@@ -1,20 +1,20 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id CD572DE0C4
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 17:57:48 +1000 (EST)
-From: Juergen Beisert <jbe@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 25 May 2009 09:56:27 +0200
-References: <20090523231148.17919.46103.stgit@terra>
-	<20090524185509.GA3561@pengutronix.de>
-	<9e4733910905241310n59952fd2oaafd7f1363db324@mail.gmail.com>
-In-Reply-To: <9e4733910905241310n59952fd2oaafd7f1363db324@mail.gmail.com>
+Return-Path: <wg@grandegger.com>
+Message-ID: <4A1A53B1.7040708@grandegger.com>
+Date: Mon, 25 May 2009 10:15:45 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200905250956.28206.jbe@pengutronix.de>
-Subject: Re: [PATCH V2 5/9] Main rewite of the mpc5200 audio DMA code
-Cc: alsa-devel@alsa-project.org, broonie@sirena.org.uk
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
+	driver
+References: <4A16BAAE.3070401@grandegger.com>
+	<fa686aa40905220808kecd06cdqb570b78ca97f0ca6@mail.gmail.com>
+	<4A1797C5.1040907@grandegger.com> <4A182800.2090204@grandegger.com>
+	<fa686aa40905242353v21c08209x2e443f42ef4096fa@mail.gmail.com>
+In-Reply-To: <fa686aa40905242353v21c08209x2e443f42ef4096fa@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux Netdev List <netdev@vger.kernel.org>,
+	devicetree-discuss <devicetree-discuss@ozlabs.org>,
+	linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +24,117 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon,
+Grant Likely wrote:
+> On Sat, May 23, 2009 at 10:44 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>> Wolfgang Grandegger wrote:
+>>> Grant Likely wrote:
+>>>>> +- clock-frequency : CAN system clock frequency in Hz, which is normally
+>>>>> +       half of the oscillator clock frequency. If not specified, a
+>>>>> +       default value of 8000000 (8 MHz) is used.
+>>>> A clock-frequency property typically refers to the bus clock
+>>>> frequency.  Something like can-frequency would be better.
+>>> Ah, right, but I'm also not happy with "can-frequency". The manual
+>>> speaks about the "internal clock", which is half of the external
+>>> oscillator frequency. Maybe "internal-clock-frequency" might be better.
+> 
+> Would it be better to specify the external clock frequency, and the
+> driver know that internal freq is half that?  I ask because external
+> clock freq is a value the HW designer actually has control over.
 
-On Sonntag, 24. Mai 2009, Jon Smirl wrote:
-> On Sun, May 24, 2009 at 2:55 PM, Wolfram Sang <w.sang@pengutronix.de> wrote:
-> >> Rewrite the mpc5200 audio DMA code to support both I2S and AC97. Make it
-> >> more robust.
-> >
-> > Why is it more robust?
->
-> I've implemented retries for when the AC97 hardware doesn't reset on
-> first try. About 10% of the time both the Efika and pcm030 AC97 codecs
-> don't reset on first try and need to be poked multiple times.  Failure
-> is indicated by not having the link clock start ticking. Every once in
-> a while even five pokes won't get the link started and I have to power
-> cycle.
+I'm sharing your arguments: "external-clock-frequency". There is always
+some confusion about external and internal clock frequency but the name
+should make it clear.
 
-Do you know this (from our website)?
+>>>>> +- cdr-reg : value of the SJA1000 clock divider register according to
+>>>>> +       the SJA1000 data sheet. If not specified, a default value of
+>>>>> +       0x48 is used.
+>>>> Ewh.  The driver should be clueful enough to derive the clock divider
+>>>> value given both the bus and can frequencies.  I don't like this
+>>>> property.
+>>> The clock divider register controls the CLKOUT frequency for the
+>>> microcontroller another CAN controller and allows to deactivate the
+>>> CLKOUT pin. It's not used to configure the CAN bus frequency.
+>>>
+>>>>> +- ocr-reg : value of the SJA1000 output control register according to
+>>>>> +       the SJA1000 data sheet. If not specified, a default value of
+>>>>> +       0x0a is used.
+>>>> Ditto here; the binding should describe the usage mode; not the
+>>>> register settings to get the usage mode.  What sort of settings will
+>>>> the .dts author be writing here?
+>>> Unfortunately, there are many:
+>>>
+>>> clkout-frequency
+>>> bypass-comperator
+>>> tx1-output-on-rx-irq
+>>>
+>>> #define OCR_MODE_BIPHASE  0x00
+>>> #define OCR_MODE_TEST     0x01
+>>> #define OCR_MODE_NORMAL   0x02
+>>> #define OCR_MODE_CLOCK    0x03
+>>>
+>>> #define OCR_TX0_INVERT    0x04
+>>> #define OCR_TX0_PULLDOWN  0x08
+>>> #define OCR_TX0_PULLUP    0x10
+>>> #define OCR_TX0_PUSHPULL  0x18
+>>> #define OCR_TX1_INVERT    0x20
+>>> #define OCR_TX1_PULLDOWN  0x40
+>>> #define OCR_TX1_PULLUP    0x80
+>>> #define OCR_TX1_PUSHPULL  0xc0
+>>>
+>>> I think implementing properties for each option is overkill.
+> 
+> Ugh, I see what you mean.
+> 
+>> Would the following more descriptive properties be OK?
+>>
+>>  clock-out-frequency = <0>, // CLKOUT pin clock off
+>>                      = <4000000>; // frequency on CLKOUT pin
+> 
+> Or how about CLKOUT pin off if the property isn't present?  Otherwise,
 
-"The AC97 mixer needs a hardware patch to make it wake up from power down 
-mode. Download here the instruction how to do so."
+Yep, that will be the default anyhow.
 
-http://www.pengutronix.de/oselas/bsp/phytec/download/phyCORE-MPC5200B-tiny/TN-015e_1.pdf
+> this looks okay.  BTW, I'd consider prefixing this with 'nxp,' or
+> 'sja1000,' to protect the namespace.  clock-out-frequency sounds like
+> one of those names which could be commonly used in the future.  I'd so
+> the same for the other chip-specific properties too.
 
-jbe
+> Segher, what's your opinion on this?
 
--- 
-Pengutronix e.K.                              | Juergen Beisert             |
-Linux Solutions for Science and Industry      | Phone: +49-8766-939 228     |
-Vertretung Sued/Muenchen, Germany             | Fax:   +49-5121-206917-5555 |
-Amtsgericht Hildesheim, HRA 2686              | http://www.pengutronix.de/  |
+I personally don't have a real preference.
+
+>>  bypass-input-comparator; // allows to bypass the CAN input comparator.
+>>
+>>  tx1-output-on-rx-irq;    // allows the TX1 output to be used as a
+>>                           // dedicated RX interrupt output.
+>>
+>>  output-control-mode = <0x0> // bi-phase output mode
+>>                        <0x1> // test output mode
+>>                        <0x2> // normal output mode (default)
+>>                        <0x3> // clock output mode
+>>
+>>  output-pin-config = <0x01> // TX0 invert
+>>                      <0x02> // TX0 pull-down
+>>                      <0x04> // TX0 pull-up
+>>                      <0x06> // TX0 push-pull
+>>                      <0x08> // TX1 invert
+>>                      <0x10> // TX1 pull-down
+>>                      <0x20> // TX1 pull-up
+>>                      <0x30> // TX1 push-pull
+> 
+> hmmm; It is very chip specific and it is a lot of mucking around.  If
+> you prefix the property with the manufacturer name, then perhaps the
+> explicit register setting is okay.
+
+OK.
+
+> Are TX0 & TX1 protocol pins or GPIOs?  If gpio, then maybe it is worth
+> the mucking about to then use the gpios binding to specify the pin
+> mode.
+
+These are the output from the CAN output driver 0 or 1 to the physical
+bus line. E.g., in normal output mode the CAN bit sequence is sent via
+TX0 or TX1. From a non-hardware expert point of view, they must be
+programmed properly to get the hardware to work.
+
+Wolfgang.
