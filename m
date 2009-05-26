@@ -1,26 +1,11 @@
-Return-Path: <Ian.Campbell@eu.citrix.com>
-Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
-	by ozlabs.org (Postfix) with ESMTP id 1098FDE04E
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 22:51:51 +1000 (EST)
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
-From: Ian Campbell <Ian.Campbell@eu.citrix.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <4A173B72.5000201@goop.org>
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
-	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
-	<20090519142656T.fujita.tomonori@lab.ntt.co.jp>
-	<19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
-	<4A1592CF.8000208@goop.org>
-	<E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
-	<1242990702.22654.253.camel@zakaz.uk.xensource.com>
-	<4A173B72.5000201@goop.org>
-Content-Type: text/plain
-Date: Tue, 26 May 2009 13:51:47 +0100
-Message-ID: <1243342307.9295.86.camel@zakaz.uk.xensource.com>
+Return-Path: <purushtm1@gmail.com>
 MIME-Version: 1.0
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 26 May 2009 14:59:07 +0530
+Message-ID: <8730448c0905260229r21ea29adt3e2813c38c68f617@mail.gmail.com>
+Subject: Query on KGDBOE
+From: purushothama s <purushtm1@gmail.com>
+To: Linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=000e0cd23e7cc9fc24046acd5b56
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,42 +15,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2009-05-22 at 19:55 -0400, Jeremy Fitzhardinge wrote:
-> Ian Campbell wrote:
-> > On Thu, 2009-05-21 at 14:27 -0400, Becky Bruce wrote:
-> >   
-> >> I can work with that, but it's going to be a bit inefficient, as I  
-> >> actually need the dma_addr_t, not the phys_addr_t, so I'll have to  
-> >> convert.  In every case, this is a conversion I've already done and  
-> >> that I need in the calling code as well. 
-> >>     
-> >
-> > Does
-> >
-> >     dma_addr_t dma_map_range(struct device *hwdev, phys_addr_t addr,
-> >     size_t size);
-> >
-> > work for you?
-> >
-> > If the range does not need mapping then it returns the dma address, if
-> > you needed to calculate the dma address anyway to figure out if mapping
-> > is required then this is fine. If the range does need mapping then it
-> > returns NULL.
-> >   
-> 
-> My only concern is whether dma_addr_t == 0 is actually equivalent to 
-> NULL.  That is, can we be sure that address 0 will never be used?
+--000e0cd23e7cc9fc24046acd5b56
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-It seems not, ~0UL might have been an option, but...
+Hi All,
 
-> Taking dma_alloc_coherent as a model, we could have something like:
-> 
->     int dma_map_range(struct device *hwdev, phys_addr_t addr, size_t size, dma_addr_t *dma_addrp);
->       
-> 
-> where *dma_addrp is set if the function returns success (bool return 
-> type might be clearer).
+I am working on Xilinx virtex5 ppc44x target. I am seeing that
+CONFIG_NET_POLL_CONTROLLER is not present xlltemac_main.c, has anybody come
+across it.  And I also see lltemac is working in interrupt driven mode and
+not in polled mode. Is it possible support KGDBOE for xilinx LLTEMAC driver
+from Xilinx Git:
 
-... this sounds like a good idea to me.
+log of kernel crash:
+===============
+KGDB: re-enter exception: ALL breakpoints killed
+ Call Trace:
+ [c0391a10] [c00060d0] show_stack+0x4c/0x16c (unreliable)
+ [c0391a50] [c0067b54] kgdb_handle_exception+0xb28/0xe14
+[c0391af0] [c000fa50] kgdb_handle_breakpoint+0x4c/0x8c
+ [c0391b00] [c000ce40] program_check_exception+0x45c/0x600
+ [c0391b20] [c000f090] ret_from_except_full+0x0/0x4c
+ [c0391be0] [c0390000] 0xc0390000
+[c0391bf0] [c01df520] xenet_DmaSend+0x48/0x60
+ [c0391c10] [c023001c] netpoll_send_skb+0x174/0x1c0
+ [c0391c50] [c01e45a8] eth_flush_buf+0x44/0x80
+[c0391c70] [c0067394] kgdb_handle_exception+0x368/0xe14
+ [c0391d10] [c000fa50] kgdb_handle_breakpoint+0x4c/0x8c
+ [c0391d20] [c000ce40] program_check_exception+0x45c/0x600
+ [c0391d40] [c000f090] ret_from_except_full+0x0/0x4c
+[c0391e00] [c0390000] 0xc0390000
+ [c0391e10] [c003bb0c] tasklet_action+0xa0/0x1d0
+ [c0391e40] [c003bce8] __do_softirq+0xac/0x1d4
+[c0391e80] [c0003ef4] do_softirq+0x5c/0x60
+ [c0391e90] [c003b820] irq_exit+0xc0/0xc4
+ [c0391ea0] [c00043f0] do_IRQ+0xa0/0xc4
+ [c0391ec0] [c000f0dc] ret_from_except+0x0/0x18
+ [c0391f80] [c000725c] cpu_idle+0x50/0xf0
+** [c0391fa0] [c02a95b0] __got2_end+0x80/0x94
+ [c0391fc0] [c03427f8] start_kernel+0x230/0x2ac
+ [c0391ff0] [c0000218] skpinv+0x1a8/0x1e4
+ Kernel panic - not syncing: Recursive entry to debugger
 
-Ian.
+Thanks and Regards
+Purushothama.S
+
+--000e0cd23e7cc9fc24046acd5b56
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<font size=3D"3">Hi All,<br>
+<br>
+I am working on Xilinx virtex5 ppc44x target. I am seeing that
+CONFIG_NET_POLL_CONTROLLER is not present xlltemac_main.c, has anybody
+come across it.=A0 And I also see lltemac is working in interrupt
+driven mode and not in polled mode. Is it possible support KGDBOE for
+xilinx LLTEMAC driver from Xilinx Git:<br>
+<br>
+log of kernel crash:<br>
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D<br>
+</font><font size=3D"3">KGDB: re-enter exception: ALL breakpoints killed</f=
+ont><br>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> Ca=
+ll Trace:                                                         </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391a10] [c00060d0] show_stack+0x4c/0x16c (unreliable)            </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391a50] [c0067b54] kgdb_handle_exception+0xb28/0xe14             </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3">[c0=
+391af0] [c000fa50] kgdb_handle_breakpoint+0x4c/0x8c              </font><br=
+>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391b00] [c000ce40] program_check_exception+0x45c/0x600           </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391b20] [c000f090] ret_from_except_full+0x0/0x4c                 </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391be0] [c0390000] 0xc0390000                                    </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3">[c0=
+391bf0] [c01df520] xenet_DmaSend+0x48/0x60                       </font><br=
+>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391c10] [c023001c] netpoll_send_skb+0x174/0x1c0                  </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391c50] [c01e45a8] eth_flush_buf+0x44/0x80                       </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3">[c0=
+391c70] [c0067394] kgdb_handle_exception+0x368/0xe14             </font><br=
+>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391d10] [c000fa50] kgdb_handle_breakpoint+0x4c/0x8c              </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391d20] [c000ce40] program_check_exception+0x45c/0x600           </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391d40] [c000f090] ret_from_except_full+0x0/0x4c                 </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3">[c0=
+391e00] [c0390000] 0xc0390000                                    </font><br=
+>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391e10] [c003bb0c] tasklet_action+0xa0/0x1d0                     </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391e40] [c003bce8] __do_softirq+0xac/0x1d4                       </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3">[c0=
+391e80] [c0003ef4] do_softirq+0x5c/0x60                          </font><br=
+>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391e90] [c003b820] irq_exit+0xc0/0xc4                            </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391ea0] [c00043f0] do_IRQ+0xa0/0xc4                              </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391ec0] [c000f0dc] ret_from_except+0x0/0x18                      </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391f80] [c000725c] cpu_idle+0x50/0xf0                            </font><b=
+r>
+<font color=3D"#a82f2f"><b><font size=3D"3"></font></b></font><font size=3D=
+"3"> [c0391fa0] [c02a95b0] __got2_end+0x80/0x94                          </=
+font><br>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391fc0] [c03427f8] start_kernel+0x230/0x2ac                      </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> [c=
+0391ff0] [c0000218] skpinv+0x1a8/0x1e4                            </font><b=
+r>
+<font size=3D"2"><font color=3D"#a82f2f"></font></font><font size=3D"3"> Ke=
+rnel panic - not syncing: Recursive entry to debugger<br>
+<br>
+Thanks and Regards<br>
+Purushothama.S<br>
+  </font>
+
+--000e0cd23e7cc9fc24046acd5b56--
