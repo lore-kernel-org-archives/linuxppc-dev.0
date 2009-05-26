@@ -1,29 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 43832DE059
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 06:25:36 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n4QKPV37021769
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:25:31 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n4QKPVTF012557
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 15:25:31 -0500 (CDT)
-Date: Tue, 26 May 2009 15:25:30 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Carl-Erwin GRIFFITH <carl.erwin@gmail.com>
-Subject: Re: 82xx multiple soc support/initialization
-Message-ID: <20090526202530.GA2342@b07421-ec1.am.freescale.net>
-References: <5c90346a0905250723t2c9d30a0qd4fbebed38917cd7@mail.gmail.com>
-Mime-Version: 1.0
+Return-Path: <ben@fluff.org.uk>
+Received: from kira.home.fluff.org (aeryn.fluff.org.uk [87.194.8.8])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CD7DEDE03B
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 07:34:35 +1000 (EST)
+Date: Tue, 26 May 2009 22:33:51 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Esben Haabendal <esbenhaabendal@gmail.com>
+Subject: Re: [PATCH v2] i2c-mpc: generate START condition after STOP caused
+	by read i2c_msg
+Message-ID: <20090526213351.GG23114@fluff.org.uk>
+References: <4A124202.4010201@doredevelopment.dk>
+	<d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5c90346a0905250723t2c9d30a0qd4fbebed38917cd7@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
+	Esben Haabendal <eha@doredevelopment.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,23 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 25, 2009 at 04:23:37PM +0200, Carl-Erwin GRIFFITH wrote:
-> Hi guys,
+On Tue, May 26, 2009 at 01:30:21PM +0200, Esben Haabendal wrote:
+> On Tue, May 19, 2009 at 7:22 AM, Esben Haabendal <eha@doredevelopment.dk> wrote:
+> > This fixes MAL (arbitration lost) bug caused by illegal use of
+> > RSTA (repeated START) after STOP condition generated after last byte
+> > of reads. With this patch, it is possible to do an i2c_transfer() with
+> > additional i2c_msg's following the I2C_M_RD messages.
+> >
+> > It still needs to be resolved if it is possible to fix this issue
+> > by removing the STOP condition after reads in a robust way.
+> >
+> > Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
+> > ---
+> > ?drivers/i2c/busses/i2c-mpc.c | ? ?9 +++++++--
+> > ?1 files changed, 7 insertions(+), 2 deletions(-)
 > 
-> 
->  I'm working on an derived muas3001 board (kernel version 2.6.30-rc5),
-> 
-> and so far I did not find an example of multiple SOCs initialization.
-> 
-> The board has 3 cpus (only one core activated).
+> Any blockers to get this accepted?
 
-This is not currently supported -- there are lots of places, especially
-in 82xx/CPM code, that assume there's only one instance of the SoC.
+It would be nice to get an ack from someone who can actually test
+the driver before getting this merged.
+ 
+> /Esben
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-i2c" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-> 1) Is there a special syntax to use in the device tree ?
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-You'd have multiple instances of the soc node (plus kernel changes to
-make this work).  You'll probably need some way of indicating which one
-contains the running core.
-
--Scott
+  'a smiley only costs 4 bytes'
