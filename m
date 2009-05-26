@@ -1,21 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 92F97DE007
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 19:12:03 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
-	driver
-Date: Tue, 26 May 2009 10:10:30 +0100
-References: <4A16BAAE.3070401@grandegger.com>
-	<200905242327.15139.arnd@arndb.de>
-	<4A1A418D.3040207@grandegger.com>
-In-Reply-To: <4A1A418D.3040207@grandegger.com>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A6A78DE00B
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 19:21:47 +1000 (EST)
+Date: Tue, 26 May 2009 10:21:38 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [alsa-devel] [PATCH V4 0/5] AC97 driver for mpc5200
+Message-ID: <20090526092137.GA2645@sirena.org.uk>
+References: <20090525221406.21370.30326.stgit@terra>
+	<ed82fe3e0905252044w1d0e1f5cqbaf4256b9f749d42@mail.gmail.com>
 MIME-Version: 1.0
-Message-Id: <200905261010.31364.arnd@arndb.de>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Cc: Linux Netdev List <netdev@vger.kernel.org>, devicetree-discuss@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ed82fe3e0905252044w1d0e1f5cqbaf4256b9f749d42@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 25 May 2009, Wolfgang Grandegger wrote:
-> > Right, that makes sense. However, most drivers use the field to store the
-> > physical address, not the iomap token. Maybe there should be a new field
-> > in struct sja1000_priv for the virtual address, but that would be a change
-> > to the base driver, not just to the OF portion.
-> 
-> Is that common practice? If yes, I will add a member to store the
-> virtual address to struct sja1000_priv.
+On Mon, May 25, 2009 at 10:44:12PM -0500, Timur Tabi wrote:
+> On Mon, May 25, 2009 at 5:15 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
 
-I grepped through the network driver for usage of ->base_addr, and
-it's somewhat inconsistent. The majority of the users use it for
-a physical address, but there are also a few that use it for the
-__iomem token.
+> > ? ? ?The macro spin_event_timeout() takes a condition and timeout value
 
-Casts between unsigned long and qualified (__iomem, __user, const, ...)
-pointers do not cause a warning, but can easily lead to bugs when
-another user casts to an unqualified pointer.
+> My patch is already set to go through the powerpc tree, so there's no
+> need to repost it here.  Please, you changed the title of the patch.
 
-	Arnd <><
+Indeed.  Since this is a new driver I'm happy to let the code go in
+without the new function and then sort itself out in the merge window.
