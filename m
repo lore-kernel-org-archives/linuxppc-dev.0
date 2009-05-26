@@ -1,12 +1,24 @@
-Return-Path: <anton@ozlabs.org>
-Date: Tue, 26 May 2009 16:25:49 +1000
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Convert RTAS event scan from kernel thread to
-	workqueue
-Message-ID: <20090526062549.GH19728@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <sgruszka@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id 13463DE0A2
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 16:52:15 +1000 (EST)
+Date: Tue, 26 May 2009 08:44:55 +0200
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH resend4 2/3] itimers: fix periodic tics precision
+Message-ID: <20090526084455.672c652f@dhcp-lab-109.englab.brq.redhat.com>
+In-Reply-To: <20090525145132.03915e19@dhcp-lab-109.englab.brq.redhat.com>
+References: <20090522154339.06d30f0a@dhcp-lab-109.englab.brq.redhat.com>
+	<alpine.LFD.2.00.0905221611380.3570@localhost.localdomain>
+	<20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
+	<alpine.LFD.2.00.0905251423490.3582@localhost.localdomain>
+	<20090525145132.03915e19@dhcp-lab-109.englab.brq.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Ingo, Peter Zijlstra <a.p.zijlstra@chello.nl>, linuxppc-dev@ozlabs.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Nesterov <oleg@redhat.com>, Oleg, Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,142 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 25 May 2009 14:51:32 +0200
+Stanislaw Gruszka <sgruszka@redhat.com> wrote:
 
-RTAS event scan has to run across all cpus. Right now we use a kernel
-thread and set_cpus_allowed but in doing so we wake up the previous cpu
-unnecessarily.
+> On Mon, 25 May 2009 14:32:14 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Mon, 25 May 2009, Stanislaw Gruszka wrote:
+> > > @@ -904,6 +905,7 @@ void __init time_init(void)
+> > >  	tb_ticks_per_usec = ppc_tb_freq / 1000000;
+> > >  	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
+> > >  	calc_cputime_factors();
+> > > +	cputime_one = jiffies_to_cputime(1);
+> > 
+> >   1) The variable name is misleading.
+> 
+> What about cputime_one_jiffy ?
+> 
+> >   2) The patch breaks all powerpc platforms which have
+> >   CONFIG_VIRT_CPU_ACCOUNTING=n and ia64 with
+> >   CONFIG_VIRT_CPU_ACCOUNTING=y
+> 
+> Stupid me, in asm-generic/cputime.h should be 
+> #define cputime_one jiffies_to_cputime(1)
 
-Some ftrace output shows this:
+Hmmm, I'm confused. Perhaps I missed something, but I think patch was ok.
+For powerpc and ia64 and CONFIG_VIRT_CPU_ACCOUNTING=n definitions from
+asm-generic/cputime.h where used. In this file was:
 
-previous cpu (2):
-[002]  7.022331: sched_switch: task swapper:0 [140] ==> rtasd:194 [120]
-[002]  7.022338: sched_switch: task rtasd:194 [120] ==> migration/2:9 [0]
-[002]  7.022344: sched_switch: task migration/2:9 [0] ==> swapper:0 [140]
+#define cputime_one (1UL) 
 
-next cpu (3):
-[003]  7.022345: sched_switch: task swapper:0 [140] ==> rtasd:194 [120]
-[003]  7.022371: sched_switch: task rtasd:194 [120] ==> swapper:0 [140]
+and that correct as jiffies_to_cputime(x) is just (x)
 
-We can use schedule_delayed_work_on and avoid the unnecessary wakeup. 
+For CONFIG_VIRT_CPU_ACCOUTING=y:
+- For powerpc additional variable was  declared and computed in
+  initialization  time. Declaration of was in __KERENEL__ scope.
+- For ia64: cputime_one was defined as jiffies_to_cputime(1)
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Anyway I didn't try to even compile the patch on other architectures than x86.
+Of cource I will test my patch, but first I would like to know what You think?
+Does we really need such optimization (because before usage of
+jiffies_to_cputime(1) was just fine) ?
 
-Index: linux-2.6/arch/powerpc/platforms/pseries/rtasd.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/pseries/rtasd.c	2009-03-15 17:03:45.000000000 +1100
-+++ linux-2.6/arch/powerpc/platforms/pseries/rtasd.c	2009-05-26 16:02:39.000000000 +1000
-@@ -19,7 +19,7 @@
- #include <linux/vmalloc.h>
- #include <linux/spinlock.h>
- #include <linux/cpu.h>
--#include <linux/delay.h>
-+#include <linux/workqueue.h>
- 
- #include <asm/uaccess.h>
- #include <asm/io.h>
-@@ -387,36 +387,51 @@
- 	} while(error == 0);
- }
- 
--static void do_event_scan_all_cpus(long delay)
-+static void rtas_event_scan(struct work_struct *w);
-+DECLARE_DELAYED_WORK(event_scan_work, rtas_event_scan);
-+
-+/*
-+ * Delay should be at least one second since some machines have problems if
-+ * we call event-scan too quickly.
-+ */
-+static unsigned long event_scan_delay = 1*HZ;
-+static int first_pass = 1;
-+
-+static void rtas_event_scan(struct work_struct *w)
- {
--	int cpu;
-+	unsigned int cpu;
-+
-+	do_event_scan();
- 
- 	get_online_cpus();
--	cpu = first_cpu(cpu_online_map);
--	for (;;) {
--		set_cpus_allowed(current, cpumask_of_cpu(cpu));
--		do_event_scan();
--		set_cpus_allowed(current, CPU_MASK_ALL);
--
--		/* Drop hotplug lock, and sleep for the specified delay */
--		put_online_cpus();
--		msleep_interruptible(delay);
--		get_online_cpus();
- 
--		cpu = next_cpu(cpu, cpu_online_map);
--		if (cpu == NR_CPUS)
--			break;
-+	cpu = next_cpu(smp_processor_id(), cpu_online_map);
-+	if (cpu == NR_CPUS) {
-+		cpu = first_cpu(cpu_online_map);
-+
-+		if (first_pass) {
-+			first_pass = 0;
-+			event_scan_delay = 30*HZ/rtas_event_scan_rate;
-+
-+			if (surveillance_timeout != -1) {
-+				pr_debug("rtasd: enabling surveillance\n");
-+				enable_surveillance(surveillance_timeout);
-+				pr_debug("rtasd: surveillance enabled\n");
-+			}
-+		}
- 	}
-+
-+	schedule_delayed_work_on(cpu, &event_scan_work,
-+		__round_jiffies_relative(event_scan_delay, cpu));
-+
- 	put_online_cpus();
- }
- 
--static int rtasd(void *unused)
-+static void start_event_scan(void)
- {
- 	unsigned int err_type;
- 	int rc;
- 
--	daemonize("rtasd");
--
- 	printk(KERN_DEBUG "RTAS daemon started\n");
- 	pr_debug("rtasd: will sleep for %d milliseconds\n",
- 		 (30000 / rtas_event_scan_rate));
-@@ -434,22 +449,8 @@
- 		}
- 	}
- 
--	/* First pass. */
--	do_event_scan_all_cpus(1000);
--
--	if (surveillance_timeout != -1) {
--		pr_debug("rtasd: enabling surveillance\n");
--		enable_surveillance(surveillance_timeout);
--		pr_debug("rtasd: surveillance enabled\n");
--	}
--
--	/* Delay should be at least one second since some
--	 * machines have problems if we call event-scan too
--	 * quickly. */
--	for (;;)
--		do_event_scan_all_cpus(30000/rtas_event_scan_rate);
--
--	return -EINVAL;
-+	schedule_delayed_work_on(first_cpu(cpu_online_map), &event_scan_work,
-+				 event_scan_delay);
- }
- 
- static int __init rtas_init(void)
-@@ -487,8 +488,7 @@
- 	if (!entry)
- 		printk(KERN_ERR "Failed to create error_log proc entry\n");
- 
--	if (kernel_thread(rtasd, NULL, CLONE_FS) < 0)
--		printk(KERN_ERR "Failed to start RTAS daemon\n");
-+	start_event_scan();
- 
- 	return 0;
- }
+Cheers
+Stanislaw
