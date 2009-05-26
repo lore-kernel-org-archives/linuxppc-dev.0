@@ -1,18 +1,22 @@
-Return-Path: <dgibson@bilbo.ozlabs.org>
-Date: Tue, 26 May 2009 12:23:41 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Initialize DBCR0 for PPC440 targets
-Message-ID: <20090526022341.GA18801@yookeroo.seuss>
-References: <6213bc560905190608j73f4191fxbd94158a2b1740c0@mail.gmail.com>
-	<20090519235302.GA6333@yookeroo.seuss>
-	<6213bc560905192250w4caa84aem9c0dedb2eed72fea@mail.gmail.com>
-	<20090520060014.GL6333@yookeroo.seuss>
-	<1243235075.24376.60.camel@pasglop>
+Return-Path: <timur.tabi@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
+	by ozlabs.org (Postfix) with ESMTP id 9752BDE0D7
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:27:19 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so1844639qwe.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 20:27:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1243235075.24376.60.camel@pasglop>
-Cc: srikanth krishnakar <skrishnakar@gmail.com>, Linuxppc-dev@ozlabs.org
+Sender: timur.tabi@gmail.com
+In-Reply-To: <9e4733910905251046y5f7377f4y49ce72e775faef16@mail.gmail.com>
+References: <1242761199-17875-1-git-send-email-timur@freescale.com>
+	<1242761199-17875-2-git-send-email-timur@freescale.com>
+	<9e4733910905251046y5f7377f4y49ce72e775faef16@mail.gmail.com>
+Date: Mon, 25 May 2009 22:27:17 -0500
+Message-ID: <ed82fe3e0905252027y198e78ct821753acacb1bdb1@mail.gmail.com>
+Subject: Re: [PATCH 1/2 v8] powerpc: introduce macro spin_event_timeout()
+From: Timur Tabi <timur@freescale.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,37 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 25, 2009 at 05:04:35PM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-05-20 at 16:00 +1000, David Gibson wrote:
-> > On Wed, May 20, 2009 at 11:20:46AM +0530, srikanth krishnakar wrote:
-> > > Hi David,
-> > > 
-> > > I am not sure how the IDM behaves on few of PPC440 targets which don't
-> > > have boot loaders. I have a reference for your question:
-> > > 
-> > > http://www.nabble.com/Question-about-DBCR0-initialization-for-440-td23049044.html
-> > > 
-> > > Without this fix (given patch) I am facing problems with GDB, and
-> > > further target hangs while running gdbserver !
-> > 
-> > That doesn't answer my question.  It's not enough to say "this fixes a
-> > problem" you need to explain *how* it fixes the problem.
-> > 
-> > And I don't see why IDM would have any effect on *software*
-> > breakpoints.
-> 
-> No but gdb can use the DABR emulation and single step would be busted
-> too. GDB internally heavily uses single step in places you wouldn't
-> expect it to :-) Like I think when breaking on main, it sometimes single
-> step the whole init process of the executable until it hits it. At least
-> I've seen it do that when I was debugging the debug support for 64-bit
-> Book3E.
+On Mon, May 25, 2009 at 12:46 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
 
-Right, but I believe the kernel does turn on IDM when it turns on
-single step, or the DAC event bit.
+> I just tried using this. The !rc has the effect of making the error
+> return be zero instead the normal not zero.
+
+You're confused.  It's not a "return code", it's a return value.  I
+guess I should have called the parameter "ret" instead of "rc", but I
+didn't expect people to get confused.
+
+'rc' is the value of the expression when the loop terminates.  That's
+what makes the most sense, because the developer will want to know
+what that value is.  If you're expression happens to rely on negative
+logic (e.g. wait until a bit is cleared), then of course it's going to
+appear "backwards" when you test it.
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Timur Tabi
+Linux kernel developer at Freescale
