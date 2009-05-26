@@ -1,21 +1,22 @@
-Return-Path: <timur@freescale.com>
+Return-Path: <Geoff.Thorpe@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 698E0DE11D
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 01:23:27 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-	benh@kernel.crashing.org, jonsmirl@gmail.com, arnd@arndb.de,
-	geert.uytterhoeven@sonycom.com
-Subject: [PATCH 1/2] [PATCH 1/2 v9] powerpc: introduce macro
-	spin_event_timeout()
-Date: Tue, 26 May 2009 10:21:41 -0500
-Message-Id: <1243351302-32062-2-git-send-email-timur@freescale.com>
-In-Reply-To: <1243351302-32062-1-git-send-email-timur@freescale.com>
-References: <1243351302-32062-1-git-send-email-timur@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id CAC37DE055
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 02:21:05 +1000 (EST)
+Message-ID: <4A1C16DF.9090802@freescale.com>
+Date: Tue, 26 May 2009 12:20:47 -0400
+From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 1/2 v8] powerpc: introduce macro spin_event_timeout()
+References: <1242761199-17875-1-git-send-email-timur@freescale.com>	<1242761199-17875-2-git-send-email-timur@freescale.com>	<9e4733910905251046y5f7377f4y49ce72e775faef16@mail.gmail.com>
+	<ed82fe3e0905252027y198e78ct821753acacb1bdb1@mail.gmail.com>
+In-Reply-To: <ed82fe3e0905252027y198e78ct821753acacb1bdb1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,78 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The macro spin_event_timeout() takes a condition and timeout value
-(in microseconds) as parameters.  It spins until either the condition is true
-or the timeout expires.  It returns the result of the condition when the loop
-was terminated.
+Timur Tabi wrote:
+> On Mon, May 25, 2009 at 12:46 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> 
+>> I just tried using this. The !rc has the effect of making the error
+>> return be zero instead the normal not zero.
+> 
+> You're confused.  It's not a "return code", it's a return value.  I
+> guess I should have called the parameter "ret" instead of "rc", but I
+> didn't expect people to get confused.
+> 
+> 'rc' is the value of the expression when the loop terminates.  That's
+> what makes the most sense, because the developer will want to know
+> what that value is.  If you're expression happens to rely on negative
+> logic (e.g. wait until a bit is cleared), then of course it's going to
+> appear "backwards" when you test it.
 
-This primary purpose of this macro is to poll on a hardware register until a
-status bit changes.  The timeout ensures that the loop still terminates if the
-bit doesn't change as expected.  This macro makes it easier for driver
-developers to perform this kind of operation properly.
+I've just been going through some hassles associated with wait_event
+variants and their return codes.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+Eg. wait_event_interruptible()'s return value is documented as; "The
+function will return -ERESTARTSYS if it was interrupted by a signal and
+0 if @condition evaluated to true." And wait_event_timeout()'s return
+value is; "The function returns 0 if the @timeout elapsed, and the
+remaining jiffies if the condition evaluated to true before the timeout
+elapsed."
 
-v9: changed the macro to return the value, instead of having it passed in
+In all cases it seems, they don't return the what the expression
+evaluates to, but instead return an indication about the wait outcome.
+This is why I've taken to doing things like;
+   wait_event_***(queue, !(ret = try_something()));
 
- arch/powerpc/include/asm/delay.h |   36 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 36 insertions(+), 0 deletions(-)
+So from this user's perspective (FWIW), it would come as a surprise if
+the return value reflected the evaluated expression rather than what
+happened w.r.t. the spin/timeout.
 
-diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/delay.h
-index f9200a6..1e2eb41 100644
---- a/arch/powerpc/include/asm/delay.h
-+++ b/arch/powerpc/include/asm/delay.h
-@@ -2,8 +2,11 @@
- #define _ASM_POWERPC_DELAY_H
- #ifdef __KERNEL__
- 
-+#include <asm/time.h>
-+
- /*
-  * Copyright 1996, Paul Mackerras.
-+ * Copyright (C) 2009 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-@@ -30,5 +33,38 @@ extern void udelay(unsigned long usecs);
- #define mdelay(n)	udelay((n) * 1000)
- #endif
- 
-+/**
-+ * spin_event_timeout - spin until a condition gets true or a timeout elapses
-+ * @condition: a C expression to evalate
-+ * @timeout: timeout, in microseconds
-+ * @delay: the number of microseconds to delay between each evaluation of
-+ *         @condition
-+ *
-+ * The process spins until the condition evaluates to true (non-zero) or the
-+ * timeout elapses.  The return value of this macro is the value of
-+ * @condition when the loop terminates. This allows you to determine the cause
-+ * of the loop terminates.  If the return value is zero, then you know a
-+ * timeout has occurred.
-+ *
-+ * This primary purpose of this macro is to poll on a hardware register
-+ * until a status bit changes.  The timeout ensures that the loop still
-+ * terminates even if the bit never changes.  The delay is for devices that
-+ * need a delay in between successive reads.
-+ *
-+ * gcc will optimize out the if-statement if @delay is a constant.
-+ */
-+#define spin_event_timeout(condition, timeout, delay)                          \
-+({                                                                             \
-+	typeof(condition) __ret;                                               \
-+	unsigned long __loops = tb_ticks_per_usec * timeout;                   \
-+	unsigned long __start = get_tbl();                                     \
-+	while (!(__ret = (condition)) && (tb_ticks_since(__start) <= __loops)) \
-+		if (delay)                                                     \
-+			udelay(delay);                                         \
-+		else                                                           \
-+			cpu_relax();                                           \
-+	__ret;		                                                       \
-+})
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_DELAY_H */
--- 
-1.6.0.6
+Cheers,
+Geoff
