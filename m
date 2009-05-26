@@ -1,21 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f220.google.com (mail-gx0-f220.google.com
-	[209.85.217.220]) by ozlabs.org (Postfix) with ESMTP id 8CD05DE0E3
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:47:45 +1000 (EST)
-Received: by gxk20 with SMTP id 20so2391299gxk.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 20:47:44 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <ed82fe3e0905252041u367cac2fk80c9316c0236e340@mail.gmail.com>
-References: <20090525221406.21370.30326.stgit@terra>
-	<20090525221511.21370.81405.stgit@terra>
-	<ed82fe3e0905252041u367cac2fk80c9316c0236e340@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 25 May 2009 21:47:24 -0600
-Message-ID: <fa686aa40905252047g6c88efa9t2b9b864f2d2023f9@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH V4 3/5] AC97 driver for mpc5200
-To: Timur Tabi <timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 04CA8DE0F8
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:51:07 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 13:50:41 +1000
+Message-Id: <1243309841.2858.60.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 25, 2009 at 9:41 PM, Timur Tabi <timur@freescale.com> wrote:
-> On Mon, May 25, 2009 at 5:15 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
->
->> + =A0 =A0 =A0 spin_event_timeout(1, 3, 0, rc);
->
-> Ugh, don't do this. =A0Just use udelay!
+Hi Linus !
 
-heh; indeed.  My objection to udelay is that it burns cycles it the
-test loop that could be used to decide whether or not the loop is
-complete.  Not an issue when the explicit goal is to burn a fixed
-number of cycles.
+Here's the first of two fixes for nasty brown paper bag bugs that went
+in recently and are both my fault (I need to start buying those bags
+in bulk I reckon...)
 
-g.
+It's 2.6.30 material. I'll send the second one tomorrow or so after a
+bit more review and testing happened as it's unfortunately more
+invasive.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+The following changes since commit b18f1e21993f73f072b1e0859f942fb11afddcb1:
+  Linus Torvalds (1):
+        Merge branch 'kvm-updates/2.6.30' of git://git.kernel.org/pub/scm/virt/kvm/kvm
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Hideo Saito (1):
+      powerpc/mm: Fix broken MMU PID stealing on !SMP
+
+ arch/powerpc/mm/mmu_context_nohash.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
