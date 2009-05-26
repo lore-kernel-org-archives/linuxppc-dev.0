@@ -1,22 +1,21 @@
 Return-Path: <timur.tabi@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
-	by ozlabs.org (Postfix) with ESMTP id 9752BDE0D7
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:27:19 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so1844639qwe.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 20:27:17 -0700 (PDT)
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id EB29BDE0AE
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:41:25 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so1846835qwe.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 20:41:24 -0700 (PDT)
 MIME-Version: 1.0
 Sender: timur.tabi@gmail.com
-In-Reply-To: <9e4733910905251046y5f7377f4y49ce72e775faef16@mail.gmail.com>
-References: <1242761199-17875-1-git-send-email-timur@freescale.com>
-	<1242761199-17875-2-git-send-email-timur@freescale.com>
-	<9e4733910905251046y5f7377f4y49ce72e775faef16@mail.gmail.com>
-Date: Mon, 25 May 2009 22:27:17 -0500
-Message-ID: <ed82fe3e0905252027y198e78ct821753acacb1bdb1@mail.gmail.com>
-Subject: Re: [PATCH 1/2 v8] powerpc: introduce macro spin_event_timeout()
+In-Reply-To: <20090525221511.21370.81405.stgit@terra>
+References: <20090525221406.21370.30326.stgit@terra>
+	<20090525221511.21370.81405.stgit@terra>
+Date: Mon, 25 May 2009 22:41:23 -0500
+Message-ID: <ed82fe3e0905252041u367cac2fk80c9316c0236e340@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH V4 3/5] AC97 driver for mpc5200
 From: Timur Tabi <timur@freescale.com>
 To: Jon Smirl <jonsmirl@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 25, 2009 at 12:46 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+On Mon, May 25, 2009 at 5:15 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
 
-> I just tried using this. The !rc has the effect of making the error
-> return be zero instead the normal not zero.
+> + =A0 =A0 =A0 spin_event_timeout(1, 3, 0, rc);
 
-You're confused.  It's not a "return code", it's a return value.  I
-guess I should have called the parameter "ret" instead of "rc", but I
-didn't expect people to get confused.
+Ugh, don't do this.  Just use udelay!
 
-'rc' is the value of the expression when the loop terminates.  That's
-what makes the most sense, because the developer will want to know
-what that value is.  If you're expression happens to rely on negative
-logic (e.g. wait until a bit is cleared), then of course it's going to
-appear "backwards" when you test it.
-
--- 
+--=20
 Timur Tabi
 Linux kernel developer at Freescale
