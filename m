@@ -1,24 +1,21 @@
-Return-Path: <sgruszka@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 13463DE0A2
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 16:52:15 +1000 (EST)
-Date: Tue, 26 May 2009 08:44:55 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH resend4 2/3] itimers: fix periodic tics precision
-Message-ID: <20090526084455.672c652f@dhcp-lab-109.englab.brq.redhat.com>
-In-Reply-To: <20090525145132.03915e19@dhcp-lab-109.englab.brq.redhat.com>
-References: <20090522154339.06d30f0a@dhcp-lab-109.englab.brq.redhat.com>
-	<alpine.LFD.2.00.0905221611380.3570@localhost.localdomain>
-	<20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
-	<alpine.LFD.2.00.0905251423490.3582@localhost.localdomain>
-	<20090525145132.03915e19@dhcp-lab-109.englab.brq.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Ingo, Peter Zijlstra <a.p.zijlstra@chello.nl>, linuxppc-dev@ozlabs.org,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Nesterov <oleg@redhat.com>, Oleg, Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id B000DDE016
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 17:29:35 +1000 (EST)
+Date: Tue, 26 May 2009 09:29:31 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH V4 1/5] The macro spin_event_timeout() takes a condition
+	and timeout value
+In-Reply-To: <20090525221507.21370.68301.stgit@terra>
+Message-ID: <alpine.LRH.2.00.0905260928320.31893@vixen.sonytel.be>
+References: <20090525221406.21370.30326.stgit@terra>
+	<20090525221507.21370.68301.stgit@terra>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk,
+	timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,47 +25,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 25 May 2009 14:51:32 +0200
-Stanislaw Gruszka <sgruszka@redhat.com> wrote:
-
-> On Mon, 25 May 2009 14:32:14 +0200 (CEST)
-> Thomas Gleixner <tglx@linutronix.de> wrote:
+On Mon, 25 May 2009, Jon Smirl wrote:
+> (in microseconds) as parameters.  It spins until either the condition is true
+> or the timeout expires.  It returns the result of the condition when the loop
+> was terminated.
 > 
-> > On Mon, 25 May 2009, Stanislaw Gruszka wrote:
-> > > @@ -904,6 +905,7 @@ void __init time_init(void)
-> > >  	tb_ticks_per_usec = ppc_tb_freq / 1000000;
-> > >  	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
-> > >  	calc_cputime_factors();
-> > > +	cputime_one = jiffies_to_cputime(1);
-> > 
-> >   1) The variable name is misleading.
+> This primary purpose of this macro is to poll on a hardware register until a
+> status bit changes.  The timeout ensures that the loop still terminates if the
+> bit doesn't change as expected.  This macro makes it easier for driver
+> developers to perform this kind of operation properly.
 > 
-> What about cputime_one_jiffy ?
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>  arch/powerpc/include/asm/delay.h |   33 +++++++++++++++++++++++++++++++++
+>  1 files changed, 33 insertions(+), 0 deletions(-)
 > 
-> >   2) The patch breaks all powerpc platforms which have
-> >   CONFIG_VIRT_CPU_ACCOUNTING=n and ia64 with
-> >   CONFIG_VIRT_CPU_ACCOUNTING=y
-> 
-> Stupid me, in asm-generic/cputime.h should be 
-> #define cputime_one jiffies_to_cputime(1)
+> diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/delay.h
+> index f9200a6..fedf037 100644
+> --- a/arch/powerpc/include/asm/delay.h
+> +++ b/arch/powerpc/include/asm/delay.h
+> @@ -2,8 +2,11 @@
+>  #define _ASM_POWERPC_DELAY_H
+>  #ifdef __KERNEL__
+>  
+> +#include <asm/time.h>
+> +
+>  /*
+>   * Copyright 1996, Paul Mackerras.
+> + * Copyright (C) 2009 Freescale Semiconductor, Inc. All rights reserved.
+>   *
+>   * This program is free software; you can redistribute it and/or
+>   * modify it under the terms of the GNU General Public License
+> @@ -30,5 +33,35 @@ extern void udelay(unsigned long usecs);
+>  #define mdelay(n)	udelay((n) * 1000)
+>  #endif
+>  
+> +/**
+> + * spin_event_timeout - spin until a condition gets true or a timeout elapses
+> + * @condition: a C expression to evalate
+> + * @timeout: timeout, in microseconds
+> + * @delay: the number of microseconds to delay between eache evaluation of
+> + *         @condition
+> + * @rc: the last value of the condition
+> + *
+> + * The process spins until the condition evaluates to true (non-zero) or the
+> + * timeout elapses.  Upon exit, @rc contains the value of the condition. This
+> + * allows you to test the condition without incurring any side effects.
+> + *
+> + * This primary purpose of this macro is to poll on a hardware register
+> + * until a status bit changes.  The timeout ensures that the loop still
+> + * terminates even if the bit never changes.  The delay is for devices that
+> + * need a delay in between successive reads.
+> + *
+> + * gcc will optimize out the if-statement if @delay is a constant.
+> + */
+> +#define spin_event_timeout(condition, timeout, delay, rc)                   \
 
-Hmmm, I'm confused. Perhaps I missed something, but I think patch was ok.
-For powerpc and ia64 and CONFIG_VIRT_CPU_ACCOUNTING=n definitions from
-asm-generic/cputime.h where used. In this file was:
+static inline function, returning rc, instead of a macro?
 
-#define cputime_one (1UL) 
+> +{                                                                           \
+> +	unsigned long __loops = tb_ticks_per_usec * timeout;                \
+> +	unsigned long __start = get_tbl();                                  \
+> +	while ((rc = (condition)) && (tb_ticks_since(__start) <= __loops)) \
+> +		if (delay)                                                  \
+> +			udelay(delay);                                      \
+> +		else	                                                    \
+> +			cpu_relax();                                        \
+> +}
+> +
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_POWERPC_DELAY_H */
 
-and that correct as jiffies_to_cputime(x) is just (x)
+With kind regards,
 
-For CONFIG_VIRT_CPU_ACCOUTING=y:
-- For powerpc additional variable was  declared and computed in
-  initialization  time. Declaration of was in __KERENEL__ scope.
-- For ia64: cputime_one was defined as jiffies_to_cputime(1)
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
 
-Anyway I didn't try to even compile the patch on other architectures than x86.
-Of cource I will test my patch, but first I would like to know what You think?
-Does we really need such optimization (because before usage of
-jiffies_to_cputime(1) was just fine) ?
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-Cheers
-Stanislaw
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
