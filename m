@@ -1,19 +1,21 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
-	driver
-Date: Tue, 26 May 2009 10:42:05 +0100
-References: <200905242327.15139.arnd@arndb.de>
-	<200905261010.31364.arnd@arndb.de>
-	<20090526.022508.238274281.davem@davemloft.net>
-In-Reply-To: <20090526.022508.238274281.davem@davemloft.net>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 17C73DDED0
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 21:01:28 +1000 (EST)
+Date: Tue, 26 May 2009 12:01:20 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [alsa-devel] [PATCH V4 2/5] Main rewite of the mpc5200 audio
+	DMA code
+Message-ID: <20090526110120.GA8969@sirena.org.uk>
+References: <20090525221406.21370.30326.stgit@terra>
+	<20090525221509.21370.70182.stgit@terra>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200905261042.05967.arnd@arndb.de>
-Cc: devicetree-discuss@ozlabs.org, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Greg Ungerer <gerg@uclinux.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090525221509.21370.70182.stgit@terra>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +25,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 26 May 2009, David Miller wrote:
-> It's such a baroque thing, there is no reason to set it at all if you
-> ask me.  It's only use is to allow ISA and similar primitive bus
-> devices to have their I/O ports changed via ifconfig.
+On Mon, May 25, 2009 at 06:15:09PM -0400, Jon Smirl wrote:
+> Rewrite the mpc5200 audio DMA code to support both I2S and AC97.
+> 
+> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 
-My original comment was about the fact that sja1000 was doing
-dev->base_addr = (unsigned long)ioremap(phys_addr, size), I didn't
-even think about SIOCGIFMAP and command line overrides, but that
-surely makes it worse and the driver should be changed to
-store the virtual register address in its private data structure.
-
-drivers/net/fec.c seems to have the same problem, which manifests
-in a number of ugly casts and direct pointer dereferences in places
-where it should do writel() or out_be32().
-
-	Arnd <><
+Grant, I'm OK with that if you are?
