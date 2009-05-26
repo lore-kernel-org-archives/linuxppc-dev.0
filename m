@@ -1,17 +1,26 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from web28314.mail.ukl.yahoo.com (web28314.mail.ukl.yahoo.com
-	[87.248.110.133]) by ozlabs.org (Postfix) with SMTP id 6BCA2DE00D
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 03:13:27 +1000 (EST)
-Message-ID: <165800.5673.qm@web28314.mail.ukl.yahoo.com>
-Date: Tue, 26 May 2009 17:13:24 +0000 (GMT)
-From: Albert Herranz <albert_herranz@yahoo.es>
-Subject: Re: powerpc: DMA coherent allocations broken for
-	CONFIG_NOT_COHERENT_CACHE
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Kumar Gala <galak@gate.crashing.org>, Ilya Yanok <yanok@emcraft.com>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 27628DDF94
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 03:26:39 +1000 (EST)
+Date: Tue, 26 May 2009 10:26:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: drivers/video/logo/logo_linux_mono.c build error
+Message-Id: <20090526102628.8804e281.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LRH.2.00.0905261352140.4897@vixen.sonytel.be>
+References: <20090427145031.99d4e0ac.akpm@linux-foundation.org>
+	<20090428135202.9c9bbadb.sfr@canb.auug.org.au>
+	<alpine.LRH.2.00.0904280922410.31001@vixen.sonytel.be>
+	<20090513154415.fd10762c.akpm@linux-foundation.org>
+	<alpine.LRH.2.00.0905140919230.22602@vixen.sonytel.be>
+	<alpine.LRH.2.00.0905261352140.4897@vixen.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: sfr@canb.auug.org.au, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,12 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 26 May 2009 13:52:34 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
---- El lun, 25/5/09, Benjamin Herrenschmidt <benh@kernel.crashing.org> escr=
-ibi=F3:=0A=0A> (Please, Kumar, have a good look,=0A> especially my change t=
-o FIXMAP_TOP,=0A> was there any reason it wasn't a constant in the first=0A=
-> place ?)=0A> =0A> This is going to .30 if nobody hollers. I've done some=
-=0A> testing here=0A> and it seems to be fine, but more eyes at this stage =
-are=0A> much welcome.=0A=0ATested-by: Albert Herranz <albert_herranz@yahoo.=
-es>=0A=0ABoots fine and works on the Nintendo Wii.=0A=0AThanks,=0AAlbert=0A=
-=0A=0A=0A=0A      
+> > But logo_linux_mono_data is referenced by 
+> > 
+> >     const struct linux_logo logo_linux_mono __initconst = { 
+> > 	    .type           = LINUX_LOGO_MONO,
+> > 	    .width          = 80,
+> > 	    .height         = 80,
+> > 	    .data           = logo_linux_mono_data
+> >     };      
+> > 
+> > only, which is also __initconst? Where does the section type conflict come
+> > from?
+> 
+> Do you have any follow-up info on this one?
+
+Nope, sorry.  I've been offline for over a week and I only build
+powerpc kernels occasionally.
+
+If it's still there, I'll hit it again and I'll take a closer look.
