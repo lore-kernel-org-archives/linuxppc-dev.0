@@ -1,25 +1,29 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 84176DE042
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 06:22:05 +1000 (EST)
-Date: Tue, 26 May 2009 21:21:47 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Timur Tabi <timur@freescale.com>
-Message-ID: <20090526202146.GA4951@sirena.org.uk>
-References: <20090525221406.21370.30326.stgit@terra>
-	<20090525221509.21370.70182.stgit@terra>
-	<20090526110120.GA8969@sirena.org.uk>
-	<fa686aa40905260951g5115007fo3ef5eb1fb90998f3@mail.gmail.com>
-	<9e4733910905260953i6337f8a9xc3cd1ff490cd3540@mail.gmail.com>
-	<ed82fe3e0905261008n68672c6dk7bfc99e4cd614747@mail.gmail.com>
-MIME-Version: 1.0
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 43832DE059
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 06:25:36 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n4QKPV37021769
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:25:31 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n4QKPVTF012557
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 15:25:31 -0500 (CDT)
+Date: Tue, 26 May 2009 15:25:30 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Carl-Erwin GRIFFITH <carl.erwin@gmail.com>
+Subject: Re: 82xx multiple soc support/initialization
+Message-ID: <20090526202530.GA2342@b07421-ec1.am.freescale.net>
+References: <5c90346a0905250723t2c9d30a0qd4fbebed38917cd7@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ed82fe3e0905261008n68672c6dk7bfc99e4cd614747@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH V4 2/5] Main rewite of the mpc5200 audio
-	DMA code
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+In-Reply-To: <5c90346a0905250723t2c9d30a0qd4fbebed38917cd7@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,14 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 26, 2009 at 12:08:01PM -0500, Timur Tabi wrote:
+On Mon, May 25, 2009 at 04:23:37PM +0200, Carl-Erwin GRIFFITH wrote:
+> Hi guys,
+> 
+> 
+>  I'm working on an derived muas3001 board (kernel version 2.6.30-rc5),
+> 
+> and so far I did not find an example of multiple SOCs initialization.
+> 
+> The board has 3 cpus (only one core activated).
 
-> It won't be that simple.  V9 of my patch changes the number of
-> parameters, so not only will you need to whack this copy of the macro,
-> you'll also need to change the callers.
+This is not currently supported -- there are lots of places, especially
+in 82xx/CPM code, that assume there's only one instance of the SoC.
 
-OK, in the interests of cutting down on the amount of review here I've
-applied v5 of the series and then marked the AC97 machine drivers as
-BROKEN for the time being - once everything lands in mainline we can
-make sure that the driver is in sync with the final spin_event_timeout()
-API and remove the BROKEN marking.
+> 1) Is there a special syntax to use in the device tree ?
+
+You'd have multiple instances of the soc node (plus kernel changes to
+make this work).  You'll probably need some way of indicating which one
+contains the running core.
+
+-Scott
