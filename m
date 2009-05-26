@@ -1,23 +1,25 @@
-Return-Path: <Geoff.Thorpe@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6BFB1DDFC2
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 05:25:33 +1000 (EST)
-Message-ID: <4A1C4223.3050401@freescale.com>
-Date: Tue, 26 May 2009 15:25:23 -0400
-From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
-MIME-Version: 1.0
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 84176DE042
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 06:22:05 +1000 (EST)
+Date: Tue, 26 May 2009 21:21:47 +0100
+From: Mark Brown <broonie@sirena.org.uk>
 To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 1/2] [PATCH 1/2 v9] powerpc: introduce macro
-	spin_event_timeout()
-References: <1243351302-32062-1-git-send-email-timur@freescale.com>
-	<1243351302-32062-2-git-send-email-timur@freescale.com>
-In-Reply-To: <1243351302-32062-2-git-send-email-timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, geert.uytterhoeven@sonycom.com
+Message-ID: <20090526202146.GA4951@sirena.org.uk>
+References: <20090525221406.21370.30326.stgit@terra>
+	<20090525221509.21370.70182.stgit@terra>
+	<20090526110120.GA8969@sirena.org.uk>
+	<fa686aa40905260951g5115007fo3ef5eb1fb90998f3@mail.gmail.com>
+	<9e4733910905260953i6337f8a9xc3cd1ff490cd3540@mail.gmail.com>
+	<ed82fe3e0905261008n68672c6dk7bfc99e4cd614747@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ed82fe3e0905261008n68672c6dk7bfc99e4cd614747@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH V4 2/5] Main rewite of the mpc5200 audio
+	DMA code
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Acked-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
+On Tue, May 26, 2009 at 12:08:01PM -0500, Timur Tabi wrote:
 
-Not sure that it's the most consistent formulation, but it's definitely
-better than debating indefinitely.
+> It won't be that simple.  V9 of my patch changes the number of
+> parameters, so not only will you need to whack this copy of the macro,
+> you'll also need to change the callers.
 
-Cheers,
-Geoff
-
-Timur Tabi wrote:
-> The macro spin_event_timeout() takes a condition and timeout value
-> (in microseconds) as parameters.  It spins until either the condition is true
-> or the timeout expires.  It returns the result of the condition when the loop
-> was terminated.
-> 
-> This primary purpose of this macro is to poll on a hardware register until a
-> status bit changes.  The timeout ensures that the loop still terminates if the
-> bit doesn't change as expected.  This macro makes it easier for driver
-> developers to perform this kind of operation properly.
-> 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
-> 
-> v9: changed the macro to return the value, instead of having it passed in
-[snip]
+OK, in the interests of cutting down on the amount of review here I've
+applied v5 of the series and then marked the AC97 machine drivers as
+BROKEN for the time being - once everything lands in mainline we can
+make sure that the driver is in sync with the final spin_event_timeout()
+API and remove the BROKEN marking.
