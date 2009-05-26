@@ -1,27 +1,17 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 27520DDFFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 22:04:56 +1000 (EST)
-Date: Tue, 26 May 2009 14:04:39 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: Re: [PATCH resend4 2/3] itimers: fix periodic tics precision
-In-Reply-To: <20090526084455.672c652f@dhcp-lab-109.englab.brq.redhat.com>
-Message-ID: <alpine.LFD.2.00.0905261350450.3582@localhost.localdomain>
-References: <20090522154339.06d30f0a@dhcp-lab-109.englab.brq.redhat.com>
-	<alpine.LFD.2.00.0905221611380.3570@localhost.localdomain>
-	<20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
-	<alpine.LFD.2.00.0905251423490.3582@localhost.localdomain>
-	<20090525145132.03915e19@dhcp-lab-109.englab.brq.redhat.com>
-	<20090526084455.672c652f@dhcp-lab-109.englab.brq.redhat.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id E1EA2DE081
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 22:34:09 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1760077ywt.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 05:34:07 -0700 (PDT)
+Subject: [PATCH V5 0/5] AC97 driver for mpc5200
+To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org, broonie@sirena.org.uk, timur@freescale.com
+From: Jon Smirl <jonsmirl@gmail.com>
+Date: Tue, 26 May 2009 08:34:04 -0400
+Message-ID: <20090526123235.17472.73912.stgit@terra>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
-	Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,72 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 26 May 2009, Stanislaw Gruszka wrote:
-> On Mon, 25 May 2009 14:51:32 +0200
-> Stanislaw Gruszka <sgruszka@redhat.com> wrote:
-> 
-> > On Mon, 25 May 2009 14:32:14 +0200 (CEST)
-> > Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > On Mon, 25 May 2009, Stanislaw Gruszka wrote:
-> > > > @@ -904,6 +905,7 @@ void __init time_init(void)
-> > > >  	tb_ticks_per_usec = ppc_tb_freq / 1000000;
-> > > >  	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
-> > > >  	calc_cputime_factors();
-> > > > +	cputime_one = jiffies_to_cputime(1);
-> > > 
-> > >   1) The variable name is misleading.
-> > 
-> > What about cputime_one_jiffy ?
-> > 
-> > >   2) The patch breaks all powerpc platforms which have
-> > >   CONFIG_VIRT_CPU_ACCOUNTING=n and ia64 with
-> > >   CONFIG_VIRT_CPU_ACCOUNTING=y
-> > 
-> > Stupid me, in asm-generic/cputime.h should be 
-> > #define cputime_one jiffies_to_cputime(1)
-> 
-> Hmmm, I'm confused. Perhaps I missed something, but I think patch was ok.
-> For powerpc and ia64 and CONFIG_VIRT_CPU_ACCOUNTING=n definitions from
-> asm-generic/cputime.h where used. In this file was:
-> 
-> #define cputime_one (1UL) 
+Version 5. Modified to use spin_event_timeout() as originally written.
 
-  In time_init you add unconditionally:
+---
 
-> > > > @@ -904,6 +905,7 @@ void __init time_init(void)
-> > > >         tb_ticks_per_usec = ppc_tb_freq / 1000000;
-> > > >         tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
-> > > >         calc_cputime_factors();
-> > > > +       cputime_one = jiffies_to_cputime(1);
+Jon Smirl (5):
+      Fabric bindings for STAC9766 on the Efika
+      Support for AC97 on Phytec pmc030 base board.
+      AC97 driver for mpc5200
+      Main rewite of the mpc5200 audio DMA code
+      powerpc: introduce macro spin_event_timeout()
 
-  I doubt that the compiler will happy about that as it expands to
 
-      (1UL) = jiffies_to_cputime(1)
-  or 
-      jiffies_to_cputime(1) = jiffies_to_cputime(1)
+ arch/powerpc/include/asm/delay.h    |   33 +++
+ sound/soc/fsl/Kconfig               |   27 ++
+ sound/soc/fsl/Makefile              |    5 
+ sound/soc/fsl/efika-audio-fabric.c  |   90 +++++++
+ sound/soc/fsl/mpc5200_dma.c         |  442 ++++++++++++++++++++++-------------
+ sound/soc/fsl/mpc5200_dma.h         |   33 +--
+ sound/soc/fsl/mpc5200_psc_ac97.c    |  331 ++++++++++++++++++++++++++
+ sound/soc/fsl/mpc5200_psc_ac97.h    |   15 +
+ sound/soc/fsl/mpc5200_psc_i2s.c     |  247 +++-----------------
+ sound/soc/fsl/mpc5200_psc_i2s.h     |   12 +
+ sound/soc/fsl/pcm030-audio-fabric.c |   90 +++++++
+ 11 files changed, 934 insertions(+), 391 deletions(-)
+ create mode 100644 sound/soc/fsl/efika-audio-fabric.c
+ create mode 100644 sound/soc/fsl/mpc5200_psc_ac97.c
+ create mode 100644 sound/soc/fsl/mpc5200_psc_ac97.h
+ create mode 100644 sound/soc/fsl/mpc5200_psc_i2s.h
+ create mode 100644 sound/soc/fsl/pcm030-audio-fabric.c
 
-  in the CONFIG_VIRT_CPU_ACCOUTING=n case.
- 
-> and that correct as jiffies_to_cputime(x) is just (x)
-> 
-> For CONFIG_VIRT_CPU_ACCOUTING=y:
-> - For powerpc additional variable was  declared and computed in
->   initialization  time. Declaration of was in __KERENEL__ scope.
-> - For ia64: cputime_one was defined as jiffies_to_cputime(1)
-
-  My bad, I missed the ia64 hunk.
- 
-> Does we really need such optimization (because before usage of
-> jiffies_to_cputime(1) was just fine) ?
-
-Well, there is a subtle difference between working and nobody noticing
-the overhead.
-
-If we notice such heavy instructions in a code path we change then
-ignoring the optimization with the argument that it worked before is
-just plain wrong.
-
-Thanks,
-
-	tglx
+-- 
+Jon Smirl
+jonsmirl@gmail.com
