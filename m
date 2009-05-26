@@ -1,21 +1,26 @@
-Return-Path: <thunderbird2k@gmail.com>
-Received: from mail-bw0-f171.google.com (mail-bw0-f171.google.com
-	[209.85.218.171]) by ozlabs.org (Postfix) with ESMTP id A8C5CDE016
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 22:50:38 +1000 (EST)
-Received: by bwz19 with SMTP id 19so3769597bwz.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 05:50:36 -0700 (PDT)
+Return-Path: <Ian.Campbell@eu.citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+	by ozlabs.org (Postfix) with ESMTP id 1098FDE04E
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 22:51:51 +1000 (EST)
+Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <4A173B72.5000201@goop.org>
+References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
+	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
+	<20090519142656T.fujita.tomonori@lab.ntt.co.jp>
+	<19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
+	<4A1592CF.8000208@goop.org>
+	<E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
+	<1242990702.22654.253.camel@zakaz.uk.xensource.com>
+	<4A173B72.5000201@goop.org>
+Content-Type: text/plain
+Date: Tue, 26 May 2009 13:51:47 +0100
+Message-ID: <1243342307.9295.86.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-In-Reply-To: <c8485d470905260541t65e35d86l8c676a2b016c0ff8@mail.gmail.com>
-References: <20090525144023.13016.23071.stgit@localhost.localdomain>
-	<c8485d470905251347m4e3b7022u4f0324dfc154cfb2@mail.gmail.com>
-	<c8485d470905260541t65e35d86l8c676a2b016c0ff8@mail.gmail.com>
-Date: Tue, 26 May 2009 14:50:35 +0200
-Message-ID: <c8485d470905260550w664e1f32o2176a8a28a13fb31@mail.gmail.com>
-Subject: Re: [PATCH v5 0/4] Series short description
-From: Roderick Colenbrander <thunderbird2k@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,67 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 26, 2009 at 2:41 PM, Roderick Colenbrander
-<thunderbird2k@gmail.com> wrote:
-> On Mon, May 25, 2009 at 10:47 PM, Roderick Colenbrander
-> <thunderbird2k@gmail.com> wrote:
->> On Mon, May 25, 2009 at 4:41 PM, Grant Likely <grant.likely@secretlab.ca=
-> wrote:
->>> Repost of ml510 series. =A0This time against 2.6.30-rc7 and with the .d=
-ts
->>> file included.
->>>
->>> g.
->>>
->>> --
->>> Grant Likely, B.Sc. P.Eng.
->>> Secret Lab Technologies Ltd.
->>>
->>
->> Thanks, I will check it out tomorrow.
->>
->> Roderick
->>
->
-> Hi,
->
-> I have tested the ml510 patches. The code works properly but I had to
-> make a few slight changes to get it functioning. The most important
-> change was in xilinx_intc driver. For level interrupts the ack command
-> was removed during the xilinx_intc rewrite which caused a null pointer
-> derefence in the i8259 cascade code. I have now changed it to:
-> /* Let xilinx_intc end the interrupt */
-> desc->chip->mask(irq);
-> desc->chip->unmask(irq);
->
-> This seems to work properly. Further the driver now also has proper
-> level support, so i think my dts file has some errors. The pci
-> interrupts (a/b/c/d) are all active low, so they need to be changed to
-> '3' for the sense level. Further the i8259 is active high which needs
-> to be set to 2 instead of 3.
->
-> Further I have tested the need for the outb to 0x4d0/0x4d1. Removing
-> those lines causes interrupt timeouts and ide won't function.
-> Freescale does the same in arch/powerpc/platforms/fsl_uli1575.c (which
-> is a much newer version of this chipset) in quirk_final_uli1575 but
-> they are doing it for some more interrupts. I think this code should
-> be done using a similar quirk in virtex_ml510.c
->
-> Roderick
->
+On Fri, 2009-05-22 at 19:55 -0400, Jeremy Fitzhardinge wrote:
+> Ian Campbell wrote:
+> > On Thu, 2009-05-21 at 14:27 -0400, Becky Bruce wrote:
+> >   
+> >> I can work with that, but it's going to be a bit inefficient, as I  
+> >> actually need the dma_addr_t, not the phys_addr_t, so I'll have to  
+> >> convert.  In every case, this is a conversion I've already done and  
+> >> that I need in the calling code as well. 
+> >>     
+> >
+> > Does
+> >
+> >     dma_addr_t dma_map_range(struct device *hwdev, phys_addr_t addr,
+> >     size_t size);
+> >
+> > work for you?
+> >
+> > If the range does not need mapping then it returns the dma address, if
+> > you needed to calculate the dma address anyway to figure out if mapping
+> > is required then this is fine. If the range does need mapping then it
+> > returns NULL.
+> >   
+> 
+> My only concern is whether dma_addr_t == 0 is actually equivalent to 
+> NULL.  That is, can we be sure that address 0 will never be used?
 
-I have just tested the following and it seemed to work fine.
-static void __devinit ml510_ali_quirk_final(struct pci_dev *dev)
-{
-	/* Program irq 7 (usb/audio), 14/15 (ide) to level sensitive */
-	/* This looks like a dirty hack to me --gcl */
-	outb(0xc0, 0x4d0);
-	outb(0xc0, 0x4d1);
-}
-DECLARE_PCI_FIXUP_FINAL(0x10b9, 0x1533, ml510_ali_quirk_final);
+It seems not, ~0UL might have been an option, but...
 
-I'm not sure what is preferred level or edge interrupts as the ide
-controller can be programmed to both (I would just have to write to
-config register 0x44 and 0x75).
+> Taking dma_alloc_coherent as a model, we could have something like:
+> 
+>     int dma_map_range(struct device *hwdev, phys_addr_t addr, size_t size, dma_addr_t *dma_addrp);
+>       
+> 
+> where *dma_addrp is set if the function returns success (bool return 
+> type might be clearer).
 
-Roderick
+... this sounds like a good idea to me.
+
+Ian.
