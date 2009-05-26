@@ -1,26 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2787FDDED0
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 00:21:26 +1000 (EST)
-Message-ID: <4A1BFAA6.60309@freescale.com>
-Date: Tue, 26 May 2009 09:20:22 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <wg@grandegger.com>
+Message-ID: <4A1BFB73.4020305@grandegger.com>
+Date: Tue, 26 May 2009 16:23:47 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH V4 1/5] The macro spin_event_timeout() takes a condition
-	and timeout value
-References: <20090525221406.21370.30326.stgit@terra>
-	<ed82fe3e0905260432xdc9556cp74edc723eafe24f7@mail.gmail.com>
-	<alpine.LRH.2.00.0905261348160.4897@vixen.sonytel.be>
-	<200905261349.49832.arnd@arndb.de>
-In-Reply-To: <200905261349.49832.arnd@arndb.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
+	driver
+References: <200905242327.15139.arnd@arndb.de>	<4A1A418D.3040207@grandegger.com>	<200905261010.31364.arnd@arndb.de>
+	<20090526.022508.238274281.davem@davemloft.net>
+In-Reply-To: <20090526.022508.238274281.davem@davemloft.net>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, broonie@sirena.org.uk
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org, arnd@arndb.de,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,15 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Tuesday 26 May 2009, Geert Uytterhoeven wrote:
->> However, you can still improve useability by making the macro return the rc,
->> instead of letting the caller pass it, cfr. wait_event_timeout() and friends.
+David Miller wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> Date: Tue, 26 May 2009 10:10:30 +0100
+> 
+>> On Monday 25 May 2009, Wolfgang Grandegger wrote:
+>>>> Right, that makes sense. However, most drivers use the field to store the
+>>>> physical address, not the iomap token. Maybe there should be a new field
+>>>> in struct sja1000_priv for the virtual address, but that would be a change
+>>>> to the base driver, not just to the OF portion.
+>>> Is that common practice? If yes, I will add a member to store the
+>>> virtual address to struct sja1000_priv.
+>> I grepped through the network driver for usage of ->base_addr, and
+>> it's somewhat inconsistent. The majority of the users use it for
+>> a physical address, but there are also a few that use it for the
+>> __iomem token.
+>>
+>> Casts between unsigned long and qualified (__iomem, __user, const, ...)
+>> pointers do not cause a warning, but can easily lead to bugs when
+>> another user casts to an unqualified pointer.
+> 
+> It's such a baroque thing, there is no reason to set it at all if you
+> ask me.  It's only use is to allow ISA and similar primitive bus
+> devices to have their I/O ports changed via ifconfig.
 
-I had that originally, but somewhere during the seven revisions of my macro, it got lost.
+OK, I see, there are good reasons not to (mis-)use dev->base_addr. I
+will prepare a patch for the SJA1000 CAN drivers.
 
-I'll post a v9 soon.  This version will take 3 parameters and return __ret, so Jon will need to change his code (sorry).
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Wolfgang.
