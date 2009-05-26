@@ -1,33 +1,24 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 801ACDE01B
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 03:59:51 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n4QHtiOL028560
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:55:44 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n4QHxl5o183642
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:59:47 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n4QHxlxm019344
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:59:47 -0400
-Received: from [9.53.40.154] (mudbug-009053040154.austin.ibm.com [9.53.40.154])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	n4QHxioX019157
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 13:59:47 -0400
-Message-ID: <4A1C2E10.9020109@austin.ibm.com>
-Date: Tue, 26 May 2009 12:59:44 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-qy0-f196.google.com (mail-qy0-f196.google.com
+	[209.85.221.196]) by ozlabs.org (Postfix) with ESMTP id 09C11DE016
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 04:03:03 +1000 (EST)
+Received: by qyk34 with SMTP id 34so6616804qyk.17
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 11:03:02 -0700 (PDT)
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Display processor virtualization resource allocations in
-	lparcfg
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <4A1C20EA.5080603@freescale.com>
+References: <1242761199-17875-1-git-send-email-timur@freescale.com>
+	<1242761199-17875-2-git-send-email-timur@freescale.com>
+	<9e4733910905251046y5f7377f4y49ce72e775faef16@mail.gmail.com>
+	<ed82fe3e0905252027y198e78ct821753acacb1bdb1@mail.gmail.com>
+	<4A1C16DF.9090802@freescale.com> <4A1C20EA.5080603@freescale.com>
+Date: Tue, 26 May 2009 13:56:31 -0400
+Message-ID: <9e4733910905261056v7a1a8e77ie6f273820ce1fd3e@mail.gmail.com>
+Subject: Re: [PATCH 1/2 v8] powerpc: introduce macro spin_event_timeout()
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Geoff Thorpe <Geoff.Thorpe@freescale.com>,
+	smaclennan@pikatech.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,98 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch updates the output from /proc/ppc64/lparcfg to display the
-processor virtualization resource allocations for a shared processor
-partition.
+On Tue, May 26, 2009 at 1:03 PM, Timur Tabi <timur@freescale.com> wrote:
+> Geoff Thorpe wrote:
+>
+>> So from this user's perspective (FWIW), it would come as a surprise if
+>> the return value reflected the evaluated expression rather than what
+>> happened w.r.t. the spin/timeout.
+>
+> It shouldn't come as a surprise because I've thoroughly documented the be=
+havior. =A0I also think returning the actual value of the expression is bet=
+ter than a return code. =A0Remember, the primary purpose of this macro is t=
+o wait for a hardware register to change. =A0Contrast this to wait_event_xx=
+x, which usually queries a variable. =A0Therefore, the hardware register ma=
+y set multiple bits. =A0For instance, you could do this:
+>
+> ret =3D spin_event_timeout(in_be32(x) & 0x14, ...);
+>
+> if (ret & 0x10)
+> =A0 =A0 =A0 =A0do something here
+>
+> if (ret & 0x04)
+> =A0 =A0 =A0 =A0do something else here
 
-This information is already gathered via the h_get_ppp call, we just
-have to make sure that the ibm,partition-performance-parameters-level
-property is >= 1 to ensure that the information is valid.
+If (ret =3D=3D 0)
+    timeout_happened;
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
+That's the part that looks wrong.
 
-Index: linux-2.6/arch/powerpc/kernel/lparcfg.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/lparcfg.c	2009-05-21 10:24:57.000000000 -0500
-+++ linux-2.6/arch/powerpc/kernel/lparcfg.c	2009-05-26 11:06:59.000000000 -0500
-@@ -169,6 +169,9 @@
- 	u8	unallocated_weight;
- 	u16	active_procs_in_pool;
- 	u16	active_system_procs;
-+	u16	phys_platform_procs;
-+	u32	max_proc_cap_avail;
-+	u32	entitled_proc_cap_avail;
- };
- 
- /*
-@@ -190,13 +193,18 @@
-  *            XX - Unallocated Variable Processor Capacity Weight.
-  *              XXXX - Active processors in Physical Processor Pool.
-  *                  XXXX  - Processors active on platform.
-+ *  R8 (QQQQRRRRRRSSSSSS). if ibm,partition-performance-parameters-level >= 1
-+ *	XXXX - Physical platform procs allocated to virtualization.
-+ *	    XXXXXX - Max procs capacity % available to the partitions pool.
-+ *	          XXXXXX - Entitled procs capacity % available to the
-+ *			   partitions pool.
-  */
- static unsigned int h_get_ppp(struct hvcall_ppp_data *ppp_data)
- {
- 	unsigned long rc;
--	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
- 
--	rc = plpar_hcall(H_GET_PPP, retbuf);
-+	rc = plpar_hcall9(H_GET_PPP, retbuf);
- 
- 	ppp_data->entitlement = retbuf[0];
- 	ppp_data->unallocated_entitlement = retbuf[1];
-@@ -210,6 +218,10 @@
- 	ppp_data->active_procs_in_pool = (retbuf[3] >> 2 * 8) & 0xffff;
- 	ppp_data->active_system_procs = retbuf[3] & 0xffff;
- 
-+	ppp_data->phys_platform_procs = retbuf[4] >> 6 * 8;
-+	ppp_data->max_proc_cap_avail = (retbuf[4] >> 3 * 8) & 0xffffff;
-+	ppp_data->entitled_proc_cap_avail = retbuf[4] & 0xffffff;
-+
- 	return rc;
- }
- 
-@@ -234,6 +246,8 @@
- static void parse_ppp_data(struct seq_file *m)
- {
- 	struct hvcall_ppp_data ppp_data;
-+	struct device_node *root;
-+	const int *perf_level;
- 	int rc;
- 
- 	rc = h_get_ppp(&ppp_data);
-@@ -267,6 +281,28 @@
- 	seq_printf(m, "capped=%d\n", ppp_data.capped);
- 	seq_printf(m, "unallocated_capacity=%lld\n",
- 		   ppp_data.unallocated_entitlement);
-+
-+	/* The last bits of information returned from h_get_ppp are only
-+	 * valid if the ibm,partition-performance-parameters-level
-+	 * property is >= 1.
-+	 */
-+	root = of_find_node_by_path("/");
-+	if (root) {
-+		perf_level = of_get_property(root,
-+				"ibm,partition-performance-parameters-level",
-+					     NULL);
-+		if (*perf_level >= 1) {
-+			seq_printf(m,
-+			    "physical_procs_allocated_to_virtualization=%d\n",
-+				   ppp_data.phys_platform_procs);
-+			seq_printf(m, "max_proc_capacity_available=%d\n",
-+				   ppp_data.max_proc_cap_avail);
-+			seq_printf(m, "entitled_proc_capacity_available=%d\n",
-+				   ppp_data.entitled_proc_cap_avail);
-+		}
-+
-+		of_node_put(root);
-+	}
- }
- 
- /**
+>
+> I think the ability to do this is more important than making the code as =
+similar as possible to wait_event_xxx.
+
+Why not this?
+
+rc =3D spin_event_timeout(result =3D (in_be32(x) & 0x14), ...);
+if (rc)
+   timeout_happened;
+
+if (result & 0x10)
+       do something here
+
+if (result & 0x04)
+       do something else here
+
+
+Then if I don't care about the result (which I think is the common case)...
+
+rc =3D spin_event_timeout(in_be32(x) & 0x14, ...);
+if (rc)
+   timeout_happened;
+
+
+
+>
+> --
+> Timur Tabi
+> Linux kernel developer at Freescale
+>
+
+
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
