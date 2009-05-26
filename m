@@ -1,19 +1,21 @@
-Return-Path: <fredrik.arnerup@edgeware.tv>
-Received: from mail.edgeware.tv (mail.edgeware.tv [82.99.7.138])
-	by ozlabs.org (Postfix) with ESMTP id 55232DDFEE
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 18:28:47 +1000 (EST)
-Received: from edgeware48 (unknown [192.168.99.245])
-	by mail.edgeware.tv (Postfix) with ESMTPSA id 1AC4851B609B
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 10:18:34 +0200 (CEST)
-From: "Fredrik Arnerup" <fredrik.arnerup@edgeware.tv>
-To: <linuxppc-dev@ozlabs.org>
-Subject: MPC85xx erratum "I2C1 - I2C controller is unable to generate clocks
-	when SDA is low coming out of reset"
-Date: Tue, 26 May 2009 10:22:21 +0200
-Message-ID: <738D541FBC1741A18DB4F3CB466DF78A@edgeware.tv>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 92F97DE007
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 19:12:03 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
+	driver
+Date: Tue, 26 May 2009 10:10:30 +0100
+References: <4A16BAAE.3070401@grandegger.com>
+	<200905242327.15139.arnd@arndb.de>
+	<4A1A418D.3040207@grandegger.com>
+In-Reply-To: <4A1A418D.3040207@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Message-Id: <200905261010.31364.arnd@arndb.de>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Cc: Linux Netdev List <netdev@vger.kernel.org>, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We've had some trouble with I2C not working after a soft reboot,
-which we think is due to the the erratum "I2C1" which is present in
-at least the mpc8540 and the mpc8560. Since there is no good workaround,
-the only choice seems to be to avoid resetting the CPU while the I2C bus is
-busy.
+On Monday 25 May 2009, Wolfgang Grandegger wrote:
+> > Right, that makes sense. However, most drivers use the field to store the
+> > physical address, not the iomap token. Maybe there should be a new field
+> > in struct sja1000_priv for the virtual address, but that would be a change
+> > to the base driver, not just to the OF portion.
+> 
+> Is that common practice? If yes, I will add a member to store the
+> virtual address to struct sja1000_priv.
 
-The problem seems to be that the i2c-mpc driver leaves I2C in a busy state
-when
-it receives a signal (e.g. upon shutdown).
-The code below is not meant as a patch, just me thinking aloud.
-Thoughts?
+I grepped through the network driver for usage of ->base_addr, and
+it's somewhat inconsistent. The majority of the users use it for
+a physical address, but there are also a few that use it for the
+__iomem token.
 
-/Fredrik Arnerup
-fredrik.arnerup@edgeware.tv
+Casts between unsigned long and qualified (__iomem, __user, const, ...)
+pointers do not cause a warning, but can easily lead to bugs when
+another user casts to an unqualified pointer.
 
-Index: drivers/i2c/busses/i2c-mpc.c
-===================================================================
---- drivers/i2c/busses/i2c-mpc.c        (revision 6933)
-+++ drivers/i2c/busses/i2c-mpc.c        (working copy)
-@@ -262,12 +262,14 @@
-        /* Allow bus up to 1s to become not busy */
-        while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
-                if (signal_pending(current)) {
--                       pr_debug("I2C: Interrupted\n");
--                       writeccr(i2c, 0);
-+                       printk(KERN_WARNING "I2C: Interrupted\n");
-+                       if (readb(i2c->base + MPC_I2C_SR) ==
-+                           (CSR_MCF | CSR_MBB | CSR_RXAK))
-+                               mpc_i2c_fixup(i2c);
-                        return -EINTR;
-                }
-                if (time_after(jiffies, orig_jiffies + HZ)) {
--                       pr_debug("I2C: timeout\n");
-+                       printk(KERN_WARNING "I2C: mpc_xfer() timeout\n");
-                        if (readb(i2c->base + MPC_I2C_SR) ==
-                            (CSR_MCF | CSR_MBB | CSR_RXAK))
-                                mpc_i2c_fixup(i2c);
+	Arnd <><
