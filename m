@@ -1,19 +1,20 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 4EC76DE0D2
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 22:34:21 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1764131yxb.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 05:34:20 -0700 (PDT)
-Subject: [PATCH V5 5/5] Fabric bindings for STAC9766 on the Efika
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, broonie@sirena.org.uk, timur@freescale.com
-From: Jon Smirl <jonsmirl@gmail.com>
-Date: Tue, 26 May 2009 08:34:14 -0400
-Message-ID: <20090526123414.17472.91588.stgit@terra>
-In-Reply-To: <20090526123235.17472.73912.stgit@terra>
-References: <20090526123235.17472.73912.stgit@terra>
+Return-Path: <thunderbird2k@gmail.com>
+Received: from mail-bw0-f171.google.com (mail-bw0-f171.google.com
+	[209.85.218.171]) by ozlabs.org (Postfix) with ESMTP id 0DE6CDDDA5
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 22:41:15 +1000 (EST)
+Received: by bwz19 with SMTP id 19so3763085bwz.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 05:41:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <c8485d470905251347m4e3b7022u4f0324dfc154cfb2@mail.gmail.com>
+References: <20090525144023.13016.23071.stgit@localhost.localdomain>
+	<c8485d470905251347m4e3b7022u4f0324dfc154cfb2@mail.gmail.com>
+Date: Tue, 26 May 2009 14:41:10 +0200
+Message-ID: <c8485d470905260541t65e35d86l8c676a2b016c0ff8@mail.gmail.com>
+Subject: Re: [PATCH v5 0/4] Series short description
+From: Roderick Colenbrander <thunderbird2k@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,135 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fabric bindings for STAC9766 AC97 codec on the Efika.
+On Mon, May 25, 2009 at 10:47 PM, Roderick Colenbrander
+<thunderbird2k@gmail.com> wrote:
+> On Mon, May 25, 2009 at 4:41 PM, Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>> Repost of ml510 series. =A0This time against 2.6.30-rc7 and with the .dt=
+s
+>> file included.
+>>
+>> g.
+>>
+>> --
+>> Grant Likely, B.Sc. P.Eng.
+>> Secret Lab Technologies Ltd.
+>>
+>
+> Thanks, I will check it out tomorrow.
+>
+> Roderick
+>
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
- sound/soc/fsl/Kconfig              |    8 +++
- sound/soc/fsl/Makefile             |    1 
- sound/soc/fsl/efika-audio-fabric.c |   90 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 99 insertions(+), 0 deletions(-)
- create mode 100644 sound/soc/fsl/efika-audio-fabric.c
+Hi,
 
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index 79579ae..f571c6e 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -47,3 +47,11 @@ config SND_MPC52xx_SOC_PCM030
- 	help
- 	  Say Y if you want to add support for sound on the Phytec pcm030 baseboard.
- 
-+config SND_MPC52xx_SOC_EFIKA
-+	tristate "SoC AC97 Audio support for bbplan Efika and STAC9766"
-+	depends on PPC_EFIKA
-+	select SND_SOC_MPC5200_AC97
-+	select SND_SOC_STAC9766
-+	help
-+	  Say Y if you want to add support for sound on the Efika.
-+
-diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index 66d88c8..a83a739 100644
---- a/sound/soc/fsl/Makefile
-+++ b/sound/soc/fsl/Makefile
-@@ -17,4 +17,5 @@ obj-$(CONFIG_SND_SOC_MPC5200_AC97) += mpc5200_psc_ac97.o
- 
- # MPC5200 Machine Support
- obj-$(CONFIG_SND_MPC52xx_SOC_PCM030) += pcm030-audio-fabric.o
-+obj-$(CONFIG_SND_MPC52xx_SOC_EFIKA) += efika-audio-fabric.o
- 
-diff --git a/sound/soc/fsl/efika-audio-fabric.c b/sound/soc/fsl/efika-audio-fabric.c
-new file mode 100644
-index 0000000..85b0e75
---- /dev/null
-+++ b/sound/soc/fsl/efika-audio-fabric.c
-@@ -0,0 +1,90 @@
-+/*
-+ * Efika driver for the PSC of the Freescale MPC52xx
-+ * configured as AC97 interface
-+ *
-+ * Copyright 2008 Jon Smirl, Digispeaker
-+ * Author: Jon Smirl <jonsmirl@gmail.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/device.h>
-+#include <linux/delay.h>
-+#include <linux/of_device.h>
-+#include <linux/of_platform.h>
-+#include <linux/dma-mapping.h>
-+
-+#include <sound/core.h>
-+#include <sound/pcm.h>
-+#include <sound/pcm_params.h>
-+#include <sound/initval.h>
-+#include <sound/soc.h>
-+#include <sound/soc-of-simple.h>
-+
-+#include "mpc5200_dma.h"
-+#include "mpc5200_psc_ac97.h"
-+#include "../codecs/stac9766.h"
-+
-+static struct snd_soc_device device;
-+static struct snd_soc_card card;
-+
-+static struct snd_soc_dai_link efika_fabric_dai[] = {
-+{
-+	.name = "AC97",
-+	.stream_name = "AC97 Analog",
-+	.codec_dai = &stac9766_dai[STAC9766_DAI_AC97_ANALOG],
-+	.cpu_dai = &psc_ac97_dai[MPC5200_AC97_NORMAL],
-+},
-+{
-+	.name = "AC97",
-+	.stream_name = "AC97 IEC958",
-+	.codec_dai = &stac9766_dai[STAC9766_DAI_AC97_DIGITAL],
-+	.cpu_dai = &psc_ac97_dai[MPC5200_AC97_SPDIF],
-+},
-+};
-+
-+static __init int efika_fabric_init(void)
-+{
-+	struct platform_device *pdev;
-+	int rc;
-+
-+	if (!machine_is_compatible("bplan,efika"))
-+		return -ENODEV;
-+
-+	card.platform = &mpc5200_audio_dma_platform;
-+	card.name = "Efika";
-+	card.dai_link = efika_fabric_dai;
-+	card.num_links = ARRAY_SIZE(efika_fabric_dai);
-+
-+	device.card = &card;
-+	device.codec_dev = &soc_codec_dev_stac9766;
-+
-+	pdev = platform_device_alloc("soc-audio", 1);
-+	if (!pdev) {
-+		pr_err("efika_fabric_init: platform_device_alloc() failed\n");
-+		return -ENODEV;
-+	}
-+
-+	platform_set_drvdata(pdev, &device);
-+	device.dev = &pdev->dev;
-+
-+	rc = platform_device_add(pdev);
-+	if (rc) {
-+		pr_err("efika_fabric_init: platform_device_add() failed\n");
-+		return -ENODEV;
-+	}
-+	return 0;
-+}
-+
-+module_init(efika_fabric_init);
-+
-+
-+MODULE_AUTHOR("Jon Smirl <jonsmirl@gmail.com>");
-+MODULE_DESCRIPTION(DRV_NAME ": mpc5200 Efika fabric driver");
-+MODULE_LICENSE("GPL");
-+
+I have tested the ml510 patches. The code works properly but I had to
+make a few slight changes to get it functioning. The most important
+change was in xilinx_intc driver. For level interrupts the ack command
+was removed during the xilinx_intc rewrite which caused a null pointer
+derefence in the i8259 cascade code. I have now changed it to:
+/* Let xilinx_intc end the interrupt */
+desc->chip->mask(irq);
+desc->chip->unmask(irq);
+
+This seems to work properly. Further the driver now also has proper
+level support, so i think my dts file has some errors. The pci
+interrupts (a/b/c/d) are all active low, so they need to be changed to
+'3' for the sense level. Further the i8259 is active high which needs
+to be set to 2 instead of 3.
+
+Further I have tested the need for the outb to 0x4d0/0x4d1. Removing
+those lines causes interrupt timeouts and ide won't function.
+Freescale does the same in arch/powerpc/platforms/fsl_uli1575.c (which
+is a much newer version of this chipset) in quirk_final_uli1575 but
+they are doing it for some more interrupts. I think this code should
+be done using a similar quirk in virtex_ml510.c
+
+Roderick
