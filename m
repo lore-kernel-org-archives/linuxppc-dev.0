@@ -1,23 +1,20 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 939B9DE03C
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 21:20:19 +1000 (EST)
-Date: Tue, 26 May 2009 13:20:06 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
-	driver
-Message-ID: <20090526112006.GH22742@pengutronix.de>
-References: <200905242327.15139.arnd@arndb.de>
-	<200905261010.31364.arnd@arndb.de>
-	<20090526.022508.238274281.davem@davemloft.net>
-	<200905261042.05967.arnd@arndb.de>
+Return-Path: <esbenhaabendal@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id B59E6DE060
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 21:30:23 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so1924744qwe.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 04:30:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200905261042.05967.arnd@arndb.de>
-Cc: devicetree-discuss@ozlabs.org, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Greg Ungerer <gerg@uclinux.org>,
-	David Miller <davem@davemloft.net>
+In-Reply-To: <4A124202.4010201@doredevelopment.dk>
+References: <4A124202.4010201@doredevelopment.dk>
+Date: Tue, 26 May 2009 13:30:21 +0200
+Message-ID: <d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
+Subject: Re: [PATCH v2] i2c-mpc: generate START condition after STOP caused by
+	read i2c_msg
+From: Esben Haabendal <esbenhaabendal@gmail.com>
+To: Esben Haabendal <eha@doredevelopment.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 26, 2009 at 10:42:05AM +0100, Arnd Bergmann wrote:
-> On Tuesday 26 May 2009, David Miller wrote:
-> > It's such a baroque thing, there is no reason to set it at all if you
-> > ask me.  It's only use is to allow ISA and similar primitive bus
-> > devices to have their I/O ports changed via ifconfig.
-> 
-> My original comment was about the fact that sja1000 was doing
-> dev->base_addr = (unsigned long)ioremap(phys_addr, size), I didn't
-> even think about SIOCGIFMAP and command line overrides, but that
-> surely makes it worse and the driver should be changed to
-> store the virtual register address in its private data structure.
-> 
-> drivers/net/fec.c seems to have the same problem, which manifests
-> in a number of ugly casts and direct pointer dereferences in places
-> where it should do writel() or out_be32().
+On Tue, May 19, 2009 at 7:22 AM, Esben Haabendal <eha@doredevelopment.dk> w=
+rote:
+> This fixes MAL (arbitration lost) bug caused by illegal use of
+> RSTA (repeated START) after STOP condition generated after last byte
+> of reads. With this patch, it is possible to do an i2c_transfer() with
+> additional i2c_msg's following the I2C_M_RD messages.
+>
+> It still needs to be resolved if it is possible to fix this issue
+> by removing the STOP condition after reads in a robust way.
+>
+> Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
+> ---
+> =A0drivers/i2c/busses/i2c-mpc.c | =A0 =A09 +++++++--
+> =A01 files changed, 7 insertions(+), 2 deletions(-)
 
-Ack. I'll prepare a patch for fec.c. Internally the driver already uses
-a void __iomem * and writel/readl in -next. There is only one usage
-left.
+Any blockers to get this accepted?
 
-Sascha
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+/Esben
