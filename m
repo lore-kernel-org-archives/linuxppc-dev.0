@@ -1,22 +1,22 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 1F7DCDE02B
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 21:51:50 +1000 (EST)
-Date: Tue, 26 May 2009 13:51:47 +0200 (CEST)
+	by ozlabs.org (Postfix) with ESMTP id 76E81DE09B
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 21:52:36 +1000 (EST)
+Date: Tue, 26 May 2009 13:52:34 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH V4 1/5] The macro spin_event_timeout() takes a condition
-	and timeout value
-In-Reply-To: <ed82fe3e0905260432xdc9556cp74edc723eafe24f7@mail.gmail.com>
-Message-ID: <alpine.LRH.2.00.0905261348160.4897@vixen.sonytel.be>
-References: <20090525221406.21370.30326.stgit@terra>
-	<20090525221507.21370.68301.stgit@terra>
-	<alpine.LRH.2.00.0905260928320.31893@vixen.sonytel.be>
-	<ed82fe3e0905260432xdc9556cp74edc723eafe24f7@mail.gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: drivers/video/logo/logo_linux_mono.c build error
+In-Reply-To: <alpine.LRH.2.00.0905140919230.22602@vixen.sonytel.be>
+Message-ID: <alpine.LRH.2.00.0905261352140.4897@vixen.sonytel.be>
+References: <20090427145031.99d4e0ac.akpm@linux-foundation.org>
+	<20090428135202.9c9bbadb.sfr@canb.auug.org.au>
+	<alpine.LRH.2.00.0904280922410.31001@vixen.sonytel.be>
+	<20090513154415.fd10762c.akpm@linux-foundation.org>
+	<alpine.LRH.2.00.0905140919230.22602@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Cc: sfr@canb.auug.org.au, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 26 May 2009, Timur Tabi wrote:
-> On Tue, May 26, 2009 at 2:29 AM, Geert Uytterhoeven
-> <Geert.Uytterhoeven@sonycom.com> wrote:
-> 
-> > static inline function, returning rc, instead of a macro?
-> 
-> It won't work as an inline function ...
-> 
-> >> +     unsigned long __loops = tb_ticks_per_usec * timeout;                \
-> >> +     unsigned long __start = get_tbl();                                  \
-> >> +     while ((rc = (condition)) && (tb_ticks_since(__start) <= __loops)) \
-> 
-> There's no way to pass a expression to an inline function.  It has to
-> be a macro.  Here, the loop evaluates "condition" at every pass.  If
-> this were an inline function, "condition" would be evaluated once when
-> the function were called, and never again.
+	Hi Andrew,
 
-You're right, I missed that part. Sorry about that.
+On Thu, 14 May 2009, Geert Uytterhoeven wrote:
+> On Wed, 13 May 2009, Andrew Morton wrote:
+> > On Tue, 28 Apr 2009 09:24:53 +0200 (CEST)
+> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > > On Tue, 28 Apr 2009, Stephen Rothwell wrote:
+> > > > On Mon, 27 Apr 2009 14:50:31 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > > powerpc allmodconfig, current mainline:
+>         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > > > > 
+> > > > > drivers/video/logo/logo_linux_mono.c:11: error: logo_linux_mono_data causes a section type conflict
+> > > > > 
+> > > > > switching it from __initconst to __initdata "fixes" it.
+> > > > 
+> > > > Interesting.  The program that generates the .c file above produces
+> > > > __initdata for me ...
+> > > 
+> > > I assume Andrew once built in that tree using the recent logo patches that
+> > >   1. Makes the logos const and switch them from __initdata to __initconst,
+> > >   2. Fix the missing dependency of the generated files on the generator program.
+> > > Hence if you revert the logo patches, you have to manually remove the generated
+> > > files.
+> > > 
+> > > Is my assumption correct?
+> > 
+> > Nope - mrproper removes every .c file from drivers/video/logo/ apart
+> > from logo.c
+> > 
+> > 
+> > 
+> > The failure is caused by your fbdev-move-logo-externs-to-header-file.patch.
+> 
+> Which is not in current mainline, so the above reference was incorrectly
+> fueling my assumption?
+> 
+> > Without that patch, drivers/video/logo/logo_linux_mono.c is generated as
+> > 
+> > 	static unsigned char logo_linux_mono_data[] __initdata = {
+> > 	
+> > and with that patch, drivers/video/logo/logo_linux_mono.c is generated as
+> > 
+> > 	static const unsigned char logo_linux_mono_data[] __initconst = {
+> > 
+> > and it's the switch from __initdata to __initconst which causes this
+> > section conflict in my setup.
+> 
+> But logo_linux_mono_data is referenced by 
+> 
+>     const struct linux_logo logo_linux_mono __initconst = { 
+> 	    .type           = LINUX_LOGO_MONO,
+> 	    .width          = 80,
+> 	    .height         = 80,
+> 	    .data           = logo_linux_mono_data
+>     };      
+> 
+> only, which is also __initconst? Where does the section type conflict come
+> from?
 
-However, you can still improve useability by making the macro return the rc,
-instead of letting the caller pass it, cfr. wait_event_timeout() and friends.
+Do you have any follow-up info on this one?
+
+Thx!
 
 With kind regards,
 
