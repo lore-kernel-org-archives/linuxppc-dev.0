@@ -1,25 +1,19 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-qy0-f196.google.com (mail-qy0-f196.google.com
-	[209.85.221.196]) by ozlabs.org (Postfix) with ESMTP id 16F02DE02E
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 13:12:34 +1000 (EST)
-Received: by qyk34 with SMTP id 34so7131975qyk.17
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 20:12:32 -0700 (PDT)
-MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <9e4733910905261801p130f50afie2c50d5723192d44@mail.gmail.com>
-References: <20090527002530.16740.62502.stgit@terra>
-	<ed82fe3e0905261738u655f6f5at2351341a0a5e50d5@mail.gmail.com>
-	<9e4733910905261744j3589ace8wd427ef8a5998eccf@mail.gmail.com>
-	<ed82fe3e0905261753v1cb9c901i3b66cd903e4adda6@mail.gmail.com>
-	<9e4733910905261801p130f50afie2c50d5723192d44@mail.gmail.com>
-Date: Tue, 26 May 2009 22:12:32 -0500
-Message-ID: <ed82fe3e0905262012r58f8a750lab9cb1bf3b9a989@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH] Modify mpc5200 AC97 driver to use V9 of
-	spin_event_timeout()
-From: Timur Tabi <timur@freescale.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id C099DDDFED
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 13:48:19 +1000 (EST)
+Date: Tue, 26 May 2009 20:48:15 -0700 (PDT)
+Message-Id: <20090526.204815.185454308.davem@davemloft.net>
+To: Xiaotian.Feng@windriver.com
+Subject: Re: [PATCH net] gianfar: fix babbling rx error event bug
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1243389156-1668-1-git-send-email-Xiaotian.Feng@windriver.com>
+References: <1243389156-1668-1-git-send-email-Xiaotian.Feng@windriver.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 26, 2009 at 8:01 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+From: Xiaotian Feng <Xiaotian.Feng@windriver.com>
+Date: Wed, 27 May 2009 09:52:36 +0800
 
-> Then why did you need to make your routine that calls cpu_relax()?
+> Gianfar interrupt handler uses IEVENT_ERR_MASK to check and handle errors.
+> Babbling RX error (IEVENT_BABR) should be included in IEVENT_ERROR_MASK.
+> Otherwise if BABR is raised, it never gets handled nor cleared, and an
+> interrupt storm results. This has been observed to happen on sending a
+> burst of ethernet frames to a gianfar based board.
+> 
+> Signed-off-by: Xiaotian Feng <xiaotian.feng@windriver.com>
 
-That gets called only if delay == 0.  udelay(0) is a no-op, so if the
-caller specifies no delay, then I need to manually call cpu_relax().
-
-> I don't know what goes on in the guts of HMT_low() and cpu_relax(),
-> when you guys decide which one I should use let me know and I can
-> adjust the patch.
-
-Grant, I don't see any reason why "udelay(50)" is unacceptable.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Patch applied, thanks.
