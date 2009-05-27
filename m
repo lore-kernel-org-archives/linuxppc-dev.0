@@ -1,19 +1,28 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pz0-f193.google.com (mail-pz0-f193.google.com
-	[209.85.222.193]) by ozlabs.org (Postfix) with ESMTP id 1F94EDDFAA
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 04:55:36 +1000 (EST)
-Received: by pzk31 with SMTP id 31so5568154pzk.17
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 11:55:34 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3] powerpc: add ioremap_early() for mapping IO regions before
-	MMU_init()
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, scottwood@freescale.com,
-	galak@kernel.crashing.org
-Date: Wed, 27 May 2009 12:55:30 -0600
-Message-ID: <20090527185422.15186.46133.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C11B7DDFD4
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 05:05:35 +1000 (EST)
+Message-Id: <0628DF07-E085-4CC8-ADFC-1B0798343159@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: Ian Campbell <Ian.Campbell@eu.citrix.com>
+In-Reply-To: <1242990702.22654.253.camel@zakaz.uk.xensource.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+Date: Wed, 27 May 2009 14:05:08 -0500
+References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
+	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
+	<20090519142656T.fujita.tomonori@lab.ntt.co.jp>
+	<19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
+	<4A1592CF.8000208@goop.org>
+	<E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
+	<1242990702.22654.253.camel@zakaz.uk.xensource.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,434 +32,357 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
 
-ioremap_early() is useful for things like mapping SoC internally registers
-and early debug output because it allows mappings to devices to be setup
-early in the boot process where they are needed.  It also give a
-performance boost since BAT mapped registers don't get flushed out of
-the TLB.
+On May 22, 2009, at 6:11 AM, Ian Campbell wrote:
+>
+>
+> BTW do you need swiotlb_bus_to_virt to be __weak or is the fact that  
+> it
+> is implemented in terms of swiotlb_bus_to_phys sufficient?
 
-Without ioremap_early(), early mappings are set up in an ad-hoc manner
-and they get lost when the MMU is set up.  Drivers then have to perform
-hacky fixups to transition over to new mappings.
+The default one in swiotlb calls phys_to_virt on the result of  
+swiotlb_bus_to_phys, which only works on lowmem.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+>
+>
+> I have an appointment all afternoon and it's a bank holiday on Monday
+> but here is my WIP patch as an example of what I'm thinking. Obviously
+> some cleanups are still very much required:
+>      * The Xen specific stuff in arch/x86/include/asm/dma-mapping.h
+>        clearly needs to be properly abstracted away (I just stuck it
+>        there for testing).
+>      * swiotlb_phys_to_bus and swiotlb_bus_to_phys need to move to
+>        arch/*/include/asm/dma-mapping.h instead of being __weak
+>      * Maybe swiotlb_bus_to_virt can become static again.
+>      * Need to finish auditing the handful of non-swiotlb users of
+>        is_buffer_dma_capable.
+>      * It might be possible to implement swiolb_dma_mapping_error
+>        and/or swiotlb_dma_supported in terms of dma_map_range.
+>      * Minor detail: it doesn't actually work at the moment ;-)
 
-new in v3:
-- Rebased onto Ben's dma_alloc_coherent changes
-- Fixed alignment to match region size
+Minor detail :)
 
- arch/powerpc/include/asm/io.h                |    8 +
- arch/powerpc/kernel/setup_32.c               |    4 
- arch/powerpc/mm/init_32.c                    |    3 
- arch/powerpc/mm/mmu_decl.h                   |    7 +
- arch/powerpc/mm/pgtable_32.c                 |   12 +
- arch/powerpc/mm/ppc_mmu_32.c                 |  210 +++++++++++++++++++++++---
- arch/powerpc/platforms/52xx/mpc52xx_common.c |   13 ++
- arch/powerpc/sysdev/cpm_common.c             |    2 
- 8 files changed, 228 insertions(+), 31 deletions(-)
+I'm in the same boat- been offline most of the week and will continue  
+to be offline (I'm sneaking in an hour here to read emails!!!!) until  
+sometime next week.   I'm in the middle of a big lab construction and  
+move project.  I'll take a look as soon as I can - thanks!
 
+-Becky
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 001f2f1..10183e2 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -624,6 +624,12 @@ static inline void iosync(void)
-  *
-  * * iounmap undoes such a mapping and can be hooked
-  *
-+ * * ioremap_early is for setting up mapping regions during early boot.  Useful
-+ *   for console devices or mapping an entire region of SoC internal registers.
-+ *   ioremap_early becomes usable at machine_init() time.  Care must be taken
-+ *   when using this routine because it can consume limited resources like BAT
-+ *   registers.
-+ *
-  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
-  *   create hand-made mappings for use only by the PCI code and cannot
-  *   currently be hooked. Must be page aligned.
-@@ -647,6 +653,8 @@ extern void __iomem *ioremap_flags(phys_addr_t address, unsigned long size,
- 
- extern void iounmap(volatile void __iomem *addr);
- 
-+extern void __iomem *ioremap_early(phys_addr_t addr, unsigned long size);
-+
- extern void __iomem *__ioremap(phys_addr_t, unsigned long size,
- 			       unsigned long flags);
- extern void __iomem *__ioremap_caller(phys_addr_t, unsigned long size,
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 9e1ca74..c1c0442 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -41,6 +41,7 @@
- #include <asm/mmu_context.h>
- 
- #include "setup.h"
-+#include "mm/mmu_decl.h"
- 
- #define DBG(fmt...)
- 
-@@ -118,6 +119,9 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
-  */
- notrace void __init machine_init(unsigned long dt_ptr)
- {
-+	/* Get ready to allocate IO virtual address regions */
-+	ioremap_init();
-+
- 	/* Enable early debugging if any specified (see udbg.h) */
- 	udbg_early_init();
- 
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 3de6a0d..806c237 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -168,9 +168,6 @@ void __init MMU_init(void)
- 		ppc_md.progress("MMU:mapin", 0x301);
- 	mapin_ram();
- 
--	/* Initialize early top-down ioremap allocator */
--	ioremap_bot = IOREMAP_TOP;
--
- 	/* Map in I/O resources */
- 	if (ppc_md.progress)
- 		ppc_md.progress("MMU:setio", 0x302);
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index d1f9c62..6be30fe 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -86,11 +86,14 @@ struct tlbcam {
- 
- extern void mapin_ram(void);
- extern int map_page(unsigned long va, phys_addr_t pa, int flags);
--extern void setbat(int index, unsigned long virt, phys_addr_t phys,
--		   unsigned int size, int flags);
-+extern int setbat(unsigned long virt, phys_addr_t phys, unsigned int size,
-+		  int flags);
-+extern int loadbat(unsigned long virt, phys_addr_t phys, unsigned int size,
-+		   int flags);
- extern void settlbcam(int index, unsigned long virt, phys_addr_t phys,
- 		      unsigned int size, int flags, unsigned int pid);
- extern void invalidate_tlbcam_entry(int index);
-+extern void ioremap_init(void); /* called by machine_init() */
- 
- extern int __map_without_bats;
- extern unsigned long ioremap_base;
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 5422169..508fb91 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -51,8 +51,6 @@ extern char etext[], _stext[];
- #ifdef HAVE_BATS
- extern phys_addr_t v_mapped_by_bats(unsigned long va);
- extern unsigned long p_mapped_by_bats(phys_addr_t pa);
--void setbat(int index, unsigned long virt, phys_addr_t phys,
--	    unsigned int size, int flags);
- 
- #else /* !HAVE_BATS */
- #define v_mapped_by_bats(x)	(0UL)
-@@ -126,6 +124,16 @@ pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
- 	return ptepage;
- }
- 
-+/**
-+ * ioremap_init - Initialize early top-down ioremap allocator
-+ */
-+void __init ioremap_init(void)
-+{
-+	if (ioremap_bot)
-+		return;
-+	ioremap_bot = IOREMAP_TOP;
-+}
-+
- void __iomem *
- ioremap(phys_addr_t addr, unsigned long size)
- {
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 2d2a87e..01acd2e 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -72,38 +72,41 @@ unsigned long p_mapped_by_bats(phys_addr_t pa)
- 	return 0;
- }
- 
-+/**
-+ * mmu_mapin_ram - Map as much of RAM as possible into kernel space using BATs
-+ */
- unsigned long __init mmu_mapin_ram(void)
- {
- 	unsigned long tot, bl, done;
--	unsigned long max_size = (256<<20);
-+	int rc;
- 
- 	if (__map_without_bats) {
--		printk(KERN_DEBUG "RAM mapped without BATs\n");
-+		pr_debug("RAM mapped without BATs\n");
- 		return 0;
- 	}
- 
--	/* Set up BAT2 and if necessary BAT3 to cover RAM. */
--
--	/* Make sure we don't map a block larger than the
--	   smallest alignment of the physical address. */
-+	/* Set up BATs to cover RAM. */
- 	tot = total_lowmem;
--	for (bl = 128<<10; bl < max_size; bl <<= 1) {
--		if (bl * 2 > tot)
-+	done = 0;
-+	while (done < tot) {
-+		/* determine the smallest block size need to map the region.
-+		 * Don't use a BAT mapping if the remaining region is less
-+		 * that 128k */
-+		if (tot - done <= 128<<10)
- 			break;
--	}
--
--	setbat(2, PAGE_OFFSET, 0, bl, PAGE_KERNEL_X);
--	done = (unsigned long)bat_addrs[2].limit - PAGE_OFFSET + 1;
--	if ((done < tot) && !bat_addrs[3].limit) {
--		/* use BAT3 to cover a bit more */
--		tot -= done;
--		for (bl = 128<<10; bl < max_size; bl <<= 1)
--			if (bl * 2 > tot)
-+		for (bl = 128<<10; bl < (256<<20); bl <<= 1)
-+			if ((bl * 2) > (tot - done))
- 				break;
--		setbat(3, PAGE_OFFSET+done, done, bl, PAGE_KERNEL_X);
--		done = (unsigned long)bat_addrs[3].limit - PAGE_OFFSET + 1;
-+
-+		/* Allocate the BAT and recalculate amount of RAM mapped */
-+		rc = setbat(PAGE_OFFSET+done, done, bl, PAGE_KERNEL_X);
-+		if (rc < 0)
-+			break;
-+		done = (unsigned long)bat_addrs[rc].limit - PAGE_OFFSET + 1;
- 	}
- 
-+	if (done == 0)
-+		pr_crit("Weird; No BATs available for RAM.\n");
- 	return done;
- }
- 
-@@ -112,12 +115,29 @@ unsigned long __init mmu_mapin_ram(void)
-  * The parameters are not checked; in particular size must be a power
-  * of 2 between 128k and 256M.
-  */
--void __init setbat(int index, unsigned long virt, phys_addr_t phys,
--		   unsigned int size, int flags)
-+int __init setbat(unsigned long virt, phys_addr_t phys,
-+		  unsigned int size, int flags)
- {
- 	unsigned int bl;
--	int wimgxpp;
--	struct ppc_bat *bat = BATS[index];
-+	int wimgxpp, index, nr_bats;
-+	struct ppc_bat *bat;
-+
-+	/* Find a free BAT
-+	 *
-+	 * Special case; Keep the first entry in reserve for mapping RAM.
-+	 * Otherwise the too many other users can prevent RAM from getting
-+	 * mapped at all with a BAT.
-+	 */
-+	index = (flags == PAGE_KERNEL_X) ? 0 : 1;
-+	nr_bats = mmu_has_feature(MMU_FTR_USE_HIGH_BATS) ? 8 : 4;
-+	for (; index < nr_bats; index++) {
-+		if ((BATS[index][0].batu == 0) && (BATS[index][1].batu == 0))
-+			break;
-+	}
-+	if (index == nr_bats)
-+		return -1;
-+
-+	bat = BATS[index];
- 
- 	if ((flags & _PAGE_NO_CACHE) ||
- 	    (cpu_has_feature(CPU_FTR_NEED_COHERENT) == 0))
-@@ -156,6 +176,150 @@ void __init setbat(int index, unsigned long virt, phys_addr_t phys,
- 	bat_addrs[index].start = virt;
- 	bat_addrs[index].limit = virt + ((bl + 1) << 17) - 1;
- 	bat_addrs[index].phys = phys;
-+	return index;
-+}
-+
-+/**
-+ * loadbat - Set up and configure one of the I/D BAT register pairs.
-+ * @virt - virtual address, 128k aligned
-+ * @phys - physical address, 128k aligned
-+ * @size - size of mapping
-+ * @flags - region attribute flags
-+ *
-+ * Uses setbat() to allocate a BAT pair and immediately writes the
-+ * configuration into the BAT registers (instead of waiting for load_up_mmu)
-+ */
-+int __init loadbat(unsigned long virt, phys_addr_t phys,
-+		   unsigned int size, int flags)
-+{
-+	struct ppc_bat *bat;
-+	int i;
-+
-+	i = setbat(virt, phys, size, flags);
-+	if (i < 0)
-+		return i;
-+	bat = BATS[i];
-+
-+	/* BATs must be set with a switch statement because there is no way
-+	 * to paramaterize mtspr/mfspr instructions.
-+	 *
-+	 * Note: BAT0 is not handled here because early boot code depends
-+	 * on BAT0 for mapping first 16M of RAM.  setbat() keeps BAT0 in
-+	 * reserve for mapping main memory anyway, so this is okay.
-+	 */
-+	switch (i) {
-+	case 1:
-+		mtspr(SPRN_IBAT1U, bat[0].batu);
-+		mtspr(SPRN_IBAT1L, bat[0].batl);
-+		mtspr(SPRN_DBAT1U, bat[1].batu);
-+		mtspr(SPRN_DBAT1L, bat[1].batl);
-+		break;
-+	case 2:
-+		mtspr(SPRN_IBAT2U, bat[0].batu);
-+		mtspr(SPRN_IBAT2L, bat[0].batl);
-+		mtspr(SPRN_DBAT2U, bat[1].batu);
-+		mtspr(SPRN_DBAT2L, bat[1].batl);
-+		break;
-+	case 3:
-+		mtspr(SPRN_IBAT3U, bat[0].batu);
-+		mtspr(SPRN_IBAT3L, bat[0].batl);
-+		mtspr(SPRN_DBAT3U, bat[1].batu);
-+		mtspr(SPRN_DBAT3L, bat[1].batl);
-+		break;
-+	case 4:
-+		mtspr(SPRN_IBAT4U, bat[0].batu);
-+		mtspr(SPRN_IBAT4L, bat[0].batl);
-+		mtspr(SPRN_DBAT4U, bat[1].batu);
-+		mtspr(SPRN_DBAT4L, bat[1].batl);
-+		break;
-+	case 5:
-+		mtspr(SPRN_IBAT5U, bat[0].batu);
-+		mtspr(SPRN_IBAT5L, bat[0].batl);
-+		mtspr(SPRN_DBAT5U, bat[1].batu);
-+		mtspr(SPRN_DBAT5L, bat[1].batl);
-+		break;
-+	case 6:
-+		mtspr(SPRN_IBAT6U, bat[0].batu);
-+		mtspr(SPRN_IBAT6L, bat[0].batl);
-+		mtspr(SPRN_DBAT6U, bat[1].batu);
-+		mtspr(SPRN_DBAT6L, bat[1].batl);
-+		break;
-+	case 7:
-+		mtspr(SPRN_IBAT7U, bat[0].batu);
-+		mtspr(SPRN_IBAT7L, bat[0].batl);
-+		mtspr(SPRN_DBAT7U, bat[1].batu);
-+		mtspr(SPRN_DBAT7L, bat[1].batl);
-+		break;
-+	}
-+
-+	return i;
-+}
-+
-+/**
-+ * ioremap_early - Allow large persistant IO regions to be mapped early.
-+ * @addr: physical address of region
-+ * @size: size of region
-+ *
-+ * This routine uses setbat() to set up IO ranges before the MMU is
-+ * fully configured.
-+ *
-+ * This routine can be called really early, before MMU_init() is called.  It
-+ * is useful for setting up early debug output consoles and frequently
-+ * accessed IO regions, like the internally memory mapped registers (IMMR)
-+ * in an SoC.  Ranges mapped with this function persist even after MMU_init()
-+ * is called and the MMU is turned on 'for real.'
-+ *
-+ * The region mapped is large (minimum size of 128k) and virtual mapping must
-+ * be aligned against this boundary.  Therefore, to avoid fragmentation all
-+ * calls to ioremap_early() are best made before any calls to ioremap
-+ * for smaller regions.
-+ */
-+void __iomem * __init
-+ioremap_early(phys_addr_t addr, unsigned long size)
-+{
-+	unsigned long v, p, bl;
-+	int i;
-+
-+	/* Be loud and annoying if someone calls this too late.
-+	 * No need to crash the kernel though */
-+	WARN_ON(mem_init_done);
-+	if (mem_init_done)
-+		return NULL;
-+
-+	/* Make sure request is sane */
-+	if (size == 0)
-+		return NULL;
-+
-+	/* If the region is already block mapped, then there is nothing
-+	 * to do; just return the mapped address */
-+	v = p_mapped_by_bats(addr);
-+	if (v)
-+		return (void __iomem *)v;
-+
-+	/* Align region size */
-+	for (bl = 128<<10; bl < (256<<20); bl <<= 1) {
-+		p = _ALIGN_DOWN(addr, bl); /* BATs align on 128k boundaries */
-+		size = ALIGN(addr - p + size, bl);
-+		if (bl >= size)
-+			break;
-+	}
-+
-+	/* Complain loudly if too much is requested */
-+	if (bl >= (256<<20)) {
-+		WARN_ON(1);
-+		return NULL;
-+	}
-+
-+	/* Allocate the aligned virtual base address.  ALIGN_DOWN is used
-+	 * to ensure no overlaps occur with normal 4k ioremaps. */
-+	ioremap_bot = _ALIGN_DOWN(ioremap_bot, bl) - size;
-+
-+	/* Set up a BAT for this IO region */
-+	i = loadbat(ioremap_bot, p, size, PAGE_KERNEL_NCG);
-+	if (i < 0)
-+		return NULL;
-+
-+	return (void __iomem *) (ioremap_bot + (addr - p));
- }
- 
- /*
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-index 8e3dd5a..2c49148 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-@@ -146,7 +146,20 @@ static struct of_device_id mpc52xx_cdm_ids[] __initdata = {
- void __init
- mpc52xx_map_common_devices(void)
- {
-+	const struct of_device_id immr_ids[] = {
-+		{ .compatible = "fsl,mpc5200-immr", },
-+		{ .compatible = "fsl,mpc5200b-immr", },
-+		{ .type = "soc", .compatible = "mpc5200", }, /* lite5200 */
-+		{ .type = "builtin", .compatible = "mpc5200", }, /* efika */
-+		{}
-+	};
- 	struct device_node *np;
-+	struct resource res;
-+
-+	/* Pre-map the whole register space using a BAT entry */
-+	np = of_find_matching_node(NULL, immr_ids);
-+	if (np && (of_address_to_resource(np, 0, &res) == 0))
-+		ioremap_early(res.start, res.end - res.start + 1);
- 
- 	/* mpc52xx_wdt is mapped here and used in mpc52xx_restart,
- 	 * possibly from a interrupt context. wdt is only implement
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index e4b6d66..370723e 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -56,7 +56,7 @@ void __init udbg_init_cpm(void)
- {
- 	if (cpm_udbg_txdesc) {
- #ifdef CONFIG_CPM2
--		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, PAGE_KERNEL_NCG);
-+		setbat(0xf0000000, 0xf0000000, 1024*1024, PAGE_KERNEL_NCG);
- #endif
- 		udbg_putc = udbg_putc_cpm;
- 	}
+>
+>
+> Ian.
+>
+> diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/ 
+> asm/dma-mapping.h
+> index 36c0009..026667f 100644
+> --- a/arch/ia64/include/asm/dma-mapping.h
+> +++ b/arch/ia64/include/asm/dma-mapping.h
+> @@ -174,4 +174,12 @@ dma_cache_sync (struct device *dev, void  
+> *vaddr, size_t size,
+>
+> #define dma_is_consistent(d, h)	(1)	/* all we do is coherent  
+> memory... */
+>
+> +static inline dma_addr_t dma_map_range(struct device *dev, u64 mask,
+> +				       phys_addr_t addr, size_t size)
+> +{
+> +	if (addr + size <= mask)
+> +		return addr;
+> +	return 0;
+> +}
+> +
+> #endif /* _ASM_IA64_DMA_MAPPING_H */
+> diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/ 
+> asm/dma-mapping.h
+> index 916cbb6..b2813ab 100644
+> --- a/arch/x86/include/asm/dma-mapping.h
+> +++ b/arch/x86/include/asm/dma-mapping.h
+> @@ -309,4 +309,20 @@ static inline void dma_free_coherent(struct  
+> device *dev, size_t size,
+> 		ops->free_coherent(dev, size, vaddr, bus);
+> }
+>
+> +static inline dma_addr_t dma_map_range(struct device *dev, u64 mask,
+> +				       phys_addr_t addr, size_t size)
+> +{
+> +	dma_addr_t dma_addr;
+> +#ifdef CONFIG_XEN
+> +	extern int xen_range_needs_mapping(phys_addr_t paddr, size_t size);
+> +	if (xen_pv_domain() && xen_range_needs_mapping(addr, size))
+> +		return 0;
+> +#endif
+> +
+> +	dma_addr = swiotlb_phys_to_bus(dev, addr);
+> +	if (dma_addr + size <= mask)
+> +		return 0;
+> +	return dma_addr;
+> +}
+> +
+> #endif
+> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> index 2fffc22..c2b4196 100644
+> --- a/arch/x86/kernel/pci-dma.c
+> +++ b/arch/x86/kernel/pci-dma.c
+> @@ -145,8 +145,8 @@ again:
+> 	if (!page)
+> 		return NULL;
+>
+> -	addr = page_to_phys(page);
+> -	if (!is_buffer_dma_capable(dma_mask, addr, size)) {
+> +	addr = dma_map_range(dev, dma_mask, page_to_phys(page), size);
+> +	if (!(addr == 0)) {
+> 		__free_pages(page, get_order(size));
+>
+> 		if (dma_mask < DMA_BIT_MASK(32) && !(flag & GFP_DMA)) {
+> diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci- 
+> gart_64.c
+> index 1e8920d..6a55770 100644
+> --- a/arch/x86/kernel/pci-gart_64.c
+> +++ b/arch/x86/kernel/pci-gart_64.c
+> @@ -191,13 +191,13 @@ static inline int
+> need_iommu(struct device *dev, unsigned long addr, size_t size)
+> {
+> 	return force_iommu ||
+> -		!is_buffer_dma_capable(*dev->dma_mask, addr, size);
+> +		dma_map_range(dev, *dev->dma_mask, addr, size) == 0;
+> }
+>
+> static inline int
+> nonforced_iommu(struct device *dev, unsigned long addr, size_t size)
+> {
+> -	return !is_buffer_dma_capable(*dev->dma_mask, addr, size);
+> +	return dma_map_range(dev, *dev->dma_mask, addr, size) == 0;
+> }
+>
+> /* Map a single continuous physical area into the IOMMU.
+> diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
+> index 71d412a..712ce59 100644
+> --- a/arch/x86/kernel/pci-nommu.c
+> +++ b/arch/x86/kernel/pci-nommu.c
+> @@ -12,13 +12,13 @@
+> #include <asm/dma.h>
+>
+> static int
+> -check_addr(char *name, struct device *hwdev, dma_addr_t bus, size_t  
+> size)
+> +check_addr(char *name, struct device *hwdev, phys_addr_t phys,  
+> size_t size)
+> {
+> -	if (hwdev && !is_buffer_dma_capable(*hwdev->dma_mask, bus, size)) {
+> +	if (hwdev && dma_map_range(hwdev, *hwdev->dma_mask, phys, size) ==  
+> 0) {
+> 		if (*hwdev->dma_mask >= DMA_BIT_MASK(32))
+> 			printk(KERN_ERR
+> 			    "nommu_%s: overflow %Lx+%zu of device mask %Lx\n",
+> -				name, (long long)bus, size,
+> +				name, (long long)phys, size,
+> 				(long long)*hwdev->dma_mask);
+> 		return 0;
+> 	}
+> @@ -30,12 +30,12 @@ static dma_addr_t nommu_map_page(struct device  
+> *dev, struct page *page,
+> 				 enum dma_data_direction dir,
+> 				 struct dma_attrs *attrs)
+> {
+> -	dma_addr_t bus = page_to_phys(page) + offset;
+> +	phys_addr_t phys = page_to_phys(page) + offset;
+> 	WARN_ON(size == 0);
+> -	if (!check_addr("map_single", dev, bus, size))
+> +	if (!check_addr("map_single", dev, phys, size))
+> 		return bad_dma_address;
+> 	flush_write_buffers();
+> -	return bus;
+> +	return phys;
+> }
+>
+> /* Map a set of buffers described by scatterlist in streaming
+> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+> index 8083b6a..85dafa1 100644
+> --- a/include/linux/dma-mapping.h
+> +++ b/include/linux/dma-mapping.h
+> @@ -96,11 +96,6 @@ static inline int is_device_dma_capable(struct  
+> device *dev)
+> 	return dev->dma_mask != NULL && *dev->dma_mask != DMA_MASK_NONE;
+> }
+>
+> -static inline int is_buffer_dma_capable(u64 mask, dma_addr_t addr,  
+> size_t size)
+> -{
+> -	return addr + size <= mask;
+> -}
+> -
+> #ifdef CONFIG_HAS_DMA
+> #include <asm/dma-mapping.h>
+> #else
+> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+> index cec5f62..4fd5185 100644
+> --- a/lib/swiotlb.c
+> +++ b/lib/swiotlb.c
+> @@ -147,17 +147,6 @@ void * __weak swiotlb_bus_to_virt(struct device  
+> *hwdev, dma_addr_t address)
+> 	return phys_to_virt(swiotlb_bus_to_phys(hwdev, address));
+> }
+>
+> -int __weak swiotlb_arch_address_needs_mapping(struct device *hwdev,
+> -					       dma_addr_t addr, size_t size)
+> -{
+> -	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
+> -}
+> -
+> -int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr,  
+> size_t size)
+> -{
+> -	return 0;
+> -}
+> -
+> static void swiotlb_print_info(unsigned long bytes)
+> {
+> 	phys_addr_t pstart, pend;
+> @@ -318,17 +307,6 @@ cleanup1:
+> 	return -ENOMEM;
+> }
+>
+> -static inline int
+> -address_needs_mapping(struct device *hwdev, dma_addr_t addr, size_t  
+> size)
+> -{
+> -	return swiotlb_arch_address_needs_mapping(hwdev, addr, size);
+> -}
+> -
+> -static inline int range_needs_mapping(phys_addr_t paddr, size_t size)
+> -{
+> -	return swiotlb_force || swiotlb_arch_range_needs_mapping(paddr,  
+> size);
+> -}
+> -
+> static int is_swiotlb_buffer(char *addr)
+> {
+> 	return addr >= io_tlb_start && addr < io_tlb_end;
+> @@ -555,18 +533,17 @@ void *
+> swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+> 		       dma_addr_t *dma_handle, gfp_t flags)
+> {
+> -	dma_addr_t dev_addr;
+> +	phys_addr_t phys;
+> 	void *ret;
+> 	int order = get_order(size);
+> 	u64 dma_mask = DMA_BIT_MASK(32);
+> +	dma_addr_t dma_addr;
+>
+> 	if (hwdev && hwdev->coherent_dma_mask)
+> 		dma_mask = hwdev->coherent_dma_mask;
+>
+> 	ret = (void *)__get_free_pages(flags, order);
+> -	if (ret &&
+> -	    !is_buffer_dma_capable(dma_mask, swiotlb_virt_to_bus(hwdev,  
+> ret),
+> -				   size)) {
+> +	if (ret && dma_map_range(hwdev, dma_mask, virt_to_phys(ret), size)  
+> == 0) {
+> 		/*
+> 		 * The allocated memory isn't reachable by the device.
+> 		 */
+> @@ -585,19 +562,20 @@ swiotlb_alloc_coherent(struct device *hwdev,  
+> size_t size,
+> 	}
+>
+> 	memset(ret, 0, size);
+> -	dev_addr = swiotlb_virt_to_bus(hwdev, ret);
+> +	phys = virt_to_phys(ret);
+>
+> 	/* Confirm address can be DMA'd by device */
+> -	if (!is_buffer_dma_capable(dma_mask, dev_addr, size)) {
+> -		printk("hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
+> +	dma_addr = dma_map_range(hwdev, dma_mask, phys, size);
+> +	if (dma_addr == 0) {
+> +		printk("hwdev DMA mask = 0x%016Lx, physical addr = 0x%016Lx\n",
+> 		       (unsigned long long)dma_mask,
+> -		       (unsigned long long)dev_addr);
+> +		       (unsigned long long)phys);
+>
+> 		/* DMA_TO_DEVICE to avoid memcpy in unmap_single */
+> 		do_unmap_single(hwdev, ret, size, DMA_TO_DEVICE);
+> 		return NULL;
+> 	}
+> -	*dma_handle = dev_addr;
+> +	*dma_handle = dma_addr;
+> 	return ret;
+> }
+> EXPORT_SYMBOL(swiotlb_alloc_coherent);
+> @@ -649,7 +627,7 @@ dma_addr_t swiotlb_map_page(struct device *dev,  
+> struct page *page,
+> 			    struct dma_attrs *attrs)
+> {
+> 	phys_addr_t phys = page_to_phys(page) + offset;
+> -	dma_addr_t dev_addr = swiotlb_phys_to_bus(dev, phys);
+> +	dma_addr_t dma_addr;
+> 	void *map;
+>
+> 	BUG_ON(dir == DMA_NONE);
+> @@ -658,9 +636,9 @@ dma_addr_t swiotlb_map_page(struct device *dev,  
+> struct page *page,
+> 	 * we can safely return the device addr and not worry about bounce
+> 	 * buffering it.
+> 	 */
+> -	if (!address_needs_mapping(dev, dev_addr, size) &&
+> -	    !range_needs_mapping(phys, size))
+> -		return dev_addr;
+> +	dma_addr = dma_map_range(dev, dma_get_mask(dev), phys, size);
+> +	if (dma_addr && !swiotlb_force)
+> +		return dma_addr;
+>
+> 	/*
+> 	 * Oh well, have to allocate and map a bounce buffer.
+> @@ -671,15 +649,14 @@ dma_addr_t swiotlb_map_page(struct device  
+> *dev, struct page *page,
+> 		map = io_tlb_overflow_buffer;
+> 	}
+>
+> -	dev_addr = swiotlb_virt_to_bus(dev, map);
+> -
+> 	/*
+> 	 * Ensure that the address returned is DMA'ble
+> 	 */
+> -	if (address_needs_mapping(dev, dev_addr, size))
+> +	dma_addr = dma_map_range(dev, dma_get_mask(dev),  
+> virt_to_phys(map), size);
+> +	if (dma_addr == 0)
+> 		panic("map_single: bounce buffer is not DMA'ble");
+>
+> -	return dev_addr;
+> +	return dma_addr;
+> }
+> EXPORT_SYMBOL_GPL(swiotlb_map_page);
+>
+> @@ -820,10 +797,8 @@ swiotlb_map_sg_attrs(struct device *hwdev,  
+> struct scatterlist *sgl, int nelems,
+>
+> 	for_each_sg(sgl, sg, nelems, i) {
+> 		phys_addr_t paddr = sg_phys(sg);
+> -		dma_addr_t dev_addr = swiotlb_phys_to_bus(hwdev, paddr);
+> -
+> -		if (range_needs_mapping(paddr, sg->length) ||
+> -		    address_needs_mapping(hwdev, dev_addr, sg->length)) {
+> +		dma_addr_t dma_addr = dma_map_range(hwdev, dma_get_mask(hwdev),  
+> paddr, sg->length);
+> +		if (dma_addr == 0 || swiotlb_force) {
+> 			void *map = map_single(hwdev, sg_phys(sg),
+> 					       sg->length, dir);
+> 			if (!map) {
+> @@ -835,9 +810,9 @@ swiotlb_map_sg_attrs(struct device *hwdev,  
+> struct scatterlist *sgl, int nelems,
+> 				sgl[0].dma_length = 0;
+> 				return 0;
+> 			}
+> -			sg->dma_address = swiotlb_virt_to_bus(hwdev, map);
+> -		} else
+> -			sg->dma_address = dev_addr;
+> +			dma_addr = dma_map_range(hwdev, dma_get_mask(hwdev),  
+> virt_to_phys(map), sg->length);
+> +		}
+> +		sg->dma_address = dma_addr;
+> 		sg->dma_length = sg->length;
+> 	}
+> 	return nelems;
+>
