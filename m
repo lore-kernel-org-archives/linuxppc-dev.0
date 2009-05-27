@@ -1,18 +1,15 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 3792EDDFD1
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 14:30:19 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so2013036yxb.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 21:30:18 -0700 (PDT)
-Subject: [PATCH V2] Modify mpc5200 AC97 driver to use V9 of
-	spin_event_timeout()
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, broonie@sirena.org.uk, timur@freescale.com
-From: Jon Smirl <jonsmirl@gmail.com>
-Date: Wed, 27 May 2009 00:30:18 -0400
-Message-ID: <20090527043018.4667.94590.stgit@terra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <Kexin.Hao@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 2563FDDFE7
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 11:49:03 +1000 (EST)
+Subject: [PATCH] net/ucc_geth: allow to set mac address on running device
+From: Kevin Hao <kexin.hao@windriver.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Wed, 27 May 2009 09:48:56 +0800
+Message-Id: <1243388936.13410.4.camel@kevin>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,92 +19,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The function signature for spin_event_timeout() has changed in version V9.
-Adjust the mpc5200 AC97 driver to use the new function.
-v2 - switch back to udelay() for fixed timeouts.
+Inspired by the patch for 8139too (bda6a15a).
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+Currently we can't set mac address on a running ucc_geth device.
+But this is needed when you use this device as a bonding slave in
+bonding device in balance-alb mode. So add this feature for ucc_geth
+device.
+
+Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
 ---
- sound/soc/fsl/mpc5200_psc_ac97.c |   30 ++++++++++++++----------------
- 1 files changed, 14 insertions(+), 16 deletions(-)
+ drivers/net/ucc_geth.c |   33 ++++++++++++++++++++++++++++++++-
+ 1 files changed, 32 insertions(+), 1 deletions(-)
 
-diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_ac97.c
-index 9f2df15..4342b51 100644
---- a/sound/soc/fsl/mpc5200_psc_ac97.c
-+++ b/sound/soc/fsl/mpc5200_psc_ac97.c
-@@ -31,13 +31,13 @@ static struct psc_dma *psc_dma;
- 
- static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
- {
--	int rc;
-+	int status;
- 	unsigned int val;
- 
- 	/* Wait for command send status zero = ready */
--	spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
--				MPC52xx_PSC_SR_CMDSEND), 100, 0, rc);
--	if (rc == 0) {
-+	status= spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
-+				MPC52xx_PSC_SR_CMDSEND), 100, 0);
-+	if (status == 0) {
- 		pr_err("timeout on ac97 bus (rdy)\n");
- 		return -ENODEV;
- 	}
-@@ -45,9 +45,9 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
- 	out_be32(&psc_dma->psc_regs->ac97_cmd, (1<<31) | ((reg & 0x7f) << 24));
- 
- 	/* Wait for the answer */
--	spin_event_timeout((in_be16(&psc_dma->psc_regs->sr_csr.status) &
--				MPC52xx_PSC_SR_DATA_VAL), 100, 0, rc);
--	if (rc == 0) {
-+	status = spin_event_timeout((in_be16(&psc_dma->psc_regs->sr_csr.status) &
-+				MPC52xx_PSC_SR_DATA_VAL), 100, 0);
-+	if (status == 0) {
- 		pr_err("timeout on ac97 read (val) %x\n",
- 				in_be16(&psc_dma->psc_regs->sr_csr.status));
- 		return -ENODEV;
-@@ -66,12 +66,12 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
- static void psc_ac97_write(struct snd_ac97 *ac97,
- 				unsigned short reg, unsigned short val)
- {
--	int rc;
-+	int status;
- 
- 	/* Wait for command status zero = ready */
--	spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
--				MPC52xx_PSC_SR_CMDSEND), 100, 0, rc);
--	if (rc == 0) {
-+	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
-+				MPC52xx_PSC_SR_CMDSEND), 100, 0);
-+	if (status == 0) {
- 		pr_err("timeout on ac97 bus (write)\n");
- 		return;
- 	}
-@@ -82,24 +82,22 @@ static void psc_ac97_write(struct snd_ac97 *ac97,
- 
- static void psc_ac97_warm_reset(struct snd_ac97 *ac97)
- {
--	int rc;
- 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
- 
- 	out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_AWR);
--	spin_event_timeout(0, 3, 0, rc);
-+	udelay(3);
- 	out_be32(&regs->sicr, psc_dma->sicr);
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 9dd16c9..3c595d7 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3339,6 +3339,37 @@ static void ucc_netpoll(struct net_device *dev)
  }
+ #endif /* CONFIG_NET_POLL_CONTROLLER */
  
- static void psc_ac97_cold_reset(struct snd_ac97 *ac97)
- {
--	int rc;
- 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
- 
- 	/* Do a cold reset */
- 	out_8(&regs->op1, MPC52xx_PSC_OP_RES);
--	spin_event_timeout(0, 10, 0, rc);
-+	udelay(10);
- 	out_8(&regs->op0, MPC52xx_PSC_OP_RES);
--	spin_event_timeout(0, 50, 0, rc);
-+	udelat(50);
- 	psc_ac97_warm_reset(ac97);
- }
- 
++static int ucc_geth_set_mac_addr(struct net_device *dev, void *p)
++{
++	struct ucc_geth_private *ugeth = netdev_priv(dev);
++	struct sockaddr *addr = p;
++
++	if (!is_valid_ether_addr(addr->sa_data))
++		return -EADDRNOTAVAIL;
++
++	memcpy(dev->dev_addr, addr->sa_data, dev->addr_len);
++
++	/*
++	 * If device is not running, we will set mac addr register
++	 * when opening the device.
++	 */
++	if (!netif_running(dev))
++		return 0;
++
++	spin_lock_irq(&ugeth->lock);
++	init_mac_station_addr_regs(dev->dev_addr[0],
++				   dev->dev_addr[1],
++				   dev->dev_addr[2],
++				   dev->dev_addr[3],
++				   dev->dev_addr[4],
++				   dev->dev_addr[5],
++				   &ugeth->ug_regs->macstnaddr1,
++				   &ugeth->ug_regs->macstnaddr2);
++	spin_unlock_irq(&ugeth->lock);
++
++	return 0;
++}
++
+ /* Called when something needs to use the ethernet device */
+ /* Returns 0 for success. */
+ static int ucc_geth_open(struct net_device *dev)
+@@ -3515,7 +3546,7 @@ static const struct net_device_ops ucc_geth_netdev_ops = {
+ 	.ndo_stop		= ucc_geth_close,
+ 	.ndo_start_xmit		= ucc_geth_start_xmit,
+ 	.ndo_validate_addr	= eth_validate_addr,
+-	.ndo_set_mac_address	= eth_mac_addr,
++	.ndo_set_mac_address	= ucc_geth_set_mac_addr,
+ 	.ndo_change_mtu		= eth_change_mtu,
+ 	.ndo_set_multicast_list	= ucc_geth_set_multi,
+ 	.ndo_tx_timeout		= ucc_geth_timeout,
+-- 
+1.6.0.4.771.gef3b3
