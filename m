@@ -1,15 +1,19 @@
-Return-Path: <Kexin.Hao@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 17332DE03C
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 12:05:26 +1000 (EST)
-Subject: [PATCH] powerpc/85xx: add nor flash partitions for mpc8569mds
-From: Kevin Hao <kexin.hao@windriver.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 27 May 2009 10:05:05 +0800
-Message-Id: <1243389905.13410.6.camel@kevin>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 3BEEDDE03D
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 14:42:07 +1000 (EST)
+Date: Tue, 26 May 2009 21:42:03 -0700 (PDT)
+Message-Id: <20090526.214203.157382530.davem@davemloft.net>
+To: kexin.hao@windriver.com
+Subject: Re: [PATCH] net/ucc_geth: allow to set mac address on running device
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1243388936.13410.4.camel@kevin>
+References: <1243388936.13410.4.camel@kevin>
 Mime-Version: 1.0
-Cc: Haiying Wang <Haiying.Wang@freescale.com>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,49 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add 4 partitions in nor flash. Also fix nor flash
-bank width bug.
+From: Kevin Hao <kexin.hao@windriver.com>
+Date: Wed, 27 May 2009 09:48:56 +0800
 
-Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
----
- arch/powerpc/boot/dts/mpc8569mds.dts |   24 +++++++++++++++++++++++-
- 1 files changed, 23 insertions(+), 1 deletions(-)
+> Inspired by the patch for 8139too (bda6a15a).
+> 
+> Currently we can't set mac address on a running ucc_geth device.
+> But this is needed when you use this device as a bonding slave in
+> bonding device in balance-alb mode. So add this feature for ucc_geth
+> device.
+> 
+> Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
 
-diff --git a/arch/powerpc/boot/dts/mpc8569mds.dts b/arch/powerpc/boot/dts/mpc8569mds.dts
-index 39c2927..1f98990 100644
---- a/arch/powerpc/boot/dts/mpc8569mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8569mds.dts
-@@ -70,8 +70,30 @@
- 			#size-cells = <1>;
- 			compatible = "cfi-flash";
- 			reg = <0x0 0x0 0x02000000>;
--			bank-width = <2>;
-+			bank-width = <1>;
- 			device-width = <1>;
-+			partition@0 {
-+				label = "ramdisk";
-+				reg = <0x00000000 0x01c00000>;
-+			};
-+			partition@1c00000 {
-+				label = "kernel";
-+				reg = <0x01c00000 0x002e0000>;
-+			};
-+			partiton@1ee0000 {
-+				label = "dtb";
-+				reg = <0x01ee0000 0x00020000>;
-+			};
-+			partition@1f00000 {
-+				label = "firmware";
-+				reg = <0x01f00000 0x00080000>;
-+				read-only;
-+			};
-+			partition@1f80000 {
-+				label = "u-boot";
-+				reg = <0x01f80000 0x00080000>;
-+				read-only;
-+			};
- 		};
- 
- 		bcsr@1,0 {
--- 
-1.6.0.4.771.gef3b3
+I applied this patch already, there is no need to post it again.
