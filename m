@@ -1,21 +1,27 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp4.netcologne.de (smtp4.netcologne.de [194.8.194.137])
-	by ozlabs.org (Postfix) with ESMTP id C028ADDFCA
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 06:00:43 +1000 (EST)
-Received: from antares (xdsl-84-44-237-107.netcologne.de [84.44.237.107])
-	by smtp4.netcologne.de (Postfix) with ESMTP id 4715EDA8A1
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 22:00:42 +0200 (CEST)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id 24957BA03E
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 22:00:42 +0200 (CEST)
-Date: Wed, 27 May 2009 22:00:41 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: [PATCH] powerpc: tiny memcpy_(to|from)io optimisation
-To: Linux PPC Development <linuxppc-dev@ozlabs.org>
-Message-Id: <1243454441.3489.1@antares>
+Return-Path: <Ian.Campbell@eu.citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+	by ozlabs.org (Postfix) with ESMTP id A73E7DDFC0
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 06:29:24 +1000 (EST)
+Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+In-Reply-To: <0628DF07-E085-4CC8-ADFC-1B0798343159@kernel.crashing.org>
+References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
+	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
+	<20090519142656T.fujita.tomonori@lab.ntt.co.jp>
+	<19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
+	<4A1592CF.8000208@goop.org>
+	<E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
+	<1242990702.22654.253.camel@zakaz.uk.xensource.com>
+	<0628DF07-E085-4CC8-ADFC-1B0798343159@kernel.crashing.org>
+Content-Type: text/plain
+Date: Wed, 27 May 2009 21:29:19 +0100
+Message-ID: <1243456159.4399.42.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-ny46ZzImd75iQcwkw341"
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,53 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---=-ny46ZzImd75iQcwkw341
-Content-Type: text/plain; charset=ISO-8859-1; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2009-05-27 at 15:05 -0400, Becky Bruce wrote:
+> On May 22, 2009, at 6:11 AM, Ian Campbell wrote:
+> >
+> >
+> > BTW do you need swiotlb_bus_to_virt to be __weak or is the fact that  
+> > it
+> > is implemented in terms of swiotlb_bus_to_phys sufficient?
+> 
+> The default one in swiotlb calls phys_to_virt on the result of  
+> swiotlb_bus_to_phys, which only works on lowmem.
 
-This trivial patch changes memcpy_(to|from)io as to transfer as many =20
-32-bit words as possible in 32-bit accesses (in the current solution, =20
-the last 32-bit word was transferred as 4 byte accesses).
+Perhaps we can simply enhance the default one to handle highmem instead
+of making it arch specific?
 
-Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
----
-
-diff -urpN -X linux-2.6.29.1.orig/Documentation/dontdiff =20
-linux-2.6.29.1.orig/arch/powerpc/kernel/io.c =20
-linux-2.6.29.1/arch/powerpc/kernel/io.c
---- linux-2.6.29.1.orig/arch/powerpc/kernel/io.c	2009-04-02 =20
-22:55:27.000000000 +0200
-+++ linux-2.6.29.1/arch/powerpc/kernel/io.c	2009-05-27 =20
-11:36:09.000000000 +0200
-@@ -161,7 +161,7 @@ void _memcpy_fromio(void *dest, const vo
-  		dest++;
-  		n--;
-  	}
--	while(n > 4) {
-+	while(n >=3D 4) {
-  		*((u32 *)dest) =3D *((volatile u32 *)vsrc);
-  		eieio();
-  		vsrc +=3D 4;
-@@ -190,7 +190,7 @@ void _memcpy_toio(volatile void __iomem
-  		vdest++;
-  		n--;
-  	}
--	while(n > 4) {
-+	while(n >=3D 4) {
-  		*((volatile u32 *)vdest) =3D *((volatile u32 *)src);
-  		src +=3D 4;
-  		vdest +=3D 4;
-
---=-ny46ZzImd75iQcwkw341
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBKHZvpn/9unNAn/9ERAvUoAJ9sL4yZ52uMplVbGshiNHlOlQ83ggCeNcLB
-/Tu50l1AXor/lxSLMwOuAeM=
-=drxX
------END PGP SIGNATURE-----
-
---=-ny46ZzImd75iQcwkw341--
+Ian.
