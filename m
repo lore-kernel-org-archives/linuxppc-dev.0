@@ -1,16 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208934920A@zch01exm21.fsl.freescale.net>
-References: <D7CCA83BB0796C49BC0BB53B6AB1208934920A@zch01exm21.fsl.freescale.net>
-Subject: Re: Net: ucc_geth ethernet driver optimization space
-To: "Liu Dave-R63238" <DaveLiu@freescale.com>
-Message-ID: <OFED0E4273.051DFDD2-ONC12575C3.00246ED3-C12575C3.0025759F@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 27 May 2009 08:49:09 +0200
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 1A9D1DE032
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 17:07:49 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: u-boot@lists.denx.de
+Subject: Re: [U-Boot] [PATCH 1/2] 83xx: Replace CONFIG_MPC83XX with
+	CONFIG_MPC83xx
+Date: Wed, 27 May 2009 09:08:05 +0200
+References: <82eccabef9b5f2ad7f747ee9ba966546ef366745.1243030613.git.ptyser@xes-inc.com>
+	<20090524201327.CB44C832E416@gemini.denx.de>
+	<20090526183834.76345105.kim.phillips@freescale.com>
+In-Reply-To: <20090526183834.76345105.kim.phillips@freescale.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <200905270908.05777.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
+	Peter Tyser <ptyser@xes-inc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,50 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 27 May 2009 01:38:34 Kim Phillips wrote:
+> > > If others would prefer standardizing on uppercase, I can submit new
+> > > patches for 85xx, 5xxx, 86xx, etc.  This would be still be inconsistent
+> > > with Linux though, which is a bit annoying.
+> >
+> > It seems Linux uses 8?xx with very few exceptions (CONFIG_SND_VIA82XX*
+> > and CONFIG_EDAC_MPC85XX), so let's do the same here.
+>
+> so linux is inconsistent too.
+>
+> I'm a fan of a more self-consistent CONFIG_MPC85XX_MDS over mixed-case
+> names like linux' CONFIG_MPC85xx_MDS.
+>
+> I wonder if the linux ppc guys would accept a
+> s/CONFIG_MPC8?xx/CONFIG_MPC8?XX/g rename patch for linux...
 
+Just to add my 0.02$ as well, I prefer the lower case version CONFIG_8?xx. 
+It's used for 4xx this way as well in Linux and U-Boot. Perhaps I'm just used 
+to reading it this way...
 
-linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org wrote on 27/05/2009 07:08:07:
->
-> Guys,
->
-> The ucc_geth ethernet driver have dozens of strong sync read/write
-> operation, such as in_be32/16/8, out_be32/16/8.
->
-> all of them is sync read/write, it is very expensive for performance.
->
-> For the critical patch, we can remove some unnecessary in_be(x),
-> out_be(x) with normal memory operation, and keep some necessary
-> memory barrier.
->
-> eg: BD access in the interrupt handler and start_xmit.
->
-> The BD operation only need the memory barrier between length/buffer
-> and status.
->
-> struct buffer descriptor {
->    u16 status;
->    u16 length;
->    u32 buffer;
-> } __attribute__ ((packed));
->
-> struct buffer descriptor *BD;
->
-> BD->length = xxxx;
-> BD->buffer = yyyy;
-> wmb();
-> BD->status = zzzz;
->
-> For powerpc, eieio is enough for 60x, mbar 1 is enough for e500.
-> Of couse, also need the memory clobber to avoid the compiler
-> reorder between them.
->
-> Thanks, Dave
+Best regards,
+Stefan
 
-Yes, pretty please :)
-
-You might want to combine status and length into one U32 though:
-BD->buffer = yyyy;
-wmb();
-BD->stat_len = zzzz << 16 | xxxx;
-
-  Jocke
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
