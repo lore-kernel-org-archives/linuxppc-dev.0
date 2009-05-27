@@ -1,21 +1,17 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-qy0-f196.google.com (mail-qy0-f196.google.com
-	[209.85.221.196]) by ozlabs.org (Postfix) with ESMTP id C290EDDFCC
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 09:59:26 +1000 (EST)
-Received: by qyk34 with SMTP id 34so6998367qyk.17
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 16:59:25 -0700 (PDT)
+Return-Path: <jonsmirl@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 15388DDF90
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 10:25:32 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so1959282yxb.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 17:25:31 -0700 (PDT)
+Subject: [PATCH] Modify mpc5200 AC97 driver to use V9 of spin_event_timeout()
+To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org, broonie@sirena.org.uk, timur@freescale.com
+From: Jon Smirl <jonsmirl@gmail.com>
+Date: Tue, 26 May 2009 20:25:30 -0400
+Message-ID: <20090527002530.16740.62502.stgit@terra>
 MIME-Version: 1.0
-Sender: dan.j.williams@gmail.com
-In-Reply-To: <2a27d3730905220347s59dbd152kc69c8399693ae307@mail.gmail.com>
-References: <2a27d3730905220347s59dbd152kc69c8399693ae307@mail.gmail.com>
-Date: Tue, 26 May 2009 16:59:23 -0700
-Message-ID: <e9c3a7c20905261659v5d785df3w646efd4cbba2e6dd@mail.gmail.com>
-Subject: Re: [GIT PULL] fsldma driver fixes
-From: Dan Williams <dan.j.williams@intel.com>
-To: Li Yang <leoli@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Ira Snyder <iws@ovro.caltech.edu>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,45 +21,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 22, 2009 at 3:47 AM, Li Yang <leoli@freescale.com> wrote:
-> Hi Dan,
->
-> Here are fixes for Freescale DMA engine driver.
->
-> Thanks,
-> - Leo
->
->
-> The following changes since commit 5805977e63a36ad56594a623f3bd2bebcb7db2=
-33:
-> =A0Linus Torvalds (1):
-> =A0 =A0 =A0 =A0Merge branch 'for-linus' of git://git.kernel.org/.../jbarn=
-es/drm-2.6
->
-> are available in the git repository at:
->
-> =A0git://git.kernel.org/pub/scm/linux/kernel/git/leo/fsl-soc.git fsldma
->
-> Ira Snyder (4):
-> =A0 =A0 =A0fsldma: fix "DMA halt timeout!" errors
-> =A0 =A0 =A0fsldma: fix infinite loop on multi-descriptor DMA chain comple=
-tion
-> =A0 =A0 =A0fsldma: snooping is not enabled for last entry in descriptor c=
-hain
-> =A0 =A0 =A0fsldma: fix memory leak on error path in fsl_dma_prep_memcpy()
->
-> Li Yang (1):
-> =A0 =A0 =A0fsldma: update mailling list address in MAINTAINERS
->
-> Roel Kluin (1):
-> =A0 =A0 =A0fsldma: fix check on potential fdev->chan[] overflow
->
+The function signature for spin_event_timeout() has changed in version V9.
+Adjust the mpc5200 AC97 driver to use the new function.
 
-Pulled, thanks.  These all look like 2.6.30 candidates, right?  I'll
-send these upstream in the next few days as I have not heard back from
-Kumar on taking fsldma patches through his tree [1].
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+---
+ sound/soc/fsl/mpc5200_psc_ac97.c |   30 ++++++++++++++----------------
+ 1 files changed, 14 insertions(+), 16 deletions(-)
 
-Thanks,
-Dan
-
-[1]: http://marc.info/?l=3Dlinux-kernel&m=3D124225089507475&w=3D2
+diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_ac97.c
+index 9f2df15..bab80ac 100644
+--- a/sound/soc/fsl/mpc5200_psc_ac97.c
++++ b/sound/soc/fsl/mpc5200_psc_ac97.c
+@@ -31,13 +31,13 @@ static struct psc_dma *psc_dma;
+ 
+ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
+ {
+-	int rc;
++	int status;
+ 	unsigned int val;
+ 
+ 	/* Wait for command send status zero = ready */
+-	spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
+-				MPC52xx_PSC_SR_CMDSEND), 100, 0, rc);
+-	if (rc == 0) {
++	status= spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
++				MPC52xx_PSC_SR_CMDSEND), 100, 0);
++	if (status == 0) {
+ 		pr_err("timeout on ac97 bus (rdy)\n");
+ 		return -ENODEV;
+ 	}
+@@ -45,9 +45,9 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
+ 	out_be32(&psc_dma->psc_regs->ac97_cmd, (1<<31) | ((reg & 0x7f) << 24));
+ 
+ 	/* Wait for the answer */
+-	spin_event_timeout((in_be16(&psc_dma->psc_regs->sr_csr.status) &
+-				MPC52xx_PSC_SR_DATA_VAL), 100, 0, rc);
+-	if (rc == 0) {
++	status = spin_event_timeout((in_be16(&psc_dma->psc_regs->sr_csr.status) &
++				MPC52xx_PSC_SR_DATA_VAL), 100, 0);
++	if (status == 0) {
+ 		pr_err("timeout on ac97 read (val) %x\n",
+ 				in_be16(&psc_dma->psc_regs->sr_csr.status));
+ 		return -ENODEV;
+@@ -66,12 +66,12 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
+ static void psc_ac97_write(struct snd_ac97 *ac97,
+ 				unsigned short reg, unsigned short val)
+ {
+-	int rc;
++	int status;
+ 
+ 	/* Wait for command status zero = ready */
+-	spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
+-				MPC52xx_PSC_SR_CMDSEND), 100, 0, rc);
+-	if (rc == 0) {
++	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
++				MPC52xx_PSC_SR_CMDSEND), 100, 0);
++	if (status == 0) {
+ 		pr_err("timeout on ac97 bus (write)\n");
+ 		return;
+ 	}
+@@ -82,24 +82,22 @@ static void psc_ac97_write(struct snd_ac97 *ac97,
+ 
+ static void psc_ac97_warm_reset(struct snd_ac97 *ac97)
+ {
+-	int rc;
+ 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
+ 
+ 	out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_AWR);
+-	spin_event_timeout(0, 3, 0, rc);
++	spin_event_timeout(0, 3, 0);
+ 	out_be32(&regs->sicr, psc_dma->sicr);
+ }
+ 
+ static void psc_ac97_cold_reset(struct snd_ac97 *ac97)
+ {
+-	int rc;
+ 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
+ 
+ 	/* Do a cold reset */
+ 	out_8(&regs->op1, MPC52xx_PSC_OP_RES);
+-	spin_event_timeout(0, 10, 0, rc);
++	spin_event_timeout(0, 10, 0);
+ 	out_8(&regs->op0, MPC52xx_PSC_OP_RES);
+-	spin_event_timeout(0, 50, 0, rc);
++	spin_event_timeout(0, 50, 0);
+ 	psc_ac97_warm_reset(ac97);
+ }
+ 
