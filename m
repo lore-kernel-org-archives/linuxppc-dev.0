@@ -1,21 +1,33 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
-	by ozlabs.org (Postfix) with ESMTP id 7C821DDF8C
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 21:39:56 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so2331974qwe.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 04:39:54 -0700 (PDT)
+Return-Path: <nfont@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F1B18DDF7B
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 00:30:54 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n4RES1Ln024475
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 08:28:01 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n4REUopg238876
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 08:30:50 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n4REUoTu007887
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 08:30:50 -0600
+Message-ID: <4A1D4E96.60007@austin.ibm.com>
+Date: Wed, 27 May 2009 09:30:46 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <20090527043018.4667.94590.stgit@terra>
-References: <20090527043018.4667.94590.stgit@terra>
-Date: Wed, 27 May 2009 06:39:54 -0500
-Message-ID: <ed82fe3e0905270439h4a068564keeb6c0905e958d2a@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH V2] Modify mpc5200 AC97 driver to use V9 of
-	spin_event_timeout()
-From: Timur Tabi <timur@freescale.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] Display processor virtualization resource allocations
+	in lparcfg
+References: <4A1C2E10.9020109@austin.ibm.com>
+	<1243386862.18971.41.camel@concordia>
+In-Reply-To: <1243386862.18971.41.camel@concordia>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +37,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 26, 2009 at 11:30 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
-> The function signature for spin_event_timeout() has changed in version V9.
-> Adjust the mpc5200 AC97 driver to use the new function.
-> v2 - switch back to udelay() for fixed timeouts.
->
-> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+Michael Ellerman wrote:
+>> +	root = of_find_node_by_path("/");
+>> +	if (root) {
+>> +		perf_level = of_get_property(root,
+>> +				"ibm,partition-performance-parameters-level",
+>> +					     NULL);
+> 
+> What if there is no such property?
 
-Acked-by: Timur Tabi <timur@freescale.com>
+Yes, that would cause this code to do some bad things.  Updated patch on its way.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+> 
+>> +		if (*perf_level >= 1) {
+>> +			seq_printf(m,
+>> +			    "physical_procs_allocated_to_virtualization=%d\n",
+>> +				   ppp_data.phys_platform_procs);
+>> +			seq_printf(m, "max_proc_capacity_available=%d\n",
+>> +				   ppp_data.max_proc_cap_avail);
+>> +			seq_printf(m, "entitled_proc_capacity_available=%d\n",
+>> +				   ppp_data.entitled_proc_cap_avail);
+>> +		}
+>> +
+>> +		of_node_put(root);
+>> +	}
+> 
+> cheers
+
+-Nathan
