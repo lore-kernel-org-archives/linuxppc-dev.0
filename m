@@ -1,18 +1,28 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 874A2DE02F
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 15:06:21 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so2019027yxb.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 22:06:20 -0700 (PDT)
-Subject: [PATCH V3] Modify mpc5200 AC97 driver to use V9 of
-	spin_event_timeout()
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, broonie@sirena.org.uk, timur@freescale.com
-From: Jon Smirl <jonsmirl@gmail.com>
-Date: Wed, 27 May 2009 01:06:19 -0400
-Message-ID: <20090527050619.26595.95343.stgit@terra>
+Return-Path: <DaveLiu@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1E8F5DDFC6
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 15:08:13 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n4R58ATu002829
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 22:08:10 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n4R588aZ011175
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 00:08:09 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: Net: ucc_geth ethernet driver optimization space
+Date: Wed, 27 May 2009 13:08:07 +0800
+Message-ID: <D7CCA83BB0796C49BC0BB53B6AB1208934920A@zch01exm21.fsl.freescale.net>
+From: "Liu Dave-R63238" <DaveLiu@freescale.com>
+To: <netdev@vger.kernel.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,93 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The function signature for spin_event_timeout() has changed in version V9.
-Adjust the mpc5200 AC97 driver to use the new function.
-v2 - switch back to udelay() for fixed timeouts.
-v3 - forgot about driver being market broken, fix typo
+Guys,
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
- sound/soc/fsl/mpc5200_psc_ac97.c |   30 ++++++++++++++----------------
- 1 files changed, 14 insertions(+), 16 deletions(-)
+The ucc_geth ethernet driver have dozens of strong sync read/write
+operation, such as in_be32/16/8, out_be32/16/8.
 
-diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_ac97.c
-index 9f2df15..794a247 100644
---- a/sound/soc/fsl/mpc5200_psc_ac97.c
-+++ b/sound/soc/fsl/mpc5200_psc_ac97.c
-@@ -31,13 +31,13 @@ static struct psc_dma *psc_dma;
- 
- static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
- {
--	int rc;
-+	int status;
- 	unsigned int val;
- 
- 	/* Wait for command send status zero = ready */
--	spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
--				MPC52xx_PSC_SR_CMDSEND), 100, 0, rc);
--	if (rc == 0) {
-+	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
-+				MPC52xx_PSC_SR_CMDSEND), 100, 0);
-+	if (status == 0) {
- 		pr_err("timeout on ac97 bus (rdy)\n");
- 		return -ENODEV;
- 	}
-@@ -45,9 +45,9 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
- 	out_be32(&psc_dma->psc_regs->ac97_cmd, (1<<31) | ((reg & 0x7f) << 24));
- 
- 	/* Wait for the answer */
--	spin_event_timeout((in_be16(&psc_dma->psc_regs->sr_csr.status) &
--				MPC52xx_PSC_SR_DATA_VAL), 100, 0, rc);
--	if (rc == 0) {
-+	status = spin_event_timeout((in_be16(&psc_dma->psc_regs->sr_csr.status) &
-+				MPC52xx_PSC_SR_DATA_VAL), 100, 0);
-+	if (status == 0) {
- 		pr_err("timeout on ac97 read (val) %x\n",
- 				in_be16(&psc_dma->psc_regs->sr_csr.status));
- 		return -ENODEV;
-@@ -66,12 +66,12 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
- static void psc_ac97_write(struct snd_ac97 *ac97,
- 				unsigned short reg, unsigned short val)
- {
--	int rc;
-+	int status;
- 
- 	/* Wait for command status zero = ready */
--	spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
--				MPC52xx_PSC_SR_CMDSEND), 100, 0, rc);
--	if (rc == 0) {
-+	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
-+				MPC52xx_PSC_SR_CMDSEND), 100, 0);
-+	if (status == 0) {
- 		pr_err("timeout on ac97 bus (write)\n");
- 		return;
- 	}
-@@ -82,24 +82,22 @@ static void psc_ac97_write(struct snd_ac97 *ac97,
- 
- static void psc_ac97_warm_reset(struct snd_ac97 *ac97)
- {
--	int rc;
- 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
- 
- 	out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_AWR);
--	spin_event_timeout(0, 3, 0, rc);
-+	udelay(3);
- 	out_be32(&regs->sicr, psc_dma->sicr);
- }
- 
- static void psc_ac97_cold_reset(struct snd_ac97 *ac97)
- {
--	int rc;
- 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
- 
- 	/* Do a cold reset */
- 	out_8(&regs->op1, MPC52xx_PSC_OP_RES);
--	spin_event_timeout(0, 10, 0, rc);
-+	udelay(10);
- 	out_8(&regs->op0, MPC52xx_PSC_OP_RES);
--	spin_event_timeout(0, 50, 0, rc);
-+	udelay(50);
- 	psc_ac97_warm_reset(ac97);
- }
- 
+all of them is sync read/write, it is very expensive for performance.
+
+For the critical patch, we can remove some unnecessary in_be(x),
+out_be(x) with normal memory operation, and keep some necessary
+memory barrier.
+
+eg: BD access in the interrupt handler and start_xmit.
+
+The BD operation only need the memory barrier between length/buffer
+and status.
+
+struct buffer descriptor {
+	u16 status;
+	u16 length;
+	u32 buffer;
+} __attribute__ ((packed));
+
+struct buffer descriptor *BD;
+
+BD->length =3D xxxx;
+BD->buffer =3D yyyy;
+wmb();
+BD->status =3D zzzz;
+
+For powerpc, eieio is enough for 60x, mbar 1 is enough for e500.
+Of couse, also need the memory clobber to avoid the compiler
+reorder between them.
+
+Thanks, Dave
