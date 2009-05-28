@@ -1,13 +1,14 @@
 Return-Path: <iws@ovro.caltech.edu>
 Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 3366ADDFC1
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 05:20:45 +1000 (EST)
-Date: Thu, 28 May 2009 12:20:42 -0700
+	by ozlabs.org (Postfix) with ESMTP id C6ECCDDFCC
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 05:26:43 +1000 (EST)
+Date: Thu, 28 May 2009 12:26:40 -0700
 From: Ira Snyder <iws@ovro.caltech.edu>
 To: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
 	Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH] fsldma: enable external start for the 83xx controller
-Message-ID: <20090528192042.GB25993@ovro.caltech.edu>
+Subject: [PATCH] fsldma: do not clear bandwidth control bits on the 83xx
+	controller
+Message-ID: <20090528192640.GC25993@ovro.caltech.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,37 +20,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 83xx controller has external start capability, but lacks external pause
-capability. Hook up the external start function pointer for the 83xx
+The 83xx controller does not support the external pause feature. The bit
+in the mode register that controls external pause on the 85xx controller
+happens to be part of the bandwidth control settings for the 83xx
 controller.
+
+This patch fixes the driver so that it only clears the external pause bit
+if the hardware is the 85xx controller. When driving the 83xx controller,
+the bit is left untouched. This follows the existing convention that mode
+registers settings are not touched unless necessary.
 
 Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
 ---
 
-Though there is no way to enable external start in the mainline driver,
-the DMA_SLAVE patch I posted last week does give the ability to enable
-external start.
+There is currently no interface to change the bandwidth control setting.
+I have changed the bandwidth control setting by requesting exclusive
+access to the DMA channel (via dma_request_channel()) then, since I know
+the channel is idle, I just add the value I need.
 
-I have tested this patch along with the DMA_SLAVE patch using a driver
-for some custom hardware that uses the external DMA control lines.
+I have tested this using the DMA_SLAVE patch I posted last week, and
+verified that the bandwidth control bits do not change on the 83xx
+controller.
 
- drivers/dma/fsldma.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+The conditional could be changed from "== 85XX" to "!= 83XX", as they
+are equivalent in the current driver. I'm not sure which is better.
+
+ drivers/dma/fsldma.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index db07113..b2fd35e 100644
+index b2fd35e..a662aac 100644
 --- a/drivers/dma/fsldma.c
 +++ b/drivers/dma/fsldma.c
-@@ -1099,9 +1099,9 @@ static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
+@@ -148,10 +148,11 @@ static void dma_start(struct fsl_dma_chan *fsl_chan)
+ 	if (fsl_chan->feature & FSL_DMA_CHAN_PAUSE_EXT) {
+ 		DMA_OUT(fsl_chan, &fsl_chan->reg_base->bcr, 0, 32);
+ 		mr_set |= FSL_DMA_MR_EMP_EN;
+-	} else
++	} else if ((fsl_chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX) {
+ 		DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+ 			DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32)
+ 				& ~FSL_DMA_MR_EMP_EN, 32);
++	}
  
- 	switch (new_fsl_chan->feature & FSL_DMA_IP_MASK) {
- 	case FSL_DMA_IP_85XX:
--		new_fsl_chan->toggle_ext_start = fsl_chan_toggle_ext_start;
- 		new_fsl_chan->toggle_ext_pause = fsl_chan_toggle_ext_pause;
- 	case FSL_DMA_IP_83XX:
-+		new_fsl_chan->toggle_ext_start = fsl_chan_toggle_ext_start;
- 		new_fsl_chan->set_src_loop_size = fsl_chan_set_src_loop_size;
- 		new_fsl_chan->set_dest_loop_size = fsl_chan_set_dest_loop_size;
- 	}
+ 	if (fsl_chan->feature & FSL_DMA_CHAN_START_EXT)
+ 		mr_set |= FSL_DMA_MR_EMS_EN;
 -- 
 1.5.4.3
