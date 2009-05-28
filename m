@@ -1,26 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C1A6EDDEDC
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 16:11:16 +1000 (EST)
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <2CCC4C06-15EC-438B-8BEA-A31690B4FB2C@kernel.crashing.org>
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
-	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
-	<1242622141.18075.37.camel@pasglop>
-	<DE108B1C-85A6-4D1F-8E4D-E1AB5495578A@kernel.crashing.org>
-	<1242683395.16901.0.camel@pasglop>
-	<13F18475-1D3E-4D9E-B10C-8BE48FBA9DF5@kernel.crashing.org>
-	<2CCC4C06-15EC-438B-8BEA-A31690B4FB2C@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 28 May 2009 16:11:03 +1000
-Message-Id: <1243491063.3171.117.camel@pasglop>
-Mime-Version: 1.0
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <daniel.ng1234@gmail.com>
+Received: from mail-px0-f176.google.com (mail-px0-f176.google.com
+	[209.85.216.176]) by ozlabs.org (Postfix) with ESMTP id CEC1ADDF7F
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 17:42:53 +1000 (EST)
+Received: by pxi6 with SMTP id 6so1481901pxi.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 00:42:52 -0700 (PDT)
+MIME-Version: 1.0
+Date: Thu, 28 May 2009 17:37:18 +1000
+Message-ID: <547eba1b0905280037j3336d0av7cc5d4069622d8f4@mail.gmail.com>
+Subject: MPC8272- Porting HDLC driver from 2.6.14 to 2.6.27- "no_irq_chip"
+	error
+From: Daniel Ng <daniel.ng1234@gmail.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,62 +21,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-05-27 at 23:42 -0500, Kumar Gala wrote:
-> Ben,
-> 
-> Any comments on this.. need a decision so we can have patches ready  
-> for .31.
+Hi,
 
-> > Clamping the DMA mask is even worse than the additional indirection  
-> > for us.  We have valid scenarios in which we'd have 512M of outbound  
-> > PCI address space and 4G of mem and thus 3.5G of inbound PCI address  
-> > space.  With the DMA mask we'd be limited to 2G and bouncing from  
-> > 2..3.5G when we don't need to.
+I'm attempting to port our Ethos HDLC driver from 2.6.14 to 2.6.27, on
+a MPC8272-based platform.
 
-Ok and agreed.
+So far, the kernel crashes when the driver tries to open (see below).
 
-> > I think our options are to change archdata as follows:
-> >
-> > Option 1 - just add a new data member to dev_archdata
-> >
-> > struct dev_archdata {
-> >        /* Optional pointer to an OF device node */
-> >        struct device_node      *of_node;
-> >
-> >        /* DMA operations on that device */
-> >        struct dma_mapping_ops  *dma_ops;
-> >        void 		        *dma_data;
-> > 	dma_addr_t		direct_dma_addr;
-> > };
+It seems that the interrupt handler fails to register, with the
+following condition in setup_irq() in manage.c:
 
-That sounds like the "simple" option, might want for now to make
-it conditional on SWIOTLB but the bloat is reasonably small I would
-expect.
+desc->chip == &no_irq_chip
 
-> > Option 2 - introduce a proper container for how we use dma_data.   
-> > This may just be moving the indirection from an indirection function  
-> > call to an indirection data reference:
+I notice that the only place where desc->chip is assigned to anything
+else besides &no_irq_chip is in __set_irq_handler() in
+kernel/irq/chip.c
 
-Right, it somewhat defeats the purpose though an indirect data reference
-tends to hit the pipeline less hard than an indirect function call...
- 
-> > Option 3 - use dma_data to keep the addr at which we need to bounce  
-> > vs not for SWIOTLB - this has potential issues w/conflicting with  
-> > dma_data being used as the dma_offset. (need to think on that a bit  
-> > more).  Additionally this has the benefit in that we need dma_data  
-> > to be a 64-bit quantity on ppc32 w/>32-bit phys addr.
+In that file, __set_irq_handler() assigns desc->chip to
+&dummy_irq_chip, but this seems to be done for a special ARM-specific
+case, according to the commenting:
 
-Well, that means that swiotlb can not be used with a !0 offset. That
--might- be an issue if the PCI is setup "backward", ie with 0..N being
-the outbound MMIO and N..4G the DMA region, remapped to 0. There are
-reasons to do it this way, it's not invalid, for example it allow easy
-access to ISA/VGA holes.
+/*
+ * Some ARM implementations install a handler for really dumb
+ * interrupt hardware without setting an irq_chip. This worked
+ * with the ARM no_irq_chip but the check in setup_irq would
+ * prevent us to setup the interrupt at all. Switch it to
+ * dummy_irq_chip for easy transition.
+ */
 
-At this stage I have no firm opinion. I'm thinking that either we try
-to limit the overhead and option 1 is probably the simplest, at the
-expense of a little bit of memory, or we think the overhead is going
-to be minimum and we may as well stick to 2 functions since that's
-going to be more flexible.
+Should I try to somehow call __set_irq_handler(), or should I be
+looking elsewhere?
+
+If I should be calling __set_irq_handler(), it seems the only relevant
+function that calls this is cpm2_pic_host_map().
+
+The only relevant functions which call cpm2_pic_host_map() are
+irq_setup_virq() or irq_alloc_hosts() with the IRQ_HOST_MAP_LEGACY
+parameter. IRQ_HOST_MAP_LEGACY seems to be irrelevant. Can someone
+tell me what a virq is?
 
 Cheers,
-Ben.
+Daniel
+
+
+
+Badness at c00224ec [verbose debug info unavailable]
+NIP: c00224ec LR: c019b254 CTR: c01aa9f8
+REGS: c1a49c70 TRAP: 0700   Not tainted  (2.6.27.19-800-OS-03050107)
+MSR: 00021032 <ME,IR,DR>  CR: 22002022  XER: 00000000
+TASK = c1bda400[306] 'pppd' THREAD: c1a48000
+GPR00: 00000001 c1a49d20 c1bda400 00000000 c0318880 c19c4d80 c1b92211 00000000
+GPR08: 00001032 c02cb240 00000000 00000000 22002022 fffffffe 01ff8000 00000000
+GPR16: 10344020 00000000 00000002 10049ac0 c194f800 ffff8914 c18cd900 c18cd90c
+GPR24: c1a49e48 00009032 c1a48000 c02b5fdc 00000002 c19c4d80 c1a48000 c1a48000
+NIP [c00224ec] local_bh_enable+0x94/0xb4
+LR [c019b254] dev_queue_xmit+0x108/0x580
+Call Trace:
+[c1a49d20] [c19c4d80] 0xc19c4d80 (unreliable)
+[c1a49d30] [c019b254] dev_queue_xmit+0x108/0x580
+[c1a49d50] [c016ac98] sppp_flush_xmit+0x20/0x44
+[c1a49d60] [c016c0b4] sppp_open+0x80/0xac
+[c1a49d80] [c016a104] ppp_open+0x70/0x98
+--- Exception: bfd26bb0 at 0x8914
+    LR = 0xc1a49e90
+[c1a49da0] [c01699e0] hdlc_open+0x3c/0x104 (unreliable)
+[c1a49dc0] [c016cdd4] ethos_wan_genhdlc_open+0xb0/0xef8
+[c1a49df0] [c019c490] dev_open+0xbc/0x120
+[c1a49e00] [c019bbc8] dev_change_flags+0x8c/0x1d0
+[c1a49e20] [c01e1678] devinet_ioctl+0x700/0x7ac
+[c1a49e90] [c01e2538] inet_ioctl+0xcc/0xf8
+[c1a49ea0] [c018b584] sock_ioctl+0x60/0x268
+[c1a49ec0] [c0084ab0] vfs_ioctl+0x3c/0xc4
+[c1a49ee0] [c0084bb8] do_vfs_ioctl+0x80/0x454
+[c1a49f10] [c0084fcc] sys_ioctl+0x40/0x88
+[c1a49f40] [c000f928] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0x480af50c
+    LR = 0x480af5e4
+Instruction dump:
+41a20008 482044e1 80010014 83e1000c 38210010 7c0803a6 4e800020 3d20c02d
+3929b240 800900dc 7c000034 5400d97e <0f000000> 2f800000 41beff90 38000001
+hdlc2: Carrier detected
+setup_irq()- desc->chip == &no_irq_chip
+request_irq()- setup_irq() FAILED
+ethos_wan_genhdlc_open(): request_irq() FAILED! ethos_wan->io_addr: 0xc5080000
