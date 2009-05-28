@@ -1,23 +1,29 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp2.netcologne.de (smtp2.netcologne.de [194.8.194.112])
-	by ozlabs.org (Postfix) with ESMTP id 5346CDDFC9
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 05:50:35 +1000 (EST)
-Received: from antares (xdsl-78-34-255-14.netcologne.de [78.34.255.14])
-	by smtp2.netcologne.de (Postfix) with ESMTP id BE5274BDB
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 21:50:32 +0200 (MEST)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id 8701CBA03E
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 21:50:32 +0200 (CEST)
-Date: Thu, 28 May 2009 21:50:24 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH] powerpc: tiny memcpy_(to|from)io optimisation
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <OF508468F5.9BFFC168-ONC12575C4.005846FD-C12575C4.00592585@transmode.se>
-	(from joakim.tjernlund@transmode.se on Thu May 28 18:13:43 2009)
-Message-Id: <1243540232.3305.0@antares>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-NLkNG6WYhCi04JC2XIF/"
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 37153DDEE0
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 06:02:25 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n4SK2IOW010357
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 13:02:20 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n4SK2Hw7001875
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 15:02:17 -0500 (CDT)
+Date: Thu, 28 May 2009 15:02:15 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Nancy Isaac <nancy.isaac@pobox.com>
+Subject: Re: 8544 external interrupt configuration problems
+Message-ID: <20090528200215.GA9793@b07421-ec1.am.freescale.net>
+References: <1bcc666d0905281205p63ee8119td5578a749bce8377@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1bcc666d0905281205p63ee8119td5578a749bce8377@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,51 +33,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---=-NLkNG6WYhCi04JC2XIF/
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, May 28, 2009 at 12:05:52PM -0700, Nancy Isaac wrote:
+> My device tree has the following entry for my fpga:
+> 
+> CpuCpld\@f0000000{
+>                         compatible = "MPC8544DS";
+>                         device_type = "CpuCpld";
+>                         reg = <f0000000 00000040>;
+>                         interrupts = <41 2 42 2 43 2>;
+>                         interrupt-parent = <&mpic>;
+> };
 
-Am 28.05.09 18:13 schrieb(en) Joakim Tjernlund:
-> hmm, these do look a bit unoptimal anyway. Any reason not to write =20
-> them something like below(written by me for uClibc long time ago). =20
-> You will have to add eieio()/sync
+Where did you get those interrupt numbers from?  External interrupt
+numbers start at zero on MPIC.
 
-No (and I wasn't aware of the PPC pre-inc vs. post-inc stuff) - I just =20
-stumbled over this while fixing mtd accesses to the MPC5200's Local Bus =20
-in 16-bit mode which doesn't allow byte accesses.  And I didn't want to =20
-go too deep into this as the real fix for me is actually somewhat =20
-different...
+Is the level/sense information correct?
 
-> /* PPC can do pre increment and load/store, but not post increment =20
-> and load/store.
->    Therefore use *++ptr instead of *ptr++. */
-[snip]
->  copy_chunks:
-> 	do {
-> 		/* make gcc to load all data, then store it */
-> 		tmp1 =3D *(unsigned long *)(tmp_from+4);
-> 		tmp_from +=3D 8;
-> 		tmp2 =3D *(unsigned long *)tmp_from;
-> 		*(unsigned long *)(tmp_to+4) =3D tmp1;
-> 		tmp_to +=3D 8;
-> 		*(unsigned long *)tmp_to =3D tmp2;
-> 	} while (--chunks);
+> My driver does the mapping to the virq:
+> 
+>  np = of_find_node_by_type(NULL, "CpuCpld");
+>     if (!np) {
+>         ret = -ENODEV;
+>     }
+>     cpldCpuDrv->MateIntIrq = irq_of_parse_and_map(np, 0);
+>     cpldCpuDrv->FtaIrq =  irq_of_parse_and_map(np, 1);
+>     cpldCpuDrv->ExtractIrq =  irq_of_parse_and_map(np, 2);
+>     cpldCpuDrv->XauiIrq =  irq_of_parse_and_map(np, 0);
+> 
+>     of_node_put(np);
 
-Is this the same for all PPC cores, i.e. do they all benefit from =20
-loading/storing 8 instead of 4 bytes?
+Looks good (other than that you should be using compatible (with a more
+specific name) rather than device_type).
 
-Best, Albrecht.
+> Does anyone know what the virq should be for these external interrupts?
 
---=-NLkNG6WYhCi04JC2XIF/
-Content-Type: application/pgp-signature
+They're dynamically assigned.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+> I've tried specifying the actual irq numbers 1,2 and 3 and that doesn't work
+> either.
 
-iD8DBQBKHusHn/9unNAn/9ERAhIDAJwMsPhFIRveLeVH2NTsUmUE48tISACggnx2
-KaX1ULtN6ADZkHNDizZN9KU=
-=Jrl/
------END PGP SIGNATURE-----
+Specifying them where?  In the device tree or as virq numbers?  Never
+hard-code virq numbers.
 
---=-NLkNG6WYhCi04JC2XIF/--
+> Is there some PCI configuration that's getting in the way?  I've tried
+> disabling the FSL_PCIE and I get the same behavior.
+
+Barring an unusual bug, PCI should have nothing to do with the interrupt
+routing of things that aren't on the PCI bus.
+
+-Scott
