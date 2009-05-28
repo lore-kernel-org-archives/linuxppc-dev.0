@@ -1,26 +1,21 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedexfe.empirix.com (empbedexfe.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 2D307DDFBF
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 04:45:13 +1000 (EST)
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-qy0-f123.google.com (mail-qy0-f123.google.com
+	[209.85.221.123]) by ozlabs.org (Postfix) with ESMTP id 291D0DDFC0
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 04:58:27 +1000 (EST)
+Received: by qyk29 with SMTP id 29so1795797qyk.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 11:58:23 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Kernel bug in 2.6.23...was: RE: How to debug a hung multi-core
-	system....
-Date: Thu, 28 May 2009 14:46:29 -0400
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90111063E85@EMPBEDEX.empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90110F53C57@EMPBEDEX.empirix.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D90110EFACB2@EMPBEDEX.empirix.com>
-	<C966FFF1-23FD-4581-A001-79F6961F8E49@kernel.crashing.org>
-	<BD261180E6D35F4D9D32F3E44FD3D90110F53A79@EMPBEDEX.empirix.com>
-	<27AB6AE2-F8BA-4F05-9597-BCE0F98C1126@kernel.crashing.org>
-	<BD261180E6D35F4D9D32F3E44FD3D90110F53C57@EMPBEDEX.empirix.com>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Morrison, Tom" <tmorrison@empirix.com>,
-	"Kumar Gala" <galak@kernel.crashing.org>
-Cc: Geary Sean-R60898 <sean.geary@freescale.com>, linuxppc-dev@ozlabs.org,
-	"Young, Andrew" <andrew.young@windriver.com>, "Brown,
-	Jeff" <jbrown@empirix.com>
+In-Reply-To: <87eiu972ff.fsf@macbook.be.48ers.dk>
+References: <20090525013606.3073.86753.stgit@terra>
+	<20090525013853.3073.78627.stgit@terra>
+	<87eiu972ff.fsf@macbook.be.48ers.dk>
+Date: Thu, 28 May 2009 14:58:22 -0400
+Message-ID: <9e4733910905281158k4144a50bt363bc2b4faf81a23@mail.gmail.com>
+Subject: Re: [PATCH V3 4/4] Fabric bindings for STAC9766 on the Efika
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,121 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar,
+On Thu, May 28, 2009 at 10:00 AM, Peter Korsgaard <jacmet@sunsite.dk> wrote=
+:
+>>>>>> "Jon" =3D=3D Jon Smirl <jonsmirl@gmail.com> writes:
+>
+> Hi,
+>
+> =A0Jon> Fabric bindings for STAC9766 AC97 codec on the Efika.
+> =A0Jon> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+> =A0Jon> ---
+> =A0Jon> =A0sound/soc/fsl/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A08 ++=
++
+> =A0Jon> =A0sound/soc/fsl/Makefile =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A01
+> =A0Jon> =A0sound/soc/fsl/efika-audio-fabric.c | =A0 95 ++++++++++++++++++=
+++++++++++++++++++
+> =A0Jon> =A03 files changed, 104 insertions(+), 0 deletions(-)
+> =A0Jon> =A0create mode 100644 sound/soc/fsl/efika-audio-fabric.c
+>
+> =A0Jon> diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+> =A0Jon> index 79579ae..f571c6e 100644
+> =A0Jon> --- a/sound/soc/fsl/Kconfig
+> =A0Jon> +++ b/sound/soc/fsl/Kconfig
+> =A0Jon> @@ -47,3 +47,11 @@ config SND_MPC52xx_SOC_PCM030
+> =A0Jon> =A0 help
+> =A0Jon> =A0 =A0 Say Y if you want to add support for sound on the Phytec =
+pcm030 baseboard.
+>
+> =A0Jon> +config SND_MPC52xx_SOC_EFIKA
+> =A0Jon> + tristate "SoC AC97 Audio support for bbplan Efika and STAC9766"
+> =A0Jon> + depends on PPC_EFIKA
+> =A0Jon> + select SND_SOC_MPC5200_AC97
+> =A0Jon> + select SND_SOC_STAC9766
+> =A0Jon> + help
+> =A0Jon> + =A0 Say Y if you want to add support for sound on the Efika.
+> =A0Jon> +
+>
+> Wouldn't it make more sense to make this default y when it has such
+> specific dependencies and is so deep down in the tree - Most efika
+> users probably want to enable this if they have enabled ALSA and
+> SND_SOC?
 
-To follow up on our postings from late last week...
-(which I was expecting a response (but never got) from you)...
+I can change it in the next round of updates. Right now I'd like to
+get some people testing it and maybe doing some patches to enhance it.
 
------
+For example I know he code has a problem where about 5% of the time
+the codec doesn't reset right on boot. Someone needs to put an
+oscilloscope on the codec chip and tell me why it is failing.
 
-We (well, mostly a very bright engineer who was very persistent)=20
-have(has) found the origin of how the kernel TLB got corrupted.
-
-We tracked down the problem to a programming bug in the DataStorage
-exception handler for our kernel (2.6.23). We have looked at newer
-kernels, and have noticed that this piece of processing has changed,=20
-but let me explain to you what happened (and the conditions that=20
-caused the problem on our MPC8572E (running SMP)...
-
-If you follow the logic of in this version of the kernel, it reads=20
-the SPRN_DEAR into register R10, and then does some operations=20
-(including a tlbsx operation (which uses R10)), and then attempts
-to update the associated PTE entry.
-
-Well, if you have REALLY bad luck, sometime between the time you=20
-took this exception and try to update the PTE for this page, the=20
-other core has decided to invalidate this page's PTE. The good=20
-part is the kernel recognizes this unlucky case.
-
-Unfortunately, in this 'bad luck' case, a kernel bug was=20
-Introduced. The kernel uses R10 for some processing (puts
-the physical address associated with this virtual page) and=20
-then branches up 'above' the tlbsx operation to try again=20
-
-...without restoring R10 to the SPRN_DEAR required by the tlbsx
-operation...
-
-This means, that even though the kernel recognized this exceptional
-problem, it NEVER did the right thing, and instead, the kernel would=20
-(attempt) to modify the unlucky TLB virtual address that corresponds=20
-to the physical address of the original DataStorage exception.
-
-The only way we caught this is that we also had a second piece of=20
-'bad luck' by having that physical address map to the virtual address
-of the kernel (0xC0000000), and thus, when it loops back to try again,
-it gets the kernel page(s) from the tlbsx operation, and modifies=20
-permissions on the kernel pages and thus causing an InstructionStore=20
-Exception (forever).
-
-We fixed this in our kernel by just restoring R10 to SPRN_DEAR value
-just before it loops back, something like this:
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D
-              ....
-	mtspr	SPRN_MAS1, r13
-	tlbwe
-
-	/* because we did NOT find in PTE */
-	/* r10 was changed - so we need   */
-	/* to re-load it here to work     */
-	mfspr	r10, SPRN_DEAR   	  /* restore the faulting
-address */
-	b	5b		/* Try again */
-             ....
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D
-
-That's the short and long of it...and 4 weeks of very stressful
-problems...
-
-I am wondering why nobody has found this problem before - are we the
-first to be this unlucky? I am not sure that is a good thing!
-
-Comments? Suggestions? What else should I be doing with this
-information?
-
-Tom Morrison
-Principal Software Engineer
-EMPIRIX=20
-20 Crosby Drive - Bedford, MA  01730
-p: 781.266.3567 f: 781.266.3670=20
-email: tmorrison@empirix.com=20
-www.empirix.com
+>
+> --
+> Bye, Peter Korsgaard
+>
 
 
->> -----Original Message-----
->> From: Morrison, Tom
->> Sent: Thursday, May 21, 2009 11:24 AM
->> To: Morrison, Tom; Kumar Gala
->> Cc: linuxppc-dev@ozlabs.org; Young, Andrew; Brown, Jeff; Geary Sean-
->> R60898
->> Subject: RE: How to debug a hung multi-core system....
->>=20
->> Just had a little conference with several co-workers...to go over
-results
->>=20
->> We think that LT0 (the one that maps the kernel) has been corrupted:
->>=20
->>        Entry  EPN          RPN    TID  TMASK   WIMGE  TSIZ U0:3  X0:1
->>
----------------------------------------------------------------
->>        LT0  C0000000     00000000 00     0FF     04     9     0     0
->>=20
->>        PID  TS  PROT SHEN   UR   UW   UX   SR   SW   SX  TIDZ VAL
->>
----------------------------------------------------------------
->>        0    0    P    P    E    E    D    E    E    D    D    V
->>=20
->> Is absolutely wrong - this is TLB for the kernel - and as you can see
->> ...it does NOT have execution privileges (and in fact the user space
->> HAS executive privileges for this area (complete opposite of what it
->> should be)...
->>=20
->> This is why it is stuck AT that instruction (can't even single step
->> from that location)..
->>=20
->> (one of) The first problem(s) is how can/when did this TLB get
-corrupted!
->>=20
->> Tom
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
