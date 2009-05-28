@@ -1,26 +1,26 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 47AD9DDEF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 15:09:26 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so2358313yxb.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 May 2009 22:09:25 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090528010000.31423083@lappy.seanm.ca>
-References: <9481.63517.qm@web28305.mail.ukl.yahoo.com>
-	<1243160487.22770.59.camel@pasglop>
-	<1243210914.24376.11.camel@pasglop> <200905250243.15436.arnd@arndb.de>
-	<1243226023.24376.23.camel@pasglop>
-	<20090527233451.2d02343d@lappy.seanm.ca>
-	<fa686aa40905272042yd7b4698gbd1133b4c61c9b87@mail.gmail.com>
-	<20090528010000.31423083@lappy.seanm.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 27 May 2009 23:09:05 -0600
-Message-ID: <fa686aa40905272209p61c4a4b9ofa29c0de15d9efa1@mail.gmail.com>
-Subject: Re: powerpc: DMA coherent allocations broken for
-	CONFIG_NOT_COHERENT_CACHE
-To: Sean MacLennan <smaclennan@pikatech.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C1A6EDDEDC
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 16:11:16 +1000 (EST)
+Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <2CCC4C06-15EC-438B-8BEA-A31690B4FB2C@kernel.crashing.org>
+References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
+	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
+	<1242622141.18075.37.camel@pasglop>
+	<DE108B1C-85A6-4D1F-8E4D-E1AB5495578A@kernel.crashing.org>
+	<1242683395.16901.0.camel@pasglop>
+	<13F18475-1D3E-4D9E-B10C-8BE48FBA9DF5@kernel.crashing.org>
+	<2CCC4C06-15EC-438B-8BEA-A31690B4FB2C@kernel.crashing.org>
+Content-Type: text/plain
+Date: Thu, 28 May 2009 16:11:03 +1000
+Message-Id: <1243491063.3171.117.camel@pasglop>
+Mime-Version: 1.0
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,43 +30,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 27, 2009 at 11:00 PM, Sean MacLennan
-<smaclennan@pikatech.com> wrote:
-> On Wed, 27 May 2009 21:42:18 -0600
-> Grant Likely <grant.likely@secretlab.ca> wrote:
->
->> Make your driver use a platform device or an of_platform device. =A0It's
->> not at all hard.
->
-> Here is my first shot.... any other fields that I need to fill in so I
-> don't have any gotchas?
->
-> /* This must exist */
-> static void warp_device_release(struct device *dev) {}
+On Wed, 2009-05-27 at 23:42 -0500, Kumar Gala wrote:
+> Ben,
+> 
+> Any comments on this.. need a decision so we can have patches ready  
+> for .31.
 
-It will be easier if you do it as an of_device.  Then you just need to
-add a node to the device tree and it will get registered correctly
-without any platform specific registration code.  That gives your
-driver something to bind against.
+> > Clamping the DMA mask is even worse than the additional indirection  
+> > for us.  We have valid scenarios in which we'd have 512M of outbound  
+> > PCI address space and 4G of mem and thus 3.5G of inbound PCI address  
+> > space.  With the DMA mask we'd be limited to 2G and bouncing from  
+> > 2..3.5G when we don't need to.
 
-However, if you do want to do it this way...
+Ok and agreed.
 
-> static struct platform_device warp_device =3D {
-> =A0 =A0 =A0 =A0.name =3D "warp-device",
-> =A0 =A0 =A0 =A0.id =3D 0,
-> =A0 =A0 =A0 =A0.num_resources =3D 0,
-> =A0 =A0 =A0 =A0.dev =3D {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.coherent_dma_mask =3D ~0ULL,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.release =3D warp_device_release,
-> =A0 =A0 =A0 =A0},
-> };
+> > I think our options are to change archdata as follows:
+> >
+> > Option 1 - just add a new data member to dev_archdata
+> >
+> > struct dev_archdata {
+> >        /* Optional pointer to an OF device node */
+> >        struct device_node      *of_node;
+> >
+> >        /* DMA operations on that device */
+> >        struct dma_mapping_ops  *dma_ops;
+> >        void 		        *dma_data;
+> > 	dma_addr_t		direct_dma_addr;
+> > };
 
-No need for all this.  use platform_device_register_simple() instead.
-Again, that gives your driver something to bind again, this time on
-the platform bus (instead of of_platform bus).
+That sounds like the "simple" option, might want for now to make
+it conditional on SWIOTLB but the bloat is reasonably small I would
+expect.
 
-g.
+> > Option 2 - introduce a proper container for how we use dma_data.   
+> > This may just be moving the indirection from an indirection function  
+> > call to an indirection data reference:
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Right, it somewhat defeats the purpose though an indirect data reference
+tends to hit the pipeline less hard than an indirect function call...
+ 
+> > Option 3 - use dma_data to keep the addr at which we need to bounce  
+> > vs not for SWIOTLB - this has potential issues w/conflicting with  
+> > dma_data being used as the dma_offset. (need to think on that a bit  
+> > more).  Additionally this has the benefit in that we need dma_data  
+> > to be a 64-bit quantity on ppc32 w/>32-bit phys addr.
+
+Well, that means that swiotlb can not be used with a !0 offset. That
+-might- be an issue if the PCI is setup "backward", ie with 0..N being
+the outbound MMIO and N..4G the DMA region, remapped to 0. There are
+reasons to do it this way, it's not invalid, for example it allow easy
+access to ISA/VGA holes.
+
+At this stage I have no firm opinion. I'm thinking that either we try
+to limit the overhead and option 1 is probably the simplest, at the
+expense of a little bit of memory, or we think the overhead is going
+to be minimum and we may as well stick to 2 functions since that's
+going to be more flexible.
+
+Cheers,
+Ben.
