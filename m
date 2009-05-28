@@ -1,22 +1,19 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mail-ew0-f167.google.com (mail-ew0-f167.google.com
-	[209.85.219.167]) by ozlabs.org (Postfix) with ESMTP id 4866EDDFD5
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 00:00:29 +1000 (EST)
-Received: by ewy11 with SMTP id 11so5371876ewy.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 07:00:27 -0700 (PDT)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH V3 4/4] Fabric bindings for STAC9766 on the Efika
-References: <20090525013606.3073.86753.stgit@terra>
-	<20090525013853.3073.78627.stgit@terra>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Thu, 28 May 2009 16:00:20 +0200
-In-Reply-To: <20090525013853.3073.78627.stgit@terra> (Jon Smirl's message of
-	"Sun\, 24 May 2009 21\:38\:53 -0400")
-Message-ID: <87eiu972ff.fsf@macbook.be.48ers.dk>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E8B01DDEFA
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 02:13:50 +1000 (EST)
+In-Reply-To: <1243454441.3489.1@antares>
+References: <1243454441.3489.1@antares>
+Subject: Re: [PATCH] powerpc: tiny memcpy_(to|from)io optimisation
+To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Message-ID: <OF508468F5.9BFFC168-ONC12575C4.005846FD-C12575C4.00592585@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 28 May 2009 18:13:43 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
+Content-type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +23,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Jon" == Jon Smirl <jonsmirl@gmail.com> writes:
 
-Hi,
+>
+> This trivial patch changes memcpy_(to|from)io as to transfer as many
+> 32-bit words as possible in 32-bit accesses (in the current solution,=
 
- Jon> Fabric bindings for STAC9766 AC97 codec on the Efika.
- Jon> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
- Jon> ---
- Jon>  sound/soc/fsl/Kconfig              |    8 +++
- Jon>  sound/soc/fsl/Makefile             |    1 
- Jon>  sound/soc/fsl/efika-audio-fabric.c |   95 ++++++++++++++++++++++++++++++++++++
- Jon>  3 files changed, 104 insertions(+), 0 deletions(-)
- Jon>  create mode 100644 sound/soc/fsl/efika-audio-fabric.c
+> the last 32-bit word was transferred as 4 byte accesses).
+>
+> Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
+> ---
+>
+> diff -urpN -X linux-2.6.29.1.orig/Documentation/dontdiff
+> linux-2.6.29.1.orig/arch/powerpc/kernel/io.c
+> linux-2.6.29.1/arch/powerpc/kernel/io.c
+> --- linux-2.6.29.1.orig/arch/powerpc/kernel/io.c   2009-04-02
+> 22:55:27.000000000 +0200
+> +++ linux-2.6.29.1/arch/powerpc/kernel/io.c   2009-05-27
+> 11:36:09.000000000 +0200
+> @@ -161,7 +161,7 @@ void _memcpy_fromio(void *dest, const vo
+>         dest++;
+>         n--;
+>      }
+> -   while(n > 4) {
+> +   while(n >=3D 4) {
+>         *((u32 *)dest) =3D *((volatile u32 *)vsrc);
+>         eieio();
+>         vsrc +=3D 4;
+> @@ -190,7 +190,7 @@ void _memcpy_toio(volatile void __iomem
+>         vdest++;
+>         n--;
+>      }
+> -   while(n > 4) {
+> +   while(n >=3D 4) {
+>         *((volatile u32 *)vdest) =3D *((volatile u32 *)src);
+>         src +=3D 4;
+>         vdest +=3D 4;
 
- Jon> diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
- Jon> index 79579ae..f571c6e 100644
- Jon> --- a/sound/soc/fsl/Kconfig
- Jon> +++ b/sound/soc/fsl/Kconfig
- Jon> @@ -47,3 +47,11 @@ config SND_MPC52xx_SOC_PCM030
- Jon>  	help
- Jon>  	  Say Y if you want to add support for sound on the Phytec pcm030 baseboard.
- 
- Jon> +config SND_MPC52xx_SOC_EFIKA
- Jon> +	tristate "SoC AC97 Audio support for bbplan Efika and STAC9766"
- Jon> +	depends on PPC_EFIKA
- Jon> +	select SND_SOC_MPC5200_AC97
- Jon> +	select SND_SOC_STAC9766
- Jon> +	help
- Jon> +	  Say Y if you want to add support for sound on the Efika.
- Jon> +
+hmm, these do look a bit unoptimal anyway. Any reason not to write
+them something like below(written by me for uClibc long time ago). You =
+will
+have to add eieio()/sync
 
-Wouldn't it make more sense to make this default y when it has such
-specific dependencies and is so deep down in the tree - Most efika
-users probably want to enable this if they have enabled ALSA and
-SND_SOC?
+void *memcpy(void *to, const void *from, size_t n)
+/* PPC can do pre increment and load/store, but not post increment and =
+load/store.
+   Therefore use *++ptr instead of *ptr++. */
+{
+	unsigned long rem, chunks, tmp1, tmp2;
+	unsigned char *tmp_to;
+	unsigned char *tmp_from =3D (unsigned char *)from;
 
--- 
-Bye, Peter Korsgaard
+	chunks =3D n / 8;
+	tmp_from -=3D 4;
+	tmp_to =3D to - 4;
+	if (!chunks)
+		goto lessthan8;
+	rem =3D (unsigned long )tmp_to % 4;
+	if (rem)
+		goto align;
+ copy_chunks:
+	do {
+		/* make gcc to load all data, then store it */
+		tmp1 =3D *(unsigned long *)(tmp_from+4);
+		tmp_from +=3D 8;
+		tmp2 =3D *(unsigned long *)tmp_from;
+		*(unsigned long *)(tmp_to+4) =3D tmp1;
+		tmp_to +=3D 8;
+		*(unsigned long *)tmp_to =3D tmp2;
+	} while (--chunks);
+ lessthan8:
+	n =3D n % 8;
+	if (n >=3D 4) {
+		*(unsigned long *)(tmp_to+4) =3D *(unsigned long *)(tmp_from+4);
+		tmp_from +=3D 4;
+		tmp_to +=3D 4;
+		n =3D n-4;
+	}
+	if (!n ) return to;
+	tmp_from +=3D 3;
+	tmp_to +=3D 3;
+	do {
+		*++tmp_to =3D *++tmp_from;
+	} while (--n);
+
+	return to;
+ align:
+	rem =3D 4 - rem;
+	n =3D n - rem;
+	do {
+		*(tmp_to+4) =3D *(tmp_from+4);
+		++tmp_from;
+		++tmp_to;
+	} while (--rem);
+	chunks =3D n / 8;
+	if (chunks)
+		goto copy_chunks;
+	goto lessthan8;
+}=
