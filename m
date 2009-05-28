@@ -1,29 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 37153DDEE0
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 06:02:25 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n4SK2IOW010357
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 13:02:20 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n4SK2Hw7001875
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 15:02:17 -0500 (CDT)
-Date: Thu, 28 May 2009 15:02:15 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Nancy Isaac <nancy.isaac@pobox.com>
-Subject: Re: 8544 external interrupt configuration problems
-Message-ID: <20090528200215.GA9793@b07421-ec1.am.freescale.net>
-References: <1bcc666d0905281205p63ee8119td5578a749bce8377@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1bcc666d0905281205p63ee8119td5578a749bce8377@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <esbenhaabendal@gmail.com>
+Received: from mail-qy0-f123.google.com (mail-qy0-f123.google.com
+	[209.85.221.123]) by ozlabs.org (Postfix) with ESMTP id 2A44EDDE1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 06:10:57 +1000 (EST)
+Received: by qyk29 with SMTP id 29so1892046qyk.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 13:10:56 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090528171726.GE3112@pengutronix.de>
+References: <4A124202.4010201@doredevelopment.dk>
+	<d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
+	<20090526213351.GG23114@fluff.org.uk>
+	<20090528171726.GE3112@pengutronix.de>
+Date: Thu, 28 May 2009 22:10:56 +0200
+Message-ID: <d2b9ea600905281310p16f47ed0i454e25bf256d3010@mail.gmail.com>
+Subject: Re: [PATCH v2] i2c-mpc: generate START condition after STOP caused by
+	read i2c_msg
+From: Esben Haabendal <esbenhaabendal@gmail.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Esben Haabendal <eha@doredevelopment.dk>,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,52 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 28, 2009 at 12:05:52PM -0700, Nancy Isaac wrote:
-> My device tree has the following entry for my fpga:
-> 
-> CpuCpld\@f0000000{
->                         compatible = "MPC8544DS";
->                         device_type = "CpuCpld";
->                         reg = <f0000000 00000040>;
->                         interrupts = <41 2 42 2 43 2>;
->                         interrupt-parent = <&mpic>;
-> };
+On Thu, May 28, 2009 at 7:17 PM, Wolfram Sang <w.sang@pengutronix.de> wrote:
+>> > Any blockers to get this accepted?
+>>
+>> It would be nice to get an ack from someone who can actually test
+>> the driver before getting this merged.
+>
+> I wanted to test it, but it does not apply due to line breaks (check
+> @@-line). Also, I don't really have the time to dig into the topic, so I
+> would only test it and give a tested-by-tag if it doesn't break anything
+> here. I think Joakim would be a good candidate for an acked-by .
 
-Where did you get those interrupt numbers from?  External interrupt
-numbers start at zero on MPIC.
+I've checked both my copy in my "Sent" folder and the copy received
+from the list,
+and I cannot see any "line break" breakage of the patch.
 
-Is the level/sense information correct?
+It must be your mail client that is messing with it, so I cannot really do it
+much better in that way.
 
-> My driver does the mapping to the virq:
-> 
->  np = of_find_node_by_type(NULL, "CpuCpld");
->     if (!np) {
->         ret = -ENODEV;
->     }
->     cpldCpuDrv->MateIntIrq = irq_of_parse_and_map(np, 0);
->     cpldCpuDrv->FtaIrq =  irq_of_parse_and_map(np, 1);
->     cpldCpuDrv->ExtractIrq =  irq_of_parse_and_map(np, 2);
->     cpldCpuDrv->XauiIrq =  irq_of_parse_and_map(np, 0);
-> 
->     of_node_put(np);
+If necessary, I can push a branch to a public repo you can pull from.
 
-Looks good (other than that you should be using compatible (with a more
-specific name) rather than device_type).
-
-> Does anyone know what the virq should be for these external interrupts?
-
-They're dynamically assigned.
-
-> I've tried specifying the actual irq numbers 1,2 and 3 and that doesn't work
-> either.
-
-Specifying them where?  In the device tree or as virq numbers?  Never
-hard-code virq numbers.
-
-> Is there some PCI configuration that's getting in the way?  I've tried
-> disabling the FSL_PCIE and I get the same behavior.
-
-Barring an unusual bug, PCI should have nothing to do with the interrupt
-routing of things that aren't on the PCI bus.
-
--Scott
+/Esben
