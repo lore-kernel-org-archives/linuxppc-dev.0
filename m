@@ -1,16 +1,22 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id C6ECCDDFCC
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 05:26:43 +1000 (EST)
-Date: Thu, 28 May 2009 12:26:40 -0700
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
-	Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH] fsldma: do not clear bandwidth control bits on the 83xx
-	controller
-Message-ID: <20090528192640.GC25993@ovro.caltech.edu>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 90E83DDE21
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 05:31:42 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so2557354ywt.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 12:31:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
+References: <4A124202.4010201@doredevelopment.dk>
+	<d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 28 May 2009 13:31:20 -0600
+Message-ID: <fa686aa40905281231o26c74a13v250bcedbd066e77b@mail.gmail.com>
+Subject: Re: [PATCH v2] i2c-mpc: generate START condition after STOP caused by
+	read i2c_msg
+To: Esben Haabendal <esbenhaabendal@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
+	Esben Haabendal <eha@doredevelopment.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,50 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 83xx controller does not support the external pause feature. The bit
-in the mode register that controls external pause on the 85xx controller
-happens to be part of the bandwidth control settings for the 83xx
-controller.
+On Tue, May 26, 2009 at 5:30 AM, Esben Haabendal
+<esbenhaabendal@gmail.com> wrote:
+> On Tue, May 19, 2009 at 7:22 AM, Esben Haabendal <eha@doredevelopment.dk>=
+ wrote:
+>> This fixes MAL (arbitration lost) bug caused by illegal use of
+>> RSTA (repeated START) after STOP condition generated after last byte
+>> of reads. With this patch, it is possible to do an i2c_transfer() with
+>> additional i2c_msg's following the I2C_M_RD messages.
+>>
+>> It still needs to be resolved if it is possible to fix this issue
+>> by removing the STOP condition after reads in a robust way.
+>>
+>> Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
+>> ---
+>> =A0drivers/i2c/busses/i2c-mpc.c | =A0 =A09 +++++++--
+>> =A01 files changed, 7 insertions(+), 2 deletions(-)
+>
+> Any blockers to get this accepted?
 
-This patch fixes the driver so that it only clears the external pause bit
-if the hardware is the 85xx controller. When driving the 83xx controller,
-the bit is left untouched. This follows the existing convention that mode
-registers settings are not touched unless necessary.
+It helps if you cc: developers/maintainers of the device.  ie. Kumar
+for mpc8xxx, me for 52xx.
 
-Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
----
+This is the first time I noticed your posting.  It will take me a few
+days before I get a chance to review it.
 
-There is currently no interface to change the bandwidth control setting.
-I have changed the bandwidth control setting by requesting exclusive
-access to the DMA channel (via dma_request_channel()) then, since I know
-the channel is idle, I just add the value I need.
+g.
 
-I have tested this using the DMA_SLAVE patch I posted last week, and
-verified that the bandwidth control bits do not change on the 83xx
-controller.
-
-The conditional could be changed from "== 85XX" to "!= 83XX", as they
-are equivalent in the current driver. I'm not sure which is better.
-
- drivers/dma/fsldma.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index b2fd35e..a662aac 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -148,10 +148,11 @@ static void dma_start(struct fsl_dma_chan *fsl_chan)
- 	if (fsl_chan->feature & FSL_DMA_CHAN_PAUSE_EXT) {
- 		DMA_OUT(fsl_chan, &fsl_chan->reg_base->bcr, 0, 32);
- 		mr_set |= FSL_DMA_MR_EMP_EN;
--	} else
-+	} else if ((fsl_chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX) {
- 		DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
- 			DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32)
- 				& ~FSL_DMA_MR_EMP_EN, 32);
-+	}
- 
- 	if (fsl_chan->feature & FSL_DMA_CHAN_START_EXT)
- 		mr_set |= FSL_DMA_MR_EMS_EN;
--- 
-1.5.4.3
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
