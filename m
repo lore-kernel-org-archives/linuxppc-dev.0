@@ -1,22 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 90E83DDE21
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 05:31:42 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so2557354ywt.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 12:31:40 -0700 (PDT)
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp2.netcologne.de (smtp2.netcologne.de [194.8.194.112])
+	by ozlabs.org (Postfix) with ESMTP id 5346CDDFC9
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 05:50:35 +1000 (EST)
+Received: from antares (xdsl-78-34-255-14.netcologne.de [78.34.255.14])
+	by smtp2.netcologne.de (Postfix) with ESMTP id BE5274BDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 21:50:32 +0200 (MEST)
+Received: from antares (localhost [127.0.0.1])
+	by antares (Postfix) with ESMTPS id 8701CBA03E
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 21:50:32 +0200 (CEST)
+Date: Thu, 28 May 2009 21:50:24 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: [PATCH] powerpc: tiny memcpy_(to|from)io optimisation
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <OF508468F5.9BFFC168-ONC12575C4.005846FD-C12575C4.00592585@transmode.se>
+	(from joakim.tjernlund@transmode.se on Thu May 28 18:13:43 2009)
+Message-Id: <1243540232.3305.0@antares>
 MIME-Version: 1.0
-In-Reply-To: <d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
-References: <4A124202.4010201@doredevelopment.dk>
-	<d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 28 May 2009 13:31:20 -0600
-Message-ID: <fa686aa40905281231o26c74a13v250bcedbd066e77b@mail.gmail.com>
-Subject: Re: [PATCH v2] i2c-mpc: generate START condition after STOP caused by
-	read i2c_msg
-To: Esben Haabendal <esbenhaabendal@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
-	Esben Haabendal <eha@doredevelopment.dk>
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-NLkNG6WYhCi04JC2XIF/"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 26, 2009 at 5:30 AM, Esben Haabendal
-<esbenhaabendal@gmail.com> wrote:
-> On Tue, May 19, 2009 at 7:22 AM, Esben Haabendal <eha@doredevelopment.dk>=
- wrote:
->> This fixes MAL (arbitration lost) bug caused by illegal use of
->> RSTA (repeated START) after STOP condition generated after last byte
->> of reads. With this patch, it is possible to do an i2c_transfer() with
->> additional i2c_msg's following the I2C_M_RD messages.
->>
->> It still needs to be resolved if it is possible to fix this issue
->> by removing the STOP condition after reads in a robust way.
->>
->> Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
->> ---
->> =A0drivers/i2c/busses/i2c-mpc.c | =A0 =A09 +++++++--
->> =A01 files changed, 7 insertions(+), 2 deletions(-)
->
-> Any blockers to get this accepted?
+--=-NLkNG6WYhCi04JC2XIF/
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It helps if you cc: developers/maintainers of the device.  ie. Kumar
-for mpc8xxx, me for 52xx.
+Am 28.05.09 18:13 schrieb(en) Joakim Tjernlund:
+> hmm, these do look a bit unoptimal anyway. Any reason not to write =20
+> them something like below(written by me for uClibc long time ago). =20
+> You will have to add eieio()/sync
 
-This is the first time I noticed your posting.  It will take me a few
-days before I get a chance to review it.
+No (and I wasn't aware of the PPC pre-inc vs. post-inc stuff) - I just =20
+stumbled over this while fixing mtd accesses to the MPC5200's Local Bus =20
+in 16-bit mode which doesn't allow byte accesses.  And I didn't want to =20
+go too deep into this as the real fix for me is actually somewhat =20
+different...
 
-g.
+> /* PPC can do pre increment and load/store, but not post increment =20
+> and load/store.
+>    Therefore use *++ptr instead of *ptr++. */
+[snip]
+>  copy_chunks:
+> 	do {
+> 		/* make gcc to load all data, then store it */
+> 		tmp1 =3D *(unsigned long *)(tmp_from+4);
+> 		tmp_from +=3D 8;
+> 		tmp2 =3D *(unsigned long *)tmp_from;
+> 		*(unsigned long *)(tmp_to+4) =3D tmp1;
+> 		tmp_to +=3D 8;
+> 		*(unsigned long *)tmp_to =3D tmp2;
+> 	} while (--chunks);
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Is this the same for all PPC cores, i.e. do they all benefit from =20
+loading/storing 8 instead of 4 bytes?
+
+Best, Albrecht.
+
+--=-NLkNG6WYhCi04JC2XIF/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQBKHusHn/9unNAn/9ERAhIDAJwMsPhFIRveLeVH2NTsUmUE48tISACggnx2
+KaX1ULtN6ADZkHNDizZN9KU=
+=Jrl/
+-----END PGP SIGNATURE-----
+
+--=-NLkNG6WYhCi04JC2XIF/--
