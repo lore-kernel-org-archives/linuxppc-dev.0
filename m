@@ -1,18 +1,35 @@
-Return-Path: <xcarandiru@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 7DF91DDFA3
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 12:57:57 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so2680260ywt.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2009 19:57:56 -0700 (PDT)
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 29C1BDDFB0
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 13:47:20 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp08.au.ibm.com (8.13.1/8.13.1) with ESMTP id n4T3lGN2012511
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 13:47:16 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n4T3lGHo589958
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 13:47:16 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n4T3lFoZ015396
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 13:47:16 +1000
+Date: Fri, 29 May 2009 13:20:48 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [Patch 1/6] Prepare the PowerPC platform for HW Breakpoint
+	infrastructure
+Message-ID: <20090529032048.GB8621@yookeroo.seuss>
+References: <20090525004730.944465878@prasadkr_t60p.in.ibm.com>
+	<20090525011423.GB11078@in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <d970ff420905281057kefbf339y29257154c142186a@mail.gmail.com>
-References: <d970ff420905281057kefbf339y29257154c142186a@mail.gmail.com>
-Date: Thu, 28 May 2009 23:57:55 -0300
-Message-ID: <d970ff420905281957p69fba993ue7426f8413ec958f@mail.gmail.com>
-Subject: Fwd: serial8250: too much work
-From: Alemao <xcarandiru@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090525011423.GB11078@in.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev@ozlabs.org, Alan Stern <stern@rowland.harvard.edu>,
+	paulus@samba.org, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,61 +39,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Im facing some problems with serial, getting flooded with this
-message:
+On Mon, May 25, 2009 at 06:44:23AM +0530, K.Prasad wrote:
+> Prepare the PowerPC code for HW Breakpoint infrastructure patches by including
+> relevant constant definitions and function declarations.
+> 
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/hw_breakpoint.h |   57 +++++++++++++++++++++++++++++++
+>  arch/powerpc/include/asm/processor.h     |    1 
+>  arch/powerpc/include/asm/reg.h           |    3 +
+>  3 files changed, 61 insertions(+)
+> 
+> Index: linux-2.6-tip.hbkpt/arch/powerpc/include/asm/hw_breakpoint.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6-tip.hbkpt/arch/powerpc/include/asm/hw_breakpoint.h
+> @@ -0,0 +1,57 @@
+> +#ifndef	_PPC64_HW_BREAKPOINT_H
+> +#define	_PPC64_HW_BREAKPOINT_H
+> +
+> +#ifdef	__KERNEL__
+> +#define	__ARCH_HW_BREAKPOINT_H
+> +#ifdef CONFIG_PPC64
+> +
+> +struct arch_hw_breakpoint {
+> +	char		*name; /* Contains name of the symbol to set bkpt */
+> +	unsigned long	address;
+> +	u8		type;
 
----
-serial8250: too much work for irq16
----
+You might as well make this an int, it will get padded out to 4 bytes
+long anyway.
 
-Something I notice, in my .dts I have the following lines:
+> +};
+> +
+> +#include <linux/kdebug.h>
+> +#include <asm/reg.h>
+> +#include <asm-generic/hw_breakpoint.h>
+> +
+> +#define HW_BREAKPOINT_READ DABR_DATA_READ
+> +#define HW_BREAKPOINT_WRITE DABR_DATA_WRITE
+> +#define HW_BREAKPOINT_RW (DABR_DATA_READ | DABR_DATA_WRITE)
+> +
+> +#define HW_BREAKPOINT_ALIGN 0x7
+> +#define HW_BREAKPOINT_LEN INSTRUCTION_LEN
+> +
+> +extern struct hw_breakpoint *hbp_kernel[HBP_NUM];
+> +DECLARE_PER_CPU(struct hw_breakpoint*, this_hbp_kernel[HBP_NUM]);
+> +extern unsigned int hbp_user_refcount[HBP_NUM];
+> +
+> +extern void arch_install_thread_hw_breakpoint(struct task_struct *tsk);
+> +extern void arch_uninstall_thread_hw_breakpoint(void);
+> +extern int arch_validate_hwbkpt_settings(struct hw_breakpoint *bp,
+> +						struct task_struct *tsk);
+> +extern void arch_update_user_hw_breakpoint(int pos, struct task_struct *tsk);
+> +extern void arch_flush_thread_hw_breakpoint(struct task_struct *tsk);
+> +extern void arch_update_kernel_hw_breakpoint(void *);
+> +extern int hw_breakpoint_exceptions_notify(struct notifier_block *unused,
+> +				     unsigned long val, void *data);
+> +
+> +extern void flush_thread_hw_breakpoint(struct task_struct *tsk);
+> +extern int copy_thread_hw_breakpoint(struct task_struct *tsk,
+> +		struct task_struct *child, unsigned long clone_flags);
+> +extern void load_debug_registers(void );
 
-serial0: serial@4500, interrupts =3D <9 =A00x8>
-serial1: serial@4600, interrupts =3D <10 0x8>
-spi: =A0 =A0   spi@7000, =A0 =A0  interrupts =3D <16 0x8>
+It looks as though a lot of these arch hooks ought to have prototypes
+in the generic part of the infrastructure.
 
-But when kernel starts:
-
----
-Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
-serial8250.0: ttyS0 at MMIO 0xe0004500 (irq =3D 16) is a 16550A
----
-
-Why IRQ 16? Shouldn't it be IRQ 9?
-
-I traced functions calls in 8250.c driver:
-
----
-serial8250_interrup() -> serial8250_handle_port() -> transmit_chars()
----
-
-"too much work" is for transmiting, but there's nothing to transmit.
-
-In my MPC8343 board I have only serial0 connected to a MAX3232, serial1
-is floating. Maybe some electromagnetic interference in the bus?
-
-I found this comments in linux/drivers/serial/8250.h, and tried to use
-same defines that they used, but no success:
-
-/*
-=A0* Digital did something really horribly wrong with the OUT1 and OUT2
-=A0* lines on at least some ALPHA's. =A0The failure mode is that if either
-=A0* is cleared, the machine locks up with endless interrupts.
-=A0*/
-
-/*
-=A0* WindRiver did something similarly broken on their SBC8560 board. The
-=A0* UART tristates its IRQ output while OUT2 is clear, but they pulled
-=A0* the interrupt line _up_ instead of down, so if we register the IRQ
-=A0* while the UART is in that state, we die in an IRQ storm.
-=A0*/
-
-
-I also tried removing serial1 and spi from .dts, but didn't work.
-
-Any sugestions?
-
-Cheers,
-
---
-Alemao
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
