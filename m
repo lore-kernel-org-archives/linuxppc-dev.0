@@ -1,23 +1,35 @@
-Return-Path: <jeremy@goop.org>
-Received: from claw.goop.org (claw.goop.org [74.207.240.146])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 5C11DDDDFA
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 May 2009 07:09:25 +1000 (EST)
-Message-ID: <4A204EFC.501@goop.org>
-Date: Fri, 29 May 2009 14:09:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9CB07DDDF8
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 May 2009 08:01:40 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e37.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n4TM10x9022159
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 16:01:00 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n4TM1cAb189854
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 16:01:38 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n4TM1b6H003782
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 16:01:38 -0600
+Message-ID: <4A205B40.30306@linux.vnet.ibm.com>
+Date: Fri, 29 May 2009 17:01:36 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Ian Campbell <ian.campbell@citrix.com>
-Subject: Re: [PATCH 6/9] swiotlb: use dma_to_phys and phys_to_dma
-References: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
-	<1243586643-5554-7-git-send-email-ian.campbell@citrix.com>
-In-Reply-To: <1243586643-5554-7-git-send-email-ian.campbell@citrix.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: x86@kernel.org, Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-	Olaf Kirch <okir@suse.de>, Greg KH <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linuxppc-dev@ozlabs.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: ipr boot failure caused by MSI (2.6.30-rc1+)
+References: <1242926159.3007.5.camel@localhost.localdomain>
+	<4A15A1B2.8060609@linux.vnet.ibm.com>
+	<1242935515.3007.10.camel@localhost.localdomain>
+	<1243009395.2873.18.camel@localhost.localdomain>
+In-Reply-To: <1243009395.2873.18.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Wayne Boyer <wayneb@linux.vnet.ibm.com>,
+	linux-scsi <linux-scsi@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +39,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ian Campbell wrote:
-> static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
->  				      volatile void *address)
->  {
-> -	return swiotlb_phys_to_bus(hwdev, virt_to_phys(address));
-> +	return phys_to_dma(hwdev, virt_to_phys(address));
->  }
->  
->  void * __weak swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
->   
+James Bottomley wrote:
+> On Thu, 2009-05-21 at 14:51 -0500, James Bottomley wrote:
+>> On Thu, 2009-05-21 at 13:47 -0500, Brian King wrote:
+>>> cc'ing linuxppc-dev...
+>>>
+>>> -Brian
+>>>
+>>>
+>>> James Bottomley wrote:
+>>>> Kernels after 2.6.30-rc1 stopped booting on my powerstation.  The ipr
+>>>> just times out and refuses to probe devices.  If I let it drop into the
+>>>> initramfs system, this is what the interrupts shows:
+>>>>
+>>>> (initramfs) cat /proc/interrupts 
+>>>>            CPU0       CPU1       CPU2       CPU3       
+>>>>  16:         20         10         13         11   MPIC      Level     pata_amd
+>>>>  20:          0          0          0          0   MPIC      Level     ohci_hcd:usb1, ohci_hcd:usb2
+>>>>  21:          0          0          0          0  MPIC-U3MSI Edge      ipr
+>>>>  68:         37         37         48         37   MPIC      Edge      serial
+>>>> 251:         10         71         69         72   MPIC      Edge      ipi call function
+>>>> 252:       1555       1779       1372       1155   MPIC      Edge      ipi reschedule
+>>>> 253:          0          0          0          0   MPIC      Edge      ipi call function single
+>>>> 254:          0          0          0          0   MPIC      Edge      ipi debugger
+>>>> BAD:        416
+>>>>
+>>>> So you see the IPR is the only device not receiving them.
+>>>>
+>>>> I can fix the boot hang by reverting
+>>>>
+>>>> commit 5a9ef25b14d39b8413364df12cb8d9bb7a673a32
+>>>> Author: Wayne Boyer <wayneb@linux.vnet.ibm.com>
+>>>> Date:   Fri Jan 23 09:17:35 2009 -0800
+>>>>
+>>>>     [SCSI] ipr: add MSI support
+>>>>
+>>>> The system in question is:
+>>>>
+>>>> SYSTEM INFORMATION
+>>>>  Processor  = PowerPC,970MP @ 2500 MHz
+>>>>  I/O Bridge = U4 (4.4)
+>>>>  SMP Size   = 4 (#0 #1 #2 #3)
+>>>>  Boot-Date  = 2009-04-21 17:13:36
+>>>>  Memory     = 2 GB of RAM @ 666 MHz
+>>>>  Board Type = Bimini (7047191/0000000/1)
+>>>>  MFG Date   = 1608
+>>>>  Part No.   = 10N8748     
+>>>>  FRU No.    = 10N7182     
+>>>>  FRU Serial = YL30W8106038
+>>>>  UUID       = 00000000000000000000000000000000
+>>>>  Flashside  = 1 (temporary)
+>>>>  Version    = HEAD
+>>>>  Build Date = 12-04-2008 16:13
+>> OK, so as an update, I booted to the initrd and inserted the network
+>> modules, which are also MSI enabled and this is what I get:
+>>
+>> (initramfs) cat /proc/interrupts 
+>>            CPU0       CPU1       CPU2       CPU3       
+>>  16:         14         11         11         18   MPIC      Level     pata_amd
+>>  20:          0          0          0          0   MPIC      Level     ohci_hcd:usb1, ohci_hcd:usb2
+>>  21:          0          0          0          0  MPIC-U3MSI Edge      ipr
+>>  22:          1          0          1          0  MPIC-U3MSI Edge      eth0
+>>  23:          0          2          1          0  MPIC-U3MSI Edge      eth1
+>>  68:        193        166        113        177   MPIC      Edge      serial
+>> 251:         16         65         71         70   MPIC      Edge      ipi call function
+>> 252:       1574       1804       1346       1289   MPIC      Edge      ipi reschedule
+>> 253:          0          0          0          0   MPIC      Edge      ipi call function single
+>> 254:          0          0          0          0   MPIC      Edge      ipi debugger
+>> BAD:       1866
+>>
+>> So clearly the MSI interrupts to the network cards are working and it
+>> looks like just a local problem with the ipr rather than a platform
+>> problem with MSI.
+> 
+> I saw the quirk fix for this go by:
+> 
+> http://ozlabs.org/pipermail/linuxppc-dev/2009-May/072436.html
+> 
+> Is there an easy way to trigger an interrupt on this device?  Preferably
+> in ipr_probe_ioa() so we can at least print out if the interrupts are
+> misrouted and fall back from MSI to normal using the PCI infrastructure?
 
-Does this need to be weak too?
+I just talked with one of the adapter firmware developers and it sounds like
+this might be possible. I'll work with Wayne on coding something up to try.
 
-    J
+-Brian
+
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
