@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 54956DDFD1
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 17:44:10 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n4T7i4XV004049
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 02:44:06 -0500
-Subject: A few more things in -test
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 29 May 2009 17:44:04 +1000
-Message-Id: <1243583044.17903.40.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <roland@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 25DE9DDF91
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 17:54:02 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] powerpc: Add PTRACE_SINGLEBLOCK support
+In-Reply-To: Benjamin Herrenschmidt's message of  Friday,
+	29 May 2009 17:26:38 +1000 <20090529072644.7797ADDF84@ozlabs.org>
+References: <20090529072644.7797ADDF84@ozlabs.org>
+Message-Id: <20090529075354.853FBFC2BD@magilla.sf.frob.com>
+Date: Fri, 29 May 2009 00:53:54 -0700 (PDT)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I pushed out a few more things in -test. I'll do a new -next with these
-and maybe a couple of other things on monday hopefully.
+> The BookE variant is superior in some ways as it allows to know where
+> you come from on branches. But that also means that the semantics exposed
+> to user space would not be consistent which is BAD (tm).
 
-Anton Blanchard (1):
-      powerpc: Convert RTAS event scan from kernel thread to workqueue
+If it were me I would start with a simpler patch that doesn't implement it
+at all on BookE, and arch_has_block_step() yields 0 on those configs.
+Later on when someone using BookE asks for it, revisit the complexity.
+But that doesn't mean you shouldn't just go with what you've done now.
 
-Becky Bruce (1):
-      powerpc: Add support for swiotlb
+The reality is that there is no user expectation established one way or
+another yet.  For a long time only ia64 had PTRACE_SINGLEBLOCK and for not
+too many kernel versions has x86 had it too.  There aren't yet other
+established uses of user_enable_block_step() so as to have an expectation
+of what the semantics are.
 
-Michael Ellerman (3):
-      powerpc/ftrace: Use ppc_function_entry() instead of GET_ADDR
-      powerpc/ftrace: Remove unused macros
-      powerpc/ftrace: Use PPC_INST_NOP directly
+arch_has_block_step() by itself does not indicate the details.  If there
+is something more generic that starts to use this and thus cares to know
+exactly what "block step" means, then we can figure it out.  My first
+inclination is to have arch code provide only what is most natural and
+simple on the given CPU and just have more-specific arch macros/inlines
+saying what the behavior is (before branch or after branch, and whether
+also before non-taken branches, are the only two bits of variance I can
+think of).  Then whatever generic thing is built on this can test those
+and cope.  i.e., a non-arch layer would be responsible for deciding that
+doing an immediate single-step was the useful thing to do for this CPU's
+flavor of block-step.
 
-Michael Neuling (1):
-      powerpc: Make the NR_CPUS max 8192
+But I don't feel at all strongly that you shouldn't just roll it into
+the arch code as you have done.  It's up to you--and really it's just
+pending this getting exercised for any real-world purpose to see what
+one really wants.  (Chances are such things would get done on x86 first,
+where they might take advantage of several flavors of branch
+source/target recording features.  So seeing what of all that some
+actual tool used in practice might inform one's looking into what
+analogues or subsets powerpc chips have to offer.)
 
-Michel Dänzer (1):
-      therm_adt746x: Always clear hardware bit which inverts fan speed range.
 
-Nathan Fontenot (1):
-      powerpc: Display processor virtualization resource allocs in lparcfg
-
-roel kluin (1):
-      tape: beyond ARRAY_SIZE of viocd_diskinfo
+Thanks,
+Roland
