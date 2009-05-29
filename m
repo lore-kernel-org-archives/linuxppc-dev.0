@@ -2,20 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 804DBDDFC7
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 17:39:29 +1000 (EST)
-Subject: Re: [PATCH] powerpc ptrace block-step
+	by ozlabs.org (Postfix) with ESMTPS id 54956DDFD1
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 17:44:10 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n4T7i4XV004049
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 02:44:06 -0500
+Subject: A few more things in -test
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Roland McGrath <roland@redhat.com>
-In-Reply-To: <20090529073213.B7227FC2BD@magilla.sf.frob.com>
-References: <20090401215903.DE872FC3AB@magilla.sf.frob.com>
-	<1243573429.17903.30.camel@pasglop>
-	<20090529073213.B7227FC2BD@magilla.sf.frob.com>
-Content-Type: text/plain
-Date: Fri, 29 May 2009 17:39:21 +1000
-Message-Id: <1243582761.17903.38.camel@pasglop>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 29 May 2009 17:44:04 +1000
+Message-Id: <1243583044.17903.40.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, utrace-devel@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2009-05-29 at 00:32 -0700, Roland McGrath wrote:
-> Thanks!  I'm very glad to finally see this ironed out by someone who
-> actually knows about powerpc innards.
+I pushed out a few more things in -test. I'll do a new -next with these
+and maybe a couple of other things on monday hopefully.
 
-yeah, it's been on my todo list for some time... decided that it stayed
-rotting for too long. We also did a little test program to exercise wich
-is how I discovered the subtle difference between BookE and server.
+Anton Blanchard (1):
+      powerpc: Convert RTAS event scan from kernel thread to workqueue
 
-Any comment about my approach of making BookE "look like" server by
-sticking a single step in there ? IE. Is the semantic of stopping on the
--target- of the branch what userspace expects ?
+Becky Bruce (1):
+      powerpc: Add support for swiotlb
 
-Cheers,
-Ben.
+Michael Ellerman (3):
+      powerpc/ftrace: Use ppc_function_entry() instead of GET_ADDR
+      powerpc/ftrace: Remove unused macros
+      powerpc/ftrace: Use PPC_INST_NOP directly
+
+Michael Neuling (1):
+      powerpc: Make the NR_CPUS max 8192
+
+Michel Dänzer (1):
+      therm_adt746x: Always clear hardware bit which inverts fan speed range.
+
+Nathan Fontenot (1):
+      powerpc: Display processor virtualization resource allocs in lparcfg
+
+roel kluin (1):
+      tape: beyond ARRAY_SIZE of viocd_diskinfo
