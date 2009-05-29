@@ -1,36 +1,20 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 467FDDDFB2
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 19:53:44 +1000 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
-	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id n4T9qtqH016407
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 19:52:55 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n4T9rfGO397794
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 19:53:41 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n4T9re1o004527
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 19:53:41 +1000
-Date: Fri, 29 May 2009 15:23:33 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, David Gibson <dwg@au1.ibm.com>
-Subject: Re: [Patch 1/6] Prepare the PowerPC platform for HW Breakpoint
-	infrastructure
-Message-ID: <20090529095333.GA7572@in.ibm.com>
-References: <20090525004730.944465878@prasadkr_t60p.in.ibm.com>
-	<20090525011423.GB11078@in.ibm.com>
-	<20090529032048.GB8621@yookeroo.seuss>
+Return-Path: <Ian.Campbell@eu.citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+	by ozlabs.org (Postfix) with ESMTP id A8441DDFBF
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 18:44:09 +1000 (EST)
+From: Ian Campbell <ian.campbell@citrix.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: 
+Date: Fri, 29 May 2009 09:43:54 +0100
+Message-ID: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090529032048.GB8621@yookeroo.seuss>
-Cc: paulus@samba.org, Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
-Reply-To: prasad@linux.vnet.ibm.com
+Content-Type: text/plain
+Cc: x86@kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>,
+	Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+	Ian Campbell <ian.campbell@citrix.com>,
+	Olaf Kirch <okir@suse.de>, Greg KH <gregkh@suse.de>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,87 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 29, 2009 at 01:20:48PM +1000, David Gibson wrote:
-> On Mon, May 25, 2009 at 06:44:23AM +0530, K.Prasad wrote:
-> > Prepare the PowerPC code for HW Breakpoint infrastructure patches by including
-> > relevant constant definitions and function declarations.
-> > 
-> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/hw_breakpoint.h |   57 +++++++++++++++++++++++++++++++
-> >  arch/powerpc/include/asm/processor.h     |    1 
-> >  arch/powerpc/include/asm/reg.h           |    3 +
-> >  3 files changed, 61 insertions(+)
-> > 
-> > Index: linux-2.6-tip.hbkpt/arch/powerpc/include/asm/hw_breakpoint.h
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6-tip.hbkpt/arch/powerpc/include/asm/hw_breakpoint.h
-> > @@ -0,0 +1,57 @@
-> > +#ifndef	_PPC64_HW_BREAKPOINT_H
-> > +#define	_PPC64_HW_BREAKPOINT_H
-> > +
-> > +#ifdef	__KERNEL__
-> > +#define	__ARCH_HW_BREAKPOINT_H
-> > +#ifdef CONFIG_PPC64
-> > +
-> > +struct arch_hw_breakpoint {
-> > +	char		*name; /* Contains name of the symbol to set bkpt */
-> > +	unsigned long	address;
-> > +	u8		type;
-> 
-> You might as well make this an int, it will get padded out to 4 bytes
-> long anyway.
-> 
+This series:
+* removes the swiotlb_(arch_)_phys_to_bus and bus_to_phys __weak
+  hooks, replacing them with an architecture-specific phys_to_dma and
+  dma_to_phys interface. These are used by both PowerPC and Xen to
+  provide the correct mapping from physical to DMA addresses.
+* removes the swiotlb_address_needs_mapping and
+  swiotlb_range_needs_mapping __weak functions as well as
+  is_buffer_dma_capable (which should never have been a generic
+  function). All three are replaced by a single architecture-specific
+  interface which meets the needs of both PowerPC and Xen.
+* removes the swiotlb_virt_to_bus __weak function and replaces it with
+  a CONFIG_HIGHMEM compatible version when high memory is in use. This
+  is needed for 32 bit PowerPC swiotlb support.
 
-Okay.
+I think these new interfaces are cleaner than the existing __weak
+functions and isolate the swiotlb code from architecture internals.
 
-> > +};
-> > +
-> > +#include <linux/kdebug.h>
-> > +#include <asm/reg.h>
-> > +#include <asm-generic/hw_breakpoint.h>
-> > +
-> > +#define HW_BREAKPOINT_READ DABR_DATA_READ
-> > +#define HW_BREAKPOINT_WRITE DABR_DATA_WRITE
-> > +#define HW_BREAKPOINT_RW (DABR_DATA_READ | DABR_DATA_WRITE)
-> > +
-> > +#define HW_BREAKPOINT_ALIGN 0x7
-> > +#define HW_BREAKPOINT_LEN INSTRUCTION_LEN
-> > +
-> > +extern struct hw_breakpoint *hbp_kernel[HBP_NUM];
-> > +DECLARE_PER_CPU(struct hw_breakpoint*, this_hbp_kernel[HBP_NUM]);
-> > +extern unsigned int hbp_user_refcount[HBP_NUM];
-> > +
-> > +extern void arch_install_thread_hw_breakpoint(struct task_struct *tsk);
-> > +extern void arch_uninstall_thread_hw_breakpoint(void);
-> > +extern int arch_validate_hwbkpt_settings(struct hw_breakpoint *bp,
-> > +						struct task_struct *tsk);
-> > +extern void arch_update_user_hw_breakpoint(int pos, struct task_struct *tsk);
-> > +extern void arch_flush_thread_hw_breakpoint(struct task_struct *tsk);
-> > +extern void arch_update_kernel_hw_breakpoint(void *);
-> > +extern int hw_breakpoint_exceptions_notify(struct notifier_block *unused,
-> > +				     unsigned long val, void *data);
-> > +
-> > +extern void flush_thread_hw_breakpoint(struct task_struct *tsk);
-> > +extern int copy_thread_hw_breakpoint(struct task_struct *tsk,
-> > +		struct task_struct *child, unsigned long clone_flags);
-> > +extern void load_debug_registers(void );
-> 
-> It looks as though a lot of these arch hooks ought to have prototypes
-> in the generic part of the infrastructure.
-> 
+This series does not contain any Xen or PowerPC specific changes, those
+will follow in separate postings. The complete patchset has been boot
+tested under Xen and native-x86 and compiled for IA64 and PowerPC
 
-As I said before, the signatures of some of these functions are
-different. But I agree that we may want to eventually consolidate them
-into the generic header file, during future enhancements.
-
-Thanks,
-K.Prasad
-
-
-> -- 
-> David Gibson			| I'll have my music baroque, and my code
-> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-> 				| _way_ _around_!
-> http://www.ozlabs.org/~dgibson
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: Becky Bruce <beckyb@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Olaf Kirch <okir@suse.de>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+Cc: x86@kernel.org
