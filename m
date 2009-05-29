@@ -1,22 +1,31 @@
-Return-Path: <jeremy@goop.org>
-Received: from claw.goop.org (claw.goop.org [74.207.240.146])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8A2DFDDF8A
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 May 2009 01:58:17 +1000 (EST)
-Message-ID: <4A20060C.2050701@goop.org>
-Date: Fri, 29 May 2009 08:58:04 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-MIME-Version: 1.0
-To: Ian Campbell <ian.campbell@citrix.com>
-Subject: Re: [PATCH 8/9] swiotlb: support HIGHMEM in swiotlb_bus_to_virt
-References: <1243586643-5554-1-git-send-email-ian.campbell@citrix.com>
-	<1243586643-5554-9-git-send-email-ian.campbell@citrix.com>
-In-Reply-To: <1243586643-5554-9-git-send-email-ian.campbell@citrix.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linux-kernel@vger.kernel.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 53CE8DDF87
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 May 2009 03:09:16 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n4TH9BST021766
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 10:09:11 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n4TH9A1M022732
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 12:09:10 -0500 (CDT)
+Date: Fri, 29 May 2009 12:09:10 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Nancy Isaac <nancy.isaac@pobox.com>
+Subject: Re: 8544 external interrupt configuration problems
+Message-ID: <20090529170909.GA22066@b07421-ec1.am.freescale.net>
+References: <1bcc666d0905281205p63ee8119td5578a749bce8377@mail.gmail.com>
+	<20090528200215.GA9793@b07421-ec1.am.freescale.net>
+	<1bcc666d0905281848m5d237742h12b4bac272f28ca9@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1bcc666d0905281848m5d237742h12b4bac272f28ca9@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,51 +35,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ian Campbell wrote:
-> Rather than supplying a __weak hook which architectures which support
-> highmem can overide simply provide a version of swiotlb_bus_to_virt
-> which works with high memory. Make it conditional since it is a more
-> expensive variant than the non-highmem version.
->
-> Acutal function contents taken from the PowerPC swiotlb patchset by
-> Becky Bruce.
->
-> Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-> Cc: Becky Bruce <beckyb@kernel.crashing.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-> Cc: linuxppc-dev@ozlabs.org
-> ---
->  lib/swiotlb.c |   14 +++++++++++++-
->  1 files changed, 13 insertions(+), 1 deletions(-)
->
-> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> index e332342..c50a5ed 100644
-> --- a/lib/swiotlb.c
-> +++ b/lib/swiotlb.c
-> @@ -130,10 +130,22 @@ static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
->  	return phys_to_dma(hwdev, virt_to_phys(address));
->  }
->  
-> -void * __weak swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
-> +#ifdef CONFIG_HIGHMEM
-> +static void * swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
->   
+On Thu, May 28, 2009 at 06:48:48PM -0700, Nancy Isaac wrote:
+> > Is the level/sense information correct?
+> 
+> 
+> [NI] Yes, these interrupts are supposed to be active low, level sensitive
+> interrupts.
 
-I think it would be better to put the #ifdef within the function body so 
-that there's no chance of prototype-drift.
-> +{
-> +	unsigned long pfn = PFN_DOWN(dma_to_phys(hwdev, addr));
-> +	void *pageaddr = page_address(pfn_to_page(pfn));
-> +
-> +	if (pageaddr != NULL)
-> +		return pageaddr + (addr % PAGE_SIZE);
->   
-Is there an arch-independent test to see if a pfn is considered highmem 
-or not (which returns a constant on non-highmem configurations)?  If so, 
-then I think this could be common without having to go via a struct page.
+But the level/sense value for that on mpic is 1, not 2.  2 is active
+high (see Documentation/powerpc/booting-without-of.txt).
 
-    J
+-Scott
