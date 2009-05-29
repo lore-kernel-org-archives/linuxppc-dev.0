@@ -1,19 +1,10 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D4B8ADDFA4
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2009 15:03:59 +1000 (EST)
-Subject: Re: [PATCH] powerpc ptrace block-step
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Roland McGrath <roland@redhat.com>
-In-Reply-To: <20090401215903.DE872FC3AB@magilla.sf.frob.com>
-References: <20090401215903.DE872FC3AB@magilla.sf.frob.com>
-Content-Type: text/plain
-Date: Fri, 29 May 2009 15:03:49 +1000
-Message-Id: <1243573429.17903.30.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, utrace-devel@redhat.com
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <8e59964be84e85d2ca8c08db3fdd979db61fb0f6.1243575200.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/3] powerpc/ftrace: Use ppc_function_entry() instead of
+	GET_ADDR
+Date: Fri, 29 May 2009 15:33:34 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +14,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-04-01 at 14:59 -0700, Roland McGrath wrote:
-> Maynard asked about user_enable_block_step() support on powerpc.
-> This is the old patch I've posted before.  I haven't even tried
-> to compile it lately, but it rebased cleanly.
-> 
-> AFAIK the only reason this didn't go in several months ago was waiting
-> for someone to decide what the right arch_has_block_step() condition was,
-> i.e. if it needs to check some cpu_feature or chip identifier bits.
-> 
-> I had hoped that I had passed the buck then to ppc folks to figure that out
-> and make it so.  But it does not appear to have happened.
-> 
-> Note you can drop the #define PTRACE_SINGLEBLOCK if you want to be
-> conservative and not touch the user (ptrace) ABI yet.  Then Maynard
-> could beat on it with internal uses (utrace) before you worry about
-> whether userland expects the new ptrace request macro to exist.
+Use ppc_function_entry() from code-patching.h.
 
-So the patch had some issues, such as missing clearing of DBCR0 bits,
-missing changes to code in traps.c to properly identify the new cause
-of debug interrupts, etc...
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/kernel/ftrace.c |   12 +++---------
+ 1 files changed, 3 insertions(+), 9 deletions(-)
 
-I've spinned a new version, I'll post it as soon as I got to do some
-quick tests. It will then go into the next merge window hopefully.
-
-Note: I've verified, blockstep seems to be implemented by all the core
-variants -except- the old 601.
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 70e2a73..8585217 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -23,12 +23,6 @@
+ #include <asm/code-patching.h>
+ #include <asm/ftrace.h>
+ 
+-#ifdef CONFIG_PPC32
+-# define GET_ADDR(addr) addr
+-#else
+-/* PowerPC64's functions are data that points to the functions */
+-# define GET_ADDR(addr) (*(unsigned long *)addr)
+-#endif
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ static unsigned int ftrace_nop_replace(void)
+@@ -41,7 +35,7 @@ ftrace_call_replace(unsigned long ip, unsigned long addr, int link)
+ {
+ 	unsigned int op;
+ 
+-	addr = GET_ADDR(addr);
++	addr = ppc_function_entry((void *)addr);
+ 
+ 	/* if (link) set op to 'bl' else 'b' */
+ 	op = create_branch((unsigned int *)ip, addr, link ? 1 : 0);
+@@ -197,7 +191,7 @@ __ftrace_make_nop(struct module *mod,
+ 	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
+ 
+ 	/* This should match what was called */
+-	if (ptr != GET_ADDR(addr)) {
++	if (ptr != ppc_function_entry((void *)addr)) {
+ 		printk(KERN_ERR "addr does not match %lx\n", ptr);
+ 		return -EINVAL;
+ 	}
+@@ -570,7 +564,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 		return_hooker = (unsigned long)&mod_return_to_handler;
+ #endif
+ 
+-	return_hooker = GET_ADDR(return_hooker);
++	return_hooker = ppc_function_entry((void *)return_hooker);
+ 
+ 	/*
+ 	 * Protect against fault, even if it shouldn't
+-- 
+1.6.2.1
