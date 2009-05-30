@@ -1,17 +1,25 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4A2173EC.9040107@grandegger.com>
-Date: Sat, 30 May 2009 19:59:08 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <frank.svendsboe@gmail.com>
+Received: from mail-bw0-f171.google.com (mail-bw0-f171.google.com
+	[209.85.218.171]) by ozlabs.org (Postfix) with ESMTP id A8018DDD1B
+	for <linuxppc-dev@ozlabs.org>; Sun, 31 May 2009 06:22:11 +1000 (EST)
+Received: by bwz19 with SMTP id 19so6939193bwz.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 May 2009 13:22:08 -0700 (PDT)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
-	driver
-References: <200905242327.15139.arnd@arndb.de>	<4A1A418D.3040207@grandegger.com>	<200905261010.31364.arnd@arndb.de>	<20090526.022508.238274281.davem@davemloft.net>
-	<4A1BFB73.4020305@grandegger.com>
-In-Reply-To: <4A1BFB73.4020305@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org, arnd@arndb.de,
-	netdev@vger.kernel.org
+In-Reply-To: <20090529171835.GB22066@b07421-ec1.am.freescale.net>
+References: <547eba1b0905280037j3336d0av7cc5d4069622d8f4@mail.gmail.com>
+	<4A1E6877.2060106@aimvalley.nl> <20090528123311.GA3112@pengutronix.de>
+	<1ba63b520905290356l5d519e64w3bd852d8fc4032be@mail.gmail.com>
+	<20090529171835.GB22066@b07421-ec1.am.freescale.net>
+Date: Sat, 30 May 2009 22:22:08 +0200
+Message-ID: <1ba63b520905301322n72fa165ds7e2eb3af4475f109@mail.gmail.com>
+Subject: Re: MPC8272- Porting HDLC driver from 2.6.14 to 2.6.27- "no_irq_chip"
+	error
+From: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Daniel Ng <daniel.ng1234@gmail.com>,
+	Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Grandegger wrote:
-> David Miller wrote:
->> From: Arnd Bergmann <arnd@arndb.de>
->> Date: Tue, 26 May 2009 10:10:30 +0100
+On Fri, May 29, 2009 at 7:18 PM, Scott Wood <scottwood@freescale.com> wrote=
+:
+> On Fri, May 29, 2009 at 12:56:13PM +0200, Frank Svendsb=F8e wrote:
+>> FYI. The same applies to mpc8xx targets: No default host interrupt contr=
+oller.
+>> The following patch was needed for our target:
+>> ---
+>> diff --git a/arch/powerpc/sysdev/mpc8xx_pic.c b/arch/powerpc/sysdev/mpc8=
+xx_pic.c
+>> index 5d2d552..92b2b66 100644
+>> --- a/arch/powerpc/sysdev/mpc8xx_pic.c
+>> +++ b/arch/powerpc/sysdev/mpc8xx_pic.c
+>> @@ -186,6 +186,7 @@ int mpc8xx_pic_init(void)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -ENOMEM;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
+>> =A0 =A0 =A0 =A0 }
+>> + =A0 =A0 =A0 =A0irq_set_default_host(mpc8xx_pic_host);
+>> =A0 =A0 =A0 =A0 return 0;
+>
+> This patch is whitespace mangled.
+>
 >>
->>> On Monday 25 May 2009, Wolfgang Grandegger wrote:
->>>>> Right, that makes sense. However, most drivers use the field to store the
->>>>> physical address, not the iomap token. Maybe there should be a new field
->>>>> in struct sja1000_priv for the virtual address, but that would be a change
->>>>> to the base driver, not just to the OF portion.
->>>> Is that common practice? If yes, I will add a member to store the
->>>> virtual address to struct sja1000_priv.
->>> I grepped through the network driver for usage of ->base_addr, and
->>> it's somewhat inconsistent. The majority of the users use it for
->>> a physical address, but there are also a few that use it for the
->>> __iomem token.
->>>
->>> Casts between unsigned long and qualified (__iomem, __user, const, ...)
->>> pointers do not cause a warning, but can easily lead to bugs when
->>> another user casts to an unqualified pointer.
->> It's such a baroque thing, there is no reason to set it at all if you
->> ask me.  It's only use is to allow ISA and similar primitive bus
->> devices to have their I/O ports changed via ifconfig.
-> 
-> OK, I see, there are good reasons not to (mis-)use dev->base_addr. I
-> will prepare a patch for the SJA1000 CAN drivers.
+>> =A0out:
+>> ---
+>> Maybe setting a default host ought to be mandatory? Or is doing the
+>> mapping manually
+>> (without device tree descriptions) considered being a hack?
+>
+> I consider it a hack -- not so much doing it manually (though the device
+> tree is better), but relying on a default interrupt controller when doing
+> so. =A0IRQ numbers only make sense in the context of a specific
+> controller. =A0It's especially misleading on 8xx, which has separate
+> regular and CPM PICs.
+>
+> -Scott
+>
 
-I have just sent out a patch series fixing this issue and providing
-a revised patch for the SJA1000 OF platform driver:
+I agree, and was the reason I mentioned "hack". The patch wasn't meant
+for commit,
+just for reference (sorry for whitemangling ;-)
 
-[net-next-2.6 PATCH 0/3] can: sja1000: misused netdev->base_addr and OF platform driver
+Regarding doing manual mapping: Is there another way to retrieve the
+host controller
+from a driver module without modifying kernel source? In case not, do you t=
+hink
+exporting the mpc8xx_pic_host symbol is a better solution?
 
-Wolfgang.
+Anyway, now that I'm beginning to understand dts I guess I might as
+well just do it properly.
+
+- Frank
