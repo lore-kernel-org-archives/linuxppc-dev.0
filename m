@@ -1,18 +1,23 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 8194ADDD0C
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Jun 2009 08:51:15 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1MAts0-0002tS-St
-	for linuxppc-dev@ozlabs.org; Sun, 31 May 2009 15:51:12 -0700
-Message-ID: <23807779.post@talk.nabble.com>
-Date: Sun, 31 May 2009 15:51:12 -0700 (PDT)
-From: wael showair <showair2003@yahoo.com>
-To: linuxppc-dev@ozlabs.org
-Subject: is the resolution of do_gettimeofday in usec?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9F07BDDD04
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Jun 2009 10:47:49 +1000 (EST)
+Subject: Re: MPC8343 - serial8250: too much work
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Alemao <xcarandiru@gmail.com>
+In-Reply-To: <d970ff420905291307p62e9c6eck772e7ee3757ee44a@mail.gmail.com>
+References: <d970ff420905291307p62e9c6eck772e7ee3757ee44a@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-UpL8Ug4s3osT0+c/31iG"
+Date: Mon, 01 Jun 2009 10:47:48 +1000
+Message-Id: <1243817268.4375.28.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +28,52 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Hi All,
-i have board that contains MPC8555 processor with linux 2.6.27 ported to it.
-i want to use an accurate function to measure the time. i searched the
-kernel code & i found several functions but i read that the do_gettimeofday
-is the most accurate one since it has a timer resolution of usec.
+--=-UpL8Ug4s3osT0+c/31iG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-my question is how this function give this accuracy while the kernel timer
-is 4msec?
-is this a real accuracy or does it convert from msec to usec?
-or does it depend on another timer counter that has this resolution?
-or may b it measure the clock cycles of the processor within certain
-interval?
+On Fri, 2009-05-29 at 17:07 -0300, Alemao wrote:
+> Im facing some problems with serial, linux-2.6.23, getting flooded
+> with this message in logs:
+>=20
+> ---
+> serial8250: too much work for irq16
+> ---
+>=20
+> Something I notice, in my .dts I have the following lines:
+>=20
+> serial0: serial@4500,  interrupts   =3D  <9  0x8>
+> serial1: serial@4600,  interrupts   =3D  <10 0x8>
+> spi:       spi@7000,     interrupts   =3D  <16 0x8>
+>=20
+>=20
+> But when kernel starts:
+>=20
+> ---
+> Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+> serial8250.0: ttyS0 at MMIO 0xe0004500 (irq =3D 16) is a 16550A
+> ---
+>=20
+> Why IRQ 16? Shouldn't it be IRQ 9?
 
-Note that the freq of the processor is 850MHz.
+No. Interrupt numbers are remapped on powerpc. If you were running a
+mainline kernel you'd see a message something like:
 
-Unfortunately, the function is implemented in assembly & i cant understand
-it?
-so can u tell me how this accurate numbers can be got or they r just fake
-numbers?
+irq: irq 9 on host ?? mapped to virtual irq 16
 
-thanks
--- 
-View this message in context: http://www.nabble.com/is-the-resolution-of-do_gettimeofday-in-usec--tp23807779p23807779.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+cheers
+
+
+--=-UpL8Ug4s3osT0+c/31iG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkojJTQACgkQdSjSd0sB4dJ7bACfXBPpPRyorpEiJv+UEn1zbdvZ
+qYkAn30h1cAVrksQ+uVUAq19GvA1c/f9
+=tMIl
+-----END PGP SIGNATURE-----
+
+--=-UpL8Ug4s3osT0+c/31iG--
