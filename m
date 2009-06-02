@@ -1,17 +1,18 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 688EFDDEF1
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 03:15:30 +1000 (EST)
-Date: Tue, 2 Jun 2009 21:15:27 +0400
+	by ozlabs.org (Postfix) with ESMTP id 244B0DDE05
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 03:26:46 +1000 (EST)
+Date: Tue, 2 Jun 2009 21:26:44 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Stefan Strobl <nst@gersys.de>
-Subject: Re: MPC52xx simple GPIO support
-Message-ID: <20090602171527.GA8745@oksana.dev.rtsoft.ru>
-References: <4A255B21.8040002@gersys.de>
+To: Dave Liu <daveliu@freescale.com>
+Subject: Re: [PATCH] mmc: Fix the wrong accessor to HOSTVER register
+Message-ID: <20090602172644.GA26721@oksana.dev.rtsoft.ru>
+References: <1241606407-18685-1-git-send-email-daveliu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <4A255B21.8040002@gersys.de>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1241606407-18685-1-git-send-email-daveliu@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, pierre@ossman.eu, sdhci-devel@list.drzeus.cx,
+	ben-linux@fluff.org, drzeus-sdhci@drzeus.cx
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,33 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Stefan,
-
-On Tue, Jun 02, 2009 at 07:02:25PM +0200, Stefan Strobl wrote:
-> Hi
-> I still don't quite understand how to use the Flattened Device Tree /
-> Open Firmware. I see there's a driver (mpc52xx_gpt.c) that supports to
-> use the Pins on the GPT as simple GPIOs. I activated it by adding these
-> lines to my dts file:
+On Wed, May 06, 2009 at 06:40:07PM +0800, Dave Liu wrote:
+> Freescale eSDHC controller has the special order for
+> the HOST version register. that is not same as the other's
+> registers. The address of HOSTVER in spec is 0xFE, and
+> we need use the in_be16(0xFE) to access it, not in_be16(0xFC).
 > 
-> gpt2: timer@620 {
-> 	compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
-> 	reg = <0x620 0x10>;
-> 	interrupts = <1 11 0>;
-> 	gpio-controller;
-> 	#gpio-cells = <2>;
-> };
+> Signed-off-by: Dave Liu <daveliu@freescale.com>
+
+Sorry for the delay Dave. This patch is surely
+
+Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+
+> ---
+>  drivers/mmc/host/sdhci-of.c |    8 +++++++-
+>  1 files changed, 7 insertions(+), 1 deletions(-)
 > 
-> I can see the appropriate entries in sysfs
-> (/sys/devices/f0000000.soc5200/f0000620.timer), but how can I actually
-> use these GPIO's now?
+> diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
+> index 3ff4ac3..e167131 100644
+> --- a/drivers/mmc/host/sdhci-of.c
+> +++ b/drivers/mmc/host/sdhci-of.c
+> @@ -55,7 +55,13 @@ static u32 esdhc_readl(struct sdhci_host *host, int reg)
+>  
+>  static u16 esdhc_readw(struct sdhci_host *host, int reg)
+>  {
+> -	return in_be16(host->ioaddr + (reg ^ 0x2));
+> +	u16 ret;
+> +
+> +	if (unlikely(reg == SDHCI_HOST_VERSION))
+> +		ret = in_be16(host->ioaddr + reg);
+> +	else
+> +		ret = in_be16(host->ioaddr + (reg ^ 0x2));
+> +	return ret;
+>  }
+>  
+>  static u8 esdhc_readb(struct sdhci_host *host, int reg)
+> -- 
+> 1.5.4
 
-For in-kernel usage example you can take a look at:
-arch/powerpc/boot/dts/mpc836x_rdk.dts (upm node, notice gpios = <>)
-drivers/mtd/nand/fsl_upm.c (of_get_gpio() then gpio_request()).
-
-For userland usage you need to enable CONFIG_GPIO_SYSFS, and then
-look into /sys/class/gpio/{gpiochip,export,gpioNNN}.
+Thanks,
 
 -- 
 Anton Vorontsov
