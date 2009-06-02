@@ -1,19 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 244B0DDE05
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 03:26:46 +1000 (EST)
-Date: Tue, 2 Jun 2009 21:26:44 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Dave Liu <daveliu@freescale.com>
-Subject: Re: [PATCH] mmc: Fix the wrong accessor to HOSTVER register
-Message-ID: <20090602172644.GA26721@oksana.dev.rtsoft.ru>
-References: <1241606407-18685-1-git-send-email-daveliu@freescale.com>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp3.netcologne.de (smtp3.netcologne.de [194.8.194.66])
+	by ozlabs.org (Postfix) with ESMTP id 0AF30DDE02
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 04:46:04 +1000 (EST)
+Date: Tue, 02 Jun 2009 20:45:55 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: [PATCH] powerpc: tiny memcpy_(to|from)io optimisation
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+In-Reply-To: <OFEEF9A8F1.2B11D1F7-ONC12575C8.00214DF9-C12575C8.00224E4F@transmode.se>
+	(from joakim.tjernlund@transmode.se on Mon Jun  1 08:14:43 2009)
+Message-Id: <1243968361.4951.0@antares>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1241606407-18685-1-git-send-email-daveliu@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, pierre@ossman.eu, sdhci-devel@list.drzeus.cx,
-	ben-linux@fluff.org, drzeus-sdhci@drzeus.cx
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-khL/OpVkhe9B1GXUpsJ/"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +22,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 06, 2009 at 06:40:07PM +0800, Dave Liu wrote:
-> Freescale eSDHC controller has the special order for
-> the HOST version register. that is not same as the other's
-> registers. The address of HOSTVER in spec is 0xFE, and
-> we need use the in_be16(0xFE) to access it, not in_be16(0xFC).
-> 
-> Signed-off-by: Dave Liu <daveliu@freescale.com>
+--=-khL/OpVkhe9B1GXUpsJ/
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sorry for the delay Dave. This patch is surely
+Am 01.06.09 08:14 schrieb(en) Joakim Tjernlund:
+> .. not even 4.2.2 which is fairly modern will get it right. It breaks =20
+> very easy as gcc has never been any good at this type of =20
+> optimization. Sometimes small changes will make gcc unhappy and it =20
+> won't do the right optimization.
 
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+It's even worse...  Looking at the assembly output of the simple =20
+function
 
-> ---
->  drivers/mmc/host/sdhci-of.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-> index 3ff4ac3..e167131 100644
-> --- a/drivers/mmc/host/sdhci-of.c
-> +++ b/drivers/mmc/host/sdhci-of.c
-> @@ -55,7 +55,13 @@ static u32 esdhc_readl(struct sdhci_host *host, int reg)
->  
->  static u16 esdhc_readw(struct sdhci_host *host, int reg)
->  {
-> -	return in_be16(host->ioaddr + (reg ^ 0x2));
-> +	u16 ret;
-> +
-> +	if (unlikely(reg == SDHCI_HOST_VERSION))
-> +		ret = in_be16(host->ioaddr + reg);
-> +	else
-> +		ret = in_be16(host->ioaddr + (reg ^ 0x2));
-> +	return ret;
->  }
->  
->  static u8 esdhc_readb(struct sdhci_host *host, int reg)
-> -- 
-> 1.5.4
+<snip>
+void loop2(void * src, void * dst, int n)
+{
+   volatile uint32_t * _dst =3D (volatile uint32_t *) (dst - 4);
+   volatile uint32_t * _src =3D (volatile uint32_t *) (src - 4);
+   n >>=3D 2;
+   do {
+     *(++_dst) =3D *(++_src);
+   } while (--n);
+}
+</snip>
 
-Thanks,
+gcc 4.0.1 coming with Apple's Developer Tools (on Tiger) with options =20
+"-O3 -mcpu=3D603e -mtune=3D603e" produces
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+<snip>
+_loop2:
+         srawi r5,r5,2
+         mtctr r5
+         addi r4,r4,-4
+         addi r3,r3,-4
+L11:
+         lwzu r0,4(r3)
+         stwu r0,4(r4)
+         bdnz L11
+         blr
+</snip>
+
+which looks perfect to me.  However, gcc 4.3.3 on Ubuntu/PPC produces =20
+with the same options
+
+<snip>
+loop2:
+         srawi 5,5,2
+         stwu 1,-16(1)
+         mtctr 5
+         li 9,0
+.L8:
+         lwzx 0,3,9
+         stwx 0,4,9
+         addi 9,9,4
+         bdnz .L8
+         addi 1,1,16
+         blr
+</snip>
+
+wasting a register and a statement in the loop core, and fiddles around =20
+with the stack pointer for no good reason.  Gcc 4.4.0 produces
+
+<snip>
+loop2:
+         srawi 5,5,2
+         mtctr 5
+         li 9,0
+.L9:
+         lwzx 0,3,9
+         stwx 0,4,9
+         addi 9,9,4
+         bdnz .L9
+         blr
+</snip>
+
+which drops the r1 accesses, but still produces the sub-optimal loop.  =20
+Is this a gcc regression, or did I miss something here?  Probably the =20
+only bullet-proof way is to write some core loops in assembly... :-/
+
+Thanks, Albrecht.
+
+--=-khL/OpVkhe9B1GXUpsJ/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQBKJXNpn/9unNAn/9ERAqJSAJ9k4au6BgBXOhTGLarpwepKdu5HhACgzP8y
+B+rwzyauDB4jLtntXOW2MaM=
+=qG8D
+-----END PGP SIGNATURE-----
+
+--=-khL/OpVkhe9B1GXUpsJ/--
