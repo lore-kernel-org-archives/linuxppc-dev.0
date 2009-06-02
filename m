@@ -1,27 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B7D8DDDDF0
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Jun 2009 10:50:46 +1000 (EST)
-Subject: Re: MPC8272- Porting HDLC driver from 2.6.14 to 2.6.27-
-	"no_irq_chip" error
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Frank =?ISO-8859-1?Q?Svendsb=F8e?= <frank.svendsboe@gmail.com>
-In-Reply-To: <1ba63b520905301322n72fa165ds7e2eb3af4475f109@mail.gmail.com>
-References: <547eba1b0905280037j3336d0av7cc5d4069622d8f4@mail.gmail.com>
-	<4A1E6877.2060106@aimvalley.nl> <20090528123311.GA3112@pengutronix.de>
-	<1ba63b520905290356l5d519e64w3bd852d8fc4032be@mail.gmail.com>
-	<20090529171835.GB22066@b07421-ec1.am.freescale.net>
-	<1ba63b520905301322n72fa165ds7e2eb3af4475f109@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 02 Jun 2009 10:48:34 +1000
-Message-Id: <1243903714.591.20.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 393B3DDDE1
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Jun 2009 10:53:54 +1000 (EST)
+Date: Tue, 2 Jun 2009 10:53:53 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: fix annotation of pcibios_claim_one_bus
+Message-Id: <20090602105353.b4a7e93d.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Daniel Ng <daniel.ng1234@gmail.com>,
-	Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,18 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2009-05-30 at 22:22 +0200, Frank Svendsbøe wrote:
-> Regarding doing manual mapping: Is there another way to retrieve the
-> host controller
-> from a driver module without modifying kernel source? In case not, do
-> you think
-> exporting the mpc8xx_pic_host symbol is a better solution?
-> 
-> Anyway, now that I'm beginning to understand dts I guess I might as
-> well just do it properly.
+It was __devinit, but it is also within a CONFIG_HOTPLUG guarded section
+of code, so the __devinit does nothing but cause the following warning:
 
-Well, precisely :-) The DTS allows to contain the linkage to the PIC and
-let the kernel resolve it all nicely for you.
+WARNING: vmlinux.o(.text+0x107a8): Section mismatch in reference from the function pcibios_finish_adding_to_bus() to the function .devinit.text:pcibios_claim_one_bus()
+The function pcibios_finish_adding_to_bus() references
+the function __devinit pcibios_claim_one_bus().
+This is often because pcibios_finish_adding_to_bus lacks a __devinit
+annotation or the annotation of pcibios_claim_one_bus is wrong.
 
+It is also only (externally) used in arch/powerpc/kernel/of_platform.c
+which cannot be built as a module so don't export it.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/pci-common.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 4fee63c..5a56e97 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1505,7 +1505,7 @@ void __init pcibios_resource_survey(void)
+  * rest of the code later, for now, keep it as-is as our main
+  * resource allocation function doesn't deal with sub-trees yet.
+  */
+-void __devinit pcibios_claim_one_bus(struct pci_bus *bus)
++void pcibios_claim_one_bus(struct pci_bus *bus)
+ {
+ 	struct pci_dev *dev;
+ 	struct pci_bus *child_bus;
+@@ -1533,7 +1533,6 @@ void __devinit pcibios_claim_one_bus(struct pci_bus *bus)
+ 	list_for_each_entry(child_bus, &bus->children, node)
+ 		pcibios_claim_one_bus(child_bus);
+ }
+-EXPORT_SYMBOL_GPL(pcibios_claim_one_bus);
+ 
+ 
+ /* pcibios_finish_adding_to_bus
+-- 
+1.6.3.1
+
+-- 
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
