@@ -1,19 +1,24 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zcars04e.nortel.com (zcars04e.nortel.com [47.129.242.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 1A750DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 06:28:40 +1000 (EST)
-Message-ID: <4A258B6D.6050006@nortel.com>
-Date: Tue, 02 Jun 2009 14:28:29 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+Return-Path: <ben@fluff.org.uk>
+Received: from kira.home.fluff.org (aeryn.fluff.org.uk [87.194.8.8])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F31F3DDD01
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 08:25:41 +1000 (EST)
+Date: Tue, 2 Jun 2009 23:25:11 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Esben Haabendal <esbenhaabendal@gmail.com>
+Subject: Re: [PATCH v2] i2c-mpc: generate START condition after STOP caused
+	by read i2c_msg
+Message-ID: <20090602222511.GC18453@fluff.org.uk>
+References: <4A124202.4010201@doredevelopment.dk>
+	<d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
+	<fa686aa40905281231o26c74a13v250bcedbd066e77b@mail.gmail.com>
+	<d2b9ea600905281315x435cdb05ia7b016b3d60c4a65@mail.gmail.com>
 MIME-Version: 1.0
-To: wael showair <showair2003@yahoo.com>
-Subject: Re: is the resolution of do_gettimeofday in usec?
-References: <23807779.post@talk.nabble.com>
-In-Reply-To: <23807779.post@talk.nabble.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <d2b9ea600905281315x435cdb05ia7b016b3d60c4a65@mail.gmail.com>
+Cc: Kumar Gala <galak@gate.crashing.org>, linux-i2c@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-wael showair wrote:
-> Hi All,
-> i have board that contains MPC8555 processor with linux 2.6.27 ported to it.
-> i want to use an accurate function to measure the time. i searched the
-> kernel code & i found several functions but i read that the do_gettimeofday
-> is the most accurate one since it has a timer resolution of usec.
+On Thu, May 28, 2009 at 10:15:22PM +0200, Esben Haabendal wrote:
+> On Thu, May 28, 2009 at 9:31 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > On Tue, May 26, 2009 at 5:30 AM, Esben Haabendal wrote:
+> >> On Tue, May 19, 2009 at 7:22 AM, Esben Haabendal wrote:
+> >>> This fixes MAL (arbitration lost) bug caused by illegal use of
+> >>> RSTA (repeated START) after STOP condition generated after last byte
+> >>> of reads. With this patch, it is possible to do an i2c_transfer() with
+> >>> additional i2c_msg's following the I2C_M_RD messages.
+> >>>
+> >>> It still needs to be resolved if it is possible to fix this issue
+> >>> by removing the STOP condition after reads in a robust way.
+> >>>
+> >>> Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
+> >>> ---
+> >>> ?drivers/i2c/busses/i2c-mpc.c | ? ?9 +++++++--
+> >>> ?1 files changed, 7 insertions(+), 2 deletions(-)
+> >>
+> >> Any blockers to get this accepted?
+> >
+> > It helps if you cc: developers/maintainers of the device. ?ie. Kumar
+> > for mpc8xxx, me for 52xx.
+> >
+> > This is the first time I noticed your posting. ?It will take me a few
+> > days before I get a chance to review it.
+> 
+> Kumar, will you take a look at this patch?
 
-You might also look at clock_gettime(), which has a theoretical accuracy
-of nanoseconds.  Both this and gettimeofday are NTP-corrected if you are
-synced to an NTP clock.
+is anyone else likely to review it, or should I merge?
 
-> my question is how this function give this accuracy while the kernel timer
-> is 4msec?
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-The accuracy of the timestamp is not related to the tick interval.
-
-Chris
+  'a smiley only costs 4 bytes'
