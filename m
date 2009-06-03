@@ -1,32 +1,19 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [59.145.155.7])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 06EDCDDF54
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 02:36:02 +1000 (EST)
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
-	by e28smtp07.in.ibm.com (8.13.1/8.13.1) with ESMTP id n53GZuJE000635
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 22:05:56 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n53GZuVD3010654
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 22:05:56 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id n53GZuCh022206
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 22:05:56 +0530
-Date: Wed, 3 Jun 2009 22:05:53 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: [Patch 6/6] Adapt kexec and samples code to recognise PPC64
-	hardware breakpoint usage
-Message-ID: <20090603163553.GG5197@in.ibm.com>
-References: <20090603162741.197115376@prasadkr_t60p.in.ibm.com>
+Return-Path: <dmitchell@amcc.com>
+Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 9DCABDDE0F
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 02:42:16 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>, paulus@samba.org,
-	Alan Stern <stern@rowland.harvard.edu>,
-	"K.Prasad" <prasad@linux.vnet.ibm.com>, Roland McGrath <roland@redhat.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: of_serial.c: adding UPF_FIXED_TYPE flag
+Date: Wed, 3 Jun 2009 09:26:49 -0700
+Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C0772AF40@SDCEXCHANGE01.ad.amcc.com>
+From: "David Mitchell" <dmitchell@amcc.com>
+To: <linuxppc-dev@ozlabs.org>
+Cc: arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,55 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Modify kexec code to disable DABR registers before a reboot. Adapt the samples
-code to populate PPC64-arch specific fields.
+Hello,
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/machine_kexec_64.c  |    3 +++
- samples/hw_breakpoint/data_breakpoint.c |    4 ++++
- 2 files changed, 7 insertions(+)
+Are there any objections or concerns on adding UPF_FIXED_TYPE to the
+port flags for the of_serial driver? Or maybe - are there any
+implementations using of_serial that rely on the 8250's probing to
+determine type? Based on the configs it looks like just the 4xx and 6xx
+variants are using this driver.
 
-Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/machine_kexec_64.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/machine_kexec_64.c
-+++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/machine_kexec_64.c
-@@ -24,6 +24,7 @@
- #include <asm/sections.h>	/* _end */
- #include <asm/prom.h>
- #include <asm/smp.h>
-+#include <asm/hw_breakpoint.h>
- 
- int default_machine_kexec_prepare(struct kimage *image)
- {
-@@ -214,6 +215,7 @@ static void kexec_prepare_cpus(void)
- 	put_cpu();
- 
- 	local_irq_disable();
-+	hw_breakpoint_disable();
- }
- 
- #else /* ! SMP */
-@@ -233,6 +235,7 @@ static void kexec_prepare_cpus(void)
- 	if (ppc_md.kexec_cpu_down)
- 		ppc_md.kexec_cpu_down(0, 0);
- 	local_irq_disable();
-+	hw_breakpoint_disable();
- }
- 
- #endif /* SMP */
-Index: linux-2.6-tip.hbkpt/samples/hw_breakpoint/data_breakpoint.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/samples/hw_breakpoint/data_breakpoint.c
-+++ linux-2.6-tip.hbkpt/samples/hw_breakpoint/data_breakpoint.c
-@@ -54,6 +54,10 @@ static int __init hw_break_module_init(v
- 	sample_hbp.info.type = HW_BREAKPOINT_WRITE;
- 	sample_hbp.info.len = HW_BREAKPOINT_LEN_4;
- #endif /* CONFIG_X86 */
-+#ifdef CONFIG_PPC64
-+	sample_hbp.info.name = ksym_name;
-+	sample_hbp.info.type = HW_BREAKPOINT_WRITE;
-+#endif /* CONFIG_PPC64 */
- 
- 	sample_hbp.triggered = (void *)sample_hbp_handler;
- 
+The UPF_FIXED_TYPE is a flag added earlier this year to bypass the
+8250's autoconfig probing to determine type ("Serial: Allow port type to
+be specified when calling serial8250_register_port").
+
+On our 16750 capable parts, the 8250's autoconfig probing is identifying
+the UARTs as a 16550a. Adding this flag to of_serial's would let us
+drive the type directly from the device tree. Thus we could avoid
+polluting the 8250 driver with processor-specific tests.
+
+Thoughts or other suggestions?
+
+Thanks,
+
+Dave Mitchell
+AppliedMicro
