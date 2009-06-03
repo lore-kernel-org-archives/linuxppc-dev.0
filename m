@@ -1,31 +1,31 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8AF29DDDF7
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 01:24:33 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n53FKrF5020608
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 09:20:53 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n53FOLlX100108
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 09:24:25 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n53FOJQ8022876
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 09:24:19 -0600
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7FE1FDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 01:28:12 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n53FNumG004672
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 11:23:56 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n53FS97R213842
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 11:28:09 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n53FS8FE020150
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 11:28:08 -0400
 Received: from zod.rchland.ibm.com (sig-9-65-100-53.mts.ibm.com [9.65.100.53])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	n53FOCtt022382
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	n53FS6Fg020029
 	(version=TLSv1/SSLv3 cipher=AES128-SHA bits=128 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 09:24:17 -0600
-Date: Wed, 3 Jun 2009 11:24:12 -0400
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 11:28:08 -0400
+Date: Wed, 3 Jun 2009 11:28:03 -0400
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] powerpc/40x: Convert AMCC Makalu board to ppc40x_simple
-Message-ID: <20090603152412.GE8655@zod.rchland.ibm.com>
+Subject: [PATCH 2/2] powerpc/40x: Convert AMCC Kilauea/Halekala boards to
+	ppc40x_simple
+Message-ID: <20090603152803.GF8655@zod.rchland.ibm.com>
 References: <20090603151659.GD8655@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,23 +39,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This cleans up the makalu board port to use the ppc40x_simple platform support.
+This cleans up the kilauea/halekala board ports to use the ppc40x_simple
+platform support.
 
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
 ---
 
-diff --git a/arch/powerpc/configs/40x/makalu_defconfig b/arch/powerpc/configs/40x/makalu_defconfig
-index 50c7cc1..1467475 100644
---- a/arch/powerpc/configs/40x/makalu_defconfig
-+++ b/arch/powerpc/configs/40x/makalu_defconfig
+diff --git a/arch/powerpc/configs/40x/kilauea_defconfig b/arch/powerpc/configs/40x/kilauea_defconfig
+index cc3e7b7..865725e 100644
+--- a/arch/powerpc/configs/40x/kilauea_defconfig
++++ b/arch/powerpc/configs/40x/kilauea_defconfig
 @@ -1,7 +1,7 @@
  #
  # Automatically generated make config: don't edit
 -# Linux kernel version: 2.6.29-rc2
--# Tue Jan 20 08:17:53 2009
+-# Tue Jan 20 08:17:52 2009
 +# Linux kernel version: 2.6.30-rc7
-+# Wed Jun  3 09:11:02 2009
++# Wed Jun  3 10:18:16 2009
  #
  # CONFIG_PPC64 is not set
  
@@ -169,8 +170,8 @@ index 50c7cc1..1467475 100644
  # CONFIG_FREEZER is not set
  CONFIG_PPC4xx_PCI_EXPRESS=y
  
-@@ -170,7 +182,7 @@ CONFIG_PPC4xx_PCI_EXPRESS=y
- CONFIG_MAKALU=y
+@@ -170,7 +182,7 @@ CONFIG_KILAUEA=y
+ # CONFIG_MAKALU is not set
  # CONFIG_WALNUT is not set
  # CONFIG_XILINX_VIRTEX_GENERIC_BOARD is not set
 -# CONFIG_PPC40x_SIMPLE is not set
@@ -397,38 +398,36 @@ index 50c7cc1..1467475 100644
  # CONFIG_PPC_CLOCK is not set
  # CONFIG_VIRTUALIZATION is not set
 diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-index f39c953..1b725c6 100644
+index 1b725c6..a6e43cb 100644
 --- a/arch/powerpc/platforms/40x/Kconfig
 +++ b/arch/powerpc/platforms/40x/Kconfig
-@@ -56,6 +56,7 @@ config MAKALU
+@@ -45,6 +45,7 @@ config KILAUEA
+ 	depends on 40x
+ 	default n
  	select 405EX
- 	select PCI
- 	select PPC4xx_PCI_EXPRESS
 +	select PPC40x_SIMPLE
+ 	select PPC4xx_PCI_EXPRESS
  	help
- 	  This option enables support for the AMCC PPC405EX board.
- 
+ 	  This option enables support for the AMCC PPC405EX evaluation board.
 diff --git a/arch/powerpc/platforms/40x/Makefile b/arch/powerpc/platforms/40x/Makefile
-index 9bab76a..77d4b20 100644
+index 77d4b20..56e8900 100644
 --- a/arch/powerpc/platforms/40x/Makefile
 +++ b/arch/powerpc/platforms/40x/Makefile
-@@ -1,6 +1,5 @@
- obj-$(CONFIG_KILAUEA)				+= kilauea.o
+@@ -1,4 +1,3 @@
+-obj-$(CONFIG_KILAUEA)				+= kilauea.o
  obj-$(CONFIG_HCU4)				+= hcu4.o
--obj-$(CONFIG_MAKALU)				+= makalu.o
  obj-$(CONFIG_WALNUT)				+= walnut.o
  obj-$(CONFIG_XILINX_VIRTEX_GENERIC_BOARD)	+= virtex.o
- obj-$(CONFIG_EP405)				+= ep405.o
-diff --git a/arch/powerpc/platforms/40x/makalu.c b/arch/powerpc/platforms/40x/makalu.c
+diff --git a/arch/powerpc/platforms/40x/kilauea.c b/arch/powerpc/platforms/40x/kilauea.c
 deleted file mode 100644
-index a6a1d60..0000000
---- a/arch/powerpc/platforms/40x/makalu.c
+index fd7d934..0000000
+--- a/arch/powerpc/platforms/40x/kilauea.c
 +++ /dev/null
 @@ -1,60 +0,0 @@
 -/*
-- * Makalu board specific routines
+- * Kilauea board specific routines
 - *
-- * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
+- * Copyright 2007-2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
 - *
 - * Based on the Walnut code by
 - * Josh Boyer <jwboyer@linux.vnet.ibm.com>
@@ -449,36 +448,36 @@ index a6a1d60..0000000
 -#include <asm/pci-bridge.h>
 -#include <asm/ppc4xx.h>
 -
--static __initdata struct of_device_id makalu_of_bus[] = {
+-static __initdata struct of_device_id kilauea_of_bus[] = {
 -	{ .compatible = "ibm,plb4", },
 -	{ .compatible = "ibm,opb", },
 -	{ .compatible = "ibm,ebc", },
 -	{},
 -};
 -
--static int __init makalu_device_probe(void)
+-static int __init kilauea_device_probe(void)
 -{
--	of_platform_bus_probe(NULL, makalu_of_bus, NULL);
+-	of_platform_bus_probe(NULL, kilauea_of_bus, NULL);
 -
 -	return 0;
 -}
--machine_device_initcall(makalu, makalu_device_probe);
+-machine_device_initcall(kilauea, kilauea_device_probe);
 -
--static int __init makalu_probe(void)
+-static int __init kilauea_probe(void)
 -{
 -	unsigned long root = of_get_flat_dt_root();
 -
--	if (!of_flat_dt_is_compatible(root, "amcc,makalu"))
+-	if (!of_flat_dt_is_compatible(root, "amcc,kilauea"))
 -		return 0;
 -
--	ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
+-	ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
 -
 -	return 1;
 -}
 -
--define_machine(makalu) {
--	.name 				= "Makalu",
--	.probe 				= makalu_probe,
+-define_machine(kilauea) {
+-	.name 				= "Kilauea",
+-	.probe 				= kilauea_probe,
 -	.progress 			= udbg_progress,
 -	.init_IRQ 			= uic_init_tree,
 -	.get_irq 			= uic_get_irq,
@@ -486,16 +485,15 @@ index a6a1d60..0000000
 -	.calibrate_decr			= generic_calibrate_decr,
 -};
 diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
-index f40ac9b..0e8aa2f 100644
+index 0e8aa2f..5fd5a59 100644
 --- a/arch/powerpc/platforms/40x/ppc40x_simple.c
 +++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
-@@ -51,7 +51,8 @@ machine_device_initcall(ppc40x_simple, ppc40x_device_probe);
-  * board.c file for it rather than adding it to this list.
+@@ -52,6 +52,8 @@ machine_device_initcall(ppc40x_simple, ppc40x_device_probe);
   */
  static char *board[] __initdata = {
--	"amcc,acadia"
-+	"amcc,acadia",
-+	"amcc,makalu"
+ 	"amcc,acadia",
++	"amcc,haleakala",
++	"amcc,kilauea",
+ 	"amcc,makalu"
  };
  
- static int __init ppc40x_probe(void)
