@@ -1,20 +1,23 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp3.netcologne.de (smtp3.netcologne.de [194.8.194.66])
-	by ozlabs.org (Postfix) with ESMTP id DC00FDDE01
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 04:35:36 +1000 (EST)
-Date: Wed, 03 Jun 2009 20:35:26 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH] powerpc: tiny memcpy_(to|from)io optimisation
-To: Kenneth Johansson <kenneth@southpole.se>
-References: <1243968361.4951.0@antares> <1243983086.27194.7.camel@pasglop>
-	<1244039796.20864.48.camel@localhost.localdomain>
-In-Reply-To: <1244039796.20864.48.camel@localhost.localdomain> (from
-	kenneth@southpole.se on Wed Jun  3 16:36:36 2009)
-Message-Id: <1244054133.3367.0@antares>
-MIME-Version: 1.0
+Return-Path: <pierre@ossman.eu>
+Received: from smtp.ossman.eu (82-117-125-11.tcdsl.calypso.net [82.117.125.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F4037DDDE1
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 05:57:21 +1000 (EST)
+Date: Wed, 3 Jun 2009 21:57:09 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] mmc: Fix the wrong accessor to HOSTVER register
+Message-ID: <20090603215709.185d2a6b@mjolnir.ossman.eu>
+In-Reply-To: <20090602172644.GA26721@oksana.dev.rtsoft.ru>
+References: <1241606407-18685-1-git-send-email-daveliu@freescale.com>
+	<20090602172644.GA26721@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-jQo4Z5PnWfYq5B0ywsKn"
-Cc: linuxppc-dev@ozlabs.org
+	protocol="application/pgp-signature";
+	boundary="=_freyr.ossman.eu-31122-1244059033-0001-2"
+Cc: linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx, ben-linux@fluff.org,
+	drzeus-sdhci@drzeus.cx
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---=-jQo4Z5PnWfYq5B0ywsKn
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
+
+--=_freyr.ossman.eu-31122-1244059033-0001-2
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-Am 03.06.09 16:36 schrieb(en) Kenneth Johansson:
-> On an e300 core using the lwzu/stwu is about 20% faster so at least =20
-> one core prefer that optimization.
+On Tue, 2 Jun 2009 21:26:44 +0400
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-Bingo.  The '5200 on my test system has that core.  So "-mcpu=3D603e" =20
-should select this strategy!
+> On Wed, May 06, 2009 at 06:40:07PM +0800, Dave Liu wrote:
+> > Freescale eSDHC controller has the special order for
+> > the HOST version register. that is not same as the other's
+> > registers. The address of HOSTVER in spec is 0xFE, and
+> > we need use the in_be16(0xFE) to access it, not in_be16(0xFC).
+> >=20
+> > Signed-off-by: Dave Liu <daveliu@freescale.com>
+>=20
+> Sorry for the delay Dave. This patch is surely
+>=20
+> Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>=20
 
-Cheers, Albrecht.
+Queued.
 
+Rgds
+--=20
+     -- Pierre Ossman
 
---=-jQo4Z5PnWfYq5B0ywsKn
-Content-Type: application/pgp-signature
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-31122-1244059033-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-iD8DBQBKJsJ1n/9unNAn/9ERAl+WAJ9N5bJav9AmNwSQ79O1g+WHCmKyXwCgyshy
-OOZ5um6MIcquF8sz30L3bAs=
-=TjH/
+iEYEARECAAYFAkom1ZkACgkQ7b8eESbyJLhMhQCfeCMd15HjnbV6BHTM+E1Dd01g
+tjQAnj6w+9lHY3NBLmaA4MZdRpJeUlSA
+=+cKD
 -----END PGP SIGNATURE-----
 
---=-jQo4Z5PnWfYq5B0ywsKn--
+--=_freyr.ossman.eu-31122-1244059033-0001-2--
