@@ -1,15 +1,10 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A2FF9DDDF4
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 14:21:32 +1000 (EST)
-Date: Wed, 3 Jun 2009 14:21:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/pseries: fix warnings when printing resource_size_t
-Message-Id: <20090603142130.02be8c2d.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 03 Jun 2009 14:53:37 +1000
+Subject: [PATCH] powerpc/mm: Fix a AB->BA deadlock scenario with nohash MMU
+	context lock
+Message-Id: <20090603045351.96BEEDDDF7@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,45 +14,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-resource_size_t is 64 bits on pseries
+The MMU context_lock can be taken from switch_mm() while the
+rq->lock is held. The rq->lock can also be taken from interrupts,
+thus if we get interrupted in destroy_context() with the context
+lock held and that interrupt tries to take the rq->lock, there's
+a possible deadlock scenario with another CPU having the rq->lock
+and calling switch_mm() which takes our context lock.
 
-Gets rid of these warnings:
+The fix is to always ensure interrupts are off when taking our
+context lock. The switch_mm() path is already good so this fixes
+the destroy_context() path.
 
-arch/powerpc/platforms/pseries/iommu.c: In function 'pci_dma_bus_setup_pSeries':
-arch/powerpc/platforms/pseries/iommu.c:391: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'resource_size_t'
-arch/powerpc/platforms/pseries/iommu.c:417: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'resource_size_t'
+While at it, turn the context lock into a new style spinlock.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/pseries/iommu.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 3ee01b4..661c8e0 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -388,7 +388,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+
+ arch/powerpc/mm/mmu_context_nohash.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+--- linux-work.orig/arch/powerpc/mm/mmu_context_nohash.c	2009-06-03 14:14:47.000000000 +1000
++++ linux-work/arch/powerpc/mm/mmu_context_nohash.c	2009-06-03 14:25:30.000000000 +1000
+@@ -46,7 +46,7 @@ static unsigned int next_context, nr_fre
+ static unsigned long *context_map;
+ static unsigned long *stale_map[NR_CPUS];
+ static struct mm_struct **context_mm;
+-static spinlock_t context_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(context_lock);
  
- 		while (pci->phb->dma_window_size * children > 0x80000000ul)
- 			pci->phb->dma_window_size >>= 1;
--		pr_debug("No ISA/IDE, window size is 0x%lx\n",
-+		pr_debug("No ISA/IDE, window size is 0x%llx\n",
- 			 pci->phb->dma_window_size);
- 		pci->phb->dma_window_base_cur = 0;
+ #define CTX_MAP_SIZE	\
+ 	(sizeof(unsigned long) * (last_context / BITS_PER_LONG + 1))
+@@ -272,6 +272,7 @@ int init_new_context(struct task_struct 
+  */
+ void destroy_context(struct mm_struct *mm)
+ {
++	unsigned long flags;
+ 	unsigned int id;
  
-@@ -414,7 +414,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
- 	while (pci->phb->dma_window_size * children > 0x70000000ul)
- 		pci->phb->dma_window_size >>= 1;
+ 	if (mm->context.id == MMU_NO_CONTEXT)
+@@ -279,7 +280,7 @@ void destroy_context(struct mm_struct *m
  
--	pr_debug("ISA/IDE, window size is 0x%lx\n", pci->phb->dma_window_size);
-+	pr_debug("ISA/IDE, window size is 0x%llx\n", pci->phb->dma_window_size);
+ 	WARN_ON(mm->context.active != 0);
+ 
+-	spin_lock(&context_lock);
++	spin_lock_irqsave(&context_lock, flags);
+ 	id = mm->context.id;
+ 	if (id != MMU_NO_CONTEXT) {
+ 		__clear_bit(id, context_map);
+@@ -290,7 +291,7 @@ void destroy_context(struct mm_struct *m
+ #endif
+ 		nr_free_contexts++;
+ 	}
+-	spin_unlock(&context_lock);
++	spin_unlock_irqrestore(&context_lock, flags);
  }
  
- 
--- 
-1.6.3.1
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ #ifdef CONFIG_SMP
