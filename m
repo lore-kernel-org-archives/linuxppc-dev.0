@@ -1,20 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F0A31DDDE1
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 11:54:21 +1000 (EST)
-Subject: Re: [PATCH 3/5] powerpc: Introduce CONFIG_PPC_BOOK3S
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200906021149.17816.arnd@arndb.de>
-References: <20090602075022.57FE2DDF72@ozlabs.org>
-	<200906021149.17816.arnd@arndb.de>
-Content-Type: text/plain
-Date: Wed, 03 Jun 2009 11:54:11 +1000
-Message-Id: <1243994051.27194.27.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 3 Jun 2009 14:00:51 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jeremy Kerr <jk@ozlabs.org>
+Subject: [PATCH] powerpc/spufs: remove unused error path
+Message-Id: <20090603140051.b531ae79.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Jan Blunck <jblunck@suse.de>,
+	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +17,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-06-02 at 11:49 +0100, Arnd Bergmann wrote:
-> 
-> then add the other BOOK3S option depending on PPC64. Even though
-> it might look silly to have a choice statement with just one possible
-> option in case of PPC64, why not integrate it right away, for
-> consistency
-> reasons. It seems strange to have the same Kconfig symbol both
-> as a choice and a simple bool.
+Commit 45db9240890d9343c934db1fe82d6e68ac2d28da ("powerpc/spufs: Remove
+double check for non-negative dentry") removed the only user of the
+out_dput label, so remove it and the code following it.
 
-After some thinking I decided to keep the PPC64 variant as a separate
-simple bool for now, among others, because it should be a separate
-choice anyway due to the help text being different for 32 and 64-bit
-anyway and I'm not fan of a one-option choice.
+Gets rid of this warning:
 
-Ben.
+arch/powerpc/platforms/cell/spufs/inode.c: In function 'spufs_create':
+arch/powerpc/platforms/cell/spufs/inode.c:647: warning: label 'out_dput' defined but not used
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/cell/spufs/inode.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+index 36b6700..24b30b6 100644
+--- a/arch/powerpc/platforms/cell/spufs/inode.c
++++ b/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -644,8 +644,6 @@ long spufs_create(struct nameidata *nd, unsigned int flags, mode_t mode,
+ 		fsnotify_mkdir(nd->path.dentry->d_inode, dentry);
+ 	return ret;
+ 
+-out_dput:
+-	dput(dentry);
+ out_dir:
+ 	mutex_unlock(&nd->path.dentry->d_inode->i_mutex);
+ out:
+-- 
+1.6.3.1
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
