@@ -1,15 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 5BF32DDDF8
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 15:35:20 +1000 (EST)
-Date: Wed, 3 Jun 2009 15:35:19 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: [PATCH] sound/ppc: update annotations of serveral functions
-Message-Id: <20090603153519.cd7049db.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Jean Delvare <khali@linux-fr.org>, ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f220.google.com (mail-gx0-f220.google.com
+	[209.85.217.220]) by ozlabs.org (Postfix) with ESMTP id 8E154DDE05
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 16:01:41 +1000 (EST)
+Received: by gxk20 with SMTP id 20so10973955gxk.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Jun 2009 23:01:40 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <fa686aa40906021612q3f40a0docffa9766b53cd90b@mail.gmail.com>
+References: <4A124202.4010201@doredevelopment.dk>
+	<fa686aa40906021612q3f40a0docffa9766b53cd90b@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 3 Jun 2009 00:01:20 -0600
+Message-ID: <fa686aa40906022301t19fa98fckeb9894e480fa6f1e@mail.gmail.com>
+Subject: Re: [PATCH v2] i2c-mpc: generate START condition after STOP caused by
+	read i2c_msg
+To: Esben Haabendal <eha@doredevelopment.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
+	Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,210 +26,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[I am not sure if this is the correct approach as I don't know if any of
-this actual hardware or drivers are really hot pluggable.]
+On Tue, Jun 2, 2009 at 5:12 PM, Grant Likely <grant.likely@secretlab.ca> wr=
+ote:
+> Hi Esben and Ben,
+>
+> Sorry for the lateness in reviewing this. =A0FWIW, here are my comments.
+>
+> g.
+>
+> On Mon, May 18, 2009 at 11:22 PM, Esben Haabendal
+> <eha@doredevelopment.dk> wrote:
+>> This fixes MAL (arbitration lost) bug caused by illegal use of
+>> RSTA (repeated START) after STOP condition generated after last byte
+>> of reads. With this patch, it is possible to do an i2c_transfer() with
+>> additional i2c_msg's following the I2C_M_RD messages.
+>>
+>> It still needs to be resolved if it is possible to fix this issue
+>> by removing the STOP condition after reads in a robust way.
+>>
+>> Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
+>> ---
+>> =A0drivers/i2c/busses/i2c-mpc.c | =A0 =A09 +++++++--
+>> =A01 files changed, 7 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+>> index 4af5c09..0199f9a 100644
+>> --- a/drivers/i2c/busses/i2c-mpc.c
+>> +++ b/drivers/i2c/busses/i2c-mpc.c
+>> @@ -456,17 +456,22 @@ static int mpc_xfer(struct i2c_adapter *adap, stru=
+ct
+>> i2c_msg *msgs, int num)
+>> =A0 =A0 =A0 =A0}
+>>
+>> =A0 =A0 =A0 =A0for (i =3D 0; ret >=3D 0 && i < num; i++) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 int restart =3D i;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pmsg =3D &msgs[i];
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_dbg(i2c->dev,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0"Doing %s %d bytes to 0x%=
+02x - %d of %d messages\n",
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pmsg->flags & I2C_M_RD ? =
+"read" : "write",
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pmsg->len, pmsg->addr, i =
++ 1, num);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (i > 0 && ((pmsg - 1)->flags & I2C_M_RD=
+))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 restart =3D 0;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (pmsg->flags & I2C_M_RD)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ret =3D
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc_read(i2c, pmsg=
+->addr, pmsg->buf, pmsg->len,
+>> i);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc_read(i2c, pmsg=
+->addr, pmsg->buf, pmsg->len,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0restart);
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0else
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ret =3D
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc_write(i2c, pms=
+g->addr, pmsg->buf, pmsg->len,
+>> i);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc_write(i2c, pms=
+g->addr, pmsg->buf, pmsg->len,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 restart);
+>> =A0 =A0 =A0 =A0}
+>
+> Hmmm, seems to be a rather convoluted code path. =A0Surely this could be
+> handled in a clearer way. =A0The whole (pmsg - 1) bit raises my eyebrows
+> (I'd rather see msgs[i-1]). =A0At the very least this deserves an
+> comment describing what it is doing. =A0The following might be better
+> for the next person who has to read this code:
+>
+> + =A0 =A0 =A0int restart =3D 0;
+> =A0 =A0 =A0 for (i =3D 0; ret >=3D 0 && i < num; i++) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 pmsg =3D &msgs[i];
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_dbg(i2c->dev,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "Doing %s %d bytes to 0x%02x =
+- %d of %d messages\n",
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pmsg->flags & I2C_M_RD ? "rea=
+d" : "write",
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pmsg->len, pmsg->addr, i + 1,=
+ num);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (pmsg->flags & I2C_M_RD)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc_read(i2c, pmsg-=
+>addr, pmsg->buf, pmsg->len,
+> i);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc_read(i2c, pmsg-=
+>addr, pmsg->buf, pmsg->len,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+restart);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc_write(i2c, pmsg=
+->addr, pmsg->buf, pmsg->len,
+> i);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc_write(i2c, pmsg=
+->addr, pmsg->buf, pmsg->len,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ restart);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Only set the restart flag if this was no=
+t an
+> I2C_M_RD transaction
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* because it causes an illegal use of
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* RSTA (repeated START) after STOP condi=
+tion
+> generated after last byte
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* of reads =A0*/
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 restart =3D (pmsg->flags & I2C_M_RD =3D=3D =
+0);
+> =A0 =A0 =A0 }
 
-Gets rid of these build warnings:
+BTW, since you're touching these lines anyway, please clean up the
+whitespace usage.  Since you have to break the line anyway, it no
+longer makes sense for the "ret =3D " to be on a separate line anymore.
 
-WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x5c): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_new()
-The function __devinit .snd_pmac_probe() references
-a function __init .snd_pmac_new().
-If .snd_pmac_new is only used by .snd_pmac_probe then
-annotate .snd_pmac_new with a matching annotation.
+g.
 
-WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x10c): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_burgundy_init()
-The function __devinit .snd_pmac_probe() references
-a function __init .snd_pmac_burgundy_init().
-If .snd_pmac_burgundy_init is only used by .snd_pmac_probe then
-annotate .snd_pmac_burgundy_init with a matching annotation.
-
-WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x164): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_daca_init()
-The function __devinit .snd_pmac_probe() references
-a function __init .snd_pmac_daca_init().
-If .snd_pmac_daca_init is only used by .snd_pmac_probe then
-annotate .snd_pmac_daca_init with a matching annotation.
-
-WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x1dc): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_tumbler_init()
-The function __devinit .snd_pmac_probe() references
-a function __init .snd_pmac_tumbler_init().
-If .snd_pmac_tumbler_init is only used by .snd_pmac_probe then
-annotate .snd_pmac_tumbler_init with a matching annotation.
-
-WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x1ec): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_tumbler_post_init()
-The function __devinit .snd_pmac_probe() references
-a function __init .snd_pmac_tumbler_post_init().
-If .snd_pmac_tumbler_post_init is only used by .snd_pmac_probe then
-annotate .snd_pmac_tumbler_post_init with a matching annotation.
-
-WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x28c): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_awacs_init()
-The function __devinit .snd_pmac_probe() references
-a function __init .snd_pmac_awacs_init().
-If .snd_pmac_awacs_init is only used by .snd_pmac_probe then
-annotate .snd_pmac_awacs_init with a matching annotation.
-
-WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x2bc): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_pcm_new()
-The function __devinit .snd_pmac_probe() references
-a function __init .snd_pmac_pcm_new().
-If .snd_pmac_pcm_new is only used by .snd_pmac_probe then
-annotate .snd_pmac_pcm_new with a matching annotation.
-
-WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x2f8): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_attach_beep()
-The function __devinit .snd_pmac_probe() references
-a function __init .snd_pmac_attach_beep().
-If .snd_pmac_attach_beep is only used by .snd_pmac_probe then
-annotate .snd_pmac_attach_beep with a matching annotation.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- sound/ppc/awacs.c    |    2 +-
- sound/ppc/beep.c     |    2 +-
- sound/ppc/burgundy.c |    2 +-
- sound/ppc/daca.c     |    2 +-
- sound/ppc/keywest.c  |    4 ++--
- sound/ppc/pmac.c     |    8 ++++----
- sound/ppc/tumbler.c  |    4 ++--
- 7 files changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/sound/ppc/awacs.c b/sound/ppc/awacs.c
-index 80df9b1..0d2d62d 100644
---- a/sound/ppc/awacs.c
-+++ b/sound/ppc/awacs.c
-@@ -872,7 +872,7 @@ static void snd_pmac_awacs_update_automute(struct snd_pmac *chip, int do_notify)
- /*
-  * initialize chip
-  */
--int __init
-+int __devinit
- snd_pmac_awacs_init(struct snd_pmac *chip)
- {
- 	int pm7500 = IS_PM7500;
-diff --git a/sound/ppc/beep.c b/sound/ppc/beep.c
-index 89f5c32..a9d3507 100644
---- a/sound/ppc/beep.c
-+++ b/sound/ppc/beep.c
-@@ -215,7 +215,7 @@ static struct snd_kcontrol_new snd_pmac_beep_mixer = {
- };
- 
- /* Initialize beep stuff */
--int __init snd_pmac_attach_beep(struct snd_pmac *chip)
-+int __devinit snd_pmac_attach_beep(struct snd_pmac *chip)
- {
- 	struct pmac_beep *beep;
- 	struct input_dev *input_dev;
-diff --git a/sound/ppc/burgundy.c b/sound/ppc/burgundy.c
-index 45a7629..aba3814 100644
---- a/sound/ppc/burgundy.c
-+++ b/sound/ppc/burgundy.c
-@@ -618,7 +618,7 @@ static void snd_pmac_burgundy_update_automute(struct snd_pmac *chip, int do_noti
- /*
-  * initialize burgundy
-  */
--int __init snd_pmac_burgundy_init(struct snd_pmac *chip)
-+int __devinit snd_pmac_burgundy_init(struct snd_pmac *chip)
- {
- 	int imac = machine_is_compatible("iMac");
- 	int i, err;
-diff --git a/sound/ppc/daca.c b/sound/ppc/daca.c
-index f8d478c..24200b7 100644
---- a/sound/ppc/daca.c
-+++ b/sound/ppc/daca.c
-@@ -244,7 +244,7 @@ static void daca_cleanup(struct snd_pmac *chip)
- }
- 
- /* exported */
--int __init snd_pmac_daca_init(struct snd_pmac *chip)
-+int __devinit snd_pmac_daca_init(struct snd_pmac *chip)
- {
- 	int i, err;
- 	struct pmac_daca *mix;
-diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
-index a5afb26..15518e6 100644
---- a/sound/ppc/keywest.c
-+++ b/sound/ppc/keywest.c
-@@ -109,7 +109,7 @@ void snd_pmac_keywest_cleanup(struct pmac_keywest *i2c)
- 	}
- }
- 
--int __init snd_pmac_tumbler_post_init(void)
-+int __devinit snd_pmac_tumbler_post_init(void)
- {
- 	int err;
- 	
-@@ -124,7 +124,7 @@ int __init snd_pmac_tumbler_post_init(void)
- }
- 
- /* exported */
--int __init snd_pmac_keywest_init(struct pmac_keywest *i2c)
-+int __devinit snd_pmac_keywest_init(struct pmac_keywest *i2c)
- {
- 	int err;
- 
-diff --git a/sound/ppc/pmac.c b/sound/ppc/pmac.c
-index 9b4e9c3..dfea116 100644
---- a/sound/ppc/pmac.c
-+++ b/sound/ppc/pmac.c
-@@ -702,7 +702,7 @@ static struct snd_pcm_ops snd_pmac_capture_ops = {
- 	.pointer =	snd_pmac_capture_pointer,
- };
- 
--int __init snd_pmac_pcm_new(struct snd_pmac *chip)
-+int __devinit snd_pmac_pcm_new(struct snd_pmac *chip)
- {
- 	struct snd_pcm *pcm;
- 	int err;
-@@ -934,7 +934,7 @@ static void __init detect_byte_swap(struct snd_pmac *chip)
- /*
-  * detect a sound chip
-  */
--static int __init snd_pmac_detect(struct snd_pmac *chip)
-+static int __devinit snd_pmac_detect(struct snd_pmac *chip)
- {
- 	struct device_node *sound;
- 	struct device_node *dn;
-@@ -1158,7 +1158,7 @@ static struct snd_kcontrol_new auto_mute_controls[] __initdata = {
- 	},
- };
- 
--int __init snd_pmac_add_automute(struct snd_pmac *chip)
-+int __devinit snd_pmac_add_automute(struct snd_pmac *chip)
- {
- 	int err;
- 	chip->auto_mute = 1;
-@@ -1175,7 +1175,7 @@ int __init snd_pmac_add_automute(struct snd_pmac *chip)
- /*
-  * create and detect a pmac chip record
-  */
--int __init snd_pmac_new(struct snd_card *card, struct snd_pmac **chip_return)
-+int __devinit snd_pmac_new(struct snd_card *card, struct snd_pmac **chip_return)
- {
- 	struct snd_pmac *chip;
- 	struct device_node *np;
-diff --git a/sound/ppc/tumbler.c b/sound/ppc/tumbler.c
-index 40222fc..adc8341 100644
---- a/sound/ppc/tumbler.c
-+++ b/sound/ppc/tumbler.c
-@@ -1269,7 +1269,7 @@ static void tumbler_resume(struct snd_pmac *chip)
- #endif
- 
- /* initialize tumbler */
--static int __init tumbler_init(struct snd_pmac *chip)
-+static int __devinit tumbler_init(struct snd_pmac *chip)
- {
- 	int irq;
- 	struct pmac_tumbler *mix = chip->mixer_data;
-@@ -1339,7 +1339,7 @@ static void tumbler_cleanup(struct snd_pmac *chip)
- }
- 
- /* exported */
--int __init snd_pmac_tumbler_init(struct snd_pmac *chip)
-+int __devinit snd_pmac_tumbler_init(struct snd_pmac *chip)
- {
- 	int i, err;
- 	struct pmac_tumbler *mix;
--- 
-1.6.3.1
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
