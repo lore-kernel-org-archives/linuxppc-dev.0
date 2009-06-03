@@ -1,19 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B2408DDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 07:32:08 +1000 (EST)
-Message-Id: <E6E25BED-8561-4C3B-9501-489FC53F53DE@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-In-Reply-To: <20090603195429.GA31269@www.tglx.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [RFC] powerpc/mpc85xx: add support for suspend mode
-Date: Wed, 3 Jun 2009 16:31:42 -0500
-References: <20090603195429.GA31269@www.tglx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <soni.trilok@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
+	by ozlabs.org (Postfix) with ESMTP id 92FDFDDD01
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 01:54:54 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so48167qwe.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 03 Jun 2009 08:54:52 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <9e4733910906030838o7313c311je3545cd974d3edd5@mail.gmail.com>
+References: <4A255B21.8040002@gersys.de>
+	<20090602171527.GA8745@oksana.dev.rtsoft.ru>
+	<4A266FB2.2040902@gersys.de>
+	<20090603132217.GA18353@oksana.dev.rtsoft.ru>
+	<9e4733910906030838o7313c311je3545cd974d3edd5@mail.gmail.com>
+Date: Wed, 3 Jun 2009 21:24:52 +0530
+Message-ID: <5d5443650906030854h40e98ff9tb2bd23a0f5e8dec6@mail.gmail.com>
+Subject: Re: PWM class? (was: Re: MPC52xx simple GPIO support)
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Bill Gatliff <bgat@billgatliff.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
+	linux-kernel@vger.kernel.org, Stefan Strobl <nst@gersys.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Jon,
 
-On Jun 3, 2009, at 2:54 PM, Sebastian Andrzej Siewior wrote:
-
-> This patch adds support for the MPC85xx boards to enter the SLEEP  
-> mode.
-> The wake up is done via an external interrupt.
-> mpc85xx_enter_sleep() does not clear HID0_SLEEP in resume but it may  
-> be
-> okay since it gets cleared on next NAP/DOZE.
-> mpc85xx_enter_sleep() is mostly copied from NAP/DOZE. It does not look
-> like it is worth to merge into e500_idle(). I removed the feature  
-> check
-> for NAP/DOZE because it does not look required. It is just there to  
-> work
-> around the BDI. If it is required it could be moved to
-> mpc85xx_init_suspend().
-> The suspend.c file contains a sample implementation. I need  
-> additionally
-> to add hooks prio and after mpc85xx_enter_sleep() to toggle a few bits
-> in my FPGA. Since the suspend.c is really short I'm not sure if it is
-> worth to keep it here and add couple function prototypes or add the
-> required bits directly into the board code.
+On Wed, Jun 3, 2009 at 9:08 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On Wed, Jun 3, 2009 at 9:22 AM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+>> On Wed, Jun 03, 2009 at 02:42:26PM +0200, Stefan Strobl wrote:
+>> [...]
+>>> The led class provides support for setting the brightness, which
+>>> obviously the gpio driver doesn't support. The hardware (mpc52xx_gpt)
+>>> would support it in PWM mode though. I'm now wandering how this could b=
+e
+>>> best implemented.
+>>>
+>>> 1) - Create some PWM class similar to the GPIO class
+>>> =A0 =A0- Add support for PWM mode in mpc52xx_gpt.c that uses that PWM c=
+lass
+>>> =A0 =A0- And add an interface for the LED to use the PWM class
+>>>
+>>> 2) - Create an LED driver that accesses the mpc52xx_gpt directly.
+>>>
+>>> I think I would be overwhelmed trying to implement (1) but am confident
+>>> to do (2). What do you think is the right approach?
+>>
+>> I'd suggest creating a generic PWM class, i.e. PWMLIB, alike to
+>> GPIOLIB. (2) can be an acceptable approach for now, but for the
+>> long-term solution (1) is the way to go.
 >
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> ---
-> arch/powerpc/Kconfig                  |    2 +-
-> arch/powerpc/kernel/idle_e500.S       |   43 ++++++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/platforms/85xx/Makefile  |    1 +
-> arch/powerpc/platforms/85xx/suspend.c |   27 ++++++++++++++++++++
-> 4 files changed, 72 insertions(+), 1 deletions(-)
-> create mode 100644 arch/powerpc/platforms/85xx/suspend.c
+> What happened to this one?
+>
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-October/063562.html
+>
 
-On what system did you test / develop this on?
+Adding Bill to see if he has any updates.
 
-- k
+--=20
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
