@@ -2,24 +2,24 @@ Return-Path: <prasad@linux.vnet.ibm.com>
 Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [59.145.155.7])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BC492DE22D
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 02:35:54 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 06EDCDDF54
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 02:36:02 +1000 (EST)
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
-	by e28smtp07.in.ibm.com (8.13.1/8.13.1) with ESMTP id n53GZmF2000545
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 22:05:48 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+	by e28smtp07.in.ibm.com (8.13.1/8.13.1) with ESMTP id n53GZuJE000635
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 22:05:56 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
 	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n53GZmKW2359538
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 22:05:48 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
-	by d28av02.in.ibm.com (8.13.1/8.13.3) with ESMTP id n53GZmFR002471
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Jun 2009 02:35:48 +1000
-Date: Wed, 3 Jun 2009 22:05:45 +0530
+	n53GZuVD3010654
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 22:05:56 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id n53GZuCh022206
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 22:05:56 +0530
+Date: Wed, 3 Jun 2009 22:05:53 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: [Patch 5/6] Modify Data storage exception code to recognise DABR
-	match first
-Message-ID: <20090603163545.GF5197@in.ibm.com>
+Subject: [Patch 6/6] Adapt kexec and samples code to recognise PPC64
+	hardware breakpoint usage
+Message-ID: <20090603163553.GG5197@in.ibm.com>
 References: <20090603162741.197115376@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,43 +36,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Modify Data storage exception code to first lookout for a DABR match before
-recognising a kprobe or xmon exception.
+Modify kexec code to disable DABR registers before a reboot. Adapt the samples
+code to populate PPC64-arch specific fields.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/fault.c |   14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/machine_kexec_64.c  |    3 +++
+ samples/hw_breakpoint/data_breakpoint.c |    4 ++++
+ 2 files changed, 7 insertions(+)
 
-Index: linux-2.6-tip.hbkpt/arch/powerpc/mm/fault.c
+Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/machine_kexec_64.c
 ===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/powerpc/mm/fault.c
-+++ linux-2.6-tip.hbkpt/arch/powerpc/mm/fault.c
-@@ -136,6 +136,12 @@ int __kprobes do_page_fault(struct pt_re
- 		error_code &= 0x48200000;
- 	else
- 		is_write = error_code & DSISR_ISSTORE;
-+
-+	if (error_code & DSISR_DABRMATCH) {
-+		/* DABR match */
-+		do_dabr(regs, address, error_code);
-+		return 0;
-+	}
- #else
- 	is_write = error_code & ESR_DST;
- #endif /* CONFIG_4xx || CONFIG_BOOKE */
-@@ -150,14 +156,6 @@ int __kprobes do_page_fault(struct pt_re
- 	if (!user_mode(regs) && (address >= TASK_SIZE))
- 		return SIGSEGV;
+--- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/machine_kexec_64.c
++++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/machine_kexec_64.c
+@@ -24,6 +24,7 @@
+ #include <asm/sections.h>	/* _end */
+ #include <asm/prom.h>
+ #include <asm/smp.h>
++#include <asm/hw_breakpoint.h>
  
--#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
--  	if (error_code & DSISR_DABRMATCH) {
--		/* DABR match */
--		do_dabr(regs, address, error_code);
--		return 0;
--	}
--#endif /* !(CONFIG_4xx || CONFIG_BOOKE)*/
--
- 	if (in_atomic() || mm == NULL) {
- 		if (!user_mode(regs))
- 			return SIGSEGV;
+ int default_machine_kexec_prepare(struct kimage *image)
+ {
+@@ -214,6 +215,7 @@ static void kexec_prepare_cpus(void)
+ 	put_cpu();
+ 
+ 	local_irq_disable();
++	hw_breakpoint_disable();
+ }
+ 
+ #else /* ! SMP */
+@@ -233,6 +235,7 @@ static void kexec_prepare_cpus(void)
+ 	if (ppc_md.kexec_cpu_down)
+ 		ppc_md.kexec_cpu_down(0, 0);
+ 	local_irq_disable();
++	hw_breakpoint_disable();
+ }
+ 
+ #endif /* SMP */
+Index: linux-2.6-tip.hbkpt/samples/hw_breakpoint/data_breakpoint.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/samples/hw_breakpoint/data_breakpoint.c
++++ linux-2.6-tip.hbkpt/samples/hw_breakpoint/data_breakpoint.c
+@@ -54,6 +54,10 @@ static int __init hw_break_module_init(v
+ 	sample_hbp.info.type = HW_BREAKPOINT_WRITE;
+ 	sample_hbp.info.len = HW_BREAKPOINT_LEN_4;
+ #endif /* CONFIG_X86 */
++#ifdef CONFIG_PPC64
++	sample_hbp.info.name = ksym_name;
++	sample_hbp.info.type = HW_BREAKPOINT_WRITE;
++#endif /* CONFIG_PPC64 */
+ 
+ 	sample_hbp.triggered = (void *)sample_hbp_handler;
+ 
