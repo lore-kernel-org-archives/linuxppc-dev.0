@@ -1,10 +1,15 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 03 Jun 2009 14:53:37 +1000
-Subject: [PATCH] powerpc/mm: Fix a AB->BA deadlock scenario with nohash MMU
-	context lock
-Message-Id: <20090603045351.96BEEDDDF7@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 5BF32DDDF8
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 15:35:20 +1000 (EST)
+Date: Wed, 3 Jun 2009 15:35:19 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: [PATCH] sound/ppc: update annotations of serveral functions
+Message-Id: <20090603153519.cd7049db.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Jean Delvare <khali@linux-fr.org>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,60 +19,210 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The MMU context_lock can be taken from switch_mm() while the
-rq->lock is held. The rq->lock can also be taken from interrupts,
-thus if we get interrupted in destroy_context() with the context
-lock held and that interrupt tries to take the rq->lock, there's
-a possible deadlock scenario with another CPU having the rq->lock
-and calling switch_mm() which takes our context lock.
+[I am not sure if this is the correct approach as I don't know if any of
+this actual hardware or drivers are really hot pluggable.]
 
-The fix is to always ensure interrupts are off when taking our
-context lock. The switch_mm() path is already good so this fixes
-the destroy_context() path.
+Gets rid of these build warnings:
 
-While at it, turn the context lock into a new style spinlock.
+WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x5c): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_new()
+The function __devinit .snd_pmac_probe() references
+a function __init .snd_pmac_new().
+If .snd_pmac_new is only used by .snd_pmac_probe then
+annotate .snd_pmac_new with a matching annotation.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x10c): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_burgundy_init()
+The function __devinit .snd_pmac_probe() references
+a function __init .snd_pmac_burgundy_init().
+If .snd_pmac_burgundy_init is only used by .snd_pmac_probe then
+annotate .snd_pmac_burgundy_init with a matching annotation.
+
+WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x164): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_daca_init()
+The function __devinit .snd_pmac_probe() references
+a function __init .snd_pmac_daca_init().
+If .snd_pmac_daca_init is only used by .snd_pmac_probe then
+annotate .snd_pmac_daca_init with a matching annotation.
+
+WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x1dc): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_tumbler_init()
+The function __devinit .snd_pmac_probe() references
+a function __init .snd_pmac_tumbler_init().
+If .snd_pmac_tumbler_init is only used by .snd_pmac_probe then
+annotate .snd_pmac_tumbler_init with a matching annotation.
+
+WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x1ec): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_tumbler_post_init()
+The function __devinit .snd_pmac_probe() references
+a function __init .snd_pmac_tumbler_post_init().
+If .snd_pmac_tumbler_post_init is only used by .snd_pmac_probe then
+annotate .snd_pmac_tumbler_post_init with a matching annotation.
+
+WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x28c): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_awacs_init()
+The function __devinit .snd_pmac_probe() references
+a function __init .snd_pmac_awacs_init().
+If .snd_pmac_awacs_init is only used by .snd_pmac_probe then
+annotate .snd_pmac_awacs_init with a matching annotation.
+
+WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x2bc): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_pcm_new()
+The function __devinit .snd_pmac_probe() references
+a function __init .snd_pmac_pcm_new().
+If .snd_pmac_pcm_new is only used by .snd_pmac_probe then
+annotate .snd_pmac_pcm_new with a matching annotation.
+
+WARNING: sound/ppc/snd-powermac.o(.devinit.text+0x2f8): Section mismatch in reference from the function .snd_pmac_probe() to the function .init.text:.snd_pmac_attach_beep()
+The function __devinit .snd_pmac_probe() references
+a function __init .snd_pmac_attach_beep().
+If .snd_pmac_attach_beep is only used by .snd_pmac_probe then
+annotate .snd_pmac_attach_beep with a matching annotation.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
+ sound/ppc/awacs.c    |    2 +-
+ sound/ppc/beep.c     |    2 +-
+ sound/ppc/burgundy.c |    2 +-
+ sound/ppc/daca.c     |    2 +-
+ sound/ppc/keywest.c  |    4 ++--
+ sound/ppc/pmac.c     |    8 ++++----
+ sound/ppc/tumbler.c  |    4 ++--
+ 7 files changed, 12 insertions(+), 12 deletions(-)
 
-
- arch/powerpc/mm/mmu_context_nohash.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
---- linux-work.orig/arch/powerpc/mm/mmu_context_nohash.c	2009-06-03 14:14:47.000000000 +1000
-+++ linux-work/arch/powerpc/mm/mmu_context_nohash.c	2009-06-03 14:25:30.000000000 +1000
-@@ -46,7 +46,7 @@ static unsigned int next_context, nr_fre
- static unsigned long *context_map;
- static unsigned long *stale_map[NR_CPUS];
- static struct mm_struct **context_mm;
--static spinlock_t context_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_SPINLOCK(context_lock);
- 
- #define CTX_MAP_SIZE	\
- 	(sizeof(unsigned long) * (last_context / BITS_PER_LONG + 1))
-@@ -272,6 +272,7 @@ int init_new_context(struct task_struct 
+diff --git a/sound/ppc/awacs.c b/sound/ppc/awacs.c
+index 80df9b1..0d2d62d 100644
+--- a/sound/ppc/awacs.c
++++ b/sound/ppc/awacs.c
+@@ -872,7 +872,7 @@ static void snd_pmac_awacs_update_automute(struct snd_pmac *chip, int do_notify)
+ /*
+  * initialize chip
   */
- void destroy_context(struct mm_struct *mm)
+-int __init
++int __devinit
+ snd_pmac_awacs_init(struct snd_pmac *chip)
  {
-+	unsigned long flags;
- 	unsigned int id;
+ 	int pm7500 = IS_PM7500;
+diff --git a/sound/ppc/beep.c b/sound/ppc/beep.c
+index 89f5c32..a9d3507 100644
+--- a/sound/ppc/beep.c
++++ b/sound/ppc/beep.c
+@@ -215,7 +215,7 @@ static struct snd_kcontrol_new snd_pmac_beep_mixer = {
+ };
  
- 	if (mm->context.id == MMU_NO_CONTEXT)
-@@ -279,7 +280,7 @@ void destroy_context(struct mm_struct *m
- 
- 	WARN_ON(mm->context.active != 0);
- 
--	spin_lock(&context_lock);
-+	spin_lock_irqsave(&context_lock, flags);
- 	id = mm->context.id;
- 	if (id != MMU_NO_CONTEXT) {
- 		__clear_bit(id, context_map);
-@@ -290,7 +291,7 @@ void destroy_context(struct mm_struct *m
- #endif
- 		nr_free_contexts++;
- 	}
--	spin_unlock(&context_lock);
-+	spin_unlock_irqrestore(&context_lock, flags);
+ /* Initialize beep stuff */
+-int __init snd_pmac_attach_beep(struct snd_pmac *chip)
++int __devinit snd_pmac_attach_beep(struct snd_pmac *chip)
+ {
+ 	struct pmac_beep *beep;
+ 	struct input_dev *input_dev;
+diff --git a/sound/ppc/burgundy.c b/sound/ppc/burgundy.c
+index 45a7629..aba3814 100644
+--- a/sound/ppc/burgundy.c
++++ b/sound/ppc/burgundy.c
+@@ -618,7 +618,7 @@ static void snd_pmac_burgundy_update_automute(struct snd_pmac *chip, int do_noti
+ /*
+  * initialize burgundy
+  */
+-int __init snd_pmac_burgundy_init(struct snd_pmac *chip)
++int __devinit snd_pmac_burgundy_init(struct snd_pmac *chip)
+ {
+ 	int imac = machine_is_compatible("iMac");
+ 	int i, err;
+diff --git a/sound/ppc/daca.c b/sound/ppc/daca.c
+index f8d478c..24200b7 100644
+--- a/sound/ppc/daca.c
++++ b/sound/ppc/daca.c
+@@ -244,7 +244,7 @@ static void daca_cleanup(struct snd_pmac *chip)
  }
  
- #ifdef CONFIG_SMP
+ /* exported */
+-int __init snd_pmac_daca_init(struct snd_pmac *chip)
++int __devinit snd_pmac_daca_init(struct snd_pmac *chip)
+ {
+ 	int i, err;
+ 	struct pmac_daca *mix;
+diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
+index a5afb26..15518e6 100644
+--- a/sound/ppc/keywest.c
++++ b/sound/ppc/keywest.c
+@@ -109,7 +109,7 @@ void snd_pmac_keywest_cleanup(struct pmac_keywest *i2c)
+ 	}
+ }
+ 
+-int __init snd_pmac_tumbler_post_init(void)
++int __devinit snd_pmac_tumbler_post_init(void)
+ {
+ 	int err;
+ 	
+@@ -124,7 +124,7 @@ int __init snd_pmac_tumbler_post_init(void)
+ }
+ 
+ /* exported */
+-int __init snd_pmac_keywest_init(struct pmac_keywest *i2c)
++int __devinit snd_pmac_keywest_init(struct pmac_keywest *i2c)
+ {
+ 	int err;
+ 
+diff --git a/sound/ppc/pmac.c b/sound/ppc/pmac.c
+index 9b4e9c3..dfea116 100644
+--- a/sound/ppc/pmac.c
++++ b/sound/ppc/pmac.c
+@@ -702,7 +702,7 @@ static struct snd_pcm_ops snd_pmac_capture_ops = {
+ 	.pointer =	snd_pmac_capture_pointer,
+ };
+ 
+-int __init snd_pmac_pcm_new(struct snd_pmac *chip)
++int __devinit snd_pmac_pcm_new(struct snd_pmac *chip)
+ {
+ 	struct snd_pcm *pcm;
+ 	int err;
+@@ -934,7 +934,7 @@ static void __init detect_byte_swap(struct snd_pmac *chip)
+ /*
+  * detect a sound chip
+  */
+-static int __init snd_pmac_detect(struct snd_pmac *chip)
++static int __devinit snd_pmac_detect(struct snd_pmac *chip)
+ {
+ 	struct device_node *sound;
+ 	struct device_node *dn;
+@@ -1158,7 +1158,7 @@ static struct snd_kcontrol_new auto_mute_controls[] __initdata = {
+ 	},
+ };
+ 
+-int __init snd_pmac_add_automute(struct snd_pmac *chip)
++int __devinit snd_pmac_add_automute(struct snd_pmac *chip)
+ {
+ 	int err;
+ 	chip->auto_mute = 1;
+@@ -1175,7 +1175,7 @@ int __init snd_pmac_add_automute(struct snd_pmac *chip)
+ /*
+  * create and detect a pmac chip record
+  */
+-int __init snd_pmac_new(struct snd_card *card, struct snd_pmac **chip_return)
++int __devinit snd_pmac_new(struct snd_card *card, struct snd_pmac **chip_return)
+ {
+ 	struct snd_pmac *chip;
+ 	struct device_node *np;
+diff --git a/sound/ppc/tumbler.c b/sound/ppc/tumbler.c
+index 40222fc..adc8341 100644
+--- a/sound/ppc/tumbler.c
++++ b/sound/ppc/tumbler.c
+@@ -1269,7 +1269,7 @@ static void tumbler_resume(struct snd_pmac *chip)
+ #endif
+ 
+ /* initialize tumbler */
+-static int __init tumbler_init(struct snd_pmac *chip)
++static int __devinit tumbler_init(struct snd_pmac *chip)
+ {
+ 	int irq;
+ 	struct pmac_tumbler *mix = chip->mixer_data;
+@@ -1339,7 +1339,7 @@ static void tumbler_cleanup(struct snd_pmac *chip)
+ }
+ 
+ /* exported */
+-int __init snd_pmac_tumbler_init(struct snd_pmac *chip)
++int __devinit snd_pmac_tumbler_init(struct snd_pmac *chip)
+ {
+ 	int i, err;
+ 	struct pmac_tumbler *mix;
+-- 
+1.6.3.1
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
