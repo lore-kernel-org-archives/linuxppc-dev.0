@@ -1,20 +1,9 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A33B1DDDE9
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Jun 2009 17:05:40 +1000 (EST)
-Date: Wed, 3 Jun 2009 17:05:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [PATCH] sound/ppc: update annotations of serveral functions
-Message-Id: <20090603170536.41c79414.sfr@canb.auug.org.au>
-In-Reply-To: <s5hskihyh7m.wl%tiwai@suse.de>
-References: <20090603153519.cd7049db.sfr@canb.auug.org.au>
-	<s5hskihyh7m.wl%tiwai@suse.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__3_Jun_2009_17_05_36_+1000_jlIl0oQtat7ilvB."
-Cc: Jean Delvare <khali@linux-fr.org>, ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 03 Jun 2009 17:16:38 +1000
+Subject: [PATCH] powerpc: Set init_bootmem_done on NUMA platforms as well
+Message-Id: <20090603071653.8E1B7DDDF7@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +13,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__3_Jun_2009_17_05_36_+1000_jlIl0oQtat7ilvB.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For some obscure reason, we only set init_bootmem_done after initializing
+bootmem when NUMA isn't enabled. We even document this next to the declaration
+of that global in system.h which of course I didn't read before I had to
+debug why some WIP code wasn't working properly...
 
-Hi Takashi,
+This patch changes it so that we always set it after bootmem is initialized
+which should have always been the case... go figure !
 
-On Wed, 03 Jun 2009 08:17:01 +0200 Takashi Iwai <tiwai@suse.de> wrote:
->
-> At Wed, 3 Jun 2009 15:35:19 +1000,
-> Stephen Rothwell wrote:
-> >=20
-> > [I am not sure if this is the correct approach as I don't know if any of
-> > this actual hardware or drivers are really hot pluggable.]
->=20
-> I thought it can be bound/unbound dynamically via sysfs.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Right.
+ arch/powerpc/include/asm/system.h |    2 +-
+ arch/powerpc/mm/numa.c            |    2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-> Anyway, the patch looks correct, so I applied it now.
-> There were still places with __initdata (and one forgotten __init), so
-> I fixed them as well.
-
-Thanks for all that.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__3_Jun_2009_17_05_36_+1000_jlIl0oQtat7ilvB.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkomIMAACgkQjjKRsyhoI8yQUgCfZ/zC0fZxhAtX25ZPtVBXtcNZ
-flYAnRYf7VXgVPlpivfPoK7kvwZHY4MY
-=oUmr
------END PGP SIGNATURE-----
-
---Signature=_Wed__3_Jun_2009_17_05_36_+1000_jlIl0oQtat7ilvB.--
+--- linux-work.orig/arch/powerpc/include/asm/system.h	2009-06-03 17:12:48.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/system.h	2009-06-03 17:12:51.000000000 +1000
+@@ -211,7 +211,7 @@ extern struct task_struct *_switch(struc
+ 
+ extern unsigned int rtas_data;
+ extern int mem_init_done;	/* set on boot once kmalloc can be called */
+-extern int init_bootmem_done;	/* set on !NUMA once bootmem is available */
++extern int init_bootmem_done;	/* set once bootmem is available */
+ extern phys_addr_t memory_limit;
+ extern unsigned long klimit;
+ 
+Index: linux-work/arch/powerpc/mm/numa.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/numa.c	2009-06-03 17:12:21.000000000 +1000
++++ linux-work/arch/powerpc/mm/numa.c	2009-06-03 17:12:25.000000000 +1000
+@@ -981,6 +981,8 @@ void __init do_init_bootmem(void)
+ 		mark_reserved_regions_for_nid(nid);
+ 		sparse_memory_present_with_active_regions(nid);
+ 	}
++
++	init_bootmem_done = 1;
+ }
+ 
+ void __init paging_init(void)
