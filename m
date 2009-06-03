@@ -1,26 +1,19 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 35DADDDDE2
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 06:36:49 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH] IB/ehca: Remove superfluous bitmasks from QP control block
-References: <200806061835.43802.fenkes@de.ibm.com>
-	<48499C11.7030504@gmail.com> <200906031628.19556.fenkes@de.ibm.com>
-Date: Wed, 03 Jun 2009 13:26:01 -0700
-In-Reply-To: <200906031628.19556.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Wed, 3 Jun 2009 16:28:17 +0200")
-Message-ID: <adaoct59i92.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Alexander Schmidt <alexschm@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B2408DDDFB
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 07:32:08 +1000 (EST)
+Message-Id: <E6E25BED-8561-4C3B-9501-489FC53F53DE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+In-Reply-To: <20090603195429.GA31269@www.tglx.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [RFC] powerpc/mpc85xx: add support for suspend mode
+Date: Wed, 3 Jun 2009 16:31:42 -0500
+References: <20090603195429.GA31269@www.tglx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,4 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-looks fine, applied for 2.6.31
+
+On Jun 3, 2009, at 2:54 PM, Sebastian Andrzej Siewior wrote:
+
+> This patch adds support for the MPC85xx boards to enter the SLEEP  
+> mode.
+> The wake up is done via an external interrupt.
+> mpc85xx_enter_sleep() does not clear HID0_SLEEP in resume but it may  
+> be
+> okay since it gets cleared on next NAP/DOZE.
+> mpc85xx_enter_sleep() is mostly copied from NAP/DOZE. It does not look
+> like it is worth to merge into e500_idle(). I removed the feature  
+> check
+> for NAP/DOZE because it does not look required. It is just there to  
+> work
+> around the BDI. If it is required it could be moved to
+> mpc85xx_init_suspend().
+> The suspend.c file contains a sample implementation. I need  
+> additionally
+> to add hooks prio and after mpc85xx_enter_sleep() to toggle a few bits
+> in my FPGA. Since the suspend.c is really short I'm not sure if it is
+> worth to keep it here and add couple function prototypes or add the
+> required bits directly into the board code.
+>
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> ---
+> arch/powerpc/Kconfig                  |    2 +-
+> arch/powerpc/kernel/idle_e500.S       |   43 ++++++++++++++++++++++++ 
+> +++++++++
+> arch/powerpc/platforms/85xx/Makefile  |    1 +
+> arch/powerpc/platforms/85xx/suspend.c |   27 ++++++++++++++++++++
+> 4 files changed, 72 insertions(+), 1 deletions(-)
+> create mode 100644 arch/powerpc/platforms/85xx/suspend.c
+
+On what system did you test / develop this on?
+
+- k
