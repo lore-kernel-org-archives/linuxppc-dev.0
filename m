@@ -1,18 +1,32 @@
-Return-Path: <kenneth@southpole.se>
-Received: from mail.southpole.se (mail.southpole.se [193.12.106.18])
-	by ozlabs.org (Postfix) with ESMTP id 2856CDDE01
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 00:36:43 +1000 (EST)
-Subject: Re: [PATCH] powerpc: tiny memcpy_(to|from)io optimisation
-From: Kenneth Johansson <kenneth@southpole.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1243983086.27194.7.camel@pasglop>
-References: <1243968361.4951.0@antares>  <1243983086.27194.7.camel@pasglop>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Wed, 03 Jun 2009 16:36:36 +0200
-Message-Id: <1244039796.20864.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Albrecht =?ISO-8859-1?Q?Dre=DF?= <albrecht.dress@arcor.de>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 25FCFDDD1B
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 01:17:09 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n53FCswt008852
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 11:12:54 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n53FH6mA255672
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 11:17:06 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n53FEu9o028594
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 11:14:56 -0400
+Received: from zod.rchland.ibm.com (sig-9-65-100-53.mts.ibm.com [9.65.100.53])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	n53FEna2028184
+	(version=TLSv1/SSLv3 cipher=AES128-SHA bits=128 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Jun 2009 11:14:55 -0400
+Date: Wed, 3 Jun 2009 11:16:59 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/2] Convert more boards to ppc40x_simple
+Message-ID: <20090603151659.GD8655@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +36,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-06-03 at 08:51 +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2009-06-02 at 20:45 +0200, Albrecht Dreß wrote:
-> 
-> > 
-> > which drops the r1 accesses, but still produces the sub-optimal loop.   
-> > Is this a gcc regression, or did I miss something here?  Probably the  
-> > only bullet-proof way is to write some core loops in assembly... :-/
-> 
-> Well, gcc may be right here. What you call the "optimal" loop uses the
-> lwzu instruction. An interesting thing about this instruction is that
-> it updates two GPRs at completion (I'm ignoring the load multiple and
-> string instructions on purpose here).
+Below are some patches to convert the Malaku and Kilauea/Halekala boards to the
+ppc40x_simple platform.  I've tested the second patch on my Halekala board.
+The Malaku patch should work as well, but I don't have access to one of those
+boards.  Feedback would be appreciated.
 
-> I wouldn't be surprised thus if the loop variant with the separate add
-> ends up more efficient on most implementations around.
-
-On an e300 core using the lwzu/stwu is about 20% faster so at least one
-core prefer that optimization. 
+josh
