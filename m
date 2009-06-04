@@ -1,31 +1,23 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9E12EDDDA1
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 21:20:33 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n54BKTfx019531
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Jun 2009 04:20:29 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n54BKRgq012672
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Jun 2009 06:20:28 -0500 (CDT)
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
+	by ozlabs.org (Postfix) with ESMTP id 3A6B4DDDA2
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 21:10:22 +1000 (EST)
+Date: Thu, 4 Jun 2009 18:59:59 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH v4] zone_reclaim is always 0 by default
+Message-ID: <20090604105959.GA22118@localhost>
+References: <20090604192236.9761.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [RFC PATCH] fsldma: Add DMA_SLAVE support
-Date: Thu, 4 Jun 2009 19:20:26 +0800
-Message-ID: <3A45394FD742FA419B760BB8D398F9ED48368B@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20090603181038.GC7292@ovro.caltech.edu>
-References: <20090515225659.GD858@ovro.caltech.edu>
-	<20090603181038.GC7292@ovro.caltech.edu>
-From: "Li Yang-R58472" <LeoLi@freescale.com>
-To: "Ira Snyder" <iws@ovro.caltech.edu>,
-	"Dan Williams" <dan.j.williams@intel.com>, <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090604192236.9761.A69D9226@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>,
+	"linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+	linux-mm <linux-mm@kvack.org>, "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Robin Holt <holt@sgi.com>, Christoph Lameter <cl@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,56 +27,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Jun 04, 2009 at 06:23:15PM +0800, KOSAKI Motohiro wrote:
+> 
+> Current linux policy is, zone_reclaim_mode is enabled by default if the machine
+> has large remote node distance. it's because we could assume that large distance
+> mean large server until recently.
+> 
+> Unfortunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P transport
+> memory controller. IOW it's seen as NUMA from software view.
+> Some Core i7 machine has large remote node distance.
+> 
+> Yanmin reported zone_reclaim_mode=1 cause large apache regression.
+> 
+>     One Nehalem machine has 12GB memory,
+>     but there is always 2GB free although applications accesses lots of files.
+>     Eventually we located the root cause as zone_reclaim_mode=1.
+> 
+> Actually, zone_reclaim_mode=1 mean "I dislike remote node allocation rather than
+> disk access", it makes performance improvement to HPC workload.
+> but it makes performance degression to desktop, file server and web server.
+> 
+> In general, workload depended configration shouldn't put into default settings.
+> 
+> However, current code is long standing about two year. Highest POWER and IA64 HPC machine
+> (only) use this setting.
+> 
+> Thus, x86 and almost rest architecture change default setting, but Only power and ia64
+> remain current configuration for backward-compatibility.
 
->> This is a request for comments on this patch. I hunch it is=20
->not quite=20
->> ready for inclusion, though it is certainly ready for=20
->review. Correct=20
->> functioning of this patch depends on the patches submitted earlier.
->>=20
->> As suggested by Dan Williams, I implemented DMA_SLAVE=20
->support for the=20
->> fsldma controller to allow me to use the hardware to=20
->transfer to/from=20
->> a scatterlist to a list of hardware address/length pairs.
->>=20
->> I implemented support for the extra features available in the DMA=20
->> controller, such as external pause and external start. I have not=20
->> tested the features yet. I am willing to drop the support if=20
->> everything else looks good.
->>=20
->> I have implemented helper functions for creating the list of=20
->hardware=20
->> address/length pairs as static inline functions in the=20
->linux/fsldma.h=20
->> header. Should I incorporate these into the driver itself and use=20
->> EXPORT_SYMBOL()? I've never done this before :)
->>=20
->
->Any comments on this patch?
->
+The above lines are too long. Limit to 72 cols in general could be
+better as git-log may add additional leading white spaces.
 
-No comment for now.  Didn't get the time to study the DMA_SLAVE thing.
-:(
+Thank you for all the efforts!
 
->I've tested the external start feature, and it works great. I=20
+Acked-by: Wu Fengguang <fengguang.wu@intel.com>
 
-Good.  Is it working with your custom board?  Can I verify this with my
-reference board?
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: Christoph Lameter <cl@linux-foundation.org>
+> Cc: Rik van Riel <riel@redhat.com>
+> Cc: Robin Holt <holt@sgi.com>
+> Cc: "Zhang, Yanmin" <yanmin.zhang@intel.com>
+> Cc: Wu Fengguang <fengguang.wu@intel.com>
+> Cc: linux-ia64@vger.kernel.org
+> Cc: linuxppc-dev@ozlabs.org
+> ---
+>  arch/powerpc/include/asm/topology.h |    6 ++++++
+>  include/linux/topology.h            |    7 +------
+>  2 files changed, 7 insertions(+), 6 deletions(-)
+> 
+> Index: b/include/linux/topology.h
+> ===================================================================
+> --- a/include/linux/topology.h
+> +++ b/include/linux/topology.h
+> @@ -54,12 +54,7 @@ int arch_update_cpu_topology(void);
+>  #define node_distance(from,to)	((from) == (to) ? LOCAL_DISTANCE : REMOTE_DISTANCE)
+>  #endif
+>  #ifndef RECLAIM_DISTANCE
+> -/*
+> - * If the distance between nodes in a system is larger than RECLAIM_DISTANCE
+> - * (in whatever arch specific measurement units returned by node_distance())
+> - * then switch on zone reclaim on boot.
+> - */
+> -#define RECLAIM_DISTANCE 20
+> +#define RECLAIM_DISTANCE INT_MAX
+>  #endif
+>  #ifndef PENALTY_FOR_NODE_WITH_CPUS
+>  #define PENALTY_FOR_NODE_WITH_CPUS	(1)
+> Index: b/arch/powerpc/include/asm/topology.h
+> ===================================================================
+> --- a/arch/powerpc/include/asm/topology.h
+> +++ b/arch/powerpc/include/asm/topology.h
+> @@ -10,6 +10,12 @@ struct device_node;
+>  
+>  #include <asm/mmzone.h>
+>  
+> +/*
+> + * Distance above which we begin to use zone reclaim
 
->had to set the DMA Request Count (in the mode register) after=20
->the driver was in control. There is no interface for doing=20
->this in the existing driver. I just ioremap()ed the registers=20
->and added the value from my driver after claiming the channel=20
->with dma_request_channel().
->
->There are ways to get the DMA controller into a state where=20
->the CB bit stays set no matter what you do. I have only seen=20
->this during an externally controlled transfer, when the=20
->external master does weird things. I would fix this state in=20
->terminate_all(), but I have been unsuccessful in getting the=20
->DMA controller working again after it has been messed up.
+s/begin to/default to/ ?
 
-What's the frequency for this to happen?  Is the problem reproducable?
-
-- Leo
+> + */
+> +#define RECLAIM_DISTANCE 20
+> +
+> +
+>  static inline int cpu_to_node(int cpu)
+>  {
+>  	return numa_cpu_lookup_table[cpu];
+> 
