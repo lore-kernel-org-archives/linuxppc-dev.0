@@ -1,20 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6B0E2DDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Jun 2009 07:50:38 +1000 (EST)
-Message-Id: <0FD273FE-CCAA-451A-B86C-916849DD4DD8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Byron Bradley <byron.bbradley@gmail.com>
-In-Reply-To: <alpine.DEB.2.00.0906042152330.7053@gamma>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Return-Path: <bouffski@gmail.com>
+Received: from mail-bw0-f219.google.com (mail-bw0-f219.google.com
+	[209.85.218.219]) by ozlabs.org (Postfix) with ESMTP id A538DDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Jun 2009 02:19:04 +1000 (EST)
+Received: by bwz19 with SMTP id 19so883451bwz.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 04 Jun 2009 09:19:02 -0700 (PDT)
+Message-Id: <0E7783F5-0A6D-413D-828B-735789FA14A7@gmail.com>
+From: Hubert <bouffski@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=Apple-Mail-9--463285482
 Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] [POWERPC] 83xx: Add support for the Thecus N1200 NAS
-	device
-Date: Thu, 4 Jun 2009 16:50:30 -0500
-References: <alpine.DEB.2.00.0906042152330.7053@gamma>
-Cc: linuxppc-dev@ozlabs.org, tim.ellis@mac.com
+Subject: new
+Date: Thu, 4 Jun 2009 18:11:26 +0200
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +21,63 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 4, 2009, at 3:59 PM, Byron Bradley wrote:
+--Apple-Mail-9--463285482
+Content-Type: text/plain;
+	charset=US-ASCII;
+	format=flowed;
+	delsp=yes
+Content-Transfer-Encoding: 7bit
 
-> The Thecus N1200 is a NAS device with a single internal SATA disk and
-> an eSATA port based on an MPC8347 SoC.
->
-> http://thecus.nas-central.org/index.php/Category:N1200
->
-> Signed-off-by: Byron Bradley <byron.bbradley@gmail.com>
-> Signed-off-by: Tim Ellis <tim.ellis@mac.com>
-> ---
-> arch/powerpc/boot/Makefile                       |    1 +
-> arch/powerpc/boot/dts/thecus_n1200.dts           |  352 +++++
-> arch/powerpc/boot/wrapper                        |    2 +-
-> arch/powerpc/configs/83xx/thecus_n1200_defconfig | 1674 +++++++++++++ 
-> +++++++++
-> arch/powerpc/platforms/83xx/Kconfig              |    7 +
-> arch/powerpc/platforms/83xx/Makefile             |    1 +
-> arch/powerpc/platforms/83xx/thecus_n1200.c       |  160 ++
-> 7 files changed, 2196 insertions(+), 1 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/thecus_n1200.dts
-> create mode 100644 arch/powerpc/configs/83xx/thecus_n1200_defconfig
-> create mode 100644 arch/powerpc/platforms/83xx/thecus_n1200.c
->
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 9ae7b7e..7ea6aff 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -228,6 +228,7 @@ image-$(CONFIG_MPC834x_ITX)		+=  
-> cuImage.mpc8349emitx \
-> 					   cuImage.mpc8349emitxgp
-> image-$(CONFIG_MPC834x_MDS)		+= cuImage.mpc834x_mds
-> image-$(CONFIG_MPC836x_MDS)		+= cuImage.mpc836x_mds
-> +image-$(CONFIG_THECUS_N1200)		+= cuImage.thecus_n1200
-> image-$(CONFIG_ASP834x)			+= dtbImage.asp834x-redboot
+Just one (1) question...
 
-Is the u-boot for the board capable of dealing w/device trees or do  
-you really need cuImage?
+On my iMac (G4 1GHz, 1Gb Leo 10.5.7)  I want to use a Linux version...
+Therefor I downloaded Ubuntu 8 (and 9 and 7). By Disk Utility I made a  
+bootable partition on an external FireWire drive... Changed my startup  
+disk to this partition, and rebooted...
+Did not work... although the startup disk appears... (By holding down  
+Alt-key during rebooting)
 
-- k
+Diggin' around on the 'net, learned me in a some way I needed a boot- 
+program, this is the reason why I'm writing this e-mail...
+
+My aim is to boot from a partition of my FW-drive and install a Linux  
+version on another partition on that FW-drive...
+
+And now the question: is there an unambiguous manual for this newbie  
+that will guide me through this?
+
+thanks in advance,
+
+Hubert
+
+
+
+
+
+--Apple-Mail-9--463285482
+Content-Type: text/html;
+	charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+
+<html><body style=3D"word-wrap: break-word; -webkit-nbsp-mode: space; =
+-webkit-line-break: after-white-space; ">Just one (1) =
+question...<div><br><div>On my iMac (G4 1GHz, 1Gb Leo 10.5.7) &nbsp;I =
+want to use a Linux version...&nbsp;</div><div>Therefor I downloaded =
+Ubuntu 8 (and 9 and 7). By Disk Utility I made a bootable partition on =
+an external FireWire drive... Changed my startup disk to this partition, =
+and rebooted...</div><div>Did not work... although the startup disk =
+appears... (By holding down Alt-key during =
+rebooting)</div><div><br></div><div>Diggin' around on the 'net, learned =
+me in a some way I needed a boot-program, this is the reason why I'm =
+writing this e-mail...&nbsp;</div><div><br></div><div><font =
+class=3D"Apple-style-span" color=3D"#3300FF"><font =
+class=3D"Apple-style-span" size=3D"4"><span class=3D"Apple-style-span" =
+style=3D"font-size: 14px;">My aim is to boot from a partition of my =
+FW-drive and install a Linux version on another partition on that =
+FW-drive...</span></font></font></div><div><br></div><div>And now the =
+question: is there an unambiguous manual for this newbie that will guide =
+me through this?</div><div><br></div><div>thanks in =
+advance,&nbsp;</div><div><br></div><div>Hubert</div><div><br></div><div><b=
+r></div><div><br></div><div><br></div></div></body></html>=
+
+--Apple-Mail-9--463285482--
