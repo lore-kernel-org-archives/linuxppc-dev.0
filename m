@@ -1,23 +1,21 @@
-Return-Path: <fengguang.wu@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
-	by ozlabs.org (Postfix) with ESMTP id 3A6B4DDDA2
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 21:10:22 +1000 (EST)
-Date: Thu, 4 Jun 2009 18:59:59 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH v4] zone_reclaim is always 0 by default
-Message-ID: <20090604105959.GA22118@localhost>
-References: <20090604192236.9761.A69D9226@jp.fujitsu.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id AE86CDDDE1
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Jun 2009 22:09:47 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so346000ywt.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 04 Jun 2009 05:09:45 -0700 (PDT)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Thu, 4 Jun 2009 08:09:38 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH 0/2] Convert more boards to ppc40x_simple
+Message-ID: <20090604120938.GA3088@hansolo.jdub.homelinux.org>
+References: <20090603151659.GD8655@zod.rchland.ibm.com>
+	<200906041305.51382.sr@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090604192236.9761.A69D9226@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>,
-	"linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-	linux-mm <linux-mm@kvack.org>, "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Robin Holt <holt@sgi.com>, Christoph Lameter <cl@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200906041305.51382.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,90 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 04, 2009 at 06:23:15PM +0800, KOSAKI Motohiro wrote:
-> 
-> Current linux policy is, zone_reclaim_mode is enabled by default if the machine
-> has large remote node distance. it's because we could assume that large distance
-> mean large server until recently.
-> 
-> Unfortunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P transport
-> memory controller. IOW it's seen as NUMA from software view.
-> Some Core i7 machine has large remote node distance.
-> 
-> Yanmin reported zone_reclaim_mode=1 cause large apache regression.
-> 
->     One Nehalem machine has 12GB memory,
->     but there is always 2GB free although applications accesses lots of files.
->     Eventually we located the root cause as zone_reclaim_mode=1.
-> 
-> Actually, zone_reclaim_mode=1 mean "I dislike remote node allocation rather than
-> disk access", it makes performance improvement to HPC workload.
-> but it makes performance degression to desktop, file server and web server.
-> 
-> In general, workload depended configration shouldn't put into default settings.
-> 
-> However, current code is long standing about two year. Highest POWER and IA64 HPC machine
-> (only) use this setting.
-> 
-> Thus, x86 and almost rest architecture change default setting, but Only power and ia64
-> remain current configuration for backward-compatibility.
+On Thu, Jun 04, 2009 at 01:05:51PM +0200, Stefan Roese wrote:
+>Hi Josh,
+>
+>On Wednesday 03 June 2009 17:16:59 Josh Boyer wrote:
+>> Below are some patches to convert the Malaku and Kilauea/Halekala boards to
+>> the ppc40x_simple platform.  I've tested the second patch on my Halekala
+>> board. The Malaku patch should work as well, but I don't have access to one
+>> of those boards.  Feedback would be appreciated.
+>
+>Tested successfully on both Kilauea and Makalu.
+>
+>So, please add my:
+>
+>Tested-by: Stefan Roese <sr@denx.de>
 
-The above lines are too long. Limit to 72 cols in general could be
-better as git-log may add additional leading white spaces.
+Thanks!
 
-Thank you for all the efforts!
-
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
-
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Rik van Riel <riel@redhat.com>
-> Cc: Robin Holt <holt@sgi.com>
-> Cc: "Zhang, Yanmin" <yanmin.zhang@intel.com>
-> Cc: Wu Fengguang <fengguang.wu@intel.com>
-> Cc: linux-ia64@vger.kernel.org
-> Cc: linuxppc-dev@ozlabs.org
-> ---
->  arch/powerpc/include/asm/topology.h |    6 ++++++
->  include/linux/topology.h            |    7 +------
->  2 files changed, 7 insertions(+), 6 deletions(-)
-> 
-> Index: b/include/linux/topology.h
-> ===================================================================
-> --- a/include/linux/topology.h
-> +++ b/include/linux/topology.h
-> @@ -54,12 +54,7 @@ int arch_update_cpu_topology(void);
->  #define node_distance(from,to)	((from) == (to) ? LOCAL_DISTANCE : REMOTE_DISTANCE)
->  #endif
->  #ifndef RECLAIM_DISTANCE
-> -/*
-> - * If the distance between nodes in a system is larger than RECLAIM_DISTANCE
-> - * (in whatever arch specific measurement units returned by node_distance())
-> - * then switch on zone reclaim on boot.
-> - */
-> -#define RECLAIM_DISTANCE 20
-> +#define RECLAIM_DISTANCE INT_MAX
->  #endif
->  #ifndef PENALTY_FOR_NODE_WITH_CPUS
->  #define PENALTY_FOR_NODE_WITH_CPUS	(1)
-> Index: b/arch/powerpc/include/asm/topology.h
-> ===================================================================
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -10,6 +10,12 @@ struct device_node;
->  
->  #include <asm/mmzone.h>
->  
-> +/*
-> + * Distance above which we begin to use zone reclaim
-
-s/begin to/default to/ ?
-
-> + */
-> +#define RECLAIM_DISTANCE 20
-> +
-> +
->  static inline int cpu_to_node(int cpu)
->  {
->  	return numa_cpu_lookup_table[cpu];
-> 
+josh
