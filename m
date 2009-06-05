@@ -1,30 +1,31 @@
-Return-Path: <jacmet@gmail.com>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B8D04B70C9
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6F85AB7093
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  5 Jun 2009 17:31:58 +1000 (EST)
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.159])
-	by ozlabs.org (Postfix) with ESMTP id DF30BDDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Jun 2009 17:31:57 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id 13so162377fge.16
-	for <linuxppc-dev@ozlabs.org>; Fri, 05 Jun 2009 00:31:55 -0700 (PDT)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-To: Byron Bradley <byron.bbradley@gmail.com>
-Subject: Re: [PATCH] [POWERPC] 83xx: Add support for the Thecus N1200 NAS
-	device
-References: <alpine.DEB.2.00.0906042152330.7053@gamma>
-	<20090605030850.GF2054@yookeroo.seuss>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Fri, 05 Jun 2009 09:31:53 +0200
-In-Reply-To: <20090605030850.GF2054@yookeroo.seuss> (David Gibson's message of
-	"Fri\, 5 Jun 2009 13\:08\:50 +1000")
-Message-ID: <87ws7rxhjq.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, tim.ellis@mac.com
+	Fri,  5 Jun 2009 17:38:41 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5AE74DDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Jun 2009 17:38:41 +1000 (EST)
+Subject: Re: mailing list moving
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20090605172616.7fde58ab.sfr@canb.auug.org.au>
+References: <20090531150950.596d2681.sfr@canb.auug.org.au>
+	<20090605172616.7fde58ab.sfr@canb.auug.org.au>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-3FbKlIXEWO7GIGGFfOO7"
+Date: Fri, 05 Jun 2009 17:38:40 +1000
+Message-Id: <1244187520.11359.9.camel@concordia>
+Mime-Version: 1.0
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linuxppc-dev-owner@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,32 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>> "David" == David Gibson <david@gibson.dropbear.id.au> writes:
 
- David> On Thu, Jun 04, 2009 at 09:59:04PM +0100, Byron Bradley wrote:
- >> The Thecus N1200 is a NAS device with a single internal SATA disk and
- >> an eSATA port based on an MPC8347 SoC.
+--=-3FbKlIXEWO7GIGGFfOO7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- David> Comments on a number of fairly minor device tree nits below:
+On Fri, 2009-06-05 at 17:26 +1000, Stephen Rothwell wrote:
+> Hi all,
+>=20
+> On Sun, 31 May 2009 15:09:50 +1000 Stephen Rothwell <sfr@canb.auug.org.au=
+> wrote:
+> >
+> > Sometime over the next few days I will be moving this mailing list from
+> > ozlabs.org to lists.ozlabs.org.  The old submission address
+> > (linuxppc-dev@ozlabs.org) will still work and I hope that references in=
+to
+> > the archives will also still work (though I can't guarantee that as
+> > rebuilding Mailman archives sometimes renumbers the individual emails).
+> >=20
+> > The change that will affect people is the change in the List-Id header
+> > (for those that filter using it).  It will become "List-Id: Linux on
+> > PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>".
+> >=20
+> > All subscriptions (and preferences) will be preserved.
+> >=20
+> > I will post another message after I have moved it.
+>=20
+> The list has now moved.  Please report any problems to me.
+>=20
+> The archives on lists.ozlabs.org (and ozlabs.org) have unfortunately not
+> retained their URLs (the basename of the article URLs changed).=20
 
- David> [snip]
- >> +	soc8349@e0000000 {
- >> +		#address-cells = <1>;
- >> +		#size-cells = <1>;
- >> +		device_type = "soc";
- >> +		compatible = "simple-bus";
- >> +		};
- >> +
- >> +		gpio1: gpio-controller@c00 {
- >> +			#gpio-cells = <2>;
- >> +			compatible = "fsl,mpc8347-gpio", "fsl,mpc8349-gpio";
+Would a rewrite rule fix it? It'd be nice for them to keep working.
 
- David> This actually is an 8349 board, yes?  Generally compatible should be
- David> listed from most specific to least specific, so the 8349 entry should
- David> go first.
+cheers
 
-No, it's an 8347, to the gpio compatible is fine, but the soc8349
-should be changed to 8347 above.
+--=-3FbKlIXEWO7GIGGFfOO7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
--- 
-Bye, Peter Korsgaard
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkooy3wACgkQdSjSd0sB4dK1BACfSvebc6HLeKsQKhb8fYZV2/GQ
+gk8An1UfDdbD2V0n5HddMYKiTEO2GBPU
+=LCF3
+-----END PGP SIGNATURE-----
+
+--=-3FbKlIXEWO7GIGGFfOO7--
