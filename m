@@ -1,28 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 21FBBB709C
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-1718.google.com (yw-out-1718.google.com [74.125.46.157])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 7301EB70A3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Jun 2009 09:32:57 +1000 (EST)
-Subject: Re: [BUILD FAILURE 01/04] Next June 04:PPC64 randconfig
-	[drivers/staging/comedi/drivers.o]
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Subrata Modak <subrata@linux.vnet.ibm.com>
-In-Reply-To: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
-References: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 06 Jun 2009 09:32:29 +1000
-Message-Id: <1244244749.31984.16.camel@pasglop>
-Mime-Version: 1.0
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
-	Linux-Kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Linux-Next <linux-next@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>
+	Sat,  6 Jun 2009 09:53:18 +1000 (EST)
+Received: by yw-out-1718.google.com with SMTP id 5so931375ywm.32
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 05 Jun 2009 16:53:16 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <461095.11075.qm@web111310.mail.gq1.yahoo.com>
+References: <461095.11075.qm@web111310.mail.gq1.yahoo.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 5 Jun 2009 17:52:56 -0600
+Message-ID: <fa686aa40906051652r2f978065ife1fa71de7f8b5eb@mail.gmail.com>
+Subject: Re: Add "mpc5200-simple-platform" to the list of supported boards
+To: Marcelo Dalmas <m_dalmas@yahoo.com.br>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,73 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Jun 5, 2009 at 5:20 PM, Marcelo Dalmas<m_dalmas@yahoo.com.br> wrote=
+:
+>
+> Hello,
+>
+> Adding =A0"mpc5200-simple-platform" to the list of supported boards allow=
+ to use the option "Generic support for simple MPC5200 based boards" withou=
+t patching the kernel. Just set model to "mpc5200-simple-plataform" on your=
+ dts file.
+>
+>
+> diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/=
+platforms/52xx/mpc5200_simple.c
+> index c31e5b5..a2df795 100644
+> --- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
+> +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+> @@ -50,6 +50,7 @@ static void __init mpc5200_simple_setup_arch(void)
+>
+> =A0/* list of the supported boards */
+> =A0static char *board[] __initdata =3D {
+> + =A0 =A0 =A0 "mpc5200-simple-platform",
+> =A0 =A0 =A0 =A0"intercontrol,digsy-mtc",
+> =A0 =A0 =A0 =A0"phytec,pcm030",
+> =A0 =A0 =A0 =A0"phytec,pcm032",
 
-> I tried this. But, with some catch. ‘PAGE_KERNEL_NOCACHE’ seems to be the
-> choice for majority of architectures like frv, m32r, sh, x86, etc, as Geert
-> mentions below. However, i believe POWERPC defines it as ‘PAGE_KERNEL_NC‘
-> found at arch/powerpc/include/asm/pte-common.h.
-> 
-> Paul/Banjamin,
-> Can you please confirm this ?
+Sorry, nack.  For the time being, board support is listed explicitly
+in mpc5200_simple.c and 'generic' compatible values are strongly
+discouraged.  This is on purpose.
 
-Read my reply to Greg. Why the heck are you trying to map memory
-non-cacheable in the first place ?
+I have been thinking about coming up with a method for generic mpc5200
+platform support code to bind against an otherwise unknown mpc5200
+board, but there are subtleties here and considerable pain if it is
+done wrong.
 
-Cheers
-Ben.
+In the mean time, just patch your kernel with your board name(s) and
+don't try to use a generic value like mpc5200-simple-platform.
 
-> The below patch fixes the build error.
-> 
-> Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-> ---
-> 
-> --- linux-2.6.30-rc8/drivers/staging/comedi/drivers.c.orig	2009-06-05 12:46:35.000000000 -0500
-> +++ linux-2.6.30-rc8/drivers/staging/comedi/drivers.c	2009-06-05 13:03:31.000000000 -0500
-> @@ -43,9 +43,13 @@
->  #include <linux/vmalloc.h>
->  #include <linux/cdev.h>
->  #include <linux/dma-mapping.h>
-> -
->  #include <asm/io.h>
->  #include <asm/system.h>
-> +#ifdef __powerpc64__
-> +#include <asm/pte-common.h>
-> +#else
-> +#include <asm/pgtable.h>
-> +#endif
->  
->  static int postconfig(struct comedi_device *dev);
->  static int insn_rw_emulate_bits(struct comedi_device *dev, struct comedi_subdevice *s,
-> @@ -492,8 +496,13 @@ int comedi_buf_alloc(struct comedi_devic
->  		}
->  		if (i == n_pages) {
->  			async->prealloc_buf =
-> +#ifdef __powerpc64__
-> +				vmap(pages, n_pages, VM_MAP,
-> +				PAGE_KERNEL_NC);
-> +#else
->  				vmap(pages, n_pages, VM_MAP,
->  				PAGE_KERNEL_NOCACHE);
-> +#endif
->  		}
->  		if (pages) {
->  			vfree(pages);
-> 
-> ---
-> Regards--
-> Subrata
-> 
-> > PAGE_KERNEL_NOCACHE is defined on a few architectures only, namely
-> > frv, m32r, mn10300, sh, and x86[*]. On all others, it will fail.
-> > 
-> > [*] Interestingly, sparc refers to it in one of its include files,
-> > without providing a
-> >     definition, Probably that code is unused.
-> > 
-> > Gr{oetje,eeting}s,
-> > 
-> > 						Geert
-> > 
-> > --
-> > Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> > 
+BTW, please cc: the appropriate maintainers and developers when
+posting patches to the Linux kernel.  The MAINTAINERS file and
+'scripts/get_maintainer.pl -f <filename>' are useful tools here.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
