@@ -3,20 +3,21 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 882AEB708A
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6DD3AB708F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Jun 2009 00:36:37 +1000 (EST)
+	Sat,  6 Jun 2009 00:45:46 +1000 (EST)
 Received: from mail-ew0-f215.google.com (mail-ew0-f215.google.com
-	[209.85.219.215]) by ozlabs.org (Postfix) with ESMTP id B2EA1DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Jun 2009 00:36:36 +1000 (EST)
-Received: by ewy11 with SMTP id 11so2190334ewy.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 05 Jun 2009 07:36:34 -0700 (PDT)
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: linuxppc-dev@ozlabs.org,
-	galak@kernel.crashing.org
-Subject: 
-Date: Fri,  5 Jun 2009 16:31:08 +0200
-Message-Id: <1244212268-28648-1-git-send-email-leon@sidebranch.com>
+	[209.85.219.215]) by ozlabs.org (Postfix) with ESMTP id 99ED4DDDA0
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Jun 2009 00:45:43 +1000 (EST)
+Received: by ewy11 with SMTP id 11so2199952ewy.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 05 Jun 2009 07:45:42 -0700 (PDT)
+Message-ID: <4a292f95.05a4100a.1a14.0a04@mx.google.com>
+Date: Fri, 05 Jun 2009 07:45:41 -0700 (PDT)
+To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+	linux-kernel@vger.kernel.org
+To: Leon Woestenberg <leon@sidebranch.com>
+From: leon.woestenberg@gmail.com
+Subject: [PATCH] Add MSI interrupts to DTS of MPC8315E-RDB
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,6 +26,14 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+The PCIe MSI interrupts are missing from the device tree source, and
+thus were not enabled. This patch adds them.
+
+Tested to work on MPC8315E-RDB with custom FPGA PCIe device.
+
+Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
+Tested-by: Leon Woestenberg <leon@sidebranch.com>
 
 diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
 index 3f4c5fb..4f04667 100644
