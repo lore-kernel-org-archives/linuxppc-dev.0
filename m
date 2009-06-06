@@ -1,20 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <davem@davemloft.net>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 24A76B70AB
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6B4B1B70A9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Jun 2009 10:28:50 +1000 (EST)
-Subject: Re: Add "mpc5200-simple-platform" to the list of supported boards
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Marcelo Dalmas <m_dalmas@yahoo.com.br>
-In-Reply-To: <461095.11075.qm@web111310.mail.gq1.yahoo.com>
-References: <461095.11075.qm@web111310.mail.gq1.yahoo.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 06 Jun 2009 10:28:44 +1000
-Message-Id: <1244248124.31984.27.camel@pasglop>
+	Sat,  6 Jun 2009 10:56:59 +1000 (EST)
+Date: Fri, 05 Jun 2009 17:56:56 -0700 (PDT)
+Message-Id: <20090605.175656.95336229.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: [BUILD FAILURE 01/04] Next June 04:PPC64 randconfig
+	[drivers/staging/comedi/drivers.o]
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1244244749.31984.16.camel@pasglop>
+References: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
+	<1244244749.31984.16.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain; charset=utf-8
+Cc: sachinp@linux.vnet.ibm.com, sfr@canb.auug.org.au, greg@kroah.com,
+	linux-kernel@vger.kernel.org, Linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, paulus@samba.org,
+	Geert.Uytterhoeven@sonycom.com, geert@linux-m68k.org,
+	subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,38 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-06-05 at 16:20 -0700, Marcelo Dalmas wrote:
-> Hello,
-> 
-> Adding  "mpc5200-simple-platform" to the list of supported boards allow to use the option "Generic support for simple MPC5200 based boards" without patching the kernel. Just set model to "mpc5200-simple-plataform" on your dts file.
-
-I'm generally against that. Some time you'll need to diverge and poof !
-you lost the ability to identify your board... it's also a very linux
-centric thing to put in the device-tree.
-
-Cheers,
-Ben.
-
-> diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-> index c31e5b5..a2df795 100644
-> --- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
-> +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-> @@ -50,6 +50,7 @@ static void __init mpc5200_simple_setup_arch(void)
->  
->  /* list of the supported boards */
->  static char *board[] __initdata = {
-> +	"mpc5200-simple-platform",
->  	"intercontrol,digsy-mtc",
->  	"phytec,pcm030",
->  	"phytec,pcm032",
-> 
-> 
-> 
-> 
->       Veja quais são os assuntos do momento no Yahoo! +Buscados
-> http://br.maisbuscados.yahoo.com
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+RnJvbTogQmVuamFtaW4gSGVycmVuc2NobWlkdCA8YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnPg0K
+RGF0ZTogU2F0LCAwNiBKdW4gMjAwOSAwOTozMjoyOSArMTAwMA0KDQo+IA0KPj4gSSB0cmllZCB0
+aGlzLiBCdXQsIHdpdGggc29tZSBjYXRjaC4g4oCYUEFHRV9LRVJORUxfTk9DQUNIReKAmSBzZWVt
+cyB0byBiZSB0aGUNCj4+IGNob2ljZSBmb3IgbWFqb3JpdHkgb2YgYXJjaGl0ZWN0dXJlcyBsaWtl
+IGZydiwgbTMyciwgc2gsIHg4NiwgZXRjLCBhcyBHZWVydA0KPj4gbWVudGlvbnMgYmVsb3cuIEhv
+d2V2ZXIsIGkgYmVsaWV2ZSBQT1dFUlBDIGRlZmluZXMgaXQgYXMg4oCYUEFHRV9LRVJORUxfTkPi
+gJgNCj4+IGZvdW5kIGF0IGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wdGUtY29tbW9uLmguDQo+
+PiANCj4+IFBhdWwvQmFuamFtaW4sDQo+PiBDYW4geW91IHBsZWFzZSBjb25maXJtIHRoaXMgPw0K
+PiANCj4gUmVhZCBteSByZXBseSB0byBHcmVnLiBXaHkgdGhlIGhlY2sgYXJlIHlvdSB0cnlpbmcg
+dG8gbWFwIG1lbW9yeQ0KPiBub24tY2FjaGVhYmxlIGluIHRoZSBmaXJzdCBwbGFjZSA/DQoNCkkg
+YWdyZWUsIHRoaXMgaXMgZXh0cmVtZWx5IGZpc2h5Lg0KDQpJIGd1ZXNzIHRoZSBpc3N1ZSBpcyB0
+aGF0IHRoZSBkcml2ZXIgd2FudHMgY29uc2lzdGVudCBETUEgbWVtb3J5DQpidXQgd2FudHMgdG8g
+YWxsb2NhdGUgYSBodWdlIGFyZWEgdm1hcCgpIHN0eWxlLg0K
