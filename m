@@ -1,27 +1,28 @@
-Return-Path: <wd@denx.de>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 41701B70AD
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id AD0EBB70AC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  7 Jun 2009 08:16:22 +1000 (EST)
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 7ABC9DDD0C
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Jun 2009 08:16:21 +1000 (EST)
-To: John Rigby <jcrigby@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 05/04] *** NOT FOR RELEASE *** HACK *** Work around MII
-	clock issue ***
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <4b73d43f0905071909v6e6e8b2el9eb6d4a1b9038f45@mail.gmail.com>
-References: <1241641262-5202-1-git-send-email-wd@denx.de>
-	<1241641262-5202-6-git-send-email-wd@denx.de>
-	<4b73d43f0905071909v6e6e8b2el9eb6d4a1b9038f45@mail.gmail.com>
-Date: Sun, 07 Jun 2009 00:16:18 +0200
-Message-Id: <20090606221618.701E0832E416@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+	Sun,  7 Jun 2009 08:42:17 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 13747DDD1B
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Jun 2009 08:42:16 +1000 (EST)
+Subject: Re: [RFC][PATCH v5] MPC5121 TLB errata workaround
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20090606220723.A38DA832E416@gemini.denx.de>
+References: <200903161652.09747.david.jander@protonic.nl>
+	<20090606220723.A38DA832E416@gemini.denx.de>
+Content-Type: text/plain
+Date: Sun, 07 Jun 2009 08:42:04 +1000
+Message-Id: <1244328124.31984.40.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, David Jander <david.jander@protonic.nl>,
+	gunnar@genesi-usa.com, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear John,
-
-In message <4b73d43f0905071909v6e6e8b2el9eb6d4a1b9038f45@mail.gmail.com> you wrote:
+On Sun, 2009-06-07 at 00:07 +0200, Wolfgang Denk wrote:
+> Dear David Jander,
 > 
-> I think the fec's parent clock is the ipb clock not the ppc core clock.
-> Could that be the problem?
+> In message <200903161652.09747.david.jander@protonic.nl> you wrote:
+> > Complete workaround for DTLB errata in e300c2/c3/c4 processors.
+> > 
+> > Due to the bug, the hardware-implemented LRU algorythm always goes to way
+> > 1 of the TLB. This fix implements the proposed software workaround in
+> > form of a LRW table for chosing the TLB-way.
+> > 
+> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> > Signed-off-by: David Jander <david@protonic.nl>
+> 
+> What is the actual status of this patch?
+> 
+> Patchwork (http://patchwork.ozlabs.org/patch/24502/) says it's
+> "superseded" - but by what?
+> 
+> I can't see such code in mainline - what happened to it?
 
-I don't think so.
+I can see the code in mainline ... but only in the -data- TLB miss
+handler, not the instruction one...
 
-When debugging, I printed the actual clock frequencies, and they
-looked as expected. And "arch/powerpc/platforms/512x/clock.c" has
-this:
+Kumar ? Shouldn't we have the workaround in both ?
 
-385 static struct clk fec_clk = {
-386         .name = "fec_clk",
-387         .flags = CLK_HAS_CTRL,
-388         .reg = 0,
-389         .bit = 13,
-390         .calc = unity_clk_calc,
-391         .parent = &ips_clk,
-392 };
-
-which looks OK to me.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The human mind  ordinarily  operates  at  only  ten  percent  of  its
-capacity. The rest is overhead for the operating system.
+Cheers,
+Ben.
