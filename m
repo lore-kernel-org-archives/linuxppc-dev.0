@@ -1,16 +1,25 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by bilbo.ozlabs.org (Postfix) with SMTP id B1224B70AC
+Return-Path: <b.spranger@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 32D2CB70AD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  7 Jun 2009 07:19:19 +1000 (EST)
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 06 Jun 2009 23:12:36 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Message-ID: <20090606211236.245370@gmx.net>
-MIME-Version: 1.0
-Subject: [PATCH] powerpc: Enable additional BAT registers in
-	setup_745x_specifics()
+	Sun,  7 Jun 2009 07:32:35 +1000 (EST)
+Received: from clark.bene.spranger.biz (p5B17E358.dip.t-dialin.net
+	[91.23.227.88]) (authenticated bits=0)
+	by www.tglx.de (8.13.8/8.13.8/TGLX-2007100201) with ESMTP id
+	n56KpDIX030808
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES128-SHA bits=128 verify=NO)
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 6 Jun 2009 22:51:14 +0200
+Date: Sat, 6 Jun 2009 22:51:11 +0200
+From: Benedikt Spranger <b.spranger@linutronix.de>
 To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: how can i send real-time signal?
+Message-ID: <20090606225111.254af971@clark.bene.spranger.biz>
+In-Reply-To: <23892580.post@talk.nabble.com>
+References: <23892580.post@talk.nabble.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,33 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the kernel expects the additional four IBAT and DBAT registers
-to be available, but doesn't enable these registers on 745x CPUs, which
-have them disabled after reset. Thus set the HIGH_BAT_EN bit in HID0
-register, if the corresponding MMU feature is defined.
+Am Fri, 5 Jun 2009 10:41:56 -0700 (PDT)
+schrieb wael showair <showair2003@yahoo.com>:
 
-Signed-off-by: Gerhard Pircher <gerhard_pircher@gmx.net>
----
- arch/powerpc/kernel/cpu_setup_6xx.S |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+> My aim is : Each time the DSP-core interrupts the MPC8555 processor, a
+> process in the user space will be informed by the arrival of this each
+> interrupt.
+You should have a look at drivers/uio...
 
-diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
-index 54f767e..1e9949e 100644
---- a/arch/powerpc/kernel/cpu_setup_6xx.S
-+++ b/arch/powerpc/kernel/cpu_setup_6xx.S
-@@ -239,6 +239,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_L3CR)
- 	ori	r11,r11,HID0_SGE | HID0_FOLD | HID0_BHTE
- 	ori	r11,r11,HID0_LRSTK | HID0_BTIC
- 	oris	r11,r11,HID0_DPM@h
-+BEGIN_MMU_FTR_SECTION
-+	oris	r11,r11,HID0_HIGH_BAT@h
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_HIGH_BATS)
- BEGIN_FTR_SECTION
- 	xori	r11,r11,HID0_BTIC
- END_FTR_SECTION_IFSET(CPU_FTR_NO_BTIC)
--- 
-1.5.6.5
+> So i decided to use sw signals, in the ISR of the DSP-core interrupt
+> i send a SW signal to the user space process? Is this the best
+> solution? are there any better suggestion to achieve my aim? 
+signals are expensive. Look at the UIO-Framework for a cheaper solution.
+preallocated RT-Signals on the other Hand are fragile. Blocking reads
+are cheaper and in case of preempt-RT, but not resticted to it, much
+easier to handle.
 
--- 
-GMX FreeDSL mit DSL 6.000 Flatrate und Telefonanschluss nur 17,95 Euro/mtl.!
-http://dslspecial.gmx.de/freedsl-aktionspreis/?ac=OM.AD.PD003K11308T4569a
+Bene
