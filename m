@@ -1,25 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <BATV+b9b5b997e1b0c89ea184+2113+infradead.org+dwmw2@casper.srs.infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id AD720B709D
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 80D0FB70A7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  7 Jun 2009 02:26:09 +1000 (EST)
-Received: from mail-gx0-f211.google.com (mail-gx0-f211.google.com
-	[209.85.217.211]) by ozlabs.org (Postfix) with ESMTP id 04086DDD1B
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Jun 2009 02:26:08 +1000 (EST)
-Received: by gxk7 with SMTP id 7so1844978gxk.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 06 Jun 2009 09:26:05 -0700 (PDT)
-MIME-Version: 1.0
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 6 Jun 2009 10:25:45 -0600
-Message-ID: <fa686aa40906060925w18fc4c39ld2a59718a32ee996@mail.gmail.com>
-Subject: Please pull -next branch from git.secretlab.ca
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Roderick Colenbrander <thunderbird2k@gmail.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun,  7 Jun 2009 02:38:18 +1000 (EST)
+Subject: [PATCH] Remove machine_is(chrp) from 64-bit kernel
+From: David Woodhouse <dwmw2@infradead.org>
+To: benh@kernel.crashing.org
+Content-Type: text/plain
+Date: Sat, 06 Jun 2009 17:38:10 +0100
+Message-Id: <1244306290.3751.2032.camel@macbook.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+The CHRP platform type only exists in a 32-bit build. Don't bother
+checking machine_is(chrp) if we're in 64-bit mode.
 
-Here are some new commits to support the Xilinx ML507 board for 2.6.31
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 
-The following changes since commit baf75b0a42a1b3f6fca80f8949b6141eaff61b0d:
-  Stephen Rothwell (1):
-        powerpc/pci: Fix annotation of pcibios_claim_one_bus
-
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6 next
-
-Grant Likely (1):
-      powerpc/virtex: refactor intc driver and add support for i8259 cascading
-
-Roderick Colenbrander (3):
-      powerpc/virtex: Add support for Xilinx PCI host bridge
-      powerpc/virtex: Add Xilinx ML510 reference design support
-      powerpc/virtex: Add ml510 reference design device tree
-
- arch/powerpc/boot/dts/virtex440-ml510.dts |  465 +++++++++++++++++++++++++++++
- arch/powerpc/include/asm/xilinx_pci.h     |   21 ++
- arch/powerpc/platforms/40x/virtex.c       |    2 +
- arch/powerpc/platforms/44x/Kconfig        |   13 +-
- arch/powerpc/platforms/44x/Makefile       |    1 +
- arch/powerpc/platforms/44x/virtex.c       |    2 +
- arch/powerpc/platforms/44x/virtex_ml510.c |   29 ++
- arch/powerpc/platforms/Kconfig            |    4 +
- arch/powerpc/sysdev/Makefile              |    1 +
- arch/powerpc/sysdev/xilinx_intc.c         |   81 ++++--
- arch/powerpc/sysdev/xilinx_pci.c          |  132 ++++++++
- 11 files changed, 732 insertions(+), 19 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/virtex440-ml510.dts
- create mode 100644 arch/powerpc/include/asm/xilinx_pci.h
- create mode 100644 arch/powerpc/platforms/44x/virtex_ml510.c
- create mode 100644 arch/powerpc/sysdev/xilinx_pci.c
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index 45936c9..c22f7e8 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -518,9 +518,10 @@ static int __init pmac_declare_of_platform_devices(void)
+ {
+ 	struct device_node *np;
+ 
++#ifdef CONFIG_PPC32
+ 	if (machine_is(chrp))
+ 		return -1;
+-
++#endif
+ 	np = of_find_node_by_name(NULL, "valkyrie");
+ 	if (np)
+ 		of_platform_device_create(np, "valkyrie", NULL);
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
