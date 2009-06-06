@@ -1,27 +1,23 @@
-Return-Path: <albrecht.dress@arcor.de>
+Return-Path: <leon.woestenberg@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5BC66B7098
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E4CF1B70C4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  7 Jun 2009 02:16:12 +1000 (EST)
-Date: Sat, 06 Jun 2009 18:16:06 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH V2 2/2] mtd/maps/mtd-ram: add an of-platform driver
-To: Grant Likely <grant.likely@secretlab.ca>
-References: <1244203514-12516-1-git-send-email-w.sang@pengutronix.de>
-	<1244203514-12516-3-git-send-email-w.sang@pengutronix.de>
-	<fa686aa40906060905y1d39dce1j87d993ceb94273be@mail.gmail.com>
-In-Reply-To: <fa686aa40906060905y1d39dce1j87d993ceb94273be@mail.gmail.com>
-	(from grant.likely@secretlab.ca on Sat Jun  6 18:05:41 2009)
-Message-Id: <1244304966.6356.1@antares>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-QxzQ4Qam/pys6+fWyUaj"
-Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, Ben Dooks <ben-linux@fluff.org>,
-	David Woodhouse <dwmw2@infradead.org>
+	Sun,  7 Jun 2009 02:16:15 +1000 (EST)
+Received: from mail-ew0-f215.google.com (mail-ew0-f215.google.com
+	[209.85.219.215]) by ozlabs.org (Postfix) with ESMTP id AE124DDDA0
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Jun 2009 02:16:07 +1000 (EST)
+Received: by ewy11 with SMTP id 11so3082681ewy.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 06 Jun 2009 09:15:56 -0700 (PDT)
+Message-ID: <4a2a9611.06c8100a.49ae.ffff88e4@mx.google.com>
+Date: Sat, 06 Jun 2009 09:15:13 -0700 (PDT)
+To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+	linux-kernel@vger.kernel.org
+To: Leon Woestenberg <leon@sidebranch.com>
+From: leon.woestenberg@gmail.com
+Subject: [PATCH v2] Add MSI interrupts to DTS of MPC8315E-RDB
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,34 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-QxzQ4Qam/pys6+fWyUaj
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The PCIe MSI interrupts are missing from the device tree source, and
+thus were not enabled. This patch adds them.
 
-Am 06.06.09 18:05 schrieb(en) Grant Likely:
-> > + - bank-width : Width (in bytes) of the RAM bank.
->=20
-> Question: why is bank-width even relevant for a RAM device?
+v2 of the patch fixes inconsistent white space, reported by David Gibson.
 
-At least if the RAM is attached to the 5200's Local Plus Bus in 16-bit =20
-mode, no byte write accesses are allowed (byte /reads/ work, though).  =20
-I have a tweak (which I will post next week) to address this case, =20
-which depends upon this setting.  No idea if the same happens on other =20
-chips and/or on 5200 in 32-bit (muxed) mode, but I guess similar =20
-effects will pop up there, too.
+Tested to work on MPC8315E-RDB with custom FPGA PCIe device.
 
-Cheers, Albrecht.
+Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
+Tested-by: Leon Woestenberg <leon@sidebranch.com>
 
---=-QxzQ4Qam/pys6+fWyUaj
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBKKpZGn/9unNAn/9ERAqQuAJ9kKc52W8PvIqI0f/yQu/7uioICEgCeKTA9
-L8skza7amytWvqUF8YmMMGY=
-=5UdO
------END PGP SIGNATURE-----
-
---=-QxzQ4Qam/pys6+fWyUaj--
+Index: git/arch/powerpc/boot/dts/mpc8315erdb.dts
+===================================================================
+--- git.orig/arch/powerpc/boot/dts/mpc8315erdb.dts	2009-05-23 20:49:40.000000000 +0200
++++ git/arch/powerpc/boot/dts/mpc8315erdb.dts	2009-06-06 10:35:14.000000000 +0200
+@@ -322,6 +322,21 @@
+ 			reg = <0x700 0x100>;
+ 			device_type = "ipic";
+ 		};
++
++		ipic-msi@7c0 {
++			compatible = "fsl,ipic-msi";
++			reg = <0x7c0 0x40>;
++			msi-available-ranges = <0 0x100>;
++			interrupts = <0x43 0x8
++				      0x4  0x8
++				      0x51 0x8
++				      0x52 0x8
++				      0x56 0x8
++				      0x57 0x8
++				      0x58 0x8
++				      0x59 0x8>;
++			interrupt-parent = < &ipic >;
++		};
+ 	};
+ 
+ 	pci0: pci@e0008500 {
