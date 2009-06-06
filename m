@@ -1,30 +1,24 @@
-Return-Path: <jacmet@gmail.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 28064B7090
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9C974B7098
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  7 Jun 2009 01:22:00 +1000 (EST)
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
-	by ozlabs.org (Postfix) with ESMTP id 47C56DDD1B
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Jun 2009 01:21:58 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id e21so834780fga.16
-	for <linuxppc-dev@ozlabs.org>; Sat, 06 Jun 2009 08:21:56 -0700 (PDT)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-To: Joachim Foerster <JOFT@gmx.de>
-Subject: Re: SD card over (xilinx_)SPI, timeout error while CID
-References: <1244216069.21470.12.camel@localhost>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Sat, 06 Jun 2009 17:14:24 +0200
-In-Reply-To: <1244216069.21470.12.camel@localhost> (Joachim Foerster's message
-	of "Fri\, 05 Jun 2009 17\:34\:29 +0200")
-Message-ID: <87bpp1xulr.fsf@macbook.be.48ers.dk>
+	Sun,  7 Jun 2009 02:06:29 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: joachim@missinglinkelectronics.com, linuxppc-dev@ozlabs.org,
-	dbrownell@users.sourceforge.net, john.linn@xilinx.com,
-	lorenz@missinglinkelectronics.com
+In-Reply-To: <1244203514-12516-3-git-send-email-w.sang@pengutronix.de>
+References: <1244203514-12516-1-git-send-email-w.sang@pengutronix.de>
+	<1244203514-12516-3-git-send-email-w.sang@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 6 Jun 2009 10:05:41 -0600
+Message-ID: <fa686aa40906060905y1d39dce1j87d993ceb94273be@mail.gmail.com>
+Subject: Re: [PATCH V2 2/2] mtd/maps/mtd-ram: add an of-platform driver
+To: Wolfram Sang <w.sang@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@ozlabs.org, albrecht.dress@arcor.de,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Ben Dooks <ben-linux@fluff.org>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,15 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>> "Joachim" == Joachim Foerster <JOFT@gmx.de> writes:
+On Fri, Jun 5, 2009 at 6:05 AM, Wolfram Sang<w.sang@pengutronix.de> wrote:
+> diff --git a/Documentation/powerpc/dts-bindings/mtd-ram.txt b/Documentati=
+on/powerpc/dts-bindings/mtd-ram.txt
+> new file mode 100644
+> index 0000000..a2e9932
+> --- /dev/null
+> +++ b/Documentation/powerpc/dts-bindings/mtd-ram.txt
+> @@ -0,0 +1,18 @@
+> +RAM emulating an MTD
+> +
+> +An external RAM like SRAM or FRAM can also be treated as an MTD.
+> +
+> + - compatible : should contain the specific model of the RAM chip
+> + =A0 used, if known, followed by "mtd-ram".
+> + - reg : Address range of the RAM chip
+> + - bank-width : Width (in bytes) of the RAM bank.
 
-Hi,
+Question: why is bank-width even relevant for a RAM device?
 
- Joachim> Any hints? Does anybody use SD card support with
- Joachim> mmc_spi+xilinx_spi ?
+g.
 
-I don't, but have you compared the spi signals on a scope in the 2
-setups? Is timing significantly different?
-
--- 
-Bye, Peter Korsgaard
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
