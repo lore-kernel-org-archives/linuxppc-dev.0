@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 03ECCB70A4
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by bilbo.ozlabs.org (Postfix) with SMTP id B1224B70AC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  7 Jun 2009 07:16:01 +1000 (EST)
-Subject: Re: [PATCH] Remove machine_is(chrp) from 64-bit kernel
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1244306290.3751.2032.camel@macbook.infradead.org>
-References: <1244306290.3751.2032.camel@macbook.infradead.org>
-Content-Type: text/plain
-Date: Sun, 07 Jun 2009 07:15:46 +1000
-Message-Id: <1244322946.31984.37.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Sun,  7 Jun 2009 07:19:19 +1000 (EST)
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 06 Jun 2009 23:12:36 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20090606211236.245370@gmx.net>
+MIME-Version: 1.0
+Subject: [PATCH] powerpc: Enable additional BAT registers in
+	setup_745x_specifics()
+To: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2009-06-06 at 17:38 +0100, David Woodhouse wrote:
-> The CHRP platform type only exists in a 32-bit build. Don't bother
-> checking machine_is(chrp) if we're in 64-bit mode.
-> 
-> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Currently the kernel expects the additional four IBAT and DBAT registers
+to be available, but doesn't enable these registers on 745x CPUs, which
+have them disabled after reset. Thus set the HIGH_BAT_EN bit in HID0
+register, if the corresponding MMU feature is defined.
 
-Isn't the test bogus anyway ? It should be if (!machine_is(powermac))
-but is useless since the function is called via:
+Signed-off-by: Gerhard Pircher <gerhard_pircher@gmx.net>
+---
+ arch/powerpc/kernel/cpu_setup_6xx.S |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-machine_device_initcall(powermac, pmac_declare_of_platform_devices);
+diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
+index 54f767e..1e9949e 100644
+--- a/arch/powerpc/kernel/cpu_setup_6xx.S
++++ b/arch/powerpc/kernel/cpu_setup_6xx.S
+@@ -239,6 +239,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_L3CR)
+ 	ori	r11,r11,HID0_SGE | HID0_FOLD | HID0_BHTE
+ 	ori	r11,r11,HID0_LRSTK | HID0_BTIC
+ 	oris	r11,r11,HID0_DPM@h
++BEGIN_MMU_FTR_SECTION
++	oris	r11,r11,HID0_HIGH_BAT@h
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_HIGH_BATS)
+ BEGIN_FTR_SECTION
+ 	xori	r11,r11,HID0_BTIC
+ END_FTR_SECTION_IFSET(CPU_FTR_NO_BTIC)
+-- 
+1.5.6.5
 
-Cheers,
-Ben.
-
-> diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-> index 45936c9..c22f7e8 100644
-> --- a/arch/powerpc/platforms/powermac/setup.c
-> +++ b/arch/powerpc/platforms/powermac/setup.c
-> @@ -518,9 +518,10 @@ static int __init pmac_declare_of_platform_devices(void)
->  {
->  	struct device_node *np;
->  
-> +#ifdef CONFIG_PPC32
->  	if (machine_is(chrp))
->  		return -1;
-> -
-> +#endif
->  	np = of_find_node_by_name(NULL, "valkyrie");
->  	if (np)
->  		of_platform_device_create(np, "valkyrie", NULL);
-> 
+-- 
+GMX FreeDSL mit DSL 6.000 Flatrate und Telefonanschluss nur 17,95 Euro/mtl.!
+http://dslspecial.gmx.de/freedsl-aktionspreis/?ac=OM.AD.PD003K11308T4569a
