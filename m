@@ -1,18 +1,25 @@
-Return-Path: <BATV+b9b5b997e1b0c89ea184+2113+infradead.org+dwmw2@casper.srs.infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+Return-Path: <glikely@secretlab.ca>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 80D0FB70A7
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 82499B70AE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  7 Jun 2009 02:38:18 +1000 (EST)
-Subject: [PATCH] Remove machine_is(chrp) from 64-bit kernel
-From: David Woodhouse <dwmw2@infradead.org>
-To: benh@kernel.crashing.org
-Content-Type: text/plain
-Date: Sat, 06 Jun 2009 17:38:10 +0100
-Message-Id: <1244306290.3751.2032.camel@macbook.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Sun,  7 Jun 2009 02:39:53 +1000 (EST)
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 07BC1DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Jun 2009 02:39:52 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so456704waf.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 06 Jun 2009 09:39:50 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/install: Bail with error code on error in install
+	script
+To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
+Date: Sat, 06 Jun 2009 10:39:46 -0600
+Message-ID: <20090606163837.17482.56209.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,28 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The CHRP platform type only exists in a 32-bit build. Don't bother
-checking machine_is(chrp) if we're in 64-bit mode.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+If anything goes wrong when copying images into the install path, then
+the install script should exit with an error code so that 'make' knows
+about it and tells the user.
 
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index 45936c9..c22f7e8 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -518,9 +518,10 @@ static int __init pmac_declare_of_platform_devices(void)
- {
- 	struct device_node *np;
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+
+ arch/powerpc/boot/install.sh |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+
+diff --git a/arch/powerpc/boot/install.sh b/arch/powerpc/boot/install.sh
+index 51b2387..98312d1 100644
+--- a/arch/powerpc/boot/install.sh
++++ b/arch/powerpc/boot/install.sh
+@@ -18,6 +18,9 @@
+ #   $5 and more - kernel boot files; zImage*, uImage, cuImage.*, etc.
+ #
  
-+#ifdef CONFIG_PPC32
- 	if (machine_is(chrp))
- 		return -1;
--
-+#endif
- 	np = of_find_node_by_name(NULL, "valkyrie");
- 	if (np)
- 		of_platform_device_create(np, "valkyrie", NULL);
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
++# Bail with error code if anything goes wrong
++set -e
++
+ # User may have a custom install script
+ 
+ if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
