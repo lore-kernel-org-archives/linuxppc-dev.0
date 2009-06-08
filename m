@@ -1,24 +1,30 @@
-Return-Path: <albrecht.dress@arcor.de>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 22E53B70C0
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9A195B70C8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Jun 2009 03:31:02 +1000 (EST)
-Date: Mon, 08 Jun 2009 19:30:45 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH V2 2/2] mtd/maps/mtd-ram: add an of-platform driver
-To: Wolfram Sang <w.sang@pengutronix.de>
-In-Reply-To: <20090608163540.GA16384@pengutronix.de> (from
-	w.sang@pengutronix.de on Mon Jun  8 18:35:40 2009)
-Message-Id: <1244482256.3278.0@antares>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-97gFfBnOr0Mpi+yYBi41"
-Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, Ben Dooks <ben-linux@fluff.org>,
-	David Woodhouse <dwmw2@infradead.org>
+	Tue,  9 Jun 2009 04:16:32 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E61A5DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jun 2009 04:16:31 +1000 (EST)
+Message-Id: <C1B3311B-B3D3-422A-A4DE-9A319AE90CDC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1244328124.31984.40.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [RFC][PATCH v5] MPC5121 TLB errata workaround
+Date: Mon, 8 Jun 2009 13:16:16 -0500
+References: <200903161652.09747.david.jander@protonic.nl>
+	<20090606220723.A38DA832E416@gemini.denx.de>
+	<1244328124.31984.40.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	David Jander <david.jander@protonic.nl>,
+	Wolfgang Denk <wd@denx.de>, gunnar@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-97gFfBnOr0Mpi+yYBi41
-Content-Type: text/plain; charset=ISO-8859-1; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Am 08.06.09 18:35 schrieb(en) Wolfram Sang:
->> Question: why is bank-width even relevant for a RAM device?
->=20
-> The underlying map_ram-driver uses it once while erasing. The =20
-> question remains if this is really needed?
+On Jun 6, 2009, at 5:42 PM, Benjamin Herrenschmidt wrote:
 
-Am 06.06.09 18:16 schrieb(en) Albrecht Dre=DF:
-> At least if the RAM is attached to the 5200's Local Plus Bus in =20
-> 16-bit mode, no byte write accesses are allowed (byte /reads/ work, =20
-> though).  I have a tweak (which I will post next week) to address =20
-> this case, which depends upon this setting.
+> On Sun, 2009-06-07 at 00:07 +0200, Wolfgang Denk wrote:
+>> Dear David Jander,
+>>
+>> In message <200903161652.09747.david.jander@protonic.nl> you wrote:
+>>> Complete workaround for DTLB errata in e300c2/c3/c4 processors.
+>>>
+>>> Due to the bug, the hardware-implemented LRU algorythm always goes  
+>>> to way
+>>> 1 of the TLB. This fix implements the proposed software workaround  
+>>> in
+>>> form of a LRW table for chosing the TLB-way.
+>>>
+>>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>>> Signed-off-by: David Jander <david@protonic.nl>
+>>
+>> What is the actual status of this patch?
+>>
+>> Patchwork (http://patchwork.ozlabs.org/patch/24502/) says it's
+>> "superseded" - but by what?
+>>
+>> I can't see such code in mainline - what happened to it?
+>
+> I can see the code in mainline ... but only in the -data- TLB miss
+> handler, not the instruction one...
+>
+> Kumar ? Shouldn't we have the workaround in both ?
 
-To put this clearer: on '5200 based systems, the driver (more specific: =20
-the function inline_map_copy_to()) *must* know whether the hardware is =20
-connected in 8-bit or 16-bit mode to the Local Plus Bus, as byte writes =20
-(issued by memcpy_toio()) will fail for the latter setup (probably the =20
-same applies for byte and word writes in 32-bit mode).
+The errata was only for the d-side.  The patch is in the mainline  
+kernel.
 
-IMHO, this information should be passed using the device tree.  The =20
-"bank-width" seems to be an obvious choice for that.
-
-Best, Albrecht.
-
---=-97gFfBnOr0Mpi+yYBi41
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBKLUrQn/9unNAn/9ERAlojAKCQcNeACQ0s+hriPt5oMQphSBrv2QCgquGu
-2U7wswApUdESMZiYG64xdfk=
-=ODlX
------END PGP SIGNATURE-----
-
---=-97gFfBnOr0Mpi+yYBi41--
+- k
