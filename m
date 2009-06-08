@@ -1,32 +1,34 @@
-Return-Path: <DaveLiu@freescale.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4DC90B70B2
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6542DB70C2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Jun 2009 00:30:58 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B1E59DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jun 2009 00:30:55 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n58EUZEB028681
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2009 07:30:46 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n58EUXpu003224
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2009 09:30:34 -0500 (CDT)
-From: Dave Liu <daveliu@freescale.com>
-To: linux-serial@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] serial: Fix bug of ucc_uart
-Date: Mon,  8 Jun 2009 22:24:36 +0800
-Message-Id: <1244471076-25905-1-git-send-email-daveliu@freescale.com>
-Cc: timur@freescale.com
+	Tue,  9 Jun 2009 00:37:39 +1000 (EST)
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id B4E7CDDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jun 2009 00:37:37 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1551575ywt.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 08 Jun 2009 07:37:36 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090607203406.7C8BC832E416@gemini.denx.de>
+References: <1241641262-5202-1-git-send-email-wd@denx.de>
+	<1241641262-5202-6-git-send-email-wd@denx.de>
+	<4b73d43f0905071909v6e6e8b2el9eb6d4a1b9038f45@mail.gmail.com>
+	<20090606221618.701E0832E416@gemini.denx.de>
+	<4b73d43f0906061527p7ca1b301ybcfc576870a168d5@mail.gmail.com>
+	<20090606232148.4E0BD832E416@gemini.denx.de>
+	<4b73d43f0906061708o763409d0u10a344dfc30e32c1@mail.gmail.com>
+	<20090607203406.7C8BC832E416@gemini.denx.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 8 Jun 2009 08:37:16 -0600
+Message-ID: <fa686aa40906080737h64bad3cfv32155e5b819d650b@mail.gmail.com>
+Subject: Re: [PATCH 05/04] *** NOT FOR RELEASE *** HACK *** Work around MII
+	clock issue ***
+To: Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Chen Hongjun <Hong-jun.chen@freecale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,74 +38,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current ucc_uart driver doesn't work at UART mode,
-The TxBD[READY] is not cleared by H/W (RISC engine)
-when user send characters to Tx buffer of QE UART.
-so, these characters stay on the QE forever, never
-go to UART line.
+On Sun, Jun 7, 2009 at 2:34 PM, Wolfgang Denk<wd@denx.de> wrote:
+> Dear John,
+>
+> in message <4b73d43f0906061708o763409d0u10a344dfc30e32c1@mail.gmail.com> =
+you wrote:
+>>
+>> > The big question seems to be what the RefMan means when talking about
+>> > the "system clock frequency". Obiously it is NOT =A0the =A0CPU =A0cloc=
+k =A0as
+> ...
+>> > But which one is it?
+>>
+>> My best guess is still that it is ips clock. =A0I think I stated in a pr=
+evious
+>> email ipb, but I meant ips. =A05200 has ibp and 5121 has ips. =A0Have yo=
+u looked
+>> at he MII clock on a scope to see how the calculated values compare to
+>> actual?
+>
+> Yes, it seems very much as if you were right again.
+>
+> When using ips/ibp everything makes sense, and works.
+>
+> Hm... so that means on MPC512x we should use mpc512x_find_ips_freq(),
+> while on MPC5200 we should use =A0mpc52xx_find_ipb_freq() =A0- =A0but =A0=
+hey,
+> apart from the name these two functions are identical.
+>
+> Grant - how would you like to see this handled? Should we merge these
+> two code-wise identical functions into one? =A0What should be the name,
+> and in which file should we put it?
 
-The patch is fixing th bug.
+If you want to merge them... Seeing as the function just walks up the
+parent nodes looking for the "bus-frequency" property; how about
+"mpc5xxx_get_bus_frequency()"?  It should go somewhere in
+arch/powerpc/sysdev/
 
-Signed-off-by: Dave Liu <daveliu@freescale.com>
----
- drivers/serial/ucc_uart.c |   19 ++++++++++++++-----
- 1 files changed, 14 insertions(+), 5 deletions(-)
+Alternately, it is a pretty trivial function; 52xx and 512x could both
+have their own versions of it.  Whichever makes the most sense to you
+(I haven't personally looked at the device driver impact).
 
-diff --git a/drivers/serial/ucc_uart.c b/drivers/serial/ucc_uart.c
-index 7de66c0..e945e78 100644
---- a/drivers/serial/ucc_uart.c
-+++ b/drivers/serial/ucc_uart.c
-@@ -681,22 +681,27 @@ static void qe_uart_init_ucc(struct uart_qe_port *qe_port)
- 	out_be16(&uccup->rccm, 0xc0ff);
- 
- 	/* Configure the GUMR registers for UART */
--	if (soft_uart)
-+	if (soft_uart) {
- 		/* Soft-UART requires a 1X multiplier for TX */
- 		clrsetbits_be32(&uccp->gumr_l,
- 			UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK |
- 			UCC_SLOW_GUMR_L_RDCR_MASK,
- 			UCC_SLOW_GUMR_L_MODE_UART | UCC_SLOW_GUMR_L_TDCR_1 |
- 			UCC_SLOW_GUMR_L_RDCR_16);
--	else
-+
-+		clrsetbits_be32(&uccp->gumr_h, UCC_SLOW_GUMR_H_RFW,
-+			UCC_SLOW_GUMR_H_TRX | UCC_SLOW_GUMR_H_TTX);
-+	} else {
- 		clrsetbits_be32(&uccp->gumr_l,
- 			UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK |
- 			UCC_SLOW_GUMR_L_RDCR_MASK,
- 			UCC_SLOW_GUMR_L_MODE_UART | UCC_SLOW_GUMR_L_TDCR_16 |
- 			UCC_SLOW_GUMR_L_RDCR_16);
- 
--	clrsetbits_be32(&uccp->gumr_h, UCC_SLOW_GUMR_H_RFW,
--		UCC_SLOW_GUMR_H_TRX | UCC_SLOW_GUMR_H_TTX);
-+		clrsetbits_be32(&uccp->gumr_h,
-+			UCC_SLOW_GUMR_H_TRX | UCC_SLOW_GUMR_H_TTX,
-+			UCC_SLOW_GUMR_H_RFW);
-+	}
- 
- #ifdef LOOPBACK
- 	clrsetbits_be32(&uccp->gumr_l, UCC_SLOW_GUMR_L_DIAG_MASK,
-@@ -706,7 +711,7 @@ static void qe_uart_init_ucc(struct uart_qe_port *qe_port)
- 		UCC_SLOW_GUMR_H_CDS);
- #endif
- 
--	/* Enable rx interrupts  and clear all pending events.  */
-+	/* Disable rx interrupts  and clear all pending events.  */
- 	out_be16(&uccp->uccm, 0);
- 	out_be16(&uccp->ucce, 0xffff);
- 	out_be16(&uccp->udsr, 0x7e7e);
-@@ -765,6 +770,10 @@ static void qe_uart_init_ucc(struct uart_qe_port *qe_port)
- 		cecr_subblock = ucc_slow_get_qe_cr_subblock(qe_port->ucc_num);
- 		qe_issue_cmd(QE_INIT_TX_RX, cecr_subblock,
- 			QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+	} else {
-+		cecr_subblock = ucc_slow_get_qe_cr_subblock(qe_port->ucc_num);
-+		qe_issue_cmd(QE_INIT_TX_RX, cecr_subblock,
-+			QE_CR_PROTOCOL_UART, 0);
- 	}
- }
- 
--- 
-1.5.4
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
