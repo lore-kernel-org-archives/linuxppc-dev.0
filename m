@@ -1,36 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <leon.woestenberg@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 65CA0B70BA
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 502D9B70B7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Jun 2009 00:39:35 +1000 (EST)
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id A2A3EDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jun 2009 00:39:34 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so1585457qwe.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Jun 2009 07:39:32 -0700 (PDT)
+	Tue,  9 Jun 2009 01:31:57 +1000 (EST)
+Received: from mail-qy0-f171.google.com (mail-qy0-f171.google.com
+	[209.85.221.171]) by ozlabs.org (Postfix) with ESMTP id 616C3DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jun 2009 01:31:56 +1000 (EST)
+Received: by qyk1 with SMTP id 1so4463395qyk.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 08 Jun 2009 08:31:54 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20090608081904.14265832E416@gemini.denx.de>
-References: <1241641262-5202-1-git-send-email-wd@denx.de>
-	<1241641262-5202-6-git-send-email-wd@denx.de>
-	<4b73d43f0905071909v6e6e8b2el9eb6d4a1b9038f45@mail.gmail.com>
-	<20090606221618.701E0832E416@gemini.denx.de>
-	<4b73d43f0906061527p7ca1b301ybcfc576870a168d5@mail.gmail.com>
-	<20090606232148.4E0BD832E416@gemini.denx.de>
-	<4b73d43f0906061708o763409d0u10a344dfc30e32c1@mail.gmail.com>
-	<20090607203406.7C8BC832E416@gemini.denx.de>
-	<4A2CC1DE.5040704@grandegger.com>
-	<20090608081904.14265832E416@gemini.denx.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 8 Jun 2009 08:39:12 -0600
-Message-ID: <fa686aa40906080739w6c9a763cmc38371726e97a12@mail.gmail.com>
-Subject: Re: [PATCH 05/04] *** NOT FOR RELEASE *** HACK *** Work around MII
-	clock issue ***
-To: Wolfgang Denk <wd@denx.de>
+Date: Mon, 8 Jun 2009 16:59:14 +0200
+Message-ID: <c384c5ea0906080759n24a66d21ob9076518cec41755@mail.gmail.com>
+Subject: 2.6.30-rc6: Problem with an SSD disk on Freescale PowerPC
+	mpc8315e-rdb, works fine on x86
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: Linux PPC <linuxppc-dev@ozlabs.org>, Stuart Hughes <stuarth@freescale.com>,
+	Kumar Gala <galak@kernel.crashing.org>, linux-ide@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Chen Hongjun <Hong-jun.chen@freecale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,48 +29,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 8, 2009 at 2:19 AM, Wolfgang Denk<wd@denx.de> wrote:
-> Dear Wolfgang,
->
-> In message <4A2CC1DE.5040704@grandegger.com> you wrote:
->>
->> > Hm... so that means on MPC512x we should use mpc512x_find_ips_freq(),
->> > while on MPC5200 we should use =A0mpc52xx_find_ipb_freq() =A0- =A0but =
-=A0hey,
->> > apart from the name these two functions are identical.
->> >
->> > Grant - how would you like to see this handled? Should we merge these
->> > two code-wise identical functions into one? =A0What should be the name=
-,
->> > and in which file should we put it?
->> >
->> > [We need this clock thing for "drivers/net/fs_enet/mii-fec.c"...]
->>
->> I2C and MSCAN need it as well. What about implementing the more generic
->> clk api for the MPC5200 as done for the MPC512x?
->
->> http://lxr.linux.no/linux+v2.6.29/arch/powerpc/platforms/512x/clock.c
->
-> Hmmm... I have to admit that I'm biased he. My =A0primary =A0interest =A0=
-at
-> the =A0moment is obviously just to get the MPC512x stuff into mainline,
-> and thus I'm not happy about extending the scope of the isse to other
-> processors.
->
-> From the technical point of view you are right, but I have to admit
-> that I don't see which direction we should go from here. If we keep in
-> mind that the same FEC core is also used in various i.MX platforms (=3D
-> ARM processors), we probably cannot come up with a clean, unique
-> implementation that covers all uses.
->
-> That's why I asked Grant how to address this. =A0I also added Kumar to
-> the Cc: list - mayby he has some ideas as well?
+Hello,
 
-I say use the simple approach to get it merged;  It can always be changed l=
-ater.
+using 2.6.30-rc6, I get the following problems when I read from a SSD
+disk, connected to the
+3.0 Gb SATA controller of the MPC8315E SoC rev 1.0 running Linux 2.6.30-rc6.
 
-g.
+Below see the output from two dd read runs.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+The disk behaves fine on a x86 box.
+
+What I can do to (help) pin-point the problem?
+
+Regards,
+
+Leon.
+
+
+root@mpc8315e-rdb:~# dd if=/dev/sda of=/dev/null bs=4k
+ata2: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata2.00: cmd c8/00:3e:1e:e0:01/00:00:00:00:00/e0 tag 0 dma 31744 in
+         res 50/00:3e:e0:df:01/00:00:00:00:00/e0 Emask 0x1 (device error)
+ata2.00: status: { DRDY }
+ata2: hard resetting link
+ata2: Signature Update detected @ 3528 msecs
+ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+ata2.00: configured for UDMA/133
+sd 1:0:0:0: [sda] Result: hostbyte=0x00 driverbyte=0x08
+sd 1:0:0:0: [sda] Sense Key : 0xb [current] [descriptor]
+Descriptor sense data with sense descriptors (in hex):
+        72 0b 00 00 00 00 00 0c 00 0a 80 00 00 00 00 00
+        00 01 df e0
+sd 1:0:0:0: [sda] ASC=0x0 ASCQ=0x0
+end_request: I/O error, dev sda, sector 122910
+__ratelimit: 52 callbacks suppressed
+Buffer I/O error on device sda, logical block 122910
+Buffer I/O error on device sda, logical block 122911
+Buffer I/O error on device sda, logical block 122912
+Buffer I/O error on device sda, logical block 122913
+Buffer I/O error on device sda, logical block 122914
+Buffer I/O error on device sda, logical block 122915
+Buffer I/O error on device sda, logical block 122916
+Buffer I/O error on device sda, logical block 122917
+Buffer I/O error on device sda, logical block 122918
+Buffer I/O error on device sda, logical block 122919
+ata2: EH complete
+dd: /dev/sda: Input/output error
+
+
+root@mpc8315e-rdb:~# dd if=/dev/sda of=/dev/null bs=4k
+ata2: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x2 frozen
+ata2.00: cmd c8/00:32:9a:6e:00/00:00:00:00:00/e0 tag 0 dma 25600 in
+         res 50/00:3e:5c:6e:00/00:00:00:00:00/e0 Emask 0x1 (device error)
+ata2.00: status: { DRDY }
+ata2: hard resetting link
+ata2: Signature Update detected @ 3528 msecs
+ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+ata2.00: configured for UDMA/133
+sd 1:0:0:0: [sda] Result: hostbyte=0x00 driverbyte=0x08
+sd 1:0:0:0: [sda] Sense Key : 0xb [current] [descriptor]
+Descriptor sense data with sense descriptors (in hex):
+        72 0b 00 00 00 00 00 0c 00 0a 80 00 00 00 00 00
+        00 00 6e 5c
+sd 1:0:0:0: [sda] ASC=0x0 ASCQ=0x0
+end_request: I/O error, dev sda, sector 28314
+__ratelimit: 52 callbacks suppressed
+Buffer I/O error on device sda, logical block 28314
+Buffer I/O error on device sda, logical block 28315
+Buffer I/O error on device sda, logical block 28316
+Buffer I/O error on device sda, logical block 28317
+Buffer I/O error on device sda, logical block 28318
+Buffer I/O error on device sda, logical block 28319
+Buffer I/O error on device sda, logical block 28320
+Buffer I/O error on device sda, logical block 28321
+Buffer I/O error on device sda, logical block 28322
+Buffer I/O error on device sda, logical block 28323
+ata2: EH complete
+dd: /dev/sda: Input/output error
+
+
+root@mpc8315e-rdb:~# uname -a
+Linux mpc8315e-rdb 2.6.30-rc6 #1 Mon Jun 8 15:54:00 CEST 2009 ppc unknown
+
+root@mpc8315e-rdb:~# hdparm -i /dev/sda
+
+/dev/sda:
+
+ Model=Solidata X SSD                          , FwRev=0955    , SerialNo=<...>
+ Config={ HardSect NotMFM HdSw>15uSec Fixed DTR>10Mbs }
+ RawCHS=16383/16/63, TrkSize=0, SectSize=0, ECCbytes=0
+ BuffType=unknown, BuffSize=0kB, MaxMultSect=128, MultSect=?1?
+ CurCHS=16383/16/63, CurSects=16514064, LBA=no
+ IORDY=no, tPIO={min:240,w/IORDY:120}
+ PIO modes:  pio0 pio3 pio4
+ UDMA modes: udma0 udma1 udma2 udma3 udma4 udma5
+ AdvancedPM=yes: disabled (255) WriteCache=disabled
+ Drive conforms to: Unspecified:  ATA/ATAPI-4 ATA/ATAPI-5 ATA/ATAPI-6
+ATA/ATAPI-7
+
+ * signifies the current active mode
+
+
+
+-- 
+Leon
