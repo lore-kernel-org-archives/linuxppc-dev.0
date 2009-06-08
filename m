@@ -1,31 +1,40 @@
-Return-Path: <mel@csn.ul.ie>
+Return-Path: <sachinp@in.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 49912B70AE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B25F1B70AC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Jun 2009 21:51:00 +1000 (EST)
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	Mon,  8 Jun 2009 22:12:21 +1000 (EST)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8E59ADDD04
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jun 2009 21:50:57 +1000 (EST)
-Date: Mon, 8 Jun 2009 12:50:48 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH v4] zone_reclaim is always 0 by default
-Message-ID: <20090608115048.GA15070@csn.ul.ie>
-References: <20090604192236.9761.A69D9226@jp.fujitsu.com>
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4BE7BDDD04
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Jun 2009 22:12:20 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id n58CCFmT027845
+	for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2009 22:12:15 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n58CCJQC663594
+	for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2009 22:12:19 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n58CCJOT026795
+	for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2009 22:12:19 +1000
+Message-ID: <4A2D001E.5060802@in.ibm.com>
+Date: Mon, 08 Jun 2009 17:42:14 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20090604192236.9761.A69D9226@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, Christoph Lameter <cl@linux-foundation.org>,
-	linux-mm <linux-mm@kvack.org>, "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Robin Holt <holt@sgi.com>, linux-ia64@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Wu Fengguang <fengguang.wu@intel.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [Powerpc/SLQB] Next June 06 : BUG during scsi initialization
+References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
+	<4A081002.4050802@in.ibm.com> <4A2909E8.6000507@in.ibm.com>
+	<Pine.LNX.4.64.0906071105030.11309@melkki.cs.Helsinki.FI>
+In-Reply-To: <Pine.LNX.4.64.0906071105030.11309@melkki.cs.Helsinki.FI>
+Content-Type: multipart/mixed; boundary="------------090001070505070502010009"
+Cc: Nick Piggin <npiggin@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-next@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,150 +44,355 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 04, 2009 at 07:23:15PM +0900, KOSAKI Motohiro wrote:
-> 
-> Current linux policy is, zone_reclaim_mode is enabled by default if the machine
-> has large remote node distance. it's because we could assume that large distance
-> mean large server until recently.
-> 
+This is a multi-part message in MIME format.
+--------------090001070505070502010009
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-We don't make assumptions about the server being large, small or otherwise. The
-affinity tables reporting a distance of 20 or more is saying "remote memory
-has twice the latency of local memory". This is true irrespective of workload
-and implies that going off-node has a real penalty regardless of workload.
+Pekka J Enberg wrote:
+> Hi Sachin,
+>
+> On Fri, 5 Jun 2009, Sachin Sant wrote:
+>   
+>> I can still recreate this bug on a Power 6 hardware with today's next tree.
+>> I can recreate this problem at will.
+>> Let me know if i can help in debugging this problem.
+>>     
+>
+> Can you please reproduce the issue with this debugging patch applied and 
+> post the result?
+I had some trouble collecting debug o/p with this patch. Because of the
+number of printk's the machine was crawling during boot. It was difficult
+to read/collect the o/p. So i inserted a hack as follows such that
+slab_alloc_page prints only during the failure.(modprobe scsi-driver)
 
-> Unfortunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P transport
-> memory controller. IOW it's seen as NUMA from software view.
-> Some Core i7 machine has large remote node distance.
-> 
++ if (strcmp(current->comm, "modprobe"))
++	printk(KERN_INFO "%s: cpu=%d, cache_cpu=%p, cache_list=%p\n", __func__, cpu, c, l);
 
-If they have large remote node distance, they have large remote node
-distance. Now, if they are *lying* and remote memory is not really that
-expensive, then prehaps we should be thinking of a per-arch-per-chip
-modifier to the distances reported by ACPI.
+Attached here is the boot log. Let me know if i can provide any other
+information.
 
-> Yanmin reported zone_reclaim_mode=1 cause large apache regression.
-> 
->     One Nehalem machine has 12GB memory,
->     but there is always 2GB free although applications accesses lots of files.
->     Eventually we located the root cause as zone_reclaim_mode=1.
-> 
-> Actually, zone_reclaim_mode=1 mean "I dislike remote node allocation rather than
-> disk access", it makes performance improvement to HPC workload.
-> but it makes performance degression to desktop, file server and web server.
-> 
+Thanks
+-Sachin
 
-How are you determining a performance regression to desktop? On a
-desktop, I would expect processes to be spread on the different CPUs for
-each of the nodes. In that case, memory faulted on each CPU should be
-faulted locally.
-
-If there are local processes that access a lot of files, then it might end
-up reclaiming those to keep memory local and this might be undesirable
-but this is explicitly documented;
-
-"It may be beneficial to switch off zone reclaim if the system is used for a
-file server and all of memory should be used for caching files from disk. In
-that case the caching effect is more important than data locality."
-
-Ideally we could detect if the machine was a file-server or not but no
-such luck.
-
-> In general, workload depended configration shouldn't put into default settings.
-> 
-> However, current code is long standing about two year. Highest POWER and IA64 HPC machine
-> (only) use this setting.
-> 
-> Thus, x86 and almost rest architecture change default setting, but Only power and ia64
-> remain current configuration for backward-compatibility.
-> 
-
-What about if it's x86-64-based NUMA but it's not i7 based. There, the
-NUMA distances might really mean something and that zone_reclaim behaviour
-is desirable.
-
-I think if we're going down the road of setting the default, it shouldn't be
-per-architecture defaults as such. Other choices for addressing this might be;
-
-1. Make RECLAIM_DISTANCE a variable on x86. Set it to 20 by default, and 5
-   (or some other sensible figure) on i7
-
-2. There should be a per-arch modifier callback for the affinity
-   distances. If the x86 code detects the CPU is an i7, it can reduce the
-   reported latencies to be more in line with expected reality.
-
-3. Do not use zone_reclaim() for file-backed data if more than 20% of memory
-   overall is free. The difficulty is figuring out if the allocation is for
-   file pages.
-
-4. Change zone_reclaim_mode default to mean "do your best to figure it
-   out". Patch 1 would default large distances to 1 to see what happens.
-   Then apply a heuristic when in figure-it-out mode and using reclaim_mode == 1
-
-	If we have locally reclaimed 2% of the nodes memory in file pages
-	within the last 5 seconds when >= 20% of total physical memory was
-	free, then set the reclaim_mode to 0 on the assumption the node is
-	mostly caching pages and shouldn't be reclaimed to avoid excessive IO
-
-Option 1 would appear to be the most straight-forward but option 2
-should be doable. Option 3 and 4 could turn into a rats nest and I would
-consider those approaches a bit more drastic.
-
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Rik van Riel <riel@redhat.com>
-> Cc: Robin Holt <holt@sgi.com>
-> Cc: "Zhang, Yanmin" <yanmin.zhang@intel.com>
-> Cc: Wu Fengguang <fengguang.wu@intel.com>
-> Cc: linux-ia64@vger.kernel.org
-> Cc: linuxppc-dev@ozlabs.org
-> ---
->  arch/powerpc/include/asm/topology.h |    6 ++++++
->  include/linux/topology.h            |    7 +------
->  2 files changed, 7 insertions(+), 6 deletions(-)
-> 
-> Index: b/include/linux/topology.h
-> ===================================================================
-> --- a/include/linux/topology.h
-> +++ b/include/linux/topology.h
-> @@ -54,12 +54,7 @@ int arch_update_cpu_topology(void);
->  #define node_distance(from,to)	((from) == (to) ? LOCAL_DISTANCE : REMOTE_DISTANCE)
->  #endif
->  #ifndef RECLAIM_DISTANCE
-> -/*
-> - * If the distance between nodes in a system is larger than RECLAIM_DISTANCE
-> - * (in whatever arch specific measurement units returned by node_distance())
-> - * then switch on zone reclaim on boot.
-> - */
-> -#define RECLAIM_DISTANCE 20
-> +#define RECLAIM_DISTANCE INT_MAX
->  #endif
->  #ifndef PENALTY_FOR_NODE_WITH_CPUS
->  #define PENALTY_FOR_NODE_WITH_CPUS	(1)
-> Index: b/arch/powerpc/include/asm/topology.h
-> ===================================================================
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -10,6 +10,12 @@ struct device_node;
->  
->  #include <asm/mmzone.h>
->  
-> +/*
-> + * Distance above which we begin to use zone reclaim
-> + */
-> +#define RECLAIM_DISTANCE 20
-> +
-> +
-
-Where is the ia-64-specific modifier to RECAIM_DISTANCE?
-
->  static inline int cpu_to_node(int cpu)
->  {
->  	return numa_cpu_lookup_table[cpu];
-> 
-> 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
+
+
+--------------090001070505070502010009
+Content-Type: text/plain;
+ name="boot-log"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="boot-log"
+
+00
+alloc_kmem_cache_nodes: cache=ext2_xattr, node=2
+alloc_kmem_cache_nodes: cache=ext2_xattr, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=ext2_inode_cache, node=2
+alloc_kmem_cache_nodes: cache=ext2_inode_cache, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=ext4_system_zone, node=2
+alloc_kmem_cache_nodes: cache=ext4_system_zone, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=ext4_prealloc_space, node=2
+alloc_kmem_cache_nodes: cache=ext4_prealloc_space, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=ext4_alloc_context, node=2
+alloc_kmem_cache_nodes: cache=ext4_alloc_context, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=ext4_free_block_extents, node=2
+alloc_kmem_cache_nodes: cache=ext4_free_block_extents, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=ext4_xattr, node=2
+alloc_kmem_cache_nodes: cache=ext4_xattr, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=ext4_inode_cache, node=2
+alloc_kmem_cache_nodes: cache=ext4_inode_cache, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=revoke_record, node=2
+alloc_kmem_cache_nodes: cache=revoke_record, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=revoke_table, node=2
+alloc_kmem_cache_nodes: cache=revoke_table, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=journal_head, node=2
+alloc_kmem_cache_nodes: cache=journal_head, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=journal_handle, node=2
+alloc_kmem_cache_nodes: cache=journal_handle, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=jbd2_revoke_record, node=2
+alloc_kmem_cache_nodes: cache=jbd2_revoke_record, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=jbd2_revoke_table, node=2
+alloc_kmem_cache_nodes: cache=jbd2_revoke_table, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=jbd2_journal_head, node=2
+alloc_kmem_cache_nodes: cache=jbd2_journal_head, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=jbd2_journal_handle, node=2
+alloc_kmem_cache_nodes: cache=jbd2_journal_handle, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+alloc_kmem_cache_nodes: cache=hugetlbfs_inode_cache, node=2
+alloc_kmem_cache_nodes: cache=hugetlbfs_inode_cache, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000dbc7b780, cache_list=c0000000dbc7b780
+alloc_kmem_cache_nodes: cache=minix_inode_cache, node=2
+alloc_kmem_cache_nodes: cache=minix_inode_cache, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=fat_cache, node=2
+alloc_kmem_cache_nodes: cache=fat_cache, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=fat_inode_cache, node=2
+alloc_kmem_cache_nodes: cache=fat_inode_cache, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+alloc_kmem_cache_nodes: cache=isofs_inode_cache, node=2
+alloc_kmem_cache_nodes: cache=isofs_inode_cache, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_node=c0000000de011200, cache_list=c0000000de011200
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de010000, cache_list=c0000000de010000
+alloc_kmem_cache_nodes: cache=btrfs_inode_cache, node=2
+alloc_kmem_cache_nodes: cache=btrfs_inode_cache, node=3
+__slab_alloc_page: nid=2, cache_node=c0000000008c4300, cache_list=c0000000008c4300
+__slab_alloc_page: nid=2, cache_00
+00
+00
+
+
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012a00, cache_list=c0000000de012a00
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012a00, cache_list=c0000000de012a00
+ehea: eth0: Jumbo frames are disabled
+ehea: eth0 -> logical port id #2
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+mice: PS/2 mouse device common for all mice
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de019f00, cache_list=c0000000de019f00
+__slab_alloc_page: nid=2, cache_node=c0000000de019900, cache_list=c0000000de019900
+__slab_alloc_page: nid=2, cache_node=c0000000de019c00, cache_list=c0000000de019c00
+__slab_alloc_page: nid=2, cache_node=c0000000de011200, cache_list=c0000000de011200
+__slab_alloc_page: nid=2, cache_node=c0000000de01db00, cache_list=c0000000de01db00
+__slab_alloc_page: nid=2, cache_node=c0000000de01a200, cache_list=c0000000de01a200
+__slab_alloc_page: nid=2, cache_node=c0000000de01a500, cache_list=c0000000de01a500
+__slab_alloc_page: nid=2, cache_node=c0000000de018d00, cache_list=c0000000de018d00
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+EDAC MC: Ver: 2.1.0 Jun  8 2009
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de01e700, cache_list=c0000000de01e700
+__slab_alloc_page: nid=2, cache_node=c0000000de012400, cache_list=c0000000de012400
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de011800, cache_list=c0000000de011800
+__slab_alloc_page: nid=2, cache_node=c0000000de019f00, cache_list=c0000000de019f00
+__slab_alloc_page: nid=2, cache_node=c0000000de019900, cache_list=c0000000de019900
+__slab_alloc_page: nid=2, cache_node=c0000000de019c00, cache_list=c0000000de019c00
+__slab_alloc_page: nid=2, cache_node=c0000000de011200, cache_list=c0000000de011200
+__slab_alloc_page: nid=2, cache_node=c0000000de01db00, cache_list=c0000000de01db00
+__slab_alloc_page: nid=2, cache_node=c0000000de01a200, cache_list=c0000000de01a200
+__slab_alloc_page: nid=2, cache_node=c0000000de01a500, cache_list=c0000000de01a500
+__slab_alloc_page: nid=2, cache_00
+00
+
+
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de019600, cache_list=c0000000de019600
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de019600, cache_list=c0000000de019600
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de000
+00
+00
+doing fast boot
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de0__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c000, cache_list=c0000000de01c000
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de000
+00
+00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_lis__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de019600, cache_list=c0000000de019600
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de000
+00
+00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de019600, cache_list=c0000000de019600
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de01b100, cache_list=c0000000de01b100
+__slab_alloc_page: nid=2, cache_node=c0000000de019600, cache_list=c0000000de019600
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_lis__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de000
+00
+00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01c300, cache_list=c0000000de01c300
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+__slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+__slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_lisBUG: spinlock bad magic on CPU#1, modprobe/62
+ lock: c0000000008c4280, .magic: 7dcc61f0, .owner:  || status == __GCONV_INCOMPLETE_INPUT || status == __GCONV_FULL_OUTPUT/724596736, .owner_cpu: 4095
+Call Trace:
+[c0000000c7da36d0] [c0000000000116e0] .show_stack+0x6c/0x16c (unreliable)
+[c0000000c7da3780] [c000000000365bcc] .spin_bug+0xb0/0xd4
+[c0000000c7da3810] [c000000000365e94] ._raw_spin_lock+0x48/0x184
+[c0000000c7da38b0] [c0000000005de4f8] ._spin_lock+0x10/0x24
+[c0000000c7da3920] [c000000000141240] .__slab_alloc_page+0x410/0x4b4
+[c0000000c7da39e0] [c000000000142804] .kmem_cache_alloc+0x13c/0x21c
+[c0000000c7da3aa0] [c0000000001431dc] .kmem_cache_create+0x294/0x2a8
+[c0000000c7da3b90] [d000000000ea1438] .scsi_init_queue+0x38/0x170 [scsi_mod]
+[c0000000c7da3c20] [d000000000ea1334] .init_scsi+0x1c/0xe8 [scsi_mod]
+[c0000000c7da3ca0] [c0000000000092c0] .do_one_initcall+0x80/0x19c
+[c0000000c7da3d90] [c0000000000c09c8] .SyS_init_module+0xe0/0x244
+[c0000000c7da3e30] [c000000000008534] syscall_exit+0x0/0x40
+BUG: spinlock lockup on CPU#1, modprobe/62, c0000000008c4280
+Call Trace:
+[c0000000c7da3760] [c0000000000116e0] .show_stack+0x6c/0x16c (unreliable)
+[c0000000c7da3810] [c000000000365f88] ._raw_spin_lock+0x13c/0x184
+[c0000000c7da38b0] [c0000000005de4f8] ._spin_lock+0x10/0x24
+[c0000000c7da3920] [c000000000141240] .__slab_alloc_page+0x410/0x4b4
+[c0000000c7da39e0] [c000000000142804] .kmem_cache_alloc+0x13c/0x21c
+[c0000000c7da3aa0] [c0000000001431dc] .kmem_cache_create+0x294/0x2a8
+[c0000000c7da3b90] [d000000000ea1438] .scsi_init_queue+0x38/0x170 [scsi_mod]
+[c0000000c7da3c20] [d000000000ea1334] .init_scsi+0x1c/0xe8 [scsi_mod]
+[c0000000c7da3ca0] [c0000000000092c0] .do_one_initcall+0x80/0x19c
+[c0000000c7da3d90] [c0000000000c09c8] .SyS_init_module+0xe0/0x244
+[c0000000c7da3e30] [c000000000008534] syscall_exit+0x0/0x40
+
+
+
+
+--------------090001070505070502010009--
