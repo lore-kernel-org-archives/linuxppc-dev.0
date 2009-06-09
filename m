@@ -1,32 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <skrishnakar@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 538B2B70B1
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 00999B70AC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Jun 2009 08:35:20 +1000 (EST)
-Subject: Re: [BUILD FAILURE 01/04] Next June 04:PPC64 randconfig
-	[drivers/staging/comedi/drivers.o]
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: subrata@linux.vnet.ibm.com
-In-Reply-To: <1244572446.5497.32.camel@subratamodak.linux.ibm.com>
-References: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
-	<1244261806.31984.36.camel@pasglop> <20090606055103.GA9446@kroah.com>
-	<200906060936.22322.fmhess@speakeasy.net>
-	<1244385405.5265.7.camel@subratamodak.linux.ibm.com>
-	<1244519418.5235.2.camel@pasglop>
-	<1244572446.5497.32.camel@subratamodak.linux.ibm.com>
-Content-Type: text/plain
-Date: Wed, 10 Jun 2009 08:34:39 +1000
-Message-Id: <1244586879.24481.19.camel@pasglop>
-Mime-Version: 1.0
-Cc: sachinp@linux.vnet.ibm.com, sfr@canb.auug.org.au,
-	fmhess@users.sourceforge.net, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org, Linuxppc-dev@ozlabs.org,
-	Ian Abbott <abbotti@mev.co.uk>, linux-next@vger.kernel.org,
-	paulus@samba.org, Geert.Uytterhoeven@sonycom.com,
-	geert@linux-m68k.org, David Miller <davem@davemloft.net>
+	Wed, 10 Jun 2009 04:17:02 +1000 (EST)
+MIME-Version: 1.0
+Date: Tue, 9 Jun 2009 23:38:40 +0530
+Message-ID: <6213bc560906091108j2526efeep1dc9397123df5e0@mail.gmail.com>
+Subject: "Info threads" hangs in Linux-2.6.29 with KGDBOE
+From: srikanth krishnakar <skrishnakar@gmail.com>
+To: kgdb-bugreport@lists.sourceforge.net
+Content-Type: multipart/alternative; boundary=000e0cd157449ee15e046bee3f44
+Cc: Jason Wessel <jason.wessel@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,47 +23,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--000e0cd157449ee15e046bee3f44
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> > In any case, doing PAGE_KERNEL_NOCACHE for DMA memory is incorrect on
-> > many architectures. So at this stage, there's no much option but ifdef I
-> > suspect for now until this is fixed properly.
-> 
-> Ok. But, i am not sure whether Greg will agree to this. If, Ok, is the
-> following patch i sent earlier Ok ?
-> 
-> http://lkml.org/lkml/2009/6/5/462,
+Hi All,
 
-Not really.
+*ISSUE *: "*Info threads*" hangs in KGDBOE
+Kernel : Linux-2.6.29
+Bug found in Architectures: PowerPC (ppc32), x86
+-------
 
-You probably want to use a constant (call it MY_DMA_MAP_PGPROT), and
-in a header, you have a bunch of ifdef's that set it to PAGE_KERNEL,
-PAGE_KERNEL_NOCACHE or PAGE_KERNEL_NC depending on what's needed.
+While trying to run kernel* Linux-2.6.29* on* PowerPC* Xilinx target
+with *KGDBOE
+*enabled.  Further issues arise when I run  "*info threads*" after
+connecting to the target. following is the error:
 
-Today, you can pretty much assume that
+(gdb) target remote udp:10.161.2.35:6443
 
- - x86*, sparc*, ia64*, alpha, ... needs PAGE_KERNEL
- - powerpc needs PAGE_KERNEL if !CONFIG_NOT_COHERENT_CACHE
- - powerpc needs PAGE_KERNEL_NC if CONFIG_NOT_COHERENT_CACHE
- - ARM and MIPS, I think, needs PAGE_KERNEL_NOCACHE
- - ... others I don't know.
+warning: The remote protocol may be unreliable over UDP.
 
-Cheers,
-Ben.
+Some events may be lost, rendering further debugging impossible.
 
-> Regards--
-> Subrata
-> 
-> > 
-> > It does make sense to want to have some memory like that shared between
-> > user space and DMA, though I don't know what the right approach that
-> > works on all archs is at this stage. Worth asking the Alsa guys, I think
-> > they have similar issues :-)
-> > 
-> > But doing double buffering might do the trick fine for now.
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> > 
-> > 
-> > 
+Remote debugging using udp:10.161.2.35:6443
+
+kgdb_breakpoint () at kernel/kgdb.c:1803
+
+1803            arch_kgdb_breakpoint();
+
+(gdb) info threads
+[New Thread -2]
+[New Thread 2]
+[New Thread 3]
+[New Thread 4]
+[New Thread 5]
+[New Thread 6]
+[New Thread 59]
+[New Thread 67]
+[New Thread 101]
+[New Thread 102]
+[New Thread 103]
+[New Thread 104]
+[New Thread 105]
+ 14 Thread 105 (nfsiod)  __switch_to (prev=<value optimized out>,
+new=0xcf89c100) at arch/powerpc/kernel/process.c:411
+ 13 Thread 104 (aio/0)  __switch_to (prev=<value optimized out>,
+new=0xcf82f4e0) at arch/powerpc/kernel/process.c:411
+ 12 Thread 103 (kswapd0)  __switch_to (prev=<value optimized out>,
+new=0xcf82f4e0) at arch/powerpc/kernel/process.c:411
+ 11 Thread 102 (pdflush)  __switch_to (prev=<value optimized out>,
+new=0xcf82e880) at arch/powerpc/kernel/process.c:411
+ 10 Thread 101 (pdflush)  Ignoring packet error, continuing...
+Ignoring packet error, continuing...
+Ignoring packet error, continuing...
+Ignoring packet error, continuing...
+Ignoring packet error, continuing...
+
+Finally kernel dies, after these error messages. This issue is not found
+till Linux-2.6.28.10 kernel version, KGDBOE works fine in x86 & PowerPC. Now
+the bug is seen in x86 (32bit) and PowerPC from kernel version Linux-2.6.29
+
+Hope this should not be raw_smp_processor_id issue ! The CPU ID returned in
+both arch's is 0.  Which patch in netpoll* or any net device has caused this
+issue.
+
+One more thing to notice in x86 or PowerPC the kernel dies exactly after
+reply of four threads/packets.
+
+
+Thanks,
+Srikanth Krishnakar
+
+--000e0cd157449ee15e046bee3f44
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi All,<br><br><b>ISSUE </b>: &quot;<b>Info threads</b>&quot; hangs in KGDB=
+OE <br>Kernel : Linux-2.6.29<br>Bug found in Architectures: PowerPC (ppc32)=
+, x86<br>-------<br><br>While trying to run kernel<b style=3D"color: rgb(15=
+3, 0, 0);"> Linux-2.6.29</b> on<b> PowerPC</b> Xilinx target with <b>KGDBOE=
+ </b>enabled. =A0Further issues arise when I run =A0&quot;<b>info threads</=
+b>&quot; after connecting to the target. following is the error:<br>
+
+<br>(gdb) target remote udp:<a href=3D"http://10.161.2.35:6443/" target=3D"=
+_blank">10.161.2.35:6443</a> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0<br>warning: The=
+ remote protocol may be unreliable over UDP. =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0<br>
+
+Some events may be lost, rendering further debugging impossible. =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0<br>Remote debugging using u=
+dp:<a href=3D"http://10.161.2.35:6443/" target=3D"_blank">10.161.2.35:6443<=
+/a> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 <br>
+
+kgdb_breakpoint () at kernel/kgdb.c:1803 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0<br>=
+1803 =A0 =A0 =A0 =A0 =A0 =A0arch_kgdb_breakpoint(); =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 <br>(gdb) info threads<br>[New Thread -2]<br>
+
+[New Thread 2]<br>[New Thread 3]<br>[New Thread 4]<br>[New Thread 5]<br>[Ne=
+w Thread 6]<br>[New Thread 59]<br>[New Thread 67]<br>[New Thread 101]<br>[N=
+ew Thread 102]<br>[New Thread 103]<br>[New Thread 104]<br>[New Thread 105]<=
+br>
+
+ =A014 Thread 105 (nfsiod) =A0__switch_to (prev=3D&lt;value optimized out&g=
+t;, new=3D0xcf89c100) at arch/powerpc/kernel/process.c:<div id=3D":zr" clas=
+s=3D"ii gt">411<br> =A013 Thread 104 (aio/0) =A0__switch_to (prev=3D&lt;val=
+ue optimized out&gt;, new=3D0xcf82f4e0) at arch/powerpc/kernel/process.c:41=
+1<br>
+
+ =A012 Thread 103 (kswapd0) =A0__switch_to (prev=3D&lt;value optimized out&=
+gt;, new=3D0xcf82f4e0) at arch/powerpc/kernel/process.c:411<br> =A011 Threa=
+d 102 (pdflush) =A0__switch_to (prev=3D&lt;value optimized out&gt;, new=3D0=
+xcf82e880) at arch/powerpc/kernel/process.c:411<br>
+
+ =A010 Thread 101 (pdflush) =A0Ignoring packet error, continuing...<br>Igno=
+ring packet error, continuing...<br>Ignoring packet error, continuing...<br=
+>Ignoring packet error, continuing...<br>Ignoring packet error, continuing.=
+..<br>
+
+<br>Finally kernel dies, after these error messages. This issue is not foun=
+d till Linux-2.6.28.10 kernel version, KGDBOE works fine in x86 &amp; Power=
+PC. Now the bug is seen in x86 (32bit) and PowerPC from kernel version Linu=
+x-2.6.29<br>
+<br>Hope this should not be raw_smp_processor_id issue ! The CPU ID returne=
+d in both arch&#39;s is 0.=A0 Which patch in netpoll* or any net device has=
+ caused this issue. <br><br>One more thing to notice in x86 or PowerPC the =
+kernel dies exactly after reply of four threads/packets.<br>
+<br><br>Thanks,<br><font color=3D"#888888">Srikanth Krishnakar</font></div>=
+<br clear=3D"all"><br><br><br><br>
+
+--000e0cd157449ee15e046bee3f44--
