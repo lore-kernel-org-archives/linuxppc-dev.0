@@ -1,40 +1,31 @@
-Return-Path: <hannes.hering@linux.vnet.ibm.com>
+Return-Path: <npiggin@suse.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 014B7B70D5
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 495B9B70D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Jun 2009 23:59:43 +1000 (EST)
-Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [194.196.100.161])
+	Wed, 10 Jun 2009 00:19:14 +1000 (EST)
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5F444DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jun 2009 23:59:38 +1000 (EST)
-Received: from d06nrmr1806.portsmouth.uk.ibm.com
-	(d06nrmr1806.portsmouth.uk.ibm.com [9.149.39.193])
-	by mtagate1.uk.ibm.com (8.13.1/8.13.1) with ESMTP id n59DxSt6013063
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Jun 2009 13:59:28 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1806.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.2) with
-	ESMTP id n59DxSBP1683698
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Jun 2009 14:59:28 +0100
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id n59DxRuk029171
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Jun 2009 14:59:28 +0100
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-To: rdreier@cisco.com
-Subject: [PATCH 2.6.31] ehca: Tolerate dynamic memory operations and huge pages
-Date: Tue, 9 Jun 2009 15:59:24 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
-Cc: alexs@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-	ewg@lists.openfabrics.org, linuxppc-dev@ozlabs.org,
-	raisch@de.ibm.com, ossrosch@linux.vnet.ibm.com
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7A599DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 00:19:12 +1000 (EST)
+Date: Tue, 9 Jun 2009 16:19:03 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: [Powerpc/SLQB] Next June 06 : BUG during scsi initialization
+Message-ID: <20090609141903.GE15219@wotan.suse.de>
+References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
+	<4A081002.4050802@in.ibm.com> <4A2909E8.6000507@in.ibm.com>
+	<Pine.LNX.4.64.0906071105030.11309@melkki.cs.Helsinki.FI>
+	<4A2D001E.5060802@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4A2D001E.5060802@in.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Pekka J Enberg <penberg@cs.helsinki.fi>,
+	linux-next@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,739 +35,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch implements toleration of dynamic memory operations and 16 GB
-gigantic pages. On module load the driver walks through available system
-memory, checks for available memory ranges and then registers the kernel
-internal memory region accordingly. The translation of address ranges is
-implemented via a 3-level busmap.
+On Mon, Jun 08, 2009 at 05:42:14PM +0530, Sachin Sant wrote:
+> Pekka J Enberg wrote:
+> >Hi Sachin,
+> __slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_list=c0000000de01ba00
+> __slab_alloc_page: nid=2, cache_node=c0000000de01bd00, cache_list=c0000000de01bd00
+> __slab_alloc_page: nid=2, cache_node=c0000000de01ba00, cache_lisBUG: spinlock bad magic on CPU#1, modprobe/62
+>  lock: c0000000008c4280, .magic: 7dcc61f0, .owner:  || status == __GCONV_INCOMPLETE_INPUT || status == __GCONV_FULL_OUTPUT/724596736, .owner_cpu: 4095
+> Call Trace:
+> [c0000000c7da36d0] [c0000000000116e0] .show_stack+0x6c/0x16c (unreliable)
+> [c0000000c7da3780] [c000000000365bcc] .spin_bug+0xb0/0xd4
+> [c0000000c7da3810] [c000000000365e94] ._raw_spin_lock+0x48/0x184
+> [c0000000c7da38b0] [c0000000005de4f8] ._spin_lock+0x10/0x24
+> [c0000000c7da3920] [c000000000141240] .__slab_alloc_page+0x410/0x4b4
+> [c0000000c7da39e0] [c000000000142804] .kmem_cache_alloc+0x13c/0x21c
+> [c0000000c7da3aa0] [c0000000001431dc] .kmem_cache_create+0x294/0x2a8
+> [c0000000c7da3b90] [d000000000ea1438] .scsi_init_queue+0x38/0x170 [scsi_mod]
+> [c0000000c7da3c20] [d000000000ea1334] .init_scsi+0x1c/0xe8 [scsi_mod]
+> [c0000000c7da3ca0] [c0000000000092c0] .do_one_initcall+0x80/0x19c
+> [c0000000c7da3d90] [c0000000000c09c8] .SyS_init_module+0xe0/0x244
+> [c0000000c7da3e30] [c000000000008534] syscall_exit+0x0/0x40
 
-Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+I can't really work it out. It seems to be the kmem_cache_cache which has
+a problem, but there have already been lots of caches created and even
+this samw cache_node already used right beforehand with no problem.
+
+Unless a CPU or node comes up or something right at this point or the
+caller is scheduled onto a different CPU... oopses seem to all
+have CPU#1, wheras boot CPU is probably #0 (these CPUs are node 0
+and memory is only on node 1 and 2 where there are no CPUs if I read
+correctly).
+
+I still can't see the reason for the failure, but can you try this
+patch please and show dmesg?
 
 ---
-This patch is built and tested against infiniband.git. Please apply for 2.6.31.
+ mm/slqb.c |   34 +++++++++++++++++++++++++++++++---
+ 1 file changed, 31 insertions(+), 3 deletions(-)
 
-Regards
-
-Hannes
-
-Index: infiniband/drivers/infiniband/hw/ehca/ehca_main.c
+Index: linux-2.6/mm/slqb.c
 ===================================================================
---- infiniband.orig/drivers/infiniband/hw/ehca/ehca_main.c	2009-06-09 14:20:37.000000000 +0200
-+++ infiniband/drivers/infiniband/hw/ehca/ehca_main.c	2009-06-09 14:20:47.000000000 +0200
-@@ -52,7 +52,7 @@
- #include "ehca_tools.h"
- #include "hcp_if.h"
+--- linux-2.6.orig/mm/slqb.c
++++ linux-2.6/mm/slqb.c
+@@ -963,6 +963,7 @@ static struct slqb_page *allocate_slab(s
  
--#define HCAD_VERSION "0026"
-+#define HCAD_VERSION "0027"
+ 	flags |= s->allocflags;
  
- MODULE_LICENSE("Dual BSD/GPL");
- MODULE_AUTHOR("Christoph Raisch <raisch@de.ibm.com>");
-@@ -506,6 +506,7 @@
- 	shca->ib_device.detach_mcast	    = ehca_detach_mcast;
- 	shca->ib_device.process_mad	    = ehca_process_mad;
- 	shca->ib_device.mmap		    = ehca_mmap;
-+	shca->ib_device.dma_ops		    = &ehca_dma_mapping_ops;
++	flags &= ~0x2000;
+ 	page = (struct slqb_page *)alloc_pages_node(node, flags, s->order);
+ 	if (!page)
+ 		return NULL;
+@@ -1357,6 +1358,8 @@ static noinline void *__slab_alloc_page(
+ 	unsigned int colour;
+ 	void *object;
  
- 	if (EHCA_BMASK_GET(HCA_CAP_SRQ, shca->hca_cap)) {
- 		shca->ib_device.uverbs_cmd_mask |=
-@@ -1028,17 +1029,23 @@
- 		goto module_init1;
++	if (gfpflags & 0x2000)
++		printk("SLQB: __slab_alloc_page cpu=%d request node=%d\n", smp_processor_id(), node);
+ 	c = get_cpu_slab(s, smp_processor_id());
+ 	colour = c->colour_next;
+ 	c->colour_next += s->colour_off;
+@@ -1374,6 +1377,8 @@ static noinline void *__slab_alloc_page(
+ 	if (unlikely(!page))
+ 		return page;
+ 
++	if (gfpflags & 0x2000)
++		printk("SLQB: __slab_alloc_page cpu=%d,nid=%d request node=%d page node=%d\n", smp_processor_id(), numa_node_id(), node, slqb_page_to_nid(page));
+ 	if (!NUMA_BUILD || likely(slqb_page_to_nid(page) == numa_node_id())) {
+ 		struct kmem_cache_cpu *c;
+ 		int cpu = smp_processor_id();
+@@ -1382,6 +1387,7 @@ static noinline void *__slab_alloc_page(
+ 		l = &c->list;
+ 		page->list = l;
+ 
++		printk("SLQB: __slab_alloc_page spin_lock(%p)\n", &l->page_lock);
+ 		spin_lock(&l->page_lock);
+ 		l->nr_slabs++;
+ 		l->nr_partial++;
+@@ -1398,6 +1404,8 @@ static noinline void *__slab_alloc_page(
+ 		l = &n->list;
+ 		page->list = l;
+ 
++		printk("SLQB: __slab_alloc_page spin_lock(%p)\n", &n->list_lock);
++		printk("SLQB: __slab_alloc_page spin_lock(%p)\n", &l->page_lock);
+ 		spin_lock(&n->list_lock);
+ 		spin_lock(&l->page_lock);
+ 		l->nr_slabs++;
+@@ -1411,6 +1419,7 @@ static noinline void *__slab_alloc_page(
+ #endif
  	}
- 
-+	ret = ehca_create_busmap();
-+	if (ret) {
-+		ehca_gen_err("Cannot create busmap.");
-+		goto module_init2;
-+	}
-+
- 	ret = ibmebus_register_driver(&ehca_driver);
- 	if (ret) {
- 		ehca_gen_err("Cannot register eHCA device driver");
- 		ret = -EINVAL;
--		goto module_init2;
-+		goto module_init3;
- 	}
- 
- 	ret = register_memory_notifier(&ehca_mem_nb);
- 	if (ret) {
- 		ehca_gen_err("Failed registering memory add/remove notifier");
--		goto module_init3;
-+		goto module_init4;
- 	}
- 
- 	if (ehca_poll_all_eqs != 1) {
-@@ -1053,9 +1060,12 @@
- 
- 	return 0;
- 
--module_init3:
-+module_init4:
- 	ibmebus_unregister_driver(&ehca_driver);
- 
-+module_init3:
-+	ehca_destroy_busmap();
-+
- module_init2:
- 	ehca_destroy_slab_caches();
- 
-@@ -1073,6 +1083,8 @@
- 
- 	unregister_memory_notifier(&ehca_mem_nb);
- 
-+	ehca_destroy_busmap();
-+
- 	ehca_destroy_slab_caches();
- 
- 	ehca_destroy_comp_pool();
-Index: infiniband/drivers/infiniband/hw/ehca/ehca_mrmw.c
-===================================================================
---- infiniband.orig/drivers/infiniband/hw/ehca/ehca_mrmw.c	2009-06-09 14:20:37.000000000 +0200
-+++ infiniband/drivers/infiniband/hw/ehca/ehca_mrmw.c	2009-06-09 14:20:47.000000000 +0200
-@@ -53,6 +53,39 @@
- /* max number of rpages (per hcall register_rpages) */
- #define MAX_RPAGES 512
- 
-+/* DMEM toleration management */
-+#define EHCA_SECTSHIFT        SECTION_SIZE_BITS
-+#define EHCA_SECTSIZE          (1UL << EHCA_SECTSHIFT)
-+#define EHCA_HUGEPAGESHIFT     34
-+#define EHCA_HUGEPAGE_SIZE     (1UL << EHCA_HUGEPAGESHIFT)
-+#define EHCA_HUGEPAGE_PFN_MASK ((EHCA_HUGEPAGE_SIZE - 1) >> PAGE_SHIFT)
-+#define EHCA_INVAL_ADDR        0xFFFFFFFFFFFFFFFFULL
-+#define EHCA_DIR_INDEX_SHIFT 13                   /* 8k Entries in 64k block */
-+#define EHCA_TOP_INDEX_SHIFT (EHCA_DIR_INDEX_SHIFT * 2)
-+#define EHCA_MAP_ENTRIES (1 << EHCA_DIR_INDEX_SHIFT)
-+#define EHCA_TOP_MAP_SIZE (0x10000)               /* currently fixed map size */
-+#define EHCA_DIR_MAP_SIZE (0x10000)
-+#define EHCA_ENT_MAP_SIZE (0x10000)
-+#define EHCA_INDEX_MASK (EHCA_MAP_ENTRIES - 1)
-+#define EHCA_REG_MR 0
-+#define EHCA_REG_BUSMAP_MR (~0)
-+
-+static unsigned long ehca_mr_len;
-+/*
-+ * Memory map data structures
-+ */
-+struct ehca_dir_bmap {
-+	u64 ent[EHCA_MAP_ENTRIES];
-+};
-+struct ehca_top_bmap {
-+	struct ehca_dir_bmap *dir[EHCA_MAP_ENTRIES];
-+};
-+struct ehca_bmap {
-+	struct ehca_top_bmap *top[EHCA_MAP_ENTRIES];
-+};
-+
-+static struct ehca_bmap *ehca_bmap;
-+
- static struct kmem_cache *mr_cache;
- static struct kmem_cache *mw_cache;
- 
-@@ -68,6 +101,8 @@
- #define EHCA_MR_PGSHIFT1M  20
- #define EHCA_MR_PGSHIFT16M 24
- 
-+static u64 ehca_map_vaddr(void *caddr);
-+
- static u32 ehca_encode_hwpage_size(u32 pgsize)
- {
- 	int log = ilog2(pgsize);
-@@ -135,7 +170,8 @@
- 			goto get_dma_mr_exit0;
- 		}
- 
--		ret = ehca_reg_maxmr(shca, e_maxmr, (u64 *)KERNELBASE,
-+		ret = ehca_reg_maxmr(shca, e_maxmr,
-+				     (void *)ehca_map_vaddr((void *)KERNELBASE),
- 				     mr_access_flags, e_pd,
- 				     &e_maxmr->ib.ib_mr.lkey,
- 				     &e_maxmr->ib.ib_mr.rkey);
-@@ -251,7 +287,7 @@
- 
- 		ret = ehca_reg_mr(shca, e_mr, iova_start, size, mr_access_flags,
- 				  e_pd, &pginfo, &e_mr->ib.ib_mr.lkey,
--				  &e_mr->ib.ib_mr.rkey);
-+				  &e_mr->ib.ib_mr.rkey, EHCA_REG_MR);
- 		if (ret) {
- 			ib_mr = ERR_PTR(ret);
- 			goto reg_phys_mr_exit1;
-@@ -370,7 +406,7 @@
- 
- 	ret = ehca_reg_mr(shca, e_mr, (u64 *)virt, length, mr_access_flags,
- 			  e_pd, &pginfo, &e_mr->ib.ib_mr.lkey,
--			  &e_mr->ib.ib_mr.rkey);
-+			  &e_mr->ib.ib_mr.rkey, EHCA_REG_MR);
- 	if (ret == -EINVAL && pginfo.hwpage_size > PAGE_SIZE) {
- 		ehca_warn(pd->device, "failed to register mr "
- 			  "with hwpage_size=%llx", hwpage_size);
-@@ -794,7 +830,7 @@
- 	ret = ehca_reg_mr(shca, e_fmr, NULL,
- 			  fmr_attr->max_pages * (1 << fmr_attr->page_shift),
- 			  mr_access_flags, e_pd, &pginfo,
--			  &tmp_lkey, &tmp_rkey);
-+			  &tmp_lkey, &tmp_rkey, EHCA_REG_MR);
- 	if (ret) {
- 		ib_fmr = ERR_PTR(ret);
- 		goto alloc_fmr_exit1;
-@@ -983,6 +1019,10 @@
- 
- /*----------------------------------------------------------------------*/
- 
-+static int ehca_reg_bmap_mr_rpages(struct ehca_shca *shca,
-+				   struct ehca_mr *e_mr,
-+				   struct ehca_mr_pginfo *pginfo);
-+
- int ehca_reg_mr(struct ehca_shca *shca,
- 		struct ehca_mr *e_mr,
- 		u64 *iova_start,
-@@ -991,7 +1031,8 @@
- 		struct ehca_pd *e_pd,
- 		struct ehca_mr_pginfo *pginfo,
- 		u32 *lkey, /*OUT*/
--		u32 *rkey) /*OUT*/
-+		u32 *rkey, /*OUT*/
-+		int reg_busmap)
- {
- 	int ret;
- 	u64 h_ret;
-@@ -1015,7 +1056,11 @@
- 
- 	e_mr->ipz_mr_handle = hipzout.handle;
- 
--	ret = ehca_reg_mr_rpages(shca, e_mr, pginfo);
-+	if (reg_busmap)
-+		ret = ehca_reg_bmap_mr_rpages(shca, e_mr, pginfo);
-+	else
-+		ret = ehca_reg_mr_rpages(shca, e_mr, pginfo);
-+
- 	if (ret)
- 		goto ehca_reg_mr_exit1;
- 
-@@ -1316,7 +1361,7 @@
- 		e_mr->fmr_map_cnt = save_mr.fmr_map_cnt;
- 
- 		ret = ehca_reg_mr(shca, e_mr, iova_start, size, acl,
--				  e_pd, pginfo, lkey, rkey);
-+				  e_pd, pginfo, lkey, rkey, EHCA_REG_MR);
- 		if (ret) {
- 			u32 offset = (u64)(&e_mr->flags) - (u64)e_mr;
- 			memcpy(&e_mr->flags, &(save_mr.flags),
-@@ -1409,7 +1454,7 @@
- 	ret = ehca_reg_mr(shca, e_fmr, NULL,
- 			  (e_fmr->fmr_max_pages * e_fmr->fmr_page_size),
- 			  e_fmr->acl, e_pd, &pginfo, &tmp_lkey,
--			  &tmp_rkey);
-+			  &tmp_rkey, EHCA_REG_MR);
- 	if (ret) {
- 		u32 offset = (u64)(&e_fmr->flags) - (u64)e_fmr;
- 		memcpy(&e_fmr->flags, &(save_mr.flags),
-@@ -1478,6 +1523,90 @@
- } /* end ehca_reg_smr() */
- 
- /*----------------------------------------------------------------------*/
-+static inline void *ehca_calc_sectbase(int top, int dir, int idx)
-+{
-+	unsigned long ret = idx;
-+	ret |= dir << EHCA_DIR_INDEX_SHIFT;
-+	ret |= top << EHCA_TOP_INDEX_SHIFT;
-+	return abs_to_virt(ret << SECTION_SIZE_BITS);
-+}
-+
-+#define ehca_bmap_valid(entry) \
-+	((u64)entry != (u64)EHCA_INVAL_ADDR)
-+
-+static u64 ehca_reg_mr_section(int top, int dir, int idx, u64 *kpage,
-+			       struct ehca_shca *shca, struct ehca_mr *mr,
-+			       struct ehca_mr_pginfo *pginfo)
-+{
-+	u64 h_ret = 0;
-+	unsigned long page = 0;
-+	u64 rpage = virt_to_abs(kpage);
-+	int page_count;
-+
-+	void *sectbase = ehca_calc_sectbase(top, dir, idx);
-+	if ((unsigned long)sectbase & (pginfo->hwpage_size - 1)) {
-+		ehca_err(&shca->ib_device, "reg_mr_section will probably fail:"
-+					   "hwpage_size does not fit to "
-+					   "section start address");
-+	}
-+	page_count = EHCA_SECTSIZE / pginfo->hwpage_size;
-+
-+	while (page < page_count) {
-+		u64 rnum;
-+		for (rnum = 0; (rnum < MAX_RPAGES) && (page < page_count);
-+		     rnum++) {
-+			void *pg = sectbase + ((page++) * pginfo->hwpage_size);
-+			kpage[rnum] = virt_to_abs(pg);
-+		}
-+
-+		h_ret = hipz_h_register_rpage_mr(shca->ipz_hca_handle, mr,
-+			ehca_encode_hwpage_size(pginfo->hwpage_size),
-+			0, rpage, rnum);
-+
-+		if ((h_ret != H_SUCCESS) && (h_ret != H_PAGE_REGISTERED)) {
-+			ehca_err(&shca->ib_device, "register_rpage_mr failed");
-+			return h_ret;
-+		}
-+	}
-+	return h_ret;
-+}
-+
-+static u64 ehca_reg_mr_sections(int top, int dir, u64 *kpage,
-+				struct ehca_shca *shca, struct ehca_mr *mr,
-+				struct ehca_mr_pginfo *pginfo)
-+{
-+	u64 hret = H_SUCCESS;
-+	int idx;
-+
-+	for (idx = 0; idx < EHCA_MAP_ENTRIES; idx++) {
-+		if (!ehca_bmap_valid(ehca_bmap->top[top]->dir[dir]->ent[idx]))
-+			continue;
-+
-+		hret = ehca_reg_mr_section(top, dir, idx, kpage, shca, mr,
-+					   pginfo);
-+		if ((hret != H_SUCCESS) && (hret != H_PAGE_REGISTERED))
-+				return hret;
-+	}
-+	return hret;
-+}
-+
-+static u64 ehca_reg_mr_dir_sections(int top, u64 *kpage, struct ehca_shca *shca,
-+				    struct ehca_mr *mr,
-+				    struct ehca_mr_pginfo *pginfo)
-+{
-+	u64 hret = H_SUCCESS;
-+	int dir;
-+
-+	for (dir = 0; dir < EHCA_MAP_ENTRIES; dir++) {
-+		if (!ehca_bmap_valid(ehca_bmap->top[top]->dir[dir]))
-+			continue;
-+
-+		hret = ehca_reg_mr_sections(top, dir, kpage, shca, mr, pginfo);
-+		if ((hret != H_SUCCESS) && (hret != H_PAGE_REGISTERED))
-+				return hret;
-+	}
-+	return hret;
-+}
- 
- /* register internal max-MR to internal SHCA */
- int ehca_reg_internal_maxmr(
-@@ -1495,6 +1624,11 @@
- 	u32 num_hwpages;
- 	u64 hw_pgsize;
- 
-+	if (!ehca_bmap) {
-+		ret = -EFAULT;
-+		goto ehca_reg_internal_maxmr_exit0;
-+	}
-+
- 	e_mr = ehca_mr_new();
- 	if (!e_mr) {
- 		ehca_err(&shca->ib_device, "out of memory");
-@@ -1504,8 +1638,8 @@
- 	e_mr->flags |= EHCA_MR_FLAG_MAXMR;
- 
- 	/* register internal max-MR on HCA */
--	size_maxmr = (u64)high_memory - PAGE_OFFSET;
--	iova_start = (u64 *)KERNELBASE;
-+	size_maxmr = ehca_mr_len;
-+	iova_start = (u64 *)ehca_map_vaddr((void *)KERNELBASE);
- 	ib_pbuf.addr = 0;
- 	ib_pbuf.size = size_maxmr;
- 	num_kpages = NUM_CHUNKS(((u64)iova_start % PAGE_SIZE) + size_maxmr,
-@@ -1524,7 +1658,7 @@
- 
- 	ret = ehca_reg_mr(shca, e_mr, iova_start, size_maxmr, 0, e_pd,
- 			  &pginfo, &e_mr->ib.ib_mr.lkey,
--			  &e_mr->ib.ib_mr.rkey);
-+			  &e_mr->ib.ib_mr.rkey, EHCA_REG_BUSMAP_MR);
- 	if (ret) {
- 		ehca_err(&shca->ib_device, "reg of internal max MR failed, "
- 			 "e_mr=%p iova_start=%p size_maxmr=%llx num_kpages=%x "
-@@ -2077,8 +2211,8 @@
- 		     u64 *iova_start)
- {
- 	/* a MR is treated as max-MR only if it fits following: */
--	if ((size == ((u64)high_memory - PAGE_OFFSET)) &&
--	    (iova_start == (void *)KERNELBASE)) {
-+	if ((size == ehca_mr_len) &&
-+	    (iova_start == (void *)ehca_map_vaddr((void *)KERNELBASE))) {
- 		ehca_gen_dbg("this is a max-MR");
- 		return 1;
- 	} else
-@@ -2184,3 +2318,350 @@
- 	if (mw_cache)
- 		kmem_cache_destroy(mw_cache);
+ 	VM_BUG_ON(!object);
++	printk("SLQB: __slab_alloc_page OK\n");
+ 	return object;
  }
-+
-+static inline int ehca_init_top_bmap(struct ehca_top_bmap *ehca_top_bmap,
-+				     int dir)
-+{
-+	if (!ehca_bmap_valid(ehca_top_bmap->dir[dir])) {
-+		ehca_top_bmap->dir[dir] =
-+			kmalloc(sizeof(struct ehca_dir_bmap), GFP_KERNEL);
-+		if (!ehca_top_bmap->dir[dir])
-+			return -ENOMEM;
-+		/* Set map block to 0xFF according to EHCA_INVAL_ADDR */
-+		memset(ehca_top_bmap->dir[dir], 0xFF, EHCA_ENT_MAP_SIZE);
-+	}
-+	return 0;
-+}
-+
-+static inline int ehca_init_bmap(struct ehca_bmap *ehca_bmap, int top, int dir)
-+{
-+	if (!ehca_bmap_valid(ehca_bmap->top[top])) {
-+		ehca_bmap->top[top] =
-+			kmalloc(sizeof(struct ehca_top_bmap), GFP_KERNEL);
-+		if (!ehca_bmap->top[top])
-+			return -ENOMEM;
-+		/* Set map block to 0xFF according to EHCA_INVAL_ADDR */
-+		memset(ehca_bmap->top[top], 0xFF, EHCA_DIR_MAP_SIZE);
-+	}
-+	return ehca_init_top_bmap(ehca_bmap->top[top], dir);
-+}
-+
-+static inline int ehca_calc_index(unsigned long i, unsigned long s)
-+{
-+	return (i >> s) & EHCA_INDEX_MASK;
-+}
-+
-+void ehca_destroy_busmap(void)
-+{
-+	int top, dir;
-+
-+	if (!ehca_bmap)
-+		return;
-+
-+	for (top = 0; top < EHCA_MAP_ENTRIES; top++) {
-+		if (!ehca_bmap_valid(ehca_bmap->top[top]))
-+			continue;
-+		for (dir = 0; dir < EHCA_MAP_ENTRIES; dir++) {
-+			if (!ehca_bmap_valid(ehca_bmap->top[top]->dir[dir]))
-+				continue;
-+
-+			kfree(ehca_bmap->top[top]->dir[dir]);
-+		}
-+
-+		kfree(ehca_bmap->top[top]);
-+	}
-+
-+	kfree(ehca_bmap);
-+	ehca_bmap = NULL;
-+}
-+
-+static int ehca_update_busmap(unsigned long pfn, unsigned long nr_pages)
-+{
-+	unsigned long i, start_section, end_section;
-+	int top, dir, idx;
-+
-+	if (!nr_pages)
-+		return 0;
-+
-+	if (!ehca_bmap) {
-+		ehca_bmap = kmalloc(sizeof(struct ehca_bmap), GFP_KERNEL);
-+		if (!ehca_bmap)
-+			return -ENOMEM;
-+		/* Set map block to 0xFF according to EHCA_INVAL_ADDR */
-+		memset(ehca_bmap, 0xFF, EHCA_TOP_MAP_SIZE);
-+	}
-+
-+	start_section = phys_to_abs(pfn * PAGE_SIZE) / EHCA_SECTSIZE;
-+	end_section = phys_to_abs((pfn + nr_pages) * PAGE_SIZE) / EHCA_SECTSIZE;
-+	for (i = start_section; i < end_section; i++) {
-+		int ret;
-+		top = ehca_calc_index(i, EHCA_TOP_INDEX_SHIFT);
-+		dir = ehca_calc_index(i, EHCA_DIR_INDEX_SHIFT);
-+		idx = i & EHCA_INDEX_MASK;
-+
-+		ret = ehca_init_bmap(ehca_bmap, top, dir);
-+		if (ret) {
-+			ehca_destroy_busmap();
-+			return ret;
-+		}
-+		ehca_bmap->top[top]->dir[dir]->ent[idx] = ehca_mr_len;
-+		ehca_mr_len += EHCA_SECTSIZE;
-+	}
-+	return 0;
-+}
-+
-+static int ehca_is_hugepage(unsigned long pfn)
-+{
-+	int page_order;
-+
-+	if (pfn & EHCA_HUGEPAGE_PFN_MASK)
-+		return 0;
-+
-+	page_order = compound_order(pfn_to_page(pfn));
-+	if (page_order + PAGE_SHIFT != EHCA_HUGEPAGESHIFT)
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static int ehca_create_busmap_callback(unsigned long initial_pfn,
-+				       unsigned long total_nr_pages, void *arg)
-+{
-+	int ret;
-+	unsigned long pfn, start_pfn, end_pfn, nr_pages;
-+
-+	if ((total_nr_pages * PAGE_SIZE) < EHCA_HUGEPAGE_SIZE)
-+		return ehca_update_busmap(initial_pfn, total_nr_pages);
-+
-+	/* Given chunk is >= 16GB -> check for hugepages */
-+	start_pfn = initial_pfn;
-+	end_pfn = initial_pfn + total_nr_pages;
-+	pfn = start_pfn;
-+
-+	while (pfn < end_pfn) {
-+		if (ehca_is_hugepage(pfn)) {
-+			/* Add mem found in front of the hugepage */
-+			nr_pages = pfn - start_pfn;
-+			ret = ehca_update_busmap(start_pfn, nr_pages);
-+			if (ret)
-+				return ret;
-+			/* Skip the hugepage */
-+			pfn += (EHCA_HUGEPAGE_SIZE / PAGE_SIZE);
-+			start_pfn = pfn;
-+		} else
-+			pfn += (EHCA_SECTSIZE / PAGE_SIZE);
-+	}
-+
-+	/* Add mem found behind the hugepage(s)  */
-+	nr_pages = pfn - start_pfn;
-+	return ehca_update_busmap(start_pfn, nr_pages);
-+}
-+
-+int ehca_create_busmap(void)
-+{
-+	int ret;
-+
-+	ehca_mr_len = 0;
-+	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
-+				   ehca_create_busmap_callback);
-+	return ret;
-+}
-+
-+static int ehca_reg_bmap_mr_rpages(struct ehca_shca *shca,
-+				   struct ehca_mr *e_mr,
-+				   struct ehca_mr_pginfo *pginfo)
-+{
-+	int top;
-+	u64 hret, *kpage;
-+
-+	kpage = ehca_alloc_fw_ctrlblock(GFP_KERNEL);
-+	if (!kpage) {
-+		ehca_err(&shca->ib_device, "kpage alloc failed");
-+		return -ENOMEM;
-+	}
-+	for (top = 0; top < EHCA_MAP_ENTRIES; top++) {
-+		if (!ehca_bmap_valid(ehca_bmap->top[top]))
-+			continue;
-+		hret = ehca_reg_mr_dir_sections(top, kpage, shca, e_mr, pginfo);
-+		if ((hret != H_PAGE_REGISTERED) && (hret != H_SUCCESS))
-+			break;
-+	}
-+
-+	ehca_free_fw_ctrlblock(kpage);
-+
-+	if (hret == H_SUCCESS)
-+		return 0; /* Everything is fine */
-+	else {
-+		ehca_err(&shca->ib_device, "ehca_reg_bmap_mr_rpages failed, "
-+				 "h_ret=%lli e_mr=%p top=%x lkey=%x "
-+				 "hca_hndl=%llx mr_hndl=%llx", hret, e_mr, top,
-+				 e_mr->ib.ib_mr.lkey,
-+				 shca->ipz_hca_handle.handle,
-+				 e_mr->ipz_mr_handle.handle);
-+		return ehca2ib_return_code(hret);
-+	}
-+}
-+
-+static u64 ehca_map_vaddr(void *caddr)
-+{
-+	int top, dir, idx;
-+	unsigned long abs_addr, offset;
-+	u64 entry;
-+
-+	if (!ehca_bmap)
-+		return EHCA_INVAL_ADDR;
-+
-+	abs_addr = virt_to_abs(caddr);
-+	top = ehca_calc_index(abs_addr, EHCA_TOP_INDEX_SHIFT + EHCA_SECTSHIFT);
-+	if (!ehca_bmap_valid(ehca_bmap->top[top]))
-+		return EHCA_INVAL_ADDR;
-+
-+	dir = ehca_calc_index(abs_addr, EHCA_DIR_INDEX_SHIFT + EHCA_SECTSHIFT);
-+	if (!ehca_bmap_valid(ehca_bmap->top[top]->dir[dir]))
-+		return EHCA_INVAL_ADDR;
-+
-+	idx = ehca_calc_index(abs_addr, EHCA_SECTSHIFT);
-+
-+	entry = ehca_bmap->top[top]->dir[dir]->ent[idx];
-+	if (ehca_bmap_valid(entry)) {
-+		offset = (unsigned long)caddr & (EHCA_SECTSIZE - 1);
-+		return entry | offset;
-+	} else
-+		return EHCA_INVAL_ADDR;
-+}
-+
-+static int ehca_dma_mapping_error(struct ib_device *dev, u64 dma_addr)
-+{
-+	return dma_addr == EHCA_INVAL_ADDR;
-+}
-+
-+static u64 ehca_dma_map_single(struct ib_device *dev, void *cpu_addr,
-+			       size_t size, enum dma_data_direction direction)
-+{
-+	if (cpu_addr)
-+		return ehca_map_vaddr(cpu_addr);
-+	else
-+		return EHCA_INVAL_ADDR;
-+}
-+
-+static void ehca_dma_unmap_single(struct ib_device *dev, u64 addr, size_t size,
-+				  enum dma_data_direction direction)
-+{
-+	/* This is only a stub; nothing to be done here */
-+}
-+
-+static u64 ehca_dma_map_page(struct ib_device *dev, struct page *page,
-+			     unsigned long offset, size_t size,
-+			     enum dma_data_direction direction)
-+{
-+	u64 addr;
-+
-+	if (offset + size > PAGE_SIZE)
-+		return EHCA_INVAL_ADDR;
-+
-+	addr = ehca_map_vaddr(page_address(page));
-+	if (!ehca_dma_mapping_error(dev, addr))
-+		addr += offset;
-+
-+	return addr;
-+}
-+
-+static void ehca_dma_unmap_page(struct ib_device *dev, u64 addr, size_t size,
-+				enum dma_data_direction direction)
-+{
-+	/* This is only a stub; nothing to be done here */
-+}
-+
-+static int ehca_dma_map_sg(struct ib_device *dev, struct scatterlist *sgl,
-+			   int nents, enum dma_data_direction direction)
-+{
-+	struct scatterlist *sg;
-+	int i;
-+
-+	for_each_sg(sgl, sg, nents, i) {
-+		u64 addr;
-+		addr = ehca_map_vaddr(sg_virt(sg));
-+		if (ehca_dma_mapping_error(dev, addr))
-+			return 0;
-+
-+		sg->dma_address = addr;
-+		sg->dma_length = sg->length;
-+	}
-+	return nents;
-+}
-+
-+static void ehca_dma_unmap_sg(struct ib_device *dev, struct scatterlist *sg,
-+			      int nents, enum dma_data_direction direction)
-+{
-+	/* This is only a stub; nothing to be done here */
-+}
-+
-+static u64 ehca_dma_address(struct ib_device *dev, struct scatterlist *sg)
-+{
-+	return sg->dma_address;
-+}
-+
-+static unsigned int ehca_dma_len(struct ib_device *dev, struct scatterlist *sg)
-+{
-+	return sg->length;
-+}
-+
-+static void ehca_dma_sync_single_for_cpu(struct ib_device *dev, u64 addr,
-+					 size_t size,
-+					 enum dma_data_direction dir)
-+{
-+	dma_sync_single_for_cpu(dev->dma_device, addr, size, dir);
-+}
-+
-+static void ehca_dma_sync_single_for_device(struct ib_device *dev, u64 addr,
-+					    size_t size,
-+					    enum dma_data_direction dir)
-+{
-+	dma_sync_single_for_device(dev->dma_device, addr, size, dir);
-+}
-+
-+static void *ehca_dma_alloc_coherent(struct ib_device *dev, size_t size,
-+				     u64 *dma_handle, gfp_t flag)
-+{
-+	struct page *p;
-+	void *addr = NULL;
-+	u64 dma_addr;
-+
-+	p = alloc_pages(flag, get_order(size));
-+	if (p) {
-+		addr = page_address(p);
-+		dma_addr = ehca_map_vaddr(addr);
-+		if (ehca_dma_mapping_error(dev, dma_addr)) {
-+			free_pages((unsigned long)addr,	get_order(size));
-+			return NULL;
-+		}
-+		if (dma_handle)
-+			*dma_handle = dma_addr;
-+		return addr;
-+	}
-+	return NULL;
-+}
-+
-+static void ehca_dma_free_coherent(struct ib_device *dev, size_t size,
-+				   void *cpu_addr, u64 dma_handle)
-+{
-+	if (cpu_addr && size)
-+		free_pages((unsigned long)cpu_addr, get_order(size));
-+}
-+
-+
-+struct ib_dma_mapping_ops ehca_dma_mapping_ops = {
-+	.mapping_error = ehca_dma_mapping_error,
-+	.map_single = ehca_dma_map_single,
-+	.unmap_single = ehca_dma_unmap_single,
-+	.map_page = ehca_dma_map_page,
-+	.unmap_page = ehca_dma_unmap_page,
-+	.map_sg = ehca_dma_map_sg,
-+	.unmap_sg = ehca_dma_unmap_sg,
-+	.dma_address = ehca_dma_address,
-+	.dma_len = ehca_dma_len,
-+	.sync_single_for_cpu = ehca_dma_sync_single_for_cpu,
-+	.sync_single_for_device = ehca_dma_sync_single_for_device,
-+	.alloc_coherent = ehca_dma_alloc_coherent,
-+	.free_coherent = ehca_dma_free_coherent,
-+};
-Index: infiniband/drivers/infiniband/hw/ehca/ehca_mrmw.h
-===================================================================
---- infiniband.orig/drivers/infiniband/hw/ehca/ehca_mrmw.h	2009-06-09 14:20:37.000000000 +0200
-+++ infiniband/drivers/infiniband/hw/ehca/ehca_mrmw.h	2009-06-09 14:20:47.000000000 +0200
-@@ -50,7 +50,8 @@
- 		struct ehca_pd *e_pd,
- 		struct ehca_mr_pginfo *pginfo,
- 		u32 *lkey,
--		u32 *rkey);
-+		u32 *rkey,
-+		int reg_busmap);
  
- int ehca_reg_mr_rpages(struct ehca_shca *shca,
- 		       struct ehca_mr *e_mr,
-@@ -118,4 +119,9 @@
+@@ -1440,6 +1449,8 @@ static void *__remote_slab_alloc_node(st
+ 	struct kmem_cache_list *l;
+ 	void *object;
  
- void ehca_mr_deletenew(struct ehca_mr *mr);
++	if (gfpflags & 0x2000)
++		printk("SLQB: __remote_slab_alloc_node cpu=%d request node=%d\n", smp_processor_id(), node);
+ 	n = s->node_slab[node];
+ 	if (unlikely(!n)) /* node has no memory */
+ 		return NULL;
+@@ -1541,7 +1552,11 @@ static __always_inline void *slab_alloc(
  
-+int ehca_create_busmap(void);
+ again:
+ 	local_irq_save(flags);
++	if (gfpflags & 0x2000)
++		printk("SLQB: slab_alloc cpu=%d,nid=%d request node=%d\n", smp_processor_id(), numa_node_id(), node);
+ 	object = __slab_alloc(s, gfpflags, node);
++	if (gfpflags & 0x2000)
++		printk("SLQB: slab_alloc cpu=%d return=%p\n", smp_processor_id(), object);
+ 	local_irq_restore(flags);
+ 
+ 	if (unlikely(slab_debug(s)) && likely(object)) {
+@@ -2869,9 +2884,12 @@ void __init kmem_cache_init(void)
+ #endif
+ 
+ #ifdef CONFIG_SMP
++	printk("SLQB: kmem_cache_init possible CPUs: ");
+ 	for_each_possible_cpu(i) {
+ 		struct kmem_cache_cpu *c;
+ 
++		printk("%d ", i);
 +
-+void ehca_destroy_busmap(void);
+ 		c = &per_cpu(kmem_cache_cpus, i);
+ 		init_kmem_cache_cpu(&kmem_cache_cache, c);
+ 		kmem_cache_cache.cpu_slab[i] = c;
+@@ -2886,14 +2904,18 @@ void __init kmem_cache_init(void)
+ 		kmem_node_cache.cpu_slab[i] = c;
+ #endif
+ 	}
++	printk("\n");
+ #else
+ 	init_kmem_cache_cpu(&kmem_cache_cache, &kmem_cache_cache.cpu_slab);
+ #endif
+ 
+ #ifdef CONFIG_NUMA
+-	for_each_node_state(i, N_NORMAL_MEMORY) {
++	printk("SLQB: kmem_cache_init possible nodes: ");
++	for_each_node_state(i, N_POSSIBLE) {
+ 		struct kmem_cache_node *n;
+ 
++		printk("%d ", i);
 +
-+extern struct ib_dma_mapping_ops ehca_dma_mapping_ops;
- #endif  /*_EHCA_MRMW_H_*/
+ 		n = &per_cpu(kmem_cache_nodes, i);
+ 		init_kmem_cache_node(&kmem_cache_cache, n);
+ 		kmem_cache_cache.node_slab[i] = n;
+@@ -2906,6 +2928,7 @@ void __init kmem_cache_init(void)
+ 		init_kmem_cache_node(&kmem_node_cache, n);
+ 		kmem_node_cache.node_slab[i] = n;
+ 	}
++	printk("\n");
+ #endif
+ 
+ 	/* Caches that are not of the two-to-the-power-of size */
+@@ -3040,12 +3063,17 @@ struct kmem_cache *kmem_cache_create(con
+ 	if (!kmem_cache_create_ok(name, size, align, flags))
+ 		goto err;
+ 
+-	s = kmem_cache_alloc(&kmem_cache_cache, GFP_KERNEL);
++	printk("SLQB: kmem_cache_create %s size=%d align=%d flags=%lx\n", name, (int)size, (int)align, flags);
++
++	s = kmem_cache_alloc(&kmem_cache_cache, GFP_KERNEL|0x2000);
+ 	if (!s)
+ 		goto err;
+ 
+-	if (kmem_cache_open(s, name, size, align, flags, ctor, 1))
++	printk("SLQB: kmem_cache_create %s kmem_cache allocated\n", name);
++	if (kmem_cache_open(s, name, size, align, flags, ctor, 1)) {
++		printk("SLQB: kmem_cache_create %s kmem_cache opened\n", name);
+ 		return s;
++	}
+ 
+ 	kmem_cache_free(&kmem_cache_cache, s);
+ 
