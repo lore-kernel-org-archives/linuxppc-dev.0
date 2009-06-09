@@ -1,23 +1,33 @@
-Return-Path: <jacmet@gmail.com>
+Return-Path: <holt@sgi.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id AB961B70C8
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A6810B70CF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Jun 2009 21:48:53 +1000 (EST)
-Received: from mail-ew0-f215.google.com (mail-ew0-f215.google.com
-	[209.85.219.215]) by ozlabs.org (Postfix) with ESMTP id 236D6DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jun 2009 21:48:50 +1000 (EST)
-Received: by ewy11 with SMTP id 11so5377033ewy.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Jun 2009 04:48:49 -0700 (PDT)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: galak@kernel.crashing.org,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH] mpc83xx/usb.c: fix usb mux setup for mpc834x
-Date: Tue,  9 Jun 2009 13:43:32 +0200
-Message-Id: <1244547812-3811-1-git-send-email-jacmet@sunsite.dk>
+	Tue,  9 Jun 2009 22:02:17 +1000 (EST)
+Received: from relay.sgi.com (relay3.sgi.com [192.48.156.57])
+	by ozlabs.org (Postfix) with ESMTP id 38E08DDD01
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jun 2009 22:02:16 +1000 (EST)
+Date: Tue, 9 Jun 2009 07:02:14 -0500
+From: Robin Holt <holt@sgi.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH v4] zone_reclaim is always 0 by default
+Message-ID: <20090609120213.GA18753@attica.americas.sgi.com>
+References: <20090604192236.9761.A69D9226@jp.fujitsu.com>
+	<20090608115048.GA15070@csn.ul.ie>
+	<20090609095507.GA9851@attica.americas.sgi.com>
+	<20090609103754.GN18380@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090609103754.GN18380@csn.ul.ie>
+Cc: Rik van Riel <riel@redhat.com>, Christoph Lameter <cl@linux-foundation.org>,
+	linux-mm <linux-mm@kvack.org>, "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Robin Holt <holt@sgi.com>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	linux-ia64@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Wu Fengguang <fengguang.wu@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,130 +37,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-usb0 and usb1 mux settings in the sicrl register were swapped (twice!)
-in mpc834x_usb_cfg(), leading to various strange issues with fsl-ehci
-and full speed devices.
+On Tue, Jun 09, 2009 at 11:37:55AM +0100, Mel Gorman wrote:
+> On Tue, Jun 09, 2009 at 04:55:07AM -0500, Robin Holt wrote:
+> > On Mon, Jun 08, 2009 at 12:50:48PM +0100, Mel Gorman wrote:
+> > 
+> > Let me start by saying I agree completely with everything you wrote and
+> > still disagree with this patch, but was willing to compromise and work
+> > around this for our upcoming x86_64 machine by putting a "value add"
+> > into our packaging of adding a sysctl that turns reclaim back on.
+> > 
+> 
+> To be honest, I'm more leaning towards a NACK than an ACK on this one. I
+> don't support enough NUMA machines to feel strongly enough about it but
+> unconditionally setting zone_reclaim_mode to 0 on x86-64 just because i7's
+> might be there seems ill-advised to me and will have other consequences for
+> existing more traditional x86-64 NUMA machines.
 
-The USB port config on mpc834x is done using 2 muxes: Port 0 is always
-used for MPH port 0, and port 1 can either be used for MPH port 1 or DR
-(unless DR uses TMDI phy or OTG, then it uses both ports) - See 8349 RM
-figure 1-4..
+I was sort-of planning on coming up with an x86_64 arch specific function
+for setting zone_reclaim_mode, but didn't like the direction things
+were going.
 
-mpc8349_usb_cfg() had this inverted for the DR, and it also had the bit
-positions of the usb0 / usb1 mux settings swapped. It would basically
-work if you specified port1 instead of port0 for the MPH controller (and
-happened to use ULPI phys), which is what all the 834x dts have done,
-even though that configuration is physically invalid.
-
-Instead fix mpc8349_usb_cfg() and adjust the dts files to match reality.
-
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
----
- arch/powerpc/boot/dts/asp834x-redboot.dts |    2 +-
- arch/powerpc/boot/dts/mpc8349emitx.dts    |    2 +-
- arch/powerpc/boot/dts/mpc834x_mds.dts     |    2 +-
- arch/powerpc/boot/dts/sbc8349.dts         |    2 +-
- arch/powerpc/platforms/83xx/mpc83xx.h     |    4 ++--
- arch/powerpc/platforms/83xx/usb.c         |   10 +++++-----
- 6 files changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/asp834x-redboot.dts b/arch/powerpc/boot/dts/asp834x-redboot.dts
-index 7da84fd..261d10c 100644
---- a/arch/powerpc/boot/dts/asp834x-redboot.dts
-+++ b/arch/powerpc/boot/dts/asp834x-redboot.dts
-@@ -167,7 +167,7 @@
- 			interrupt-parent = <&ipic>;
- 			interrupts = <39 0x8>;
- 			phy_type = "ulpi";
--			port1;
-+			port0;
- 		};
- 		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
-diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-index 1ae38f0..e540d44 100644
---- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -156,7 +156,7 @@
- 			interrupt-parent = <&ipic>;
- 			interrupts = <39 0x8>;
- 			phy_type = "ulpi";
--			port1;
-+			port0;
- 		};
+Something to the effect of...
+--- 20090609.orig/mm/page_alloc.c       2009-06-09 06:51:34.000000000 -0500
++++ 20090609/mm/page_alloc.c    2009-06-09 06:55:00.160762069 -0500
+@@ -2326,12 +2326,7 @@ static void build_zonelists(pg_data_t *p
+        while ((node = find_next_best_node(local_node, &used_mask)) >= 0) {
+                int distance = node_distance(local_node, node);
  
- 		usb@23000 {
-diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
-index d9f0a23..a667fe7 100644
---- a/arch/powerpc/boot/dts/mpc834x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
-@@ -153,7 +153,7 @@
- 			interrupt-parent = <&ipic>;
- 			interrupts = <39 0x8>;
- 			phy_type = "ulpi";
--			port1;
-+			port0;
- 		};
- 		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
-diff --git a/arch/powerpc/boot/dts/sbc8349.dts b/arch/powerpc/boot/dts/sbc8349.dts
-index a36dbbc..c7e1c4b 100644
---- a/arch/powerpc/boot/dts/sbc8349.dts
-+++ b/arch/powerpc/boot/dts/sbc8349.dts
-@@ -144,7 +144,7 @@
- 			interrupt-parent = <&ipic>;
- 			interrupts = <39 0x8>;
- 			phy_type = "ulpi";
--			port1;
-+			port0;
- 		};
- 		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index 83cfe51..d1dc5b0 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -22,8 +22,8 @@
- /* system i/o configuration register low */
- #define MPC83XX_SICRL_OFFS         0x114
- #define MPC834X_SICRL_USB_MASK     0x60000000
--#define MPC834X_SICRL_USB0         0x40000000
--#define MPC834X_SICRL_USB1         0x20000000
-+#define MPC834X_SICRL_USB0         0x20000000
-+#define MPC834X_SICRL_USB1         0x40000000
- #define MPC831X_SICRL_USB_MASK     0x00000c00
- #define MPC831X_SICRL_USB_ULPI     0x00000800
- #define MPC8315_SICRL_USB_MASK     0x000000fc
-diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-index 11e1fac..f53eba3 100644
---- a/arch/powerpc/platforms/83xx/usb.c
-+++ b/arch/powerpc/platforms/83xx/usb.c
-@@ -51,21 +51,21 @@ int mpc834x_usb_cfg(void)
- 					!strcmp(prop, "utmi_wide"))) {
- 			sicrl |= MPC834X_SICRL_USB0 | MPC834X_SICRL_USB1;
- 			sicrh |= MPC834X_SICRH_USB_UTMI;
--			port1_is_dr = 1;
-+			port0_is_dr = 1;
- 		} else if (prop && !strcmp(prop, "serial")) {
- 			dr_mode = of_get_property(np, "dr_mode", NULL);
- 			if (dr_mode && !strcmp(dr_mode, "otg")) {
- 				sicrl |= MPC834X_SICRL_USB0 | MPC834X_SICRL_USB1;
--				port1_is_dr = 1;
-+				port0_is_dr = 1;
- 			} else {
--				sicrl |= MPC834X_SICRL_USB0;
-+				sicrl |= MPC834X_SICRL_USB1;
- 			}
- 		} else if (prop && !strcmp(prop, "ulpi")) {
--			sicrl |= MPC834X_SICRL_USB0;
-+			sicrl |= MPC834X_SICRL_USB1;
- 		} else {
- 			printk(KERN_WARNING "834x USB PHY type not supported\n");
- 		}
--		port0_is_dr = 1;
-+		port1_is_dr = 1;
- 		of_node_put(np);
- 	}
- 	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-mph");
--- 
-1.6.2
+-               /*
+-                * If another node is sufficiently far away then it is better
+-                * to reclaim pages in a zone before going off node.
+-                */
+-               if (distance > RECLAIM_DISTANCE)
+-                       zone_reclaim_mode = 1;
++               zone_reclaim_mode = arch_zone_reclaim_mode(distance);
+ 
+                /*
+                 * We don't want to pressure a particular node.
+
+And then letting each arch define an arch_zone_reclaim_mode().  If other
+values are needed in the determination, we would add parameters to
+reflect this.
+
+For ia64, add
+
+static inline ia64_zone_reclaim_mode(int distance)
+{
+	if (distance > 15)
+		return 1;
+}
+
+#define	arch_zone_reclaim_mode(_d)	ia64_zone_reclaim_mode(_d)
+
+
+Then, inside x86_64_zone_reclaim_mode(), I could make it something like
+	if (distance > 40 || is_uv_system())
+		return 1;
+
+In the end, I didn't think this fight was worth fighting given how ugly
+this felt.  Upon second thought, I am beginning to think it is not that
+bad, but I also don't think it is that good either.
+
+Thanks,
+Robin
