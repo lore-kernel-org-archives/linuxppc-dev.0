@@ -1,26 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6A5E3B70C7
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C0EF7B70BB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Jun 2009 13:19:38 +1000 (EST)
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id C0300DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jun 2009 13:19:36 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so1758771ywt.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Jun 2009 20:19:34 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090609.102054.125129248.saito@densan.co.jp>
-References: <20090609.102054.125129248.saito@densan.co.jp>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 8 Jun 2009 21:19:14 -0600
-Message-ID: <fa686aa40906082019s311cdf8bg8ee9e33b7a1884cd@mail.gmail.com>
-Subject: Re: sensors can't be detected on i2c-mpc
-To: Hide Saito <hsaito.ppc@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, saito@densan.co.jp
+	Tue,  9 Jun 2009 13:51:03 +1000 (EST)
+Subject: Re: [BUILD FAILURE 01/04] Next June 04:PPC64 randconfig
+	[drivers/staging/comedi/drivers.o]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: subrata@linux.vnet.ibm.com
+In-Reply-To: <1244385405.5265.7.camel@subratamodak.linux.ibm.com>
+References: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
+	<1244261806.31984.36.camel@pasglop> <20090606055103.GA9446@kroah.com>
+	<200906060936.22322.fmhess@speakeasy.net>
+	<1244385405.5265.7.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain
+Date: Tue, 09 Jun 2009 13:50:18 +1000
+Message-Id: <1244519418.5235.2.camel@pasglop>
+Mime-Version: 1.0
+Cc: sachinp@linux.vnet.ibm.com, fmhess@users.sourceforge.net,
+	sfr@canb.auug.org.au, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org, Linuxppc-dev@ozlabs.org,
+	Ian Abbott <abbotti@mev.co.uk>, linux-next@vger.kernel.org,
+	paulus@samba.org, Geert.Uytterhoeven@sonycom.com,
+	geert@linux-m68k.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +34,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 8, 2009 at 7:20 PM, Hide Saito<hsaito.ppc@gmail.com> wrote:
-> sensors can't be detected on i2c-mpc
->
-> Hi all,
->
-> The sensors can't be detected on the built-in I2C interface on the Freescale's MPC processors on linux-2.6.29.
-> If it is not yet fixed, I think that it is forgotten to set the following values in the class.
->
-> Signed-off-by: Hideo Saito <hsaito.ppc@gmail.com>
+On Sun, 2009-06-07 at 20:06 +0530, Subrata Modak wrote:
+> On Sat, 2009-06-06 at 09:36 -0400, Frank Mori Hess wrote:
+> > On Saturday 06 June 2009, Greg KH wrote:
+> > > Frank and Ian, any thoughts about the vmap call in the
+> > > comedi_buf_alloc() call?  Why is it using PAGE_KERNEL_NOCACHE, and what
+> > > is the prealloc_buf buffer used for?
+> > 
+> > It is a circular buffer used to hold data streaming either to or from a 
+> > board (for example when producing an analog output waveform).  Reads and 
+> > writes to the device files read/write to the circular buffer, plus a few 
+> > drivers do dma directly to/from it.  I personally don't have a problem 
+> > with requiring drivers to have their own dma buffers and making them copy 
+> > data between their private dma buffers and the main circular buffer.  I 
+> > guess the original design wanted to support zero-copy dma.
+> 
+> Great to hear that. How about a patch that solves my build problem on
+> PPC64(the problem seems to be existing for long) ? 
 
-Since i2c probing is hit and miss at best; Most MPCxxxx SPI busses get
-the i2c bus topology out of the device tree file
-(arch/powerpc/boot/dts/<board-name>.dts) and do not support probing.
-If the i2c device you need is missing, then add a node to the .dts
-file for the missing device (there are lots of examples of this in the
-dts directory).
+In any case, doing PAGE_KERNEL_NOCACHE for DMA memory is incorrect on
+many architectures. So at this stage, there's no much option but ifdef I
+suspect for now until this is fixed properly.
 
-g.
+It does make sense to want to have some memory like that shared between
+user space and DMA, though I don't know what the right approach that
+works on all archs is at this stage. Worth asking the Alsa guys, I think
+they have similar issues :-)
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+But doing double buffering might do the trick fine for now.
+
+Cheers,
+Ben.
