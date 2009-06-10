@@ -1,16 +1,44 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <prasad@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 82AF7B70B3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6EF11B70B9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Jun 2009 16:48:53 +1000 (EST)
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <adf502e7c85161d77fdcaca24f55ba6b418c7f04.1244616523.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc: Add configurable -Werror for arch/powerpc
-Date: Wed, 10 Jun 2009 16:48:51 +1000 (EST)
+	Wed, 10 Jun 2009 16:50:14 +1000 (EST)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 440C0DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 16:50:14 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp08.au.ibm.com (8.13.1/8.13.1) with ESMTP id n5AGn2wS001040
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 02:49:02 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5A6oCqC315866
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 16:50:12 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n5A6oCN9000307
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 16:50:12 +1000
+Date: Wed, 10 Jun 2009 12:20:02 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+Subject: Re: [Patch 3/6] Modify ptrace code to use Hardware Breakpoint
+	interfaces
+Message-ID: <20090610065002.GB6912@in.ibm.com>
+References: <20090603162741.197115376@prasadkr_t60p.in.ibm.com>
+	<20090603163524.GD5197@in.ibm.com>
+	<20090605051345.GK2054@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090605051345.GK2054@yookeroo.seuss>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,156 +48,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the option to build the code under arch/powerpc with -Werror.
+On Fri, Jun 05, 2009 at 03:13:45PM +1000, David Gibson wrote:
+> On Wed, Jun 03, 2009 at 10:05:24PM +0530, K.Prasad wrote:
+> > Modify the ptrace code to use the hardware breakpoint interfaces for user-space.
+> > 
+> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/kernel/ptrace.c |   47 +++++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 47 insertions(+)
+> > 
+> > Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/ptrace.c
+> > ===================================================================
+> > --- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/ptrace.c
+> > +++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/ptrace.c
+> > @@ -37,6 +37,7 @@
+> >  #include <asm/page.h>
+> >  #include <asm/pgtable.h>
+> >  #include <asm/system.h>
+> > +#include <asm/hw_breakpoint.h>
+> >  
+> >  /*
+> >   * does not yet catch signals sent when the child dies.
+> > @@ -735,9 +736,26 @@ void user_disable_single_step(struct tas
+> >  	clear_tsk_thread_flag(task, TIF_SINGLESTEP);
+> >  }
+> >  
+> > +void ptrace_triggered(struct hw_breakpoint *bp, struct pt_regs *regs)
+> > +{
+> > +	/*
+> > +	 * Unregister the breakpoint request here since ptrace has defined a
+> > +	 * one-shot behaviour for breakpoint exceptions in PPC64.
+> > +	 * The SIGTRAP signal is generated automatically for us in do_dabr().
+> > +	 * We don't have to do anything here
+> > +	 */
+> > +	unregister_user_hw_breakpoint(current, bp);
+> > +	kfree(bp);
+> 
+> Couldn't you also clear the saved dabr info here, to avoid having to
+> special case this in the actual breakpoint handler.
+> 
 
-The intention is to make it harder for people to inadvertantly introduce
-warnings in the arch/powerpc code. It needs to be configurable so that
-if a warning is introduced, people can easily work around it while it's
-being fixed.
+The saved dabr_data is created as a static variable and I didn't want to
+modify its value across files.
 
-The option is a negative, ie. don't enable -Werror, so that it will be
-turned on for allyes and allmodconfig builds.
+> Also, I think you should be delivering the signal here - for gdb
+> compatibility I think we'll need to match the old behaviour which has
+> the TRAP delivered before executing the breakpointed instruction.
+> 
 
-The default is n, in the hope that developers will build with -Werror,
-that will probably lead to some build breaks, I am prepared to be flamed.
+We could do it either way. Return a NOTIFY_DONE from
+hw_breakpoint_handler() and allow the do_dabr()
+code to deliver the signal, or deliver a signal here and return a
+NOTIFY_STOP in the exception handler. I chose the former as it doesn't
+duplicate the code.
 
-It's not enabled for math-emu, which is a steaming pile of warnings.
+> -- 
+> David Gibson			| I'll have my music baroque, and my code
+> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+> 				| _way_ _around_!
+> http://www.ozlabs.org/~dgibson
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/Kconfig.debug      |   17 +++++++++++++++++
- arch/powerpc/kernel/Makefile    |    2 ++
- arch/powerpc/kvm/Makefile       |    2 ++
- arch/powerpc/lib/Makefile       |    2 ++
- arch/powerpc/mm/Makefile        |    2 ++
- arch/powerpc/oprofile/Makefile  |    2 ++
- arch/powerpc/platforms/Makefile |    2 ++
- arch/powerpc/sysdev/Makefile    |    2 ++
- arch/powerpc/xmon/Makefile      |    2 ++
- 9 files changed, 33 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index d79a902..3b10051 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -2,6 +2,23 @@ menu "Kernel hacking"
- 
- source "lib/Kconfig.debug"
- 
-+config PPC_DISABLE_WERROR
-+	bool "Don't build arch/powerpc code with -Werror"
-+	default n
-+	help
-+	  This option tells the compiler NOT to build the code under
-+	  arch/powerpc with the -Werror flag (which means warnings
-+	  are treated as errors).
-+
-+	  Only enable this if you are hitting a build failure in the
-+	  arch/powerpc code caused by a warning, and you don't feel
-+	  inclined to fix it.
-+
-+config PPC_WERROR
-+	bool
-+	depends on !PPC_DISABLE_WERROR
-+	default y
-+
- config PRINT_STACK_DEPTH
- 	int "Stack depth to print" if DEBUG_KERNEL
- 	default 64
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 65cf365..110ec6d 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -4,6 +4,8 @@
- 
- CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
- 
-+subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
-+
- ifeq ($(CONFIG_PPC64),y)
- CFLAGS_prom_init.o	+= -mno-minimal-toc
- endif
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index 4b2df66..459c7ee 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -2,6 +2,8 @@
- # Makefile for Kernel-based Virtual Machine module
- #
- 
-+subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
-+
- EXTRA_CFLAGS += -Ivirt/kvm -Iarch/powerpc/kvm
- 
- common-objs-y = $(addprefix ../../../virt/kvm/, kvm_main.o coalesced_mmio.o)
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 29b742b..3040dac 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -2,6 +2,8 @@
- # Makefile for ppc-specific library files..
- #
- 
-+subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
-+
- ifeq ($(CONFIG_PPC64),y)
- EXTRA_CFLAGS		+= -mno-minimal-toc
- endif
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index c4bcf07..2d2192e 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -2,6 +2,8 @@
- # Makefile for the linux ppc-specific parts of the memory manager.
- #
- 
-+subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
-+
- ifeq ($(CONFIG_PPC64),y)
- EXTRA_CFLAGS	+= -mno-minimal-toc
- endif
-diff --git a/arch/powerpc/oprofile/Makefile b/arch/powerpc/oprofile/Makefile
-index 2ef6b0d..73e1c2c 100644
---- a/arch/powerpc/oprofile/Makefile
-+++ b/arch/powerpc/oprofile/Makefile
-@@ -1,3 +1,5 @@
-+subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
-+
- ifeq ($(CONFIG_PPC64),y)
- EXTRA_CFLAGS	+= -mno-minimal-toc
- endif
-diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
-index f741919..a6812ee 100644
---- a/arch/powerpc/platforms/Makefile
-+++ b/arch/powerpc/platforms/Makefile
-@@ -1,4 +1,6 @@
- 
-+subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
-+
- obj-$(CONFIG_FSL_ULI1575)	+= fsl_uli1575.o
- 
- obj-$(CONFIG_PPC_PMAC)		+= powermac/
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 2d1c87d..d073bfd 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -1,3 +1,5 @@
-+subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
-+
- ifeq ($(CONFIG_PPC64),y)
- EXTRA_CFLAGS			+= -mno-minimal-toc
- endif
-diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
-index 9cb03b7..85ab97a 100644
---- a/arch/powerpc/xmon/Makefile
-+++ b/arch/powerpc/xmon/Makefile
-@@ -1,5 +1,7 @@
- # Makefile for xmon
- 
-+subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
-+
- ifdef CONFIG_PPC64
- EXTRA_CFLAGS += -mno-minimal-toc
- endif
--- 
-1.6.2.1
+Thanks,
+K.Prasad
