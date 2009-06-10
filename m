@@ -3,15 +3,15 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0FEF5B72DF
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DFADAB70F9
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 11 Jun 2009 00:39:25 +1000 (EST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 23/33] net/ps3: gelic - Add missing annotations
-Date: Wed, 10 Jun 2009 16:38:58 +0200
-Message-Id: <1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1244644748-24211-23-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 26/33] sound/ps3: Fix checkpatch issues
+Date: Wed, 10 Jun 2009 16:39:01 +0200
+Message-Id: <1244644748-24211-27-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1244644748-24211-26-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
@@ -35,9 +35,13 @@ References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-21-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-22-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-23-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-26-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+	linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	cbe-oss-dev@ozlabs.org, Takashi Iwai <tiwai@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,120 +51,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-probe functions should be __devinit
-
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: alsa-devel@alsa-project.org
+Cc: Takashi Iwai <tiwai@suse.de>
 ---
- drivers/net/ps3_gelic_net.c      |   22 ++++++++++++----------
- drivers/net/ps3_gelic_wireless.c |    6 +++---
- 2 files changed, 15 insertions(+), 13 deletions(-)
+ sound/ppc/snd_ps3.c |   32 +++++++++++++++-----------------
+ 1 files changed, 15 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/net/ps3_gelic_net.c b/drivers/net/ps3_gelic_net.c
-index 2b38f39..d1a5fb4 100644
---- a/drivers/net/ps3_gelic_net.c
-+++ b/drivers/net/ps3_gelic_net.c
-@@ -214,9 +214,10 @@ static void gelic_card_free_chain(struct gelic_card *card,
-  *
-  * returns 0 on success, <0 on failure
-  */
--static int gelic_card_init_chain(struct gelic_card *card,
--				 struct gelic_descr_chain *chain,
--				 struct gelic_descr *start_descr, int no)
-+static int __devinit gelic_card_init_chain(struct gelic_card *card,
-+					   struct gelic_descr_chain *chain,
-+					   struct gelic_descr *start_descr,
-+					   int no)
- {
- 	int i;
- 	struct gelic_descr *descr;
-@@ -407,7 +408,7 @@ rewind:
-  *
-  * returns 0 on success, < 0 on failure
-  */
--static int gelic_card_alloc_rx_skbs(struct gelic_card *card)
-+static int __devinit gelic_card_alloc_rx_skbs(struct gelic_card *card)
- {
- 	struct gelic_descr_chain *chain;
- 	int ret;
-@@ -1422,8 +1423,8 @@ static const struct net_device_ops gelic_netdevice_ops = {
-  *
-  * fills out function pointers in the net_device structure
-  */
--static void gelic_ether_setup_netdev_ops(struct net_device *netdev,
--					 struct napi_struct *napi)
-+static void __devinit gelic_ether_setup_netdev_ops(struct net_device *netdev,
-+						   struct napi_struct *napi)
- {
- 	netdev->watchdog_timeo = GELIC_NET_WATCHDOG_TIMEOUT;
- 	/* NAPI */
-@@ -1443,7 +1444,8 @@ static void gelic_ether_setup_netdev_ops(struct net_device *netdev,
-  * gelic_ether_setup_netdev initializes the net_device structure
-  * and register it.
-  **/
--int gelic_net_setup_netdev(struct net_device *netdev, struct gelic_card *card)
-+int __devinit gelic_net_setup_netdev(struct net_device *netdev,
-+				     struct gelic_card *card)
- {
- 	int status;
- 	u64 v1, v2;
-@@ -1491,7 +1493,7 @@ int gelic_net_setup_netdev(struct net_device *netdev, struct gelic_card *card)
-  * the card and net_device structures are linked to each other
-  */
- #define GELIC_ALIGN (32)
--static struct gelic_card *gelic_alloc_card_net(struct net_device **netdev)
-+static struct gelic_card * __devinit gelic_alloc_card_net(struct net_device **netdev)
- {
- 	struct gelic_card *card;
- 	struct gelic_port *port;
-@@ -1542,7 +1544,7 @@ static struct gelic_card *gelic_alloc_card_net(struct net_device **netdev)
- 	return card;
- }
- 
--static void gelic_card_get_vlan_info(struct gelic_card *card)
-+static void __devinit gelic_card_get_vlan_info(struct gelic_card *card)
- {
- 	u64 v1, v2;
- 	int status;
-@@ -1616,7 +1618,7 @@ static void gelic_card_get_vlan_info(struct gelic_card *card)
- /**
-  * ps3_gelic_driver_probe - add a device to the control of this driver
-  */
--static int ps3_gelic_driver_probe(struct ps3_system_bus_device *dev)
-+static int __devinit ps3_gelic_driver_probe(struct ps3_system_bus_device *dev)
- {
- 	struct gelic_card *card;
- 	struct net_device *netdev;
-diff --git a/drivers/net/ps3_gelic_wireless.c b/drivers/net/ps3_gelic_wireless.c
-index 4f3ada6..b6b3ca9 100644
---- a/drivers/net/ps3_gelic_wireless.c
-+++ b/drivers/net/ps3_gelic_wireless.c
-@@ -2442,7 +2442,7 @@ static const struct iw_handler_def gelic_wl_wext_handler_def = {
- #endif
+diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
+index f361c26..d660b0f 100644
+--- a/sound/ppc/snd_ps3.c
++++ b/sound/ppc/snd_ps3.c
+@@ -165,8 +165,7 @@ static const struct snd_pcm_hardware snd_ps3_pcm_hw = {
+ 	.fifo_size = PS3_AUDIO_FIFO_SIZE
  };
  
--static struct net_device *gelic_wl_alloc(struct gelic_card *card)
-+static struct net_device * __devinit gelic_wl_alloc(struct gelic_card *card)
- {
- 	struct net_device *netdev;
- 	struct gelic_port *port;
-@@ -2722,7 +2722,7 @@ static struct ethtool_ops gelic_wl_ethtool_ops = {
- 	.set_rx_csum	= gelic_net_set_rx_csum,
- };
+-static struct snd_pcm_ops snd_ps3_pcm_spdif_ops =
+-{
++static struct snd_pcm_ops snd_ps3_pcm_spdif_ops = {
+ 	.open = snd_ps3_pcm_open,
+ 	.close = snd_ps3_pcm_close,
+ 	.prepare = snd_ps3_pcm_prepare,
+@@ -183,7 +182,7 @@ static int snd_ps3_verify_dma_stop(struct snd_ps3_card_info *card,
+ 	int dma_ch, done, retries, stop_forced = 0;
+ 	uint32_t status;
  
--static void gelic_wl_setup_netdev_ops(struct net_device *netdev)
-+static void __devinit gelic_wl_setup_netdev_ops(struct net_device *netdev)
- {
- 	struct gelic_wl_info *wl;
- 	wl = port_wl(netdev_priv(netdev));
-@@ -2738,7 +2738,7 @@ static void gelic_wl_setup_netdev_ops(struct net_device *netdev)
+-	for (dma_ch = 0; dma_ch < 8; dma_ch ++) {
++	for (dma_ch = 0; dma_ch < 8; dma_ch++) {
+ 		retries = count;
+ 		do {
+ 			status = read_reg(PS3_AUDIO_KICK(dma_ch)) &
+@@ -259,9 +258,7 @@ static void snd_ps3_kick_dma(struct snd_ps3_card_info *card)
  /*
-  * driver probe/remove
+  * convert virtual addr to ioif bus addr.
   */
--int gelic_wl_driver_probe(struct gelic_card *card)
-+int __devinit gelic_wl_driver_probe(struct gelic_card *card)
+-static dma_addr_t v_to_bus(struct snd_ps3_card_info *card,
+-			   void * paddr,
+-			   int ch)
++static dma_addr_t v_to_bus(struct snd_ps3_card_info *card, void *paddr, int ch)
  {
- 	int ret;
- 	struct net_device *netdev;
+ 	return card->dma_start_bus_addr[ch] +
+ 		(paddr - card->dma_start_vaddr[ch]);
+@@ -321,7 +318,7 @@ static int snd_ps3_program_dma(struct snd_ps3_card_info *card,
+ 	spin_lock_irqsave(&card->dma_lock, irqsave);
+ 	for (ch = 0; ch < 2; ch++) {
+ 		start_vaddr = card->dma_next_transfer_vaddr[0];
+-		for (stage = 0; stage < fill_stages; stage ++) {
++		for (stage = 0; stage < fill_stages; stage++) {
+ 			dma_ch = stage * 2 + ch;
+ 			if (silent)
+ 				dma_addr = card->null_buffer_start_dma_addr;
+@@ -619,7 +616,7 @@ static int snd_ps3_change_avsetting(struct snd_ps3_card_info *card)
+ 			  PS3_AUDIO_AO_3WMCTRL_ASOEN(2) |
+ 			  PS3_AUDIO_AO_3WMCTRL_ASOEN(3)),
+ 			0);
+-	wmb(); 	/* ensure the hardware sees the change */
++	wmb();	/* ensure the hardware sees the change */
+ 	/* wait for actually stopped */
+ 	retries = 1000;
+ 	while ((read_reg(PS3_AUDIO_AO_3WMCTRL) &
+@@ -798,20 +795,20 @@ static struct snd_kcontrol_new spdif_ctls[] = {
+ 	{
+ 		.access = SNDRV_CTL_ELEM_ACCESS_READ,
+ 		.iface = SNDRV_CTL_ELEM_IFACE_PCM,
+-		.name = SNDRV_CTL_NAME_IEC958("",PLAYBACK,CON_MASK),
++		.name = SNDRV_CTL_NAME_IEC958("", PLAYBACK, CON_MASK),
+ 		.info = snd_ps3_spdif_mask_info,
+ 		.get = snd_ps3_spdif_cmask_get,
+ 	},
+ 	{
+ 		.access = SNDRV_CTL_ELEM_ACCESS_READ,
+ 		.iface = SNDRV_CTL_ELEM_IFACE_PCM,
+-		.name = SNDRV_CTL_NAME_IEC958("",PLAYBACK,PRO_MASK),
++		.name = SNDRV_CTL_NAME_IEC958("", PLAYBACK, PRO_MASK),
+ 		.info = snd_ps3_spdif_mask_info,
+ 		.get = snd_ps3_spdif_pmask_get,
+ 	},
+ 	{
+ 		.iface = SNDRV_CTL_ELEM_IFACE_PCM,
+-		.name = SNDRV_CTL_NAME_IEC958("",PLAYBACK,DEFAULT),
++		.name = SNDRV_CTL_NAME_IEC958("", PLAYBACK, DEFAULT),
+ 		.info = snd_ps3_spdif_mask_info,
+ 		.get = snd_ps3_spdif_default_get,
+ 		.put = snd_ps3_spdif_default_put,
+@@ -1020,11 +1017,12 @@ static int __init snd_ps3_driver_probe(struct ps3_system_bus_device *dev)
+ 	 * its size should be lager than PS3_AUDIO_FIFO_STAGE_SIZE * 2
+ 	 * PAGE_SIZE is enogh
+ 	 */
+-	if (!(the_card.null_buffer_start_vaddr =
+-	      dma_alloc_coherent(&the_card.ps3_dev->core,
+-				 PAGE_SIZE,
+-				 &the_card.null_buffer_start_dma_addr,
+-				 GFP_KERNEL))) {
++	the_card.null_buffer_start_vaddr =
++		dma_alloc_coherent(&the_card.ps3_dev->core,
++				   PAGE_SIZE,
++				   &the_card.null_buffer_start_dma_addr,
++				   GFP_KERNEL);
++	if (!the_card.null_buffer_start_vaddr) {
+ 		pr_info("%s: nullbuffer alloc failed\n", __func__);
+ 		goto clean_preallocate;
+ 	}
+@@ -1148,7 +1146,7 @@ static irqreturn_t snd_ps3_interrupt(int irq, void *dev_id)
+ 				SND_PS3_DMA_FILLTYPE_SILENT_FIRSTFILL :
+ 				SND_PS3_DMA_FILLTYPE_SILENT_RUNNING);
+ 			snd_ps3_kick_dma(card);
+-			card->silent --;
++			card->silent--;
+ 		} else {
+ 			snd_ps3_program_dma(card,
+ 				(underflow_occured) ?
 -- 
 1.6.2.4
