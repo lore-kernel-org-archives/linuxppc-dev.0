@@ -3,17 +3,16 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4454CB7144
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id AB7A7B7144
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 11 Jun 2009 02:36:13 +1000 (EST)
-Message-ID: <4A2FE0CD.60003@am.sony.com>
-Date: Wed, 10 Jun 2009 09:35:25 -0700
+Message-ID: <4A2FE0D2.1000204@am.sony.com>
+Date: Wed, 10 Jun 2009 09:35:30 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 23/33] net/ps3: gelic - Add missing annotations
+Subject: Re: [PATCH 24/33] usb/ps3: Add missing annotations
 References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-12-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-13-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-14-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-15-git-send-email-Geert.Uytterhoeven@sonycom.com>
@@ -26,7 +25,8 @@ References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-22-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-23-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,12 +40,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On 06/10/2009 07:38 AM, Geert Uytterhoeven wrote:
 > probe functions should be __devinit
+> initialization functions should be __init
 > 
 > Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 > Cc: Geoff Levand <geoffrey.levand@am.sony.com>
 > ---
->  drivers/net/ps3_gelic_net.c      |   22 ++++++++++++----------
->  drivers/net/ps3_gelic_wireless.c |    6 +++---
->  2 files changed, 15 insertions(+), 13 deletions(-)
+>  drivers/usb/host/ehci-ps3.c |    4 ++--
+>  drivers/usb/host/ohci-ps3.c |    4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 
 Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
