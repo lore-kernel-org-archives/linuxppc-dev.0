@@ -1,33 +1,28 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <david-b@pacbell.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6EB68B70C2
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2F154B707F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Jun 2009 10:02:37 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5E1A8DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 10:02:37 +1000 (EST)
-Subject: Re: [PATCH 2.6.31] ehca: Tolerate dynamic memory operations and
-	huge pages
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-In-Reply-To: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
-References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-S9Rw98E4WhQMC5FbJiRl"
-Date: Wed, 10 Jun 2009 10:02:36 +1000
-Message-Id: <1244592156.4680.5.camel@concordia>
-Mime-Version: 1.0
-Cc: rdreier@cisco.com, alexs@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-	ewg@lists.openfabrics.org, linuxppc-dev@ozlabs.org,
-	raisch@de.ibm.com, ossrosch@linux.vnet.ibm.com
-Reply-To: michael@ellerman.id.au
+	Wed, 10 Jun 2009 10:45:57 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Subrata Modak <subrata@linux.vnet.ibm.com>, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [BUILD FAILURE 02/04] Next June 04:PPC64 randconfig
+	[drivers/usb/host/ohci-hcd.o]
+Date: Tue, 9 Jun 2009 17:38:57 -0700
+References: <20090605182651.24094.36577.sendpatchset@elm3a191.beaverton.ibm.com>
+In-Reply-To: <20090605182651.24094.36577.sendpatchset@elm3a191.beaverton.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200906091738.58154.david-b@pacbell.net>
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-usb@vger.kernel.org,
+	Linux-Kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Linux-Next <linux-next@vger.kernel.org>, kernel@wantstofly.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,79 +32,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Friday 05 June 2009, Subrata Modak wrote:
+> Correct, it fixes the issue. However, since few changes might have gone
+> to the Kconfig, the patch does not apply cleanly. Below is the patch, just
+> a retake of the earlier one, but on the latest code. 
 
---=-S9Rw98E4WhQMC5FbJiRl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+And it got mangled a bit along the way.  Plus, the original one
+goofed up Kconfig dependency displays ... both issues fixed in
+this version, against current mainline GIT.
 
-On Tue, 2009-06-09 at 15:59 +0200, Hannes Hering wrote:
-> This patch implements toleration of dynamic memory operations and 16 GB
-> gigantic pages. On module load the driver walks through available system
-> memory, checks for available memory ranges and then registers the kernel
-> internal memory region accordingly. The translation of address ranges is
-> implemented via a 3-level busmap.
+If someone can verify all four PPC/OF/OHCI configs build on
+on PPC64, I'm OK with it.
 
-Hi Hannes,
-
-For those of us who haven't read the HEA spec lately, can you give us
-some more detail on that? :)
-
-How does it interact with kexec/kdump?
-
-> +static int ehca_update_busmap(unsigned long pfn, unsigned long nr_pages)
-> +{
-> +	unsigned long i, start_section, end_section;
-> +	int top, dir, idx;
-> +
-> +	if (!nr_pages)
-> +		return 0;
-> +
-> +	if (!ehca_bmap) {
-> +		ehca_bmap =3D kmalloc(sizeof(struct ehca_bmap), GFP_KERNEL);
-> +		if (!ehca_bmap)
-> +			return -ENOMEM;
-> +		/* Set map block to 0xFF according to EHCA_INVAL_ADDR */
-> +		memset(ehca_bmap, 0xFF, EHCA_TOP_MAP_SIZE);
-> +	}
-> +
-> +	start_section =3D phys_to_abs(pfn * PAGE_SIZE) / EHCA_SECTSIZE;
-> +	end_section =3D phys_to_abs((pfn + nr_pages) * PAGE_SIZE) / EHCA_SECTSI=
-ZE;
+- Dave
 
 
-phys_to_abs() ? As below, or does it come from somewhere else?
+========== CUT HERE
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: fix build failure for PPC64 randconfig [usb/ohci]
 
- arch/powerpc/include/asm/abs_addr.h:
- 47 static inline unsigned long phys_to_abs(unsigned long pa)              =
-    =20
- 48 {
- 49         unsigned long chunk;
- 50=20
- 51         /* This is a no-op on non-iSeries */
- 52         if (!firmware_has_feature(FW_FEATURE_ISERIES))
- 53                 return pa;
- 54=20
- 55         chunk =3D addr_to_chunk(pa);
- 56=20
- 57         if (chunk < mschunks_map.num_chunks)
- 58                 chunk =3D mschunks_map.mapping[chunk];
- 59=20
- 60         return chunk_to_addr(chunk) + (pa & MSCHUNKS_OFFSET_MASK);
- 61 }
+We could just make the USB_OHCI_HCD_PPC_OF option implicit
+and selected only if at least one of USB_OHCI_HCD_PPC_OF_BE
+and USB_OHCI_HCD_PPC_OF_LE are set.
 
+[ dbrownell@users.sourceforge.net: fix patch manglation and dependencies ]
 
-cheers
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Resent-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/usb/host/Kconfig |   29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
---=-S9Rw98E4WhQMC5FbJiRl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkou+A0ACgkQdSjSd0sB4dLuewCfSpTFRmT6ie66HWeYI0citu+h
-DRkAniClvuCqubfuz2smbsIRsx0ee0FU
-=S1Hv
------END PGP SIGNATURE-----
-
---=-S9Rw98E4WhQMC5FbJiRl--
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -180,26 +180,27 @@ config USB_OHCI_HCD_PPC_SOC
+ 	  Enables support for the USB controller on the MPC52xx or
+ 	  STB03xxx processor chip.  If unsure, say Y.
+ 
+-config USB_OHCI_HCD_PPC_OF
+-	bool "OHCI support for PPC USB controller on OF platform bus"
+-	depends on USB_OHCI_HCD && PPC_OF
+-	default y
+-	---help---
+-	  Enables support for the USB controller PowerPC present on the
+-	  OpenFirmware platform bus.
+-
+ config USB_OHCI_HCD_PPC_OF_BE
+-	bool "Support big endian HC"
+-	depends on USB_OHCI_HCD_PPC_OF
+-	default y
++	bool "OHCI support for OF platform bus (big endian)"
++	depends on USB_OHCI_HCD && PPC_OF
+ 	select USB_OHCI_BIG_ENDIAN_DESC
+ 	select USB_OHCI_BIG_ENDIAN_MMIO
++	---help---
++	  Enables support for big-endian USB controllers present on the
++	  OpenFirmware platform bus.
+ 
+ config USB_OHCI_HCD_PPC_OF_LE
+-	bool "Support little endian HC"
+-	depends on USB_OHCI_HCD_PPC_OF
+-	default n
++	bool "OHCI support for OF platform bus (little endian)"
++	depends on USB_OHCI_HCD && PPC_OF
+ 	select USB_OHCI_LITTLE_ENDIAN
++	---help---
++	  Enables support for little-endian USB controllers present on the
++	  OpenFirmware platform bus.
++
++config USB_OHCI_HCD_PPC_OF
++	bool
++	depends on USB_OHCI_HCD && PPC_OF
++	default USB_OHCI_HCD_PPC_OF_BE || USB_OHCI_HCD_PPC_OF_LE
+ 
+ config USB_OHCI_HCD_PCI
+ 	bool "OHCI support for PCI-bus USB controllers"
