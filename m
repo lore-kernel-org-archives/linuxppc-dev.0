@@ -3,16 +3,16 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 78B48B70FD
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4A86AB72D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 00:39:23 +1000 (EST)
+	Thu, 11 Jun 2009 00:39:24 +1000 (EST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 21/33] ps3: ps3rom - Use ps3_system_bus_[gs]et_drvdata()
+Subject: [PATCH 20/33] ps3: ps3flash - Use ps3_system_bus_[gs]et_drvdata()
 	instead of direct access
-Date: Wed, 10 Jun 2009 16:38:56 +0200
-Message-Id: <1244644748-24211-22-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1244644748-24211-21-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Date: Wed, 10 Jun 2009 16:38:55 +0200
+Message-Id: <1244644748-24211-21-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1244644748-24211-20-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
@@ -33,12 +33,9 @@ References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-18-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-19-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-20-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-21-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	cbe-oss-dev@ozlabs.org, linux-scsi@vger.kernel.org
+	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,56 +46,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-scsi@vger.kernel.org
-Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
 ---
- drivers/scsi/ps3rom.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/char/ps3flash.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
-index ca0dd33..db90caf 100644
---- a/drivers/scsi/ps3rom.c
-+++ b/drivers/scsi/ps3rom.c
-@@ -299,7 +299,7 @@ static irqreturn_t ps3rom_interrupt(int irq, void *data)
- 		return IRQ_HANDLED;
- 	}
- 
--	host = dev->sbd.core.driver_data;
-+	host = ps3_system_bus_get_drvdata(&dev->sbd);
- 	priv = shost_priv(host);
- 	cmd = priv->curr_cmd;
- 
-@@ -387,7 +387,7 @@ static int __devinit ps3rom_probe(struct ps3_system_bus_device *_dev)
- 	}
- 
- 	priv = shost_priv(host);
--	dev->sbd.core.driver_data = host;
-+	ps3_system_bus_set_drvdata(&dev->sbd, host);
- 	priv->dev = dev;
- 
- 	/* One device/LUN per SCSI bus */
-@@ -407,7 +407,7 @@ static int __devinit ps3rom_probe(struct ps3_system_bus_device *_dev)
- 
- fail_host_put:
- 	scsi_host_put(host);
--	dev->sbd.core.driver_data = NULL;
-+	ps3_system_bus_set_drvdata(&dev->sbd, NULL);
- fail_teardown:
- 	ps3stor_teardown(dev);
- fail_free_bounce:
-@@ -418,12 +418,12 @@ fail_free_bounce:
- static int ps3rom_remove(struct ps3_system_bus_device *_dev)
+diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
+index afbe456..184e6ed 100644
+--- a/drivers/char/ps3flash.c
++++ b/drivers/char/ps3flash.c
+@@ -108,7 +108,7 @@ static ssize_t ps3flash_read(struct file *file, char __user *buf, size_t count,
+ 			     loff_t *pos)
  {
- 	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
--	struct Scsi_Host *host = dev->sbd.core.driver_data;
-+	struct Scsi_Host *host = ps3_system_bus_get_drvdata(&dev->sbd);
+ 	struct ps3_storage_device *dev = ps3flash_dev;
+-	struct ps3flash_private *priv = dev->sbd.core.driver_data;
++	struct ps3flash_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
+ 	u64 size, start_sector, end_sector, offset;
+ 	ssize_t sectors_read;
+ 	size_t remaining, n;
+@@ -173,7 +173,7 @@ static ssize_t ps3flash_write(struct file *file, const char __user *buf,
+ 			      size_t count, loff_t *pos)
+ {
+ 	struct ps3_storage_device *dev = ps3flash_dev;
+-	struct ps3flash_private *priv = dev->sbd.core.driver_data;
++	struct ps3flash_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
+ 	u64 size, chunk_sectors, start_write_sector, end_write_sector,
+ 	    end_read_sector, start_read_sector, head, tail, offset;
+ 	ssize_t res;
+@@ -366,7 +366,7 @@ static int __devinit ps3flash_probe(struct ps3_system_bus_device *_dev)
+ 		goto fail;
+ 	}
  
- 	scsi_remove_host(host);
+-	dev->sbd.core.driver_data = priv;
++	ps3_system_bus_set_drvdata(&dev->sbd, priv);
+ 	mutex_init(&priv->mutex);
+ 
+ 	dev->bounce_size = ps3flash_bounce_buffer.size;
+@@ -392,7 +392,7 @@ fail_teardown:
  	ps3stor_teardown(dev);
- 	scsi_host_put(host);
+ fail_free_priv:
+ 	kfree(priv);
 -	dev->sbd.core.driver_data = NULL;
 +	ps3_system_bus_set_drvdata(&dev->sbd, NULL);
- 	kfree(dev->bounce_buf);
+ fail:
+ 	ps3flash_dev = NULL;
+ 	return error;
+@@ -404,8 +404,8 @@ static int ps3flash_remove(struct ps3_system_bus_device *_dev)
+ 
+ 	misc_deregister(&ps3flash_misc);
+ 	ps3stor_teardown(dev);
+-	kfree(dev->sbd.core.driver_data);
+-	dev->sbd.core.driver_data = NULL;
++	kfree(ps3_system_bus_get_drvdata(&dev->sbd));
++	ps3_system_bus_set_drvdata(&dev->sbd, NULL);
+ 	ps3flash_dev = NULL;
  	return 0;
  }
 -- 
