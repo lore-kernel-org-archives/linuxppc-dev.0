@@ -1,23 +1,26 @@
-Return-Path: <prvs=405a8bead=Stephan.Schaller@sensor-technik.de>
-Received: from mail.sensor-technik.de (mail.sensor-technik.de [217.89.75.155])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 1C666B70F4
+Return-Path: <akpm@linux-foundation.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5FE61B6F34
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 04:14:54 +1000 (EST)
-Received: from keys.sensor-technik.de (localhost [127.0.0.1])
-	by keys.sensor-technik.de (Postfix) with ESMTP id BFF4D703DAF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Jun 2009 20:04:11 +0200 (CEST)
-Received: from mail.sensor-technik.de (unknown [192.168.1.1])
-	by keys.sensor-technik.de (Postfix) with ESMTP id 82811703D90
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Jun 2009 20:03:58 +0200 (CEST)
-From: Schaller Stephan <Stephan.Schaller@sensor-technik.de>
-To: "'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 10 Jun 2009 20:03:56 +0200
-Subject: MPC5200B: Can't receive/handle external Interrupts
-Message-ID: <C10D11C8340AFC47891731EA67CD31C20162F071EFC7@stwex.stww2k.local>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+	Thu, 11 Jun 2009 05:45:00 +1000 (EST)
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CF873DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 05:44:59 +1000 (EST)
+Message-Id: <200906101942.n5AJgVPU030230@imap1.linux-foundation.org>
+Subject: [patch 1/1] drivers/hvc: add missing __devexit_p()
+To: benh@kernel.crashing.org
+From: akpm@linux-foundation.org
+Date: Wed, 10 Jun 2009 12:42:30 -0700
+Cc: sfr@canb.auug.org.au, vapier@gentoo.org, miltonm@bga.com,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGVsbG8sDQogDQpJIGFtIHVzaW5nIGEgRnJlZXNjYWxlIE1QQzUyMDBCIHJ1bm5pbmcgTGludXgg
-Mi42LjI3LjEwLiBIYXJkd2FyZSBpcyBkZWNsYXJlZCB1c2luZyBhIGZsYXQgZGV2aWNlIHRyZWUg
-bG9hZGVkIGJ5IHVCb290Lg0KIA0KTXkgUHJvYmxlbSBpcyB0aGF0IGV4dGVybmFsIEludGVycnVw
-dHMgKEkgdXNlIElSUTMpIGdldCBub3QgcmVjZWl2ZWQuDQpJIGNhbiB1c2UgYml0IDE4IG9mIHRo
-ZSBNYWluIEludGVycnVwdCBFbXVsYXRpb24gQWxsIFJlZ2lzdGVyIChNQkFSKzB4NTQwKSB0byB0
-cmlnZ2VyIElSUTMgbWFudWFsbHkgd2hpY2ggY2FsbHMgdXAgbXkgSVNSLg0KSG93ZXZlciwgaWYg
-SSB0cmlnZ2VyIElSUSB1c2luZyBCaXQgNyBvZiB0aGUgSVJRIEludGVycnVwdCBFbXVsYXRpb24g
-QWxsIFJlZ2lzdGVyIChNQkFSKzB4NTQ4KSwgTXkgSVNSIGRvZXMgbm90IGdldCBjYWxsZWQuIFRo
-ZSBNUEM1MjAwIFVzZXIgTWFudWFsIHNheXMgKG9uIHAuIDctMjQpOiAiVGhpcyByZWdpc3RlciBp
-cyByZWR1bmRhbnQgd2l0aCBJSUNUTCBNYWluIEludGVycnVwdCBFbXVsYXRpb24gQWxsIFJlZ2lz
-dGVyIGZvciBJUlExLTMgYnV0IGlzIHRoZSBvbmx5IHNvdXJjZSB0byBlbXVsYXRlIElSUTAuIi4g
-SSB1bmRlcnN0YW5kIHRoaXMgdGhhdCB0aGVyZSBzaG91bGQgbm90IGJlIGEgZGlmZmVyZW5jZSBi
-ZXR3ZWVuIGVtdWxhdGluZyBhbiBleHRlcm5hbCBpbnRlcnJ1cHQgdXNpbmcgb25lIG9mIHRoZXNl
-IHJlZ2lzdGVycyBvciB0aGUgb3RoZXIuIEJ1dCB0aGVyZSBpcy4gSSB0cmllZCBwdWxsaW5nIGRv
-d24gdGhlIElSUTMtUGluIGFzIG1lbnRpb25lZCBpbiB0aGUgbWFudWFsLCBidXQgdGhpcyBkb2Vz
-IG5vdCBtYWtlIGEgZGlmZmVyZW5jZS4NCkkgY2hlY2tlZCB0aGUgTWFpbiBJbnRlcnJ1cHQgU3Rh
-dHVzIEFsbCBSZWdpc3RlciAoTUJBUisweDUyQyksIGJpdCAxOCBhbmQgdGhlIGJpdCBvbmx5IGdl
-dHMgc2V0IHdoZW4gaSB1c2UgdGhlIE1haW4gSW50ZXJydXB0IEVtdWxhdGlvbiBBbGwgUmVnaXN0
-ZXIgdG8gZW11bGF0ZS4gQWxzbywgYWZ0ZXIgc2V0dGluZyB0aGUgYXBwcm9wcmlhdGUgYml0IGlu
-IE1haW4gSW50ZXJydXB0IEVtdWxhdGlvbiBBbGwgUmVnaXN0ZXIsIGl0IGFsc28gaXMgc2V0IGlu
-IElSUSBJbnRlcnJ1cHQgRW11bGF0aW9uIEFsbCBSZWdpc3Rlci4gQnV0IGl0IGRvZXMgbm90IHdv
-cmsgdmljZSB2ZXJzYS4gVGhpcyBpcyBub3Qgd2hhdCBJIHRoaW5rICJyZWR1bmRhbnQiIG1lYW5z
-Li4uDQoNCkkgTWFkZSBzdXJlIHRoYXQgSVJRMyBpcyBlbmFibGVkIGFuZCB1bm1hc2tlZCAoTUJB
-UisweDUxMCwgQml0IDIzID0gMSwgQml0IDE5ID0gMSkuIEZvcndhcmRpbmcgaXQgdG8gU01JIGlu
-c3RlYWQgb2YgSU5UIGRvZXMgbm90IG1ha2UgYSBkaWZmZXJlbmNlLiBJZiBJIGNoYW5nZSBJUlEz
-IHRvIGFjdGl2ZSBoaWdoICh1c2luZyBNQkFSKzB4NTEwKSwgbXkgSVNSIGdldHMgY2FsbGVkIGlu
-c3RhbnRseSwgbm8gbWF0dGVyIHdldGhlciB0aGUgSVJRMy1QaW4gaXMgY29ubmVjdGVkIHRvIGhp
-Z2ggb3IgbG93Lg0KVGhlIEJpdCByZXByZXNlbnRpbmcgSVJRMyBpbiBNYWluIEludGVycnVwdCBT
-dGF0dXMgQWxsIFJlZ2lzdGVyIGRvZXMgbm90IGNoYW5nZSB3aGVuIGkgY29ubmVjdCB0aGUgUGlu
-IHRvIGhpZ2ggb3IgbG93Lg0KDQpTbywgYmFzaWNhbGx5IHR3byBQcm9ibGVtczoNCi0gSVNSIHNl
-ZW1zIG9ubHkgdG8gZ2V0IGNhbGxlZCBieSBhICJNYWluIEludGVycnVwdCIsIG5vdCBieSBhICJJ
-UlEgSW50ZXJydXB0Ii4gSG93IGRvIEkgbWFrZSB0aGUgY29ubmVjdGlvbiBiZXR3ZWVuIHRoZXNl
-Pw0KLSBUaGUgSVJRMyBpbnB1dCBQaW4gbGV2ZWwgaXMgbm90IHNob3duIGluIHRoZSBzdGF0dXMg
-cmVnaXN0ZXIgYW5kIGlzIG5vdCByZWdvZ25pemVkIGJ5IHRoZSBDUFUuDQoNCkkgaGF2ZSBub3Rp
-Y2VkIHNldmVyYWwgcGVvcGxlIGhlcmUgdXNpbmcgZXh0ZXJuYWwgSVJRcywgc28gc29tZW9uZSBt
-aWdodCBob3BlZnVsbHkga25vdyB3aGF0IEkgZm9yZ290IHRvIGRvLiBJJ20gcnVubmluZyBvdXQg
-b2YgaWRlYXMgb24gdGhpcyBvbmUuDQoNCkhlcmUgaXMgc29tZSBhZGRpdGlvbmFsIGluZm9ybWF0
-aW9uOg0KDQoNCkkgZGVjbGFyZSBteSB0ZXN0IGRyaXZlciBpbiB0aGUgRlREIGFzIGZvbGxvd3M6
-DQoNCgkJaXJxdGVzdEAwMCB7DQoJCWNvbXBhdGlibGUgPSAiaXJxdGVzdCI7DQoJCWludGVycnVw
-dHMgPSA8IDEgMyAzID47DQoJCWludGVycnVwdC1wYXJlbnQgPSA8Jm1wYzUyMDBfcGljPjsNCg0K
-DQphbmQgdGhlIFBJQzoNCg0KCQltcGM1MjAwX3BpYzogaW50ZXJydXB0LWNvbnRyb2xsZXJANTAw
-IHsNCgkJCS8vIDUyMDAgaW50ZXJydXB0cyBhcmUgZW5jb2RlZCBpbnRvIHR3byBsZXZlbHM7DQoJ
-CQlpbnRlcnJ1cHQtY29udHJvbGxlcjsNCgkJCSNpbnRlcnJ1cHQtY2VsbHMgPSA8Mz47DQoJCQlk
-ZXZpY2VfdHlwZSA9ICJpbnRlcnJ1cHQtY29udHJvbGxlciI7DQoJCQljb21wYXRpYmxlID0gImZz
-bCxtcGM1MjAwYi1waWMiLCJmc2wsbXBjNTIwMC1waWMiOw0KCQkJcmVnID0gPDB4NTAwIDB4ODA+
-Ow0KCQl9Ow0KDQooT2YgY291cnNlLCB0aGUgUElDIGRyaXZlciBpcyBsb2FkZWQpDQoNCk15IGRy
-aXZlciByZXF1ZXN0cyB0aGUgSVJRIGFzIGZvbGxvd3M6DQoNCiAgIGlycSA9IGlycV9vZl9wYXJz
-ZV9hbmRfbWFwKG9wLT5ub2RlLCAwKTsNCiAgIHJlcXVlc3RfaXJxKGlycSwgaXJxdGVzdF9pc3Is
-IElSUUZfU0FNUExFX1JBTkRPTSwgImlycXRlc3QiLCBOVUxMKTsNCg0KDQp0aGlzIGlzIG15IG91
-dHB1dCB3aGlsZSBsb2FkaW5nIHRoZSBtb2R1bGUgKHNlZW1zIHRvIGJlIE9LKToNCg0KCWluaXRp
-YWxpemluZyBpcnF0ZXN0IG1vZHVsZS4uLg0KCWlycXRlc3Rfb2ZfcHJvYmUgY2FsbGVkLCBtYXBw
-aW5nIGlycS4uLg0KCWlycXRlc3Q6IG1hcHBlZCBpcnEgNjcsIGNhbGxpbmcgcmVxdWVzdF9pcnEu
-Li4NCglyZXF1ZXN0X2lycSByZXR1cm5lZCAwDQoNCg0KDQpUaGFuayB5b3UgaW4gYWR2YW5jZSwN
-ClN0ZXBoYW4gU2NoYWxsZXI=
+From: Mike Frysinger <vapier@gentoo.org>
+
+The remove function uses __devexit, so the .remove assignment needs
+__devexit_p() to fix a build error with hotplug disabled.
+
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Milton Miller <miltonm@bga.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/char/hvc_iseries.c |    2 +-
+ drivers/char/hvc_vio.c     |    2 +-
+ drivers/char/hvcs.c        |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff -puN drivers/char/hvc_iseries.c~drivers-hvc-add-missing-__devexit_p drivers/char/hvc_iseries.c
+--- a/drivers/char/hvc_iseries.c~drivers-hvc-add-missing-__devexit_p
++++ a/drivers/char/hvc_iseries.c
+@@ -241,7 +241,7 @@ static int __devexit hvc_vio_remove(stru
+ static struct vio_driver hvc_vio_driver = {
+ 	.id_table	= hvc_driver_table,
+ 	.probe		= hvc_vio_probe,
+-	.remove		= hvc_vio_remove,
++	.remove		= __devexit_p(hvc_vio_remove),
+ 	.driver		= {
+ 		.name	= hvc_driver_name,
+ 		.owner	= THIS_MODULE,
+diff -puN drivers/char/hvc_vio.c~drivers-hvc-add-missing-__devexit_p drivers/char/hvc_vio.c
+--- a/drivers/char/hvc_vio.c~drivers-hvc-add-missing-__devexit_p
++++ a/drivers/char/hvc_vio.c
+@@ -113,7 +113,7 @@ static int __devexit hvc_vio_remove(stru
+ static struct vio_driver hvc_vio_driver = {
+ 	.id_table	= hvc_driver_table,
+ 	.probe		= hvc_vio_probe,
+-	.remove		= hvc_vio_remove,
++	.remove		= __devexit_p(hvc_vio_remove),
+ 	.driver		= {
+ 		.name	= hvc_driver_name,
+ 		.owner	= THIS_MODULE,
+diff -puN drivers/char/hvcs.c~drivers-hvc-add-missing-__devexit_p drivers/char/hvcs.c
+--- a/drivers/char/hvcs.c~drivers-hvc-add-missing-__devexit_p
++++ a/drivers/char/hvcs.c
+@@ -868,7 +868,7 @@ static int __devexit hvcs_remove(struct 
+ static struct vio_driver hvcs_vio_driver = {
+ 	.id_table	= hvcs_driver_table,
+ 	.probe		= hvcs_probe,
+-	.remove		= hvcs_remove,
++	.remove		= __devexit_p(hvcs_remove),
+ 	.driver		= {
+ 		.name	= hvcs_driver_name,
+ 		.owner	= THIS_MODULE,
+_
