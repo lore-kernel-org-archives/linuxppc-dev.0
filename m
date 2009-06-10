@@ -1,43 +1,16 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05B63B70B3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 82AF7B70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Jun 2009 16:44:01 +1000 (EST)
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [59.145.155.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E8C40DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 16:43:59 +1000 (EST)
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
-	by e28smtp01.in.ibm.com (8.13.1/8.13.1) with ESMTP id n5A6hrs7000613
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 12:13:53 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n5A6hqNj2691188
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 12:13:53 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.13.1/8.13.3) with ESMTP id n5A6hqT8005224
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 16:43:52 +1000
-Date: Wed, 10 Jun 2009 12:13:49 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-Subject: Re: [Patch 2/6] Introduce PPC64 specific Hardware Breakpoint
-	interfaces
-Message-ID: <20090610064349.GA6912@in.ibm.com>
-References: <20090603162741.197115376@prasadkr_t60p.in.ibm.com>
-	<20090603163511.GC5197@in.ibm.com>
-	<20090605051158.GJ2054@yookeroo.seuss>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090605051158.GJ2054@yookeroo.seuss>
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
-Reply-To: prasad@linux.vnet.ibm.com
+	Wed, 10 Jun 2009 16:48:53 +1000 (EST)
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <adf502e7c85161d77fdcaca24f55ba6b418c7f04.1244616523.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc: Add configurable -Werror for arch/powerpc
+Date: Wed, 10 Jun 2009 16:48:51 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,285 +20,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 05, 2009 at 03:11:58PM +1000, David Gibson wrote:
-> On Wed, Jun 03, 2009 at 10:05:11PM +0530, K.Prasad wrote:
+Add the option to build the code under arch/powerpc with -Werror.
 
-Hi David,
-	Sorry for the delay in response below. In the meanwhile, I
-discovered an issue in detecting stray exceptions that affected
-user-space handling of breakpoints. I've made some changes to correct
-that behaviour which will be included in version VI of the patchset.
+The intention is to make it harder for people to inadvertantly introduce
+warnings in the arch/powerpc code. It needs to be configurable so that
+if a warning is introduced, people can easily work around it while it's
+being fixed.
 
-> > Introduce PPC64 implementation for the generic hardware breakpoint interfaces
-> > defined in kernel/hw_breakpoint.c. Enable the HAVE_HW_BREAKPOINT flag and the
-> > Makefile.
-> 
-> 
-> [snip]
-> > +/*
-> > + * Install the debug register values for just the kernel, no thread.
-> 
-> This comment does seem to quite match the function below.
-> 
+The option is a negative, ie. don't enable -Werror, so that it will be
+turned on for allyes and allmodconfig builds.
 
-Thanks for pointing out. Will change it to read thus:
-/*
- * Clear the DABR which contains the thread-specific breakpoint address
- */
+The default is n, in the hope that developers will build with -Werror,
+that will probably lead to some build breaks, I am prepared to be flamed.
 
-> > + */
-> > +void arch_uninstall_thread_hw_breakpoint()
-> > +{
-> > +	set_dabr(0);
-> > +}
-> > +
-> > +/*
-> > + * Store a breakpoint's encoded address, length, and type.
-> > + */
-> > +int arch_store_info(struct hw_breakpoint *bp, struct task_struct *tsk)
-> > +{
-> > +	/*
-> > +	 * User-space requests will always have the address field populated
-> > +	* Symbol names from user-space are rejected
-> > +	*/
-> > +	if (tsk && bp->info.name)
-> > +		return -EINVAL;
-> > +	/*
-> > +	 * User-space requests will always have the address field populated
-> > +	 * For kernel-addresses, either the address or symbol name can be
-> > +	 * specified.
-> > +	 */
-> > +	if (bp->info.name)
-> > +		bp->info.address = (unsigned long)
-> > +					kallsyms_lookup_name(bp->info.name);
-> 
-> Archs don't have to implement this name lookup stuff, but it looks
-> like most of them would - so it looks like there ought to be a helper
-> function in generic code that will do the check / name lookup stuff.
-> 
->
+It's not enabled for math-emu, which is a steaming pile of warnings.
 
-It doesn't turn out to be very generic. The IO breakpoints in x86, the
-address-range (only) breakpoints in S390 and perhaps 4xx powerpc
-processors were what made me think that this should remain in
-arch-specific code. In these cases, we might have to deal only with
-breakpoint addresses and not names.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/Kconfig.debug      |   17 +++++++++++++++++
+ arch/powerpc/kernel/Makefile    |    2 ++
+ arch/powerpc/kvm/Makefile       |    2 ++
+ arch/powerpc/lib/Makefile       |    2 ++
+ arch/powerpc/mm/Makefile        |    2 ++
+ arch/powerpc/oprofile/Makefile  |    2 ++
+ arch/powerpc/platforms/Makefile |    2 ++
+ arch/powerpc/sysdev/Makefile    |    2 ++
+ arch/powerpc/xmon/Makefile      |    2 ++
+ 9 files changed, 33 insertions(+), 0 deletions(-)
 
-> > +	if (bp->info.address)
-> > +		return 0;
-> 
-> Hrm.. you realise there's no theoretical reason a userspace program
-> couldn't put a breakpoint at address 0...?
-> 
-
-I agree. I think there must be parts of code that works based on this
-assumption. Will check and remove them.
-
-> > +	return -EINVAL;
-> > +}
-> > +
-> > +/*
-> > + * Validate the arch-specific HW Breakpoint register settings
-> > + */
-> > +int arch_validate_hwbkpt_settings(struct hw_breakpoint *bp,
-> > +						struct task_struct *tsk)
-> > +{
-> > +	int is_kernel, ret = -EINVAL;
-> > +
-> > +	if (!bp)
-> > +		return ret;
-> > +
-> > +	switch (bp->info.type) {
-> > +	case HW_BREAKPOINT_READ:
-> > +	case HW_BREAKPOINT_WRITE:
-> > +	case HW_BREAKPOINT_RW:
-> > +		break;
-> > +	default:
-> > +		return ret;
-> > +	}
-> > +
-> > +	if (bp->triggered)
-> > +		ret = arch_store_info(bp, tsk);
-> > +
-> > +	is_kernel = is_kernel_addr(bp->info.address);
-> > +	if ((tsk && is_kernel) || (!tsk && !is_kernel))
-> > +		return -EINVAL;
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +void arch_update_user_hw_breakpoint(int pos, struct task_struct *tsk)
-> > +{
-> > +	struct thread_struct *thread = &(tsk->thread);
-> > +	struct hw_breakpoint *bp = thread->hbp[0];
-> > +
-> > +	if (bp)
-> > +		thread->dabr = (bp->info.address & ~HW_BREAKPOINT_ALIGN) |
-> > +				bp->info.type | DABR_TRANSLATION;
-> > +	else
-> > +		thread->dabr = 0;
-> > +}
-> > +
-> > +void arch_flush_thread_hw_breakpoint(struct task_struct *tsk)
-> > +{
-> > +	struct thread_struct *thread = &(tsk->thread);
-> > +
-> > +	thread->dabr = 0;
-> > +}
-> > +
-> > +/*
-> > + * Handle debug exception notifications.
-> > + */
-> > +int __kprobes hw_breakpoint_handler(struct die_args *args)
-> > +{
-> > +	int rc = NOTIFY_STOP;
-> > +	struct hw_breakpoint *bp;
-> > +	struct pt_regs *regs = args->regs;
-> > +	unsigned long dar = regs->dar;
-> > +	int cpu, is_one_shot, stepped = 1;
-> > +
-> > +	/* Disable breakpoints during exception handling */
-> > +	set_dabr(0);
-> > +
-> > +	cpu = get_cpu();
-> > +	/* Determine whether kernel- or user-space address is the trigger */
-> > +	bp = (hbp_kernel_pos == HBP_NUM) ? current->thread.hbp[0] :
-> > +					per_cpu(this_hbp_kernel[0], cpu);
-> > +	/*
-> > +	 * bp can be NULL due to lazy debug register switching
-> > +	 * or due to the delay between updates of hbp_kernel_pos
-> > +	 * and this_hbp_kernel.
-> > +	 */
-> > +	if (!bp)
-> > +		goto out;
-> > +
-> > +	if (dar == bp->info.address)
-> > +		per_cpu(dabr_data, cpu) = (hbp_kernel_pos == HBP_NUM) ?
-> > +						current->thread.dabr : kdabr;
-> > +	else {
-> > +		/*
-> > +		 * This exception is triggered not because of a memory access on
-> > +		 * the monitored variable but in the double-word address range
-> > +		 * in which it is contained. We will consume this exception,
-> > +		 * considering it as 'noise'.
-> > +		 */
-> > +		rc = NOTIFY_STOP;
-> > +		goto out;
-> > +	}
-> > +	is_one_shot = (bp->triggered == ptrace_triggered) ? 1 : 0;
-> 
-> Ouch, explicitly special-casing ptrace_triggered is pretty nasty.
-> Since the bp_info is already arch specific, maybe it should include a
-> flag to indicate whether the breakpoint is one-shot or not.
-> 
-
-The reason to check for ptrace_triggered is to contain the one-shot
-behaviour only to ptrace (thus retaining the semantics) and not to extend
-them to all user-space requests through register_user_hw_breakpoint().
-
-A one-shot behaviour for all user-space requests would create more work
-for the user-space programs (such as re-registration) and will leave open
-a small window of opportunity for debug register grabbing by kernel-space
-requests.
-
-So, in effect a request through register_user_hw_breakpoint() interface
-will behave as under:
-- Single-step over the causative instruction that triggered the
-  breakpoint exception handler.
-- Deliver the SIGTRAP signal to user-space after executing the causative
-  instruction.
-
-This behaviour is in consonance with that of kernel-space requests and
-those on x86 processors, and helps define a consistent behaviour across
-architectures for user-space.
-
-Let me know what you think on the same.
-
-> > +	(bp->triggered)(bp, regs);
-> > +	/*
-> > +	 * Ptrace expects the HW Breakpoints to be one-shot. We will return
-> > +	 * NOTIFY_DONE without restoring DABR with the breakpoint address. The
-> > +	 * downstream code will generate SIGTRAP to the process
-> > +	 */
-> > +	if (is_one_shot) {
-> > +		rc = NOTIFY_DONE;
-> > +		goto out;
-> 
-> Don't you need to clear dabr_data?  Otherwise if we enter single step
-> for some other reason (e.g. gdb turns it on), won't we incorrectly hit
-> the code-path to step over a dabr breakpoint?
-> 
-
-Yes, I missed it.
-
-> > +	}
-> > +
-> > +	stepped = emulate_step(regs, regs->nip);
-> > +	/*
-> > +	 * Single-step the causative instruction manually if
-> > +	 * emulate_step() could not execute it
-> > +	 */
-> > +	if (stepped == 0) {
-> > +		regs->msr |= MSR_SE;
-> > +		goto out;
-> > +	}
-> > +	set_dabr(per_cpu(dabr_data, cpu));
-> > +	per_cpu(dabr_data, cpu) = 0;
-> > +
-> > +out:
-> > +	/* Enable pre-emption only if single-stepping is finished */
-> > +	if (stepped)
-> > +		put_cpu_no_resched();
-> > +	return rc;
-> > +}
-> > +
-> > +/*
-> > + * Handle single-step exceptions following a DABR hit.
-> > + */
-> > +int __kprobes single_step_dabr_instruction(struct die_args *args)
-> > +{
-> > +	struct pt_regs *regs = args->regs;
-> > +	int cpu = get_cpu();
-> > +	int ret = NOTIFY_DONE;
-> > +	siginfo_t info;
-> > +	unsigned long this_dabr_data = per_cpu(dabr_data, cpu);
-> > +
-> > +	/*
-> > +	 * Check if we are single-stepping as a result of a
-> > +	 * previous HW Breakpoint exception
-> > +	 */
-> > +	if (this_dabr_data == 0)
-> > +		goto out;
-> > +
-> > +	regs->msr &= ~MSR_SE;
-> > +	/* Deliver signal to user-space */
-> > +	if (this_dabr_data < TASK_SIZE) {
-> > +		info.si_signo = SIGTRAP;
-> > +		info.si_errno = 0;
-> > +		info.si_code = TRAP_HWBKPT;
-> > +		info.si_addr = (void __user *)(per_cpu(dabr_data, cpu));
-> > +		force_sig_info(SIGTRAP, &info, current);
-> 
-> Uh.. I recall mentioning in my previous review that in order to match
-> previous behaviour we need to deliver the userspace signal *before*
-> stepping over the breakpointed instruction, rather than after (which
-> I guess is why breakpoints are one-shot in the old scheme).
-> 
-
-This code would implement the behaviour as stated in the comment for
-user-space requests above.
-
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> > 
-> 
-> -- 
-> David Gibson			| I'll have my music baroque, and my code
-> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-> 				| _way_ _around_!
-> http://www.ozlabs.org/~dgibson
-
-Thanks,
-K.Prasad
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index d79a902..3b10051 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -2,6 +2,23 @@ menu "Kernel hacking"
+ 
+ source "lib/Kconfig.debug"
+ 
++config PPC_DISABLE_WERROR
++	bool "Don't build arch/powerpc code with -Werror"
++	default n
++	help
++	  This option tells the compiler NOT to build the code under
++	  arch/powerpc with the -Werror flag (which means warnings
++	  are treated as errors).
++
++	  Only enable this if you are hitting a build failure in the
++	  arch/powerpc code caused by a warning, and you don't feel
++	  inclined to fix it.
++
++config PPC_WERROR
++	bool
++	depends on !PPC_DISABLE_WERROR
++	default y
++
+ config PRINT_STACK_DEPTH
+ 	int "Stack depth to print" if DEBUG_KERNEL
+ 	default 64
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 65cf365..110ec6d 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -4,6 +4,8 @@
+ 
+ CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
+ 
++subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
++
+ ifeq ($(CONFIG_PPC64),y)
+ CFLAGS_prom_init.o	+= -mno-minimal-toc
+ endif
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index 4b2df66..459c7ee 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -2,6 +2,8 @@
+ # Makefile for Kernel-based Virtual Machine module
+ #
+ 
++subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
++
+ EXTRA_CFLAGS += -Ivirt/kvm -Iarch/powerpc/kvm
+ 
+ common-objs-y = $(addprefix ../../../virt/kvm/, kvm_main.o coalesced_mmio.o)
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 29b742b..3040dac 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -2,6 +2,8 @@
+ # Makefile for ppc-specific library files..
+ #
+ 
++subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
++
+ ifeq ($(CONFIG_PPC64),y)
+ EXTRA_CFLAGS		+= -mno-minimal-toc
+ endif
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index c4bcf07..2d2192e 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -2,6 +2,8 @@
+ # Makefile for the linux ppc-specific parts of the memory manager.
+ #
+ 
++subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
++
+ ifeq ($(CONFIG_PPC64),y)
+ EXTRA_CFLAGS	+= -mno-minimal-toc
+ endif
+diff --git a/arch/powerpc/oprofile/Makefile b/arch/powerpc/oprofile/Makefile
+index 2ef6b0d..73e1c2c 100644
+--- a/arch/powerpc/oprofile/Makefile
++++ b/arch/powerpc/oprofile/Makefile
+@@ -1,3 +1,5 @@
++subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
++
+ ifeq ($(CONFIG_PPC64),y)
+ EXTRA_CFLAGS	+= -mno-minimal-toc
+ endif
+diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
+index f741919..a6812ee 100644
+--- a/arch/powerpc/platforms/Makefile
++++ b/arch/powerpc/platforms/Makefile
+@@ -1,4 +1,6 @@
+ 
++subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
++
+ obj-$(CONFIG_FSL_ULI1575)	+= fsl_uli1575.o
+ 
+ obj-$(CONFIG_PPC_PMAC)		+= powermac/
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 2d1c87d..d073bfd 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -1,3 +1,5 @@
++subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
++
+ ifeq ($(CONFIG_PPC64),y)
+ EXTRA_CFLAGS			+= -mno-minimal-toc
+ endif
+diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
+index 9cb03b7..85ab97a 100644
+--- a/arch/powerpc/xmon/Makefile
++++ b/arch/powerpc/xmon/Makefile
+@@ -1,5 +1,7 @@
+ # Makefile for xmon
+ 
++subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
++
+ ifdef CONFIG_PPC64
+ EXTRA_CFLAGS += -mno-minimal-toc
+ endif
+-- 
+1.6.2.1
