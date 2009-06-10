@@ -1,31 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <ncase@xes-inc.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3DE6AB715C
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7EEFEB715F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 07:46:31 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Thu, 11 Jun 2009 07:47:06 +1000 (EST)
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 89F4ADDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 07:46:30 +1000 (EST)
-Subject: Re: Delay on intialization ide subsystem(most likely)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrey Gusev <a.gusev1980@mail.ru>
-In-Reply-To: <20090611003834.7bde5e95@power-debian>
-References: <20090425170203.74603b9c@power-debian>
-	<200905201756.14769.bzolnier@gmail.com>
-	<20090530144643.76cb456e@power-debian>
-	<200906082220.41763.bzolnier@gmail.com>
-	<20090611003834.7bde5e95@power-debian>
+	by ozlabs.org (Postfix) with ESMTPS id D7EDEDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 07:47:05 +1000 (EST)
+Subject: Re: [PATCH -next] powerpc/85xx: Add support for X-ES MPC85xx boards
+From: Nate Case <ncase@xes-inc.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <EF23D631-7B02-40C4-9635-61213F7DD117@kernel.crashing.org>
+References: <1244499228-18602-1-git-send-email-ncase@xes-inc.com>
+	<EF23D631-7B02-40C4-9635-61213F7DD117@kernel.crashing.org>
 Content-Type: text/plain
-Date: Thu, 11 Jun 2009 07:46:17 +1000
-Message-Id: <1244670377.3352.12.camel@pasglop>
+Date: Wed, 10 Jun 2009 16:46:59 -0500
+Message-Id: <1244670419.29684.1600.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linux-ide@vger.kernel.org, petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,43 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-06-11 at 00:38 +0400, Andrey Gusev wrote:
+Hi Kumar,
 
-> I try this small fix, traces in disappeared, but lost interrupts on the place:)
-> Some interesting thing from dmesg:
-> 
-> [    0.435806] irq: irq 251 on host /pci@f2000000/mac-io@17/interrupt-controller@40000 mapped to virtual irq 251
-> [    0.435824] irq: irq 252 on host /pci@f2000000/mac-io@17/interrupt-controller@40000 mapped to virtual irq 252
-> [    0.435840] irq: irq 253 on host /pci@f2000000/mac-io@17/interrupt-controller@40000 mapped to virtual irq 253
-> [    0.435856] irq: irq 254 on host /pci@f2000000/mac-io@17/interrupt-controller@40000 mapped to virtual irq 254
-> [    0.435867] CPU0: L2CR is 80080000
-> [    0.435880] CPU0: L3CR is 8f0b0000
-> [478142827.057095] CPU1: L2CR was 80000
-> [478142827.057133] CPU1: L2CR set to 80080000
-> [478142827.057139] CPU1: L3CR was 0
-> [478142827.057300] CPU1: L3CR set to 8f0b0000
-> [    0.437529] Processor 1 found.
-> [    0.437588] clockevent: decrementer mult[886] shift[16] cpu[1]
-> 
-> This is don't look good.
+Thanks for the feedback.  Response below:
 
-What doesn't look good ? It's copying the L2CR and L3CR values over from
-CPU 0 to CPU 1 when bringing the later up, I don't see anything wrong.
-
-Cheers,
-Ben.
-
-> > 
-> > 
-> > > [   70.584122]  hdb:<3>ide-pmac lost interrupt, dma status: 8480
-> > 
-> > DMA status indicates that DMA transfer is still active according to
-> > the controller.  This one is really a platform/hardware specific
-> > issue.
-> > 
+> > +
+> > +	root = of_find_node_by_path("/");
+> > +	if (root == NULL)
+> > +		return;
+> > +
+> > +	model = of_get_property(root, "model", NULL);
+> > +	if (strncasecmp(model, "xes,", strlen("xes,")) != 0)
+> > +		return;
 > 
-> Notes for Ben, I checked only 2.6.26, but may be somebody checked 2.6.24
-> or this is interpolation.
+> What is this check for?
+
+Historical accident.  A while back we somehow ended up with a case of
+probe() succeeding when it shouldn't have, and this was the workaround.
+I'll remove it since it's useless now.
+
+> > +
+> > +	printk(KERN_INFO "X-ES MPC85xx-based single-board computer: %s\n",
+> > +	       model + strlen("xes,"));
 > 
-> Thanks,
-> Andrey 
+> Why not print the name from machine_id.name
+
+Because machine_id->name will give us "X-ES MPC8572" from the machine
+description rather than the actual board name (e.g., xpedite5370).
+
+In our situation, we have several boards that share largely the same
+hardware design.  I decided to just put 1 machine definition per
+processor rather than having a machine definition for every board (which
+would get pretty crazy for our case).  For example, we have at least 6
+MPC8572-based boards with more on the way, but all of their changes can
+be described in the device tree (e.g., changes in number of ethernet
+ports or PCI express controllers), so there's no need for a machine
+definition for all of them.
+
+> > +machine_device_initcall(xes_mpc8572, xes_mpc85xx_publish_devices);
+> > +machine_device_initcall(xes_mpc8548, xes_mpc85xx_publish_devices);
+> 
+> Do you not need this for xes_mpc8540?
+
+Yes, thanks.  I'll fix this and the other things you mentioned and
+re-submit.  Will this be able to make it into your next tree destined
+for 2.6.31?
+
+-- 
+Nate Case <ncase@xes-inc.com>
