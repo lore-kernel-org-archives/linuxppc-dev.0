@@ -3,15 +3,15 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1875EB719A
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C2821B72E8
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 11 Jun 2009 00:39:27 +1000 (EST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 27/33] sound/ps3: Restructure driver source
-Date: Wed, 10 Jun 2009 16:39:02 +0200
-Message-Id: <1244644748-24211-28-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1244644748-24211-27-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 32/33] ps3flash: Cache the last accessed FLASH chunk
+Date: Wed, 10 Jun 2009 16:39:07 +0200
+Message-Id: <1244644748-24211-33-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1244644748-24211-32-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
@@ -39,10 +39,14 @@ References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-26-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-27-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-28-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-29-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-30-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-31-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-32-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	cbe-oss-dev@ozlabs.org, Takashi Iwai <tiwai@suse.de>
+	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,735 +56,356 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sort includes, and reorder code so we can kill the forward declarations
+Add support for caching, to reduce FLASH wear when writing using small
+blocksizes. As we also don't care anymore about heads and tails in case of
+partial writes, this greatly simplifies the code for handling writes.
 
-No functional changes
+Note: We don't bother caching reads smaller than the FLASH chunk size
+(256 KiB).
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: alsa-devel@alsa-project.org
-Cc: Takashi Iwai <tiwai@suse.de>
 ---
- sound/ppc/snd_ps3.c |  621 ++++++++++++++++++++++++---------------------------
- 1 files changed, 288 insertions(+), 333 deletions(-)
+ drivers/char/ps3flash.c |  209 +++++++++++++++++++++++------------------------
+ 1 files changed, 104 insertions(+), 105 deletions(-)
 
-diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
-index d660b0f..cd9109a 100644
---- a/sound/ppc/snd_ps3.c
-+++ b/sound/ppc/snd_ps3.c
-@@ -18,80 +18,30 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  */
+diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
+index f7f21f4..d884d31 100644
+--- a/drivers/char/ps3flash.c
++++ b/drivers/char/ps3flash.c
+@@ -33,13 +33,16 @@
  
-+#include <linux/dma-mapping.h>
-+#include <linux/dmapool.h>
- #include <linux/init.h>
--#include <linux/slab.h>
--#include <linux/io.h>
- #include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/slab.h>
-+
-+#include <sound/asound.h>
-+#include <sound/control.h>
- #include <sound/core.h>
- #include <sound/initval.h>
--#include <sound/pcm.h>
--#include <sound/asound.h>
- #include <sound/memalloc.h>
-+#include <sound/pcm.h>
- #include <sound/pcm_params.h>
--#include <sound/control.h>
--#include <linux/dmapool.h>
--#include <linux/dma-mapping.h>
--#include <asm/firmware.h>
-+
- #include <asm/dma.h>
-+#include <asm/firmware.h>
- #include <asm/lv1call.h>
- #include <asm/ps3.h>
- #include <asm/ps3av.h>
- 
--#include "snd_ps3_reg.h"
- #include "snd_ps3.h"
-+#include "snd_ps3_reg.h"
- 
--MODULE_LICENSE("GPL v2");
--MODULE_DESCRIPTION("PS3 sound driver");
--MODULE_AUTHOR("Sony Computer Entertainment Inc.");
--
--/* module  entries */
--static int __init snd_ps3_init(void);
--static void __exit snd_ps3_exit(void);
--
--/* ALSA snd driver ops */
--static int snd_ps3_pcm_open(struct snd_pcm_substream *substream);
--static int snd_ps3_pcm_close(struct snd_pcm_substream *substream);
--static int snd_ps3_pcm_prepare(struct snd_pcm_substream *substream);
--static int snd_ps3_pcm_trigger(struct snd_pcm_substream *substream,
--				 int cmd);
--static snd_pcm_uframes_t snd_ps3_pcm_pointer(struct snd_pcm_substream
--					     *substream);
--static int snd_ps3_pcm_hw_params(struct snd_pcm_substream *substream,
--				 struct snd_pcm_hw_params *hw_params);
--static int snd_ps3_pcm_hw_free(struct snd_pcm_substream *substream);
--
--
--/* ps3_system_bus_driver entries */
--static int __init snd_ps3_driver_probe(struct ps3_system_bus_device *dev);
--static int snd_ps3_driver_remove(struct ps3_system_bus_device *dev);
--
--/* address setup */
--static int snd_ps3_map_mmio(void);
--static void snd_ps3_unmap_mmio(void);
--static int snd_ps3_allocate_irq(void);
--static void snd_ps3_free_irq(void);
--static void snd_ps3_audio_set_base_addr(uint64_t ioaddr_start);
--
--/* interrupt handler */
--static irqreturn_t snd_ps3_interrupt(int irq, void *dev_id);
--
--
--/* set sampling rate/format */
--static int snd_ps3_set_avsetting(struct snd_pcm_substream *substream);
--/* take effect parameter change */
--static int snd_ps3_change_avsetting(struct snd_ps3_card_info *card);
--/* initialize avsetting and take it effect */
--static int snd_ps3_init_avsetting(struct snd_ps3_card_info *card);
--/* setup dma */
--static int snd_ps3_program_dma(struct snd_ps3_card_info *card,
--			       enum snd_ps3_dma_filltype filltype);
--static void snd_ps3_wait_for_dma_stop(struct snd_ps3_card_info *card);
--
--static dma_addr_t v_to_bus(struct snd_ps3_card_info *, void  *vaddr, int ch);
--
--
--module_init(snd_ps3_init);
--module_exit(snd_ps3_exit);
- 
- /*
-  * global
-@@ -165,17 +115,6 @@ static const struct snd_pcm_hardware snd_ps3_pcm_hw = {
- 	.fifo_size = PS3_AUDIO_FIFO_SIZE
+ struct ps3flash_private {
+ 	struct mutex mutex;	/* Bounce buffer mutex */
++	u64 chunk_sectors;
++	int tag;		/* Start sector of buffer, -1 if invalid */
++	bool dirty;
  };
  
--static struct snd_pcm_ops snd_ps3_pcm_spdif_ops = {
--	.open = snd_ps3_pcm_open,
--	.close = snd_ps3_pcm_close,
--	.prepare = snd_ps3_pcm_prepare,
--	.ioctl = snd_pcm_lib_ioctl,
--	.trigger = snd_ps3_pcm_trigger,
--	.pointer = snd_ps3_pcm_pointer,
--	.hw_params = snd_ps3_pcm_hw_params,
--	.hw_free = snd_ps3_pcm_hw_free
--};
--
- static int snd_ps3_verify_dma_stop(struct snd_ps3_card_info *card,
- 				   int count, int force_stop)
+ static struct ps3_storage_device *ps3flash_dev;
+ 
+-static ssize_t ps3flash_read_write_sectors(struct ps3_storage_device *dev,
+-					   u64 lpar, u64 start_sector,
+-					   u64 sectors, int write)
++static int ps3flash_read_write_sectors(struct ps3_storage_device *dev,
++				       u64 lpar, u64 start_sector, u64 sectors,
++				       int write)
  {
-@@ -369,6 +308,71 @@ static int snd_ps3_program_dma(struct snd_ps3_card_info *card,
- }
- 
- /*
-+ * Interrupt handler
-+ */
-+static irqreturn_t snd_ps3_interrupt(int irq, void *dev_id)
-+{
-+
-+	uint32_t port_intr;
-+	int underflow_occured = 0;
-+	struct snd_ps3_card_info *card = dev_id;
-+
-+	if (!card->running) {
-+		update_reg(PS3_AUDIO_AX_IS, 0);
-+		update_reg(PS3_AUDIO_INTR_0, 0);
-+		return IRQ_HANDLED;
-+	}
-+
-+	port_intr = read_reg(PS3_AUDIO_AX_IS);
-+	/*
-+	 *serial buffer empty detected (every 4 times),
-+	 *program next dma and kick it
-+	 */
-+	if (port_intr & PS3_AUDIO_AX_IE_ASOBEIE(0)) {
-+		write_reg(PS3_AUDIO_AX_IS, PS3_AUDIO_AX_IE_ASOBEIE(0));
-+		if (port_intr & PS3_AUDIO_AX_IE_ASOBUIE(0)) {
-+			write_reg(PS3_AUDIO_AX_IS, port_intr);
-+			underflow_occured = 1;
-+		}
-+		if (card->silent) {
-+			/* we are still in silent time */
-+			snd_ps3_program_dma(card,
-+				(underflow_occured) ?
-+				SND_PS3_DMA_FILLTYPE_SILENT_FIRSTFILL :
-+				SND_PS3_DMA_FILLTYPE_SILENT_RUNNING);
-+			snd_ps3_kick_dma(card);
-+			card->silent--;
-+		} else {
-+			snd_ps3_program_dma(card,
-+				(underflow_occured) ?
-+				SND_PS3_DMA_FILLTYPE_FIRSTFILL :
-+				SND_PS3_DMA_FILLTYPE_RUNNING);
-+			snd_ps3_kick_dma(card);
-+			snd_pcm_period_elapsed(card->substream);
-+		}
-+	} else if (port_intr & PS3_AUDIO_AX_IE_ASOBUIE(0)) {
-+		write_reg(PS3_AUDIO_AX_IS, PS3_AUDIO_AX_IE_ASOBUIE(0));
-+		/*
-+		 * serial out underflow, but buffer empty not detected.
-+		 * in this case, fill fifo with 0 to recover.  After
-+		 * filling dummy data, serial automatically start to
-+		 * consume them and then will generate normal buffer
-+		 * empty interrupts.
-+		 * If both buffer underflow and buffer empty are occured,
-+		 * it is better to do nomal data transfer than empty one
-+		 */
-+		snd_ps3_program_dma(card,
-+				    SND_PS3_DMA_FILLTYPE_SILENT_FIRSTFILL);
-+		snd_ps3_kick_dma(card);
-+		snd_ps3_program_dma(card,
-+				    SND_PS3_DMA_FILLTYPE_SILENT_FIRSTFILL);
-+		snd_ps3_kick_dma(card);
-+	}
-+	/* clear interrupt cause */
-+	return IRQ_HANDLED;
-+};
-+
-+/*
-  * audio mute on/off
-  * mute_on : 0 output enabled
-  *           1 mute
-@@ -379,6 +383,142 @@ static int snd_ps3_mute(int mute_on)
- }
- 
- /*
-+ * av setting
-+ * NOTE: calling this function may generate audio interrupt.
-+ */
-+static int snd_ps3_change_avsetting(struct snd_ps3_card_info *card)
-+{
-+	int ret, retries, i;
-+	pr_debug("%s: start\n", __func__);
-+
-+	ret = ps3av_set_audio_mode(card->avs.avs_audio_ch,
-+				  card->avs.avs_audio_rate,
-+				  card->avs.avs_audio_width,
-+				  card->avs.avs_audio_format,
-+				  card->avs.avs_audio_source);
-+	/*
-+	 * Reset the following unwanted settings:
-+	 */
-+
-+	/* disable all 3wire buffers */
-+	update_mask_reg(PS3_AUDIO_AO_3WMCTRL,
-+			~(PS3_AUDIO_AO_3WMCTRL_ASOEN(0) |
-+			  PS3_AUDIO_AO_3WMCTRL_ASOEN(1) |
-+			  PS3_AUDIO_AO_3WMCTRL_ASOEN(2) |
-+			  PS3_AUDIO_AO_3WMCTRL_ASOEN(3)),
-+			0);
-+	wmb();	/* ensure the hardware sees the change */
-+	/* wait for actually stopped */
-+	retries = 1000;
-+	while ((read_reg(PS3_AUDIO_AO_3WMCTRL) &
-+		(PS3_AUDIO_AO_3WMCTRL_ASORUN(0) |
-+		 PS3_AUDIO_AO_3WMCTRL_ASORUN(1) |
-+		 PS3_AUDIO_AO_3WMCTRL_ASORUN(2) |
-+		 PS3_AUDIO_AO_3WMCTRL_ASORUN(3))) &&
-+	       --retries) {
-+		udelay(1);
-+	}
-+
-+	/* reset buffer pointer */
-+	for (i = 0; i < 4; i++) {
-+		update_reg(PS3_AUDIO_AO_3WCTRL(i),
-+			   PS3_AUDIO_AO_3WCTRL_ASOBRST_RESET);
-+		udelay(10);
-+	}
-+	wmb(); /* ensure the hardware actually start resetting */
-+
-+	/* enable 3wire#0 buffer */
-+	update_reg(PS3_AUDIO_AO_3WMCTRL, PS3_AUDIO_AO_3WMCTRL_ASOEN(0));
-+
-+
-+	/* In 24bit mode,ALSA inserts a zero byte at first byte of per sample */
-+	update_mask_reg(PS3_AUDIO_AO_3WCTRL(0),
-+			~PS3_AUDIO_AO_3WCTRL_ASODF,
-+			PS3_AUDIO_AO_3WCTRL_ASODF_LSB);
-+	update_mask_reg(PS3_AUDIO_AO_SPDCTRL(0),
-+			~PS3_AUDIO_AO_SPDCTRL_SPODF,
-+			PS3_AUDIO_AO_SPDCTRL_SPODF_LSB);
-+	/* ensure all the setting above is written back to register */
-+	wmb();
-+	/* avsetting driver altered AX_IE, caller must reset it if you want */
-+	pr_debug("%s: end\n", __func__);
-+	return ret;
-+}
-+
-+/*
-+ *  set sampling rate according to the substream
-+ */
-+static int snd_ps3_set_avsetting(struct snd_pcm_substream *substream)
-+{
-+	struct snd_ps3_card_info *card = snd_pcm_substream_chip(substream);
-+	struct snd_ps3_avsetting_info avs;
-+	int ret;
-+
-+	avs = card->avs;
-+
-+	pr_debug("%s: called freq=%d width=%d\n", __func__,
-+		 substream->runtime->rate,
-+		 snd_pcm_format_width(substream->runtime->format));
-+
-+	pr_debug("%s: before freq=%d width=%d\n", __func__,
-+		 card->avs.avs_audio_rate, card->avs.avs_audio_width);
-+
-+	/* sample rate */
-+	switch (substream->runtime->rate) {
-+	case 44100:
-+		avs.avs_audio_rate = PS3AV_CMD_AUDIO_FS_44K;
-+		break;
-+	case 48000:
-+		avs.avs_audio_rate = PS3AV_CMD_AUDIO_FS_48K;
-+		break;
-+	case 88200:
-+		avs.avs_audio_rate = PS3AV_CMD_AUDIO_FS_88K;
-+		break;
-+	case 96000:
-+		avs.avs_audio_rate = PS3AV_CMD_AUDIO_FS_96K;
-+		break;
-+	default:
-+		pr_info("%s: invalid rate %d\n", __func__,
-+			substream->runtime->rate);
-+		return 1;
-+	}
-+
-+	/* width */
-+	switch (snd_pcm_format_width(substream->runtime->format)) {
-+	case 16:
-+		avs.avs_audio_width = PS3AV_CMD_AUDIO_WORD_BITS_16;
-+		break;
-+	case 24:
-+		avs.avs_audio_width = PS3AV_CMD_AUDIO_WORD_BITS_24;
-+		break;
-+	default:
-+		pr_info("%s: invalid width %d\n", __func__,
-+			snd_pcm_format_width(substream->runtime->format));
-+		return 1;
-+	}
-+
-+	memcpy(avs.avs_cs_info, ps3av_mode_cs_info, 8);
-+
-+	if (memcmp(&card->avs, &avs, sizeof(avs))) {
-+		pr_debug("%s: after freq=%d width=%d\n", __func__,
-+			 card->avs.avs_audio_rate, card->avs.avs_audio_width);
-+
-+		card->avs = avs;
-+		snd_ps3_change_avsetting(card);
-+		ret = 0;
-+	} else
-+		ret = 1;
-+
-+	/* check CS non-audio bit and mute accordingly */
-+	if (avs.avs_cs_info[0] & 0x02)
-+		ps3av_audio_mute_analog(1); /* mute if non-audio */
-+	else
-+		ps3av_audio_mute_analog(0);
-+
-+	return ret;
-+}
-+
-+/*
-  * PCM operators
-  */
- static int snd_ps3_pcm_open(struct snd_pcm_substream *substream)
-@@ -403,6 +543,13 @@ static int snd_ps3_pcm_open(struct snd_pcm_substream *substream)
- 	return 0;
- };
- 
-+static int snd_ps3_pcm_close(struct snd_pcm_substream *substream)
-+{
-+	/* mute on */
-+	snd_ps3_mute(1);
+ 	u64 res = ps3stor_read_write_sectors(dev, lpar, start_sector, sectors,
+ 					     write);
+@@ -48,33 +51,55 @@ static ssize_t ps3flash_read_write_sectors(struct ps3_storage_device *dev,
+ 			__LINE__, write ? "write" : "read", res);
+ 		return -EIO;
+ 	}
+-	return sectors;
 +	return 0;
-+};
-+
- static int snd_ps3_pcm_hw_params(struct snd_pcm_substream *substream,
- 				 struct snd_pcm_hw_params *hw_params)
- {
-@@ -414,6 +561,13 @@ static int snd_ps3_pcm_hw_params(struct snd_pcm_substream *substream,
- 	return 0;
- };
- 
-+static int snd_ps3_pcm_hw_free(struct snd_pcm_substream *substream)
-+{
-+	int ret;
-+	ret = snd_pcm_lib_free_pages(substream);
-+	return ret;
-+};
-+
- static int snd_ps3_delay_to_bytes(struct snd_pcm_substream *substream,
- 				  unsigned int delay_ms)
- {
-@@ -553,202 +707,6 @@ static snd_pcm_uframes_t snd_ps3_pcm_pointer(
- 	return ret;
- };
- 
--static int snd_ps3_pcm_hw_free(struct snd_pcm_substream *substream)
--{
--	int ret;
--	ret = snd_pcm_lib_free_pages(substream);
--	return ret;
--};
--
--static int snd_ps3_pcm_close(struct snd_pcm_substream *substream)
--{
--	/* mute on */
--	snd_ps3_mute(1);
--	return 0;
--};
--
--static void snd_ps3_audio_fixup(struct snd_ps3_card_info *card)
--{
--	/*
--	 * avsetting driver seems to never change the followings
--	 * so, init them here once
--	 */
--
--	/* no dma interrupt needed */
--	write_reg(PS3_AUDIO_INTR_EN_0, 0);
--
--	/* use every 4 buffer empty interrupt */
--	update_mask_reg(PS3_AUDIO_AX_IC,
--			PS3_AUDIO_AX_IC_AASOIMD_MASK,
--			PS3_AUDIO_AX_IC_AASOIMD_EVERY4);
--
--	/* enable 3wire clocks */
--	update_mask_reg(PS3_AUDIO_AO_3WMCTRL,
--			~(PS3_AUDIO_AO_3WMCTRL_ASOBCLKD_DISABLED |
--			  PS3_AUDIO_AO_3WMCTRL_ASOLRCKD_DISABLED),
--			0);
--	update_reg(PS3_AUDIO_AO_3WMCTRL,
--		   PS3_AUDIO_AO_3WMCTRL_ASOPLRCK_DEFAULT);
--}
--
--/*
-- * av setting
-- * NOTE: calling this function may generate audio interrupt.
-- */
--static int snd_ps3_change_avsetting(struct snd_ps3_card_info *card)
--{
--	int ret, retries, i;
--	pr_debug("%s: start\n", __func__);
--
--	ret = ps3av_set_audio_mode(card->avs.avs_audio_ch,
--				  card->avs.avs_audio_rate,
--				  card->avs.avs_audio_width,
--				  card->avs.avs_audio_format,
--				  card->avs.avs_audio_source);
--	/*
--	 * Reset the following unwanted settings:
--	 */
--
--	/* disable all 3wire buffers */
--	update_mask_reg(PS3_AUDIO_AO_3WMCTRL,
--			~(PS3_AUDIO_AO_3WMCTRL_ASOEN(0) |
--			  PS3_AUDIO_AO_3WMCTRL_ASOEN(1) |
--			  PS3_AUDIO_AO_3WMCTRL_ASOEN(2) |
--			  PS3_AUDIO_AO_3WMCTRL_ASOEN(3)),
--			0);
--	wmb();	/* ensure the hardware sees the change */
--	/* wait for actually stopped */
--	retries = 1000;
--	while ((read_reg(PS3_AUDIO_AO_3WMCTRL) &
--		(PS3_AUDIO_AO_3WMCTRL_ASORUN(0) |
--		 PS3_AUDIO_AO_3WMCTRL_ASORUN(1) |
--		 PS3_AUDIO_AO_3WMCTRL_ASORUN(2) |
--		 PS3_AUDIO_AO_3WMCTRL_ASORUN(3))) &&
--	       --retries) {
--		udelay(1);
--	}
--
--	/* reset buffer pointer */
--	for (i = 0; i < 4; i++) {
--		update_reg(PS3_AUDIO_AO_3WCTRL(i),
--			   PS3_AUDIO_AO_3WCTRL_ASOBRST_RESET);
--		udelay(10);
--	}
--	wmb(); /* ensure the hardware actually start resetting */
--
--	/* enable 3wire#0 buffer */
--	update_reg(PS3_AUDIO_AO_3WMCTRL, PS3_AUDIO_AO_3WMCTRL_ASOEN(0));
--
--
--	/* In 24bit mode,ALSA inserts a zero byte at first byte of per sample */
--	update_mask_reg(PS3_AUDIO_AO_3WCTRL(0),
--			~PS3_AUDIO_AO_3WCTRL_ASODF,
--			PS3_AUDIO_AO_3WCTRL_ASODF_LSB);
--	update_mask_reg(PS3_AUDIO_AO_SPDCTRL(0),
--			~PS3_AUDIO_AO_SPDCTRL_SPODF,
--			PS3_AUDIO_AO_SPDCTRL_SPODF_LSB);
--	/* ensure all the setting above is written back to register */
--	wmb();
--	/* avsetting driver altered AX_IE, caller must reset it if you want */
--	pr_debug("%s: end\n", __func__);
--	return ret;
--}
--
--static int snd_ps3_init_avsetting(struct snd_ps3_card_info *card)
--{
--	int ret;
--	pr_debug("%s: start\n", __func__);
--	card->avs.avs_audio_ch = PS3AV_CMD_AUDIO_NUM_OF_CH_2;
--	card->avs.avs_audio_rate = PS3AV_CMD_AUDIO_FS_48K;
--	card->avs.avs_audio_width = PS3AV_CMD_AUDIO_WORD_BITS_16;
--	card->avs.avs_audio_format = PS3AV_CMD_AUDIO_FORMAT_PCM;
--	card->avs.avs_audio_source = PS3AV_CMD_AUDIO_SOURCE_SERIAL;
--	memcpy(card->avs.avs_cs_info, ps3av_mode_cs_info, 8);
--
--	ret = snd_ps3_change_avsetting(card);
--
--	snd_ps3_audio_fixup(card);
--
--	/* to start to generate SPDIF signal, fill data */
--	snd_ps3_program_dma(card, SND_PS3_DMA_FILLTYPE_SILENT_FIRSTFILL);
--	snd_ps3_kick_dma(card);
--	pr_debug("%s: end\n", __func__);
--	return ret;
--}
--
--/*
-- *  set sampling rate according to the substream
-- */
--static int snd_ps3_set_avsetting(struct snd_pcm_substream *substream)
--{
--	struct snd_ps3_card_info *card = snd_pcm_substream_chip(substream);
--	struct snd_ps3_avsetting_info avs;
--	int ret;
--
--	avs = card->avs;
--
--	pr_debug("%s: called freq=%d width=%d\n", __func__,
--		 substream->runtime->rate,
--		 snd_pcm_format_width(substream->runtime->format));
--
--	pr_debug("%s: before freq=%d width=%d\n", __func__,
--		 card->avs.avs_audio_rate, card->avs.avs_audio_width);
--
--	/* sample rate */
--	switch (substream->runtime->rate) {
--	case 44100:
--		avs.avs_audio_rate = PS3AV_CMD_AUDIO_FS_44K;
--		break;
--	case 48000:
--		avs.avs_audio_rate = PS3AV_CMD_AUDIO_FS_48K;
--		break;
--	case 88200:
--		avs.avs_audio_rate = PS3AV_CMD_AUDIO_FS_88K;
--		break;
--	case 96000:
--		avs.avs_audio_rate = PS3AV_CMD_AUDIO_FS_96K;
--		break;
--	default:
--		pr_info("%s: invalid rate %d\n", __func__,
--			substream->runtime->rate);
--		return 1;
--	}
--
--	/* width */
--	switch (snd_pcm_format_width(substream->runtime->format)) {
--	case 16:
--		avs.avs_audio_width = PS3AV_CMD_AUDIO_WORD_BITS_16;
--		break;
--	case 24:
--		avs.avs_audio_width = PS3AV_CMD_AUDIO_WORD_BITS_24;
--		break;
--	default:
--		pr_info("%s: invalid width %d\n", __func__,
--			snd_pcm_format_width(substream->runtime->format));
--		return 1;
--	}
--
--	memcpy(avs.avs_cs_info, ps3av_mode_cs_info, 8);
--
--	if (memcmp(&card->avs, &avs, sizeof(avs))) {
--		pr_debug("%s: after freq=%d width=%d\n", __func__,
--			 card->avs.avs_audio_rate, card->avs.avs_audio_width);
--
--		card->avs = avs;
--		snd_ps3_change_avsetting(card);
--		ret = 0;
--	} else
--		ret = 1;
--
--	/* check CS non-audio bit and mute accordingly */
--	if (avs.avs_cs_info[0] & 0x02)
--		ps3av_audio_mute_analog(1); /* mute if non-audio */
--	else
--		ps3av_audio_mute_analog(0);
--
--	return ret;
--}
--
- /*
-  * SPDIF status bits controls
-  */
-@@ -815,6 +773,17 @@ static struct snd_kcontrol_new spdif_ctls[] = {
- 	},
- };
- 
-+static struct snd_pcm_ops snd_ps3_pcm_spdif_ops = {
-+	.open = snd_ps3_pcm_open,
-+	.close = snd_ps3_pcm_close,
-+	.ioctl = snd_pcm_lib_ioctl,
-+	.hw_params = snd_ps3_pcm_hw_params,
-+	.hw_free = snd_ps3_pcm_hw_free,
-+	.prepare = snd_ps3_pcm_prepare,
-+	.trigger = snd_ps3_pcm_trigger,
-+	.pointer = snd_ps3_pcm_pointer,
-+};
-+
- 
- static int snd_ps3_map_mmio(void)
- {
-@@ -912,6 +881,52 @@ static void snd_ps3_audio_set_base_addr(uint64_t ioaddr_start)
- 			ret);
  }
  
-+static void snd_ps3_audio_fixup(struct snd_ps3_card_info *card)
-+{
-+	/*
-+	 * avsetting driver seems to never change the followings
-+	 * so, init them here once
-+	 */
-+
-+	/* no dma interrupt needed */
-+	write_reg(PS3_AUDIO_INTR_EN_0, 0);
-+
-+	/* use every 4 buffer empty interrupt */
-+	update_mask_reg(PS3_AUDIO_AX_IC,
-+			PS3_AUDIO_AX_IC_AASOIMD_MASK,
-+			PS3_AUDIO_AX_IC_AASOIMD_EVERY4);
-+
-+	/* enable 3wire clocks */
-+	update_mask_reg(PS3_AUDIO_AO_3WMCTRL,
-+			~(PS3_AUDIO_AO_3WMCTRL_ASOBCLKD_DISABLED |
-+			  PS3_AUDIO_AO_3WMCTRL_ASOLRCKD_DISABLED),
-+			0);
-+	update_reg(PS3_AUDIO_AO_3WMCTRL,
-+		   PS3_AUDIO_AO_3WMCTRL_ASOPLRCK_DEFAULT);
-+}
-+
-+static int snd_ps3_init_avsetting(struct snd_ps3_card_info *card)
-+{
-+	int ret;
-+	pr_debug("%s: start\n", __func__);
-+	card->avs.avs_audio_ch = PS3AV_CMD_AUDIO_NUM_OF_CH_2;
-+	card->avs.avs_audio_rate = PS3AV_CMD_AUDIO_FS_48K;
-+	card->avs.avs_audio_width = PS3AV_CMD_AUDIO_WORD_BITS_16;
-+	card->avs.avs_audio_format = PS3AV_CMD_AUDIO_FORMAT_PCM;
-+	card->avs.avs_audio_source = PS3AV_CMD_AUDIO_SOURCE_SERIAL;
-+	memcpy(card->avs.avs_cs_info, ps3av_mode_cs_info, 8);
-+
-+	ret = snd_ps3_change_avsetting(card);
-+
-+	snd_ps3_audio_fixup(card);
-+
-+	/* to start to generate SPDIF signal, fill data */
-+	snd_ps3_program_dma(card, SND_PS3_DMA_FILLTYPE_SILENT_FIRSTFILL);
-+	snd_ps3_kick_dma(card);
-+	pr_debug("%s: end\n", __func__);
-+	return ret;
-+}
-+
- static int __init snd_ps3_driver_probe(struct ps3_system_bus_device *dev)
+-static ssize_t ps3flash_read_sectors(struct ps3_storage_device *dev,
+-				     u64 start_sector, u64 sectors,
+-				     unsigned int sector_offset)
++static int ps3flash_writeback(struct ps3_storage_device *dev)
  {
- 	int i, ret;
-@@ -1113,71 +1128,6 @@ static struct ps3_system_bus_driver snd_ps3_bus_driver_info = {
+-	u64 max_sectors, lpar;
++	struct ps3flash_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
++	int res;
  
- 
- /*
-- * Interrupt handler
-- */
--static irqreturn_t snd_ps3_interrupt(int irq, void *dev_id)
--{
--
--	uint32_t port_intr;
--	int underflow_occured = 0;
--	struct snd_ps3_card_info *card = dev_id;
--
--	if (!card->running) {
--		update_reg(PS3_AUDIO_AX_IS, 0);
--		update_reg(PS3_AUDIO_INTR_0, 0);
--		return IRQ_HANDLED;
+-	max_sectors = dev->bounce_size / dev->blk_size;
+-	if (sectors > max_sectors) {
+-		dev_dbg(&dev->sbd.core, "%s:%u Limiting sectors to %llu\n",
+-			__func__, __LINE__, max_sectors);
+-		sectors = max_sectors;
 -	}
--
--	port_intr = read_reg(PS3_AUDIO_AX_IS);
--	/*
--	 *serial buffer empty detected (every 4 times),
--	 *program next dma and kick it
--	 */
--	if (port_intr & PS3_AUDIO_AX_IE_ASOBEIE(0)) {
--		write_reg(PS3_AUDIO_AX_IS, PS3_AUDIO_AX_IE_ASOBEIE(0));
--		if (port_intr & PS3_AUDIO_AX_IE_ASOBUIE(0)) {
--			write_reg(PS3_AUDIO_AX_IS, port_intr);
--			underflow_occured = 1;
++	if (!priv->dirty || priv->tag < 0)
++		return 0;
++
++	res = ps3flash_read_write_sectors(dev, dev->bounce_lpar, priv->tag,
++					  priv->chunk_sectors, 1);
++	if (res)
++		return res;
+ 
+-	lpar = dev->bounce_lpar + sector_offset * dev->blk_size;
+-	return ps3flash_read_write_sectors(dev, lpar, start_sector, sectors,
+-					   0);
++	priv->dirty = false;
++	return 0;
+ }
+ 
+-static ssize_t ps3flash_write_chunk(struct ps3_storage_device *dev,
+-				    u64 start_sector)
++static int ps3flash_fetch(struct ps3_storage_device *dev, u64 start_sector,
++			  u64 sectors)
+ {
+-       u64 sectors = dev->bounce_size / dev->blk_size;
+-       return ps3flash_read_write_sectors(dev, dev->bounce_lpar, start_sector,
+-					  sectors, 1);
++	struct ps3flash_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
++	unsigned int tag, offset;
++	u64 lpar;
++	int res;
++
++	offset = start_sector % priv->chunk_sectors;
++	tag = start_sector - offset;
++	if (tag == priv->tag)
++		return 0;
++
++	res = ps3flash_writeback(dev);
++	if (res)
++		return res;
++
++	priv->tag = -1;
++
++	lpar = dev->bounce_lpar + offset * dev->blk_size;
++	res = ps3flash_read_write_sectors(dev, lpar, start_sector, sectors, 0);
++	if (res)
++		return res;
++
++	/* We don't bother caching reads smaller than the chunk size */
++	if (sectors == priv->chunk_sectors)
++		priv->tag = tag;
++
++	return 0;
+ }
+ 
+ static loff_t ps3flash_llseek(struct file *file, loff_t offset, int origin)
+@@ -109,8 +134,8 @@ static ssize_t ps3flash_read(char __user *userbuf, void *kernelbuf,
+ {
+ 	struct ps3_storage_device *dev = ps3flash_dev;
+ 	struct ps3flash_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
+-	u64 size, start_sector, end_sector, offset;
+-	ssize_t sectors_read;
++	u64 size, start_sector, end_sector, offset, sectors;
++	int res;
+ 	size_t remaining, n;
+ 	const void *src;
+ 
+@@ -130,30 +155,29 @@ static ssize_t ps3flash_read(char __user *userbuf, void *kernelbuf,
+ 	}
+ 
+ 	start_sector = *pos / dev->blk_size;
+-	offset = *pos % dev->blk_size;
++	offset = *pos % dev->bounce_size;
+ 	end_sector = DIV_ROUND_UP(*pos + count, dev->blk_size);
+ 
+ 	remaining = count;
+ 	do {
++		sectors = min(end_sector - start_sector,
++			      priv->chunk_sectors -
++			      start_sector % priv->chunk_sectors);
++
+ 		mutex_lock(&priv->mutex);
+ 
+-		sectors_read = ps3flash_read_sectors(dev, start_sector,
+-						     end_sector-start_sector,
+-						     0);
+-		if (sectors_read < 0) {
+-			mutex_unlock(&priv->mutex);
++		res = ps3flash_fetch(dev, start_sector, sectors);
++		if (res)
+ 			goto fail;
 -		}
--		if (card->silent) {
--			/* we are still in silent time */
--			snd_ps3_program_dma(card,
--				(underflow_occured) ?
--				SND_PS3_DMA_FILLTYPE_SILENT_FIRSTFILL :
--				SND_PS3_DMA_FILLTYPE_SILENT_RUNNING);
--			snd_ps3_kick_dma(card);
--			card->silent--;
+ 
+-		n = min_t(u64, remaining, sectors_read*dev->blk_size-offset);
+-		src = dev->bounce_buf+offset;
++		n = min_t(u64, remaining, dev->bounce_size - offset);
++		src = dev->bounce_buf + offset;
+ 		dev_dbg(&dev->sbd.core,
+ 			"%s:%u: copy %lu bytes from 0x%p to U0x%p/K0x%p\n",
+ 			__func__, __LINE__, n, src, userbuf, kernelbuf);
+ 		if (userbuf) {
+ 			if (copy_to_user(userbuf, src, n)) {
+-				mutex_unlock(&priv->mutex);
+-				sectors_read = -EFAULT;
++				res = -EFAULT;
+ 				goto fail;
+ 			}
+ 			userbuf += n;
+@@ -167,14 +191,15 @@ static ssize_t ps3flash_read(char __user *userbuf, void *kernelbuf,
+ 
+ 		*pos += n;
+ 		remaining -= n;
+-		start_sector += sectors_read;
++		start_sector += sectors;
+ 		offset = 0;
+ 	} while (remaining > 0);
+ 
+ 	return count;
+ 
+ fail:
+-	return sectors_read;
++	mutex_unlock(&priv->mutex);
++	return res;
+ }
+ 
+ static ssize_t ps3flash_write(const char __user *userbuf,
+@@ -182,11 +207,9 @@ static ssize_t ps3flash_write(const char __user *userbuf,
+ {
+ 	struct ps3_storage_device *dev = ps3flash_dev;
+ 	struct ps3flash_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
+-	u64 size, chunk_sectors, start_write_sector, end_write_sector,
+-	    end_read_sector, start_read_sector, head, tail, offset;
+-	ssize_t res;
++	u64 size, sector, offset;
++	int res = 0;
+ 	size_t remaining, n;
+-	unsigned int sec_off;
+ 	void *dst;
+ 
+ 	dev_dbg(&dev->sbd.core,
+@@ -204,71 +227,23 @@ static ssize_t ps3flash_write(const char __user *userbuf,
+ 		count = size - *pos;
+ 	}
+ 
+-	chunk_sectors = dev->bounce_size / dev->blk_size;
+-
+-	start_write_sector = *pos / dev->bounce_size * chunk_sectors;
++	sector = *pos / dev->bounce_size * priv->chunk_sectors;
+ 	offset = *pos % dev->bounce_size;
+-	end_write_sector = DIV_ROUND_UP(*pos + count, dev->bounce_size) *
+-			   chunk_sectors;
+-
+-	end_read_sector = DIV_ROUND_UP(*pos, dev->blk_size);
+-	start_read_sector = (*pos + count) / dev->blk_size;
+-
+-	/*
+-	 * As we have to write in 256 KiB chunks, while we can read in blk_size
+-	 * (usually 512 bytes) chunks, we perform the following steps:
+-	 *   1. Read from start_write_sector to end_read_sector ("head")
+-	 *   2. Read from start_read_sector to end_write_sector ("tail")
+-	 *   3. Copy data to buffer
+-	 *   4. Write from start_write_sector to end_write_sector
+-	 * All of this is complicated by using only one 256 KiB bounce buffer.
+-	 */
+-
+-	head = end_read_sector - start_write_sector;
+-	tail = end_write_sector - start_read_sector;
+ 
+ 	remaining = count;
+ 	do {
++		n = min_t(u64, remaining, dev->bounce_size - offset);
++
+ 		mutex_lock(&priv->mutex);
+ 
+-		if (end_read_sector >= start_read_sector) {
+-			/* Merge head and tail */
+-			dev_dbg(&dev->sbd.core,
+-				"Merged head and tail: %llu sectors at %llu\n",
+-				chunk_sectors, start_write_sector);
+-			res = ps3flash_read_sectors(dev, start_write_sector,
+-						    chunk_sectors, 0);
+-			if (res < 0)
+-				goto fail;
 -		} else {
--			snd_ps3_program_dma(card,
--				(underflow_occured) ?
--				SND_PS3_DMA_FILLTYPE_FIRSTFILL :
--				SND_PS3_DMA_FILLTYPE_RUNNING);
--			snd_ps3_kick_dma(card);
--			snd_pcm_period_elapsed(card->substream);
+-			if (head) {
+-				/* Read head */
+-				dev_dbg(&dev->sbd.core,
+-					"head: %llu sectors at %llu\n", head,
+-					start_write_sector);
+-				res = ps3flash_read_sectors(dev,
+-							    start_write_sector,
+-							    head, 0);
+-				if (res < 0)
+-					goto fail;
+-			}
+-			if (start_read_sector <
+-			    start_write_sector+chunk_sectors) {
+-				/* Read tail */
+-				dev_dbg(&dev->sbd.core,
+-					"tail: %llu sectors at %llu\n", tail,
+-					start_read_sector);
+-				sec_off = start_read_sector-start_write_sector;
+-				res = ps3flash_read_sectors(dev,
+-							    start_read_sector,
+-							    tail, sec_off);
+-				if (res < 0)
+-					goto fail;
+-			}
 -		}
--	} else if (port_intr & PS3_AUDIO_AX_IE_ASOBUIE(0)) {
--		write_reg(PS3_AUDIO_AX_IS, PS3_AUDIO_AX_IE_ASOBUIE(0));
--		/*
--		 * serial out underflow, but buffer empty not detected.
--		 * in this case, fill fifo with 0 to recover.  After
--		 * filling dummy data, serial automatically start to
--		 * consume them and then will generate normal buffer
--		 * empty interrupts.
--		 * If both buffer underflow and buffer empty are occured,
--		 * it is better to do nomal data transfer than empty one
--		 */
--		snd_ps3_program_dma(card,
--				    SND_PS3_DMA_FILLTYPE_SILENT_FIRSTFILL);
--		snd_ps3_kick_dma(card);
--		snd_ps3_program_dma(card,
--				    SND_PS3_DMA_FILLTYPE_SILENT_FIRSTFILL);
--		snd_ps3_kick_dma(card);
--	}
--	/* clear interrupt cause */
--	return IRQ_HANDLED;
--};
--
--/*
-  * module/subsystem initialize/terminate
-  */
- static int __init snd_ps3_init(void)
-@@ -1195,10 +1145,15 @@ static int __init snd_ps3_init(void)
++		if (n != dev->bounce_size)
++			res = ps3flash_fetch(dev, sector, priv->chunk_sectors);
++		else if (sector != priv->tag)
++			res = ps3flash_writeback(dev);
++		if (res)
++			goto fail;
  
- 	return ret;
- }
-+module_init(snd_ps3_init);
+-		n = min_t(u64, remaining, dev->bounce_size-offset);
+-		dst = dev->bounce_buf+offset;
++		dst = dev->bounce_buf + offset;
+ 		dev_dbg(&dev->sbd.core,
+ 			"%s:%u: copy %lu bytes from U0x%p/K0x%p to 0x%p\n",
+ 			__func__, __LINE__, n, userbuf, kernelbuf, dst);
+@@ -284,16 +259,14 @@ static ssize_t ps3flash_write(const char __user *userbuf,
+ 			kernelbuf += n;
+ 		}
  
- static void __exit snd_ps3_exit(void)
+-		res = ps3flash_write_chunk(dev, start_write_sector);
+-		if (res < 0)
+-			goto fail;
++		priv->tag = sector;
++		priv->dirty = true;
+ 
+ 		mutex_unlock(&priv->mutex);
+ 
+ 		*pos += n;
+ 		remaining -= n;
+-		start_write_sector += chunk_sectors;
+-		head = 0;
++		sector += priv->chunk_sectors;
+ 		offset = 0;
+ 	} while (remaining > 0);
+ 
+@@ -324,9 +297,31 @@ static ssize_t ps3flash_kernel_read(void *buf, size_t count, loff_t pos)
+ static ssize_t ps3flash_kernel_write(const void *buf, size_t count,
+ 				     loff_t pos)
  {
- 	ps3_system_bus_driver_unregister(&snd_ps3_bus_driver_info);
+-	return ps3flash_write(NULL, buf, count, &pos);
++	ssize_t res;
++	int wb;
++
++	res = ps3flash_write(NULL, buf, count, &pos);
++	if (res < 0)
++		return res;
++
++	/* Make kernel writes synchronous */
++	wb = ps3flash_writeback(ps3flash_dev);
++	if (wb)
++		return wb;
++
++	return res;
  }
-+module_exit(snd_ps3_exit);
  
-+MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("PS3 sound driver");
-+MODULE_AUTHOR("Sony Computer Entertainment Inc.");
- MODULE_ALIAS(PS3_MODULE_ALIAS_SOUND);
++static int ps3flash_flush(struct file *file, fl_owner_t id)
++{
++	return ps3flash_writeback(ps3flash_dev);
++}
++
++static int ps3flash_fsync(struct file *file, struct dentry *dentry,
++			  int datasync)
++{
++	return ps3flash_writeback(ps3flash_dev);
++}
+ 
+ static irqreturn_t ps3flash_interrupt(int irq, void *data)
+ {
+@@ -356,6 +351,8 @@ static const struct file_operations ps3flash_fops = {
+ 	.llseek	= ps3flash_llseek,
+ 	.read	= ps3flash_user_read,
+ 	.write	= ps3flash_user_write,
++	.flush	= ps3flash_flush,
++	.fsync	= ps3flash_fsync,
+ };
+ 
+ static const struct ps3_os_area_flash_ops ps3flash_kernel_ops = {
+@@ -411,9 +408,11 @@ static int __devinit ps3flash_probe(struct ps3_system_bus_device *_dev)
+ 
+ 	ps3_system_bus_set_drvdata(&dev->sbd, priv);
+ 	mutex_init(&priv->mutex);
++	priv->tag = -1;
+ 
+ 	dev->bounce_size = ps3flash_bounce_buffer.size;
+ 	dev->bounce_buf = ps3flash_bounce_buffer.address;
++	priv->chunk_sectors = dev->bounce_size / dev->blk_size;
+ 
+ 	error = ps3stor_setup(dev, ps3flash_interrupt);
+ 	if (error)
 -- 
 1.6.2.4
