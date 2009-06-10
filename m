@@ -1,23 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <timur.tabi@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 972B7B70A9
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CC343B709F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Jun 2009 14:13:57 +1000 (EST)
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id D77C1DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 14:13:55 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so222045ywt.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Jun 2009 21:13:54 -0700 (PDT)
+	Wed, 10 Jun 2009 16:07:56 +1000 (EST)
+Received: from mail-qy0-f171.google.com (mail-qy0-f171.google.com
+	[209.85.221.171]) by ozlabs.org (Postfix) with ESMTP id 23647DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 16:07:55 +1000 (EST)
+Received: by qyk1 with SMTP id 1so883013qyk.17
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Jun 2009 23:07:54 -0700 (PDT)
 MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
 In-Reply-To: <1244603678.2431.18.camel@pasglop>
 References: <1244603678.2431.18.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 9 Jun 2009 22:13:34 -0600
-Message-ID: <fa686aa40906092113x5aa5d78fjc3ab9b8809a25c7c@mail.gmail.com>
+Date: Wed, 10 Jun 2009 01:07:54 -0500
+Message-ID: <ed82fe3e0906092307oc381f94i276a647c48e9a0bc@mail.gmail.com>
 Subject: Re: "next" branch update
+From: Timur Tabi <timur@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
@@ -30,22 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 9, 2009 at 9:14 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->
+On Tue, Jun 9, 2009 at 10:14 PM, Benjamin
+Herrenschmidt<benh@kernel.crashing.org> wrote:
 > Hi !
 >
 > I've updated my "next" branch with the following patches. We're getting
 > real close to the merge window now, so if something is missing, please
 > holler ASAP.
 
-Just these two; but I see you've got them marked "under review":
+[PATCH 1/2 v9] powerpc: introduce macro spin_event_timeout()
 
-http://patchwork.ozlabs.org/patch/28191/
-http://patchwork.ozlabs.org/patch/27752/
-
-g.
-
---
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
