@@ -1,24 +1,24 @@
-Return-Path: <davem@davemloft.net>
+Return-Path: <Geoffrey.Levand@am.sony.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3916DB707D
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A00B2B71E6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 02:45:15 +1000 (EST)
-Date: Wed, 10 Jun 2009 09:45:12 -0700 (PDT)
-Message-Id: <20090610.094512.90091251.davem@davemloft.net>
-To: jk@ozlabs.org
-Subject: Re: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200906102241.47823.jk@ozlabs.org>
-References: <4A2F6D32.8030400@hartkopp.net>
-	<20090610.015245.141342130.davem@davemloft.net>
-	<200906102241.47823.jk@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: patchwork@ozlabs.org, netdev@vger.kernel.org, oliver@hartkopp.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+	Thu, 11 Jun 2009 02:51:14 +1000 (EST)
+Received: from WA4EHSOBE005.bigfish.com (wa4ehsobe005.messaging.microsoft.com
+	[216.32.181.15]) by ozlabs.org (Postfix) with ESMTP id 33050DDE07
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 02:51:13 +1000 (EST)
+Message-ID: <4A2FE088.7030009@am.sony.com>
+Date: Wed, 10 Jun 2009 09:34:16 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 00/33] My PS3-specific patches for 2.6.31
+References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +28,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 10 Jun 2009 22:41:47 +1000
+On 06/10/2009 07:38 AM, Geert Uytterhoeven wrote:
+> Here are my PS3-specific patches for 2.6.31:
 
-> David,
-> 
->> We really can't expect patchwork to look for every conceivable
->> malignment of the various reviewer tags.
-> 
-> No, but we could probably be more tolerant about capitalisation. Any 
-> objections about ignoring case completely? I have a patch ready to 
-> push...
+All the ones that touch my stuff look good.  A lot
+of nice cleanups, thanks for the effort.
 
-Sure, sounds fine to me.
+-Geoff
