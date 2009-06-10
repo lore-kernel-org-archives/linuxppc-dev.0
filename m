@@ -3,15 +3,16 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5F9DEB7192
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 78B48B70FD
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 11 Jun 2009 00:39:23 +1000 (EST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 25/33] drivers/ps3: Add missing annotations
-Date: Wed, 10 Jun 2009 16:39:00 +0200
-Message-Id: <1244644748-24211-26-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 21/33] ps3: ps3rom - Use ps3_system_bus_[gs]et_drvdata()
+	instead of direct access
+Date: Wed, 10 Jun 2009 16:38:56 +0200
+Message-Id: <1244644748-24211-22-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1244644748-24211-21-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
@@ -33,13 +34,11 @@ References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-19-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-20-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-21-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-22-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-23-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+	linuxppc-dev@ozlabs.org,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	cbe-oss-dev@ozlabs.org, linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,50 +48,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-probe functions should be __devinit
-initialization functions should be __init
-
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: linux-scsi@vger.kernel.org
+Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
 ---
- drivers/ps3/ps3-sys-manager.c |    2 +-
- drivers/ps3/ps3av.c           |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/scsi/ps3rom.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/ps3/ps3-sys-manager.c b/drivers/ps3/ps3-sys-manager.c
-index f17513d..88cb740 100644
---- a/drivers/ps3/ps3-sys-manager.c
-+++ b/drivers/ps3/ps3-sys-manager.c
-@@ -706,7 +706,7 @@ static void ps3_sys_manager_work(struct ps3_system_bus_device *dev)
- 	ps3_vuart_read_async(dev, PS3_SM_RX_MSG_LEN_MIN);
+diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
+index ca0dd33..db90caf 100644
+--- a/drivers/scsi/ps3rom.c
++++ b/drivers/scsi/ps3rom.c
+@@ -299,7 +299,7 @@ static irqreturn_t ps3rom_interrupt(int irq, void *data)
+ 		return IRQ_HANDLED;
+ 	}
+ 
+-	host = dev->sbd.core.driver_data;
++	host = ps3_system_bus_get_drvdata(&dev->sbd);
+ 	priv = shost_priv(host);
+ 	cmd = priv->curr_cmd;
+ 
+@@ -387,7 +387,7 @@ static int __devinit ps3rom_probe(struct ps3_system_bus_device *_dev)
+ 	}
+ 
+ 	priv = shost_priv(host);
+-	dev->sbd.core.driver_data = host;
++	ps3_system_bus_set_drvdata(&dev->sbd, host);
+ 	priv->dev = dev;
+ 
+ 	/* One device/LUN per SCSI bus */
+@@ -407,7 +407,7 @@ static int __devinit ps3rom_probe(struct ps3_system_bus_device *_dev)
+ 
+ fail_host_put:
+ 	scsi_host_put(host);
+-	dev->sbd.core.driver_data = NULL;
++	ps3_system_bus_set_drvdata(&dev->sbd, NULL);
+ fail_teardown:
+ 	ps3stor_teardown(dev);
+ fail_free_bounce:
+@@ -418,12 +418,12 @@ fail_free_bounce:
+ static int ps3rom_remove(struct ps3_system_bus_device *_dev)
+ {
+ 	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+-	struct Scsi_Host *host = dev->sbd.core.driver_data;
++	struct Scsi_Host *host = ps3_system_bus_get_drvdata(&dev->sbd);
+ 
+ 	scsi_remove_host(host);
+ 	ps3stor_teardown(dev);
+ 	scsi_host_put(host);
+-	dev->sbd.core.driver_data = NULL;
++	ps3_system_bus_set_drvdata(&dev->sbd, NULL);
+ 	kfree(dev->bounce_buf);
+ 	return 0;
  }
- 
--static int ps3_sys_manager_probe(struct ps3_system_bus_device *dev)
-+static int __devinit ps3_sys_manager_probe(struct ps3_system_bus_device *dev)
- {
- 	int result;
- 	struct ps3_sys_manager_ops ops;
-diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
-index 4e4611e..e82d8c9 100644
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -937,7 +937,7 @@ int ps3av_audio_mute(int mute)
- 
- EXPORT_SYMBOL_GPL(ps3av_audio_mute);
- 
--static int ps3av_probe(struct ps3_system_bus_device *dev)
-+static int __devinit ps3av_probe(struct ps3_system_bus_device *dev)
- {
- 	int res;
- 	int id;
-@@ -1048,7 +1048,7 @@ static struct ps3_vuart_port_driver ps3av_driver = {
- 	.shutdown = ps3av_shutdown,
- };
- 
--static int ps3av_module_init(void)
-+static int __init ps3av_module_init(void)
- {
- 	int error;
- 
 -- 
 1.6.2.4
