@@ -1,26 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5CBC5B70B5
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 972B7B70A9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Jun 2009 13:55:51 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A8B39DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 13:55:49 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n5A3tiVn023062
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Jun 2009 22:55:45 -0500
-Subject: "next" branch update
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Wed, 10 Jun 2009 13:14:38 +1000
-Message-Id: <1244603678.2431.18.camel@pasglop>
-Mime-Version: 1.0
+	Wed, 10 Jun 2009 14:13:57 +1000 (EST)
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id D77C1DDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 14:13:55 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so222045ywt.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Jun 2009 21:13:54 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1244603678.2431.18.camel@pasglop>
+References: <1244603678.2431.18.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 9 Jun 2009 22:13:34 -0600
+Message-ID: <fa686aa40906092113x5aa5d78fjc3ab9b8809a25c7c@mail.gmail.com>
+Subject: Re: "next" branch update
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,44 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi !
+On Tue, Jun 9, 2009 at 9:14 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>
+> Hi !
+>
+> I've updated my "next" branch with the following patches. We're getting
+> real close to the merge window now, so if something is missing, please
+> holler ASAP.
 
-I've updated my "next" branch with the following patches. We're getting
-real close to the merge window now, so if something is missing, please
-holler ASAP.
+Just these two; but I see you've got them marked "under review":
 
-Cheers,
-Ben.
+http://patchwork.ozlabs.org/patch/28191/
+http://patchwork.ozlabs.org/patch/27752/
 
-Becky Bruce (1):
-      powerpc: Add support for swiotlb on 32-bit
+g.
 
-Benjamin Herrenschmidt (8):
-      powerpc/mm: Fix some SMP issues with MMU context handling
-      powerpc/mm: Fix a AB->BA deadlock scenario with nohash MMU context lock
-      powerpc: Set init_bootmem_done on NUMA platforms as well
-      powerpc: Move VMX and VSX asm code to vector.S
-      powerpc: Introduce CONFIG_PPC_BOOK3S
-      powerpc: Split exception handling out of head_64.S
-      powerpc: Separate PACA fields for server CPUs
-      powerpc: Shield code specific to 64-bit server processors
-
-Grant Likely (1):
-      powerpc/virtex: refactor intc driver and add support for i8259 cascading
-
-John Linn (1):
-      fbdev: Add PLB support and cleanup DCR in xilinxfb driver.
-
-Roderick Colenbrander (3):
-      powerpc/virtex: Add support for Xilinx PCI host bridge
-      powerpc/virtex: Add Xilinx ML510 reference design support
-      powerpc/virtex: Add ml510 reference design device tree
-
-Roland McGrath (1):
-      powerpc: Add PTRACE_SINGLEBLOCK support
-
-Stephen Rothwell (4):
-      powerpc/pseries: Fix warnings when printing resource_size_t
-      powerpc/xmon: Remove unused variable in xmon.c
-      powerpc: Fix warning when printing a resource_size_t
-      powerpc/spufs: Remove unused error path
+--
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
