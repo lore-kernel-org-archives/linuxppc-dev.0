@@ -3,15 +3,15 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 133D8B7164
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 19F77B72E0
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 11 Jun 2009 00:39:25 +1000 (EST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 24/33] usb/ps3: Add missing annotations
-Date: Wed, 10 Jun 2009 16:38:59 +0200
-Message-Id: <1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 29/33] ps3: Correct debug message in dma_ioc0_map_pages()
+Date: Wed, 10 Jun 2009 16:39:04 +0200
+Message-Id: <1244644748-24211-30-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1244644748-24211-29-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
@@ -36,6 +36,11 @@ References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-22-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-23-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-26-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-27-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-28-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-29-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
@@ -48,59 +53,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-probe functions should be __devinit
-initialization functions should be __init
+It reports the failure of a call to lv1_put_iopte(), not
+lv1_map_device_dma_region().
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Cc: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- drivers/usb/host/ehci-ps3.c |    4 ++--
- drivers/usb/host/ohci-ps3.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/ps3/mm.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/usb/host/ehci-ps3.c b/drivers/usb/host/ehci-ps3.c
-index bb870b8..3e8844e 100644
---- a/drivers/usb/host/ehci-ps3.c
-+++ b/drivers/usb/host/ehci-ps3.c
-@@ -76,7 +76,7 @@ static const struct hc_driver ps3_ehci_hc_driver = {
- 	.port_handed_over	= ehci_port_handed_over,
- };
- 
--static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
-+static int __devinit ps3_ehci_probe(struct ps3_system_bus_device *dev)
- {
- 	int result;
- 	struct usb_hcd *hcd;
-@@ -224,7 +224,7 @@ static int ps3_ehci_remove(struct ps3_system_bus_device *dev)
- 	return 0;
- }
- 
--static int ps3_ehci_driver_register(struct ps3_system_bus_driver *drv)
-+static int __init ps3_ehci_driver_register(struct ps3_system_bus_driver *drv)
- {
- 	return firmware_has_feature(FW_FEATURE_PS3_LV1)
- 		? ps3_system_bus_driver_register(drv)
-diff --git a/drivers/usb/host/ohci-ps3.c b/drivers/usb/host/ohci-ps3.c
-index 1d56259..7009504 100644
---- a/drivers/usb/host/ohci-ps3.c
-+++ b/drivers/usb/host/ohci-ps3.c
-@@ -75,7 +75,7 @@ static const struct hc_driver ps3_ohci_hc_driver = {
- #endif
- };
- 
--static int ps3_ohci_probe(struct ps3_system_bus_device *dev)
-+static int __devinit ps3_ohci_probe(struct ps3_system_bus_device *dev)
- {
- 	int result;
- 	struct usb_hcd *hcd;
-@@ -224,7 +224,7 @@ static int ps3_ohci_remove(struct ps3_system_bus_device *dev)
- 	return 0;
- }
- 
--static int ps3_ohci_driver_register(struct ps3_system_bus_driver *drv)
-+static int __init ps3_ohci_driver_register(struct ps3_system_bus_driver *drv)
- {
- 	return firmware_has_feature(FW_FEATURE_PS3_LV1)
- 		? ps3_system_bus_driver_register(drv)
+diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+index 017b614..846eb8b 100644
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -606,9 +606,8 @@ static int dma_ioc0_map_pages(struct ps3_dma_region *r, unsigned long phys_addr,
+ 				       r->ioid,
+ 				       iopte_flag);
+ 		if (result) {
+-			printk(KERN_WARNING "%s:%d: lv1_map_device_dma_region "
+-				"failed: %s\n", __func__, __LINE__,
+-				ps3_result(result));
++			pr_warning("%s:%d: lv1_put_iopte failed: %s\n",
++				   __func__, __LINE__, ps3_result(result));
+ 			goto fail_map;
+ 		}
+ 		DBG("%s: pg=%d bus=%#lx, lpar=%#lx, ioid=%#x\n", __func__,
 -- 
 1.6.2.4
