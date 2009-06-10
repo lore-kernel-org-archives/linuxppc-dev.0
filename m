@@ -3,16 +3,15 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 08FD9B70CA
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 17920B7326
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 00:39:28 +1000 (EST)
+	Thu, 11 Jun 2009 00:39:29 +1000 (EST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 19/33] ps3: shorten ps3_system_bus_[gs]et_driver_data to
-	ps3_system_bus_[gs]et_drvdata
-Date: Wed, 10 Jun 2009 16:38:54 +0200
-Message-Id: <1244644748-24211-20-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1244644748-24211-19-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 31/33] ps3: Replace direct file operations by callback
+Date: Wed, 10 Jun 2009 16:39:06 +0200
+Message-Id: <1244644748-24211-32-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1244644748-24211-31-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
@@ -32,9 +31,21 @@ References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-17-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-18-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-19-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-20-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-21-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-22-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-23-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-26-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-27-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-28-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-29-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-30-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-31-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, Jim Paris <jim@jtan.com>, cbe-oss-dev@ozlabs.org
+	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,449 +55,438 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Currently the FLASH database is updated by the kernel using file operations,
+meant for userspace only. While this works for us because copy_{from,to}_user()
+on powerpc can handle kernel pointers, this is unportable and a bad example.
+Replace the file operations by callbacks, registered by the ps3flash driver.
+
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Jim Paris <jim@jtan.com>
 ---
- arch/powerpc/include/asm/ps3.h |    4 +-
- drivers/block/ps3disk.c        |   23 +++++++-----------
- drivers/block/ps3vram.c        |   48 ++++++++++++++++++++--------------------
- drivers/net/ps3_gelic_net.c    |    8 +++---
- drivers/usb/host/ehci-ps3.c    |    7 ++---
- drivers/usb/host/ohci-ps3.c    |    7 ++---
- 6 files changed, 45 insertions(+), 52 deletions(-)
+ arch/powerpc/include/asm/ps3.h       |    7 ++
+ arch/powerpc/platforms/ps3/os-area.c |  138 ++++++++++++++++++---------------
+ drivers/char/ps3flash.c              |   94 +++++++++++++++++------
+ 3 files changed, 152 insertions(+), 87 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
-index dcd302f..7660694 100644
+index 7660694..7f065e1 100644
 --- a/arch/powerpc/include/asm/ps3.h
 +++ b/arch/powerpc/include/asm/ps3.h
-@@ -418,12 +418,12 @@ static inline struct ps3_system_bus_driver *
-  * @data: Data to set
+@@ -53,6 +53,13 @@ enum ps3_param_av_multi_out ps3_os_area_get_av_multi_out(void);
+ extern u64 ps3_os_area_get_rtc_diff(void);
+ extern void ps3_os_area_set_rtc_diff(u64 rtc_diff);
+ 
++struct ps3_os_area_flash_ops {
++	ssize_t (*read)(void *buf, size_t count, loff_t pos);
++	ssize_t (*write)(const void *buf, size_t count, loff_t pos);
++};
++
++extern void ps3_os_area_flash_register(const struct ps3_os_area_flash_ops *ops);
++
+ /* dma routines */
+ 
+ enum ps3_dma_page_size {
+diff --git a/arch/powerpc/platforms/ps3/os-area.c b/arch/powerpc/platforms/ps3/os-area.c
+index 6e4125d..d6487a9 100644
+--- a/arch/powerpc/platforms/ps3/os-area.c
++++ b/arch/powerpc/platforms/ps3/os-area.c
+@@ -226,6 +226,44 @@ static struct property property_av_multi_out = {
+ 	.value = &saved_params.av_multi_out,
+ };
+ 
++
++static DEFINE_MUTEX(os_area_flash_mutex);
++
++static const struct ps3_os_area_flash_ops *os_area_flash_ops;
++
++void ps3_os_area_flash_register(const struct ps3_os_area_flash_ops *ops)
++{
++	mutex_lock(&os_area_flash_mutex);
++	os_area_flash_ops = ops;
++	mutex_unlock(&os_area_flash_mutex);
++}
++EXPORT_SYMBOL_GPL(ps3_os_area_flash_register);
++
++static ssize_t os_area_flash_read(void *buf, size_t count, loff_t pos)
++{
++	ssize_t res = -ENODEV;
++
++	mutex_lock(&os_area_flash_mutex);
++	if (os_area_flash_ops)
++		res = os_area_flash_ops->read(buf, count, pos);
++	mutex_unlock(&os_area_flash_mutex);
++
++	return res;
++}
++
++static ssize_t os_area_flash_write(const void *buf, size_t count, loff_t pos)
++{
++	ssize_t res = -ENODEV;
++
++	mutex_lock(&os_area_flash_mutex);
++	if (os_area_flash_ops)
++		res = os_area_flash_ops->write(buf, count, pos);
++	mutex_unlock(&os_area_flash_mutex);
++
++	return res;
++}
++
++
+ /**
+  * os_area_set_property - Add or overwrite a saved_params value to the device tree.
+  *
+@@ -352,12 +390,12 @@ static int db_verify(const struct os_area_db *db)
+ 	if (memcmp(db->magic_num, OS_AREA_DB_MAGIC_NUM,
+ 		sizeof(db->magic_num))) {
+ 		pr_debug("%s:%d magic_num failed\n", __func__, __LINE__);
+-		return -1;
++		return -EINVAL;
+ 	}
+ 
+ 	if (db->version != 1) {
+ 		pr_debug("%s:%d version failed\n", __func__, __LINE__);
+-		return -1;
++		return -EINVAL;
+ 	}
+ 
+ 	return 0;
+@@ -578,59 +616,48 @@ static void os_area_db_init(struct os_area_db *db)
+  *
   */
  
--static inline void ps3_system_bus_set_driver_data(
-+static inline void ps3_system_bus_set_drvdata(
- 	struct ps3_system_bus_device *dev, void *data)
+-static void __maybe_unused update_flash_db(void)
++static int update_flash_db(void)
  {
- 	dev_set_drvdata(&dev->core, data);
+-	int result;
+-	int file;
+-	off_t offset;
++	const unsigned int buf_len = 8 * OS_AREA_SEGMENT_SIZE;
++	struct os_area_header *header;
+ 	ssize_t count;
+-	static const unsigned int buf_len = 8 * OS_AREA_SEGMENT_SIZE;
+-	const struct os_area_header *header;
++	int error;
++	loff_t pos;
+ 	struct os_area_db* db;
+ 
+ 	/* Read in header and db from flash. */
+ 
+-	file = sys_open("/dev/ps3flash", O_RDWR, 0);
+-
+-	if (file < 0) {
+-		pr_debug("%s:%d sys_open failed\n", __func__, __LINE__);
+-		goto fail_open;
+-	}
+-
+ 	header = kmalloc(buf_len, GFP_KERNEL);
+-
+ 	if (!header) {
+-		pr_debug("%s:%d kmalloc failed\n", __func__, __LINE__);
+-		goto fail_malloc;
++		pr_debug("%s: kmalloc failed\n", __func__);
++		return -ENOMEM;
+ 	}
+ 
+-	offset = sys_lseek(file, 0, SEEK_SET);
+-
+-	if (offset != 0) {
+-		pr_debug("%s:%d sys_lseek failed\n", __func__, __LINE__);
+-		goto fail_header_seek;
++	count = os_area_flash_read(header, buf_len, 0);
++	if (count < 0) {
++		pr_debug("%s: os_area_flash_read failed %zd\n", __func__,
++			 count);
++		error = count;
++		goto fail;
+ 	}
+ 
+-	count = sys_read(file, (char __user *)header, buf_len);
+-
+-	result = count < OS_AREA_SEGMENT_SIZE || verify_header(header)
+-		|| count < header->db_area_offset * OS_AREA_SEGMENT_SIZE;
+-
+-	if (result) {
+-		pr_debug("%s:%d verify_header failed\n", __func__, __LINE__);
++	pos = header->db_area_offset * OS_AREA_SEGMENT_SIZE;
++	if (count < OS_AREA_SEGMENT_SIZE || verify_header(header) ||
++	    count < pos) {
++		pr_debug("%s: verify_header failed\n", __func__);
+ 		dump_header(header);
+-		goto fail_header;
++		error = -EINVAL;
++		goto fail;
+ 	}
+ 
+ 	/* Now got a good db offset and some maybe good db data. */
+ 
+-	db = (void*)header + header->db_area_offset * OS_AREA_SEGMENT_SIZE;
++	db = (void *)header + pos;
+ 
+-	result = db_verify(db);
+-
+-	if (result) {
+-		printk(KERN_NOTICE "%s:%d: Verify of flash database failed, "
+-			"formatting.\n", __func__, __LINE__);
++	error = db_verify(db);
++	if (error) {
++		pr_notice("%s: Verify of flash database failed, formatting.\n",
++			  __func__);
+ 		dump_db(db);
+ 		os_area_db_init(db);
+ 	}
+@@ -639,29 +666,16 @@ static void __maybe_unused update_flash_db(void)
+ 
+ 	db_set_64(db, &os_area_db_id_rtc_diff, saved_params.rtc_diff);
+ 
+-	offset = sys_lseek(file, header->db_area_offset * OS_AREA_SEGMENT_SIZE,
+-		SEEK_SET);
+-
+-	if (offset != header->db_area_offset * OS_AREA_SEGMENT_SIZE) {
+-		pr_debug("%s:%d sys_lseek failed\n", __func__, __LINE__);
+-		goto fail_db_seek;
+-	}
+-
+-	count = sys_write(file, (const char __user *)db,
+-		sizeof(struct os_area_db));
+-
++	count = os_area_flash_write(db, sizeof(struct os_area_db), pos);
+ 	if (count < sizeof(struct os_area_db)) {
+-		pr_debug("%s:%d sys_write failed\n", __func__, __LINE__);
++		pr_debug("%s: os_area_flash_write failed %zd\n", __func__,
++			 count);
++		error = count < 0 ? count : -EIO;
+ 	}
+ 
+-fail_db_seek:
+-fail_header:
+-fail_header_seek:
++fail:
+ 	kfree(header);
+-fail_malloc:
+-	sys_close(file);
+-fail_open:
+-	return;
++	return error;
  }
--static inline void *ps3_system_bus_get_driver_data(
-+static inline void *ps3_system_bus_get_drvdata(
- 	struct ps3_system_bus_device *dev)
- {
- 	return dev_get_drvdata(&dev->core);
-diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
-index d5781a8..bca99da 100644
---- a/drivers/block/ps3disk.c
-+++ b/drivers/block/ps3disk.c
-@@ -120,8 +120,7 @@ static void ps3disk_scatter_gather(struct ps3_storage_device *dev,
- static int ps3disk_submit_request_sg(struct ps3_storage_device *dev,
- 				     struct request *req)
- {
--	struct ps3disk_private *priv =
--		ps3_system_bus_get_driver_data(&dev->sbd);
-+	struct ps3disk_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
- 	int write = rq_data_dir(req), res;
- 	const char *op = write ? "write" : "read";
- 	u64 start_sector, sectors;
-@@ -170,8 +169,7 @@ static int ps3disk_submit_request_sg(struct ps3_storage_device *dev,
- static int ps3disk_submit_flush_request(struct ps3_storage_device *dev,
- 					struct request *req)
- {
--	struct ps3disk_private *priv =
--		ps3_system_bus_get_driver_data(&dev->sbd);
-+	struct ps3disk_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
- 	u64 res;
  
- 	dev_dbg(&dev->sbd.core, "%s:%u: flush request\n", __func__, __LINE__);
-@@ -216,8 +214,7 @@ static void ps3disk_do_request(struct ps3_storage_device *dev,
- static void ps3disk_request(struct request_queue *q)
+ /**
+@@ -674,11 +688,11 @@ fail_open:
+ static void os_area_queue_work_handler(struct work_struct *work)
  {
- 	struct ps3_storage_device *dev = q->queuedata;
--	struct ps3disk_private *priv =
--		ps3_system_bus_get_driver_data(&dev->sbd);
-+	struct ps3disk_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
+ 	struct device_node *node;
++	int error;
  
- 	if (priv->req) {
- 		dev_dbg(&dev->sbd.core, "%s:%u busy\n", __func__, __LINE__);
-@@ -250,7 +247,7 @@ static irqreturn_t ps3disk_interrupt(int irq, void *data)
- 		return IRQ_HANDLED;
- 	}
+ 	pr_debug(" -> %s:%d\n", __func__, __LINE__);
  
--	priv = ps3_system_bus_get_driver_data(&dev->sbd);
-+	priv = ps3_system_bus_get_drvdata(&dev->sbd);
- 	req = priv->req;
- 	if (!req) {
+ 	node = of_find_node_by_path("/");
+-
+ 	if (node) {
+ 		os_area_set_property(node, &property_rtc_diff);
+ 		of_node_put(node);
+@@ -686,12 +700,10 @@ static void os_area_queue_work_handler(struct work_struct *work)
+ 		pr_debug("%s:%d of_find_node_by_path failed\n",
+ 			__func__, __LINE__);
+ 
+-#if defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
+-	update_flash_db();
+-#else
+-	printk(KERN_WARNING "%s:%d: No flash rom driver configured.\n",
+-		__func__, __LINE__);
+-#endif
++	error = update_flash_db();
++	if (error)
++		pr_warning("%s: Could not update FLASH ROM\n", __func__);
++
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ }
+ 
+diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
+index 184e6ed..f7f21f4 100644
+--- a/drivers/char/ps3flash.c
++++ b/drivers/char/ps3flash.c
+@@ -104,18 +104,19 @@ out:
+ 	return res;
+ }
+ 
+-static ssize_t ps3flash_read(struct file *file, char __user *buf, size_t count,
+-			     loff_t *pos)
++static ssize_t ps3flash_read(char __user *userbuf, void *kernelbuf,
++			     size_t count, loff_t *pos)
+ {
+ 	struct ps3_storage_device *dev = ps3flash_dev;
+ 	struct ps3flash_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
+ 	u64 size, start_sector, end_sector, offset;
+ 	ssize_t sectors_read;
+ 	size_t remaining, n;
++	const void *src;
+ 
+ 	dev_dbg(&dev->sbd.core,
+-		"%s:%u: Reading %zu bytes at position %lld to user 0x%p\n",
+-		__func__, __LINE__, count, *pos, buf);
++		"%s:%u: Reading %zu bytes at position %lld to U0x%p/K0x%p\n",
++		__func__, __LINE__, count, *pos, userbuf, kernelbuf);
+ 
+ 	size = dev->regions[dev->region_idx].size*dev->blk_size;
+ 	if (*pos >= size || !count)
+@@ -145,19 +146,26 @@ static ssize_t ps3flash_read(struct file *file, char __user *buf, size_t count,
+ 		}
+ 
+ 		n = min_t(u64, remaining, sectors_read*dev->blk_size-offset);
++		src = dev->bounce_buf+offset;
  		dev_dbg(&dev->sbd.core,
-@@ -371,8 +368,7 @@ static void ata_id_c_string(const u16 *id, unsigned char *s, unsigned int ofs,
+-			"%s:%u: copy %lu bytes from 0x%p to user 0x%p\n",
+-			__func__, __LINE__, n, dev->bounce_buf+offset, buf);
+-		if (copy_to_user(buf, dev->bounce_buf+offset, n)) {
+-			mutex_unlock(&priv->mutex);
+-			sectors_read = -EFAULT;
+-			goto fail;
++			"%s:%u: copy %lu bytes from 0x%p to U0x%p/K0x%p\n",
++			__func__, __LINE__, n, src, userbuf, kernelbuf);
++		if (userbuf) {
++			if (copy_to_user(userbuf, src, n)) {
++				mutex_unlock(&priv->mutex);
++				sectors_read = -EFAULT;
++				goto fail;
++			}
++			userbuf += n;
++		}
++		if (kernelbuf) {
++			memcpy(kernelbuf, src, n);
++			kernelbuf += n;
+ 		}
  
- static int ps3disk_identify(struct ps3_storage_device *dev)
+ 		mutex_unlock(&priv->mutex);
+ 
+ 		*pos += n;
+-		buf += n;
+ 		remaining -= n;
+ 		start_sector += sectors_read;
+ 		offset = 0;
+@@ -169,8 +177,8 @@ fail:
+ 	return sectors_read;
+ }
+ 
+-static ssize_t ps3flash_write(struct file *file, const char __user *buf,
+-			      size_t count, loff_t *pos)
++static ssize_t ps3flash_write(const char __user *userbuf,
++			      const void *kernelbuf, size_t count, loff_t *pos)
  {
--	struct ps3disk_private *priv =
--		ps3_system_bus_get_driver_data(&dev->sbd);
-+	struct ps3disk_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
- 	struct lv1_ata_cmnd_block ata_cmnd;
- 	u16 *id = dev->bounce_buf;
- 	u64 res;
-@@ -453,7 +449,7 @@ static int __devinit ps3disk_probe(struct ps3_system_bus_device *_dev)
- 		goto fail;
- 	}
+ 	struct ps3_storage_device *dev = ps3flash_dev;
+ 	struct ps3flash_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
+@@ -179,10 +187,11 @@ static ssize_t ps3flash_write(struct file *file, const char __user *buf,
+ 	ssize_t res;
+ 	size_t remaining, n;
+ 	unsigned int sec_off;
++	void *dst;
  
--	ps3_system_bus_set_driver_data(_dev, priv);
-+	ps3_system_bus_set_drvdata(_dev, priv);
- 	spin_lock_init(&priv->lock);
+ 	dev_dbg(&dev->sbd.core,
+-		"%s:%u: Writing %zu bytes at position %lld from user 0x%p\n",
+-		__func__, __LINE__, count, *pos, buf);
++		"%s:%u: Writing %zu bytes at position %lld from U0x%p/K0x%p\n",
++		__func__, __LINE__, count, *pos, userbuf, kernelbuf);
  
- 	dev->bounce_size = BOUNCE_SIZE;
-@@ -531,7 +527,7 @@ fail_free_bounce:
- 	kfree(dev->bounce_buf);
- fail_free_priv:
- 	kfree(priv);
--	ps3_system_bus_set_driver_data(_dev, NULL);
-+	ps3_system_bus_set_drvdata(_dev, NULL);
- fail:
- 	mutex_lock(&ps3disk_mask_mutex);
- 	__clear_bit(devidx, &ps3disk_mask);
-@@ -542,8 +538,7 @@ fail:
- static int ps3disk_remove(struct ps3_system_bus_device *_dev)
+ 	size = dev->regions[dev->region_idx].size*dev->blk_size;
+ 	if (*pos >= size || !count)
+@@ -259,12 +268,20 @@ static ssize_t ps3flash_write(struct file *file, const char __user *buf,
+ 		}
+ 
+ 		n = min_t(u64, remaining, dev->bounce_size-offset);
++		dst = dev->bounce_buf+offset;
+ 		dev_dbg(&dev->sbd.core,
+-			"%s:%u: copy %lu bytes from user 0x%p to 0x%p\n",
+-			__func__, __LINE__, n, buf, dev->bounce_buf+offset);
+-		if (copy_from_user(dev->bounce_buf+offset, buf, n)) {
+-			res = -EFAULT;
+-			goto fail;
++			"%s:%u: copy %lu bytes from U0x%p/K0x%p to 0x%p\n",
++			__func__, __LINE__, n, userbuf, kernelbuf, dst);
++		if (userbuf) {
++			if (copy_from_user(dst, userbuf, n)) {
++				res = -EFAULT;
++				goto fail;
++			}
++			userbuf += n;
++		}
++		if (kernelbuf) {
++			memcpy(dst, kernelbuf, n);
++			kernelbuf += n;
+ 		}
+ 
+ 		res = ps3flash_write_chunk(dev, start_write_sector);
+@@ -274,7 +291,6 @@ static ssize_t ps3flash_write(struct file *file, const char __user *buf,
+ 		mutex_unlock(&priv->mutex);
+ 
+ 		*pos += n;
+-		buf += n;
+ 		remaining -= n;
+ 		start_write_sector += chunk_sectors;
+ 		head = 0;
+@@ -288,6 +304,29 @@ fail:
+ 	return res;
+ }
+ 
++static ssize_t ps3flash_user_read(struct file *file, char __user *buf,
++				  size_t count, loff_t *pos)
++{
++	return ps3flash_read(buf, NULL, count, pos);
++}
++
++static ssize_t ps3flash_user_write(struct file *file, const char __user *buf,
++				   size_t count, loff_t *pos)
++{
++	return ps3flash_write(buf, NULL, count, pos);
++}
++
++static ssize_t ps3flash_kernel_read(void *buf, size_t count, loff_t pos)
++{
++	return ps3flash_read(NULL, buf, count, &pos);
++}
++
++static ssize_t ps3flash_kernel_write(const void *buf, size_t count,
++				     loff_t pos)
++{
++	return ps3flash_write(NULL, buf, count, &pos);
++}
++
+ 
+ static irqreturn_t ps3flash_interrupt(int irq, void *data)
+ {
+@@ -312,12 +351,16 @@ static irqreturn_t ps3flash_interrupt(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
+ 
+-
+ static const struct file_operations ps3flash_fops = {
+ 	.owner	= THIS_MODULE,
+ 	.llseek	= ps3flash_llseek,
+-	.read	= ps3flash_read,
+-	.write	= ps3flash_write,
++	.read	= ps3flash_user_read,
++	.write	= ps3flash_user_write,
++};
++
++static const struct ps3_os_area_flash_ops ps3flash_kernel_ops = {
++	.read	= ps3flash_kernel_read,
++	.write	= ps3flash_kernel_write,
+ };
+ 
+ static struct miscdevice ps3flash_misc = {
+@@ -386,6 +429,8 @@ static int __devinit ps3flash_probe(struct ps3_system_bus_device *_dev)
+ 
+ 	dev_info(&dev->sbd.core, "%s:%u: registered misc device %d\n",
+ 		 __func__, __LINE__, ps3flash_misc.minor);
++
++	ps3_os_area_flash_register(&ps3flash_kernel_ops);
+ 	return 0;
+ 
+ fail_teardown:
+@@ -402,6 +447,7 @@ static int ps3flash_remove(struct ps3_system_bus_device *_dev)
  {
  	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
--	struct ps3disk_private *priv =
--		ps3_system_bus_get_driver_data(&dev->sbd);
-+	struct ps3disk_private *priv = ps3_system_bus_get_drvdata(&dev->sbd);
  
- 	mutex_lock(&ps3disk_mask_mutex);
- 	__clear_bit(MINOR(disk_devt(priv->gendisk)) / PS3DISK_MINORS,
-@@ -557,7 +552,7 @@ static int ps3disk_remove(struct ps3_system_bus_device *_dev)
++	ps3_os_area_flash_register(NULL);
+ 	misc_deregister(&ps3flash_misc);
  	ps3stor_teardown(dev);
- 	kfree(dev->bounce_buf);
- 	kfree(priv);
--	ps3_system_bus_set_driver_data(_dev, NULL);
-+	ps3_system_bus_set_drvdata(_dev, NULL);
- 	return 0;
- }
- 
-diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index fcecc7f..095f97e 100644
---- a/drivers/block/ps3vram.c
-+++ b/drivers/block/ps3vram.c
-@@ -110,7 +110,7 @@ static u32 *ps3vram_get_notifier(void *reports, int notifier)
- 
- static void ps3vram_notifier_reset(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
- 	int i;
- 
-@@ -121,7 +121,7 @@ static void ps3vram_notifier_reset(struct ps3_system_bus_device *dev)
- static int ps3vram_notifier_wait(struct ps3_system_bus_device *dev,
- 				 unsigned int timeout_ms)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
- 	unsigned long timeout = jiffies + msecs_to_jiffies(timeout_ms);
- 
-@@ -136,7 +136,7 @@ static int ps3vram_notifier_wait(struct ps3_system_bus_device *dev,
- 
- static void ps3vram_init_ring(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 
- 	priv->ctrl[CTRL_PUT] = FIFO_BASE + FIFO_OFFSET;
- 	priv->ctrl[CTRL_GET] = FIFO_BASE + FIFO_OFFSET;
-@@ -145,7 +145,7 @@ static void ps3vram_init_ring(struct ps3_system_bus_device *dev)
- static int ps3vram_wait_ring(struct ps3_system_bus_device *dev,
- 			     unsigned int timeout_ms)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	unsigned long timeout = jiffies + msecs_to_jiffies(timeout_ms);
- 
- 	do {
-@@ -174,7 +174,7 @@ static void ps3vram_begin_ring(struct ps3vram_priv *priv, u32 chan, u32 tag,
- 
- static void ps3vram_rewind_ring(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	int status;
- 
- 	ps3vram_out_ring(priv, 0x20000000 | (FIFO_BASE + FIFO_OFFSET));
-@@ -192,7 +192,7 @@ static void ps3vram_rewind_ring(struct ps3_system_bus_device *dev)
- 
- static void ps3vram_fire_ring(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	int status;
- 
- 	mutex_lock(&ps3_gpu_mutex);
-@@ -218,7 +218,7 @@ static void ps3vram_fire_ring(struct ps3_system_bus_device *dev)
- 
- static void ps3vram_bind(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 
- 	ps3vram_begin_ring(priv, UPLOAD_SUBCH, 0, 1);
- 	ps3vram_out_ring(priv, 0x31337303);
-@@ -241,7 +241,7 @@ static int ps3vram_upload(struct ps3_system_bus_device *dev,
- 			  unsigned int src_offset, unsigned int dst_offset,
- 			  int len, int count)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 
- 	ps3vram_begin_ring(priv, UPLOAD_SUBCH,
- 			   NV_MEMORY_TO_MEMORY_FORMAT_OFFSET_IN, 8);
-@@ -273,7 +273,7 @@ static int ps3vram_download(struct ps3_system_bus_device *dev,
- 			    unsigned int src_offset, unsigned int dst_offset,
- 			    int len, int count)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 
- 	ps3vram_begin_ring(priv, DOWNLOAD_SUBCH,
- 			   NV_MEMORY_TO_MEMORY_FORMAT_OFFSET_IN, 8);
-@@ -303,7 +303,7 @@ static int ps3vram_download(struct ps3_system_bus_device *dev,
- 
- static void ps3vram_cache_evict(struct ps3_system_bus_device *dev, int entry)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	struct ps3vram_cache *cache = &priv->cache;
- 
- 	if (!(cache->tags[entry].flags & CACHE_PAGE_DIRTY))
-@@ -325,7 +325,7 @@ static void ps3vram_cache_evict(struct ps3_system_bus_device *dev, int entry)
- static void ps3vram_cache_load(struct ps3_system_bus_device *dev, int entry,
- 			       unsigned int address)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	struct ps3vram_cache *cache = &priv->cache;
- 
- 	dev_dbg(&dev->core, "Fetching %d: 0x%08x\n", entry, address);
-@@ -345,7 +345,7 @@ static void ps3vram_cache_load(struct ps3_system_bus_device *dev, int entry,
- 
- static void ps3vram_cache_flush(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	struct ps3vram_cache *cache = &priv->cache;
- 	int i;
- 
-@@ -359,7 +359,7 @@ static void ps3vram_cache_flush(struct ps3_system_bus_device *dev)
- static unsigned int ps3vram_cache_match(struct ps3_system_bus_device *dev,
- 					loff_t address)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	struct ps3vram_cache *cache = &priv->cache;
- 	unsigned int base;
- 	unsigned int offset;
-@@ -393,7 +393,7 @@ static unsigned int ps3vram_cache_match(struct ps3_system_bus_device *dev,
- 
- static int ps3vram_cache_init(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 
- 	priv->cache.page_count = CACHE_PAGE_COUNT;
- 	priv->cache.page_size = CACHE_PAGE_SIZE;
-@@ -412,7 +412,7 @@ static int ps3vram_cache_init(struct ps3_system_bus_device *dev)
- 
- static void ps3vram_cache_cleanup(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 
- 	ps3vram_cache_flush(dev);
- 	kfree(priv->cache.tags);
-@@ -421,7 +421,7 @@ static void ps3vram_cache_cleanup(struct ps3_system_bus_device *dev)
- static int ps3vram_read(struct ps3_system_bus_device *dev, loff_t from,
- 			size_t len, size_t *retlen, u_char *buf)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	unsigned int cached, count;
- 
- 	dev_dbg(&dev->core, "%s: from=0x%08x len=0x%zx\n", __func__,
-@@ -465,7 +465,7 @@ static int ps3vram_read(struct ps3_system_bus_device *dev, loff_t from,
- static int ps3vram_write(struct ps3_system_bus_device *dev, loff_t to,
- 			 size_t len, size_t *retlen, const u_char *buf)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	unsigned int cached, count;
- 
- 	if (to >= priv->size)
-@@ -528,7 +528,7 @@ static const struct file_operations ps3vram_proc_fops = {
- 
- static void __devinit ps3vram_proc_init(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	struct proc_dir_entry *pde;
- 
- 	pde = proc_create_data(DEVICE_NAME, 0444, NULL, &ps3vram_proc_fops,
-@@ -540,7 +540,7 @@ static void __devinit ps3vram_proc_init(struct ps3_system_bus_device *dev)
- static struct bio *ps3vram_do_bio(struct ps3_system_bus_device *dev,
- 				  struct bio *bio)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	int write = bio_data_dir(bio) == WRITE;
- 	const char *op = write ? "write" : "read";
- 	loff_t offset = bio->bi_sector << 9;
-@@ -590,7 +590,7 @@ out:
- static int ps3vram_make_request(struct request_queue *q, struct bio *bio)
- {
- 	struct ps3_system_bus_device *dev = q->queuedata;
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	int busy;
- 
- 	dev_dbg(&dev->core, "%s\n", __func__);
-@@ -628,7 +628,7 @@ static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
- 
- 	spin_lock_init(&priv->lock);
- 	bio_list_init(&priv->list);
--	ps3_system_bus_set_driver_data(dev, priv);
-+	ps3_system_bus_set_drvdata(dev, priv);
- 
- 	/* Allocate XDR buffer (1MiB aligned) */
- 	priv->xdr_buf = (void *)__get_free_pages(GFP_KERNEL,
-@@ -793,14 +793,14 @@ out_free_xdr_buf:
- 	free_pages((unsigned long) priv->xdr_buf, get_order(XDR_BUF_SIZE));
- fail_free_priv:
- 	kfree(priv);
--	ps3_system_bus_set_driver_data(dev, NULL);
-+	ps3_system_bus_set_drvdata(dev, NULL);
- fail:
- 	return error;
- }
- 
- static int ps3vram_remove(struct ps3_system_bus_device *dev)
- {
--	struct ps3vram_priv *priv = ps3_system_bus_get_driver_data(dev);
-+	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 
- 	del_gendisk(priv->gendisk);
- 	put_disk(priv->gendisk);
-@@ -817,7 +817,7 @@ static int ps3vram_remove(struct ps3_system_bus_device *dev)
- 	ps3_close_hv_device(dev);
- 	free_pages((unsigned long) priv->xdr_buf, get_order(XDR_BUF_SIZE));
- 	kfree(priv);
--	ps3_system_bus_set_driver_data(dev, NULL);
-+	ps3_system_bus_set_drvdata(dev, NULL);
- 	return 0;
- }
- 
-diff --git a/drivers/net/ps3_gelic_net.c b/drivers/net/ps3_gelic_net.c
-index 30900b3..2b38f39 100644
---- a/drivers/net/ps3_gelic_net.c
-+++ b/drivers/net/ps3_gelic_net.c
-@@ -1648,7 +1648,7 @@ static int ps3_gelic_driver_probe(struct ps3_system_bus_device *dev)
- 		result = -ENOMEM;
- 		goto fail_alloc_card;
- 	}
--	ps3_system_bus_set_driver_data(dev, card);
-+	ps3_system_bus_set_drvdata(dev, card);
- 	card->dev = dev;
- 
- 	/* get internal vlan info */
-@@ -1749,7 +1749,7 @@ fail_alloc_irq:
- 					       bus_id(card),
- 					       0, 0);
- fail_status_indicator:
--	ps3_system_bus_set_driver_data(dev, NULL);
-+	ps3_system_bus_set_drvdata(dev, NULL);
- 	kfree(netdev_card(netdev)->unalign);
- 	free_netdev(netdev);
- fail_alloc_card:
-@@ -1766,7 +1766,7 @@ fail_open:
- 
- static int ps3_gelic_driver_remove(struct ps3_system_bus_device *dev)
- {
--	struct gelic_card *card = ps3_system_bus_get_driver_data(dev);
-+	struct gelic_card *card = ps3_system_bus_get_drvdata(dev);
- 	struct net_device *netdev0;
- 	pr_debug("%s: called\n", __func__);
- 
-@@ -1803,7 +1803,7 @@ static int ps3_gelic_driver_remove(struct ps3_system_bus_device *dev)
- 	kfree(netdev_card(netdev0)->unalign);
- 	free_netdev(netdev0);
- 
--	ps3_system_bus_set_driver_data(dev, NULL);
-+	ps3_system_bus_set_drvdata(dev, NULL);
- 
- 	ps3_dma_region_free(dev->d_region);
- 
-diff --git a/drivers/usb/host/ehci-ps3.c b/drivers/usb/host/ehci-ps3.c
-index 1ba9f9a..bb870b8 100644
---- a/drivers/usb/host/ehci-ps3.c
-+++ b/drivers/usb/host/ehci-ps3.c
-@@ -162,7 +162,7 @@ static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
- 	dev_dbg(&dev->core, "%s:%d: virq            %lu\n", __func__, __LINE__,
- 		(unsigned long)virq);
- 
--	ps3_system_bus_set_driver_data(dev, hcd);
-+	ps3_system_bus_set_drvdata(dev, hcd);
- 
- 	result = usb_add_hcd(hcd, virq, IRQF_DISABLED);
- 
-@@ -195,8 +195,7 @@ fail_start:
- static int ps3_ehci_remove(struct ps3_system_bus_device *dev)
- {
- 	unsigned int tmp;
--	struct usb_hcd *hcd =
--		(struct usb_hcd *)ps3_system_bus_get_driver_data(dev);
-+	struct usb_hcd *hcd = ps3_system_bus_get_drvdata(dev);
- 
- 	BUG_ON(!hcd);
- 
-@@ -208,7 +207,7 @@ static int ps3_ehci_remove(struct ps3_system_bus_device *dev)
- 	ehci_shutdown(hcd);
- 	usb_remove_hcd(hcd);
- 
--	ps3_system_bus_set_driver_data(dev, NULL);
-+	ps3_system_bus_set_drvdata(dev, NULL);
- 
- 	BUG_ON(!hcd->regs);
- 	iounmap(hcd->regs);
-diff --git a/drivers/usb/host/ohci-ps3.c b/drivers/usb/host/ohci-ps3.c
-index 3d19103..1d56259 100644
---- a/drivers/usb/host/ohci-ps3.c
-+++ b/drivers/usb/host/ohci-ps3.c
-@@ -162,7 +162,7 @@ static int ps3_ohci_probe(struct ps3_system_bus_device *dev)
- 	dev_dbg(&dev->core, "%s:%d: virq            %lu\n", __func__, __LINE__,
- 		(unsigned long)virq);
- 
--	ps3_system_bus_set_driver_data(dev, hcd);
-+	ps3_system_bus_set_drvdata(dev, hcd);
- 
- 	result = usb_add_hcd(hcd, virq, IRQF_DISABLED);
- 
-@@ -195,8 +195,7 @@ fail_start:
- static int ps3_ohci_remove(struct ps3_system_bus_device *dev)
- {
- 	unsigned int tmp;
--	struct usb_hcd *hcd =
--		(struct usb_hcd *)ps3_system_bus_get_driver_data(dev);
-+	struct usb_hcd *hcd = ps3_system_bus_get_drvdata(dev);
- 
- 	BUG_ON(!hcd);
- 
-@@ -208,7 +207,7 @@ static int ps3_ohci_remove(struct ps3_system_bus_device *dev)
- 	ohci_shutdown(hcd);
- 	usb_remove_hcd(hcd);
- 
--	ps3_system_bus_set_driver_data(dev, NULL);
-+	ps3_system_bus_set_drvdata(dev, NULL);
- 
- 	BUG_ON(!hcd->regs);
- 	iounmap(hcd->regs);
+ 	kfree(ps3_system_bus_get_drvdata(&dev->sbd));
 -- 
 1.6.2.4
