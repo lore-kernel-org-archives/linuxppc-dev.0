@@ -1,24 +1,23 @@
-Return-Path: <subrata@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 76817B7110
+Return-Path: <prvs=405a8bead=Stephan.Schaller@sensor-technik.de>
+Received: from mail.sensor-technik.de (mail.sensor-technik.de [217.89.75.155])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 1C666B70F4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 03:43:36 +1000 (EST)
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>
-Date: Wed, 10 Jun 2009 23:13:23 +0530
-Message-Id: <20090610174323.28045.70169.sendpatchset@subratamodak.linux.ibm.com>
-Subject: [PATCH] Re:[BUILD FAILURE 04/04] Next June 04:PPC64 randconfig
-	[drivers/net/ucc_geth.o]
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Linux-Kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Linux-Next <linux-next@vger.kernel.org>,
-	Subrata Modak <subrata@linux.vnet.ibm.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+	Thu, 11 Jun 2009 04:14:54 +1000 (EST)
+Received: from keys.sensor-technik.de (localhost [127.0.0.1])
+	by keys.sensor-technik.de (Postfix) with ESMTP id BFF4D703DAF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 10 Jun 2009 20:04:11 +0200 (CEST)
+Received: from mail.sensor-technik.de (unknown [192.168.1.1])
+	by keys.sensor-technik.de (Postfix) with ESMTP id 82811703D90
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 10 Jun 2009 20:03:58 +0200 (CEST)
+From: Schaller Stephan <Stephan.Schaller@sensor-technik.de>
+To: "'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 10 Jun 2009 20:03:56 +0200
+Subject: MPC5200B: Can't receive/handle external Interrupts
+Message-ID: <C10D11C8340AFC47891731EA67CD31C20162F071EFC7@stwex.stww2k.local>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,54 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ling,
-
->On Thu, 2009-06-04 at 19:02 +0530, Subrata Modak wrote:
->CC [M]  drivers/net/ucc_geth.o
-> drivers/net/ucc_geth.c: In function bucc_geth_probeb:
-> drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in this function)
-> drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is reported only once
-> drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
-> drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in this function)
-> make[2]: *** [drivers/net/ucc_geth.o] Error 1
-
-With the above build error reported on 4th June linux next tree, i am proposing
-the following patch. Can you please let me know if you would like to merge it.
-
-Reference: http://lkml.org/lkml/2009/6/4/241,
-Fix the following build error:
-
-drivers/net/ucc_geth.c: In function bucc_geth_probeb:
-drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in this function)
-drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is reported only once
-drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
-drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in this function)
-make[2]: *** [drivers/net/ucc_geth.o] Error 1
-
-Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
----
-
---- linux-2.6.30-rc8/drivers/net/ucc_geth.c.orig	2009-06-10 11:58:39.000000000 -0500
-+++ linux-2.6.30-rc8/drivers/net/ucc_geth.c	2009-06-10 12:37:15.000000000 -0500
-@@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_g
- 
- static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *match)
- {
-+	struct device_node *mdio;
-+	phandle *ph;
- 	struct device *device = &ofdev->dev;
- 	struct device_node *np = ofdev->node;
- 	struct net_device *dev = NULL;
-@@ -3819,7 +3821,7 @@ static int ucc_geth_probe(struct of_devi
- 	ugeth->node = np;
- 
- 	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
--	ph = of_get_property(np, "tbi-handle", NULL);
-+	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
- 	if (ph) {
- 		struct device_node *tbi = of_find_node_by_phandle(*ph);
- 		struct of_device *ofdev;
-
----
-Regards--
-Subrata
+SGVsbG8sDQogDQpJIGFtIHVzaW5nIGEgRnJlZXNjYWxlIE1QQzUyMDBCIHJ1bm5pbmcgTGludXgg
+Mi42LjI3LjEwLiBIYXJkd2FyZSBpcyBkZWNsYXJlZCB1c2luZyBhIGZsYXQgZGV2aWNlIHRyZWUg
+bG9hZGVkIGJ5IHVCb290Lg0KIA0KTXkgUHJvYmxlbSBpcyB0aGF0IGV4dGVybmFsIEludGVycnVw
+dHMgKEkgdXNlIElSUTMpIGdldCBub3QgcmVjZWl2ZWQuDQpJIGNhbiB1c2UgYml0IDE4IG9mIHRo
+ZSBNYWluIEludGVycnVwdCBFbXVsYXRpb24gQWxsIFJlZ2lzdGVyIChNQkFSKzB4NTQwKSB0byB0
+cmlnZ2VyIElSUTMgbWFudWFsbHkgd2hpY2ggY2FsbHMgdXAgbXkgSVNSLg0KSG93ZXZlciwgaWYg
+SSB0cmlnZ2VyIElSUSB1c2luZyBCaXQgNyBvZiB0aGUgSVJRIEludGVycnVwdCBFbXVsYXRpb24g
+QWxsIFJlZ2lzdGVyIChNQkFSKzB4NTQ4KSwgTXkgSVNSIGRvZXMgbm90IGdldCBjYWxsZWQuIFRo
+ZSBNUEM1MjAwIFVzZXIgTWFudWFsIHNheXMgKG9uIHAuIDctMjQpOiAiVGhpcyByZWdpc3RlciBp
+cyByZWR1bmRhbnQgd2l0aCBJSUNUTCBNYWluIEludGVycnVwdCBFbXVsYXRpb24gQWxsIFJlZ2lz
+dGVyIGZvciBJUlExLTMgYnV0IGlzIHRoZSBvbmx5IHNvdXJjZSB0byBlbXVsYXRlIElSUTAuIi4g
+SSB1bmRlcnN0YW5kIHRoaXMgdGhhdCB0aGVyZSBzaG91bGQgbm90IGJlIGEgZGlmZmVyZW5jZSBi
+ZXR3ZWVuIGVtdWxhdGluZyBhbiBleHRlcm5hbCBpbnRlcnJ1cHQgdXNpbmcgb25lIG9mIHRoZXNl
+IHJlZ2lzdGVycyBvciB0aGUgb3RoZXIuIEJ1dCB0aGVyZSBpcy4gSSB0cmllZCBwdWxsaW5nIGRv
+d24gdGhlIElSUTMtUGluIGFzIG1lbnRpb25lZCBpbiB0aGUgbWFudWFsLCBidXQgdGhpcyBkb2Vz
+IG5vdCBtYWtlIGEgZGlmZmVyZW5jZS4NCkkgY2hlY2tlZCB0aGUgTWFpbiBJbnRlcnJ1cHQgU3Rh
+dHVzIEFsbCBSZWdpc3RlciAoTUJBUisweDUyQyksIGJpdCAxOCBhbmQgdGhlIGJpdCBvbmx5IGdl
+dHMgc2V0IHdoZW4gaSB1c2UgdGhlIE1haW4gSW50ZXJydXB0IEVtdWxhdGlvbiBBbGwgUmVnaXN0
+ZXIgdG8gZW11bGF0ZS4gQWxzbywgYWZ0ZXIgc2V0dGluZyB0aGUgYXBwcm9wcmlhdGUgYml0IGlu
+IE1haW4gSW50ZXJydXB0IEVtdWxhdGlvbiBBbGwgUmVnaXN0ZXIsIGl0IGFsc28gaXMgc2V0IGlu
+IElSUSBJbnRlcnJ1cHQgRW11bGF0aW9uIEFsbCBSZWdpc3Rlci4gQnV0IGl0IGRvZXMgbm90IHdv
+cmsgdmljZSB2ZXJzYS4gVGhpcyBpcyBub3Qgd2hhdCBJIHRoaW5rICJyZWR1bmRhbnQiIG1lYW5z
+Li4uDQoNCkkgTWFkZSBzdXJlIHRoYXQgSVJRMyBpcyBlbmFibGVkIGFuZCB1bm1hc2tlZCAoTUJB
+UisweDUxMCwgQml0IDIzID0gMSwgQml0IDE5ID0gMSkuIEZvcndhcmRpbmcgaXQgdG8gU01JIGlu
+c3RlYWQgb2YgSU5UIGRvZXMgbm90IG1ha2UgYSBkaWZmZXJlbmNlLiBJZiBJIGNoYW5nZSBJUlEz
+IHRvIGFjdGl2ZSBoaWdoICh1c2luZyBNQkFSKzB4NTEwKSwgbXkgSVNSIGdldHMgY2FsbGVkIGlu
+c3RhbnRseSwgbm8gbWF0dGVyIHdldGhlciB0aGUgSVJRMy1QaW4gaXMgY29ubmVjdGVkIHRvIGhp
+Z2ggb3IgbG93Lg0KVGhlIEJpdCByZXByZXNlbnRpbmcgSVJRMyBpbiBNYWluIEludGVycnVwdCBT
+dGF0dXMgQWxsIFJlZ2lzdGVyIGRvZXMgbm90IGNoYW5nZSB3aGVuIGkgY29ubmVjdCB0aGUgUGlu
+IHRvIGhpZ2ggb3IgbG93Lg0KDQpTbywgYmFzaWNhbGx5IHR3byBQcm9ibGVtczoNCi0gSVNSIHNl
+ZW1zIG9ubHkgdG8gZ2V0IGNhbGxlZCBieSBhICJNYWluIEludGVycnVwdCIsIG5vdCBieSBhICJJ
+UlEgSW50ZXJydXB0Ii4gSG93IGRvIEkgbWFrZSB0aGUgY29ubmVjdGlvbiBiZXR3ZWVuIHRoZXNl
+Pw0KLSBUaGUgSVJRMyBpbnB1dCBQaW4gbGV2ZWwgaXMgbm90IHNob3duIGluIHRoZSBzdGF0dXMg
+cmVnaXN0ZXIgYW5kIGlzIG5vdCByZWdvZ25pemVkIGJ5IHRoZSBDUFUuDQoNCkkgaGF2ZSBub3Rp
+Y2VkIHNldmVyYWwgcGVvcGxlIGhlcmUgdXNpbmcgZXh0ZXJuYWwgSVJRcywgc28gc29tZW9uZSBt
+aWdodCBob3BlZnVsbHkga25vdyB3aGF0IEkgZm9yZ290IHRvIGRvLiBJJ20gcnVubmluZyBvdXQg
+b2YgaWRlYXMgb24gdGhpcyBvbmUuDQoNCkhlcmUgaXMgc29tZSBhZGRpdGlvbmFsIGluZm9ybWF0
+aW9uOg0KDQoNCkkgZGVjbGFyZSBteSB0ZXN0IGRyaXZlciBpbiB0aGUgRlREIGFzIGZvbGxvd3M6
+DQoNCgkJaXJxdGVzdEAwMCB7DQoJCWNvbXBhdGlibGUgPSAiaXJxdGVzdCI7DQoJCWludGVycnVw
+dHMgPSA8IDEgMyAzID47DQoJCWludGVycnVwdC1wYXJlbnQgPSA8Jm1wYzUyMDBfcGljPjsNCg0K
+DQphbmQgdGhlIFBJQzoNCg0KCQltcGM1MjAwX3BpYzogaW50ZXJydXB0LWNvbnRyb2xsZXJANTAw
+IHsNCgkJCS8vIDUyMDAgaW50ZXJydXB0cyBhcmUgZW5jb2RlZCBpbnRvIHR3byBsZXZlbHM7DQoJ
+CQlpbnRlcnJ1cHQtY29udHJvbGxlcjsNCgkJCSNpbnRlcnJ1cHQtY2VsbHMgPSA8Mz47DQoJCQlk
+ZXZpY2VfdHlwZSA9ICJpbnRlcnJ1cHQtY29udHJvbGxlciI7DQoJCQljb21wYXRpYmxlID0gImZz
+bCxtcGM1MjAwYi1waWMiLCJmc2wsbXBjNTIwMC1waWMiOw0KCQkJcmVnID0gPDB4NTAwIDB4ODA+
+Ow0KCQl9Ow0KDQooT2YgY291cnNlLCB0aGUgUElDIGRyaXZlciBpcyBsb2FkZWQpDQoNCk15IGRy
+aXZlciByZXF1ZXN0cyB0aGUgSVJRIGFzIGZvbGxvd3M6DQoNCiAgIGlycSA9IGlycV9vZl9wYXJz
+ZV9hbmRfbWFwKG9wLT5ub2RlLCAwKTsNCiAgIHJlcXVlc3RfaXJxKGlycSwgaXJxdGVzdF9pc3Is
+IElSUUZfU0FNUExFX1JBTkRPTSwgImlycXRlc3QiLCBOVUxMKTsNCg0KDQp0aGlzIGlzIG15IG91
+dHB1dCB3aGlsZSBsb2FkaW5nIHRoZSBtb2R1bGUgKHNlZW1zIHRvIGJlIE9LKToNCg0KCWluaXRp
+YWxpemluZyBpcnF0ZXN0IG1vZHVsZS4uLg0KCWlycXRlc3Rfb2ZfcHJvYmUgY2FsbGVkLCBtYXBw
+aW5nIGlycS4uLg0KCWlycXRlc3Q6IG1hcHBlZCBpcnEgNjcsIGNhbGxpbmcgcmVxdWVzdF9pcnEu
+Li4NCglyZXF1ZXN0X2lycSByZXR1cm5lZCAwDQoNCg0KDQpUaGFuayB5b3UgaW4gYWR2YW5jZSwN
+ClN0ZXBoYW4gU2NoYWxsZXI=
