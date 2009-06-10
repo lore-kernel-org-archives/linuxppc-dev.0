@@ -1,34 +1,24 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
+Return-Path: <davem@davemloft.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 93011B7354
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3916DB707D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 02:36:15 +1000 (EST)
-Message-ID: <4A2FE0DC.8090405@am.sony.com>
-Date: Wed, 10 Jun 2009 09:35:40 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 29/33] ps3: Correct debug message in dma_ioc0_map_pages()
-References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-18-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-19-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-20-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-21-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-22-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-23-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-26-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-27-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-28-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-29-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-30-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1244644748-24211-30-git-send-email-Geert.Uytterhoeven@sonycom.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+	Thu, 11 Jun 2009 02:45:15 +1000 (EST)
+Date: Wed, 10 Jun 2009 09:45:12 -0700 (PDT)
+Message-Id: <20090610.094512.90091251.davem@davemloft.net>
+To: jk@ozlabs.org
+Subject: Re: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200906102241.47823.jk@ozlabs.org>
+References: <4A2F6D32.8030400@hartkopp.net>
+	<20090610.015245.141342130.davem@davemloft.net>
+	<200906102241.47823.jk@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: patchwork@ozlabs.org, netdev@vger.kernel.org, oliver@hartkopp.net,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,14 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/10/2009 07:39 AM, Geert Uytterhoeven wrote:
-> It reports the failure of a call to lv1_put_iopte(), not
-> lv1_map_device_dma_region().
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-> ---
->  arch/powerpc/platforms/ps3/mm.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Wed, 10 Jun 2009 22:41:47 +1000
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> David,
+> 
+>> We really can't expect patchwork to look for every conceivable
+>> malignment of the various reviewer tags.
+> 
+> No, but we could probably be more tolerant about capitalisation. Any 
+> objections about ignoring case completely? I have a patch ready to 
+> push...
+
+Sure, sounds fine to me.
