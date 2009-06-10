@@ -1,30 +1,27 @@
-Return-Path: <a.gusev1980@mail.ru>
+Return-Path: <ncase@xes-inc.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 87CEEB7177
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C2E24B716D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 07:57:39 +1000 (EST)
-Received: from mx40.mail.ru (mx40.mail.ru [94.100.176.54])
-	by ozlabs.org (Postfix) with ESMTP id B655EDDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 07:57:38 +1000 (EST)
-Date: Thu, 11 Jun 2009 01:57:33 +0400
-From: Andrey Gusev <a.gusev1980@mail.ru>
+	Thu, 11 Jun 2009 08:00:15 +1000 (EST)
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5626FDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 08:00:13 +1000 (EST)
+Subject: Re: [PATCH 00/33] My PS3-specific patches for 2.6.31
+From: Nate Case <ncase@xes-inc.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Delay on intialization ide subsystem(most likely)
-Message-ID: <20090611015733.39bab13a@power-debian>
-In-Reply-To: <1244670377.3352.12.camel@pasglop>
-References: <20090425170203.74603b9c@power-debian>
-	<200905201756.14769.bzolnier@gmail.com>
-	<20090530144643.76cb456e@power-debian>
-	<200906082220.41763.bzolnier@gmail.com>
-	<20090611003834.7bde5e95@power-debian>
-	<1244670377.3352.12.camel@pasglop>
+In-Reply-To: <1244670213.3352.11.camel@pasglop>
+References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244670213.3352.11.camel@pasglop>
+Content-Type: text/plain
+Date: Wed, 10 Jun 2009 17:00:05 -0500
+Message-Id: <1244671205.29684.1611.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-ide@vger.kernel.org, petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,57 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 11 Jun 2009 07:46:17 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Thu, 2009-06-11 at 07:43 +1000, Benjamin Herrenschmidt wrote:
+> Grrrr.....
+> 
+> It's -WAY TOO LATE-
+> 
+> I though I made it clear that patches should be ready in -next
+> -before- the merge window, in fact, by rc7 or rc8, we should have a
+> good idea of what's going in either via my 'next' branch or pending
+> stuff in patchwork.
+> 
+> I'll go through your pile and may still merge it this time around, but
+> you should be more proactive at feeding me with that stuff before it's
+> merge time.
 
-> On Thu, 2009-06-11 at 00:38 +0400, Andrey Gusev wrote:
-> 
-> > I try this small fix, traces in disappeared, but lost interrupts on
-> > the place:) Some interesting thing from dmesg:
-> > 
-> > [    0.435806] irq: irq 251 on
-> > host /pci@f2000000/mac-io@17/interrupt-controller@40000 mapped to
-> > virtual irq 251 [    0.435824] irq: irq 252 on
-> > host /pci@f2000000/mac-io@17/interrupt-controller@40000 mapped to
-> > virtual irq 252 [    0.435840] irq: irq 253 on
-> > host /pci@f2000000/mac-io@17/interrupt-controller@40000 mapped to
-> > virtual irq 253 [    0.435856] irq: irq 254 on
-> > host /pci@f2000000/mac-io@17/interrupt-controller@40000 mapped to
-> > virtual irq 254 [    0.435867] CPU0: L2CR is 80080000
-> > [    0.435880] CPU0: L3CR is 8f0b0000 [478142827.057095] CPU1: L2CR
-> > was 80000 [478142827.057133] CPU1: L2CR set to 80080000
-> > [478142827.057139] CPU1: L3CR was 0 [478142827.057300] CPU1: L3CR
-> > set to 8f0b0000 [    0.437529] Processor 1 found. [    0.437588]
-> > clockevent: decrementer mult[886] shift[16] cpu[1]
-> > 
-> > This is don't look good.
-> 
-> What doesn't look good ? It's copying the L2CR and L3CR values over
-> from CPU 0 to CPU 1 when bringing the later up, I don't see anything
-> wrong.
-> 
-> Cheers,
-> Ben.
+Hmm, I guess this sorta answers my question to Kumar about my recent
+-next submissions being eligible for 2.6.31.  Sorry for not paying
+closer attention -- I just assumed we weren't even close to the cutoff
+time.  I didn't even see Kumar's "next" branch until April 30th (around
+-rc6..rc7 time I think).
 
-I wrote about time, why it have such values on second CPU? Sorry, if this 
-message is silly.
-
-I found configuration, where there isn't delay, but I need more time for
-testing.
-
-> 
-> > > 
-> > > 
-> > > > [   70.584122]  hdb:<3>ide-pmac lost interrupt, dma status: 8480
-> > > 
-> > > DMA status indicates that DMA transfer is still active according
-> > > to the controller.  This one is really a platform/hardware
-> > > specific issue.
-> > > 
-> > 
-> > Notes for Ben, I checked only 2.6.26, but may be somebody checked
-> > 2.6.24 or this is interpolation.
-> > 
-> > Thanks,
-> > Andrey 
-> 
+-- 
+Nate Case <ncase@xes-inc.com>
