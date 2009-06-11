@@ -1,29 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 88BAAB714B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E0361B7197
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 11:35:43 +1000 (EST)
+	Thu, 11 Jun 2009 11:38:10 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D6FF5DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 11:35:42 +1000 (EST)
-Subject: Re: [PATCH 00/33] My PS3-specific patches for 2.6.31
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1244683951.4674.5.camel@concordia>
-References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244670213.3352.11.camel@pasglop>  <4A302B67.4000401@mlbassoc.com>
-	<1244681320.5739.5.camel@pasglop> <1244683951.4674.5.camel@concordia>
-Content-Type: text/plain
-Date: Thu, 11 Jun 2009 11:35:28 +1000
-Message-Id: <1244684128.5739.30.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Gary Thomas <gary@mlbassoc.com>
+	by ozlabs.org (Postfix) with ESMTPS id 3D000DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 11:38:09 +1000 (EST)
+Message-Id: <8BE7FB34-A682-4E6D-B3AC-45D5594812C8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20090603.035132.157926180.davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH 4/4] MPC85xx: Add UCC6 and UCC8 nodes in SGMII mode for
+	MPC8569MDS
+Date: Wed, 10 Jun 2009 20:35:59 -0500
+References: <1243951456-4685-2-git-send-email-Haiying.Wang@freescale.com>
+	<1243951456-4685-3-git-send-email-Haiying.Wang@freescale.com>
+	<1243951456-4685-4-git-send-email-Haiying.Wang@freescale.com>
+	<20090603.035132.157926180.davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, Haiying.Wang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-06-11 at 11:32 +1000, Michael Ellerman wrote:
-> The way I think of it is that the "merge window" is the time for
-> maintainers to merge with Linus.
-> 
-> So if you're sending patches to a maintainer you need to have sent all
-> your patches to them _before_ then. So the merge window for you is the
-> weeks prior to the "merge window".
 
-Right. But a patch generally needs time to be reviewed, spun several
-times, etc... so just the week before the merge window is probably too
-late :-)
+On Jun 3, 2009, at 5:51 AM, David Miller wrote:
 
-A good rule is that people should start sending things to the list for
-review about one kernel release in advance :-)
+> From: Haiying Wang <Haiying.Wang@freescale.com>
+> Date: Tue,  2 Jun 2009 10:04:16 -0400
+>
+>> Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
+>
+> I couldn't apply this to net-next-2.6 because this DTS
+> file being patched doesn't exist there.
+>
+> Perhaps the powerpc-next tree can suck it in...
 
-Now, -rc4 should generally be the wakeup call. It's when I start
-frowning even on bug fixes, and putting together a next branch, at least
-normally. I can be flexible but people need to try to play nicely too.
+I'll pick this one up and send it via the powerpc tree.
 
-Cheers,
-Ben.
+- k
