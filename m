@@ -3,24 +3,28 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 03926B715F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9B676B71A3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 07:41:25 +1000 (EST)
+	Fri, 12 Jun 2009 08:01:13 +1000 (EST)
 Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 58E2EDDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 07:41:23 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so811272ywt.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 14:41:22 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTP id EE352DDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 08:01:12 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so816742ywt.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 15:01:11 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <008701c9eaa7$3c8336c0$8dde520a@cisco.com>
-References: <008701c9eaa7$3c8336c0$8dde520a@cisco.com>
+In-Reply-To: <20090603132217.GA18353@oksana.dev.rtsoft.ru>
+References: <4A255B21.8040002@gersys.de>
+	<20090602171527.GA8745@oksana.dev.rtsoft.ru>
+	<4A266FB2.2040902@gersys.de>
+	<20090603132217.GA18353@oksana.dev.rtsoft.ru>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 11 Jun 2009 15:41:02 -0600
-Message-ID: <fa686aa40906111441n3d4afd48w334b7c0937c000da@mail.gmail.com>
-Subject: Re: System clock systems to be twice as fast as RTC
-To: Subodh Nijsure <sunijsur@cisco.com>
+Date: Thu, 11 Jun 2009 16:00:51 -0600
+Message-ID: <fa686aa40906111500w1760290bm890f3ee132500b1d@mail.gmail.com>
+Subject: Re: PWM class? (was: Re: MPC52xx simple GPIO support)
+To: avorontsov@ru.mvista.com
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
+	Stefan Strobl <nst@gersys.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,136 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 11, 2009 at 9:13 AM, Subodh Nijsure<sunijsur@cisco.com> wrote:
+On Wed, Jun 3, 2009 at 7:22 AM, Anton Vorontsov<avorontsov@ru.mvista.com> w=
+rote:
+> On Wed, Jun 03, 2009 at 02:42:26PM +0200, Stefan Strobl wrote:
+> [...]
+>> The led class provides support for setting the brightness, which
+>> obviously the gpio driver doesn't support. The hardware (mpc52xx_gpt)
+>> would support it in PWM mode though. I'm now wandering how this could be
+>> best implemented.
+>>
+>> 1) - Create some PWM class similar to the GPIO class
+>> =A0 =A0- Add support for PWM mode in mpc52xx_gpt.c that uses that PWM cl=
+ass
+>> =A0 =A0- And add an interface for the LED to use the PWM class
+>>
+>> 2) - Create an LED driver that accesses the mpc52xx_gpt directly.
+>>
+>> I think I would be overwhelmed trying to implement (1) but am confident
+>> to do (2). What do you think is the right approach?
 >
+> I'd suggest creating a generic PWM class, i.e. PWMLIB, alike to
+> GPIOLIB. (2) can be an acceptable approach for now, but for the
+> long-term solution (1) is the way to go.
 >
-> I am running system with kernel 2.6.10 with following cpuinfo
+> The non-lib PWM API is already there, see include/linux/pwm.h,
+> and arch/arm/mach-pxa/pwm.c as an implementation example.
+>
+> Note that PXA implementation is SOC-specific, which is not very
+> good.
+>
+> So I'd suggest creating drivers/pwm/pwmlib.c, borrowing
+> ideas from gpiolib. And then we can reuse drivers/leds/leds-pwm.c
+> driver (of course, after adding appropriate OF code into it).
 
-Wow, that's an old kernel version.  2.6.10 was released in 2004.  Can
-you move up to something more recent?
+Ugh.  The referenced pwm api is about as trivial as it gets; it is an
+anonymous context pointer (anonymous struct pwm_device *) with a set
+of accessor functions.  PWMs are also not nearly as common as GPIO
+pins, and I am not interested in gpiolib being duplicated for PWMs, at
+least not until there are more that just two examples of use to draw
+from.
 
+If anything, I'd rather struct pwm_device be non-anonymous and contain
+a set of ops which call directly into the driver.  That way is at
+least multiplatform friendly.  I don't think the gpio API is the
+example to follow here.  But even then I think it is premature to try
+and define a PWM api.  Personally, I'd modify mpc52xx_gpt to export
+its own PWM interface for the time being using the existing GPIO
+infrastructure to find the appropriate pin.
+
+If you do decide to do a generic PWM api, then I think the way to go
+is to build it as an extension to gpiolib.
+
+Cheers,
 g.
-
-> sh-2.05b# cat /proc/cpuinfo
-> processor =A0 =A0 =A0 : 0
-> cpu =A0 =A0 =A0 =A0 =A0 =A0 : 440 in Virtex-5 FXT
-> clock =A0 =A0 =A0 =A0 =A0 : 200MHz
-> revision =A0 =A0 =A0 =A0: 25.18 (pvr 7ff2 1912)
-> bogomips =A0 =A0 =A0 =A0: 296.96
-> machine =A0 =A0 =A0 =A0 : Xilinx ML507 PPC440 evaluation board
-> plb bus clock =A0 : 100MHz
->
-> The system clock seems to be running twice as as fast as RTC,
->
-> sh-2.05b# date ; sleep 60 ; date
-> Fri Sep 11 01:37:11 UTC 1970
-> Fri Sep 11 01:37:41 UTC 1970
-> sh-2.05b# date ; sleep 60 ; date
-> Fri Sep 11 01:38:21 UTC 1970
-> Fri Sep 11 01:38:51 UTC 1970
-> sh-2.05b# date ; sleep 60 ; date
-> Fri Sep 11 01:38:59 UTC 1970
-> Fri Sep 11 01:39:29 UTC 1970
->
-> I have tried various values of CONFIG_HZ and that didn't help. Google
-> searches has shown up this issue on X86 system but not on PPC. Any hints =
-as
-> to what I should be looking for? I have included relevant portion of conf=
-ig
-> file..
->
->
-> /Subodh
->
->
->
-> CONFIG_MMU=3Dy
-> CONFIG_GENERIC_HARDIRQS=3Dy
-> CONFIG_RWSEM_GENERIC_SPINLOCK=3Dy
-> CONFIG_ASM_SEMAPHORES=3Dy
-> CONFIG_HAVE_DEC_LOCK=3Dy
-> CONFIG_PPC=3Dy
-> CONFIG_PPC32=3Dy
-> CONFIG_GENERIC_NVRAM=3Dy
-> CONFIG_EXPERIMENTAL=3Dy
-> CONFIG_CLEAN_COMPILE=3Dy
-> CONFIG_BROKEN_ON_SMP=3Dy
-> CONFIG_LOCK_KERNEL=3Dy
-> CONFIG_LOCALVERSION=3D""
-> CONFIG_SWAP=3Dy
-> CONFIG_SYSVIPC=3Dy
-> CONFIG_SYSVIPC_SEMMNI=3D128
-> CONFIG_SYSVIPC_SEMMSL=3D250
-> CONFIG_POSIX_MQUEUE=3Dy
-> CONFIG_SYSCTL=3Dy
-> CONFIG_LOG_BUF_SHIFT=3D14
-> CONFIG_HOTPLUG=3Dy
-> CONFIG_KOBJECT_UEVENT=3Dy
-> CONFIG_IKCONFIG=3Dy
-> CONFIG_IKCONFIG_PROC=3Dy
-> CONFIG_KALLSYMS=3Dy
-> CONFIG_FUTEX=3Dy
-> CONFIG_EPOLL=3Dy
-> CONFIG_SHMEM=3Dy
-> CONFIG_CC_ALIGN_FUNCTIONS=3D0
-> CONFIG_CC_ALIGN_LABELS=3D0
-> CONFIG_CC_ALIGN_LOOPS=3D0
-> CONFIG_CC_ALIGN_JUMPS=3D0
-> CONFIG_LTT_MAX_HANDLES=3D128
-> CONFIG_LOCKLESS=3Dy
-> CONFIG_BOOT_FLIGHT_BUFFERS=3D4
-> CONFIG_BOOT_FLIGHT_SIZE=3D524288
-> CONFIG_FLIGHT_PROC_BUFFERS=3D8
-> CONFIG_FLIGHT_PROC_SIZE=3D8192
-> CONFIG_NEWEV=3Dy
-> CONFIG_CSTM=3Dy
-> CONFIG_CREATE_DEV_CONSOLE=3Dy
-> CONFIG_MODULES=3Dy
-> CONFIG_MODULE_UNLOAD=3Dy
-> CONFIG_MODULE_FORCE_UNLOAD=3Dy
-> CONFIG_OBSOLETE_MODPARM=3Dy
-> CONFIG_KMOD=3Dy
-> CONFIG_44x=3Dy
-> CONFIG_BOOKE=3Dy
-> CONFIG_PTE_64BIT=3Dy
-> CONFIG_PHYS_64BIT=3Dy
-> CONFIG_MATH_EMULATION=3Dy
-> CONFIG_4xx=3Dy
-> CONFIG_XILINX_ML507=3Dy
-> CONFIG_XILINX_OCP=3Dy
-> CONFIG_XILINX_VIRTEX_5_FX=3Dy
-> CONFIG_XILINX_VIRTEX=3Dy
-> CONFIG_EMBEDDEDBOOT=3Dy
-> CONFIG_PPC_GEN550=3Dy
-> CONFIG_UART0_TTYS0=3Dy
-> CONFIG_NOT_COHERENT_CACHE=3Dy
-> CONFIG_PREEMPT_DESKTOP=3Dy
-> CONFIG_PREEMPT=3Dy
-> CONFIG_PREEMPT_BKL=3Dy
-> CONFIG_HIGH_RES_TIMERS=3Dy
-> CONFIG_BINFMT_ELF=3Dy
-> CONFIG_CMDLINE_BOOL=3Dy
-> CONFIG_CMDLINE=3D"console=3DttyS0,9600n8 initrd=3D0x1800000,32M rw root=
-=3D/dev/ram
-> ip=3D$(ipaddr)::(gatewayip):$(subnetmask)::eth0:none eth=3D$(ethaddr)"
-> <snip>
->
->
->
->
->
->
->
->
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
-
-
 
 --=20
 Grant Likely, B.Sc., P.Eng.
