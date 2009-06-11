@@ -1,26 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <subrata@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B73C4B71E6
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 08E90B7213
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 13:32:46 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E2AAFDDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 13:32:45 +1000 (EST)
-Message-Id: <E3FB2692-D60E-4C06-BEDD-45441E67458E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-In-Reply-To: <1244547812-3811-1-git-send-email-jacmet@sunsite.dk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] mpc83xx/usb.c: fix usb mux setup for mpc834x
-Date: Wed, 10 Jun 2009 22:32:39 -0500
-References: <1244547812-3811-1-git-send-email-jacmet@sunsite.dk>
-Cc: linuxppc-dev@ozlabs.org
+	Thu, 11 Jun 2009 13:37:20 +1000 (EST)
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Tony Breeds <tony@bakeyournoodle.com>, netdev@vger.kernel.org,
+	michael@ellerman.id.au, Li Yang <leoli@freescale.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, Nathan Lynch <ntl@pobox.com>
+Date: Thu, 11 Jun 2009 09:07:05 +0530
+Message-Id: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com>
+Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig
+	[drivers/net/ucc_geth.o]
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+	Linux-Kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Linux-Next <linux-next@vger.kernel.org>,
+	Subrata Modak <subrata@linux.vnet.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +29,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Nathan,
 
-On Jun 9, 2009, at 6:43 AM, Peter Korsgaard wrote:
+>On Wed, 2009-06-10 at 21:28 -0500, Nathan Lynch wrote:
+>Subrata Modak <subrata@linux.vnet.ibm.com> writes:
+> 
+> > On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
+> >> Hi Subrata,
+> >> 
+> >> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
+> >> >
+> >> >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+> >> > -	ph = of_get_property(np, "tbi-handle", NULL);
+> >> > +	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
+> >> 
+> >> You don't need this cast because of_get_property() returns "void *".
+> >
+> > Stephen,
+> >
+> > True. But without this gcc complains:
+> >
+> > CC [M]  drivers/net/ucc_geth.o
+> > drivers/net/ucc_geth.c: In function ‘ucc_geth_probe’:
+> > drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers
+> > from pointer target type
+> 
+> ph should be declared const phandle *.  Look at other uses of
+> of_get_property.
+>
 
-> usb0 and usb1 mux settings in the sicrl register were swapped (twice!)
-> in mpc834x_usb_cfg(), leading to various strange issues with fsl-ehci
-> and full speed devices.
->
-> The USB port config on mpc834x is done using 2 muxes: Port 0 is always
-> used for MPH port 0, and port 1 can either be used for MPH port 1 or  
-> DR
-> (unless DR uses TMDI phy or OTG, then it uses both ports) - See 8349  
-> RM
-> figure 1-4..
->
-> mpc8349_usb_cfg() had this inverted for the DR, and it also had the  
-> bit
-> positions of the usb0 / usb1 mux settings swapped. It would basically
-> work if you specified port1 instead of port0 for the MPH controller  
-> (and
-> happened to use ULPI phys), which is what all the 834x dts have done,
-> even though that configuration is physically invalid.
->
-> Instead fix mpc8349_usb_cfg() and adjust the dts files to match  
-> reality.
->
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-> ---
-> arch/powerpc/boot/dts/asp834x-redboot.dts |    2 +-
-> arch/powerpc/boot/dts/mpc8349emitx.dts    |    2 +-
-> arch/powerpc/boot/dts/mpc834x_mds.dts     |    2 +-
-> arch/powerpc/boot/dts/sbc8349.dts         |    2 +-
-> arch/powerpc/platforms/83xx/mpc83xx.h     |    4 ++--
-> arch/powerpc/platforms/83xx/usb.c         |   10 +++++-----
-> 6 files changed, 11 insertions(+), 11 deletions(-)
+Ok fine. Here is a revised patch again.
 
-applied.. Please remind me to send this linux-stable for .30 and .29
+Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig [drivers/net/ucc_geth.o]
+Reference(s):
+http://lkml.org/lkml/2009/6/4/241,
+http://lkml.org/lkml/2009/6/10/338,
 
-- k
+Fix the following build error:
+
+drivers/net/ucc_geth.c: In function bucc_geth_probeb:
+drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in this function)
+drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is reported only once
+drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
+drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in this function)
+make[2]: *** [drivers/net/ucc_geth.o] Error 1
+
+Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+---
+
+--- linux-2.6.30-rc8/drivers/net/ucc_geth.c.orig	2009-06-10 11:58:39.000000000 -0500
++++ linux-2.6.30-rc8/drivers/net/ucc_geth.c	2009-06-10 22:28:13.000000000 -0500
+@@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_g
+ 
+ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *match)
+ {
++	struct device_node *mdio;
++	const phandle *ph;
+ 	struct device *device = &ofdev->dev;
+ 	struct device_node *np = ofdev->node;
+ 	struct net_device *dev = NULL;
+
+---
+Regards--
+Subrata
