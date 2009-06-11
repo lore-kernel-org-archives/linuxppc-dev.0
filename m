@@ -1,26 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <ntl@pobox.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 32109B722D
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 61430B726E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 12:22:54 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6F169DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 12:22:53 +1000 (EST)
-Message-Id: <76C9B3EA-967A-4B4F-BC3A-A24942F31294@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kevin Hao <kexin.hao@windriver.com>
-In-Reply-To: <1243389905.13410.6.camel@kevin>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] powerpc/85xx: add nor flash partitions for mpc8569mds
-Date: Wed, 10 Jun 2009 21:20:42 -0500
-References: <1243389905.13410.6.camel@kevin>
-Cc: linuxppc-dev@ozlabs.org, Haiying Wang <Haiying.Wang@freescale.com>
+	Thu, 11 Jun 2009 12:34:20 +1000 (EST)
+To: subrata@linux.vnet.ibm.com
+Subject: Re: [PATCH] Re:[BUILD FAILURE 04/04] Next June 04:PPC64 randconfig
+	[drivers/net/ucc_geth.o]
+References: <20090610174323.28045.70169.sendpatchset@subratamodak.linux.ibm.com>
+	<20090611110523.1fd56a41.sfr@canb.auug.org.au>
+	<1244685364.6494.14.camel@subratamodak.linux.ibm.com>
+From: Nathan Lynch <ntl@pobox.com>
+Date: Wed, 10 Jun 2009 21:28:30 -0500
+In-Reply-To: <1244685364.6494.14.camel@subratamodak.linux.ibm.com> (Subrata
+	Modak's message of "Thu\, 11 Jun 2009 07\:26\:04 +0530")
+Message-ID: <m3d49btsfl.fsf@pobox.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
+	Linux-Kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Linux-Next <linux-next@vger.kernel.org>, Li Yang <leoli@freescale.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,60 +34,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Subrata Modak <subrata@linux.vnet.ibm.com> writes:
 
-On May 26, 2009, at 9:05 PM, Kevin Hao wrote:
-
-> Add 4 partitions in nor flash. Also fix nor flash
-> bank width bug.
-
-Can you explain this.. I'm trying to understand why you set the bank- 
-width to 1
-
-- k
-
+> On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
+>> Hi Subrata,
+>>=20
+>> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm=
+.com> wrote:
+>> >
+>> >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+>> > -	ph =3D of_get_property(np, "tbi-handle", NULL);
+>> > +	ph =3D (phandle *)of_get_property(np, "tbi-handle", NULL);
+>>=20
+>> You don't need this cast because of_get_property() returns "void *".
 >
+> Stephen,
 >
-> Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
-> ---
-> arch/powerpc/boot/dts/mpc8569mds.dts |   24 +++++++++++++++++++++++-
-> 1 files changed, 23 insertions(+), 1 deletions(-)
+> True. But without this gcc complains:
 >
-> diff --git a/arch/powerpc/boot/dts/mpc8569mds.dts b/arch/powerpc/ 
-> boot/dts/mpc8569mds.dts
-> index 39c2927..1f98990 100644
-> --- a/arch/powerpc/boot/dts/mpc8569mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8569mds.dts
-> @@ -70,8 +70,30 @@
-> 			#size-cells = <1>;
-> 			compatible = "cfi-flash";
-> 			reg = <0x0 0x0 0x02000000>;
-> -			bank-width = <2>;
-> +			bank-width = <1>;
-> 			device-width = <1>;
-> +			partition@0 {
-> +				label = "ramdisk";
-> +				reg = <0x00000000 0x01c00000>;
-> +			};
-> +			partition@1c00000 {
-> +				label = "kernel";
-> +				reg = <0x01c00000 0x002e0000>;
-> +			};
-> +			partiton@1ee0000 {
-> +				label = "dtb";
-> +				reg = <0x01ee0000 0x00020000>;
-> +			};
-> +			partition@1f00000 {
-> +				label = "firmware";
-> +				reg = <0x01f00000 0x00080000>;
-> +				read-only;
-> +			};
-> +			partition@1f80000 {
-> +				label = "u-boot";
-> +				reg = <0x01f80000 0x00080000>;
-> +				read-only;
-> +			};
-> 		};
->
-> 		bcsr@1,0 {
-> -- 
-> 1.6.0.4.771.gef3b3
+> CC [M]  drivers/net/ucc_geth.o
+> drivers/net/ucc_geth.c: In function =E2=80=98ucc_geth_probe=E2=80=99:
+> drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers
+> from pointer target type
+
+ph should be declared const phandle *.  Look at other uses of
+of_get_property.
