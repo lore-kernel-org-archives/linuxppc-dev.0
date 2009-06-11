@@ -1,42 +1,26 @@
-Return-Path: <wayneb@linux.vnet.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BEECAB71D4
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B73C4B71E6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 13:23:26 +1000 (EST)
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	Thu, 11 Jun 2009 13:32:46 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2BDA0DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 13:23:25 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n5B3HNd5008894
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 23:17:23 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n5B3NLGX150830
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 23:23:21 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n5B3NL5W032155
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2009 23:23:21 -0400
-Message-ID: <4A3078A7.20406@linux.vnet.ibm.com>
-Date: Wed, 10 Jun 2009 20:23:19 -0700
-From: Wayne Boyer <wayneb@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Brian King <brking@linux.vnet.ibm.com>
-Subject: Re: ipr boot failure caused by MSI (2.6.30-rc1+)
-References: <1242926159.3007.5.camel@localhost.localdomain>
-	<4A15A1B2.8060609@linux.vnet.ibm.com>
-	<1242935515.3007.10.camel@localhost.localdomain>
-	<1243009395.2873.18.camel@localhost.localdomain>
-	<4A205B40.30306@linux.vnet.ibm.com>
-In-Reply-To: <4A205B40.30306@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-	ppc-dev <linuxppc-dev@ozlabs.org>, linux-scsi <linux-scsi@vger.kernel.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E2AAFDDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 13:32:45 +1000 (EST)
+Message-Id: <E3FB2692-D60E-4C06-BEDD-45441E67458E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+In-Reply-To: <1244547812-3811-1-git-send-email-jacmet@sunsite.dk>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH] mpc83xx/usb.c: fix usb mux setup for mpc834x
+Date: Wed, 10 Jun 2009 22:32:39 -0500
+References: <1244547812-3811-1-git-send-email-jacmet@sunsite.dk>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,40 +31,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+On Jun 9, 2009, at 6:43 AM, Peter Korsgaard wrote:
 
-Brian King wrote:
-> James Bottomley wrote:
->> On Thu, 2009-05-21 at 14:51 -0500, James Bottomley wrote:
->> I saw the quirk fix for this go by:
->>
->> http://ozlabs.org/pipermail/linuxppc-dev/2009-May/072436.html
->>
->> Is there an easy way to trigger an interrupt on this device?  Preferably
->> in ipr_probe_ioa() so we can at least print out if the interrupts are
->> misrouted and fall back from MSI to normal using the PCI infrastructure?
-> 
-> I just talked with one of the adapter firmware developers and it sounds like
-> this might be possible. I'll work with Wayne on coding something up to try.
-> 
-> -Brian
-> 
+> usb0 and usb1 mux settings in the sicrl register were swapped (twice!)
+> in mpc834x_usb_cfg(), leading to various strange issues with fsl-ehci
+> and full speed devices.
+>
+> The USB port config on mpc834x is done using 2 muxes: Port 0 is always
+> used for MPH port 0, and port 1 can either be used for MPH port 1 or  
+> DR
+> (unless DR uses TMDI phy or OTG, then it uses both ports) - See 8349  
+> RM
+> figure 1-4..
+>
+> mpc8349_usb_cfg() had this inverted for the DR, and it also had the  
+> bit
+> positions of the usb0 / usb1 mux settings swapped. It would basically
+> work if you specified port1 instead of port0 for the MPH controller  
+> (and
+> happened to use ULPI phys), which is what all the 834x dts have done,
+> even though that configuration is physically invalid.
+>
+> Instead fix mpc8349_usb_cfg() and adjust the dts files to match  
+> reality.
+>
+> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+> ---
+> arch/powerpc/boot/dts/asp834x-redboot.dts |    2 +-
+> arch/powerpc/boot/dts/mpc8349emitx.dts    |    2 +-
+> arch/powerpc/boot/dts/mpc834x_mds.dts     |    2 +-
+> arch/powerpc/boot/dts/sbc8349.dts         |    2 +-
+> arch/powerpc/platforms/83xx/mpc83xx.h     |    4 ++--
+> arch/powerpc/platforms/83xx/usb.c         |   10 +++++-----
+> 6 files changed, 11 insertions(+), 11 deletions(-)
 
-I've put together some code to trigger the test MSI and either fall back to
-LSI if it isn't detected, or continue on using MSI.  In the routine that
-does the setup and test I have this call to request_irq:
+applied.. Please remind me to send this linux-stable for .30 and .29
 
-rc = request_irq(pdev->irq, ipr_test_intr, 0, IPR_NAME, ioa_cfg);
-
-Note that the flags value is '0'.  The question came up as to whether or
-not this value should really be IRQF_SHARED.  Given that this is for an MSI
-interrupt and MSI interrupts are not shared by definition, IRQF_SHARED did
-not seem correct.
-
-What should the flags value be in this case?
-
-
--- 
-Wayne Boyer
-IBM - Beaverton, Oregon
-LTC S/W Development - eServerIO
-(503) 578-5236, T/L 775-5236
+- k
