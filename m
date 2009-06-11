@@ -3,31 +3,29 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9D77BB719B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5DD04B71C1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 12:01:13 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8D076DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 12:01:13 +1000 (EST)
-Subject: Re: [PATCH 00/33] My PS3-specific patches for 2.6.31
+	Thu, 11 Jun 2009 12:03:12 +1000 (EST)
+Subject: Re: [PATCH] Re:[BUILD FAILURE 04/04] Next June 04:PPC64 randconfig
+	[drivers/net/ucc_geth.o]
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1244684128.5739.30.camel@pasglop>
-References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244670213.3352.11.camel@pasglop>  <4A302B67.4000401@mlbassoc.com>
-	<1244681320.5739.5.camel@pasglop> <1244683951.4674.5.camel@concordia>
-	<1244684128.5739.30.camel@pasglop>
+To: subrata@linux.vnet.ibm.com
+In-Reply-To: <1244685364.6494.14.camel@subratamodak.linux.ibm.com>
+References: <20090610174323.28045.70169.sendpatchset@subratamodak.linux.ibm.com>
+	<20090611110523.1fd56a41.sfr@canb.auug.org.au>
+	<1244685364.6494.14.camel@subratamodak.linux.ibm.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-VM4UiT9Z2DNRq/Q29z0y"
-Date: Thu, 11 Jun 2009 12:01:12 +1000
-Message-Id: <1244685672.4674.10.camel@concordia>
+	boundary="=-Gs/KyC+TrNDFjdC2ZtWn"
+Date: Thu, 11 Jun 2009 12:03:11 +1000
+Message-Id: <1244685791.4674.12.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Gary Thomas <gary@mlbassoc.com>
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
+	Linux-Kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Linux-Next <linux-next@vger.kernel.org>, Li Yang <leoli@freescale.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -39,49 +37,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-VM4UiT9Z2DNRq/Q29z0y
-Content-Type: text/plain
+--=-Gs/KyC+TrNDFjdC2ZtWn
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2009-06-11 at 11:35 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2009-06-11 at 11:32 +1000, Michael Ellerman wrote:
-> > The way I think of it is that the "merge window" is the time for
-> > maintainers to merge with Linus.
+On Thu, 2009-06-11 at 07:26 +0530, Subrata Modak wrote:
+> On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
+> > Hi Subrata,
 > >=20
-> > So if you're sending patches to a maintainer you need to have sent all
-> > your patches to them _before_ then. So the merge window for you is the
-> > weeks prior to the "merge window".
+> > On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ib=
+m.com> wrote:
+> > >
+> > >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+> > > -	ph =3D of_get_property(np, "tbi-handle", NULL);
+> > > +	ph =3D (phandle *)of_get_property(np, "tbi-handle", NULL);
+> >=20
+> > You don't need this cast because of_get_property() returns "void *".
 >=20
-> Right. But a patch generally needs time to be reviewed, spun several
-> times, etc... so just the week before the merge window is probably too
-> late :-)
+> Stephen,
+>=20
+> True. But without this gcc complains:
+>=20
+> CC [M]  drivers/net/ucc_geth.o
+> drivers/net/ucc_geth.c: In function =E2=80=98ucc_geth_probe=E2=80=99:
+> drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers from=
+ pointer target type
+                                                           ^^^^^^^^^^^
 
-Sure. I mean that's when you should be sending polished code that's
-ready to merge. In the same way that the maintainers are sending
-polished ready to merge code to Linus during the merge window.
+And what does that warning actually mean?
 
-But absolutely, most patches need to be reviewed at least once before
-they're ready, which is probably a week at best.
-
-
-But really people should just be sending patches ASAP, even if they're
-not 100% finished, so they get as much exposure as early as possible.
-
-Sitting on patches waiting for the "right time" to send them is the
-wrong approach IMHO.
+Your cast actually introduces a bug.
 
 cheers
 
---=-VM4UiT9Z2DNRq/Q29z0y
+--=-Gs/KyC+TrNDFjdC2ZtWn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkowZWgACgkQdSjSd0sB4dJGbACfdNsAq9grCvDBQVflSOC3cgqG
-8gEAoL3ZGX5K9eOi/WtADJ5zIVE+tdwl
-=A8zC
+iEYEABECAAYFAkowZd8ACgkQdSjSd0sB4dLk5gCcC/h3ugX0KI34JeU9onHHPv7t
+iL8AnA6s3XJ6wOJGrHrwg+LQavqZWNw/
+=5Ygr
 -----END PGP SIGNATURE-----
 
---=-VM4UiT9Z2DNRq/Q29z0y--
+--=-Gs/KyC+TrNDFjdC2ZtWn--
