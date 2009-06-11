@@ -1,37 +1,27 @@
-Return-Path: <sunijsur@cisco.com>
+Return-Path: <ncase@xes-inc.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BAFFAB7165
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D748DB7149
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 01:24:27 +1000 (EST)
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-4.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0DA53DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 01:24:26 +1000 (EST)
-Received: from sj-core-4.cisco.com (sj-core-4.cisco.com [171.68.223.138])
-	by sj-dkim-4.cisco.com (8.12.11/8.12.11) with ESMTP id n5BFDukI031830
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 08:13:56 -0700
-Received: from sj-webmail-9.cisco.com (sj-webmail-9.cisco.com [171.71.183.158])
-	by sj-core-4.cisco.com (8.13.8/8.13.8) with ESMTP id n5BFDusL004748
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 15:13:56 GMT
-Received: from sj-webmail-9.cisco.com (localhost.localdomain [127.0.0.1])
-	by sj-webmail-9.cisco.com (8.13.1/8.13.1) with ESMTP id n5BFDuJw015688
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 08:13:56 -0700
-Received: from sj-webmail-9 (root@localhost)
-	by sj-webmail-9.cisco.com (8.13.1/8.13.1/Submit) with ESMTP id
-	n5BFDtmt015687
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 08:13:56 -0700
-Date: Thu, 11 Jun 2009 08:13:54 -0700
-From: Subodh Nijsure <sunijsur@cisco.com>
-To: <linuxppc-dev@ozlabs.org>
-Message-ID: <008701c9eaa7$3c8336c0$8dde520a@cisco.com>
-Subject: System clock systems to be twice as fast as RTC
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Fri, 12 Jun 2009 02:05:25 +1000 (EST)
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 41AEBDDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 02:05:24 +1000 (EST)
+Subject: Re: [PATCH v2 -next] powerpc/85xx: Add support for X-ES MPC85xx boards
+From: Nate Case <ncase@xes-inc.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20090611013201.GA31850@yookeroo.seuss>
+References: <1244673039-1089-1-git-send-email-ncase@xes-inc.com>
+	<20090611013201.GA31850@yookeroo.seuss>
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 11:04:59 -0500
+Message-Id: <1244736299.29684.1641.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,107 +31,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi David,
 
+Thanks for the comments.
 
-I am running system with kernel 2.6.10 with following cpuinfo
+On Thu, 2009-06-11 at 11:32 +1000, David Gibson wrote:
+> These last two aren't standard properties, so should probably be
+> "xes,form-factor" and "xes,boot-bank".
 
-sh-2.05b# cat /proc/cpuinfo
-processor       : 0
-cpu             : 440 in Virtex-5 FXT
-clock           : 200MHz
-revision        : 25.18 (pvr 7ff2 1912)
-bogomips        : 296.96
-machine         : Xilinx ML507 PPC440 evaluation board
-plb bus clock   : 100MHz
+I'll just delete them for now since they're not critical.
 
-The system clock seems to be running twice as as fast as RTC, 
+> > +	pmcslots {
+> 
+> What does this structure model?  Without any reg properties it's kind
+> of hard to see what you could do with it.
 
-sh-2.05b# date ; sleep 60 ; date
-Fri Sep 11 01:37:11 UTC 1970
-Fri Sep 11 01:37:41 UTC 1970
-sh-2.05b# date ; sleep 60 ; date
-Fri Sep 11 01:38:21 UTC 1970
-Fri Sep 11 01:38:51 UTC 1970
-sh-2.05b# date ; sleep 60 ; date
-Fri Sep 11 01:38:59 UTC 1970
-Fri Sep 11 01:39:29 UTC 1970
+This would be a bit more obvious to those familiar with CompactPCI and
+PMC modules.  It aims to describe how many PMC slots are in the system,
+and gives information on whether or not a module is installed and if
+it's monarch of the bus or not.  So it's really just a description of
+the hardware.  The properties themselves are useful because you may have
+to read from GPIO lines to get this information (which may be accessible
+only via I2C, which can't be done too early in the kernel).  A reg
+property could be used just for indexing the slots, but there are no
+real memory-mapped resources involved for the slot itself (that
+information would go in the PCI nodes).
 
-I have tried various values of CONFIG_HZ and that didn't help. Google
-searches has shown up this issue on X86 system but not on PPC. Any hints as
-to what I should be looking for? I have included relevant portion of config
-file..
+It'd be nice if we could get a device tree standard for this type of
+information in the future, but for now I can just delete it since we
+don't yet rely on it in the kernel.
 
+> > +
+> > +				tbi2: tbi-phy@11 {
+> > +					reg = <0x11>;
+> > +					device_type = "tbi-phy";
+> 
+> And this one, too.  Although this node should probably have a
+> compatible property instead.
 
-/Subodh
+I don't think I can drop that device_type yet.  All the other device
+trees for Freescale boards use it, and the Freescale MDIO driver appears
+to rely on it.  A future patch I suppose?
 
+> Analagous comments for the other device trees.
 
+Thanks again.  I'll fix up the other things you and Kumar mentioned and
+re-submit today.
 
-CONFIG_MMU=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_RWSEM_GENERIC_SPINLOCK=y
-CONFIG_ASM_SEMAPHORES=y
-CONFIG_HAVE_DEC_LOCK=y
-CONFIG_PPC=y
-CONFIG_PPC32=y
-CONFIG_GENERIC_NVRAM=y
-CONFIG_EXPERIMENTAL=y
-CONFIG_CLEAN_COMPILE=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_LOCALVERSION=""
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SEMMNI=128
-CONFIG_SYSVIPC_SEMMSL=250
-CONFIG_POSIX_MQUEUE=y
-CONFIG_SYSCTL=y
-CONFIG_LOG_BUF_SHIFT=14
-CONFIG_HOTPLUG=y
-CONFIG_KOBJECT_UEVENT=y
-CONFIG_IKCONFIG=y
-CONFIG_IKCONFIG_PROC=y
-CONFIG_KALLSYMS=y
-CONFIG_FUTEX=y
-CONFIG_EPOLL=y
-CONFIG_SHMEM=y
-CONFIG_CC_ALIGN_FUNCTIONS=0
-CONFIG_CC_ALIGN_LABELS=0
-CONFIG_CC_ALIGN_LOOPS=0
-CONFIG_CC_ALIGN_JUMPS=0
-CONFIG_LTT_MAX_HANDLES=128
-CONFIG_LOCKLESS=y
-CONFIG_BOOT_FLIGHT_BUFFERS=4
-CONFIG_BOOT_FLIGHT_SIZE=524288
-CONFIG_FLIGHT_PROC_BUFFERS=8
-CONFIG_FLIGHT_PROC_SIZE=8192
-CONFIG_NEWEV=y
-CONFIG_CSTM=y
-CONFIG_CREATE_DEV_CONSOLE=y
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_MODULE_FORCE_UNLOAD=y
-CONFIG_OBSOLETE_MODPARM=y
-CONFIG_KMOD=y
-CONFIG_44x=y
-CONFIG_BOOKE=y
-CONFIG_PTE_64BIT=y
-CONFIG_PHYS_64BIT=y
-CONFIG_MATH_EMULATION=y
-CONFIG_4xx=y
-CONFIG_XILINX_ML507=y
-CONFIG_XILINX_OCP=y
-CONFIG_XILINX_VIRTEX_5_FX=y
-CONFIG_XILINX_VIRTEX=y
-CONFIG_EMBEDDEDBOOT=y
-CONFIG_PPC_GEN550=y
-CONFIG_UART0_TTYS0=y
-CONFIG_NOT_COHERENT_CACHE=y
-CONFIG_PREEMPT_DESKTOP=y
-CONFIG_PREEMPT=y
-CONFIG_PREEMPT_BKL=y
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_BINFMT_ELF=y
-CONFIG_CMDLINE_BOOL=y
-CONFIG_CMDLINE="console=ttyS0,9600n8 initrd=0x1800000,32M rw root=/dev/ram
-ip=$(ipaddr)::(gatewayip):$(subnetmask)::eth0:none eth=$(ethaddr)"
-<snip>
+-- 
+Nate Case <ncase@xes-inc.com>
