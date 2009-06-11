@@ -3,24 +3,28 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9CCF0B7104
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 088E0B7161
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 03:30:34 +1000 (EST)
-Received: from mail-gx0-f210.google.com (mail-gx0-f210.google.com
-	[209.85.217.210]) by ozlabs.org (Postfix) with ESMTP id D61B9DDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 03:30:33 +1000 (EST)
-Received: by gxk6 with SMTP id 6so1925761gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 10:30:31 -0700 (PDT)
+	Fri, 12 Jun 2009 03:36:06 +1000 (EST)
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id 37F72DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 03:36:04 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so743234ywt.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 10:36:02 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1243454441.3489.1@antares>
-References: <1243454441.3489.1@antares>
+In-Reply-To: <20090611165527.GB28028@pengutronix.de>
+References: <1244576781.3455.0@antares>
+	<fa686aa40906110927w60a5a74alaa3420b9bf3f3e44@mail.gmail.com>
+	<20090611165527.GB28028@pengutronix.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 11 Jun 2009 11:30:11 -0600
-Message-ID: <fa686aa40906111030h5cebcbd6xeee76561601cf41a@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: tiny memcpy_(to|from)io optimisation
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Date: Thu, 11 Jun 2009 11:28:50 -0600
+Message-ID: <fa686aa40906111028w6311b244pe934400d0c6f44f8@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/mpc52xx/mtd: fix mtd-ram access for 16-bit Local
+	Plus Bus
+To: Wolfram Sang <w.sang@pengutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Cc: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>,
+	dwmw2@infradead.org, Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,54 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 27, 2009 at 2:00 PM, Albrecht Dre=DF<albrecht.dress@arcor.de> w=
-rote:
-> This trivial patch changes memcpy_(to|from)io as to transfer as many 32-b=
-it
-> words as possible in 32-bit accesses (in the current solution, the last
-> 32-bit word was transferred as 4 byte accesses).
+On Thu, Jun 11, 2009 at 10:55 AM, Wolfram Sang<w.sang@pengutronix.de> wrote=
+:
+>> Blech. =A0ugly #ifdef and not really multiplatform safe (yeah, I know it
+>> shouldn't break non-5200 platforms, but it does have an undesirable
+>> impact). =A0There's got to be a better way.
 >
-> Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> What about putting the special memcpy in asm/io.h (like it is done for ee=
+h)?
 
-> ---
->
-> diff -urpN -X linux-2.6.29.1.orig/Documentation/dontdiff
-> linux-2.6.29.1.orig/arch/powerpc/kernel/io.c
-> linux-2.6.29.1/arch/powerpc/kernel/io.c
-> --- linux-2.6.29.1.orig/arch/powerpc/kernel/io.c =A0 =A0 =A0 =A02009-04-0=
-2
-> 22:55:27.000000000 +0200
-> +++ linux-2.6.29.1/arch/powerpc/kernel/io.c =A0 =A0 2009-05-27
-> 11:36:09.000000000 +0200
-> @@ -161,7 +161,7 @@ void _memcpy_fromio(void *dest, const vo
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dest++;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0n--;
-> =A0 =A0 =A0 =A0}
-> - =A0 =A0 =A0 while(n > 4) {
-> + =A0 =A0 =A0 while(n >=3D 4) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*((u32 *)dest) =3D *((volatile u32 *)vsrc)=
-;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0eieio();
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0vsrc +=3D 4;
-> @@ -190,7 +190,7 @@ void _memcpy_toio(volatile void __iomem
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0vdest++;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0n--;
-> =A0 =A0 =A0 =A0}
-> - =A0 =A0 =A0 while(n > 4) {
-> + =A0 =A0 =A0 while(n >=3D 4) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*((volatile u32 *)vdest) =3D *((volatile u=
-32 *)src);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0src +=3D 4;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0vdest +=3D 4;
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+It is a beefy enough function that it is probably a net loss to make
+it an inline static in the header file.  It should be an exported
+function.
 
+> Will this cause too much overhead for a memcpy which does not go to the L=
+PB?
 
+It doesn't solve my concerns.  bankwidth=3D=3D2 is the wrong test; plenty
+of non-mpc5200 platforms could have the same property set without
+needing the workaround.
+
+inline_map_copy_to is used in exactly 2 places in drivers/mtd/* and
+include/linux/mtd/*:
+1) the definition of map_copy_to() in include/linux/mtd/map.h
+- map_copy_to() is only used by maprap_write() which is a mtd_info hook.
+2) the definition of simple_map_copy_to() in drivers/mtd/maps/map_funcs.c
+- a map_info hook.
+
+So; the solution to me seems to be on an MPC5200 platform replace the
+offending hooks with MPC5200 specific variants at runtime.
+
+g.
 
 --=20
 Grant Likely, B.Sc., P.Eng.
