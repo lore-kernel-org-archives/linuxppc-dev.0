@@ -3,23 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 696A8B7167
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2A4EFB7147
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 10:48:48 +1000 (EST)
+	Thu, 11 Jun 2009 10:50:59 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B781ADDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 10:48:47 +1000 (EST)
-Subject: Re: [PATCH 00/33] My PS3-specific patches for 2.6.31
+	by ozlabs.org (Postfix) with ESMTPS id 7D325DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 10:50:58 +1000 (EST)
+Subject: Re: next branch update
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gary Thomas <gary@mlbassoc.com>
-In-Reply-To: <4A302B67.4000401@mlbassoc.com>
-References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244670213.3352.11.camel@pasglop>  <4A302B67.4000401@mlbassoc.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+In-Reply-To: <20090610175602.722bf68d@lappy.seanm.ca>
+References: <1242890760.5109.1.camel@pasglop>
+	<20090610175602.722bf68d@lappy.seanm.ca>
 Content-Type: text/plain
-Date: Thu, 11 Jun 2009 10:48:40 +1000
-Message-Id: <1244681320.5739.5.camel@pasglop>
+Date: Thu, 11 Jun 2009 10:50:52 +1000
+Message-Id: <1244681452.5739.7.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,38 +31,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-06-10 at 15:53 -0600, Gary Thomas wrote:
+On Wed, 2009-06-10 at 17:56 -0400, Sean MacLennan wrote:
+> What ever happened to this patch?
 
-> Trying to understand the process (in preparation for any patches
-> I may want to push upstream) - how can this be too late for 2.6.31?
-> 2.6.30 just came out today...
+Dunno... It should have been in patchwork. I remember the patch
+in fact and I intended to merge it... Can you re-submit with appropriate
+cset comment, signed-off-by etc... ?
 
-I'm taking the liberty to reply to the list here because I think
-more people need to understand that problem :-)
-
-Because the process is such that new features can only be merged
-during the 2 weeks merge window, which started ... yesterday.
-
-Also, it's frowned upon to have lots of new stuff close to the end of
-the merge window.
-
-The idea is that stuff to go into 2.6.31 should have essentially been
-ready to merge -before- the merge window opens, ie, before 2.6.30 is
-released, for us maintainers to be ready to push things out when the
-merge window open and spend that time sorting out collisions &
-conflicts, -not- reviewing new features that have been sent way too
-late.
-
-In addition, before being merged, patches should generally be post long
-in advance since they are likely to go through several revisions as
-people review and comment on them. This process must happen long before
-the patch is queued up for the actual merge.
-
-So when the merge window opens, it's too late to have your patch be
-submitted for the first time. Patches that have been submitted a while
-ago and just didn't make it yet into my "next" branch due to my own
-lazyness are generally fine. Bug fixes too, at least until -rc3 or -rc4,
-after which only major bug fixes and regressions are accepted.
+(Mistakes -do- happen, which is why we can be flexible with the rules,
+btw, but heh, 33 new patches the day the merge window opens is a bit
+over the top).
 
 Cheers,
 Ben.
+
+> diff --git b/arch/powerpc/platforms/44x/warp.c
+> a/arch/powerpc/platforms/44x/warp.c index c511880..7f3c1c7 100644
+> --- b/arch/powerpc/platforms/44x/warp.c
+> +++ a/arch/powerpc/platforms/44x/warp.c
+> @@ -43,7 +43,13 @@ static int __init warp_probe(void)
+>  {
+>  	unsigned long root = of_get_flat_dt_root();
+>  
+> -	return of_flat_dt_is_compatible(root, "pika,warp");
+> +	if (!of_flat_dt_is_compatible(root, "pika,warp"))
+> +		return 0;
+> +
+> +	/* For __dma_alloc_coherent */
+> +	ISA_DMA_THRESHOLD = ~0L;
+> +
+> +	return 1;
+>  }
+>  
+> I don't see it in patchworks and I don't see it in Ben's or Josh's tree.
+> 
+> Cheers,
+>    Sean
