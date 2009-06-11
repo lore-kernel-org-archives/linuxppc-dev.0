@@ -1,22 +1,25 @@
-Return-Path: <rini@arvoo.nl>
+Return-Path: <sshtylyov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BA1B7B7102
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E08C5B7135
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 19:11:14 +1000 (EST)
-Received: from smtp3.euronet.nl (smtp3.euronet.nl [194.134.35.173])
-	by ozlabs.org (Postfix) with ESMTP id E5BD1DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 19:11:12 +1000 (EST)
-Message-ID: <4A30CA1F.4000702@arvoo.nl>
-Date: Thu, 11 Jun 2009 11:10:55 +0200
-From: Rini van Zetten <rini@arvoo.nl>
+	Thu, 11 Jun 2009 19:29:52 +1000 (EST)
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 90C83DDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 19:29:51 +1000 (EST)
+Message-ID: <4A30CE85.40508@ru.mvista.com>
+Date: Thu, 11 Jun 2009 13:29:41 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: galak@kernel.crashing.org,
-	spi-devel-general@lists.sourceforge.net, Linuxppc-dev@ozlabs.org
-Subject: [PATCH][POWERPC] mpc83xx : allow SPI without cs.
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] sata_fsl: Add power mgmt support
+References: <1244692417-18484-1-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1244692417-18484-1-git-send-email-galak@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, jeff@garzik.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,85 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the possibility to have a spi device without a cs.
+Hello.
 
-For example, the dts file should look something like this:
+Kumar Gala wrote:
 
-spi-controller {
-        gpios = <&pio1 1 0      /* cs0 */
-                 0              /* cs1, no GPIO */
-                 &pio2 2 0>;    /* cs2 */
+> From: Dave Liu <daveliu@freescale.com>
+>
+> Signed-off-by: Dave Liu <daveliu@freescale.com>
+> Signed-off-by: Liu Yu <yu.liu@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  drivers/ata/sata_fsl.c |   35 +++++++++++++++++++++++++++++++++++
+>  1 files changed, 35 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+> index 36b8629..94eaa43 100644
+> --- a/drivers/ata/sata_fsl.c
+> +++ b/drivers/ata/sata_fsl.c
+> @@ -1378,6 +1378,37 @@ static int sata_fsl_remove(struct of_device *ofdev)
+>  	return 0;
+>  }
+>  
+> +#ifdef CONFIG_PM
+> +static int sata_fsl_suspend(struct of_device *op, pm_message_t state)
+> +{
+> +	struct ata_host *host = dev_get_drvdata(&op->dev);
+> +	return ata_host_suspend(host, state);
+> +}
+> +
+> +static int sata_fsl_resume(struct of_device *op)
+> +{
+> +	struct ata_host *host = dev_get_drvdata(&op->dev);
+> +	struct sata_fsl_host_priv *host_priv = host->private_data;
+> +	int ret;
+> +	void __iomem *hcr_base = host_priv->hcr_base;
+> +	struct ata_port *ap = host->ports[0];
+> +	struct sata_fsl_port_priv *pp = ap->private_data;
+> +
+> +	ret = sata_fsl_init_controller(host);
+> +	if (ret) {
+> +		dev_printk(KERN_ERR, &op->dev,
+> +			"Error initialize hardware\n");
+>   
 
+   May be "initializing"?
 
+> +		return ret;
+> +	}
+> +
+> +	/* Recovery the CHBA register in host controller cmd register set */
+>   
 
-Signed-off-by: Rini van Zetten <rini@arvoo.nl>
----
-  drivers/spi/spi_mpc83xx.c |   44 +++++++++++++++++++++++---------------------
-  1 files changed, 23 insertions(+), 21 deletions(-)
+   Maybe "Recover"?
 
-diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-index f4573a9..d06027e 100644
---- a/drivers/spi/spi_mpc83xx.c
-+++ b/drivers/spi/spi_mpc83xx.c
-@@ -687,9 +687,10 @@ static void mpc83xx_spi_cs_control(struct spi_device *spi, bool on)
-  	struct mpc83xx_spi_probe_info *pinfo = to_of_pinfo(dev->platform_data);
-  	u16 cs = spi->chip_select;
-  	int gpio = pinfo->gpios[cs];
--	bool alow = pinfo->alow_flags[cs];
--
--	gpio_set_value(gpio, on ^ alow);
-+	if ( gpio != -EEXIST ) {
-+		bool alow = pinfo->alow_flags[cs];
-+		gpio_set_value(gpio, on ^ alow);
-+	}
-  }
+> +	iowrite32(pp->cmdslot_paddr & 0xffffffff, hcr_base + CHBA);
+> +
+> +	ata_host_resume(host);
+> +	return 0;
+> +}
+> +#endif
+>   
 
-  static int of_mpc83xx_spi_get_chipselects(struct device *dev)
-@@ -728,27 +729,28 @@ static int of_mpc83xx_spi_get_chipselects(struct device *dev)
-  		enum of_gpio_flags flags;
-
-  		gpio = of_get_gpio_flags(np, i, &flags);
--		if (!gpio_is_valid(gpio)) {
-+		if (gpio_is_valid(gpio)) {
-+			ret = gpio_request(gpio, dev_name(dev));
-+			if (ret) {
-+				dev_err(dev, "can't request gpio #%d: %d\n", i, ret);
-+				goto err_loop;
-+			}
-+			pinfo->gpios[i] = gpio;
-+			pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
-+
-+			ret = gpio_direction_output(pinfo->gpios[i],
-+					pinfo->alow_flags[i]);
-+			if (ret) {
-+				dev_err(dev, "can't set output direction for gpio "
-+						"#%d: %d\n", i, ret);
-+				goto err_loop;
-+			}
-+		} else if (gpio == -EEXIST) {
-+			pinfo->gpios[i] = -EEXIST;
-+		} else {
-  			dev_err(dev, "invalid gpio #%d: %d\n", i, gpio);
-  			goto err_loop;
-  		}
--
--		ret = gpio_request(gpio, dev_name(dev));
--		if (ret) {
--			dev_err(dev, "can't request gpio #%d: %d\n", i, ret);
--			goto err_loop;
--		}
--
--		pinfo->gpios[i] = gpio;
--		pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
--
--		ret = gpio_direction_output(pinfo->gpios[i],
--					    pinfo->alow_flags[i]);
--		if (ret) {
--			dev_err(dev, "can't set output direction for gpio "
--				"#%d: %d\n", i, ret);
--			goto err_loop;
--		}
-  	}
-
-  	pdata->max_chipselect = ngpios;
--- 
+MBR, Sergei
