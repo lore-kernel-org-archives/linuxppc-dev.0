@@ -3,14 +3,15 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1BC4CB7063
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 70171B723E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 15:05:00 +1000 (EST)
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <f91eeceb158ac9661094de2c73fb0d21febdbe06.1244696691.git.michael@ellerman.id.au>
+	Thu, 11 Jun 2009 15:06:34 +1000 (EST)
+To: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Message-Id: <d88a2fc47f45788be9d698b16e7707531ca58b0b.1244696770.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc: Fix warning in setup_64.c when CONFIG_RELOCATABLE=y
-Date: Thu, 11 Jun 2009 15:05:00 +1000 (EST)
+Subject: [PATCH] powerpc/cell: Use driver_data acessors, not platform_data
+Date: Thu, 11 Jun 2009 15:06:34 +1000 (EST)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,29 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_RELOCATABLE is enabled, PHYSICAL_START is actually a
-variable of type phys_addr_t. That means to print it we need to
-cast to unsigned long long and use llx.
+The Axon MSI driver incorrectly uses platform_data, rather than
+the proper accessors for driver_data.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/setup_64.c |    4 ++--
+ arch/powerpc/platforms/cell/axon_msi.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index f46548e..1f68160 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -424,8 +424,8 @@ void __init setup_system(void)
- 	printk("htab_hash_mask                = 0x%lx\n", htab_hash_mask);
- #endif /* CONFIG_PPC_STD_MMU_64 */
- 	if (PHYSICAL_START > 0)
--		printk("physical_start                = 0x%lx\n",
--		       PHYSICAL_START);
-+		printk("physical_start                = 0x%llx\n",
-+		       (unsigned long long)PHYSICAL_START);
- 	printk("-----------------------------------------------------\n");
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index 0ce45c2..c71498d 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -329,7 +329,7 @@ static struct irq_host_ops msic_host_ops = {
  
- 	DBG(" <- setup_system()\n");
+ static int axon_msi_shutdown(struct of_device *device)
+ {
+-	struct axon_msic *msic = device->dev.platform_data;
++	struct axon_msic *msic = dev_get_drvdata(&device->dev);
+ 	u32 tmp;
+ 
+ 	pr_debug("axon_msi: disabling %s\n",
+@@ -416,7 +416,7 @@ static int axon_msi_probe(struct of_device *device,
+ 	msic->read_offset = dcr_read(msic->dcr_host, MSIC_WRITE_OFFSET_REG)
+ 				& MSIC_FIFO_SIZE_MASK;
+ 
+-	device->dev.platform_data = msic;
++	dev_set_drvdata(&device->dev, msic);
+ 
+ 	ppc_md.setup_msi_irqs = axon_msi_setup_msi_irqs;
+ 	ppc_md.teardown_msi_irqs = axon_msi_teardown_msi_irqs;
 -- 
 1.6.2.1
