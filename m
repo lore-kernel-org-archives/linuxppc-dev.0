@@ -1,27 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7921BB7153
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 68F25B71BE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 12:54:06 +1000 (EST)
+	Thu, 11 Jun 2009 13:17:12 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C501BDDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 12:54:05 +1000 (EST)
-Message-Id: <094F1487-85D2-400A-A2B6-5ED54685907A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Nate Case <ncase@xes-inc.com>
-In-Reply-To: <1244499462-18719-1-git-send-email-ncase@xes-inc.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] powerpc/boot: cuboot: Fix up ethernet3 MAC address on
-	MPC85xx
-Date: Wed, 10 Jun 2009 21:54:01 -0500
-References: <1244499462-18719-1-git-send-email-ncase@xes-inc.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id B77C7DDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 13:17:11 +1000 (EST)
+Subject: Re: linux-next: powerpc tree build warning
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20090611113930.78a42893.sfr@canb.auug.org.au>
+References: <20090611113930.78a42893.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 13:14:04 +1000
+Message-Id: <1244690044.5739.31.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +31,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2009-06-11 at 11:39 +1000, Stephen Rothwell wrote:
+> Hi Ben,
+> 
+> Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+> 
+> arch/powerpc/platforms/Kconfig.cputype:60:warning: defaults for choice values not supported
+> 
+> We appear to have CONFIG_PPC_BOOK3S int two places which is confusing
+> Kconfig.
 
-On Jun 8, 2009, at 5:17 PM, Nate Case wrote:
+Yes, I see that. One place depends on PPC32 and the other one PPC64, but
+it still seems to be somewhat confused. In any case, it seems to still
+do the right thing, so not a big hurry here, but I'll do a patch that
+does it differently.
 
-> MPC85xx platforms do support 4 ethernet ports, so make sure the boot
-> wrapper fixes up all of them in the fdt.
->
-> Signed-off-by: Nate Case <ncase@xes-inc.com>
-> ---
-> arch/powerpc/boot/cuboot-85xx.c |    2 ++
-> 1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/boot/cuboot-85xx.c b/arch/powerpc/boot/ 
-> cuboot-85xx.c
-> index 6776a1a..277ba4a 100644
-> --- a/arch/powerpc/boot/cuboot-85xx.c
-> +++ b/arch/powerpc/boot/cuboot-85xx.c
-> @@ -15,6 +15,7 @@
-> #include "cuboot.h"
->
-> #define TARGET_85xx
-> +#define TARGET_HAS_ETH3
-
-This is problematic in that we'd be changing the memory layout of the  
-bd_t and not ALL 85xx's have HAS_ETH3 set.
-
-- k
+Cheers,
+Ben.
