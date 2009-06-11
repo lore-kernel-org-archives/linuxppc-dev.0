@@ -3,24 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C1822B7234
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 66334B7298
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 14:32:24 +1000 (EST)
+	Thu, 11 Jun 2009 14:33:50 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 21B09DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 14:32:23 +1000 (EST)
-Message-Id: <8AFD68DF-26DE-4A68-88AC-C73A076B23AF@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id B9033DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 14:33:49 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Fredrik Arnerup <fredrik.arnerup@edgeware.tv>
-In-Reply-To: <738D541FBC1741A18DB4F3CB466DF78A@edgeware.tv>
+To: mware@internode.on.net
+In-Reply-To: <38410.1244689279@internode.on.net>
+Subject: Re: [PATCH] powerpc/fsl_lbc: Increase the number of possible lbc banks
+References: <38410.1244689279@internode.on.net>
+Message-Id: <ABADE46C-FAEF-4206-A948-1ECC62D28295@kernel.crashing.org>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: MPC85xx erratum "I2C1 - I2C controller is unable to generate
-	clocks when SDA is low coming out of reset"
-Date: Wed, 10 Jun 2009 23:32:13 -0500
-References: <738D541FBC1741A18DB4F3CB466DF78A@edgeware.tv>
+Date: Wed, 10 Jun 2009 23:33:23 -0500
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,52 +31,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On May 26, 2009, at 3:22 AM, Fredrik Arnerup wrote:
+On Jun 10, 2009, at 10:01 PM, mware@internode.on.net wrote:
 
-> We've had some trouble with I2C not working after a soft reboot,
-> which we think is due to the the erratum "I2C1" which is present in
-> at least the mpc8540 and the mpc8560. Since there is no good  
-> workaround,
-> the only choice seems to be to avoid resetting the CPU while the I2C  
-> bus is
-> busy.
+> Currently the fsl,*lbc devices support 8 banks (ie OR and BR  
+> registers).
+> This is adequate for most pq2 and pq3 processors, but not the  
+> MPC8280 which
+> has 12 banks.
 >
-> The problem seems to be that the i2c-mpc driver leaves I2C in a busy  
-> state
-> when
-> it receives a signal (e.g. upon shutdown).
-> The code below is not meant as a patch, just me thinking aloud.
-> Thoughts?
->
-> /Fredrik Arnerup
-> fredrik.arnerup@edgeware.tv
->
-> Index: drivers/i2c/busses/i2c-mpc.c
-> ===================================================================
-> --- drivers/i2c/busses/i2c-mpc.c        (revision 6933)
-> +++ drivers/i2c/busses/i2c-mpc.c        (working copy)
-> @@ -262,12 +262,14 @@
->        /* Allow bus up to 1s to become not busy */
->        while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
->                if (signal_pending(current)) {
-> -                       pr_debug("I2C: Interrupted\n");
-> -                       writeccr(i2c, 0);
-> +                       printk(KERN_WARNING "I2C: Interrupted\n");
-> +                       if (readb(i2c->base + MPC_I2C_SR) ==
-> +                           (CSR_MCF | CSR_MBB | CSR_RXAK))
-> +                               mpc_i2c_fixup(i2c);
->                        return -EINTR;
->                }
->                if (time_after(jiffies, orig_jiffies + HZ)) {
-> -                       pr_debug("I2C: timeout\n");
-> +                       printk(KERN_WARNING "I2C: mpc_xfer() timeout 
-> \n");
->                        if (readb(i2c->base + MPC_I2C_SR) ==
->                            (CSR_MCF | CSR_MBB | CSR_RXAK))
->                                mpc_i2c_fixup(i2c);
+> Signed-Off-By: Mark Ware <mware@elphinstone.net>
+> ---
+> arch/powerpc/include/asm/fsl_lbc.h |    4 ++--
+> 1 files changed, 2 insertions(+), 2 deletions(-)
 
-
-I don't think we should have the printk's.  Its possible that we hit  
-the interrupted condition while using the i2c from user space.
+fsl_lbc is not applicable to the MPC8280.  Its only used for MPC83xx,  
+MPC85xx, and MPC86xx.
 
 - k
