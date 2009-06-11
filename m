@@ -3,23 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C8299B75B6
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A41E9B7A63
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 11:51:11 +1000 (EST)
+	Thu, 11 Jun 2009 11:51:22 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1AC0EDDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 11:51:10 +1000 (EST)
-Message-Id: <577AF3AA-3CBA-4918-915F-F768640FD90F@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id E99FEDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 11:51:21 +1000 (EST)
+Message-Id: <35E6ECD2-30B1-4BCD-A46A-01683AA16C7D@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <20090519094057.11438.12921.stgit@ES-J7S4D2J>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090610151926.GA32386@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] powerpc/86xx: Add I2C device mappings in DTS for SBC610
-Date: Wed, 10 Jun 2009 20:50:59 -0500
-References: <20090519094057.11438.12921.stgit@ES-J7S4D2J>
+Subject: Re: [PATCH] powerpc/83xx: Update sdhci nodes per new bindings
+Date: Wed, 10 Jun 2009 20:51:10 -0500
+References: <20090610151926.GA32386@oksana.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,17 +31,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On May 19, 2009, at 4:40 AM, Martyn Welch wrote:
+On Jun 10, 2009, at 10:19 AM, Anton Vorontsov wrote:
 
-> Mappings for temperature sensors (adt7461 and lm92) are missing from  
-> the
-> SBC610's DTS file.
+> As of commit 404614728f857d0ac63d29c3a29d0cf392a15598 ("Update FSL
+> esdhc binding"), we use "fsl,esdhc" compatible entry as a base
+> match. U-Boot will use the same compatible to fixup esdhc nodes.
 >
-> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+> This patch updates 83xx dts files so that they conform to the new
+> bindings.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
->
-> arch/powerpc/boot/dts/gef_sbc610.dts |   10 ++++++++++
-> 1 files changed, 10 insertions(+), 0 deletions(-)
+> arch/powerpc/boot/dts/mpc8377_mds.dts |    2 +-
+> arch/powerpc/boot/dts/mpc8377_rdb.dts |    2 +-
+> arch/powerpc/boot/dts/mpc8378_mds.dts |    2 +-
+> arch/powerpc/boot/dts/mpc8378_rdb.dts |    2 +-
+> arch/powerpc/boot/dts/mpc8379_mds.dts |    2 +-
+> arch/powerpc/boot/dts/mpc8379_rdb.dts |    2 +-
+> 6 files changed, 6 insertions(+), 6 deletions(-)
 
 
 applied to next.
