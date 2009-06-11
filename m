@@ -1,25 +1,23 @@
-Return-Path: <subrata@linux.vnet.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E7FB0B7222
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9F8E7B7228
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 13:50:57 +1000 (EST)
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Date: Thu, 11 Jun 2009 09:20:46 +0530
-Message-Id: <20090611035046.22125.26641.sendpatchset@subratamodak.linux.ibm.com>
-Subject: [PATCH][BUILD FAILURE 03/04] Next June 04:PPC64 randconfig
-	[drivers/net/lance.o]
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Linux-Kernel <linux-kernel@vger.kernel.org>,
-	Linux-Next <linux-next@vger.kernel.org>,
-	Subrata Modak <subrata@linux.vnet.ibm.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+	Thu, 11 Jun 2009 13:56:47 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C75C8DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 13:56:46 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: jeff@garzik.org
+Subject: [PATCH] sata_fsl: Add power mgmt support
+Date: Wed, 10 Jun 2009 22:53:37 -0500
+Message-Id: <1244692417-18484-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Benjamin/Paul,
+From: Dave Liu <daveliu@freescale.com>
 
->On Thu, 2009-06-04 at 19:02 +0530, Subrata Modak wrote:
->CC      drivers/net/lance.o
-> drivers/net/lance.c: In function 'lance_probe1':
-> drivers/net/lance.c:575: error: implicit declaration of function 'isa_virt_to_bus'
-> drivers/net/lance.c: In function 'lance_rx':
-> drivers/net/lance.c:1197: error: implicit declaration of function 'isa_bus_to_virt'
-> make[2]: *** [drivers/net/lance.o] Error 1
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
-
-Reference: http://lkml.org/lkml/2009/6/4/240,
-To fix the following build error:
-
-drivers/net/lance.c: In function 'lance_probe1':
-drivers/net/lance.c:575: error: implicit declaration of function 'isa_virt_to_bus'
-drivers/net/lance.c: In function 'lance_rx':
-drivers/net/lance.c:1197: error: implicit declaration of function 'isa_bus_to_virt'
-make[2]: *** [drivers/net/lance.o] Error 1
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
-
-I would like to propose the following patch. The prototypes for the functions:
-'isa_virt_to_bus' & 'isa_virt_to_bus' are existing for some archs like the
-mips, x86, parisc, arm & alpha, but, is missing for powerpc. Is it safe to
-introduce the following soultion for powerpc ? It fixes the build problem
-i reported earlier.
-
-Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+Signed-off-by: Dave Liu <daveliu@freescale.com>
+Signed-off-by: Liu Yu <yu.liu@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+ drivers/ata/sata_fsl.c |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
 
---- linux-2.6.30-rc8/arch/powerpc/include/asm/io.h.orig	2009-06-10 21:56:49.000000000 -0500
-+++ linux-2.6.30-rc8/arch/powerpc/include/asm/io.h	2009-06-10 22:21:35.000000000 -0500
-@@ -680,6 +680,9 @@ extern void __iounmap_at(void *ea, unsig
- #define mmio_outsw(addr, src, count)	writesw(addr, src, count)
- #define mmio_outsl(addr, src, count)	writesl(addr, src, count)
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index 36b8629..94eaa43 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -1378,6 +1378,37 @@ static int sata_fsl_remove(struct of_device *ofdev)
+ 	return 0;
+ }
  
-+#define isa_virt_to_bus		virt_to_phys
-+#define isa_bus_to_virt		phys_to_virt
++#ifdef CONFIG_PM
++static int sata_fsl_suspend(struct of_device *op, pm_message_t state)
++{
++	struct ata_host *host = dev_get_drvdata(&op->dev);
++	return ata_host_suspend(host, state);
++}
 +
- /**
-  *	virt_to_phys	-	map virtual addresses to physical
-  *	@address: address to remap
-
----
-Regards--
-Subrata
++static int sata_fsl_resume(struct of_device *op)
++{
++	struct ata_host *host = dev_get_drvdata(&op->dev);
++	struct sata_fsl_host_priv *host_priv = host->private_data;
++	int ret;
++	void __iomem *hcr_base = host_priv->hcr_base;
++	struct ata_port *ap = host->ports[0];
++	struct sata_fsl_port_priv *pp = ap->private_data;
++
++	ret = sata_fsl_init_controller(host);
++	if (ret) {
++		dev_printk(KERN_ERR, &op->dev,
++			"Error initialize hardware\n");
++		return ret;
++	}
++
++	/* Recovery the CHBA register in host controller cmd register set */
++	iowrite32(pp->cmdslot_paddr & 0xffffffff, hcr_base + CHBA);
++
++	ata_host_resume(host);
++	return 0;
++}
++#endif
++
+ static struct of_device_id fsl_sata_match[] = {
+ 	{
+ 		.compatible = "fsl,pq-sata",
+@@ -1392,6 +1423,10 @@ static struct of_platform_driver fsl_sata_driver = {
+ 	.match_table	= fsl_sata_match,
+ 	.probe		= sata_fsl_probe,
+ 	.remove		= sata_fsl_remove,
++#ifdef CONFIG_PM
++	.suspend	= sata_fsl_suspend,
++	.resume		= sata_fsl_resume,
++#endif
+ };
+ 
+ static int __init sata_fsl_init(void)
+-- 
+1.6.0.6
