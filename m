@@ -1,30 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8DA2BB716B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8D1EDB7168
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 00:23:18 +1000 (EST)
-Received: from mail-gx0-f210.google.com (mail-gx0-f210.google.com
-	[209.85.217.210]) by ozlabs.org (Postfix) with ESMTP id D2297DDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 00:23:16 +1000 (EST)
-Received: by gxk6 with SMTP id 6so1739418gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 07:23:14 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090414215342.GB9877@ovro.caltech.edu>
-References: <20090224000002.GA578@ovro.caltech.edu>
-	<fa686aa40904141328oa57fb1bsffd0549a52eca90@mail.gmail.com>
-	<20090414215342.GB9877@ovro.caltech.edu>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 11 Jun 2009 08:22:54 -0600
-Message-ID: <fa686aa40906110722y1b4b8c22l7ccdd32d6684324d@mail.gmail.com>
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-To: Ira Snyder <iws@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Arnd Bergmann <arnd@arndb.de>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-	netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+	Fri, 12 Jun 2009 00:33:09 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 730FDDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 00:33:09 +1000 (EST)
+Subject: Re: "test" branch updates
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1242631175.18075.54.camel@pasglop>
+References: <1242631175.18075.54.camel@pasglop>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-M3NE4WH8Oux1+wJd6w3v"
+Date: Fri, 12 Jun 2009 00:33:07 +1000
+Message-Id: <1244730787.4599.94.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,54 +34,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 14, 2009 at 3:53 PM, Ira Snyder<iws@ovro.caltech.edu> wrote:
-> On Tue, Apr 14, 2009 at 02:28:26PM -0600, Grant Likely wrote:
->> On Mon, Feb 23, 2009 at 6:00 PM, Ira Snyder <iws@ovro.caltech.edu> wrote=
-:
->> > This adds support to Linux for using virtio between two computers link=
-ed by
->> > a PCI interface. This allows the use of virtio_net to create a familia=
-r,
->> > fast interface for communication. It should be possible to use other v=
-irtio
->> > devices in the future, but this has not been tested.
->>
->> Hey Ira,
->>
->> I like this a lot. =A0I need to do much the same thing on one of my
->> platforms, so I'm going to use your patch as my starting point. =A0Have
->> you made many changes since you posted this version of your patch?
->> I'd like to collaborate on the development and help to get it
->> mainlined.
->>
->
-> This would be great. I'd really appreciate the help. I haven't had time
-> to make any changes since I last posted the patch. I started work on
-> converting all of the usage of struct vop_loc_* to just use the on-wire
-> structures, but I didn't get very far before other work got in the way.
->
->> In my case I've got an MPC5200 as the 'host' and a Xilinx Virtex
->> (ppc440) as the 'client'. =A0I intend set aside a region of the Xilinx
->> Virtex's memory space for the shared queues. =A0I'm starting work on it
->> now, and I'll provide you with feedback and/or patches as I make
->> progress.
->>
->
-> I'm looking forward to seeing your implementation. If you have any
-> questions, I'd be happy to attempt to answer them :)
 
-Hey Ira,
+--=-M3NE4WH8Oux1+wJd6w3v
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I've been slowly hacking on your virtio-over-pci stuff.  I've got an
-initial series of cleanup patches which address some of the comments
-from this thread.  Before I send them to you, have you made any
-changes on your end?  They likely won't apply without changes to the
-core code, so I'd like to sync up with you first.
+On Mon, 2009-05-18 at 17:19 +1000, Benjamin Herrenschmidt wrote:
+> Just a quick note before I leave the office...
+>=20
+> I've just pushed out a bunch of stuff to my "test" branch. There's a
+> couple of known breakage (iseries and 8xx) which will have to be sorted
+> out before that stuff goes into "next". hopefully in a couple of days.
+>=20
+> Still... feel free to take a peek, test, etc...
 
-Cheers,
-g.
+The swiotlb stuff doesn't build:
+
+arch/powerpc/kernel/dma-swiotlb.c
+   In function =E2=80=98swiotlb_bus_to_virt=E2=80=99:
+  29: warning: passing argument 1 of =E2=80=98swiotlb_bus_to_phys=E2=80=99 =
+makes integer from pointer without a cast
+  29: error: too many arguments to function =E2=80=98swiotlb_bus_to_phys=E2=
+=80=99
+   At top level:
+  42: error: conflicting types for =E2=80=98swiotlb_bus_to_phys=E2=80=99
 
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+There's changes in linux-next that make it work, which look like they're
+going via Ingo?
+
+cheers
+
+--=-M3NE4WH8Oux1+wJd6w3v
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkoxFaMACgkQdSjSd0sB4dJTBQCgmoCG8wWnKl4YKmR1hjDwgcBo
+AdcAn3NVJ/vrGBezoPDUP2knXusMANqQ
+=rQoT
+-----END PGP SIGNATURE-----
+
+--=-M3NE4WH8Oux1+wJd6w3v--
