@@ -1,29 +1,21 @@
-Return-Path: <lorenz@missinglinkelectronics.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 411A4B7165
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3E300B715D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 06:05:41 +1000 (EST)
-Received: from smtp.esic-solutions.com (h1371364.stratoserver.net
-	[85.214.87.145]) by ozlabs.org (Postfix) with ESMTP id C6649DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 06:05:40 +1000 (EST)
-Message-ID: <4A316386.4020404@missinglinkelectronics.com>
-Date: Thu, 11 Jun 2009 22:05:26 +0200
-From: Lorenz Kolb <lorenz@missinglinkelectronics.com>
+	Fri, 12 Jun 2009 06:16:00 +1000 (EST)
+Date: Fri, 12 Jun 2009 00:15:45 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <pierre@ossman.eu>
+Subject: [PATCH] sdhci: Add support for hosts that are only capable of
+	1-bit transfers
+Message-ID: <20090611201545.GA15942@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
-Subject: Re: SD card over (xilinx_)SPI, timeout error while CID
-References: <1244216069.21470.12.camel@localhost>	<1244568361.25223.16.camel@localhost>
-	<aa76a2be0906111215j15933053rf128f1985a982ca0__26561.0047536486$1244748319$gmane$org@mail.gmail.com>
-In-Reply-To: <aa76a2be0906111215j15933053rf128f1985a982ca0__26561.0047536486$1244748319$gmane$org@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: joachim@missinglinkelectronics.com, dbrownell@users.sourceforge.net,
-	Joachim Foerster <JOFT@gmx.de>, hp@axis.com,
-	lorenz@missinglinkelectronics.com, linuxppc-dev@ozlabs.org,
-	mike@steroidmicros.com, pierre@ossman.eu,
-	jan.nikitenko@gmail.com, john.linn@xilinx.com, linuxkernel@vger.kernel.org
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	sdhci-devel@lists.ossman.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,36 +25,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+Some hosts (hardware configurations, or particular SD/MMC slots) may
+not support 4-bit bus. For example, on MPC8569E-MDS boards we can
+switch between serial (1-bit only) and nibble (4-bit) modes, thought
+we have to disable more peripherals to work in 4-bit mode.
 
-Ricardo Ribalda Delgado wrote:
-> Hello,
-> 
->    It seems that I am facing the same problem!. I attach another trace
-> that also shows the sd I/O.
+Along with some small core changes, this patch modifies sdhci-of
+driver, so that now it looks for "mode" property in the device-tree.
 
-Is the I/O logged from within the Xilinx-SPI-Driver or from within the 
-mmc-spi-layer?
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-The response to CMD10 seems quite strange to me. The R1 answer to that 
-command says that everything is OK, so what is done next is that the 
-0xfe token will be expected by the mmc-spi-layer. Obviously that one is 
-not received within the proper time (assuming your data-logging was done 
-from within xilinx-spi-driver). Also be aware of printk() taking 
-milliseconds for printing to console, within time critical routines that 
-might not be the best choice for debugging.
+Pierre, I'm not sure if a quirk would be appropriate here. If so,
+I can redo the patch with FORCE_1_BIT_DATA quirk.
 
-What frequency does Your SPI-Bus use?
+Thanks,
 
+ Documentation/powerpc/dts-bindings/fsl/esdhc.txt |    2 ++
+ drivers/mmc/host/sdhci-of.c                      |    7 +++++++
+ drivers/mmc/host/sdhci-pci.c                     |    1 +
+ drivers/mmc/host/sdhci.c                         |    2 +-
+ 4 files changed, 11 insertions(+), 1 deletions(-)
 
-Also double check to completely disable the whole
-
-   if (spi->master->dev.parent->dma_mask) {
-     ...
-   }
-
-block within mmc_spi_probe(). That worked for us (as we already said as 
-an ugly workaround).
-
-Regards,
-   Lorenz
+diff --git a/Documentation/powerpc/dts-bindings/fsl/esdhc.txt b/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
+index 5093ddf..298b865 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
+@@ -10,6 +10,8 @@ Required properties:
+   - interrupts : should contain eSDHC interrupt.
+   - interrupt-parent : interrupt source phandle.
+   - clock-frequency : specifies eSDHC base clock frequency.
++  - mode : specifies eSDHC mode, valid values are: "1-bit" and "4-bit".
++    If mode is unspecified, then 4-bit mode is assumed.
+ 
+ Example:
+ 
+diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
+index 09cc597..12b9615 100644
+--- a/drivers/mmc/host/sdhci-of.c
++++ b/drivers/mmc/host/sdhci-of.c
+@@ -14,6 +14,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/string.h>
+ #include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/interrupt.h>
+@@ -212,6 +213,7 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
+ 	struct sdhci_of_data *sdhci_of_data = match->data;
+ 	struct sdhci_host *host;
+ 	struct sdhci_of_host *of_host;
++	const char *mode;
+ 	const u32 *clk;
+ 	int size;
+ 	int ret;
+@@ -244,6 +246,11 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
+ 		host->ops = &sdhci_of_data->ops;
+ 	}
+ 
++	mode = of_get_property(np, "mode", &size);
++	if (!mode || (size == sizeof("4-bit") &&
++			!strncmp(mode, "4-bit", size)))
++		host->mmc->caps |= MMC_CAP_4_BIT_DATA;
++
+ 	clk = of_get_property(np, "clock-frequency", &size);
+ 	if (clk && size == sizeof(*clk) && *clk)
+ 		of_host->clock = *clk;
+diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
+index 65be279..c447d6c 100644
+--- a/drivers/mmc/host/sdhci-pci.c
++++ b/drivers/mmc/host/sdhci-pci.c
+@@ -535,6 +535,7 @@ static struct sdhci_pci_slot * __devinit sdhci_pci_probe_slot(
+ 	host->hw_name = "PCI";
+ 	host->ops = &sdhci_pci_ops;
+ 	host->quirks = chip->quirks;
++	host->mmc->caps = MMC_CAP_4_BIT_DATA;
+ 
+ 	host->irq = pdev->irq;
+ 
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 9234be2..e31dd2a 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -1721,7 +1721,7 @@ int sdhci_add_host(struct sdhci_host *host)
+ 	mmc->ops = &sdhci_ops;
+ 	mmc->f_min = host->max_clk / 256;
+ 	mmc->f_max = host->max_clk;
+-	mmc->caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SDIO_IRQ;
++	mmc->caps |= MMC_CAP_SDIO_IRQ;
+ 
+ 	if (caps & SDHCI_CAN_DO_HISPD)
+ 		mmc->caps |= MMC_CAP_SD_HIGHSPEED;
+-- 
+1.6.3.1
