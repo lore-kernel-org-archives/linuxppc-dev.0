@@ -3,26 +3,24 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 58D9BB7202
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 75023B7221
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 13:44:06 +1000 (EST)
+	Thu, 11 Jun 2009 13:48:11 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9B4A7DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 13:44:05 +1000 (EST)
-Message-Id: <3859ABBF-ACBF-4564-B599-FBDDE0E60031@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id BC38BDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 13:48:10 +1000 (EST)
+Message-Id: <A7E846FC-2D42-4E82-AE08-EDE30E6AFF54@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Nathaniel Case <ncase@xes-inc.com>
-In-Reply-To: <155ffc0deec796912080304f76bb09e7@xes-inc.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Nate Case <ncase@xes-inc.com>
+In-Reply-To: <1244499462-18719-1-git-send-email-ncase@xes-inc.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v935.3)
 Subject: Re: [PATCH] powerpc/boot: cuboot: Fix up ethernet3 MAC address on
 	MPC85xx
-Date: Wed, 10 Jun 2009 22:44:01 -0500
+Date: Wed, 10 Jun 2009 22:48:00 -0500
 References: <1244499462-18719-1-git-send-email-ncase@xes-inc.com>
-	<094F1487-85D2-400A-A2B6-5ED54685907A@kernel.crashing.org>
-	<155ffc0deec796912080304f76bb09e7@xes-inc.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,27 +32,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jun 10, 2009, at 10:40 PM, Nathaniel Case wrote:
+On Jun 8, 2009, at 5:17 PM, Nate Case wrote:
 
-> On Wed, 10 Jun 2009 21:54:01 -0500, Kumar Gala <galak@kernel.crashing.org 
-> >
-> wrote:
->>> #define TARGET_85xx
->>> +#define TARGET_HAS_ETH3
->>
->> This is problematic in that we'd be changing the memory layout of the
->> bd_t and not ALL 85xx's have HAS_ETH3 set.
+> MPC85xx platforms do support 4 ethernet ports, so make sure the boot
+> wrapper fixes up all of them in the fdt.
 >
-> It shouldn't be problematic.  The bi_enet3addr field is at the end  
-> of the
-> structure on MPC85xx.  The only fields after it in ppcboot.h are
-> 4xx-specific
-> fields.  I believe the MAC addresses were placed at the end of the  
-> struct
-> for
-> this very reason.
+> Signed-off-by: Nate Case <ncase@xes-inc.com>
+> ---
+> arch/powerpc/boot/cuboot-85xx.c |    2 ++
+> 1 files changed, 2 insertions(+), 0 deletions(-)
 
-ahh, good point... I'll add this detail to the commit message when I  
-commit this.
+applied (updated commit message) to next
 
 - k
