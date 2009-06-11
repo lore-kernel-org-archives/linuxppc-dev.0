@@ -1,21 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <wd@denx.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3E300B715D
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0BE44B716E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 06:16:00 +1000 (EST)
-Date: Fri, 12 Jun 2009 00:15:45 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Pierre Ossman <pierre@ossman.eu>
-Subject: [PATCH] sdhci: Add support for hosts that are only capable of
-	1-bit transfers
-Message-ID: <20090611201545.GA15942@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	sdhci-devel@lists.ossman.eu
+	Fri, 12 Jun 2009 06:19:11 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 4F9B5DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 06:19:10 +1000 (EST)
+From: Wolfgang Denk <wd@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH RFC] fs_enet/mii-fec.c: fix MII speed calculation
+Date: Thu, 11 Jun 2009 22:19:03 +0200
+Message-Id: <1244751543-21977-2-git-send-email-wd@denx.de>
+In-Reply-To: <fa686aa40906080737h64bad3cfv32155e5b819d650b@mail.gmail.com>
+References: <fa686aa40906080737h64bad3cfv32155e5b819d650b@mail.gmail.com>
+Cc: Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,97 +26,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some hosts (hardware configurations, or particular SD/MMC slots) may
-not support 4-bit bus. For example, on MPC8569E-MDS boards we can
-switch between serial (1-bit only) and nibble (4-bit) modes, thought
-we have to disable more peripherals to work in 4-bit mode.
+The MII speed calculation was incorrectly based on the CPU clock
+(ppc_proc_freq) instead of the bus clock; it worked only by chance and
+for some CPU clock frequencies.
 
-Along with some small core changes, this patch modifies sdhci-of
-driver, so that now it looks for "mode" property in the device-tree.
+This patch makes it use the correct clock and adds some error
+handling.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Wolfgang Denk <wd@denx.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Kumar Gala <galak@kernel.crashing.org>
 ---
 
-Pierre, I'm not sure if a quirk would be appropriate here. If so,
-I can redo the patch with FORCE_1_BIT_DATA quirk.
+This is mostly a fix for an old bug - it's starnge that this went
+unnoticed so far. It worked only because the incorrectly computed
+value was truncated due to the fact that the MII_SPEED field in the
+rebister is only 6 bits wide - but, depending on the system clock
+frequency, non working systems (MII_SPEED set to zero or DIS_PREAMBLE
+set to one) might result as well.
 
-Thanks,
+This patch is marked a RFC for the following reasons:
 
- Documentation/powerpc/dts-bindings/fsl/esdhc.txt |    2 ++
- drivers/mmc/host/sdhci-of.c                      |    7 +++++++
- drivers/mmc/host/sdhci-pci.c                     |    1 +
- drivers/mmc/host/sdhci.c                         |    2 +-
- 4 files changed, 11 insertions(+), 1 deletions(-)
+1) drivers/net/fs_enet/mii-fec.c now uses mpc5xxx_get_mii_speed()
+   which makes it 5xxx specific. I don't really like this, but did
+   not see a clean way to avoid it either.
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/esdhc.txt b/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
-index 5093ddf..298b865 100644
---- a/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
-@@ -10,6 +10,8 @@ Required properties:
-   - interrupts : should contain eSDHC interrupt.
-   - interrupt-parent : interrupt source phandle.
-   - clock-frequency : specifies eSDHC base clock frequency.
-+  - mode : specifies eSDHC mode, valid values are: "1-bit" and "4-bit".
-+    If mode is unspecified, then 4-bit mode is assumed.
- 
- Example:
- 
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index 09cc597..12b9615 100644
---- a/drivers/mmc/host/sdhci-of.c
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -14,6 +14,7 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/string.h>
- #include <linux/init.h>
- #include <linux/io.h>
- #include <linux/interrupt.h>
-@@ -212,6 +213,7 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
- 	struct sdhci_of_data *sdhci_of_data = match->data;
- 	struct sdhci_host *host;
- 	struct sdhci_of_host *of_host;
-+	const char *mode;
- 	const u32 *clk;
- 	int size;
- 	int ret;
-@@ -244,6 +246,11 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
- 		host->ops = &sdhci_of_data->ops;
- 	}
- 
-+	mode = of_get_property(np, "mode", &size);
-+	if (!mode || (size == sizeof("4-bit") &&
-+			!strncmp(mode, "4-bit", size)))
-+		host->mmc->caps |= MMC_CAP_4_BIT_DATA;
+2) We probably should also use mpc5xxx_get_mii_speed() in
+   drivers/net/fec_mpc52xx.c and drivers/net/fec_mpc52xx_phy.c, which
+   also contain code to calculate the MII speed. But then we should
+   also add some error checking to the code there, and we should make
+   sure that only the bits that belong to the MII_SPEED field get
+   written when setting the MII speed.
+
+   I'm not sure if such changes are considered necessary, and if, if
+   they should be added to this patch or handled in a separate one.
+
+
+ arch/powerpc/sysdev/mpc5xxx_clocks.c |   37 ++++++++++++++++++++++++++++++++++
+ drivers/net/fs_enet/mii-fec.c        |    9 ++++++-
+ 2 files changed, 44 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/mpc5xxx_clocks.c b/arch/powerpc/sysdev/mpc5xxx_clocks.c
+index 34e12f9..3e9584b 100644
+--- a/arch/powerpc/sysdev/mpc5xxx_clocks.c
++++ b/arch/powerpc/sysdev/mpc5xxx_clocks.c
+@@ -31,3 +31,40 @@ mpc5xxx_get_bus_frequency(struct device_node *node)
+ 	return p_bus_freq ? *p_bus_freq : 0;
+ }
+ EXPORT_SYMBOL(mpc5xxx_get_bus_frequency);
 +
- 	clk = of_get_property(np, "clock-frequency", &size);
- 	if (clk && size == sizeof(*clk) && *clk)
- 		of_host->clock = *clk;
-diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
-index 65be279..c447d6c 100644
---- a/drivers/mmc/host/sdhci-pci.c
-+++ b/drivers/mmc/host/sdhci-pci.c
-@@ -535,6 +535,7 @@ static struct sdhci_pci_slot * __devinit sdhci_pci_probe_slot(
- 	host->hw_name = "PCI";
- 	host->ops = &sdhci_pci_ops;
- 	host->quirks = chip->quirks;
-+	host->mmc->caps = MMC_CAP_4_BIT_DATA;
++/**
++ *	mpc5xxx_get_get_mii_speed - Get the MII_SPEED value
++ *	@node:	device node
++ *
++ *	Returns the MII_SPEED value for MPC512x and MPC52xx systems.
++ *	The value gets computed such that the resulting MDC frequency
++ *	is 2.5 MHz or lower.
++ */
++
++int
++mpc5xxx_get_mii_speed(struct of_device *ofdev)
++{
++	unsigned int clock, speed;
++
++	clock = mpc5xxx_get_bus_frequency(ofdev->node);
++
++	if (!clock) {
++		dev_err(&ofdev->dev, "could not determine IPS/IPB clock\n");
++		return -ENODEV;
++	}
++
++	/* scale for a MII clock <= 2.5 MHz */
++	speed = (clock + 2499999) / 2500000;
++
++	/* only 6 bits available for MII speed */
++	if (speed > 0x3F) {
++		speed = 0x3F;
++		dev_err(&ofdev->dev,
++			"MII clock (%d MHz) exceeds max (2.5 MHz)\n",
++			clock / speed);
++	}
++
++	/* Field is in bits 25:30 of MII_SPEED register */
++	return speed << 1;
++}
++EXPORT_SYMBOL(mpc5xxx_get_mii_speed);
+diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
+index 28077cc..a2693b4 100644
+--- a/drivers/net/fs_enet/mii-fec.c
++++ b/drivers/net/fs_enet/mii-fec.c
+@@ -36,6 +36,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
++#include <asm/mpc5xxx.h>
  
- 	host->irq = pdev->irq;
+ #include "fs_enet.h"
+ #include "fec.h"
+@@ -152,13 +153,17 @@ static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
+ 	if (!fec->fecp)
+ 		goto out_fec;
  
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 9234be2..e31dd2a 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -1721,7 +1721,7 @@ int sdhci_add_host(struct sdhci_host *host)
- 	mmc->ops = &sdhci_ops;
- 	mmc->f_min = host->max_clk / 256;
- 	mmc->f_max = host->max_clk;
--	mmc->caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SDIO_IRQ;
-+	mmc->caps |= MMC_CAP_SDIO_IRQ;
+-	fec->mii_speed = ((ppc_proc_freq + 4999999) / 5000000) << 1;
++	i = mpc5xxx_get_mii_speed(ofdev);
++	if (i < 0)
++		goto out_unmap_regs;
++
++	fec->mii_speed = i;
  
- 	if (caps & SDHCI_CAN_DO_HISPD)
- 		mmc->caps |= MMC_CAP_SD_HIGHSPEED;
+ 	setbits32(&fec->fecp->fec_r_cntrl, FEC_RCNTRL_MII_MODE);
+ 	setbits32(&fec->fecp->fec_ecntrl, FEC_ECNTRL_PINMUX |
+ 	                                  FEC_ECNTRL_ETHER_EN);
+ 	out_be32(&fec->fecp->fec_ievent, FEC_ENET_MII);
+-	out_be32(&fec->fecp->fec_mii_speed, fec->mii_speed);
++	clrsetbits_be32(&fec->fecp->fec_mii_speed, 0x7E, fec->mii_speed);
+ 
+ 	new_bus->phy_mask = ~0;
+ 	new_bus->irq = kmalloc(sizeof(int) * PHY_MAX_ADDR, GFP_KERNEL);
 -- 
-1.6.3.1
+1.6.0.6
