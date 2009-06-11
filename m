@@ -1,27 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <subrata@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C1FE6B7211
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 33B31B71B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 11:53:32 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D2ACDDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 11:53:31 +1000 (EST)
-Message-Id: <87E7BC96-041F-4244-8370-B8EE64EEDA7F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <1242155174-2513-1-git-send-email-wd@denx.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash size
-Date: Wed, 10 Jun 2009 20:51:19 -0500
-References: <1242155174-2513-1-git-send-email-wd@denx.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+	Thu, 11 Jun 2009 11:56:20 +1000 (EST)
+Subject: Re: [PATCH] Re:[BUILD FAILURE 04/04] Next June 04:PPC64 randconfig
+	[drivers/net/ucc_geth.o]
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
+	Li Yang <leoli@freescale.com>
+In-Reply-To: <20090611110523.1fd56a41.sfr@canb.auug.org.au>
+References: <20090610174323.28045.70169.sendpatchset@subratamodak.linux.ibm.com>
+	<20090611110523.1fd56a41.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 11 Jun 2009 07:26:04 +0530
+Message-Id: <1244685364.6494.14.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Linux-Next <linux-next@vger.kernel.org>,
+	Linux-Kernel <linux-kernel@vger.kernel.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,34 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
+> Hi Subrata,
+> 
+> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
+> >
+> >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+> > -	ph = of_get_property(np, "tbi-handle", NULL);
+> > +	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
+> 
+> You don't need this cast because of_get_property() returns "void *".
 
-On May 12, 2009, at 2:06 PM, Wolfgang Denk wrote:
+Stephen,
 
-> The current device tree for the MPC8272ADS assumes a mapping of 32 MB
-> of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
-> the boards, mapped at 0xFF80.0000. When booting an uImage with such a
-> device tree, the kernel crashes because 0xFE00.0000 is not mapped.
->
-> Also introduce aliases for serial[01] and ethernet[01].
->
-> Signed-off-by: Wolfgang Denk <wd@denx.de>
-> Cc: Scott Wood <scottwood@freescale.com>
-> cc: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> I am not really sure what the typical flash size on MPC8272ADS boards
-> is. The board I used for testing is marked as "Prototype", so it may
-> not be the release configuration. On the other hand, the manual also
-> says 8 MB, Vitaly Borduk confirms 8 MB on his board, too, and Scott
-> Wood eventually tested only with cuImage which fixes up the localbus
-> mappings, thus eventually concealing the issue.
->
-> I'm posting this as reference in case the 8 MB should turn out to be
-> correct. -- wd
->
-> arch/powerpc/boot/dts/mpc8272ads.dts |   19 +++++++++++++------
-> 1 files changed, 13 insertions(+), 6 deletions(-)
+True. But without this gcc complains:
 
+CC [M]  drivers/net/ucc_geth.o
+drivers/net/ucc_geth.c: In function ‘ucc_geth_probe’:
+drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers
+from pointer target type
 
-applied to next.
+Else gcc just builds fine:
 
-- k
+CC [M]  drivers/net/ucc_geth.o
+
+This is an just an extra caution to fix both the build and warning
+regression(s).
+
+Regards--
+Subrata
+
+> 
