@@ -1,25 +1,27 @@
-Return-Path: <subrata@linux.vnet.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 08E90B7213
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4D5DFB720D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 11 Jun 2009 13:37:20 +1000 (EST)
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: Tony Breeds <tony@bakeyournoodle.com>, netdev@vger.kernel.org,
-	michael@ellerman.id.au, Li Yang <leoli@freescale.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, Nathan Lynch <ntl@pobox.com>
-Date: Thu, 11 Jun 2009 09:07:05 +0530
-Message-Id: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com>
-Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig
-	[drivers/net/ucc_geth.o]
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	Linux-Kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Linux-Next <linux-next@vger.kernel.org>,
-	Subrata Modak <subrata@linux.vnet.ibm.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+	Thu, 11 Jun 2009 13:39:30 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A0947DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 13:39:29 +1000 (EST)
+Message-Id: <2C012660-52A9-4403-8592-FE27A8EA67B0@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Nate Case <ncase@xes-inc.com>
+In-Reply-To: <1244666248-23322-1-git-send-email-ncase@xes-inc.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH -next] powerpc/fsl-booke: Enable L1 cache on
+	e500v1/e500v2/e500mc CPUs
+Date: Wed, 10 Jun 2009 22:39:25 -0500
+References: <1244666248-23322-1-git-send-email-ncase@xes-inc.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,66 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nathan,
 
->On Wed, 2009-06-10 at 21:28 -0500, Nathan Lynch wrote:
->Subrata Modak <subrata@linux.vnet.ibm.com> writes:
-> 
-> > On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
-> >> Hi Subrata,
-> >> 
-> >> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
-> >> >
-> >> >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
-> >> > -	ph = of_get_property(np, "tbi-handle", NULL);
-> >> > +	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
-> >> 
-> >> You don't need this cast because of_get_property() returns "void *".
-> >
-> > Stephen,
-> >
-> > True. But without this gcc complains:
-> >
-> > CC [M]  drivers/net/ucc_geth.o
-> > drivers/net/ucc_geth.c: In function ‘ucc_geth_probe’:
-> > drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers
-> > from pointer target type
-> 
-> ph should be declared const phandle *.  Look at other uses of
-> of_get_property.
+On Jun 10, 2009, at 3:37 PM, Nate Case wrote:
+
+> Some boot loaders may not enable L1 instruction/data cache.  Check if
+> data and instruction caches are enabled, and enable them if needed.
 >
+> Signed-off-by: Nate Case <ncase@xes-inc.com>
+> ---
+> arch/powerpc/include/asm/reg_booke.h      |    2 +
+> arch/powerpc/kernel/cpu_setup_fsl_booke.S |   49 ++++++++++++++++++++ 
+> +++++++--
+> 2 files changed, 48 insertions(+), 3 deletions(-)
 
-Ok fine. Here is a revised patch again.
+applied to next
 
-Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig [drivers/net/ucc_geth.o]
-Reference(s):
-http://lkml.org/lkml/2009/6/4/241,
-http://lkml.org/lkml/2009/6/10/338,
-
-Fix the following build error:
-
-drivers/net/ucc_geth.c: In function bucc_geth_probeb:
-drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in this function)
-drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is reported only once
-drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
-drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in this function)
-make[2]: *** [drivers/net/ucc_geth.o] Error 1
-
-Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
----
-
---- linux-2.6.30-rc8/drivers/net/ucc_geth.c.orig	2009-06-10 11:58:39.000000000 -0500
-+++ linux-2.6.30-rc8/drivers/net/ucc_geth.c	2009-06-10 22:28:13.000000000 -0500
-@@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_g
- 
- static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *match)
- {
-+	struct device_node *mdio;
-+	const phandle *ph;
- 	struct device *device = &ofdev->dev;
- 	struct device_node *np = ofdev->node;
- 	struct net_device *dev = NULL;
-
----
-Regards--
-Subrata
+- k
