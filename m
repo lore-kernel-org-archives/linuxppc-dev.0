@@ -1,34 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D0913B70E9
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8DA2BB716B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 00:13:03 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ED3A3DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 00:13:02 +1000 (EST)
-Message-Id: <0AFEA008-BBF6-448B-844F-6EBE3DE24F7B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: hs@denx.de
-In-Reply-To: <4A30A14D.50907@denx.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH v3] 83xx: add support for the kmeter1 board.
-Date: Thu, 11 Jun 2009 09:10:52 -0500
-References: <49F00605.1080605@denx.de>
-	<6B76A454-649E-408C-A8DF-AAEEE6011929@kernel.crashing.org>
-	<49F544DE.1010307@denx.de>
-	<20090427180503.GB10292@ld0162-tx32.am.freescale.net>
-	<49F68943.3090800@denx.de>
-	<20090428163540.GA2193@ld0162-tx32.am.freescale.net>
-	<49F7DC0C.3080409@denx.de>
-	<C934E2FC-7597-4D10-AA2F-F28884D1DD1B@kernel.crashing.org>
-	<4A30A14D.50907@denx.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+	Fri, 12 Jun 2009 00:23:18 +1000 (EST)
+Received: from mail-gx0-f210.google.com (mail-gx0-f210.google.com
+	[209.85.217.210]) by ozlabs.org (Postfix) with ESMTP id D2297DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 00:23:16 +1000 (EST)
+Received: by gxk6 with SMTP id 6so1739418gxk.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 07:23:14 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090414215342.GB9877@ovro.caltech.edu>
+References: <20090224000002.GA578@ovro.caltech.edu>
+	<fa686aa40904141328oa57fb1bsffd0549a52eca90@mail.gmail.com>
+	<20090414215342.GB9877@ovro.caltech.edu>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 11 Jun 2009 08:22:54 -0600
+Message-ID: <fa686aa40906110722y1b4b8c22l7ccdd32d6684324d@mail.gmail.com>
+Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
+To: Ira Snyder <iws@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Arnd Bergmann <arnd@arndb.de>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,57 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Apr 14, 2009 at 3:53 PM, Ira Snyder<iws@ovro.caltech.edu> wrote:
+> On Tue, Apr 14, 2009 at 02:28:26PM -0600, Grant Likely wrote:
+>> On Mon, Feb 23, 2009 at 6:00 PM, Ira Snyder <iws@ovro.caltech.edu> wrote=
+:
+>> > This adds support to Linux for using virtio between two computers link=
+ed by
+>> > a PCI interface. This allows the use of virtio_net to create a familia=
+r,
+>> > fast interface for communication. It should be possible to use other v=
+irtio
+>> > devices in the future, but this has not been tested.
+>>
+>> Hey Ira,
+>>
+>> I like this a lot. =A0I need to do much the same thing on one of my
+>> platforms, so I'm going to use your patch as my starting point. =A0Have
+>> you made many changes since you posted this version of your patch?
+>> I'd like to collaborate on the development and help to get it
+>> mainlined.
+>>
+>
+> This would be great. I'd really appreciate the help. I haven't had time
+> to make any changes since I last posted the patch. I started work on
+> converting all of the usage of struct vop_loc_* to just use the on-wire
+> structures, but I didn't get very far before other work got in the way.
+>
+>> In my case I've got an MPC5200 as the 'host' and a Xilinx Virtex
+>> (ppc440) as the 'client'. =A0I intend set aside a region of the Xilinx
+>> Virtex's memory space for the shared queues. =A0I'm starting work on it
+>> now, and I'll provide you with feedback and/or patches as I make
+>> progress.
+>>
+>
+> I'm looking forward to seeing your implementation. If you have any
+> questions, I'd be happy to attempt to answer them :)
 
-On Jun 11, 2009, at 1:16 AM, Heiko Schocher wrote:
+Hey Ira,
 
-> The following series implements basic board support for
-> the kmeter1 board from keymile, based on a MPC8360.
->
-> This series provides the following functionality:
->
-> - The board can boot with a serial console on UART1
-> - Ethernet:
->    UCC1 in RGMII mode
->    UCC2 in RGMII mode
->    UCC4 in RMII mode
->    UCC5 in RMII mode
->    UCC6 in RMII mode
->    UCC7 in RMII mode
->    UCC8 in RMII mode
->
->    following patch is necessary for working UCC in RMII mode:
->
->    http://ozlabs.org/pipermail/linuxppc-dev/2009-April/070909.html
->
-> - Flash accessed via MTD layer
->
->  On this hardware there is an Intel P30 flash, following patch
->  series is necessary for working with this hardware:
->
->  http://ozlabs.org/pipermail/linuxppc-dev/2009-April/070716.html
+I've been slowly hacking on your virtio-over-pci stuff.  I've got an
+initial series of cleanup patches which address some of the comments
+from this thread.  Before I send them to you, have you made any
+changes on your end?  They likely won't apply without changes to the
+core code, so I'd like to sync up with you first.
 
-the links are stale since the ozlabs.org rebuilt and moved the  
-maillist.. mind updating.
+Cheers,
+g.
 
->
->
-> - I2C using I2C Bus 1 from the MPC8360 cpu
->
-> Signed-off-by: Heiko Schocher <hs@denx.de>
-> ---
-> changes since v1:
-> - added comments from Kumar Gala and Scott Wood
-> - get rid of using get_immrbase() in board specific code
->
-> changes since v2:
-> - added comments from Kumar Gala
-> - rebased against 1406de8e11eb043681297adf86d6892ff8efc27a
->  from git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
->
-> $ ./scripts/checkpatch.pl 0001--83xx-add-support-for-the-kmeter1- 
-> board.patch
-> total: 0 errors, 0 warnings, 1618 lines checked
->
-> 0001--83xx-add-support-for-the-kmeter1-board.patch has no obvious  
-> style problems and is ready for submission.
-> $
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
