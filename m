@@ -1,41 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
+Return-Path: <wsa@pengutronix.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 10157B70F7
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7A137B715B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 03:05:29 +1000 (EST)
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8BABDDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 03:05:28 +1000 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e33.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n5BH3N2k027451
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 11:03:23 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n5BH5BXM045584
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 11:05:13 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n5BH5AAc024111
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2009 11:05:10 -0600
-Message-ID: <20090611130507.y7sfzzfb40cgw8oo@imap.linux.ibm.com>
-Date: Thu, 11 Jun 2009 13:05:07 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: "next" branch update
-References: <1244603678.2431.18.camel@pasglop>
-In-Reply-To: <1244603678.2431.18.camel@pasglop>
+	Fri, 12 Jun 2009 03:07:37 +1000 (EST)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id DCE0CDDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 03:07:36 +1000 (EST)
+Date: Thu, 11 Jun 2009 19:07:30 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Albrecht =?iso-8859-1?Q?Dre=DF?= <albrecht.dress@arcor.de>
+Subject: Re: [PATCH] powerpc: tiny memcpy_(to|from)io optimisation
+Message-ID: <20090611170730.GC28028@pengutronix.de>
+References: <1243454441.3489.1@antares>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="w7PDEPdKQumQfZlR"
+In-Reply-To: <1243454441.3489.1@antares>
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,16 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Benjamin Herrenschmidt <benh@kernel.crashing.org>:
 
-> Hi !
+--w7PDEPdKQumQfZlR
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, May 27, 2009 at 10:00:41PM +0200, Albrecht Dre=DF wrote:
+> This trivial patch changes memcpy_(to|from)io as to transfer as many =20
+> 32-bit words as possible in 32-bit accesses (in the current solution, =20
+> the last 32-bit word was transferred as 4 byte accesses).
 >
-> I've updated my "next" branch with the following patches. We're getting
-> real close to the merge window now, so if something is missing, please
-> holler ASAP.
+> Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
 
-Could you please pull the 'next' branch of the 4xx tree?  I haven't  
-had a chance to generate a formal pull request due to travel and now  
-an unexpected family issue.
+Besides the discussion about optimizing the loop, what about the patch itse=
+lf?
+Looks plausible to me...
 
-josh
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--w7PDEPdKQumQfZlR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoxOdEACgkQD27XaX1/VRt8IQCdHTX2zugrASaUnyCPpXeUtjht
+EJ4AoIM0Ha9Wx9iBaq4VRJ5iA1vPv3/J
+=/rxs
+-----END PGP SIGNATURE-----
+
+--w7PDEPdKQumQfZlR--
