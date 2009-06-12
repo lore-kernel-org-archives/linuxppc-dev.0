@@ -1,18 +1,30 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id DD0E8B71B8
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CC2E3B71BC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 10:24:31 +1000 (EST)
-Date: Fri, 12 Jun 2009 10:24:27 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>
-Subject: linux-next: origin tree build failure
-Message-Id: <20090612102427.32582baa.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-	linux-next@vger.kernel.org, paulus@samba.org, Ingo Molnar <mingo@elte.hu>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Fri, 12 Jun 2009 10:37:14 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 00569DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 10:37:13 +1000 (EST)
+Date: Fri, 12 Jun 2009 04:37:01 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: PWM class? (was: Re: MPC52xx simple GPIO support)
+Message-ID: <20090612003701.GA9496@oksana.dev.rtsoft.ru>
+References: <4A255B21.8040002@gersys.de>
+	<20090602171527.GA8745@oksana.dev.rtsoft.ru>
+	<4A266FB2.2040902@gersys.de>
+	<20090603132217.GA18353@oksana.dev.rtsoft.ru>
+	<fa686aa40906111500w1760290bm890f3ee132500b1d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <fa686aa40906111500w1760290bm890f3ee132500b1d@mail.gmail.com>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
+	Stefan Strobl <nst@gersys.de>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,67 +34,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On Thu, Jun 11, 2009 at 04:00:51PM -0600, Grant Likely wrote:
+> On Wed, Jun 3, 2009 at 7:22 AM, Anton Vorontsov<avorontsov@ru.mvista.com> wrote:
+> > On Wed, Jun 03, 2009 at 02:42:26PM +0200, Stefan Strobl wrote:
+> > [...]
+> >> The led class provides support for setting the brightness, which
+> >> obviously the gpio driver doesn't support. The hardware (mpc52xx_gpt)
+> >> would support it in PWM mode though. I'm now wandering how this could be
+> >> best implemented.
+> >>
+> >> 1) - Create some PWM class similar to the GPIO class
+> >>    - Add support for PWM mode in mpc52xx_gpt.c that uses that PWM class
+> >>    - And add an interface for the LED to use the PWM class
+> >>
+> >> 2) - Create an LED driver that accesses the mpc52xx_gpt directly.
+> >>
+> >> I think I would be overwhelmed trying to implement (1) but am confident
+> >> to do (2). What do you think is the right approach?
+> >
+> > I'd suggest creating a generic PWM class, i.e. PWMLIB, alike to
+> > GPIOLIB. (2) can be an acceptable approach for now, but for the
+> > long-term solution (1) is the way to go.
+> >
+> > The non-lib PWM API is already there, see include/linux/pwm.h,
+> > and arch/arm/mach-pxa/pwm.c as an implementation example.
+> >
+> > Note that PXA implementation is SOC-specific, which is not very
+> > good.
+> >
+> > So I'd suggest creating drivers/pwm/pwmlib.c, borrowing
+> > ideas from gpiolib. And then we can reuse drivers/leds/leds-pwm.c
+> > driver (of course, after adding appropriate OF code into it).
+> 
+> Ugh.  The referenced pwm api is about as trivial as it gets; it is an
+> anonymous context pointer (anonymous struct pwm_device *) with a set
+> of accessor functions.  PWMs are also not nearly as common as GPIO
+> pins, and I am not interested in gpiolib being duplicated for PWMs, at
+> least not until there are more that just two examples of use to draw
+> from.
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+I didn't say that we should duplicate gpiolib. I said that we
+might borrow some ideas. ;-)
 
-include/linux/perf_counter.h:677: error: redefinition of 'perf_counter_do_pending'
-arch/powerpc/include/asm/hw_irq.h:170: note: previous definition of 'perf_counter_do_pending' was here
+> If anything, I'd rather struct pwm_device be non-anonymous and contain
+> a set of ops which call directly into the driver.  That way is at
+> least multiplatform friendly.  I don't think the gpio API is the
+> example to follow here.  But even then I think it is premature to try
+> and define a PWM api.  Personally, I'd modify mpc52xx_gpt to export
+> its own PWM interface for the time being using the existing GPIO
+> infrastructure to find the appropriate pin.
 
-Caused by commit 925d519ab82b6dd7aca9420d809ee83819c08db2 ("perf_counter:
-unify and fix delayed counter wakeup") which added the former definitions
-but forgot the remove the latter.
+Jon Smirl found that there were already some efforts put
+into making generic PWM class:
 
-I applied the following patch.
+http://thread.gmane.org/gmane.linux.kernel.embedded/1160
+
+Briefly looking, the class is pretty cool. Somebody should just
+continue this work.
+
+> If you do decide to do a generic PWM api, then I think the way to go
+> is to build it as an extension to gpiolib.
+
+I don't think David Brownell will like this idea. But
+who knows... maybe.
+
+Thanks,
+
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 12 Jun 2009 10:14:22 +1000
-Subject: [PATCH] perfcounters: remove powerpc definitions of perf_counter_do_pending
-
-Commit 925d519ab82b6dd7aca9420d809ee83819c08db2 ("perf_counter:
-unify and fix delayed counter wakeup") added global definitions.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/include/asm/hw_irq.h |    3 ---
- arch/powerpc/kernel/irq.c         |    1 +
- 2 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 20a44d0..5351237 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -156,8 +156,6 @@ static inline void clear_perf_counter_pending(void)
- 		"i" (offsetof(struct paca_struct, perf_counter_pending)));
- }
- 
--extern void perf_counter_do_pending(void);
--
- #else
- 
- static inline unsigned long test_perf_counter_pending(void)
-@@ -167,7 +165,6 @@ static inline unsigned long test_perf_counter_pending(void)
- 
- static inline void set_perf_counter_pending(void) {}
- static inline void clear_perf_counter_pending(void) {}
--static inline void perf_counter_do_pending(void) {}
- #endif /* CONFIG_PERF_COUNTERS */
- 
- #endif	/* __KERNEL__ */
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index feff792..844d3f8 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -53,6 +53,7 @@
- #include <linux/bootmem.h>
- #include <linux/pci.h>
- #include <linux/debugfs.h>
-+#include <linux/perf_counter.h>
- 
- #include <asm/uaccess.h>
- #include <asm/system.h>
--- 
-1.6.3.1
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
