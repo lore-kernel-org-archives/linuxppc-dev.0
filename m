@@ -1,24 +1,36 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dgibson@bilbo.ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E9083B71C4
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EC593B71D7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 11:01:07 +1000 (EST)
-Subject: Re: linux-next: origin tree build failure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20090612102427.32582baa.sfr@canb.auug.org.au>
-References: <20090612102427.32582baa.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Fri, 12 Jun 2009 11:00:06 +1000
-Message-Id: <1244768406.7172.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	paulus@samba.org, Ingo Molnar <mingo@elte.hu>,
-	Linus <torvalds@linux-foundation.org>
+	Fri, 12 Jun 2009 11:13:35 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DB536DDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 11:13:35 +1000 (EST)
+Date: Fri, 12 Jun 2009 11:13:32 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH v4] 83xx: add support for the kmeter1 board.
+Message-ID: <20090612011332.GA9084@yookeroo.seuss>
+References: <6B76A454-649E-408C-A8DF-AAEEE6011929@kernel.crashing.org>
+	<49F544DE.1010307@denx.de>
+	<20090427180503.GB10292@ld0162-tx32.am.freescale.net>
+	<49F68943.3090800@denx.de>
+	<20090428163540.GA2193@ld0162-tx32.am.freescale.net>
+	<49F7DC0C.3080409@denx.de>
+	<C934E2FC-7597-4D10-AA2F-F28884D1DD1B@kernel.crashing.org>
+	<4A30A14D.50907@denx.de>
+	<0AFEA008-BBF6-448B-844F-6EBE3DE24F7B@kernel.crashing.org>
+	<4A3148A1.3030403@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4A3148A1.3030403@denx.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,61 +40,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-06-12 at 10:24 +1000, Stephen Rothwell wrote:
+On Thu, Jun 11, 2009 at 08:10:41PM +0200, Heiko Schocher wrote:
+> The following series implements basic board support for
+> the kmeter1 board from keymile, based on a MPC8360.
 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Fri, 12 Jun 2009 10:14:22 +1000
-> Subject: [PATCH] perfcounters: remove powerpc definitions of perf_counter_do_pending
-> 
-> Commit 925d519ab82b6dd7aca9420d809ee83819c08db2 ("perf_counter:
-> unify and fix delayed counter wakeup") added global definitions.
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+[snip]
+> +		par_io@1400 {
+> +			reg = <0x1400 0x100>;
+> +			device_type = "par_io";
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+This should have a compatible value instead of a device_type value.
 
-Linus, please apply. BTW, This is _EXACTLY_ why this should have been in
--next for a few days before being merged :-(
+[snip]
 
-Cheers,
-Ben.
+> +			num-ports = <7>;
+> +
+> +			pio_ucc1: ucc_pin@00 {
 
-> ---
->  arch/powerpc/include/asm/hw_irq.h |    3 ---
->  arch/powerpc/kernel/irq.c         |    1 +
->  2 files changed, 1 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-> index 20a44d0..5351237 100644
-> --- a/arch/powerpc/include/asm/hw_irq.h
-> +++ b/arch/powerpc/include/asm/hw_irq.h
-> @@ -156,8 +156,6 @@ static inline void clear_perf_counter_pending(void)
->  		"i" (offsetof(struct paca_struct, perf_counter_pending)));
->  }
->  
-> -extern void perf_counter_do_pending(void);
-> -
->  #else
->  
->  static inline unsigned long test_perf_counter_pending(void)
-> @@ -167,7 +165,6 @@ static inline unsigned long test_perf_counter_pending(void)
->  
->  static inline void set_perf_counter_pending(void) {}
->  static inline void clear_perf_counter_pending(void) {}
-> -static inline void perf_counter_do_pending(void) {}
->  #endif /* CONFIG_PERF_COUNTERS */
->  
->  #endif	/* __KERNEL__ */
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index feff792..844d3f8 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -53,6 +53,7 @@
->  #include <linux/bootmem.h>
->  #include <linux/pci.h>
->  #include <linux/debugfs.h>
-> +#include <linux/perf_counter.h>
->  
->  #include <asm/uaccess.h>
->  #include <asm/system.h>
+Since these nodes have addresses, they should also have reg
+properties.  And the parent should have #address-cells and
+#size-cells.
+
+[snip]
+> +		qe@100000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			device_type = "qe";
+
+This device_type should not be here.
+
+> +			compatible = "fsl,qe";
+> +			ranges = <0x0 0x100000 0x100000>;
+> +			reg = <0x100000 0x480>;
+> +			clock-frequency = <0>;	/* Filled in by U-Boot */
+> +			brg-frequency = <0>;	/* Filled in by U-Boot */
+> +			bus-frequency = <0>;	/* Filled in by U-Boot */
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
