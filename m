@@ -1,36 +1,24 @@
-Return-Path: <dgibson@bilbo.ozlabs.org>
+Return-Path: <Yang.Shi@windriver.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id EC593B71D7
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BAC4CB71D6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Jun 2009 11:13:35 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DB536DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 11:13:35 +1000 (EST)
-Date: Fri, 12 Jun 2009 11:13:32 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH v4] 83xx: add support for the kmeter1 board.
-Message-ID: <20090612011332.GA9084@yookeroo.seuss>
-References: <6B76A454-649E-408C-A8DF-AAEEE6011929@kernel.crashing.org>
-	<49F544DE.1010307@denx.de>
-	<20090427180503.GB10292@ld0162-tx32.am.freescale.net>
-	<49F68943.3090800@denx.de>
-	<20090428163540.GA2193@ld0162-tx32.am.freescale.net>
-	<49F7DC0C.3080409@denx.de>
-	<C934E2FC-7597-4D10-AA2F-F28884D1DD1B@kernel.crashing.org>
-	<4A30A14D.50907@denx.de>
-	<0AFEA008-BBF6-448B-844F-6EBE3DE24F7B@kernel.crashing.org>
-	<4A3148A1.3030403@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4A3148A1.3030403@denx.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+	Fri, 12 Jun 2009 11:26:05 +1000 (EST)
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 3BDA1DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2009 11:26:03 +1000 (EST)
+Subject: [PATCH 1/1] EDAC: Add DDR3 memory type for MPC85xx EDAC
+From: yshi <yang.shi@windriver.com>
+To: dougthompson@xmission.com, "bluesmoke-devel@lists.sourceforge.net"
+	<bluesmoke-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 12 Jun 2009 09:26:10 +0800
+Message-Id: <1244769970.3419.246.camel@yshi-desktop.CORP>
+Mime-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,44 +28,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 11, 2009 at 08:10:41PM +0200, Heiko Schocher wrote:
-> The following series implements basic board support for
-> the kmeter1 board from keymile, based on a MPC8360.
+=EF=BB=BFSince some new MPC85xx SOCs support DDR3 memory now, so
+add DDR3 memory type for MPC85xx EDAC.
 
-[snip]
-> +		par_io@1400 {
-> +			reg = <0x1400 0x100>;
-> +			device_type = "par_io";
+Signed-off-by: Yang Shi <yang.shi@windriver.com>
+---
+ b/drivers/edac/edac_core.h     |    4 ++++
+ b/drivers/edac/edac_mc_sysfs.c |    4 +++-
+ b/drivers/edac/mpc85xx_edac.c  |    6 ++++++
+ b/drivers/edac/mpc85xx_edac.h  |    1 +
+ 4 files changed, 14 insertions(+), 1 deletion(-)
 
-This should have a compatible value instead of a device_type value.
-
-[snip]
-
-> +			num-ports = <7>;
-> +
-> +			pio_ucc1: ucc_pin@00 {
-
-Since these nodes have addresses, they should also have reg
-properties.  And the parent should have #address-cells and
-#size-cells.
-
-[snip]
-> +		qe@100000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			device_type = "qe";
-
-This device_type should not be here.
-
-> +			compatible = "fsl,qe";
-> +			ranges = <0x0 0x100000 0x100000>;
-> +			reg = <0x100000 0x480>;
-> +			clock-frequency = <0>;	/* Filled in by U-Boot */
-> +			brg-frequency = <0>;	/* Filled in by U-Boot */
-> +			bus-frequency = <0>;	/* Filled in by U-Boot */
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+--- a/drivers/edac/mpc85xx_edac.h
++++ b/drivers/edac/mpc85xx_edac.h
+@@ -53,6 +53,7 @@
+=20
+ #define DSC_SDTYPE_DDR         0x02000000
+ #define DSC_SDTYPE_DDR2                0x03000000
++#define DSC_SDTYPE_DDR3                0x07000000
+ #define DSC_X32_EN     0x00000020
+=20
+ /* Err_Int_En */
+--- a/drivers/edac/edac_core.h
++++ b/drivers/edac/edac_core.h
+@@ -149,6 +149,8 @@ enum mem_type {
+        MEM_FB_DDR2,            /* fully buffered DDR2 */
+        MEM_RDDR2,              /* Registered DDR2 RAM */
+        MEM_XDR,                /* Rambus XDR */
++       MEM_DDR3,               /* DDR3 RAM */
++       MEM_RDDR3,              /* Registered DDR3 RAM */
+ };
+=20
+ #define MEM_FLAG_EMPTY         BIT(MEM_EMPTY)
+@@ -166,6 +168,8 @@ enum mem_type {
+ #define MEM_FLAG_FB_DDR2        BIT(MEM_FB_DDR2)
+ #define MEM_FLAG_RDDR2          BIT(MEM_RDDR2)
+ #define MEM_FLAG_XDR            BIT(MEM_XDR)
++#define MEM_FLAG_DDR3           BIT(MEM_DDR3)
++#define MEM_FLAG_RDDR3          BIT(MEM_RDDR3)
+=20
+ /* chipset Error Detection and Correction capabilities and mode */
+ enum edac_type {
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -757,6 +757,9 @@ static void __devinit mpc85xx_init_csrow
+                case DSC_SDTYPE_DDR2:
+                        mtype =3D MEM_RDDR2;
+                        break;
++               case DSC_SDTYPE_DDR3:
++                       mtype =3D MEM_RDDR3;
++                       break;
+                default:
+                        mtype =3D MEM_UNKNOWN;
+                        break;
+@@ -769,6 +772,9 @@ static void __devinit mpc85xx_init_csrow
+                case DSC_SDTYPE_DDR2:
+                        mtype =3D MEM_DDR2;
+                        break;
++               case DSC_SDTYPE_DDR3:
++                       mtype =3D MEM_DDR3;
++                       break;
+                default:
+                        mtype =3D MEM_UNKNOWN;
+                        break;
+--- a/drivers/edac/edac_mc_sysfs.c
++++ b/drivers/edac/edac_mc_sysfs.c
+@@ -94,7 +94,9 @@ static const char *mem_types[] =3D {
+        [MEM_DDR2] =3D "Unbuffered-DDR2",
+        [MEM_FB_DDR2] =3D "FullyBuffered-DDR2",
+        [MEM_RDDR2] =3D "Registered-DDR2",
+-       [MEM_XDR] =3D "XDR"
++       [MEM_XDR] =3D "XDR",
++       [MEM_DDR3] =3D "Unbuffered-DDR3",
++       [MEM_RDDR3] =3D "Registered-DDR3"
+ };
+=20
+ static const char *dev_types[] =3D {
