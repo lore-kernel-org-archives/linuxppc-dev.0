@@ -1,29 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 34CD4B7187
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 13 Jun 2009 01:05:48 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C51C9B7173
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 13 Jun 2009 00:23:27 +1000 (EST)
-Subject: Re: linux-next: origin tree build failure
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090612141118.GK32105@elte.hu>
-References: <20090612102427.32582baa.sfr@canb.auug.org.au>
-	<1244768406.7172.1.camel@pasglop> <20090612092054.GB32052@elte.hu>
-	<1244799197.7172.106.camel@pasglop> <20090612125335.GH31845@elte.hu>
-	<1244812224.7172.146.camel@pasglop> <1244813397.7172.156.camel@pasglop>
-	<20090612134940.GD32105@elte.hu> <1244815574.7172.171.camel@pasglop>
-	<20090612141118.GK32105@elte.hu>
-Content-Type: text/plain
-Date: Sat, 13 Jun 2009 00:23:02 +1000
-Message-Id: <1244816582.7172.175.camel@pasglop>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	paulus@samba.org, Linus <torvalds@linux-foundation.org>
+	by ozlabs.org (Postfix) with ESMTPS id 86F3DDDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jun 2009 01:05:47 +1000 (EST)
+Message-Id: <24633D89-D4EC-4C27-8B7F-3992EFE50989@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+In-Reply-To: <2a27d3730906120223w9f30b7ewfd22eb328e3a23d3@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+Date: Fri, 12 Jun 2009 10:03:27 -0500
+References: <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>
+	<49F608B7.9080409@ovro.caltech.edu>
+	<49F60A3A.4060402@freescale.com>
+	<49F61416.8040501@ovro.caltech.edu> <49F614FC.70000@freescale.com>
+	<20090427204213.GA4960@ovro.caltech.edu>
+	<49F619C4.20100@freescale.com>
+	<e9c3a7c20904271349m134ff7f2s9d7901015454cf3d@mail.gmail.com>
+	<09185A86-F744-4302-A78A-04E1FFFA32BD@kernel.crashing.org>
+	<20090611151750.GB9323@ovro.caltech.edu>
+	<2a27d3730906120223w9f30b7ewfd22eb328e3a23d3@mail.gmail.com>
+Cc: David Hawkins <dwh@ovro.caltech.edu>, Ira Snyder <iws@ovro.caltech.edu>,
+	Liu Dave-R63238 <DaveLiu@freescale.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Dan Williams <dan.j.williams@intel.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +42,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-06-12 at 16:11 +0200, Ingo Molnar wrote:
-> > Maybe. But maybe it's representative... so far in this merge 
-> > window, 100% of the powerpc build and runtime breakage upstream 
-> > comes from stuff that didn't get into -next before.
-> 
-> But that's axiomatic, isnt it? linux-next build-tests PowerPC as the 
-> first in the row of tests - so no change that was in linux-next can 
-> ever cause a build failure on PowerPC, right?
 
-I'd have to check with Stephen but I think linux-next tests a whole
-bunch of archs each round. Anyway, the idea is, just don't get things
-upstream before the at least had a chance to go through that little bit
-of integration testing .. Is it -that- hard ?
+On Jun 12, 2009, at 4:23 AM, Li Yang wrote:
 
-Oh and before you ask me, yes, I do the same mistakes, and I have been
-caught too merging things at the last minute that ended up broken and
-that could have been caught by -next... I'm just trying to advocate the
-idea that we all try to improve in that area :-)
+> On Thu, Jun 11, 2009 at 11:17 PM, Ira Snyder<iws@ovro.caltech.edu>  
+> wrote:
+>> On Wed, Jun 10, 2009 at 09:45:26PM -0500, Kumar Gala wrote:
+>>>
+>>> On Apr 27, 2009, at 3:49 PM, Dan Williams wrote:
+>>>
+>>>> On Mon, Apr 27, 2009 at 1:47 PM, Timur Tabi <timur@freescale.com>
+>>>> wrote:
+>>>>> Adding Kumar to the CC: list, since he might pick up the patch.
+>>>>>
+>>>>
+>>>> Acked-by: Dan Williams <dan.j.williams@intel.com>
+>>>>
+>>>> I agree with taking this through Kumar's tree.
+>>>
+>>> I'm going through patches for .31.. Should I still pick this up?   
+>>> Going
+>>> forward should I pick up fsldma patches?
+>>>
+>>
+>> I'm fine with that, but you should probably talk to Li Yang (added to
+>> CC). He's gotten in contact with me a few times recently.
+>
+> I am fine with both ways for this patch as it is only related to
+> Freescale register details.  But in general I think patches should go
+> through functional subsystem, as they usually would need insight of
+> the subsystem architecture.  I prefer the way that the patch acked or
+> signed-off by Freescale guys and push upstream through Dan's tree as
+> most other subsystems did.  Unless Dan prefers to ack the subsystem
+> architectural part of each patch and have them pushed other way.
 
-Cheers,
-Ben.
+I agree w/this and just wanting to see what Dan's preference is.
+
+- k
