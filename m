@@ -1,30 +1,27 @@
-Return-Path: <rpjday@crashcourse.ca>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CE3B6B7206
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DDB05B720A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 14 Jun 2009 01:58:39 +1000 (EST)
-Received: from astoria.ccjclearline.com (astoria.ccjclearline.com
-	[64.235.106.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7223ADDD01
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jun 2009 01:58:39 +1000 (EST)
-Received: from cpe002129687b04-cm001225dbafb6.cpe.net.cable.rogers.com
-	([99.235.241.187] helo=crashcourse.ca)
-	by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
-	(Exim 4.69) (envelope-from <rpjday@crashcourse.ca>)
-	id 1MFV7A-0000nZ-Tj
-	for linuxppc-dev@ozlabs.org; Sat, 13 Jun 2009 11:25:52 -0400
-Date: Sat, 13 Jun 2009 11:11:28 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
-Subject: invalid Kconfig "select" for MPC5121_ADS_CPLD
-Message-ID: <alpine.LFD.2.00.0906131109260.23298@localhost>
+	Sun, 14 Jun 2009 02:21:46 +1000 (EST)
+Received: from mail-gx0-f210.google.com (mail-gx0-f210.google.com
+	[209.85.217.210]) by ozlabs.org (Postfix) with ESMTP id 396CFDDD01
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jun 2009 02:21:45 +1000 (EST)
+Received: by gxk6 with SMTP id 6so3960030gxk.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jun 2009 09:21:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <alpine.LFD.2.00.0906131109260.23298@localhost>
+References: <alpine.LFD.2.00.0906131109260.23298@localhost>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 13 Jun 2009 10:21:24 -0600
+Message-ID: <fa686aa40906130921y51747e04se450697c7e2739bd@mail.gmail.com>
+Subject: Re: invalid Kconfig "select" for MPC5121_ADS_CPLD
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,20 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, Jun 13, 2009 at 9:11 AM, Robert P. J. Day<rpjday@crashcourse.ca> wr=
+ote:
+>
+> =A0arch/powerpc/platforms/512x/Kconfig: =A0select MPC5121_ADS_CPLD
 
-  arch/powerpc/platforms/512x/Kconfig:	select MPC5121_ADS_CPLD
+5121 support in mainline is half-baked.  Wolfgang is working on a
+patch series to update it (undergone one review cycle on the mailing
+list).  I don't know if he has published a git tree containing the
+current state.
 
-no such config directive anywhere.
+BTW, it is helpful to cc: the relevant maintainers when asking
+questions about particular SoCs.
 
-rday
---
+g.
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
