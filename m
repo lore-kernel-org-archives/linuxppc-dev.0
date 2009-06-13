@@ -1,30 +1,28 @@
-Return-Path: <rdreier@cisco.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 88737B71F8
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id A5A03B71BC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 13 Jun 2009 14:51:03 +1000 (EST)
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-6.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D13DBDDD01
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jun 2009 14:51:02 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2.6.31] ehca: Tolerate dynamic memory operations and huge
-	pages
-References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
-Date: Fri, 12 Jun 2009 21:50:58 -0700
-In-Reply-To: <200906091559.24661.hannes.hering@linux.vnet.ibm.com> (Hannes
-	Hering's message of "Tue, 9 Jun 2009 15:59:24 +0200")
-Message-ID: <adar5xoybwt.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: alexs@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-	ewg@lists.openfabrics.org, linuxppc-dev@ozlabs.org,
-	raisch@de.ibm.com, ossrosch@linux.vnet.ibm.com
+	Sat, 13 Jun 2009 14:55:00 +1000 (EST)
+Date: Sat, 13 Jun 2009 14:54:51 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: origin tree build failure
+Message-Id: <20090613145451.07430ad0.sfr@canb.auug.org.au>
+In-Reply-To: <20090612134428.GC32105@elte.hu>
+References: <20090612102427.32582baa.sfr@canb.auug.org.au>
+	<1244768406.7172.1.camel@pasglop> <20090612092054.GB32052@elte.hu>
+	<1244799197.7172.106.camel@pasglop>
+	<20090612125335.GH31845@elte.hu>
+	<1244812224.7172.146.camel@pasglop>
+	<20090612134428.GC32105@elte.hu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__13_Jun_2009_14_54_51_+1000_/1X8baDtHHiWIYw."
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	paulus@samba.org, Linus <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,124 +32,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-OK, one major issue with this patch and a few minor nits.
+--Signature=_Sat__13_Jun_2009_14_54_51_+1000_/1X8baDtHHiWIYw.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-First, the major issue is that I don't see anything in the patch that
-changes the code in ehca_mem_notifier() in ehca_main.c:
+Hi Ingo,
 
-	case MEM_GOING_ONLINE:
-	case MEM_GOING_OFFLINE:
-		/* only ok if no hca is attached to the lpar */
-		spin_lock_irqsave(&shca_list_lock, flags);
-		if (list_empty(&shca_list)) {
-			spin_unlock_irqrestore(&shca_list_lock, flags);
-			return NOTIFY_OK;
-		} else {
-			spin_unlock_irqrestore(&shca_list_lock, flags);
-			if (printk_timed_ratelimit(&ehca_dmem_warn_time,
-						   30 * 1000))
-				ehca_gen_err("DMEM operations are not allowed"
-					     "in conjunction with eHCA");
-			return NOTIFY_BAD;
-		}
+On Fri, 12 Jun 2009 15:44:28 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> In terms of test coverage, at least for our trees, less than 1% of=20
+> the bugs we handle get reported in a linux-next context - and most=20
+> of the bugs that get reported (against say the scheduler tree) are=20
+> related to rare architectures.
 
-But your patch description says:
+I expect that most bugs get reported and fixed before code gets to
+linux-next (in fact one of the prerequisites for being in linux-next is
+that code has been tested as well as possible).
 
- > This patch implements toleration of dynamic memory operations....
+> In fact, i checked, there were _zero_ x86 bugs reported against=20
+> linux-next and solved against it between v2.6.30-rc1 and v2.6.30:
+>=20
+>    git log --grep=3Dnext -i v2.6.30-rc1..v2.6.30 arch/x86/
+>=20
+> Doing it over the full cycle shows one commit altogether - a Xen=20
+> build failure. In fact, i just checked the whole stabilization cycle=20
+> for the whole kernel (v2.6.30-rc1..v2.6.30-final), and there were=20
+> only 5 linux-next originated patches, most of them build failures.
 
-But it seems you're still going to hit the same NOTIFY_BAD case above
-after your patch.  So something doesn't compute for me.  Could you
-explain more?
+Nice set of figures.  For some other context, between April 6 and June 9
+(2.6.30-rc1 to 2.6.30) I sent 50 emails with subjects like "linux-next:
+xxx tree build failure".  What results from those emails?  I sometimes
+don't even hear back.  Almost all of the failures get fixed.
 
-Second, a nit:
+A lot of these probably also get discovered independently.  I don't
+really care as long as they do get fixed.
 
- > +#define EHCA_REG_MR 0
- > +#define EHCA_REG_BUSMAP_MR (~0)
+One of those failures was a sparc build failure due to a change in the
+tip-core tree (see commit d2de688891909b148efe83a6fc9520a9cd6015f0).
+Another report produced commit 27b19565fe4ca5b0e9d2ae98ce4b81ca728bf445.
 
-and you pass these as the reg_busmap parm in:
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
- >  int ehca_reg_mr(struct ehca_shca *shca,
- >  		struct ehca_mr *e_mr,
- >  		u64 *iova_start,
- > @@ -991,7 +1031,8 @@
- >  		struct ehca_pd *e_pd,
- >  		struct ehca_mr_pginfo *pginfo,
- >  		u32 *lkey, /*OUT*/
- > -		u32 *rkey) /*OUT*/
- > +		u32 *rkey, /*OUT*/
- > +		int reg_busmap)
+--Signature=_Sat__13_Jun_2009_14_54_51_+1000_/1X8baDtHHiWIYw.
+Content-Type: application/pgp-signature
 
-and test it as:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
- > +	if (reg_busmap)
- > +		ret = ehca_reg_bmap_mr_rpages(shca, e_mr, pginfo);
- > +	else
- > +		ret = ehca_reg_mr_rpages(shca, e_mr, pginfo);
+iEYEARECAAYFAkozMRsACgkQjjKRsyhoI8y8tgCcC8NfR2wXQvpqMnNHFnboqJbr
+U/4AnRggiQ30EYELKxNIvJWRXfKSGVnO
+=VQly
+-----END PGP SIGNATURE-----
 
-So the ~0 for true looks a bit odd.  One option would be to make
-reg_busmap a bool, since that's how you're using it, but then you lose
-the nice self-documenting macro where you call things.
-
-So I think it would be cleaner to do something like
-
-enum ehca_reg_type {
-	EHCA_REG_MR,
-	EHCA_REG_BUSMAP_MR
-};
-
-and make the "int reg_busmap" parameter into "enum ehca_reg_type reg_type"
-and have the code become
-
-+	if (reg_type == EHCA_REG_BUSMAP_MR)
-+		ret = ehca_reg_bmap_mr_rpages(shca, e_mr, pginfo);
-+	else if (reg_type == EHCA_REG_MR)
-+		ret = ehca_reg_mr_rpages(shca, e_mr, pginfo);
-+	else
-+		ret = -EINVAL
-
-or something like that.
-
- > +struct ib_dma_mapping_ops ehca_dma_mapping_ops = {
- > +	.mapping_error = ehca_dma_mapping_error,
- > +	.map_single = ehca_dma_map_single,
- > +	.unmap_single = ehca_dma_unmap_single,
- > +	.map_page = ehca_dma_map_page,
- > +	.unmap_page = ehca_dma_unmap_page,
- > +	.map_sg = ehca_dma_map_sg,
- > +	.unmap_sg = ehca_dma_unmap_sg,
- > +	.dma_address = ehca_dma_address,
- > +	.dma_len = ehca_dma_len,
- > +	.sync_single_for_cpu = ehca_dma_sync_single_for_cpu,
- > +	.sync_single_for_device = ehca_dma_sync_single_for_device,
- > +	.alloc_coherent = ehca_dma_alloc_coherent,
- > +	.free_coherent = ehca_dma_free_coherent,
- > +};
-
-I always think structures like this are easier to read if you align the
-'=' signs.  But no big deal.
-
- > +	ret = ehca_create_busmap();
- > +	if (ret) {
- > +		ehca_gen_err("Cannot create busmap.");
- > +		goto module_init2;
- > +	}
- > +
- >  	ret = ibmebus_register_driver(&ehca_driver);
- >  	if (ret) {
- >  		ehca_gen_err("Cannot register eHCA device driver");
- >  		ret = -EINVAL;
- > -		goto module_init2;
- > +		goto module_init3;
- >  	}
- >  
- >  	ret = register_memory_notifier(&ehca_mem_nb);
- >  	if (ret) {
- >  		ehca_gen_err("Failed registering memory add/remove notifier");
- > -		goto module_init3;
- > +		goto module_init4;
-
-Having to renumber unrelated things is when something changes is why I
-don't like this style of error path labels.  But I think it's well and
-truly too late to fix that in ehca.
-
- - R.
+--Signature=_Sat__13_Jun_2009_14_54_51_+1000_/1X8baDtHHiWIYw.--
