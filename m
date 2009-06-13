@@ -1,31 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 5F5EFB71F4
+Return-Path: <paulus@bilbo.ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 20EB9B7202
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 13 Jun 2009 15:06:40 +1000 (EST)
-Date: Sat, 13 Jun 2009 15:06:34 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: origin tree build failure
-Message-Id: <20090613150634.3221d74a.sfr@canb.auug.org.au>
-In-Reply-To: <20090612141118.GK32105@elte.hu>
-References: <20090612102427.32582baa.sfr@canb.auug.org.au>
-	<1244768406.7172.1.camel@pasglop> <20090612092054.GB32052@elte.hu>
-	<1244799197.7172.106.camel@pasglop>
-	<20090612125335.GH31845@elte.hu>
-	<1244812224.7172.146.camel@pasglop>
-	<1244813397.7172.156.camel@pasglop>
-	<20090612134940.GD32105@elte.hu>
-	<1244815574.7172.171.camel@pasglop>
-	<20090612141118.GK32105@elte.hu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__13_Jun_2009_15_06_34_+1000_2EUVha+RtjHgWiRz"
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	paulus@samba.org, Linus <torvalds@linux-foundation.org>
+	Sat, 13 Jun 2009 17:13:50 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id ED51EDDD04
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jun 2009 17:13:49 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18995.20721.75525.524733@cargo.ozlabs.ibm.com>
+Date: Sat, 13 Jun 2009 17:10:41 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: benh@kernel.crashing.org, torvalds@linux-foundation.org,
+	akpm@linux-foundation.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] powerpc: Use generic atomic64_t implementation on 32-bit
+	processors
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,52 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Sat__13_Jun_2009_15_06_34_+1000_2EUVha+RtjHgWiRz
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>From 02fccb02e29bc24e84a5b2ea6ea5d63779247408 Mon Sep 17 00:00:00 2001
+From: Paul Mackerras <paulus@samba.org>
+Date: Sat, 13 Jun 2009 16:24:03 +1000
+Subject: 
 
-Hi Ingo,
+This makes 32-bit powerpc use the generic atomic64_t implementation.
 
-On Fri, 12 Jun 2009 16:11:18 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->
-> But that's axiomatic, isnt it? linux-next build-tests PowerPC as the=20
-> first in the row of tests - so no change that was in linux-next can=20
-> ever cause a build failure on PowerPC, right?
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/Kconfig              |    1 +
+ arch/powerpc/include/asm/atomic.h |    3 +++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-Not really.  I build a powerpc ppc64_defconfig and an x86_64 allmodconfig
-between merging most trees.  At the end of the day, I do the following
-builds before releasing linux-next:
-
-powerpc allnoconfig
-powerpc64 allnoconfig
-powerpc ppc44x_defconfig
-powerpc allyesconfig
-i386 defconfig
-sparc64 defconfig
-sparc defconfig
-
-Which clearly doesn't cover all possible configs, but is a start and
-catches a lot (the powerpc allyesconfig is only 64 bit).
-
-Then after release, linux-next gets built for a lot of architectures and
-configs (see http://kisskb.ellerman.id.au/kisskb/branch/9/).  A couple of
-people also do randconfig builds which find all sorts of things.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__13_Jun_2009_15_06_34_+1000_2EUVha+RtjHgWiRz
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkozM9oACgkQjjKRsyhoI8xBVwCeNVCbILrnRv1ZNcEBWJwr2lbO
-3pwAn0PmPtwU7KAQ2sXl8NNi3bYnjxhY
-=bu6d
------END PGP SIGNATURE-----
-
---Signature=_Sat__13_Jun_2009_15_06_34_+1000_2EUVha+RtjHgWiRz--
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index cdc9a6f..3f0a983 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -125,6 +125,7 @@ config PPC
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+ 	select HAVE_OPROFILE
+ 	select HAVE_SYSCALL_WRAPPERS if PPC64
++	select GENERIC_ATOMIC64 if PPC32
+ 
+ config EARLY_PRINTK
+ 	bool
+diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
+index b7d2d07..4012483 100644
+--- a/arch/powerpc/include/asm/atomic.h
++++ b/arch/powerpc/include/asm/atomic.h
+@@ -470,6 +470,9 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+ 
+ #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
+ 
++#else  /* __powerpc64__ */
++#include <asm-generic/atomic64.h>
++
+ #endif /* __powerpc64__ */
+ 
+ #include <asm-generic/atomic-long.h>
+-- 
+1.6.0.4
