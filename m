@@ -1,26 +1,34 @@
-Return-Path: <hjk@linutronix.de>
+Return-Path: <wsa@pengutronix.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7DC35B70F2
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DD3F5B70F3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Jun 2009 09:46:01 +1000 (EST)
-Date: Mon, 15 Jun 2009 01:45:46 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Mon, 15 Jun 2009 09:46:56 +1000 (EST)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 58B3ADDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 09:46:56 +1000 (EST)
+Date: Mon, 15 Jun 2009 01:46:43 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: "Hans J. Koch" <hjk@linutronix.de>
 Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
-Message-ID: <20090614234546.GJ3639@local>
-References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de>
-	<1244765062-14144-3-git-send-email-w.sang@pengutronix.de>
+Message-ID: <20090614234643.GA17791@pengutronix.de>
+References: <1244765062-14144-3-git-send-email-w.sang@pengutronix.de>
 	<20090614122136.GD3639@local>
-	<20090615001207.1829e7b5@lxorguk.ukuu.org.uk>
+	<20090614171406.GA1010@pengutronix.de>
+	<20090614183357.GE3639@local>
+	<20090614190533.GA7387@pengutronix.de>
+	<20090614192359.GG3639@local> <4A355155.4020500@grandegger.com>
+	<20090614203444.GH3639@local>
+	<20090614220022.GB24323@pengutronix.de>
+	<20090614230135.GI3639@local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090615001207.1829e7b5@lxorguk.ukuu.org.uk>
-Cc: devicetree-discuss@ozlabs.org, "Hans J. Koch" <hjk@linutronix.de>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Greg KH <gregkh@suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="0F1p//8PRICkK4MW"
+In-Reply-To: <20090614230135.GI3639@local>
+Cc: devicetree-discuss@ozlabs.org, Greg KH <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,42 +38,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 15, 2009 at 12:12:07AM +0100, Alan Cox wrote:
-> > > +	if (!uioinfo->irq)
-> > > +		uioinfo->irq = UIO_IRQ_NONE;
-> > 
-> > Please don't do this. It's inconsistent if all other UIO drivers require
-> > people to use UIO_IRQ_NONE and you also allow zero. UIO_IRQ_NONE was
-> > introduced because 0 may be a legal interrupt number on some platforms.
-> 
-> Zero is not a valid IRQ number in the kernel (except in arch specific
-> depths). IRQ numbers are also *unsigned* so -1 isn't a safe definition.
 
-The above uioinfo->irq is a signed long.
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> Zero means no IRQ. If any old UIO code is assuming otherwise it wants
-> fixing.
 
-It doesn't. It won't complain about IRQ 0 and will pass it on to
-request_irq, which will probably fail if it is as you say.
+> driver. A user _has_ to setup irq, if there is none, he still has to set
+> irq=3DUIO_IRQ_NONE. For that matter, 'not specified' and 'not found' is b=
+oth
+> the same bad thing.
 
-I did it that way because I saw IRQ 0 in /proc/interrupts on every PC...
+Hmm, what should I do?
 
-> 
-> It is the job of the platform to map a physical IRQ 0 to some other
-> representation if it exists outside of arch specific code.
+A typical interrupts-property in a device-tree is specified as:
 
-Funny.
+	interrupts =3D <&irq_controller_node irq_number irq_sense>;
 
-> This was
-> decided some years ago and a large part of the kernel simply doesn't
-> support any notion of a real IRQ 0.
+Something like UIO_IRQ_NONE does not fit into this scheme, even more as it =
+is
+Linux-specific and device trees need to be OS independant.
 
-Can you tell me the reason for that decision or point me to some ml archive?
+I'm pretty sure the correct way to state that you don't need an interrupt in
+the device-tree is to simply not specify the above interrupt property.
 
-Thanks,
-Hans
+Well, yes, that means you can't distinguish between 'forgotten' and
+'intentionally left out'. I wonder if it is really that bad? If something d=
+oes
+not work (=3D one is missing interrupts), the first place to look at is the
+device tree. If one does not see an interrupt-property, voila, problem solv=
+ed.
 
-> 
-> Alan
+(Note that with my latest suggestion, a _wrong_ interrupt is handled the sa=
+me
+way as with platform_data. request_irq() should equally fail if the
+return-value from irq_of_parse_and_map() is simply forwarded.)
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--0F1p//8PRICkK4MW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko1i+MACgkQD27XaX1/VRtmwgCfU35vNsB6pRMg8ZPEwH5uZbGv
+yf0AoK9cs8c+cyQpX3TlCqepX2CY7fID
+=ZRIy
+-----END PGP SIGNATURE-----
+
+--0F1p//8PRICkK4MW--
