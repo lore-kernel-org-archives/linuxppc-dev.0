@@ -1,27 +1,44 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <dwg@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 58694B712F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 66BA2B7136
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Jun 2009 16:57:15 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Mon, 15 Jun 2009 16:58:11 +1000 (EST)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8A543DDD1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 16:57:14 +1000 (EST)
-Subject: Re: [PATCH v3] powerpc: add ioremap_early() for mapping IO regions
-	before MMU_init()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20090527185422.15186.46133.stgit@localhost.localdomain>
-References: <20090527185422.15186.46133.stgit@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 15 Jun 2009 16:55:02 +1000
-Message-Id: <1245048902.19217.47.camel@pasglop>
-Mime-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 31DE1DDD1B
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 16:58:11 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp07.au.ibm.com (8.13.1/8.13.1) with ESMTP id n5FGw8gc028292
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 02:58:08 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5F6w8ve397702
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 16:58:08 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n5F6w7gK022079
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 16:58:08 +1000
+Date: Mon, 15 Jun 2009 16:52:31 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [Patch 3/6] Modify ptrace code to use Hardware Breakpoint
+	interfaces
+Message-ID: <20090615065231.GC26817@yookeroo.seuss>
+References: <20090603162741.197115376@prasadkr_t60p.in.ibm.com>
+	<20090603163524.GD5197@in.ibm.com>
+	<20090605051345.GK2054@yookeroo.seuss>
+	<20090610065002.GB6912@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090610065002.GB6912@in.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,132 +48,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-05-27 at 12:55 -0600, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+On Wed, Jun 10, 2009 at 12:20:02PM +0530, K.Prasad wrote:
+> On Fri, Jun 05, 2009 at 03:13:45PM +1000, David Gibson wrote:
+> > On Wed, Jun 03, 2009 at 10:05:24PM +0530, K.Prasad wrote:
+> > > Modify the ptrace code to use the hardware breakpoint interfaces for user-space.
+> > > 
+> > > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > > ---
+> > >  arch/powerpc/kernel/ptrace.c |   47 +++++++++++++++++++++++++++++++++++++++++++
+> > >  1 file changed, 47 insertions(+)
+> > > 
+> > > Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/ptrace.c
+> > > ===================================================================
+> > > --- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/ptrace.c
+> > > +++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/ptrace.c
+> > > @@ -37,6 +37,7 @@
+> > >  #include <asm/page.h>
+> > >  #include <asm/pgtable.h>
+> > >  #include <asm/system.h>
+> > > +#include <asm/hw_breakpoint.h>
+> > >  
+> > >  /*
+> > >   * does not yet catch signals sent when the child dies.
+> > > @@ -735,9 +736,26 @@ void user_disable_single_step(struct tas
+> > >  	clear_tsk_thread_flag(task, TIF_SINGLESTEP);
+> > >  }
+> > >  
+> > > +void ptrace_triggered(struct hw_breakpoint *bp, struct pt_regs *regs)
+> > > +{
+> > > +	/*
+> > > +	 * Unregister the breakpoint request here since ptrace has defined a
+> > > +	 * one-shot behaviour for breakpoint exceptions in PPC64.
+> > > +	 * The SIGTRAP signal is generated automatically for us in do_dabr().
+> > > +	 * We don't have to do anything here
+> > > +	 */
+> > > +	unregister_user_hw_breakpoint(current, bp);
+> > > +	kfree(bp);
+> > 
+> > Couldn't you also clear the saved dabr info here, to avoid having to
+> > special case this in the actual breakpoint handler.
 > 
-> ioremap_early() is useful for things like mapping SoC internally registers
-> and early debug output because it allows mappings to devices to be setup
-> early in the boot process where they are needed.  It also give a
-> performance boost since BAT mapped registers don't get flushed out of
-> the TLB.
+> The saved dabr_data is created as a static variable and I didn't want to
+> modify its value across files.
+
+Hrm.  I'm not sure which of these options is the uglier, to be honest.
+
+> > Also, I think you should be delivering the signal here - for gdb
+> > compatibility I think we'll need to match the old behaviour which has
+> > the TRAP delivered before executing the breakpointed instruction.
+> > 
 > 
-> Without ioremap_early(), early mappings are set up in an ad-hoc manner
-> and they get lost when the MMU is set up.  Drivers then have to perform
-> hacky fixups to transition over to new mappings.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
+> We could do it either way. Return a NOTIFY_DONE from
+> hw_breakpoint_handler() and allow the do_dabr()
+> code to deliver the signal, or deliver a signal here and return a
+> NOTIFY_STOP in the exception handler. I chose the former as it doesn't
+> duplicate the code.
 
-Approach looks sane at first glance.
+I see.  The thing is, since you're aiming to make *the* hardware
+breakpoint interface here, I think you really should be rewriting
+do_dabr entirely as part of this framework, not just adding your stuff
+as one option in there alongside the old-style ways of doing it.
 
-However, I'm reluctant to but that in until we have all MMU types
-covered or we'll have "interesting" surprises. Also, the CPM patch
-doesn't actually fix the massive bogon in there :-)
-
-> +	/* Be loud and annoying if someone calls this too late.
-> +	 * No need to crash the kernel though */
-> +	WARN_ON(mem_init_done);
-> +	if (mem_init_done)
-> +		return NULL;
-
-Can't we write
-
-	if (WARN_ON(mem_init_done))
-		return NULL;
-
-nowadays ?
-
-> +	/* Make sure request is sane */
-> +	if (size == 0)
-> +		return NULL;
-> +
-> +	/* If the region is already block mapped, then there is nothing
-> +	 * to do; just return the mapped address */
-> +	v = p_mapped_by_bats(addr);
-> +	if (v)
-> +		return (void __iomem *)v;
-
-Should we check the size ?
-
-> +	/* Align region size */
-> +	for (bl = 128<<10; bl < (256<<20); bl <<= 1) {
-> +		p = _ALIGN_DOWN(addr, bl); /* BATs align on 128k boundaries */
-> +		size = ALIGN(addr - p + size, bl);
-> +		if (bl >= size)
-> +			break;
-> +	}
-> +
-> +	/* Complain loudly if too much is requested */
-> +	if (bl >= (256<<20)) {
-> +		WARN_ON(1);
-> +		return NULL;
-> +	}
-
-Do we avoid that running into the linear mapping ?
-
-> +	/* Allocate the aligned virtual base address.  ALIGN_DOWN is used
-> +	 * to ensure no overlaps occur with normal 4k ioremaps. */
-> +	ioremap_bot = _ALIGN_DOWN(ioremap_bot, bl) - size;
-> +
-> +	/* Set up a BAT for this IO region */
-> +	i = loadbat(ioremap_bot, p, size, PAGE_KERNEL_NCG);
-> +	if (i < 0)
-> +		return NULL;
-> +
-> +	return (void __iomem *) (ioremap_bot + (addr - p));
->  }
->  
->  /*
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> index 8e3dd5a..2c49148 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> @@ -146,7 +146,20 @@ static struct of_device_id mpc52xx_cdm_ids[] __initdata = {
->  void __init
->  mpc52xx_map_common_devices(void)
->  {
-> +	const struct of_device_id immr_ids[] = {
-> +		{ .compatible = "fsl,mpc5200-immr", },
-> +		{ .compatible = "fsl,mpc5200b-immr", },
-> +		{ .type = "soc", .compatible = "mpc5200", }, /* lite5200 */
-> +		{ .type = "builtin", .compatible = "mpc5200", }, /* efika */
-> +		{}
-> +	};
->  	struct device_node *np;
-> +	struct resource res;
-> +
-> +	/* Pre-map the whole register space using a BAT entry */
-> +	np = of_find_matching_node(NULL, immr_ids);
-> +	if (np && (of_address_to_resource(np, 0, &res) == 0))
-> +		ioremap_early(res.start, res.end - res.start + 1);
->  
->  	/* mpc52xx_wdt is mapped here and used in mpc52xx_restart,
->  	 * possibly from a interrupt context. wdt is only implement
-> diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-> index e4b6d66..370723e 100644
-> --- a/arch/powerpc/sysdev/cpm_common.c
-> +++ b/arch/powerpc/sysdev/cpm_common.c
-> @@ -56,7 +56,7 @@ void __init udbg_init_cpm(void)
->  {
->  	if (cpm_udbg_txdesc) {
->  #ifdef CONFIG_CPM2
-> -		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, PAGE_KERNEL_NCG);
-> +		setbat(0xf0000000, 0xf0000000, 1024*1024, PAGE_KERNEL_NCG);
->  #endif
->  		udbg_putc = udbg_putc_cpm;
->  	}
-
-That needs to be properly fixed ... maybe using ioremap_early() ? :-)
-
-Also, make the initial call ioremap_early_init() just to make things
-clear that one can't just call ioremap(), we are limited to a very
-specific thing here.
-
-For 8xx I'm not sure what the right approach is. For 40x, 440 and FSL
-BookE we probably want to allow to bolt some TLB entries.
-
-Cheers,
-Ben.
-
-Cheers,
-Ben.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
