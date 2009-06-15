@@ -1,30 +1,30 @@
-Return-Path: <subrata@linux.vnet.ibm.com>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8340FB71EE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8895BB718C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Jun 2009 17:22:00 +1000 (EST)
-Subject: Re: [PATCH][BUILD FAILURE 03/04] Next June 04:PPC64 randconfig
-	[drivers/net/lance.o]
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1245049899.19217.56.camel@pasglop>
-References: <20090611035046.22125.26641.sendpatchset@subratamodak.linux.ibm.com>
-	<1245048698.5239.9.camel@subratamodak.linux.ibm.com>
-	<1245049899.19217.56.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 15 Jun 2009 12:51:49 +0530
-Message-Id: <1245050509.5239.11.camel@subratamodak.linux.ibm.com>
+	Mon, 15 Jun 2009 17:50:42 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 794D8DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 17:50:42 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Add configurable -Werror for arch/powerpc
+From: Michael Ellerman <michael@ellerman.id.au>
+To: BenjaminHerrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <adf502e7c85161d77fdcaca24f55ba6b418c7f04.1244616523.git.michael@ellerman.id.au>
+References: <adf502e7c85161d77fdcaca24f55ba6b418c7f04.1244616523.git.michael@ellerman.id.au>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-f4hHTSzMe/yKqm7k209f"
+Date: Mon, 15 Jun 2009 17:50:41 +1000
+Message-Id: <1245052241.7705.78.camel@concordia>
 Mime-Version: 1.0
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
-	Linux-Kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Linux-Next <linux-next@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,53 +34,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-06-15 at 17:11 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-06-15 at 12:21 +0530, Subrata Modak wrote:
-> 
-> > Benjamin,
-> > 
-> > I am not sure whether you liked the following patch to solve the above
-> > problem. Do, you want me address some other issue(s)/fixes for this ?
-> 
-> I suppose ... in fact some old PReP machines can even have ISA slots
-> iirc, but it's not going to do good with machines that have an iommu...
-> 
-> IE. Nobody should use that crap, period.
 
-Great,
+--=-f4hHTSzMe/yKqm7k209f
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Can you please make some changes at drivers/net/Kconfig so that this guy
-does not build for the PPC64 systems ?
+On Wed, 2009-06-10 at 16:48 +1000, Michael Ellerman wrote:
+> Add the option to build the code under arch/powerpc with -Werror.
+>=20
+> The intention is to make it harder for people to inadvertantly introduce
+> warnings in the arch/powerpc code. It needs to be configurable so that
+> if a warning is introduced, people can easily work around it while it's
+> being fixed.
+>=20
+> The option is a negative, ie. don't enable -Werror, so that it will be
+> turned on for allyes and allmodconfig builds.
+>=20
+> The default is n, in the hope that developers will build with -Werror,
+> that will probably lead to some build breaks, I am prepared to be flamed.
 
-Regards--
-Subrata
+Currently this appears to break only one of the defconfigs, chrp32.
 
-> 
-> Cheers,
-> Ben.
-> 
-> Cheers,
-> Ben.
-> 
-> > Regards--
-> > Subrata
-> > 
-> > > 
-> > > --- linux-2.6.30-rc8/arch/powerpc/include/asm/io.h.orig	2009-06-10 21:56:49.000000000 -0500
-> > > +++ linux-2.6.30-rc8/arch/powerpc/include/asm/io.h	2009-06-10 22:21:35.000000000 -0500
-> > > @@ -680,6 +680,9 @@ extern void __iounmap_at(void *ea, unsig
-> > >  #define mmio_outsw(addr, src, count)	writesw(addr, src, count)
-> > >  #define mmio_outsl(addr, src, count)	writesl(addr, src, count)
-> > > 
-> > > +#define isa_virt_to_bus		virt_to_phys
-> > > +#define isa_bus_to_virt		phys_to_virt
-> > > +
-> > >  /**
-> > >   *	virt_to_phys	-	map virtual addresses to physical
-> > >   *	@address: address to remap
-> > > 
-> > > ---
-> > > Regards--
-> > > Subrata
-> > > 
-> 
+http://kisskb.ellerman.id.au/kisskb/head/1907/
+
+And that's a legitimate error AFAICT:
+
+arch/powerpc/platforms/chrp/setup.c:378: error: the frame size of 1040 byte=
+s is larger than 1024 bytes
+
+From:
+
+367 void
+368 chrp_event_scan(unsigned long unused)
+369 {
+370         unsigned char log[1024];
+371         int ret =3D 0;
+
+
+cheers
+
+--=-f4hHTSzMe/yKqm7k209f
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAko1/VEACgkQdSjSd0sB4dLdJACcDp5qzRjDsUIVnL/OFxfAPCIB
+SbAAnRQCqQssrXv1ApN6Qrdwa3Z9CJTj
+=1GzX
+-----END PGP SIGNATURE-----
+
+--=-f4hHTSzMe/yKqm7k209f--
