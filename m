@@ -3,25 +3,28 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A1EEDB7081
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1ED81B70AA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Jun 2009 19:40:20 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DB594DDD1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 19:40:19 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Add configurable -Werror for arch/powerpc
+	Mon, 15 Jun 2009 19:43:18 +1000 (EST)
+Subject: Re: [PATCH][BUILD FAILURE 03/04] Next June 04:PPC64 randconfig
+	[drivers/net/lance.o]
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1245052241.7705.78.camel@concordia>
-References: <adf502e7c85161d77fdcaca24f55ba6b418c7f04.1244616523.git.michael@ellerman.id.au>
-	<1245052241.7705.78.camel@concordia>
+To: subrata@linux.vnet.ibm.com
+In-Reply-To: <1245050509.5239.11.camel@subratamodak.linux.ibm.com>
+References: <20090611035046.22125.26641.sendpatchset@subratamodak.linux.ibm.com>
+	<1245048698.5239.9.camel@subratamodak.linux.ibm.com>
+	<1245049899.19217.56.camel@pasglop>
+	<1245050509.5239.11.camel@subratamodak.linux.ibm.com>
 Content-Type: text/plain
-Date: Mon, 15 Jun 2009 19:40:07 +1000
-Message-Id: <1245058807.12400.0.camel@pasglop>
+Date: Mon, 15 Jun 2009 19:43:01 +1000
+Message-Id: <1245058981.12400.3.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
+	Linux-Kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Linux-Next <linux-next@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2009-06-15 at 12:51 +0530, Subrata Modak wrote:
+> On Mon, 2009-06-15 at 17:11 +1000, Benjamin Herrenschmidt wrote:
+> > On Mon, 2009-06-15 at 12:21 +0530, Subrata Modak wrote:
+> > 
+> > > Benjamin,
+> > > 
+> > > I am not sure whether you liked the following patch to solve the above
+> > > problem. Do, you want me address some other issue(s)/fixes for this ?
+> > 
+> > I suppose ... in fact some old PReP machines can even have ISA slots
+> > iirc, but it's not going to do good with machines that have an iommu...
+> > 
+> > IE. Nobody should use that crap, period.
+> 
+> Great,
+> 
+> Can you please make some changes at drivers/net/Kconfig so that this guy
+> does not build for the PPC64 systems ?
 
-> Currently this appears to break only one of the defconfigs, chrp32.
-> 
-> http://kisskb.ellerman.id.au/kisskb/head/1907/
-> 
-> And that's a legitimate error AFAICT:
-> 
-> arch/powerpc/platforms/chrp/setup.c:378: error: the frame size of 1040 bytes is larger than 1024 bytes
-> 
-> From:
-> 
-> 367 void
-> 368 chrp_event_scan(unsigned long unused)
-> 369 {
-> 370         unsigned char log[1024];
-> 371         int ret = 0;
+When I said "that crap" I was talking about those interfaces which I
+-hope- are deprecated :-)
 
-I wonder to what extent we could merge that with the pSeries
-event-scan...
+I suspect we never really sorted out the issue of DMA mapping for old
+legacy ISA stuff... pci_map_* should work to some extent, though you
+have to pass it the ISA bridge pci_dev.
 
-We can have a closer look tomorrow. In any case, stack alloc for that is
-indeed fishy.
+Maybe it's time for somebody to start exposing a -proper- abstraction
+accross all platforms for that :-)
 
-Cheers,
 Ben.
