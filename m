@@ -3,23 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 03B25B712A
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7A06BB712F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Jun 2009 01:31:58 +1000 (EST)
+	Tue, 16 Jun 2009 03:06:36 +1000 (EST)
 Received: from SG2EHSOBE002.bigfish.com (sg2ehsobe002.messaging.microsoft.com
-	[207.46.51.76]) by ozlabs.org (Postfix) with ESMTP id 5758DDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 01:31:57 +1000 (EST)
+	[207.46.51.76]) by ozlabs.org (Postfix) with ESMTP id C2D5FDDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 03:06:35 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Subject: RE: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up probe
 	path
-Date: Mon, 15 Jun 2009 09:16:43 -0600
+Date: Mon, 15 Jun 2009 11:06:22 -0600
 In-Reply-To: <20090612175634.12827.12207.stgit@localhost.localdomain>
 References: <20090612175634.12827.12207.stgit@localhost.localdomain>
 From: John Linn <John.Linn@xilinx.com>
 To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
 	<linux-kernel@vger.kernel.org>, <benh@kernel.crashing.org>
-Message-ID: <20090615151646.6ADA0E5805C@mail92-sin.bigfish.com>
+Message-ID: <20090615170624.EDFEDF5006C@mail54-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,9 +56,32 @@ probe path
 
 > John, can you please test and verify this fix is correct?
 
-I will try to test it today.
+After a small fix to get it to compile, I did some quick testing with
+DCR and without and
+it's working fine on the ML507.
 
 -- John
+
+Here's the small change to get it to compile.
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index e3d2992..596157c 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -441,7 +441,7 @@ xilinxfb_of_probe(struct of_device *op, const struct
+of_device_id *match)
+ 		res.start =3D 0;
+ 		start =3D dcr_resource_start(op->node, 0);
+ 		drvdata->dcr_len =3D dcr_resource_len(op->node, 0);
+-		drvdata->dcr_host =3D dcr_map(op->node, start,
+drvdata->len);
++		drvdata->dcr_host =3D dcr_map(op->node, start,
+drvdata->dcr_len);
+ 		if (!DCR_MAP_OK(drvdata->dcr_host)) {
+ 			dev_err(&op->dev, "invalid DCR address\n");
+ 			goto err;
+--
+
 
 > =
 
