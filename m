@@ -3,13 +3,13 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 198B3B70FE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C8E4DB7101
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Jun 2009 16:31:38 +1000 (EST)
-Subject: Re: [PATCH 23/33] net/ps3: gelic - Add missing annotations
+	Mon, 15 Jun 2009 16:31:56 +1000 (EST)
+Subject: Re: [PATCH 24/33] usb/ps3: Add missing annotations
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
@@ -34,9 +34,10 @@ References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-22-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-23-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-24-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-25-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Content-Type: text/plain
-Date: Mon, 15 Jun 2009 16:31:24 +1000
-Message-Id: <1245047484.19217.39.camel@pasglop>
+Date: Mon, 15 Jun 2009 16:31:41 +1000
+Message-Id: <1245047501.19217.40.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -50,123 +51,61 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Wed, 2009-06-10 at 16:38 +0200, Geert Uytterhoeven wrote:
 > probe functions should be __devinit
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> Cc: Geoff Levand <geoffrey.levand@am.sony.com>
+> initialization functions should be __init
 
-Please send to netdev or get an ack from davem.
+Please send to USB maintainers or get an ack from them.
 
 Cheers,
 Ben.
 
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Cc: Geoff Levand <geoffrey.levand@am.sony.com>
 > ---
->  drivers/net/ps3_gelic_net.c      |   22 ++++++++++++----------
->  drivers/net/ps3_gelic_wireless.c |    6 +++---
->  2 files changed, 15 insertions(+), 13 deletions(-)
+>  drivers/usb/host/ehci-ps3.c |    4 ++--
+>  drivers/usb/host/ohci-ps3.c |    4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/net/ps3_gelic_net.c b/drivers/net/ps3_gelic_net.c
-> index 2b38f39..d1a5fb4 100644
-> --- a/drivers/net/ps3_gelic_net.c
-> +++ b/drivers/net/ps3_gelic_net.c
-> @@ -214,9 +214,10 @@ static void gelic_card_free_chain(struct gelic_card *card,
->   *
->   * returns 0 on success, <0 on failure
->   */
-> -static int gelic_card_init_chain(struct gelic_card *card,
-> -				 struct gelic_descr_chain *chain,
-> -				 struct gelic_descr *start_descr, int no)
-> +static int __devinit gelic_card_init_chain(struct gelic_card *card,
-> +					   struct gelic_descr_chain *chain,
-> +					   struct gelic_descr *start_descr,
-> +					   int no)
+> diff --git a/drivers/usb/host/ehci-ps3.c b/drivers/usb/host/ehci-ps3.c
+> index bb870b8..3e8844e 100644
+> --- a/drivers/usb/host/ehci-ps3.c
+> +++ b/drivers/usb/host/ehci-ps3.c
+> @@ -76,7 +76,7 @@ static const struct hc_driver ps3_ehci_hc_driver = {
+>  	.port_handed_over	= ehci_port_handed_over,
+>  };
+>  
+> -static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
+> +static int __devinit ps3_ehci_probe(struct ps3_system_bus_device *dev)
 >  {
->  	int i;
->  	struct gelic_descr *descr;
-> @@ -407,7 +408,7 @@ rewind:
->   *
->   * returns 0 on success, < 0 on failure
->   */
-> -static int gelic_card_alloc_rx_skbs(struct gelic_card *card)
-> +static int __devinit gelic_card_alloc_rx_skbs(struct gelic_card *card)
->  {
->  	struct gelic_descr_chain *chain;
->  	int ret;
-> @@ -1422,8 +1423,8 @@ static const struct net_device_ops gelic_netdevice_ops = {
->   *
->   * fills out function pointers in the net_device structure
->   */
-> -static void gelic_ether_setup_netdev_ops(struct net_device *netdev,
-> -					 struct napi_struct *napi)
-> +static void __devinit gelic_ether_setup_netdev_ops(struct net_device *netdev,
-> +						   struct napi_struct *napi)
->  {
->  	netdev->watchdog_timeo = GELIC_NET_WATCHDOG_TIMEOUT;
->  	/* NAPI */
-> @@ -1443,7 +1444,8 @@ static void gelic_ether_setup_netdev_ops(struct net_device *netdev,
->   * gelic_ether_setup_netdev initializes the net_device structure
->   * and register it.
->   **/
-> -int gelic_net_setup_netdev(struct net_device *netdev, struct gelic_card *card)
-> +int __devinit gelic_net_setup_netdev(struct net_device *netdev,
-> +				     struct gelic_card *card)
->  {
->  	int status;
->  	u64 v1, v2;
-> @@ -1491,7 +1493,7 @@ int gelic_net_setup_netdev(struct net_device *netdev, struct gelic_card *card)
->   * the card and net_device structures are linked to each other
->   */
->  #define GELIC_ALIGN (32)
-> -static struct gelic_card *gelic_alloc_card_net(struct net_device **netdev)
-> +static struct gelic_card * __devinit gelic_alloc_card_net(struct net_device **netdev)
->  {
->  	struct gelic_card *card;
->  	struct gelic_port *port;
-> @@ -1542,7 +1544,7 @@ static struct gelic_card *gelic_alloc_card_net(struct net_device **netdev)
->  	return card;
+>  	int result;
+>  	struct usb_hcd *hcd;
+> @@ -224,7 +224,7 @@ static int ps3_ehci_remove(struct ps3_system_bus_device *dev)
+>  	return 0;
 >  }
 >  
-> -static void gelic_card_get_vlan_info(struct gelic_card *card)
-> +static void __devinit gelic_card_get_vlan_info(struct gelic_card *card)
+> -static int ps3_ehci_driver_register(struct ps3_system_bus_driver *drv)
+> +static int __init ps3_ehci_driver_register(struct ps3_system_bus_driver *drv)
 >  {
->  	u64 v1, v2;
->  	int status;
-> @@ -1616,7 +1618,7 @@ static void gelic_card_get_vlan_info(struct gelic_card *card)
->  /**
->   * ps3_gelic_driver_probe - add a device to the control of this driver
->   */
-> -static int ps3_gelic_driver_probe(struct ps3_system_bus_device *dev)
-> +static int __devinit ps3_gelic_driver_probe(struct ps3_system_bus_device *dev)
->  {
->  	struct gelic_card *card;
->  	struct net_device *netdev;
-> diff --git a/drivers/net/ps3_gelic_wireless.c b/drivers/net/ps3_gelic_wireless.c
-> index 4f3ada6..b6b3ca9 100644
-> --- a/drivers/net/ps3_gelic_wireless.c
-> +++ b/drivers/net/ps3_gelic_wireless.c
-> @@ -2442,7 +2442,7 @@ static const struct iw_handler_def gelic_wl_wext_handler_def = {
+>  	return firmware_has_feature(FW_FEATURE_PS3_LV1)
+>  		? ps3_system_bus_driver_register(drv)
+> diff --git a/drivers/usb/host/ohci-ps3.c b/drivers/usb/host/ohci-ps3.c
+> index 1d56259..7009504 100644
+> --- a/drivers/usb/host/ohci-ps3.c
+> +++ b/drivers/usb/host/ohci-ps3.c
+> @@ -75,7 +75,7 @@ static const struct hc_driver ps3_ohci_hc_driver = {
 >  #endif
 >  };
 >  
-> -static struct net_device *gelic_wl_alloc(struct gelic_card *card)
-> +static struct net_device * __devinit gelic_wl_alloc(struct gelic_card *card)
+> -static int ps3_ohci_probe(struct ps3_system_bus_device *dev)
+> +static int __devinit ps3_ohci_probe(struct ps3_system_bus_device *dev)
 >  {
->  	struct net_device *netdev;
->  	struct gelic_port *port;
-> @@ -2722,7 +2722,7 @@ static struct ethtool_ops gelic_wl_ethtool_ops = {
->  	.set_rx_csum	= gelic_net_set_rx_csum,
->  };
+>  	int result;
+>  	struct usb_hcd *hcd;
+> @@ -224,7 +224,7 @@ static int ps3_ohci_remove(struct ps3_system_bus_device *dev)
+>  	return 0;
+>  }
 >  
-> -static void gelic_wl_setup_netdev_ops(struct net_device *netdev)
-> +static void __devinit gelic_wl_setup_netdev_ops(struct net_device *netdev)
+> -static int ps3_ohci_driver_register(struct ps3_system_bus_driver *drv)
+> +static int __init ps3_ohci_driver_register(struct ps3_system_bus_driver *drv)
 >  {
->  	struct gelic_wl_info *wl;
->  	wl = port_wl(netdev_priv(netdev));
-> @@ -2738,7 +2738,7 @@ static void gelic_wl_setup_netdev_ops(struct net_device *netdev)
->  /*
->   * driver probe/remove
->   */
-> -int gelic_wl_driver_probe(struct gelic_card *card)
-> +int __devinit gelic_wl_driver_probe(struct gelic_card *card)
->  {
->  	int ret;
->  	struct net_device *netdev;
+>  	return firmware_has_feature(FW_FEATURE_PS3_LV1)
+>  		? ps3_system_bus_driver_register(drv)
