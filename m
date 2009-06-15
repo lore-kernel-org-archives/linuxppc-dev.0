@@ -1,27 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4D30CB711E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id ACDBEB7129
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Jun 2009 11:38:30 +1000 (EST)
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 3F044DDD0B
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 11:38:30 +1000 (EST)
-Date: Mon, 15 Jun 2009 11:38:23 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: michael@ellerman.id.au
-Subject: Re: [OOPS] hugetlbfs tests with 2.6.30-rc8-git1
-Message-Id: <20090615113823.d206a91d.sfr@canb.auug.org.au>
-In-Reply-To: <1245027396.7705.23.camel@concordia>
-References: <4A290195.3080807@in.ibm.com> <1244233062.31984.6.camel@pasglop>
-	<4A34E12B.4010000@in.ibm.com> <1245027396.7705.23.camel@concordia>
+	Mon, 15 Jun 2009 11:39:28 +1000 (EST)
+Subject: Re: [PATCH 05/33] block: Add bio_list_peek()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1244644748-24211-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Content-Type: text/plain
+Date: Mon, 15 Jun 2009 11:39:12 +1000
+Message-Id: <1245029952.19217.4.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__15_Jun_2009_11_38_23_+1000_XtUXnI/Vy70yjTDv"
-Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org
+Cc: Jens Axboe <axboe@kernel.dk>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,39 +31,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__15_Jun_2009_11_38_23_+1000_XtUXnI/Vy70yjTDv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2009-06-10 at 16:38 +0200, Geert Uytterhoeven wrote:
+> Introduce bio_list_peek(), to obtain a pointer to the first bio on the bio_list
+> without actually removing it from the list. This is needed when you want to
+> serialize based on the list being empty or not.
 
-Hi Michael,
+Leaving that one (and the next one) out for now until Jens Ack them.
 
-On Mon, 15 Jun 2009 10:56:36 +1000 Michael Ellerman <michael@ellerman.id.au=
-> wrote:
->
-> Rather than "-git7" can you tell us the actual SHA, I don't know what
-> git7 is.
-
-$ cat tools/get_gitid=20
-#!/bin/sh
-
-wget -q -O - http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-$1=
-.id
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben.
 
---Signature=_Mon__15_Jun_2009_11_38_23_+1000_XtUXnI/Vy70yjTDv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko1pg8ACgkQjjKRsyhoI8woCgCgnGIDRKA0IBOuLsBNTFKA44Bt
-oAcAn3r5bsSreKso3+NPIUzecHXaWHd5
-=dfPp
------END PGP SIGNATURE-----
-
---Signature=_Mon__15_Jun_2009_11_38_23_+1000_XtUXnI/Vy70yjTDv--
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Cc: Jens Axboe <axboe@kernel.dk>
+> ---
+>  include/linux/bio.h |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/bio.h b/include/linux/bio.h
+> index 7b214fd..618bb7d 100644
+> --- a/include/linux/bio.h
+> +++ b/include/linux/bio.h
+> @@ -590,6 +590,11 @@ static inline void bio_list_merge_head(struct bio_list *bl,
+>  	bl->head = bl2->head;
+>  }
+>  
+> +static inline struct bio *bio_list_peek(struct bio_list *bl)
+> +{
+> +	return bl->head;
+> +}
+> +
+>  static inline struct bio *bio_list_pop(struct bio_list *bl)
+>  {
+>  	struct bio *bio = bl->head;
