@@ -1,28 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <arnd@arndb.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 67F3EB70AB
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 38D47B712E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Jun 2009 17:02:05 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A36FDDDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 17:02:04 +1000 (EST)
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1245031736.19217.15.camel@pasglop>
-References: <1245031736.19217.15.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 15 Jun 2009 17:01:51 +1000
-Message-Id: <1245049311.19217.52.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	Mon, 15 Jun 2009 17:05:45 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 10/33] powerpc/cell: Extract duplicated IOPTE_* to
+	<asm/iommu.h>
+Date: Mon, 15 Jun 2009 09:05:29 +0200
+References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-11-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1245030085.19217.5.camel@pasglop>
+In-Reply-To: <1245030085.19217.5.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200906150905.30744.arnd@arndb.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, cbe-oss-dev@ozlabs.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,20 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-06-15 at 12:09 +1000, Benjamin Herrenschmidt wrote:
-> Hi Linus !
+On Monday 15 June 2009, Benjamin Herrenschmidt wrote:
+> On Wed, 2009-06-10 at 16:38 +0200, Geert Uytterhoeven wrote:
+> > Both arch/powerpc/platforms/cell/iommu.c and arch/powerpc/platforms/ps3/mm.c
+> > contain the same Cell IOMMU page table entry definitions. Extract them and move
+> > them to <asm/iommu.h>, while adding a CBE_ prefix.
+> > This also allows them to be used by drivers.
 > 
-> Here's the first half of the powerpc merge for 2.6.31. I'll have the
-> rest in a couple of days, just dealing with some of my own backlog here
-> plus some collisions.
+> Are we sure include/asm/iommu.h is the right place for that ?
+> 
+> I'm hesitating here...
 
- .../...
+Good point, that file does not contain hardware specific definitions but
+only interfaces.
 
->   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
+Geert, how about putting them into arch/powerpc/include/asm/cell-regs.h
+instead?
 
-Use "merge" not "next" please. I added some more stuff in "next" after
-that request that need to sit a bit before you pull it, I didn't notice
-that git request-pull picked up the wrong branch :-)
-
-Cheers,
-Ben.
+	Arnd <><
