@@ -1,35 +1,34 @@
-Return-Path: <dgibson@bilbo.ozlabs.org>
+Return-Path: <rdreier@cisco.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CE631B7134
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 830B4B7136
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 15 Jun 2009 12:42:57 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B8FA3DDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 12:42:57 +1000 (EST)
-Date: Mon, 15 Jun 2009 12:42:52 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH v4] 83xx: add support for the kmeter1 board.
-Message-ID: <20090615024252.GC25444@yookeroo.seuss>
-References: <20090427180503.GB10292@ld0162-tx32.am.freescale.net>
-	<49F68943.3090800@denx.de>
-	<20090428163540.GA2193@ld0162-tx32.am.freescale.net>
-	<49F7DC0C.3080409@denx.de>
-	<C934E2FC-7597-4D10-AA2F-F28884D1DD1B@kernel.crashing.org>
-	<4A30A14D.50907@denx.de>
-	<0AFEA008-BBF6-448B-844F-6EBE3DE24F7B@kernel.crashing.org>
-	<4A3148A1.3030403@denx.de> <20090612011332.GA9084@yookeroo.seuss>
-	<4A31E74E.6090505@denx.de>
+	Mon, 15 Jun 2009 12:44:53 +1000 (EST)
+Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id DBF6BDDD1B
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 12:44:52 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH 1/2] lib: Provide generic atomic64_t implementation
+References: <18995.20685.227683.561827@cargo.ozlabs.ibm.com>
+	<alpine.LFD.2.01.0906131312470.3237@localhost.localdomain>
+	<alpine.LFD.2.01.0906131323270.3237@localhost.localdomain>
+	<4A34E4A5.3040306@redhat.com>
+	<18996.60235.178618.531664@cargo.ozlabs.ibm.com>
+	<4A34F564.2010500@redhat.com>
+Date: Sun, 14 Jun 2009 19:44:45 -0700
+In-Reply-To: <4A34F564.2010500@redhat.com> (Avi Kivity's message of "Sun, 14
+	Jun 2009 16:04:36 +0300")
+Message-ID: <ada4ouixlk2.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4A31E74E.6090505@denx.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,71 +38,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 12, 2009 at 07:27:42AM +0200, Heiko Schocher wrote:
-> Hello David,
-> 
-> David Gibson wrote:
-> > On Thu, Jun 11, 2009 at 08:10:41PM +0200, Heiko Schocher wrote:
-> >> The following series implements basic board support for
-> >> the kmeter1 board from keymile, based on a MPC8360.
-> > 
-> > [snip]
-> >> +		par_io@1400 {
-> >> +			reg = <0x1400 0x100>;
-> >> +			device_type = "par_io";
-> > 
-> > This should have a compatible value instead of a device_type value.
-> 
-> compatible = "fsl,mpc8360-par_io"; ?
 
-Sounds reasonable, if there isn't an existing precedent to follow.
+ > The new Nehalems provide 8 logical threads in a single socket.  All
+ > those threads share a cache, and they have cmpxchg8b anyway, so this
+ > won't matter.
 
-> > [snip]
-> > 
-> >> +			num-ports = <7>;
-> >> +
-> >> +			pio_ucc1: ucc_pin@00 {
-> > 
-> > Since these nodes have addresses, they should also have reg
-> > properties.  And the parent should have #address-cells and
-> > #size-cells.
-> 
-> added "#address-cells" and "#size-cells", but couldn;t find what
-> I should write in a "reg" entry ... I think something like that:
-> 
-> reg = <0x00 0x01>;
+FWIW, Nehalem EX actually goes to 8 cores/16 threads per socket.  But
+worrying about 32-bit performance on Nehalem is a little silly -- this
+simplest solution is simply to run a 64-bit kernel.
 
-If you just want a plain index number, which is what it seems you have
-here, then you'll want #address-cells = 1, #size-cells = 0 and reg
-will then have one cell (i.e. 1 u32) with the index number
-
-so 	subnode@0 {
-		reg = <0>;
-	}
-	subnode@1 {
-		reg = <1>;
-	}
-
-Note also that it's usual for the unit addresses (that's the bits
-after the @ sign) to be formatted without leading zeroes.
-
-> 
-> ?
-> 
-> > [snip]
-> >> +		qe@100000 {
-> >> +			#address-cells = <1>;
-> >> +			#size-cells = <1>;
-> >> +			device_type = "qe";
-> > 
-> > This device_type should not be here.
-> 
-> deleted.
-
-Ok.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ - R.
