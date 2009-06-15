@@ -1,25 +1,23 @@
-Return-Path: <John.Linn@xilinx.com>
+Return-Path: <Kari.Davidsson@marel.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7A06BB712F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3FAF7B70CC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Jun 2009 03:06:36 +1000 (EST)
-Received: from SG2EHSOBE002.bigfish.com (sg2ehsobe002.messaging.microsoft.com
-	[207.46.51.76]) by ozlabs.org (Postfix) with ESMTP id C2D5FDDD1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 03:06:35 +1000 (EST)
+	Tue, 16 Jun 2009 02:49:06 +1000 (EST)
+Received: from mail.marel.is (mail.marel.is [213.167.134.96])
+	by ozlabs.org (Postfix) with ESMTP id 79406DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 02:49:05 +1000 (EST)
+Message-ID: <4A3678A3.1050802@marel.com>
+Date: Mon, 15 Jun 2009 16:36:51 +0000
+From: =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up probe
-	path
-Date: Mon, 15 Jun 2009 11:06:22 -0600
-In-Reply-To: <20090612175634.12827.12207.stgit@localhost.localdomain>
-References: <20090612175634.12827.12207.stgit@localhost.localdomain>
-From: John Linn <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, <benh@kernel.crashing.org>
-Message-ID: <20090615170624.EDFEDF5006C@mail54-sin.bigfish.com>
+Subject: Re: Chipselect in SPI binding with mpc5200-psc-spi
+References: <fa686aa40902130719k1d16f936o4776cff371db16ae@mail.gmail.com>
+In-Reply-To: <fa686aa40902130719k1d16f936o4776cff371db16ae@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,218 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Grant Likely [mailto:grant.likely@secretlab.ca]
-> Sent: Friday, June 12, 2009 11:57 AM
-> To: linuxppc-dev@ozlabs.org; linux-kernel@vger.kernel.org;
-benh@kernel.crashing.org; John Linn
-> Subject: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up
-probe path
-> =
+Is this true?
 
-> From: Grant Likely <grant.likely@secretlab.ca>
-> =
+Grant Likely wrote:
+> 
+> Yes, this is right.  The psc_spi driver automatically registers all
+> spi children that it finds in the device tree onto the SPI bus.
+> Therefore registering an spi_driver() is the right thing to do.
 
-> The xilinxfb driver is improperly casting a physical address to a
-> u32, and the probe routine isn't as straight forward as it could be.
-> (discovered by gcc spitting out warnings on most recent change to
-> xilinxfb driver).
-> =
+I am writing an SPI protocol driver and I find that my driver
+is never probed.
 
-> This patch fixes the cast and simplifies the probe path.
-> =
+I tried to add and call to of_register_spi_devices() in the
+drivers/spi/mpc52xx_psc_spi.c::mpc52xx_psc_spi_of_probe() function,
+without much effect besided that the DTS node is parsed but the driver probe
+is not called, actually it complains about a modalias for my node is missing.
 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> =
+This is with kernel 2.6.29.3.
 
-> John, can you please test and verify this fix is correct?
-
-After a small fix to get it to compile, I did some quick testing with
-DCR and without and
-it's working fine on the ML507.
-
--- John
-
-Here's the small change to get it to compile.
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index e3d2992..596157c 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -441,7 +441,7 @@ xilinxfb_of_probe(struct of_device *op, const struct
-of_device_id *match)
- 		res.start =3D 0;
- 		start =3D dcr_resource_start(op->node, 0);
- 		drvdata->dcr_len =3D dcr_resource_len(op->node, 0);
--		drvdata->dcr_host =3D dcr_map(op->node, start,
-drvdata->len);
-+		drvdata->dcr_host =3D dcr_map(op->node, start,
-drvdata->dcr_len);
- 		if (!DCR_MAP_OK(drvdata->dcr_host)) {
- 			dev_err(&op->dev, "invalid DCR address\n");
- 			goto err;
---
-
-
-> =
-
-> Thanks,
-> g.
-> =
-
->  drivers/video/xilinxfb.c |   59
-++++++++++++++++++----------------------------
->  1 files changed, 23 insertions(+), 36 deletions(-)
-> =
-
-> =
-
-> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-> index 7a868bd..b68b331 100644
-> --- a/drivers/video/xilinxfb.c
-> +++ b/drivers/video/xilinxfb.c
-> @@ -124,7 +124,6 @@ struct xilinxfb_drvdata {
->  						registers */
-> =
-
->  	dcr_host_t      dcr_host;
-> -	unsigned int    dcr_start;
->  	unsigned int    dcr_len;
-> =
-
->  	void		*fb_virt;	/* virt. address of the frame
-buffer */
-> @@ -325,8 +324,8 @@ static int xilinxfb_assign(struct device *dev,
->  					drvdata->regs);
->  	}
->  	/* Put a banner in the log (for DEBUG) */
-> -	dev_dbg(dev, "fb: phys=3D%p, virt=3D%p, size=3D%x\n",
-> -		(void *)drvdata->fb_phys, drvdata->fb_virt, fbsize);
-> +	dev_dbg(dev, "fb: phys=3D%llx, virt=3D%p, size=3D%x\n",
-> +		(unsigned long long)drvdata->fb_phys, drvdata->fb_virt,
-fbsize);
-> =
-
->  	return 0;	/* success */
-> =
-
-> @@ -404,9 +403,7 @@ xilinxfb_of_probe(struct of_device *op, const
-struct of_device_id *match)
->  	u32 tft_access;
->  	struct xilinxfb_platform_data pdata;
->  	struct resource res;
-> -	int size, rc;
-> -	int start =3D 0, len =3D 0;
-> -	dcr_host_t dcr_host;
-> +	int size, rc, start;
->  	struct xilinxfb_drvdata *drvdata;
-> =
-
->  	/* Copy with the default pdata (not a ptr reference!) */
-> @@ -414,35 +411,39 @@ xilinxfb_of_probe(struct of_device *op, const
-struct of_device_id *match)
-> =
-
->  	dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, match);
-> =
-
-> +	/* Allocate the driver data region */
-> +	drvdata =3D kzalloc(sizeof(*drvdata), GFP_KERNEL);
-> +	if (!drvdata) {
-> +		dev_err(&op->dev, "Couldn't allocate device private
-record\n");
-> +		return -ENOMEM;
-> +	}
-> +
->  	/*
->  	 * To check whether the core is connected directly to DCR or PLB
->  	 * interface and initialize the tft_access accordingly.
->  	 */
->  	p =3D (u32 *)of_get_property(op->node, "xlnx,dcr-splb-slave-if",
-NULL);
-> -
-> -	if (p)
-> -		tft_access =3D *p;
-> -	else
-> -		tft_access =3D 0;		/* For backward compatibility */
-> +	tft_access =3D p ? *p : 0;
-> =
-
->  	/*
->  	 * Fill the resource structure if its direct PLB interface
->  	 * otherwise fill the dcr_host structure.
->  	 */
->  	if (tft_access) {
-> +		drvdata->flags |=3D PLB_ACCESS_FLAG;
->  		rc =3D of_address_to_resource(op->node, 0, &res);
->  		if (rc) {
->  			dev_err(&op->dev, "invalid address\n");
-> -			return -ENODEV;
-> +			goto err;
->  		}
-> -
->  	} else {
-> +		res.start =3D 0;
->  		start =3D dcr_resource_start(op->node, 0);
-> -		len =3D dcr_resource_len(op->node, 0);
-> -		dcr_host =3D dcr_map(op->node, start, len);
-> -		if (!DCR_MAP_OK(dcr_host)) {
-> -			dev_err(&op->dev, "invalid address\n");
-> -			return -ENODEV;
-> +		drvdata->dcr_len =3D dcr_resource_len(op->node, 0);
-> +		drvdata->dcr_host =3D dcr_map(op->node, start,
-drvdata->len);
-> +		if (!DCR_MAP_OK(drvdata->dcr_host)) {
-> +			dev_err(&op->dev, "invalid DCR address\n");
-> +			goto err;
->  		}
->  	}
-> =
-
-> @@ -467,26 +468,12 @@ xilinxfb_of_probe(struct of_device *op, const
-struct of_device_id *match)
->  	if (of_find_property(op->node, "rotate-display", NULL))
->  		pdata.rotate_screen =3D 1;
-> =
-
-> -	/* Allocate the driver data region */
-> -	drvdata =3D kzalloc(sizeof(*drvdata), GFP_KERNEL);
-> -	if (!drvdata) {
-> -		dev_err(&op->dev, "Couldn't allocate device private
-record\n");
-> -		return -ENOMEM;
-> -	}
->  	dev_set_drvdata(&op->dev, drvdata);
-> +	return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
-> =
-
-> -	if (tft_access)
-> -		drvdata->flags |=3D PLB_ACCESS_FLAG;
-> -
-> -	/* Arguments are passed based on the interface */
-> -	if (drvdata->flags & PLB_ACCESS_FLAG) {
-> -		return xilinxfb_assign(&op->dev, drvdata, res.start,
-&pdata);
-> -	} else {
-> -		drvdata->dcr_start =3D start;
-> -		drvdata->dcr_len =3D len;
-> -		drvdata->dcr_host =3D dcr_host;
-> -		return xilinxfb_assign(&op->dev, drvdata, 0, &pdata);
-> -	}
-> + err:
-> +	kfree(drvdata);
-> +	return -ENODEV;
->  }
-> =
-
->  static int __devexit xilinxfb_of_remove(struct of_device *op)
-> =
-
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+rg
+kd
