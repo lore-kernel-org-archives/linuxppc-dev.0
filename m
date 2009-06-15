@@ -1,22 +1,26 @@
-Return-Path: <Kari.Davidsson@marel.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3FAF7B70CC
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A4720B712A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Jun 2009 02:49:06 +1000 (EST)
-Received: from mail.marel.is (mail.marel.is [213.167.134.96])
-	by ozlabs.org (Postfix) with ESMTP id 79406DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 02:49:05 +1000 (EST)
-Message-ID: <4A3678A3.1050802@marel.com>
-Date: Mon, 15 Jun 2009 16:36:51 +0000
-From: =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>
+	Tue, 16 Jun 2009 03:33:15 +1000 (EST)
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id CBFB4DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 03:33:13 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1689226ywt.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 10:33:12 -0700 (PDT)
 MIME-Version: 1.0
-Subject: Re: Chipselect in SPI binding with mpc5200-psc-spi
+In-Reply-To: <4A3678A3.1050802@marel.com>
 References: <fa686aa40902130719k1d16f936o4776cff371db16ae@mail.gmail.com>
-In-Reply-To: <fa686aa40902130719k1d16f936o4776cff371db16ae@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+	<4A3678A3.1050802@marel.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 15 Jun 2009 11:31:48 -0600
+Message-ID: <fa686aa40906151031p74636557oc1ab173236d0a81b@mail.gmail.com>
+Subject: Re: Chipselect in SPI binding with mpc5200-psc-spi
+To: =?ISO-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kari.davidsson@marel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,23 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Is this true?
+On Mon, Jun 15, 2009 at 10:36 AM, K=E1ri
+Dav=ED=F0sson<kari.davidsson@marel.com> wrote:
+> Is this true?
+>
+> Grant Likely wrote:
+>>
+>> Yes, this is right. =A0The psc_spi driver automatically registers all
+>> spi children that it finds in the device tree onto the SPI bus.
+>> Therefore registering an spi_driver() is the right thing to do.
+>
+> I am writing an SPI protocol driver and I find that my driver
+> is never probed.
+>
+> I tried to add and call to of_register_spi_devices() in the
+> drivers/spi/mpc52xx_psc_spi.c::mpc52xx_psc_spi_of_probe() function,
+> without much effect besided that the DTS node is parsed but the driver pr=
+obe
+> is not called, actually it complains about a modalias for my node is
+> missing.
 
-Grant Likely wrote:
-> 
-> Yes, this is right.  The psc_spi driver automatically registers all
-> spi children that it finds in the device tree onto the SPI bus.
-> Therefore registering an spi_driver() is the right thing to do.
+What do you see when you look in /sys/bus/spi/devices?  You should see
+a directory for your device.  What do you see in /sys/bus/spi/drivers?
+ In here you should see your driver.  If they are both there, then you
+just have a problem matching your driver name to the device name.
 
-I am writing an SPI protocol driver and I find that my driver
-is never probed.
+g.
 
-I tried to add and call to of_register_spi_devices() in the
-drivers/spi/mpc52xx_psc_spi.c::mpc52xx_psc_spi_of_probe() function,
-without much effect besided that the DTS node is parsed but the driver probe
-is not called, actually it complains about a modalias for my node is missing.
-
-This is with kernel 2.6.29.3.
-
-rg
-kd
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
