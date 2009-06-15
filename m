@@ -1,28 +1,25 @@
-Return-Path: <timur.tabi@gmail.com>
+Return-Path: <John.Linn@xilinx.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0E2F7B711E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 03B25B712A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Jun 2009 00:54:24 +1000 (EST)
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
-	by ozlabs.org (Postfix) with ESMTP id 3AEA6DDD1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 00:54:22 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so1834925qwe.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2009 07:54:21 -0700 (PDT)
+	Tue, 16 Jun 2009 01:31:58 +1000 (EST)
+Received: from SG2EHSOBE002.bigfish.com (sg2ehsobe002.messaging.microsoft.com
+	[207.46.51.76]) by ozlabs.org (Postfix) with ESMTP id 5758DDDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 01:31:57 +1000 (EST)
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <1245052241.7705.78.camel@concordia>
-References: <adf502e7c85161d77fdcaca24f55ba6b418c7f04.1244616523.git.michael@ellerman.id.au>
-	<1245052241.7705.78.camel@concordia>
-Date: Mon, 15 Jun 2009 09:54:21 -0500
-Message-ID: <ed82fe3e0906150754w125c6283q2468213b59c7f114@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Add configurable -Werror for arch/powerpc
-From: Timur Tabi <timur@freescale.com>
-To: michael@ellerman.id.au
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up probe
+	path
+Date: Mon, 15 Jun 2009 09:16:43 -0600
+In-Reply-To: <20090612175634.12827.12207.stgit@localhost.localdomain>
+References: <20090612175634.12827.12207.stgit@localhost.localdomain>
+From: John Linn <John.Linn@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, <benh@kernel.crashing.org>
+Message-ID: <20090615151646.6ADA0E5805C@mail92-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,12 +29,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 15, 2009 at 2:50 AM, Michael Ellerman<michael@ellerman.id.au> wrote:
-> arch/powerpc/platforms/chrp/setup.c:378: error: the frame size of 1040 bytes is larger than 1024 bytes
+> -----Original Message-----
+> From: Grant Likely [mailto:grant.likely@secretlab.ca]
+> Sent: Friday, June 12, 2009 11:57 AM
+> To: linuxppc-dev@ozlabs.org; linux-kernel@vger.kernel.org;
+benh@kernel.crashing.org; John Linn
+> Subject: [PATCH] fbdev/xilinxfb: Fix improper casting and tighen up
+probe path
+> =
 
-What's so bad about a frame size larger than 1024?
+> From: Grant Likely <grant.likely@secretlab.ca>
+> =
+
+> The xilinxfb driver is improperly casting a physical address to a
+> u32, and the probe routine isn't as straight forward as it could be.
+> (discovered by gcc spitting out warnings on most recent change to
+> xilinxfb driver).
+> =
+
+> This patch fixes the cast and simplifies the probe path.
+> =
+
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> =
+
+> John, can you please test and verify this fix is correct?
+
+I will try to test it today.
+
+-- John
+
+> =
+
+> Thanks,
+> g.
+> =
+
+>  drivers/video/xilinxfb.c |   59
+++++++++++++++++++----------------------------
+>  1 files changed, 23 insertions(+), 36 deletions(-)
+> =
+
+> =
+
+> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+> index 7a868bd..b68b331 100644
+> --- a/drivers/video/xilinxfb.c
+> +++ b/drivers/video/xilinxfb.c
+> @@ -124,7 +124,6 @@ struct xilinxfb_drvdata {
+>  						registers */
+> =
+
+>  	dcr_host_t      dcr_host;
+> -	unsigned int    dcr_start;
+>  	unsigned int    dcr_len;
+> =
+
+>  	void		*fb_virt;	/* virt. address of the frame
+buffer */
+> @@ -325,8 +324,8 @@ static int xilinxfb_assign(struct device *dev,
+>  					drvdata->regs);
+>  	}
+>  	/* Put a banner in the log (for DEBUG) */
+> -	dev_dbg(dev, "fb: phys=3D%p, virt=3D%p, size=3D%x\n",
+> -		(void *)drvdata->fb_phys, drvdata->fb_virt, fbsize);
+> +	dev_dbg(dev, "fb: phys=3D%llx, virt=3D%p, size=3D%x\n",
+> +		(unsigned long long)drvdata->fb_phys, drvdata->fb_virt,
+fbsize);
+> =
+
+>  	return 0;	/* success */
+> =
+
+> @@ -404,9 +403,7 @@ xilinxfb_of_probe(struct of_device *op, const
+struct of_device_id *match)
+>  	u32 tft_access;
+>  	struct xilinxfb_platform_data pdata;
+>  	struct resource res;
+> -	int size, rc;
+> -	int start =3D 0, len =3D 0;
+> -	dcr_host_t dcr_host;
+> +	int size, rc, start;
+>  	struct xilinxfb_drvdata *drvdata;
+> =
+
+>  	/* Copy with the default pdata (not a ptr reference!) */
+> @@ -414,35 +411,39 @@ xilinxfb_of_probe(struct of_device *op, const
+struct of_device_id *match)
+> =
+
+>  	dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, match);
+> =
+
+> +	/* Allocate the driver data region */
+> +	drvdata =3D kzalloc(sizeof(*drvdata), GFP_KERNEL);
+> +	if (!drvdata) {
+> +		dev_err(&op->dev, "Couldn't allocate device private
+record\n");
+> +		return -ENOMEM;
+> +	}
+> +
+>  	/*
+>  	 * To check whether the core is connected directly to DCR or PLB
+>  	 * interface and initialize the tft_access accordingly.
+>  	 */
+>  	p =3D (u32 *)of_get_property(op->node, "xlnx,dcr-splb-slave-if",
+NULL);
+> -
+> -	if (p)
+> -		tft_access =3D *p;
+> -	else
+> -		tft_access =3D 0;		/* For backward compatibility */
+> +	tft_access =3D p ? *p : 0;
+> =
+
+>  	/*
+>  	 * Fill the resource structure if its direct PLB interface
+>  	 * otherwise fill the dcr_host structure.
+>  	 */
+>  	if (tft_access) {
+> +		drvdata->flags |=3D PLB_ACCESS_FLAG;
+>  		rc =3D of_address_to_resource(op->node, 0, &res);
+>  		if (rc) {
+>  			dev_err(&op->dev, "invalid address\n");
+> -			return -ENODEV;
+> +			goto err;
+>  		}
+> -
+>  	} else {
+> +		res.start =3D 0;
+>  		start =3D dcr_resource_start(op->node, 0);
+> -		len =3D dcr_resource_len(op->node, 0);
+> -		dcr_host =3D dcr_map(op->node, start, len);
+> -		if (!DCR_MAP_OK(dcr_host)) {
+> -			dev_err(&op->dev, "invalid address\n");
+> -			return -ENODEV;
+> +		drvdata->dcr_len =3D dcr_resource_len(op->node, 0);
+> +		drvdata->dcr_host =3D dcr_map(op->node, start,
+drvdata->len);
+> +		if (!DCR_MAP_OK(drvdata->dcr_host)) {
+> +			dev_err(&op->dev, "invalid DCR address\n");
+> +			goto err;
+>  		}
+>  	}
+> =
+
+> @@ -467,26 +468,12 @@ xilinxfb_of_probe(struct of_device *op, const
+struct of_device_id *match)
+>  	if (of_find_property(op->node, "rotate-display", NULL))
+>  		pdata.rotate_screen =3D 1;
+> =
+
+> -	/* Allocate the driver data region */
+> -	drvdata =3D kzalloc(sizeof(*drvdata), GFP_KERNEL);
+> -	if (!drvdata) {
+> -		dev_err(&op->dev, "Couldn't allocate device private
+record\n");
+> -		return -ENOMEM;
+> -	}
+>  	dev_set_drvdata(&op->dev, drvdata);
+> +	return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
+> =
+
+> -	if (tft_access)
+> -		drvdata->flags |=3D PLB_ACCESS_FLAG;
+> -
+> -	/* Arguments are passed based on the interface */
+> -	if (drvdata->flags & PLB_ACCESS_FLAG) {
+> -		return xilinxfb_assign(&op->dev, drvdata, res.start,
+&pdata);
+> -	} else {
+> -		drvdata->dcr_start =3D start;
+> -		drvdata->dcr_len =3D len;
+> -		drvdata->dcr_host =3D dcr_host;
+> -		return xilinxfb_assign(&op->dev, drvdata, 0, &pdata);
+> -	}
+> + err:
+> +	kfree(drvdata);
+> +	return -ENODEV;
+>  }
+> =
+
+>  static int __devexit xilinxfb_of_remove(struct of_device *op)
+> =
 
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
