@@ -1,28 +1,26 @@
-Return-Path: <wsa@pengutronix.de>
+Return-Path: <Kari.Davidsson@marel.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 01706B7117
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D848BB7138
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Jun 2009 19:18:10 +1000 (EST)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 6C3EDDDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 19:18:09 +1000 (EST)
-Date: Tue, 16 Jun 2009 11:18:01 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Albrecht =?iso-8859-1?Q?Dre=DF?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH V2 2/2] mtd/maps/mtd-ram: add an of-platform driver
-Message-ID: <20090616091801.GC21321@pengutronix.de>
-References: <1244203514-12516-3-git-send-email-w.sang@pengutronix.de>
-	<1245087807.3185.0@antares>
+	Tue, 16 Jun 2009 20:41:06 +1000 (EST)
+Received: from mail.marel.is (mail.marel.is [213.167.134.96])
+	by ozlabs.org (Postfix) with ESMTP id 18C3DDDD01
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 20:41:05 +1000 (EST)
+Message-ID: <4A3776BE.6010601@marel.com>
+Date: Tue, 16 Jun 2009 10:41:02 +0000
+From: =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bAmEntskrkuBymla"
-In-Reply-To: <1245087807.3185.0@antares>
-Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, Ben Dooks <ben-linux@fluff.org>,
-	David Woodhouse <dwmw2@infradead.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Chipselect in SPI binding with mpc5200-psc-spi
+References: <fa686aa40902130719k1d16f936o4776cff371db16ae@mail.gmail.com>
+	<4A3678A3.1050802@marel.com>
+	<fa686aa40906151031p74636557oc1ab173236d0a81b@mail.gmail.com>
+In-Reply-To: <fa686aa40906151031p74636557oc1ab173236d0a81b@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="------------000503080209020903030901"
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,49 +30,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--------------000503080209020903030901
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 8bit
 
---bAmEntskrkuBymla
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Now my driver gets probed.
 
-On Mon, Jun 15, 2009 at 07:43:20PM +0200, Albrecht Dre=DF wrote:
-> Am 05.06.09 14:05 schrieb(en) Wolfram Sang:
->> Create an of-aware driver using the now exported generic functions =20
->> from plat-ram.c. Also add the documentation for the binding. =20
->> Partitions are not yet supported. Tested on a phyCORE-MPC5200B-IO.
->
-> Dumb question: what is the current status of this patch?  I ask because =
-=20
+This "modalias" error was due to wrong "compatible" attribute of
+my of node.
 
-I don't know.
+But I still need to have the call to of_register_spi_devices().
 
-David wondered if 'of_physmap' could be used, so I wrote what I experienced
-during development. I can't tell if this helped the case.
+The attached patch shows what I mean.
 
-Grant wondered if we need a bankwidth. IMHO it is needed for now, but I don=
-'t
-know if this is a common agreement.
+rg
+kd
 
-Regards,
+Grant Likely wrote:
+> On Mon, Jun 15, 2009 at 10:36 AM, Kári
+> Davíðsson<kari.davidsson@marel.com> wrote:
+>> Is this true?
+>>
+>> Grant Likely wrote:
+>>> Yes, this is right.  The psc_spi driver automatically registers all
+>>> spi children that it finds in the device tree onto the SPI bus.
+>>> Therefore registering an spi_driver() is the right thing to do.
+>> I am writing an SPI protocol driver and I find that my driver
+>> is never probed.
+>>
+>> I tried to add and call to of_register_spi_devices() in the
+>> drivers/spi/mpc52xx_psc_spi.c::mpc52xx_psc_spi_of_probe() function,
+>> without much effect besided that the DTS node is parsed but the driver probe
+>> is not called, actually it complains about a modalias for my node is
+>> missing.
+> 
+> What do you see when you look in /sys/bus/spi/devices?  You should see
+> a directory for your device.  What do you see in /sys/bus/spi/drivers?
+>  In here you should see your driver.  If they are both there, then you
+> just have a problem matching your driver name to the device name.
+> 
+> g.
+> 
 
-   Wolfram
+--------------000503080209020903030901
+Content-Type: text/plain; name="patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="patch"
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Index: drivers/spi/mpc52xx_psc_spi.c
+===================================================================
+--- drivers/spi/mpc52xx_psc_spi.c	(revision 548)
++++ drivers/spi/mpc52xx_psc_spi.c	(working copy)
+@@ -22,6 +22,7 @@
+ #include <linux/delay.h>
+ #include <linux/spi/spi.h>
+ #include <linux/fsl_devices.h>
++#include <linux/of_spi.h>
+ 
+ #include <asm/mpc52xx.h>
+ #include <asm/mpc52xx_psc.h>
+@@ -371,7 +372,7 @@
+ 
+ /* bus_num is used only for the case dev->platform_data == NULL */
+ static int __init mpc52xx_psc_spi_do_probe(struct device *dev, u32 regaddr,
+-				u32 size, unsigned int irq, s16 bus_num)
++				u32 size, unsigned int irq, s16 bus_num, struct spi_master ** pmaster)
+ {
+ 	struct fsl_spi_platform_data *pdata = dev->platform_data;
+ 	struct mpc52xx_psc_spi *mps;
+@@ -439,6 +440,10 @@
+ 	if (ret < 0)
+ 		goto unreg_master;
+ 
++    dev_info(dev, "Activated\n");
++
++    *pmaster = master;
++
+ 	return ret;
+ 
+ unreg_master:
+@@ -474,6 +479,8 @@
+ 	const u32 *regaddr_p;
+ 	u64 regaddr64, size64;
+ 	s16 id = -1;
++    int res;
++    struct spi_master * master = NULL;;
+ 
+ 	regaddr_p = of_get_address(op->node, 0, &size64, NULL);
+ 	if (!regaddr_p) {
+@@ -495,8 +502,16 @@
+ 		id = *psc_nump + 1;
+ 	}
+ 
+-	return mpc52xx_psc_spi_do_probe(&op->dev, (u32)regaddr64, (u32)size64,
+-					irq_of_parse_and_map(op->node, 0), id);
++	res = mpc52xx_psc_spi_do_probe(&op->dev, (u32)regaddr64, (u32)size64,
++					irq_of_parse_and_map(op->node, 0), id, &master);
++
++    if( master != NULL )
++    {
++        /* Add any subnodes on the SPI bus */
++        of_register_spi_devices( master, op->node);
++    }
++
++    return res;
+ }
+ 
+ static int __exit mpc52xx_psc_spi_of_remove(struct of_device *op)
 
---bAmEntskrkuBymla
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko3Y0kACgkQD27XaX1/VRsjegCfRhzQq3HNnvxjh6NTeRdmyJvp
-Lr4Anj/ApO0NW6IoNRvXHHWrbCjvrFf9
-=Sigq
------END PGP SIGNATURE-----
-
---bAmEntskrkuBymla--
+--------------000503080209020903030901--
