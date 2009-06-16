@@ -1,27 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <benh@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B51CBB7148
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5D322B70E5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Jun 2009 13:55:53 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Tue, 16 Jun 2009 14:12:17 +1000 (EST)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C6DF9DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 13:55:52 +1000 (EST)
-Subject: Re: [PATCH] RFC: powerpc: expose the multi-bit ops that underlie
-	single-bit ops.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geoff Thorpe <Geoff.Thorpe@freescale.com>
-In-Reply-To: <1243361946-6771-1-git-send-email-Geoff.Thorpe@freescale.com>
-References: <1243361946-6771-1-git-send-email-Geoff.Thorpe@freescale.com>
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4F935DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 14:12:16 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id n5G4A5ic003750
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 14:10:05 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5G4CFXt987296
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 14:12:15 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n5G4CFRJ009314
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 14:12:15 +1000
+Subject: Re: [PATCH] Fix oprofile sampling of marked events on POWER7
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Maynard Johnson <maynardj@us.ibm.com>
+In-Reply-To: <4A364F4A.6060300@us.ibm.com>
+References: <49FB2EC5.4040400@us.ibm.com>  <4A364F4A.6060300@us.ibm.com>
 Content-Type: text/plain
-Date: Tue, 16 Jun 2009 13:53:38 +1000
-Message-Id: <1245124418.12400.67.camel@pasglop>
+Date: Tue, 16 Jun 2009 14:12:14 +1000
+Message-Id: <1245125534.12400.70.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,177 +41,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-05-26 at 14:19 -0400, Geoff Thorpe wrote:
-> NOT FOR COMMIT, THIS IS A REQUEST FOR FEEDBACK.
-> 
-> The bitops.h functions that operate on a single bit in a bitfield are
-> implemented by operating on the corresponding word location. In all cases
-> the inner logic appears to be valid if the mask being applied has more
-> than one bit set, so this patch exposes those inner operations. Indeed,
-> set_bits() was already available, but it duplicated code from set_bit()
-> (rather than making the latter a wrapper) - it was also missing the
-> PPC405_ERR77() workaround and the "volatile" address qualifier present in
-> other APIs. This corrects that, and exposes the other multi-bit
-> equivalents.
-> 
-> One advantage of these multi-bit forms is that they allow word-sized
-> variables to essentially be their own spinlocks.
+On Mon, 2009-06-15 at 08:40 -0500, Maynard Johnson wrote:
+> Looks like this posting got overlooked, so I'm re-posting the original patch.  Ben, can you please review?  BTW, Anton reported the problem that this patch fixes.
 
-Hi ! Sorry for the delay, that was on my "have a look one of these days,
-low priority" list for a bit too long :-)
-
-> NB, the same factoring is possible in asm-generic/bitops/[non-]atomic.h.
-> I would be happy to provide corresponding patches if this approach is
-> deemed appropriate. Feedback would be most welcome.
-> 
-> Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
-> ---
->  arch/powerpc/include/asm/bitops.h |  111 +++++++++++++++++++++++--------------
->  1 files changed, 69 insertions(+), 42 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-> index 897eade..72de28c 100644
-> --- a/arch/powerpc/include/asm/bitops.h
-> +++ b/arch/powerpc/include/asm/bitops.h
-> @@ -56,11 +56,10 @@
->  #define BITOP_WORD(nr)		((nr) / BITS_PER_LONG)
->  #define BITOP_LE_SWIZZLE	((BITS_PER_LONG-1) & ~0x7)
->  
-> -static __inline__ void set_bit(int nr, volatile unsigned long *addr)
-> +static __inline__ void set_bits(unsigned long mask, volatile unsigned long *_p)
->  {
->  	unsigned long old;
-> -	unsigned long mask = BITOP_MASK(nr);
-> -	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
-> +	unsigned long *p = (unsigned long *)_p;
->  
->  	__asm__ __volatile__(
->  "1:"	PPC_LLARX "%0,0,%3	# set_bit\n"
-> @@ -73,11 +72,16 @@ static __inline__ void set_bit(int nr, volatile unsigned long *addr)
->  	: "cc" );
->  }
->  
-> -static __inline__ void clear_bit(int nr, volatile unsigned long *addr)
-> +static __inline__ void set_bit(int nr, volatile unsigned long *addr)
-> +{
-> +	set_bits(BITOP_MASK(nr), addr + BITOP_WORD(nr));
-> +}
-
-No objection with the above.
-
-> +static __inline__ void clear_bits(unsigned long mask,
-> +				volatile unsigned long *_p)
->  {
->  	unsigned long old;
-> -	unsigned long mask = BITOP_MASK(nr);
-> -	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
-> +	unsigned long *p = (unsigned long *)_p;
->  
->  	__asm__ __volatile__(
->  "1:"	PPC_LLARX "%0,0,%3	# clear_bit\n"
-> @@ -90,11 +94,16 @@ static __inline__ void clear_bit(int nr, volatile unsigned long *addr)
->  	: "cc" );
->  }
->  
-> -static __inline__ void clear_bit_unlock(int nr, volatile unsigned long *addr)
-> +static __inline__ void clear_bit(int nr, volatile unsigned long *addr)
-> +{
-> +	clear_bits(BITOP_MASK(nr), addr + BITOP_WORD(nr));
-> +}
-
-Looks good too.
-
-> +static __inline__ void clear_bits_unlock(unsigned long mask,
-> +					volatile unsigned long *_p)
->  {
->  	unsigned long old;
-> -	unsigned long mask = BITOP_MASK(nr);
-> -	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
-> +	unsigned long *p = (unsigned long *)_p;
->  
->  	__asm__ __volatile__(
->  	LWSYNC_ON_SMP
-> @@ -108,11 +117,16 @@ static __inline__ void clear_bit_unlock(int nr, volatile unsigned long *addr)
->  	: "cc", "memory");
->  }
->  
-> -static __inline__ void change_bit(int nr, volatile unsigned long *addr)
-> +static __inline__ void clear_bit_unlock(int nr, volatile unsigned long *addr)
-> +{
-> +	clear_bits_unlock(BITOP_MASK(nr), addr + BITOP_WORD(nr));
-> +}
-
-I'm not sure it's useful to provide a multi-bit variant of the
-"lock" and "unlock" primitives. Do other archs do ?
-
-> +static __inline__ void change_bits(unsigned long mask,
-> +				volatile unsigned long *_p)
->  {
->  	unsigned long old;
-> -	unsigned long mask = BITOP_MASK(nr);
-> -	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
-> +	unsigned long *p = (unsigned long *)_p;
->  
->  	__asm__ __volatile__(
->  "1:"	PPC_LLARX "%0,0,%3	# change_bit\n"
-> @@ -125,12 +139,16 @@ static __inline__ void change_bit(int nr, volatile unsigned long *addr)
->  	: "cc" );
->  }
->  
-> -static __inline__ int test_and_set_bit(unsigned long nr,
-> -				       volatile unsigned long *addr)
-> +static __inline__ void change_bit(int nr, volatile unsigned long *addr)
-> +{
-> +	change_bits(BITOP_MASK(nr), addr + BITOP_WORD(nr));
-> +}
-
-Ah, patch is getting confused between change_bit and
-test_and_set_bit :-)
-
-Now, you know what I'm thinking is ... Those are all the same except
-for:
-
- - Barriers for lock and unlock variants
- - Barriers for "return" (aka test_and_set) variants
- - Actual op done on the mask
-
-Maybe we can shrink that file significantly (and avoid the risk for
-typos etc...) by generating them all from a macro.
-
-Something like (typed directly into the mailer :-)
-
-#define DEFINE_BITOP(op, prefix, postfix) \
-	asm volatile (			  \
-	prefix				  \
-"1:"    PPC_LLARX "%0,0,%3\n"		  \
-	__stringify(op) "%1,%0,%2\n"	  \
-	PPC405_ERR77(0,%3)		  \
-	PPC_STLCX "%1,0,%3\n"		  \
-	"bne- 1b\n"			  \
-	postfix				  \
-	 : "=&r" (old), "=&r" (t)
-	 : "r" (mask), "r" (p)
-	 : "cc", "memory")
-
-and so:
-
-static inline void set_bits(unsigned long mask, volatile unsigned long *addr)
-{
-	unsigned long old, t;
-
-	DEFINE_BITOP(or, "", "");
-}
-
-static inline void test_and_set_bits(unsigned long mask, volatile unsigned long *addr)
-{
-	unsigned long old, t;
-
-	DEFINE_BITOP(or, LWSYNC_ON_SMP, ISYNC_ON_SMP);
-
-	return (old & mask) != 0;
-}
-
-etc...
+It was merged upstream after 2.6.30 -rc6, see commit e5fc948b...
 
 Cheers,
 Ben.
+
+> Thanks.
+> -Maynard
+> 
+> ==============================================================
+> 
+> 
+> Description
+> -----------
+> Change ppc64 oprofile kernel driver to use the SLOT bits (MMCRA[37:39]only on 
+> older processors where those bits are defined.
+> 
+> Background
+> ----------
+> The performance monitor unit of the 64-bit POWER processor family has the 
+> ability to collect accurate instruction-level samples when profiling on marked 
+> events (i.e., "PM_MRK_<event-name>").  In processors prior to POWER6, the MMCRA 
+> register contained "slot information" that the oprofile kernel driver used to 
+> adjust the value latched in the SIAR at the time of a PMU interrupt.  But as of 
+> POWER6, these slot bits in MMCRA are no longer necessary for oprofile to use, 
+> since the SIAR itself holds the accurate sampled instruction address.  With 
+> POWER6, these MMCRA slot bits were zero'ed out by hardware so oprofile's use of 
+> these slot bits was, in effect, a NOP.  But with POWER7, these bits are no 
+> longer zero'ed out; however, they serve some other purpose rather than slot 
+> information.  Thus, using these bits on POWER7 to adjust the SIAR value results 
+> in samples being attributed to the wrong instructions.  The attached patch 
+> changes the oprofile kernel driver to ignore these slot bits on all newer 
+> processors starting with POWER6.
+> 
+> Thanks.
+> -Maynard
+> 
+> Signed-off-by: Maynard Johnson <maynardj@us.ibm.com>
+> 
+> 
+> 
+> diff -paur linux/arch/powerpc/oprofile/op_model_power4.c linux-p7-oprofile-patch//arch/powerpc/oprofile/op_model_power4.c
+> --- linux/arch/powerpc/oprofile/op_model_power4.c	2009-05-01 08:20:21.000000000 -0500
+> +++ linux-p7-oprofile-patch//arch/powerpc/oprofile/op_model_power4.c	2009-05-01 08:20:05.000000000 -0500
+> @@ -26,6 +26,7 @@
+>  static unsigned long reset_value[OP_MAX_COUNTER];
+> 
+>  static int oprofile_running;
+> +static int use_slot_nums;
+> 
+>  /* mmcr values are set in power4_reg_setup, used in power4_cpu_setup */
+>  static u32 mmcr0_val;
+> @@ -61,6 +62,12 @@ static int power4_reg_setup(struct op_co
+>  	else
+>  		mmcr0_val |= MMCR0_PROBLEM_DISABLE;
+> 
+> +	if (__is_processor(PV_POWER4) || __is_processor(PV_POWER4p) ||
+> +	    __is_processor(PV_970) || __is_processor(PV_970FX) ||
+> +	    __is_processor(PV_970MP) || __is_processor(PV_970GX) ||
+> +	    __is_processor(PV_POWER5) || __is_processor(PV_POWER5p))
+> +		use_slot_nums = 1;
+> +
+>  	return 0;
+>  }
+> 
+> @@ -206,7 +213,7 @@ static unsigned long get_pc(struct pt_re
+> 
+>  	mmcra = mfspr(SPRN_MMCRA);
+> 
+> -	if (mmcra & MMCRA_SAMPLE_ENABLE) {
+> +	if (use_slot_nums && (mmcra & MMCRA_SAMPLE_ENABLE)) {
+>  		slot = ((mmcra & MMCRA_SLOT) >> MMCRA_SLOT_SHIFT);
+>  		if (slot > 1)
+>  			pc += 4 * (slot - 1);
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
