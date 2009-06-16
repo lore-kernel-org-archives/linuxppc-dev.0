@@ -3,24 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3EBEAB7195
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C7858B7196
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Jun 2009 22:52:51 +1000 (EST)
+	Tue, 16 Jun 2009 22:53:39 +1000 (EST)
 MIME-Version: 1.0
-In-Reply-To: <20090616090435.GA21321@pengutronix.de>
-References: <1244765062-14144-1-git-send-email-w.sang@pengutronix.de>
-	<1244765062-14144-3-git-send-email-w.sang@pengutronix.de>
-	<fa686aa40906140740m43e9dd8am4d242310f681c95c@mail.gmail.com>
-	<20090616090435.GA21321@pengutronix.de>
+In-Reply-To: <20090616091801.GC21321@pengutronix.de>
+References: <1244203514-12516-3-git-send-email-w.sang@pengutronix.de>
+	<1245087807.3185.0@antares> <20090616091801.GC21321@pengutronix.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 16 Jun 2009 06:46:47 -0600
-Message-ID: <fa686aa40906160546q73765b66h204334e3ca081de0@mail.gmail.com>
-Subject: Re: [PATCH 2/2] uio: add an of_genirq driver
+Date: Tue, 16 Jun 2009 06:53:17 -0600
+Message-ID: <fa686aa40906160553m2f0e7cc4n644c3893573845f@mail.gmail.com>
+Subject: Re: [PATCH V2 2/2] mtd/maps/mtd-ram: add an of-platform driver
 To: Wolfram Sang <w.sang@pengutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@ozlabs.org, "Hans J. Koch" <hjk@linutronix.de>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Greg KH <gregkh@suse.de>
+Cc: devicetree-discuss@ozlabs.org,
+	=?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Ben Dooks <ben-linux@fluff.org>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,65 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 16, 2009 at 3:04 AM, Wolfram Sang<w.sang@pengutronix.de> wrote:
->
->> > diff --git a/Documentation/powerpc/dts-bindings/uio-generic.txt b/Docu=
-mentation/powerpc/dts-bindings/uio-generic.txt
->> > new file mode 100644
->> > index 0000000..8ad9861
->> > --- /dev/null
->> > +++ b/Documentation/powerpc/dts-bindings/uio-generic.txt
->> > @@ -0,0 +1,16 @@
->> > +UIO for custom devices
->> > +
->> > +A device which will be mapped using the UIO subsystem.
->> > +
->> > +Properties:
->> > + - compatible : should contain the specific model used, followed by
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0"generic-uio".
->> > + - reg : address range(s) of the device (up to MAX_UIO_MAPS)
->> > + - interrupts : interrupt of the device
->> > +
->> > +Example:
->> > + =A0 =A0 =A0 =A0c64fpga@0 {
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "ptx,c64fpga001", "gen=
-eric-uio";
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0x0 0x10000>;
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupts =3D <0 0 3>;
->> > + =A0 =A0 =A0 =A0};
+On Tue, Jun 16, 2009 at 3:18 AM, Wolfram Sang<w.sang@pengutronix.de> wrote:
+> On Mon, Jun 15, 2009 at 07:43:20PM +0200, Albrecht Dre=DF wrote:
+>> Am 05.06.09 14:05 schrieb(en) Wolfram Sang:
+>>> Create an of-aware driver using the now exported generic functions
+>>> from plat-ram.c. Also add the documentation for the binding.
+>>> Partitions are not yet supported. Tested on a phyCORE-MPC5200B-IO.
 >>
->> Hmmm, I'm not happy about this. =A0The device tree describes the
->> hardware, not the way Linux uses the hardware. =A0UIO definitely falls
->> into the category of Linux implementation detail.
+>> Dumb question: what is the current status of this patch? =A0I ask becaus=
+e
 >
-> Yes, I am aware of that. I just started with the mechanisms which are ava=
-ilable
-> today and hoped we could find some compatible-value which will suit all n=
-eeds.
+> I don't know.
+>
+> David wondered if 'of_physmap' could be used, so I wrote what I experienc=
+ed
+> during development. I can't tell if this helped the case.
+>
+> Grant wondered if we need a bankwidth. IMHO it is needed for now, but I d=
+on't
+> know if this is a common agreement.
 
-Trouble is a value that suits all needs today probably won't a year
-from now.  :-)
-
->> This should be approached from the other way around. =A0Either the
->> generic-uio of_platform driver should contain an explicit list of
->> devices to be handled by UIO,
->
-> Well, that could lead to a quite huge match_table over time.
->
->> or the OF infrastructure should be modified to allow things like force
->> binding of_devices to of_drivers at runtime.
->
-> That is an interesting idea. I could imagine something like a 'new_compat=
-ible"
-> entry in the sysfs-section of the driver similar to 'new_id' for PCI. Aft=
-er
-> writing a new compatible-string into it, matching will triggered again wi=
-th the
-> new entry added. That could (should?) also be placed at the of-core-level=
-. Or
-> did you have something else in mind?
-
-Yeah, that sounds appropriate.
+I'm not happy about the use case though.  It probably shouldn't appear
+in this binding, or if it does it should be tagged as an optional
+property.  It is only in the 5200 localplus case that bank-width is
+needed to figure out how to apply the workaround.
 
 g.
 
