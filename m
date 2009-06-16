@@ -1,28 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <paubert@iram.es>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 885AFB71AE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EE993B71B9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 07:52:20 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D137DDDA0
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 07:52:18 +1000 (EST)
-Subject: Re: [PATCH] RFC: powerpc: expose the multi-bit ops that underlie
-	single-bit ops.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geoff Thorpe <Geoff.Thorpe@freescale.com>
-In-Reply-To: <4A37AC09.1020200@freescale.com>
-References: <1243361946-6771-1-git-send-email-Geoff.Thorpe@freescale.com>
-	<1245124418.12400.67.camel@pasglop>  <4A37AC09.1020200@freescale.com>
-Content-Type: text/plain
-Date: Wed, 17 Jun 2009 07:33:46 +1000
-Message-Id: <1245188026.14036.17.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	Wed, 17 Jun 2009 08:27:47 +1000 (EST)
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 18601DDD1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 08:27:46 +1000 (EST)
+Date: Wed, 17 Jun 2009 00:27:23 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH 1/2] lib: Provide generic atomic64_t implementation
+Message-ID: <20090616222723.GA18394@iram.es>
+References: <18995.20685.227683.561827@cargo.ozlabs.ibm.com>
+	<alpine.LFD.2.01.0906131312470.3237@localhost.localdomain>
+	<alpine.LFD.2.01.0906131323270.3237@localhost.localdomain>
+	<4A34E4A5.3040306@redhat.com>
+	<18996.60235.178618.531664@cargo.ozlabs.ibm.com>
+	<4A34F564.2010500@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4A34F564.2010500@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,105 +35,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-06-16 at 10:28 -0400, Geoff Thorpe wrote:
+On Sun, Jun 14, 2009 at 04:04:36PM +0300, Avi Kivity wrote:
+> Paul Mackerras wrote:
+>> Avi Kivity writes:
+>>
+>>   
+>>> An alternative implementation using 64-bit cmpxchg will recover most 
+>>> of the costs of hashed spinlocks.  I assume most serious 32-bit  
+>>> architectures have them?
+>>>     
+>>
+>> Have a 64-bit cmpxchg, you mean?  x86 is the only one I know of, and
+>> it already has an atomic64_t implementation using cmpxchg8b (or
+>> whatever it's called).
+>>   
+>
+> Yes (and it is cmpxchg8b).  I'm surprised powerpc doesn't have DCAS support.
 
-> > Hi ! Sorry for the delay, that was on my "have a look one of these days,
-> > low priority" list for a bit too long :-)
-> 
-> NP, optimal throughput often requires a compromise in latency :-)
+Well, s390 and m68k have the equivalent (although I don't think Linux
+suppiorts SMP m68k, although some dual 68040/68060 boards have existed).
 
-Hehehe, so true :-)
- 
-> > I'm not sure it's useful to provide a multi-bit variant of the
-> > "lock" and "unlock" primitives. Do other archs do ?
-> 
-> For clear_bit_unlock(), no they don't appear to. There is a fallback in
-> include/asm-generic though, and I notice that it's used in a few places,
-> eg. drivers/rtc/rtc-dev. OTOH some other archs appear to provide their
-> own test_and_set_bit_lock(), and there's a fallback in
-> includes/asm-generic for that too.
-> 
-> Do you see a reason to isolate either of these and not factor out the
-> inner word-based logic?
+But 32 bit PPC will never have it. It just does not fit in the architecture
+since integer loads and stores are limited to 32 bit (or split into 32 bit
+chunks). Besides that there is no instruction that performs a read-modify-write
+of memory. This would make the LSU much more complex for a corner case.
 
-Don't bother, especially if we are using a macro to generate them, we
-may as well make them all look the same.
+Hey, Intel also botched the first implementation of cmpxchg8b on the Pentium:
+the (in)famous f00f bug is actually "lock cmpxchg8b" with a register operand.
 
- .../...
+Now for these counters, other solutions could be considered, like using
+the most significant bit as a lock and having "only" 63 usable bits (when 
+counting ns, this overflows at 292 years). 
 
-> Yup, believe it or not, I saw this coming but didn't have the guts to
-> try proposing something like it up-front (in particular, I was wary of
-> botching some subtleties in the assembly).
+>
+>> My thinking is that the 32-bit non-x86 architectures will be mostly
+>> UP, so the overhead is just an interrupt enable/restore.  Those that
+>> are SMP I would expect to be small SMP -- mostly just 2 cpus and maybe
+>> a few 4-way systems.
+>>   
+>
+> The new Nehalems provide 8 logical threads in a single socket.  All  
+> those threads share a cache, and they have cmpxchg8b anyway, so this  
+> won't matter.
+>
 
-Fair enough :-)
+The problem is not Nehalem (who wants to run 32 bit kernels on a Nehalem
+anyway) or x86.
 
-> > Maybe we can shrink that file significantly (and avoid the risk for
-> > typos etc...) by generating them all from a macro.
-> > 
-> > Something like (typed directly into the mailer :-)
-> > 
-> > #define DEFINE_BITOP(op, prefix, postfix) \
-> > 	asm volatile (			  \
-> > 	prefix				  \
-> > "1:"    PPC_LLARX "%0,0,%3\n"		  \
-> > 	__stringify(op) "%1,%0,%2\n"	  \
-> > 	PPC405_ERR77(0,%3)		  \
-> > 	PPC_STLCX "%1,0,%3\n"		  \
-> > 	"bne- 1b\n"			  \
-> > 	postfix				  \
-> > 	 : "=&r" (old), "=&r" (t)
-> > 	 : "r" (mask), "r" (p)
-> > 	 : "cc", "memory")
-> > 
-> > and so:
-> > 
-> > static inline void set_bits(unsigned long mask, volatile unsigned long *addr)
-> > {
-> > 	unsigned long old, t;
-> > 
-> > 	DEFINE_BITOP(or, "", "");
-> > }
-> > 
-> > static inline void test_and_set_bits(unsigned long mask, volatile unsigned long *addr)
-> > {
-> > 	unsigned long old, t;
-> > 
-> > 	DEFINE_BITOP(or, LWSYNC_ON_SMP, ISYNC_ON_SMP);
-> > 
-> > 	return (old & mask) != 0;
-> > }
-> > 
-> > etc...
-> 
-> 
-> Sounds good, I'll try working this up and I'll send a new patch shortly.
+The problem is that the assumption that the largest PPC32 SMP are 4 way
+may be outdated:
 
-You can also go totally mad and generate the whole function (both -s and
-non -s variants) from one macro but I wouldn't go that far :-)
+http://www.freescale.com/webapp/sps/site/prod_summary.jsp?fastpreview=1&code=P4080
 
-> So can I assume implicitly that changing the set_bits() function to add
-> the 'volatile' qualifier to the prototype (and the missing
-> PPC405_ERR77() workaround) was OK?
+and some products including that processor have been announced (I don't know
+whether they are shipping or not) and (apparently) run Linux.
 
-The PPC405_ERR77 workaround is definitely needed. The volatile, well, I
-suspect it's useless, but it will remove warnings when callers call
-these on something that is declared as volatile in the first place.
-
-Do x86 use volatile there ? If not, then don't do it on powerpc neither,
-it could well be an historical remain. It's not functionally useful, the
-"memory" clobber in the asm takes care of telling the compiler not to
-mess around I believe.
-
-> Also - any opinion on whether the same re-factoring of the asm-generic
-> versions should be undertaken? I'm not looking to bite off more than I
-> can chew, but I don't know if it's frowned upon to make powerpc-only
-> extensions to the API. And if you think an asm-generic patch makes
-> sense, could that be taken via linuxppc-dev too or does it need to go
-> elsewhere?
-
-I'm not people care -that- much :-) You can always try and post it to
-lkml (maybe linux-arch too) and see what comes back... but let's finish
-the powerpc variant first :-)
-
-Cheers,
-Ben.
+	Gabriel
