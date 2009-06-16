@@ -1,21 +1,27 @@
-Return-Path: <chris.pringle@oxtel.com>
-Received: from oxtel.com (mail.oxtel.com [193.200.114.15])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 2FB13B7123
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 054B3B7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 02:59:44 +1000 (EST)
-Message-ID: <4A37CF02.5080906@oxtel.com>
-Date: Tue, 16 Jun 2009 17:57:38 +0100
-From: Chris Pringle <chris.pringle@oxtel.com>
+	Wed, 17 Jun 2009 03:00:07 +1000 (EST)
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id 5A460DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 03:00:06 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1983963ywt.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 10:00:04 -0700 (PDT)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-References: <4A37A503.3030209@oxtel.com>
-	<20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
-	<4A37CC72.3060709@freescale.com>
-In-Reply-To: <4A37CC72.3060709@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <4A37C88F.8040701@ovro.caltech.edu>
+References: <c384c5ea0906160852l4845760cp8594463a866683dc@mail.gmail.com>
+	<4A37C88F.8040701@ovro.caltech.edu>
+Date: Tue, 16 Jun 2009 18:59:59 +0200
+Message-ID: <c384c5ea0906160959v1fde484av8cff4916cacb84cc@mail.gmail.com>
+Subject: Re: MPC83xx watchdog reset board dead lock
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: David Hawkins <dwh@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,75 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
->
-> Check asm/cputable.h for CPU_FTR_NEED_COHERENT.  Make sure that 
-> CONFIG_8260 is one of the #ifdefs that turns that on.  It looks like 
-> that was in place by 2.6.26 in arch/powerpc.  I'm not sure what to 
-> look for in arch/ppc.
-I've just checked that and it's definitely switched on in CPU_FTR_COMMON 
-(CONFIG_8260 is also being used).
->
->>> Also make sure that you park the bus on PCI and raise its arbitration
->>> priority, as done at the end of fixup_pci in 
->>> arch/powerpc/boot/cuboot-pq2.c.
->>>   
->> Since this is a reasonably recent kernel,
->
-> Not really, there was a fair amount of 82xx work in the mid-2.6.20s. 
-> The addition of CPU_FTR_NEED_COHERENT to 82xx was somewhere in that time.
->
-> Can you try 2.6.30?
-I'll give it a try, but that won't be a quick thing to do - will 
-hopefully manage to get that done tomorrow if it patches without too 
-many issues. I should point out that we've got the low latency patches 
-on this kernel too; I guess it'd be worth trying it without them before 
-I move kernels.
->
->> I'd guess that both of these things are correct. I've had a quick 
->> look in that file and there is code in there raising arbitartion 
->> priority and parking the bus.
->
-> Just because the code is there doesn't mean you're using it -- are you 
-> using cuImage?  Are you using arch/ppc or arch/powerpc?
->
-> Typically this would be done by firmware; it's only in cuboot because 
-> u-boot wasn't doing it.
-Just checked this is being called and it is. We're using arch/powerpc.
->
->
->> Interestingly, I've just turned off cache snooping and the problem 
->> has got much worse. This has surprised me as I thought that part of 
->> the job done by pci_map_sg was to flush the CPU cache
->
-> It only flushes the cache on hardware that doesn't do coherent DMA.
->
-Ah right - that would explain what we're seeing then... Doh. Thought I 
-might have been onto something then. Is there any way to force a cache 
-flush? That'd at least prove it was a caching issue if it resolved the 
-problem.
+Hello,
 
-Thanks,
-Chris
+On Tue, Jun 16, 2009 at 6:30 PM, David Hawkins<dwh@ovro.caltech.edu> wrote:
+>> Most MPC8xxx board designs I have seen suffer from this possible dead
+>> lock:
+>> - NOR Flash is put in erase mode or write mode
+>> - Hardware watchdog triggers
+>> - HRESET# is asserted by the processor, during which the configuration
+>> words are read from NOR Flash.
+>>
+>> Either
+>> HRESET# is not attached to NOR, NOR stays in erase/write mode and
+>> invalid words will be read -> dead lock
+>>
+>> or either:
+>> HRESET# is attached to NOR reset, NOR is reset, but stays in reset as
+>> HRESET# stays asserted.
+>>
+>> We have been looking at several solutions hardware wise that reset the
+>> NOR flash on HRESET# going low, but the processors are stubborn,
+>> read the config words only once, than dead lock.
+>>
+>> I wonder if there are known-working designs for this.
+>
+> What do you do in the case of blank flash on a board?
+>
+The problem is not with blank flash or firmware upgrades, we know how
+to handle that.
 
+Your solution is (a solution) to a different problem.
+
+The problem lies in the fact that board dead lock can occur if the
+watchdog triggers, for all reference designs I have seen.
+
+Thanks for thinking along.  I would like to solve the original problem though.
+BTW, we use CPLD/FPGAs on most of our boards, this one we do not for
+cost reasons.
+
+
+Regards,
 -- 
-
-______________________________
-Chris Pringle
-Software Engineer
-
-Miranda Technologies Ltd.
-Hithercroft Road
-Wallingford
-Oxfordshire OX10 9DG
-UK
-
-Tel. +44 1491 820206
-Fax. +44 1491 820001
-www.miranda.com
-
-____________________________
-
-Miranda Technologies Limited
-Registered in England and Wales CN 02017053
-Registered Office: James House, Mere Park, Dedmere Road, Marlow, Bucks, SL7 1FJ
+Leon
