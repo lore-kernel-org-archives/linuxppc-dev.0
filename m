@@ -1,28 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <benh@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B8E36B7116
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C0441B70CD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Jun 2009 11:31:23 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10D03DDD1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 11:31:22 +1000 (EST)
-Subject: Re: [OOPS] hugetlbfs tests with 2.6.30-rc8-git1
+	Tue, 16 Jun 2009 12:54:19 +1000 (EST)
+To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sachin Sant <sachinp@in.ibm.com>
-In-Reply-To: <4A3645EE.5060103@in.ibm.com>
-References: <4A290195.3080807@in.ibm.com> <1244233062.31984.6.camel@pasglop>
-	<4A34E12B.4010000@in.ibm.com> <1245027396.7705.23.camel@concordia>
-	<4A3645EE.5060103@in.ibm.com>
-Content-Type: text/plain
-Date: Tue, 16 Jun 2009 11:30:28 +1000
-Message-Id: <1245115828.12400.48.camel@pasglop>
-Mime-Version: 1.0
-Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org
+Date: Tue, 16 Jun 2009 12:53:43 +1000
+Subject: [PATCH] powerpc/mm: Fix potential access to freed pages when using
+	hugetlbfs
+Message-Id: <20090616025419.A5581DDD1B@ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,19 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-06-15 at 18:30 +0530, Sachin Sant wrote:
+When using 64k page sizes, our PTE pages are split in two halves,
+the second half containing the "extension" used to keep track of
+individual 4k pages when not using HW 64k pages.
 
->  278:   2f 80 00 00     cmpwi   cr7,r0,0
->         } else {
->                 vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
->                 ssize = mmu_kernel_ssize;
->         }
->         vaddr = hpt_va(addr, vsid, ssize);
->         rpte = __real_pte(__pte(pte), ptep);
->  27c:   eb 89 80 00     ld      r28,-32768(r9)  
+However, our page tables used for hugetlb have a slightly different
+format and don't carry that "second half".
 
-I think I know what the problem is. I'll send a tentative patch as soon
-as I got to test it a bit here.
+Our code that batched PTEs to be invalidated unconditionally reads
+the "second half" (to put it into the batch), which means that when
+called to invalidate hugetlb PTEs, it will access unrelated memory.
 
-Cheers,
-Ben.
+It breaks when CONFIG_DEBUG_PAGEALLOC is enabled.
+
+This fixes it by only accessing the second half when the _PAGE_COMBO
+bit is set in the first half, which indicates that we are dealing with
+a "combo" page which represents 16x4k subpages. Anything else shouldn't
+have this bit set and thus not require loading from the second half.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+
+ arch/powerpc/include/asm/pte-hash64-64k.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- linux-work.orig/arch/powerpc/include/asm/pte-hash64-64k.h	2009-06-16 11:27:05.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/pte-hash64-64k.h	2009-06-16 12:03:29.000000000 +1000
+@@ -47,7 +47,8 @@
+  * generic accessors and iterators here
+  */
+ #define __real_pte(e,p) 	((real_pte_t) { \
+-	(e), pte_val(*((p) + PTRS_PER_PTE)) })
++			(e), ((e) & _PAGE_COMBO) ? \
++				(pte_val(*((p) + PTRS_PER_PTE))) : 0 })
+ #define __rpte_to_hidx(r,index)	((pte_val((r).pte) & _PAGE_COMBO) ? \
+         (((r).hidx >> ((index)<<2)) & 0xf) : ((pte_val((r).pte) >> 12) & 0xf))
+ #define __rpte_to_pte(r)	((r).pte)
