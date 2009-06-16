@@ -1,30 +1,28 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B7F22B7120
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 30325B7086
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Jun 2009 16:43:02 +1000 (EST)
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A70CDDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 16:43:02 +1000 (EST)
-Date: Tue, 16 Jun 2009 16:42:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Subject: Re: linux-next: manual merge of the driver-core tree with the
-	powerpc tree
-Message-Id: <20090616164257.d7e8d460.sfr@canb.auug.org.au>
-In-Reply-To: <20090616061849.GA32109@kroah.com>
-References: <20090616155317.d1f1217e.sfr@canb.auug.org.au>
-	<20090616061849.GA32109@kroah.com>
+	Tue, 16 Jun 2009 17:00:03 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8A319DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 17:00:01 +1000 (EST)
+Subject: Re: linux-next: Linus/powerpc tree build warning
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20090616162429.07e74e75.sfr@canb.auug.org.au>
+References: <20090616162429.07e74e75.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Tue, 16 Jun 2009 16:59:46 +1000
+Message-Id: <1245135586.12400.104.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__16_Jun_2009_16_42_57_+1000_.Ru1NNGs2YwIrBQd"
-Cc: Roel Kluin <roel.kluin@gmail.com>, linux-kernel@vger.kernel.org,
-	ppc-dev <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org,
-	Geert, Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Suneel <suneelg@xilinx.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,38 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__16_Jun_2009_16_42_57_+1000_.Ru1NNGs2YwIrBQd
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-06-16 at 16:24 +1000, Stephen Rothwell wrote:
+> Hi Ben,
+> 
+> Today's linux-next build (powerpc ppc44x_defconfig) produced this warning:
+> 
+> drivers/video/xilinxfb.c: In function 'xilinxfb_assign':
+> drivers/video/xilinxfb.c:328: warning: cast to pointer from integer of different size
+> 
+> Introduced by commit dac4ccfb64bcdd5b4c248ccc22903d67486573cd ("fbdev:
+> Add PLB support and cleanup DCR in xilinxfb driver").
 
-Hi Greg,
+Known problem, a fix is currently being polished by Grant and John.
 
-On Mon, 15 Jun 2009 23:18:49 -0700 Greg KH <greg@kroah.com> wrote:
->
-> I pushed out an update a number of hours ago (like 6+), so you should
-> have gotten it with this update.
->=20
-> When did you pull from my tree?  I also just sent a merge request to
-> Linus, so everything should be fixed up now.
-
-OK, thanks.  I fetch the trees usually between 8:30am and 10:00am UTC
-+1000 (or +1100 in summer), so about 7 hours ago :-)
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__16_Jun_2009_16_42_57_+1000_.Ru1NNGs2YwIrBQd
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko3PvEACgkQjjKRsyhoI8wx0QCdFcBRhrSoIDIYL6XzQvm9BdN9
-EOsAn0oiH4BUvXJ1NuivpYnFhMIt0AH5
-=uo5E
------END PGP SIGNATURE-----
-
---Signature=_Tue__16_Jun_2009_16_42_57_+1000_.Ru1NNGs2YwIrBQd--
+Ben.
