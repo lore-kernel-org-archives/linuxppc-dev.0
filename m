@@ -1,31 +1,23 @@
-Return-Path: <rdreier@cisco.com>
+Return-Path: <leon.woestenberg@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4CA7DB716B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A03E6B7185
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 02:10:47 +1000 (EST)
-Received: from sj-iport-2.cisco.com (sj-iport-2.cisco.com [171.71.176.71])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-2.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 68175DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 02:10:46 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Alexander Schmidt <alexs@linux.vnet.ibm.com>
-Subject: Re: [ewg] Re: [PATCH 2.6.31] ehca: Tolerate dynamic memory operations
-	and huge pages
-References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
-	<adar5xoybwt.fsf@cisco.com>
-	<20090616090809.34d162fc@BL3D1974.boeblingen.de.ibm.com>
-Date: Tue, 16 Jun 2009 09:10:39 -0700
-In-Reply-To: <20090616090809.34d162fc@BL3D1974.boeblingen.de.ibm.com>
-	(Alexander Schmidt's message of "Tue, 16 Jun 2009 09:08:09 +0200")
-Message-ID: <adazlc8w45c.fsf@cisco.com>
+	Wed, 17 Jun 2009 02:16:17 +1000 (EST)
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id E6FB1DDD1C
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 02:16:16 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1971742ywt.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 09:16:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Hoang-Nam Nguyen <HNGUYEN@linux.vnet.ibm.com>,
-	raisch@de.ibm.com, linux-kernel@vger.kernel.org, ewg@lists.openfabrics.org
+Date: Tue, 16 Jun 2009 17:52:50 +0200
+Message-ID: <c384c5ea0906160852l4845760cp8594463a866683dc@mail.gmail.com>
+Subject: MPC83xx watchdog reset board dead lock
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: Linux PPC <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,16 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello,
 
- > Yeah, the notifier code remains untouched as we still do not allow dynamic
- > memory operations _while_ our module is loaded. The patch allows the driver to
- > cope with DMEM operations that happened before the module was loaded, which
- > might result in a non-contiguous memory layout. When the driver registers
- > its global memory region in the system, the memory layout must be considered.
- > 
- > We chose the term "toleration" instead of "support" to illustrate this.
+this is a hardware, even board issue, but I hope to find the right
+target audience here.
 
-I see.  So things just silently broke in some cases when the driver was
-loaded after operations you didn't tolerate?
 
-Anyway, thanks for the explanation.
+In our MPC83xx design I would like to prevent dead lock in case where
+a field upgrade is performed, i.e. NOR Flash is erased or written, and
+the MPC83xx built-in hardware watchdog triggers.
+
+In u-boot the scenario can be easily reproduced by running this
+command (WARNING, erases some sectors!) on an MPC8313E-RDB:
+
+erase_wdg=mw.l 0xe0000204 0x10000007 1;mw.w 0xe000020e 0x556c 1;mw.w
+0xe000020e 0xaa39 1;erase 1:10-30
+
+This sets up the watchdog to reset soonish, then starts erasing NOR
+sectors. Watchdog triggers and resets -> Dead lock.
+
+
+Most MPC8xxx board designs I have seen suffer from this possible dead lock:
+- NOR Flash is put in erase mode or write mode
+- Hardware watchdog triggers
+- HRESET# is asserted by the processor, during which the configuration
+words are read from NOR Flash.
+
+Either
+HRESET# is not attached to NOR, NOR stays in erase/write mode and
+invalid words will be read -> dead lock
+
+or either:
+HRESET# is attached to NOR reset, NOR is reset, but stays in reset as
+HRESET# stays asserted.
+
+
+
+We have been looking at several solutions hardware wise that reset the
+NOR flash on HRESET# going low, but the processors are stubborn,
+read the config words only once, than dead lock.
+
+I wonder if there are known-working designs for this.
+
+Regards,
+-- 
+Leon
