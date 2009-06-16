@@ -1,28 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id AE4E0B70B0
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B6C38B716D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 02:40:47 +1000 (EST)
-Received: from mail-gx0-f210.google.com (mail-gx0-f210.google.com
-	[209.85.217.210]) by ozlabs.org (Postfix) with ESMTP id 1322BDDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 02:40:46 +1000 (EST)
-Received: by gxk6 with SMTP id 6so6753678gxk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 09:40:45 -0700 (PDT)
+	Wed, 17 Jun 2009 02:46:43 +1000 (EST)
+Message-ID: <4A37CC72.3060709@freescale.com>
+Date: Tue, 16 Jun 2009 11:46:42 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1245049031.19217.49.camel@pasglop>
-References: <20090527185422.15186.46133.stgit@localhost.localdomain>
-	<1245049031.19217.49.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 16 Jun 2009 10:40:25 -0600
-Message-ID: <fa686aa40906160940p443cd954xa69ffb1fdf4e81dc@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc: add ioremap_early() for mapping IO regions
-	before MMU_init()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=windows-1252
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
+To: Chris Pringle <chris.pringle@oxtel.com>
+Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
+References: <4A37A503.3030209@oxtel.com>
+	<20090616162114.GA5051@loki.buserror.net>
+	<4A37C97A.5050508@oxtel.com>
+In-Reply-To: <4A37C97A.5050508@oxtel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,39 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 15, 2009 at 12:57 AM, Benjamin
-Herrenschmidt<benh@kernel.crashing.org> wrote:
-> On Wed, 2009-05-27 at 12:55 -0600, Grant Likely wrote:
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->> ioremap_early() is useful for things like mapping SoC internally registe=
-rs
->> and early debug output because it allows mappings to devices to be setup
->> early in the boot process where they are needed. =A0It also give a
->> performance boost since BAT mapped registers don't get flushed out of
->> the TLB.
->>
->> Without ioremap_early(), early mappings are set up in an ad-hoc manner
->> and they get lost when the MMU is set up. =A0Drivers then have to perfor=
-m
->> hacky fixups to transition over to new mappings.
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->> ---
->
-> My 40x config gives me:
->
-> /home/benh/linux-powerpc-test/drivers/video/xilinxfb.c:409: warning:
-> =91dcr_host.base=92 may be used uninitialized in this function
->
-> (warning, I think, was already there, so the patch is going into -next
-> but we may want another one, provided we find a way to shut the idiot up
-> without horrible hacks since that's just gcc being stupid I believe).
+Chris Pringle wrote:
+> The kernel version is 2.6.26. Firmware is custom on a custom board.
+>> Cache coherency on PCI DMA requires that the memory be mapped with the M
+>> attribute on this chip, but that should be happening based on 
+>> detection of
+>> the core.
+>>   
+> I'm not sure where to look to verify this?
 
-I'll have the final fix out to you today.
+Check asm/cputable.h for CPU_FTR_NEED_COHERENT.  Make sure that 
+CONFIG_8260 is one of the #ifdefs that turns that on.  It looks like 
+that was in place by 2.6.26 in arch/powerpc.  I'm not sure what to look 
+for in arch/ppc.
 
-g.
+>> Also make sure that you park the bus on PCI and raise its arbitration
+>> priority, as done at the end of fixup_pci in 
+>> arch/powerpc/boot/cuboot-pq2.c.
+>>   
+> Since this is a reasonably recent kernel,
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Not really, there was a fair amount of 82xx work in the mid-2.6.20s. 
+The addition of CPU_FTR_NEED_COHERENT to 82xx was somewhere in that time.
+
+Can you try 2.6.30?
+
+> I'd guess that both of these 
+> things are correct. I've had a quick look in that file and there is code 
+> in there raising arbitartion priority and parking the bus.
+
+Just because the code is there doesn't mean you're using it -- are you 
+using cuImage?  Are you using arch/ppc or arch/powerpc?
+
+Typically this would be done by firmware; it's only in cuboot because 
+u-boot wasn't doing it.
+
+>> BTW, you may want to post to linuxppc-dev@lists.ozlabs.org for
+>> powerpc-specific issues, especially this kind of hardware issue.
+>>
+>>   
+> I've just posted there :-)
+
+Doh, sorry. :-)
+
+> Interestingly, I've just turned off cache snooping and the problem has 
+> got much worse. This has surprised me as I thought that part of the job 
+> done by pci_map_sg was to flush the CPU cache
+
+It only flushes the cache on hardware that doesn't do coherent DMA.
+
+-Scott
