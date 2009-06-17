@@ -1,35 +1,43 @@
-Return-Path: <mingo@elte.hu>
+Return-Path: <mohan@in.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0697AB7270
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4799DB7246
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 23:29:03 +1000 (EST)
-Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	Wed, 17 Jun 2009 23:34:42 +1000 (EST)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 86E68DDDA2
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 23:29:02 +1000 (EST)
-Received: from mx3.mail.elte.hu ([157.181.1.138])
-	by fallback.mail.elte.hu with esmtp (Exim) id 1MGvCB-0000ze-DN
-	from <mingo@elte.hu>
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 15:28:55 +0200
-Date: Wed, 17 Jun 2009 15:28:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 6/6] perf_counter: tools: Makefile tweaks for 64-bit
-	powerpc
-Message-ID: <20090617132839.GA15428@elte.hu>
-References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
-	<19000.55666.866148.559620@cargo.ozlabs.ibm.com>
-	<20090617120831.GB26454@elte.hu>
-	<19000.57673.618229.523229@cargo.ozlabs.ibm.com>
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 01E5FDDDA2
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 23:34:41 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp07.au.ibm.com (8.13.1/8.13.1) with ESMTP id n5HNYauR031337
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 09:34:36 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5HDYaOv1003596
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 23:34:36 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n5HDYZpj005468
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 23:34:36 +1000
+Date: Wed, 17 Jun 2009 19:04:35 +0530
+From: "M. Mohan Kumar" <mohan@in.ibm.com>
+To: Neil Horman <nhorman@redhat.com>
+Subject: Re: [PATCH] Do not inline putprops function
+Message-ID: <20090617133435.GB4059@in.ibm.com>
+References: <20090617113456.GC31595@in.ibm.com>
+	<20090617114551.GA5672@verge.net.au>
+	<20090617115917.GD31595@in.ibm.com>
+	<1245241595.4269.15.camel@concordia>
+	<20090617130413.GB2774@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19000.57673.618229.523229@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <20090617130413.GB2774@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Simon Horman <horms@verge.net.au>,
+	kexec@lists.infradead.org, miltonm@bga.com
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,46 +47,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> Ingo Molnar writes:
-> 
-> > ah, it does this:
+On Wed, Jun 17, 2009 at 09:04:13AM -0400, Neil Horman wrote:
+> On Wed, Jun 17, 2009 at 10:26:35PM +1000, Michael Ellerman wrote:
 > > 
-> > /*
-> >  * This is here because we used to use l64 for 64bit powerpc
-> >  * and we don't want to impact user mode with our change to ll64
-> >  * in the kernel.
-> >  */
-> > #if defined(__powerpc64__) && !defined(__KERNEL__)
-> > # include <asm-generic/int-l64.h>
-> > #else
-> > # include <asm-generic/int-ll64.h>
-> > #endif
+> > What compiler version are you using? Does the behaviour change if you
+> > use a newer/older compiler? It sounds to me like there's some deeper bug
+> > and your patch is just papering over it.
 > > 
-> > That's crappy really.
-> 
-> We were concerned that changing the userland-visible type of __u64 
-> from unsigned long to unsigned long long, etc., would be breaking 
-> the ABI, even if only in a small way - I thought it could possibly 
-> change C++ mangled function names, for instance, and it would 
-> cause fresh compile warnings on existing user code that prints 
-> __u64 with %lx, which has always been the correct thing to do on 
-> ppc64.
-> 
-> A counter-argument would be, I guess, that __u64 et al. are purely 
-> for use in describing the kernel/user interface, so we have a 
-> little more latitude than with the type of e.g. u_int64_t.  I 
-> dunno.  I don't recall getting much of an answer from the glibc 
-> guys about what they thought of the idea of changing it.
-> 
-> Anyway, of the 64-bit architectures, alpha, ia64, and mips64 also 
-> have __u64 as unsigned long in userspace, so this issue will still 
-> crop up even if we change it on powerpc.
 
-Having crap elsewhere is no reason to spread it further really. We 
-need consistent types. Can we define __KERNEL__ perhaps to get to 
-the real types?
+I tried with gcc 4.3.2. Let me try with a recent version and update.
 
-	Ingo
+> Agreed, this doesn't make any sense. Try changing the compiler version to see if
+> the problem goes away or stops.  It might also be worthwhile to dump the
+> contents of the device tree at the start and end of the kexec process.  If the
+> changing of how a function is inlined is causing a hang, its likely changing how
+> the putprops function is writing information to the device tree.  Understanding
+> what that change is will likely provide clues to how the code has changed.
+
+Neil, there was no code change in fs2dt.c
+
+Regards,
+M. Mohan Kumar
