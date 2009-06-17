@@ -1,29 +1,26 @@
-Return-Path: <penberg@gmail.com>
+Return-Path: <axboe@kernel.dk>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6D48AB71C2
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7671FB7196
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 14:16:31 +1000 (EST)
-Received: from mail-bw0-f219.google.com (mail-bw0-f219.google.com
-	[209.85.218.219]) by ozlabs.org (Postfix) with ESMTP id 96A4EDDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 14:16:30 +1000 (EST)
-Received: by bwz19 with SMTP id 19so53213bwz.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 21:16:28 -0700 (PDT)
-MIME-Version: 1.0
-Sender: penberg@gmail.com
-In-Reply-To: <1245210519.21602.16.camel@pasglop>
-References: <1245210519.21602.16.camel@pasglop>
-Date: Wed, 17 Jun 2009 07:16:28 +0300
-Message-ID: <84144f020906162116v2d6f449fgc19aac69f19dd34f@mail.gmail.com>
-Subject: Re: mm: Move pgtable_cache_init() earlier
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+	Wed, 17 Jun 2009 14:36:16 +1000 (EST)
+Received: from kernel.dk (brick.kernel.dk [93.163.65.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EBAC8DDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 14:36:15 +1000 (EST)
+Date: Wed, 17 Jun 2009 06:36:09 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-mm <linux-mm@kvack.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>, Chris Zankel <chris@zankel.net>
+Subject: Re: Warning in block code
+Message-ID: <20090617043609.GT11363@kernel.dk>
+References: <1245202783.21602.5.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1245202783.21602.5.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,17 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On Wed, Jun 17 2009, Benjamin Herrenschmidt wrote:
+> Hoy !
+> 
+> I see that:
+> 
+> block/blk-settings.c: In function ???blk_set_default_limits???:
+> block/blk-settings.c:115: warning: large integer implicitly truncated to unsigned type
+> 
+> Comes from
+> 
+> 	lim->bounce_pfn = BLK_BOUNCE_ANY;
+> 
+> With BLK_BOUNCE_ANY being a
+> 
+> include/linux/blkdev.h:#define BLK_BOUNCE_ANY		(-1ULL)
+> 
+> And struct queue_limit.bounce_pfn is:
+> 
+> 	unsigned long		bounce_pfn;
+> 
+> (The warning is fishy as both quantities are unsigned, but there -is-
+> truncation happening here).
 
-On Wed, Jun 17, 2009 at 6:48 AM, Benjamin
-Herrenschmidt<benh@kernel.crashing.org> wrote:
-> Some architectures need to initialize SLAB caches to be able
-> to allocate page tables. They do that from pgtable_cache_init()
-> so the later should be called earlier now, best is before
-> vmalloc_init().
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Should be safe to just make it -1UL now.
 
-Looks good to me!
-
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+-- 
+Jens Axboe
