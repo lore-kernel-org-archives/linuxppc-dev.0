@@ -1,35 +1,28 @@
-Return-Path: <sachinp@in.ibm.com>
+Return-Path: <leon.woestenberg@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 85CE5B7167
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 378F6B71B5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 20:51:50 +1000 (EST)
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [59.145.155.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 93D14DDD1C
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 20:51:48 +1000 (EST)
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
-	by e28smtp04.in.ibm.com (8.13.1/8.13.1) with ESMTP id n5HApYea027877
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 16:21:34 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n5HApO8l2117668
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 16:21:24 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id n5HApNKp014592
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 16:21:23 +0530
-Message-ID: <4A38CAAC.4090606@in.ibm.com>
-Date: Wed, 17 Jun 2009 16:21:24 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+	Wed, 17 Jun 2009 21:07:27 +1000 (EST)
+Received: from mail-gx0-f210.google.com (mail-gx0-f210.google.com
+	[209.85.217.210]) by ozlabs.org (Postfix) with ESMTP id 84898DDD1C
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 21:07:25 +1000 (EST)
+Received: by gxk6 with SMTP id 6so324586gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 04:07:23 -0700 (PDT)
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [BUG] lib/kernel_lock.c:126 with cgroups regression ltp tests
-Content-Type: multipart/mixed; boundary="------------080808090809040803080509"
-Cc: linuxppc-dev@ozlabs.org, menage@google.com,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+In-Reply-To: <c384c5ea0906170309j6fdf28f5qc38129e82649ef28@mail.gmail.com>
+References: <c384c5ea0906160852l4845760cp8594463a866683dc@mail.gmail.com>
+	<4A38AADD.3070801@aimvalley.nl>
+	<c384c5ea0906170309j6fdf28f5qc38129e82649ef28@mail.gmail.com>
+Date: Wed, 17 Jun 2009 13:07:23 +0200
+Message-ID: <c384c5ea0906170407w5dfb891n2d4e4c41bf06b66d@mail.gmail.com>
+Subject: Re: MPC83xx watchdog reset board dead lock
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,117 +32,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------080808090809040803080509
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hello,
 
-While executing cgroups regression tests from LTP May 2009
-release on a Power6 box came across the following bug.
-This is with 2.6.30-git10 (300df7dc89cc276377fc020704e34875d5c473b6)
+On Wed, Jun 17, 2009 at 12:09 PM, Leon
+Woestenberg<leon.woestenberg@gmail.com> wrote:
+> Quoting David Hawkins, who gave a very clear explanation:
+> <...>
+> If you have the Flash BUSY# signal, then this scheme works
+> great, since using HRESET# low and BUSY# low to create a
+> PORESET# source is only active until the Flash RESET#
+> is asserted long enough for it to get out of the BUSY#
+> state and back into read-array mode.
+>
 
-------------[ cut here ]------------
-kernel BUG at lib/kernel_lock.c:126!
-Oops: Exception in kernel mode, sig: 5 [#1]
-SMP NR_CPUS=1024 NUMA pSeries
-Modules linked in: ipv6 fuse loop dm_mod sr_mod ehea cdrom sg ibmveth sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
-NIP: c0000000005c6dac LR: c0000000001965ac CTR: 0000000000000006
-REGS: c00000002a5d3910 TRAP: 0700   Not tainted  (2.6.30-git10)
-MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 82042442  XER: 00000000
-TASK = c0000000407cbc20[9581] 'mount' THREAD: c00000002a5d0000 CPU: 3
-<6>GPR00: 0000000000000001 c00000002a5d3b90 c000000000ef31f0 fffffffffffffff0 
-<6>GPR04: c0000000000f0098 c000000000799813 0000000000000000 0000000000000001 
-<6>GPR08: c000000000e36aa0 c0000000407cbc20 0000000000000002 c0000000407cbc20 
-<6>GPR12: 0000000024042424 c000000000ff2a00 00000fffed50f6fd 00000fffed506e08 
-<6>GPR16: 00000fffed506db8 000000001002b638 0000000000000000 0000000000000000 
-<6>GPR20: 00000000100329a0 00000fffed506e0c c00000003e14b870 0000000000000000 
-<6>GPR24: 0000000000000000 c00000002a030000 0000000000000000 0000000000000000 
-<6>GPR28: c00000003e14b800 fffffffffffffff0 c000000000e7aa40 c00000002a5d3b90 
-NIP [c0000000005c6dac] .unlock_kernel+0x20/0x78
-LR [c0000000001965ac] .do_remount_sb+0x190/0x204
-Call Trace:
-[c00000002a5d3bd0] [c00000000019659c] .do_remount_sb+0x180/0x204
-[c00000002a5d3c70] [c0000000001b8210] .do_mount+0x38c/0x9fc
-[c00000002a5d3d60] [c0000000001b8940] .SyS_mount+0xc0/0x12c
-[c00000002a5d3e30] [c000000000008534] syscall_exit+0x0/0x40
-Instruction dump:
-383f0040 ebc1fff0 ebe1fff8 4e800020 fbc1fff0 fbe1fff8 f821ffc1 7c3f0b78 
-ebc2c0b8 e92d01b0 e809001e 78000fe0 <0b000000> e96d01b0 812b001c 3929ffff 
----[ end trace 3bf0012ad33d52b2 ]---
+I just found out from a Spansion datasheet that the RY/BUSY# of a
+typical Flash NOR is enabled by CE#, and tri-state otherwise.
+CE# in turn is driven by the LCS# from the PowerPC.
 
-Corresponding c code is :
+So basically, the first configuration access cycle while the NOR is in
+write mode, will pull CE# low, which results in RY/BUSY#
+being driven.
 
-void __lockfunc unlock_kernel(void)
-{
-        BUG_ON(current->lock_depth < 0);  <<======
-        if (likely(--current->lock_depth < 0))
-                __unlock_kernel();
+I have measured this pulse is ~1.9 us. So the reset circuitry needs a
+maximum minimum pulse duration of 1.9 us.
 
-Have attached the cgroups regression test run log.
+Our reset controller (DS1818) fulfills this requirement, with a T,PB of 1 us.
 
-Thanks
--Sachin
+A reset controller will extend the reset pulse. This is needed because:
 
+for Flash NOR: I have seen a mininum of 35 us reset pulse.
+(for the PowerPC: PORESET# should be asserted externally for at least
+32 input clock cycles)
+
+
+Regards,
 -- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
-
---------------080808090809040803080509
-Content-Type: text/x-log;
- name="controller-run.log"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="controller-run.log"
-
-cgroup_regression_test    1  PASS  :  no kernel bug was found
-/ltp-full-20090531/testcases/bin/cgroup_regression_test.sh: line 102:  7036 Terminated              ./fork_processes
-cgroup_regression_test    2  PASS  :  notify_on_release is inherited
-cgroup_regression_test    3  PASS  :  no kernel bug was found
-cgroup_regression_test    4  CONF  :  CONFIG_LOCKDEP is not enabled
-cgroup_regression_test    5  PASS  :  no kernel bug was found
-/ltp-full-20090531/testcases/bin/cgroup_regression_test.sh: line 253:  8781 Terminated              sleep 100
-/ltp-full-20090531/testcases/bin/cgroup_regression_test.sh: line 325:  8800 Terminated              ./test_6_2
-cgroup_regression_test    6  PASS  :  no kernel bug was found
-------------[ cut here ]------------
-Oops: Exception in kernel mode, sig: 5 [#1]
-SMP NR_CPUS=1024 NUMA pSeries
-Modules linked in: ipv6 fuse loop dm_mod sr_mod ehea cdrom sg ibmveth sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
-NIP: c0000000005c6dac LR: c0000000001965ac CTR: 0000000000000006
-REGS: c00000002a5d3910 TRAP: 0700   Not tainted  (2.6.30-git10)
-MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 82042442  XER: 00000000
-TASK = c0000000407cbc20[9581] 'mount' THREAD: c00000002a5d0000 CPU: 3
-<6>GPR00: 0000000000000001 c00000002a5d3b90 c000000000ef31f0 fffffffffffffff0 
-<6>GPR04: c0000000000f0098 c000000000799813 0000000000000000 0000000000000001 
-<6>GPR08: c000000000e36aa0 c0000000407cbc20 0000000000000002 c0000000407cbc20 
-<6>GPR12: 0000000024042424 c000000000ff2a00 00000fffed50f6fd 00000fffed506e08 
-<6>GPR16: 00000fffed506db8 000000001002b638 0000000000000000 0000000000000000 
-<6>GPR20: 00000000100329a0 00000fffed506e0c c00000003e14b870 0000000000000000 
-<6>GPR24: 0000000000000000 c00000002a030000 0000000000000000 0000000000000000 
-<6>GPR28: c00000003e14b800 fffffffffffffff0 c000000000e7aa40 c00000002a5d3b90 
-NIP [c0000000005c6dac] .unlock_kernel+0x20/0x78
-LR [c0000000001965ac] .do_remount_sb+0x190/0x204
-Call Trace:
-[c00000002a5d3bd0] [c00000000019659c] .do_remount_sb+0x180/0x204
-[c00000002a5d3c70] [c0000000001b8210] .do_mount+0x38c/0x9fc
-[c00000002a5d3d60] [c0000000001b8940] .SyS_mount+0xc0/0x12c
-[c00000002a5d3e30] [c000000000008534] syscall_exit+0x0/0x40
-Instruction dump:
-383f0040 ebc1fff0 ebe1fff8 4e800020 fbc1fff0 fbe1fff8 f821ffc1 7c3f0b78 
-ebc2c0b8 e92d01b0 e809001e 78000fe0 <0b000000> e96d01b0 812b001c 3929ffff 
----[ end trace 3bf0012ad33d52b2 ]---
-/ltp-full-20090531/testcases/bin/cgroup_regression_test.sh: line 347:  9581 Trace/breakpoint trap   mount -t cgroup -o remount xxx cgroup/ 2> /dev/null
-/ltp-full-20090531/testcases/bin/cgroup_regression_test.sh: line 363:  9579 Terminated              sleep 100 < cgroup/0
-Cannot create link /etc/mtab~
-Perhaps there is a stale lock file?
-
-Cannot create link /etc/mtab~
-Perhaps there is a stale lock file?
-
-
---------------080808090809040803080509--
+Leon
