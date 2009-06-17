@@ -1,33 +1,31 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <paulus@bilbo.ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id ED0B0B7225
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A6462B722B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 22:26:36 +1000 (EST)
+	Wed, 17 Jun 2009 22:28:19 +1000 (EST)
 Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DF815DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 22:26:36 +1000 (EST)
-Subject: Re: [PATCH] Do not inline putprops function
-From: Michael Ellerman <michael@ellerman.id.au>
-To: mohan@in.ibm.com
-In-Reply-To: <20090617115917.GD31595@in.ibm.com>
-References: <20090617113456.GC31595@in.ibm.com>
-	<20090617114551.GA5672@verge.net.au>
-	<20090617115917.GD31595@in.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-5Rg9Pwn15+VvVi8FWhQm"
-Date: Wed, 17 Jun 2009 22:26:35 +1000
-Message-Id: <1245241595.4269.15.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Simon Horman <horms@verge.net.au>,
-	kexec@lists.infradead.org, miltonm@bga.com
-Reply-To: michael@ellerman.id.au
+	by ozlabs.org (Postfix) with ESMTPS id 9364FDDDA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 22:28:19 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <19000.57673.618229.523229@cargo.ozlabs.ibm.com>
+Date: Wed, 17 Jun 2009 22:27:53 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 6/6] perf_counter: tools: Makefile tweaks for 64-bit
+	powerpc
+In-Reply-To: <20090617120831.GB26454@elte.hu>
+References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+	<19000.55666.866148.559620@cargo.ozlabs.ibm.com>
+	<20090617120831.GB26454@elte.hu>
+Cc: linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,56 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Ingo Molnar writes:
 
---=-5Rg9Pwn15+VvVi8FWhQm
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> ah, it does this:
+> 
+> /*
+>  * This is here because we used to use l64 for 64bit powerpc
+>  * and we don't want to impact user mode with our change to ll64
+>  * in the kernel.
+>  */
+> #if defined(__powerpc64__) && !defined(__KERNEL__)
+> # include <asm-generic/int-l64.h>
+> #else
+> # include <asm-generic/int-ll64.h>
+> #endif
+> 
+> That's crappy really.
 
-On Wed, 2009-06-17 at 17:29 +0530, M. Mohan Kumar wrote:
-> Do not inline putprops function
->=20
-> With the recent kexec-tools git tree, both kexec and kdump kernels hang (=
-i.e
-> kexec -l and kexec -p respectively). This happened after the patch "ppc64=
-:
-> cleanups" commit b43a84a31a4be6ed025c1bdef3bb1c3c12e01b16. I tried
-> reverting each hunk and then found out that retaining following lines in
-> fs2dt.c makes kexec/kdump work.
->=20
-> -static unsigned *dt_len; /* changed len of modified cmdline
-> -                           in flat device-tree */
->=20
-> [....]
->=20
-> -               dt_len =3D dt;
->=20
-> I don't have any clue why removing a unused variable would cause the kexe=
-c
-> kernel to hang. After further investigation, I observed that if the putpr=
-ops
-> function is not inlined, kexec/kdump kernel would work even after removin=
-g
-> the above lines.
->=20
-> This patch directs gcc to not inline the putprops function. Now we could
-> invoke kexec and kdump kernels.
+We were concerned that changing the userland-visible type of __u64
+from unsigned long to unsigned long long, etc., would be breaking the
+ABI, even if only in a small way - I thought it could possibly change
+C++ mangled function names, for instance, and it would cause fresh
+compile warnings on existing user code that prints __u64 with %lx,
+which has always been the correct thing to do on ppc64.
 
-What compiler version are you using? Does the behaviour change if you
-use a newer/older compiler? It sounds to me like there's some deeper bug
-and your patch is just papering over it.
+A counter-argument would be, I guess, that __u64 et al. are purely for
+use in describing the kernel/user interface, so we have a little more
+latitude than with the type of e.g. u_int64_t.  I dunno.  I don't
+recall getting much of an answer from the glibc guys about what they
+thought of the idea of changing it.
 
-cheers
+Anyway, of the 64-bit architectures, alpha, ia64, and mips64 also have
+__u64 as unsigned long in userspace, so this issue will still crop up
+even if we change it on powerpc.
 
---=-5Rg9Pwn15+VvVi8FWhQm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAko44PsACgkQdSjSd0sB4dJ5MQCfaDXTPJjZgiB0XajA00U+rBt1
-ctAAoKL4oFogfSyYVilZ6ubJziQ9rhtN
-=gJIX
------END PGP SIGNATURE-----
-
---=-5Rg9Pwn15+VvVi8FWhQm--
+Paul.
