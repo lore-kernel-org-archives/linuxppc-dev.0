@@ -1,27 +1,34 @@
-Return-Path: <dan.j.williams@intel.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id ECC19B71E8
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5B3BEB7173
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 03:27:54 +1000 (EST)
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-	by ozlabs.org (Postfix) with ESMTP id 4E728DDDA2
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 03:27:51 +1000 (EST)
-Message-ID: <4A392542.6010306@intel.com>
-Date: Wed, 17 Jun 2009 10:17:54 -0700
-From: Dan Williams <dan.j.williams@intel.com>
+	Thu, 18 Jun 2009 03:30:19 +1000 (EST)
 MIME-Version: 1.0
-To: Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [RFC PATCH] fsldma: Add DMA_SLAVE support
-References: <20090515225659.GD858@ovro.caltech.edu>
-	<4A37EC14.5010005@intel.com>
-	<20090616201256.GG15955@ovro.caltech.edu>
-In-Reply-To: <20090616201256.GG15955@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Li Yang <leoli@freescale.com>
+In-Reply-To: <20090617233452.03ac78d5.sfr@canb.auug.org.au>
+References: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com>
+	<1245048719.5239.10.camel@subratamodak.linux.ibm.com>
+	<1245243097.4870.3.camel@subratamodak.linux.ibm.com>
+	<6E26D0A1-0FE5-4179-9DA8-FDF0E3D417DA@kernel.crashing.org>
+	<20090617232341.c4543ff2.sfr@canb.auug.org.au>
+	<20090617233452.03ac78d5.sfr@canb.auug.org.au>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 17 Jun 2009 11:29:54 -0600
+Message-ID: <fa686aa40906171029p4d5b876fm16d0f144b1a19346@mail.gmail.com>
+Subject: Re: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64
+	randconfig [drivers/net/ucc_geth.o]
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+	Linux-Kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Linux-Next <linux-next@vger.kernel.org>, Nathan Lynch <ntl@pobox.com>,
+	Haiying Wang <Haiying.Wang@freescale.com>,
+	Li Yang <leoli@freescale.com>, subrata@linux.vnet.ibm.com,
+	"David S. Miller" <davem@davemloft.net>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,87 +38,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ira Snyder wrote:
->> Using EXPORT_SYMBOL would defeat the purpose of conforming to the
->> dmaengine api which should allow other subsystems to generically
->> discover an fsldma resource.
+On Wed, Jun 17, 2009 at 7:34 AM, Stephen Rothwell<sfr@canb.auug.org.au> wro=
+te:
+> On Wed, 17 Jun 2009 23:23:41 +1000 Stephen Rothwell <sfr@canb.auug.org.au=
+> wrote:
 >>
-> 
-> Any driver would still use dma_request_channel(), etc. to get access to
-> a DMA channel. AFAICT, DMA_SLAVE is intended for doing something
-> completely hardware-specific with the DMA controller.
+>> Hi Kumar,
+>>
+>> On Wed, 17 Jun 2009 08:07:47 -0500 Kumar Gala <galak@kernel.crashing.org=
+> wrote:
+>> >
+>> >
+>> > I'm confused by the proposed fix as we already have *mdio & *ph
+>> > defined in this function:
+>>
+>> Which tree are you looking at? =A0Linus' tree, and linux-next, do not ha=
+ve
+>> those local variables ...
+>
+> Hmmm, commit 0b9da337dca972e7a4144e298ec3adb8f244d4a4 ("net: Rework
+> ucc_geth driver to use of_mdio infrastructure") removed the locals along
+> with their usages, then commit 047584ce94108012288554a5f84585d792cc7f8f
+> ("net/ucc_geth: Add SGMII support for UEC GETH driver") added more uses
+> without adding the variables back.
+>
+> Here is the patch again:
+>
+> From: Subrata Modak <subrata@linux.vnet.ibm.com>
+> Subject: [PATCH] Fix build error in ucc_geth.c
+>
+> Fix the following build error:
+>
+> drivers/net/ucc_geth.c: In function bucc_geth_probeb:
+> drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in this fu=
+nction)
+> drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is report=
+ed only once
+> drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
+> drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in this =
+function)
+> make[2]: *** [drivers/net/ucc_geth.o] Error 1
+>
+> Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+>
+> --- linux-2.6.30-rc8/drivers/net/ucc_geth.c.orig =A0 =A0 =A0 =A02009-06-1=
+0 11:58:39.000000000 -0500
+> +++ linux-2.6.30-rc8/drivers/net/ucc_geth.c =A0 =A0 2009-06-10 22:28:13.0=
+00000000 -0500
+> @@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_g
+>
+> =A0static int ucc_geth_probe(struct of_device* ofdev, const struct of_dev=
+ice_id *match)
+> =A0{
+> + =A0 =A0 =A0 struct device_node *mdio;
+> + =A0 =A0 =A0 const phandle *ph;
+> =A0 =A0 =A0 =A0struct device *device =3D &ofdev->dev;
+> =A0 =A0 =A0 =A0struct device_node *np =3D ofdev->node;
+> =A0 =A0 =A0 =A0struct net_device *dev =3D NULL;
 
-Yes.  Specifically DMA_SLAVE operations imply a pre-established context 
-with a 3rd device (the other 2 devices being system memory and the dma 
-channel), as compared to plain memcpy.  The assumption is that a dma 
-device with this capability may not be shared with other requesters 
-until the context is torn down.
+Ah, this might not be the right fix then.  I'll look.
 
-[..]
-> What I've implemented is this: (sorry about the poor drawing)
-> 
-> scatterlist           fsl_dma_hw_addr
-> +--------+            +-------+
-> |  DATA  | -------->  | DEST1 |
-> |  DATA  | ----+      +-------+
-> |  DATA  |     |
-> |  DATA  |     |      +-------+
-> |  DATA  |     +--->  | DEST2 |
-> |  DATA  |            +-------+
-> +--------+
->                           .
->                           .
->                           .
-> 
-> Of course, the reverse works as well. You can copy from a list of
-> hardware address/length pairs to a scatterlist.
-> 
-> So, using my implementation of the DMA_SLAVE feature, you can take a big
-> chunk of data (which is organized into a scatterlist) and DMA it
-> directly to a set of hardware addresses, all in a single, unbroken
-> transaction.
+g.
 
-Could the same effect be achieved by calling ->prep_slave_sg multiple 
-times?  Once you need to add dma-driver specific helper routines you are 
-effectively extending the dmaengine interface in an fsldma specific 
-fashion.  Can we reduce this to just the existing primitives?  If it 
-turns out that this is untenable can we extend dmaengine to make this a 
-generic capability?  My preference is the former.
-
-> I've inlined the driver for the FPGA programmer below. I don't think it
-> is appropriate to push into mainline, since it will only work for our
-> board, and nothing else.
-
-If we find that we need to extend the dmaengine interface we will need 
-an in-tree user.  In my opinion, as long as it passes the Voyager test 
-[1] then I do not see why it should be barred from upstream.
-
-[..]
-> He also used platform data to get the register addresses. I'm unaware of
-> a way to put arbitrary platform data into the OF tree used on PowerPC.
-> 
-
-Anybody else on ppc-dev know if this is possible??
-
-> I didn't want to force other users to implement the allocation routines
-> for the struct fsl_dma_hw_addr themselves, so I provided routines to do
-> so.
-
-It depends on how many users of this feature there ends up being, 
-pushing this into each driver that needs it would not be too horrible 
-especially if it just the three straightforward routines 
-(fsl_dma_slave_append, fsl_dma_slave_free, and fsl_dma_slave_alloc).
-
-So, the three options in order of preference are:
-1/ arrange to call ->prep multiple times to handle each dma address
-2/ push the functionality down into the individual drivers that need it
-3/ up level the functionality into dmaengine to make it generically 
-available
-
-Thanks,
-Dan
-
-[1]: The Voyager test refers to James Bottomley's maintenance of the 
-Voyager x86-sub-architecture.  If at least one person cares about a 
-feature, is willing to maintain the code, and it does not impose a 
-maintenance burden on other parts of the tree then it can go upstream.
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
