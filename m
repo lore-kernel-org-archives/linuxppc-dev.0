@@ -1,28 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B40D6B7267
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E773DB72A4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 23:55:51 +1000 (EST)
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A5922DDDA0
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 23:55:51 +1000 (EST)
-Date: Wed, 17 Jun 2009 23:55:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: linux-next: kvm/powerpc tree build failure
-Message-Id: <20090617235546.95aa39a5.sfr@canb.auug.org.au>
-In-Reply-To: <4A38F47F.509@redhat.com>
-References: <20090617150419.e406a69a.sfr@canb.auug.org.au>
-	<4A38F47F.509@redhat.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__17_Jun_2009_23_55_46_+1000_GyhvIH0i2ThtTBbK"
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+	Wed, 17 Jun 2009 23:58:06 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 46528DDDA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 23:58:05 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH] net/ucc_geth: Fix compile errors
+Date: Wed, 17 Jun 2009 08:57:56 -0500
+Message-Id: <1245247076-30426-1-git-send-email-galak@kernel.crashing.org>
+Cc: netdev@vger.kernel.org, Subrata Modak <subrata@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,36 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__17_Jun_2009_23_55_46_+1000_GyhvIH0i2ThtTBbK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
 
-Hi Avi,
+drivers/net/ucc_geth.c: In function 'ucc_geth_probe':
+drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in this function)
+drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is reported only once
+drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
+drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in this function)
 
-On Wed, 17 Jun 2009 16:49:51 +0300 Avi Kivity <avi@redhat.com> wrote:
->
-> Thanks, applied.  For some reason my own build testing didn't fail on thi=
-s.
+Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/net/ucc_geth.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Thanks.  It could be a different compiler version doesn't complain (I am
-currently using 4.4.0) and the powerpc tree has a patch to build parts of
-arch/powerpc with -Werror which makes it stand out a bit :-)
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__17_Jun_2009_23_55_46_+1000_GyhvIH0i2ThtTBbK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAko49eIACgkQjjKRsyhoI8wnagCbBoNlSUAGVX48030lymGSm9Pe
-fEAAnjef5ljG6Khkc4qz5+fYk4+kfWld
-=ettf
------END PGP SIGNATURE-----
-
---Signature=_Wed__17_Jun_2009_23_55_46_+1000_GyhvIH0i2ThtTBbK--
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index e2f2e91..31da996 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_geth_netdev_ops = {
+ 
+ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *match)
+ {
++	struct device_node *mdio;
++	const phandle *ph;
+ 	struct device *device = &ofdev->dev;
+ 	struct device_node *np = ofdev->node;
+ 	struct net_device *dev = NULL;
+-- 
+1.6.0.6
