@@ -1,36 +1,27 @@
-Return-Path: <mohan@in.ibm.com>
+Return-Path: <paulus@bilbo.ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id F3760B71D3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 39FB7B71F3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 21:34:53 +1000 (EST)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+	Wed, 17 Jun 2009 21:56:23 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CE20CDDD1C
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 21:34:53 +1000 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id n5HBY029020053
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 21:34:00 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n5HBYpQ7831492
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 21:34:51 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n5HBYpIx026672
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 21:34:51 +1000
-Date: Wed, 17 Jun 2009 17:04:56 +0530
-From: "M. Mohan Kumar" <mohan@in.ibm.com>
-To: kexec@lists.infradead.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] Do not inline putprops function
-Message-ID: <20090617113456.GC31595@in.ibm.com>
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 17CEFDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 21:56:23 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: horms@verge.net.au, miltonm@bga.com
-Reply-To: mohan@in.ibm.com
+Message-ID: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+Date: Wed, 17 Jun 2009 21:50:04 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, benh@kernel.crashing.org
+Subject: [PATCH 1/6] perf_counter: powerpc: Enable use of software
+	counters on 32-bit powerpc
+Cc: linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,44 +31,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Do not inline putprops function
+This enables the perf_counter subsystem on 32-bit powerpc.  Since we
+don't have any support for hardware counters on 32-bit powerpc yet,
+only software counters can be used.
 
-With the recent kexec-tools git tree, both kexec and kdump kernels hang (i.e
-kexec -l and kexec -p respectively). This happened after the patch "ppc64:
-cleanups" commit b43a84a31a4be6ed025c1bdef3bb1c3c12e01b16. I tried
-reverting each hunk and then found out that retaining following lines in
-fs2dt.c makes kexec/kdump work.
+Besides selecting HAVE_PERF_COUNTERS for 32-bit powerpc as well as
+64-bit, the main thing this does is add an implementation of
+set_perf_counter_pending().  This needs to arrange for
+perf_counter_do_pending() to be called when interrupts are enabled.
+Rather than add code to local_irq_restore as 64-bit does, the 32-bit
+set_perf_counter_pending() generates an interrupt by setting the
+decrementer to 1 so that a decrementer interrupt will become pending
+in 1 or 2 timebase ticks (if a decrementer interrupt isn't already
+pending).  When interrupts are enabled, timer_interrupt() will be
+called, and some new code in there calls perf_counter_do_pending().
+We use a per-cpu array of flags to indicate whether we need to call
+perf_counter_do_pending() or not.
 
--static unsigned *dt_len; /* changed len of modified cmdline
--                           in flat device-tree */
+This introduces a couple of new Kconfig symbols: PPC_HAVE_PMU_SUPPORT,
+which is selected by processor families for which we have hardware PMU
+support (currently only PPC64), and PPC_PERF_CTRS, which enables the
+powerpc-specific perf_counter back-end.
 
-[....]
-
--               dt_len = dt;
-
-I don't have any clue why removing a unused variable would cause the kexec
-kernel to hang. After further investigation, I observed that if the putprops
-function is not inlined, kexec/kdump kernel would work even after removing
-the above lines.
-
-This patch directs gcc to not inline the putprops function. Now we could
-invoke kexec and kdump kernels.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- kexec/arch/ppc64/fs2dt.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+This depends on the generic atomic64_t patches, which are now in
+Linus' tree.  Ingo, if you're putting these in, please pull Linus'
+tree in first.
 
-diff --git a/kexec/arch/ppc64/fs2dt.c b/kexec/arch/ppc64/fs2dt.c
-index 1f551fd..1e01f74 100644
---- a/kexec/arch/ppc64/fs2dt.c
-+++ b/kexec/arch/ppc64/fs2dt.c
-@@ -259,7 +259,7 @@ static void add_usable_mem_property(int fd, int len)
- }
+ arch/powerpc/Kconfig                    |    1 +
+ arch/powerpc/include/asm/hw_irq.h       |    5 ++++-
+ arch/powerpc/include/asm/perf_counter.h |   10 ++++++++--
+ arch/powerpc/kernel/Makefile            |    6 +++---
+ arch/powerpc/kernel/time.c              |   25 +++++++++++++++++++++++++
+ arch/powerpc/platforms/Kconfig.cputype  |   11 ++++++++++-
+ 6 files changed, 51 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9fb344d..bf6cedf 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -126,6 +126,7 @@ config PPC
+ 	select HAVE_OPROFILE
+ 	select HAVE_SYSCALL_WRAPPERS if PPC64
+ 	select GENERIC_ATOMIC64 if PPC32
++	select HAVE_PERF_COUNTERS
  
- /* put all properties (files) in the property structure */
--static void putprops(char *fn, struct dirent **nlist, int numlist)
-+__attribute__ ((noinline)) static void putprops(char *fn, struct dirent **nlist, int numlist)
+ config EARLY_PRINTK
+ 	bool
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 10a642d..867ab8e 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -131,6 +131,8 @@ static inline int irqs_disabled_flags(unsigned long flags)
+ struct irq_chip;
+ 
+ #ifdef CONFIG_PERF_COUNTERS
++
++#ifdef CONFIG_PPC64
+ static inline unsigned long test_perf_counter_pending(void)
  {
- 	struct dirent *dp;
- 	int i = 0, fd, len;
+ 	unsigned long x;
+@@ -154,8 +156,9 @@ static inline void clear_perf_counter_pending(void)
+ 		"r" (0),
+ 		"i" (offsetof(struct paca_struct, perf_counter_pending)));
+ }
++#endif /* CONFIG_PPC64 */
+ 
+-#else
++#else  /* CONFIG_PERF_COUNTERS */
+ 
+ static inline unsigned long test_perf_counter_pending(void)
+ {
+diff --git a/arch/powerpc/include/asm/perf_counter.h b/arch/powerpc/include/asm/perf_counter.h
+index b398a84..2c2d9f6 100644
+--- a/arch/powerpc/include/asm/perf_counter.h
++++ b/arch/powerpc/include/asm/perf_counter.h
+@@ -57,11 +57,17 @@ extern struct power_pmu *ppmu;
+ 
+ struct pt_regs;
+ extern unsigned long perf_misc_flags(struct pt_regs *regs);
+-#define perf_misc_flags(regs)	perf_misc_flags(regs)
+-
+ extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+ 
+ /*
++ * Only override the default definitions in include/linux/perf_counter.h
++ * if we have hardware PMU support.
++ */
++#ifdef CONFIG_PPC_PERF_CTRS
++#define perf_misc_flags(regs)	perf_misc_flags(regs)
++#endif
++
++/*
+  * The power_pmu.get_constraint function returns a 64-bit value and
+  * a 64-bit mask that express the constraints between this event and
+  * other events.
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 612b0c4..c5f93f0 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -95,9 +95,9 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+ 
+ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
+-obj-$(CONFIG_PERF_COUNTERS)	+= perf_counter.o power4-pmu.o ppc970-pmu.o \
+-				   power5-pmu.o power5+-pmu.o power6-pmu.o \
+-				   power7-pmu.o
++obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_counter.o
++obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
++				   power5+-pmu.o power6-pmu.o power7-pmu.o
+ 
+ obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
+ 
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 15391c2..eae4511 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -53,6 +53,7 @@
+ #include <linux/posix-timers.h>
+ #include <linux/irq.h>
+ #include <linux/delay.h>
++#include <linux/perf_counter.h>
+ 
+ #include <asm/io.h>
+ #include <asm/processor.h>
+@@ -525,6 +526,26 @@ void __init iSeries_time_init_early(void)
+ }
+ #endif /* CONFIG_PPC_ISERIES */
+ 
++#if defined(CONFIG_PERF_COUNTERS) && defined(CONFIG_PPC32)
++DEFINE_PER_CPU(u8, perf_counter_pending);
++
++void set_perf_counter_pending(void)
++{
++	get_cpu_var(perf_counter_pending) = 1;
++	set_dec(1);
++	put_cpu_var(perf_counter_pending);
++}
++
++#define test_perf_counter_pending()	__get_cpu_var(perf_counter_pending)
++#define clear_perf_counter_pending()	__get_cpu_var(perf_counter_pending) = 0
++
++#else  /* CONFIG_PERF_COUNTERS && CONFIG_PPC32 */
++
++#define test_perf_counter_pending()	0
++#define clear_perf_counter_pending()
++
++#endif /* CONFIG_PERF_COUNTERS && CONFIG_PPC32 */
++
+ /*
+  * For iSeries shared processors, we have to let the hypervisor
+  * set the hardware decrementer.  We set a virtual decrementer
+@@ -551,6 +572,10 @@ void timer_interrupt(struct pt_regs * regs)
+ 	set_dec(DECREMENTER_MAX);
+ 
+ #ifdef CONFIG_PPC32
++	if (test_perf_counter_pending()) {
++		clear_perf_counter_pending();
++		perf_counter_do_pending();
++	}
+ 	if (atomic_read(&ppc_n_lost_interrupts) != 0)
+ 		do_IRQ(regs);
+ #endif
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index cca6b4f..dd9f3ec 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -1,7 +1,7 @@
+ config PPC64
+ 	bool "64-bit kernel"
+ 	default n
+-	select HAVE_PERF_COUNTERS
++	select PPC_HAVE_PMU_SUPPORT
+ 	help
+ 	  This option selects whether a 32-bit or a 64-bit kernel
+ 	  will be built.
+@@ -243,6 +243,15 @@ config VIRT_CPU_ACCOUNTING
+ 
+ 	  If in doubt, say Y here.
+ 
++config PPC_HAVE_PMU_SUPPORT
++       bool
++
++config PPC_PERF_CTRS
++       def_bool y
++       depends on PERF_COUNTERS && PPC_HAVE_PMU_SUPPORT
++       help
++         This enables the powerpc-specific perf_counter back-end.
++
+ config SMP
+ 	depends on PPC_STD_MMU || FSL_BOOKE
+ 	bool "Symmetric multi-processing support"
 -- 
-1.6.0.6
+1.6.0.4
