@@ -1,30 +1,28 @@
-Return-Path: <nhorman@redhat.com>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8CCB4B719A
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 27EFAB7180
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 00:06:03 +1000 (EST)
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 28542DDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 00:05:59 +1000 (EST)
-Date: Wed, 17 Jun 2009 10:05:14 -0400
-From: Neil Horman <nhorman@redhat.com>
-To: "M. Mohan Kumar" <mohan@in.ibm.com>
-Subject: Re: [PATCH] Do not inline putprops function
-Message-ID: <20090617140514.GB31383@hmsreliant.think-freely.org>
-References: <20090617113456.GC31595@in.ibm.com>
-	<20090617114551.GA5672@verge.net.au>
-	<20090617115917.GD31595@in.ibm.com>
-	<1245241595.4269.15.camel@concordia>
-	<20090617130413.GB2774@localhost.localdomain>
-	<20090617133435.GB4059@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090617133435.GB4059@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Simon Horman <horms@verge.net.au>,
-	kexec@lists.infradead.org, miltonm@bga.com
+	Thu, 18 Jun 2009 00:11:11 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6E622DDDA0
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 00:11:10 +1000 (EST)
+Message-Id: <A731338A-E954-46D9-8BF7-6E74C797209C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH 1/6] perf_counter: powerpc: Enable use of software
+	counters on 32-bit powerpc
+Date: Wed, 17 Jun 2009 09:10:49 -0500
+References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,35 +32,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 17, 2009 at 07:04:35PM +0530, M. Mohan Kumar wrote:
-> On Wed, Jun 17, 2009 at 09:04:13AM -0400, Neil Horman wrote:
-> > On Wed, Jun 17, 2009 at 10:26:35PM +1000, Michael Ellerman wrote:
-> > > 
-> > > What compiler version are you using? Does the behaviour change if you
-> > > use a newer/older compiler? It sounds to me like there's some deeper bug
-> > > and your patch is just papering over it.
-> > > 
-> 
-> I tried with gcc 4.3.2. Let me try with a recent version and update.
-> 
-> > Agreed, this doesn't make any sense. Try changing the compiler version to see if
-> > the problem goes away or stops.  It might also be worthwhile to dump the
-> > contents of the device tree at the start and end of the kexec process.  If the
-> > changing of how a function is inlined is causing a hang, its likely changing how
-> > the putprops function is writing information to the device tree.  Understanding
-> > what that change is will likely provide clues to how the code has changed.
-> 
-> Neil, there was no code change in fs2dt.c
-> 
-Sure there was, by modifying the code to tell it to not inline the putprops
-function, you changed how the complier optimizes that code block.  There may not
-be any source level code change, but the assembly is certainly different, and it
-must be so in a way thats causing a hang.  The putpops function changes the
-contents of the ppc64 device-tree, so if this is a compiler bug, and its causing
-a hang, I imagine we'll see some manifestation in a change in the device tree
-contents.
 
-Neil
+On Jun 17, 2009, at 6:50 AM, Paul Mackerras wrote:
 
-> Regards,
-> M. Mohan Kumar
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/ 
+> platforms/Kconfig.cputype
+> index cca6b4f..dd9f3ec 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -1,7 +1,7 @@
+> config PPC64
+> 	bool "64-bit kernel"
+> 	default n
+> -	select HAVE_PERF_COUNTERS
+> +	select PPC_HAVE_PMU_SUPPORT
+> 	help
+> 	  This option selects whether a 32-bit or a 64-bit kernel
+> 	  will be built.
+> @@ -243,6 +243,15 @@ config VIRT_CPU_ACCOUNTING
+>
+> 	  If in doubt, say Y here.
+>
+> +config PPC_HAVE_PMU_SUPPORT
+> +       bool
+
+what does this mean?
+
+> +
+> +config PPC_PERF_CTRS
+> +       def_bool y
+> +       depends on PERF_COUNTERS && PPC_HAVE_PMU_SUPPORT
+> +       help
+> +         This enables the powerpc-specific perf_counter back-end.
+
+Can we distinguish between the two different architected perf counters  
+programming models to start with.  Maybe something like:
+
+PPC_BOOK3S_PERF_CTRS and PPC_BOOK3E_PERF_CTRS (or  
+PPC_SERVER_PERF_CTRS / PPC_EMB_PERF_CTRS)
+
+
+>
+> +
+> config SMP
+> 	depends on PPC_STD_MMU || FSL_BOOKE
+> 	bool "Symmetric multi-processing support"
+> -- 
+> 1.6.0.4
+>
