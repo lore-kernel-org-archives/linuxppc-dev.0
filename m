@@ -1,29 +1,24 @@
-Return-Path: <mingo@elte.hu>
+Return-Path: <horms@verge.net.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 32D03B7148
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 422D5B7126
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 22:08:46 +1000 (EST)
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BC0F2DDDB2
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 22:08:45 +1000 (EST)
-Date: Wed, 17 Jun 2009 14:08:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 6/6] perf_counter: tools: Makefile tweaks for 64-bit
-	powerpc
-Message-ID: <20090617120831.GB26454@elte.hu>
-References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
-	<19000.55666.866148.559620@cargo.ozlabs.ibm.com>
+	Wed, 17 Jun 2009 22:10:29 +1000 (EST)
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id 308A1DDDA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 22:10:29 +1000 (EST)
+Date: Wed, 17 Jun 2009 21:45:52 +1000
+From: Simon Horman <horms@verge.net.au>
+To: "M. Mohan Kumar" <mohan@in.ibm.com>
+Subject: Re: [PATCH] Do not inline putprops function
+Message-ID: <20090617114551.GA5672@verge.net.au>
+References: <20090617113456.GC31595@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19000.55666.866148.559620@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <20090617113456.GC31595@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,46 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Jun 17, 2009 at 05:04:56PM +0530, M. Mohan Kumar wrote:
+> Do not inline putprops function
+> 
+> With the recent kexec-tools git tree, both kexec and kdump kernels hang (i.e
+> kexec -l and kexec -p respectively). This happened after the patch "ppc64:
+> cleanups" commit b43a84a31a4be6ed025c1bdef3bb1c3c12e01b16. I tried
+> reverting each hunk and then found out that retaining following lines in
+> fs2dt.c makes kexec/kdump work.
+> 
+> -static unsigned *dt_len; /* changed len of modified cmdline
+> -                           in flat device-tree */
+> 
+> [....]
+> 
+> -               dt_len = dt;
+> 
+> I don't have any clue why removing a unused variable would cause the kexec
+> kernel to hang. After further investigation, I observed that if the putprops
+> function is not inlined, kexec/kdump kernel would work even after removing
+> the above lines.
+> 
+> This patch directs gcc to not inline the putprops function. Now we could
+> invoke kexec and kdump kernels.
 
-* Paul Mackerras <paulus@samba.org> wrote:
+I'm happy to apply this if you provide a sign-off,
+but do you know why not inlining makes a difference here?
 
-> +++ b/tools/perf/Makefile
-> @@ -157,9 +157,21 @@ uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
->  uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
->  uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+> ---
+>  kexec/arch/ppc64/fs2dt.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kexec/arch/ppc64/fs2dt.c b/kexec/arch/ppc64/fs2dt.c
+> index 1f551fd..1e01f74 100644
+> --- a/kexec/arch/ppc64/fs2dt.c
+> +++ b/kexec/arch/ppc64/fs2dt.c
+> @@ -259,7 +259,7 @@ static void add_usable_mem_property(int fd, int len)
+>  }
 >  
-> +# If we're on a 64-bit kernel, use -m64
-> +ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
-> +  M64 := -m64
-> +endif
-
-this is fine.
-
-> +# Don't use -Werror on ppc64; we get warnings due to using
-> +# %Lx formats on __u64, which is unsigned long.
-> +Werror := -Werror
-> +ifeq ($(uname_M),ppc64)
-> +  Werror :=
-> +endif
-
-hm, i dont really like this one - it just adds a special case on an 
-arch. Why is __u64 unsigned long on powerpc and not unsigned long 
-long? I thought the whole mess with u64 was fixed there recently and 
-powerpc too now uses include/asm-generic/int-ll64.h ?
-
-ah, it does this:
-
-/*
- * This is here because we used to use l64 for 64bit powerpc
- * and we don't want to impact user mode with our change to ll64
- * in the kernel.
- */
-#if defined(__powerpc64__) && !defined(__KERNEL__)
-# include <asm-generic/int-l64.h>
-#else
-# include <asm-generic/int-ll64.h>
-#endif
-
-That's crappy really.
-
-	Ingo
+>  /* put all properties (files) in the property structure */
+> -static void putprops(char *fn, struct dirent **nlist, int numlist)
+> +__attribute__ ((noinline)) static void putprops(char *fn, struct dirent **nlist, int numlist)
+>  {
+>  	struct dirent *dp;
+>  	int i = 0, fd, len;
+> -- 
+> 1.6.0.6
