@@ -1,16 +1,23 @@
-Return-Path: <benh@ozlabs.org>
+Return-Path: <smaclennan@pikatech.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 89C94B718D
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B1C67B71CE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 11:55:57 +1000 (EST)
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 17 Jun 2009 11:55:19 +1000
-Subject: [PATCH 2/2] powerpc/440: Fix warning early debug code
-Message-Id: <20090617015557.7ADA7DDDA1@ozlabs.org>
+	Wed, 17 Jun 2009 12:04:50 +1000 (EST)
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 7C478DDD1C
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 12:04:46 +1000 (EST)
+Date: Tue, 16 Jun 2009 22:04:43 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: Update Warp defconfig
+Message-ID: <20090616220443.6b590baa@lappy.seanm.ca>
+In-Reply-To: <20090616112435.20f7b3d9@lappy.seanm.ca>
+References: <20090616112435.20f7b3d9@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,23 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function udbg_44x_as1_flush() has the wrong prototype causing
-a warning when enabling 440 early debug.
+On Tue, 16 Jun 2009 11:24:35 -0400
+Sean MacLennan <smaclennan@pikatech.com> wrote:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> I forgot to include the defconfig in the last set of patches. So you
+> don't get to use the shiny new LEDS driver on the warp unless you turn
+> it on.
+> 
+> Enabling hotplug is also very important since we have moved to udev on
+> the warp.
+> 
+> Like most defconfig patches, most of the changes are just the normal
+> kernel changes, not warp specific.
+> 
+> If it is too early, and we want to hold off until say rc4 with
+> defconfigs I have no problem with that. I have tried to outline all
+> the changes we specifically made. If anybody sees any bad choices with
+> options, let me know!
+> 
+> Cheers,
+>    Sean
+> 
+> * Enable GPIO LEDS
+> * Enable LED triggers
+> * Move to slub
+> * Enable hotplug
+> * Enable timestamps on printks
+> * Enable UBIFS
 
- arch/powerpc/kernel/udbg_16550.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Oops, missed an important option in the list:
 
---- linux-work.orig/arch/powerpc/kernel/udbg_16550.c	2009-06-17 11:52:05.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/udbg_16550.c	2009-06-17 11:52:08.000000000 +1000
-@@ -219,7 +219,7 @@ void udbg_init_pas_realmode(void)
- #ifdef CONFIG_PPC_EARLY_DEBUG_44x
- #include <platforms/44x/44x.h>
- 
--static int udbg_44x_as1_flush(void)
-+static void udbg_44x_as1_flush(void)
- {
- 	if (udbg_comport) {
- 		while ((as1_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
+* Enable in kernel config
+
+If you use Pika's development environment (PADS), you need this
+enabled. We use the config to enable certain features, mainly udev.
+Without this config, we will assume you have an old Pika kernel without
+new features.
+
+Cheers,
+   Sean
