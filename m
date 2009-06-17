@@ -1,26 +1,15 @@
-Return-Path: <blackluck@ktk.bme.hu>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05688B71B5
+Return-Path: <jal2@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by bilbo.ozlabs.org (Postfix) with SMTP id 05476B71DF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 19:42:08 +1000 (EST)
-Received: from ns02.broadband.hu (bpdcpr01.bpcl.broadband.hu [195.184.181.4])
-	by ozlabs.org (Postfix) with ESMTP id 0747FDDD1C
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 19:42:07 +1000 (EST)
-Message-ID: <4A38B883.80507@ktk.bme.hu>
-Date: Wed, 17 Jun 2009 11:33:55 +0200
-From: Laszlo Fekete <blackluck@ktk.bme.hu>
+	Wed, 17 Jun 2009 19:56:00 +1000 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Wed, 17 Jun 2009 11:49:17 +0200
+From: "Joerg Albert" <jal2@gmx.de>
+Message-ID: <20090617094917.308670@gmx.net>
 MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: sym scsi driver problem with 2.6.26 or newer debian kernel on
-	p610 (fwd)
-References: <Pine.LNX.4.64.0906141105050.4412@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.0906141105050.4412@axis700.grange>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
-Reply-To: blackluck@ktk.bme.hu
+Subject: 8xx: 2.4.25, fec.c, consistent_alloc and eth_copy_and_sum
+To: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,76 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello!
+Looking into arch/ppc/8xx_io/fec.c in the linuxppc_2_4_devel git tree I wonder if it is necessary to copy every received frame from memory allocated by consistent_alloc into a socket buffer? Couldn't we let the FEC
+DMA directly into the socket buffer to improve the performance?
 
-I'm sorry about the annoyances, but I'd welcome all ideas, suggestions 
-to see what needs to be done or should be tested for the solution.
+BTW, has someone tried to implement NAPI in this driver?
 
-Thank you very much!
-
-Guennadi Liakhovetski wrote:
-> Ok, first attempt to forward this to scsi was wrong, as pointed out by 
-> Matthew Wilcox this does indeed look like an interrupt problem - no 
-> interrupts drom SCSI, IDE, keyboar. Might be a known problem, I guess. In 
-> any case, I think, the OP would be grateful for any hints.
->
-> Thanks
-> Guennadi
-> ---
-> Guennadi Liakhovetski, Ph.D.
-> Freelance Open-Source Software Developer
-> http://www.open-technology.de/
->
-> ---------- Forwarded message ----------
-> Date: Sat, 13 Jun 2009 16:22:07 +0200
-> From: Laszlo Fekete <blackluck@ktk.bme.hu>
-> To: debian-powerpc@lists.debian.org
-> Subject: sym scsi driver problem with 2.6.26 or newer debian kernel on p610
-> Resent-Date: Sat, 13 Jun 2009 14:29:55 +0000 (UTC)
-> Resent-From: debian-powerpc@lists.debian.org
->
-> This is a multi-part message in MIME format.
-> ------------------------------------------------------------------------
->
-> Hello!
->
->
->
->
->
-> Pls help me with sym scsi driver problem.
->
->
->
-> I have Ibm P610 (and tested it on P630 and P640 too), installed debian
->
-> etch and upgraded to lenny.
->
->
->
-> But with 2.6.26 or newer kernel it's not booting, it's hang on sym scsi
->
-> bus scan.
->
->
->
->
->
-> Whats the problem with it, or how can I fix this?
->
->
->
->
->
-> I attach the output from minicom with 2.6.29, 2.6.26, and the working
->
-> 2.6.24 kernel booting.
->
->
->
->
->
-> Thank you very much!
->
->
->   
+Regards,
+Joerg
+-- 
+GMX FreeDSL Komplettanschluss mit DSL 6.000 Flatrate und Telefonanschluss
+für nur 17,95 Euro/mtl.!* http://portal.gmx.net/de/go/dsl02
