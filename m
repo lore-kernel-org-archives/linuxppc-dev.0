@@ -1,29 +1,44 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <alexs@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2F2F0B71B8
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 18E46B714B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 16:22:10 +1000 (EST)
-Received: from mail-yx0-f199.google.com (mail-yx0-f199.google.com
-	[209.85.210.199]) by ozlabs.org (Postfix) with ESMTP id 667BFDDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 16:22:08 +1000 (EST)
-Received: by yxe37 with SMTP id 37so88381yxe.17
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jun 2009 23:22:07 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <fa686aa40906162314p3e308bc4j2420a5f5570d5ae@mail.gmail.com>
-References: <fa686aa40906080737h64bad3cfv32155e5b819d650b@mail.gmail.com>
-	<1244751543-21977-1-git-send-email-wd@denx.de>
-	<fa686aa40906162314p3e308bc4j2420a5f5570d5ae@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 17 Jun 2009 00:21:47 -0600
-Message-ID: <fa686aa40906162321p43d7542bm6d3180991da63142@mail.gmail.com>
-Subject: Re: [PATCH] mpc5xxx_get_bus_frequency(): use common code on MPC512x
-	and MPC52xx
-To: Wolfgang Denk <wd@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+	Wed, 17 Jun 2009 16:42:03 +1000 (EST)
+Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [194.196.100.162])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 320FEDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 16:42:01 +1000 (EST)
+Received: from d06nrmr1707.portsmouth.uk.ibm.com
+	(d06nrmr1707.portsmouth.uk.ibm.com [9.149.39.225])
+	by mtagate2.uk.ibm.com (8.13.1/8.13.1) with ESMTP id n5H6fs2f016909
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 06:41:54 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1707.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.2) with
+	ESMTP id n5H6fstx1388680
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 07:41:54 +0100
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id n5H6frTv013389
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 07:41:54 +0100
+Date: Wed, 17 Jun 2009 08:41:51 +0200
+From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [ewg] Re: [PATCH 2.6.31] ehca: Tolerate dynamic memory
+	operations and huge pages
+Message-ID: <20090617084151.010562c5@BL3D1974.boeblingen.de.ibm.com>
+In-Reply-To: <adazlc8w45c.fsf@cisco.com>
+References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
+	<adar5xoybwt.fsf@cisco.com>
+	<20090616090809.34d162fc@BL3D1974.boeblingen.de.ibm.com>
+	<adazlc8w45c.fsf@cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+	raisch@de.ibm.com, linux-kernel@vger.kernel.org, ewg@lists.openfabrics.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,26 +48,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 17, 2009 at 12:14 AM, Grant Likely<grant.likely@secretlab.ca> w=
-rote:
-> On Thu, Jun 11, 2009 at 2:19 PM, Wolfgang Denk<wd@denx.de> wrote:
->> So far, MPC512x used mpc512x_find_ips_freq() to get the bus frequency,
->> while MPC52xx used mpc52xx_find_ipb_freq(). =A0Despite the different
->> clock names (IPS vs. IPB) the code was identical.
->>
->> Use common code for both processor families.
->>
->> Signed-off-by: Wolfgang Denk <wd@denx.de>
->> Cc: Grant Likely <grant.likely@secretlab.ca>
->> Cc: Kumar Gala <galak@kernel.crashing.org>
->
-> You probably already know this, but this patch doesn't apply against
-> mainline, so I won't merge for 2.6.31.
+On Tue, 16 Jun 2009 09:10:39 -0700
+Roland Dreier <rdreier@cisco.com> wrote:
 
-Never mind; I'm smoking something.  The patch applies fine.
+> 
+>  > Yeah, the notifier code remains untouched as we still do not allow dynamic
+>  > memory operations _while_ our module is loaded. The patch allows the driver to
+>  > cope with DMEM operations that happened before the module was loaded, which
+>  > might result in a non-contiguous memory layout. When the driver registers
+>  > its global memory region in the system, the memory layout must be considered.
+>  > 
+>  > We chose the term "toleration" instead of "support" to illustrate this.
+> 
+> I see.  So things just silently broke in some cases when the driver was
+> loaded after operations you didn't tolerate?
+> 
+> Anyway, thanks for the explanation.
 
-g.
+Well, things did not break silently. The registration of the MR failed with
+an error code which was reported to userspace.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Will you push the patch for .31 or .32?
+
+Thanks,
+Alex
