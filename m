@@ -3,23 +3,25 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 39FB7B71F3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5C1AEB71F5
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed, 17 Jun 2009 21:56:23 +1000 (EST)
 Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 17CEFDDD0B
+	by ozlabs.org (Postfix) with ESMTPS id 2D6B4DDDB6
 	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 21:56:23 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
-Date: Wed, 17 Jun 2009 21:50:04 +1000
+Message-ID: <19000.55590.634126.876084@cargo.ozlabs.ibm.com>
+Date: Wed, 17 Jun 2009 21:53:10 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Ingo Molnar <mingo@elte.hu>, benh@kernel.crashing.org
-Subject: [PATCH 1/6] perf_counter: powerpc: Enable use of software
-	counters on 32-bit powerpc
+Subject: [PATCH 4/6] perf_counter: powerpc: Make powerpc perf_counter code
+	safe for 32-bit kernels
+In-Reply-To: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,197 +33,350 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This enables the perf_counter subsystem on 32-bit powerpc.  Since we
-don't have any support for hardware counters on 32-bit powerpc yet,
-only software counters can be used.
+This abstracts a few things in arch/powerpc/kernel/perf_counter.c
+that are specific to 64-bit kernels, and provides definitions for
+32-bit kernels.  In particular,
 
-Besides selecting HAVE_PERF_COUNTERS for 32-bit powerpc as well as
-64-bit, the main thing this does is add an implementation of
-set_perf_counter_pending().  This needs to arrange for
-perf_counter_do_pending() to be called when interrupts are enabled.
-Rather than add code to local_irq_restore as 64-bit does, the 32-bit
-set_perf_counter_pending() generates an interrupt by setting the
-decrementer to 1 so that a decrementer interrupt will become pending
-in 1 or 2 timebase ticks (if a decrementer interrupt isn't already
-pending).  When interrupts are enabled, timer_interrupt() will be
-called, and some new code in there calls perf_counter_do_pending().
-We use a per-cpu array of flags to indicate whether we need to call
-perf_counter_do_pending() or not.
+* Only 64-bit has MMCRA and the bits in it that give information
+  about a PMU interrupt (sampled PR, HV, slot number etc.)
+* Only 64-bit has the lppaca and the lppaca->pmcregs_in_use field
+* Use of SDAR is confined to 64-bit for now
+* Only 64-bit has soft/lazy interrupt disable and therefore
+  pseudo-NMIs (interrupts that occur while interrupts are soft-disabled)
+* Only 64-bit has PMC7 and PMC8
+* Only 64-bit has the MSR_HV bit.
 
-This introduces a couple of new Kconfig symbols: PPC_HAVE_PMU_SUPPORT,
-which is selected by processor families for which we have hardware PMU
-support (currently only PPC64), and PPC_PERF_CTRS, which enables the
-powerpc-specific perf_counter back-end.
+This also fixes the types used in a couple of places, where we were
+using long types for things that need to be 64-bit.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
-This depends on the generic atomic64_t patches, which are now in
-Linus' tree.  Ingo, if you're putting these in, please pull Linus'
-tree in first.
+ arch/powerpc/kernel/perf_counter.c |  193 +++++++++++++++++++++++++-----------
+ 1 files changed, 133 insertions(+), 60 deletions(-)
 
- arch/powerpc/Kconfig                    |    1 +
- arch/powerpc/include/asm/hw_irq.h       |    5 ++++-
- arch/powerpc/include/asm/perf_counter.h |   10 ++++++++--
- arch/powerpc/kernel/Makefile            |    6 +++---
- arch/powerpc/kernel/time.c              |   25 +++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig.cputype  |   11 ++++++++++-
- 6 files changed, 51 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9fb344d..bf6cedf 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -126,6 +126,7 @@ config PPC
- 	select HAVE_OPROFILE
- 	select HAVE_SYSCALL_WRAPPERS if PPC64
- 	select GENERIC_ATOMIC64 if PPC32
-+	select HAVE_PERF_COUNTERS
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index 54e0489..809fdf9 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -46,6 +46,115 @@ struct power_pmu *ppmu;
+  */
+ static unsigned int freeze_counters_kernel = MMCR0_FCS;
  
- config EARLY_PRINTK
- 	bool
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 10a642d..867ab8e 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -131,6 +131,8 @@ static inline int irqs_disabled_flags(unsigned long flags)
- struct irq_chip;
- 
- #ifdef CONFIG_PERF_COUNTERS
-+
-+#ifdef CONFIG_PPC64
- static inline unsigned long test_perf_counter_pending(void)
- {
- 	unsigned long x;
-@@ -154,8 +156,9 @@ static inline void clear_perf_counter_pending(void)
- 		"r" (0),
- 		"i" (offsetof(struct paca_struct, perf_counter_pending)));
- }
-+#endif /* CONFIG_PPC64 */
- 
--#else
-+#else  /* CONFIG_PERF_COUNTERS */
- 
- static inline unsigned long test_perf_counter_pending(void)
- {
-diff --git a/arch/powerpc/include/asm/perf_counter.h b/arch/powerpc/include/asm/perf_counter.h
-index b398a84..2c2d9f6 100644
---- a/arch/powerpc/include/asm/perf_counter.h
-+++ b/arch/powerpc/include/asm/perf_counter.h
-@@ -57,11 +57,17 @@ extern struct power_pmu *ppmu;
- 
- struct pt_regs;
- extern unsigned long perf_misc_flags(struct pt_regs *regs);
--#define perf_misc_flags(regs)	perf_misc_flags(regs)
--
- extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
- 
- /*
-+ * Only override the default definitions in include/linux/perf_counter.h
-+ * if we have hardware PMU support.
-+ */
-+#ifdef CONFIG_PPC_PERF_CTRS
-+#define perf_misc_flags(regs)	perf_misc_flags(regs)
-+#endif
-+
 +/*
-  * The power_pmu.get_constraint function returns a 64-bit value and
-  * a 64-bit mask that express the constraints between this event and
-  * other events.
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 612b0c4..c5f93f0 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -95,9 +95,9 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
- 
- obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
- obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
--obj-$(CONFIG_PERF_COUNTERS)	+= perf_counter.o power4-pmu.o ppc970-pmu.o \
--				   power5-pmu.o power5+-pmu.o power6-pmu.o \
--				   power7-pmu.o
-+obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_counter.o
-+obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
-+				   power5+-pmu.o power6-pmu.o power7-pmu.o
- 
- obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
- 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 15391c2..eae4511 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -53,6 +53,7 @@
- #include <linux/posix-timers.h>
- #include <linux/irq.h>
- #include <linux/delay.h>
-+#include <linux/perf_counter.h>
- 
- #include <asm/io.h>
- #include <asm/processor.h>
-@@ -525,6 +526,26 @@ void __init iSeries_time_init_early(void)
- }
- #endif /* CONFIG_PPC_ISERIES */
- 
-+#if defined(CONFIG_PERF_COUNTERS) && defined(CONFIG_PPC32)
-+DEFINE_PER_CPU(u8, perf_counter_pending);
++ * 32-bit doesn't have MMCRA but does have an MMCR2,
++ * and a few other names are different.
++ */
++#ifdef CONFIG_PPC32
 +
-+void set_perf_counter_pending(void)
++#define MMCR0_FCHV		0
++#define MMCR0_PMCjCE		MMCR0_PMCnCE
++
++#define SPRN_MMCRA		SPRN_MMCR2
++#define MMCRA_SAMPLE_ENABLE	0
++
++static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
 +{
-+	get_cpu_var(perf_counter_pending) = 1;
-+	set_dec(1);
-+	put_cpu_var(perf_counter_pending);
++	return 0;
++}
++static inline void perf_set_pmu_inuse(int inuse) { }
++static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp) { }
++static inline u32 perf_get_misc_flags(struct pt_regs *regs)
++{
++	return 0;
++}
++static inline void perf_read_regs(struct pt_regs *regs) { }
++static inline int perf_intr_is_nmi(struct pt_regs *regs)
++{
++	return 0;
 +}
 +
-+#define test_perf_counter_pending()	__get_cpu_var(perf_counter_pending)
-+#define clear_perf_counter_pending()	__get_cpu_var(perf_counter_pending) = 0
++#endif /* CONFIG_PPC32 */
 +
-+#else  /* CONFIG_PERF_COUNTERS && CONFIG_PPC32 */
++/*
++ * Things that are specific to 64-bit implementations.
++ */
++#ifdef CONFIG_PPC64
 +
-+#define test_perf_counter_pending()	0
-+#define clear_perf_counter_pending()
++static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
++{
++	unsigned long mmcra = regs->dsisr;
 +
-+#endif /* CONFIG_PERF_COUNTERS && CONFIG_PPC32 */
-+
- /*
-  * For iSeries shared processors, we have to let the hypervisor
-  * set the hardware decrementer.  We set a virtual decrementer
-@@ -551,6 +572,10 @@ void timer_interrupt(struct pt_regs * regs)
- 	set_dec(DECREMENTER_MAX);
- 
- #ifdef CONFIG_PPC32
-+	if (test_perf_counter_pending()) {
-+		clear_perf_counter_pending();
-+		perf_counter_do_pending();
++	if ((mmcra & MMCRA_SAMPLE_ENABLE) && !(ppmu->flags & PPMU_ALT_SIPR)) {
++		unsigned long slot = (mmcra & MMCRA_SLOT) >> MMCRA_SLOT_SHIFT;
++		if (slot > 1)
++			return 4 * (slot - 1);
 +	}
- 	if (atomic_read(&ppc_n_lost_interrupts) != 0)
- 		do_IRQ(regs);
- #endif
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index cca6b4f..dd9f3ec 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -1,7 +1,7 @@
- config PPC64
- 	bool "64-bit kernel"
- 	default n
--	select HAVE_PERF_COUNTERS
-+	select PPC_HAVE_PMU_SUPPORT
- 	help
- 	  This option selects whether a 32-bit or a 64-bit kernel
- 	  will be built.
-@@ -243,6 +243,15 @@ config VIRT_CPU_ACCOUNTING
- 
- 	  If in doubt, say Y here.
- 
-+config PPC_HAVE_PMU_SUPPORT
-+       bool
++	return 0;
++}
 +
-+config PPC_PERF_CTRS
-+       def_bool y
-+       depends on PERF_COUNTERS && PPC_HAVE_PMU_SUPPORT
-+       help
-+         This enables the powerpc-specific perf_counter back-end.
++static inline void perf_set_pmu_inuse(int inuse)
++{
++	get_lppaca()->pmcregs_in_use = inuse;
++}
 +
- config SMP
- 	depends on PPC_STD_MMU || FSL_BOOKE
- 	bool "Symmetric multi-processing support"
++/*
++ * The user wants a data address recorded.
++ * If we're not doing instruction sampling, give them the SDAR
++ * (sampled data address).  If we are doing instruction sampling, then
++ * only give them the SDAR if it corresponds to the instruction
++ * pointed to by SIAR; this is indicated by the [POWER6_]MMCRA_SDSYNC
++ * bit in MMCRA.
++ */
++static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp)
++{
++	unsigned long mmcra = regs->dsisr;
++	unsigned long sdsync = (ppmu->flags & PPMU_ALT_SIPR) ?
++		POWER6_MMCRA_SDSYNC : MMCRA_SDSYNC;
++
++	if (!(mmcra & MMCRA_SAMPLE_ENABLE) || (mmcra & sdsync))
++		*addrp = mfspr(SPRN_SDAR);
++}
++
++static inline u32 perf_get_misc_flags(struct pt_regs *regs)
++{
++	unsigned long mmcra = regs->dsisr;
++
++	if (TRAP(regs) != 0xf00)
++		return 0;	/* not a PMU interrupt */
++
++	if (ppmu->flags & PPMU_ALT_SIPR) {
++		if (mmcra & POWER6_MMCRA_SIHV)
++			return PERF_EVENT_MISC_HYPERVISOR;
++		return (mmcra & POWER6_MMCRA_SIPR) ?
++			PERF_EVENT_MISC_USER : PERF_EVENT_MISC_KERNEL;
++	}
++	if (mmcra & MMCRA_SIHV)
++		return PERF_EVENT_MISC_HYPERVISOR;
++	return (mmcra & MMCRA_SIPR) ? PERF_EVENT_MISC_USER :
++		PERF_EVENT_MISC_KERNEL;
++}
++
++/*
++ * Overload regs->dsisr to store MMCRA so we only need to read it once
++ * on each interrupt.
++ */
++static inline void perf_read_regs(struct pt_regs *regs)
++{
++	regs->dsisr = mfspr(SPRN_MMCRA);
++}
++
++/*
++ * If interrupts were soft-disabled when a PMU interrupt occurs, treat
++ * it as an NMI.
++ */
++static inline int perf_intr_is_nmi(struct pt_regs *regs)
++{
++	return !regs->softe;
++}
++
++#endif /* CONFIG_PPC64 */
++
+ static void perf_counter_interrupt(struct pt_regs *regs);
+ 
+ void perf_counter_print_debug(void)
+@@ -78,12 +187,14 @@ static unsigned long read_pmc(int idx)
+ 	case 6:
+ 		val = mfspr(SPRN_PMC6);
+ 		break;
++#ifdef CONFIG_PPC64
+ 	case 7:
+ 		val = mfspr(SPRN_PMC7);
+ 		break;
+ 	case 8:
+ 		val = mfspr(SPRN_PMC8);
+ 		break;
++#endif /* CONFIG_PPC64 */
+ 	default:
+ 		printk(KERN_ERR "oops trying to read PMC%d\n", idx);
+ 		val = 0;
+@@ -115,12 +226,14 @@ static void write_pmc(int idx, unsigned long val)
+ 	case 6:
+ 		mtspr(SPRN_PMC6, val);
+ 		break;
++#ifdef CONFIG_PPC64
+ 	case 7:
+ 		mtspr(SPRN_PMC7, val);
+ 		break;
+ 	case 8:
+ 		mtspr(SPRN_PMC8, val);
+ 		break;
++#endif /* CONFIG_PPC64 */
+ 	default:
+ 		printk(KERN_ERR "oops trying to write PMC%d\n", idx);
+ 	}
+@@ -283,7 +396,7 @@ static int check_excludes(struct perf_counter **ctrs, unsigned int cflags[],
+ 
+ static void power_pmu_read(struct perf_counter *counter)
+ {
+-	long val, delta, prev;
++	s64 val, delta, prev;
+ 
+ 	if (!counter->hw.idx)
+ 		return;
+@@ -477,7 +590,7 @@ void hw_perf_enable(void)
+ 		mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
+ 		mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
+ 		if (cpuhw->n_counters == 0)
+-			get_lppaca()->pmcregs_in_use = 0;
++			perf_set_pmu_inuse(0);
+ 		goto out_enable;
+ 	}
+ 
+@@ -510,7 +623,7 @@ void hw_perf_enable(void)
+ 	 * bit set and set the hardware counters to their initial values.
+ 	 * Then unfreeze the counters.
+ 	 */
+-	get_lppaca()->pmcregs_in_use = 1;
++	perf_set_pmu_inuse(1);
+ 	mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
+ 	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
+ 	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
+@@ -1007,13 +1120,12 @@ const struct pmu *hw_perf_counter_init(struct perf_counter *counter)
+  * things if requested.  Note that interrupts are hard-disabled
+  * here so there is no possibility of being interrupted.
+  */
+-static void record_and_restart(struct perf_counter *counter, long val,
++static void record_and_restart(struct perf_counter *counter, unsigned long val,
+ 			       struct pt_regs *regs, int nmi)
+ {
+ 	u64 period = counter->hw.sample_period;
+ 	s64 prev, delta, left;
+ 	int record = 0;
+-	unsigned long mmcra, sdsync;
+ 
+ 	/* we don't have to worry about interrupts here */
+ 	prev = atomic64_read(&counter->hw.prev_count);
+@@ -1033,8 +1145,8 @@ static void record_and_restart(struct perf_counter *counter, long val,
+ 				left = period;
+ 			record = 1;
+ 		}
+-		if (left < 0x80000000L)
+-			val = 0x80000000L - left;
++		if (left < 0x80000000LL)
++			val = 0x80000000LL - left;
+ 	}
+ 
+ 	/*
+@@ -1047,22 +1159,9 @@ static void record_and_restart(struct perf_counter *counter, long val,
+ 			.period	= counter->hw.last_period,
+ 		};
+ 
+-		if (counter->attr.sample_type & PERF_SAMPLE_ADDR) {
+-			/*
+-			 * The user wants a data address recorded.
+-			 * If we're not doing instruction sampling,
+-			 * give them the SDAR (sampled data address).
+-			 * If we are doing instruction sampling, then only
+-			 * give them the SDAR if it corresponds to the
+-			 * instruction pointed to by SIAR; this is indicated
+-			 * by the [POWER6_]MMCRA_SDSYNC bit in MMCRA.
+-			 */
+-			mmcra = regs->dsisr;
+-			sdsync = (ppmu->flags & PPMU_ALT_SIPR) ?
+-				POWER6_MMCRA_SDSYNC : MMCRA_SDSYNC;
+-			if (!(mmcra & MMCRA_SAMPLE_ENABLE) || (mmcra & sdsync))
+-				data.addr = mfspr(SPRN_SDAR);
+-		}
++		if (counter->attr.sample_type & PERF_SAMPLE_ADDR)
++			perf_get_data_addr(regs, &data.addr);
++
+ 		if (perf_counter_overflow(counter, nmi, &data)) {
+ 			/*
+ 			 * Interrupts are coming too fast - throttle them
+@@ -1088,25 +1187,12 @@ static void record_and_restart(struct perf_counter *counter, long val,
+  */
+ unsigned long perf_misc_flags(struct pt_regs *regs)
+ {
+-	unsigned long mmcra;
++	u32 flags = perf_get_misc_flags(regs);
+ 
+-	if (TRAP(regs) != 0xf00) {
+-		/* not a PMU interrupt */
+-		return user_mode(regs) ? PERF_EVENT_MISC_USER :
+-			PERF_EVENT_MISC_KERNEL;
+-	}
+-
+-	mmcra = regs->dsisr;
+-	if (ppmu->flags & PPMU_ALT_SIPR) {
+-		if (mmcra & POWER6_MMCRA_SIHV)
+-			return PERF_EVENT_MISC_HYPERVISOR;
+-		return (mmcra & POWER6_MMCRA_SIPR) ? PERF_EVENT_MISC_USER :
+-			PERF_EVENT_MISC_KERNEL;
+-	}
+-	if (mmcra & MMCRA_SIHV)
+-		return PERF_EVENT_MISC_HYPERVISOR;
+-	return (mmcra & MMCRA_SIPR) ? PERF_EVENT_MISC_USER :
+-			PERF_EVENT_MISC_KERNEL;
++	if (flags)
++		return flags;
++	return user_mode(regs) ? PERF_EVENT_MISC_USER :
++		PERF_EVENT_MISC_KERNEL;
+ }
+ 
+ /*
+@@ -1115,20 +1201,12 @@ unsigned long perf_misc_flags(struct pt_regs *regs)
+  */
+ unsigned long perf_instruction_pointer(struct pt_regs *regs)
+ {
+-	unsigned long mmcra;
+ 	unsigned long ip;
+-	unsigned long slot;
+ 
+ 	if (TRAP(regs) != 0xf00)
+ 		return regs->nip;	/* not a PMU interrupt */
+ 
+-	ip = mfspr(SPRN_SIAR);
+-	mmcra = regs->dsisr;
+-	if ((mmcra & MMCRA_SAMPLE_ENABLE) && !(ppmu->flags & PPMU_ALT_SIPR)) {
+-		slot = (mmcra & MMCRA_SLOT) >> MMCRA_SLOT_SHIFT;
+-		if (slot > 1)
+-			ip += 4 * (slot - 1);
+-	}
++	ip = mfspr(SPRN_SIAR) + perf_ip_adjust(regs);
+ 	return ip;
+ }
+ 
+@@ -1140,7 +1218,7 @@ static void perf_counter_interrupt(struct pt_regs *regs)
+ 	int i;
+ 	struct cpu_hw_counters *cpuhw = &__get_cpu_var(cpu_hw_counters);
+ 	struct perf_counter *counter;
+-	long val;
++	unsigned long val;
+ 	int found = 0;
+ 	int nmi;
+ 
+@@ -1148,16 +1226,9 @@ static void perf_counter_interrupt(struct pt_regs *regs)
+ 		freeze_limited_counters(cpuhw, mfspr(SPRN_PMC5),
+ 					mfspr(SPRN_PMC6));
+ 
+-	/*
+-	 * Overload regs->dsisr to store MMCRA so we only need to read it once.
+-	 */
+-	regs->dsisr = mfspr(SPRN_MMCRA);
++	perf_read_regs(regs);
+ 
+-	/*
+-	 * If interrupts were soft-disabled when this PMU interrupt
+-	 * occurred, treat it as an NMI.
+-	 */
+-	nmi = !regs->softe;
++	nmi = perf_intr_is_nmi(regs);
+ 	if (nmi)
+ 		nmi_enter();
+ 	else
+@@ -1223,11 +1294,13 @@ int register_power_pmu(struct power_pmu *pmu)
+ 	pr_info("%s performance monitor hardware support registered\n",
+ 		pmu->name);
+ 
++#ifdef MSR_HV
+ 	/*
+ 	 * Use FCHV to ignore kernel events if MSR.HV is set.
+ 	 */
+ 	if (mfmsr() & MSR_HV)
+ 		freeze_counters_kernel = MMCR0_FCHV;
++#endif /* CONFIG_PPC64 */
+ 
+ 	return 0;
+ }
 -- 
 1.6.0.4
