@@ -1,28 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B128AB716F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 84029B71BB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 03:53:23 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 395D7DDDD4
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 03:53:21 +1000 (EST)
-Message-Id: <71FC3E27-40A6-4212-A4BE-428732D6A624@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-In-Reply-To: <c384c5ea0906170907u5a4af524m65e23b32446dd79f@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: 2.6.30-rc6: Problem with an SSD disk on Freescale PowerPC
-	mpc8315e-rdb, works fine on x86
-Date: Wed, 17 Jun 2009 12:53:15 -0500
-References: <c384c5ea0906080759n24a66d21ob9076518cec41755@mail.gmail.com>
-	<c384c5ea0906170907u5a4af524m65e23b32446dd79f@mail.gmail.com>
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>, linux-ide@vger.kernel.org
+	Thu, 18 Jun 2009 04:15:40 +1000 (EST)
+MIME-Version: 1.0
+In-Reply-To: <1245243186.4870.5.camel@subratamodak.linux.ibm.com>
+References: <20090605182651.24094.36577.sendpatchset@elm3a191.beaverton.ibm.com>
+	<200906091738.58154.david-b@pacbell.net>
+	<1244799348.5234.13.camel@subratamodak.linux.ibm.com>
+	<1245048679.5239.8.camel@subratamodak.linux.ibm.com>
+	<1245243186.4870.5.camel@subratamodak.linux.ibm.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 17 Jun 2009 12:15:16 -0600
+Message-ID: <fa686aa40906171115m3e3faab2r63814ea8013056d0@mail.gmail.com>
+Subject: Re: [BUILD FAILURE 02/04] Next June 04:PPC64 randconfig
+	[drivers/usb/host/ohci-hcd.o]
+To: subrata@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+	Randy Dunlap <randy.dunlap@oracle.com>, Arnd Bergmann <arnd@arndb.de>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-usb@vger.kernel.org,
+	Linux-Kernel <linux-kernel@vger.kernel.org>,
+	David Brownell <david-b@pacbell.net>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Linux-Next <linux-next@vger.kernel.org>, kernel@wantstofly.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,28 +36,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Jun 17, 2009, at 11:07 AM, Leon Woestenberg wrote:
-
-> Hello Kumar, all,
->
-> On Mon, Jun 8, 2009 at 4:59 PM, Leon
-> Woestenberg<leon.woestenberg@gmail.com> wrote:
->> using 2.6.30-rc6, I get the following problems when I read from a SSD
->> disk, connected to the
->> 3.0 Gb SATA controller of the MPC8315E SoC rev 1.0 running Linux  
->> 2.6.30-rc6.
+On Wed, Jun 17, 2009 at 6:53 AM, Subrata
+Modak<subrata@linux.vnet.ibm.com> wrote:
+> On Mon, 2009-06-15 at 12:21 +0530, Subrata Modak wrote:
+>> On Fri, 2009-06-12 at 15:05 +0530, Subrata Modak wrote:
+>> > On Tue, 2009-06-09 at 17:38 -0700, David Brownell wrote:
+>> > > On Friday 05 June 2009, Subrata Modak wrote:
+>> > > > Correct, it fixes the issue. However, since few changes might have=
+ gone
+>> > > > to the Kconfig, the patch does not apply cleanly. Below is the pat=
+ch, just
+>> > > > a retake of the earlier one, but on the latest code.
+>> > >
+>> > > And it got mangled a bit along the way. =A0Plus, the original one
+>> > > goofed up Kconfig dependency displays ... both issues fixed in
+>> > > this version, against current mainline GIT.
+>> > >
+>> > > If someone can verify all four PPC/OF/OHCI configs build on
+>> > > on PPC64, I'm OK with it.
+>> > >
+>> > > - Dave
+>> >
+>> > Dave,
+>> >
+>> > Sorry for being late. The patch fixes the issue on the latest git for
+>> > PPC64. Infact, the whole drivers/usb/host/ builds just fine:
+>> >
+>> > linux-2.6 # make drivers/usb/host/
+>> > =A0 CHK =A0 =A0 include/linux/version.h
+>> > =A0 CHK =A0 =A0 include/linux/utsrelease.h
+>> > =A0 SYMLINK include/asm -> include/asm-powerpc
+>> > =A0 CALL =A0 =A0scripts/checksyscalls.sh
+>> > =A0 CC =A0 =A0 =A0drivers/usb/host/ohci-hcd.o
+>> > =A0 CC =A0 =A0 =A0drivers/usb/host/pci-quirks.o
+>> > =A0 CC =A0 =A0 =A0drivers/usb/host/uhci-hcd.o
+>> > =A0 LD =A0 =A0 =A0drivers/usb/host/built-in.o
+>> > =A0 CC [M] =A0drivers/usb/host/isp116x-hcd.o
+>> > =A0 CC [M] =A0drivers/usb/host/u132-hcd.o
+>> >
+>> > You can check in the patch now.
 >>
-> Result on a first batch of bisects. I decided to go with the kernel
-> releases rather than git-bisect (still too scary for me).
+>> Dave,
+>>
+>> Have you checked in this patch ? Or, does it require some more
+>> modification/updates from somebody=B4s side ?
+>>
 >
-> All kernel releases 2.6.25 through -30 kernel gave the same error.
-> 2.6.25 crashed on it, whereas 2.6.26+ recovered after each "dd" run.
+> Dave,
 >
-> The BSP 2.6.24.3-rt3 kernel did not give the error.
->
-> So on my todo is diff between 2.6.25 and .2.6.24.3-rt3 from the BSP.
+> Would you consider checking in this patch ?
 
-Does kernel.org 2.6.24 work ok?
+Hold off please; give me a couple of hours to investigate.
 
-- k
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
