@@ -1,44 +1,25 @@
-Return-Path: <alexs@linux.vnet.ibm.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 18E46B714B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A539AB71B5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 16:42:03 +1000 (EST)
-Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [194.196.100.162])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 320FEDDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 16:42:01 +1000 (EST)
-Received: from d06nrmr1707.portsmouth.uk.ibm.com
-	(d06nrmr1707.portsmouth.uk.ibm.com [9.149.39.225])
-	by mtagate2.uk.ibm.com (8.13.1/8.13.1) with ESMTP id n5H6fs2f016909
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 06:41:54 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
-	[9.149.37.212])
-	by d06nrmr1707.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.2) with
-	ESMTP id n5H6fstx1388680
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 07:41:54 +0100
-Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id n5H6frTv013389
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 07:41:54 +0100
-Date: Wed, 17 Jun 2009 08:41:51 +0200
-From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [ewg] Re: [PATCH 2.6.31] ehca: Tolerate dynamic memory
-	operations and huge pages
-Message-ID: <20090617084151.010562c5@BL3D1974.boeblingen.de.ibm.com>
-In-Reply-To: <adazlc8w45c.fsf@cisco.com>
-References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
-	<adar5xoybwt.fsf@cisco.com>
-	<20090616090809.34d162fc@BL3D1974.boeblingen.de.ibm.com>
-	<adazlc8w45c.fsf@cisco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
-	raisch@de.ibm.com, linux-kernel@vger.kernel.org, ewg@lists.openfabrics.org
+	Wed, 17 Jun 2009 17:22:54 +1000 (EST)
+Received: from mail-yx0-f198.google.com (mail-yx0-f198.google.com
+	[209.85.210.198]) by ozlabs.org (Postfix) with ESMTP id 003ECDDD1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 17:22:53 +1000 (EST)
+Received: by yxe36 with SMTP id 36so104472yxe.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 00:22:51 -0700 (PDT)
+MIME-Version: 1.0
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 17 Jun 2009 01:22:31 -0600
+Message-ID: <fa686aa40906170022y703e31b3vfe6da5bfc633bf52@mail.gmail.com>
+Subject: Please pull mpc5xxx & virtex merge branch
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,27 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 16 Jun 2009 09:10:39 -0700
-Roland Dreier <rdreier@cisco.com> wrote:
+Hi Ben,
 
-> 
->  > Yeah, the notifier code remains untouched as we still do not allow dynamic
->  > memory operations _while_ our module is loaded. The patch allows the driver to
->  > cope with DMEM operations that happened before the module was loaded, which
->  > might result in a non-contiguous memory layout. When the driver registers
->  > its global memory region in the system, the memory layout must be considered.
->  > 
->  > We chose the term "toleration" instead of "support" to illustrate this.
-> 
-> I see.  So things just silently broke in some cases when the driver was
-> loaded after operations you didn't tolerate?
-> 
-> Anyway, thanks for the explanation.
+Here's the xilinxfb fix plus some outstanding 5xxx changes that I
+didn't get to the first time around.
 
-Well, things did not break silently. The registration of the MR failed with
-an error code which was reported to userspace.
+Cheers,
+g.
 
-Will you push the patch for .31 or .32?
+The following changes since commit 313485175da221c388f6a8ecf4c30062ba9bea17:
+  Geert Uytterhoeven (1):
+        usb/ps3: Add missing annotations
 
-Thanks,
-Alex
+are available in the git repository at:
+
+  git://git.secretlab.ca/git/linux-2.6 merge
+
+Anton Vorontsov (1):
+      powerpc/5200: convert mpc52xx_psc_spi to use cs_control callback
+
+Grant Likely (1):
+      fbdev/xilinxfb: Fix improper casting and tighen up probe path
+
+Wolfgang Denk (1):
+      powerpc/5xxx: Add common mpc5xxx_get_bus_frequency() function
+
+Wolfram Sang (2):
+      powerpc/5200: Update pcm030.dts to add i2c eeprom and delete cruft
+      powerpc/5121: make clock debug output more readable
+
+ arch/powerpc/boot/dts/pcm030.dts                  |   26 ++--------
+ arch/powerpc/include/asm/mpc52xx.h                |    2 +-
+ arch/powerpc/include/asm/{mpc512x.h => mpc5xxx.h} |   10 ++--
+ arch/powerpc/platforms/512x/clock.c               |   10 ++--
+ arch/powerpc/platforms/512x/mpc512x.h             |    1 -
+ arch/powerpc/platforms/512x/mpc512x_shared.c      |   23 --------
+ arch/powerpc/platforms/52xx/mpc52xx_common.c      |   32 +-----------
+ arch/powerpc/sysdev/Makefile                      |    3 +
+ arch/powerpc/sysdev/mpc5xxx_clocks.c              |   33 ++++++++++++
+ drivers/ata/pata_mpc52xx.c                        |    2 +-
+ drivers/i2c/busses/i2c-mpc.c                      |    2 +-
+ drivers/net/fec_mpc52xx.c                         |    2 +-
+ drivers/net/fec_mpc52xx_phy.c                     |    2 +-
+ drivers/serial/mpc52xx_uart.c                     |    5 +-
+ drivers/spi/mpc52xx_psc_spi.c                     |   22 +++-----
+ drivers/video/xilinxfb.c                          |   59 ++++++++-------------
+ drivers/watchdog/mpc5200_wdt.c                    |    2 +-
+ include/linux/fsl_devices.h                       |    4 --
+ 18 files changed, 91 insertions(+), 149 deletions(-)
+ rename arch/powerpc/include/asm/{mpc512x.h => mpc5xxx.h} (65%)
+ create mode 100644 arch/powerpc/sysdev/mpc5xxx_clocks.c
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
