@@ -1,26 +1,30 @@
-Return-Path: <avi@redhat.com>
+Return-Path: <nhorman@redhat.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C3297B7314
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8CCB4B719A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 00:04:26 +1000 (EST)
+	Thu, 18 Jun 2009 00:06:03 +1000 (EST)
 Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 3CE0DDDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 00:04:25 +1000 (EST)
-Message-ID: <4A38F7DC.3030206@redhat.com>
-Date: Wed, 17 Jun 2009 17:04:12 +0300
-From: Avi Kivity <avi@redhat.com>
+	by ozlabs.org (Postfix) with ESMTP id 28542DDDA0
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 00:05:59 +1000 (EST)
+Date: Wed, 17 Jun 2009 10:05:14 -0400
+From: Neil Horman <nhorman@redhat.com>
+To: "M. Mohan Kumar" <mohan@in.ibm.com>
+Subject: Re: [PATCH] Do not inline putprops function
+Message-ID: <20090617140514.GB31383@hmsreliant.think-freely.org>
+References: <20090617113456.GC31595@in.ibm.com>
+	<20090617114551.GA5672@verge.net.au>
+	<20090617115917.GD31595@in.ibm.com>
+	<1245241595.4269.15.camel@concordia>
+	<20090617130413.GB2774@localhost.localdomain>
+	<20090617133435.GB4059@in.ibm.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: kvm/powerpc tree build failure
-References: <20090617150419.e406a69a.sfr@canb.auug.org.au>	<4A38F47F.509@redhat.com>
-	<20090617235546.95aa39a5.sfr@canb.auug.org.au>
-In-Reply-To: <20090617235546.95aa39a5.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090617133435.GB4059@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Simon Horman <horms@verge.net.au>,
+	kexec@lists.infradead.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,20 +34,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2009 04:55 PM, Stephen Rothwell wrote:
-> Hi Avi,
->
-> On Wed, 17 Jun 2009 16:49:51 +0300 Avi Kivity<avi@redhat.com>  wrote:
->    
->> Thanks, applied.  For some reason my own build testing didn't fail on this.
->>      
->
-> Thanks.  It could be a different compiler version doesn't complain (I am
-> currently using 4.4.0) and the powerpc tree has a patch to build parts of
-> arch/powerpc with -Werror which makes it stand out a bit :-)
->    
+On Wed, Jun 17, 2009 at 07:04:35PM +0530, M. Mohan Kumar wrote:
+> On Wed, Jun 17, 2009 at 09:04:13AM -0400, Neil Horman wrote:
+> > On Wed, Jun 17, 2009 at 10:26:35PM +1000, Michael Ellerman wrote:
+> > > 
+> > > What compiler version are you using? Does the behaviour change if you
+> > > use a newer/older compiler? It sounds to me like there's some deeper bug
+> > > and your patch is just papering over it.
+> > > 
+> 
+> I tried with gcc 4.3.2. Let me try with a recent version and update.
+> 
+> > Agreed, this doesn't make any sense. Try changing the compiler version to see if
+> > the problem goes away or stops.  It might also be worthwhile to dump the
+> > contents of the device tree at the start and end of the kexec process.  If the
+> > changing of how a function is inlined is causing a hang, its likely changing how
+> > the putprops function is writing information to the device tree.  Understanding
+> > what that change is will likely provide clues to how the code has changed.
+> 
+> Neil, there was no code change in fs2dt.c
+> 
+Sure there was, by modifying the code to tell it to not inline the putprops
+function, you changed how the complier optimizes that code block.  There may not
+be any source level code change, but the assembly is certainly different, and it
+must be so in a way thats causing a hang.  The putpops function changes the
+contents of the ppc64 device-tree, so if this is a compiler bug, and its causing
+a hang, I imagine we'll see some manifestation in a change in the device tree
+contents.
 
-Ah yes, you did mention it was a warning.
+Neil
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+> Regards,
+> M. Mohan Kumar
