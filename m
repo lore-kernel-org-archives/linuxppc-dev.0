@@ -1,23 +1,29 @@
-Return-Path: <daniel.ng1234@gmail.com>
+Return-Path: <subrata@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1FB3AB7297
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 22299B727B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Jun 2009 22:39:15 +1000 (EST)
-Received: from mail-px0-f193.google.com (mail-px0-f193.google.com
-	[209.85.216.193]) by ozlabs.org (Postfix) with ESMTP id 94B17DDDD4
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 22:39:14 +1000 (EST)
-Received: by pxi31 with SMTP id 31so229624pxi.17
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 05:39:13 -0700 (PDT)
-MIME-Version: 1.0
-Date: Wed, 17 Jun 2009 22:39:13 +1000
-Message-ID: <547eba1b0906170539k46b65e08v4ba0fa0f8a4e37d7@mail.gmail.com>
-Subject: Trouble porting a USB gadget serial UDC driver from 2.6.14 to 2.6.27
-From: Daniel Ng <daniel.ng1234@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Jun 2009 22:51:52 +1000 (EST)
+Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64
+	randconfig [drivers/net/ucc_geth.o]
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>
+In-Reply-To: <1245048719.5239.10.camel@subratamodak.linux.ibm.com>
+References: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com>
+	<1245048719.5239.10.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain
+Date: Wed, 17 Jun 2009 18:21:37 +0530
+Message-Id: <1245243097.4870.3.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Linux-Kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Linux-Next <linux-next@vger.kernel.org>, Nathan Lynch <ntl@pobox.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +33,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, 2009-06-15 at 12:22 +0530, Subrata Modak wrote:
+> Hi Li/Nathan,
+> 
+> On Thu, 2009-06-11 at 09:07 +0530, Subrata Modak wrote: 
+> > Hi Nathan,
+> > 
+> > >On Wed, 2009-06-10 at 21:28 -0500, Nathan Lynch wrote:
+> > >Subrata Modak <subrata@linux.vnet.ibm.com> writes:
+> > > 
+> > > > On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
+> > > >> Hi Subrata,
+> > > >> 
+> > > >> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
+> > > >> >
+> > > >> >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+> > > >> > -	ph = of_get_property(np, "tbi-handle", NULL);
+> > > >> > +	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
+> > > >> 
+> > > >> You don't need this cast because of_get_property() returns "void *".
+> > > >
+> > > > Stephen,
+> > > >
+> > > > True. But without this gcc complains:
+> > > >
+> > > > CC [M]  drivers/net/ucc_geth.o
+> > > > drivers/net/ucc_geth.c: In function bucc_geth_probeb:
+> > > > drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers
+> > > > from pointer target type
+> > > 
+> > > ph should be declared const phandle *.  Look at other uses of
+> > > of_get_property.
+> > >
+> > 
+> > Ok fine. Here is a revised patch again.
+> > 
+> > Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig [drivers/net/ucc_geth.o]
+> > Reference(s):
+> > http://lkml.org/lkml/2009/6/4/241,
+> > http://lkml.org/lkml/2009/6/10/338,
+> > 
+> > Fix the following build error:
+> > 
+> > drivers/net/ucc_geth.c: In function bucc_geth_probeb:
+> > drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in this function)
+> > drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is reported only once
+> > drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
+> > drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in this function)
+> > make[2]: *** [drivers/net/ucc_geth.o] Error 1
+> > 
+> > Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+> > ---
+> 
+> Is there anything else to be done in this patch. If this is OK, can this
+> be applied. I am not sure, but, i find Li Yang as the maintainer for
+> this in linux*/MAINTAINERS file. Kindly let me know if this patch needs
+> to be revisited for some other issue(s).
 
-I'm having trouble porting our in-house UDC driver to 2.6.27. It
-originally worked on 2.6.14 as an CDC-ACM driver. The hardware
-platform is a mpc8272-based board.
+Li,
 
-I notice a lot of changes since 2.6.14. For starters, instead of the
-single serial.c file, there is now f_serial.c, u_serial.c and f_acm.c.
+Any thoughts on this patch ?
 
-Currently, the UDC driver in 2.6.27 seems to work if I simply plug the
-USB cable in between our gadget serial Linux device and a Windows PC.
-However, if I unplug, then replug the cable, the 'Out' Endpoint seems
-fine, but the 'In' Endpoint doesn't seem to come up properly.
+Regards--
+Subrata
 
-In other words, data only seems to be getting through in the direction
-from the PC to the gadget serial Linux device, but not vice versa.
-
-Is there some sort of architecture document to show how the
-f_serial.c, u_serial.c and f_acm.c files all fit together? I've
-searched in the Documentation directory and I've read the
-usb-gadget-serial docbook document but it doesn't really tell me this.
-
-Also, it seems that for some reason composite.c is being compiled and
-used, but my CDC-ACM gadget serial driver is *not* a composite driver.
-Is it possible to prevent linking with this composite driver?
-
-Cheers,
-Daniel
+> 
+> Regards--
+> Subrata
+> 
+> > 
+> > --- linux-2.6.30-rc8/drivers/net/ucc_geth.c.orig	2009-06-10 11:58:39.000000000 -0500
+> > +++ linux-2.6.30-rc8/drivers/net/ucc_geth.c	2009-06-10 22:28:13.000000000 -0500
+> > @@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_g
+> > 
+> >  static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *match)
+> >  {
+> > +	struct device_node *mdio;
+> > +	const phandle *ph;
+> >  	struct device *device = &ofdev->dev;
+> >  	struct device_node *np = ofdev->node;
+> >  	struct net_device *dev = NULL;
+> > 
+> > ---
+> > Regards--
+> > Subrata
+> > 
