@@ -3,16 +3,16 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C2722B7223
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7D616B726B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 14:13:51 +1000 (EST)
+	Thu, 18 Jun 2009 14:13:52 +1000 (EST)
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <57aa741dd20afd92712007325b649bc5c2315230.1245298429.git.michael@ellerman.id.au>
+Message-Id: <3145fd5df21245d79ef43268b72f712dbbfe2dbe.1245298429.git.michael@ellerman.id.au>
 In-Reply-To: <1fdc1f0bb73b6ff2db7f9b394331d5ef5dfc4cb5.1245298429.git.michael@ellerman.id.au>
 References: <1fdc1f0bb73b6ff2db7f9b394331d5ef5dfc4cb5.1245298429.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 3/7] powerpc: Cleanup & use pr_devel() in arch/powerpc/mm/slb.c
-Date: Thu, 18 Jun 2009 14:13:51 +1000 (EST)
+Subject: [PATCH 4/7] powerpc: Use pr_devel() in do_dcache_icache_coherency()
+Date: Thu, 18 Jun 2009 14:13:52 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,58 +29,35 @@ With CONFIG_DYNAMIC_DEBUG=y:
 
 size before:
    text    data     bss     dec     hex filename
-   3261     416       4    3681     e61 arch/powerpc/mm/slb.o
+   2036     368       8    2412     96c arch/powerpc/mm/pgtable.o
 
 size after:
    text    data     bss     dec     hex filename
-   2861     248       4    3113     c29 arch/powerpc/mm/slb.o
+   1677     248       8    1933     78d arch/powerpc/mm/pgtable.o
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/mm/slb.c |   13 +++----------
- 1 files changed, 3 insertions(+), 10 deletions(-)
+ arch/powerpc/mm/pgtable.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 3b52c80..5b7038f 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -14,8 +14,6 @@
-  *      2 of the License, or (at your option) any later version.
-  */
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index ae1d67c..627767d 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -129,12 +129,12 @@ static pte_t do_dcache_icache_coherency(pte_t pte)
+ 	page = pfn_to_page(pfn);
  
--#undef DEBUG
--
- #include <asm/pgtable.h>
- #include <asm/mmu.h>
- #include <asm/mmu_context.h>
-@@ -27,11 +25,6 @@
- #include <linux/compiler.h>
- #include <asm/udbg.h>
- 
--#ifdef DEBUG
--#define DBG(fmt...) printk(fmt)
--#else
--#define DBG pr_debug
--#endif
- 
- extern void slb_allocate_realmode(unsigned long ea);
- extern void slb_allocate_user(unsigned long ea);
-@@ -285,13 +278,13 @@ void slb_initialize(void)
- 		patch_slb_encoding(slb_compare_rr_to_size,
- 				   mmu_slb_size);
- 
--		DBG("SLB: linear  LLP = %04lx\n", linear_llp);
--		DBG("SLB: io      LLP = %04lx\n", io_llp);
-+		pr_devel("SLB: linear  LLP = %04lx\n", linear_llp);
-+		pr_devel("SLB: io      LLP = %04lx\n", io_llp);
- 
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
- 		patch_slb_encoding(slb_miss_kernel_load_vmemmap,
- 				   SLB_VSID_KERNEL | vmemmap_llp);
--		DBG("SLB: vmemmap LLP = %04lx\n", vmemmap_llp);
-+		pr_devel("SLB: vmemmap LLP = %04lx\n", vmemmap_llp);
- #endif
+ 	if (!PageReserved(page) && !test_bit(PG_arch_1, &page->flags)) {
+-		pr_debug("do_dcache_icache_coherency... flushing\n");
++		pr_devel("do_dcache_icache_coherency... flushing\n");
+ 		flush_dcache_icache_page(page);
+ 		set_bit(PG_arch_1, &page->flags);
  	}
+ 	else
+-		pr_debug("do_dcache_icache_coherency... already clean\n");
++		pr_devel("do_dcache_icache_coherency... already clean\n");
+ 	return __pte(pte_val(pte) | _PAGE_HWEXEC);
+ }
  
 -- 
 1.6.2.1
