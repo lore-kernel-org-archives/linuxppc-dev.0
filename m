@@ -3,14 +3,14 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CAA6AB721C
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1B07FB722A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 13:39:52 +1000 (EST)
+	Thu, 18 Jun 2009 13:44:39 +1000 (EST)
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 18 Jun 2009 13:39:13 +1000
-Subject: [PATCH] powerpc/mm: Make k(un)map_atomic out of line
-Message-Id: <20090618033952.B60D4DDDA2@ozlabs.org>
+Date: Thu, 18 Jun 2009 13:43:59 +1000
+Subject: [PATCH] powerpc: Add irqtrace support for 32-bit powerpc (v2)
+Message-Id: <20090618034439.0854ADDDB2@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,187 +20,359 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Those functions are way too big to be inline, besides, kmap_atomic()
-wants to call debug_kmap_atomic() which isn't exported for modules
-and causes module link failures.
+Based on initial work from: Dale Farnsworth <dale@farnsworth.org>
+
+Add the low level irq tracing hooks for 32-bit powerpc needed
+to enable full lockdep functionality.
+
+The approach taken to deal with the code in entry_32.S is that
+we don't trace all the transitions of MSR:EE when we just turn
+it off to peek at TI_FLAGS without races. Only when we are
+calling into C code or returning from exceptions with a state
+that have changed from what lockdep thinks.
+
+There's a little bugger though: If we take an exception that
+keeps interrupts enabled (such as an alignment exception) while
+interrupts are enabled, we will call trace_hardirqs_on() on the
+way back spurriously. Not a big deal, but to get rid of it would
+require remembering in pt_regs that the exception was one of the
+type that kept interrupts enabled which we don't know at this
+stage. (Well, we could test all cases for regs->trap but that
+sucks too much).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/include/asm/highmem.h |   55 +--------------------------
- arch/powerpc/mm/Makefile           |    1 
- arch/powerpc/mm/highmem.c          |   75 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 80 insertions(+), 51 deletions(-)
+This one fixes a bug, trace_hardirqs_on was too late in the
+restore: code path and would clobber things. This boots fine
+now on a PowerBook.
 
---- linux-work.orig/arch/powerpc/include/asm/highmem.h	2009-06-18 11:34:42.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/highmem.h	2009-06-18 11:34:45.000000000 +1000
-@@ -62,6 +62,9 @@ extern pte_t *pkmap_page_table;
+ arch/powerpc/Kconfig              |    1 
+ arch/powerpc/include/asm/hw_irq.h |   20 ++---
+ arch/powerpc/kernel/entry_32.S    |  127 ++++++++++++++++++++++++++++++++++++--
+ arch/powerpc/kernel/setup_32.c    |    2 
+ arch/powerpc/kernel/udbg.c        |    1 
+ 5 files changed, 136 insertions(+), 15 deletions(-)
+
+--- linux-work.orig/arch/powerpc/Kconfig	2009-06-18 13:21:29.000000000 +1000
++++ linux-work/arch/powerpc/Kconfig	2009-06-18 13:21:39.000000000 +1000
+@@ -62,7 +62,6 @@ config HAVE_LATENCYTOP_SUPPORT
  
- extern void *kmap_high(struct page *page);
- extern void kunmap_high(struct page *page);
-+extern void *kmap_atomic_prot(struct page *page, enum km_type type,
-+			      pgprot_t prot);
-+extern void kunmap_atomic(void *kvaddr, enum km_type type);
+ config TRACE_IRQFLAGS_SUPPORT
+ 	bool
+-	depends on PPC64
+ 	default y
  
- static inline void *kmap(struct page *page)
- {
-@@ -79,62 +82,11 @@ static inline void kunmap(struct page *p
- 	kunmap_high(page);
- }
- 
--/*
-- * The use of kmap_atomic/kunmap_atomic is discouraged - kmap/kunmap
-- * gives a more generic (and caching) interface. But kmap_atomic can
-- * be used in IRQ contexts, so in some (very limited) cases we need
-- * it.
-- */
--static inline void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
--{
--	unsigned int idx;
--	unsigned long vaddr;
--
--	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
--	pagefault_disable();
--	if (!PageHighMem(page))
--		return page_address(page);
--
--	debug_kmap_atomic(type);
--	idx = type + KM_TYPE_NR*smp_processor_id();
--	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
--#ifdef CONFIG_DEBUG_HIGHMEM
--	BUG_ON(!pte_none(*(kmap_pte-idx)));
--#endif
--	__set_pte_at(&init_mm, vaddr, kmap_pte-idx, mk_pte(page, prot), 1);
--	local_flush_tlb_page(NULL, vaddr);
--
--	return (void*) vaddr;
--}
--
- static inline void *kmap_atomic(struct page *page, enum km_type type)
- {
- 	return kmap_atomic_prot(page, type, kmap_prot);
- }
- 
--static inline void kunmap_atomic(void *kvaddr, enum km_type type)
--{
--#ifdef CONFIG_DEBUG_HIGHMEM
--	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
--	enum fixed_addresses idx = type + KM_TYPE_NR*smp_processor_id();
--
--	if (vaddr < __fix_to_virt(FIX_KMAP_END)) {
--		pagefault_enable();
--		return;
--	}
--
--	BUG_ON(vaddr != __fix_to_virt(FIX_KMAP_BEGIN + idx));
--
--	/*
--	 * force other mappings to Oops if they'll try to access
--	 * this pte without first remap it
--	 */
--	pte_clear(&init_mm, vaddr, kmap_pte-idx);
--	local_flush_tlb_page(NULL, vaddr);
--#endif
--	pagefault_enable();
--}
--
- static inline struct page *kmap_atomic_to_page(void *ptr)
- {
- 	unsigned long idx, vaddr = (unsigned long) ptr;
-@@ -148,6 +100,7 @@ static inline struct page *kmap_atomic_t
- 	return pte_page(*pte);
- }
- 
-+
- #define flush_cache_kmaps()	flush_cache_all()
- 
- #endif /* __KERNEL__ */
-Index: linux-work/arch/powerpc/mm/Makefile
+ config LOCKDEP_SUPPORT
+Index: linux-work/arch/powerpc/kernel/entry_32.S
 ===================================================================
---- linux-work.orig/arch/powerpc/mm/Makefile	2009-06-18 11:34:42.000000000 +1000
-+++ linux-work/arch/powerpc/mm/Makefile	2009-06-18 11:34:45.000000000 +1000
-@@ -30,3 +30,4 @@ obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
- obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
- obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
- obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
-+obj-$(CONFIG_HIGHMEM)		+= highmem.o
-Index: linux-work/arch/powerpc/mm/highmem.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/arch/powerpc/mm/highmem.c	2009-06-18 11:35:51.000000000 +1000
-@@ -0,0 +1,75 @@
-+/*
-+ * highmem.c: virtual kernel memory mappings for high memory
-+ *
-+ * PowerPC version, stolen from the i386 version.
-+ *
-+ * Used in CONFIG_HIGHMEM systems for memory pages which
-+ * are not addressable by direct kernel virtual addresses.
-+ *
-+ * Copyright (C) 1999 Gerhard Wichert, Siemens AG
-+ *		      Gerhard.Wichert@pdb.siemens.de
-+ *
-+ *
-+ * Redesigned the x86 32-bit VM architecture to deal with
-+ * up to 16 Terrabyte physical memory. With current x86 CPUs
-+ * we now support up to 64 Gigabytes physical RAM.
-+ *
-+ * Copyright (C) 1999 Ingo Molnar <mingo@redhat.com>
-+ *
-+ * Reworked for PowerPC by various contributors. Moved from
-+ * highmem.h by Benjamin Herrenschmidt (c) 2009 IBM Corp.
-+ */
+--- linux-work.orig/arch/powerpc/kernel/entry_32.S	2009-06-18 13:21:29.000000000 +1000
++++ linux-work/arch/powerpc/kernel/entry_32.S	2009-06-18 13:36:41.000000000 +1000
+@@ -191,11 +191,49 @@ transfer_to_handler_cont:
+ 	mflr	r9
+ 	lwz	r11,0(r9)		/* virtual address of handler */
+ 	lwz	r9,4(r9)		/* where to go when done */
++#ifdef CONFIG_TRACE_IRQFLAGS
++	lis	r12,reenable_mmu@h
++	ori	r12,r12,reenable_mmu@l
++	mtspr	SPRN_SRR0,r12
++	mtspr	SPRN_SRR1,r10
++	SYNC
++	RFI
++reenable_mmu:				/* re-enable mmu so we can */
++	mfmsr	r10
++	lwz	r12,_MSR(r1)
++	xor	r10,r10,r12
++	andi.	r10,r10,MSR_EE		/* Did EE change? */
++	beq	1f
 +
-+
-+/*
-+ * The use of kmap_atomic/kunmap_atomic is discouraged - kmap/kunmap
-+ * gives a more generic (and caching) interface. But kmap_atomic can
-+ * be used in IRQ contexts, so in some (very limited) cases we need
-+ * it.
-+ */
-+void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
-+{
-+	unsigned int idx;
-+	unsigned long vaddr;
-+
-+	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
-+	pagefault_disable();
-+	if (!PageHighMem(page))
-+		return page_address(page);
-+
-+	debug_kmap_atomic(type);
-+	idx = type + KM_TYPE_NR*smp_processor_id();
-+	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
-+#ifdef CONFIG_DEBUG_HIGHMEM
-+	BUG_ON(!pte_none(*(kmap_pte-idx)));
-+#endif
-+	__set_pte_at(&init_mm, vaddr, kmap_pte-idx, mk_pte(page, prot), 1);
-+	local_flush_tlb_page(NULL, vaddr);
-+
-+	return (void*) vaddr;
-+}
-+EXPORT_SYMBOL(kmap_atomic_prot);
-+
-+void kunmap_atomic(void *kvaddr, enum km_type type)
-+{
-+#ifdef CONFIG_DEBUG_HIGHMEM
-+	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
-+	enum fixed_addresses idx = type + KM_TYPE_NR*smp_processor_id();
-+
-+	if (vaddr < __fix_to_virt(FIX_KMAP_END)) {
-+		pagefault_enable();
-+		return;
-+	}
-+
-+	BUG_ON(vaddr != __fix_to_virt(FIX_KMAP_BEGIN + idx));
-+
-+	/*
-+	 * force other mappings to Oops if they'll try to access
-+	 * this pte without first remap it
++	/* Save handler and return address into the 2 unused words
++	 * of the STACK_FRAME_OVERHEAD (sneak sneak sneak). Everything
++	 * else can be recovered from the pt_regs except r3 which for
++	 * normal interrupts has been set to pt_regs and for syscalls
++	 * is an argument, so we temporarily use ORIG_GPR3 to save it
 +	 */
-+	pte_clear(&init_mm, vaddr, kmap_pte-idx);
-+	local_flush_tlb_page(NULL, vaddr);
++	stw	r9,8(r1)
++	stw	r11,12(r1)
++	stw	r3,ORIG_GPR3(r1)
++	bl	trace_hardirqs_off
++	lwz	r0,GPR0(r1)
++	lwz	r3,ORIG_GPR3(r1)
++	lwz	r4,GPR4(r1)
++	lwz	r5,GPR5(r1)
++	lwz	r6,GPR6(r1)
++	lwz	r7,GPR7(r1)
++	lwz	r8,GPR8(r1)
++	lwz	r9,8(r1)
++	lwz	r11,12(r1)
++1:	mtctr	r11
++	mtlr	r9
++	bctr				/* jump to handler */
++#else /* CONFIG_TRACE_IRQFLAGS */
+ 	mtspr	SPRN_SRR0,r11
+ 	mtspr	SPRN_SRR1,r10
+ 	mtlr	r9
+ 	SYNC
+ 	RFI				/* jump to handler, enable MMU */
++#endif /* CONFIG_TRACE_IRQFLAGS */
+ 
+ #if defined (CONFIG_6xx) || defined(CONFIG_E500)
+ 4:	rlwinm	r12,r12,0,~_TLF_NAPPING
+@@ -251,6 +289,31 @@ _GLOBAL(DoSyscall)
+ #ifdef SHOW_SYSCALLS
+ 	bl	do_show_syscall
+ #endif /* SHOW_SYSCALLS */
++#ifdef CONFIG_TRACE_IRQFLAGS
++	/* Return from syscalls can (and generally will) hard enable
++	 * interrupts. You aren't supposed to call a syscall with
++	 * interrupts disabled in the first place. However, to ensure
++	 * that we get it right vs. lockdep if it happens, we force
++	 * that hard enable here with appropriate tracing if we see
++	 * that we have been called with interrupts off
++	 */
++	mfmsr	r11
++	andi.	r12,r11,MSR_EE
++	bne+	1f
++	/* We came in with interrupts disabled, we enable them now */
++	bl	trace_hardirqs_on
++	mfmsr	r11
++	lwz	r0,GPR0(r1)
++	lwz	r3,GPR3(r1)
++	lwz	r4,GPR4(r1)
++	ori	r11,r11,MSR_EE
++	lwz	r5,GPR5(r1)
++	lwz	r6,GPR6(r1)
++	lwz	r7,GPR7(r1)
++	lwz	r8,GPR8(r1)
++	mtmsr	r11
++1:
++#endif /* CONFIG_TRACE_IRQFLAGS */
+ 	rlwinm	r10,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
+ 	lwz	r11,TI_FLAGS(r10)
+ 	andi.	r11,r11,_TIF_SYSCALL_T_OR_A
+@@ -275,6 +338,7 @@ ret_from_syscall:
+ 	rlwinm	r12,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
+ 	/* disable interrupts so current_thread_info()->flags can't change */
+ 	LOAD_MSR_KERNEL(r10,MSR_KERNEL)	/* doesn't include MSR_EE */
++	/* Note: We don't bother telling lockdep about it */
+ 	SYNC
+ 	MTMSRD(r10)
+ 	lwz	r9,TI_FLAGS(r12)
+@@ -288,6 +352,19 @@ ret_from_syscall:
+ 	oris	r11,r11,0x1000	/* Set SO bit in CR */
+ 	stw	r11,_CCR(r1)
+ syscall_exit_cont:
++	lwz	r8,_MSR(r1)
++#ifdef CONFIG_TRACE_IRQFLAGS
++	/* If we are going to return from the syscall with interrupts
++	 * off, we trace that here. It shouldn't happen though but we
++	 * want to catch the bugger if it does right ?
++	 */
++	andi.	r10,r8,MSR_EE
++	bne+	1f
++	stw	r3,GPR3(r1)
++	bl      trace_hardirqs_off
++	lwz	r3,GPR3(r1)
++1:
++#endif /* CONFIG_TRACE_IRQFLAGS */
+ #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+ 	/* If the process has its own DBCR0 value, load it up.  The internal
+ 	   debug mode bit tells us that dbcr0 should be loaded. */
+@@ -311,7 +388,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRE
+ 	mtlr	r4
+ 	mtcr	r5
+ 	lwz	r7,_NIP(r1)
+-	lwz	r8,_MSR(r1)
+ 	FIX_SRR1(r8, r0)
+ 	lwz	r2,GPR2(r1)
+ 	lwz	r1,GPR1(r1)
+@@ -394,7 +470,9 @@ syscall_exit_work:
+ 	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP)
+ 	beq	ret_from_except
+ 
+-	/* Re-enable interrupts */
++	/* Re-enable interrupts. There is no need to trace that with
++	 * lockdep as we are supposed to have IRQs on at this point
++	 */
+ 	ori	r10,r10,MSR_EE
+ 	SYNC
+ 	MTMSRD(r10)
+@@ -705,6 +783,7 @@ ret_from_except:
+ 	/* Hard-disable interrupts so that current_thread_info()->flags
+ 	 * can't change between when we test it and when we return
+ 	 * from the interrupt. */
++	/* Note: We don't bother telling lockdep about it */
+ 	LOAD_MSR_KERNEL(r10,MSR_KERNEL)
+ 	SYNC			/* Some chip revs have problems here... */
+ 	MTMSRD(r10)		/* disable interrupts */
+@@ -744,11 +823,24 @@ resume_kernel:
+ 	beq+	restore
+ 	andi.	r0,r3,MSR_EE	/* interrupts off? */
+ 	beq	restore		/* don't schedule if so */
++#ifdef CONFIG_TRACE_IRQFLAGS
++	/* Lockdep thinks irqs are enabled, we need to call
++	 * preempt_schedule_irq with IRQs off, so we inform lockdep
++	 * now that we -did- turn them off already
++	 */
++	bl	trace_hardirqs_off
 +#endif
-+	pagefault_enable();
-+}
-+EXPORT_SYMBOL(kunmap_atomic);
+ 1:	bl	preempt_schedule_irq
+ 	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
+ 	lwz	r3,TI_FLAGS(r9)
+ 	andi.	r0,r3,_TIF_NEED_RESCHED
+ 	bne-	1b
++#ifdef CONFIG_TRACE_IRQFLAGS
++	/* And now, to properly rebalance the above, we tell lockdep they
++	 * are being turned back on, which will happen when we return
++	 */
++	bl	trace_hardirqs_on
++#endif
+ #else
+ resume_kernel:
+ #endif /* CONFIG_PREEMPT */
+@@ -765,6 +857,28 @@ restore:
+ 	stw	r6,icache_44x_need_flush@l(r4)
+ 1:
+ #endif  /* CONFIG_44x */
++
++	lwz	r9,_MSR(r1)
++#ifdef CONFIG_TRACE_IRQFLAGS
++	/* Lockdep doesn't know about the fact that IRQs are temporarily turned
++	 * off in this assembly code while peeking at TI_FLAGS() and such. However
++	 * we need to inform it if the exception turned interrupts off, and we
++	 * are about to trun them back on.
++	 *
++	 * The problem here sadly is that we don't know whether the exceptions was
++	 * one that turned interrupts off or not. So we always tell lockdep about
++	 * turning them on here when we go back to wherever we came from with EE
++	 * on, even if that may meen some redudant calls being tracked. Maybe later
++	 * we could encode what the exception did somewhere or test the exception
++	 * type in the pt_regs but that sounds overkill
++	 */
++	andi.	r10,r9,MSR_EE
++	beq	1f
++	bl	trace_hardirqs_on
++	lwz	r9,_MSR(r1)
++1:
++#endif /* CONFIG_TRACE_IRQFLAGS */
++
+ 	lwz	r0,GPR0(r1)
+ 	lwz	r2,GPR2(r1)
+ 	REST_4GPRS(3, r1)
+@@ -782,7 +896,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRE
+ 	stwcx.	r0,0,r1			/* to clear the reservation */
+ 
+ #if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+-	lwz	r9,_MSR(r1)
+ 	andi.	r10,r9,MSR_RI		/* check if this exception occurred */
+ 	beql	nonrecoverable		/* at a bad place (MSR:RI = 0) */
+ 
+@@ -805,7 +918,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRE
+ 	MTMSRD(r10)		/* clear the RI bit */
+ 	.globl exc_exit_restart
+ exc_exit_restart:
+-	lwz	r9,_MSR(r1)
+ 	lwz	r12,_NIP(r1)
+ 	FIX_SRR1(r9,r10)
+ 	mtspr	SPRN_SRR0,r12
+@@ -1035,11 +1147,18 @@ do_work:			/* r10 contains MSR_KERNEL he
+ 	beq	do_user_signal
+ 
+ do_resched:			/* r10 contains MSR_KERNEL here */
++	/* Note: We don't need to inform lockdep that we are enabling
++	 * interrupts here. As far as it knows, they are already enabled
++	 */
+ 	ori	r10,r10,MSR_EE
+ 	SYNC
+ 	MTMSRD(r10)		/* hard-enable interrupts */
+ 	bl	schedule
+ recheck:
++	/* Note: And we don't tell it we are disabling them again
++	 * neither. Those disable/enable cycles used to peek at
++	 * TI_FLAGS aren't advertised.
++	 */
+ 	LOAD_MSR_KERNEL(r10,MSR_KERNEL)
+ 	SYNC
+ 	MTMSRD(r10)		/* disable interrupts */
+Index: linux-work/arch/powerpc/kernel/setup_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/setup_32.c	2009-06-18 13:21:29.000000000 +1000
++++ linux-work/arch/powerpc/kernel/setup_32.c	2009-06-18 13:21:39.000000000 +1000
+@@ -119,6 +119,8 @@ notrace unsigned long __init early_init(
+  */
+ notrace void __init machine_init(unsigned long dt_ptr)
+ {
++	lockdep_init();
++
+ 	/* Enable early debugging if any specified (see udbg.h) */
+ 	udbg_early_init();
+ 
+Index: linux-work/arch/powerpc/include/asm/hw_irq.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/hw_irq.h	2009-06-18 13:21:29.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/hw_irq.h	2009-06-18 13:21:39.000000000 +1000
+@@ -68,13 +68,13 @@ static inline int irqs_disabled_flags(un
+ 
+ #if defined(CONFIG_BOOKE)
+ #define SET_MSR_EE(x)	mtmsr(x)
+-#define local_irq_restore(flags)	__asm__ __volatile__("wrtee %0" : : "r" (flags) : "memory")
++#define raw_local_irq_restore(flags)	__asm__ __volatile__("wrtee %0" : : "r" (flags) : "memory")
+ #else
+ #define SET_MSR_EE(x)	mtmsr(x)
+-#define local_irq_restore(flags)	mtmsr(flags)
++#define raw_local_irq_restore(flags)	mtmsr(flags)
+ #endif
+ 
+-static inline void local_irq_disable(void)
++static inline void raw_local_irq_disable(void)
+ {
+ #ifdef CONFIG_BOOKE
+ 	__asm__ __volatile__("wrteei 0": : :"memory");
+@@ -86,7 +86,7 @@ static inline void local_irq_disable(voi
+ #endif
+ }
+ 
+-static inline void local_irq_enable(void)
++static inline void raw_local_irq_enable(void)
+ {
+ #ifdef CONFIG_BOOKE
+ 	__asm__ __volatile__("wrteei 1": : :"memory");
+@@ -98,7 +98,7 @@ static inline void local_irq_enable(void
+ #endif
+ }
+ 
+-static inline void local_irq_save_ptr(unsigned long *flags)
++static inline void raw_local_irq_save_ptr(unsigned long *flags)
+ {
+ 	unsigned long msr;
+ 	msr = mfmsr();
+@@ -110,12 +110,12 @@ static inline void local_irq_save_ptr(un
+ #endif
+ }
+ 
+-#define local_save_flags(flags)	((flags) = mfmsr())
+-#define local_irq_save(flags)	local_irq_save_ptr(&flags)
+-#define irqs_disabled()		((mfmsr() & MSR_EE) == 0)
++#define raw_local_save_flags(flags)	((flags) = mfmsr())
++#define raw_local_irq_save(flags)	raw_local_irq_save_ptr(&flags)
++#define raw_irqs_disabled()		((mfmsr() & MSR_EE) == 0)
++#define raw_irqs_disabled_flags(flags)	(((flags) & MSR_EE) == 0)
+ 
+-#define hard_irq_enable()	local_irq_enable()
+-#define hard_irq_disable()	local_irq_disable()
++#define hard_irq_disable()		raw_local_irq_disable()
+ 
+ static inline int irqs_disabled_flags(unsigned long flags)
+ {
+Index: linux-work/arch/powerpc/kernel/udbg.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/udbg.c	2009-06-18 13:21:29.000000000 +1000
++++ linux-work/arch/powerpc/kernel/udbg.c	2009-06-18 13:21:39.000000000 +1000
+@@ -65,6 +65,7 @@ void __init udbg_early_init(void)
+ #ifdef CONFIG_PPC_EARLY_DEBUG
+ 	console_loglevel = 10;
+ #endif
++	register_early_udbg_console();
+ }
+ 
+ /* udbg library, used by xmon et al */
