@@ -1,23 +1,35 @@
-Return-Path: <chris.pringle@oxtel.com>
-Received: from oxtel.com (mail.oxtel.com [193.200.114.15])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id EAF10B7291
+Return-Path: <sachinp@in.ibm.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D6E5EB7213
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 21:26:51 +1000 (EST)
-Message-ID: <4A3A23FA.1000407@oxtel.com>
-Date: Thu, 18 Jun 2009 12:24:42 +0100
-From: Chris Pringle <chris.pringle@oxtel.com>
+	Thu, 18 Jun 2009 22:04:07 +1000 (EST)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B923ADDD1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 22:04:06 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp08.au.ibm.com (8.13.1/8.13.1) with ESMTP id n5IM1DTS017551
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 08:01:13 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5IC42qY446964
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 22:04:02 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n5IC42Rt007554
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 22:04:02 +1000
+Message-ID: <4A3A2D2B.7070704@in.ibm.com>
+Date: Thu, 18 Jun 2009 17:33:55 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
-References: <4A37A503.3030209@oxtel.com>
-	<20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
-	<4A37CC72.3060709@freescale.com> <4A37CF02.5080906@oxtel.com>
-	<4A37D073.6020802@freescale.com> <4A38A21B.5060306@oxtel.com>
-	<4A38ED31.9030705@oxtel.com>
-In-Reply-To: <4A38ED31.9030705@oxtel.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PowerPC] Badness at drivers/char/tty_ldisc.c:210 during shutdown
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +39,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Chris Pringle wrote:
-> Chris Pringle wrote:
->>> You could enable CONFIG_NOT_COHERENT_CACHE.
->>>
->> I've just tried this (I had to edit Kconfig in power/platforms to 
->> make the build system accept it), and interestingly it's making no 
->> difference. I'm using streaming mappings, and are using the 
->> pci_map_sg functions to ensure the memory is mapped/flushed 
->> correctly. I've also explicitly put in a pci_dma_sync_sg_for_device, 
->> however that's also not made any difference. Turning the cpu cache 
->> snoop off has the same affect as it did without 
->> CONFIG_NOT_COHERENT_CACHE; it gets much worse. Any other ideas?
->>
->> Will back off the low latency patches next, and give 2.6.30 a try - 
->> see if that makes any difference.
->>
-> Low latency patches made no difference. Tried it with 2.6.30 and it 
-> now works. There are a couple of commits contributing to the fix, 
-> including one introduced between 2.6.29-rc8 and 2.6.29 proper in 
-> powerpc/kernel/head_32.S (couple of commits with the name "Fix Respect 
-> _PAGE_COHERENT on classic ppc32 SW TLB load machines"). I've tried 
-> backporting this to 2.6.29-rc8 and it then worked. Backporting to 
-> 2.6.26 made no difference however, so I suspect there are other things 
-> fixed which are also contributing.
->
-> I'm going to move to 2.6.29/2.6.30 which should resolve our issue.
->
-> Thanks to all who have contributed to this thread.
->
-The other part of the fix is in asm-powerpc/pgtable32.h. _PAGE_BASE 
-needs _PAGE_COHERENT in order to work correctly, and in fact there is 
-now a comment in there to that affect in 2.6.29. Backporting that change 
-has made it work on 2.6.26. Both this patch, and the fix to head_32.S 
-are needed for it to work correctly on older kernels.
+I came across the following badness message during shutdown on a Power6 box.
+This was with 2.6.30-git12(3fe0344faf7fdcb158bd5c1a9aec960a8d70c8e8)
 
-Chris
+------------[ cut here ]------------
+Badness at drivers/char/tty_ldisc.c:210
+NIP: c000000000409428 LR: c000000000409410 CTR: 0000000000000000
+REGS: c0000000374f37f0 TRAP: 0700   Not tainted  (2.6.30-git12)
+MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24000484  XER: 00000001
+TASK = c00000003d941ae0[8535] 'vhangup' THREAD: c0000000374f0000 CPU: 1
+<6>GPR00: 0000000000000001 c0000000374f3a70 c000000000ef4550 0000000000000001
+<6>GPR04: c000000000409410 c00000003e99f000 c000000000406ba0 0000000000000000
+<6>GPR08: 0000000000000000 0000000000000000 0000000000000000 c0000000374f3a70
+<6>GPR12: 0000000024000488 c000000001002600 00000000ffffffff ffffffffffffffff
+<6>GPR16: 00000000320c8a50 0000000000000002 0000000000000000 00000000320b03b0
+<6>GPR20: 0000000000000000 0000000000000000 c00000003e1d3d00 0000000000000001
+<6>GPR24: 0000000000000000 0000000000000000 0000000000000001 c00000003d4a05e0
+<6>GPR28: 0000000000000000 c0000000013ffd38 c000000000e7e610 c0000000374f3a70
+NIP [c000000000409428] .tty_ldisc_put+0xbc/0xf4
+LR [c000000000409410] .tty_ldisc_put+0xa4/0xf4
+Call Trace:
+[c0000000374f3a70] [c000000000409410] .tty_ldisc_put+0xa4/0xf4 (unreliable)
+[c0000000374f3b10] [c000000000409808] .tty_ldisc_reinit+0x38/0x80
+[c0000000374f3ba0] [c00000000040a218] .tty_ldisc_hangup+0x190/0x260
+[c0000000374f3c40] [c0000000004000d0] .do_tty_hangup+0x188/0x4c0
+[c0000000374f3d20] [c000000000400480] .tty_vhangup_self+0x34/0x54
+[c0000000374f3db0] [c0000000001917c8] .sys_vhangup+0x38/0x58
+[c0000000374f3e30] [c000000000008534] syscall_exit+0x0/0x40
+Instruction dump:
+912b0088 4bcd2201 60000000 e87e8008 7f44d378 481c0735 60000000 801b0008
+7c09fe70 7d200278 7c004850 54000ffe <0b000000> 7f63db78 4bd7cf0d 60000000
+
+Not sure if this is a new issue. I haven't really paid attention
+to messages that are displayed during shutdown.
+
+Line 210 corresponds to the following code.
+
+static void tty_ldisc_put(struct tty_ldisc *ld)
+{
+......
+	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
+	WARN_ON(ld->refcount); <<===
+.......
+
+Thanks
+-Sachin
+
+
 
 -- 
 
-______________________________
-Chris Pringle
-Software Engineer
-
-Miranda Technologies Ltd.
-Hithercroft Road
-Wallingford
-Oxfordshire OX10 9DG
-UK
-
-Tel. +44 1491 820206
-Fax. +44 1491 820001
-www.miranda.com
-
-____________________________
-
-Miranda Technologies Limited
-Registered in England and Wales CN 02017053
-Registered Office: James House, Mere Park, Dedmere Road, Marlow, Bucks, SL7 1FJ
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
