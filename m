@@ -1,31 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <dwh@ovro.caltech.edu>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6EBE3B729E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id ABC84B7218
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 09:03:42 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BDC00DDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 09:03:41 +1000 (EST)
-Subject: Re: [PATCH 1/6] perf_counter: powerpc: Enable use of software
-	counters on 32-bit powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090617142719.GC6846@elte.hu>
-References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
-	<20090617142151.GB6846@elte.hu>
-	<8C6954A9-BE4C-47F5-AD87-A1D0EAF43F8A@kernel.crashing.org>
-	<20090617142719.GC6846@elte.hu>
-Content-Type: text/plain
-Date: Fri, 19 Jun 2009 09:03:24 +1000
-Message-Id: <1245366204.8693.11.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Fri, 19 Jun 2009 09:22:47 +1000 (EST)
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 4E77EDDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 09:22:47 +1000 (EST)
+Message-ID: <4A3ACC43.1060909@ovro.caltech.edu>
+Date: Thu, 18 Jun 2009 16:22:43 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
+MIME-Version: 1.0
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Subject: Re: MPC83xx watchdog reset board dead lock
+References: <c384c5ea0906160852l4845760cp8594463a866683dc@mail.gmail.com>	
+	<4A38AADD.3070801@aimvalley.nl>	
+	<c384c5ea0906170309j6fdf28f5qc38129e82649ef28@mail.gmail.com>	
+	<4A38DE83.1010405@aimvalley.nl>
+	<c384c5ea0906181601g28e3ac7frf2019b11bc34e057@mail.gmail.com>
+In-Reply-To: <c384c5ea0906181601g28e3ac7frf2019b11bc34e057@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>,
+	Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,21 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-06-17 at 16:27 +0200, Ingo Molnar wrote:
-> I think it would be nice to have more platform support in .31. 
-> Perfcounters is a brand-new feature so there's no risk of 
-> regression. In the end it will depend on Linus to pull of course, 
-> and BenH can veto it too if he'd like no more PowerPC changes in 
-> this cycle. Worst-case it's all .32 material.
+Hi Leon,
 
-There have been little PowerPC changes in this cycle and I agree
-with you on that it's a nice feature to have with little risk of
-regression.
+>>> I'll be testing the design tomorrow on the reference board, I'll
+>>> report results in this thread.
+>> Interesting.
+>> Looking forward to the results.
+>>
+> Design works as expected on the now slightly modified MPC8313E-RDB
+> board.
 
-In fact, I also have an up-to-date (and hopefully working)
-irqtrace/lockdep patch for 32-bit powerpc (we only do 64-bit right now)
-that I'm considering merging this time around, the benefit it brings is
-worth the risk I believe.
+That's great!
+
+> Kudos to David.
+
+I'm sure you would have come up with a similar solution,
+had you had a chance to sleep on it :)
+
+Glad to help out.
 
 Cheers,
-Ben.
+Dave
