@@ -1,30 +1,29 @@
-Return-Path: <leon.woestenberg@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2EEDFB714E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CEF2EB716C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 09:01:35 +1000 (EST)
-Received: from mail-gx0-f210.google.com (mail-gx0-f210.google.com
-	[209.85.217.210]) by ozlabs.org (Postfix) with ESMTP id 8036DDDD1B
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 09:01:34 +1000 (EST)
-Received: by gxk6 with SMTP id 6so2070291gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 16:01:32 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <4A38DE83.1010405@aimvalley.nl>
-References: <c384c5ea0906160852l4845760cp8594463a866683dc@mail.gmail.com>
-	<4A38AADD.3070801@aimvalley.nl>
-	<c384c5ea0906170309j6fdf28f5qc38129e82649ef28@mail.gmail.com>
-	<4A38DE83.1010405@aimvalley.nl>
-Date: Fri, 19 Jun 2009 01:01:32 +0200
-Message-ID: <c384c5ea0906181601g28e3ac7frf2019b11bc34e057@mail.gmail.com>
-Subject: Re: MPC83xx watchdog reset board dead lock
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>,
-	David Hawkins <dwh@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>
+	Fri, 19 Jun 2009 09:02:08 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 25427DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 09:02:07 +1000 (EST)
+Subject: Re: [PATCH 1/6] perf_counter: powerpc: Enable use of software
+	counters on 32-bit powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20090617142151.GB6846@elte.hu>
+References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
+	<20090617142151.GB6846@elte.hu>
+Content-Type: text/plain
+Date: Fri, 19 Jun 2009 09:01:54 +1000
+Message-Id: <1245366114.8693.9.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,20 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Wed, 2009-06-17 at 16:21 +0200, Ingo Molnar wrote:
+> > This depends on the generic atomic64_t patches, which are now in 
+> > Linus' tree.  Ingo, if you're putting these in, please pull Linus' 
+> > tree in first.
+> 
+> Note, i've created a new branch, tip:perfcounters/powerpc, so we can 
+> keep these things separate and Ben can pull them too. I see there 
+> was some review feedback - do you want to send a v2 version perhaps?
 
-On Wed, Jun 17, 2009 at 2:16 PM, Norbert van
-Bolhuis<nvbolhuis@aimvalley.nl> wrote:
->>
->> I'll be testing the design tomorrow on the reference board, I'll
->> report results in this thread.
->
-> Interesting.
-> Looking forward to the results.
->
-Design works as expected on the now slightly modified MPC8313E-RDB
-board. Kudos to David.
+At this stage, I'm happy for you to push them. I was thinking about
+moving the files around but that can wait. No serious comments on the
+patches themselves on my side.
 
-Cheers,
--- 
-Leon
+Cheers
+Ben
