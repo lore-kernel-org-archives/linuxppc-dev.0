@@ -1,23 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3382FB7282
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id B27D5B72A5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 00:06:06 +1000 (EST)
-Message-Id: <EEB9B7B7-5456-4AE9-8BB9-96DA04320697@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090618130955.GA1369@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH -mm][POWERPC] mpc8xxx : allow SPI without cs.
-Date: Thu, 18 Jun 2009 09:04:46 -0500
-References: <4A39DC80.7030906@arvoo.nl>
-	<20090618130955.GA1369@oksana.dev.rtsoft.ru>
-Cc: spi-devel-general@lists.sourceforge.net, Rini van Zetten <rini@arvoo.nl>,
-	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+	Fri, 19 Jun 2009 00:23:00 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Add configurable -Werror for arch/powerpc
+Date: Thu, 18 Jun 2009 16:22:18 +0200
+References: <adf502e7c85161d77fdcaca24f55ba6b418c7f04.1244616523.git.michael@ellerman.id.au>
+	<1245052241.7705.78.camel@concordia>
+	<ed82fe3e0906150754w125c6283q2468213b59c7f114@mail.gmail.com>
+In-Reply-To: <ed82fe3e0906150754w125c6283q2468213b59c7f114@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200906181622.18349.arnd@arndb.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Monday 15 June 2009, Timur Tabi wrote:
+> On Mon, Jun 15, 2009 at 2:50 AM, Michael Ellerman<michael@ellerman.id.au> wrote:
+> > arch/powerpc/platforms/chrp/setup.c:378: error: the frame size of 1040 bytes is larger than 1024 bytes
+> 
+> What's so bad about a frame size larger than 1024?
+> 
 
-On Jun 18, 2009, at 8:09 AM, Anton Vorontsov wrote:
+It's not necessarily a bug, but all frame sizes in the call chain
+combined must never exceed the kernel stack size. 1024 is an
+arbitrary limit that we warn about for a single function, because
+it's likely that things will break if you have more than one of these.
 
-> On Thu, Jun 18, 2009 at 08:19:44AM +0200, Rini van Zetten wrote:
->> This patch adds the possibility to have a spi device without a cs.
->>
->> For example, the dts file should look something like this:
->>
->> spi-controller {
->>       gpios = <&pio1 1 0      /* cs0 */
->>                0              /* cs1, no GPIO */
->>                &pio2 2 0>;    /* cs2 */
->>
->
-> Interesting scheme. I guess this is for eSPI controllers that can
-> do their own chip-selects, but we want GPIO chip selects in addition
-> (or in place of built-in ones), correct?
-
-That is a good question.  What HW is this for (I don't think its for  
-eSPI but I could be wrong).
-
-- k
+	Arnd <><
