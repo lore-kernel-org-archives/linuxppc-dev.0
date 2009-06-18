@@ -1,22 +1,24 @@
-Return-Path: <fabidi@ultsol.com>
+Return-Path: <geoff@geoffthorpe.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9BCC5B71D0
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E27FCB723A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 06:59:45 +1000 (EST)
-Received: from ultsol.com (unknown [216.117.139.109])
-	by ozlabs.org (Postfix) with ESMTP id BE5D1DDD1B
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 06:59:44 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C9F054.1C91C81F"
-Subject: Problem with memcpy on ppc8536
-Date: Thu, 18 Jun 2009 16:33:53 -0400
-Message-ID: <71DEA556544D7A4F9C6848402D8184340C4A13@usi01.ultsol.local>
-From: "Fahd Abidi" <fabidi@ultsol.com>
-To: <linuxppc-dev@ozlabs.org>
+	Fri, 19 Jun 2009 07:21:42 +1000 (EST)
+Received: from geiger.vandervecken.com (geiger.vandervecken.com
+	[202.170.160.133])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B3589DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 07:21:42 +1000 (EST)
+From: Geoff Thorpe <geoff@geoffthorpe.net>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: expose the multi-bit ops that underlie single-bit
+	ops.
+Date: Thu, 18 Jun 2009 16:36:50 -0400
+Message-Id: <1245357410-8040-1-git-send-email-geoff@geoffthorpe.net>
+Cc: Geoff Thorpe <geoff@geoffthorpe.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,147 +28,265 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+The bitops.h functions that operate on a single bit in a bitfield are
+implemented by operating on the corresponding word location. In all cases
+the inner logic is valid if the mask being applied has more than one bit
+set, so this patch exposes those inner operations. Indeed, set_bits() was
+already available, but it duplicated code from set_bit() (rather than
+making the latter a wrapper) - it was also missing the PPC405_ERR77()
+workaround and the "volatile" address qualifier present in other APIs.
+This corrects that, and exposes the other multi-bit equivalents.
 
-------_=_NextPart_001_01C9F054.1C91C81F
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+One advantage of these multi-bit forms is that they allow word-sized
+variables to essentially be their own spinlocks, eg. very useful for
+state machines where an atomic "flags" variable can obviate the need for
+any additional locking.
 
-Hello,=20
+Signed-off-by: Geoff Thorpe <geoff@geoffthorpe.net>
+---
+ arch/powerpc/include/asm/bitops.h |  194 ++++++++++++-------------------------
+ 1 files changed, 61 insertions(+), 133 deletions(-)
 
-I am trying to debug a crash during memcpy while copying data from the
-FCM buffer of an mpc8536 to the ddr ram. I debugged memcpy enough
-through my BDI3000 to see that the entire contents of the fcm buffer I
-want moved are actually moved off to memory location I specify. The
-crash comes after it memcpy finishes copying and performs the
-instruction "2: cmplwi 0,r5,4":=20
-
-memcpy:=20
-rlwinm. r7,r5,32-3,3,31 /* r0 =3D r5 >> 3 */=20
-addi r6,r3,-4=20
-addi r4,r4,-4=20
-beq 2f /* if less than 8 bytes to do */=20
-andi. r0,r6,3 /* get dest word aligned */=20
-mtctr r7=20
-bne 5f=20
-1: lwz r7,4(r4)=20
-lwzu r8,8(r4)=20
-stw r7,4(r6)=20
-stwu r8,8(r6)=20
-bdnz 1b=20
-andi. r5,r5,7=20
-2: cmplwi 0,r5,4=20
-
-contents of r5 are 0x0 showing that the entire 0x1000 size transfer I
-specified correctly finished. At this point I can check the memory
-contents through my BDI and verify all the data is in the ddr as I
-expect. Now the strange thing happens, if I execute the "cmplwi 0,r5,4"
-the program takes an exception and eventually gets struck at exception
-vector 0x700 which I saw from start.S is an "Alignment" exception. I am
-not sure what this exception means, can someone help me understand what
-is happening?=20
-
-Does this exception somehow mean that memcpy did not move all the data?
-Does memcpy expect contents of r5 to be 4 and not 0 when it hits the
-cmplwi instruction?=20
-
-
-Fahd Abidi
-Product Manager - Technical Tools and Development
-Ultimate Solutions, Inc.
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Your Single Source for Professional Development Tools and Embedded
-Solutions
-Ph: 978-455-3383 x255
-Fx: 978-926-3091
-Email: fabidi@ultsol.com
-Visit: http://www.ultsol.com <http://www.ultsol.com/> =20
-=20
-
-------_=_NextPart_001_01C9F054.1C91C81F
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META content=3D"text/html; charset=3Dus-ascii" =
-http-equiv=3DContent-Type>
-<META name=3DGENERATOR content=3D"MSHTML 8.00.6001.18783"></HEAD>
-<BODY>
-<DIV><FONT size=3D2 face=3DArial>
-<P><SPAN id=3D_ctl0_dgMessages__ctl2_lblPost>Hello, <BR><BR>I am trying =
-to debug a=20
-crash during memcpy while copying data from the FCM buffer of an mpc8536 =
-to the=20
-ddr ram. I debugged memcpy enough through my BDI3000 to see that the =
-entire=20
-contents of the fcm buffer I want moved are actually moved off to memory =
-
-location I specify. The crash comes after it memcpy finishes copying and =
-
-performs the instruction "2: cmplwi 0,r5,4": <BR><BR>memcpy: <BR>rlwinm. =
-
-r7,r5,32-3,3,<WBR></WBR>31 /* r0 =3D r5 &gt;&gt; 3 */ <BR>addi r6,r3,-4 =
-<BR>addi=20
-r4,r4,-4 <BR>beq 2f /* if less than 8 bytes to do */ <BR>andi. r0,r6,3 =
-/* get=20
-dest word aligned */ <BR>mtctr r7 <BR>bne 5f <BR>1: lwz r7,4(r4) =
-<BR>lwzu=20
-r8,8(r4) <BR>stw r7,4(r6) <BR>stwu r8,8(r6) <BR>bdnz 1b <BR>andi. =
-r5,r5,7 <BR>2:=20
-cmplwi 0,r5,4 <BR><BR>contents of r5 are 0x0 showing that the entire =
-0x1000 size=20
-transfer I specified correctly finished. At this point I can check the =
-memory=20
-contents through my BDI and verify all the data is in the ddr as I =
-expect. Now=20
-the strange thing happens, if I execute the "cmplwi 0,r5,4" the program =
-takes an=20
-exception and eventually gets struck at exception vector 0x700 which I =
-saw from=20
-start.S is an "Alignment" exception. I am not sure what this exception =
-means,=20
-can someone help me understand what is happening? <BR><BR>Does this =
-exception=20
-somehow mean that memcpy did not move all the data? Does memcpy expect =
-contents=20
-of r5 to be 4 and not 0 when it hits the cmplwi instruction?=20
-<BR></SPAN></FONT></P></DIV>
-<DIV align=3Dleft><FONT size=3D2 face=3DArial><SPAN=20
-style=3D"FONT-FAMILY: 'Arial','sans-serif'; FONT-SIZE: 10pt">Fahd =
-Abidi<BR>Product=20
-Manager - Technical Tools and <SPAN=20
-lang=3DEN>Development</SPAN></SPAN></FONT></DIV>
-<DIV align=3Dleft><FONT size=3D2 face=3DArial><SPAN=20
-style=3D"FONT-FAMILY: 'Arial','sans-serif'; FONT-SIZE: 10pt">Ultimate =
-Solutions,=20
-Inc.<BR></SPAN><SPAN style=3D"COLOR: #0080c0; FONT-SIZE: 10pt"><FONT=20
-face=3D"Times New =
-Roman">=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D</FONT></SPAN><SPAN=20
-style=3D"COLOR: teal; FONT-SIZE: 10pt"><BR></SPAN><EM><B><SPAN=20
-style=3D"FONT-FAMILY: 'Arial','sans-serif'; FONT-SIZE: 10pt">Your Single =
-Source=20
-for Professional Development Tools and Embedded=20
-Solutions</SPAN></B></EM><B><I><SPAN=20
-style=3D"FONT-FAMILY: 'Arial','sans-serif'; FONT-SIZE: =
-10pt"><BR></SPAN></I></B><SPAN=20
-style=3D"FONT-FAMILY: 'Arial','sans-serif'; FONT-SIZE: 10pt">Ph: =
-978-455-3383=20
-x255<BR>Fx: 978-926-3091<BR>Email: fabidi@ultsol.com<BR>Visit: </SPAN><A =
-
-title=3Dblocked::http://www.ultsol.com/ =
-href=3D"http://www.ultsol.com/"><SPAN=20
-style=3D"FONT-FAMILY: 'Arial','sans-serif'; FONT-SIZE: 10pt"=20
-title=3Dblocked::http://www.ultsol.com/><FONT=20
-color=3D#800080>http://www.ultsol.com</FONT></SPAN></A><SPAN=20
-style=3D"FONT-FAMILY: 'Arial','sans-serif'; FONT-SIZE: 10pt"> =
-</SPAN></FONT></DIV>
-<DIV>&nbsp;</DIV></BODY></HTML>
-
-------_=_NextPart_001_01C9F054.1C91C81F--
+diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
+index 897eade..56f2f2e 100644
+--- a/arch/powerpc/include/asm/bitops.h
++++ b/arch/powerpc/include/asm/bitops.h
+@@ -56,174 +56,102 @@
+ #define BITOP_WORD(nr)		((nr) / BITS_PER_LONG)
+ #define BITOP_LE_SWIZZLE	((BITS_PER_LONG-1) & ~0x7)
+ 
++/* Macro for generating the ***_bits() functions */
++#define DEFINE_BITOP(fn, op, prefix, postfix)	\
++static __inline__ void fn(unsigned long mask,	\
++		volatile unsigned long *_p)	\
++{						\
++	unsigned long old;			\
++	unsigned long *p = (unsigned long *)_p;	\
++	__asm__ __volatile__ (			\
++	prefix					\
++"1:"	PPC_LLARX "%0,0,%3\n"			\
++	stringify_in_c(op) "%0,%0,%2\n"		\
++	PPC405_ERR77(0,%3)			\
++	PPC_STLCX "%0,0,%3\n"			\
++	"bne- 1b\n"				\
++	postfix					\
++	: "=&r" (old), "+m" (*p)		\
++	: "r" (mask), "r" (p)			\
++	: "cc", "memory");			\
++}
++
++DEFINE_BITOP(set_bits, or, "", "")
++DEFINE_BITOP(clear_bits, andc, "", "")
++DEFINE_BITOP(clear_bits_unlock, andc, LWSYNC_ON_SMP, "")
++DEFINE_BITOP(change_bits, xor, "", "")
++
+ static __inline__ void set_bit(int nr, volatile unsigned long *addr)
+ {
+-	unsigned long old;
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	__asm__ __volatile__(
+-"1:"	PPC_LLARX "%0,0,%3	# set_bit\n"
+-	"or	%0,%0,%2\n"
+-	PPC405_ERR77(0,%3)
+-	PPC_STLCX "%0,0,%3\n"
+-	"bne-	1b"
+-	: "=&r" (old), "+m" (*p)
+-	: "r" (mask), "r" (p)
+-	: "cc" );
++	set_bits(BITOP_MASK(nr), addr + BITOP_WORD(nr));
+ }
+ 
+ static __inline__ void clear_bit(int nr, volatile unsigned long *addr)
+ {
+-	unsigned long old;
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	__asm__ __volatile__(
+-"1:"	PPC_LLARX "%0,0,%3	# clear_bit\n"
+-	"andc	%0,%0,%2\n"
+-	PPC405_ERR77(0,%3)
+-	PPC_STLCX "%0,0,%3\n"
+-	"bne-	1b"
+-	: "=&r" (old), "+m" (*p)
+-	: "r" (mask), "r" (p)
+-	: "cc" );
++	clear_bits(BITOP_MASK(nr), addr + BITOP_WORD(nr));
+ }
+ 
+ static __inline__ void clear_bit_unlock(int nr, volatile unsigned long *addr)
+ {
+-	unsigned long old;
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	__asm__ __volatile__(
+-	LWSYNC_ON_SMP
+-"1:"	PPC_LLARX "%0,0,%3	# clear_bit_unlock\n"
+-	"andc	%0,%0,%2\n"
+-	PPC405_ERR77(0,%3)
+-	PPC_STLCX "%0,0,%3\n"
+-	"bne-	1b"
+-	: "=&r" (old), "+m" (*p)
+-	: "r" (mask), "r" (p)
+-	: "cc", "memory");
++	clear_bits_unlock(BITOP_MASK(nr), addr + BITOP_WORD(nr));
+ }
+ 
+ static __inline__ void change_bit(int nr, volatile unsigned long *addr)
+ {
+-	unsigned long old;
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	__asm__ __volatile__(
+-"1:"	PPC_LLARX "%0,0,%3	# change_bit\n"
+-	"xor	%0,%0,%2\n"
+-	PPC405_ERR77(0,%3)
+-	PPC_STLCX "%0,0,%3\n"
+-	"bne-	1b"
+-	: "=&r" (old), "+m" (*p)
+-	: "r" (mask), "r" (p)
+-	: "cc" );
++	change_bits(BITOP_MASK(nr), addr + BITOP_WORD(nr));
++}
++
++/* Like DEFINE_BITOP(), with changes to the arguments to 'op' and the output
++ * operands. */
++#define DEFINE_TESTOP(fn, op, prefix, postfix)	\
++static __inline__ unsigned long fn(		\
++		unsigned long mask,		\
++		volatile unsigned long *_p)	\
++{						\
++	unsigned long old, t;			\
++	unsigned long *p = (unsigned long *)_p;	\
++	__asm__ __volatile__ (			\
++	prefix					\
++"1:"	PPC_LLARX "%0,0,%3\n"			\
++	stringify_in_c(op) "%1,%0,%2\n"		\
++	PPC405_ERR77(0,%3)			\
++	PPC_STLCX "%1,0,%3\n"			\
++	"bne- 1b\n"				\
++	postfix					\
++	: "=&r" (old), "=&r" (t)		\
++	: "r" (mask), "r" (p)			\
++	: "cc", "memory");			\
++	return (old & mask);			\
+ }
+ 
++DEFINE_TESTOP(test_and_set_bits, or, LWSYNC_ON_SMP, ISYNC_ON_SMP)
++DEFINE_TESTOP(test_and_set_bits_lock, or, "", ISYNC_ON_SMP)
++DEFINE_TESTOP(test_and_clear_bits, andc, LWSYNC_ON_SMP, ISYNC_ON_SMP)
++DEFINE_TESTOP(test_and_change_bits, xor, LWSYNC_ON_SMP, ISYNC_ON_SMP)
++
+ static __inline__ int test_and_set_bit(unsigned long nr,
+ 				       volatile unsigned long *addr)
+ {
+-	unsigned long old, t;
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	__asm__ __volatile__(
+-	LWSYNC_ON_SMP
+-"1:"	PPC_LLARX "%0,0,%3		# test_and_set_bit\n"
+-	"or	%1,%0,%2 \n"
+-	PPC405_ERR77(0,%3)
+-	PPC_STLCX "%1,0,%3 \n"
+-	"bne-	1b"
+-	ISYNC_ON_SMP
+-	: "=&r" (old), "=&r" (t)
+-	: "r" (mask), "r" (p)
+-	: "cc", "memory");
+-
+-	return (old & mask) != 0;
++	return test_and_set_bits(BITOP_MASK(nr), addr + BITOP_WORD(nr)) != 0;
+ }
+ 
+ static __inline__ int test_and_set_bit_lock(unsigned long nr,
+ 				       volatile unsigned long *addr)
+ {
+-	unsigned long old, t;
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	__asm__ __volatile__(
+-"1:"	PPC_LLARX "%0,0,%3		# test_and_set_bit_lock\n"
+-	"or	%1,%0,%2 \n"
+-	PPC405_ERR77(0,%3)
+-	PPC_STLCX "%1,0,%3 \n"
+-	"bne-	1b"
+-	ISYNC_ON_SMP
+-	: "=&r" (old), "=&r" (t)
+-	: "r" (mask), "r" (p)
+-	: "cc", "memory");
+-
+-	return (old & mask) != 0;
++	return test_and_set_bits_lock(BITOP_MASK(nr),
++				addr + BITOP_WORD(nr)) != 0;
+ }
+ 
+ static __inline__ int test_and_clear_bit(unsigned long nr,
+ 					 volatile unsigned long *addr)
+ {
+-	unsigned long old, t;
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	__asm__ __volatile__(
+-	LWSYNC_ON_SMP
+-"1:"	PPC_LLARX "%0,0,%3		# test_and_clear_bit\n"
+-	"andc	%1,%0,%2 \n"
+-	PPC405_ERR77(0,%3)
+-	PPC_STLCX "%1,0,%3 \n"
+-	"bne-	1b"
+-	ISYNC_ON_SMP
+-	: "=&r" (old), "=&r" (t)
+-	: "r" (mask), "r" (p)
+-	: "cc", "memory");
+-
+-	return (old & mask) != 0;
++	return test_and_clear_bits(BITOP_MASK(nr), addr + BITOP_WORD(nr)) != 0;
+ }
+ 
+ static __inline__ int test_and_change_bit(unsigned long nr,
+ 					  volatile unsigned long *addr)
+ {
+-	unsigned long old, t;
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	__asm__ __volatile__(
+-	LWSYNC_ON_SMP
+-"1:"	PPC_LLARX "%0,0,%3		# test_and_change_bit\n"
+-	"xor	%1,%0,%2 \n"
+-	PPC405_ERR77(0,%3)
+-	PPC_STLCX "%1,0,%3 \n"
+-	"bne-	1b"
+-	ISYNC_ON_SMP
+-	: "=&r" (old), "=&r" (t)
+-	: "r" (mask), "r" (p)
+-	: "cc", "memory");
+-
+-	return (old & mask) != 0;
+-}
+-
+-static __inline__ void set_bits(unsigned long mask, unsigned long *addr)
+-{
+-        unsigned long old;
+-
+-	__asm__ __volatile__(
+-"1:"	PPC_LLARX "%0,0,%3         # set_bits\n"
+-	"or	%0,%0,%2\n"
+-	PPC_STLCX "%0,0,%3\n"
+-	"bne-	1b"
+-	: "=&r" (old), "+m" (*addr)
+-	: "r" (mask), "r" (addr)
+-	: "cc");
++	return test_and_change_bits(BITOP_MASK(nr), addr + BITOP_WORD(nr)) != 0;
+ }
+ 
+ #include <asm-generic/bitops/non-atomic.h>
+-- 
+1.5.6.3
