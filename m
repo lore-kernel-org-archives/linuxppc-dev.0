@@ -1,28 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id AC230B71EA
+Return-Path: <chris.pringle@oxtel.com>
+Received: from oxtel.com (mail.oxtel.com [193.200.114.15])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id EAF10B7291
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 19:31:28 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 07DD8DDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 19:31:27 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n5I9VMG7002629
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 04:31:23 -0500
-Subject: Re: [PATCH] powerpc: Add irqtrace support for 32-bit powerpc (v2)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <20090618034439.0854ADDDB2@ozlabs.org>
-References: <20090618034439.0854ADDDB2@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 18 Jun 2009 19:31:21 +1000
-Message-Id: <1245317482.21602.53.camel@pasglop>
-Mime-Version: 1.0
+	Thu, 18 Jun 2009 21:26:51 +1000 (EST)
+Message-ID: <4A3A23FA.1000407@oxtel.com>
+Date: Thu, 18 Jun 2009 12:24:42 +0100
+From: Chris Pringle <chris.pringle@oxtel.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: PowerPC PCI DMA issues (prefetch/coherency?)
+References: <4A37A503.3030209@oxtel.com>
+	<20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
+	<4A37CC72.3060709@freescale.com> <4A37CF02.5080906@oxtel.com>
+	<4A37D073.6020802@freescale.com> <4A38A21B.5060306@oxtel.com>
+	<4A38ED31.9030705@oxtel.com>
+In-Reply-To: <4A38ED31.9030705@oxtel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,23 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-06-18 at 13:43 +1000, Benjamin Herrenschmidt wrote:
-> Index: linux-work/arch/powerpc/kernel/udbg.c
-> ===================================================================
-> --- linux-work.orig/arch/powerpc/kernel/udbg.c  2009-06-18
-> 13:21:29.000000000 +1000
-> +++ linux-work/arch/powerpc/kernel/udbg.c       2009-06-18
-> 13:21:39.000000000 +1000
-> @@ -65,6 +65,7 @@ void __init udbg_early_init(void)
->  #ifdef CONFIG_PPC_EARLY_DEBUG
->         console_loglevel = 10;
->  #endif
-> +       register_early_udbg_console();
->  }
+Chris Pringle wrote:
+> Chris Pringle wrote:
+>>> You could enable CONFIG_NOT_COHERENT_CACHE.
+>>>
+>> I've just tried this (I had to edit Kconfig in power/platforms to 
+>> make the build system accept it), and interestingly it's making no 
+>> difference. I'm using streaming mappings, and are using the 
+>> pci_map_sg functions to ensure the memory is mapped/flushed 
+>> correctly. I've also explicitly put in a pci_dma_sync_sg_for_device, 
+>> however that's also not made any difference. Turning the cpu cache 
+>> snoop off has the same affect as it did without 
+>> CONFIG_NOT_COHERENT_CACHE; it gets much worse. Any other ideas?
+>>
+>> Will back off the low latency patches next, and give 2.6.30 a try - 
+>> see if that makes any difference.
+>>
+> Low latency patches made no difference. Tried it with 2.6.30 and it 
+> now works. There are a couple of commits contributing to the fix, 
+> including one introduced between 2.6.29-rc8 and 2.6.29 proper in 
+> powerpc/kernel/head_32.S (couple of commits with the name "Fix Respect 
+> _PAGE_COHERENT on classic ppc32 SW TLB load machines"). I've tried 
+> backporting this to 2.6.29-rc8 and it then worked. Backporting to 
+> 2.6.26 made no difference however, so I suspect there are other things 
+> fixed which are also contributing.
+>
+> I'm going to move to 2.6.29/2.6.30 which should resolve our issue.
+>
+> Thanks to all who have contributed to this thread.
+>
+The other part of the fix is in asm-powerpc/pgtable32.h. _PAGE_BASE 
+needs _PAGE_COHERENT in order to work correctly, and in fact there is 
+now a comment in there to that affect in 2.6.29. Backporting that change 
+has made it work on 2.6.26. Both this patch, and the fix to head_32.S 
+are needed for it to work correctly on older kernels.
 
-And that bit of course have nothing to do in that patch :-)
+Chris
 
-No need for a respin for now though unless we find other problems.
+-- 
 
-Cheers,
-Ben.
+______________________________
+Chris Pringle
+Software Engineer
+
+Miranda Technologies Ltd.
+Hithercroft Road
+Wallingford
+Oxfordshire OX10 9DG
+UK
+
+Tel. +44 1491 820206
+Fax. +44 1491 820001
+www.miranda.com
+
+____________________________
+
+Miranda Technologies Limited
+Registered in England and Wales CN 02017053
+Registered Office: James House, Mere Park, Dedmere Road, Marlow, Bucks, SL7 1FJ
