@@ -1,29 +1,43 @@
-Return-Path: <dan.j.williams@intel.com>
+Return-Path: <prasad@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A0D74B7280
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 433A0B725A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 04:16:06 +1000 (EST)
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-	by ozlabs.org (Postfix) with ESMTP id 10EBEDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 04:16:05 +1000 (EST)
-Message-ID: <4A3A8463.7080601@intel.com>
-Date: Thu, 18 Jun 2009 11:16:03 -0700
-From: Dan Williams <dan.j.williams@intel.com>
+	Fri, 19 Jun 2009 04:20:58 +1000 (EST)
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 54E90DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 04:20:56 +1000 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28smtp05.in.ibm.com (8.13.1/8.13.1) with ESMTP id n5IIKnWL021151
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 23:50:49 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5IIKmEW2334974
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 23:50:48 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id n5IIKmt1017794
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 23:50:48 +0530
+Date: Thu, 18 Jun 2009 23:50:45 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+Subject: Re: [Patch 2/6] Introduce PPC64 specific Hardware Breakpoint
+	interfaces
+Message-ID: <20090618182045.GC4590@in.ibm.com>
+References: <20090610090316.898961359@prasadkr_t60p.in.ibm.com>
+	<20090610090806.GC14478@in.ibm.com>
+	<20090617043224.GL486@yookeroo.seuss>
 MIME-Version: 1.0
-To: Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [RFC PATCH] fsldma: Add DMA_SLAVE support
-References: <20090515225659.GD858@ovro.caltech.edu>
-	<4A37EC14.5010005@intel.com>
-	<20090616201256.GG15955@ovro.caltech.edu>
-	<4A392542.6010306@intel.com>
-	<20090617182947.GB4707@ovro.caltech.edu>
-In-Reply-To: <20090617182947.GB4707@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Li Yang <leoli@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090617043224.GL486@yookeroo.seuss>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,66 +47,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ira Snyder wrote:
-> I can do something similar by calling device_prep_dma_memcpy() lots of
-> times. Once for each page in the scatterlist.
+On Wed, Jun 17, 2009 at 02:32:24PM +1000, David Gibson wrote:
+> On Wed, Jun 10, 2009 at 02:38:06PM +0530, K.Prasad wrote:
+> > Introduce PPC64 implementation for the generic hardware breakpoint interfaces
+> > defined in kernel/hw_breakpoint.c. Enable the HAVE_HW_BREAKPOINT flag and the
+> > Makefile.
 > 
-> This has the advantage of not changing the DMAEngine API.
+> [snip]
+> > +int arch_store_info(struct hw_breakpoint *bp, struct task_struct *tsk)
+> > +{
+> > +	/* Symbol names from user-space are rejected */
+> > +	if (tsk) {
+> > +		if (bp->info.name)
+> > +			return -EINVAL;
+> > +		else
+> > +			return 0;
+> > +	}
+> > +	/*
+> > +	 * User-space requests will always have the address field populated
+> > +	 * For kernel-addresses, either the address or symbol name can be
+> > +	 * specified.
+> > +	 */
+> > +	if (bp->info.name)
+> > +		bp->info.address = (unsigned long)
+> > +					kallsyms_lookup_name(bp->info.name);
+> > +	if (bp->info.address)
+> > +		if (kallsyms_lookup_size_offset(bp->info.address,
+> > +						&(bp->info.symbolsize), NULL))
+> > +			return 0;
+> > +	return -EINVAL;
+> > +}
+> > +
+> > +/*
+> > + * Validate the arch-specific HW Breakpoint register settings
+> > + */
+> > +int arch_validate_hwbkpt_settings(struct hw_breakpoint *bp,
+> > +						struct task_struct *tsk)
+> > +{
+> > +	int is_kernel, ret = -EINVAL;
+> > +
+> > +	if (!bp)
+> > +		return ret;
+> > +
+> > +	switch (bp->info.type) {
+> > +	case HW_BREAKPOINT_READ:
+> > +	case HW_BREAKPOINT_WRITE:
+> > +	case HW_BREAKPOINT_RW:
+> > +		break;
+> > +	default:
+> > +		return ret;
+> > +	}
+> > +
+> > +	if (bp->triggered)
+> > +		ret = arch_store_info(bp, tsk);
 > 
-> This has the disadvantage of not being a single transaction. The DMA
-> controller will get an interrupt after each memcpy() transaction, clean
-> up descriptors, etc.
+> Under what circumstances would triggered be NULL?  It's not clear to
+> me that you wouldn't still need arch_store_info() in this case.
+> 
+
+Simple, triggered would be NULL when a user fails to specify it!
+This function would return EINVAL if that's the case.
+
+> > +
+> > +	is_kernel = is_kernel_addr(bp->info.address);
+> > +	if ((tsk && is_kernel) || (!tsk && !is_kernel))
+> > +		return -EINVAL;
+> > +
+> > +	return ret;
+> > +}
+> > +
+
+<snipped>
+
+> > +/*
+> > + * Handle debug exception notifications.
+> > + */
+> > +int __kprobes hw_breakpoint_handler(struct die_args *args)
+> > +{
+> > +	int rc = NOTIFY_STOP;
+> > +	struct hw_breakpoint *bp;
+> > +	struct pt_regs *regs = args->regs;
+> > +	unsigned long dar = regs->dar;
+> > +	int cpu, is_one_shot, stepped = 1;
+> > +
+> > +	/* Disable breakpoints during exception handling */
+> > +	set_dabr(0);
+> > +
+> > +	cpu = get_cpu();
+> > +	/* Determine whether kernel- or user-space address is the trigger */
+> > +	bp = (hbp_kernel_pos == HBP_NUM) ? current->thread.hbp[0] :
+> > +					per_cpu(this_hbp_kernel[0], cpu);
+> > +	/*
+> > +	 * bp can be NULL due to lazy debug register switching
+> > +	 * or due to the delay between updates of hbp_kernel_pos
+> > +	 * and this_hbp_kernel.
+> > +	 */
+> > +	if (!bp)
+> > +		goto out;
+> > +
+> > +	is_one_shot = (bp->triggered == ptrace_triggered) ? 1 : 0;
+> > +	per_cpu(dabr_data, cpu) = (hbp_kernel_pos == HBP_NUM) ?
+> > +						current->thread.dabr : kdabr;
+> > +
+> > +	/* Verify if dar lies within the address range occupied by the symbol
+> > +	 * being watched. Since we cannot get the symbol size for
+> > +	 * user-space requests we skip this check in that case
+> > +	 */
+> > +	if ((hbp_kernel_pos == 0) &&
+> > +	    !((bp->info.address <= dar) &&
+> > +	     (dar <= (bp->info.address + bp->info.symbolsize))))
+> > +		/*
+> > +		 * This exception is triggered not because of a memory access on
+> > +		 * the monitored variable but in the double-word address range
+> > +		 * in which it is contained. We will consume this exception,
+> > +		 * considering it as 'noise'.
+> > +		 */
+> > +		goto out;
+> > +
+> > +	(bp->triggered)(bp, regs);
+> 
+> So this confuses me.  You go to great efforts to step over the
+> instruction to generate a SIGTRAP after the instruction, for
+> consistency with x86.  But that SIGTRAP is *never* used, since the
+> only way to set userspace breakpoints is through ptrace at the moment.
+> At the same time, the triggered function is called here before the
+> instruction is executed, so not consistent with x86 anyway.
+> 
+> It just seems strange to me that sending a SIGTRAP is a special case
+> anyway.  Why can't sending a SIGTRAP be just a particular triggered
+> function.
 >
 
-Why would it need an interrupt per memcpy?  There is a 
-DMA_PREP_INTERRUPT flag to gate interrupt generation to the last 
-descriptor.  This is how async_tx delays callbacks until the last 
-operation in a chain has completed.  Also, I am not currently seeing how 
-your implementation achieves a single hardware transaction.  It still 
-calls fsl_dma_alloc_descriptor() per address pair?
+The consistency in the interface across architectures that I referred to
+in my previous mail was w.r.t. continuous triggering of breakpoints and
+not to implement a trigger-before or trigger-after behaviour across
+architectures. In fact, this behaviour differs even on the same
+processor depending upon the breakpoint type (trigger-before for
+instructions and trigger-after for data in x86), and introducing
+uniformity might be a) at the cost of loss of some unique & innovative
+uses for each of them b) may not be always possible e.g. trigger-after
+to trigger-before.
 
-The api currently allows a call to ->prep_* to generate multiple 
-internal descriptors for a single input address (i.e. memcpy in the case 
-where the transfer length exceeds the hardware maximum).  The slave api 
-allows for transfers from a scatterlist to a slave context.  I think 
-what is bothering me is that the fsldma slave implementation is passing 
-a list of sideband addresses rather than a constant address context like 
-the existing dw_dmac, so it is different.  However, I can now see that 
-trying to enforce uniformity in this area is counterproductive.  The 
-DMA_SLAVE interface will always have irreconcilable differences across 
-architectures.
-
-> It also has the disadvantage of not being able to change the
-> controller-specific features I'm using: external start. This feature
-> lets the "3rd device" control the DMA controller. It looks like the
-> atmel-mci driver has a similar feature. The DMAEngine API has no way to
-> expose this type of feature except through DMA_SLAVE.
-
-Yeah, an example of an architecture specific quirk that has no chance of 
-being uniformly handled in a generic api.
-
-> If it is just the 3 helper routines that are the issue with this patch,
-> I have no problem dropping them and letting each user re-create them
-> themselves.
-
-I think this makes the most sense at this point.  We can reserve 
-judgement on the approach until the next fsldma-slave user arrives and 
-tries to use this implementation for their device.  Can we move the 
-header file under arch/powerpc/include?
-
-[..]
-> A single-transaction scatterlist-to-scatterlist copy would be nice.
-> 
-> One of the major advantages of working with the DMA controller is that
-> it automatically handles scatter/gather. Almost all DMA controllers have
-> the feature, but it is totally missing from the high-level API.
-
-The engines I am familiar with (ioatdma and iop-adma) still need a 
-hardware descriptor per address pair I do not see how fsldma does this 
-any more automatically than those engines?  I could see having a helper 
-routine that does the mapping and iterating, but in the end the driver 
-still sees multiple calls to ->prep (unless of course you are doing this 
-in a DMA_SLAVE context, then anything goes).
+Hope this resolves the confusion (that I might have inadvertently caused
+in my previous mail)!
 
 Thanks,
-Dan
+K.Prasad
+ 
