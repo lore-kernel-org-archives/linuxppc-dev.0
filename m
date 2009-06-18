@@ -3,19 +3,20 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DE829B741F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 692C5B7119
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 12:40:01 +1000 (EST)
+	Thu, 18 Jun 2009 12:55:07 +1000 (EST)
 Received: from mail-pz0-f193.google.com (mail-pz0-f193.google.com
-	[209.85.222.193]) by ozlabs.org (Postfix) with ESMTP id 201B5DDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 12:40:00 +1000 (EST)
-Received: by mail-pz0-f193.google.com with SMTP id 31so795732pzk.17
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 19:40:00 -0700 (PDT)
+	[209.85.222.193]) by ozlabs.org (Postfix) with ESMTP id 60996DDD1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 12:55:05 +1000 (EST)
+Received: by pzk31 with SMTP id 31so803319pzk.17
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2009 19:55:04 -0700 (PDT)
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3] powerpc/5200: add LocalPlus bus FIFO device driver
-To: linuxppc-dev@ozlabs.org
-Date: Wed, 17 Jun 2009 20:39:58 -0600
-Message-ID: <20090618023957.11976.59147.stgit@localhost.localdomain>
+Subject: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device driver
+To: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Date: Wed, 17 Jun 2009 20:55:01 -0600
+Message-ID: <20090618025030.12363.69402.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,548 +30,608 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-This is a driver for the LocalPlus bus FIFO device
+Adds support for the dedicated SPI device on the Freescale MPC5200(b)
+SoC.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/powerpc/include/asm/mpc52xx.h            |   36 ++
- arch/powerpc/platforms/52xx/Kconfig           |    4 
- arch/powerpc/platforms/52xx/Makefile          |    1 
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |  458 +++++++++++++++++++++++++
- 4 files changed, 499 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
+Hi David,
+
+It's been a while since I've posted this, but I believe I've addressed
+all the outstanding comments against v3, and people are asking me for it.
+The pre-message stuff is all gone and the error handling should be
+better now.
+
+BTW, the premessage stuff was to handle a platform I had where some of
+the CS lines were controlled with a separate SPI transaction to the
+same SPI controller.  It almost looks like an SPI bridge.  It requires
+more thought before I try again.
+
+Being a new driver, it would be nice to get it into 2.6.31, but
+definitely not critical.
+
+g.
+
+ drivers/spi/Kconfig             |    8 +
+ drivers/spi/Makefile            |    1 
+ drivers/spi/mpc52xx_spi.c       |  520 +++++++++++++++++++++++++++++++++++++++
+ include/linux/spi/mpc52xx_spi.h |   10 +
+ 4 files changed, 539 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/spi/mpc52xx_spi.c
+ create mode 100644 include/linux/spi/mpc52xx_spi.h
 
 
-diff --git a/arch/powerpc/include/asm/mpc52xx.h b/arch/powerpc/include/asm/mpc52xx.h
-index 6716850..974fc8f 100644
---- a/arch/powerpc/include/asm/mpc52xx.h
-+++ b/arch/powerpc/include/asm/mpc52xx.h
-@@ -283,6 +283,42 @@ extern int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, int period,
-                             int continuous);
- extern void mpc52xx_gpt_stop_timer(struct mpc52xx_gpt_priv *gpt);
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 83a185d..1994bcd 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -132,6 +132,14 @@ config SPI_LM70_LLP
+ 	  which interfaces to an LM70 temperature sensor using
+ 	  a parallel port.
  
-+/* mpc52xx_lpbfifo.c */
-+#define MPC52XX_LPBFIFO_FLAG_READ		(0)
-+#define MPC52XX_LPBFIFO_FLAG_WRITE		(1<<0)
-+#define MPC52XX_LPBFIFO_FLAG_NO_INCREMENT	(1<<1)
-+#define MPC52XX_LPBFIFO_FLAG_NO_DMA		(1<<2)
-+#define MPC52XX_LPBFIFO_FLAG_POLL_DMA		(1<<3)
++config SPI_MPC52xx
++	tristate "Freescale MPC52xx SPI (non-PSC) controller support"
++	depends on PPC_MPC52xx && SPI
++	select SPI_MASTER_OF
++	help
++	  This drivers supports the MPC52xx SPI controller in master SPI
++	  mode.
 +
-+struct mpc52xx_lpbfifo_request {
-+	struct list_head list;
-+
-+	/* localplus bus address */
-+	unsigned int cs;
-+	size_t offset;
-+
-+	/* Memory address */
-+	void *data;
-+	phys_addr_t data_phys;
-+
-+	/* Details of transfer */
-+	size_t size;
-+	size_t pos;	/* current position of transfer */
-+	int flags;
-+
-+	/* What to do when finished */
-+	void (*callback)(struct mpc52xx_lpbfifo_request *);
-+
-+	void *priv;		/* Driver private data */
-+
-+	/* statistics */
-+	int irq_count;
-+	int irq_ticks;
-+};
-+
-+extern int mpc52xx_lpbfifo_submit(struct mpc52xx_lpbfifo_request *req);
-+extern void mpc52xx_lpbfifo_abort(struct mpc52xx_lpbfifo_request *req);
-+
- /* mpc52xx_pic.c */
- extern void mpc52xx_init_irq(void);
- extern unsigned int mpc52xx_get_irq(void);
-diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
-index 8b8e956..d64783e 100644
---- a/arch/powerpc/platforms/52xx/Kconfig
-+++ b/arch/powerpc/platforms/52xx/Kconfig
-@@ -62,3 +62,7 @@ config PPC_MPC5200_GPIO
- 	select GENERIC_GPIO
- 	help
- 	  Enable gpiolib support for mpc5200 based boards
-+
-+config PPC_MPC5200_LPBFIFO
-+	tristate "MPC5200 LocalPlus bus FIFO driver"
-+	depends on PPC_MPC52xx
-diff --git a/arch/powerpc/platforms/52xx/Makefile b/arch/powerpc/platforms/52xx/Makefile
-index bfd4f52..2bc8cd0 100644
---- a/arch/powerpc/platforms/52xx/Makefile
-+++ b/arch/powerpc/platforms/52xx/Makefile
-@@ -15,3 +15,4 @@ ifeq ($(CONFIG_PPC_LITE5200),y)
- endif
- 
- obj-$(CONFIG_PPC_MPC5200_GPIO)	+= mpc52xx_gpio.o
-+obj-$(CONFIG_PPC_MPC5200_LPBFIFO)	+= mpc52xx_lpbfifo.o
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
+ config SPI_MPC52xx_PSC
+ 	tristate "Freescale MPC52xx PSC SPI controller"
+ 	depends on PPC_MPC52xx && EXPERIMENTAL
+diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
+index 5d04519..8de32c7 100644
+--- a/drivers/spi/Makefile
++++ b/drivers/spi/Makefile
+@@ -24,6 +24,7 @@ obj-$(CONFIG_SPI_OMAP_UWIRE)		+= omap_uwire.o
+ obj-$(CONFIG_SPI_OMAP24XX)		+= omap2_mcspi.o
+ obj-$(CONFIG_SPI_ORION)			+= orion_spi.o
+ obj-$(CONFIG_SPI_MPC52xx_PSC)		+= mpc52xx_psc_spi.o
++obj-$(CONFIG_SPI_MPC52xx)		+= mpc52xx_spi.o
+ obj-$(CONFIG_SPI_MPC83xx)		+= spi_mpc83xx.o
+ obj-$(CONFIG_SPI_S3C24XX_GPIO)		+= spi_s3c24xx_gpio.o
+ obj-$(CONFIG_SPI_S3C24XX)		+= spi_s3c24xx.o
+diff --git a/drivers/spi/mpc52xx_spi.c b/drivers/spi/mpc52xx_spi.c
 new file mode 100644
-index 0000000..fe32ae5
+index 0000000..ef8379b
 --- /dev/null
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-@@ -0,0 +1,458 @@
++++ b/drivers/spi/mpc52xx_spi.c
+@@ -0,0 +1,520 @@
 +/*
-+ * LocalPlus Bus FIFO driver for the Freescale MPC52xx.
++ * MPC52xx SPI bus driver.
 + *
-+ * Copyright (C) 2009 Secret Lab Technologies Ltd.
++ * Copyright (C) 2008 Secret Lab Technologies Ltd.
 + *
 + * This file is released under the GPLv2
 + *
-+ * Todo:
-+ * - Add support for multiple requests to be queued.
++ * This is the driver for the MPC5200's dedicated SPI controller.
++ *
++ * Note: this driver does not support the MPC5200 PSC in SPI mode.  For
++ * that driver see drivers/spi/mpc52xx_psc_spi.c
 + */
 +
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/of.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/errno.h>
 +#include <linux/of_platform.h>
-+#include <linux/spinlock.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/mpc52xx.h>
++#include <linux/interrupt.h>
++#include <linux/delay.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/mpc52xx_spi.h>
++#include <linux/of_spi.h>
++#include <linux/io.h>
 +#include <asm/time.h>
-+
-+#include <sysdev/bestcomm/bestcomm.h>
-+#include <sysdev/bestcomm/bestcomm_priv.h>
-+#include <sysdev/bestcomm/gen_bd.h>
++#include <asm/mpc52xx.h>
 +
 +MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
-+MODULE_DESCRIPTION("MPC5200 LocalPlus FIFO device driver");
++MODULE_DESCRIPTION("MPC52xx SPI (non-PSC) Driver");
 +MODULE_LICENSE("GPL");
 +
-+#define LPBFIFO_REG_PACKET_SIZE		(0x00)
-+#define LPBFIFO_REG_START_ADDRESS	(0x04)
-+#define LPBFIFO_REG_CONTROL		(0x08)
-+#define LPBFIFO_REG_ENABLE		(0x0C)
-+#define LPBFIFO_REG_BYTES_DONE_STATUS	(0x14)
-+#define LPBFIFO_REG_FIFO_DATA		(0x40)
-+#define LPBFIFO_REG_FIFO_STATUS		(0x44)
-+#define LPBFIFO_REG_FIFO_CONTROL	(0x48)
-+#define LPBFIFO_REG_FIFO_ALARM		(0x4C)
++/* Register offsets */
++#define SPI_CTRL1	0x00
++#define SPI_CTRL1_SPIE		(1 << 7)
++#define SPI_CTRL1_SPE		(1 << 6)
++#define SPI_CTRL1_MSTR		(1 << 4)
++#define SPI_CTRL1_CPOL		(1 << 3)
++#define SPI_CTRL1_CPHA		(1 << 2)
++#define SPI_CTRL1_SSOE		(1 << 1)
++#define SPI_CTRL1_LSBFE		(1 << 0)
 +
-+struct mpc52xx_lpbfifo {
-+	struct device *dev;
-+	phys_addr_t regs_phys;
++#define SPI_CTRL2	0x01
++#define SPI_BRR		0x04
++
++#define SPI_STATUS	0x05
++#define SPI_STATUS_SPIF		(1 << 7)
++#define SPI_STATUS_WCOL		(1 << 6)
++#define SPI_STATUS_MODF		(1 << 4)
++
++#define SPI_DATA	0x09
++#define SPI_PORTDATA	0x0d
++#define SPI_DATADIR	0x10
++
++/* FSM state return values */
++#define FSM_STOP	0	/* Nothing more for the state machine to */
++				/* do.  If something interesting happens */
++				/* then and IRQ will be received */
++#define FSM_POLL	1	/* need to poll for completion, an IRQ is */
++				/* not expected */
++#define FSM_CONTINUE	2	/* Keep iterating the state machine */
++
++/* Driver internal data */
++struct mpc52xx_spi {
++	struct spi_master *master;
++	u32 sysclk;
 +	void __iomem *regs;
-+	int irq;
++	int irq0;	/* MODF irq */
++	int irq1;	/* SPIF irq */
++	int ipb_freq;
++
++	/* Statistics */
++	int msg_count;
++	int wcol_count;
++	int wcol_ticks;
++	u32 wcol_tx_timestamp;
++	int modf_count;
++	int byte_count;
++
++	struct list_head queue;		/* queue of pending messages */
 +	spinlock_t lock;
++	struct work_struct work;
 +
-+	struct bcom_task *bcom_tx_task;
-+	struct bcom_task *bcom_rx_task;
-+	struct bcom_task *bcom_cur_task;
 +
-+	/* Current state data */
-+	struct mpc52xx_lpbfifo_request *req;
++	/* Details of current transfer (length, and buffer pointers) */
++	struct spi_message *message;	/* current message */
++	struct spi_transfer *transfer;	/* current transfer */
++	int (*state)(int irq, struct mpc52xx_spi *ms, u8 status, u8 data);
++	int len;
++	int timestamp;
++	u8 *rx_buf;
++	const u8 *tx_buf;
++	int cs_change;
 +};
 +
-+/* The MPC5200 has only one fifo, so only need one instance structure */
-+static struct mpc52xx_lpbfifo lpbfifo;
-+
-+/**
-+ * mpc52xx_lpbfifo_kick - Trigger the next block of data to be transfered
++/*
++ * CS control function
 + */
-+static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfifo_request *req)
++static void mpc52xx_spi_chipsel(struct mpc52xx_spi *ms, int value)
 +{
-+	size_t transfer_size = req->size - req->pos;
-+	struct bcom_bd *bd;
-+	void __iomem *reg;
-+	u32 *data;
-+	int i;
-+
-+	/* Set and clear the reset bits; is good practice in User Manual */
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
-+
-+	if (req->flags & MPC52XX_LPBFIFO_FLAG_NO_DMA) {
-+		/* While the FIFO can be setup for transfer sizes as large as
-+		 * 16M-1, the FIFO itself is only 512 bytes deep and it does
-+		 * not generate interrupts for FIFO full events (only transfer
-+		 * complete will raise an IRQ).  Therefore when not using
-+		 * Bestcomm to drive the FIFO it needs to either be polled, or
-+		 * transfers need to constrained to the size of the fifo.
-+		 *
-+		 * This driver restricts the size of the transfer
-+		 */
-+		if (transfer_size > 512)
-+			transfer_size = 512;
-+
-+		/* Load the FIFO with data */
-+		if (req->flags & MPC52XX_LPBFIFO_FLAG_WRITE) {
-+			reg = lpbfifo.regs + LPBFIFO_REG_FIFO_DATA;
-+			data = req->data + req->pos;
-+			for (i = 0; i < transfer_size; i += 4)
-+				out_be32(reg, *data++);
-+		}
-+
-+		/* Unmask both error and completion irqs */
-+		out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x00000301);
-+	} else {
-+		/* Choose the correct direction */
-+		if (req->flags & MPC52XX_LPBFIFO_FLAG_WRITE)
-+			lpbfifo.bcom_cur_task = lpbfifo.bcom_tx_task;
-+		else
-+			lpbfifo.bcom_cur_task = lpbfifo.bcom_rx_task;
-+
-+		bd = bcom_prepare_next_buffer(lpbfifo.bcom_cur_task);
-+		bd->status = transfer_size;
-+		transfer_size += 4; /* BLECH! */
-+		bd->data[0] = req->data_phys + req->pos;
-+		bcom_submit_next_buffer(lpbfifo.bcom_cur_task, NULL);
-+
-+		/* Unmask error irq */
-+		out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x00000201);
-+	}
-+
-+	/* Set transfer size, width, chip select and READ mode */
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_START_ADDRESS,
-+		 req->offset + req->pos);
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_PACKET_SIZE, transfer_size);
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_CONTROL, req->cs << 24 | 0x010008);
-+
-+	/* Kick it off */
-+	out_8(lpbfifo.regs + LPBFIFO_REG_PACKET_SIZE, 0x01);
-+	if (!(req->flags & MPC52XX_LPBFIFO_FLAG_NO_DMA))
-+		bcom_enable(lpbfifo.bcom_cur_task);
++	out_8(ms->regs + SPI_PORTDATA, value ? 0 : 0x08);
 +}
 +
-+/**
-+ * mpc52xx_lpbfifo_irq - IRQ handler for LPB FIFO
++/*
++ * Start a new transfer.  This is called both by the idle state
++ * for the first transfer in a message, and by the wait state when the
++ * previous transfer in a message is complete.
 + */
-+static irqreturn_t mpc52xx_lpbfifo_irq(int irq, void *dev_id)
++static void mpc52xx_spi_start_transfer(struct mpc52xx_spi *ms)
 +{
-+	struct mpc52xx_lpbfifo_request *req;
-+	u8 status = in_8(lpbfifo.regs + LPBFIFO_REG_BYTES_DONE_STATUS);
-+	void __iomem *reg;
-+	u32 *data;
-+	int count, i;
-+	int do_callback = 0;
-+	u32 ts;
-+	unsigned long flags;
++	ms->rx_buf = ms->transfer->rx_buf;
++	ms->tx_buf = ms->transfer->tx_buf;
++	ms->len = ms->transfer->len;
 +
-+	spin_lock_irqsave(&lpbfifo.lock, flags);
-+	ts = get_tbl();
++	/* Activate the chip select */
++	if (ms->cs_change)
++		mpc52xx_spi_chipsel(ms, 1);
++	ms->cs_change = ms->transfer->cs_change;
 +
-+	req = lpbfifo.req;
-+	if (!req) {
-+		spin_unlock_irqrestore(&lpbfifo.lock, flags);
-+		pr_err("bogus LPBFIFO IRQ\n");
-+		return IRQ_HANDLED;
-+	}
-+
-+	/*
-+	 * This is a tricky bit of code.  There are 4 exit conditions:
-+	 * 1. FIFO abort
-+	 * 2. FIFO complete without DMA; more data to do
-+	 * 3. FIFO complete without DMA; all data transfered
-+	 * 4. FIFO complete using DMA
-+	 *
-+	 * Condition 1 can occur regardless of whether or not DMA is used.
-+	 * It requires executing the callback to report the error and exiting
-+	 * immediately.
-+	 *
-+	 * Condition 2 requires programming the FIFO with the next block of data
-+	 *
-+	 * Condition 3 requires executing the callback to report completion
-+	 *
-+	 * Condition 4 means the same as 3, except the callback must *not* be
-+	 * executed.  Instead, execution of the callback is deferred to the DMA
-+	 * interrupt handler.
-+	 *
-+	 * To make things trickier, the spinlock must be dropped before
-+	 * executing the callback, otherwise we could end up with a deadlock
-+	 * or nested spinlock condition.  The out path is non-trivial, so
-+	 * extra fiddling is done to make sure all paths lead to the same
-+	 * outbound code.
-+	 */
-+
-+	/* check abort bit */
-+	if (status & 0x10) {
-+		out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
-+		do_callback = 1;
-+		goto out;
-+	}
-+
-+	/* If using DMA, we should not be at this point */
-+	if (!(req->flags & MPC52XX_LPBFIFO_FLAG_NO_DMA)) {
-+		pr_err("bad IRQ mask? mask:%.8x status:%.8x flags=%x\n",
-+		       in_be32(lpbfifo.regs + LPBFIFO_REG_BYTES_DONE_STATUS),
-+		       status, req->flags);
-+		goto out;
-+	}
-+
-+	/* If the transaction done bit is *not* set; then why are we here? */
-+	if ((status & 0x01) == 0) {
-+		pr_err("spurious IRQ? %x\n", status);
-+		goto out;
-+	}
-+
-+	/* Read result from hardware */
-+	count = in_be32(lpbfifo.regs + LPBFIFO_REG_BYTES_DONE_STATUS);
-+	count &= 0x00ffffff;
-+
-+	/* copy the data out of the FIFO */
-+	if (!(req->flags & MPC52XX_LPBFIFO_FLAG_WRITE)) {
-+		reg = lpbfifo.regs + LPBFIFO_REG_FIFO_DATA;
-+		data = req->data + req->pos;
-+		for (i = 0; i < count; i += 4)
-+			*data++ = in_be32(reg);
-+	}
-+
-+	/* Update transfer position and count */
-+	req->pos += count;
-+
-+	/* Decide what to do next */
-+	if (req->size - req->pos)
-+		mpc52xx_lpbfifo_kick(req); /* more work to do */
++	/* Write out the first byte */
++	ms->wcol_tx_timestamp = get_tbl();
++	if (ms->tx_buf)
++		out_8(ms->regs + SPI_DATA, *ms->tx_buf++);
 +	else
-+		do_callback = 1;
++		out_8(ms->regs + SPI_DATA, 0);
++}
 +
-+ out:
-+	/* Clear the IRQ */
-+	out_8(lpbfifo.regs + LPBFIFO_REG_BYTES_DONE_STATUS, 0x01);
++/* Forward declaration of state handlers */
++static int mpc52xx_spi_fsmstate_transfer(int irq, struct mpc52xx_spi *ms,
++					 u8 status, u8 data);
++static int mpc52xx_spi_fsmstate_wait(int irq, struct mpc52xx_spi *ms,
++				     u8 status, u8 data);
 +
-+	/* When the do_callback flag is set; it means the transfer is finished
-+	 * so set the FIFO as idle */
-+	if (do_callback)
-+		lpbfifo.req = NULL;
++/*
++ * IDLE state
++ *
++ * No transfers are in progress; if another transfer is pending then retrieve
++ * it and kick it off.  Otherwise, stop processing the state machine
++ */
++static int
++mpc52xx_spi_fsmstate_idle(int irq, struct mpc52xx_spi *ms, u8 status, u8 data)
++{
++	struct spi_device *spi;
++	int spr, sppr;
++	u8 ctrl1;
 +
-+	/* Release the lock before calling out to the callback. */
-+	req->irq_count++;
-+	req->irq_ticks += get_tbl() - ts;
-+	spin_unlock_irqrestore(&lpbfifo.lock, flags);
++	if (status && (irq != NO_IRQ))
++		dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
++			status);
 +
-+	/* Spinlock is released; it is now safe to call the callback */
-+	if (do_callback && req->callback)
-+		req->callback(req);
++	/* Check if there is another transfer waiting. */
++	if (list_empty(&ms->queue))
++		return FSM_STOP;
 +
++	/* get the head of the queue */
++	ms->message = list_first_entry(&ms->queue, struct spi_message, queue);
++	list_del_init(&ms->message->queue);
++
++	/* Setup the controller parameters */
++	ctrl1 = SPI_CTRL1_SPIE | SPI_CTRL1_SPE | SPI_CTRL1_MSTR;
++	spi = ms->message->spi;
++	if (spi->mode & SPI_CPHA)
++		ctrl1 |= SPI_CTRL1_CPHA;
++	if (spi->mode & SPI_CPOL)
++		ctrl1 |= SPI_CTRL1_CPOL;
++	if (spi->mode & SPI_LSB_FIRST)
++		ctrl1 |= SPI_CTRL1_LSBFE;
++	out_8(ms->regs + SPI_CTRL1, ctrl1);
++
++	/* Setup the controller speed */
++	/* minimum divider is '2'.  Also, add '1' to force rounding the
++	 * divider up. */
++	sppr = ((ms->ipb_freq / ms->message->spi->max_speed_hz) + 1) >> 1;
++	spr = 0;
++	if (sppr < 1)
++		sppr = 1;
++	while (((sppr - 1) & ~0x7) != 0) {
++		sppr = (sppr + 1) >> 1; /* add '1' to force rounding up */
++		spr++;
++	}
++	sppr--;		/* sppr quantity in register is offset by 1 */
++	if (spr > 7) {
++		/* Don't overrun limits of SPI baudrate register */
++		spr = 7;
++		sppr = 7;
++	}
++	out_8(ms->regs + SPI_BRR, sppr << 4 | spr); /* Set speed */
++
++	ms->cs_change = 1;
++	ms->transfer = container_of(ms->message->transfers.next,
++				    struct spi_transfer, transfer_list);
++
++	mpc52xx_spi_start_transfer(ms);
++	ms->state = mpc52xx_spi_fsmstate_transfer;
++
++	return FSM_CONTINUE;
++}
++
++/*
++ * TRANSFER state
++ *
++ * In the middle of a transfer.  If the SPI core has completed processing
++ * a byte, then read out the received data and write out the next byte
++ * (unless this transfer is finished; in which case go on to the wait
++ * state)
++ */
++static int mpc52xx_spi_fsmstate_transfer(int irq, struct mpc52xx_spi *ms,
++					 u8 status, u8 data)
++{
++	if (!status)
++		return ms->irq0 ? FSM_STOP : FSM_POLL;
++
++	if (status & SPI_STATUS_WCOL) {
++		/* The SPI controller is stoopid.  At slower speeds, it may
++		 * raise the SPIF flag before the state machine is actually
++		 * finished, which causes a collision (internal to the state
++		 * machine only).  The manual recommends inserting a delay
++		 * between receiving the interrupt and sending the next byte,
++		 * but it can also be worked around simply by retrying the
++		 * transfer which is what we do here. */
++		ms->wcol_count++;
++		ms->wcol_ticks += get_tbl() - ms->wcol_tx_timestamp;
++		ms->wcol_tx_timestamp = get_tbl();
++		data = 0;
++		if (ms->tx_buf)
++			data = *(ms->tx_buf-1);
++		out_8(ms->regs + SPI_DATA, data); /* try again */
++		return FSM_CONTINUE;
++	} else if (status & SPI_STATUS_MODF) {
++		ms->modf_count++;
++		dev_err(&ms->master->dev, "mode fault\n");
++		mpc52xx_spi_chipsel(ms, 0);
++		ms->message->status = -EIO;
++		ms->message->complete(ms->message->context);
++		ms->state = mpc52xx_spi_fsmstate_idle;
++		return FSM_CONTINUE;
++	}
++
++	/* Read data out of the spi device */
++	ms->byte_count++;
++	if (ms->rx_buf)
++		*ms->rx_buf++ = data;
++
++	/* Is the transfer complete? */
++	ms->len--;
++	if (ms->len == 0) {
++		ms->timestamp = get_tbl();
++		ms->timestamp += ms->transfer->delay_usecs * tb_ticks_per_usec;
++		ms->state = mpc52xx_spi_fsmstate_wait;
++		return FSM_CONTINUE;
++	}
++
++	/* Write out the next byte */
++	ms->wcol_tx_timestamp = get_tbl();
++	if (ms->tx_buf)
++		out_8(ms->regs + SPI_DATA, *ms->tx_buf++);
++	else
++		out_8(ms->regs + SPI_DATA, 0);
++
++	return FSM_CONTINUE;
++}
++
++/*
++ * WAIT state
++ *
++ * A transfer has completed; need to wait for the delay period to complete
++ * before starting the next transfer
++ */
++static int
++mpc52xx_spi_fsmstate_wait(int irq, struct mpc52xx_spi *ms, u8 status, u8 data)
++{
++	if (status && irq)
++		dev_err(&ms->master->dev, "spurious irq, status=0x%.2x\n",
++			status);
++
++	if (((int)get_tbl()) - ms->timestamp < 0)
++		return FSM_POLL;
++
++	ms->message->actual_length += ms->transfer->len;
++
++	/* Check if there is another transfer in this message.  If there
++	 * aren't then deactivate CS, notify sender, and drop back to idle
++	 * to start the next message. */
++	if (ms->transfer->transfer_list.next == &ms->message->transfers) {
++		ms->msg_count++;
++		mpc52xx_spi_chipsel(ms, 0);
++		ms->message->status = 0;
++		ms->message->complete(ms->message->context);
++		ms->state = mpc52xx_spi_fsmstate_idle;
++		return FSM_CONTINUE;
++	}
++
++	/* There is another transfer; kick it off */
++
++	if (ms->cs_change)
++		mpc52xx_spi_chipsel(ms, 0);
++
++	ms->transfer = container_of(ms->transfer->transfer_list.next,
++				    struct spi_transfer, transfer_list);
++	mpc52xx_spi_start_transfer(ms);
++	ms->state = mpc52xx_spi_fsmstate_transfer;
++	return FSM_CONTINUE;
++}
++
++/**
++ * mpc52xx_spi_fsm_process - Finite State Machine iteration function
++ * @irq: irq number that triggered the FSM or 0 for polling
++ * @ms: pointer to mpc52xx_spi driver data
++ */
++static void mpc52xx_spi_fsm_process(int irq, struct mpc52xx_spi *ms)
++{
++	int rc = FSM_CONTINUE;
++	u8 status, data;
++
++	while (rc == FSM_CONTINUE) {
++		/* Interrupt cleared by read of STATUS followed by
++		 * read of DATA registers */
++		status = in_8(ms->regs + SPI_STATUS);
++		data = in_8(ms->regs + SPI_DATA);
++		rc = ms->state(irq, ms, status, data);
++	}
++
++	if (rc == FSM_POLL)
++		schedule_work(&ms->work);
++}
++
++/**
++ * mpc52xx_spi_irq - IRQ handler
++ */
++static irqreturn_t mpc52xx_spi_irq(int irq, void *_ms)
++{
++	struct mpc52xx_spi *ms = _ms;
++	spin_lock(&ms->lock);
++	mpc52xx_spi_fsm_process(irq, ms);
++	spin_unlock(&ms->lock);
 +	return IRQ_HANDLED;
 +}
 +
 +/**
-+ * mpc52xx_lpbfifo_bcom_irq - IRQ handler for LPB FIFO Bestcomm task
++ * mpc52xx_spi_wq - Workqueue function for polling the state machine
 + */
-+static irqreturn_t mpc52xx_lpbfifo_bcom_irq(int irq, void *dev_id)
++static void mpc52xx_spi_wq(struct work_struct *work)
 +{
-+	struct mpc52xx_lpbfifo_request *req;
++	struct mpc52xx_spi *ms = container_of(work, struct mpc52xx_spi, work);
 +	unsigned long flags;
-+	u32 status;
-+	u32 ts;
 +
-+	spin_lock_irqsave(&lpbfifo.lock, flags);
-+	ts = get_tbl();
++	spin_lock_irqsave(&ms->lock, flags);
++	mpc52xx_spi_fsm_process(0, ms);
++	spin_unlock_irqrestore(&ms->lock, flags);
++}
 +
-+	req = lpbfifo.req;
-+	if (!req) {
-+		spin_unlock_irqrestore(&lpbfifo.lock, flags);
-+		WARN_ONCE(1, "bogus Bestcomm IRQ\n");
-+		return IRQ_HANDLED;
++/*
++ * spi_master ops
++ */
++
++static int mpc52xx_spi_setup(struct spi_device *spi)
++{
++	if (spi->bits_per_word % 8)
++		return -EINVAL;
++
++	if (spi->mode & ~(SPI_CPOL | SPI_CPHA | SPI_LSB_FIRST))
++		return -EINVAL;
++
++	if (spi->chip_select >= spi->master->num_chipselect)
++		return -EINVAL;
++
++	return 0;
++}
++
++static int mpc52xx_spi_transfer(struct spi_device *spi, struct spi_message *m)
++{
++	struct mpc52xx_spi *ms = spi_master_get_devdata(spi->master);
++	unsigned long flags;
++
++	m->actual_length = 0;
++	m->status = -EINPROGRESS;
++
++	spin_lock_irqsave(&ms->lock, flags);
++	list_add_tail(&m->queue, &ms->queue);
++	spin_unlock_irqrestore(&ms->lock, flags);
++	schedule_work(&ms->work);
++
++	return 0;
++}
++
++/*
++ * OF Platform Bus Binding
++ */
++static int __devinit mpc52xx_spi_probe(struct of_device *op,
++				       const struct of_device_id *match)
++{
++	struct spi_master *master;
++	struct mpc52xx_spi *ms;
++	void __iomem *regs;
++	int rc;
++
++	/* MMIO registers */
++	dev_dbg(&op->dev, "probing mpc5200 SPI device\n");
++	regs = of_iomap(op->node, 0);
++	if (!regs)
++		return -ENODEV;
++
++	/* initialize the device */
++	out_8(regs+SPI_CTRL1, SPI_CTRL1_SPIE | SPI_CTRL1_SPE | SPI_CTRL1_MSTR);
++	out_8(regs + SPI_CTRL2, 0x0);
++	out_8(regs + SPI_DATADIR, 0xe);	/* Set output pins */
++	out_8(regs + SPI_PORTDATA, 0x8);	/* Deassert /SS signal */
++
++	/* Clear the status register and re-read it to check for a MODF
++	 * failure.  This driver cannot currently handle multiple masters
++	 * on the SPI bus.  This fault will also occur if the SPI signals
++	 * are not connected to any pins (port_config setting) */
++	in_8(regs + SPI_STATUS);
++	in_8(regs + SPI_DATA);
++	if (in_8(regs + SPI_STATUS) & SPI_STATUS_MODF) {
++		dev_err(&op->dev, "mode fault; is port_config correct?\n");
++		rc = -EIO;
++		goto err_init;
 +	}
 +
-+	bcom_retrieve_buffer(lpbfifo.bcom_cur_task, &status, NULL);
++	dev_dbg(&op->dev, "allocating spi_master struct\n");
++	master = spi_alloc_master(&op->dev, sizeof *ms);
++	if (!master) {
++		rc = -ENOMEM;
++		goto err_alloc;
++	}
++	master->bus_num = -1;
++	master->num_chipselect = 1;
++	master->setup = mpc52xx_spi_setup;
++	master->transfer = mpc52xx_spi_transfer;
++	dev_set_drvdata(&op->dev, master);
 +
-+	req->pos = status & 0x00ffffff;
++	ms = spi_master_get_devdata(master);
++	ms->master = master;
++	ms->regs = regs;
++	ms->irq0 = irq_of_parse_and_map(op->node, 0);
++	ms->irq1 = irq_of_parse_and_map(op->node, 1);
++	ms->state = mpc52xx_spi_fsmstate_idle;
++	ms->ipb_freq = mpc5xxx_get_bus_frequency(op->node);
++	spin_lock_init(&ms->lock);
++	INIT_LIST_HEAD(&ms->queue);
++	INIT_WORK(&ms->work, mpc52xx_spi_wq);
 +
-+	/* Mark the FIFO as idle */
-+	lpbfifo.req = NULL;
-+
-+	/* Release the lock before calling out to the callback. */
-+	req->irq_count++;
-+	req->irq_ticks += get_tbl() - ts;
-+	spin_unlock_irqrestore(&lpbfifo.lock, flags);
-+
-+	if (req->callback)
-+		req->callback(req);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+
-+/**
-+ * mpc52xx_lpbfifo_submit - Submit an LPB FIFO transfer request.
-+ * @req: Pointer to request structure
-+ */
-+int mpc52xx_lpbfifo_submit(struct mpc52xx_lpbfifo_request *req)
-+{
-+	unsigned long flags;
-+
-+	if (!lpbfifo.regs)
-+		return -ENODEV;
-+
-+	spin_lock_irqsave(&lpbfifo.lock, flags);
-+
-+	/* If the req pointer is already set, then a transfer is in progress */
-+	if (lpbfifo.req) {
-+		spin_unlock_irqrestore(&lpbfifo.lock, flags);
-+		return -EBUSY;
++	/* Decide if interrupts can be used */
++	if (ms->irq0 && ms->irq1) {
++		rc = request_irq(ms->irq0, mpc52xx_spi_irq, IRQF_SAMPLE_RANDOM,
++				  "mpc5200-spi-modf", ms);
++		rc |= request_irq(ms->irq1, mpc52xx_spi_irq, IRQF_SAMPLE_RANDOM,
++				  "mpc5200-spi-spiF", ms);
++		if (rc) {
++			free_irq(ms->irq0, ms);
++			free_irq(ms->irq1, ms);
++			ms->irq0 = ms->irq1 = 0;
++		}
++	} else {
++		/* operate in polled mode */
++		ms->irq0 = ms->irq1 = 0;
 +	}
 +
-+	/* Setup the transfer */
-+	lpbfifo.req = req;
-+	req->irq_count = 0;
-+	req->irq_ticks = 0;
-+	req->pos = 0;
++	if (!ms->irq0)
++		dev_info(&op->dev, "using polled mode\n");
 +
-+	mpc52xx_lpbfifo_kick(req);
-+	spin_unlock_irqrestore(&lpbfifo.lock, flags);
-+	return 0;
-+}
-+EXPORT_SYMBOL(mpc52xx_lpbfifo_submit);
-+
-+void mpc52xx_lpbfifo_abort(struct mpc52xx_lpbfifo_request *req)
-+{
-+	unsigned long flags;
-+
-+	if (lpbfifo.req != req)
-+		return;
-+
-+	spin_lock_irqsave(&lpbfifo.lock, flags);
-+	/* Put it into reset and clear the state */
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
-+	lpbfifo.req = NULL;
-+	spin_unlock_irqrestore(&lpbfifo.lock, flags);
-+}
-+EXPORT_SYMBOL(mpc52xx_lpbfifo_abort);
-+
-+static int __devinit
-+mpc52xx_lpbfifo_probe(struct of_device *op, const struct of_device_id *match)
-+{
-+	struct resource res;
-+	int rc = -ENOMEM;
-+
-+	if (lpbfifo.dev != NULL)
-+		return -ENOSPC;
-+
-+	lpbfifo.irq = irq_of_parse_and_map(op->node, 0);
-+	if (!lpbfifo.irq)
-+		return -ENODEV;
-+
-+	if (of_address_to_resource(op->node, 0, &res))
-+		return -ENODEV;
-+	lpbfifo.regs_phys = res.start;
-+	lpbfifo.regs = of_iomap(op->node, 0);
-+	if (!lpbfifo.regs)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&lpbfifo.lock);
-+
-+	/* Put FIFO into reset */
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
-+
-+	/* Configure the watermarks so DMA will always complete correctly.
-+	 * It may be worth experimenting with the ALARM value to see if
-+	 * there is a performance impacit.  However, if it is wrong there
-+	 * is a risk of DMA not transferring the last chunk of data */
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_FIFO_ALARM, 0x1ff);
-+	out_8(lpbfifo.regs + LPBFIFO_REG_FIFO_CONTROL, 0);
-+
-+	/* Register the interrupt handler */
-+	rc = request_irq(lpbfifo.irq, mpc52xx_lpbfifo_irq, 0,
-+			 "mpc52xx-lpbfifo", &lpbfifo);
++	dev_dbg(&op->dev, "registering spi_master struct\n");
++	rc = spi_register_master(master);
 +	if (rc)
-+		goto err_irq;
++		goto err_register;
 +
-+	/* Request the Bestcomm receive (fifo --> memory) task and IRQ */
-+	lpbfifo.bcom_rx_task =
-+		bcom_gen_bd_rx_init(2, res.start + LPBFIFO_REG_FIFO_DATA,
-+				    BCOM_INITIATOR_SCLPC, BCOM_IPR_SCLPC,
-+				    16*1024*1024);
-+	if (!lpbfifo.bcom_rx_task)
-+		goto err_bcom_rx;
++	of_register_spi_devices(master, op->node);
++	dev_info(&ms->master->dev, "registered MPC5200 SPI bus\n");
 +
-+	rc = request_irq(bcom_get_task_irq(lpbfifo.bcom_rx_task),
-+			 mpc52xx_lpbfifo_bcom_irq, 0,
-+			 "mpc52xx-lpbfifo-rx", &lpbfifo);
-+	if (rc)
-+		goto err_bcom_rx_irq;
++	return rc;
 +
-+	/* Request the Bestcomm transmit (memory --> fifo) task and IRQ */
-+	lpbfifo.bcom_tx_task =
-+		bcom_gen_bd_tx_init(2, res.start + LPBFIFO_REG_FIFO_DATA,
-+				    BCOM_INITIATOR_SCLPC, BCOM_IPR_SCLPC);
-+	if (!lpbfifo.bcom_tx_task)
-+		goto err_bcom_tx;
-+
-+	rc = request_irq(bcom_get_task_irq(lpbfifo.bcom_tx_task),
-+			 mpc52xx_lpbfifo_bcom_irq, 0,
-+			 "mpc52xx-lpbfifo-tx", &lpbfifo);
-+	if (rc)
-+		goto err_bcom_tx_irq;
-+
-+	lpbfifo.dev = &op->dev;
-+	return 0;
-+
-+ err_bcom_tx_irq:
-+	bcom_gen_bd_tx_release(lpbfifo.bcom_tx_task);
-+ err_bcom_tx:
-+	free_irq(bcom_get_task_irq(lpbfifo.bcom_rx_task), &lpbfifo);
-+ err_bcom_rx_irq:
-+	bcom_gen_bd_rx_release(lpbfifo.bcom_rx_task);
-+ err_bcom_rx:
-+ err_irq:
-+	iounmap(lpbfifo.regs);
-+	lpbfifo.regs = NULL;
-+
-+	dev_err(&op->dev, "mpc52xx_lpbfifo_probe() failed\n");
-+	return -ENODEV;
++ err_register:
++	dev_err(&ms->master->dev, "initialization failed\n");
++	spi_master_put(master);
++ err_alloc:
++ err_init:
++	iounmap(regs);
++	return rc;
 +}
 +
-+
-+static int __devexit mpc52xx_lpbfifo_remove(struct of_device *op)
++static int __devexit mpc52xx_spi_remove(struct of_device *op)
 +{
-+	if (lpbfifo.dev != &op->dev)
-+		return 0;
++	struct spi_master *master = dev_get_drvdata(&op->dev);
++	struct mpc52xx_spi *ms = spi_master_get_devdata(master);
 +
-+	/* Put FIFO in reset */
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
++	free_irq(ms->irq0, ms);
++	free_irq(ms->irq1, ms);
 +
-+	/* Release the bestcomm transmit task */
-+	free_irq(bcom_get_task_irq(lpbfifo.bcom_tx_task), &lpbfifo);
-+	bcom_gen_bd_tx_release(lpbfifo.bcom_tx_task);
-+	
-+	/* Release the bestcomm receive task */
-+	free_irq(bcom_get_task_irq(lpbfifo.bcom_rx_task), &lpbfifo);
-+	bcom_gen_bd_rx_release(lpbfifo.bcom_rx_task);
-+
-+	free_irq(lpbfifo.irq, &lpbfifo);
-+	iounmap(lpbfifo.regs);
-+	lpbfifo.regs = NULL;
-+	lpbfifo.dev = NULL;
++	spi_unregister_master(master);
++	spi_master_put(master);
++	iounmap(ms->regs);
 +
 +	return 0;
 +}
 +
-+static struct of_device_id mpc52xx_lpbfifo_match[] __devinitconst = {
-+	{ .compatible = "fsl,mpc5200-lpbfifo", },
-+	{},
++static struct of_device_id mpc52xx_spi_match[] __devinitdata = {
++	{ .compatible = "fsl,mpc5200-spi", },
++	{}
 +};
++MODULE_DEVICE_TABLE(of, mpc52xx_spi_match);
 +
-+static struct of_platform_driver mpc52xx_lpbfifo_driver = {
++static struct of_platform_driver mpc52xx_spi_of_driver = {
 +	.owner = THIS_MODULE,
-+	.name = "mpc52xx-lpbfifo",
-+	.match_table = mpc52xx_lpbfifo_match,
-+	.probe = mpc52xx_lpbfifo_probe,
-+	.remove = __devexit_p(mpc52xx_lpbfifo_remove),
++	.name = "mpc52xx-spi",
++	.match_table = mpc52xx_spi_match,
++	.probe = mpc52xx_spi_probe,
++	.remove = __exit_p(mpc52xx_spi_remove),
 +};
 +
-+/***********************************************************************
-+ * Module init/exit
-+ */
-+static int __init mpc52xx_lpbfifo_init(void)
++static int __init mpc52xx_spi_init(void)
 +{
-+	pr_debug("Registering LocalPlus bus FIFO driver\n");
-+	return of_register_platform_driver(&mpc52xx_lpbfifo_driver);
++	return of_register_platform_driver(&mpc52xx_spi_of_driver);
 +}
-+module_init(mpc52xx_lpbfifo_init);
++module_init(mpc52xx_spi_init);
 +
-+static void __exit mpc52xx_lpbfifo_exit(void)
++static void __exit mpc52xx_spi_exit(void)
 +{
-+	pr_debug("Unregistering LocalPlus bus FIFO driver\n");
-+	of_unregister_platform_driver(&mpc52xx_lpbfifo_driver);
++	of_unregister_platform_driver(&mpc52xx_spi_of_driver);
 +}
-+module_exit(mpc52xx_lpbfifo_exit);
++module_exit(mpc52xx_spi_exit);
++
+diff --git a/include/linux/spi/mpc52xx_spi.h b/include/linux/spi/mpc52xx_spi.h
+new file mode 100644
+index 0000000..d1004cf
+--- /dev/null
++++ b/include/linux/spi/mpc52xx_spi.h
+@@ -0,0 +1,10 @@
++
++#ifndef INCLUDE_MPC5200_SPI_H
++#define INCLUDE_MPC5200_SPI_H
++
++extern void mpc52xx_spi_set_premessage_hook(struct spi_master *master,
++					    void (*hook)(struct spi_message *m,
++							 void *context),
++					    void *hook_context);
++
++#endif
