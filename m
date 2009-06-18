@@ -1,19 +1,23 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <rini@arvoo.nl>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 44416B72A0
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6A7DAB7285
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 14:13:54 +1000 (EST)
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <d554caa95a54f3b545d10b73e64c7780186aa4a3.1245298429.git.michael@ellerman.id.au>
-In-Reply-To: <1fdc1f0bb73b6ff2db7f9b394331d5ef5dfc4cb5.1245298429.git.michael@ellerman.id.au>
-References: <1fdc1f0bb73b6ff2db7f9b394331d5ef5dfc4cb5.1245298429.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 7/7] powerpc: Use pr_devel() in
-	arch/powerpc/mm/mmu_context_nohash.c
-Date: Thu, 18 Jun 2009 14:13:54 +1000 (EST)
+	Thu, 18 Jun 2009 16:20:01 +1000 (EST)
+Received: from smtp3.euronet.nl (smtp3.euronet.nl [194.134.35.173])
+	by ozlabs.org (Postfix) with ESMTP id 708AFDDDA0
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 16:19:59 +1000 (EST)
+Message-ID: <4A39DC80.7030906@arvoo.nl>
+Date: Thu, 18 Jun 2009 08:19:44 +0200
+From: Rini van Zetten <rini@arvoo.nl>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>,
+	spi-devel-general@lists.sourceforge.net,
+	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH -mm][POWERPC] mpc8xxx : allow SPI without cs.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,97 +27,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pr_debug() can now result in code being generated even when DEBUG
-is not defined. That's not really desirable in some places.
+This patch adds the possibility to have a spi device without a cs.
 
-With CONFIG_DYNAMIC_DEBUG=y:
+For example, the dts file should look something like this:
 
-size before:
-   text	   data	    bss	    dec	    hex	filename
-   1508	     48	     28	   1584	    630	powerpc/mm/mmu_context_nohash.o
+spi-controller {
+        gpios = <&pio1 1 0      /* cs0 */
+                 0              /* cs1, no GPIO */
+                 &pio2 2 0>;    /* cs2 */
 
-size after:
-   text	   data	    bss	    dec	    hex	filename
-   1088	      0	     28	   1116	    45c	powerpc/mm/mmu_context_nohash.o
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+
+Signed-off-by: Rini van Zetten <rini@arvoo.nl>
 ---
- arch/powerpc/mm/mmu_context_nohash.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+Changes :
+	patch against 2.6.30-rc8-mm1
 
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
-index 8343986..92a1971 100644
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -89,7 +89,7 @@ static unsigned int steal_context_smp(unsigned int id)
- 				id = first_context;
- 			continue;
- 		}
--		pr_debug("[%d] steal context %d from mm @%p\n",
-+		pr_devel("[%d] steal context %d from mm @%p\n",
- 			 smp_processor_id(), id, mm);
- 
- 		/* Mark this mm has having no context anymore */
-@@ -126,7 +126,7 @@ static unsigned int steal_context_up(unsigned int id)
- 	/* Pick up the victim mm */
- 	mm = context_mm[id];
- 
--	pr_debug("[%d] steal context %d from mm @%p\n", cpu, id, mm);
-+	pr_devel("[%d] steal context %d from mm @%p\n", cpu, id, mm);
- 
- 	/* Flush the TLB for that context */
- 	local_flush_tlb_mm(mm);
-@@ -180,7 +180,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
- 	spin_lock(&context_lock);
- 
- #ifndef DEBUG_STEAL_ONLY
--	pr_debug("[%d] activating context for mm @%p, active=%d, id=%d\n",
-+	pr_devel("[%d] activating context for mm @%p, active=%d, id=%d\n",
- 		 cpu, next, next->context.active, next->context.id);
- #endif
- 
-@@ -189,7 +189,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
- 	next->context.active++;
- 	if (prev) {
- #ifndef DEBUG_STEAL_ONLY
--		pr_debug(" old context %p active was: %d\n",
-+		pr_devel(" old context %p active was: %d\n",
- 			 prev, prev->context.active);
- #endif
- 		WARN_ON(prev->context.active < 1);
-@@ -236,7 +236,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
- 	next->context.id = id;
- 
- #ifndef DEBUG_STEAL_ONLY
--	pr_debug("[%d] picked up new id %d, nrf is now %d\n",
-+	pr_devel("[%d] picked up new id %d, nrf is now %d\n",
- 		 cpu, id, nr_free_contexts);
- #endif
- 
-@@ -247,7 +247,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
- 	 * local TLB for it and unmark it before we use it
- 	 */
- 	if (test_bit(id, stale_map[cpu])) {
--		pr_debug("[%d] flushing stale context %d for mm @%p !\n",
-+		pr_devel("[%d] flushing stale context %d for mm @%p !\n",
- 			 cpu, id, next);
- 		local_flush_tlb_mm(next);
- 
-@@ -314,13 +314,13 @@ static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
- 	switch (action) {
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
--		pr_debug("MMU: Allocating stale context map for CPU %d\n", cpu);
-+		pr_devel("MMU: Allocating stale context map for CPU %d\n", cpu);
- 		stale_map[cpu] = kzalloc(CTX_MAP_SIZE, GFP_KERNEL);
- 		break;
- #ifdef CONFIG_HOTPLUG_CPU
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
--		pr_debug("MMU: Freeing stale context map for CPU %d\n", cpu);
-+		pr_devel("MMU: Freeing stale context map for CPU %d\n", cpu);
- 		kfree(stale_map[cpu]);
- 		stale_map[cpu] = NULL;
- 		break;
+--- drivers/spi/spi_mpc8xxx.c.org	2009-06-12 10:45:21.000000000 +0200
++++ drivers/spi/spi_mpc8xxx.c	2009-06-12 10:54:48.000000000 +0200
+@@ -666,9 +666,10 @@ static void mpc8xxx_spi_cs_control(struc
+  	struct mpc8xxx_spi_probe_info *pinfo = to_of_pinfo(dev->platform_data);
+  	u16 cs = spi->chip_select;
+  	int gpio = pinfo->gpios[cs];
+-	bool alow = pinfo->alow_flags[cs];
+-
+-	gpio_set_value(gpio, on ^ alow);
++	if (gpio != -EEXIST) {
++		bool alow = pinfo->alow_flags[cs];
++		gpio_set_value(gpio, on ^ alow);
++	}
+  }
+
+  static int of_mpc8xxx_spi_get_chipselects(struct device *dev)
+@@ -707,27 +708,29 @@ static int of_mpc8xxx_spi_get_chipselect
+  		enum of_gpio_flags flags;
+
+  		gpio = of_get_gpio_flags(np, i, &flags);
+-		if (!gpio_is_valid(gpio)) {
++		if (gpio_is_valid(gpio)) {
++			ret = gpio_request(gpio, dev_name(dev));
++			if (ret) {
++				dev_err(dev, "can't request gpio #%d: %d\n", i, ret);
++				goto err_loop;
++			}
++
++			pinfo->gpios[i] = gpio;
++			pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
++
++			ret = gpio_direction_output(pinfo->gpios[i],
++					pinfo->alow_flags[i]);
++			if (ret) {
++				dev_err(dev, "can't set output direction for gpio "
++						"#%d: %d\n", i, ret);
++				goto err_loop;
++			}
++		} else if (gpio == -EEXIST) {
++			pinfo->gpios[i] = -EEXIST;
++		} else {
+  			dev_err(dev, "invalid gpio #%d: %d\n", i, gpio);
+  			goto err_loop;
+  		}
+-
+-		ret = gpio_request(gpio, dev_name(dev));
+-		if (ret) {
+-			dev_err(dev, "can't request gpio #%d: %d\n", i, ret);
+-			goto err_loop;
+-		}
+-
+-		pinfo->gpios[i] = gpio;
+-		pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
+-
+-		ret = gpio_direction_output(pinfo->gpios[i],
+-					    pinfo->alow_flags[i]);
+-		if (ret) {
+-			dev_err(dev, "can't set output direction for gpio "
+-				"#%d: %d\n", i, ret);
+-			goto err_loop;
+-		}
+  	}
+
+  	pdata->max_chipselect = ngpios;
+--
+
+
 -- 
-1.6.2.1
+Rini van Zetten
+Senior Software Engineer
+
+-------------------------
+ARVOO Engineering B.V.
+Tasveld 13
+3417 XS Montfoort
+The Netherlands
+
+E-mail : <mailto:rini@arvoo.com> Rini van Zetten
+
+Web : www.arvoo.com
