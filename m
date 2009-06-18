@@ -3,26 +3,25 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BCA23B726B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 29FB0B7291
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 19:04:28 +1000 (EST)
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	Thu, 18 Jun 2009 19:13:46 +1000 (EST)
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 55357DDD1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 19:04:27 +1000 (EST)
-Date: Thu, 18 Jun 2009 11:04:14 +0200
+	by ozlabs.org (Postfix) with ESMTPS id B8F8BDDD1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 19:13:45 +1000 (EST)
+Date: Thu, 18 Jun 2009 11:13:34 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/6] perf_counter: powerpc: Enable use of software
-	counters on 32-bit powerpc
-Message-ID: <20090618090414.GA21191@elte.hu>
+Subject: Re: [PATCH 6/6] perf_counter: tools: Makefile tweaks for 64-bit
+	powerpc
+Message-ID: <20090618091334.GB21191@elte.hu>
 References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
-	<20090617142151.GB6846@elte.hu>
-	<19001.31734.428534.890844@cargo.ozlabs.ibm.com>
+	<19000.55666.866148.559620@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19001.31734.428534.890844@cargo.ozlabs.ibm.com>
+In-Reply-To: <19000.55666.866148.559620@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,17 +36,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 * Paul Mackerras <paulus@samba.org> wrote:
 
-> Ingo Molnar writes:
-> 
-> > Note, i've created a new branch, tip:perfcounters/powerpc, so we can 
-> > keep these things separate and Ben can pull them too. I see there 
-> > was some review feedback - do you want to send a v2 version perhaps?
-> 
-> Kumar's comments seemed to me to be wanting changes to accommodate 
-> code that doesn't exist yet, so I think those changes should be 
-> done later when that code exists and we know exactly what is 
-> needed.  So the current patches are fine as-is IMO.
+> This also removes the -Werror flag when building on a 64-bit powerpc
+> machine.  The userspace definition of u64 is unsigned long rather
+> than unsigned long long, meaning that gcc warns every time a u64
+> is printed with %Lx or %llx (though that does work properly).
+> In future we may use PRI64 etc. for printing 64-bit quantities,
+> which would eliminate these warnings.
 
-ok - will queue them up.
+> +# Don't use -Werror on ppc64; we get warnings due to using
+> +# %Lx formats on __u64, which is unsigned long.
+> +Werror := -Werror
+> +ifeq ($(uname_M),ppc64)
+> +  Werror :=
+> +endif
+
+Note, i left out this bit from the commit - we need to find a better 
+solution than to allow ugly warnings on PowerPC.
+
+Could we use the kernel's u64 type directly perhaps? That would 
+allow us to change all __u64 to u64 in all of tools/perf/ which is a 
+nice clean-up in any case.
 
 	Ingo
