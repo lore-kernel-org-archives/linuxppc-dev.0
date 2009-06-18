@@ -3,16 +3,17 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B3536B7294
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 44416B72A0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Jun 2009 14:13:53 +1000 (EST)
+	Thu, 18 Jun 2009 14:13:54 +1000 (EST)
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <64b4bee5b3e4949bf8c273c7d8da77281eefdcfa.1245298429.git.michael@ellerman.id.au>
+Message-Id: <d554caa95a54f3b545d10b73e64c7780186aa4a3.1245298429.git.michael@ellerman.id.au>
 In-Reply-To: <1fdc1f0bb73b6ff2db7f9b394331d5ef5dfc4cb5.1245298429.git.michael@ellerman.id.au>
 References: <1fdc1f0bb73b6ff2db7f9b394331d5ef5dfc4cb5.1245298429.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 6/7] powerpc/pseries: Use pr_devel() in xics.c
-Date: Thu, 18 Jun 2009 14:13:53 +1000 (EST)
+Subject: [PATCH 7/7] powerpc: Use pr_devel() in
+	arch/powerpc/mm/mmu_context_nohash.c
+Date: Thu, 18 Jun 2009 14:13:54 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +29,91 @@ is not defined. That's not really desirable in some places.
 With CONFIG_DYNAMIC_DEBUG=y:
 
 size before:
-   text    data     bss     dec     hex filename
-   7720    5488     296   13504    34c0 platforms/pseries/xics.o
+   text	   data	    bss	    dec	    hex	filename
+   1508	     48	     28	   1584	    630	powerpc/mm/mmu_context_nohash.o
 
 size after:
-   text    data     bss     dec     hex filename
-   7535	   5456	    296	  13287	   33e7	platforms/pseries/xics.o
+   text	   data	    bss	    dec	    hex	filename
+   1088	      0	     28	   1116	    45c	powerpc/mm/mmu_context_nohash.o
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/xics.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/mm/mmu_context_nohash.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
-index be3581a..419f8a6 100644
---- a/arch/powerpc/platforms/pseries/xics.c
-+++ b/arch/powerpc/platforms/pseries/xics.c
-@@ -190,10 +190,10 @@ static void xics_unmask_irq(unsigned int virq)
- 	int call_status;
- 	int server;
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index 8343986..92a1971 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -89,7 +89,7 @@ static unsigned int steal_context_smp(unsigned int id)
+ 				id = first_context;
+ 			continue;
+ 		}
+-		pr_debug("[%d] steal context %d from mm @%p\n",
++		pr_devel("[%d] steal context %d from mm @%p\n",
+ 			 smp_processor_id(), id, mm);
  
--	pr_debug("xics: unmask virq %d\n", virq);
-+	pr_devel("xics: unmask virq %d\n", virq);
+ 		/* Mark this mm has having no context anymore */
+@@ -126,7 +126,7 @@ static unsigned int steal_context_up(unsigned int id)
+ 	/* Pick up the victim mm */
+ 	mm = context_mm[id];
  
- 	irq = (unsigned int)irq_map[virq].hwirq;
--	pr_debug(" -> map to hwirq 0x%x\n", irq);
-+	pr_devel(" -> map to hwirq 0x%x\n", irq);
- 	if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
- 		return;
+-	pr_debug("[%d] steal context %d from mm @%p\n", cpu, id, mm);
++	pr_devel("[%d] steal context %d from mm @%p\n", cpu, id, mm);
  
-@@ -252,7 +252,7 @@ static void xics_mask_irq(unsigned int virq)
- {
- 	unsigned int irq;
+ 	/* Flush the TLB for that context */
+ 	local_flush_tlb_mm(mm);
+@@ -180,7 +180,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ 	spin_lock(&context_lock);
  
--	pr_debug("xics: mask virq %d\n", virq);
-+	pr_devel("xics: mask virq %d\n", virq);
+ #ifndef DEBUG_STEAL_ONLY
+-	pr_debug("[%d] activating context for mm @%p, active=%d, id=%d\n",
++	pr_devel("[%d] activating context for mm @%p, active=%d, id=%d\n",
+ 		 cpu, next, next->context.active, next->context.id);
+ #endif
  
- 	irq = (unsigned int)irq_map[virq].hwirq;
- 	if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
-@@ -414,7 +414,7 @@ static int xics_host_match(struct irq_host *h, struct device_node *node)
- static int xics_host_map(struct irq_host *h, unsigned int virq,
- 			 irq_hw_number_t hw)
- {
--	pr_debug("xics: map virq %d, hwirq 0x%lx\n", virq, hw);
-+	pr_devel("xics: map virq %d, hwirq 0x%lx\n", virq, hw);
+@@ -189,7 +189,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ 	next->context.active++;
+ 	if (prev) {
+ #ifndef DEBUG_STEAL_ONLY
+-		pr_debug(" old context %p active was: %d\n",
++		pr_devel(" old context %p active was: %d\n",
+ 			 prev, prev->context.active);
+ #endif
+ 		WARN_ON(prev->context.active < 1);
+@@ -236,7 +236,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ 	next->context.id = id;
  
- 	/* Insert the interrupt mapping into the radix tree for fast lookup */
- 	irq_radix_revmap_insert(xics_host, virq, hw);
+ #ifndef DEBUG_STEAL_ONLY
+-	pr_debug("[%d] picked up new id %d, nrf is now %d\n",
++	pr_devel("[%d] picked up new id %d, nrf is now %d\n",
+ 		 cpu, id, nr_free_contexts);
+ #endif
+ 
+@@ -247,7 +247,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ 	 * local TLB for it and unmark it before we use it
+ 	 */
+ 	if (test_bit(id, stale_map[cpu])) {
+-		pr_debug("[%d] flushing stale context %d for mm @%p !\n",
++		pr_devel("[%d] flushing stale context %d for mm @%p !\n",
+ 			 cpu, id, next);
+ 		local_flush_tlb_mm(next);
+ 
+@@ -314,13 +314,13 @@ static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
+ 	switch (action) {
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+-		pr_debug("MMU: Allocating stale context map for CPU %d\n", cpu);
++		pr_devel("MMU: Allocating stale context map for CPU %d\n", cpu);
+ 		stale_map[cpu] = kzalloc(CTX_MAP_SIZE, GFP_KERNEL);
+ 		break;
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
+-		pr_debug("MMU: Freeing stale context map for CPU %d\n", cpu);
++		pr_devel("MMU: Freeing stale context map for CPU %d\n", cpu);
+ 		kfree(stale_map[cpu]);
+ 		stale_map[cpu] = NULL;
+ 		break;
 -- 
 1.6.2.1
