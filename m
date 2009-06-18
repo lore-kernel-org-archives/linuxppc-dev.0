@@ -1,31 +1,26 @@
-Return-Path: <dan.j.williams@intel.com>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E0A0DB7244
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 93CA2B7288
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 07:36:28 +1000 (EST)
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-	by ozlabs.org (Postfix) with ESMTP id 45972DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 07:36:27 +1000 (EST)
-Message-ID: <4A3AB359.40209@intel.com>
-Date: Thu, 18 Jun 2009 14:36:25 -0700
-From: Dan Williams <dan.j.williams@intel.com>
-MIME-Version: 1.0
-To: Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [RFC PATCH] fsldma: Add DMA_SLAVE support
-References: <20090515225659.GD858@ovro.caltech.edu>
-	<4A37EC14.5010005@intel.com>
-	<20090616201256.GG15955@ovro.caltech.edu>
-	<4A392542.6010306@intel.com>
-	<20090617182947.GB4707@ovro.caltech.edu>
-	<4A3A8463.7080601@intel.com>
-	<20090618205024.GA16741@ovro.caltech.edu>
-In-Reply-To: <20090618205024.GA16741@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Li Yang <leoli@freescale.com>
+	Fri, 19 Jun 2009 08:18:29 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E8369DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 08:18:28 +1000 (EST)
+Subject: Re: killing use of ppc_md.init
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <C81AEED1-5CEC-42B8-A893-5E6BDDD4EC54@kernel.crashing.org>
+References: <C81AEED1-5CEC-42B8-A893-5E6BDDD4EC54@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 19 Jun 2009 08:18:18 +1000
+Message-Id: <1245363498.8693.3.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,21 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ira Snyder wrote:
-> So, I see a couple of ways of moving forward:
-> 1) Keep my implementation, moving the includes to arch/powerpc/include.
->    Do we drop the allocation functions?
+On Thu, 2009-06-18 at 09:38 -0500, Kumar Gala wrote:
+> ppc_md.init only exists on ppc32 and seems like its pretty useless  
+> today.  The users seem to fall into two classes:
+> 
+> 1. called to do of_platform_bus_probe() - most platforms use  
+> machine_device_initcall() for this
+> 2. some platform init code which seems like it could move into  
+> setup_arch().
+> 
+> The second one seems to only be on amigaone and chrp.  Anyone know if  
+> there is any harm in moving the amigaone_init() into  
+> amigaone_setup_arch() and similarly on chrp chrp_init2() into  
+> chrp_setup_arch().
 
-+1 for option 1.  Having it under arch/powerpc/include makes it clear 
-that it is a powerpc specific api, so keep the allocation routines. 
-Copy Kumar on the updated patch as I'll need a ppc-dev ack for carrying 
-this file addition through the dmaengine tree.
+We might kill it ... and revive it differently :-) 
 
-> Thanks for all the input Dan. I finally feel like we're getting
-> somewhere :)
+Yes, the current ppc_init() can probably just go.
 
-Thanks for the exchange it always helps to get a good picture of the 
-underlying design rationale.
+However, we probably also want to add a call from init/main.c back to
+the architectures and ppc_md. in our case that is right after mm_init().
 
-Regards,
-Dan
+Right now, we do way too many things at setup_arch() (or even before
+that on ppc64) which induces all sorts of pain due to having to use
+bootmem etc...
+
+Now that slab is available much earlier, before init_IRQ() and
+time_init(), we should consider moving a whole bunch of stuff somewhere
+later in the boot process to simplify the code etc...
+
+Cheers,
+Ben.
