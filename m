@@ -1,24 +1,19 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2ADE0B7243
+Return-Path: <lada.podivin@gmail.com>
+Received: from mail-fx0-f213.google.com (mail-fx0-f213.google.com
+	[209.85.220.213])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id BA7EAB72FE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 21:45:50 +1000 (EST)
+	Fri, 19 Jun 2009 18:00:55 +1000 (EST)
+Received: by fxm9 with SMTP id 9so1842419fxm.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Jun 2009 01:00:52 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <EEB9B7B7-5456-4AE9-8BB9-96DA04320697@kernel.crashing.org>
-References: <4A39DC80.7030906@arvoo.nl>
-	<20090618130955.GA1369@oksana.dev.rtsoft.ru>
-	<EEB9B7B7-5456-4AE9-8BB9-96DA04320697@kernel.crashing.org>
-Date: Fri, 19 Jun 2009 13:45:46 +0200
-Message-ID: <c384c5ea0906190445u130a4fedv14c22c7f9abdb9d8@mail.gmail.com>
-Subject: Re: [PATCH -mm][POWERPC] mpc8xxx : allow SPI without cs.
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: spi-devel-general@lists.sourceforge.net, Rini van Zetten <rini@arvoo.nl>,
-	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Date: Fri, 19 Jun 2009 10:00:52 +0200
+Message-ID: <e35801cc0906190100i1a0429eahade975319b5246df@mail.gmail.com>
+Subject: kilauea/405ex external interrupts
+From: Lada Podivin <lada.podivin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=001485f7c48e5cb8c2046caeecbd
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +23,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+--001485f7c48e5cb8c2046caeecbd
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 18, 2009 at 4:04 PM, Kumar Gala<galak@kernel.crashing.org> wrot=
-e:
-> On Jun 18, 2009, at 8:09 AM, Anton Vorontsov wrote:
->> On Thu, Jun 18, 2009 at 08:19:44AM +0200, Rini van Zetten wrote:
->>>
->>> This patch adds the possibility to have a spi device without a cs.
->>>
-> That is a good question. =A0What HW is this for (I don't think its for eS=
-PI
-> but I could be wrong).
->
-We need SPI without CS too on our MPC8313E design.
+Hi,
+I'm writing a linux driver that uses an external interrupt (ppc 405ex). I'm
+using GPIO pin 30 (external IRQ 1) connected to UIC1. I'm aware of the
+virtual interrupt stuff, so I added a new node to my device tree in order to
+get proper virtual IRQ number. This node describes an external event and its
+connection to UIC via the mentioned ext. int. Here is a sample of the
+divce-tree:
+...
 
-In our case having a CS line to each slave (18 of them) is too
-expensive and we use a chip select which piggy backs on another
-signal.
-Once the slave is selected, SPI is used to send large amounts of data.
+UIC1: interrupt-controller1 {
+        compatible = "ibm,uic-405ex","ibm,uic";
+        interrupt-controller;
+        cell-index = <1>;
+        dcr-reg = <0x0d0 0x009>;
+        #address-cells = <0>;
+        #size-cells = <0>;
+        #interrupt-cells = <2>;
+        interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
+        interrupt-parent = <&UIC0>;
+};
 
-Regards,
---=20
-Leon
+EXTEVENT: external_event {
+        device_type = "external";
+        #address-cells = <0>;
+        #size-cells = <0>;
+        #interrupt-cells = <2>;
+        interrupts = <0x1e 0x1>;
+        interrupt-parent = <&UIC1>;
+};
+...
+
+Then I use function "irq_of_parse_and_map()" which returns the virtual IRQ
+number 22. So, "request_irq()" seems to be satisfied with this number. I can
+see this interrupt in the /proc/interrupts. But! When I connect a signal
+source to the pin 30, nothing happens - the interrupt service routine isn't
+called.
+
+Am I suppose to configure anything else? (e. g. pin multiplexing, further
+device-tree tuning...) Thank you!
+
+Best regards,
+Ladi
+
+--001485f7c48e5cb8c2046caeecbd
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi,<br>I&#39;m writing a linux driver that uses an external interrupt (ppc =
+405ex). I&#39;m using GPIO pin 30 (external IRQ 1) connected to UIC1. I&#39=
+;m aware of the virtual interrupt stuff, so I added a new node to my device=
+ tree in order to get proper virtual IRQ number. This node describes an ext=
+ernal event and its connection to UIC via the mentioned ext. int. Here is a=
+ sample of the divce-tree:<br>
+...<br><br>UIC1: interrupt-controller1 {<br>=A0=A0=A0 =A0=A0=A0 compatible =
+=3D &quot;ibm,uic-405ex&quot;,&quot;ibm,uic&quot;;<br>=A0=A0=A0 =A0=A0=A0 i=
+nterrupt-controller;<br>=A0=A0=A0 =A0=A0=A0 cell-index =3D &lt;1&gt;;<br>=
+=A0=A0=A0 =A0=A0=A0 dcr-reg =3D &lt;0x0d0 0x009&gt;;<br>
+=A0=A0=A0 =A0=A0=A0 #address-cells =3D &lt;0&gt;;<br>=A0=A0=A0 =A0=A0=A0 #s=
+ize-cells =3D &lt;0&gt;;<br>=A0=A0=A0 =A0=A0=A0 #interrupt-cells =3D &lt;2&=
+gt;;<br>=A0=A0=A0 =A0=A0=A0 interrupts =3D &lt;0x1e 0x4 0x1f 0x4&gt;; /* ca=
+scade */<br>=A0=A0=A0 =A0=A0=A0 interrupt-parent =3D &lt;&amp;UIC0&gt;;<br>
+};<br><br>EXTEVENT: external_event {<br>=A0=A0=A0 =A0=A0=A0 device_type =3D=
+ &quot;external&quot;;<br>=A0=A0=A0 =A0=A0=A0 #address-cells =3D &lt;0&gt;;=
+<br>=A0=A0=A0 =A0=A0=A0 #size-cells =3D &lt;0&gt;;<br>=A0=A0=A0 =A0=A0=A0 #=
+interrupt-cells =3D &lt;2&gt;;<br>=A0=A0=A0 =A0=A0=A0 interrupts =3D &lt;0x=
+1e 0x1&gt;;<br>
+=A0=A0=A0 =A0=A0=A0 interrupt-parent =3D &lt;&amp;UIC1&gt;;<br>};<br>...<br=
+><br>Then I use function &quot;irq_of_parse_and_map()&quot; which returns t=
+he virtual IRQ number 22. So, &quot;request_irq()&quot; seems to be satisfi=
+ed with this number. I can see this interrupt in the /proc/interrupts. But!=
+ When I connect a signal source to the pin 30, nothing happens - the interr=
+upt service routine isn&#39;t called. <br>
+<br>Am I suppose to configure anything else? (e. g. pin multiplexing, furth=
+er device-tree tuning...) Thank you!<br><br>Best regards,<br>Ladi<br>
+
+--001485f7c48e5cb8c2046caeecbd--
