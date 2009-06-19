@@ -1,24 +1,24 @@
-Return-Path: <lorenz.kolb@uni-ulm.de>
+Return-Path: <iws@ovro.caltech.edu>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B14F9B726A
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C2D71B7269
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 20 Jun 2009 03:31:31 +1000 (EST)
-Received: from smtp.esic-solutions.com (h1371364.stratoserver.net
-	[85.214.87.145]) by ozlabs.org (Postfix) with ESMTP id 44E87DDD0C
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 03:31:29 +1000 (EST)
-Message-ID: <4A3BC503.80400@uni-ulm.de>
-Date: Fri, 19 Jun 2009 19:04:03 +0200
-From: Lorenz Kolb <lorenz.kolb@uni-ulm.de>
+	Sat, 20 Jun 2009 04:26:04 +1000 (EST)
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 15B8FDDD1B
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 04:26:03 +1000 (EST)
+Date: Fri, 19 Jun 2009 11:26:00 -0700
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: linuxppc-dev@ozlabs.org, Kumar Gala <galak@kernel.crashing.org>,
+	Dan Williams <dan.j.williams@intel.com>, Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH v2] fsldma: Add DMA_SLAVE support
+Message-ID: <20090619182600.GA30992@ovro.caltech.edu>
+References: <20090618225345.GB16741@ovro.caltech.edu>
 MIME-Version: 1.0
-To: Fahd Abidi <fabidi@ultsol.com>
-Subject: Re: Problem with memcpy on ppc8536
-References: <71DEA556544D7A4F9C6848402D8184340C4A13__24467.8549039692$1245370891$gmane$org@usi01.ultsol.local>
-In-Reply-To: <71DEA556544D7A4F9C6848402D8184340C4A13__24467.8549039692$1245370891$gmane$org@usi01.ultsol.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090618225345.GB16741@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,88 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Could you please try the following patch, I am quite sure that checking 
-for > 4 was accidentially done within io.c instead of >= 4 as if it's 4 
-we still can copy a 32-bit word. Some hardware might not be happy about 
-8-bit accesses...
+On Thu, Jun 18, 2009 at 03:53:45PM -0700, Ira Snyder wrote:
+> Use the DMA_SLAVE capability of the DMAEngine API to copy/from a
+> scatterlist into an arbitrary list of hardware address/length pairs.
+> 
+> This allows a single DMA transaction to copy data from several different
+> devices into a scatterlist at the same time.
+> 
+> This also adds support to enable some controller-specific features such as
+> external start and external pause for a DMA transaction.
+> 
+> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+> ---
+> 
+> After discussion with Dan Williams, this is the second version of the
+> DMA_SLAVE API for the Freescale DMA controller. I've tested it heavily
+> with both drivers I have written against this API, an FPGA programmer
+> and an FPGA data grabber.
+> 
+> Kumar, Dan asked me to add you to the CC list, so you can have a look at
+> this patch before he adds it to his tree.
+> 
+> The other two small patches I posted earlier are very helpful in testing
+> this functionality. They make the fsldma driver leave the BWC (bandwidth
+> control) bits alone on the 83xx controller, as well as making the
+> external start feature available on 83xx.
+> 
+> In order for the external start/pause features to be useful, the
+> bandwidth control bits (in the mode register) need to be set before
+> attempting to use the controller. I could spin a v3 of this patch that
+> adds a field to struct fsl_dma_slave to set the bits appropriately. Or I
+> could send another patch for that. Thoughts?
+> 
+> Many thanks to all that have participated in the discussion about this
+> patch.
+> 
+> v1 -> v2:
+> * move fsldma.h from include/linux to arch/powerpc/include/asm
+> * add kerneldoc documentation
+> 
 
-Index: 2.6.30-source/arch/powerpc/kernel/io.c
-===================================================================
---- a/2.6.30-source/arch/powerpc/kernel/io.c
-+++ b/2.6.30-source/arch/powerpc/kernel/io.c
+[snip]
 
-@@ -162,5 +162,5 @@
-                  n--;
-          }
--        while(n > 4) {
-+        while(n >= 4) {
-                  *((u32 *)dest) = *((volatile u32 *)vsrc);
-                  eieio();
-@@ -191,5 +191,5 @@
-                  n--;
-          }
--        while(n > 4) {
-+        while(n >= 4) {
-                  *((volatile u32 *)vdest) = *((volatile u32 *)src);
-                  src += 4;
+> +
+> +	/* Enable extra controller features */
+> +	if (fsl_chan->set_src_loop_size)
+> +		fsl_chan->set_src_loop_size(fsl_chan, slave->src_loop_size);
+> +
+> +	if (fsl_chan->set_dest_loop_size)
+> +		fsl_chan->set_dest_loop_size(fsl_chan, slave->dst_loop_size);
+> +
+> +	if (fsl_chan->toggle_ext_start)
+> +		fsl_chan->toggle_ext_start(fsl_chan, slave->external_start);
+> +
+> +	if (fsl_chan->toggle_ext_pause)
+> +		fsl_chan->toggle_ext_pause(fsl_chan, slave->external_pause);
 
-Fahd Abidi wrote:
-> Hello, 
-> 
-> I am trying to debug a crash during memcpy while copying data from the
-> FCM buffer of an mpc8536 to the ddr ram. I debugged memcpy enough
-> through my BDI3000 to see that the entire contents of the fcm buffer I
-> want moved are actually moved off to memory location I specify. The
-> crash comes after it memcpy finishes copying and performs the
-> instruction "2: cmplwi 0,r5,4": 
-> 
-> memcpy: 
-> rlwinm. r7,r5,32-3,3,31 /* r0 = r5 >> 3 */ 
-> addi r6,r3,-4 
-> addi r4,r4,-4 
-> beq 2f /* if less than 8 bytes to do */ 
-> andi. r0,r6,3 /* get dest word aligned */ 
-> mtctr r7 
-> bne 5f 
-> 1: lwz r7,4(r4) 
-> lwzu r8,8(r4) 
-> stw r7,4(r6) 
-> stwu r8,8(r6) 
-> bdnz 1b 
-> andi. r5,r5,7 
-> 2: cmplwi 0,r5,4 
-> 
-> contents of r5 are 0x0 showing that the entire 0x1000 size transfer I
-> specified correctly finished. At this point I can check the memory
-> contents through my BDI and verify all the data is in the ddr as I
-> expect. Now the strange thing happens, if I execute the "cmplwi 0,r5,4"
-> the program takes an exception and eventually gets struck at exception
-> vector 0x700 which I saw from start.S is an "Alignment" exception. I am
-> not sure what this exception means, can someone help me understand what
-> is happening? 
-> 
-> Does this exception somehow mean that memcpy did not move all the data?
-> Does memcpy expect contents of r5 to be 4 and not 0 when it hits the
-> cmplwi instruction? 
-> 
-> 
-> Fahd Abidi
-> Product Manager - Technical Tools and Development
-> Ultimate Solutions, Inc.
-> ================================================================
-> Your Single Source for Professional Development Tools and Embedded
-> Solutions
-> Ph: 978-455-3383 x255
-> Fx: 978-926-3091
-> Email: fabidi@ultsol.com
-> Visit: http://www.ultsol.com <http://www.ultsol.com/>  
->  
-> 
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+I just noticed that I got this wrong for external pause. It takes a
+size, not a boolean enable/disable. I'll split the size out from the
+external pause feature, and send another patch.
+
+> +
+> +	return &first->async_tx;
+> +
