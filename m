@@ -1,21 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <gerhard_pircher@gmx.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D8F5EB7173
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0EC20B727C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 18:30:02 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 34AA6DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 18:30:01 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Fix output from show_regs
-Date: Fri, 19 Jun 2009 03:29:55 -0500
-Message-Id: <1245400195-4220-1-git-send-email-galak@kernel.crashing.org>
+	Fri, 19 Jun 2009 18:30:31 +1000 (EST)
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id CBACEDDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 18:30:28 +1000 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Fri, 19 Jun 2009 10:30:24 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <C81AEED1-5CEC-42B8-A893-5E6BDDD4EC54@kernel.crashing.org>
+Message-ID: <20090619083024.309900@gmx.net>
+MIME-Version: 1.0
+References: <C81AEED1-5CEC-42B8-A893-5E6BDDD4EC54@kernel.crashing.org>
+Subject: Re: killing use of ppc_md.init
+To: Kumar Gala <galak@krnel.crashing.org>, benh@kernel.crashing.org
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,31 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For some reason we've had an explicit KERN_INFO for GPR dumps.  With
-recent changes we get output like:
 
-<6>GPR00: 00000000 ef855eb0 ef858000 00000001 000000d0 f1000000 ffbc8000 ffffffff
+-------- Original-Nachricht --------
+> Datum: Thu, 18 Jun 2009 09:38:50 -0500
+> Von: Kumar Gala <galak@kernel.crashing.org>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+> Betreff: killing use of ppc_md.init
 
-The KERN_INFO is causing the <6>.  Don't see any reason to keep it
-around.
+> ppc_md.init only exists on ppc32 and seems like its pretty useless  
+> today.  The users seem to fall into two classes:
+> 
+> 1. called to do of_platform_bus_probe() - most platforms use  
+> machine_device_initcall() for this
+> 2. some platform init code which seems like it could move into  
+> setup_arch().
+> 
+> The second one seems to only be on amigaone and chrp.  Anyone know if  
+> there is any harm in moving the amigaone_init() into  
+> amigaone_setup_arch() and similarly on chrp chrp_init2() into  
+> chrp_setup_arch().
+I guess converting amigaone_init() to a machine_device_initcall() is the
+easiest approach. I'll send a patch soon.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/kernel/process.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Gerhard
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 3e7135b..892a9f2 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -528,7 +528,7 @@ void show_regs(struct pt_regs * regs)
- 
- 	for (i = 0;  i < 32;  i++) {
- 		if ((i % REGS_PER_LINE) == 0)
--			printk("\n" KERN_INFO "GPR%02d: ", i);
-+			printk("\nGPR%02d: ", i);
- 		printk(REG " ", regs->gpr[i]);
- 		if (i == LAST_VOLATILE && !FULL_REGS(regs))
- 			break;
 -- 
-1.6.0.6
+GMX FreeDSL Komplettanschluss mit DSL 6.000 Flatrate und Telefonanschluss
+für nur 17,95 Euro/mtl.!* http://portal.gmx.net/de/go/dsl02
