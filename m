@@ -1,26 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6BBEDB7255
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 01F49B72A0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 20 Jun 2009 01:31:56 +1000 (EST)
+	Sat, 20 Jun 2009 01:31:59 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 850E4DDD0C
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 01:31:58 +1000 (EST)
+Date: Fri, 19 Jun 2009 19:31:13 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/85xx: Make eSDHC 1-bit only transfer mode
+	default for MPC8569E-MDS
+Message-ID: <20090619153113.GA6267@oksana.dev.rtsoft.ru>
+References: <20090618233752.GA13279@oksana.dev.rtsoft.ru>
+	<7898009C-2A9D-45D3-8C2B-1AFA90C4CB31@kernel.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <20090619132501.GA10886@oksana.dev.rtsoft.ru>
-References: <4A39DC80.7030906@arvoo.nl>
-	<20090618130955.GA1369@oksana.dev.rtsoft.ru>
-	<EEB9B7B7-5456-4AE9-8BB9-96DA04320697@kernel.crashing.org>
-	<c384c5ea0906190445u130a4fedv14c22c7f9abdb9d8@mail.gmail.com>
-	<20090619132501.GA10886@oksana.dev.rtsoft.ru>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 19 Jun 2009 09:31:33 -0600
-Message-ID: <fa686aa40906190831t2532e978pc1ec647d39e69b8d@mail.gmail.com>
-Subject: Re: [PATCH -mm][POWERPC] mpc8xxx : allow SPI without cs.
-To: avorontsov@ru.mvista.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: spi-devel-general@lists.sourceforge.net, Rini van Zetten <rini@arvoo.nl>,
-	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <7898009C-2A9D-45D3-8C2B-1AFA90C4CB31@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,33 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 19, 2009 at 7:25 AM, Anton
-Vorontsov<avorontsov@ru.mvista.com> wrote:
-> Surely we can hide the bridge into the SPI controller driver,
-> but I think it would be beneficial to "factor-out" it to a
-> stand-alone entity, so that other SPI controllers could work
-> with this setup without any modifications (oh and btw, we could
-> also create a bridge called "gpio-chipselects-bridge", and
-> factor out all GPIO stuff from the drivers).
+On Thu, Jun 18, 2009 at 09:25:46PM -0500, Kumar Gala wrote:
 >
-> There are two options of how we can factor out chip-select
-> machines... the bad and the ugly. :-) No, the first one is bad,
-> but the second should be OK.
-[...]
-> 2. Another option (which I like more), is to create "SPI chip-
-> =A0 select machine driver framework", so we could (finally)
-> =A0 separate two SPI entities: SPI IO and SPI chip-select machine.
-> =A0 CS machines of different flavours: GPIO, built-in, and
-> =A0 board-specific (!) with a lot of demuxing magic.
+> On Jun 18, 2009, at 6:37 PM, Anton Vorontsov wrote:
+>
+>> For yet unknown reason 4-bit mode doesn't work on MPC8569E-MDS boards,
+>> so make 1-bit mode default. When we resolve the issue, u-boot will
+>> remove sdhci,1-bit-only property from the device tree, while SDHCI
+>> will still work with older u-boots.
+>>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>> ---
+>> arch/powerpc/boot/dts/mpc8569mds.dts |    1 +
+>> 1 files changed, 1 insertions(+), 0 deletions(-)
+>
+> Did I miss the patch that adds this property defn. to our docs?
 
-I agree, I think your option 2 is the way to go.  It would probably
-need to be implemented as some form of logical bridge so that SPI
-requests don't go straight to the IO driver, but first go through the
-CS machine so that the CS driver can do funky stuff like inserting or
-modifying SPI requests before they go to the hardware.
+Yep. ;-)
 
-g.
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-June/073394.html
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
