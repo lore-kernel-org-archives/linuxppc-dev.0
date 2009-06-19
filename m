@@ -1,25 +1,25 @@
-Return-Path: <rini@arvoo.nl>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C92BDB7227
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6BBEDB7255
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 20 Jun 2009 00:18:40 +1000 (EST)
-Received: from smtp3.euronet.nl (smtp3.euronet.nl [194.134.35.173])
-	by ozlabs.org (Postfix) with ESMTP id F079BDDD1B
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 00:18:39 +1000 (EST)
-Message-ID: <4A3B9E38.9060004@arvoo.nl>
-Date: Fri, 19 Jun 2009 16:18:32 +0200
-From: Rini van Zetten <rini@arvoo.nl>
+	Sat, 20 Jun 2009 01:31:56 +1000 (EST)
 MIME-Version: 1.0
+In-Reply-To: <20090619132501.GA10886@oksana.dev.rtsoft.ru>
+References: <4A39DC80.7030906@arvoo.nl>
+	<20090618130955.GA1369@oksana.dev.rtsoft.ru>
+	<EEB9B7B7-5456-4AE9-8BB9-96DA04320697@kernel.crashing.org>
+	<c384c5ea0906190445u130a4fedv14c22c7f9abdb9d8@mail.gmail.com>
+	<20090619132501.GA10886@oksana.dev.rtsoft.ru>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 19 Jun 2009 09:31:33 -0600
+Message-ID: <fa686aa40906190831t2532e978pc1ec647d39e69b8d@mail.gmail.com>
+Subject: Re: [PATCH -mm][POWERPC] mpc8xxx : allow SPI without cs.
 To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH -mm v4][POWERPC] mpc8xxx : allow SPI without cs.
-References: <4A39DC80.7030906@arvoo.nl>	<20090618130955.GA1369@oksana.dev.rtsoft.ru>	<EEB9B7B7-5456-4AE9-8BB9-96DA04320697@kernel.crashing.org>	<4A3B3D90.5030100@arvoo.nl>
-	<20090619134558.GA18872@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090619134558.GA18872@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: spi-devel-general@lists.sourceforge.net,
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: spi-devel-general@lists.sourceforge.net, Rini van Zetten <rini@arvoo.nl>,
 	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,105 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the possibility to have a spi device without a cs.
+On Fri, Jun 19, 2009 at 7:25 AM, Anton
+Vorontsov<avorontsov@ru.mvista.com> wrote:
+> Surely we can hide the bridge into the SPI controller driver,
+> but I think it would be beneficial to "factor-out" it to a
+> stand-alone entity, so that other SPI controllers could work
+> with this setup without any modifications (oh and btw, we could
+> also create a bridge called "gpio-chipselects-bridge", and
+> factor out all GPIO stuff from the drivers).
+>
+> There are two options of how we can factor out chip-select
+> machines... the bad and the ugly. :-) No, the first one is bad,
+> but the second should be OK.
+[...]
+> 2. Another option (which I like more), is to create "SPI chip-
+> =A0 select machine driver framework", so we could (finally)
+> =A0 separate two SPI entities: SPI IO and SPI chip-select machine.
+> =A0 CS machines of different flavours: GPIO, built-in, and
+> =A0 board-specific (!) with a lot of demuxing magic.
 
-For example, the dts file should look something like this:
+I agree, I think your option 2 is the way to go.  It would probably
+need to be implemented as some form of logical bridge so that SPI
+requests don't go straight to the IO driver, but first go through the
+CS machine so that the CS driver can do funky stuff like inserting or
+modifying SPI requests before they go to the hardware.
 
-spi-controller {
-        gpios = <&pio1 1 0      /* cs0 */
-                 0              /* cs1, no GPIO */
-                 &pio2 2 0>;    /* cs2 */
+g.
 
-This feature is needed on our home made board to program an onboard fpga.
-The fpga needs some special pin toggling to put it in programming mode.
-That's why we want to skip the usual gpio cs and do the pin toggling
-in our driver
-
-Signed-off-by: Rini van Zetten <rini@arvoo.nl>
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-Changes :
-     patch against 2.6.30-rc8-mm1
-     style updates
-     compiler warning fix
-v4 :
-     missing space in error text added
-     splitted lines combined
-
-diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
-index 0fd0ec4..de95790 100644
---- a/drivers/spi/spi_mpc8xxx.c
-+++ b/drivers/spi/spi_mpc8xxx.c
-@@ -666,9 +666,12 @@ static void mpc8xxx_spi_cs_control(struct spi_device *spi, bool on)
-  	struct mpc8xxx_spi_probe_info *pinfo = to_of_pinfo(dev->platform_data);
-  	u16 cs = spi->chip_select;
-  	int gpio = pinfo->gpios[cs];
--	bool alow = pinfo->alow_flags[cs];
-
--	gpio_set_value(gpio, on ^ alow);
-+	if (gpio != -EEXIST) {
-+		bool alow = pinfo->alow_flags[cs];
-+
-+		gpio_set_value(gpio, on ^ alow);
-+	}
-  }
-
-  static int of_mpc8xxx_spi_get_chipselects(struct device *dev)
-@@ -678,7 +681,7 @@ static int of_mpc8xxx_spi_get_chipselects(struct device *dev)
-  	struct mpc8xxx_spi_probe_info *pinfo = to_of_pinfo(pdata);
-  	unsigned int ngpios;
-  	int i = 0;
--	int ret;
-+	int ret = 0;
-
-  	ngpios = of_gpio_count(np);
-  	if (!ngpios) {
-@@ -707,27 +710,30 @@ static int of_mpc8xxx_spi_get_chipselects(struct device *dev)
-  		enum of_gpio_flags flags;
-
-  		gpio = of_get_gpio_flags(np, i, &flags);
--		if (!gpio_is_valid(gpio)) {
-+		if (gpio_is_valid(gpio)) {
-+			ret = gpio_request(gpio, dev_name(dev));
-+			if (ret) {
-+				dev_err(dev, "can't request gpio #%d: %d\n",
-+							 i, ret);
-+				goto err_loop;
-+			}
-+
-+			pinfo->gpios[i] = gpio;
-+			pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
-+
-+			ret = gpio_direction_output(pinfo->gpios[i],
-+					pinfo->alow_flags[i]);
-+			if (ret) {
-+				dev_err(dev, "can't set output direction for "
-+						"gpio #%d: %d\n", i, ret);
-+				goto err_loop;
-+			}
-+		} else if (gpio == -EEXIST) {
-+			pinfo->gpios[i] = -EEXIST;
-+		} else {
-  			dev_err(dev, "invalid gpio #%d: %d\n", i, gpio);
-  			goto err_loop;
-  		}
--
--		ret = gpio_request(gpio, dev_name(dev));
--		if (ret) {
--			dev_err(dev, "can't request gpio #%d: %d\n", i, ret);
--			goto err_loop;
--		}
--
--		pinfo->gpios[i] = gpio;
--		pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
--
--		ret = gpio_direction_output(pinfo->gpios[i],
--					    pinfo->alow_flags[i]);
--		if (ret) {
--			dev_err(dev, "can't set output direction for gpio "
--				"#%d: %d\n", i, ret);
--			goto err_loop;
--		}
-  	}
-
-  	pdata->max_chipselect = ngpios;
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
