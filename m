@@ -1,21 +1,27 @@
-Return-Path: <gerhard_pircher@gmx.net>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 23678B7276
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2BCA7B727B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 20 Jun 2009 07:42:40 +1000 (EST)
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 0A399DDD1B
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 07:42:38 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Fri, 19 Jun 2009 23:42:36 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Message-ID: <20090619214236.198400@gmx.net>
-MIME-Version: 1.0
-Subject: [PATCH] powerpc/amigaone: Limit ISA I/O range to 4k in the device tree
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	Sat, 20 Jun 2009 08:29:59 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8730DDDD1B
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 08:29:58 +1000 (EST)
+Subject: Re: [PowerPC] 2.6.30-git14 boot failure with SLAB
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sachin Sant <sachinp@in.ibm.com>
+In-Reply-To: <4A3BC57B.8000408@in.ibm.com>
+References: <4A3B615F.8090504@in.ibm.com>  <4A3BC57B.8000408@in.ibm.com>
+Content-Type: text/plain
+Date: Sat, 20 Jun 2009 08:29:40 +1000
+Message-Id: <1245450580.16880.12.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +31,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kernel reserves the I/O address space from 0x0 to 0xfff for legacy
-ISA devices. Change the ranges property for the PCI2ISA bridge to match
-the kernels behavior, even if the ranges property isn't used for now.
+On Fri, 2009-06-19 at 22:36 +0530, Sachin Sant wrote:
+> The offending commit seems to be
+> c868d550115b9ccc0027c67265b9520790f05601.
+> mm: Move pgtable_cache_init() earlier
+> 
+> If i revert this commit, the machine boots fine.
 
-Signed-off-by: Gerhard Pircher <gerhard_pircher@gmx.net>
----
- arch/powerpc/boot/dts/amigaone.dts |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+That is strange. If I revert that commit, I get breakages on machines
+here. It would be interesting to understand what the problem is here,
+as we -do- use that kmem cache for allocating page tables, so we do
+need it initialized that early. (IE, we can't allow vmalloc for example
+to be called before the page table caches are initialized).
 
-diff --git a/arch/powerpc/boot/dts/amigaone.dts b/arch/powerpc/boot/dts/amigaone.dts
-index 26549fc..49ac36b 100644
---- a/arch/powerpc/boot/dts/amigaone.dts
-+++ b/arch/powerpc/boot/dts/amigaone.dts
-@@ -70,8 +70,8 @@
- 			devsel-speed = <0x00000001>;
- 			min-grant = <0>;
- 			max-latency = <0>;
--			/* First 64k for I/O at 0x0 on PCI mapped to 0x0 on ISA. */
--			ranges = <0x00000001 0 0x01000000 0 0x00000000 0x00010000>;
-+			/* First 4k for I/O at 0x0 on PCI mapped to 0x0 on ISA. */
-+			ranges = <0x00000001 0 0x01000000 0 0x00000000 0x00001000>;
- 			interrupt-parent = <&i8259>;
- 			#interrupt-cells = <2>;
- 			#address-cells = <2>;
--- 
-1.5.6.5
+This will need more debugging and understanding as to why it hangs.
 
--- 
-GMX FreeDSL Komplettanschluss mit DSL 6.000 Flatrate und Telefonanschluss
-für nur 17,95 Euro/mtl.!* http://portal.gmx.net/de/go/dsl02
+Cheers,
+Ben.
