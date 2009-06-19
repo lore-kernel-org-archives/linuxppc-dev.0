@@ -1,31 +1,38 @@
-Return-Path: <mingo@elte.hu>
+Return-Path: <sachinp@in.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 508EFB7243
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id AC378B724E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 20 Jun 2009 02:27:31 +1000 (EST)
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	Sat, 20 Jun 2009 03:06:06 +1000 (EST)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CC0BEDDD1B
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 02:27:30 +1000 (EST)
-Date: Fri, 19 Jun 2009 18:27:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 6/6] perf_counter: tools: Makefile tweaks for 64-bit
-	powerpc
-Message-ID: <20090619162718.GB15197@elte.hu>
-References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
-	<19000.55666.866148.559620@cargo.ozlabs.ibm.com>
-	<20090618091334.GB21191@elte.hu>
-	<19003.18793.605755.277949@cargo.ozlabs.ibm.com>
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9048FDDD0C
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 03:06:06 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp08.au.ibm.com (8.13.1/8.13.1) with ESMTP id n5K331IU015580
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 13:03:01 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5JH65DN356760
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 03:06:05 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n5JH64Cg018408
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 03:06:05 +1000
+Message-ID: <4A3BC57B.8000408@in.ibm.com>
+Date: Fri, 19 Jun 2009 22:36:03 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19003.18793.605755.277949@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PowerPC] 2.6.30-git14 boot failure with SLAB
+References: <4A3B615F.8090504@in.ibm.com>
+In-Reply-To: <4A3B615F.8090504@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,24 +42,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Sachin Sant wrote:
+> 2.6.30-git14 (0732f87761dbe417cb6e084b712d07e879e876ef) fails to boot
+> on various PowerPC machines. Here are last few boot messages from a 
+> Power6
+> box.
+<SNIP>
 
-* Paul Mackerras <paulus@samba.org> wrote:
+>
+> I will go back and check what changes between git10 and git11
+> could have caused this boot failure.
+>
+The offending commit seems to be c868d550115b9ccc0027c67265b9520790f05601.
+mm: Move pgtable_cache_init() earlier
 
-> Ingo Molnar writes:
-> 
-> > Note, i left out this bit from the commit - we need to find a 
-> > better solution than to allow ugly warnings on PowerPC.
-> > 
-> > Could we use the kernel's u64 type directly perhaps? That would 
-> > allow us to change all __u64 to u64 in all of tools/perf/ which 
-> > is a nice clean-up in any case.
-> 
-> This is userspace, we can use "u64" however we like. :) I'll cook 
-> up a patch to add "typedef unsigned long long u64" and change 
-> __u64 to u64.
+If i revert this commit, the machine boots fine.
 
-Thanks, i've applied the patch. Note, it crossed with a few changes 
-from Peter - i fixed up the conflicts - please double check whether 
-it's still fine on PowerPC too.
+Thanks
+-Sachin
 
-	Ingo
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
