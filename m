@@ -3,22 +3,24 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C639FB72AE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8562BB72F0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 17:45:53 +1000 (EST)
-Message-Id: <292C3A97-D618-460C-BE3F-B8770F63C2E3@kernel.crashing.org>
+	Fri, 19 Jun 2009 17:46:55 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CBCA0DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 17:46:54 +1000 (EST)
+Message-Id: <5014AA2E-2E85-49BF-8184-54866B067099@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Rini van Zetten <rini@arvoo.nl>
-In-Reply-To: <4A3B3D90.5030100@arvoo.nl>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20090618034439.0854ADDDB2@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH -mm v3][POWERPC] mpc8xxx : allow SPI without cs.
-Date: Fri, 19 Jun 2009 02:45:35 -0500
-References: <4A39DC80.7030906@arvoo.nl>	<20090618130955.GA1369@oksana.dev.rtsoft.ru>
-	<EEB9B7B7-5456-4AE9-8BB9-96DA04320697@kernel.crashing.org>
-	<4A3B3D90.5030100@arvoo.nl>
-Cc: spi-devel-general@lists.sourceforge.net,
-	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: Add irqtrace support for 32-bit powerpc (v2)
+Date: Fri, 19 Jun 2009 02:46:48 -0500
+References: <20090618034439.0854ADDDB2@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +31,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jun 19, 2009, at 2:26 AM, Rini van Zetten wrote:
+On Jun 17, 2009, at 10:43 PM, Benjamin Herrenschmidt wrote:
 
-> This patch adds the possibility to have a spi device without a cs.
+> Based on initial work from: Dale Farnsworth <dale@farnsworth.org>
 >
-> For example, the dts file should look something like this:
+> Add the low level irq tracing hooks for 32-bit powerpc needed
+> to enable full lockdep functionality.
 >
-> spi-controller {
->       gpios = <&pio1 1 0      /* cs0 */
->                0              /* cs1, no GPIO */
->                &pio2 2 0>;    /* cs2 */
+> The approach taken to deal with the code in entry_32.S is that
+> we don't trace all the transitions of MSR:EE when we just turn
+> it off to peek at TI_FLAGS without races. Only when we are
+> calling into C code or returning from exceptions with a state
+> that have changed from what lockdep thinks.
 >
-> Signed-off-by: Rini van Zetten <rini@arvoo.nl>
+> There's a little bugger though: If we take an exception that
+> keeps interrupts enabled (such as an alignment exception) while
+> interrupts are enabled, we will call trace_hardirqs_on() on the
+> way back spurriously. Not a big deal, but to get rid of it would
+> require remembering in pt_regs that the exception was one of the
+> type that kept interrupts enabled which we don't know at this
+> stage. (Well, we could test all cases for regs->trap but that
+> sucks too much).
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > ---
-> Changes :
-> 	patch against 2.6.30-rc8-mm1
-> 	style updates
-> 	compiler warning fix
-> comment :
-> 	This feature is needed on our home made board to program an onboard  
-> fpga.
-> 	The fpga needs some special pin toggling to put it in programming  
-> mode.
-> 	That's why we want to skip the usual gpio cs and do the pin toggling
-> 	in our driver
-> 	
+>
+> This one fixes a bug, trace_hardirqs_on was too late in the
+> restore: code path and would clobber things. This boots fine
+> now on a PowerBook.
 
-Which FSL chip are you using?
+Tested-by: Kumar Gala <galak@kernel.crashing.org>
+
+on SMP e500 based system (8572)
 
 - k
