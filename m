@@ -1,23 +1,26 @@
-Return-Path: <michael@evidence.eu.com>
+Return-Path: <rini@arvoo.nl>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 56684B70F2
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C92BDB7227
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 23:49:02 +1000 (EST)
-Received: from sssup.it (ms01.sssup.it [193.205.80.99])
-	by ozlabs.org (Postfix) with ESMTP id 38071DDD1B
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 23:49:00 +1000 (EST)
-Date: Fri, 19 Jun 2009 14:50:02 +0200
-From: Michael Trimarchi <michael@evidence.eu.com>
-To: jochen@scram.de
-Subject: [RFC] Fix stuck on cpm-i2c driver
-Message-ID: <20090619125002.GA17067@gandalf.sssup.it>
+	Sat, 20 Jun 2009 00:18:40 +1000 (EST)
+Received: from smtp3.euronet.nl (smtp3.euronet.nl [194.134.35.173])
+	by ozlabs.org (Postfix) with ESMTP id F079BDDD1B
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 00:18:39 +1000 (EST)
+Message-ID: <4A3B9E38.9060004@arvoo.nl>
+Date: Fri, 19 Jun 2009 16:18:32 +0200
+From: Rini van Zetten <rini@arvoo.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: bruno@evidence.eu.com, trimarchi@gandalf.sssup.it,
-	linux-i2c@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH -mm v4][POWERPC] mpc8xxx : allow SPI without cs.
+References: <4A39DC80.7030906@arvoo.nl>	<20090618130955.GA1369@oksana.dev.rtsoft.ru>	<EEB9B7B7-5456-4AE9-8BB9-96DA04320697@kernel.crashing.org>	<4A3B3D90.5030100@arvoo.nl>
+	<20090619134558.GA18872@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090619134558.GA18872@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: spi-devel-general@lists.sourceforge.net,
+	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,62 +30,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a process tries to read/write a disconnected i2c device, it receives a signal (e.g. ctrl-c) and the kernel gets stuck.
+This patch adds the possibility to have a spi device without a cs.
 
-BUG: soft lockup - CPU#0 stuck for 61s! [I2CEEpromTest:392]
-NIP: c01628f8 LR: c01628f0 CTR: c00177cc
-REGS: c39abd70 TRAP: 0901   Not tainted  (2.6.25.7-alcore)
-MSR: 00009032 <EE,ME,IR,DR>  CR: 42042048  XER: 20000000
-TASK = c3889bd0[392] 'I2CEEpromTest' THREAD: c39aa000
-GPR00: 00009000 c39abe20 c3889bd0 c39075c8 c39abe28 00000001 00000000 00000001
-GPR08: c3889bd0 c39075c8 00009032 c39abe34 00002437
-NIP [c01628f8] cpm_i2c_xfer+0x5fc/0x6d0
-LR [c01628f0] cpm_i2c_xfer+0x5f4/0x6d0
-Call Trace:
-[c39abe20] [c0162924] cpm_i2c_xfer+0x628/0x6d0 (unreliable)
-[c39abe90] [c015f6a0] i2c_transfer+0x88/0xb4
-[c39abeb0] [c0160164] i2c_master_recv+0x48/0x6c
-[c39abed0] [c01618dc] i2cdev_read+0x50/0xe4
-[c39abef0] [c0068b24] vfs_read+0xc4/0x108
-[c39abf10] [c0068f4c] sys_read+0x4c/0x90
-[c39abf40] [c000d348] ret_from_syscall+0x0/0x38
-Instruction dump:
-3bc00064 92610010 3bf201c8 92810014 3b61
+For example, the dts file should look something like this:
 
-This happen because though the wait_event_interruptible_timeout takes the
-signals into account, the driver does not handle them.
-We propose to change the wait_event_interruptible_timeout with
-wait_event_timeout, leaving the signals to be handled in other points
-on the upper layers.
+spi-controller {
+        gpios = <&pio1 1 0      /* cs0 */
+                 0              /* cs1, no GPIO */
+                 &pio2 2 0>;    /* cs2 */
 
-Signed-off-by: Bruno Morelli <bruno@evidence.eu.com>
-Signed-off-by: Michael Trimarchi <michael@evidence.eu.com>
+This feature is needed on our home made board to program an onboard fpga.
+The fpga needs some special pin toggling to put it in programming mode.
+That's why we want to skip the usual gpio cs and do the pin toggling
+in our driver
+
+Signed-off-by: Rini van Zetten <rini@arvoo.nl>
+Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
-diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
-index b5db8b8..9c2e100 100644
---- a/drivers/i2c/busses/i2c-cpm.c
-+++ b/drivers/i2c/busses/i2c-cpm.c
-@@ -140,7 +140,7 @@ static irqreturn_t cpm_i2c_interrupt(int irq, void *dev_id)
+Changes :
+     patch against 2.6.30-rc8-mm1
+     style updates
+     compiler warning fix
+v4 :
+     missing space in error text added
+     splitted lines combined
 
- 	dev_dbg(&adap->dev, "Interrupt: %x\n", i);
+diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
+index 0fd0ec4..de95790 100644
+--- a/drivers/spi/spi_mpc8xxx.c
++++ b/drivers/spi/spi_mpc8xxx.c
+@@ -666,9 +666,12 @@ static void mpc8xxx_spi_cs_control(struct spi_device *spi, bool on)
+  	struct mpc8xxx_spi_probe_info *pinfo = to_of_pinfo(dev->platform_data);
+  	u16 cs = spi->chip_select;
+  	int gpio = pinfo->gpios[cs];
+-	bool alow = pinfo->alow_flags[cs];
 
--	wake_up_interruptible(&cpm->i2c_wait);
-+	wake_up(&cpm->i2c_wait);
+-	gpio_set_value(gpio, on ^ alow);
++	if (gpio != -EEXIST) {
++		bool alow = pinfo->alow_flags[cs];
++
++		gpio_set_value(gpio, on ^ alow);
++	}
+  }
 
- 	return i ? IRQ_HANDLED : IRQ_NONE;
- }
-@@ -364,12 +364,12 @@ static int cpm_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 		dev_dbg(&adap->dev, "test ready.\n");
- 		pmsg = &msgs[tptr];
- 		if (pmsg->flags & I2C_M_RD)
--			ret = wait_event_interruptible_timeout(cpm->i2c_wait,
-+			ret = wait_event_timeout(cpm->i2c_wait,
- 				(in_be16(&tbdf[tptr].cbd_sc) & BD_SC_NAK) ||
- 				!(in_be16(&rbdf[rptr].cbd_sc) & BD_SC_EMPTY),
- 				1 * HZ);
- 		else
--			ret = wait_event_interruptible_timeout(cpm->i2c_wait,
-+			ret = wait_event_timeout(cpm->i2c_wait,
- 				!(in_be16(&tbdf[tptr].cbd_sc) & BD_SC_READY),
- 				1 * HZ);
- 		if (ret == 0) {
+  static int of_mpc8xxx_spi_get_chipselects(struct device *dev)
+@@ -678,7 +681,7 @@ static int of_mpc8xxx_spi_get_chipselects(struct device *dev)
+  	struct mpc8xxx_spi_probe_info *pinfo = to_of_pinfo(pdata);
+  	unsigned int ngpios;
+  	int i = 0;
+-	int ret;
++	int ret = 0;
+
+  	ngpios = of_gpio_count(np);
+  	if (!ngpios) {
+@@ -707,27 +710,30 @@ static int of_mpc8xxx_spi_get_chipselects(struct device *dev)
+  		enum of_gpio_flags flags;
+
+  		gpio = of_get_gpio_flags(np, i, &flags);
+-		if (!gpio_is_valid(gpio)) {
++		if (gpio_is_valid(gpio)) {
++			ret = gpio_request(gpio, dev_name(dev));
++			if (ret) {
++				dev_err(dev, "can't request gpio #%d: %d\n",
++							 i, ret);
++				goto err_loop;
++			}
++
++			pinfo->gpios[i] = gpio;
++			pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
++
++			ret = gpio_direction_output(pinfo->gpios[i],
++					pinfo->alow_flags[i]);
++			if (ret) {
++				dev_err(dev, "can't set output direction for "
++						"gpio #%d: %d\n", i, ret);
++				goto err_loop;
++			}
++		} else if (gpio == -EEXIST) {
++			pinfo->gpios[i] = -EEXIST;
++		} else {
+  			dev_err(dev, "invalid gpio #%d: %d\n", i, gpio);
+  			goto err_loop;
+  		}
+-
+-		ret = gpio_request(gpio, dev_name(dev));
+-		if (ret) {
+-			dev_err(dev, "can't request gpio #%d: %d\n", i, ret);
+-			goto err_loop;
+-		}
+-
+-		pinfo->gpios[i] = gpio;
+-		pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
+-
+-		ret = gpio_direction_output(pinfo->gpios[i],
+-					    pinfo->alow_flags[i]);
+-		if (ret) {
+-			dev_err(dev, "can't set output direction for gpio "
+-				"#%d: %d\n", i, ret);
+-			goto err_loop;
+-		}
+  	}
+
+  	pdata->max_chipselect = ngpios;
