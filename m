@@ -1,19 +1,26 @@
-Return-Path: <lada.podivin@gmail.com>
-Received: from mail-fx0-f213.google.com (mail-fx0-f213.google.com
-	[209.85.220.213])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id BA7EAB72FE
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 073C5B7243
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 18:00:55 +1000 (EST)
-Received: by fxm9 with SMTP id 9so1842419fxm.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 01:00:52 -0700 (PDT)
+	Fri, 19 Jun 2009 23:25:50 +1000 (EST)
+Date: Fri, 19 Jun 2009 17:25:01 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Subject: Re: [PATCH -mm][POWERPC] mpc8xxx : allow SPI without cs.
+Message-ID: <20090619132501.GA10886@oksana.dev.rtsoft.ru>
+References: <4A39DC80.7030906@arvoo.nl>
+	<20090618130955.GA1369@oksana.dev.rtsoft.ru>
+	<EEB9B7B7-5456-4AE9-8BB9-96DA04320697@kernel.crashing.org>
+	<c384c5ea0906190445u130a4fedv14c22c7f9abdb9d8@mail.gmail.com>
 MIME-Version: 1.0
-Date: Fri, 19 Jun 2009 10:00:52 +0200
-Message-ID: <e35801cc0906190100i1a0429eahade975319b5246df@mail.gmail.com>
-Subject: kilauea/405ex external interrupts
-From: Lada Podivin <lada.podivin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=001485f7c48e5cb8c2046caeecbd
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <c384c5ea0906190445u130a4fedv14c22c7f9abdb9d8@mail.gmail.com>
+Cc: spi-devel-general@lists.sourceforge.net, Rini van Zetten <rini@arvoo.nl>,
+	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,83 +30,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001485f7c48e5cb8c2046caeecbd
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Fri, Jun 19, 2009 at 01:45:46PM +0200, Leon Woestenberg wrote:
+> Hello,
+> 
+> On Thu, Jun 18, 2009 at 4:04 PM, Kumar Gala<galak@kernel.crashing.org> wrote:
+> > On Jun 18, 2009, at 8:09 AM, Anton Vorontsov wrote:
+> >> On Thu, Jun 18, 2009 at 08:19:44AM +0200, Rini van Zetten wrote:
+> >>>
+> >>> This patch adds the possibility to have a spi device without a cs.
+> >>>
+> > That is a good question.  What HW is this for (I don't think its for eSPI
+> > but I could be wrong).
+> >
+> We need SPI without CS too on our MPC8313E design.
 
-Hi,
-I'm writing a linux driver that uses an external interrupt (ppc 405ex). I'm
-using GPIO pin 30 (external IRQ 1) connected to UIC1. I'm aware of the
-virtual interrupt stuff, so I added a new node to my device tree in order to
-get proper virtual IRQ number. This node describes an external event and its
-connection to UIC via the mentioned ext. int. Here is a sample of the
-divce-tree:
-...
+We do support SPI without CS, but only for one slave device. If
+there is no CS, technically you can address only one device on a
+SPI bus.
 
-UIC1: interrupt-controller1 {
-        compatible = "ibm,uic-405ex","ibm,uic";
-        interrupt-controller;
-        cell-index = <1>;
-        dcr-reg = <0x0d0 0x009>;
-        #address-cells = <0>;
-        #size-cells = <0>;
-        #interrupt-cells = <2>;
-        interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
-        interrupt-parent = <&UIC0>;
+And apparently Rini's case is not for addressing multiple chips
+w/o CS lines, it's just some chip-selects need quirks.
+
+> In our case having a CS line to each slave (18 of them) is too
+> expensive and we use a chip select which piggy backs on another
+> signal.
+> Once the slave is selected, SPI is used to send large amounts of data.
+
+Can you describe it a little bit more? Have you patched the SPI
+driver to work with your setup?
+
+If you can address 18 slaves w/o chip-select line, I quess
+you have a CS demuxing bridge somewhere, i.e.
+
+spi-controller {
+	/*
+	 * no chip-selects from the controller, it can only talk to
+	 * one device: the cs demuxing bridge, it is always selected.
+	 */
+	spi-cs-demuxing-bridge {
+		/*
+		 * knows how to manage chip-selects (or demux
+		 * one chip select line for several slaves)
+		 */
+		spi-slave {
+			reg = <0>;
+		};
+		...
+		spi-slave {
+			reg = <17>;
+		};
+	};
 };
 
-EXTEVENT: external_event {
-        device_type = "external";
-        #address-cells = <0>;
-        #size-cells = <0>;
-        #interrupt-cells = <2>;
-        interrupts = <0x1e 0x1>;
-        interrupt-parent = <&UIC1>;
-};
-...
+Surely we can hide the bridge into the SPI controller driver,
+but I think it would be beneficial to "factor-out" it to a
+stand-alone entity, so that other SPI controllers could work
+with this setup without any modifications (oh and btw, we could
+also create a bridge called "gpio-chipselects-bridge", and
+factor out all GPIO stuff from the drivers).
 
-Then I use function "irq_of_parse_and_map()" which returns the virtual IRQ
-number 22. So, "request_irq()" seems to be satisfied with this number. I can
-see this interrupt in the /proc/interrupts. But! When I connect a signal
-source to the pin 30, nothing happens - the interrupt service routine isn't
-called.
+There are two options of how we can factor out chip-select
+machines... the bad and the ugly. :-) No, the first one is bad,
+but the second should be OK.
 
-Am I suppose to configure anything else? (e. g. pin multiplexing, further
-device-tree tuning...) Thank you!
+1. We can create full-fledged SPI master bridge drivers, the
+   drivers will just pass-through all SPI IO, but will manage
+   chip-selects. The bad part is that these drivers could degrade
+   performance since they'll have to manage SPI IO, which is
+   unneeded for the pure CS machines.
 
-Best regards,
-Ladi
+2. Another option (which I like more), is to create "SPI chip-
+   select machine driver framework", so we could (finally)
+   separate two SPI entities: SPI IO and SPI chip-select machine.
+   CS machines of different flavours: GPIO, built-in, and
+   board-specific (!) with a lot of demuxing magic.
 
---001485f7c48e5cb8c2046caeecbd
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+(1) can be implemented trivially, while (2) is a lot of work.
 
-Hi,<br>I&#39;m writing a linux driver that uses an external interrupt (ppc =
-405ex). I&#39;m using GPIO pin 30 (external IRQ 1) connected to UIC1. I&#39=
-;m aware of the virtual interrupt stuff, so I added a new node to my device=
- tree in order to get proper virtual IRQ number. This node describes an ext=
-ernal event and its connection to UIC via the mentioned ext. int. Here is a=
- sample of the divce-tree:<br>
-...<br><br>UIC1: interrupt-controller1 {<br>=A0=A0=A0 =A0=A0=A0 compatible =
-=3D &quot;ibm,uic-405ex&quot;,&quot;ibm,uic&quot;;<br>=A0=A0=A0 =A0=A0=A0 i=
-nterrupt-controller;<br>=A0=A0=A0 =A0=A0=A0 cell-index =3D &lt;1&gt;;<br>=
-=A0=A0=A0 =A0=A0=A0 dcr-reg =3D &lt;0x0d0 0x009&gt;;<br>
-=A0=A0=A0 =A0=A0=A0 #address-cells =3D &lt;0&gt;;<br>=A0=A0=A0 =A0=A0=A0 #s=
-ize-cells =3D &lt;0&gt;;<br>=A0=A0=A0 =A0=A0=A0 #interrupt-cells =3D &lt;2&=
-gt;;<br>=A0=A0=A0 =A0=A0=A0 interrupts =3D &lt;0x1e 0x4 0x1f 0x4&gt;; /* ca=
-scade */<br>=A0=A0=A0 =A0=A0=A0 interrupt-parent =3D &lt;&amp;UIC0&gt;;<br>
-};<br><br>EXTEVENT: external_event {<br>=A0=A0=A0 =A0=A0=A0 device_type =3D=
- &quot;external&quot;;<br>=A0=A0=A0 =A0=A0=A0 #address-cells =3D &lt;0&gt;;=
-<br>=A0=A0=A0 =A0=A0=A0 #size-cells =3D &lt;0&gt;;<br>=A0=A0=A0 =A0=A0=A0 #=
-interrupt-cells =3D &lt;2&gt;;<br>=A0=A0=A0 =A0=A0=A0 interrupts =3D &lt;0x=
-1e 0x1&gt;;<br>
-=A0=A0=A0 =A0=A0=A0 interrupt-parent =3D &lt;&amp;UIC1&gt;;<br>};<br>...<br=
-><br>Then I use function &quot;irq_of_parse_and_map()&quot; which returns t=
-he virtual IRQ number 22. So, &quot;request_irq()&quot; seems to be satisfi=
-ed with this number. I can see this interrupt in the /proc/interrupts. But!=
- When I connect a signal source to the pin 30, nothing happens - the interr=
-upt service routine isn&#39;t called. <br>
-<br>Am I suppose to configure anything else? (e. g. pin multiplexing, furth=
-er device-tree tuning...) Thank you!<br><br>Best regards,<br>Ladi<br>
-
---001485f7c48e5cb8c2046caeecbd--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
