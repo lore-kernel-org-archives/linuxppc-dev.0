@@ -1,36 +1,27 @@
-Return-Path: <sonny@us.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 14EEAB72BB
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 04CDAB72B8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 11:14:42 +1000 (EST)
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	Fri, 19 Jun 2009 12:25:53 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 91850DDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 11:14:41 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n5J1DBcR026499
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 19:13:11 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n5J1EbJu252376
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 19:14:37 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n5J1Ea1U000305
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2009 19:14:36 -0600
-Date: Thu, 18 Jun 2009 20:14:36 -0500
-From: Sonny Rao <sonnyrao@us.ibm.com>
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
-Subject: [PATCH] BSR: add 4096 byte BSR size
-Message-ID: <20090619011436.GG31192@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: sonnyrao@us.ibm.com, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 56FD2DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 12:25:52 +1000 (EST)
+Message-Id: <7898009C-2A9D-45D3-8C2B-1AFA90C4CB31@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090618233752.GA13279@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH] powerpc/85xx: Make eSDHC 1-bit only transfer mode default
+	for MPC8569E-MDS
+Date: Thu, 18 Jun 2009 21:25:46 -0500
+References: <20090618233752.GA13279@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,46 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a 4096 byte BSR size which will be used on new machines.  Also, remove
-the warning when we run into an unknown size, as this can spam the kernel
-log excessively.
 
-Signed-off-by: Sonny Rao <sonnyrao@us.ibm.com>
+On Jun 18, 2009, at 6:37 PM, Anton Vorontsov wrote:
 
-Index: linux-2.6.27/drivers/char/bsr.c
-===================================================================
---- linux-2.6.27.orig/drivers/char/bsr.c	2009-06-18 17:50:41.000000000 -0500
-+++ linux-2.6.27/drivers/char/bsr.c	2009-06-18 17:50:58.000000000 -0500
-@@ -76,12 +76,13 @@
- static int bsr_major;
- 
- enum {
--	BSR_8   = 0,
--	BSR_16  = 1,
--	BSR_64  = 2,
--	BSR_128 = 3,
--	BSR_UNKNOWN = 4,
--	BSR_MAX = 5,
-+	BSR_8    = 0,
-+	BSR_16   = 1,
-+	BSR_64   = 2,
-+	BSR_128  = 3,
-+	BSR_4096 = 4,
-+	BSR_UNKNOWN = 5,
-+	BSR_MAX  = 6,
- };
- 
- static unsigned bsr_types[BSR_MAX];
-@@ -231,9 +232,11 @@
- 		case 128:
- 			cur->bsr_type = BSR_128;
- 			break;
-+		case 4096:
-+			cur->bsr_type = BSR_4096;
-+			break;
- 		default:
- 			cur->bsr_type = BSR_UNKNOWN;
--			printk(KERN_INFO "unknown BSR size %d\n",cur->bsr_bytes);
- 		}
- 
- 		cur->bsr_num = bsr_types[cur->bsr_type];
+> For yet unknown reason 4-bit mode doesn't work on MPC8569E-MDS boards,
+> so make 1-bit mode default. When we resolve the issue, u-boot will
+> remove sdhci,1-bit-only property from the device tree, while SDHCI
+> will still work with older u-boots.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> arch/powerpc/boot/dts/mpc8569mds.dts |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
+
+Did I miss the patch that adds this property defn. to our docs?
+
+- k
