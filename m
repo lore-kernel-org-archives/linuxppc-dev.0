@@ -1,31 +1,30 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id ED440B72F4
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A3554B7304
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 18:16:46 +1000 (EST)
+	Fri, 19 Jun 2009 18:24:22 +1000 (EST)
 Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D55ECDDD1B
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 18:16:46 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <19003.18793.605755.277949@cargo.ozlabs.ibm.com>
-Date: Fri, 19 Jun 2009 18:16:41 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 6/6] perf_counter: tools: Makefile tweaks for 64-bit
-	powerpc
-In-Reply-To: <20090618091334.GB21191@elte.hu>
-References: <19000.55404.103840.393470@cargo.ozlabs.ibm.com>
-	<19000.55666.866148.559620@cargo.ozlabs.ibm.com>
-	<20090618091334.GB21191@elte.hu>
-Cc: linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id 8E7E4DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 18:24:22 +1000 (EST)
+Subject: Re: [PATCH] of_serial: Add UPF_FIXED_TYPE flag
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Dave Mitchell <dmitchell@amcc.com>
+In-Reply-To: <1244590787-13716-1-git-send-email-dmitchell@amcc.com>
+References: <1244590787-13716-1-git-send-email-dmitchell@amcc.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-3EWuDwg2BNnXjDzAL1Jc"
+Date: Fri, 19 Jun 2009 18:24:21 +1000
+Message-Id: <1245399861.10629.194.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,17 +34,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ingo Molnar writes:
 
-> Note, i left out this bit from the commit - we need to find a better 
-> solution than to allow ugly warnings on PowerPC.
-> 
-> Could we use the kernel's u64 type directly perhaps? That would 
-> allow us to change all __u64 to u64 in all of tools/perf/ which is a 
-> nice clean-up in any case.
+--=-3EWuDwg2BNnXjDzAL1Jc
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This is userspace, we can use "u64" however we like. :)  I'll cook up
-a patch to add "typedef unsigned long long u64" and change __u64 to
-u64.
+On Tue, 2009-06-09 at 18:39 -0500, Dave Mitchell wrote:
+> This patch adds the UPF_FIXED_TYPE flag which will bypass the
+> 8250's autoconfig probe for uart type. The uart type identified
+> by the of_serial's parse of the flat device tree will be utilized
+> as defined.
+>=20
+> Signed-off-by: Dave Mitchell <dmitchell@amcc.com>
+> ---
+>  drivers/serial/of_serial.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
+> index 14f8fa9..3f2027c 100644
+> --- a/drivers/serial/of_serial.c
+> +++ b/drivers/serial/of_serial.c
+> @@ -67,7 +67,7 @@ static int __devinit of_platform_serial_setup(struct of=
+_device *ofdev,
+>  	port->type =3D type;
+>  	port->uartclk =3D *clk;
+>  	port->flags =3D UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
+> -		| UPF_FIXED_PORT;
+> +		| UPF_FIXED_PORT | UPF_FIXED_TYPE;
 
-Paul.
+I think we /probably/ want a similar change in legacy_serial.c, for soc
+ports at least.
+
+Or do people have things that are compatible "ns16550" but aren't?
+
+cheers
+
+--=-3EWuDwg2BNnXjDzAL1Jc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAko7SzUACgkQdSjSd0sB4dJlpACeMCwp6pGrh6VagC7sN5Be62zr
+QH8An04CwXXTVjrOE0QTeYgQxYG7s8bp
+=TYfW
+-----END PGP SIGNATURE-----
+
+--=-3EWuDwg2BNnXjDzAL1Jc--
