@@ -3,23 +3,19 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8562BB72F0
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C17A7B72FF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Jun 2009 17:46:55 +1000 (EST)
+	Fri, 19 Jun 2009 18:01:27 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CBCA0DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 17:46:54 +1000 (EST)
-Message-Id: <5014AA2E-2E85-49BF-8184-54866B067099@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 171FBDDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2009 18:01:26 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090618034439.0854ADDDB2@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] powerpc: Add irqtrace support for 32-bit powerpc (v2)
-Date: Fri, 19 Jun 2009 02:46:48 -0500
-References: <20090618034439.0854ADDDB2@ozlabs.org>
+Subject: [PATCH] powerpc: Fix mpic alloc warning
+Date: Fri, 19 Jun 2009 03:01:20 -0500
+Message-Id: <1245398480-29196-1-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,38 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Since we can use kmalloc earlier we are getting the following since the
+mpic_alloc() code calls alloc_bootmem().  Move to using kzalloc() to
+remove the warning.
 
-On Jun 17, 2009, at 10:43 PM, Benjamin Herrenschmidt wrote:
+------------[ cut here ]------------
+Badness at c0583248 [verbose debug info unavailable]
+NIP: c0583248 LR: c0583210 CTR: 00000004
+REGS: c0741de0 TRAP: 0700   Not tainted  (2.6.30-06736-g12a31df)
+MSR: 00021000 <ME,CE>  CR: 22024024  XER: 00000000
+TASK = c070d3b8[0] 'swapper' THREAD: c0740000 CPU: 0
+<6>GPR00: 00000001 c0741e90 c070d3b8 00000001 00000210 00000020 3fffffff 00000000
+<6>GPR08: 00000000 c0c85700 c04f8c40 0000002d 22044022 1004a388 7ffd9400 00000000
+<6>GPR16: 00000000 7ffcd100 7ffcd100 7ffcd100 c04f8c40 00000000 c059f62c c075a0c0
+<6>GPR24: c059f648 00000000 0000000f 00000210 00000020 00000000 3fffffff 00000210
+NIP [c0583248] alloc_arch_preferred_bootmem+0x50/0x80
+LR [c0583210] alloc_arch_preferred_bootmem+0x18/0x80
+Call Trace:
+[c0741e90] [c07343b0] devtree_lock+0x0/0x24 (unreliable)
+[c0741ea0] [c0583b14] ___alloc_bootmem_nopanic+0x54/0x108
+[c0741ee0] [c0583e18] ___alloc_bootmem+0x18/0x50
+[c0741ef0] [c057b9cc] mpic_alloc+0x48/0x710
+[c0741f40] [c057ecf4] mpc85xx_ds_pic_init+0x190/0x1b8
+[c0741f90] [c057633c] init_IRQ+0x24/0x34
+[c0741fa0] [c05738b8] start_kernel+0x260/0x3dc
+[c0741ff0] [c00003c8] skpinv+0x2e0/0x31c
+Instruction dump:
+409e001c 7c030378 80010014 83e1000c 38210010 7c0803a6 4e800020 3d20c0c8
+39295700 80090004 7c000034 5400d97e <0f000000> 2f800000 409e001c 38800000
 
-> Based on initial work from: Dale Farnsworth <dale@farnsworth.org>
->
-> Add the low level irq tracing hooks for 32-bit powerpc needed
-> to enable full lockdep functionality.
->
-> The approach taken to deal with the code in entry_32.S is that
-> we don't trace all the transitions of MSR:EE when we just turn
-> it off to peek at TI_FLAGS without races. Only when we are
-> calling into C code or returning from exceptions with a state
-> that have changed from what lockdep thinks.
->
-> There's a little bugger though: If we take an exception that
-> keeps interrupts enabled (such as an alignment exception) while
-> interrupts are enabled, we will call trace_hardirqs_on() on the
-> way back spurriously. Not a big deal, but to get rid of it would
-> require remembering in pt_regs that the exception was one of the
-> type that kept interrupts enabled which we don't know at this
-> stage. (Well, we could test all cases for regs->trap but that
-> sucks too much).
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->
-> This one fixes a bug, trace_hardirqs_on was too late in the
-> restore: code path and would clobber things. This boots fine
-> now on a PowerBook.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/mpic.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-Tested-by: Kumar Gala <galak@kernel.crashing.org>
-
-on SMP e500 based system (8572)
-
-- k
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 9c3af50..9e81157 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1052,11 +1052,10 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	int		intvec_top;
+ 	u64		paddr = phys_addr;
+ 
+-	mpic = alloc_bootmem(sizeof(struct mpic));
++	mpic = kzalloc(sizeof(struct mpic), GFP_NOWAIT);
+ 	if (mpic == NULL)
+ 		return NULL;
+-	
+-	memset(mpic, 0, sizeof(struct mpic));
++
+ 	mpic->name = name;
+ 
+ 	mpic->hc_irq = mpic_irq_chip;
+-- 
+1.6.0.6
