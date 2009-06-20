@@ -1,25 +1,23 @@
-Return-Path: <smaclennan@pikatech.com>
+Return-Path: <weiyi.huang@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B329FB7234
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0C923B723E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 21 Jun 2009 09:10:40 +1000 (EST)
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 321EEDDD1B
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 09:10:37 +1000 (EST)
-Date: Sat, 20 Jun 2009 19:10:34 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: Badness on the Warp
-Message-ID: <20090620191034.48fa085a@lappy.seanm.ca>
-In-Reply-To: <200906202256.46073.elendil@planet.nl>
-References: <20090620154824.72b5cd50@lappy.seanm.ca>
-	<200906202256.46073.elendil@planet.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	Sun, 21 Jun 2009 09:37:17 +1000 (EST)
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
+	by ozlabs.org (Postfix) with ESMTP id 761D7DDD0C
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 09:37:15 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so933951wfg.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2009 16:37:13 -0700 (PDT)
+From: Huang Weiyi <weiyi.huang@gmail.com>
+To: paulus@samba.org,
+	benh@kernel.crashing.org
+Subject: [PATCH] perf_counter: powerpc: remove duplicated #include
+Date: Sun, 21 Jun 2009 07:37:00 +0800
+Message-Id: <1245541020-2504-1-git-send-email-weiyi.huang@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Huang Weiyi <weiyi.huang@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 20 Jun 2009 22:56:45 +0200
-Frans Pop <elendil@planet.nl> wrote:
+Remove duplicated #include('s) in
+  arch/powerpc/kernel/mpc7450-pmu.c
+  arch/powerpc/kernel/ppc970-pmu.c
 
-> The fact that your bisect ended at a merge essentially means that it
-> is invalid. As a merge does not introduce any actual change (unless
-> it includes changes to resolve conflicts), it normally cannot be the
-> cause of a regression.
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+---
+ arch/powerpc/kernel/mpc7450-pmu.c |    1 -
+ arch/powerpc/kernel/ppc970-pmu.c  |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
 
-Makes sense I messed up somewhere. This is the commit that causes
-problems:
-
-Merge branch 'topic/slab/earlyboot' of git://git./linux/kernel/git/penberg/slab-2.6
-
-
-* 'topic/slab/earlyboot' of git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6:
-
-  vgacon: use slab allocator instead of the bootmem allocator
-
-  irq: use kcalloc() instead of the bootmem allocator
-
-  sched: use slab in cpupri_init()
-
-  sched: use alloc_cpumask_var() instead of alloc_bootmem_cpumask_var()
-
-  memcg: don't use bootmem allocator in setup code
-
-  irq/cpumask: make memoryless node zero happy
-
-  x86: remove some alloc_bootmem_cpumask_var calling
-
-  vt: use kzalloc() instead of the bootmem allocator
-
-  sched: use kzalloc() instead of the bootmem allocator
-
-  init: introduce mm_init()
-
-  vmalloc: use kzalloc() instead of alloc_bootmem()
-
-  slab: setup allocators earlier in the boot sequence
-
-  bootmem: fix slab fallback on numa
-
-  bootmem: use slab if bootmem is no longer available
-
-Makes sense since it is very early in the boot I get the badness. Also, there is no mention of JFS in the above logs.
-
-Cheers,
-   Sean
+diff --git a/arch/powerpc/kernel/mpc7450-pmu.c b/arch/powerpc/kernel/mpc7450-pmu.c
+index 75ff47f..c244133 100644
+--- a/arch/powerpc/kernel/mpc7450-pmu.c
++++ b/arch/powerpc/kernel/mpc7450-pmu.c
+@@ -10,7 +10,6 @@
+  */
+ #include <linux/string.h>
+ #include <linux/perf_counter.h>
+-#include <linux/string.h>
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+ 
+diff --git a/arch/powerpc/kernel/ppc970-pmu.c b/arch/powerpc/kernel/ppc970-pmu.c
+index 6637c87..833097a 100644
+--- a/arch/powerpc/kernel/ppc970-pmu.c
++++ b/arch/powerpc/kernel/ppc970-pmu.c
+@@ -10,7 +10,6 @@
+  */
+ #include <linux/string.h>
+ #include <linux/perf_counter.h>
+-#include <linux/string.h>
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+ 
+-- 
+1.6.1.2
