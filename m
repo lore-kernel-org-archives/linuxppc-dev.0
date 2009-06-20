@@ -3,19 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B7308B7239
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B329FB7234
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 21 Jun 2009 05:48:31 +1000 (EST)
+	Sun, 21 Jun 2009 09:10:40 +1000 (EST)
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 804DDDDD0C
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 05:48:27 +1000 (EST)
-Date: Sat, 20 Jun 2009 15:48:24 -0400
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 321EEDDD1B
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 09:10:37 +1000 (EST)
+Date: Sat, 20 Jun 2009 19:10:34 -0400
 From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Badness on the Warp
-Message-ID: <20090620154824.72b5cd50@lappy.seanm.ca>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: Badness on the Warp
+Message-ID: <20090620191034.48fa085a@lappy.seanm.ca>
+In-Reply-To: <200906202256.46073.elendil@planet.nl>
+References: <20090620154824.72b5cd50@lappy.seanm.ca>
+	<200906202256.46073.elendil@planet.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,66 +29,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] Badness at c033ebc4 [verbose debug info unavailable]
-[    0.000000] NIP: c033ebc4 LR: c033eb94 CTR: 00000000
-[    0.000000] REGS: c037fe70 TRAP: 0700   Not tainted  (2.6.30-pika)
-[    0.000000] MSR: 00021000 <ME,CE>  CR: 22022024  XER: 00000000
-[    0.000000] TASK = c035b440[0] 'swapper' THREAD: c037e000
-[    0.000000] <6>GPR00: 00000001 c037ff20 c035b440 00000000 0000000c 00000020 3fffffff 00000000 
-[    0.000000] <6>GPR08: c036faa4 c0380000 c07b7586 00000000 22002022 00000000 0ffa7f00 007fff99 
-[    0.000000] <6>GPR16: 00400450 00800000 007fff00 0ffa7a90 00000000 ffffffff 00000000 c0351d40 
-[    0.000000] <6>GPR24: 00000000 00001229 c0386b1c 0000000c 00000020 00000000 3fffffff 0000000c 
-[    0.000000] NIP [c033ebc4] alloc_arch_preferred_bootmem+0x48/0x74
-[    0.000000] LR [c033eb94] alloc_arch_preferred_bootmem+0x18/0x74
-[    0.000000] Call Trace:
-[    0.000000] [c037ff20] [c0350fa8] 0xc0350fa8 (unreliable)
-[    0.000000] [c037ff30] [c033ec40] ___alloc_bootmem_nopanic+0x50/0x108
-[    0.000000] [c037ff60] [c033ed10] ___alloc_bootmem+0x18/0x50
-[    0.000000] [c037ff70] [c033b3bc] uic_init_one+0x40/0x22c
-[    0.000000] [c037ff90] [c033b630] uic_init_tree+0x88/0x168
-[    0.000000] [c037ffb0] [c0337378] init_IRQ+0x28/0x40
-[    0.000000] [c037ffc0] [c0334664] start_kernel+0x15c/0x2a0
-[    0.000000] [c037fff0] [c0000200] skpinv+0x190/0x1cc
-[    0.000000] Instruction dump:
-[    0.000000] 2f830000 38600000 409e0018 80010014 83e1000c 7c0803a6 38210010 4e800020 
-[    0.000000] 3d20c038 80095408 21600000 7c0b0114 <0f000000> 2f800000 409e0018 38800000 
+On Sat, 20 Jun 2009 22:56:45 +0200
+Frans Pop <elendil@planet.nl> wrote:
+
+> The fact that your bisect ended at a merge essentially means that it
+> is invalid. As a merge does not introduce any actual change (unless
+> it includes changes to resolve conflicts), it normally cannot be the
+> cause of a regression.
+
+Makes sense I messed up somewhere. This is the commit that causes
+problems:
+
+Merge branch 'topic/slab/earlyboot' of git://git./linux/kernel/git/penberg/slab-2.6
 
 
-I wouldn't trust the backtrace too much since it seems to keep
-changing. It used to show __start_notes as the backtrace. This one is
-with the head of Linus' tree as of a few minutes ago.
+* 'topic/slab/earlyboot' of git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6:
 
-So I did a git bisect, and the problem goes back to June 11. The Warp
-boots and seems to run fine. So I didn't notice until looking at the
-logs for a different problem. I have since added a test to my
-regression tests to look for badness or oops in the logs.
+  vgacon: use slab allocator instead of the bootmem allocator
 
-The git bisect returned:
+  irq: use kcalloc() instead of the bootmem allocator
 
-  871fa90791a6f83dd8e2e489feb9534a8c02088d is first bad commit
+  sched: use slab in cpupri_init()
 
-That is it, no more info.... strange. git show 8714...088d gives:
+  sched: use alloc_cpumask_var() instead of alloc_bootmem_cpumask_var()
 
-Merge: 7702667... 79f52b7...
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Thu Jun 11 11:27:09 2009 -0700
+  memcg: don't use bootmem allocator in setup code
 
-    Merge branch 'for-linus' of
-    git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6 
-    * 'for-linus' of
-    git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6: jfs:
-    Add missing mutex_unlock call to error path missing unlock in
-    jfs_quota_write()
+  irq/cpumask: make memoryless node zero happy
 
-The Warp has jfs disabled, so I don't know why it would affect us,
-especially this realy in the boot! Anyway, I tried to revert the patch:
+  x86: remove some alloc_bootmem_cpumask_var calling
 
-$ git revert 871fa90791a6f83dd8e2e489feb9534a8c02088d
-fatal: Commit 871fa90791a6f83dd8e2e489feb9534a8c02088d is a merge but no -m option was given.
+  vt: use kzalloc() instead of the bootmem allocator
 
-So, anybody got an idea what is going on here? Or how I can revert the
-patch. I am not a git expert, so if I am doing this wrong, let me know.
+  sched: use kzalloc() instead of the bootmem allocator
+
+  init: introduce mm_init()
+
+  vmalloc: use kzalloc() instead of alloc_bootmem()
+
+  slab: setup allocators earlier in the boot sequence
+
+  bootmem: fix slab fallback on numa
+
+  bootmem: use slab if bootmem is no longer available
+
+Makes sense since it is very early in the boot I get the badness. Also, there is no mention of JFS in the above logs.
 
 Cheers,
    Sean
