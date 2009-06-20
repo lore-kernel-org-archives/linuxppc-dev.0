@@ -1,28 +1,25 @@
-Return-Path: <jochen@scram.de>
+Return-Path: <bounces@nabble.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B601FB7125
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3A92FB723E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 21 Jun 2009 03:01:10 +1000 (EST)
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de",
-	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
-	verified)) by ozlabs.org (Postfix) with ESMTPS id 4414CDDD1B
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 03:01:10 +1000 (EST)
-Message-ID: <4A3CF4F3.4030002@scram.de>
-Date: Sat, 20 Jun 2009 16:40:51 +0200
-From: Jochen Friedrich <jochen@scram.de>
+	Sun, 21 Jun 2009 03:54:46 +1000 (EST)
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id D46FEDDD0C
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 03:54:45 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1MI4m0-0006hJ-EM
+	for linuxppc-dev@ozlabs.org; Sat, 20 Jun 2009 10:54:40 -0700
+Message-ID: <24127643.post@talk.nabble.com>
+Date: Sat, 20 Jun 2009 10:54:40 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
+To: linuxppc-dev@ozlabs.org
+Subject: howto redirect serial console
 MIME-Version: 1.0
-To: Michael Trimarchi <michael@evidence.eu.com>
-Subject: Re: [RFC] Fix stuck on cpm-i2c driver
-References: <20090619125002.GA17067@gandalf.sssup.it>
-In-Reply-To: <20090619125002.GA17067@gandalf.sssup.it>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: bruno@evidence.eu.com, trimarchi@gandalf.sssup.it,
-	linux-i2c@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,21 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
 
-> This happen because though the wait_event_interruptible_timeout takes the
-> signals into account, the driver does not handle them.
-> We propose to change the wait_event_interruptible_timeout with
-> wait_event_timeout, leaving the signals to be handled in other points
-> on the upper layers.
+I have a ppc405 based board with one serial interface which I use as a
+console.
+I would like to redirect or suppress, at run time, the console in order to
+use the
+serial port to control external serial devices.
 
-Makes sense. I2C transactions better shouldn't be interrupted or
-data loss might happen.
+I have tried (busybox) setconsole program to redirect the console to
+/dev/null
+but it did not work. What would be the elegant way to redirect or suppress
+the serial console.
 
-> Signed-off-by: Bruno Morelli <bruno@evidence.eu.com>
-> Signed-off-by: Michael Trimarchi <michael@evidence.eu.com>
-
-Acked-by: Jochen Friedrich <jochen@scram.de>
-
-Thanks,
-Jochen
+M.  
+-- 
+View this message in context: http://www.nabble.com/howto-redirect-serial-console-tp24127643p24127643.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
