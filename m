@@ -1,23 +1,23 @@
-Return-Path: <herbert@gondor.apana.org.au>
+Return-Path: <gerhard_pircher@gmx.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 44F4EB71EE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CE7E0B7188
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 22 Jun 2009 00:35:56 +1000 (EST)
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	by ozlabs.org (Postfix) with ESMTP id B4241DDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 00:35:55 +1000 (EST)
-Date: Sun, 21 Jun 2009 21:53:11 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Shasi Pulijala <spulijala@amcc.com>
-Subject: Re: [PATCH 1/3] AMCC Crypto4xx Device Driver v7
-Message-ID: <20090621135311.GA3185@gondor.apana.org.au>
+	Mon, 22 Jun 2009 04:19:03 +1000 (EST)
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id A15E9DDD1C
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 04:19:01 +1000 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Sun, 21 Jun 2009 20:18:55 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20090621181855.74980@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DB599F406D04E34389140B7D99C71B1B07D83E96@SDCEXCHANGE01.ad.amcc.com>
-Cc: linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org
+Subject: ALSA fixes for non-coherent ppc32 again
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Takashi Iwai
+	<tiwai@suse.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shasi Pulijala <spulijala@amcc.com> wrote:
-> Hi,
->        I am re-sending this patch as a patch series of 3, I am assuming the earlier one did not go through the mailing lists
-> because it was over the size limit.
+Hi,
 
-Actually the original patch came through the list and to me :)
+Takashi Iwai posted patches to make ALSA work on non-coherent PPC32
+systems (almost exactly) a year ago. See here:
+http://www.nabble.com/-PATCH-0-3--ALSA-fixes-for-non-coherent-ppc32-to17980027.html#a17980027
 
-However I'm not against splitting it up, but if you are going to
-do it please make sure that each patch compiles by itself since
-we want a bisectable tree.
+As far as I can see these patches never went upstream. Where there any
+objections or did we just forget about them? It would be cool, if the
+patches could be merged now, as at least two platforms need this bugfix
+(namely Sam440 and AmigaOne).
 
-Thanks,
+Thanks!
+
+Gerhard
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+GRATIS für alle GMX-Mitglieder: Die maxdome Movie-FLAT!
+Jetzt freischalten unter http://portal.gmx.net/de/go/maxdome01
