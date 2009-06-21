@@ -3,25 +3,27 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7AC08B7242
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5C7CEB7214
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 21 Jun 2009 09:26:12 +1000 (EST)
-Received: from CPSMTPM-EML109.kpnxchange.com (Cpsmtpm-eml109.kpnxchange.com
-	[195.121.3.13]) by ozlabs.org (Postfix) with ESMTP id BC0EEDDD1C
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 09:26:11 +1000 (EST)
+	Sun, 21 Jun 2009 14:28:39 +1000 (EST)
+Received: from CPSMTPM-EML102.kpnxchange.com (cpsmtpm-eml102.kpnxchange.com
+	[195.121.3.6]) by ozlabs.org (Postfix) with ESMTP id 9CCE6DDD1B
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 14:28:38 +1000 (EST)
 From: Frans Pop <elendil@planet.nl>
 To: Sean MacLennan <smaclennan@pikatech.com>
 Subject: Re: Badness on the Warp
-Date: Sun, 21 Jun 2009 01:26:08 +0200
+Date: Sun, 21 Jun 2009 06:28:33 +0200
 References: <20090620154824.72b5cd50@lappy.seanm.ca>
 	<200906202256.46073.elendil@planet.nl>
-	<20090620191034.48fa085a@lappy.seanm.ca>
-In-Reply-To: <20090620191034.48fa085a@lappy.seanm.ca>
+	<20090620194250.5a3e826f@lappy.seanm.ca>
+In-Reply-To: <20090620194250.5a3e826f@lappy.seanm.ca>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200906210126.09049.elendil@planet.nl>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Message-Id: <200906210628.35553.elendil@planet.nl>
+Cc: linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,20 +34,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Sunday 21 June 2009, Sean MacLennan wrote:
-> On Sat, 20 Jun 2009 22:56:45 +0200 Frans Pop <elendil@planet.nl> wrote:
-> > The fact that your bisect ended at a merge essentially means that it
-> > is invalid. As a merge does not introduce any actual change (unless
-> > it includes changes to resolve conflicts), it normally cannot be the
-> > cause of a regression.
+> I found the source of the badness. The backtrace is correct:
 >
-> Makes sense I messed up somewhere. This is the commit that causes
-> problems:
->
-> Merge branch 'topic/slab/earlyboot' of
-> git://git./linux/kernel/git/penberg/slab-2.6
->
-> * 'topic/slab/earlyboot' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6:
+> uic_init_one
 
-Hmmm. That's b640f042faa2, which is another merge...
-So you're still not there.
+So that's in arch/powerpc/sysdev/uic.c.
+
+> ___alloc_bootmem
+> ___alloc_bootmem_nopanic
+> alloc_arch_preferred_bootmem
+>
+> In alloc_arch_preferred_bootmem we have:
+>
+> 	if (WARN_ON_ONCE(slab_is_available()))
+> 		return kzalloc(size, GFP_NOWAIT);
+>
+> Since the slab is available (it had better be or the call will return
+> NULL), we get the badness message, then a successful return from
+> kzalloc.
+>
+> I believe the author wants something like:
+>
+> 	if (slab_is_available())
+> 		return kzalloc(size, GFP_NOWAIT);
+> 	else
+> 		WARN_ON_ONCE(1);
+
+Well, I myself have no idea. It could also indicate a bug in the uic code.
+
+But let's CC some people responsible for this code. Pekka recently added 
+this WARN that triggers in your case; David and Paul look to be the 
+people most involved in the uic code.
+
+Start of the thread is at http://lkml.org/lkml/2009/6/20/165.
+
+Cheers,
+FJP
