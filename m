@@ -1,16 +1,38 @@
-Return-Path: <Sylvain.Cote@verint.com>
-Received: from exprod7og107.obsmtp.com (exprod7og107.obsmtp.com [64.18.2.167])
-	by bilbo.ozlabs.org (Postfix) with SMTP id 9389EB7113
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DB49DB7167
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Jun 2009 01:28:18 +1000 (EST)
-From: "Cote, Sylvain" <Sylvain.Cote@verint.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 22 Jun 2009 11:13:41 -0400
-Subject: ppc405ex GPIO mapping
-Message-ID: <579B119545DAEF4689C8FBEEFEC5793F01D4FEF815F1@ATLMBX.verint.corp.verintsystems.com>
-Content-Type: multipart/alternative;
-	boundary="_000_579B119545DAEF4689C8FBEEFEC5793F01D4FEF815F1ATLMBXverin_"
+	Tue, 23 Jun 2009 02:11:48 +1000 (EST)
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6B72CDDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2009 02:11:47 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n5MGAFwK015098
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 10:10:15 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5MGBW5u044094
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 10:11:33 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n5MGBVji003742
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 10:11:32 -0600
+Message-ID: <4A3FAD31.2060703@linux.vnet.ibm.com>
+Date: Mon, 22 Jun 2009 11:11:29 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: Boot failure on the powerstation with 2.6.30 latest
+References: <1245683801.6901.8.camel@mulgrave.site>
+In-Reply-To: <1245683801.6901.8.camel@mulgrave.site>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,200 +42,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_579B119545DAEF4689C8FBEEFEC5793F01D4FEF815F1ATLMBXverin_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+James,
 
-Hi,
+I was running into a similar hang on one of my Power boxes as well.
+Reverting c868d550115b9ccc0027c67265b9520790f05601 allowed by system
+to boot. It looks like that patch injected a bug where we can end up
+waiting on an uninitialized mutex:
 
-I am using kernel 2.6.25.20 on my Kilauea eval board (ppc405ex).  I want to=
- access some GPIO's.  I have configured my u-boot to reflect what GPIO conf=
-iguration I need.  I try to access my GPIO's in my driver.  When accessing =
-GPIO's, I get this error in the kernel <<Unable to handle kernel paging req=
-uest for data at address 0xef600800>>.   0xef600800 is the base address of =
-GPIO in the ppc405ex.
+[c0000000009f3c30] c00000000052c7dc .mutex_lock+0x34/0x50
+[c0000000009f3cb0] c00000000008b190 .get_online_cpus+0x3c/0x74
+[c0000000009f3d40] c000000000146cd0 .kmem_cache_create+0xcc/0x548
+[c0000000009f3e50] c000000000032ae0 .pgtable_cache_init+0x28/0x6c
+[c0000000009f3ee0] c000000000780960 .start_kernel+0x1ec/0x520
+[c0000000009f3f90] c0000000000083d8 .start_here_common+0x1c/0x44
 
-It looks like GPIO's are not mapped in my kernel.  I have tried to add this=
- entry in my dts file (under POB0: opb ) but it does not work:
+The mutex gets initialized in cpu_hotplug_init, which doesn't get called until
+after pgtable_cache_init.
 
-GPIO: gpio@ef600800
-{
-compatible =3D "ibm,gpio-405ex";
-reg =3D <ef600800 00000020>;
-};
+-Brian
+
+James Bottomley wrote:
+> 2.6.30-rc8 worked fine ... unless this is a known problem, I suppose I
+> can begin bisecting.
+> 
+> The boot log of the hang is:
+> 
+> Please wait, loading kernel...
+>    Elf64 kernel loaded...
+> Loading ramdisk...
+> ramdisk loaded at 02500000, size: 8280 Kbytes
+> OF stdout device is: /ht/isa@8/serial@2f8
+> Preparing to boot Linux version 2.6.30 (jejb@claymoor) (gcc version 4.3.3 (Debian 4.3.3-10) ) #1 SMP Mon Jun 22 09:59:35 CDT 2009
+> command line: root=/dev/sda3 ro console=ttyS0,19200n1 
+> memory layout at init:
+>   alloc_bottom : 0000000002d16000
+>   alloc_top    : 0000000030000000
+>   alloc_top_hi : 0000000080000000
+>   rmo_top      : 0000000030000000
+>   ram_top      : 0000000080000000
+> instantiating rtas at 0x000000002fff5000... done
+> boot cpu hw idx 0000000000000000
+> starting cpu hw idx 0000000000000001... done
+> starting cpu hw idx 0000000000000002... done
+> starting cpu hw idx 0000000000000003... done
+> copying OF device tree...
+> Building dt strings...
+> Building dt structure...
+> Device tree strings 0x0000000003117000 -> 0x0000000003117640
+> Device tree struct  0x0000000003118000 -> 0x000000000311b000
+> Calling quiesce...
+> returning from prom_init
+> 
+> So it looks like some type of early boot failure or handoff in head_64
+> 
+> James
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
 
-Any clues on this issues?
-
-
-Thanks
-
-Sylvain C.
-
-This electronic message may contain proprietary and confidential informat=
-ion of Verint Systems Inc., its affiliates and/or subsidiaries.
-The information is intended to be for the use of the individual(s) or
-entity(ies) named above.  If you are not the intended recipient (or autho=
-rized to receive this e-mail for the intended recipient), you may not use=
-, copy, disclose or distribute to anyone this message or any information =
-contained in this message.  If you have received this electronic message =
-in error, please notify us by replying to this e-mail.
-=0D
---_000_579B119545DAEF4689C8FBEEFEC5793F01D4FEF815F1ATLMBXverin_
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
-hemas-microsoft-com:office:word" xmlns:st1=3D"urn:schemas-microsoft-com:off=
-ice:smarttags" xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<o:SmartTagType namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"place"/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-CA link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>Hi,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>I am using kernel 2.6.25.20 on my <st1:place w:st=
-=3D"on">Kilauea</st1:place>
-eval board (ppc405ex).&nbsp; I want to access some GPIO&#8217;s.&nbsp; I ha=
-ve
-configured my u-boot to reflect what GPIO configuration I need. &nbsp;I try=
- to
-access my GPIO&#8217;s in my driver.&nbsp; When accessing GPIO&#8217;s, I g=
-et
-this error in the kernel &lt;&lt;Unable to handle kernel paging request for
-data at address 0xef600800&gt;&gt;. &nbsp;&nbsp;0xef600800 is the base addr=
-ess
-of GPIO in the ppc405ex.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>It looks like GPIO&#8217;s are not mapped in my
-kernel. &nbsp;I have tried to add this entry in my dts file (under POB0: op=
-b ) but
-it does not work:<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>GPIO: gpio@ef600800 <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>{&nbsp; <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><font size=3D2 face=3DArial=
-><span
-lang=3DFR style=3D'font-size:10.0pt;font-family:Arial'>compatible =3D
-&quot;ibm,gpio-405ex&quot;;&nbsp; <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'margin-left:.5in'><font size=3D2 face=3DArial=
-><span
-lang=3DFR style=3D'font-size:10.0pt;font-family:Arial'>reg =3D &lt;ef600800
-00000020&gt;;&nbsp; <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>};<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>&nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>Any clues on this issues?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>Thanks&nbsp; <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>Sylvain C.<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-<pre>This electronic message may contain proprietary and confidential inf=
-ormation of Verint Systems Inc., its affiliates and/or subsidiaries.
-The information is intended to be for the use of the individual(s) or
-entity(ies) named above.  If you are not the intended recipient (or autho=
-rized to receive this e-mail for the intended recipient), you may not use=
-, copy, disclose or distribute to anyone this message or any information =
-contained in this message.  If you have received this electronic message =
-in error, please notify us by replying to this e-mail.
-=0D
---_000_579B119545DAEF4689C8FBEEFEC5793F01D4FEF815F1ATLMBXverin_--
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
