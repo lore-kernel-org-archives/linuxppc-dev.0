@@ -3,23 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05A25B71A5
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5723CB71C9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 22 Jun 2009 11:26:09 +1000 (EST)
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 4CCD5DDDA0
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 11:26:06 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so1260781ywt.39
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 18:26:05 -0700 (PDT)
+	Mon, 22 Jun 2009 11:36:11 +1000 (EST)
+Received: from mail-gx0-f210.google.com (mail-gx0-f210.google.com
+	[209.85.217.210]) by ozlabs.org (Postfix) with ESMTP id AA425DDDA0
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 11:36:10 +1000 (EST)
+Received: by gxk6 with SMTP id 6so4401941gxk.9
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 18:36:09 -0700 (PDT)
 Received: from localhost ([127.0.0.1] helo=[127.0.1.1])
 	by terra with esmtp (Exim 4.69) (envelope-from <jonsmirl@gmail.com>)
-	id 1MIYIN-0008D2-53
-	for linuxppc-dev@ozlabs.org; Sun, 21 Jun 2009 21:26:03 -0400
+	id 1MIYKG-0008F6-5X
+	for linuxppc-dev@ozlabs.org; Sun, 21 Jun 2009 21:28:00 -0400
 Subject: [PATCH] Have git ignore generated files from dtc compile
 To: linuxppc-dev@ozlabs.org
 From: Jon Smirl <jonsmirl@gmail.com>
-Date: Sun, 21 Jun 2009 21:26:03 -0400
-Message-ID: <20090622012603.31524.1342.stgit@terra>
+Date: Sun, 21 Jun 2009 21:28:00 -0400
+Message-ID: <20090622012800.31652.35886.stgit@terra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,7 +31,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Have git ignore generated files from dtc compile
 
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 ---
  arch/powerpc/boot/.gitignore |   10 ++++++++++
  scripts/dtc/.gitignore       |    5 +++++
