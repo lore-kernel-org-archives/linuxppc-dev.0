@@ -1,24 +1,22 @@
-Return-Path: <roel.kluin@gmail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4D660B7154
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [88.79.252.171])
+	by bilbo.ozlabs.org (Postfix) with SMTP id 89C49B70B1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Jun 2009 00:39:36 +1000 (EST)
-Received: from mail-ew0-f215.google.com (mail-ew0-f215.google.com
-	[209.85.219.215]) by ozlabs.org (Postfix) with ESMTP id 5C08FDDDA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2009 00:39:34 +1000 (EST)
-Received: by ewy11 with SMTP id 11so4813501ewy.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 07:39:32 -0700 (PDT)
-Message-ID: <4A3FB3E2.7090309@gmail.com>
-Date: Mon, 22 Jun 2009 18:40:02 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
+	Tue, 23 Jun 2009 00:56:01 +1000 (EST)
+From: <Sergej.Stepanov@ids.de>
+To: <chris.pringle@oxtel.com>, <scottwood@freescale.com>
+Date: Mon, 22 Jun 2009 16:31:07 +0200
+Subject: AW: PowerPC PCI DMA issues (prefetch/coherency?)
+Message-ID: <4206182445660643B9AEB8D4E55BBD0A08533B67B5@HERMES2>
+References: <4A37A503.3030209@oxtel.com>
+	<20090616162114.GA5051@loki.buserror.net> <4A37C97A.5050508@oxtel.com>
+	<4A37CC72.3060709@freescale.com> <4A37CF02.5080906@oxtel.com>
+	<4A37D073.6020802@freescale.com> <4A38A21B.5060306@oxtel.com>
+	<4A38ED31.9030705@oxtel.com>,<4A3A23FA.1000407@oxtel.com>
+In-Reply-To: <4A3A23FA.1000407@oxtel.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: [PATCH] Sky CPU: redundant or incorrect tests on unsigned
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-count is unsigned and cannot be less than 0.
+>The other part of the fix is in asm-powerpc/pgtable32.h. _PAGE_BASE
+>needs _PAGE_COHERENT in order to work correctly, and in fact there is
+>now a comment in there to that affect in 2.6.29. Backporting that change
+>has made it work on 2.6.26. Both this patch, and the fix to head_32.S
+>are needed for it to work correctly on older kernels.
+>
+>Chris
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Can these be removed or do we need an `if (count > MAX)' test, and
-what should MAX be then?
+Hello Chris,
 
-diff --git a/drivers/misc/hdpuftrs/hdpu_cpustate.c b/drivers/misc/hdpuftrs/hdpu_cpustate.c
-index 176fe4e..35000cf 100644
---- a/drivers/misc/hdpuftrs/hdpu_cpustate.c
-+++ b/drivers/misc/hdpuftrs/hdpu_cpustate.c
-@@ -121,8 +121,6 @@ static ssize_t cpustate_read(struct file *file, char *buf,
- {
- 	unsigned char data;
- 
--	if (count < 0)
--		return -EFAULT;
- 	if (count == 0)
- 		return 0;
- 
-@@ -137,9 +135,6 @@ static ssize_t cpustate_write(struct file *file, const char *buf,
- {
- 	unsigned char data;
- 
--	if (count < 0)
--		return -EFAULT;
--
- 	if (count == 0)
- 		return 0;
- 
+sorry for dummy, but if it possible, could you, please, send a correspondin=
+g summary patch of backporting you've done for older kernels?
+or just summary of that changes once again?
+
+Many thanks
+
+Sergej.=
