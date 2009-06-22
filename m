@@ -1,35 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <jonsmirl@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 958BDB71D9
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05A25B71A5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 22 Jun 2009 08:57:32 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D2815DDDA0
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 08:57:31 +1000 (EST)
-Subject: Re: Badness on the Warp
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-In-Reply-To: <20090621183658.2b408e69@lappy.seanm.ca>
-References: <20090620154824.72b5cd50@lappy.seanm.ca>
-	<200906202256.46073.elendil@planet.nl>
-	<20090620194250.5a3e826f@lappy.seanm.ca>
-	<200906210628.35553.elendil@planet.nl>
-	<84144f020906210320n2984807dw2d4b4fb38afd22cf@mail.gmail.com>
-	<1245623104.16880.26.camel@pasglop>
-	<20090621183658.2b408e69@lappy.seanm.ca>
-Content-Type: text/plain
-Date: Mon, 22 Jun 2009 08:57:15 +1000
-Message-Id: <1245625035.16880.31.camel@pasglop>
-Mime-Version: 1.0
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+	Mon, 22 Jun 2009 11:26:09 +1000 (EST)
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 4CCD5DDDA0
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 11:26:06 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1260781ywt.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 18:26:05 -0700 (PDT)
+Received: from localhost ([127.0.0.1] helo=[127.0.1.1])
+	by terra with esmtp (Exim 4.69) (envelope-from <jonsmirl@gmail.com>)
+	id 1MIYIN-0008D2-53
+	for linuxppc-dev@ozlabs.org; Sun, 21 Jun 2009 21:26:03 -0400
+Subject: [PATCH] Have git ignore generated files from dtc compile
+To: linuxppc-dev@ozlabs.org
+From: Jon Smirl <jonsmirl@gmail.com>
+Date: Sun, 21 Jun 2009 21:26:03 -0400
+Message-ID: <20090622012603.31524.1342.stgit@terra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,25 +31,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2009-06-21 at 18:36 -0400, Sean MacLennan wrote:
-> On Mon, 22 Jun 2009 08:25:04 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > Right, our interrupt controllers need those fixes, they are low
-> > on my priority list since it's a reasonably harmless warning and I'm
-> > still chasing some actual breakage (though maybe not directly related
-> > to your patches).
-> > 
-> > Kumar already submitted a couple, Frans, feel free to beat me
-> > at converting UIC (just use kmalloc directly in there instead
-> > of alloc_bootmem).
-> 
-> I can make the changes to UIC if you want. They badness is harmless (it
-> ends up calling kzalloc anyway), but hard to explain to our PV (Product
-> Verification) department that they can ignore what looks like a crash ;)
 
-Heh, right, but hopefully we should have that fixed before .31 is
-out :-)
+---
+ arch/powerpc/boot/.gitignore |   10 ++++++++++
+ scripts/dtc/.gitignore       |    5 +++++
+ 2 files changed, 15 insertions(+), 0 deletions(-)
+ create mode 100644 scripts/dtc/.gitignore
 
-Cheers,
-Ben.
+diff --git a/arch/powerpc/boot/.gitignore b/arch/powerpc/boot/.gitignore
+index d57aa5c..dab1b41 100644
+--- a/arch/powerpc/boot/.gitignore
++++ b/arch/powerpc/boot/.gitignore
+@@ -37,3 +37,13 @@ zImage.pseries
+ zconf.h
+ zlib.h
+ zutil.h
++fdt.c
++fdt.h
++fdt_ro.c
++fdt_rw.c
++fdt_strerror.c
++fdt_sw.c
++fdt_wip.c
++libfdt.h
++libfdt_internal.h
++
+diff --git a/scripts/dtc/.gitignore b/scripts/dtc/.gitignore
+new file mode 100644
+index 0000000..095acb4
+--- /dev/null
++++ b/scripts/dtc/.gitignore
+@@ -0,0 +1,5 @@
++dtc
++dtc-lexer.lex.c
++dtc-parser.tab.c
++dtc-parser.tab.h
++
