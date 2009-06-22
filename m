@@ -1,26 +1,25 @@
-Return-Path: <dan.j.williams@intel.com>
+Return-Path: <James.Bottomley@HansenPartnership.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E4701B7120
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9F5DAB7112
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Jun 2009 07:22:47 +1000 (EST)
-Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
-	by ozlabs.org (Postfix) with ESMTP id 55B17DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2009 07:22:47 +1000 (EST)
-Subject: Re: [PATCH v3 2/2] fsldma: Add DMA_SLAVE support
-From: Dan Williams <dan.j.williams@intel.com>
-To: Ira Snyder <iws@ovro.caltech.edu>, Li Yang <leoli@freescale.com>,
-	Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1245705647.937.2.camel@dwillia2-linux.ch.intel.com>
-References: <20090619193134.GC30992@ovro.caltech.edu>
-	<1245705647.937.2.camel@dwillia2-linux.ch.intel.com>
+	Tue, 23 Jun 2009 08:04:01 +1000 (EST)
+Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
+	[66.63.167.143]) by ozlabs.org (Postfix) with ESMTP id 5DFF7DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2009 08:04:01 +1000 (EST)
+Subject: Re: Boot failure on the powerstation with 2.6.30 latest
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Brian King <brking@linux.vnet.ibm.com>
+In-Reply-To: <4A3FAD31.2060703@linux.vnet.ibm.com>
+References: <1245683801.6901.8.camel@mulgrave.site>
+	<4A3FAD31.2060703@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Mon, 22 Jun 2009 14:22:45 -0700
-Message-Id: <1245705765.937.4.camel@dwillia2-linux.ch.intel.com>
+Date: Mon, 22 Jun 2009 17:03:56 -0500
+Message-Id: <1245708236.17035.2.camel@mulgrave.site>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,53 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-06-22 at 14:20 -0700, Dan Williams wrote:
-> On Fri, 2009-06-19 at 12:31 -0700, Ira Snyder wrote:
-> > Use the DMA_SLAVE capability of the DMAEngine API to copy/from a
-> > scatterlist into an arbitrary list of hardware address/length pairs.
-> > 
-> > This allows a single DMA transaction to copy data from several different
-> > devices into a scatterlist at the same time.
-> > 
-> > This also adds support to enable some controller-specific features such as
-> > external start and external pause for a DMA transaction.
-> > 
-> > Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
-> > ---
-> > 
-> > This patch depends on the "fsldma: split apart external pause and
-> > request count features" patch.
-> > 
-> > After discussion with Dan Williams, this is the third version of the
-> > DMA_SLAVE API for the Freescale DMA controller. I've tested it heavily
-> > with both drivers I have written against this API, an FPGA programmer
-> > and an FPGA data grabber.
-> > 
-> > Kumar, Dan asked me to add you to the CC list, so you can have a look at
-> > this patch before he adds it to his tree.
-> > 
-> > The other two small patches I posted earlier are very helpful in testing
-> > this functionality. They make the fsldma driver leave the BWC (bandwidth
-> > control) bits alone on the 83xx controller, as well as making the
-> > external start feature available on 83xx.
-> > 
+On Mon, 2009-06-22 at 11:11 -0500, Brian King wrote:
+> James,
 > 
-> Kumar, Leo,
+> I was running into a similar hang on one of my Power boxes as well.
+> Reverting c868d550115b9ccc0027c67265b9520790f05601 allowed by system
+> to boot. It looks like that patch injected a bug where we can end up
+> waiting on an uninitialized mutex:
 > 
-> Can I get your acked-by's for the current state of async_tx.git/next?  I
-> just pushed out Ira's latest so it may take a moment to mirror out.
+> [c0000000009f3c30] c00000000052c7dc .mutex_lock+0x34/0x50
+> [c0000000009f3cb0] c00000000008b190 .get_online_cpus+0x3c/0x74
+> [c0000000009f3d40] c000000000146cd0 .kmem_cache_create+0xcc/0x548
+> [c0000000009f3e50] c000000000032ae0 .pgtable_cache_init+0x28/0x6c
+> [c0000000009f3ee0] c000000000780960 .start_kernel+0x1ec/0x520
+> [c0000000009f3f90] c0000000000083d8 .start_here_common+0x1c/0x44
 > 
-> Thanks,
-> Dan
-> 
-> The following changes since commit f234012f52a37e48f2330e1ca2df69800e797c3b:
->   Linus Torvalds (1):
->         Merge branch 'for-linus' of git://git.kernel.org/.../drzeus/mmc
-> 
-> are available in the git repository at:
-> 
->   ssh://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
+> The mutex gets initialized in cpu_hotplug_init, which doesn't get called until
+> after pgtable_cache_init.
 
-That should be:
+Actually, no, reverting that one doesn't fix it.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
+A full run of git bisect turns up this commit as the culprit; I'll make
+a fuss on lkml:
+
+83b519e8b9572c319c8e0c615ee5dd7272856090 is first bad commit
+commit 83b519e8b9572c319c8e0c615ee5dd7272856090
+Author: Pekka Enberg <penberg@cs.helsinki.fi>
+Date:   Wed Jun 10 19:40:04 2009 +0300
+
+    slab: setup allocators earlier in the boot sequence
+
+James
