@@ -1,35 +1,37 @@
-Return-Path: <penberg@gmail.com>
+Return-Path: <sachinp@in.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 313DAB71AA
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 494F5B71A9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 22 Jun 2009 14:48:42 +1000 (EST)
-Received: from mail-bw0-f219.google.com (mail-bw0-f219.google.com
-	[209.85.218.219]) by ozlabs.org (Postfix) with ESMTP id 3559BDDDA0
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 14:48:38 +1000 (EST)
-Received: by bwz19 with SMTP id 19so3271204bwz.9
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jun 2009 21:48:36 -0700 (PDT)
+	Mon, 22 Jun 2009 16:44:10 +1000 (EST)
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2C11DDDD0C
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 16:44:10 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id n5M6fSBT018491
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 16:41:28 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5M6hrip299354
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 16:43:53 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n5M6hr0h004441
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2009 16:43:53 +1000
+Message-ID: <4A3F281F.9000408@in.ibm.com>
+Date: Mon, 22 Jun 2009 12:13:43 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Sender: penberg@gmail.com
-In-Reply-To: <20090621183658.2b408e69@lappy.seanm.ca>
-References: <20090620154824.72b5cd50@lappy.seanm.ca>
-	<200906202256.46073.elendil@planet.nl>
-	<20090620194250.5a3e826f@lappy.seanm.ca>
-	<200906210628.35553.elendil@planet.nl>
-	<84144f020906210320n2984807dw2d4b4fb38afd22cf@mail.gmail.com>
-	<1245623104.16880.26.camel@pasglop>
-	<20090621183658.2b408e69@lappy.seanm.ca>
-Date: Mon, 22 Jun 2009 07:48:35 +0300
-Message-ID: <84144f020906212148y77a05be6k8f96beb3cf31da2b@mail.gmail.com>
-Subject: Re: Badness on the Warp
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Badness at drivers/char/tty_ldisc.c:210 during shutdown
+References: <4A3A2D2B.7070704@in.ibm.com>
+In-Reply-To: <4A3A2D2B.7070704@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,26 +41,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sean,
-
-On Mon, Jun 22, 2009 at 1:36 AM, Sean MacLennan<smaclennan@pikatech.com> wrote:
-> On Mon, 22 Jun 2009 08:25:04 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Sachin Sant wrote:
+> I came across the following badness message during shutdown on a 
+> Power6 box.
+> This was with 2.6.30-git12(3fe0344faf7fdcb158bd5c1a9aec960a8d70c8e8)
 >
->> Right, our interrupt controllers need those fixes, they are low
->> on my priority list since it's a reasonably harmless warning and I'm
->> still chasing some actual breakage (though maybe not directly related
->> to your patches).
->>
->> Kumar already submitted a couple, Frans, feel free to beat me
->> at converting UIC (just use kmalloc directly in there instead
->> of alloc_bootmem).
->
-> I can make the changes to UIC if you want. They badness is harmless (it
-> ends up calling kzalloc anyway), but hard to explain to our PV (Product
-> Verification) department that they can ignore what looks like a crash ;)
+> ------------[ cut here ]------------
+> Badness at drivers/char/tty_ldisc.c:210
+The badness message is still present with git18.
 
-Right. We can also wrap the WARN_ON() in CONFIG_DEBUG_BOOTMEM or
-something too but I'd prefer a proper fix here.
+------------[ cut here ]------------
+Badness at drivers/char/tty_ldisc.c:210
+NIP: c00000000040a3e8 LR: c00000000040a3d0 CTR: 0000000000000000
+REGS: c00000003cf6b7f0 TRAP: 0700   Not tainted  (2.6.30-git18)
+MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24000424  XER: 00000001
+TASK = c00000003e308660[3846] 'vhangup' THREAD: c00000003cf68000 CPU: 1
+<6>GPR00: 0000000000000001 c00000003cf6ba70 c000000000ef48c0 0000000000000001 
+<6>GPR04: 0000000000000001 c00000003819f000 c000000000407b60 0000000000000000 
+<6>GPR08: 0000000000000000 0000000000000000 0000000000000001 c000000000e1bce8 
+<6>GPR12: 0000000044000428 c000000001002600 00000000ffffffff ffffffffffffffff 
+<6>GPR16: 0000000021fd8a50 0000000000000002 0000000000000000 0000000021fc03b0 
+<6>GPR20: 0000000000000000 0000000000000000 c00000003d04c700 0000000000000001 
+<6>GPR24: 0000000000000000 0000000000000000 0000000000000001 c000000040007e20 
+<6>GPR28: 0000000000000000 c0000000013ffd38 c000000000e7e860 c00000003cf6ba70 
+NIP [c00000000040a3e8] .tty_ldisc_put+0xbc/0xf4
+LR [c00000000040a3d0] .tty_ldisc_put+0xa4/0xf4
+Call Trace:
+[c00000003cf6ba70] [c00000000040a3d0] .tty_ldisc_put+0xa4/0xf4 (unreliable)
+[c00000003cf6bb10] [c00000000040a7c8] .tty_ldisc_reinit+0x38/0x80
+[c00000003cf6bba0] [c00000000040b1d8] .tty_ldisc_hangup+0x190/0x260
+[c00000003cf6bc40] [c000000000401090] .do_tty_hangup+0x188/0x4c0
+[c00000003cf6bd20] [c000000000401440] .tty_vhangup_self+0x34/0x54
+[c00000003cf6bdb0] [c00000000019236c] .sys_vhangup+0x38/0x58
+[c00000003cf6be30] [c000000000008534] syscall_exit+0x0/0x40
+Instruction dump:
+912b0088 4bcd17bd 60000000 e87e8008 7f44d378 481c04fd 60000000 801b0008 
+7c09fe70 7d200278 7c004850 54000ffe <0b000000> 7f63db78 4bd7c98d 60000000 
 
-                                   Pekka
+Let me know if i can provide any other information.
+
+Thanks
+-Sachin
+
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
