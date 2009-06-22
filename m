@@ -1,15 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 666F2B71A3
+	by bilbo.ozlabs.org (Postfix) with ESMTP id A587AB7154
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 22 Jun 2009 18:04:24 +1000 (EST)
-Date: Mon, 22 Jun 2009 18:04:20 +1000
+	Mon, 22 Jun 2009 18:34:21 +1000 (EST)
+Date: Mon, 22 Jun 2009 18:34:15 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Linus <torvalds@linux-foundation.org>
-Subject: [PATCH] fbdev: work around old compiler bug
-Message-Id: <20090622180420.2e0424e4.sfr@canb.auug.org.au>
+Subject: Re: [PATCH] fbdev: work around old compiler bug
+Message-Id: <20090622183415.46fa786b.sfr@canb.auug.org.au>
+In-Reply-To: <20090622180420.2e0424e4.sfr@canb.auug.org.au>
+References: <20090622180420.2e0424e4.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__22_Jun_2009_18_34_15_+1000_ppHojJRl/ruUqHwd"
 Cc: James Simmons <jsimmons@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
 	LKML <linux-kernel@vger.kernel.org>,
 	Krzysztof Helt <krzysztof.h1@poczta.fm>,
@@ -25,38 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When building with a 4.1.x compiler on powerpc64 (at least) we get
-this error:
+--Signature=_Mon__22_Jun_2009_18_34_15_+1000_ppHojJRl/ruUqHwd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-drivers/video/logo/logo_linux_mono.c:81: error: logo_linux_mono causes a section type conflict
+On Mon, 22 Jun 2009 18:04:20 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> When building with a 4.1.x compiler on powerpc64 (at least) we get
+> this error:
 
-This was introduced by commit ae52bb2384f721562f15f719de1acb8e934733cb
-("fbdev: move logo externs to header file").  This is a partial revert
-of that commit sufficient to not hit the compiler bug.
+Ignore this, it causes more problems:
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- scripts/pnmtologo.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+drivers/video/logo/logo_linux_clut224.c:548: error: logo_linux_clut224_clut=
+ causes a section type conflict
 
-diff --git a/scripts/pnmtologo.c b/scripts/pnmtologo.c
-index 64f5ddb..d10c389 100644
---- a/scripts/pnmtologo.c
-+++ b/scripts/pnmtologo.c
-@@ -237,7 +237,7 @@ static void write_header(void)
-     fprintf(out, " *  Linux logo %s\n", logoname);
-     fputs(" */\n\n", out);
-     fputs("#include <linux/linux_logo.h>\n\n", out);
--    fprintf(out, "static const unsigned char %s_data[] __initconst = {\n",
-+    fprintf(out, "static unsigned char %s_data[] __initdata = {\n",
- 	    logoname);
- }
- 
--- 
-1.6.3.1
-
-
--- 
+I'll work on a better solution.
+--=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__22_Jun_2009_18_34_15_+1000_ppHojJRl/ruUqHwd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAko/QgcACgkQjjKRsyhoI8wFwgCfadJlSGyDOj4rWg+P/b+klxoA
+S5YAoKjh7PPFs1fh/uTueDGZU+Eb57Ir
+=rbt5
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__22_Jun_2009_18_34_15_+1000_ppHojJRl/ruUqHwd--
