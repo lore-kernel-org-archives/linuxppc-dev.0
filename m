@@ -1,29 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <kyle@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1715FB70B7
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F14F9B70B5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 02:42:23 +1000 (EST)
-Received: from mail-yx0-f199.google.com (mail-yx0-f199.google.com
-	[209.85.210.199]) by ozlabs.org (Postfix) with ESMTP id 732CEDDDE9
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 02:42:21 +1000 (EST)
-Received: by yxe37 with SMTP id 37so312863yxe.17
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2009 09:42:19 -0700 (PDT)
+	Wed, 24 Jun 2009 02:45:26 +1000 (EST)
+Date: Tue, 23 Jun 2009 12:45:05 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v2] fbdev: work around old compiler bug
+Message-ID: <20090623164505.GA3101@bombadil.infradead.org>
+References: <20090622180420.2e0424e4.sfr@canb.auug.org.au>
+	<20090622183415.46fa786b.sfr@canb.auug.org.au>
+	<20090623154428.e2f4ddc9.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <4A410351.4050508@marel.com>
-References: <20090618025030.12363.69402.stgit@localhost.localdomain>
-	<4A40E940.10201@marel.com>
-	<fa686aa40906230853t5db35b11wae09cf46634d4758@mail.gmail.com>
-	<4A410351.4050508@marel.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 23 Jun 2009 10:41:59 -0600
-Message-ID: <fa686aa40906230941r1b0dbf1bh325366823d01ebfa@mail.gmail.com>
-Subject: Re: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device driver
-To: =?ISO-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kari.davidsson@marel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090623154428.e2f4ddc9.sfr@canb.auug.org.au>
+Sender: Kyle McMartin <kyle@infradead.org>
+Cc: James Simmons <jsimmons@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Krzysztof Helt <krzysztof.h1@poczta.fm>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,25 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 23, 2009 at 10:31 AM, K=E1ri
-Dav=ED=F0sson<kari.davidsson@marel.com> wrote:
-> Lowered my SPI clock down to 1MHz (from 50MHz (in steps of 10MHz).
-> At 1Mhz the driver stops starving the rest of the kernel.
->
-> What is interesting is that due to the low duty cycle of the SPI port
-> the transfer rate at 1MHz and 50Mhz is almost the same.
->
-> I suggest that the driver simply limits max frequency to 1Mhz.
+On Tue, Jun 23, 2009 at 03:44:28PM +1000, Stephen Rothwell wrote:
+> When building with a 4.1.x compiler on powerpc64 (at least) we get
+> this error:
+> 
+> drivers/video/logo/logo_linux_mono.c:81: error: logo_linux_mono causes a section type conflict
+> 
+> This was introduced by commit ae52bb2384f721562f15f719de1acb8e934733cb
+> ("fbdev: move logo externs to header file").  This is a partial revert
+> of that commit sufficient to not hit the compiler bug.
+> 
 
-Sounds good to me.  Thanks for the testing!
+We're seeing similar issues with 4.3 on parisc (the case I saw today was
+in fs/nfs/nfsroot.c...) Any ideas on the actual culprit or is it just
+gcc being unfriendly?
 
-> This (very limited) SPI pherperial does not handle any more anyways.
-
-indeed.
-
-g.
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+regards, Kyle
