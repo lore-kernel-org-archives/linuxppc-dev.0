@@ -1,32 +1,24 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1A2A9B7115
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 08850B7112
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Jun 2009 15:24:49 +1000 (EST)
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id E1D26DDD1C
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2009 15:24:46 +1000 (EST)
-Date: Tue, 23 Jun 2009 01:24:42 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Badness on the Warp
-Message-ID: <20090623012442.11ab5eff@lappy.seanm.ca>
-In-Reply-To: <1245623104.16880.26.camel@pasglop>
-References: <20090620154824.72b5cd50@lappy.seanm.ca>
-	<200906202256.46073.elendil@planet.nl>
-	<20090620194250.5a3e826f@lappy.seanm.ca>
-	<200906210628.35553.elendil@planet.nl>
-	<84144f020906210320n2984807dw2d4b4fb38afd22cf@mail.gmail.com>
-	<1245623104.16880.26.camel@pasglop>
+	Tue, 23 Jun 2009 15:44:31 +1000 (EST)
+Date: Tue, 23 Jun 2009 15:44:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Subject: [PATCH v2] fbdev: work around old compiler bug
+Message-Id: <20090623154428.e2f4ddc9.sfr@canb.auug.org.au>
+In-Reply-To: <20090622183415.46fa786b.sfr@canb.auug.org.au>
+References: <20090622180420.2e0424e4.sfr@canb.auug.org.au>
+	<20090622183415.46fa786b.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: James Simmons <jsimmons@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Krzysztof Helt <krzysztof.h1@poczta.fm>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,15 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 22 Jun 2009 08:25:04 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+When building with a 4.1.x compiler on powerpc64 (at least) we get
+this error:
 
-> Kumar already submitted a couple, Frans, feel free to beat me
-> at converting UIC (just use kmalloc directly in there instead
-> of alloc_bootmem).
+drivers/video/logo/logo_linux_mono.c:81: error: logo_linux_mono causes a section type conflict
 
-I replace the bootmem_alloc with a kzalloc and the badness went away.
-So it looks like, for my config anyway, that solves the problem.
+This was introduced by commit ae52bb2384f721562f15f719de1acb8e934733cb
+("fbdev: move logo externs to header file").  This is a partial revert
+of that commit sufficient to not hit the compiler bug.
 
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ scripts/pnmtologo.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+v2: also convert _clut arrays from __initconst to __initdata.
+
+diff --git a/scripts/pnmtologo.c b/scripts/pnmtologo.c
+index 64f5ddb..5c11312 100644
+--- a/scripts/pnmtologo.c
++++ b/scripts/pnmtologo.c
+@@ -237,7 +237,7 @@ static void write_header(void)
+     fprintf(out, " *  Linux logo %s\n", logoname);
+     fputs(" */\n\n", out);
+     fputs("#include <linux/linux_logo.h>\n\n", out);
+-    fprintf(out, "static const unsigned char %s_data[] __initconst = {\n",
++    fprintf(out, "static unsigned char %s_data[] __initdata = {\n",
+ 	    logoname);
+ }
+ 
+@@ -374,7 +374,7 @@ static void write_logo_clut224(void)
+     fputs("\n};\n\n", out);
+ 
+     /* write logo clut */
+-    fprintf(out, "static const unsigned char %s_clut[] __initconst = {\n",
++    fprintf(out, "static unsigned char %s_clut[] __initdata = {\n",
+ 	    logoname);
+     write_hex_cnt = 0;
+     for (i = 0; i < logo_clutsize; i++) {
+-- 
+1.6.3.1
+
+-- 
 Cheers,
-   Sean
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
