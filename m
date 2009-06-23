@@ -1,27 +1,28 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <dan.j.williams@intel.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 328EDB70D1
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BED46B70D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 01:54:19 +1000 (EST)
-Received: from mail-gx0-f210.google.com (mail-gx0-f210.google.com
-	[209.85.217.210]) by ozlabs.org (Postfix) with ESMTP id 60EBEDDDE9
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 01:54:18 +1000 (EST)
-Received: by gxk6 with SMTP id 6so238314gxk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2009 08:54:16 -0700 (PDT)
+	Wed, 24 Jun 2009 01:56:27 +1000 (EST)
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	by ozlabs.org (Postfix) with ESMTP id 42D0ADDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 01:56:26 +1000 (EST)
+Message-ID: <4A40FB26.8080301@intel.com>
+Date: Tue, 23 Jun 2009 08:56:22 -0700
+From: Dan Williams <dan.j.williams@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <4A40E940.10201@marel.com>
-References: <20090618025030.12363.69402.stgit@localhost.localdomain>
-	<4A40E940.10201@marel.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 23 Jun 2009 09:53:54 -0600
-Message-ID: <fa686aa40906230853t5db35b11wae09cf46634d4758@mail.gmail.com>
-Subject: Re: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device driver
-To: =?ISO-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kari.davidsson@marel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3 2/2] fsldma: Add DMA_SLAVE support
+References: <20090619193134.GC30992@ovro.caltech.edu>
+	<1245705647.937.2.camel@dwillia2-linux.ch.intel.com>
+	<2a27d3730906230318g7103a890ic85d1678425ac2c9@mail.gmail.com>
+	<6A70F385-C883-4D89-A302-AB09660762C1@kernel.crashing.org>
+In-Reply-To: <6A70F385-C883-4D89-A302-AB09660762C1@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Li Yang <leoli@freescale.com>, Ira Snyder <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 23, 2009 at 8:40 AM, K=E1ri Dav=ED=F0sson<kari.davidsson@marel.=
-com> wrote:
-> Hi,
->
-> I have been testing this driver a little bit (on 2.6.29.3)
->
-> What happens for me is that the driver starves the system while sending
-> data over the SPI interface.
->
-> I think the problem is in the function (interrupt handler)
-> mpc52xx_spi_irq() that calls the function mpc52xx_spi_fsm_process()
-> which again is an loop that iterates over the whole data to be sent.
+Kumar Gala wrote:
+>>> Kumar, Leo,
+>>>
+>>> Can I get your acked-by's for the current state of async_tx.git/ 
+>>> next?  I
+>>> just pushed out Ira's latest so it may take a moment to mirror out.
+>> Acked-by: Li Yang <leoli@freescale.com>
+>>
+>> However, the addition of arch/powerpc/include/asm/fsldma.h still needs
+>> the ack from Kumar.  It doesn't seem to be a common practice though.
+> 
+> hmm, why are we moving fsldma.h?
 
-Hmmm, the state machine is supposed to yield after each byte sent, but
-on fast transfers I could see it becoming ready to run again
-immediately.
+There are now two fsldma.h files.
 
-Unfortunately it is not an easy problem.  The SPI device can only
-handle 1 byte at a time.  Maybe it would be better for CPU fairness if
-all the work was done in a thread.  I didn't originally because I
-didn't want to introduce a huge amount of scheduling overhead every
-time a byte was transfered, and I wanted to keep transfers fast.  I
-need to think about this some more.
+drivers/dma/fsldma.h: no changes, houses the private driver 
+implementation details.
 
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+arch/powerpc/include/asm/fsldma.h: adds some helper routines and 
+definitions for the DMA_SLAVE capability of the driver.  It defines an 
+interface for other drivers to use fsldma to initiate device-to-memory 
+dma.  Any drivers that use the interface will depend on CONFIG_FSL_DMA 
+hence placing this public header under arch/powerpc/include.
