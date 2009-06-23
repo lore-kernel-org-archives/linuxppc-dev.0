@@ -1,32 +1,32 @@
-Return-Path: <rdreier@cisco.com>
+Return-Path: <smaclennan@pikatech.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 437D4B70FB
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1A2A9B7115
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Jun 2009 15:19:28 +1000 (EST)
-Received: from sj-iport-2.cisco.com (sj-iport-2.cisco.com [171.71.176.71])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-2.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7B587DDD1C
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2009 15:19:27 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Alexander Schmidt <alexs@linux.vnet.ibm.com>
-Subject: Re: [ewg] Re: [PATCH 2.6.31 try 2] ehca: Tolerate dynamic memory
-	operations and huge pages
-References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
-	<20090616091021.2acf7302@BL3D1974.boeblingen.de.ibm.com>
-Date: Mon, 22 Jun 2009 22:19:21 -0700
-In-Reply-To: <20090616091021.2acf7302@BL3D1974.boeblingen.de.ibm.com>
-	(Alexander Schmidt's message of "Tue, 16 Jun 2009 09:10:21 +0200")
-Message-ID: <adabpofr0h2.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Hannes Hering <hannes.hering@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, ewg@lists.openfabrics.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	Hoang-Nam Nguyen <HNGUYEN@linux.vnet.ibm.com>
+	Tue, 23 Jun 2009 15:24:49 +1000 (EST)
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id E1D26DDD1C
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2009 15:24:46 +1000 (EST)
+Date: Tue, 23 Jun 2009 01:24:42 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Badness on the Warp
+Message-ID: <20090623012442.11ab5eff@lappy.seanm.ca>
+In-Reply-To: <1245623104.16880.26.camel@pasglop>
+References: <20090620154824.72b5cd50@lappy.seanm.ca>
+	<200906202256.46073.elendil@planet.nl>
+	<20090620194250.5a3e826f@lappy.seanm.ca>
+	<200906210628.35553.elendil@planet.nl>
+	<84144f020906210320n2984807dw2d4b4fb38afd22cf@mail.gmail.com>
+	<1245623104.16880.26.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,9 +36,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-thanks, applied.
+On Mon, 22 Jun 2009 08:25:04 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
- > -#define HCAD_VERSION "0026"
- > +#define HCAD_VERSION "0027"
+> Kumar already submitted a couple, Frans, feel free to beat me
+> at converting UIC (just use kmalloc directly in there instead
+> of alloc_bootmem).
 
-the driver version was already 0027 (since bde2cfaf), so I dropped this chunk.
+I replace the bootmem_alloc with a kzalloc and the badness went away.
+So it looks like, for my config anyway, that solves the problem.
+
+Cheers,
+   Sean
