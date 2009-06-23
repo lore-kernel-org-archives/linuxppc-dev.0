@@ -1,29 +1,32 @@
-Return-Path: <david-b@pacbell.net>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 067F7B7085
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 73F68B6F44
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 08:38:46 +1000 (EST)
-Received: from smtp102.sbc.mail.gq1.yahoo.com (smtp102.sbc.mail.gq1.yahoo.com
-	[67.195.15.61]) by ozlabs.org (Postfix) with SMTP id 51477DDDE9
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 08:38:42 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: [Question] m25p80 driver versus spi clock rate
-Date: Tue, 23 Jun 2009 15:38:39 -0700
-References: <4A3FEE98.60700@harris.com>
-	<200906231408.26912.david-b@pacbell.net>
-	<4A414E07.5050303@harris.com>
-In-Reply-To: <4A414E07.5050303@harris.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200906231538.40125.david-b@pacbell.net>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Stefan Roese <sr@denx.de>, linux-mtd@lists.infradead.org,
-	Mike Frysinger <vapier.adi@gmail.com>
+	Wed, 24 Jun 2009 09:31:33 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B4132DDD1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 09:31:32 +1000 (EST)
+Subject: Re: sym scsi driver problem with 2.6.26 or newer debian kernel on
+	p610 (fwd)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: blackluck@ktk.bme.hu
+In-Reply-To: <1245794228.10356.31.camel@pasglop>
+References: <Pine.LNX.4.64.0906141105050.4412@axis700.grange>
+	<4A38B883.80507@ktk.bme.hu>  <4A3F4A77.6070704@ktk.bme.hu>
+	<1245719890.4017.26.camel@pasglop> <1245724218.4017.35.camel@pasglop>
+	<1245794228.10356.31.camel@pasglop>
+Content-Type: text/plain
+Date: Wed, 24 Jun 2009 09:29:52 +1000
+Message-Id: <1245799792.10356.42.camel@pasglop>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	debian-powerpc@lists.debian.org,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,82 +36,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 23 June 2009, Steven A. Falco wrote:
-> m25p80 spi0.0: invalid bits-per-word (0)
+On Wed, 2009-06-24 at 07:57 +1000, Benjamin Herrenschmidt wrote:
+> > I tried on a POWER3 box I have here "IBM,7044-170" and things work fine
+> > here with current upstream. (I suspect a much smaller machine).
+> > 
+> > I will really need an actual bisection here... In the meantime, I'll see
+> > if I can get my hand on one of these machines here.
 > 
-> This message comes from spi_ppc4xx_setupxfer.  I believe your patch
-> is doing what you intended (i.e. forcing an initial call to
-> spi_ppc4xx_setupxfer), but it exposes an OF / SPI linkage problem.
+> Ok so I think we may have found it... looks like
+> CONFIG_MPIC_BROKEN_REGREAD is what breaks it which is enabled by PA-Semi
+> support in the .config.
 > 
-> Namely, of_register_spi_devices does not support a bits-per-word
-> property, so bits-per-word is zero.
+> Can you verify that disabling PA-Semi support removes that option from
+> your .config and that once removed, it works again ?
+> 
+> We don't know yet -why- it breaks it, still investigating.
 
-Bits-per-word == 0 must be interpreted as == 8.
+Do the following patch also fix it ?
 
-Simple bug in the ppc4xx code.  It currently rejects
-values other than 8.
-
-Speaking of spi_ppc4xx issues ... I still have an oldish
-copy in my review queue, it needs something like the
-appended patch.  (Plus something to accept bpw == 0.)
-Is there a newer version?
-
-- Dave
-
-
---- a/drivers/spi/spi_ppc4xx.c
-+++ b/drivers/spi/spi_ppc4xx.c
-@@ -61,9 +61,6 @@
- /* RxD ready */
- #define SPI_PPC4XX_SR_RBR	(0x80 >> 7)
+Index: linux-work/arch/powerpc/sysdev/mpic.c
+===================================================================
+--- linux-work.orig/arch/powerpc/sysdev/mpic.c	2009-06-24 09:24:51.000000000 +1000
++++ linux-work/arch/powerpc/sysdev/mpic.c	2009-06-24 09:26:45.000000000 +1000
+@@ -230,14 +230,16 @@ static inline u32 _mpic_irq_read(struct 
+ {
+ 	unsigned int	isu = src_no >> mpic->isu_shift;
+ 	unsigned int	idx = src_no & mpic->isu_mask;
++	unsigned int	val;
  
--/* the spi->mode bits understood by this driver: */
--#define MODEBITS	(SPI_CPHA | SPI_CPOL | SPI_CS_HIGH | SPI_LSB_FIRST)
--
- /* clock settings (SCP and CI) for various SPI modes */
- #define SPI_CLK_MODE0	SPI_PPC4XX_MODE_SCP
- #define SPI_CLK_MODE1	0
-@@ -198,9 +195,6 @@ static int spi_ppc4xx_setup(struct spi_d
- 	struct spi_ppc4xx_cs *cs = spi->controller_state;
- 	int init = 0;
- 
--	if (!spi->bits_per_word)
--		spi->bits_per_word = 8;
--
- 	if (spi->bits_per_word != 8) {
- 		dev_err(&spi->dev, "invalid bits-per-word (%d)\n",
- 			spi->bits_per_word);
-@@ -212,12 +206,6 @@ static int spi_ppc4xx_setup(struct spi_d
- 		return -EINVAL;
- 	}
- 
--	if (spi->mode & ~MODEBITS) {
--		dev_dbg(&spi->dev, "setup: unsupported mode bits %x\n",
--			spi->mode & ~MODEBITS);
--		return -EINVAL;
--	}
--
- 	if (cs == NULL) {
- 		cs = kzalloc(sizeof *cs, GFP_KERNEL);
- 		if (!cs)
-@@ -268,10 +256,6 @@ static int spi_ppc4xx_setup(struct spi_d
- 		}
- 	}
- 
--	dev_dbg(&spi->dev, "%s: mode %d, %u bpw, %d hz\n",
--		__func__, spi->mode, spi->bits_per_word,
--		spi->max_speed_hz);
--
- 	return 0;
++	val = _mpic_read(mpic->reg_type, &mpic->isus[isu],
++			 reg + (idx * MPIC_INFO(IRQ_STRIDE)));	
+ #ifdef CONFIG_MPIC_BROKEN_REGREAD
+ 	if (reg == 0)
+-		return mpic->isu_reg0_shadow[idx];
+-	else
++		val = (val & (MPIC_VECPRI_MASK | MPIC_VECPRI_ACTIVITY)) |
++			mpic->isu_reg0_shadow[idx];
+ #endif
+-		return _mpic_read(mpic->reg_type, &mpic->isus[isu],
+-				  reg + (idx * MPIC_INFO(IRQ_STRIDE)));
++	return val;
  }
  
-@@ -442,6 +426,9 @@ static int __init spi_ppc4xx_of_probe(st
- 		}
- 	}
+ static inline void _mpic_irq_write(struct mpic *mpic, unsigned int src_no,
+@@ -251,7 +253,8 @@ static inline void _mpic_irq_write(struc
  
-+	/* the spi->mode bits understood by this driver: */
-+	master->modebits = SPI_CPHA | SPI_CPOL | SPI_CS_HIGH | SPI_LSB_FIRST;
-+
- 	/* Setup the state for the bitbang driver */
- 	bbp = &hw->bitbang;
- 	bbp->master = hw->master;
+ #ifdef CONFIG_MPIC_BROKEN_REGREAD
+ 	if (reg == 0)
+-		mpic->isu_reg0_shadow[idx] = value;
++		mpic->isu_reg0_shadow[idx] =
++			value & ~(MPIC_VECPRI_MASK | MPIC_VECPRI_ACTIVITY);
+ #endif
+ }
+ 
