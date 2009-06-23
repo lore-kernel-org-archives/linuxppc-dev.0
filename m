@@ -1,29 +1,24 @@
-Return-Path: <kyle@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id F14F9B70B5
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7B967B70D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 02:45:26 +1000 (EST)
-Date: Tue, 23 Jun 2009 12:45:05 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH v2] fbdev: work around old compiler bug
-Message-ID: <20090623164505.GA3101@bombadil.infradead.org>
-References: <20090622180420.2e0424e4.sfr@canb.auug.org.au>
-	<20090622183415.46fa786b.sfr@canb.auug.org.au>
-	<20090623154428.e2f4ddc9.sfr@canb.auug.org.au>
+	Wed, 24 Jun 2009 02:54:10 +1000 (EST)
+Received: from IE1EHSOBE002.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id A33DFDDDA2
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 02:54:09 +1000 (EST)
+Message-ID: <4A4108A3.8060003@am.sony.com>
+Date: Tue, 23 Jun 2009 09:53:55 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090623154428.e2f4ddc9.sfr@canb.auug.org.au>
-Sender: Kyle McMartin <kyle@infradead.org>
-Cc: James Simmons <jsimmons@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Krzysztof Helt <krzysztof.h1@poczta.fm>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus <torvalds@linux-foundation.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/ps3: Use pr_devel() in ps3/mm.c
+References: <8977d21ed6cf59b89f9a830d59968ce178420a46.1245722192.git.michael@ellerman.id.au>
+In-Reply-To: <8977d21ed6cf59b89f9a830d59968ce178420a46.1245722192.git.michael@ellerman.id.au>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,19 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 23, 2009 at 03:44:28PM +1000, Stephen Rothwell wrote:
-> When building with a 4.1.x compiler on powerpc64 (at least) we get
-> this error:
+On 06/22/2009 06:56 PM, Michael Ellerman wrote:
+> The non-debug case in ps3/mm.c uses pr_debug(), so that the compiler
+> still does type checks etc. and doesn't complain about unused
+> variables in the non-debug case.
 > 
-> drivers/video/logo/logo_linux_mono.c:81: error: logo_linux_mono causes a section type conflict
+> However with DEBUG=n and CONFIG_DYNAMIC_DEBUG=y there's still code
+> generated for those pr_debugs().
 > 
-> This was introduced by commit ae52bb2384f721562f15f719de1acb8e934733cb
-> ("fbdev: move logo externs to header file").  This is a partial revert
-> of that commit sufficient to not hit the compiler bug.
-> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+>  arch/powerpc/platforms/ps3/mm.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 
-We're seeing similar issues with 4.3 on parisc (the case I saw today was
-in fs/nfs/nfsroot.c...) Any ideas on the actual culprit or is it just
-gcc being unfriendly?
+Looks good, thanks.  I put it on the todo list to go through
+the the remaining PS3 code to check for the same.
 
-regards, Kyle
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
