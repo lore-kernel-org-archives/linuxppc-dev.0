@@ -1,28 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <benh@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B6CEAB7122
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 30653B70E3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Jun 2009 12:33:02 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 19DDDDDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2009 12:33:01 +1000 (EST)
-Subject: Re: sym scsi driver problem with 2.6.26 or newer debian kernel on
-	p610 (fwd)
+	Tue, 23 Jun 2009 12:48:07 +1000 (EST)
+To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-In-Reply-To: <Pine.LNX.4.64.0906141105050.4412@axis700.grange>
-References: <Pine.LNX.4.64.0906141105050.4412@axis700.grange>
-Content-Type: text/plain
-Date: Tue, 23 Jun 2009 12:31:35 +1000
-Message-Id: <1245724295.4017.36.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
-	Laszlo Fekete <blackluck@ktk.bme.hu>
+Date: Tue, 23 Jun 2009 12:47:59 +1000
+Subject: [PATCH] powerpc/mpic: Fix mapping of "DCR" based MPIC variants
+Message-Id: <20090623024807.170CADDD1C@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,10 +20,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2009-06-14 at 11:10 +0200, Guennadi Liakhovetski wrote:
-> P610 (and tested it on P630 and P640 too)
+Commit 31207dab7d2e63795eb15823947bd2f7025b08e2
+"Fix incorrect allocation of interrupt rev-map"
+introduced a regression crashing on boot on machines using
+a "DCR" based MPIC, such as the Cell blades.
 
-Also, send me a tarball of /proc/device-tree please.
+The reason is that the irq host data structure is initialized
+much later as a result of that patch, causing our calls to
+mpic_map() do be done before we have a host setup.
 
-Cheers,
-Ben.
+Unfortunately, this breaks _mpic_map_dcr() which uses the
+mpic->irqhost to get to the device node.
+
+This fixes it by, instead, passing the device node explicitely
+to mpic_map().
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+ arch/powerpc/sysdev/mpic.c |   29 ++++++++++++++++-------------
+ 1 file changed, 16 insertions(+), 13 deletions(-)
+
+--- linux-work.orig/arch/powerpc/sysdev/mpic.c	2009-06-23 11:30:14.000000000 +1000
++++ linux-work/arch/powerpc/sysdev/mpic.c	2009-06-23 11:45:17.000000000 +1000
+@@ -279,28 +279,29 @@ static void _mpic_map_mmio(struct mpic *
+ }
+ 
+ #ifdef CONFIG_PPC_DCR
+-static void _mpic_map_dcr(struct mpic *mpic, struct mpic_reg_bank *rb,
++static void _mpic_map_dcr(struct mpic *mpic, struct device_node *node,
++			  struct mpic_reg_bank *rb,
+ 			  unsigned int offset, unsigned int size)
+ {
+ 	const u32 *dbasep;
+ 
+-	dbasep = of_get_property(mpic->irqhost->of_node, "dcr-reg", NULL);
++	dbasep = of_get_property(node, "dcr-reg", NULL);
+ 
+-	rb->dhost = dcr_map(mpic->irqhost->of_node, *dbasep + offset, size);
++	rb->dhost = dcr_map(node, *dbasep + offset, size);
+ 	BUG_ON(!DCR_MAP_OK(rb->dhost));
+ }
+ 
+-static inline void mpic_map(struct mpic *mpic, phys_addr_t phys_addr,
+-			    struct mpic_reg_bank *rb, unsigned int offset,
+-			    unsigned int size)
++static inline void mpic_map(struct mpic *mpic, struct device_node *node,
++			    phys_addr_t phys_addr, struct mpic_reg_bank *rb,
++			    unsigned int offset, unsigned int size)
+ {
+ 	if (mpic->flags & MPIC_USES_DCR)
+-		_mpic_map_dcr(mpic, rb, offset, size);
++		_mpic_map_dcr(mpic, node, rb, offset, size);
+ 	else
+ 		_mpic_map_mmio(mpic, phys_addr, rb, offset, size);
+ }
+ #else /* CONFIG_PPC_DCR */
+-#define mpic_map(m,p,b,o,s)	_mpic_map_mmio(m,p,b,o,s)
++#define mpic_map(m,n,p,b,o,s)	_mpic_map_mmio(m,p,b,o,s)
+ #endif /* !CONFIG_PPC_DCR */
+ 
+ 
+@@ -1152,8 +1153,8 @@ struct mpic * __init mpic_alloc(struct d
+ 	}
+ 
+ 	/* Map the global registers */
+-	mpic_map(mpic, paddr, &mpic->gregs, MPIC_INFO(GREG_BASE), 0x1000);
+-	mpic_map(mpic, paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
++	mpic_map(mpic, node, paddr, &mpic->gregs, MPIC_INFO(GREG_BASE), 0x1000);
++	mpic_map(mpic, node, paddr, &mpic->tmregs, MPIC_INFO(TIMER_BASE), 0x1000);
+ 
+ 	/* Reset */
+ 	if (flags & MPIC_WANTS_RESET) {
+@@ -1194,7 +1195,7 @@ struct mpic * __init mpic_alloc(struct d
+ 
+ 	/* Map the per-CPU registers */
+ 	for (i = 0; i < mpic->num_cpus; i++) {
+-		mpic_map(mpic, paddr, &mpic->cpuregs[i],
++		mpic_map(mpic, node, paddr, &mpic->cpuregs[i],
+ 			 MPIC_INFO(CPU_BASE) + i * MPIC_INFO(CPU_STRIDE),
+ 			 0x1000);
+ 	}
+@@ -1202,7 +1203,7 @@ struct mpic * __init mpic_alloc(struct d
+ 	/* Initialize main ISU if none provided */
+ 	if (mpic->isu_size == 0) {
+ 		mpic->isu_size = mpic->num_sources;
+-		mpic_map(mpic, paddr, &mpic->isus[0],
++		mpic_map(mpic, node, paddr, &mpic->isus[0],
+ 			 MPIC_INFO(IRQ_BASE), MPIC_INFO(IRQ_STRIDE) * mpic->isu_size);
+ 	}
+ 	mpic->isu_shift = 1 + __ilog2(mpic->isu_size - 1);
+@@ -1256,8 +1257,10 @@ void __init mpic_assign_isu(struct mpic 
+ 
+ 	BUG_ON(isu_num >= MPIC_MAX_ISU);
+ 
+-	mpic_map(mpic, paddr, &mpic->isus[isu_num], 0,
++	mpic_map(mpic, mpic->irqhost->of_node,
++		 paddr, &mpic->isus[isu_num], 0,
+ 		 MPIC_INFO(IRQ_STRIDE) * mpic->isu_size);
++
+ 	if ((isu_first + mpic->isu_size) > mpic->num_sources)
+ 		mpic->num_sources = isu_first + mpic->isu_size;
+ }
