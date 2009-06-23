@@ -1,23 +1,26 @@
-Return-Path: <lada.podivin@gmail.com>
-Received: from mail-fx0-f207.google.com (mail-fx0-f207.google.com
-	[209.85.220.207])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 801DBB70DD
+Return-Path: <sr@denx.de>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 84031B711F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Jun 2009 16:29:57 +1000 (EST)
-Received: by fxm3 with SMTP id 3so1651273fxm.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 22 Jun 2009 23:29:53 -0700 (PDT)
+	Tue, 23 Jun 2009 16:37:26 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: devicetree-discuss@ozlabs.org
+Subject: Re: [PATCH 1/3 v3] mtd: physmap_of: Add multiple regions and
+	concatenation support
+Date: Tue, 23 Jun 2009 08:36:57 +0200
+References: <1239883845-17804-1-git-send-email-sr@denx.de>
+	<fa686aa40904160646v75a98e02s446fd89c08cfebae@mail.gmail.com>
+	<fa686aa40906162253j76776e88y9d7c818f4d0f1508@mail.gmail.com>
+In-Reply-To: <fa686aa40906162253j76776e88y9d7c818f4d0f1508@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <e35801cc0906220948v22a13e2fxfcae52d51e69c310@mail.gmail.com>
-References: <579B119545DAEF4689C8FBEEFEC5793F01D4FEF815F1@ATLMBX.verint.corp.verintsystems.com>
-	<e35801cc0906220948v22a13e2fxfcae52d51e69c310@mail.gmail.com>
-Date: Tue, 23 Jun 2009 08:29:52 +0200
-Message-ID: <e35801cc0906222329k62aa3488w862e3fcdd06e2973@mail.gmail.com>
-Subject: Re: ppc405ex GPIO mapping
-From: Lada Podivin <lada.podivin@gmail.com>
-To: "Cote, Sylvain" <Sylvain.Cote@verint.com>
-Content-Type: multipart/alternative; boundary=001636c5b848516624046cfe1eff
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <200906230836.57275.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +30,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001636c5b848516624046cfe1eff
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Wednesday 17 June 2009 07:53:51 Grant Likely wrote:
+> David, what's the status of this patch?  Will it be merged for 2.6.31?
 
-Eh, sorry! I mean
-include/asm-generic/gpio.h
+It's merged now.
 
-NOT
-
-include/linux/gpio.h
-
---001636c5b848516624046cfe1eff
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div class=3D"gmail_quote"><span dir=3D"ltr"></span><font face=3D"Arial" si=
-ze=3D"2"><span style=3D"font-size: 10pt; font-family: Arial;" lang=3D"FR">E=
-h, sorry! I mean <br>include/asm-generic/gpio.h <br><br>NOT <br></span></fo=
-nt><font face=3D"Arial" size=3D"2"><span style=3D"font-size: 10pt; font-fam=
-ily: Arial;" lang=3D"FR"><br>
-
-include/linux/gpio.h</span></font><div><br><br></div></div><br>
-
---001636c5b848516624046cfe1eff--
+Thanks,
+Stefan
