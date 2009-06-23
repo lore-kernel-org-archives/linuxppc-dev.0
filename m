@@ -1,24 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 08850B7112
+Return-Path: <lada.podivin@gmail.com>
+Received: from mail-fx0-f207.google.com (mail-fx0-f207.google.com
+	[209.85.220.207])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 801DBB70DD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Jun 2009 15:44:31 +1000 (EST)
-Date: Tue, 23 Jun 2009 15:44:28 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>
-Subject: [PATCH v2] fbdev: work around old compiler bug
-Message-Id: <20090623154428.e2f4ddc9.sfr@canb.auug.org.au>
-In-Reply-To: <20090622183415.46fa786b.sfr@canb.auug.org.au>
-References: <20090622180420.2e0424e4.sfr@canb.auug.org.au>
-	<20090622183415.46fa786b.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: James Simmons <jsimmons@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Krzysztof Helt <krzysztof.h1@poczta.fm>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Tue, 23 Jun 2009 16:29:57 +1000 (EST)
+Received: by fxm3 with SMTP id 3so1651273fxm.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 22 Jun 2009 23:29:53 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <e35801cc0906220948v22a13e2fxfcae52d51e69c310@mail.gmail.com>
+References: <579B119545DAEF4689C8FBEEFEC5793F01D4FEF815F1@ATLMBX.verint.corp.verintsystems.com>
+	<e35801cc0906220948v22a13e2fxfcae52d51e69c310@mail.gmail.com>
+Date: Tue, 23 Jun 2009 08:29:52 +0200
+Message-ID: <e35801cc0906222329k62aa3488w862e3fcdd06e2973@mail.gmail.com>
+Subject: Re: ppc405ex GPIO mapping
+From: Lada Podivin <lada.podivin@gmail.com>
+To: "Cote, Sylvain" <Sylvain.Cote@verint.com>
+Content-Type: multipart/alternative; boundary=001636c5b848516624046cfe1eff
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,48 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When building with a 4.1.x compiler on powerpc64 (at least) we get
-this error:
+--001636c5b848516624046cfe1eff
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-drivers/video/logo/logo_linux_mono.c:81: error: logo_linux_mono causes a section type conflict
+Eh, sorry! I mean
+include/asm-generic/gpio.h
 
-This was introduced by commit ae52bb2384f721562f15f719de1acb8e934733cb
-("fbdev: move logo externs to header file").  This is a partial revert
-of that commit sufficient to not hit the compiler bug.
+NOT
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- scripts/pnmtologo.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+include/linux/gpio.h
 
-v2: also convert _clut arrays from __initconst to __initdata.
+--001636c5b848516624046cfe1eff
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/scripts/pnmtologo.c b/scripts/pnmtologo.c
-index 64f5ddb..5c11312 100644
---- a/scripts/pnmtologo.c
-+++ b/scripts/pnmtologo.c
-@@ -237,7 +237,7 @@ static void write_header(void)
-     fprintf(out, " *  Linux logo %s\n", logoname);
-     fputs(" */\n\n", out);
-     fputs("#include <linux/linux_logo.h>\n\n", out);
--    fprintf(out, "static const unsigned char %s_data[] __initconst = {\n",
-+    fprintf(out, "static unsigned char %s_data[] __initdata = {\n",
- 	    logoname);
- }
- 
-@@ -374,7 +374,7 @@ static void write_logo_clut224(void)
-     fputs("\n};\n\n", out);
- 
-     /* write logo clut */
--    fprintf(out, "static const unsigned char %s_clut[] __initconst = {\n",
-+    fprintf(out, "static unsigned char %s_clut[] __initdata = {\n",
- 	    logoname);
-     write_hex_cnt = 0;
-     for (i = 0; i < logo_clutsize; i++) {
--- 
-1.6.3.1
+<div class=3D"gmail_quote"><span dir=3D"ltr"></span><font face=3D"Arial" si=
+ze=3D"2"><span style=3D"font-size: 10pt; font-family: Arial;" lang=3D"FR">E=
+h, sorry! I mean <br>include/asm-generic/gpio.h <br><br>NOT <br></span></fo=
+nt><font face=3D"Arial" size=3D"2"><span style=3D"font-size: 10pt; font-fam=
+ily: Arial;" lang=3D"FR"><br>
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+include/linux/gpio.h</span></font><div><br><br></div></div><br>
+
+--001636c5b848516624046cfe1eff--
