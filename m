@@ -1,24 +1,34 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
+Return-Path: <rdreier@cisco.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7B967B70D2
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 98D63B70E2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 02:54:10 +1000 (EST)
-Received: from IE1EHSOBE002.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id A33DFDDDA2
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 02:54:09 +1000 (EST)
-Message-ID: <4A4108A3.8060003@am.sony.com>
-Date: Tue, 23 Jun 2009 09:53:55 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+	Wed, 24 Jun 2009 03:30:48 +1000 (EST)
+Received: from sj-iport-2.cisco.com (sj-iport-2.cisco.com [171.71.176.71])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-2.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C1BACDDDF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 03:30:47 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+Subject: Re: [ewg] Re: [PATCH 2.6.31 try 2] ehca: Tolerate dynamic memory
+	operations and huge pages
+References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
+	<20090616091021.2acf7302@BL3D1974.boeblingen.de.ibm.com>
+	<adabpofr0h2.fsf@cisco.com>
+	<20090623101123.72690731@BL3D1974.boeblingen.de.ibm.com>
+Date: Tue, 23 Jun 2009 10:30:43 -0700
+In-Reply-To: <20090623101123.72690731@BL3D1974.boeblingen.de.ibm.com>
+	(Alexander Schmidt's message of "Tue, 23 Jun 2009 10:11:23 +0200")
+Message-ID: <adaljniq2m4.fsf@cisco.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/ps3: Use pr_devel() in ps3/mm.c
-References: <8977d21ed6cf59b89f9a830d59968ce178420a46.1245722192.git.michael@ellerman.id.au>
-In-Reply-To: <8977d21ed6cf59b89f9a830d59968ce178420a46.1245722192.git.michael@ellerman.id.au>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Hannes Hering <hannes.hering@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org, ewg@lists.openfabrics.org,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
+	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,20 +38,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/22/2009 06:56 PM, Michael Ellerman wrote:
-> The non-debug case in ps3/mm.c uses pr_debug(), so that the compiler
-> still does type checks etc. and doesn't complain about unused
-> variables in the non-debug case.
-> 
-> However with DEBUG=n and CONFIG_DYNAMIC_DEBUG=y there's still code
-> generated for those pr_debugs().
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  arch/powerpc/platforms/ps3/mm.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-
-Looks good, thanks.  I put it on the todo list to go through
-the the remaining PS3 code to check for the same.
-
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+applied...
