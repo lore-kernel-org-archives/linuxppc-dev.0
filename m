@@ -1,23 +1,29 @@
-Return-Path: <kernelmailz@googlemail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <ego@in.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 60DE6B70AC
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A9DF6B70AA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 19:44:34 +1000 (EST)
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
-	by ozlabs.org (Postfix) with ESMTP id B66B1DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 19:44:33 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 5so42405qwd.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 02:44:31 -0700 (PDT)
+	Wed, 24 Jun 2009 19:26:42 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp09.au.ibm.com (8.13.1/8.13.1) with ESMTP id n5OJJ3xk025202
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2009 05:19:03 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5O9Qfwf475170
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2009 19:26:41 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n5O9QeXO026832
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2009 19:26:40 +1000
+Subject: [PATCH] pseries: cpu: Reduce the polling interval in __cpu_up()
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Gautham R Shenoy <ego@in.ibm.com>
+Date: Wed, 24 Jun 2009 14:56:37 +0530
+Message-ID: <20090624092637.32078.88042.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
-Date: Wed, 24 Jun 2009 15:14:31 +0530
-Message-ID: <abe8a1fd0906240244i6e33c260xadff5cf462df7b8c@mail.gmail.com>
-Subject: 85xx Address space query
-From: kernel mailz <kernelmailz@googlemail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=0015175cb3003ded25046d14f430
+Content-Type: text/plain; charset="utf-8"
+Cc: Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,54 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0015175cb3003ded25046d14f430
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Time time taken for a single cpu online operation on a pseries machine
+is as follows:
+Dedicated LPAR (POWER6): ~220ms.
+Shared LPAR (POWER5)   : ~240ms.
 
-Hi,
+Of this time, approximately 200ms is taken up by __cpu_up(). This is because
+we poll every 200ms to check if the new cpu has notified it's presence
+through the cpu_callin_map. We repeat this operation until the new cpu sets
+the value in cpu_callin_map or 5 seconds elapse, whichever comes earlier.
 
-I am a newbie, trying to learn but have a few queries, nice if you could
-respond
-For linux on 85xx systems...
+However, using completion_structs instead of polling loops,
+the time taken by the new processor to indicate it's presence has
+found to be less than 1ms on pseries. This method however may not
+work on all powerpc platforms due to the time-base synchronization code.
 
-(a) Kernel code runs in PR=0 AS=0 and PID=0, which user space application
-run in PR=1 AS=0 and PID 1-255.
-Is this correct.
+Keeping this in mind, we could reduce msleep polling interval from
+200ms to 1ms while retaining the 5 second timeout.
 
-(b) I am writing a small program where the application code opens invokes a
-ioctl call and passes a buffer pointer ( say 0x10000 in user space)
-Now the driver code is using copy_from_user.
-How this works internally ?
+With this, the time taken for a cpu online operation changes as follows:
+Dedicated LPAR (POWER6): 20-25ms.
+Shared LPAR (POWER5)   : 60-80ms.
 
-1. User code executes ioctl
-2. interrupt goes to the kernel
-3. ioctl handler in driver gets invoked
-The buffer pointer still contains 0x10000.
+In both these cases, it was found that the code polls through the loop
+only once indicating that 1ms is a reasonable value, atleast on pseries.
 
-How kernel code running in PR=0 accesses it and does the copy. I am not able
-to see a address space switch in the asm code of copy_tofrom_user.
+The code needs testing on other powerpc platforms.
 
-Please respond
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+---
+ arch/powerpc/kernel/smp.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
--TRX
-
---0015175cb3003ded25046d14f430
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi,<br><br>I am a newbie, trying to learn but have a few queries, nice if y=
-ou could respond<br>For linux on 85xx systems...<br><br>(a) Kernel code run=
-s in PR=3D0 AS=3D0 and PID=3D0, which user space application run in PR=3D1 =
-AS=3D0 and PID 1-255.<br>
-Is this correct.<br><br>(b) I am writing a small program where the applicat=
-ion code opens invokes a ioctl call and passes a buffer pointer ( say 0x100=
-00 in user space)<br>Now the driver code is using copy_from_user.<br>How th=
-is works internally ?<br>
-<br>1. User code executes ioctl<br>2. interrupt goes to the kernel<br>3. io=
-ctl handler in driver gets invoked<br>The buffer pointer still contains 0x1=
-0000. <br><br>How kernel code running in PR=3D0 accesses it and does the co=
-py. I am not able to see a address space switch in the asm code of copy_tof=
-rom_user.<br>
-<br>Please respond<br><br>-TRX<br><br><br><br>
-
---0015175cb3003ded25046d14f430--
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 65484b2..00c13a1 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -411,9 +411,8 @@ int __cpuinit __cpu_up(unsigned int cpu)
+ 		 * CPUs can take much longer to come up in the
+ 		 * hotplug case.  Wait five seconds.
+ 		 */
+-		for (c = 25; c && !cpu_callin_map[cpu]; c--) {
+-			msleep(200);
+-		}
++		for (c = 5000; c && !cpu_callin_map[cpu]; c--)
++			msleep(1);
+ #endif
+ 
+ 	if (!cpu_callin_map[cpu]) {
