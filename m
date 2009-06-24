@@ -1,33 +1,26 @@
-Return-Path: <cbouatmailru@gmail.com>
+Return-Path: <kernelmailz@googlemail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BD52DB709A
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B5E7CB70A8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 07:51:52 +1000 (EST)
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
-	by ozlabs.org (Postfix) with ESMTP id E938EDDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 07:51:51 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id e21so3799fga.16
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 14:51:49 -0700 (PDT)
-Date: Thu, 25 Jun 2009 01:50:41 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] gianfar: Fix half-duplex operation for non-MII/RMII
-	interfaces
-Message-ID: <20090624215041.GA8416@oksana.dev.rtsoft.ru>
-References: <20090624182734.GA14306@oksana.dev.rtsoft.ru>
-	<ED58F994-6BDC-4496-8445-EA1D984F1379@freescale.com>
-	<20090624211038.GA29555@oksana.dev.rtsoft.ru>
-	<FFCBF074-5F39-4D0C-A0C3-F488A619C821@freescale.com>
-	<20090624213945.GB4163@oksana.dev.rtsoft.ru>
+	Thu, 25 Jun 2009 03:53:39 +1000 (EST)
+Received: from mail-fx0-f222.google.com (mail-fx0-f222.google.com
+	[209.85.220.222]) by ozlabs.org (Postfix) with ESMTP id 87A00DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 03:53:38 +1000 (EST)
+Received: by fxm22 with SMTP id 22so1045604fxm.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 10:53:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090624213945.GB4163@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Li Yang <leoli@freescale.com>, David Miller <davem@davemloft.net>
-Reply-To: avorontsov@ru.mvista.com
+In-Reply-To: <D47FC871-1535-4DBF-8617-6EEA8C180484@kernel.crashing.org>
+References: <abe8a1fd0906240244i6e33c260xadff5cf462df7b8c@mail.gmail.com>
+	<D47FC871-1535-4DBF-8617-6EEA8C180484@kernel.crashing.org>
+Date: Wed, 24 Jun 2009 23:16:08 +0530
+Message-ID: <abe8a1fd0906241046x2e3ee7d5h6a6c0231086a6f0e@mail.gmail.com>
+Subject: Re: 85xx Address space query
+From: kernel mailz <kernelmailz@googlemail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,42 +30,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 25, 2009 at 01:39:45AM +0400, Anton Vorontsov wrote:
-> On Wed, Jun 24, 2009 at 04:25:06PM -0500, Andy Fleming wrote:
-> [...]
-> >>> My concern is that you will be detecting the GMII interface, and
-> >>> disallowing half-duplex, despite the fact that the interface is  
-> >>> actually
-> >>> running at 10 or 100 Mbit.
-> >>
-> >> Very interesting, though I'm not sure I'm completely following. :-)
-> >>
-> >> Are you saying that I should do this instead:
-> >>
-> >> 	if (!phydev->duplex &&
-> >> 			(phyi == PHY_INTERFACE_MODE_MII ||
-> >> 			 phyi == PHY_INTERFACE_MODE_RMII ||
-> >> 			 (phyi == PHY_INTERFACE_MODE_GMII &&
-> >> 			  phydev->speed < 1000)))
-> >> 		tempval &= ~MACCFG2_FULL_DUPLEX;
-> >> 	else
-> >> 		tempval |= MACCFG2_FULL_DUPLEX;
-> >>
-> >> i.e. we detected GMII interface initially, but it downgraded
-> >> to MII since speed is < 1000, thus we can set half-duplex in MAC?
-> >
-> > Yeah, I think that works out more correctly.
-> 
-> Cool, thanks.
-> 
-> Do you happen to know how gianfar iface auto-detection works in HW?
-> I mean, if we connect 100 Mbs link to the GMII PHY, then
-> gfar_get_interface() would return MII, correct?
+On Wed, Jun 24, 2009 at 6:45 PM, Kumar Gala<galak@kernel.crashing.org> wrot=
+e:
+>
+> On Jun 24, 2009, at 4:44 AM, kernel mailz wrote:
+>
+>> Hi,
+>>
+>> I am a newbie, trying to learn but have a few queries, nice if you could
+>> respond
+>> For linux on 85xx systems...
+>>
+>> (a) Kernel code runs in PR=3D0 AS=3D0 and PID=3D0, which user space appl=
+ication
+>> run in PR=3D1 AS=3D0 and PID 1-255.
+>> Is this correct.
+>
+> correct.
+>
+>> (b) I am writing a small program where the application code opens invoke=
+s
+>> a ioctl call and passes a buffer pointer ( say 0x10000 in user space)
+>> Now the driver code is using copy_from_user.
+>> How this works internally ?
+>>
+>> 1. User code executes ioctl
+>> 2. interrupt goes to the kernel
+>
+> On the interrupt the PR changes from 0 -> 1
+>
+>> 3. ioctl handler in driver gets invoked
+>> The buffer pointer still contains 0x10000.
+>>
+>> How kernel code running in PR=3D0 accesses it and does the copy. I am no=
+t
+>> able to see a address space switch in the asm code of copy_tofrom_user.
+>
+> There isn't a address space switch. =A0But address spaces exist at the sa=
+me
+> time. =A0The user app is given 0..0xc000_0000 and the kernel uses
+> 0xc000_0000..0xffff_ffff.
+>
+Ah Ok, I get it Thanks Kumar
 
-Stupid me. HW has nothing to do with this. GMII, just as you said,
-is just a marker, comes from FSL_GIANFAR_DEV_HAS_GIGABIT flag.
+But If the app was running with PID=3D1, interrupt occurs, kernel code
+gets executed in PID=3D1, how does the kernel handle this ? and goes
+back to PID=3D0, since its translations are all in PID=3D0
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> - k
+>
