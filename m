@@ -3,20 +3,26 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2CE3CB70AF
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 741BDB70A7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 00:34:39 +1000 (EST)
+	Thu, 25 Jun 2009 00:37:05 +1000 (EST)
 Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 726E1DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 00:34:38 +1000 (EST)
-Message-ID: <4A42397A.8030105@harris.com>
-Date: Wed, 24 Jun 2009 10:34:34 -0400
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id CB43FDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 00:37:04 +1000 (EST)
+Message-ID: <4A423A0A.2010004@harris.com>
+Date: Wed, 24 Jun 2009 10:36:58 -0400
 From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v1] Make spi_ppc4xx.c tolerate 0 bits-per-word and 0 speed_hz
-Content-Type: text/plain; charset=UTF-8
-Cc: David Brownell <david-b@pacbell.net>, Stefan Roese <sr@denx.de>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [Question] m25p80 driver versus spi clock rate
+References: <4A3FEE98.60700@harris.com>
+	<200906231538.40125.david-b@pacbell.net>
+	<4A423750.8080605@harris.com> <200906241633.35571.sr@denx.de>
+In-Reply-To: <200906241633.35571.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: David Brownell <david-b@pacbell.net>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	linux-mtd@lists.infradead.org, Mike Frysinger <vapier.adi@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,59 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a SPI transfer is set up, but does not explicitly set bits-per-word
-and speed_hz, then the transaction fails, because spi_ppc4xx_setupxfer
-rejects it.
+Stefan Roese wrote:
+> On Wednesday 24 June 2009 16:25:20 Steven A. Falco wrote:
+>>> Speaking of spi_ppc4xx issues ... I still have an oldish
+>>> copy in my review queue, it needs something like the
+>>> appended patch.  (Plus something to accept bpw == 0.)
+>>> Is there a newer version?
+>> That is a question for Stefan.  Perhaps when I post my patch
+>> to the PPC list, we can move this further along...
+> 
+> I have to admit that I didn't find the time to rework the driver after David's 
+> latest review. Frankly, this could take some time since I'm currently busy 
+> with other tasks. So it would be great if someone else (Steven?) might pick up 
+> here and resubmit this driver so that we can get it finally included.
+> 
+> Thanks.
+> 
+> Best regards,
+> Stefan
 
-This patch modifies the logic to chose the struct spi_transfer parameters
-only if they are non-zero.  Otherwise, the struct spi_device parameters
-are used.
+Ok - I'll take that on.
 
-Additionally, since there is no OF binding for bits-per-word, we have to
-tolerate the case where both t->bits_per_word and spi->bits_per_word are
-zero.
----
-This was brought to light by a pending patch to spi_bitbang, which results
-in more calls to spi_ppc4xx_setupxfer.
+Please, both David and Stefan send me the latest versions
+and/or patches you have, and I'll integrate them and post
+to the PPC list.
 
- drivers/spi/spi_ppc4xx.c |   22 +++++++++++++++-------
- 1 files changed, 15 insertions(+), 7 deletions(-)
+	Steve
 
-diff --git a/drivers/spi/spi_ppc4xx.c b/drivers/spi/spi_ppc4xx.c
-index e46292b..9775bf2 100644
---- a/drivers/spi/spi_ppc4xx.c
-+++ b/drivers/spi/spi_ppc4xx.c
-@@ -151,16 +151,24 @@ static int spi_ppc4xx_setupxfer(struct spi_device *spi, struct spi_transfer *t)
- 	/* Write new configration */
- 	out_8(&hw->regs->mode, cs->mode);
- 
-+	/* Start with the generic configuration for this device. */
-+	bpw = spi->bits_per_word;
-+	cs->speed_hz = spi->max_speed_hz;
-+
- 	/*
--	 * Allow platform reduce the interrupt load on the CPU during SPI
--	 * transfers. We do not target maximum performance, but rather allow
--	 * platform to limit SPI bus frequency and interrupt rate.
-+	 * Allow the platform to reduce the interrupt load on the CPU during
-+	 * SPI transfers. We do not target maximum performance, but rather
-+	 * allow the platform to limit SPI bus frequency and interrupt rate.
- 	 */
--	bpw = t ? t->bits_per_word : spi->bits_per_word;
--	cs->speed_hz = t ? min(t->speed_hz, spi->max_speed_hz) :
--		spi->max_speed_hz;
-+	if(t) {
-+		if(t->bits_per_word)
-+			bpw = t->bits_per_word;
-+
-+		if(t->speed_hz)
-+			cs->speed_hz = min(t->speed_hz, spi->max_speed_hz);
-+	}
- 
--	if (bpw != 8) {
-+	if (bpw && bpw != 8) {
- 		dev_err(&spi->dev, "invalid bits-per-word (%d)\n", bpw);
- 		return -EINVAL;
- 	}
+
 -- 
-1.6.0.2
+A: Because it makes the logic of the discussion difficult to follow.
+Q: Why shouldn't I top post?
+A: No.
+Q: Should I top post?
