@@ -1,38 +1,26 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <gerhard_pircher@gmx.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2C984B70C5
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D5384B7093
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 16:19:55 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 19D9ADDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 16:19:55 +1000 (EST)
-Subject: Re: sym scsi driver problem with 2.6.26 or newer debian kernel on
-	p610 (fwd)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1245823019.10356.69.camel@pasglop>
-References: <Pine.LNX.4.64.0906141105050.4412@axis700.grange>
-	<4A38B883.80507@ktk.bme.hu>  <4A3F4A77.6070704@ktk.bme.hu>
-	<1245719890.4017.26.camel@pasglop> <1245724218.4017.35.camel@pasglop>
-	<1245794228.10356.31.camel@pasglop> <1245799792.10356.42.camel@pasglop>
-	<1245822826.9237.62.camel@concordia>
-	<1245823019.10356.69.camel@pasglop>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-a7xyBQrfbsvugh/rowBF"
-Date: Wed, 24 Jun 2009 16:19:52 +1000
-Message-Id: <1245824392.9237.85.camel@concordia>
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>, blackluck@ktk.bme.hu
-Reply-To: michael@ellerman.id.au
+	Wed, 24 Jun 2009 18:46:09 +1000 (EST)
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id B0FFEDDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 18:46:07 +1000 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Wed, 24 Jun 2009 10:46:01 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <20090623214224.104620@gmx.net>
+Message-ID: <20090624084601.273130@gmx.net>
+MIME-Version: 1.0
+References: <20090621181855.74980@gmx.net>	<1245623678.16880.27.camel@pasglop>
+	<s5h8wjkoi70.wl%tiwai@suse.de> <20090623085554.9200@gmx.net>
+	<20090623214224.104620@gmx.net>
+Subject: Re: ALSA fixes for non-coherent ppc32 again
+To: tiwai@suse.de, benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,73 +31,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-a7xyBQrfbsvugh/rowBF
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+-------- Original-Nachricht --------
+> Datum: Tue, 23 Jun 2009 23:42:24 +0200
+> Von: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+> An: benh@kernel.crashing.org, tiwai@suse.de
+> CC: linuxppc-dev@ozlabs.org
+> Betreff: Re: ALSA fixes for non-coherent ppc32 again
 
-On Wed, 2009-06-24 at 15:56 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-06-24 at 15:53 +1000, Michael Ellerman wrote:
-> > Doesn't fix my machine :/
-> >=20
-> That doesn't make sense ... What if you remove the bit inside the ifdef
-> CONFIG_MPIC_BROKEN_REGREAD in _mpic_read() ?
->=20
-> If that makes a difference, then it would be interesting to add a printk
-> in there that prints what the original value "val" is and what we have
-> in the shadow...
+> Okay, that's wrong. I somehow messed up the .config file. It doesn't
+> compile, too.
+I got it to compile now and it seems to work fine. I overlooked a typo
+in sound/core/Makefile first (ifndef CONFIG_SND_NONCOHERNT_DMA.)
+                                                        ^
+I vote for a merge, if the config option and the typo is fixed. Ben,
+should I resend a properly formatted patch for the dma_mmap_coherent
+implementation or can we take the patch I already sent?
 
-With this patch it boots:
+Thanks!
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 2353adc..fc17289 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -231,13 +231,16 @@ static inline u32 _mpic_irq_read(struct mpic *mpic, u=
-nsign
-        unsigned int    isu =3D src_no >> mpic->isu_shift;
-        unsigned int    idx =3D src_no & mpic->isu_mask;
-        unsigned int    val;
-+       unsigned int    shadow;
-=20
-        val =3D _mpic_read(mpic->reg_type, &mpic->isus[isu],
-                         reg + (idx * MPIC_INFO(IRQ_STRIDE))); =20
- #ifdef CONFIG_MPIC_BROKEN_REGREAD
--       if (reg =3D=3D 0)
--               val =3D (val & (MPIC_VECPRI_MASK | MPIC_VECPRI_ACTIVITY)) |
-+       if (reg =3D=3D 0) {
-+               shadow =3D (val & (MPIC_VECPRI_MASK | MPIC_VECPRI_ACTIVITY)=
-) |
-                        mpic->isu_reg0_shadow[idx];
-+               printk("%s: val 0x%x shadow 0x%x\n", __func__, val, shadow)=
-;
-+       }
- #endif
-        return val;
- }
+Gerhard
 
-
-And I see:
-
-sym53c8xx 0000:00:0c.0: enabling device (0140 -> 0143)
-sym0: <896> rev 0x7 at pci 0000:00:0c.0 irq 17
-sym0: No NVRAM, ID 7, Fast-40, SE, parity checking
-_mpic_irq_read: val 0x80480004 shadow 0x80080014
-_mpic_irq_read: val 0x480004 shadow 0x480004
-
-
-
-cheers
-
---=-a7xyBQrfbsvugh/rowBF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpBxYgACgkQdSjSd0sB4dJpDACfSdOBQ/0dIgLcjo6uTi+cIxfF
-ld8AoIaV8oSyjFOjp/8xkgjWUZ9qNXyK
-=WmLu
------END PGP SIGNATURE-----
-
---=-a7xyBQrfbsvugh/rowBF--
+-- 
+GRATIS für alle GMX-Mitglieder: Die maxdome Movie-FLAT!
+Jetzt freischalten unter http://portal.gmx.net/de/go/maxdome01
