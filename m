@@ -1,29 +1,23 @@
-Return-Path: <sfalco@harris.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id AF7C8B70A2
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8C246B70A9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 02:15:02 +1000 (EST)
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 15339DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 02:15:01 +1000 (EST)
-Message-ID: <4A425102.8050507@harris.com>
-Date: Wed, 24 Jun 2009 12:14:58 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+	Thu, 25 Jun 2009 02:31:38 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 1A2DADDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 02:31:36 +1000 (EST)
+Date: Wed, 24 Jun 2009 20:30:28 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/85xx: Fix ethernet link detection on MPC8569E-MDS
+	boards
+Message-ID: <20090624163028.GA18825@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [Question] m25p80 driver versus spi clock rate
-References: <4A3FEE98.60700@harris.com>
-	<200906231538.40125.david-b@pacbell.net>
-	<4A423750.8080605@harris.com>
-	<200906240813.01220.david-b@pacbell.net>
-In-Reply-To: <200906240813.01220.david-b@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Stefan Roese <sr@denx.de>, linux-mtd@lists.infradead.org,
-	Mike Frysinger <vapier.adi@gmail.com>
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Brownell wrote:
-> On Wednesday 24 June 2009, Steven A. Falco wrote:
->> Your changes to bitbang_work look good.
-> 
-> You tested?
-> 
+Linux isn't able to detect link changes on ethernet ports that were
+used by U-Boot. This is because U-Boot wrongly clears interrupt
+polarity bit (INTPOL, 0x400) in the extended status register (EXT_SR,
+0x1b) of Marvell PHYs.
 
-Yes - I built a kernel with your patch, combined with the changes I
-just posted to linuxppc-dev@ozlabs.org as:
+There is no easy way for PHY drivers to know IRQ line polarity (we
+could extract it from the device tree and pass it to phydevs, but
+that'll be quite a lot of work), so for now just reset the PHYs to
+their default states.
 
-"[PATCH v1] Make spi_ppc4xx.c tolerate 0 bits-per-word and 0 speed_hz"
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-I was successful in operating both the m25p16 at 16 MHz and the AVR
-at 240 KHz, as verified by oscilloscope.  So my "ack" includes testing.
-
-> 
->> I'm not clear on why you first set do_setup = -1 but later 
->> use do_setup = 1.  Perhaps they should both be "1".  Other than that,
->>
->> Acked-by: Steven A. Falco <sfalco@harris.com>
-> 
-> The "-1" is for the init path, "1" for per-transfer overrides;
-> this way it avoids some extra calls to set up the bits/speed.
-
-Got it.  No further comments.  My "ack" stands.
-
-I'll start looking at a revised version of the spi_ppc4xx.c driver,
-integrating your comments.
-
-	Steve
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 3268c95..34664c0 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -223,6 +223,19 @@ static void __init mpc85xx_mds_setup_arch(void)
+ 			/* Turn UCC1 & UCC2 on */
+ 			setbits8(&bcsr_regs[8], BCSR_UCC1_GETH_EN);
+ 			setbits8(&bcsr_regs[9], BCSR_UCC2_GETH_EN);
++		} else if (machine_is(mpc8569_mds)) {
++#define BCSR7_UCC12_GETHnRST	(0x1 << 2)
++#define BCSR8_UEM_MARVELL_RST	(0x1 << 1)
++			/*
++			 * U-Boot mangles interrupt polarity for Marvell PHYs,
++			 * so reset built-in and UEM Marvell PHYs, this puts
++			 * the PHYs into their normal state.
++			 */
++			clrbits8(&bcsr_regs[7], BCSR7_UCC12_GETHnRST);
++			setbits8(&bcsr_regs[8], BCSR8_UEM_MARVELL_RST);
++
++			setbits8(&bcsr_regs[7], BCSR7_UCC12_GETHnRST);
++			clrbits8(&bcsr_regs[8], BCSR8_UEM_MARVELL_RST);
+ 		}
+ 		iounmap(bcsr_regs);
+ 	}
+-- 
+1.6.3.1
