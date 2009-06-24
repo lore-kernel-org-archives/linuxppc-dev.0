@@ -1,20 +1,35 @@
-Return-Path: <Timothy.Bird@am.sony.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
-	[216.32.180.15])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id CE4C3B70BF
+Return-Path: <akirat@rd.scei.sony.co.jp>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1BD76B707D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 15:19:22 +1000 (EST)
-Message-ID: <4A41B3A5.9010807@am.sony.com>
-Date: Tue, 23 Jun 2009 22:03:33 -0700
-From: Tim Bird <tim.bird@am.sony.com>
+	Wed, 24 Jun 2009 15:35:02 +1000 (EST)
+Received: from ms4.sony.co.jp (ms4.sony.co.jp [211.125.136.198])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8E29BDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 15:35:01 +1000 (EST)
+Received: from mta7.sony.co.jp (mta7.Sony.CO.JP [137.153.71.12])
+	by ms4.sony.co.jp (R8/Sony) with ESMTP id n5O5Yvh3017531
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 14:34:57 +0900 (JST)
+Received: from mta7.sony.co.jp (localhost [127.0.0.1])
+	by mta7.sony.co.jp (R8/Sony) with ESMTP id n5O5YvB8018788
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 14:34:57 +0900 (JST)
+Received: from mailgw02.scei.sony.co.jp (mailgw02.scei.sony.co.jp [43.27.73.8])
+	by mta7.sony.co.jp (R8/Sony) with SMTP id n5O5YvP5018784
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 14:34:57 +0900 (JST)
+Date: Wed, 24 Jun 2009 14:34:37 +0900
+From: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mpic: Fix mapping of "DCR" based MPIC variants
+In-Reply-To: <20090623024807.170CADDD1C@ozlabs.org>
+References: <20090623024807.170CADDD1C@ozlabs.org>
+Message-Id: <20090624143143.408E.4D252088@rd.scei.sony.co.jp>
 MIME-Version: 1.0
-To: Johnny Hung <johnny.hacking@gmail.com>
-Subject: Re: How the kernel printk works before do console_setup.
-References: <cb9ecdfa0906232050n6fcfee31ubeee4bcd9b8c0dfe@mail.gmail.com>
-In-Reply-To: <cb9ecdfa0906232050n6fcfee31ubeee4bcd9b8c0dfe@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-embedded@vger.kernel.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +39,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Johnny Hung wrote:
-> Hi All:
->     I have a powerpc arch platform. The default console is ttyS1 not
-> ttyS0 in the platform. My question is how the kernel print debug
-> message
-> like DBG before parse kernel command line and do console_setup
-> function. The command line passed to kernel about console info is
-> console=ttyS1.
-> So kernel can not print anything before parse cmd line and initial
-> console but the result is against. Anyone point me or give me a clue
-> is appreciate.
+Hi Benjamin,
 
-Before the console is set up, the printk data is formatted
-and put into the kernel log buffer, but not sent to any console.
-Any messages printk'ed before that are buffered but do not
-appear.  When the console is initialized, then all buffered
-messages are sent to the console, and subsequent printks cause
-the message to go to the log buffer, but then immediately
-get sent from there to the console.
+On Tue, 23 Jun 2009 12:47:59 +1000, 
+Benjamin Herrenschmidt <benh@kernel.crashing.org> mentioned: 
+> Commit 31207dab7d2e63795eb15823947bd2f7025b08e2
+> "Fix incorrect allocation of interrupt rev-map"
+> introduced a regression crashing on boot on machines using
+> a "DCR" based MPIC, such as the Cell blades.
+> 
+> The reason is that the irq host data structure is initialized
+> much later as a result of that patch, causing our calls to
+> mpic_map() do be done before we have a host setup.
+> 
+> Unfortunately, this breaks _mpic_map_dcr() which uses the
+> mpic->irqhost to get to the device node.
+> 
+> This fixes it by, instead, passing the device node explicitely
+> to mpic_map().
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+>  arch/powerpc/sysdev/mpic.c |   29 ++++++++++++++++-------------
+>  1 file changed, 16 insertions(+), 13 deletions(-)
 
-Under certain conditions you can examine the log buffer of
-a kernel that failed to initialize it's console, after a
-warm reset of the machine, using the firmware memory dump
-command.
+I confirmed that the boot failure on IBM Cell Blades QS21/22 are fixed 
+with this patch.
 
-See http://elinux.org/Kernel_Debugging_Tips#Accessing_the_printk_buffer_after_a_silent_hang_on_boot
-for some tips on accessing the log buffer of a previous boot.
+Acked-by: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>
 
-Note also, that if the serial console does not come up,
-but the kernel successfully boots, and you can get a network
-login on the machine, you can always print out the kernel log
-buffer messages using 'dmesg' at a user-space shell prompt.
-
-Hope this helps!
- -- Tim
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+-- 
+Akira Tsukamoto
+Sony Computer Entertainment Inc. 
+Architecture Lab.
+Japan
