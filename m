@@ -1,29 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7C1F9B70CA
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DBA17B7092
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 08:51:56 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 13C4DDDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 08:51:54 +1000 (EST)
-Message-ID: <4A42AE1A.1090107@freescale.com>
-Date: Wed, 24 Jun 2009 17:52:10 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: kernel mailz <kernelmailz@googlemail.com>
-Subject: Re: 85xx Address space query
-References: <abe8a1fd0906240244i6e33c260xadff5cf462df7b8c@mail.gmail.com>	<D47FC871-1535-4DBF-8617-6EEA8C180484@kernel.crashing.org>
-	<abe8a1fd0906241046x2e3ee7d5h6a6c0231086a6f0e@mail.gmail.com>
-In-Reply-To: <abe8a1fd0906241046x2e3ee7d5h6a6c0231086a6f0e@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	Thu, 25 Jun 2009 08:56:55 +1000 (EST)
+Subject: Re: How the kernel printk works before do console_setup.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <4A41B3A5.9010807@am.sony.com>
+References: <cb9ecdfa0906232050n6fcfee31ubeee4bcd9b8c0dfe@mail.gmail.com>
+	<4A41B3A5.9010807@am.sony.com>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 08:56:43 +1000
+Message-Id: <1245884203.21200.18.camel@pasglop>
+Mime-Version: 1.0
+Cc: Johnny Hung <johnny.hacking@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,12 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kernel mailz wrote:
-> But If the app was running with PID=1, interrupt occurs, kernel code
-> gets executed in PID=1, how does the kernel handle this ? and goes
-> back to PID=0, since its translations are all in PID=0
 
-PID 0 is special, it's mappings are present regardless of the value of 
-the PID register.
+> Before the console is set up, the printk data is formatted
+> and put into the kernel log buffer, but not sent to any console.
+> Any messages printk'ed before that are buffered but do not
+> appear.  When the console is initialized, then all buffered
+> messages are sent to the console, and subsequent printks cause
+> the message to go to the log buffer, but then immediately
+> get sent from there to the console.
+> 
+> Under certain conditions you can examine the log buffer of
+> a kernel that failed to initialize it's console, after a
+> warm reset of the machine, using the firmware memory dump
+> command.
 
--Scott
+On ppc, we have tricks to display things earlier :-)
+
+We can initialize the serial ports way before console_setup() (and we do
+in most cases) and we use what we call the "udbg" console until the real
+one takes over. The "udbg" console is a very small layer which outputs
+via a provided "putc" routine. Platforms can provide their own here, we
+have a collection of standard ones for legacy UARTs (it should be
+automatically setup in that case by the code in legacy_serial), Apple
+ESCCs, etc... We even have compile time options that allow that stuff to
+be initialized before start_kernel...
+
+Cheers,
+Ben.
+
+
+> See http://elinux.org/Kernel_Debugging_Tips#Accessing_the_printk_buffer_after_a_silent_hang_on_boot
+> for some tips on accessing the log buffer of a previous boot.
+> 
+> Note also, that if the serial console does not come up,
+> but the kernel successfully boots, and you can get a network
+> login on the machine, you can always print out the kernel log
+> buffer messages using 'dmesg' at a user-space shell prompt.
+> 
+> Hope this helps!
+>  -- Tim
+> 
+> =============================
+> Tim Bird
+> Architecture Group Chair, CE Linux Forum
+> Senior Staff Engineer, Sony Corporation of America
+> =============================
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
