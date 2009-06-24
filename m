@@ -1,23 +1,32 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8C246B70A9
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6B8FCB70A6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 02:31:38 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 1A2DADDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 02:31:36 +1000 (EST)
-Date: Wed, 24 Jun 2009 20:30:28 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/85xx: Fix ethernet link detection on MPC8569E-MDS
-	boards
-Message-ID: <20090624163028.GA18825@oksana.dev.rtsoft.ru>
+	Thu, 25 Jun 2009 02:39:19 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n5OGYRPv026906
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2009 12:34:27 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n5OGdEXB207084
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2009 12:39:14 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n5OGdEhr021774
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2009 12:39:14 -0400
+Message-ID: <4A4256AD.3080507@austin.ibm.com>
+Date: Wed, 24 Jun 2009 11:39:09 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org
+To: Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [PATCH] pseries: cpu: Reduce the polling interval in __cpu_up()
+References: <20090624092637.32078.88042.stgit@sofia.in.ibm.com>
+In-Reply-To: <20090624092637.32078.88042.stgit@sofia.in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Nathan Lynch <ntl@pobox.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +36,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Linux isn't able to detect link changes on ethernet ports that were
-used by U-Boot. This is because U-Boot wrongly clears interrupt
-polarity bit (INTPOL, 0x400) in the extended status register (EXT_SR,
-0x1b) of Marvell PHYs.
+>
+> The code needs testing on other powerpc platforms.
+>   
+I think given the numbers you showed this is a good improvement, and it 
+clearly can't do any harm on platforms that implement msleep correctly.
 
-There is no easy way for PHY drivers to know IRQ line polarity (we
-could extract it from the device tree and pass it to phydevs, but
-that'll be quite a lot of work), so for now just reset the PHYs to
-their default states.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 3268c95..34664c0 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -223,6 +223,19 @@ static void __init mpc85xx_mds_setup_arch(void)
- 			/* Turn UCC1 & UCC2 on */
- 			setbits8(&bcsr_regs[8], BCSR_UCC1_GETH_EN);
- 			setbits8(&bcsr_regs[9], BCSR_UCC2_GETH_EN);
-+		} else if (machine_is(mpc8569_mds)) {
-+#define BCSR7_UCC12_GETHnRST	(0x1 << 2)
-+#define BCSR8_UEM_MARVELL_RST	(0x1 << 1)
-+			/*
-+			 * U-Boot mangles interrupt polarity for Marvell PHYs,
-+			 * so reset built-in and UEM Marvell PHYs, this puts
-+			 * the PHYs into their normal state.
-+			 */
-+			clrbits8(&bcsr_regs[7], BCSR7_UCC12_GETHnRST);
-+			setbits8(&bcsr_regs[8], BCSR8_UEM_MARVELL_RST);
-+
-+			setbits8(&bcsr_regs[7], BCSR7_UCC12_GETHnRST);
-+			clrbits8(&bcsr_regs[8], BCSR8_UEM_MARVELL_RST);
- 		}
- 		iounmap(bcsr_regs);
- 	}
--- 
-1.6.3.1
+For what it's worth:
+Acked-by: Joel Schopp <jschopp@austin.ibm.com>
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> ---
+>  arch/powerpc/kernel/smp.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 65484b2..00c13a1 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -411,9 +411,8 @@ int __cpuinit __cpu_up(unsigned int cpu)
+>  		 * CPUs can take much longer to come up in the
+>  		 * hotplug case.  Wait five seconds.
+>  		 */
+> -		for (c = 25; c && !cpu_callin_map[cpu]; c--) {
+> -			msleep(200);
+> -		}
+> +		for (c = 5000; c && !cpu_callin_map[cpu]; c--)
+> +			msleep(1);
+>  #endif
+>  
+>  	if (!cpu_callin_map[cpu]) {
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>   
