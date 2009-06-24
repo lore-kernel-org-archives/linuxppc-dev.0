@@ -3,38 +3,28 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3E0CCB70CE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 02BF9B70C9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 10:27:45 +1000 (EST)
+	Wed, 24 Jun 2009 10:55:34 +1000 (EST)
 Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 24AECDDDE2
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 10:27:45 +1000 (EST)
-Subject: Re: [PATCH] Do not inline putprops function
+	by ozlabs.org (Postfix) with ESMTPS id E3CC0DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 10:55:33 +1000 (EST)
+Subject: Re: [PATCH] powerpc/ps3: Use pr_devel() in ps3/mm.c
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Neil Horman <nhorman@redhat.com>
-In-Reply-To: <20090623135604.GC1157@hmsreliant.think-freely.org>
-References: <20090617113456.GC31595@in.ibm.com>
-	<20090617114551.GA5672@verge.net.au>
-	<20090617115917.GD31595@in.ibm.com>
-	<1245241595.4269.15.camel@concordia>
-	<20090617130413.GB2774@localhost.localdomain>
-	<20090617133435.GB4059@in.ibm.com>
-	<20090617140514.GB31383@hmsreliant.think-freely.org>
-	<20090617142652.GC4059@in.ibm.com>
-	<20090617144007.GC31383@hmsreliant.think-freely.org>
-	<20090623125534.GA8664@in.ibm.com>
-	<20090623135604.GC1157@hmsreliant.think-freely.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <4A4108A3.8060003@am.sony.com>
+References: <8977d21ed6cf59b89f9a830d59968ce178420a46.1245722192.git.michael@ellerman.id.au>
+	<4A4108A3.8060003@am.sony.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-ggNhO6RKgPj9FrJxG8iU"
-Date: Wed, 24 Jun 2009 10:27:43 +1000
-Message-Id: <1245803263.9237.3.camel@concordia>
+	boundary="=-1+mCou/r+kHk5712RbQa"
+Date: Wed, 24 Jun 2009 10:55:32 +1000
+Message-Id: <1245804932.9237.30.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org, miltonm@bga.com,
-	Simon Horman <horms@verge.net.au>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -46,63 +36,45 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-ggNhO6RKgPj9FrJxG8iU
+--=-1+mCou/r+kHk5712RbQa
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2009-06-23 at 09:56 -0400, Neil Horman wrote:
-> On Tue, Jun 23, 2009 at 06:25:34PM +0530, M. Mohan Kumar wrote:
-> > On Wed, Jun 17, 2009 at 10:40:07AM -0400, Neil Horman wrote:
-> > =20
-> > > > send objdump of fs2dt.o with and without this assignment.
-> > > >=20
-> > > That would be a fine thing to do, and I'd be happy to compare them.  =
-My though
-> > > regarding the comparison of the device tree on a good and bad run was=
- meant to
-> > > expidite what change in the assembly we'd be looking for.  If its the=
- kdump
-> > > kernel boot thats hanging, Its likely hanging on something in the dev=
-ice tree,
-> > > as thats whats being manipulated by this code.  So I figure that unde=
-rstanding
-> > > whats changed there will point us toward what change in the assembly =
-might be
-> > > responsible for the hang.  The assmebly's going to be signficantly di=
-fferent
-> > > (lots of optimization might be lost from no longer inlining a functio=
-n), so
-> > > anything that helps us narrow down whats changed will be good
+On Tue, 2009-06-23 at 09:53 -0700, Geoff Levand wrote:
+> On 06/22/2009 06:56 PM, Michael Ellerman wrote:
+> > The non-debug case in ps3/mm.c uses pr_debug(), so that the compiler
+> > still does type checks etc. and doesn't complain about unused
+> > variables in the non-debug case.
 > >=20
-> > I am attaching the objdumps of fs2dt with and without dt_len.
+> > However with DEBUG=3Dn and CONFIG_DYNAMIC_DEBUG=3Dy there's still code
+> > generated for those pr_debugs().
 > >=20
-> Well it definately looks like removing that variable had some code change=
-s.
-> It'll take some time to match it up to source, but Most interesting I thi=
-nk is
-> the variance in putprops around address f34.  Looks like its doing some s=
-tring
-> maniuplation in a reversed order, using a huge offset.  Might be worthwhi=
-le to
-> check to see if theres any string overruns in this code.
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > ---
+> >  arch/powerpc/platforms/ps3/mm.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> Looks good, thanks.  I put it on the todo list to go through
+> the the remaining PS3 code to check for the same.
 
-Yeah I still suspect it's just a bug in the code that's being exposed
-now.
+Cool, I've been slowly going through as I have time but I'll leave ps3
+to you. I see ~270 uses in 9 files.
 
-Mohan, can you try running it under valgrind?
+There are places where being able to dynamically enable the debug is
+useful, but there are plenty where it's not also.
 
 cheers
 
---=-ggNhO6RKgPj9FrJxG8iU
+--=-1+mCou/r+kHk5712RbQa
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkpBcv8ACgkQdSjSd0sB4dIrYgCeOc0NKJAe0vj8YBryzOSF47S1
-6o0AoIwG689eO7S+Neae/5wgpE8f1Ydn
-=xAmA
+iEYEABECAAYFAkpBeYQACgkQdSjSd0sB4dLlvgCgimbHhJCOuUK2vx/duJZzke8x
+z3UAoJ7q4wEytaeyXSvqQdlL+4+3u4iU
+=lQUA
 -----END PGP SIGNATURE-----
 
---=-ggNhO6RKgPj9FrJxG8iU--
+--=-1+mCou/r+kHk5712RbQa--
