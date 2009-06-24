@@ -1,29 +1,33 @@
-Return-Path: <ego@in.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <LeoLi@freescale.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A9DF6B70AA
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3F1BCB70A0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 19:26:42 +1000 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
-	by e23smtp09.au.ibm.com (8.13.1/8.13.1) with ESMTP id n5OJJ3xk025202
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2009 05:19:03 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n5O9Qfwf475170
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2009 19:26:41 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n5O9QeXO026832
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2009 19:26:40 +1000
-Subject: [PATCH] pseries: cpu: Reduce the polling interval in __cpu_up()
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-From: Gautham R Shenoy <ego@in.ibm.com>
-Date: Wed, 24 Jun 2009 14:56:37 +0530
-Message-ID: <20090624092637.32078.88042.stgit@sofia.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Nathan Lynch <ntl@pobox.com>
+	Wed, 24 Jun 2009 22:35:36 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CE0D3DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 22:35:34 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n5OCZDFu003105
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 05:35:21 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n5OCZBtY029737
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 07:35:12 -0500 (CDT)
+From: Li Yang <leoli@freescale.com>
+To: davem@davemloft.net
+Subject: [PATCH] net/gianfar: add missing set_mac_address hook
+Date: Wed, 24 Jun 2009 21:04:34 +0800
+Message-Id: <1245848674-6192-1-git-send-email-leoli@freescale.com>
+Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,51 +37,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Time time taken for a single cpu online operation on a pseries machine
-is as follows:
-Dedicated LPAR (POWER6): ~220ms.
-Shared LPAR (POWER5)   : ~240ms.
+Add the missing ndo_set_mac_address function to enable changing MAC
+address.  Also remove the unnecessary gfar_set_mac_address function.
 
-Of this time, approximately 200ms is taken up by __cpu_up(). This is because
-we poll every 200ms to check if the new cpu has notified it's presence
-through the cpu_callin_map. We repeat this operation until the new cpu sets
-the value in cpu_callin_map or 5 seconds elapse, whichever comes earlier.
-
-However, using completion_structs instead of polling loops,
-the time taken by the new processor to indicate it's presence has
-found to be less than 1ms on pseries. This method however may not
-work on all powerpc platforms due to the time-base synchronization code.
-
-Keeping this in mind, we could reduce msleep polling interval from
-200ms to 1ms while retaining the 5 second timeout.
-
-With this, the time taken for a cpu online operation changes as follows:
-Dedicated LPAR (POWER6): 20-25ms.
-Shared LPAR (POWER5)   : 60-80ms.
-
-In both these cases, it was found that the code polls through the loop
-only once indicating that 1ms is a reasonable value, atleast on pseries.
-
-The code needs testing on other powerpc platforms.
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Acked-by: Andy Fleming <afleming@freescale.com>
 ---
- arch/powerpc/kernel/smp.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/net/gianfar.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 65484b2..00c13a1 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -411,9 +411,8 @@ int __cpuinit __cpu_up(unsigned int cpu)
- 		 * CPUs can take much longer to come up in the
- 		 * hotplug case.  Wait five seconds.
- 		 */
--		for (c = 25; c && !cpu_callin_map[cpu]; c--) {
--			msleep(200);
--		}
-+		for (c = 5000; c && !cpu_callin_map[cpu]; c--)
-+			msleep(1);
- #endif
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 4ae1d25..f526c99 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -111,7 +111,6 @@ static int gfar_close(struct net_device *dev);
+ struct sk_buff *gfar_new_skb(struct net_device *dev);
+ static void gfar_new_rxbdp(struct net_device *dev, struct rxbd8 *bdp,
+ 		struct sk_buff *skb);
+-static int gfar_set_mac_address(struct net_device *dev);
+ static int gfar_change_mtu(struct net_device *dev, int new_mtu);
+ static irqreturn_t gfar_error(int irq, void *dev_id);
+ static irqreturn_t gfar_transmit(int irq, void *dev_id);
+@@ -142,6 +141,7 @@ void gfar_start(struct net_device *dev);
+ static void gfar_clear_exact_match(struct net_device *dev);
+ static void gfar_set_mac_for_addr(struct net_device *dev, int num, u8 *addr);
+ static int gfar_ioctl(struct net_device *dev, struct ifreq *rq, int cmd);
++static int gfar_set_mac_addr(struct net_device *dev, void *p)
  
- 	if (!cpu_callin_map[cpu]) {
+ MODULE_AUTHOR("Freescale Semiconductor, Inc");
+ MODULE_DESCRIPTION("Gianfar Ethernet Driver");
+@@ -156,6 +156,7 @@ static const struct net_device_ops gfar_netdev_ops = {
+ 	.ndo_tx_timeout = gfar_timeout,
+ 	.ndo_do_ioctl = gfar_ioctl,
+ 	.ndo_vlan_rx_register = gfar_vlan_rx_register,
++	.ndo_set_mac_address = gfar_set_mac_addr,
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ 	.ndo_poll_controller = gfar_netpoll,
+ #endif
+@@ -1182,7 +1183,7 @@ static int gfar_enet_open(struct net_device *dev)
+ 	/* Initialize a bunch of registers */
+ 	init_registers(dev);
+ 
+-	gfar_set_mac_address(dev);
++	gfar_set_mac_for_addr(dev, 0, dev->dev_addr);
+ 
+ 	err = init_phy(dev);
+ 
+@@ -1426,15 +1427,19 @@ static int gfar_close(struct net_device *dev)
+ 	return 0;
+ }
+ 
+-/* Changes the mac address if the controller is not running. */
+-static int gfar_set_mac_address(struct net_device *dev)
++/* Changes the station mac address on the go */
++static int gfar_set_mac_addr(struct net_device *dev, void *p)
+ {
+-	gfar_set_mac_for_addr(dev, 0, dev->dev_addr);
++	struct sockaddr *addr = p;
++
++	if (!is_valid_ether_addr(addr->sa_data))
++		return -EADDRNOTAVAIL;
++	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
+ 
++	gfar_set_mac_for_addr(dev, 0, dev->dev_addr);
+ 	return 0;
+ }
+ 
+-
+ /* Enables and disables VLAN insertion/extraction */
+ static void gfar_vlan_rx_register(struct net_device *dev,
+ 		struct vlan_group *grp)
+-- 
+1.6.3.1.6.g4bf1f
