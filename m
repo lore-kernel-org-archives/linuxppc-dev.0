@@ -1,30 +1,28 @@
-Return-Path: <dan.j.williams@intel.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E89CCB70A2
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A4036B70A2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 07:08:36 +1000 (EST)
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
-	by ozlabs.org (Postfix) with ESMTP id 500B0DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 07:08:35 +1000 (EST)
-Message-ID: <4A4295D1.2050802@intel.com>
-Date: Wed, 24 Jun 2009 14:08:33 -0700
-From: Dan Williams <dan.j.williams@intel.com>
+	Thu, 25 Jun 2009 07:11:48 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id D3D3DDDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 07:11:47 +1000 (EST)
+Date: Thu, 25 Jun 2009 01:10:38 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH] gianfar: Fix half-duplex operation for non-MII/RMII
+	interfaces
+Message-ID: <20090624211038.GA29555@oksana.dev.rtsoft.ru>
+References: <20090624182734.GA14306@oksana.dev.rtsoft.ru>
+	<ED58F994-6BDC-4496-8445-EA1D984F1379@freescale.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3 2/2] fsldma: Add DMA_SLAVE support
-References: <20090619193134.GC30992@ovro.caltech.edu>
-	<1245705647.937.2.camel@dwillia2-linux.ch.intel.com>
-	<2a27d3730906230318g7103a890ic85d1678425ac2c9@mail.gmail.com>
-	<6A70F385-C883-4D89-A302-AB09660762C1@kernel.crashing.org>
-	<4A40FB26.8080301@intel.com> <4A4268B7.8060106@intel.com>
-	<B40B03DC-6064-45A3-A1E5-283F16769FFE@kernel.crashing.org>
-In-Reply-To: <B40B03DC-6064-45A3-A1E5-283F16769FFE@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Li Yang <leoli@freescale.com>, Ira Snyder <iws@ovro.caltech.edu>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <ED58F994-6BDC-4496-8445-EA1D984F1379@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Li Yang <leoli@freescale.com>, David Miller <davem@davemloft.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,12 +32,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Jun 24, 2009, at 12:56 PM, Dan Williams wrote:
-> Lets go ahead w/2.6.31 (if its ok w/you).
-> 
+On Wed, Jun 24, 2009 at 03:18:59PM -0500, Andy Fleming wrote:
+>
+> On Jun 24, 2009, at 1:27 PM, Anton Vorontsov wrote:
+>
+>> It appears that gianfar driver has the same problem[1] that I
+>> just fixed for ucc_geth.
+>>
+>> NFS boot using 10/half link takes about 10 minutes to complete:
+>>
+>
+>>
+>> The symptoms were observed on MPC8379E-RDB boards (eTSEC). Although
+>> I didn't find where documentation forbids clearing Full Duplex bit
+>> for non-MII/RMII modes, it's pretty distinct that the bit should be
+>> set.
+>>
+>> It's no wonder though, QE Ethernet and TSEC are pretty similar.
+>
+>> -			if (!(phydev->duplex))
+>> -				tempval &= ~(MACCFG2_FULL_DUPLEX);
+>> +			if (!phydev->duplex &&
+>> +					(phyi == PHY_INTERFACE_MODE_MII ||
+>> +					 phyi == PHY_INTERFACE_MODE_RMII))
+>
+>
+> Hmm....have you tested this on a GMII interface?
 
-Ok, I'll take this as an acked-by and send it off.
+Nope, only RGMII.
+
+>  *Technically*, full  
+> duplex is required for GMII, as GMII is used only for gigabit.  However, 
+> we've been treating the GMII interface type as an indicator that the PHY 
+> *has* a GMII connection to the NIC.  When gianfar detects the speed is 
+> 10/100 it switches to the compatible MII interface via this code, just 
+> below:
+>
+>                         case 100:
+>                         case 10:
+>                                 tempval =
+>                                     ((tempval & ~(MACCFG2_IF)) |  
+> MACCFG2_MII);
+>
+>
+> My concern is that you will be detecting the GMII interface, and  
+> disallowing half-duplex, despite the fact that the interface is actually 
+> running at 10 or 100 Mbit.
+
+Very interesting, though I'm not sure I'm completely following. :-)
+
+Are you saying that I should do this instead:
+
+	if (!phydev->duplex &&
+			(phyi == PHY_INTERFACE_MODE_MII ||
+			 phyi == PHY_INTERFACE_MODE_RMII ||
+			 (phyi == PHY_INTERFACE_MODE_GMII &&
+			  phydev->speed < 1000)))
+		tempval &= ~MACCFG2_FULL_DUPLEX;
+	else
+		tempval |= MACCFG2_FULL_DUPLEX;
+
+i.e. we detected GMII interface initially, but it downgraded
+to MII since speed is < 1000, thus we can set half-duplex in MAC?
 
 Thanks,
-Dan
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
