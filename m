@@ -1,26 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <sfalco@harris.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id AD8F8B7090
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 16313B70A0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 23:15:40 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CAE3EDDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 23:15:38 +1000 (EST)
-Message-Id: <D47FC871-1535-4DBF-8617-6EEA8C180484@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: kernel mailz <kernelmailz@googlemail.com>
-In-Reply-To: <abe8a1fd0906240244i6e33c260xadff5cf462df7b8c@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: 85xx Address space query
-Date: Wed, 24 Jun 2009 08:15:25 -0500
-References: <abe8a1fd0906240244i6e33c260xadff5cf462df7b8c@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+	Thu, 25 Jun 2009 00:25:27 +1000 (EST)
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 5F084DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 00:25:26 +1000 (EST)
+Message-ID: <4A423750.8080605@harris.com>
+Date: Wed, 24 Jun 2009 10:25:20 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
+MIME-Version: 1.0
+To: David Brownell <david-b@pacbell.net>, Stefan Roese <sr@denx.de>
+Subject: Re: [Question] m25p80 driver versus spi clock rate
+References: <4A3FEE98.60700@harris.com>
+	<200906231408.26912.david-b@pacbell.net>
+	<4A414E07.5050303@harris.com>
+	<200906231538.40125.david-b@pacbell.net>
+In-Reply-To: <200906231538.40125.david-b@pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	linux-mtd@lists.infradead.org, Mike Frysinger <vapier.adi@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+David Brownell wrote:
+> On Tuesday 23 June 2009, Steven A. Falco wrote:
+>> m25p80 spi0.0: invalid bits-per-word (0)
+>>
+>> This message comes from spi_ppc4xx_setupxfer.  I believe your patch
+>> is doing what you intended (i.e. forcing an initial call to
+>> spi_ppc4xx_setupxfer), but it exposes an OF / SPI linkage problem.
+>>
+>> Namely, of_register_spi_devices does not support a bits-per-word
+>> property, so bits-per-word is zero.
+> 
+> Bits-per-word == 0 must be interpreted as == 8.
+> 
+> Simple bug in the ppc4xx code.  It currently rejects
+> values other than 8.
 
-On Jun 24, 2009, at 4:44 AM, kernel mailz wrote:
+Ok - I'll post a patch for that.  Your changes to bitbang_work look
+good.  I'm not clear on why you first set do_setup = -1 but later
+use do_setup = 1.  Perhaps they should both be "1".  Other than that,
 
-> Hi,
->
-> I am a newbie, trying to learn but have a few queries, nice if you  
-> could respond
-> For linux on 85xx systems...
->
-> (a) Kernel code runs in PR=0 AS=0 and PID=0, which user space  
-> application run in PR=1 AS=0 and PID 1-255.
-> Is this correct.
+Acked-by: Steven A. Falco <sfalco@harris.com>
 
-correct.
+> 
+> Speaking of spi_ppc4xx issues ... I still have an oldish
+> copy in my review queue, it needs something like the
+> appended patch.  (Plus something to accept bpw == 0.)
+> Is there a newer version?
 
-> (b) I am writing a small program where the application code opens  
-> invokes a ioctl call and passes a buffer pointer ( say 0x10000 in  
-> user space)
-> Now the driver code is using copy_from_user.
-> How this works internally ?
->
-> 1. User code executes ioctl
-> 2. interrupt goes to the kernel
+That is a question for Stefan.  Perhaps when I post my patch
+to the PPC list, we can move this further along...
 
-On the interrupt the PR changes from 0 -> 1
-
-> 3. ioctl handler in driver gets invoked
-> The buffer pointer still contains 0x10000.
->
-> How kernel code running in PR=0 accesses it and does the copy. I am  
-> not able to see a address space switch in the asm code of  
-> copy_tofrom_user.
-
-There isn't a address space switch.  But address spaces exist at the  
-same time.  The user app is given 0..0xc000_0000 and the kernel uses  
-0xc000_0000..0xffff_ffff.
-
-- k
+	Steve
