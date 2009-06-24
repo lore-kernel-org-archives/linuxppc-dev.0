@@ -1,35 +1,36 @@
-Return-Path: <akirat@rd.scei.sony.co.jp>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1BD76B707D
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 24815B70C2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Jun 2009 15:35:02 +1000 (EST)
-Received: from ms4.sony.co.jp (ms4.sony.co.jp [211.125.136.198])
+	Wed, 24 Jun 2009 15:53:49 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8E29BDDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 15:35:01 +1000 (EST)
-Received: from mta7.sony.co.jp (mta7.Sony.CO.JP [137.153.71.12])
-	by ms4.sony.co.jp (R8/Sony) with ESMTP id n5O5Yvh3017531
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 14:34:57 +0900 (JST)
-Received: from mta7.sony.co.jp (localhost [127.0.0.1])
-	by mta7.sony.co.jp (R8/Sony) with ESMTP id n5O5YvB8018788
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 14:34:57 +0900 (JST)
-Received: from mailgw02.scei.sony.co.jp (mailgw02.scei.sony.co.jp [43.27.73.8])
-	by mta7.sony.co.jp (R8/Sony) with SMTP id n5O5YvP5018784
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 14:34:57 +0900 (JST)
-Date: Wed, 24 Jun 2009 14:34:37 +0900
-From: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0BB9FDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2009 15:53:49 +1000 (EST)
+Subject: Re: sym scsi driver problem with 2.6.26 or newer debian kernel on
+	p610 (fwd)
+From: Michael Ellerman <michael@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mpic: Fix mapping of "DCR" based MPIC variants
-In-Reply-To: <20090623024807.170CADDD1C@ozlabs.org>
-References: <20090623024807.170CADDD1C@ozlabs.org>
-Message-Id: <20090624143143.408E.4D252088@rd.scei.sony.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1245799792.10356.42.camel@pasglop>
+References: <Pine.LNX.4.64.0906141105050.4412@axis700.grange>
+	<4A38B883.80507@ktk.bme.hu>  <4A3F4A77.6070704@ktk.bme.hu>
+	<1245719890.4017.26.camel@pasglop> <1245724218.4017.35.camel@pasglop>
+	<1245794228.10356.31.camel@pasglop> <1245799792.10356.42.camel@pasglop>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-UrNTdUiMKim5jMLoK0SG"
+Date: Wed, 24 Jun 2009 15:53:46 +1000
+Message-Id: <1245822826.9237.62.camel@concordia>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	debian-powerpc@lists.debian.org,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>, blackluck@ktk.bme.hu
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,38 +40,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Benjamin,
 
-On Tue, 23 Jun 2009 12:47:59 +1000, 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> mentioned: 
-> Commit 31207dab7d2e63795eb15823947bd2f7025b08e2
-> "Fix incorrect allocation of interrupt rev-map"
-> introduced a regression crashing on boot on machines using
-> a "DCR" based MPIC, such as the Cell blades.
-> 
-> The reason is that the irq host data structure is initialized
-> much later as a result of that patch, causing our calls to
-> mpic_map() do be done before we have a host setup.
-> 
-> Unfortunately, this breaks _mpic_map_dcr() which uses the
-> mpic->irqhost to get to the device node.
-> 
-> This fixes it by, instead, passing the device node explicitely
-> to mpic_map().
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
->  arch/powerpc/sysdev/mpic.c |   29 ++++++++++++++++-------------
->  1 file changed, 16 insertions(+), 13 deletions(-)
+--=-UrNTdUiMKim5jMLoK0SG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I confirmed that the boot failure on IBM Cell Blades QS21/22 are fixed 
-with this patch.
+On Wed, 2009-06-24 at 09:29 +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2009-06-24 at 07:57 +1000, Benjamin Herrenschmidt wrote:
+> > > I tried on a POWER3 box I have here "IBM,7044-170" and things work fi=
+ne
+> > > here with current upstream. (I suspect a much smaller machine).
+> > >=20
+> > > I will really need an actual bisection here... In the meantime, I'll =
+see
+> > > if I can get my hand on one of these machines here.
+> >=20
+> > Ok so I think we may have found it... looks like
+> > CONFIG_MPIC_BROKEN_REGREAD is what breaks it which is enabled by PA-Sem=
+i
+> > support in the .config.
+> >=20
+> > Can you verify that disabling PA-Semi support removes that option from
+> > your .config and that once removed, it works again ?
+> >=20
+> > We don't know yet -why- it breaks it, still investigating.
+>=20
+> Do the following patch also fix it ?
 
-Acked-by: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>
+Doesn't fix my machine :/
 
--- 
-Akira Tsukamoto
-Sony Computer Entertainment Inc. 
-Architecture Lab.
-Japan
+cheers
+
+
+--=-UrNTdUiMKim5jMLoK0SG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpBv2oACgkQdSjSd0sB4dKlJwCgksWVwf3TosDh5Gszsrizk/BZ
+9cMAoJFlq8jfuEmM53mWmGa221QhI/SG
+=abD5
+-----END PGP SIGNATURE-----
+
+--=-UrNTdUiMKim5jMLoK0SG--
