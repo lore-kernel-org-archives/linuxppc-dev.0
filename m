@@ -1,22 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DBA17B7092
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BB85FB70A1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 08:56:55 +1000 (EST)
-Subject: Re: How the kernel printk works before do console_setup.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <4A41B3A5.9010807@am.sony.com>
-References: <cb9ecdfa0906232050n6fcfee31ubeee4bcd9b8c0dfe@mail.gmail.com>
-	<4A41B3A5.9010807@am.sony.com>
-Content-Type: text/plain
-Date: Thu, 25 Jun 2009 08:56:43 +1000
-Message-Id: <1245884203.21200.18.camel@pasglop>
-Mime-Version: 1.0
-Cc: Johnny Hung <johnny.hacking@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+	Thu, 25 Jun 2009 11:03:42 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id EC81EDDD1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 11:03:41 +1000 (EST)
+Date: Thu, 25 Jun 2009 05:02:32 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH v2 1/2] ucc_geth: Fix half-duplex operation for
+	non-MII/RMII interfaces
+Message-ID: <20090625010232.GA28590@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
+	Andy Fleming <afleming@freescale.com>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +28,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Currently the half-duplex operation seems to not work reliably for
+RGMII PHY interfaces. It takes about 10 minutes to boot NFS rootfs
+using 10/half link, following symptoms were observed:
 
-> Before the console is set up, the printk data is formatted
-> and put into the kernel log buffer, but not sent to any console.
-> Any messages printk'ed before that are buffered but do not
-> appear.  When the console is initialized, then all buffered
-> messages are sent to the console, and subsequent printks cause
-> the message to go to the log buffer, but then immediately
-> get sent from there to the console.
-> 
-> Under certain conditions you can examine the log buffer of
-> a kernel that failed to initialize it's console, after a
-> warm reset of the machine, using the firmware memory dump
-> command.
+  ucc_geth: QE UCC Gigabit Ethernet Controller
+  ucc_geth: UCC1 at 0xe0082000 (irq = 32)
+  [...]
+  Sending DHCP and RARP requests .
+  PHY: mdio@e0082120:07 - Link is Up - 10/Half
+  ., OK
+  [...]
+  Looking up port of RPC 100003/2 on 10.0.0.2
+  Looking up port of RPC 100005/1 on 10.0.0.2
+  VFS: Mounted root (nfs filesystem) readonly on device 0:13.
+  Freeing unused kernel memory: 204k init
+  eth0: no IPv6 routers present
+  nfs: server 10.0.0.2 not responding, still trying
+  nfs: server 10.0.0.2 not responding, still trying
+  nfs: server 10.0.0.2 not responding, still trying
+  nfs: server 10.0.0.2 OK
+  nfs: server 10.0.0.2 OK
+  nfs: server 10.0.0.2 not responding, still trying
+  [... few minutes of OK/not responding flood ...]
 
-On ppc, we have tricks to display things earlier :-)
+The statistic shows that there are indeed some errors:
 
-We can initialize the serial ports way before console_setup() (and we do
-in most cases) and we use what we call the "udbg" console until the real
-one takes over. The "udbg" console is a very small layer which outputs
-via a provided "putc" routine. Platforms can provide their own here, we
-have a collection of standard ones for legacy UARTs (it should be
-automatically setup in that case by the code in legacy_serial), Apple
-ESCCs, etc... We even have compile time options that allow that stuff to
-be initialized before start_kernel...
+  # ethtool -S eth0 | grep -v ": 0"
+  NIC statistics:
+       tx-64-frames: 42
+       tx-65-127-frames: 9
+       tx-128-255-frames: 4768
+       rx-64-frames: 41
+       rx-65-127-frames: 260
+       rx-128-255-frames: 2679
+       tx-bytes-ok: 859634
+       tx-multicast-frames: 5
+       tx-broadcast-frames: 7
+       rx-frames: 8333
+       rx-bytes-ok: 8039364
+       rx-bytes-all: 8039364
+       stats-counter-mask: 4294901760
+       tx-single-collision: 324
+       tx-multiple-collision: 47
+       tx-late-collsion: 604
+       tx-aborted-frames: 604
+       tx-frames-ok: 4967
+       tx-256-511-frames: 3
+       tx-512-1023-frames: 79
+       tx-1024-1518-frames: 71
+       rx-256-511-frames: 37
+       rx-512-1023-frames: 73
+       rx-1024-1518-frames: 5243
 
-Cheers,
-Ben.
+According to current QEIWRM (Rev. 2 5/2009), FDX bit can be 0 for
+RGMII(10/100) modes, while MPC8568ERM (Rev. C 02/2007) spec says
+that cleared FDX bit is permitted for MII/RMII modes only.
 
+The symptoms above were seen on MPC8569E-MDS boards, so QEIWRM is
+clearly wrong, and this patch completely cures the problems above.
 
-> See http://elinux.org/Kernel_Debugging_Tips#Accessing_the_printk_buffer_after_a_silent_hang_on_boot
-> for some tips on accessing the log buffer of a previous boot.
-> 
-> Note also, that if the serial console does not come up,
-> but the kernel successfully boots, and you can get a network
-> login on the machine, you can always print out the kernel log
-> buffer messages using 'dmesg' at a user-space shell prompt.
-> 
-> Hope this helps!
->  -- Tim
-> 
-> =============================
-> Tim Bird
-> Architecture Group Chair, CE Linux Forum
-> Senior Staff Engineer, Sony Corporation of America
-> =============================
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/ucc_geth.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 464df03..0c26a59 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -1469,12 +1469,18 @@ static void adjust_link(struct net_device *dev)
+ 	if (phydev->link) {
+ 		u32 tempval = in_be32(&ug_regs->maccfg2);
+ 		u32 upsmr = in_be32(&uf_regs->upsmr);
++		phy_interface_t phyi = ugeth->phy_interface;
++
+ 		/* Now we make sure that we can be in full duplex mode.
+ 		 * If not, we operate in half-duplex mode. */
+ 		if (phydev->duplex != ugeth->oldduplex) {
+ 			new_state = 1;
+-			if (!(phydev->duplex))
+-				tempval &= ~(MACCFG2_FDX);
++			if (!phydev->duplex &&
++					(phyi == PHY_INTERFACE_MODE_MII ||
++					 phyi == PHY_INTERFACE_MODE_RMII ||
++					 (phyi == PHY_INTERFACE_MODE_GMII &&
++					  phydev->speed < 1000)))
++				tempval &= ~MACCFG2_FDX;
+ 			else
+ 				tempval |= MACCFG2_FDX;
+ 			ugeth->oldduplex = phydev->duplex;
+-- 
+1.6.3.1
