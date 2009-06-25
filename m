@@ -1,22 +1,29 @@
-Return-Path: <Frank.Prepelica@ubidyne.com>
+Return-Path: <kernelmailz@googlemail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0A787B707F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C1A3BB6F56
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Jun 2009 01:24:08 +1000 (EST)
-Received: from mail.ubidyne.com (mail.ubidyne.com [212.211.133.238])
-	by ozlabs.org (Postfix) with ESMTP id 20B9EDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jun 2009 01:24:06 +1000 (EST)
+	Thu, 25 Jun 2009 20:51:16 +1000 (EST)
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
+	by ozlabs.org (Postfix) with ESMTP id E995FDDD1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 20:51:14 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so337865fga.16
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 03:51:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Direct MII connection between MPC8313 and VIRTEX FPGA
-Date: Thu, 25 Jun 2009 17:11:53 +0200
-Message-ID: <29DC34A6B43468409F5A371CFE34E849D7ED46@ex01.ads.ubidyne.de>
-From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
-To: <linuxppc-dev@ozlabs.org>
+In-Reply-To: <4A42AE1A.1090107@freescale.com>
+References: <abe8a1fd0906240244i6e33c260xadff5cf462df7b8c@mail.gmail.com>
+	<D47FC871-1535-4DBF-8617-6EEA8C180484@kernel.crashing.org>
+	<abe8a1fd0906241046x2e3ee7d5h6a6c0231086a6f0e@mail.gmail.com>
+	<4A42AE1A.1090107@freescale.com>
+Date: Thu, 25 Jun 2009 16:21:11 +0530
+Message-ID: <abe8a1fd0906250351y1aadc153m9f52f65a5860a2ca@mail.gmail.com>
+Subject: Re: 85xx Address space query
+From: kernel mailz <kernelmailz@googlemail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +33,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+So this means
+when kernel gets interrupted by app which may be in PID=5 (say)
+kernel translations for PID=0 remain valid ?
+I am not able to follow Scott
 
-we removed the ethernet PHYs (MARVELL) from our customized board (based =
-on MPC8313ERDB) and=20
-connected the CPU Ethernet lines directly to a FPGA which is now =
-emulating the PHY. But the ifconfig=20
-command cannot find that eth device anymore. Does the emulated PHY needs =
-to provide MDIO=20
-information that the ETH device can be found again?
+-TZ
 
-Any help is very appreciated
-
-Best regards
-Frank
-
-
-
-
-
-Frank Prepelica
-Software Design Engineer
-
-Ubidyne GmbH
-Lise-Meitner-Str.-14
-89081 Ulm - Germany
-
-Phone:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 +49 731 88 00 71 58
-Fax:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 +49 731 88 00 71 99
-Email:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =
-frank.prepelica@ubidyne.com
-Homepage:=A0=A0=A0=A0=A0=A0 www.ubidyne.com
-=A0
-Registered office: Ulm
-District court of Ulm: HRB 5295
-Managing Directors:
-Dipl. Ing. Ken Hawk
-Dipl. Ing. Beat M=FCller
-Dipl. Ing. Mike Levis
+On Thu, Jun 25, 2009 at 4:22 AM, Scott Wood<scottwood@freescale.com> wrote:
+> kernel mailz wrote:
+>>
+>> But If the app was running with PID=1, interrupt occurs, kernel code
+>> gets executed in PID=1, how does the kernel handle this ? and goes
+>> back to PID=0, since its translations are all in PID=0
+>
+> PID 0 is special, it's mappings are present regardless of the value of the
+> PID register.
+>
+> -Scott
+>
