@@ -3,22 +3,20 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C991BB7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B4214B6F56
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Jun 2009 04:53:12 +1000 (EST)
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id B8EBDDDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jun 2009 04:53:11 +1000 (EST)
-Message-ID: <4A43C792.9030909@harris.com>
-Date: Thu, 25 Jun 2009 14:53:06 -0400
+	Fri, 26 Jun 2009 05:12:53 +1000 (EST)
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id B862BDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jun 2009 05:12:51 +1000 (EST)
+Message-ID: <4A43CC2C.1030409@harris.com>
+Date: Thu, 25 Jun 2009 15:12:44 -0400
 From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>, Stefan Roese <sr@denx.de>
-Subject: Re: Subject: [PATCH v6] spi: Add PPC4xx SPI driver
-References: <200906251833.n5PIX42Z017229@saf.cs.myharris.net>
-In-Reply-To: <200906251833.n5PIX42Z017229@saf.cs.myharris.net>
+To: David Brownell <david-b@pacbell.net>, Stefan Roese <sr@denx.de>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Subject: [PATCH v7] spi: Add PPC4xx SPI driver
 Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,450 +26,718 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stefan suggested that I try to address the comments against the PPC4xx
-SPI driver, so here goes...
+This adds a SPI driver for the SPI controller found in the IBM/AMCC
+4xx PowerPC's.
 
-A post of version 7 of the driver will follow this email, but I thought
-it might make it easier on everyone to inline my comments here.  Hence,
-this brief, introductory "top post".
+Signed-off-by: Stefan Roese <sr@denx.de>
+Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Signed-off-by: Steven A. Falco <sfalco@harris.com>
+---
+Note, I have not removed any of the prior sign-offs, but feel free to
+look this version over very closely, and let me know if you demand a
+"retraction".  :-)
 
-> On Thursday 08 January 2009, Stefan Roese wrote:
->> This adds a SPI driver for the SPI controller found in the IBM/AMCC
->> 4xx PowerPC's.
-> 
-> 
->> +/*
->> + * The PPC4xx SPI controller has no FIFO so each sent/received byte will
->> + * generate an interrupt to the CPU. This can cause high CPU utilization.
->> + * This driver allows platforms to reduce the interrupt load on the CPU
->> + * during SPI transfers by setting max_speed_hz via the device tree.
-> 
-> Note that an alternate strategy is to use polling instead of IRQs,
-> at least when the data rate is high enough that the IRQ processing
-> is also slowing down the data transfers.
-> 
-> 
->> +/* bits in mode register - bit 0 ist MSb */
->> +/* data latched on leading edge of clock, else trailing edge */
->> +#define SPI_PPC4XX_MODE_SCP	(0x80 >> 3)
-> 
-> Or in short, SCP == CPHA.
-> 
+I've successfully used this driver on a custom PPC440EPx based board
+with three devices on the spi bus, one of which uses the "chip-select
+hole" feature.
 
-Actually, SCP = !CPHA.  I've added a comment to that effect in v7.
+Changes in v7:
+- Additional comments as per David Brownell's review
+- Corrected phase in mode 2 and 3
+- Corrected speed and bits_per_word logic in spi_ppc4xx_setupxfer
+- Removed extraneous tests as per David's review
+- Added support for "holes" in the chip-select list
+- Using dynamic bus allocation
+- Corrected initialization logic
 
->> +/* port enabled */
->> +#define SPI_PPC4XX_MODE_SPE	(0x80 >> 4)
->> +/* MSB first, else LSB first */
->> +#define SPI_PPC4XX_MODE_RD	(0x80 >> 5)
->> +/* clock invert - idle clock = 1, active clock = 0; else reversed */
->> +#define SPI_PPC4XX_MODE_CI	(0x80 >> 6)
-> 
-> Or in short, CI == CPOL.
-> 
+Changes in v6:
+- Moved comment about high interrupt load to top of file and extended it
+  by explaining that the 4xx SPI controller has no FIFOs.
+- Added parameter checking to setup() routine.
+- Removed comment about LSB
+- Used of_gpio_count() instead creating own static implementation as
+  suggested by Anton.
 
-Correct.  Comment added.
+Changes in v5:
+- Don't call setupxfer() from setup() so that the baudrate etc
+  won't get changed while another transfer is active, as suggested
+  by David Brownell.
+- module_{init,exit} moved directly to the functions to which they
+  apply.
+- Use __func__ instead of __FUNCTION__.
 
->> +/* loopback enable */
->> +#define SPI_PPC4XX_MODE_IL	(0x80 >> 7)
->> +/* bits in control register */
->> +/* starts a transfer when set */
->> +#define SPI_PPC4XX_CR_STR	(0x80 >> 7)
->> +/* bits in status register */
->> +/* port is busy with a transfer */
->> +#define SPI_PPC4XX_SR_BSY	(0x80 >> 6)
->> +/* RxD ready */
->> +#define SPI_PPC4XX_SR_RBR	(0x80 >> 7)
->> +
->> +/* the spi->mode bits understood by this driver: */
->> +#define MODEBITS	(SPI_CPHA | SPI_CPOL | SPI_CS_HIGH | SPI_LSB_FIRST)
->> +
->> +/* clock settings (SCP and CI) for various SPI modes */
->> +#define SPI_CLK_MODE0	SPI_PPC4XX_MODE_SCP
->> +#define SPI_CLK_MODE1	0
->> +#define SPI_CLK_MODE2	SPI_PPC4XX_MODE_CI
->> +#define SPI_CLK_MODE3	(SPI_PPC4XX_MODE_SCP | SPI_PPC4XX_MODE_CI)
-> 
-> Color me puzzled then.  Either the definitions of MODE0 and MODE1
-> are swapped here ... or the comments above are wrong, and SCP should
-> describe "falling" vs "rising" instead of "leading" vs "trailing".
-> 
-> 
+Changes in v4:
+- Added fixes suggested by Josh Boyer
+- Changed compatible property from "ibm,spi" to "ibm,ppc4xx-spi"
 
-The modes were wrong.  MODE0 and MODE1 were correct, but MODE2 and MODE3
-were interchanged.  Fixed in v7, and verified on a logic analyzer.
+Changes in v3:
+- When the device is removed the GPIOs are released. The memory
+  for the GPIO array is freed.
 
->> +static int spi_ppc4xx_setupxfer(struct spi_device *spi, struct spi_transfer *t)
->> +{
->> +	struct ppc4xx_spi *hw = spi_master_get_devdata(spi->master);
->> +	struct spi_ppc4xx_cs *cs = spi->controller_state;
->> +	int scr;
->> +	u8 cdm = 0;
->> +	u32 speed;
->> +	u8 bits_per_word;
->> +
->> +	bits_per_word = (t) ? t->bits_per_word : spi->bits_per_word;
->> +	speed = (t) ? t->speed_hz : spi->max_speed_hz;
->> +
->> +	...
->> +
->> +	if (!speed || (speed > spi->max_speed_hz)) {
-> 
-> This is wrong.  Typical case is that t->speed_hz is zero,
-> meaning "use spi->max_speed_hz" ... you treat that as an error.
-> 
+Changes in v2:
+- Now the gpios property is correctly decoded and the
+  resulting gpio numbers are used as the devices chip
+  selects.
 
-Correct.  I've fixed the logic for t->speed_hz and for t->bits_per_word.
-
->> +		dev_err(&spi->dev, "invalid speed_hz (%d)\n", speed);
->> +		return -EINVAL;
->> +	}
->> +
->> +	...
->> +}
->> +
->> +static int spi_ppc4xx_setup(struct spi_device *spi)
->> +{
->> +	int ret;
->> +	struct spi_ppc4xx_cs *cs = spi->controller_state;
->> +	int init = 0;
-> 
-> This "init" thing is still wrong.
-
-Correct.  I've removed it entirely.
-
-> 
-> Consider:  board gets set up with one device.  Later,
-> *WHILE BUSY TRANSFERRING DATA TO/FROM THAT DEVICE*
-> some other device gets instantiated.  Then ...
-> 
-> 
->> +	if (cs == NULL) {
->> +		cs = kzalloc(sizeof *cs, GFP_KERNEL);
->> +		if (!cs)
->> +			return -ENOMEM;
->> +		spi->controller_state = cs;
->> +
->> +		/*
->> +		 * First time called, so let's init the SPI controller
->> +		 * at the end of this function
->> +		 */
->> +		init = 1;
-> 
-> "init" becomes true here, although the controller has
-> already been initialized.  If it needs to be set up,
-> do it in probe() before registering the spi_master.
-> 
-> 
->> +	}
->> +
->> +	...
->> +
->> +	/*
->> +	 * New configuration (mode, speed etc) will be written to the
->> +	 * controller in spi_ppc4xx_setupxfer(). Only call
->> +	 * spi_ppc4xx_setupxfer() directly upon first initialization.
->> +	 */
->> +	if (init) {
->> +		ret = spi_ppc4xx_setupxfer(spi, NULL);
-> 
-> ... so blam, you clobber the settings currently being used for
-> the active transfer.  So this would be a bug.
-> 
-> If not ... this driver deserves a comment on exactly how
-> unusual this driver is.  Specifically, that all spi_device
-> children must be set up *in advance* so that standard calls
-> like spi_new_device() don't work with it; and why.
-> 
-> I don't think I see anything in this driver which would
-> prevent that from working, though.  Sure you've got to
-> have a list of chipselect GPIOs in advance, but that's
-> distinct from being unable to use spi_new_device().
-> 
-> 
->> +	...
->> +}
->> +
->> +static void spi_ppc4xx_chipsel(struct spi_device *spi, int value)
->> +{
->> +	struct ppc4xx_spi *hw = spi_master_get_devdata(spi->master);
->> +	unsigned int cspol = spi->mode & SPI_CS_HIGH ? 1 : 0;
->> +	unsigned int cs = spi->chip_select;
->> +
->> +	if (!hw->num_gpios)
->> +		return;
-> 
-> Hmm, num_gpios ... can never be zero, right?  You always
-> set it up so that of_gpio_count() GPIOs can all be used
-> as chipselects.  Looks like this check is not needed.
-> 
-
-I believe that it can be zero, in the case where there is a single
-"always on" device.  But I have modified this test to use
-hw->master->num_chipselect as per your next comment.  I've also added a
-check for the special case of EEXIST, which on powerpc means "a hole in
-the list of gpio's".  I actually use this for an AVR device, because it
-won't tolerate transitions on its CS lead, so I manage its CS outside of
-the driver.  I can explain further if you want the details of our
-hardware ugliness. :-)
-
->> +
->> +	if (cs >= hw->num_gpios)
->> +		return;
-> 
-> I guess I don't see why you have num_gpio instead of just
-> using the chipselect count, either.  (Assuming that the
-> of_gpio_count routine isn't counting *all* gpios, instead
-> of just ones allocated to this controller, which would be
-> a different issue.)
-> 
-> 
-
-Correct, and fixed in v7.
-
->> +
->> +	if (value != BITBANG_CS_INACTIVE && value != BITBANG_CS_ACTIVE)
->> +		return;
-> 
-> Strange, what other values could be passed??
-> 
-> 
-
-I've removed this test - it is superfluous.
-
->> +
->> +	if (value == BITBANG_CS_INACTIVE)
->> +		cspol = !cspol;
->> +
->> +	gpio_set_value(hw->gpios[cs], cspol);
->> +}
->> +
->> +static irqreturn_t spi_ppc4xx_int(int irq, void *dev_id)
->> +{
->> +	struct ppc4xx_spi *hw;
->> +	u8 status;
->> +	u8 data;
->> +	unsigned int count;
->> +
->> +	hw = (struct ppc4xx_spi *)dev_id;
->> +
->> +	status = in_8(&hw->regs->sr);
->> +	if (!status)
->> +		return IRQ_NONE;
->> +
->> +	/* should never happen but check anyway */
->> +	if (status & SPI_PPC4XX_SR_BSY) {
-> 
-> Maybe "if (unlikely(...)) {" then.
-> 
-> 
-
-I added unlikely() and a comment explaining why this test might be
-needed.  I've not observed it myself, but the documentation seems to
-allow for the possibility.
-
->> +		u8 lstatus;
->> +		int cnt = 0;
->> +
->> +		dev_dbg(hw->dev, "got interrupt but spi still busy?\n");
-> 
-> But ... *does* this ever happen?  If not, I'd strike this
-> code.  And if it does, I'd add a comment explaining what's
-> known about this hardware bug.  Without this, the IRQ handler
-> would look pretty tight.
-> 
-
-See the comment in the v7 code for why this might be necessary.
-
->> +		do {
->> +			ndelay(10);
->> +			lstatus = in_8(&hw->regs->sr);
->> +		} while (++cnt < 100 && lstatus & SPI_PPC4XX_SR_BSY);
->> +
->> +		if (cnt >= 100) {
->> +			dev_err(hw->dev, "busywait: too many loops!\n");
->> +			complete(&hw->done);
->> +			return IRQ_HANDLED;
->> +		} else {
->> +			/* status is always 1 (RBR) here */
->> +			status = in_8(&hw->regs->sr);
->> +			dev_dbg(hw->dev, "loops %d status %x\n", cnt, status);
->> +		}
->> +	}
->> +
->> +	count = hw->count;
->> +	hw->count++;
->> +
->> +	if (status & SPI_PPC4XX_SR_RBR) {
->> +		/* Data Ready */
-> 
-> Most SPI hardware I've seen has at most a weak distinction
-> between "tx done" and "rx done" IRQs ... there's little
-> point to separate IRQs, since shifting out the last TX bit
-> is what shifts in the last RX bit.
-> 
-> Unless this is unusual hardware you can probably just assume
-> that there's RX data, and only read it if hw->rx is non-null.
-> Or, if this is *not* set, report the odd behavior...
-> 
-> 
-
-I've removed this test.  The docs clearly state that the RBR bit is the
-cause of the interrupt, so there is no reason to test it.
-
->> +		data = in_8(&hw->regs->rxd);
->> +		if (hw->rx)
->> +			hw->rx[count] = data;
->> +	}
->> +
->> +	count++;
->> +
->> +	if (count < hw->len) {
->> +		data = hw->tx ? hw->tx[count] : 0;
->> +		out_8(&hw->regs->txd, data);
->> +		out_8(&hw->regs->cr, SPI_PPC4XX_CR_STR);
->> +	} else {
->> +		complete(&hw->done);
->> +	}
->> +
->> +	return IRQ_HANDLED;
->> +}
->> +
->> +		...
->> +
-> 
->> +static int __init spi_ppc4xx_of_probe(struct of_device *op,
->> +				      const struct of_device_id *match)
->> +{
->> +	struct ppc4xx_spi *hw;
->> +	struct spi_master *master;
->> +	struct spi_bitbang *bbp;
->> +	struct resource resource;
->> +	struct device_node *np = op->node;
->> +	struct device *dev = &op->dev;
->> +	struct device_node *opbnp;
->> +	int ret;
->> +	const unsigned int *clk;
->> +
->> +	master = spi_alloc_master(dev, sizeof *hw);
->> +	if (master == NULL)
->> +		return -ENOMEM;
->> +	dev_set_drvdata(dev, master);
->> +	hw = spi_master_get_devdata(master);
->> +	memset(hw, 0, sizeof(struct ppc4xx_spi));
-> 
-> That memset is not required, it comes to you pre-zeroed.
-> 
-
-Removed.
-
->> +
->> +	hw->master = spi_master_get(master);
->> +	hw->dev = dev;
->> +
->> +	init_completion(&hw->done);
->> +
->> +	hw->num_gpios = of_gpio_count(np);
-> 
-> Worth a comment what's going on there.  I'm assuming this
-> of_gpio_count() thing returns a count of GPIOs somehow
-> associated with this specific device tree node, rather than
-> say all GPIOs known to the device tree...
-> 
-
-I've beefed up the comments for this in v7.  Please let me know if you
-want more.
-
->> +	if (hw->num_gpios) {
->> +		int i;
->> +
->> +		hw->gpios = kzalloc(sizeof(int) * hw->num_gpios,
->> +				    GFP_KERNEL);
->> +		if (!hw->gpios) {
->> +			ret = -ENOMEM;
->> +			goto free_master;
->> +		}
->> +
->> +		for (i = 0; i < hw->num_gpios; i++) {
->> +			int gpio = of_get_gpio(np, i);
->> +			if (gpio < 0) {
->> +				dev_err(dev, "Invalid gpio spec %d\n", i);
->> +				ret = gpio;
->> +				goto free_gpios;
->> +			}
->> +
->> +			ret = gpio_request(gpio, np->name);
->> +			if (ret < 0) {
->> +				dev_err(dev, "gpio %d already in use\n", i);
->> +				ret = gpio;
->> +				goto free_gpios;
->> +			}
->> +
->> +			gpio_direction_output(gpio, 0);
->> +			hw->gpios[i] = gpio;
->> +		}
->> +	}
-> 
-> Else ... error, if there are no chipselects?
-> 
-> I've got a patch pending to add a "no chipselect" spi->mode flag.
-> If you expect to support that, please let me know.
-> 
-> 
-
-I guess we should allow the case of a single device with no CS.  I don't
-have such a configuration, but I think the way I've written the
-spi_ppc4xx_chipsel() will handle that case.
-
->> +
->> +	/* Setup the state for the bitbang driver */
->> +	bbp = &hw->bitbang;
->> +	bbp->master = hw->master;
->> +	bbp->setup_transfer = spi_ppc4xx_setupxfer;
->> +	bbp->chipselect = spi_ppc4xx_chipsel;
->> +	bbp->txrx_bufs = spi_ppc4xx_txrx;
->> +	bbp->use_dma = 0;
->> +	bbp->master->setup = spi_ppc4xx_setup;
->> +	bbp->master->cleanup = spi_ppc4xx_cleanup;
->> +	/* only one SPI controller */
->> +	bbp->master->bus_num = 0;
-> 
-> Bad assumption.  There could be GPIO-based adapters,
-> of course.  And aren't these the cores which can be
-> found on higher end Xilinx FPGAs?  And, accordingly,
-> integrated with any number of additional controllers?
-> 
-> If so, the restriction is just that this controller
-> be bus #0.  If not ... the Kconfig should say more
-> about *which* PPC4xx chips have this controller.
-> (I suspect it's the latter.)
-> 
-> 
-
-I've changed this to ...bus_num = -1.  The dynamic allocation works for
-me.
-
->> +	if (bbp->master->num_chipselect == 0) {
-> 
-> You didn't set it, so of course it's still zeroed.
-> 
-> 
-
-Removed this test.
-
->> +		/* this many pins in al GPIO controllers */
->> +		bbp->master->num_chipselect = hw->num_gpios;
-> 
-> So num_chipselect is alays num_gpios, and there's no point
-> to having num_gpios since you could always use num_chipselect.
-> 
-> 
-
-Correct.  Substituted num_chipselect for num_gpios in v7.
-
->> +	}
->> +
->> +	...
->> +}
-> 
-> 
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 83a185d..2f0a3df 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -171,6 +171,13 @@ config SPI_ORION
+ 	help
+ 	  This enables using the SPI master controller on the Orion chips.
+ 
++config SPI_PPC4xx
++	tristate "PPC4xx SPI Controller"
++	depends on 4xx && SPI_MASTER
++	select SPI_BITBANG
++	help
++	  This selects a driver for the PPC4xx SPI Controller.
++
+ config SPI_PXA2XX
+ 	tristate "PXA2xx SSP SPI master"
+ 	depends on ARCH_PXA && EXPERIMENTAL
+diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
+index 5d04519..ed1d74f 100644
+--- a/drivers/spi/Makefile
++++ b/drivers/spi/Makefile
+@@ -23,8 +23,9 @@ obj-$(CONFIG_SPI_PXA2XX)		+= pxa2xx_spi.o
+ obj-$(CONFIG_SPI_OMAP_UWIRE)		+= omap_uwire.o
+ obj-$(CONFIG_SPI_OMAP24XX)		+= omap2_mcspi.o
+ obj-$(CONFIG_SPI_ORION)			+= orion_spi.o
+ obj-$(CONFIG_SPI_MPC52xx_PSC)		+= mpc52xx_psc_spi.o
+ obj-$(CONFIG_SPI_MPC83xx)		+= spi_mpc83xx.o
++obj-$(CONFIG_SPI_PPC4xx)		+= spi_ppc4xx.o
+ obj-$(CONFIG_SPI_S3C24XX_GPIO)		+= spi_s3c24xx_gpio.o
+ obj-$(CONFIG_SPI_S3C24XX)		+= spi_s3c24xx.o
+ obj-$(CONFIG_SPI_TXX9)			+= spi_txx9.o
+diff --git a/drivers/spi/spi_ppc4xx.c b/drivers/spi/spi_ppc4xx.c
+new file mode 100644
+index 0000000..631bca2
+--- /dev/null
++++ b/drivers/spi/spi_ppc4xx.c
+@@ -0,0 +1,623 @@
++/*
++ * SPI_PPC4XX SPI controller driver.
++ *
++ * Copyright (C) 2007 Gary Jennejohn <garyj@denx.de>
++ * Copyright 2008 Stefan Roese <sr@denx.de>, DENX Software Engineering
++ * Copyright 2009 Harris Corporation, Steven A. Falco <sfalco@harris.com>
++ *
++ * Based in part on drivers/spi/spi_s3c24xx.c
++ *
++ * Copyright (c) 2006 Ben Dooks
++ * Copyright (c) 2006 Simtec Electronics
++ *	Ben Dooks <ben@simtec.co.uk>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++/*
++ * The PPC4xx SPI controller has no FIFO so each sent/received byte will
++ * generate an interrupt to the CPU. This can cause high CPU utilization.
++ * This driver allows platforms to reduce the interrupt load on the CPU
++ * during SPI transfers by setting max_speed_hz via the device tree.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/sched.h>
++#include <linux/errno.h>
++#include <linux/wait.h>
++#include <linux/of_platform.h>
++#include <linux/of_spi.h>
++#include <linux/of_gpio.h>
++#include <linux/interrupt.h>
++#include <linux/delay.h>
++
++#include <linux/gpio.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/spi_bitbang.h>
++
++#include <asm/io.h>
++#include <asm/dcr.h>
++#include <asm/dcr-regs.h>
++
++/* bits in mode register - bit 0 is MSb */
++
++/*
++ * SPI_PPC4XX_MODE_SCP = 0 means "data latched on trailing edge of clock"
++ * SPI_PPC4XX_MODE_SCP = 1 means "data latched on leading edge of clock"
++ * Note: This is the inverse of CPHA.
++ */
++#define SPI_PPC4XX_MODE_SCP	(0x80 >> 3)
++
++/* SPI_PPC4XX_MODE_SPE = 1 means "port enabled" */
++#define SPI_PPC4XX_MODE_SPE	(0x80 >> 4)
++
++/*
++ * SPI_PPC4XX_MODE_RD = 0 means "MSB first" - this is the normal mode
++ * SPI_PPC4XX_MODE_RD = 1 means "LSB first" - this is bit-reversed mode
++ * Note: This is identical to SPI_LSB_FIRST.
++ */
++#define SPI_PPC4XX_MODE_RD	(0x80 >> 5)
++
++/*
++ * SPI_PPC4XX_MODE_CI = 0 means "clock idles low"
++ * SPI_PPC4XX_MODE_CI = 1 means "clock idles high"
++ * Note: This is identical to CPOL.
++ */
++#define SPI_PPC4XX_MODE_CI	(0x80 >> 6)
++
++/*
++ * SPI_PPC4XX_MODE_IL = 0 means "loopback disable"
++ * SPI_PPC4XX_MODE_IL = 1 means "loopback enable"
++ */
++#define SPI_PPC4XX_MODE_IL	(0x80 >> 7)
++
++/* bits in control register */
++/* starts a transfer when set */
++#define SPI_PPC4XX_CR_STR	(0x80 >> 7)
++
++/* bits in status register */
++/* port is busy with a transfer */
++#define SPI_PPC4XX_SR_BSY	(0x80 >> 6)
++/* RxD ready */
++#define SPI_PPC4XX_SR_RBR	(0x80 >> 7)
++
++/* the spi->mode bits understood by this driver: */
++#define MODEBITS	(SPI_CPHA | SPI_CPOL | SPI_CS_HIGH | SPI_LSB_FIRST)
++
++/* clock settings (SCP and CI) for various SPI modes */
++#define SPI_CLK_MODE0	(SPI_PPC4XX_MODE_SCP | 0)
++#define SPI_CLK_MODE1	(0 | 0)
++#define SPI_CLK_MODE2	(SPI_PPC4XX_MODE_SCP | SPI_PPC4XX_MODE_CI)
++#define SPI_CLK_MODE3	(0 | SPI_PPC4XX_MODE_CI)
++
++#define DRIVER_NAME	"spi_ppc4xx_of"
++
++struct spi_ppc4xx_regs {
++	u8 mode;
++	u8 rxd;
++	u8 txd;
++	u8 cr;
++	u8 sr;
++	u8 dummy;
++	/*
++	 * Clock divisor modulus register
++	 * This uses the follwing formula:
++	 *    SCPClkOut = OPBCLK/(4(CDM + 1))
++	 * or
++	 *    CDM = (OPBCLK/4*SCPClkOut) - 1
++	 * bit 0 is the MSb!
++	 */
++	u8 cdm;
++};
++
++/* SPI Controller driver's private data. */
++struct ppc4xx_spi {
++	/* bitbang has to be first */
++	struct spi_bitbang bitbang;
++	struct completion done;
++
++	u64 mapbase;
++	u64 mapsize;
++	int irqnum;
++	/* need this to set the SPI clock */
++	unsigned int opb_freq;
++
++	/* for transfers */
++	int len;
++	int count;
++	/* data buffers */
++	const unsigned char *tx;
++	unsigned char *rx;
++
++	int *gpios;
++
++	struct spi_ppc4xx_regs __iomem *regs; /* pointer to the registers */
++	struct spi_master *master;
++	struct device *dev;
++};
++
++/* need this so we can set the clock in the chipselect routine */
++struct spi_ppc4xx_cs {
++	u8 mode;
++};
++
++static int spi_ppc4xx_txrx(struct spi_device *spi, struct spi_transfer *t)
++{
++	struct ppc4xx_spi *hw;
++	u8 data;
++
++	dev_dbg(&spi->dev, "txrx: tx %p, rx %p, len %d\n",
++		t->tx_buf, t->rx_buf, t->len);
++
++	hw = spi_master_get_devdata(spi->master);
++
++	hw->tx = t->tx_buf;
++	hw->rx = t->rx_buf;
++	hw->len = t->len;
++	hw->count = 0;
++
++	/* send the first byte */
++	data = hw->tx ? hw->tx[0] : 0;
++	out_8(&hw->regs->txd, data);
++	out_8(&hw->regs->cr, SPI_PPC4XX_CR_STR);
++	wait_for_completion(&hw->done);
++
++	return hw->count;
++}
++
++static int spi_ppc4xx_setupxfer(struct spi_device *spi, struct spi_transfer *t)
++{
++	struct ppc4xx_spi *hw = spi_master_get_devdata(spi->master);
++	struct spi_ppc4xx_cs *cs = spi->controller_state;
++	int scr;
++	u8 cdm = 0;
++	u32 speed;
++	u8 bits_per_word;
++
++ 	/* Start with the generic configuration for this device. */
++	bits_per_word = spi->bits_per_word;
++	speed = spi->max_speed_hz;
++
++	/*
++	 * Modify the configuration if the transfer overrides it.  Do not allow
++	 * the transfer to overwrite the generic configuration with zeros.
++	 */
++	if (t) {
++		if (t->bits_per_word)
++			bits_per_word = t->bits_per_word;
++
++		if (t->speed_hz)
++			speed = min(t->speed_hz, spi->max_speed_hz);
++	}
++
++	if (bits_per_word != 8) {
++		dev_err(&spi->dev, "invalid bits-per-word (%d)\n", bits_per_word);
++		return -EINVAL;
++	}
++
++	if (!speed || (speed > spi->max_speed_hz)) {
++		dev_err(&spi->dev, "invalid speed_hz (%d)\n", speed);
++		return -EINVAL;
++	}
++
++	/* Write new configration */
++	out_8(&hw->regs->mode, cs->mode);
++
++	/* Set the clock */
++	/* opb_freq was already divided by 4 */
++	scr = (hw->opb_freq / speed) - 1;
++	if (scr > 0)
++		cdm = min(scr, 0xff);
++
++	dev_dbg(&spi->dev, "setting pre-scaler to %d (hz %d)\n", cdm, speed);
++
++	if (in_8(&hw->regs->cdm) != cdm)
++		out_8(&hw->regs->cdm, cdm);
++
++	spin_lock(&hw->bitbang.lock);
++	if (!hw->bitbang.busy) {
++		hw->bitbang.chipselect(spi, BITBANG_CS_INACTIVE);
++		/* Need to ndelay here? */
++	}
++	spin_unlock(&hw->bitbang.lock);
++
++	return 0;
++}
++
++static int spi_ppc4xx_setup(struct spi_device *spi)
++{
++	struct spi_ppc4xx_cs *cs = spi->controller_state;
++
++	if (!spi->bits_per_word)
++		spi->bits_per_word = 8;
++
++	if (spi->bits_per_word != 8) {
++		dev_err(&spi->dev, "invalid bits-per-word (%d)\n",
++			spi->bits_per_word);
++		return -EINVAL;
++	}
++
++	if (!spi->max_speed_hz) {
++		dev_err(&spi->dev, "invalid max_speed_hz (must be non-zero)\n");
++		return -EINVAL;
++	}
++
++	if (spi->mode & ~MODEBITS) {
++		dev_dbg(&spi->dev, "setup: unsupported mode bits %x\n",
++			spi->mode & ~MODEBITS);
++		return -EINVAL;
++	}
++
++	if (cs == NULL) {
++		cs = kzalloc(sizeof *cs, GFP_KERNEL);
++		if (!cs)
++			return -ENOMEM;
++		spi->controller_state = cs;
++	}
++
++	/*
++	 * We set all bits of the SPI0_MODE register, so,
++	 * no need to read-modify-write
++	 */
++	cs->mode = SPI_PPC4XX_MODE_SPE;
++
++	switch (spi->mode & (SPI_CPHA | SPI_CPOL)) {
++	case SPI_MODE_0:
++		cs->mode |= SPI_CLK_MODE0;
++		break;
++	case SPI_MODE_1:
++		cs->mode |= SPI_CLK_MODE1;
++		break;
++	case SPI_MODE_2:
++		cs->mode |= SPI_CLK_MODE2;
++		break;
++	case SPI_MODE_3:
++		cs->mode |= SPI_CLK_MODE3;
++		break;
++	}
++
++	if (spi->mode & SPI_LSB_FIRST)
++		cs->mode |= SPI_PPC4XX_MODE_RD;
++
++	dev_dbg(&spi->dev, "%s: mode %d, %u bpw, %d hz\n",
++		__func__, spi->mode, spi->bits_per_word,
++		spi->max_speed_hz);
++
++	return 0;
++}
++
++static void spi_ppc4xx_chipsel(struct spi_device *spi, int value)
++{
++	struct ppc4xx_spi *hw = spi_master_get_devdata(spi->master);
++	unsigned int cs = spi->chip_select;
++	unsigned int cspol;
++
++	/*
++	 * If there are no chip selects at all, or if this is the special case of
++	 * a non-existent (dummy) chip select, do nothing.
++	 */
++
++	if (!hw->master->num_chipselect || hw->gpios[cs] == -EEXIST)
++		return;
++
++	cspol = spi->mode & SPI_CS_HIGH ? 1 : 0;
++	if (value == BITBANG_CS_INACTIVE)
++		cspol = !cspol;
++
++	gpio_set_value(hw->gpios[cs], cspol);
++}
++
++static irqreturn_t spi_ppc4xx_int(int irq, void *dev_id)
++{
++	struct ppc4xx_spi *hw;
++	u8 status;
++	u8 data;
++	unsigned int count;
++
++	hw = (struct ppc4xx_spi *)dev_id;
++
++	status = in_8(&hw->regs->sr);
++	if (!status)
++		return IRQ_NONE;
++
++	/*
++	 * BSY de-asserts one cycle after the transfer is complete.  The interrupt
++	 * is asserted after the transfer is complete.  The exact relationship is
++	 * not documented, hence this code.
++	 */
++
++	if (unlikely(status & SPI_PPC4XX_SR_BSY)) {
++		u8 lstatus;
++		int cnt = 0;
++
++		dev_dbg(hw->dev, "got interrupt but spi still busy?\n");
++		do {
++			ndelay(10);
++			lstatus = in_8(&hw->regs->sr);
++		} while (++cnt < 100 && lstatus & SPI_PPC4XX_SR_BSY);
++
++		if (cnt >= 100) {
++			dev_err(hw->dev, "busywait: too many loops!\n");
++			complete(&hw->done);
++			return IRQ_HANDLED;
++		} else {
++			/* status is always 1 (RBR) here */
++			status = in_8(&hw->regs->sr);
++			dev_dbg(hw->dev, "loops %d status %x\n", cnt, status);
++		}
++	}
++
++	count = hw->count;
++	hw->count++;
++
++	/* RBR triggered this interrupt.  Therefore, data must be ready. */
++	data = in_8(&hw->regs->rxd);
++	if (hw->rx)
++		hw->rx[count] = data;
++
++	count++;
++
++	if (count < hw->len) {
++		data = hw->tx ? hw->tx[count] : 0;
++		out_8(&hw->regs->txd, data);
++		out_8(&hw->regs->cr, SPI_PPC4XX_CR_STR);
++	} else {
++		complete(&hw->done);
++	}
++
++	return IRQ_HANDLED;
++}
++
++static void spi_ppc4xx_cleanup(struct spi_device *spi)
++{
++	kfree(spi->controller_state);
++}
++
++static void spi_ppc4xx_enable(struct ppc4xx_spi *hw)
++{
++	/*
++	 * On all 4xx PPC's the SPI bus is shared/multiplexed with
++	 * the 2nd I2C bus. We need to enable the the SPI bus before
++	 * using it.
++	 */
++
++	/* need to clear bit 14 to enable SPC */
++	dcri_clrset(SDR0, SDR0_PFC1, 0x80000000 >> 14, 0);
++}
++
++static void free_gpios(struct ppc4xx_spi *hw)
++{
++	if (hw->master->num_chipselect) {
++		int i;
++		for (i = 0; i < hw->master->num_chipselect; i++)
++			if (gpio_is_valid(hw->gpios[i]))
++				gpio_free(hw->gpios[i]);
++
++		kfree(hw->gpios);
++		hw->gpios = NULL;
++	}
++}
++
++/*
++ * of_device layer stuff...
++ */
++static int __init spi_ppc4xx_of_probe(struct of_device *op,
++				      const struct of_device_id *match)
++{
++	struct ppc4xx_spi *hw;
++	struct spi_master *master;
++	struct spi_bitbang *bbp;
++	struct resource resource;
++	struct device_node *np = op->node;
++	struct device *dev = &op->dev;
++	struct device_node *opbnp;
++	int ret;
++	int num_gpios;
++	const unsigned int *clk;
++
++	master = spi_alloc_master(dev, sizeof *hw);
++	if (master == NULL)
++		return -ENOMEM;
++	dev_set_drvdata(dev, master);
++	hw = spi_master_get_devdata(master);
++	hw->master = spi_master_get(master);
++	hw->dev = dev;
++
++	init_completion(&hw->done);
++
++	/*
++	 * A count of zero implies a single SPI device without any chip-select.
++	 * Note that of_gpio_count counts all gpios assigned to this spi master.
++	 * This includes both "null" gpio's and real ones.
++	 */
++	num_gpios = of_gpio_count(np);
++	if (num_gpios) {
++		int i;
++
++		hw->gpios = kzalloc(sizeof(int) * num_gpios, GFP_KERNEL);
++		if (!hw->gpios) {
++			ret = -ENOMEM;
++			goto free_master;
++		}
++
++		for (i = 0; i < num_gpios; i++) {
++			int gpio;
++			enum of_gpio_flags flags;
++		       
++			gpio = of_get_gpio_flags(np, i, &flags);
++			hw->gpios[i] = gpio;
++
++			if (gpio_is_valid(gpio)) {
++				/* Real CS - set the initial state. */
++				ret = gpio_request(gpio, np->name);
++				if (ret < 0) {
++					dev_err(dev, "can't request gpio #%d: %d\n",
++							i, ret);
++					goto free_gpios;
++				}
++
++				gpio_direction_output(gpio,
++						!!(flags & OF_GPIO_ACTIVE_LOW));
++			} else if (gpio == -EEXIST) {
++				; /* No CS, but that's OK. */
++			} else {
++				dev_err(dev, "invalid gpio #%d: %d\n", i, gpio);
++				ret = -EINVAL;
++				goto free_gpios;
++			}
++		}
++	}
++
++	/* Setup the state for the bitbang driver */
++	bbp = &hw->bitbang;
++	bbp->master = hw->master;
++	bbp->setup_transfer = spi_ppc4xx_setupxfer;
++	bbp->chipselect = spi_ppc4xx_chipsel;
++	bbp->txrx_bufs = spi_ppc4xx_txrx;
++	bbp->use_dma = 0;
++	bbp->master->setup = spi_ppc4xx_setup;
++	bbp->master->cleanup = spi_ppc4xx_cleanup;
++
++	/* Allocate bus num dynamically. */
++	bbp->master->bus_num = -1;
++
++	/* this many pins in all GPIO controllers */
++	bbp->master->num_chipselect = num_gpios;
++
++	/* Get the clock for the OPB */
++	opbnp = of_find_compatible_node(NULL, NULL, "ibm,opb");
++	if (opbnp == NULL) {
++		dev_err(dev, "OPB: cannot find node\n");
++		ret = -ENODEV;
++		goto free_gpios;
++	}
++	/* Get the clock (Hz) for the OPB */
++	clk = of_get_property(opbnp, "clock-frequency", NULL);
++	if (clk == NULL) {
++		dev_err(dev, "OPB: no clock-frequency property set\n");
++		of_node_put(opbnp);
++		ret = -ENODEV;
++		goto free_gpios;
++	}
++	hw->opb_freq = *clk;
++	hw->opb_freq >>= 2;
++	of_node_put(opbnp);
++
++	ret = of_address_to_resource(np, 0, &resource);
++	if (ret) {
++		dev_err(dev, "error while parsing device node resource\n");
++		goto free_gpios;
++	}
++	hw->mapbase = resource.start;
++	hw->mapsize = resource.end - resource.start + 1;
++
++	/* Sanity check */
++	if (hw->mapsize < sizeof(struct spi_ppc4xx_regs)) {
++		dev_err(dev, "too small to map registers\n");
++		ret = -EINVAL;
++		goto free_gpios;
++	}
++
++	/* Request IRQ */
++	hw->irqnum = irq_of_parse_and_map(np, 0);
++	ret = request_irq(hw->irqnum, spi_ppc4xx_int,
++			  IRQF_DISABLED, "spi_ppc4xx_of", (void *)hw);
++	if (ret) {
++		dev_err(dev, "unable to allocate interrupt\n");
++		goto free_gpios;
++	}
++
++	if (!request_mem_region(hw->mapbase, hw->mapsize, DRIVER_NAME)) {
++		dev_err(dev, "resource unavailable\n");
++		ret = -EBUSY;
++		goto request_mem_error;
++	}
++
++	hw->regs = ioremap(hw->mapbase, sizeof(struct spi_ppc4xx_regs));
++
++	if (!hw->regs) {
++		dev_err(dev, "unable to memory map registers\n");
++		ret = -ENXIO;
++		goto map_io_error;
++	}
++
++	spi_ppc4xx_enable(hw);
++
++	/* Finally register our spi controller */
++	dev->dma_mask = 0;
++	ret = spi_bitbang_start(bbp);
++	if (ret) {
++		dev_err(dev, "failed to register SPI master\n");
++		goto unmap_regs;
++	}
++
++	dev_info(dev, "driver initialized\n");
++	of_register_spi_devices(master, np);
++
++	return 0;
++
++unmap_regs:
++	iounmap(hw->regs);
++map_io_error:
++	release_mem_region(hw->mapbase, hw->mapsize);
++request_mem_error:
++	free_irq(hw->irqnum, hw);
++free_gpios:
++	free_gpios(hw);
++free_master:
++	dev_set_drvdata(dev, NULL);
++	spi_master_put(master);
++
++	dev_err(dev, "initialization failed\n");
++	return ret;
++}
++
++static int __exit spi_ppc4xx_of_remove(struct of_device *op)
++{
++	struct spi_master *master = dev_get_drvdata(&op->dev);
++	struct ppc4xx_spi *hw = spi_master_get_devdata(master);
++
++	spi_bitbang_stop(&hw->bitbang);
++	dev_set_drvdata(&op->dev, NULL);
++	release_mem_region(hw->mapbase, hw->mapsize);
++	free_irq(hw->irqnum, hw);
++	iounmap(hw->regs);
++	free_gpios(hw);
++	return 0;
++}
++
++static struct of_device_id spi_ppc4xx_of_match[] = {
++	{ .compatible = "ibm,ppc4xx-spi", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, spi_ppc4xx_of_match);
++
++static struct of_platform_driver spi_ppc4xx_of_driver = {
++	.match_table = spi_ppc4xx_of_match,
++	.probe = spi_ppc4xx_of_probe,
++	.remove = __exit_p(spi_ppc4xx_of_remove),
++	.driver = {
++		.name = DRIVER_NAME,
++		.owner = THIS_MODULE,
++	},
++};
++
++static int __init spi_ppc4xx_init(void)
++{
++	return of_register_platform_driver(&spi_ppc4xx_of_driver);
++}
++module_init(spi_ppc4xx_init);
++
++static void __exit spi_ppc4xx_exit(void)
++{
++	of_unregister_platform_driver(&spi_ppc4xx_of_driver);
++}
++module_exit(spi_ppc4xx_exit);
++
++MODULE_AUTHOR("Gary Jennejohn & Stefan Roese");
++MODULE_DESCRIPTION("Simple PPC4xx SPI Driver");
++MODULE_LICENSE("GPL");
