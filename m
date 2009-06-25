@@ -1,21 +1,26 @@
-Return-Path: <yang.shi@windriver.com>
+Return-Path: <mhuth@mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7F1B5B70A7
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 29647B70A6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 12:03:23 +1000 (EST)
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 8CFB3DDD1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 12:03:10 +1000 (EST)
-From: Yang Shi <yang.shi@windriver.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH] powerpc/mpc85xx: Create dts for each core in CAMP mode for
-	P2020DS
-Date: Thu, 25 Jun 2009 10:03:06 +0800
-Message-Id: <1245895386-20723-1-git-send-email-yang.shi@windriver.com>
-Cc: linuxppc-dev@ozlabs.org
+	Thu, 25 Jun 2009 15:37:14 +1000 (EST)
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 98263DDD1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 15:37:13 +1000 (EST)
+Message-ID: <4A4306F2.3070909@mvista.com>
+Date: Wed, 24 Jun 2009 22:11:14 -0700
+From: Mark Huth <mhuth@mvista.com>
+MIME-Version: 1.0
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] ucc_geth: Fix half-duplex operation for non-MII/RMII
+	interfaces
+References: <20090624174557.GA31479@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090624174557.GA31479@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Li Yang <leoli@freescale.com>, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,705 +30,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Create the dts files for each core and splits the devices between
-the two cores for P2020DS.
+Anton Vorontsov wrote:
+> Currently the half-duplex operation seems to not work reliably for
+> RGMII/GMII PHY interfaces. It takes about 10 minutes to boot NFS
+> rootfs using 10/half link, following symptoms were observed:
+> 
+>   ucc_geth: QE UCC Gigabit Ethernet Controller
+>   ucc_geth: UCC1 at 0xe0082000 (irq = 32)
+>   [...]
+>   Sending DHCP and RARP requests .
+>   PHY: mdio@e0082120:07 - Link is Up - 10/Half
+>   ., OK
+So why does the phy think this is a half-duplex network?
+>   [...]
+>   Looking up port of RPC 100003/2 on 10.0.0.2
+>   Looking up port of RPC 100005/1 on 10.0.0.2
+>   VFS: Mounted root (nfs filesystem) readonly on device 0:13.
+>   Freeing unused kernel memory: 204k init
+>   eth0: no IPv6 routers present
+>   nfs: server 10.0.0.2 not responding, still trying
+>   nfs: server 10.0.0.2 not responding, still trying
+>   nfs: server 10.0.0.2 not responding, still trying
+>   nfs: server 10.0.0.2 OK
+>   nfs: server 10.0.0.2 OK
+>   nfs: server 10.0.0.2 not responding, still trying
+>   [... few minutes of OK/not responding flood ...]
+> 
+> The statistic shows that there are indeed some errors:
+> 
+>   # ethtool -S eth0 | grep -v ": 0"
+>   NIC statistics:
+>        tx-64-frames: 42
+>        tx-65-127-frames: 9
+>        tx-128-255-frames: 4768
+>        rx-64-frames: 41
+>        rx-65-127-frames: 260
+>        rx-128-255-frames: 2679
+>        tx-bytes-ok: 859634
+>        tx-multicast-frames: 5
+>        tx-broadcast-frames: 7
+>        rx-frames: 8333
+>        rx-bytes-ok: 8039364
+>        rx-bytes-all: 8039364
+>        stats-counter-mask: 4294901760
+>        tx-single-collision: 324
+>        tx-multiple-collision: 47
+>        tx-late-collsion: 604
+>        tx-aborted-frames: 604
+The above two counters are the actual errors from a half-duplex ethernet 
+configuration.  The size of the collision domain is limited so that the 
+collisions from one end will reach the other end within the minimum 
+frame length wire time.  Thus the collision will be detected within the 
+first 64 bytes of the frame.  A late collision indicates a 
+mis-configured network. The fact that everything seems to work when the 
+MAC is placed into full-duplex mode hints that the network is really a 
+full-duplex network.
 
-Resource partitioning follows the example set by MPC8572, with a
-shared MIPC using protected resources, and with the remaining
-resources divided as follows:
+Otherwise, if the network is really half-duplex, then presence of a 
+full-duplex node will result in the other nodes seeing CRC/framing 
+errors on receive, and possibly also late collisions, as the full-duplex 
+node does not observe the CS or the CD( carrier sense and collision 
+detect) part of CSMA/CD, because it doesn't care.
 
-core0: memory, L2, i2c, dma1, global-util, eth0, eth1, crypto, pci0,
-       pci1, usb, spi, sdhci.
-core1: L2, dma2, eth2, pci2, msi.
+Putting a node in full-duplex will always make the nasty collision 
+related errors go away, but it may not be a proper diagnosis of the problem.
+>        tx-frames-ok: 4967
+>        tx-256-511-frames: 3
+>        tx-512-1023-frames: 79
+>        tx-1024-1518-frames: 71
+>        rx-256-511-frames: 37
+>        rx-512-1023-frames: 73
+>        rx-1024-1518-frames: 5243
+> 
+> According to current QEIWRM (Rev. 2 5/2009), FDX bit can be 0 for
+> RGMII(10/100) modes, while MPC8568ERM (Rev. C 02/2007) spec says
+> that cleared FDX bit is permitted for MII/RMII modes only.
+> 
+> The symptoms above were seen on MPC8569E-MDS boards, so QEIWRM is
+> clearly wrong, and this patch completely cures the problems above.
 
-Based on MPC8572DS CAMP dts files.
-(commit 361425fc32422c9716fc69e52455b7d44fc02c18)
+Not so fast - RGMII and GMII refer to the interface between the MAC and 
+the PHY.  While Gigabit physical links will always be full-duplex, phys 
+that detect lower operational modes will indicate half-duplex where 
+needed, and putting the MAC into full-duplex will make other nodes see 
+errors.
 
-Signed-off-by: Yang Shi <yang.shi@windriver.com>
----
- arch/powerpc/boot/dts/p2020ds_camp_core0.dts |  457 ++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p2020ds_camp_core1.dts |  209 ++++++++++++
- 2 files changed, 666 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p2020ds_camp_core0.dts
- create mode 100644 arch/powerpc/boot/dts/p2020ds_camp_core1.dts
+As Andy indicated later, it may be necessary to alter the interface 
+definition in those cases, depending on the particular hardware. 
+Forcing full-duplex does not seem to be a general solution.
 
-diff --git a/arch/powerpc/boot/dts/p2020ds_camp_core0.dts b/arch/powerpc/boot/dts/p2020ds_camp_core0.dts
-new file mode 100644
-index 0000000..5d74a9c
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p2020ds_camp_core0.dts
-@@ -0,0 +1,457 @@
-+/*
-+ * P2020 DS Core0 Device Tree Source in CAMP mode.
-+ *
-+ * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
-+ * can be shared, all the other devices must be assigned to one core only.
-+ * This dts file allows core0 to have memory, l2, i2c, dma1, global-util, eth0,
-+ * eth1, crypto, usb, spi, sdhci, pci0, pci1.
-+ *
-+ * Copyright 2009 Wind River Systems Inc.
-+ *
-+ * Based largely on the P2020DS SMP and MPC8572DS CAMP DTS which are:
-+ *
-+ *    Copyright 2009 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+/ {
-+	model = "fsl,P2020";
-+	compatible = "fsl,P2020DS", "fsl,MPC8572DS-CAMP";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	aliases {
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		serial0 = &serial0;
-+		pci0 = &pci0;
-+		pci1 = &pci1;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,P2020@0 {
-+			device_type = "cpu";
-+			reg = <0x0>;
-+			next-level-cache = <&L2>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	soc@ffe00000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		device_type = "soc";
-+		compatible = "fsl,p2020-immr", "simple-bus";
-+		ranges = <0x0 0xffe00000 0x100000>;
-+		bus-frequency = <0>;            // Filled out by uboot.
-+
-+		ecm-law@0 {
-+			compatible = "fsl,ecm-law";
-+			reg = <0x0 0x1000>;
-+			fsl,num-laws = <12>;
-+		};
-+
-+		ecm@1000 {
-+			compatible = "fsl,p2020-ecm", "fsl,ecm";
-+			reg = <0x1000 0x1000>;
-+			interrupts = <17 2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		memory-controller@2000 {
-+			compatible = "fsl,p2020-memory-controller";
-+			reg = <0x2000 0x1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <18 2>;
-+		};
-+
-+		i2c@3000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			cell-index = <0>;
-+			compatible = "fsl-i2c";
-+			reg = <0x3000 0x100>;
-+			interrupts = <43 2>;
-+			interrupt-parent = <&mpic>;
-+			dfsrr;
-+		};
-+
-+		i2c@3100 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			cell-index = <1>;
-+			compatible = "fsl-i2c";
-+			reg = <0x3100 0x100>;
-+			interrupts = <43 2>;
-+			interrupt-parent = <&mpic>;
-+			dfsrr;
-+		};
-+
-+		enet0: ethernet@24000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			cell-index = <0>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <0x24000 0x1000>;
-+			ranges = <0x0 0x24000 0x1000>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <29 2 30 2 34 2>;
-+			interrupt-parent = <&mpic>;
-+			phy-handle = <&phy0>;
-+			phy-connection-type = "rgmii-id";
-+
-+			mdio@520 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				compatible = "fsl,gianfar-mdio";
-+				reg = <0x520 0x20>;
-+
-+				phy0: ethernet-phy@0 {
-+					interrupt-parent = <&mpic>;
-+					interrupts = <3 1>;
-+					reg = <0x0>;
-+				};
-+				phy1: ethernet-phy@1 {
-+					interrupt-parent = <&mpic>;
-+					interrupts = <3 1>;
-+					reg = <0x1>;
-+				};
-+			};
-+		};
-+
-+		enet1: ethernet@25000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			cell-index = <1>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <0x25000 0x1000>;
-+			ranges = <0x0 0x25000 0x1000>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <35 2 36 2 40 2>;
-+			interrupt-parent = <&mpic>;
-+			phy-handle = <&phy1>;
-+			phy-connection-type = "rgmii-id";
-+
-+			mdio@520 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				compatible = "fsl,gianfar-tbi";
-+				reg = <0x520 0x20>;
-+
-+			};
-+		};
-+
-+		serial0: serial@4500 {
-+			cell-index = <0>;
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <0x4500 0x100>;
-+			clock-frequency = <0>;
-+		};
-+
-+		spi@7000 {
-+			compatible = "fsl,mpc8536-espi", "fsl,espi";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x7000 0x1000>;
-+			interrupts = <59 0x2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		gpio: gpio-controller@f000 {
-+			#gpio-cells = <2>;
-+			compatible = "fsl,mpc8572-gpio";
-+			reg = <0xf000 0x100>;
-+			interrupts = <47 0x2>;
-+			interrupt-parent = <&mpic>;
-+			gpio-controller;
-+		};
-+
-+		L2: l2-cache-controller@20000 {
-+			compatible = "fsl,p2020-l2-cache-controller";
-+			reg = <0x20000 0x1000>;
-+			cache-line-size = <32>; // 32 bytes
-+			cache-size = <0x80000>; // L2, 512k
-+			interrupt-parent = <&mpic>;
-+			interrupts = <16 2>;
-+		};
-+
-+		dma@21300 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,eloplus-dma";
-+			reg = <0x21300 0x4>;
-+			ranges = <0x0 0x21100 0x200>;
-+			cell-index = <0>;
-+			dma-channel@0 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x0 0x80>;
-+				cell-index = <0>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <20 2>;
-+			};
-+			dma-channel@80 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x80 0x80>;
-+				cell-index = <1>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <21 2>;
-+			};
-+			dma-channel@100 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x100 0x80>;
-+				cell-index = <2>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <22 2>;
-+			};
-+			dma-channel@180 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x180 0x80>;
-+				cell-index = <3>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <23 2>;
-+			};
-+		};
-+
-+		usb@22000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl-usb2-dr";
-+			reg = <0x22000 0x1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <28 0x2>;
-+			phy_type = "ulpi";
-+		};
-+
-+		sdhci@2e000 {
-+			compatible = "fsl,mpc8536-esdhc";
-+			reg = <0x2e000 0x1000>;
-+			interrupts = <72 0x2>;
-+			interrupt-parent = <&mpic>;
-+			/* Filled in by U-Boot */
-+			clock-frequency = <0>;
-+		};
-+
-+		crypto@30000 {
-+			compatible = "fsl,sec3.1", "fsl,sec3.0", "fsl,sec2.4",
-+				     "fsl,sec2.2", "fsl,sec2.1", "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2 58 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0xbfe>;
-+			fsl,descriptor-types-mask = <0x3ab0ebf>;
-+		};
-+
-+		mpic: pic@40000 {
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0x40000 0x40000>;
-+			compatible = "chrp,open-pic";
-+			device_type = "open-pic";
-+			protected-sources = <
-+			31 32 33 26 42 /* eth2 pci2 serial */
-+			76 77 78 79 /* dma2 */
-+			0xe0 0xe1 0xe2 0xe3 /* msi */
-+			0xe4 0xe5 0xe6 0xe7
-+			>;    	
-+		};
-+
-+		global-utilities@e0000 {        //global utilities block
-+			compatible = "fsl,p2020-guts";
-+			reg = <0xe0000 0x1000>;
-+			fsl,has-rstcr;
-+		};
-+	};
-+
-+	pci0: pcie@ffe08000 {
-+		compatible = "fsl,mpc8548-pcie";
-+		device_type = "pci";
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0xffe08000 0x1000>;
-+		bus-range = <0 255>;
-+		ranges = <0x2000000 0x0 0x80000000 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xffc00000 0x0 0x10000>;
-+		clock-frequency = <33333333>;
-+		interrupt-parent = <&mpic>;
-+		interrupts = <24 2>;
-+		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0x0 0x0 0x1 &mpic 0x8 0x1
-+			0000 0x0 0x0 0x2 &mpic 0x9 0x1
-+			0000 0x0 0x0 0x3 &mpic 0xa 0x1
-+			0000 0x0 0x0 0x4 &mpic 0xb 0x1
-+			>;
-+		pcie@0 {
-+			reg = <0x0 0x0 0x0 0x0 0x0>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			device_type = "pci";
-+			ranges = <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x10000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe09000 {
-+		compatible = "fsl,mpc8548-pcie";
-+		device_type = "pci";
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0xffe09000 0x1000>;
-+		bus-range = <0 255>;
-+		ranges = <0x2000000 0x0 0xa0000000 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xffc10000 0x0 0x10000>;
-+		clock-frequency = <33333333>;
-+		interrupt-parent = <&mpic>;
-+		interrupts = <25 2>;
-+		interrupt-map-mask = <0xff00 0x0 0x0 0x7>;
-+		interrupt-map = <
-+
-+			// IDSEL 0x11 func 0 - PCI slot 1
-+			0x8800 0x0 0x0 0x1 &i8259 0x9 0x2
-+			0x8800 0x0 0x0 0x2 &i8259 0xa 0x2
-+
-+			// IDSEL 0x11 func 1 - PCI slot 1
-+			0x8900 0x0 0x0 0x1 &i8259 0x9 0x2
-+			0x8900 0x0 0x0 0x2 &i8259 0xa 0x2
-+
-+			// IDSEL 0x11 func 2 - PCI slot 1
-+			0x8a00 0x0 0x0 0x1 &i8259 0x9 0x2
-+			0x8a00 0x0 0x0 0x2 &i8259 0xa 0x2
-+
-+			// IDSEL 0x11 func 3 - PCI slot 1
-+			0x8b00 0x0 0x0 0x1 &i8259 0x9 0x2
-+			0x8b00 0x0 0x0 0x2 &i8259 0xa 0x2
-+
-+			// IDSEL 0x11 func 4 - PCI slot 1
-+			0x8c00 0x0 0x0 0x1 &i8259 0x9 0x2
-+			0x8c00 0x0 0x0 0x2 &i8259 0xa 0x2
-+
-+			// IDSEL 0x11 func 5 - PCI slot 1
-+			0x8d00 0x0 0x0 0x1 &i8259 0x9 0x2
-+			0x8d00 0x0 0x0 0x2 &i8259 0xa 0x2
-+
-+			// IDSEL 0x11 func 6 - PCI slot 1
-+			0x8e00 0x0 0x0 0x1 &i8259 0x9 0x2
-+			0x8e00 0x0 0x0 0x2 &i8259 0xa 0x2
-+
-+			// IDSEL 0x11 func 7 - PCI slot 1
-+			0x8f00 0x0 0x0 0x1 &i8259 0x9 0x2
-+			0x8f00 0x0 0x0 0x2 &i8259 0xa 0x2
-+
-+			// IDSEL 0x1d  Audio
-+			0xe800 0x0 0x0 0x1 &i8259 0x6 0x2
-+
-+			// IDSEL 0x1e Legacy
-+			0xf000 0x0 0x0 0x1 &i8259 0x7 0x2
-+			0xf100 0x0 0x0 0x1 &i8259 0x7 0x2
-+
-+			// IDSEL 0x1f IDE/SATA
-+			0xf800 0x0 0x0 0x1 &i8259 0xe 0x2
-+ 			0xf900 0x0 0x0 0x1 &i8259 0x5 0x2
-+			>;
-+
-+		pcie@0 {
-+			reg = <0x0 0x0 0x0 0x0 0x0>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			device_type = "pci";
-+			ranges = <0x2000000 0x0 0xa0000000
-+				  0x2000000 0x0 0xa0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x10000>;
-+			uli1575@0 {
-+				reg = <0x0 0x0 0x0 0x0 0x0>;
-+				#size-cells = <2>;
-+				#address-cells = <3>;
-+				ranges = <0x2000000 0x0 0xa0000000
-+					  0x2000000 0x0 0xa0000000
-+					  0x0 0x20000000
-+
-+					  0x1000000 0x0 0x0
-+					  0x1000000 0x0 0x0
-+					  0x0 0x10000>;
-+				isa@1e {
-+					device_type = "isa";
-+					#interrupt-cells = <2>;
-+					#size-cells = <1>;
-+					#address-cells = <2>;
-+					reg = <0xf000 0x0 0x0 0x0 0x0>;
-+					ranges = <0x1 0x0 0x1000000 0x0 0x0
-+						  0x1000>;
-+					interrupt-parent = <&i8259>;
-+
-+					i8259: interrupt-controller@20 {
-+						reg = <0x1 0x20 0x2
-+						       0x1 0xa0 0x2
-+						       0x1 0x4d0 0x2>;
-+						interrupt-controller;
-+						device_type = "interrupt-controller";
-+						#address-cells = <0>;
-+						#interrupt-cells = <2>;
-+						compatible = "chrp,iic";
-+						interrupts = <4 1>;
-+						interrupt-parent = <&mpic>;
-+					};
-+
-+					i8042@60 {
-+						#size-cells = <0>;
-+						#address-cells = <1>;
-+						reg = <0x1 0x60 0x1 0x1 0x64 0x1>;
-+						interrupts = <1 3 12 3>;
-+						interrupt-parent = <&i8259>;
-+
-+						keyboard@0 {
-+							reg = <0x0>;
-+							compatible = "pnpPNP,303";
-+						};
-+
-+						mouse@1 {
-+							reg = <0x1>;
-+							compatible = "pnpPNP,f03";
-+						};
-+					};
-+
-+					rtc@70 {
-+						compatible = "pnpPNP,b00";
-+						reg = <0x1 0x70 0x2>;
-+					};
-+
-+					gpio@400 {
-+						reg = <0x1 0x400 0x80>;
-+					};
-+				};
-+			};
-+		};
-+
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p2020ds_camp_core1.dts b/arch/powerpc/boot/dts/p2020ds_camp_core1.dts
-new file mode 100644
-index 0000000..231d274
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p2020ds_camp_core1.dts
-@@ -0,0 +1,209 @@
-+/*
-+ * P2020 DS Core1 Device Tree Source in CAMP mode.
-+ *
-+ * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
-+ * can be shared, all the other devices must be assigned to one core only.
-+ * This dts allows core1 to have l2, dma2, eth2, pci2, msi.
-+ *
-+ * Please note to add "-b 1" for core1's dts compiling.
-+ *
-+ * Copyright 2009 Wind River Systems Inc.
-+ *
-+ * Based largely on the P2020DS SMP and MPC8572DS CAMP DTS which are:
-+ *
-+ *    Copyright 2009 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+/ {
-+	model = "fsl,P2020";
-+	compatible = "fsl,P2020DS", "fsl,MPC8572DS-CAMP";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	aliases {
-+		ethernet2 = &enet2;
-+		serial0 = &serial0;
-+		pci2 = &pci2;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,P2020@1{
-+			device_type = "cpu";
-+			reg = <0x1>;
-+			next-level-cache = <&L2>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	soc@ffe00000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		device_type = "soc";
-+		compatible = "fsl,p2020-immr", "simple-bus";
-+		ranges = <0x0 0xffe00000 0x100000>;
-+		bus-frequency = <0>;            // Filled out by uboot
-+
-+		mdio@24520 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,gianfar-mdio";
-+			reg = <0x24520 0x20>;
-+
-+			phy2: ethernet-phy@2 {
-+				interrupt-parent = <&mpic>;
-+				reg = <0x2>;
-+			};
-+		};
-+
-+		enet2: ethernet@26000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			cell-index = <2>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <0x26000 0x1000>;
-+			ranges = <0x0 0x26000 0x1000>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <31 2 32 2 33 2>;
-+			interrupt-parent = <&mpic>;
-+			phy-handle = <&phy2>;
-+			phy-connection-type = "rgmii-id";
-+		};
-+
-+		serial0: serial@4600 {
-+			cell-index = <1>;
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <0x4600 0x100>;
-+			clock-frequency = <0>;
-+		};
-+
-+		dma@c300 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,eloplus-dma";
-+			reg = <0xc300 0x4>;
-+			ranges = <0x0 0xc100 0x200>;
-+			cell-index = <0>;
-+			dma-channel@0 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x0 0x80>;
-+				cell-index = <0>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <76 2>;
-+			};
-+			dma-channel@80 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x80 0x80>;
-+				cell-index = <1>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <77 2>;
-+			};
-+			dma-channel@100 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x100 0x80>;
-+				cell-index = <2>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <78 2>;
-+			};
-+			dma-channel@180 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x180 0x80>;
-+				cell-index = <3>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <79 2>;
-+			};
-+		};
-+
-+		L2: l2-cache-controller@20000 {
-+			compatible = "fsl,p2020-l2-cache-controller";
-+			reg = <0x20000 0x1000>;
-+			cache-line-size = <32>; // 32 bytes
-+			cache-size = <0x80000>; // L2, 512k
-+			interrupt-parent = <&mpic>;
-+			interrupts = <16 2>;
-+		};
-+
-+		mpic: pic@40000 {
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0x40000 0x40000>;
-+			compatible = "chrp,open-pic";
-+			device_type = "open-pic";
-+			protected-sources = <
-+			18 16 17 42 45 58 /* MEM ecm L2 serial crypto */
-+			29 30 34 35 36 40 /* enet0 enet1 */
-+			24 25 20 21 22 23 /* pci0 pci1 dma1 */
-+			3 43 59 28 72 /* mdio i2c spi usb */
-+			0x9 0xa /* pci slot */
-+			0x6 0x7 0xe 0x5 /* Audio Legacy SATA */
-+			>;  
-+		};
-+
-+		msi@41600 {
-+			compatible = "fsl,mpic-msi";
-+			reg = <0x41600 0x80>;
-+			msi-available-ranges = <0 0x100>;
-+			interrupts = <
-+				0xe0 0
-+				0xe1 0
-+				0xe2 0
-+				0xe3 0
-+				0xe4 0
-+				0xe5 0
-+				0xe6 0
-+				0xe7 0>;
-+			interrupt-parent = <&mpic>;
-+		};
-+	};
-+
-+	pci2: pcie@ffe0a000 {
-+		compatible = "fsl,mpc8548-pcie";
-+		device_type = "pci";
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0xffe0a000 0x1000>;
-+		bus-range = <0 255>;
-+		ranges = <0x2000000 0x0 0xc0000000 0xc0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xffc20000 0x0 0x10000>;
-+		clock-frequency = <33333333>;
-+		interrupt-parent = <&mpic>;
-+		interrupts = <26 2>;
-+		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0x0 0x0 0x1 &mpic 0x0 0x1
-+			0000 0x0 0x0 0x2 &mpic 0x1 0x1
-+			0000 0x0 0x0 0x3 &mpic 0x2 0x1
-+			0000 0x0 0x0 0x4 &mpic 0x3 0x1
-+			>;
-+		pcie@0 {
-+			reg = <0x0 0x0 0x0 0x0 0x0>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			device_type = "pci";
-+			ranges = <0x2000000 0x0 0xc0000000
-+				  0x2000000 0x0 0xc0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x10000>;
-+		};
-+	};
-+};
--- 
-1.6.0.4
+Mark Huth
+MontaVista Software
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  drivers/net/ucc_geth.c |    8 ++++++--
+>  1 files changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index 464df03..e618cf2 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -1469,12 +1469,16 @@ static void adjust_link(struct net_device *dev)
+>  	if (phydev->link) {
+>  		u32 tempval = in_be32(&ug_regs->maccfg2);
+>  		u32 upsmr = in_be32(&uf_regs->upsmr);
+> +		phy_interface_t phyi = ugeth->phy_interface;
+> +
+>  		/* Now we make sure that we can be in full duplex mode.
+>  		 * If not, we operate in half-duplex mode. */
+>  		if (phydev->duplex != ugeth->oldduplex) {
+>  			new_state = 1;
+> -			if (!(phydev->duplex))
+> -				tempval &= ~(MACCFG2_FDX);
+> +			if (!phydev->duplex &&
+> +					(phyi == PHY_INTERFACE_MODE_MII ||
+> +					 phyi == PHY_INTERFACE_MODE_RMII))
+> +				tempval &= ~MACCFG2_FDX;
+>  			else
+>  				tempval |= MACCFG2_FDX;
+>  			ugeth->oldduplex = phydev->duplex;
