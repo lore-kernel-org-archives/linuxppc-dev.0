@@ -1,28 +1,25 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id AA941B6F56
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9AFFBB6F56
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Jun 2009 05:35:14 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3D88EDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jun 2009 05:35:13 +1000 (EST)
-Message-ID: <4A43D15A.60806@freescale.com>
-Date: Thu, 25 Jun 2009 14:34:50 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Fri, 26 Jun 2009 06:06:12 +1000 (EST)
+Received: from mail-yx0-f199.google.com (mail-yx0-f199.google.com
+	[209.85.210.199]) by ozlabs.org (Postfix) with ESMTP id EFFB7DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jun 2009 06:06:10 +1000 (EST)
+Received: by yxe37 with SMTP id 37so3016460yxe.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 13:06:09 -0700 (PDT)
 MIME-Version: 1.0
-To: kernel mailz <kernelmailz@googlemail.com>
-Subject: Re: 85xx Address space query
-References: <abe8a1fd0906240244i6e33c260xadff5cf462df7b8c@mail.gmail.com>	<D47FC871-1535-4DBF-8617-6EEA8C180484@kernel.crashing.org>	<abe8a1fd0906241046x2e3ee7d5h6a6c0231086a6f0e@mail.gmail.com>	<4A42AE1A.1090107@freescale.com>
-	<abe8a1fd0906250351y1aadc153m9f52f65a5860a2ca@mail.gmail.com>
-In-Reply-To: <abe8a1fd0906250351y1aadc153m9f52f65a5860a2ca@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <29DC34A6B43468409F5A371CFE34E849D7ED46@ex01.ads.ubidyne.de>
+References: <29DC34A6B43468409F5A371CFE34E849D7ED46@ex01.ads.ubidyne.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 25 Jun 2009 14:05:49 -0600
+Message-ID: <fa686aa40906251305x4c835064y811cda9a0c717d23@mail.gmail.com>
+Subject: Re: Direct MII connection between MPC8313 and VIRTEX FPGA
+To: Frank Prepelica <Frank.Prepelica@ubidyne.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,13 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kernel mailz wrote:
-> So this means
-> when kernel gets interrupted by app which may be in PID=5 (say)
-> kernel translations for PID=0 remain valid ?
-> I am not able to follow Scott
+On Thu, Jun 25, 2009 at 9:11 AM, Frank
+Prepelica<Frank.Prepelica@ubidyne.com> wrote:
+> Hi all,
+>
+> we removed the ethernet PHYs (MARVELL) from our customized board (based on MPC8313ERDB) and
+> connected the CPU Ethernet lines directly to a FPGA which is now emulating the PHY. But the ifconfig
+> command cannot find that eth device anymore. Does the emulated PHY needs to provide MDIO
+> information that the ETH device can be found again?
 
-Yes, exactly.  They're valid even in userspace, except to the extent that the 
-kernel marks them supervisor-only.
+No, you just need to make sure that the Ethernet driver is able to
+support fixed speed MII links without a PHY.  It's trivial to do, but
+not all drivers support it.  Search for "current-speed" in
+drivers/net/fec_mpc52xx.c for an example.
 
--Scott
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
