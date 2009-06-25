@@ -1,28 +1,29 @@
-Return-Path: <davem@davemloft.net>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id EB0B5B7087
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 153F4B70A5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 18:07:20 +1000 (EST)
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A3641DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 18:07:20 +1000 (EST)
-Date: Thu, 25 Jun 2009 01:07:20 -0700 (PDT)
-Message-Id: <20090625.010720.07013435.davem@davemloft.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2 1/2] ucc_geth: Fix half-duplex operation for
-	non-MII/RMII interfaces
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090625070813.GA25653@oksana.dev.rtsoft.ru>
-References: <20090625010232.GA28590@oksana.dev.rtsoft.ru>
-	<20090625070813.GA25653@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, afleming@freescale.com,
-	netdev@vger.kernel.org
+	Thu, 25 Jun 2009 21:17:29 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 89F59DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 21:17:27 +1000 (EST)
+Date: Thu, 25 Jun 2009 15:17:25 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Mark Huth <mhuth@mvista.com>
+Subject: Re: [PATCH] ucc_geth: Fix half-duplex operation for non-MII/RMII
+	interfaces
+Message-ID: <20090625111725.GA30165@oksana.dev.rtsoft.ru>
+References: <20090624174557.GA31479@oksana.dev.rtsoft.ru>
+	<4A4306F2.3070909@mvista.com>
+	<20090625070236.GA27711@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20090625070236.GA27711@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Li Yang <leoli@freescale.com>, David Miller <davem@davemloft.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,17 +33,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Thu, 25 Jun 2009 11:08:13 +0400
-
-> On Thu, Jun 25, 2009 at 05:02:32AM +0400, Anton Vorontsov wrote:
->> Currently the half-duplex operation seems to not work reliably for
->> RGMII PHY interfaces. It takes about 10 minutes to boot NFS rootfs
->> using 10/half link, following symptoms were observed:
+On Thu, Jun 25, 2009 at 11:02:36AM +0400, Anton Vorontsov wrote:
+[...]
+> Of course, it could be that the root cause of the problems
+> I observe is weird NIC on my host. Well, then QA team should
+> have used the same broken NIC on their hosts. :-)
 > 
-> David, please ignore these patches, they just appear to
-> workaround the issue, but they don't fix the root cause (which
-> is unknown yet), and may cause other side to see the duplex
-> errors. Heh...
+> I can easily test it by interconnecting two targets though.
+[...]
+> Definitely. Though I'm out of ideas if it's NOT host-side issue.
 
-Ok, thanks for the heads-up.
+Two boards interconnected work fine. eTSEC + SKY2 NIC also work
+OK. I'll test some more NICs, known to not work is 3Com
+Corporation 3c905C-TX/TX-M [Tornado] (rev 74).
+
+
+After some netperf tests, statistic on a gianfar board:
+
+# ethtool -S eth0 | grep -v ": 0"
+NIC statistics:
+     rx-dropped-by-kernel: 2
+     tx-rx-64-frames: 52
+     tx-rx-65-127-frames: 20668
+     tx-rx-128-255-frames: 10343
+     tx-rx-256-511-frames: 113
+     tx-rx-512-1023-frames: 147
+     tx-rx-1024-1518-frames: 45965
+     rx-bytes: 45075782
+     rx-packets: 50300
+     rx-carrier-sense-error: 1
+     rx-fragmented-frames: 7600
+     tx-byte-counter: 27401677
+     tx-packets: 34618
+     tx-broadcast-packets: 3
+     tx-deferral-packets: 5
+     tx-single-collision-packets: 4039
+     tx-multiple-collision-packets: 1943
+     tx-excessive-collision-packets: 30
+     tx-total-collision: 785
+
+
+Thanks for the ideas, Mark.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
