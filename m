@@ -3,24 +3,25 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4B3C8B70A6
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1219DB70A7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 21:28:39 +1000 (EST)
+	Thu, 25 Jun 2009 21:32:48 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7F8EBDDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 21:28:37 +1000 (EST)
-Subject: Re: [PATCH v2] Fix RTAS watchdog driver temperature read functionality
+	by ozlabs.org (Postfix) with ESMTPS id 3E947DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 21:32:46 +1000 (EST)
+Subject: Re: 85xx Address space query
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Utz Bacher <utz.bacher@de.ibm.com>
-In-Reply-To: <OF3E26F577.90C4A946-ONC12575E0.003E09AB-C12575E0.003E67E9@de.ibm.com>
-References: <OF3E26F577.90C4A946-ONC12575E0.003E09AB-C12575E0.003E67E9@de.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <D47FC871-1535-4DBF-8617-6EEA8C180484@kernel.crashing.org>
+References: <abe8a1fd0906240244i6e33c260xadff5cf462df7b8c@mail.gmail.com>
+	<D47FC871-1535-4DBF-8617-6EEA8C180484@kernel.crashing.org>
 Content-Type: text/plain
-Date: Thu, 25 Jun 2009 21:28:14 +1000
-Message-Id: <1245929294.22312.9.camel@pasglop>
+Date: Thu, 25 Jun 2009 21:32:34 +1000
+Message-Id: <1245929554.22312.12.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, kernel mailz <kernelmailz@googlemail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,73 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-06-25 at 13:22 +0200, Utz Bacher wrote:
-> 
-> Adrian Reber wrote on 11.06.2009 12:52:17: 
-> > 
-> > I forgot about this patch. Can this still be merged?
 
-Probably, can you re-send it in proper format to the list so it gets
-into patchwork (unless it's already there in which case I'll pick it up
-anyway) ?
+> > 1. User code executes ioctl
+> > 2. interrupt goes to the kernel
+> 
+> On the interrupt the PR changes from 0 -> 1
+
+The other way around actually :-)
+
+> > 3. ioctl handler in driver gets invoked
+> > The buffer pointer still contains 0x10000.
+> >
+> > How kernel code running in PR=0 accesses it and does the copy. I am  
+> > not able to see a address space switch in the asm code of  
+> > copy_tofrom_user.
+> 
+> There isn't a address space switch.  But address spaces exist at the  
+> same time.  The user app is given 0..0xc000_0000 and the kernel uses  
+> 0xc000_0000..0xffff_ffff.
+
+You may want to add, to make things clearer, that the HW treats PID 0
+specially. Translations in the TLB that have PID (we call it TID in the
+TLB entry) 0 match any value of the PID register.
+
+So kernel pages all have TID = 0, which means they are visible to all
+processes, but have permissions set such that only the supervisor (ie.
+PR = 0) can actually access them. MSR:PR is automatically switched to 0
+by the processor when taking an interrupt, allowing the kernel thus to
+access both its own pages and the pages of the current process.
 
 Cheers,
 Ben.
-
-> > 
-> > On Thu, Mar 26, 2009 at 01:05:42PM +0100, Adrian Reber wrote:
-> > > Using the RTAS watchdog driver to read out the temperature crashes
-> > > on a PXCAB:
-> > > 
-> > > Unable to handle kernel paging request for data at address
-> 0xfe347b50
-> > > Faulting instruction address: 0xc00000000001af64
-> > > Oops: Kernel access of bad area, sig: 11 [#1]
-> > > 
-> > > The wrong usage of "(void *)__pa(&temperature)" in rtas_call() is
-> > > removed by using the function rtas_get_sensor() which does the
-> > > right thing.
-> > > 
-> > > Signed-off-by: Adrian Reber <adrian@lisas.de>
-> > > ---
-> > > v2: use rtas_get_sensor(); typo fixed
-> > > ---
-> > >  drivers/watchdog/wdrtas.c |    8 +++-----
-> > >  1 files changed, 3 insertions(+), 5 deletions(-)
-> > > 
-> > > diff --git a/drivers/watchdog/wdrtas.c b/drivers/watchdog/wdrtas.c
-> > > index 5d3b1a8..a9f00dc 100644
-> > > --- a/drivers/watchdog/wdrtas.c
-> > > +++ b/drivers/watchdog/wdrtas.c
-> > > @@ -214,16 +214,14 @@ static void wdrtas_timer_keepalive(void)
-> > >   */
-> > >  static int wdrtas_get_temperature(void)
-> > >  {
-> > > -   long result;
-> > > +   int result;
-> > >     int temperature = 0;
-> > >  
-> > > -   result = rtas_call(wdrtas_token_get_sensor_state, 2, 2,
-> > > -            (void *)__pa(&temperature),
-> > > -            WDRTAS_THERMAL_SENSOR, 0);
-> > > +   result = rtas_get_sensor(WDRTAS_THERMAL_SENSOR, 0,
-> &temperature);
-> > >  
-> > >     if (result < 0)
-> > >        printk(KERN_WARNING "wdrtas: reading the thermal sensor "
-> > > -             "faild: %li\n", result);
-> > > +             "failed: %i\n", result);
-> > >     else
-> > >        temperature = ((temperature * 9) / 5) + 32; /* fahrenheit
-> */
-> > >  
-> > > -- 
-> > > 1.5.6.6
-> 
-> makes sense. Second version also looks good to me -- thanks! 
-> 
-> Acked-by: Utz Bacher <utz.bacher@de.ibm.com> 
-> 
-> Utz 
-> 
-> :wq
