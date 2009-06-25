@@ -1,26 +1,24 @@
-Return-Path: <mhuth@mvista.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 29647B70A6
+Return-Path: <johnny.hacking@gmail.com>
+Received: from mail-gx0-f208.google.com (mail-gx0-f208.google.com
+	[209.85.217.208])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 1C6F5B7091
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 15:37:14 +1000 (EST)
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 98263DDD1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 15:37:13 +1000 (EST)
-Message-ID: <4A4306F2.3070909@mvista.com>
-Date: Wed, 24 Jun 2009 22:11:14 -0700
-From: Mark Huth <mhuth@mvista.com>
+	Thu, 25 Jun 2009 16:27:57 +1000 (EST)
+Received: by gxk4 with SMTP id 4so2125337gxk.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 24 Jun 2009 23:27:54 -0700 (PDT)
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] ucc_geth: Fix half-duplex operation for non-MII/RMII
-	interfaces
-References: <20090624174557.GA31479@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090624174557.GA31479@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Li Yang <leoli@freescale.com>, David Miller <davem@davemloft.net>
+In-Reply-To: <1245884203.21200.18.camel@pasglop>
+References: <cb9ecdfa0906232050n6fcfee31ubeee4bcd9b8c0dfe@mail.gmail.com>
+	<4A41B3A5.9010807@am.sony.com> <1245884203.21200.18.camel@pasglop>
+Date: Thu, 25 Jun 2009 14:27:54 +0800
+Message-ID: <cb9ecdfa0906242327j76d1e4fbib13bc7d9753aeacf@mail.gmail.com>
+Subject: Re: How the kernel printk works before do console_setup.
+From: Johnny Hung <johnny.hacking@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-embedded@vger.kernel.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,123 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> Currently the half-duplex operation seems to not work reliably for
-> RGMII/GMII PHY interfaces. It takes about 10 minutes to boot NFS
-> rootfs using 10/half link, following symptoms were observed:
-> 
->   ucc_geth: QE UCC Gigabit Ethernet Controller
->   ucc_geth: UCC1 at 0xe0082000 (irq = 32)
->   [...]
->   Sending DHCP and RARP requests .
->   PHY: mdio@e0082120:07 - Link is Up - 10/Half
->   ., OK
-So why does the phy think this is a half-duplex network?
->   [...]
->   Looking up port of RPC 100003/2 on 10.0.0.2
->   Looking up port of RPC 100005/1 on 10.0.0.2
->   VFS: Mounted root (nfs filesystem) readonly on device 0:13.
->   Freeing unused kernel memory: 204k init
->   eth0: no IPv6 routers present
->   nfs: server 10.0.0.2 not responding, still trying
->   nfs: server 10.0.0.2 not responding, still trying
->   nfs: server 10.0.0.2 not responding, still trying
->   nfs: server 10.0.0.2 OK
->   nfs: server 10.0.0.2 OK
->   nfs: server 10.0.0.2 not responding, still trying
->   [... few minutes of OK/not responding flood ...]
-> 
-> The statistic shows that there are indeed some errors:
-> 
->   # ethtool -S eth0 | grep -v ": 0"
->   NIC statistics:
->        tx-64-frames: 42
->        tx-65-127-frames: 9
->        tx-128-255-frames: 4768
->        rx-64-frames: 41
->        rx-65-127-frames: 260
->        rx-128-255-frames: 2679
->        tx-bytes-ok: 859634
->        tx-multicast-frames: 5
->        tx-broadcast-frames: 7
->        rx-frames: 8333
->        rx-bytes-ok: 8039364
->        rx-bytes-all: 8039364
->        stats-counter-mask: 4294901760
->        tx-single-collision: 324
->        tx-multiple-collision: 47
->        tx-late-collsion: 604
->        tx-aborted-frames: 604
-The above two counters are the actual errors from a half-duplex ethernet 
-configuration.  The size of the collision domain is limited so that the 
-collisions from one end will reach the other end within the minimum 
-frame length wire time.  Thus the collision will be detected within the 
-first 64 bytes of the frame.  A late collision indicates a 
-mis-configured network. The fact that everything seems to work when the 
-MAC is placed into full-duplex mode hints that the network is really a 
-full-duplex network.
+2009/6/25 Benjamin Herrenschmidt <benh@kernel.crashing.org>:
+>
+>> Before the console is set up, the printk data is formatted
+>> and put into the kernel log buffer, but not sent to any console.
+>> Any messages printk'ed before that are buffered but do not
+>> appear. =A0When the console is initialized, then all buffered
+>> messages are sent to the console, and subsequent printks cause
+>> the message to go to the log buffer, but then immediately
+>> get sent from there to the console.
+>>
+>> Under certain conditions you can examine the log buffer of
+>> a kernel that failed to initialize it's console, after a
+>> warm reset of the machine, using the firmware memory dump
+>> command.
+>
+> On ppc, we have tricks to display things earlier :-)
+>
+> We can initialize the serial ports way before console_setup() (and we do
+> in most cases) and we use what we call the "udbg" console until the real
+> one takes over. The "udbg" console is a very small layer which outputs
+> via a provided "putc" routine. Platforms can provide their own here, we
+> have a collection of standard ones for legacy UARTs (it should be
+> automatically setup in that case by the code in legacy_serial), Apple
+> ESCCs, etc... We even have compile time options that allow that stuff to
+> be initialized before start_kernel...
 
-Otherwise, if the network is really half-duplex, then presence of a 
-full-duplex node will result in the other nodes seeing CRC/framing 
-errors on receive, and possibly also late collisions, as the full-duplex 
-node does not observe the CS or the CD( carrier sense and collision 
-detect) part of CSMA/CD, because it doesn't care.
+Thank you. This is what I described and want to understand. The
+arch/powerpc/kernel/legacy_serial.c
+do find_legacy_serial_ports then take a default serial port by using
+open firmware device tree
+information. The find_legacy_serial_ports() called form setup_arch but
+I don't know who call
+setup_arch (setup_32.c)function. Can you give me a hint ? Thanks in advance=
+d.
 
-Putting a node in full-duplex will always make the nasty collision 
-related errors go away, but it may not be a proper diagnosis of the problem.
->        tx-frames-ok: 4967
->        tx-256-511-frames: 3
->        tx-512-1023-frames: 79
->        tx-1024-1518-frames: 71
->        rx-256-511-frames: 37
->        rx-512-1023-frames: 73
->        rx-1024-1518-frames: 5243
-> 
-> According to current QEIWRM (Rev. 2 5/2009), FDX bit can be 0 for
-> RGMII(10/100) modes, while MPC8568ERM (Rev. C 02/2007) spec says
-> that cleared FDX bit is permitted for MII/RMII modes only.
-> 
-> The symptoms above were seen on MPC8569E-MDS boards, so QEIWRM is
-> clearly wrong, and this patch completely cures the problems above.
-
-Not so fast - RGMII and GMII refer to the interface between the MAC and 
-the PHY.  While Gigabit physical links will always be full-duplex, phys 
-that detect lower operational modes will indicate half-duplex where 
-needed, and putting the MAC into full-duplex will make other nodes see 
-errors.
-
-As Andy indicated later, it may be necessary to alter the interface 
-definition in those cases, depending on the particular hardware. 
-Forcing full-duplex does not seem to be a general solution.
-
-Mark Huth
-MontaVista Software
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  drivers/net/ucc_geth.c |    8 ++++++--
->  1 files changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> index 464df03..e618cf2 100644
-> --- a/drivers/net/ucc_geth.c
-> +++ b/drivers/net/ucc_geth.c
-> @@ -1469,12 +1469,16 @@ static void adjust_link(struct net_device *dev)
->  	if (phydev->link) {
->  		u32 tempval = in_be32(&ug_regs->maccfg2);
->  		u32 upsmr = in_be32(&uf_regs->upsmr);
-> +		phy_interface_t phyi = ugeth->phy_interface;
-> +
->  		/* Now we make sure that we can be in full duplex mode.
->  		 * If not, we operate in half-duplex mode. */
->  		if (phydev->duplex != ugeth->oldduplex) {
->  			new_state = 1;
-> -			if (!(phydev->duplex))
-> -				tempval &= ~(MACCFG2_FDX);
-> +			if (!phydev->duplex &&
-> +					(phyi == PHY_INTERFACE_MODE_MII ||
-> +					 phyi == PHY_INTERFACE_MODE_RMII))
-> +				tempval &= ~MACCFG2_FDX;
->  			else
->  				tempval |= MACCFG2_FDX;
->  			ugeth->oldduplex = phydev->duplex;
+BRs, H. Johnny
