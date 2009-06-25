@@ -1,29 +1,26 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 153F4B70A5
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4B3C8B70A6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Jun 2009 21:17:29 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 89F59DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 21:17:27 +1000 (EST)
-Date: Thu, 25 Jun 2009 15:17:25 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Mark Huth <mhuth@mvista.com>
-Subject: Re: [PATCH] ucc_geth: Fix half-duplex operation for non-MII/RMII
-	interfaces
-Message-ID: <20090625111725.GA30165@oksana.dev.rtsoft.ru>
-References: <20090624174557.GA31479@oksana.dev.rtsoft.ru>
-	<4A4306F2.3070909@mvista.com>
-	<20090625070236.GA27711@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090625070236.GA27711@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Li Yang <leoli@freescale.com>, David Miller <davem@davemloft.net>
-Reply-To: avorontsov@ru.mvista.com
+	Thu, 25 Jun 2009 21:28:39 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7F8EBDDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 21:28:37 +1000 (EST)
+Subject: Re: [PATCH v2] Fix RTAS watchdog driver temperature read functionality
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Utz Bacher <utz.bacher@de.ibm.com>
+In-Reply-To: <OF3E26F577.90C4A946-ONC12575E0.003E09AB-C12575E0.003E67E9@de.ibm.com>
+References: <OF3E26F577.90C4A946-ONC12575E0.003E09AB-C12575E0.003E67E9@de.ibm.com>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 21:28:14 +1000
+Message-Id: <1245929294.22312.9.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,49 +30,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 25, 2009 at 11:02:36AM +0400, Anton Vorontsov wrote:
-[...]
-> Of course, it could be that the root cause of the problems
-> I observe is weird NIC on my host. Well, then QA team should
-> have used the same broken NIC on their hosts. :-)
+On Thu, 2009-06-25 at 13:22 +0200, Utz Bacher wrote:
 > 
-> I can easily test it by interconnecting two targets though.
-[...]
-> Definitely. Though I'm out of ideas if it's NOT host-side issue.
+> Adrian Reber wrote on 11.06.2009 12:52:17: 
+> > 
+> > I forgot about this patch. Can this still be merged?
 
-Two boards interconnected work fine. eTSEC + SKY2 NIC also work
-OK. I'll test some more NICs, known to not work is 3Com
-Corporation 3c905C-TX/TX-M [Tornado] (rev 74).
+Probably, can you re-send it in proper format to the list so it gets
+into patchwork (unless it's already there in which case I'll pick it up
+anyway) ?
 
+Cheers,
+Ben.
 
-After some netperf tests, statistic on a gianfar board:
-
-# ethtool -S eth0 | grep -v ": 0"
-NIC statistics:
-     rx-dropped-by-kernel: 2
-     tx-rx-64-frames: 52
-     tx-rx-65-127-frames: 20668
-     tx-rx-128-255-frames: 10343
-     tx-rx-256-511-frames: 113
-     tx-rx-512-1023-frames: 147
-     tx-rx-1024-1518-frames: 45965
-     rx-bytes: 45075782
-     rx-packets: 50300
-     rx-carrier-sense-error: 1
-     rx-fragmented-frames: 7600
-     tx-byte-counter: 27401677
-     tx-packets: 34618
-     tx-broadcast-packets: 3
-     tx-deferral-packets: 5
-     tx-single-collision-packets: 4039
-     tx-multiple-collision-packets: 1943
-     tx-excessive-collision-packets: 30
-     tx-total-collision: 785
-
-
-Thanks for the ideas, Mark.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> > 
+> > On Thu, Mar 26, 2009 at 01:05:42PM +0100, Adrian Reber wrote:
+> > > Using the RTAS watchdog driver to read out the temperature crashes
+> > > on a PXCAB:
+> > > 
+> > > Unable to handle kernel paging request for data at address
+> 0xfe347b50
+> > > Faulting instruction address: 0xc00000000001af64
+> > > Oops: Kernel access of bad area, sig: 11 [#1]
+> > > 
+> > > The wrong usage of "(void *)__pa(&temperature)" in rtas_call() is
+> > > removed by using the function rtas_get_sensor() which does the
+> > > right thing.
+> > > 
+> > > Signed-off-by: Adrian Reber <adrian@lisas.de>
+> > > ---
+> > > v2: use rtas_get_sensor(); typo fixed
+> > > ---
+> > >  drivers/watchdog/wdrtas.c |    8 +++-----
+> > >  1 files changed, 3 insertions(+), 5 deletions(-)
+> > > 
+> > > diff --git a/drivers/watchdog/wdrtas.c b/drivers/watchdog/wdrtas.c
+> > > index 5d3b1a8..a9f00dc 100644
+> > > --- a/drivers/watchdog/wdrtas.c
+> > > +++ b/drivers/watchdog/wdrtas.c
+> > > @@ -214,16 +214,14 @@ static void wdrtas_timer_keepalive(void)
+> > >   */
+> > >  static int wdrtas_get_temperature(void)
+> > >  {
+> > > -   long result;
+> > > +   int result;
+> > >     int temperature = 0;
+> > >  
+> > > -   result = rtas_call(wdrtas_token_get_sensor_state, 2, 2,
+> > > -            (void *)__pa(&temperature),
+> > > -            WDRTAS_THERMAL_SENSOR, 0);
+> > > +   result = rtas_get_sensor(WDRTAS_THERMAL_SENSOR, 0,
+> &temperature);
+> > >  
+> > >     if (result < 0)
+> > >        printk(KERN_WARNING "wdrtas: reading the thermal sensor "
+> > > -             "faild: %li\n", result);
+> > > +             "failed: %i\n", result);
+> > >     else
+> > >        temperature = ((temperature * 9) / 5) + 32; /* fahrenheit
+> */
+> > >  
+> > > -- 
+> > > 1.5.6.6
+> 
+> makes sense. Second version also looks good to me -- thanks! 
+> 
+> Acked-by: Utz Bacher <utz.bacher@de.ibm.com> 
+> 
+> Utz 
+> 
+> :wq
