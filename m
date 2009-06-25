@@ -1,20 +1,28 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: How the kernel printk works before do console_setup.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Johnny Hung <johnny.hacking@gmail.com>
-In-Reply-To: <cb9ecdfa0906242327j76d1e4fbib13bc7d9753aeacf@mail.gmail.com>
-References: <cb9ecdfa0906232050n6fcfee31ubeee4bcd9b8c0dfe@mail.gmail.com>
-	<4A41B3A5.9010807@am.sony.com> <1245884203.21200.18.camel@pasglop>
-	<cb9ecdfa0906242327j76d1e4fbib13bc7d9753aeacf@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-43lc7/jLw0CPhY+C4l75"
-Date: Thu, 25 Jun 2009 16:37:25 +1000
-Message-Id: <1245911845.11532.20.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-embedded@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 54FEEB70A7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 25 Jun 2009 17:03:48 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 5FEE6DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 17:03:46 +1000 (EST)
+Date: Thu, 25 Jun 2009 11:02:36 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Mark Huth <mhuth@mvista.com>
+Subject: Re: [PATCH] ucc_geth: Fix half-duplex operation for non-MII/RMII
+	interfaces
+Message-ID: <20090625070236.GA27711@oksana.dev.rtsoft.ru>
+References: <20090624174557.GA31479@oksana.dev.rtsoft.ru>
+	<4A4306F2.3070909@mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <4A4306F2.3070909@mvista.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Li Yang <leoli@freescale.com>, David Miller <davem@davemloft.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,64 +32,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Jun 24, 2009 at 10:11:14PM -0700, Mark Huth wrote:
+> Anton Vorontsov wrote:
+>> Currently the half-duplex operation seems to not work reliably for
+>> RGMII/GMII PHY interfaces. It takes about 10 minutes to boot NFS
+>> rootfs using 10/half link, following symptoms were observed:
+>>
+>>   ucc_geth: QE UCC Gigabit Ethernet Controller
+>>   ucc_geth: UCC1 at 0xe0082000 (irq = 32)
+>>   [...]
+>>   Sending DHCP and RARP requests .
+>>   PHY: mdio@e0082120:07 - Link is Up - 10/Half
+>>   ., OK
+> So why does the phy think this is a half-duplex network?
 
---=-43lc7/jLw0CPhY+C4l75
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Because it's physical media now in half-duplex. At least that's
+what PHY detects.
 
-On Thu, 2009-06-25 at 14:27 +0800, Johnny Hung wrote:
-> 2009/6/25 Benjamin Herrenschmidt <benh@kernel.crashing.org>:
-> >
-> >> Before the console is set up, the printk data is formatted
-> >> and put into the kernel log buffer, but not sent to any console.
-> >> Any messages printk'ed before that are buffered but do not
-> >> appear.  When the console is initialized, then all buffered
-> >> messages are sent to the console, and subsequent printks cause
-> >> the message to go to the log buffer, but then immediately
-> >> get sent from there to the console.
-> >>
-> >> Under certain conditions you can examine the log buffer of
-> >> a kernel that failed to initialize it's console, after a
-> >> warm reset of the machine, using the firmware memory dump
-> >> command.
-> >
-> > On ppc, we have tricks to display things earlier :-)
-> >
-> > We can initialize the serial ports way before console_setup() (and we d=
-o
-> > in most cases) and we use what we call the "udbg" console until the rea=
-l
-> > one takes over. The "udbg" console is a very small layer which outputs
-> > via a provided "putc" routine. Platforms can provide their own here, we
-> > have a collection of standard ones for legacy UARTs (it should be
-> > automatically setup in that case by the code in legacy_serial), Apple
-> > ESCCs, etc... We even have compile time options that allow that stuff t=
-o
-> > be initialized before start_kernel...
->=20
-> Thank you. This is what I described and want to understand. The
-> arch/powerpc/kernel/legacy_serial.c
-> do find_legacy_serial_ports then take a default serial port by using
-> open firmware device tree
-> information. The find_legacy_serial_ports() called form setup_arch but
-> I don't know who call
-> setup_arch (setup_32.c)function. Can you give me a hint ? Thanks in advan=
-ced.
+[...]
+>>        tx-late-collsion: 604
+>>        tx-aborted-frames: 604
+> The above two counters are the actual errors from a half-duplex ethernet  
+> configuration.  The size of the collision domain is limited so that the  
+> collisions from one end will reach the other end within the minimum  
+> frame length wire time.  Thus the collision will be detected within the  
+> first 64 bytes of the frame.  A late collision indicates a  
+> mis-configured network. The fact that everything seems to work when the  
+> MAC is placed into full-duplex mode hints that the network is really a  
+> full-duplex network.
 
-setup_arch() is called from start_kernel() in init/main.c
+No, it's half. Can be configured so on both sides, with or
+without auto-negotiation. The "10/half" message comes from a
+PHY layer, the PHY layer reports human readable values of
+PHY's LPA/BMSR registers, not MAC's configuration.
 
-cheers
+Of course, it could be that the root cause of the problems
+I observe is weird NIC on my host. Well, then QA team should
+have used the same broken NIC on their hosts. :-)
 
---=-43lc7/jLw0CPhY+C4l75
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+I can easily test it by interconnecting two targets though.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> Otherwise, if the network is really half-duplex, then presence of a  
+> full-duplex node will result in the other nodes seeing CRC/framing  
+> errors on receive, and possibly also late collisions, as the full-duplex  
+> node does not observe the CS or the CD( carrier sense and collision  
+> detect) part of CSMA/CD, because it doesn't care.
+>
+> Putting a node in full-duplex will always make the nasty collision  
+> related errors go away, but it may not be a proper diagnosis of the 
+> problem.
 
-iEYEABECAAYFAkpDGyUACgkQdSjSd0sB4dIvigCfV3efnXTX8vAjThX/KGx/OHq+
-5FgAmgLMogbMi/GzA5SJmA7CqpNldRyr
-=EWua
------END PGP SIGNATURE-----
+>>        tx-frames-ok: 4967
+>>        tx-256-511-frames: 3
+>>        tx-512-1023-frames: 79
+>>        tx-1024-1518-frames: 71
+>>        rx-256-511-frames: 37
+>>        rx-512-1023-frames: 73
+>>        rx-1024-1518-frames: 5243
+>>
+>> According to current QEIWRM (Rev. 2 5/2009), FDX bit can be 0 for
+>> RGMII(10/100) modes, while MPC8568ERM (Rev. C 02/2007) spec says
+>> that cleared FDX bit is permitted for MII/RMII modes only.
+>>
+>> The symptoms above were seen on MPC8569E-MDS boards, so QEIWRM is
+>> clearly wrong, and this patch completely cures the problems above.
+>
+> Not so fast - RGMII and GMII refer to the interface between the MAC and  
+> the PHY.
 
---=-43lc7/jLw0CPhY+C4l75--
+Correct.
+
+> While Gigabit physical links will always be full-duplex, phys  
+> that detect lower operational modes will indicate half-duplex where  
+> needed, and putting the MAC into full-duplex will make other nodes see  
+> errors.
+
+D'oh!
+
+[1358634.636147] eth1: Transmit error, Tx status register 82.
+[1358634.636150] Probably a duplex mismatch.  See Documentation/networking/vortex.txt
+
+It's on a host side.
+
+> As Andy indicated later, it may be necessary to alter the interface  
+> definition in those cases, depending on the particular hardware. Forcing 
+> full-duplex does not seem to be a general solution.
+
+Definitely. Though I'm out of ideas if it's NOT host-side issue.
+
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
