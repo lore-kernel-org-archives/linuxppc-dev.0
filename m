@@ -1,27 +1,24 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 64418B708A
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 350F4B708E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Jun 2009 08:05:27 +1000 (EST)
-Received: from VA3EHSOBE004.bigfish.com (va3ehsobe004.messaging.microsoft.com
-	[216.32.180.14]) by ozlabs.org (Postfix) with ESMTP id D0154DDD01
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 08:05:26 +1000 (EST)
-Message-ID: <4A454616.7040501@am.sony.com>
-Date: Fri, 26 Jun 2009 15:05:10 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+	Sat, 27 Jun 2009 08:29:04 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id BD5B9DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 08:29:03 +1000 (EST)
+Date: Sat, 27 Jun 2009 02:29:00 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH 0/4 for 2.6.31] NET: Revive fixed link support
+Message-ID: <20090626222900.GA14594@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Bugme-new] [Bug 13304] New: ehci_hcd module causing problems
-	in using usb head phone
-References: <Pine.LNX.4.44L0.0906261638370.4155-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906261638370.4155-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, USB list <linux-usb@vger.kernel.org>,
-	abhishekkumar <abhishekkumar@tataelxsi.co.in>,
-	bugme-daemon@bugzilla.kernel.org
+Content-Type: text/plain; charset=utf-8
+Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
+	Andy Fleming <afleming@freescale.com>, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/26/2009 01:42 PM, Alan Stern wrote:
-> On Fri, 26 Jun 2009, Geoff Levand wrote:
-> 
->> There is a known but yet unfixed bug for the PS3's EHCI Async Periodic
->> (typically audio recording) device handling.  There are a few related
->> hardware errata that I have not yet implemented driver fixes for that
->> I think are causing it.  
->> 
->> I guess it is the same problem as reported by Abhishek since Andrew's
->> dmesg (http://www.osl.iu.edu/~afriedle/dmesg.txt) shows similar 
->> results.
-> 
-> Yes, it definitely looks the same.
-> 
->> More info is here:
->> 
->>   http://ozlabs.org/pipermail/cbe-oss-dev/2009-February/006365.html
->> 
->> I have bought a ART Tube USB device but have not had time to fix
->> this bug.  It is on my todo list.  Please feel free to make an
->> attempt.
-> 
-> Where is the information about the hardware errata you mentioned?
+Hi all,
 
-Sorry, I should have mentioned it.  Unfortunately, that info is not
-in the public as far as I know.  I think only someone with access
-to those will be able to work on this fix.
+The fixed link support is broken since The Big OF MDIO Rework,
+the rework simply removed most of the code that was needed for
+fixed links.
 
--Geoff
+Too bad I didn't notice this earlier, I saw a bunch of patches
+on the ml, but unfortunately I didn't look very close presuming
+that Grant knew what he was doing. :-) And obviously I didn't
+test linux-next on anything that requires a fixed link.
+
+Anyway, here are four patches. The first one adds the fixed link
+support to a framework, otherwise we'd duplicate the code across
+the drivers (as we did previously), and I tried to keep drivers'
+changes minimal.
+
+Patches 2 and 3 are for the drivers that I tested in run-time,
+with normal PHYs, and fixed links.
+
+Patch #4 was build-tested, but I believe it should work in
+run-time too.
+
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
