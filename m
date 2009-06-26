@@ -1,26 +1,26 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <david-b@pacbell.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9AFFBB6F56
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 33167B6F44
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Jun 2009 06:06:12 +1000 (EST)
-Received: from mail-yx0-f199.google.com (mail-yx0-f199.google.com
-	[209.85.210.199]) by ozlabs.org (Postfix) with ESMTP id EFFB7DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jun 2009 06:06:10 +1000 (EST)
-Received: by yxe37 with SMTP id 37so3016460yxe.17
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2009 13:06:09 -0700 (PDT)
+	Fri, 26 Jun 2009 14:05:05 +1000 (EST)
+Received: from smtp101.sbc.mail.gq1.yahoo.com (smtp101.sbc.mail.gq1.yahoo.com
+	[67.195.15.60]) by ozlabs.org (Postfix) with SMTP id 6DCC8DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jun 2009 14:05:01 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: Subject: [PATCH v7] spi: Add PPC4xx SPI driver
+Date: Thu, 25 Jun 2009 21:04:46 -0700
+References: <4A43CC2C.1030409@harris.com>
+In-Reply-To: <4A43CC2C.1030409@harris.com>
 MIME-Version: 1.0
-In-Reply-To: <29DC34A6B43468409F5A371CFE34E849D7ED46@ex01.ads.ubidyne.de>
-References: <29DC34A6B43468409F5A371CFE34E849D7ED46@ex01.ads.ubidyne.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 25 Jun 2009 14:05:49 -0600
-Message-ID: <fa686aa40906251305x4c835064y811cda9a0c717d23@mail.gmail.com>
-Subject: Re: Direct MII connection between MPC8313 and VIRTEX FPGA
-To: Frank Prepelica <Frank.Prepelica@ubidyne.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200906252104.46189.david-b@pacbell.net>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,22 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 25, 2009 at 9:11 AM, Frank
-Prepelica<Frank.Prepelica@ubidyne.com> wrote:
-> Hi all,
->
-> we removed the ethernet PHYs (MARVELL) from our customized board (based on MPC8313ERDB) and
-> connected the CPU Ethernet lines directly to a FPGA which is now emulating the PHY. But the ifconfig
-> command cannot find that eth device anymore. Does the emulated PHY needs to provide MDIO
-> information that the ETH device can be found again?
+On Thursday 25 June 2009, Steven A. Falco wrote:
+> +       if (spi->mode & ~MODEBITS) {
+> +               dev_dbg(&spi->dev, "setup: unsupported mode bits %x\n",
+> +                       spi->mode & ~MODEBITS);
+> +               return -EINVAL;
+> +       }
 
-No, you just need to make sure that the Ethernet driver is able to
-support fixed speed MII links without a PHY.  It's trivial to do, but
-not all drivers support it.  Search for "current-speed" in
-drivers/net/fec_mpc52xx.c for an example.
+This wasn't tested against 2.6.30-rc1 was it?
 
-g.
+See the recent fixup patch I sent.  There's a spi_master->modebits
+mask that should have been initialized, and which eliminates the
+need for tests like that ...
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> +       dev_dbg(&spi->dev, "%s: mode %d, %u bpw, %d hz\n",
+> +               __func__, spi->mode, spi->bits_per_word,
+> +               spi->max_speed_hz);
+> +
+
+... also the SPI core now provides a *standard* format debug
+message for that stuff.  It also handles one more thing, which
+I expect to see fixed in a v8 of this patch ... :)
+
+- Dave
