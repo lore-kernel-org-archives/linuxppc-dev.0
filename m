@@ -1,23 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <stern+4a593f06@rowland.harvard.edu>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 531EBB7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 82FD0B7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Jun 2009 00:52:03 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id CC5B2DDD04
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 00:52:02 +1000 (EST)
-Date: Fri, 26 Jun 2009 18:51:59 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH] sky2: Fix checksum endianness
-Message-ID: <20090626145159.GA2242@oksana.dev.rtsoft.ru>
+	Sat, 27 Jun 2009 02:01:31 +1000 (EST)
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id 19C03DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 02:01:29 +1000 (EST)
+Date: Fri, 26 Jun 2009 11:54:48 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: abhishekkumar <abhishekkumar@tataelxsi.co.in>
+Subject: Re: [Bugme-new] [Bug 13304] New: ehci_hcd module causing problems
+	in using usb head phone
+In-Reply-To: <4A44CB89.8040802@tataelxsi.co.in>
+Message-ID: <Pine.LNX.4.44L0.0906261140540.2965-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: netdev@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, USB list <linux-usb@vger.kernel.org>,
+	bugme-daemon@bugzilla.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-sky2 driver on PowerPC targets floods kernel log with following errors:
+On Fri, 26 Jun 2009, abhishekkumar wrote:
 
-  eth1: hw csum failure.
-  Call Trace:
-  [ef84b8a0] [c00075e4] show_stack+0x50/0x160 (unreliable)
-  [ef84b8d0] [c02fa178] netdev_rx_csum_fault+0x3c/0x5c
-  [ef84b8f0] [c02f6920] __skb_checksum_complete_head+0x7c/0x84
-  [ef84b900] [c02f693c] __skb_checksum_complete+0x14/0x24
-  [ef84b910] [c0337e08] tcp_v4_rcv+0x4c8/0x6f8
-  [ef84b940] [c031a9c8] ip_local_deliver+0x98/0x210
-  [ef84b960] [c031a788] ip_rcv+0x38c/0x534
-  [ef84b990] [c0300338] netif_receive_skb+0x260/0x36c
-  [ef84b9c0] [c025de00] sky2_poll+0x5dc/0xcf8
-  [ef84ba20] [c02fb7fc] net_rx_action+0xc0/0x144
+> PFA I am attaching dmesg file taken from /var/log/ and also the lines 
+> which I got from dmesg command in different file named dmesgafter.txt.
 
-The NIC is Yukon-2 EC chip revision 1.
+I still don't see any lines about the headphone device in the log.  
+Was the headphone plugged in during boot, or did you plug it in later?
 
-Converting checksum field from le16 to CPU byte order fixes the issue.
+> Then , periodic and registers files and also the usbmon log.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/net/sky2.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Here's what your "registers" file says:
 
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index 7681d28..daf961a 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -2495,7 +2495,7 @@ static int sky2_status_intr(struct sky2_hw *hw, int to_do, u16 idx)
- 			if (likely(status >> 16 == (status & 0xffff))) {
- 				skb = sky2->rx_ring[sky2->rx_next].skb;
- 				skb->ip_summed = CHECKSUM_COMPLETE;
--				skb->csum = status & 0xffff;
-+				skb->csum = le16_to_cpu(status);
- 			} else {
- 				printk(KERN_NOTICE PFX "%s: hardware receive "
- 				       "checksum problem (status = %#x)\n",
--- 
-1.6.3.1
+> bus ps3_system_bus, device sb_05 (driver 10 Dec 2004)
+> PS3 EHCI Host Controller
+> EHCI ff.ff, hcd state 1
+> structural params 0xffffffff
+> capability params 0xffffffff
+> status ffffffff Async Periodic Recl Halt IAA FATAL FLR PCD ERR INT
+> command ffffffff park=3 ithresh=63 LReset IAAD Async Periodic period=?? Reset R
+> intrenable ffffffff IAA FATAL FLR PCD ERR INT
+> uframe ffffffff
+> port 1 status ffffffff POWER OWNER sig=? RESET SUSPEND RESUME OCC OC PEC PE CSC
+> port 2 status ffffffff POWER OWNER sig=? RESET SUSPEND RESUME OCC OC PEC PE CSC
+> irq normal 30832 err 30 reclaim 84 (lost 1)
+> complete 31221 unlink 10
+
+This is very bad.  It indicates that the CPU was unable to communicate
+with the EHCI controller at all!  All the memory-mapped I/O reads
+returned 0xffffffff.  No wonder the keyboard and mouse stopped working.
+
+I have no idea what could have caused this to happen.  Even if the 
+controller had suffered a fatal error, you wouldn't see this.  It looks 
+like the bus's connection to the controller was turned off.
+
+I'm CC-ing the PS3 maintainer and mailing list.  Maybe people there can 
+help.
+
+> I am even not able to kill the application because it's not showing when 
+> I use top command.
+> 
+> I addition to that I get some messages during boot up . they are
+> Unable to  accept address for port 1 (error -62)
+> usb cable may be bad
+> Unable to  accept address for port 2 (error -62)
+
+Those are normal.  They occur because your system loads ohci-hcd before 
+ehci-hcd.  It should load ehci-hcd first.
+
+Alan Stern
