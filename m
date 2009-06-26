@@ -3,17 +3,17 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 47D80B71D9
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 76CBAB72D0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Jun 2009 08:29:52 +1000 (EST)
+	Sat, 27 Jun 2009 08:29:54 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 77E35DDD04
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 08:29:51 +1000 (EST)
-Date: Sat, 27 Jun 2009 02:29:50 +0400
+	by ozlabs.org (Postfix) with ESMTP id 08EACDDD04
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 08:29:54 +1000 (EST)
+Date: Sat, 27 Jun 2009 02:29:52 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Miller <davem@davemloft.net>
-Subject: [PATCH 3/4] ucc_geth: Revive fixed link support
-Message-ID: <20090626222950.GC32487@oksana.dev.rtsoft.ru>
+Subject: [PATCH 4/4] fs_enet: Revive fixed link support
+Message-ID: <20090626222952.GD32487@oksana.dev.rtsoft.ru>
 References: <20090626222900.GA14594@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -29,71 +29,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 0b9da337dca972e7a4144e298ec3adb8f244d4a4 ("Rework
-ucc_geth driver to use of_mdio infrastructure") the fixed-link
-support is broken.
+Since commit aa73832c5a80d6c52c69b18af858d88fa595dd3c ("Rework
+fs_enet driver to use of_mdio infrastructure") the fixed-link support
+is broken in the fs_enet driver.
 
-This patch fixes the support by removing !ug_info->phy_node check,
-today the of_phy_connect() will try to find a fixed PHY if the
-phy_node appears to be NULL.
+This patch fixes the support by removing a check for phy_node, today
+of_phy_connect() tries to find fixed PHY if phy_node appears to be
+NULL.
 
-Also, remove an old fixed-link code that we don't use any longer.
+Also set netdev parent device via SET_NETDEV_DEV() call, this is needed
+so that OF MDIO core could find a node pointer for a device.
+
+Plus, fix "if (IS_ERR(phydev))" check, in case of errors,
+of_phy_connect() returns NULL, not ERR_PTR as phy_connect().
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/net/ucc_geth.c |   18 +++---------------
- 1 files changed, 3 insertions(+), 15 deletions(-)
+ drivers/net/fs_enet/fs_enet-main.c |   14 +++++---------
+ 1 files changed, 5 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 40c6eba..2dc83b1 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -1590,9 +1590,6 @@ static int init_phy(struct net_device *dev)
- 	priv->oldspeed = 0;
- 	priv->oldduplex = -1;
- 
--	if (!ug_info->phy_node)
--		return 0;
--
- 	phydev = of_phy_connect(dev, ug_info->phy_node, &adjust_link, 0,
- 				priv->phy_interface);
- 	if (!phydev) {
-@@ -3608,9 +3605,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 	struct ucc_geth_private *ugeth = NULL;
- 	struct ucc_geth_info *ug_info;
- 	struct resource res;
--	struct device_node *phy;
- 	int err, ucc_num, max_speed = 0;
--	const u32 *fixed_link;
- 	const unsigned int *prop;
- 	const char *sprop;
- 	const void *mac_addr;
-@@ -3708,15 +3703,8 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 
- 	ug_info->uf_info.regs = res.start;
- 	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
--	fixed_link = of_get_property(np, "fixed-link", NULL);
--	if (fixed_link) {
--		phy = NULL;
--	} else {
--		phy = of_parse_phandle(np, "phy-handle", 0);
--		if (phy == NULL)
--			return -ENODEV;
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index b892c3a..1fea39e 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -754,15 +754,10 @@ static int fs_init_phy(struct net_device *dev)
+ 	fep->oldlink = 0;
+ 	fep->oldspeed = 0;
+ 	fep->oldduplex = -1;
+-	if(fep->fpi->phy_node)
+-		phydev = of_phy_connect(dev, fep->fpi->phy_node,
+-					&fs_adjust_link, 0,
+-					PHY_INTERFACE_MODE_MII);
+-	else {
+-		printk("No phy bus ID specified in BSP code\n");
+-		return -EINVAL;
 -	}
--	ug_info->phy_node = phy;
+-	if (IS_ERR(phydev)) {
 +
-+	ug_info->phy_node = of_parse_phandle(np, "phy-handle", 0);
++	phydev = of_phy_connect(dev, fep->fpi->phy_node, &fs_adjust_link, 0,
++				PHY_INTERFACE_MODE_MII);
++	if (!phydev) {
+ 		printk(KERN_ERR "%s: Could not attach to PHY\n", dev->name);
+ 		return PTR_ERR(phydev);
+ 	}
+@@ -1005,6 +1000,7 @@ static int __devinit fs_enet_probe(struct of_device *ofdev,
+ 		goto out_free_fpi;
+ 	}
  
- 	/* Find the TBI PHY node.  If it's not there, we don't support SGMII */
- 	ug_info->tbi_node = of_parse_phandle(np, "tbi-handle", 0);
-@@ -3725,7 +3713,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 	prop = of_get_property(np, "phy-connection-type", NULL);
- 	if (!prop) {
- 		/* handle interface property present in old trees */
--		prop = of_get_property(phy, "interface", NULL);
-+		prop = of_get_property(ug_info->phy_node, "interface", NULL);
- 		if (prop != NULL) {
- 			phy_interface = enet_to_phy_interface[*prop];
- 			max_speed = enet_to_speed[*prop];
++	SET_NETDEV_DEV(ndev, &ofdev->dev);
+ 	dev_set_drvdata(&ofdev->dev, ndev);
+ 
+ 	fep = netdev_priv(ndev);
 -- 
 1.6.3.1
