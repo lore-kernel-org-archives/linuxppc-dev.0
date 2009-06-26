@@ -1,22 +1,27 @@
-Return-Path: <mzaturenskiy.st@gmail.com>
-Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.240])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id E062CB707D
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 73484B7081
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Jun 2009 03:13:08 +1000 (EST)
-Received: by rv-out-0708.google.com with SMTP id k29so784227rvb.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Jun 2009 10:13:07 -0700 (PDT)
+	Sat, 27 Jun 2009 03:15:02 +1000 (EST)
+Received: from SG2EHSOBE006.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 0158CDDD0C
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 03:15:01 +1000 (EST)
+Message-ID: <4A450207.5000502@am.sony.com>
+Date: Fri, 26 Jun 2009 10:14:47 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-In-Reply-To: <4A44FD90.2040607@freescale.com>
-References: <97dd5fd20906260913x351593c9raa429fd657eb42f0@mail.gmail.com>
-	<4A44FD90.2040607@freescale.com>
-From: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
-Date: Fri, 26 Jun 2009 12:12:47 -0500
-Message-ID: <97dd5fd20906261012h34a85b33j9183eb9e41ed1181@mail.gmail.com>
-Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Bugme-new] [Bug 13304] New: ehci_hcd module causing problems
+	in using usb head phone
+References: <Pine.LNX.4.44L0.0906261140540.2965-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906261140540.2965-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org, USB list <linux-usb@vger.kernel.org>,
+	abhishekkumar <abhishekkumar@tataelxsi.co.in>,
+	bugme-daemon@bugzilla.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +31,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+Hi,
 
-> This isn't the denx list;
-I've noticed :) but I'm still learning about this whole process so I
-though I could get some general suggestions.
+On 06/26/2009 08:54 AM, Alan Stern wrote:
+> On Fri, 26 Jun 2009, abhishekkumar wrote:
+>>
+>> bus ps3_system_bus, device sb_05 (driver 10 Dec 2004)
+>> PS3 EHCI Host Controller
+>> EHCI ff.ff, hcd state 1
+>> structural params 0xffffffff
+>> capability params 0xffffffff
+>> status ffffffff Async Periodic Recl Halt IAA FATAL FLR PCD ERR INT
+>> command ffffffff park=3 ithresh=63 LReset IAAD Async Periodic period=?? Reset R
+>> intrenable ffffffff IAA FATAL FLR PCD ERR INT
+>> uframe ffffffff
+>> port 1 status ffffffff POWER OWNER sig=? RESET SUSPEND RESUME OCC OC PEC PE CSC
+>> port 2 status ffffffff POWER OWNER sig=? RESET SUSPEND RESUME OCC OC PEC PE CSC
+>> irq normal 30832 err 30 reclaim 84 (lost 1)
+>> complete 31221 unlink 10
+> 
+> This is very bad.  It indicates that the CPU was unable to communicate
+> with the EHCI controller at all!  All the memory-mapped I/O reads
+> returned 0xffffffff.  No wonder the keyboard and mouse stopped working.
+> 
+> I have no idea what could have caused this to happen.  Even if the 
+> controller had suffered a fatal error, you wouldn't see this.  It looks 
+> like the bus's connection to the controller was turned off.
+> 
+> I'm CC-ing the PS3 maintainer and mailing list.  Maybe people there can 
+> help.
+> 
+> Alan Stern
 
-> what kernel version is that, and with what
-> modifications from mainline?
-Kernel is v2.6.30, I'm not yet familiar enough with it to know what's
-been modified from mainline, just following instructions.
 
-> Note that ep88xc.dts in mainline is intended for use with PlanetCore, whi=
-ch
-> is what ships on that board. =A0You may need to make modifications for it=
- to
-> work with u-boot (at the least, the IMMR base is probably different).
-Hmm, this hasn't occurred to me, thank you for pointing it out.
+There is a known but yet unfixed bug for the PS3's EHCI Async Periodic
+(typically audio recording) device handling.  There are a few related
+hardware errata that I have not yet implemented driver fixes for that
+I think are causing it.  
 
-> Also, make sure u-boot is properly updating the memory size in the device
-> tree. =A0Can you dump the post-fixup device tree in u-boot?
-Not sure, but I'll try to find out if that's possible. It'd certainly
-answer a lot of questions...
+I guess it is the same problem as reported by Abhishek since Andrew's
+dmesg (http://www.osl.iu.edu/~afriedle/dmesg.txt) shows similar 
+results.
 
-Thanks,
-Mikhail Zaturenskiy
+More info is here:
+
+  http://ozlabs.org/pipermail/cbe-oss-dev/2009-February/006365.html
+
+I have bought a ART Tube USB device but have not had time to fix
+this bug.  It is on my todo list.  Please feel free to make an
+attempt.
+
+Alan, thanks for your effort on this so far, sorry you didn't know
+about the previous report.
+
+-Geoff
