@@ -3,17 +3,17 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 21323B7091
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 962B5B7095
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Jun 2009 08:29:48 +1000 (EST)
+	Sat, 27 Jun 2009 08:29:50 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 3A8B4DDD04
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 08:29:47 +1000 (EST)
-Date: Sat, 27 Jun 2009 02:29:45 +0400
+	by ozlabs.org (Postfix) with ESMTP id C30AADDD04
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 08:29:49 +1000 (EST)
+Date: Sat, 27 Jun 2009 02:29:48 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Miller <davem@davemloft.net>
-Subject: [PATCH 1/4] of/mdio: Add fixed link support
-Message-ID: <20090626222945.GA32487@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/4] gianfar: Revive fixed link support
+Message-ID: <20090626222948.GB32487@oksana.dev.rtsoft.ru>
 References: <20090626222900.GA14594@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -29,84 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the fixed link support is broken for all OF ethernet drivers,
-an "OF MDIO rework" removed most of the support. Instead of re-adding
-fixed-link stuff to the drivers, add the support to a framework, so we
-won't duplicate any code.
+Since commit fe192a49118f5b1272317d60c7930ece4e13ae49 ("Rework gianfar
+driver to use of_mdio infrastructure") the fixed-link support is
+broken, the driver oopses at init_phy():
 
-With this patch, if a node pointer is NULL, then of_phy_connect() will
-try to find ethernet device's node, then will look for fixed-link
-property, and if specified, it connects PHY as usual, via bus_id (fixed
-link PHYs do not have any device tree nodes associated with them).
+  Unable to handle kernel paging request for data at address 0x000000e4
+  Faulting instruction address: 0xc01cf298
+  Oops: Kernel access of bad area, sig: 11 [#1]
+  [...]
+  NIP [c01cf298] init_phy+0x80/0xdc
+  LR [c01cf250] init_phy+0x38/0xdc
+  Call Trace:
+  [cf81fe80] [c01d1cf8] gfar_enet_open+0x6c/0x19c
+  [cf81fea0] [c024494c] dev_open+0xfc/0x134
+  [cf81fec0] [c0242edc] dev_change_flags+0x84/0x1ac
+  [cf81fee0] [c0399ee0] ic_open_devs+0x168/0x2d8
+  [cf81ff20] [c039b2e8] ip_auto_config+0x90/0x2a4
+  [cf81ff60] [c0003884] do_one_initcall+0x34/0x1a8
+
+This patch fixes the oops, and removes phy_node checks (of_phy_connect
+call now tries to find fixed PHYs if the phy_node is NULL).
+
+Also, remove an old fixed-link code that we don't use any longer.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/of/of_mdio.c |   45 +++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 41 insertions(+), 4 deletions(-)
+ drivers/net/gianfar.c |   21 +++++----------------
+ 1 files changed, 5 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
-index aee967d..cfd876a 100644
---- a/drivers/of/of_mdio.c
-+++ b/drivers/of/of_mdio.c
-@@ -9,6 +9,10 @@
-  * out of the OpenFirmware device tree and using it to populate an mii_bus.
-  */
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 4ae1d25..41b2107 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -262,15 +262,6 @@ static int gfar_of_init(struct net_device *dev)
+ 		priv->device_flags |= FSL_GIANFAR_DEV_HAS_MAGIC_PACKET;
  
-+#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/netdevice.h>
-+#include <linux/err.h>
- #include <linux/phy.h>
- #include <linux/of.h>
- #include <linux/of_mdio.h>
-@@ -129,11 +133,44 @@ struct phy_device *of_phy_connect(struct net_device *dev,
- 				  void (*hndlr)(struct net_device *), u32 flags,
- 				  phy_interface_t iface)
- {
--	struct phy_device *phy = of_phy_find_device(phy_np);
-+	struct phy_device *phy = NULL;
-+
-+	if (phy_np) {
-+		int ret;
-+
-+		phy = of_phy_find_device(phy_np);
-+		if (!phy)
-+			return NULL;
-+
-+		ret = phy_connect_direct(dev, phy, hndlr, flags, iface);
-+		if (ret)
-+			return NULL;
-+	} else if (dev->dev.parent) {
-+		struct device_node *net_np;
-+		const u32 *phy_id;
-+		char *bus_id;
-+		int sz;
-+
-+		net_np = dev_archdata_get_node(&dev->dev.parent->archdata);
-+		if (!net_np)
-+			return NULL;
-+
-+		phy_id = of_get_property(net_np, "fixed-link", &sz);
-+		if (!phy_id || sz < sizeof(*phy_id))
-+			return NULL;
-+
-+		bus_id = kasprintf(GFP_KERNEL, PHY_ID_FMT, "0", phy_id[0]);
-+		if (!bus_id) {
-+			dev_err(&dev->dev, "could not allocate memory\n");
-+			return NULL;
-+		}
+ 	priv->phy_node = of_parse_phandle(np, "phy-handle", 0);
+-	if (!priv->phy_node) {
+-		u32 *fixed_link;
+-
+-		fixed_link = (u32 *)of_get_property(np, "fixed-link", NULL);
+-		if (!fixed_link) {
+-			err = -ENODEV;
+-			goto err_out;
+-		}
+-	}
  
--	if (!phy)
--		return NULL;
-+		phy = phy_connect(dev, bus_id, hndlr, 0, iface);
-+		kfree(bus_id);
-+		if (IS_ERR(phy))
-+			return NULL;
-+	}
+ 	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+ 	priv->tbi_node = of_parse_phandle(np, "tbi-handle", 0);
+@@ -657,13 +648,11 @@ static int init_phy(struct net_device *dev)
  
--	return phy_connect_direct(dev, phy, hndlr, flags, iface) ? NULL : phy;
-+	return phy;
- }
- EXPORT_SYMBOL(of_phy_connect);
+ 	interface = gfar_get_interface(dev);
+ 
+-	if (priv->phy_node) {
+-		priv->phydev = of_phy_connect(dev, priv->phy_node, &adjust_link,
+-					      0, interface);
+-		if (!priv->phydev) {
+-			dev_err(&dev->dev, "error: Could not attach to PHY\n");
+-			return -ENODEV;
+-		}
++	priv->phydev = of_phy_connect(dev, priv->phy_node, &adjust_link, 0,
++				      interface);
++	if (!priv->phydev) {
++		dev_err(&dev->dev, "could not attach to PHY\n");
++		return -ENODEV;
+ 	}
+ 
+ 	if (interface == PHY_INTERFACE_MODE_SGMII)
 -- 
 1.6.3.1
