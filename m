@@ -1,21 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 28BB8B707E
+Return-Path: <mzaturenskiy.st@gmail.com>
+Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.240])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id E062CB707D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Jun 2009 02:56:04 +1000 (EST)
-Message-ID: <4A44FD90.2040607@freescale.com>
-Date: Fri, 26 Jun 2009 11:55:44 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Sat, 27 Jun 2009 03:13:08 +1000 (EST)
+Received: by rv-out-0708.google.com with SMTP id k29so784227rvb.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 26 Jun 2009 10:13:07 -0700 (PDT)
 MIME-Version: 1.0
-To: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
-Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
+In-Reply-To: <4A44FD90.2040607@freescale.com>
 References: <97dd5fd20906260913x351593c9raa429fd657eb42f0@mail.gmail.com>
-In-Reply-To: <97dd5fd20906260913x351593c9raa429fd657eb42f0@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<4A44FD90.2040607@freescale.com>
+From: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
+Date: Fri, 26 Jun 2009 12:12:47 -0500
+Message-ID: <97dd5fd20906261012h34a85b33j9183eb9e41ed1181@mail.gmail.com>
+Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,26 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mikhail Zaturenskiy wrote:
-> Hello,
-> 
-> I'm trying to load Linux from U-Boot. I am using ELDK 4.2 with U-Boot
-> 2009.03 on an EP88xC rev1.1 board (MPC885 cpu, 64MB RAM, 32MB FLASH).
-> The linux kernel sources were obtained from instructions at
-> "http://www.denx.de/wiki/view/DULG/LinuxConfiguration#Section_6.1."
-> and the FDT blob (dtb) was generated from
-> "linux-2.6-denx/arch/powerpc/boot/dts/ep88xc.dts". Below is my output
-> from boot to hang:
+Hi Scott,
 
-This isn't the denx list; what kernel version is that, and with what 
-modifications from mainline?
+> This isn't the denx list;
+I've noticed :) but I'm still learning about this whole process so I
+though I could get some general suggestions.
 
-Note that ep88xc.dts in mainline is intended for use with PlanetCore, which is 
-what ships on that board.  You may need to make modifications for it to work 
-with u-boot (at the least, the IMMR base is probably different).  This is why 
-u-boot should be maintaining its own repository of trees that it passes...
+> what kernel version is that, and with what
+> modifications from mainline?
+Kernel is v2.6.30, I'm not yet familiar enough with it to know what's
+been modified from mainline, just following instructions.
 
-Also, make sure u-boot is properly updating the memory size in the device tree. 
-  Can you dump the post-fixup device tree in u-boot?
+> Note that ep88xc.dts in mainline is intended for use with PlanetCore, whi=
+ch
+> is what ships on that board. =A0You may need to make modifications for it=
+ to
+> work with u-boot (at the least, the IMMR base is probably different).
+Hmm, this hasn't occurred to me, thank you for pointing it out.
 
--Scott
+> Also, make sure u-boot is properly updating the memory size in the device
+> tree. =A0Can you dump the post-fixup device tree in u-boot?
+Not sure, but I'll try to find out if that's possible. It'd certainly
+answer a lot of questions...
+
+Thanks,
+Mikhail Zaturenskiy
