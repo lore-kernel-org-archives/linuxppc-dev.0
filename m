@@ -1,24 +1,34 @@
-Return-Path: <frank.svendsboe@gmail.com>
-Received: from mail-bw0-f217.google.com (mail-bw0-f217.google.com
-	[209.85.218.217])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id D88E6B7063
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B787EB6F56
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 28 Jun 2009 07:01:15 +1000 (EST)
-Received: by bwz17 with SMTP id 17so23087bwz.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Jun 2009 14:01:11 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <97dd5fd20906261012h34a85b33j9183eb9e41ed1181@mail.gmail.com>
-References: <97dd5fd20906260913x351593c9raa429fd657eb42f0@mail.gmail.com>
-	<4A44FD90.2040607@freescale.com>
-	<97dd5fd20906261012h34a85b33j9183eb9e41ed1181@mail.gmail.com>
-Date: Sat, 27 Jun 2009 23:01:07 +0200
-Message-ID: <1ba63b520906271401u5d012b0ex87a48820b616ae48@mail.gmail.com>
-Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
-From: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>
-To: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+	Sun, 28 Jun 2009 08:57:17 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D8E7EDDD04
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jun 2009 08:57:16 +1000 (EST)
+Subject: Re: sym scsi driver problem with 2.6.26 or newer debian kernel on
+	p610 (fwd)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: blackluck@ktk.bme.hu
+In-Reply-To: <4A465AF5.9000606@ktk.bme.hu>
+References: <Pine.LNX.4.64.0906141105050.4412@axis700.grange>
+	<4A38B883.80507@ktk.bme.hu>  <4A3F4A77.6070704@ktk.bme.hu>
+	<1245719890.4017.26.camel@pasglop> <1245724218.4017.35.camel@pasglop>
+	<1245794228.10356.31.camel@pasglop> <1245799792.10356.42.camel@pasglop>
+	<1245822826.9237.62.camel@concordia>
+	<1245823019.10356.69.camel@pasglop>
+	<1245824392.9237.85.camel@concordia>  <4A465AF5.9000606@ktk.bme.hu>
+Content-Type: text/plain
+Date: Sun, 28 Jun 2009 08:54:20 +1000
+Message-Id: <1246143260.22312.66.camel@pasglop>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, debian-powerpc@lists.debian.org,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +38,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 26, 2009 at 7:12 PM, Mikhail
-Zaturenskiy<mzaturenskiy.st@gmail.com> wrote:
-> Hi Scott,
->
->> This isn't the denx list;
-> I've noticed :) but I'm still learning about this whole process so I
-> though I could get some general suggestions.
->
->> what kernel version is that, and with what
->> modifications from mainline?
-> Kernel is v2.6.30, I'm not yet familiar enough with it to know what's
-> been modified from mainline, just following instructions.
->
->> Note that ep88xc.dts in mainline is intended for use with PlanetCore, wh=
-ich
->> is what ships on that board. =A0You may need to make modifications for i=
-t to
->> work with u-boot (at the least, the IMMR base is probably different).
-> Hmm, this hasn't occurred to me, thank you for pointing it out.
->
+On Sat, 2009-06-27 at 19:46 +0200, Laszlo Fekete wrote:
+> Hello!
+> 
+> Thank you very much, this patch works me too.
+> 
+> Maybe this patch will be in the debian kernel someday?
 
-I don't have access to this board, but have experience with a similar
-one (Adder 875), and
-I might be able to help out. Scott's right. According to U-Boots
-include/configs/EP88x.h,
-CONFIG_SYS_IMMR is 0xf0000000, but the Linux the ep88xc.dts is
-referring to an IMMR set
-to 0xfa200000. Replace every instance of 0xfa20 with 0xf000, and it may wor=
-k.
+The patch isn't actually correct just yet :-) Michael will
+be posting a proper one next week. It should be possible to
+request its inclusion into debian separately, we'll probably
+send it to stable@kernel.org as well.
 
->> Also, make sure u-boot is properly updating the memory size in the devic=
-e
->> tree. =A0Can you dump the post-fixup device tree in u-boot?
-> Not sure, but I'll try to find out if that's possible. It'd certainly
-> answer a lot of questions...
->
-> Thanks,
-> Mikhail Zaturenskiy
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+Cheers,
+Ben.
+
+> Thank you: blackluck
+> 
+> Michael Ellerman wrote: 
+> > On Wed, 2009-06-24 at 15:56 +1000, Benjamin Herrenschmidt wrote:
+> >   
+> > > On Wed, 2009-06-24 at 15:53 +1000, Michael Ellerman wrote:
+> > >     
+> > > > Doesn't fix my machine :/
+> > > > 
+> > > >       
+> > > That doesn't make sense ... What if you remove the bit inside the ifdef
+> > > CONFIG_MPIC_BROKEN_REGREAD in _mpic_read() ?
+> > > 
+> > > If that makes a difference, then it would be interesting to add a printk
+> > > in there that prints what the original value "val" is and what we have
+> > > in the shadow...
+> > >     
+> > 
+> > With this patch it boots:
+> > 
+> > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> > index 2353adc..fc17289 100644
+> > --- a/arch/powerpc/sysdev/mpic.c
+> > +++ b/arch/powerpc/sysdev/mpic.c
+> > @@ -231,13 +231,16 @@ static inline u32 _mpic_irq_read(struct mpic *mpic, unsign
+> >         unsigned int    isu = src_no >> mpic->isu_shift;
+> >         unsigned int    idx = src_no & mpic->isu_mask;
+> >         unsigned int    val;
+> > +       unsigned int    shadow;
+> >  
+> >         val = _mpic_read(mpic->reg_type, &mpic->isus[isu],
+> >                          reg + (idx * MPIC_INFO(IRQ_STRIDE)));  
+> >  #ifdef CONFIG_MPIC_BROKEN_REGREAD
+> > -       if (reg == 0)
+> > -               val = (val & (MPIC_VECPRI_MASK | MPIC_VECPRI_ACTIVITY)) |
+> > +       if (reg == 0) {
+> > +               shadow = (val & (MPIC_VECPRI_MASK | MPIC_VECPRI_ACTIVITY)) |
+> >                         mpic->isu_reg0_shadow[idx];
+> > +               printk("%s: val 0x%x shadow 0x%x\n", __func__, val, shadow);
+> > +       }
+> >  #endif
+> >         return val;
+> >  }
+> > 
+> > 
+> > And I see:
+> > 
+> > sym53c8xx 0000:00:0c.0: enabling device (0140 -> 0143)
+> > sym0: <896> rev 0x7 at pci 0000:00:0c.0 irq 17
+> > sym0: No NVRAM, ID 7, Fast-40, SE, parity checking
+> > _mpic_irq_read: val 0x80480004 shadow 0x80080014
+> > _mpic_irq_read: val 0x480004 shadow 0x480004
+> > 
+> > 
+> > 
+> > cheers
+> >   
