@@ -1,29 +1,26 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <stern+4a593f06@rowland.harvard.edu>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3CF27B7085
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0EED2B7085
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Jun 2009 10:11:48 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 64F15DDD04
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 10:11:47 +1000 (EST)
-Date: Sat, 27 Jun 2009 04:11:45 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/4] of/mdio: Add fixed link support
-Message-ID: <20090627001145.GA9779@oksana.dev.rtsoft.ru>
-References: <20090626222900.GA14594@oksana.dev.rtsoft.ru>
-	<20090626222945.GA32487@oksana.dev.rtsoft.ru>
-	<fa686aa40906261633y502f0ed2jebc58f9160c683ce@mail.gmail.com>
+	Sat, 27 Jun 2009 11:33:29 +1000 (EST)
+Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
+	by ozlabs.org (Postfix) with SMTP id 0B07DDDD01
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 11:33:26 +1000 (EST)
+Date: Fri, 26 Jun 2009 21:33:22 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [Bugme-new] [Bug 13304] New: ehci_hcd module causing problems
+	in using usb head phone
+In-Reply-To: <4A454616.7040501@am.sony.com>
+Message-ID: <Pine.LNX.4.44L0.0906262132120.2995-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <fa686aa40906261633y502f0ed2jebc58f9160c683ce@mail.gmail.com>
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
-	Andy Fleming <afleming@freescale.com>,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, USB list <linux-usb@vger.kernel.org>,
+	abhishekkumar <abhishekkumar@tataelxsi.co.in>,
+	bugme-daemon@bugzilla.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,76 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 26, 2009 at 05:33:26PM -0600, Grant Likely wrote:
-> On Fri, Jun 26, 2009 at 4:29 PM, Anton
-> Vorontsov<avorontsov@ru.mvista.com> wrote:
-> > Currently the fixed link support is broken for all OF ethernet drivers,
-> > an "OF MDIO rework" removed most of the support. Instead of re-adding
-> > fixed-link stuff to the drivers, add the support to a framework, so we
-> > won't duplicate any code.
-> >
-> > With this patch, if a node pointer is NULL, then of_phy_connect() will
-> > try to find ethernet device's node, then will look for fixed-link
-> > property, and if specified, it connects PHY as usual, via bus_id (fixed
-> > link PHYs do not have any device tree nodes associated with them).
-> >
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+On Fri, 26 Jun 2009, Geoff Levand wrote:
+
+> > Where is the information about the hardware errata you mentioned?
 > 
-> Ugh.  I do not like this approach.  I did not intend to break fixed
-> links, but I do not think that this approach is the right fix.  There
-> are several problems.
-> 
-> I don't like the fixed.c approach of creating a dummy phy to begin
-> with.  I think it is an abuse of the device model to register a dummy
-> mii_bus and have dummy devices registered on it.  It is a lot of code
-> for what should be a very simple thing.  In particular, if a PHY is
-> not specified, then the driver should use a static link configuration.
->  This is trivial to implement in an Ethernet driver and I do not think
-> the dummy phy adds anything.
+> Sorry, I should have mentioned it.  Unfortunately, that info is not
+> in the public as far as I know.  I think only someone with access
+> to those will be able to work on this fix.
 
-Dummy PHYs add more than you think, for example you'll have to
-refactor or duplicate the code that is responsible for MAC settings
-for a given mode (10/100/100, duplex, pause), and you'll have to
-do netif_carrier_* handling yourself.
+Okay, then I guess there's nothing more I can do regarding Bug #13304.  
+Can you take it over?
 
-Not a problem per se, but you'll have to address this, and you'll
-have two paths in the drivers.
-
-> It hooks into the initialization path of *all* OF enabled net drivers,
-> whether it wants it or not.  ie. The MPC5200 FEC driver does not want
-> it because the fixed-link property is not part of the mpc5200-fec
-> binding; it uses a current-speed property instead.  'fixed-link' has
-> not been agreed upon to be applicable to all Ethernet bindings, and
-> I'm not convinced that the format of it won't need to be changed for
-> future Ethernet bindings.  A function for parsing fixed-link should be
-> a library function that a driver can choose to call out to.  It should
-> not be welded into the init path.
-> 
-> I also think parsing the device tree at device open time (when
-> of_phy_connect is usually called) is best to be avoided.  fixed-link
-> parsing should really happen at probe time and the values cached IMHO.
->  It's probably not significant, but I'd like to keep device tree reads
-> constrained in the cold path (driver probe time) as opposed to the hot
-> (or slightly less cool) device open path.
-
-open() time isn't a hot path at all.
-
-> Instead, I think that each driver should be more graceful about
-> missing phy pointers and the init path should call out to a fixed-link
-> parser function that sets the initial link settings.  Probably less
-> than 5 lines of code per driver.
-> 
-> I'm sorry about breaking it.  It was my fault, and I'd be happy to fix
-> it if you'd like me to,
-
-Please do.
-
-> but I don't think that this patch is the right
-> approach.
-
-OK, fine by me if you think you can do this stuff better. :-)
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Alan Stern
