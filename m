@@ -1,34 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <kernelmailz@googlemail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B787EB6F56
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 60307B7063
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 28 Jun 2009 08:57:17 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D8E7EDDD04
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jun 2009 08:57:16 +1000 (EST)
-Subject: Re: sym scsi driver problem with 2.6.26 or newer debian kernel on
-	p610 (fwd)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: blackluck@ktk.bme.hu
-In-Reply-To: <4A465AF5.9000606@ktk.bme.hu>
-References: <Pine.LNX.4.64.0906141105050.4412@axis700.grange>
-	<4A38B883.80507@ktk.bme.hu>  <4A3F4A77.6070704@ktk.bme.hu>
-	<1245719890.4017.26.camel@pasglop> <1245724218.4017.35.camel@pasglop>
-	<1245794228.10356.31.camel@pasglop> <1245799792.10356.42.camel@pasglop>
-	<1245822826.9237.62.camel@concordia>
-	<1245823019.10356.69.camel@pasglop>
-	<1245824392.9237.85.camel@concordia>  <4A465AF5.9000606@ktk.bme.hu>
-Content-Type: text/plain
-Date: Sun, 28 Jun 2009 08:54:20 +1000
-Message-Id: <1246143260.22312.66.camel@pasglop>
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, debian-powerpc@lists.debian.org,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org
+	Sun, 28 Jun 2009 14:57:52 +1000 (EST)
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
+	by ozlabs.org (Postfix) with ESMTP id 85C6FDDD01
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jun 2009 14:57:50 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so938611fga.16
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jun 2009 21:57:47 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <m3ab3t4623.fsf@google.com>
+References: <abe8a1fd0906271246q920124ard61422d9577e2d09@mail.gmail.com>
+	<abe8a1fd0906271249k479e5a87gfe1ee9c02798a234@mail.gmail.com>
+	<m3ab3t4623.fsf@google.com>
+Date: Sun, 28 Jun 2009 10:27:47 +0530
+Message-ID: <abe8a1fd0906272157j4246e9d3hec2e374535a22c89@mail.gmail.com>
+Subject: Re: Inline Assembly queries
+From: kernel mailz <kernelmailz@googlemail.com>
+To: Ian Lance Taylor <iant@google.com>
+Content-Type: text/plain; charset=windows-1252
+Cc: gcc-help@gcc.gnu.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,75 +32,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2009-06-27 at 19:46 +0200, Laszlo Fekete wrote:
-> Hello!
-> 
-> Thank you very much, this patch works me too.
-> 
-> Maybe this patch will be in the debian kernel someday?
+Thanks Ian,
+For the "memory" clobber
+I tried with the a function in linux kernel
 
-The patch isn't actually correct just yet :-) Michael will
-be posting a proper one next week. It should be possible to
-request its inclusion into debian separately, we'll probably
-send it to stable@kernel.org as well.
+--
+/*
+ * Atomic exchange
+ *
+ * Changes the memory location '*ptr' to be val and returns
+ * the previous value stored there.
+ */
+static inline unsigned long
+__xchg_u32(volatile void *p, unsigned long val)
+{
+        unsigned long prev;
 
-Cheers,
-Ben.
+        __asm__ __volatile__(
 
-> Thank you: blackluck
-> 
-> Michael Ellerman wrote: 
-> > On Wed, 2009-06-24 at 15:56 +1000, Benjamin Herrenschmidt wrote:
-> >   
-> > > On Wed, 2009-06-24 at 15:53 +1000, Michael Ellerman wrote:
-> > >     
-> > > > Doesn't fix my machine :/
-> > > > 
-> > > >       
-> > > That doesn't make sense ... What if you remove the bit inside the ifdef
-> > > CONFIG_MPIC_BROKEN_REGREAD in _mpic_read() ?
-> > > 
-> > > If that makes a difference, then it would be interesting to add a printk
-> > > in there that prints what the original value "val" is and what we have
-> > > in the shadow...
-> > >     
-> > 
-> > With this patch it boots:
-> > 
-> > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> > index 2353adc..fc17289 100644
-> > --- a/arch/powerpc/sysdev/mpic.c
-> > +++ b/arch/powerpc/sysdev/mpic.c
-> > @@ -231,13 +231,16 @@ static inline u32 _mpic_irq_read(struct mpic *mpic, unsign
-> >         unsigned int    isu = src_no >> mpic->isu_shift;
-> >         unsigned int    idx = src_no & mpic->isu_mask;
-> >         unsigned int    val;
-> > +       unsigned int    shadow;
-> >  
-> >         val = _mpic_read(mpic->reg_type, &mpic->isus[isu],
-> >                          reg + (idx * MPIC_INFO(IRQ_STRIDE)));  
-> >  #ifdef CONFIG_MPIC_BROKEN_REGREAD
-> > -       if (reg == 0)
-> > -               val = (val & (MPIC_VECPRI_MASK | MPIC_VECPRI_ACTIVITY)) |
-> > +       if (reg == 0) {
-> > +               shadow = (val & (MPIC_VECPRI_MASK | MPIC_VECPRI_ACTIVITY)) |
-> >                         mpic->isu_reg0_shadow[idx];
-> > +               printk("%s: val 0x%x shadow 0x%x\n", __func__, val, shadow);
-> > +       }
-> >  #endif
-> >         return val;
-> >  }
-> > 
-> > 
-> > And I see:
-> > 
-> > sym53c8xx 0000:00:0c.0: enabling device (0140 -> 0143)
-> > sym0: <896> rev 0x7 at pci 0000:00:0c.0 irq 17
-> > sym0: No NVRAM, ID 7, Fast-40, SE, parity checking
-> > _mpic_irq_read: val 0x80480004 shadow 0x80080014
-> > _mpic_irq_read: val 0x480004 shadow 0x480004
-> > 
-> > 
-> > 
-> > cheers
-> >   
+"1:     lwarx   %0,0,%2 \n"
+
+"       stwcx.  %3,0,%2 \n\
+        bne-    1b"
+
+        : "=3D&r" (prev), "+m" (*(volatile unsigned int *)p)
+        : "r" (p), "r" (val)
+//        :"memory","cc");
+
+        return prev;
+}
+#define ADDR 0x1000
+int main()
+{
+	__xchg_u32((void*)ADDR, 0x2000);
+	__xchg_u32((void*)ADDR, 0x3000);
+
+	return 0;
+
+}
+
+Got the same asm, when compiled with O1 , with / without "memory" clobber
+
+100003fc <main>:
+100003fc:       39 20 10 00     li      r9,4096
+10000400:       38 00 20 00     li      r0,8192
+10000404:       7d 60 48 28     lwarx   r11,0,r9
+10000408:       7c 00 49 2d     stwcx.  r0,0,r9
+1000040c:       40 a2 ff f8     bne-    10000404 <main+0x8>
+10000410:       38 00 30 00     li      r0,12288
+10000414:       7d 60 48 28     lwarx   r11,0,r9
+10000418:       7c 00 49 2d     stwcx.  r0,0,r9
+1000041c:       40 a2 ff f8     bne-    10000414 <main+0x18>
+10000420:       38 60 00 00     li      r3,0
+10000424:       4e 80 00 20     blr
+
+No diff ?
+am I choosing the right example ?
+
+-TZ
+
+
+On Sun, Jun 28, 2009 at 4:50 AM, Ian Lance Taylor<iant@google.com> wrote:
+> kernel mailz <kernelmailz@googlemail.com> writes:
+>
+>> I've been fiddling my luck with gcc 4.3.2 inline assembly on powerpc
+>> There are a few queries
+>>
+>> 1. asm volatile or simply asm produce the same assembly code.
+>> Tried with a few examples but didnt find any difference by adding
+>> volatile with asm
+>>
+>> 2. Use of "memory" and clobbered registers.
+>>
+>> "memory" -
+>> a. announce to the compiler that the memory has been modified
+>> b. this instruction writes to some memory (other than a listed output)
+>> and GCC shouldn=92t cache memory values in registers across this asm.
+>>
+>> I tried with stw and stwcx instruction, adding "memory" has no effect.
+>>
+>> Is there any example scenerio where gcc would generate different
+>> assembly by adding / removing "memory" ?
+>
+> Please never send a message to both gcc@gcc.gnu.org and
+> gcc-help@gcc.gnu.org. =A0This message is appropriate for
+> gcc-help@gcc.gnu.org, not for gcc@gcc.gnu.org. =A0Thanks.
+>
+> An asm with no outputs is always considered to be volatile. =A0To see the
+> affect of volatile, just try something like
+> =A0 =A0asm ("# modify %0" : "=3Dr" (i) : /* no inputs */ : /* no clobbers=
+ */);
+> Try it with and without optimization.
+>
+> As the documentation says, the effect of adding a "memory" clobber is
+> that gcc does not cache values in registers across the asm. =A0So the
+> effect will be shown in something like
+> =A0int i =3D *p;
+> =A0asm volatile ("# read %0" : : "r" (i));
+> =A0return *p;
+> The memory clobber will only make a different when optimizing.
+>
+> Ian
+>
