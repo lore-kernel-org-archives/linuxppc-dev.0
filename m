@@ -1,27 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <joe@perches.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 60D9EB74CF
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id AAE4FB6F35
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 28 Jun 2009 17:42:10 +1000 (EST)
-Received: from mail-px0-f182.google.com (mail-px0-f182.google.com
-	[209.85.216.182]) by ozlabs.org (Postfix) with ESMTP id BEEB4DDD0C
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jun 2009 17:42:09 +1000 (EST)
-Received: by mail-px0-f182.google.com with SMTP id 12so2974207pxi.17
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jun 2009 00:42:09 -0700 (PDT)
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/2] sound/soc: remove BROKEN from Efika and pcm030 fabric
-	drivers
-To: jonsmirl@gmail.com, linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	broonie@sirena.org.uk, timur@freescale.com
-Date: Sun, 28 Jun 2009 01:42:06 -0600
-Message-ID: <20090628074158.26905.36950.stgit@localhost.localdomain>
-In-Reply-To: <20090628074109.26905.9927.stgit@localhost.localdomain>
-References: <20090628074109.26905.9927.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 29 Jun 2009 02:38:45 +1000 (EST)
+Received: from mail.perches.com (136-022.dsl.LABridge.com [206.117.136.22])
+	by ozlabs.org (Postfix) with ESMTP id B5428DDD0B
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 02:38:43 +1000 (EST)
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 15/62] drivers/dma/fsldma.c: Remove unnecessary semicolons
+Date: Sun, 28 Jun 2009 09:26:20 -0700
+Message-Id: <03676ce0e272d44d1d4ea19639b28afb994c65eb.1246173680.git.joe@perches.com>
+In-Reply-To: <cover.1246173664.git.joe@perches.com>
+References: <cover.1246173664.git.joe@perches.com>
+Cc: trivial@kernel.org, linuxppc-dev@ozlabs.org,
+	Maciej Sosnowski <maciej.sosnowski@intel.com>,
+	Zhang Wei <zw@zh-kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+	Li Yang <leoli@freescale.com>, Dan Williams <dan.j.williams@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-
-The needed spin_event_timeout() macro is now merged in from the
-powerpc tree, so these drivers are no longer broken.  This reverts
-commit 0c0e09e21a9e7bc6ca54e06ef3d497255ca26383 (ASoC: Mark MPC5200
-AC97 as BROKEN until PowerPC merge issues are resolved)
-
-Tested against 2.6.31-rc1.
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Joe Perches <joe@perches.com>
 ---
+ drivers/dma/fsldma.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- sound/soc/fsl/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index 5661876..8cb65cc 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -41,7 +41,7 @@ config SND_SOC_MPC5200_AC97
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index f18d1bd..71ce8ed 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -136,7 +136,7 @@ static int dma_is_idle(struct fsl_dma_chan *fsl_chan)
  
- config SND_MPC52xx_SOC_PCM030
- 	tristate "SoC AC97 Audio support for Phytec pcm030 and WM9712"
--	depends on PPC_MPC5200_SIMPLE && BROKEN
-+	depends on PPC_MPC5200_SIMPLE
- 	select SND_SOC_MPC5200_AC97
- 	select SND_SOC_WM9712
- 	help
-@@ -50,7 +50,7 @@ config SND_MPC52xx_SOC_PCM030
+ static void dma_start(struct fsl_dma_chan *fsl_chan)
+ {
+-	u32 mr_set = 0;;
++	u32 mr_set = 0;
  
- config SND_MPC52xx_SOC_EFIKA
- 	tristate "SoC AC97 Audio support for bbplan Efika and STAC9766"
--	depends on PPC_EFIKA && BROKEN
-+	depends on PPC_EFIKA
- 	select SND_SOC_MPC5200_AC97
- 	select SND_SOC_STAC9766
- 	help
+ 	if (fsl_chan->feature & FSL_DMA_CHAN_PAUSE_EXT) {
+ 		DMA_OUT(fsl_chan, &fsl_chan->reg_base->bcr, 0, 32);
+-- 
+1.6.3.1.10.g659a0.dirty
