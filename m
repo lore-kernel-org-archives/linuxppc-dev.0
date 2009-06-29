@@ -1,39 +1,25 @@
-Return-Path: <iant@google.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D2052B7094
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F1EAEB709C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 07:40:12 +1000 (EST)
-Received: from smtp-out.google.com (smtp-out.google.com [216.239.45.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4D070DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 07:40:12 +1000 (EST)
-Received: from zps38.corp.google.com (zps38.corp.google.com [172.25.146.38])
-	by smtp-out.google.com with ESMTP id n5TLTglR000710
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 14:29:42 -0700
-Received: from pxi7 (pxi7.prod.google.com [10.243.27.7])
-	by zps38.corp.google.com with ESMTP id n5TLTe3r020660
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 14:29:40 -0700
-Received: by pxi7 with SMTP id 7so841486pxi.12
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 14:29:40 -0700 (PDT)
-To: kernel mailz <kernelmailz@googlemail.com>
-Subject: Re: Inline Assembly queries
-References: <abe8a1fd0906271246q920124ard61422d9577e2d09@mail.gmail.com>
-	<abe8a1fd0906271249k479e5a87gfe1ee9c02798a234@mail.gmail.com>
-	<m3ab3t4623.fsf@google.com>
-	<abe8a1fd0906272157j4246e9d3hec2e374535a22c89@mail.gmail.com>
-	<abe8a1fd0906290849w1ba6bd33of60a9c2e110c10fd@mail.gmail.com>
-From: Ian Lance Taylor <iant@google.com>
-Date: Mon, 29 Jun 2009 14:29:38 -0700
-In-Reply-To: <abe8a1fd0906290849w1ba6bd33of60a9c2e110c10fd@mail.gmail.com>
-	(kernel mailz's message of "Mon\, 29 Jun 2009 21\:19\:57 +0530")
-Message-ID: <m3ljna20fx.fsf@google.com>
+	Tue, 30 Jun 2009 09:40:57 +1000 (EST)
+Received: from mail-px0-f182.google.com (mail-px0-f182.google.com
+	[209.85.216.182]) by ozlabs.org (Postfix) with ESMTP id 6D6C5DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 09:40:55 +1000 (EST)
+Received: by pxi12 with SMTP id 12so4006312pxi.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 16:40:54 -0700 (PDT)
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc: Fix spin_event_timeout() to be robust over context
+	switches
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, timur@freescale.com,
+	jonsmirl@gmail.com
+Date: Mon, 29 Jun 2009 17:40:51 -0600
+Message-ID: <20090629234035.12475.58493.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: gcc-help@gcc.gnu.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,29 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kernel mailz <kernelmailz@googlemail.com> writes:
+From: Grant Likely <grant.likely@secretlab.ca>
 
-> I tried a small example
->
-> int *p = 0x1000;
-> int a = *p;
-> asm("sync":::"memory");
-> a = *p;
->
-> and
->
-> volatile int *p = 0x1000;
-> int a = *p;
-> asm("sync");
-> a = *p
->
-> Got the same assembly.
-> Which is right.
->
-> So does it mean, if proper use of volatile is done, there is no need
-> of "memory" ?
+Current implementation of spin_event_timeout can be interrupted by an
+IRQ or context switch after testing the condition, but before checking
+the timeout.  This can cause the loop to report a timeout when the
+condition actually became true in the middle.
 
-You have to consider the effects of inlining, which may bring in other
-memory loads and stores through non-volatile pointers.
+This patch adds one final check of the condition upon exit of the loop
+if the last test of the condition was still false.
 
-Ian
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+
+ arch/powerpc/include/asm/delay.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+
+diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/delay.h
+index 1e2eb41..52e4d54 100644
+--- a/arch/powerpc/include/asm/delay.h
++++ b/arch/powerpc/include/asm/delay.h
+@@ -63,6 +63,8 @@ extern void udelay(unsigned long usecs);
+ 			udelay(delay);                                         \
+ 		else                                                           \
+ 			cpu_relax();                                           \
++	if (!__ret)                                                            \
++		__ret = (condition);                                           \
+ 	__ret;		                                                       \
+ })
+ 
