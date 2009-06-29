@@ -1,32 +1,32 @@
-Return-Path: <david.hagood@gmail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05D51B7102
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CCA65B7172
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 01:49:57 +1000 (EST)
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
-	by ozlabs.org (Postfix) with ESMTP id 342FCDDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 01:49:55 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so1216869fga.16
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 08:49:54 -0700 (PDT)
-Message-ID: <bd421daddbfcd48f86096879ce621310.squirrel@localhost>
-In-Reply-To: <1246285193.10035.245.camel@demux9hc>
-References: <1242119872.16400.113.camel@demuxf9c>
-	<2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
-	<1242372791.26759.34.camel@demuxf9c>
-	<2a27d3730905150056m7298b66ckb9db92f9432953d6@mail.gmail.com>
-	<1242802800.9160.143.camel@demuxf9c>
-	<1246285193.10035.245.camel@demux9hc>
-Date: Mon, 29 Jun 2009 10:44:06 -0500 (CDT)
-Subject: Re: RapidIO - general questions
-From: david.hagood@gmail.com
-To: "Jan Neskudla" <jan.neskudla.ext@nsn.com>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, ext Li Yang <leoli@freescale.com>,
-	linux-kernel@vger.kernel.org, "IDT - Kim, Chul" <chul.kim@idt.com>
+	Tue, 30 Jun 2009 02:51:53 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n5TGpYcu010742 for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 29 Jun 2009 09:51:34 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n5TGpX3T024096
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 29 Jun 2009 11:51:33 -0500 (CDT)
+Date: Mon, 29 Jun 2009 11:51:33 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Johnny Hung <johnny.hacking@gmail.com>
+Subject: Re: PCI device support in Open Firmware (device tree syntax)
+Message-ID: <20090629165133.GC1323@b07421-ec1.am.freescale.net>
+References: <cb9ecdfa0906290858x125b8149na037f33258c21426@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <cb9ecdfa0906290858x125b8149na037f33258c21426@mail.gmail.com>
+Cc: kernelnewbies@nl.linux.org, linuxppc-dev@lists.ozlabs.org,
+	linux-embedded@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,7 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Do you know (and if you know, can you comment) if IDT is planning on
-offering RIO (and more importantly to me sRIO) chipsets that can be used
-on other architectures besides the various PPC chips with embedded sRIO
-controllers?
+On Mon, Jun 29, 2009 at 11:58:22PM +0800, Johnny Hung wrote:
+> Hi all,
+>     I am working in customized Freescale MPC8313 board. There are two
+> PCI devices (Broadcom Switch) in PCI bus.
+> Each PCI device has its configuration space. It contains
+> vendor/product ID (RO)..., and important information, likes BARs
+> (Base Address), INT line and IRQ(RW). These resources (BAR, INT, IRQ)
+> is assigned from BIOS in x86 arch.
+>     My problem is how to assign PCI device resources in device tree. I
+> can't find exist dts file as an example. I have read the
+> http://www.power.org/resources/downloads/Power_ePAPR_APPROVED_v1.0.pdf
+> file. It's described detailed about device tree
+> except PCI device. So, anyone give me a hint or sany tuff is appreciated.
+>    I think Linux Kernel parses device tree and get the PCI device
+> resources information then write into PCI configuration space.
+> So PCI device driver do pci_register_driver (get resource) and do
+> itself probe for PCI device. Is it right? CMIIAW
+
+With flat device trees, PCI devices are not typically included as they
+can be probed instead.  Interrupt mapping is conveyed by the
+interrupt-map property in the PCI controller node.
+
+-Scott
