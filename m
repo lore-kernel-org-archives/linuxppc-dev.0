@@ -1,19 +1,23 @@
-Return-Path: <jk@bilbo.ozlabs.org>
+Return-Path: <Frank.Prepelica@ubidyne.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 153D4B707D
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 36A6EB707C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 29 Jun 2009 16:38:40 +1000 (EST)
-Content-Type: text/plain; charset="us-ascii"
+	Mon, 29 Jun 2009 18:23:13 +1000 (EST)
+Received: from mail.ubidyne.com (mail.ubidyne.com [212.211.133.238])
+	by ozlabs.org (Postfix) with ESMTP id 2E5B4DDD0B
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 18:23:10 +1000 (EST)
 MIME-Version: 1.0
-Subject: [PATCH] powerpc/mpic: fix WARN_ON from alloc_bootmem
-Message-Id: <1246257419.938592.49700983608.1.gpush@pingu>
-To: <linuxppc-dev@ozlabs.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Mon, 29 Jun 2009 14:36:59 +0800
-Cc: cbe-oss-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: AW: Direct MII connection between MPC8313 and VIRTEX FPGA
+Date: Mon, 29 Jun 2009 10:23:06 +0200
+Message-ID: <29DC34A6B43468409F5A371CFE34E849D7EE1A@ex01.ads.ubidyne.de>
+From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,46 +27,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current powerpc/merge on a QS21 reports an oops on boot:
+Hi Grant
 
-------------[ cut here ]------------
-Badness at mm/bootmem.c:535
- [snip]
-Call Trace:
-[c000000000763a80] [c0000000005dd068] .alloc_arch_preferred_bootmem+0x28/0x9c (unreliable)
-[c000000000763b10] [c0000000005ddaac] .___alloc_bootmem_nopanic+0x5c/0x130
-[c000000000763bc0] [c0000000005ddbd8] .___alloc_bootmem+0x28/0x68
-[c000000000763c50] [c0000000005dddf0] .__alloc_bootmem+0x1c/0x30
-[c000000000763cd0] [c0000000005d1080] .mpic_alloc+0x20c/0x9f8
-[c000000000763dc0] [c0000000005d3348] .cell_init_irq+0x70/0x114
-[c000000000763e60] [c0000000005c41f8] .init_IRQ+0x44/0x64
-[c000000000763ee0] [c0000000005c0914] .start_kernel+0x238/0x440
-[c000000000763f90] [c000000000007368] .start_here_common+0x1c/0x34
+Thanks for your response!
 
-Looks like we're using alloc_bootmem after the slab is up and running,
-in mpic_init.
+I have searched for "current-speed" in drivers/net/fec_mpc52xx.c but I =
+cannot find anything. However we are using the gianfar.c Ethernet =
+driver.
+Do you know whether this driver supports fixed MII links without PHY?
 
-This change uses a kzalloc instead - in fact, we've already done a
-kzalloc() earlier in this function.
+I've got another question regarding MII connection between and MPC and a =
+Virtex FPGA. Whats about the PHY address which has to be set in the DTB =
+file? Do I have to modify the DTB at all?
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
----
- arch/powerpc/sysdev/mpic.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Thank you!
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index d46de1f..a5980e6 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1109,9 +1109,8 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 			psize /= 4;
- 			bits = intvec_top + 1;
- 			mapsize = BITS_TO_LONGS(bits) * sizeof(unsigned long);
--			mpic->protected = alloc_bootmem(mapsize);
-+			mpic->protected = kzalloc(mapsize, GFP_KERNEL);
- 			BUG_ON(mpic->protected == NULL);
--			memset(mpic->protected, 0, mapsize);
- 			for (i = 0; i < psize; i++) {
- 				if (psrc[i] > intvec_top)
- 					continue;
+
+Best regards
+Frank
+
+=20
+=20
+=20
+=09
+		=20
+=20
+
+Frank Prepelica
+Software Design Engineer
+
+Ubidyne GmbH
+Lise-Meitner-Str.-14
+89081 Ulm - Germany
+
+Phone:             +49 731 88 00 71 58
+Fax:                 +49 731 88 00 71 99
+Email:              frank.prepelica@ubidyne.com
+Homepage:       www.ubidyne.com
+=20
+Registered office: Ulm
+District court of Ulm: HRB 5295
+Managing Directors:
+Dipl. Ing. Ken Hawk
+Dipl. Ing. Beat M=FCller
+Dipl. Ing. Mike Levis
+
+> -----Urspr=FCngliche Nachricht-----
+> Von: Grant Likely [mailto:grant.likely@secretlab.ca]
+> Gesendet: Donnerstag, 25. Juni 2009 22:06
+> An: Frank Prepelica
+> Cc: linuxppc-dev@ozlabs.org
+> Betreff: Re: Direct MII connection between MPC8313 and VIRTEX FPGA
+>=20
+> On Thu, Jun 25, 2009 at 9:11 AM, Frank
+> Prepelica<Frank.Prepelica@ubidyne.com> wrote:
+> > Hi all,
+> >
+> > we removed the ethernet PHYs (MARVELL) from our customized board =
+(based
+> on MPC8313ERDB) and
+> > connected the CPU Ethernet lines directly to a FPGA which is now
+> emulating the PHY. But the ifconfig
+> > command cannot find that eth device anymore. Does the emulated PHY =
+needs
+> to provide MDIO
+> > information that the ETH device can be found again?
+>=20
+> No, you just need to make sure that the Ethernet driver is able to
+> support fixed speed MII links without a PHY.  It's trivial to do, but
+> not all drivers support it.  Search for "current-speed" in
+> drivers/net/fec_mpc52xx.c for an example.
+>=20
+> g.
+>=20
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
