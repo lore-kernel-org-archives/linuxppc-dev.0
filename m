@@ -1,29 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 39F71B707E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 04:41:37 +1000 (EST)
-Message-ID: <4A490AE4.7000509@freescale.com>
-Date: Mon, 29 Jun 2009 13:41:40 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <jacmet@gmail.com>
+Sender: Peter Korsgaard <jacmet@gmail.com>
+To: Jorge =?utf-8?Q?S=C3=A1nchez?= de Nova <j.s.denova@gmail.com>
+Subject: Re: Device tree for c67x00
+References: <621779fd0906290825i6bdc1e99tf6be68e3de56e9a6@mail.gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 29 Jun 2009 21:10:14 +0200
+In-Reply-To: <621779fd0906290825i6bdc1e99tf6be68e3de56e9a6@mail.gmail.com>
+	("Jorge =?utf-8?Q?S=C3=A1nchez?= de Nova"'s message of "Mon\,
+	29 Jun 2009 17\:25\:16 +0200")
+Message-ID: <871vp2eu09.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-To: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
-Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
-References: <97dd5fd20906260913x351593c9raa429fd657eb42f0@mail.gmail.com>
-	<4A44FD90.2040607@freescale.com>
-	<97dd5fd20906261012h34a85b33j9183eb9e41ed1181@mail.gmail.com>
-	<1ba63b520906271401u5d012b0ex87a48820b616ae48@mail.gmail.com>
-	<97dd5fd20906291053u1a07c3afla1c2ea0590d01f1e@mail.gmail.com>
-	<4A4901A8.5010402@mlbassoc.com>
-	<97dd5fd20906291113t5ea98285h2db6379ff1a940c@mail.gmail.com>
-In-Reply-To: <97dd5fd20906291113t5ea98285h2db6379ff1a940c@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: =?UTF-8?B?RnJhbmsgU3ZlbmRzYsO4ZQ==?= <frank.svendsboe@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, Gary Thomas <gary@mlbassoc.com>
+Content-Type: text/plain; charset=utf-8
+Cc: Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,22 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mikhail Zaturenskiy wrote:
-> Hi Gary
-> 
->> Did you try 'root=ttyCPM0,9600'?
-> 
-> Gave that a shot just now, doesn't seem to have changed anything other
-> than that it now says "VFS: Cannot open root device ttyCMP0,9600" or
-> unknown-block(2,0)." But thanks for the suggestion though.
-> 
-> What exactly was this supposed to do? I thought that the "root=" boot
-> argument did not play a role in console output of the boot
-> information.
+>>>>> "Jorge" =3D=3D Jorge S=C3=A1nchez de Nova <j.s.denova@gmail.com> writ=
+es:
 
-s/root=/console=/
+ Jorge> Hi,
 
-Alternatively, you can set /chosen/linux,stdout-path to poin to the 
-serial node you want to use for the console.
+ Jorge> It doesn't work at all since it doesn't load anything. I have
+ Jorge> looked at the driver and there is apparently no openfirmware
+ Jorge> support for it, so maybe the dts info won't work without
+ Jorge> it. Am I wrong? Does this means that the c67x00 needs OF
+ Jorge> support to work in this configuration? How can I make it
+ Jorge> otherwise?
 
--Scott
+Yes, the c67x00 driver doesn't currently have any OF bindings. Either
+you can add it, or simply manually create the struct platform_device
+in your board file (or scan the DT in your board file and fill in the
+correct base address / interrupt number from it).
+
+Remember that arch/powerpc uses virtual interrupt numbers if you're
+going to fill in the platform_device by hand.
+
+--=20
+Bye, Peter Korsgaard
