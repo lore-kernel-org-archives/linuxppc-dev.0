@@ -1,21 +1,24 @@
-Return-Path: <rob@landley.net>
-Received: from grelber.thyrsus.com
-	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 0EA0FB70AD
+Return-Path: <glikely@secretlab.ca>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 606D2B70AF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 09:41:11 +1000 (EST)
-From: Rob Landley <rob@landley.net>
-To: Jeremy Kerr <jk@ozlabs.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
-Date: Mon, 29 Jun 2009 18:34:06 -0500
-References: <200906281033.09842.jk@ozlabs.org>
-In-Reply-To: <200906281033.09842.jk@ozlabs.org>
+	Tue, 30 Jun 2009 09:42:28 +1000 (EST)
+Received: from mail-px0-f182.google.com (mail-px0-f182.google.com
+	[209.85.216.182]) by ozlabs.org (Postfix) with ESMTP id A1CD3DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 09:42:27 +1000 (EST)
+Received: by pxi12 with SMTP id 12so4006935pxi.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 16:42:24 -0700 (PDT)
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] alsa/soc: add locking to mpc5200-psc-ac97 driver
+To: jonsmirl@gmail.com, linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	broonie@sirena.org.uk
+Date: Mon, 29 Jun 2009 17:42:21 -0600
+Message-ID: <20090629234214.12670.9082.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Message-Id: <200906291834.07902.rob@landley.net>
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,92 +28,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday 27 June 2009 21:33:09 Jeremy Kerr wrote:
-> Hi Rob,
->
-> > I bisected the problem in the linux kernel repository, and wound up
-> > here:
-> >
-> > 60ee031940c1b09c137b617a8829e2f081961fe0 is first bad commit
-> > commit 60ee031940c1b09c137b617a8829e2f081961fe0
-> > Author: Jeremy Kerr <jk@ozlabs.org>
-> > Date:   Tue Feb 17 11:44:14 2009 +1100
-> >
-> >     powerpc/spufs: Use correct return value for spu_handle_mm_fault
->
-> I think it's very unlikely that this commit would be causing the
-> problem, as qemu doesn't have any SPEs (they're specific to the Cell
-> architecture), which would be required to hit this code. Also, you're
-> not compiling with CONFIG_SPU_BASE, so the file that this changed
-> shouldn't even be built.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Yeah, it seemed odd.  That's why I needed help. :)
+AC97 bus register read/write hooks need to provide locking, but the
+mpc5200-psc-ac97 driver does not.  This patch adds a mutex around
+the register access routines.
 
-> Perhaps try the bisect again?
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-Sorry about that.  I suck at git.
+ sound/soc/fsl/mpc5200_dma.c      |    1 +
+ sound/soc/fsl/mpc5200_dma.h      |    1 +
+ sound/soc/fsl/mpc5200_psc_ac97.c |   17 ++++++++++++++++-
+ 3 files changed, 18 insertions(+), 1 deletions(-)
 
-Part of the reason is that git bisect assumes that "good" always comes before 
-"bad" in the repository, so if you're looking for the patch that _fixed_ a bug 
-(I.E. good == new and bad == old), you have to reverse 'em to humor git 
-bisect.  I had to do that this time to patch an intermediate version that 
-build breaks, which "git bisect run" called "skip" on over a dozen times 
-without noticeable progress.  If good and bad then mean the opposite on the 
-_next_ bisect, I tend to get 'em confused occasionally.  (Especially when I've 
-hit three or more unrelated bugs in the same bisect run.  In this case the 
-build break in kmap_atomic_prot, whatever memory glitch is corrupting the 
-squashfs root filesystem image and spamming the console about it, and this bug.  
-Oh, and the really _fun_ part is that the squashfs bug only reproduces about 
-half the time.  If you run the same binary twice, sometimes it'll work and 
-sometimes it'll spam squashfs errors to the console.  Wheee...)
 
-Anyway, on something like my fifth attempt I managed to bisect it to:
-
-28794d34ecb6815a3fa0a4256027c9b081a17c5f is first bad commit
-commit 28794d34ecb6815a3fa0a4256027c9b081a17c5f
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Tue Mar 10 17:53:27 2009 +0000
-
-    powerpc/kconfig: Kill PPC_MULTIPLATFORM
-    
-    CONFIG_PPC_MULTIPLATFORM is a remain of the pre-powerpc days and isn't
-    really meaningful anymore. It was basically equivalent to PPC64 || 6xx.
-    
-    This removes it along with the following changes:
-    
-     - 32-bit platforms that relied on PPC32 && PPC_MULTIPLATFORM now rely
-       on 6xx which is what they want anyway.
-    
-     - A new symbol, PPC_BOOK3S, is defined that represent compliance with
-       the "Server" variant of the architecture. This is set when either 6xx
-       or PPC64 is set and open the door for future BOOK3E 64-bit.
-    
-     - 64-bit platforms that relied on PPC64 && PPC_MULTIPLATFORM now use
-       PPC64 && PPC_BOOK3S
-    
-     - A separate and selectable CONFIG_PPC_OF_BOOT_TRAMPOLINE option is now
-       used to control the use of prom_init.c
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Which suggested that the problem was the new CONFIG_PPC_OF_BOOT_TRAMPOLINE 
-symbol wasn't set, and once I switched that on it started working again.
-
-> linuxppc-dev@lists.ozlabs.org is the one you want for this:
->
->  https://lists.ozlabs.org/listinfo/linuxppc-dev
-
-Cool!  Is there a reason it's hidden?  (Or at least not listed in either 
-vger.kernel.org's list info page or in the "Maling lists" page linked from 
-ozlabs.org's top level web page.)  Just curious, I couldn't find it when I 
-looked in the obvious (to me) places.
-
-Rob
-
-P.S.  Yes I tried google: top hit for "linux powerpc list" is penguinppc.org, 
-which links to mailing lists on the right which is the ozlabs.org page that 
-doesn't list linuxppc-dev.  In fact the entire first page of google hits for 
-that search doesn't give a hint of the existence of that list, although some 
-of the later ones might if I clicked through more of them...
--- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
+index efec33a..f0a2d40 100644
+--- a/sound/soc/fsl/mpc5200_dma.c
++++ b/sound/soc/fsl/mpc5200_dma.c
+@@ -456,6 +456,7 @@ int mpc5200_audio_dma_create(struct of_device *op)
+ 		return -ENODEV;
+ 
+ 	spin_lock_init(&psc_dma->lock);
++	mutex_init(&psc_dma->mutex);
+ 	psc_dma->id = be32_to_cpu(*prop);
+ 	psc_dma->irq = irq;
+ 	psc_dma->psc_regs = regs;
+diff --git a/sound/soc/fsl/mpc5200_dma.h b/sound/soc/fsl/mpc5200_dma.h
+index 2000803..8d396bb 100644
+--- a/sound/soc/fsl/mpc5200_dma.h
++++ b/sound/soc/fsl/mpc5200_dma.h
+@@ -55,6 +55,7 @@ struct psc_dma {
+ 	unsigned int irq;
+ 	struct device *dev;
+ 	spinlock_t lock;
++	struct mutex mutex;
+ 	u32 sicr;
+ 	uint sysclk;
+ 	int imr;
+diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_ac97.c
+index 794a247..7eb5499 100644
+--- a/sound/soc/fsl/mpc5200_psc_ac97.c
++++ b/sound/soc/fsl/mpc5200_psc_ac97.c
+@@ -34,13 +34,20 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
+ 	int status;
+ 	unsigned int val;
+ 
++	mutex_lock(&psc_dma->mutex);
++
+ 	/* Wait for command send status zero = ready */
+ 	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
+ 				MPC52xx_PSC_SR_CMDSEND), 100, 0);
+ 	if (status == 0) {
+ 		pr_err("timeout on ac97 bus (rdy)\n");
++		mutex_unlock(&psc_dma->mutex);
+ 		return -ENODEV;
+ 	}
++
++	/* Force clear the data valid bit */
++	in_be32(&psc_dma->psc_regs->ac97_data);
++
+ 	/* Send the read */
+ 	out_be32(&psc_dma->psc_regs->ac97_cmd, (1<<31) | ((reg & 0x7f) << 24));
+ 
+@@ -50,16 +57,19 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
+ 	if (status == 0) {
+ 		pr_err("timeout on ac97 read (val) %x\n",
+ 				in_be16(&psc_dma->psc_regs->sr_csr.status));
++		mutex_unlock(&psc_dma->mutex);
+ 		return -ENODEV;
+ 	}
+ 	/* Get the data */
+ 	val = in_be32(&psc_dma->psc_regs->ac97_data);
+ 	if (((val >> 24) & 0x7f) != reg) {
+ 		pr_err("reg echo error on ac97 read\n");
++		mutex_unlock(&psc_dma->mutex);
+ 		return -ENODEV;
+ 	}
+ 	val = (val >> 8) & 0xffff;
+ 
++	mutex_unlock(&psc_dma->mutex);
+ 	return (unsigned short) val;
+ }
+ 
+@@ -68,16 +78,21 @@ static void psc_ac97_write(struct snd_ac97 *ac97,
+ {
+ 	int status;
+ 
++	mutex_lock(&psc_dma->mutex);
++
+ 	/* Wait for command status zero = ready */
+ 	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
+ 				MPC52xx_PSC_SR_CMDSEND), 100, 0);
+ 	if (status == 0) {
+ 		pr_err("timeout on ac97 bus (write)\n");
+-		return;
++		goto out;
+ 	}
+ 	/* Write data */
+ 	out_be32(&psc_dma->psc_regs->ac97_cmd,
+ 			((reg & 0x7f) << 24) | (val << 8));
++
++ out:
++	mutex_unlock(&psc_dma->mutex);
+ }
+ 
+ static void psc_ac97_warm_reset(struct snd_ac97 *ac97)
