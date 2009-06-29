@@ -1,33 +1,41 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <iant@google.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A36B8B7063
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2710DB708E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 07:03:20 +1000 (EST)
-Message-ID: <4A492C1A.6020302@freescale.com>
-Date: Mon, 29 Jun 2009 16:03:22 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Tue, 30 Jun 2009 07:39:00 +1000 (EST)
+Received: from smtp-out.google.com (smtp-out.google.com [216.239.33.17])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4BB08DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 07:38:58 +1000 (EST)
+Received: from spaceape7.eur.corp.google.com (spaceape7.eur.corp.google.com
+	[172.28.16.141]) by smtp-out.google.com with ESMTP id n5TLRsIX019187
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 22:27:54 +0100
+Received: from pzk16 (pzk16.prod.google.com [10.243.19.144])
+	by spaceape7.eur.corp.google.com with ESMTP id n5TLRokP032031
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 14:27:51 -0700
+Received: by pzk16 with SMTP id 16so420727pzk.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 14:27:50 -0700 (PDT)
+To: David Howells <dhowells@redhat.com>
+Subject: Re: Inline Assembly queries
+References: <abe8a1fd0906290849w1ba6bd33of60a9c2e110c10fd@mail.gmail.com>
+	<abe8a1fd0906271246q920124ard61422d9577e2d09@mail.gmail.com>
+	<abe8a1fd0906271249k479e5a87gfe1ee9c02798a234@mail.gmail.com>
+	<m3ab3t4623.fsf@google.com>
+	<abe8a1fd0906272157j4246e9d3hec2e374535a22c89@mail.gmail.com>
+	<30098.1246291036@redhat.com>
+From: Ian Lance Taylor <iant@google.com>
+Date: Mon, 29 Jun 2009 14:27:48 -0700
+In-Reply-To: <30098.1246291036@redhat.com> (David Howells's message of "Mon\,
+	29 Jun 2009 16\:57\:16 +0100")
+Message-ID: <m3prcm20iz.fsf@google.com>
 MIME-Version: 1.0
-To: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
-Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
-References: <97dd5fd20906260913x351593c9raa429fd657eb42f0@mail.gmail.com>
-	<4A44FD90.2040607@freescale.com>
-	<97dd5fd20906261012h34a85b33j9183eb9e41ed1181@mail.gmail.com>
-	<1ba63b520906271401u5d012b0ex87a48820b616ae48@mail.gmail.com>
-	<97dd5fd20906291053u1a07c3afla1c2ea0590d01f1e@mail.gmail.com>
-	<4A4901A8.5010402@mlbassoc.com>
-	<97dd5fd20906291113t5ea98285h2db6379ff1a940c@mail.gmail.com>
-	<4A490AE4.7000509@freescale.com>
-	<97dd5fd20906291324jf085addjaa61ff48dfca3d04@mail.gmail.com>
-	<4A49249C.5080101@freescale.com>
-	<97dd5fd20906291346s3ee60edbr1863c27280ae373c@mail.gmail.com>
-In-Reply-To: <97dd5fd20906291346s3ee60edbr1863c27280ae373c@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: =?UTF-8?B?RnJhbmsgU3ZlbmRzYsO4ZQ==?= <frank.svendsboe@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, Gary Thomas <gary@mlbassoc.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: gcc-help@gcc.gnu.org, linuxppc-dev@ozlabs.org,
+	kernel mailz <kernelmailz@googlemail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,15 +45,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mikhail Zaturenskiy wrote:
-> 
-> Seems like at that point it begins to redirect output to ttyCPM0 but
-> still nothing showing on the console...
+David Howells <dhowells@redhat.com> writes:
 
-Check the clock-frequency of the CPM BRG node.  If u-boot isn't setting 
-the memory, it's probably not setting this either.
+> kernel mailz <kernelmailz@googlemail.com> wrote:
+>
+>> asm("sync");
+>
+> Isn't gcc free to discard this as it has no dependencies, no indicated side
+> effects, and isn't required to be kept?  I think this should probably be:
+>
+> 	asm volatile("sync");
 
-If you're not up to the task of fixing u-boot to fill in the device 
-tree, you may want to try cuImage.
+An asm with no outputs is considered to be volatile.
 
--Scott
+Ian
