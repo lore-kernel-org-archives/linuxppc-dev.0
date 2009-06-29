@@ -3,28 +3,29 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 722DCB708D
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8A908B7090
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 01:11:54 +1000 (EST)
+	Tue, 30 Jun 2009 01:16:43 +1000 (EST)
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 00CF1DDD1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 01:11:53 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by ozlabs.org (Postfix) with ESMTPS id 0BF6FDDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 01:16:42 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n5TFBXar010976
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 08:11:43 -0700 (MST)
+	n5TFGcqW013017
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 08:16:38 -0700 (MST)
 Received: from zin33exm20.fsl.freescale.net (zin33exm20.ap.freescale.net
 	[10.232.192.5])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n5TFBVgl003011
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 10:11:32 -0500 (CDT)
-Date: Mon, 29 Jun 2009 20:41:22 +0530 (India Standard Time)
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n5TFGZbW022950
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 10:16:37 -0500 (CDT)
+Date: Mon, 29 Jun 2009 20:46:34 +0530 (India Standard Time)
 From: ashish kalra <ashish.kalra@freescale.com>
 To: linux-ide@vger.kernel.org
-Message-ID: <Pine.WNT.4.64.0906292038560.4924@B00888-02.fsl.freescale.net>
+Subject: [PATCH][v2] sata_fsl: Add asynchronous notification support 
+Message-ID: <Pine.WNT.4.64.0906292044150.5480@B00888-02.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Cc: linuxppc-dev@ozlabs.org
@@ -36,10 +37,6 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-
-From: Ashish Kalra <Ashish.Kalra@freescale.com>
-Date: Fri, 26 Jun 2009 15:46:02 +0530
-Subject: [PATCH][v2] sata_fsl: Add asynchronous notification support
 
 Enable device hot-plug support on Port multiplier fan-out ports
 
