@@ -1,25 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id F1EAEB709C
+Return-Path: <rob@landley.net>
+Received: from grelber.thyrsus.com
+	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 0EA0FB70AD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 09:40:57 +1000 (EST)
-Received: from mail-px0-f182.google.com (mail-px0-f182.google.com
-	[209.85.216.182]) by ozlabs.org (Postfix) with ESMTP id 6D6C5DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 09:40:55 +1000 (EST)
-Received: by pxi12 with SMTP id 12so4006312pxi.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 16:40:54 -0700 (PDT)
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc: Fix spin_event_timeout() to be robust over context
-	switches
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, timur@freescale.com,
-	jonsmirl@gmail.com
-Date: Mon, 29 Jun 2009 17:40:51 -0600
-Message-ID: <20090629234035.12475.58493.stgit@localhost.localdomain>
+	Tue, 30 Jun 2009 09:41:11 +1000 (EST)
+From: Rob Landley <rob@landley.net>
+To: Jeremy Kerr <jk@ozlabs.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
+Date: Mon, 29 Jun 2009 18:34:06 -0500
+References: <200906281033.09842.jk@ozlabs.org>
+In-Reply-To: <200906281033.09842.jk@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Message-Id: <200906291834.07902.rob@landley.net>
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +25,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Saturday 27 June 2009 21:33:09 Jeremy Kerr wrote:
+> Hi Rob,
+>
+> > I bisected the problem in the linux kernel repository, and wound up
+> > here:
+> >
+> > 60ee031940c1b09c137b617a8829e2f081961fe0 is first bad commit
+> > commit 60ee031940c1b09c137b617a8829e2f081961fe0
+> > Author: Jeremy Kerr <jk@ozlabs.org>
+> > Date:   Tue Feb 17 11:44:14 2009 +1100
+> >
+> >     powerpc/spufs: Use correct return value for spu_handle_mm_fault
+>
+> I think it's very unlikely that this commit would be causing the
+> problem, as qemu doesn't have any SPEs (they're specific to the Cell
+> architecture), which would be required to hit this code. Also, you're
+> not compiling with CONFIG_SPU_BASE, so the file that this changed
+> shouldn't even be built.
 
-Current implementation of spin_event_timeout can be interrupted by an
-IRQ or context switch after testing the condition, but before checking
-the timeout.  This can cause the loop to report a timeout when the
-condition actually became true in the middle.
+Yeah, it seemed odd.  That's why I needed help. :)
 
-This patch adds one final check of the condition upon exit of the loop
-if the last test of the condition was still false.
+> Perhaps try the bisect again?
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Sorry about that.  I suck at git.
 
- arch/powerpc/include/asm/delay.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Part of the reason is that git bisect assumes that "good" always comes before 
+"bad" in the repository, so if you're looking for the patch that _fixed_ a bug 
+(I.E. good == new and bad == old), you have to reverse 'em to humor git 
+bisect.  I had to do that this time to patch an intermediate version that 
+build breaks, which "git bisect run" called "skip" on over a dozen times 
+without noticeable progress.  If good and bad then mean the opposite on the 
+_next_ bisect, I tend to get 'em confused occasionally.  (Especially when I've 
+hit three or more unrelated bugs in the same bisect run.  In this case the 
+build break in kmap_atomic_prot, whatever memory glitch is corrupting the 
+squashfs root filesystem image and spamming the console about it, and this bug.  
+Oh, and the really _fun_ part is that the squashfs bug only reproduces about 
+half the time.  If you run the same binary twice, sometimes it'll work and 
+sometimes it'll spam squashfs errors to the console.  Wheee...)
 
+Anyway, on something like my fifth attempt I managed to bisect it to:
 
-diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/delay.h
-index 1e2eb41..52e4d54 100644
---- a/arch/powerpc/include/asm/delay.h
-+++ b/arch/powerpc/include/asm/delay.h
-@@ -63,6 +63,8 @@ extern void udelay(unsigned long usecs);
- 			udelay(delay);                                         \
- 		else                                                           \
- 			cpu_relax();                                           \
-+	if (!__ret)                                                            \
-+		__ret = (condition);                                           \
- 	__ret;		                                                       \
- })
- 
+28794d34ecb6815a3fa0a4256027c9b081a17c5f is first bad commit
+commit 28794d34ecb6815a3fa0a4256027c9b081a17c5f
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Tue Mar 10 17:53:27 2009 +0000
+
+    powerpc/kconfig: Kill PPC_MULTIPLATFORM
+    
+    CONFIG_PPC_MULTIPLATFORM is a remain of the pre-powerpc days and isn't
+    really meaningful anymore. It was basically equivalent to PPC64 || 6xx.
+    
+    This removes it along with the following changes:
+    
+     - 32-bit platforms that relied on PPC32 && PPC_MULTIPLATFORM now rely
+       on 6xx which is what they want anyway.
+    
+     - A new symbol, PPC_BOOK3S, is defined that represent compliance with
+       the "Server" variant of the architecture. This is set when either 6xx
+       or PPC64 is set and open the door for future BOOK3E 64-bit.
+    
+     - 64-bit platforms that relied on PPC64 && PPC_MULTIPLATFORM now use
+       PPC64 && PPC_BOOK3S
+    
+     - A separate and selectable CONFIG_PPC_OF_BOOT_TRAMPOLINE option is now
+       used to control the use of prom_init.c
+    
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Which suggested that the problem was the new CONFIG_PPC_OF_BOOT_TRAMPOLINE 
+symbol wasn't set, and once I switched that on it started working again.
+
+> linuxppc-dev@lists.ozlabs.org is the one you want for this:
+>
+>  https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+Cool!  Is there a reason it's hidden?  (Or at least not listed in either 
+vger.kernel.org's list info page or in the "Maling lists" page linked from 
+ozlabs.org's top level web page.)  Just curious, I couldn't find it when I 
+looked in the obvious (to me) places.
+
+Rob
+
+P.S.  Yes I tried google: top hit for "linux powerpc list" is penguinppc.org, 
+which links to mailing lists on the right which is the ozlabs.org page that 
+doesn't list linuxppc-dev.  In fact the entire first page of google hits for 
+that search doesn't give a hint of the existence of that list, although some 
+of the later ones might if I clicked through more of them...
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
