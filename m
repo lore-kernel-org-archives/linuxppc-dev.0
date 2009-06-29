@@ -1,34 +1,11 @@
-Return-Path: <ashish.kalra@freescale.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8A908B7090
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 01:16:43 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0BF6FDDD1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 01:16:42 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n5TFGcqW013017
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 08:16:38 -0700 (MST)
-Received: from zin33exm20.fsl.freescale.net (zin33exm20.ap.freescale.net
-	[10.232.192.5])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n5TFGZbW022950
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 10:16:37 -0500 (CDT)
-Date: Mon, 29 Jun 2009 20:46:34 +0530 (India Standard Time)
-From: ashish kalra <ashish.kalra@freescale.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH][v2] sata_fsl: Add asynchronous notification support 
-Message-ID: <Pine.WNT.4.64.0906292044150.5480@B00888-02.fsl.freescale.net>
+Return-Path: <j.s.denova@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Date: Mon, 29 Jun 2009 17:25:16 +0200
+Message-ID: <621779fd0906290825i6bdc1e99tf6be68e3de56e9a6@mail.gmail.com>
+Subject: Device tree for c67x00
+From: =?ISO-8859-1?Q?Jorge_S=E1nchez_de_Nova?= <j.s.denova@gmail.com>
+To: Linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=0015174c13aa0fadc4046d7e4c93
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,54 +15,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable device hot-plug support on Port multiplier fan-out ports
+--0015174c13aa0fadc4046d7e4c93
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Ashish Kalra <Ashish.Kalra@freescale.com>
----
-  drivers/ata/sata_fsl.c |   10 ++++++++--
-  1 files changed, 8 insertions(+), 2 deletions(-)
+Hi,
 
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index 94eaa43..5751145 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -34,7 +34,7 @@ enum {
+ I am trying to load the c67x00 driver in my Xilinx ML403 (PowerPC) based
+platform. I am running a merged tree between DENX+Adeos/Xenomai and Xilinx
+(2.6.29.4). I have the XPS_EPC core interfaced to the Cypress CY7C67300.
+Before, in PPC I used to have something like this in my virtex_devices.c
 
-  	SATA_FSL_HOST_FLAGS	= (ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
-  				ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
--				ATA_FLAG_PMP | ATA_FLAG_NCQ),
-+ 				ATA_FLAG_PMP | ATA_FLAG_NCQ | ATA_FLAG_AN),
+/*
+ * Cypress USB C67x00 shortcut macro for single instance
+ */
+#define XPAR_C67x00_USB(num) { \
+ .name = "c67x00", \
+ .id = num, \
+ .num_resources = 2, \
+ .resource = (struct resource[]) { \
+         { \
+         .start = XPAR_C67X00_USB_PRH##num##_BASEADDR, \
+         .end = XPAR_C67X00_USB_PRH##num##_BASEADDR + 0xf, \
+         .flags = IORESOURCE_MEM, \
+         }, \
+         { \
+         .start  = XPAR_OPB_INTC_0_SYSTEM_USB_HPI_INT_PIN_INTR, \
+         .end    = XPAR_OPB_INTC_0_SYSTEM_USB_HPI_INT_PIN_INTR, \
+         .flags  = IORESOURCE_IRQ, \
+          }, \
+  }, \
+ .dev.platform_data = &(struct c67x00_platform_data) { \
+ .sie_config = C67X00_SIE1_HOST | C67X00_SIE2_PERIPHERAL_A, \
+ .hpi_regstep = 0x02, /* A0 not connected on 16bit bus */ \
+ }, \
+}
 
-  	SATA_FSL_MAX_CMDS	= SATA_FSL_QUEUE_DEPTH,
-  	SATA_FSL_CMD_HDR_SIZE	= 16,	/* 4 DWORDS */
-@@ -132,7 +132,7 @@ enum {
-  	INT_ON_SINGL_DEVICE_ERR = (1 << 1),
-  	INT_ON_CMD_COMPLETE = 1,
+Together with the xparameters.h #defines. And even if I never managed to get
+it working, the kernel was loading it. Now I am trying to have the
+equivalent information in the device-tree .dts with no luck. Something like
+this:
 
--	INT_ON_ERROR = INT_ON_FATAL_ERR |
-+	INT_ON_ERROR = INT_ON_FATAL_ERR | INT_ON_SNOTIFY_UPDATE |
-  	    INT_ON_PHYRDY_CHG | INT_ON_SINGL_DEVICE_ERR,
+                xps_epc_0: usb@80800000 {
+          compatible = "cy,c67300 cy,c67x00";
+                  interrupt-parent = <&xps_intc_0>;
+          interrupts = < 0 2 >;
+                  reg = < 0x80800000 0x10000 >;
+            xlnx,family = "virtex4";
+                  } ;
 
-  	/*
-@@ -154,6 +154,7 @@ enum {
+(inspired by another mail in this list).
 
-  	DEFAULT_PORT_IRQ_ENABLE_MASK = IE_ON_FATAL_ERR | IE_ON_PHYRDY_CHG |
-  	    IE_ON_SIGNATURE_UPDATE |
-+	    IE_ON_SNOTIFY_UPDATE |
-  	    IE_ON_SINGL_DEVICE_ERR | IE_ON_CMD_COMPLETE,
+It doesn't work at all since it doesn't load anything. I have looked at the
+driver and there is apparently no openfirmware support for it, so maybe the
+dts info won't work without it. Am I wrong? Does this means that the c67x00
+needs OF support to work in this configuration? How can I make it otherwise?
 
-  	EXT_INDIRECT_SEG_PRD_FLAG = (1 << 31),
-@@ -1003,6 +1004,11 @@ static void sata_fsl_error_intr(struct ata_port *ap)
-  		freeze = 1;
-  	}
 
-+	/* Handle SDB FIS receive & notify update */
-+	if (hstatus & INT_ON_SNOTIFY_UPDATE) {
-+		sata_async_notification(ap);
-+	}
-+
-  	/* Handle PHYRDY change notification */
-  	if (hstatus & INT_ON_PHYRDY_CHG) {
-  		DPRINTK("SATA FSL: PHYRDY change indication\n");
--- 
-1.6.0
+Thanks,
+Jorge
+
+--0015174c13aa0fadc4046d7e4c93
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi, <br><br>=A0I am trying to load the c67x00 driver in my Xilinx ML403 (Po=
+werPC) based platform. I am running a merged tree between DENX+Adeos/Xenoma=
+i and Xilinx (2.6.29.4). I have the XPS_EPC core interfaced to the Cypress =
+CY7C67300. Before, in PPC I used to have something like this in my virtex_d=
+evices.c <br>
+<br>/*<br>=A0* Cypress USB C67x00 shortcut macro for single instance<br>=A0=
+*/<br>#define XPAR_C67x00_USB(num) { \<br>=A0.name =3D &quot;c67x00&quot;, =
+\<br>=A0.id =3D num, \<br>=A0.num_resources =3D 2, \<br>=A0.resource =3D (s=
+truct resource[]) { \<br>
+=A0=A0=A0 =A0=A0=A0 =A0{ \<br>=A0=A0=A0 =A0=A0=A0 =A0.start =3D XPAR_C67X00=
+_USB_PRH##num##_BASEADDR, \<br>=A0=A0=A0 =A0=A0=A0 =A0.end =3D XPAR_C67X00_=
+USB_PRH##num##_BASEADDR + 0xf, \<br>=A0=A0=A0 =A0=A0=A0 =A0.flags =3D IORES=
+OURCE_MEM, \<br>=A0=A0=A0 =A0=A0=A0 =A0}, \<br>=A0=A0=A0 =A0=A0=A0 =A0{ \<b=
+r>=A0=A0=A0 =A0=A0=A0 =A0.start=A0 =3D XPAR_OPB_INTC_0_SYSTEM_USB_HPI_INT_P=
+IN_INTR, \<br>
+=A0=A0=A0 =A0=A0=A0 =A0.end=A0=A0=A0 =3D XPAR_OPB_INTC_0_SYSTEM_USB_HPI_INT=
+_PIN_INTR, \<br>=A0=A0=A0 =A0=A0=A0 =A0.flags=A0 =3D IORESOURCE_IRQ, \<br>=
+=A0=A0=A0 =A0=A0=A0 =A0 }, \<br>=A0 }, \<br>=A0.dev.platform_data =3D &amp;=
+(struct c67x00_platform_data) { \<br>=A0.sie_config =3D C67X00_SIE1_HOST | =
+C67X00_SIE2_PERIPHERAL_A, \<br>
+=A0.hpi_regstep =3D 0x02, /* A0 not connected on 16bit bus */ \<br>=A0}, \<=
+br>}<br><br>Together with the xparameters.h #defines. And even if I never m=
+anaged to get it working, the kernel was loading it. Now I am trying to hav=
+e the equivalent information in the device-tree .dts with no luck. Somethin=
+g like this: <br>
+<br>=A0=A0=A0=A0 =A0=A0=A0 =A0=A0=A0=A0=A0=A0 xps_epc_0: usb@80800000 {<br>=
+=A0=A0=A0 =A0=A0=A0 =A0 compatible =3D &quot;cy,c67300 cy,c67x00&quot;;<br>=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 interrupt-parent =3D &l=
+t;&amp;xps_intc_0&gt;;<br>=A0=A0=A0 =A0=A0=A0 =A0 interrupts =3D &lt; 0 2 &=
+gt;;<br>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 reg =3D &lt; 0x=
+80800000 0x10000 &gt;;<br>
+=A0 =A0=A0=A0 =A0=A0=A0 =A0 xlnx,family =3D &quot;virtex4&quot;;<br>=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 } ;<br><br>(inspired by anoth=
+er mail in this list). <br><br>It doesn&#39;t work at all since it doesn&#3=
+9;t load anything. I have looked at the driver and there is apparently no o=
+penfirmware support for it, so maybe the dts info won&#39;t work without it=
+. Am I wrong? Does this means that the c67x00 needs OF support to work in t=
+his configuration? How can I make it otherwise? <br>
+<br>Thanks, <br>Jorge<br>
+
+--0015174c13aa0fadc4046d7e4c93--
