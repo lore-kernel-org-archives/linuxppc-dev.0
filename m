@@ -1,26 +1,24 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 167D3B7096
+Return-Path: <johnny.hacking@gmail.com>
+Received: from mail-gx0-f208.google.com (mail-gx0-f208.google.com
+	[209.85.217.208])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 36CB0B709A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 10:26:16 +1000 (EST)
-Received: from mail-qy0-f188.google.com (mail-qy0-f188.google.com
-	[209.85.221.188]) by ozlabs.org (Postfix) with ESMTP id 71294DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 10:26:15 +1000 (EST)
-Received: by qyk26 with SMTP id 26so2351527qyk.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 17:26:13 -0700 (PDT)
+	Tue, 30 Jun 2009 11:36:53 +1000 (EST)
+Received: by gxk4 with SMTP id 4so7105091gxk.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 29 Jun 2009 18:36:51 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20090629234214.12670.9082.stgit@localhost.localdomain>
-References: <20090629234214.12670.9082.stgit@localhost.localdomain>
-Date: Mon, 29 Jun 2009 20:26:12 -0400
-Message-ID: <9e4733910906291726h5cd5bdf8ve7e946aef855ac07@mail.gmail.com>
-Subject: Re: [PATCH] alsa/soc: add locking to mpc5200-psc-ac97 driver
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20090629165133.GC1323@b07421-ec1.am.freescale.net>
+References: <cb9ecdfa0906290858x125b8149na037f33258c21426@mail.gmail.com>
+	<20090629165133.GC1323@b07421-ec1.am.freescale.net>
+Date: Tue, 30 Jun 2009 09:36:51 +0800
+Message-ID: <cb9ecdfa0906291836mf74c41fn9c187e305771920a@mail.gmail.com>
+Subject: Re: PCI device support in Open Firmware (device tree syntax)
+From: Johnny Hung <johnny.hacking@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
+Cc: kernelnewbies@nl.linux.org, linuxppc-dev@lists.ozlabs.org,
+	linux-embedded@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,18 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 29, 2009 at 7:42 PM, Grant Likely<grant.likely@secretlab.ca> wr=
-ote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+Thanks for your reply. So there are no PCI device resource info in
+flat device tree.
+How do PCI device resources be assign in general case or is there any examp=
+le?
+I am so confusing, would you please give me detailed describle?
+
+BRs, H. Johnny
 >
-> AC97 bus register read/write hooks need to provide locking, but the
-> mpc5200-psc-ac97 driver does not. =A0This patch adds a mutex around
-> the register access routines.
-
-Does your touchscreen driver use this mutex? Or was this mutex needed
-just for the AC97 driver?
-
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
+> With flat device trees, PCI devices are not typically included as they
+> can be probed instead. =A0Interrupt mapping is conveyed by the
+> interrupt-map property in the PCI controller node.
+>
+> -Scott
+>
