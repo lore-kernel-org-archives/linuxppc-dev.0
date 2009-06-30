@@ -1,29 +1,31 @@
-Return-Path: <subrata@linux.vnet.ibm.com>
+Return-Path: <kernelmailz@googlemail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 949E7B70B1
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1A887B70B6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 16:22:21 +1000 (EST)
-Subject: [PATCH] Remove 'SBC8240 Wind River' Device Driver Code
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: Scott Wood <scottwood@freescale.com>, David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20090626142513.10380.20811.sendpatchset@gekko-lp3.ltc.austin.ibm.com>
-References: <20090626142513.10380.20811.sendpatchset@gekko-lp3.ltc.austin.ibm.com>
-Content-Type: text/plain
-Date: Tue, 30 Jun 2009 11:15:46 +0530
-Message-Id: <1246340746.4819.3.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-Cc: carolyn.j.smith@exgate.tek.com, Stephen Rothwell <sfr@canb.auug.org.au>,
-	Adrian Bunk <bunk@kernel.org>, Jim Cromie <jim.cromie@gmail.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	linux-next <linux-next@vger.kernel.org>,
-	Alexander Beregalov <a.beregalov@gmail.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
+	Tue, 30 Jun 2009 16:42:21 +1000 (EST)
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
+	by ozlabs.org (Postfix) with ESMTP id 07E97DDDE5
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 15:27:09 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id e21so762475fga.16
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 22:27:07 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090629192722.GA12789@b07421-ec1.am.freescale.net>
+References: <abe8a1fd0906271246q920124ard61422d9577e2d09@mail.gmail.com>
+	<abe8a1fd0906271249k479e5a87gfe1ee9c02798a234@mail.gmail.com>
+	<m3ab3t4623.fsf@google.com>
+	<abe8a1fd0906272157j4246e9d3hec2e374535a22c89@mail.gmail.com>
+	<abe8a1fd0906290849w1ba6bd33of60a9c2e110c10fd@mail.gmail.com>
+	<20090629192722.GA12789@b07421-ec1.am.freescale.net>
+Date: Tue, 30 Jun 2009 10:57:07 +0530
+Message-ID: <abe8a1fd0906292227p15fbfe34r595e80db780b77ca@mail.gmail.com>
+Subject: Re: Inline Assembly queries
+From: kernel mailz <kernelmailz@googlemail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: gcc-help@gcc.gnu.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,370 +35,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott/David,
+Hi Scott,
+I agree with you, kind of understand that it is required.
+But buddy unless you see some construct work or by adding the
+construct a visible difference is there, the concept is just piece of
+theory.
 
-Your say on this patch below ?
+I am trying all the kernel code inline assembly to find an example
+that works differently with memory.
 
-Regards--
-Subrata
+For instance take atomic_add , atomic_add_return, while the
+atomic_add_return has the "memory", atomic_add skips it.
 
-On Fri, 2009-06-26 at 09:25 -0500, Subrata Modak wrote:
-> Hi David/Scott,
-> 
-> Today's next tree(20090626) produced the following build error:
-> 
-> CC [M]  drivers/mtd/maps/sbc8240.o
-> drivers/mtd/maps/sbc8240.c:31:1: warning: "DEBUG" redefined
-> In file included from drivers/mtd/maps/sbc8240.c:23:
-> include/linux/mtd/mtd.h:333:1: warning: this is the location of the previous definition
-> drivers/mtd/maps/sbc8240.c: In function 'init_sbc8240_mtd':
-> drivers/mtd/maps/sbc8240.c:172: warning: passing argument 1 of 'simple_map_init' from incompatible pointer type
-> drivers/mtd/maps/sbc8240.c:177: error: 'struct mtd_info' has no member named 'module'
-> make[3]: *** [drivers/mtd/maps/sbc8240.o] Error 1
-> make[2]: *** [drivers/mtd/maps] Error 2
-> make[1]: *** [drivers/mtd] Error 2
-> make: *** [drivers] Error 2
-> 
-> I remember reporting this log back in April, when you suggested in removing it:
-> http://lkml.org/lkml/2009/4/21/476,
-> 
-> >On Tue, 2009-04-21 at 15:00 -0500, Scott Wood wrote:
-> >Subrata Modak wrote:
-> > > This is a very old one. DoesnB4t seem to go away. Reported this earlier
-> > > on 14th April:
-> > > http://lkml.org/lkml/2009/4/14/483,
-> > > 
-> > > CC [M]  drivers/mtd/maps/sbc8240.o
-> > > drivers/mtd/maps/sbc8240.c:31:1: warning: "DEBUG" redefined
-> > > In file included from drivers/mtd/maps/sbc8240.c:23:
-> > > include/linux/mtd/mtd.h:339:1: warning: this is the location of the
-> > > previous definition
-> > > drivers/mtd/maps/sbc8240.c: In function binit_sbc8240_mtdb:
-> > > drivers/mtd/maps/sbc8240.c:172: error: bsbc8240_mtdb undeclared (first
-> > > use in this function)
-> > > drivers/mtd/maps/sbc8240.c:172: error: (Each undeclared identifier is
-> > > reported only once
-> > > drivers/mtd/maps/sbc8240.c:172: error: for each function it appears in.)
-> > > drivers/mtd/maps/sbc8240.c: In function bcleanup_sbc8240_mtdb:
-> > > drivers/mtd/maps/sbc8240.c:233: error: bsbc8240_mtdb undeclared (first
-> > > use in this function)
-> > 
-> > This looks like an arch/ppc orphan.  It's not enabled by any defconfig, 
-> > and it doesn't look like it does anything that physmap_of can't do.
-> > 
-> > I'd just remove it.
-> > 
-> > -Scott
-> 
-> I tried to gather some more info about this driver from the link
-> mentioned in Kconfig:
-> http://www.windriver.com/products/sbc8240/,
-> without much success.
-> 
-> If there are no issues, can you please apply this patch to remove it ?
-> 
-> To: David Woodhouse <dwmw2@infradead.org>,
-> To: Scott Wood <scottwood@freescale.com>,
-> Cc: Jim Cromie <jim.cromie@gmail.com>,
-> Cc: carolyn.j.smith@exgate.tek.com,
-> Cc: Adrian Bunk <bunk@kernel.org>,
-> Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-> Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-> Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-> Cc: Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-> Cc: linux-next <linux-next@vger.kernel.org>,
-> Cc: Alexander Beregalov <a.beregalov@gmail.com>
-> 
-> 
-> Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-> Tested-on-PPC64-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-> ---
-> 
-> diff -uprN a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-> --- a/drivers/mtd/maps/Kconfig	2009-06-26 07:36:23.000000000 -0500
-> +++ b/drivers/mtd/maps/Kconfig	2009-06-26 07:39:34.000000000 -0500
-> @@ -284,13 +284,6 @@ config MTD_L440GX
-> 
->  	  BE VERY CAREFUL.
-> 
-> -config MTD_SBC8240
-> -	tristate "Flash device on SBC8240"
-> -	depends on MTD_JEDECPROBE && 8260
-> -	help
-> -          Flash access on the SBC8240 board from Wind River.  See
-> -          <http://www.windriver.com/products/sbc8240/>
-> -
->  config MTD_TQM8XXL
->  	tristate "CFI Flash device mapped on TQM8XXL"
->  	depends on MTD_CFI && TQM8xxL
-> diff -uprN a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
-> --- a/drivers/mtd/maps/Makefile	2009-06-26 07:36:23.000000000 -0500
-> +++ b/drivers/mtd/maps/Makefile	2009-06-26 07:40:03.000000000 -0500
-> @@ -50,7 +50,6 @@ obj-$(CONFIG_MTD_UCLINUX)	+= uclinux.o
->  obj-$(CONFIG_MTD_NETtel)	+= nettel.o
->  obj-$(CONFIG_MTD_SCB2_FLASH)	+= scb2_flash.o
->  obj-$(CONFIG_MTD_H720X)		+= h720x-flash.o
-> -obj-$(CONFIG_MTD_SBC8240)	+= sbc8240.o
->  obj-$(CONFIG_MTD_IXP4XX)	+= ixp4xx.o
->  obj-$(CONFIG_MTD_IXP2000)	+= ixp2000.o
->  obj-$(CONFIG_MTD_WRSBC8260)	+= wr_sbc82xx_flash.o
-> diff -uprN a/drivers/mtd/maps/sbc8240.c b/drivers/mtd/maps/sbc8240.c
-> --- a/drivers/mtd/maps/sbc8240.c	2009-06-26 07:36:23.000000000 -0500
-> +++ b/drivers/mtd/maps/sbc8240.c	1969-12-31 18:00:00.000000000 -0600
-> @@ -1,250 +0,0 @@
-> -/*
-> - * Handle mapping of the flash memory access routines on the SBC8240 board.
-> - *
-> - * Carolyn Smith, Tektronix, Inc.
-> - *
-> - * This code is GPLed
-> - */
-> -
-> -/*
-> - * The SBC8240 has 2 flash banks.
-> - * Bank 0 is a 512 KiB AMD AM29F040B; 8 x 64 KiB sectors.
-> - * It contains the U-Boot code (7 sectors) and the environment (1 sector).
-> - * Bank 1 is 4 x 1 MiB AMD AM29LV800BT; 15 x 64 KiB sectors, 1 x 32 KiB sector,
-> - * 2 x 8 KiB sectors, 1 x 16 KiB sectors.
-> - * Both parts are JEDEC compatible.
-> - */
-> -
-> -#include <linux/module.h>
-> -#include <linux/types.h>
-> -#include <linux/kernel.h>
-> -#include <asm/io.h>
-> -
-> -#include <linux/mtd/mtd.h>
-> -#include <linux/mtd/map.h>
-> -#include <linux/mtd/cfi.h>
-> -
-> -#ifdef CONFIG_MTD_PARTITIONS
-> -#include <linux/mtd/partitions.h>
-> -#endif
-> -
-> -#define	DEBUG
-> -
-> -#ifdef	DEBUG
-> -# define debugk(fmt,args...)	printk(fmt ,##args)
-> -#else
-> -# define debugk(fmt,args...)
-> -#endif
-> -
-> -
-> -#define WINDOW_ADDR0	0xFFF00000		/* 512 KiB */
-> -#define WINDOW_SIZE0	0x00080000
-> -#define BUSWIDTH0	1
-> -
-> -#define WINDOW_ADDR1	0xFF000000		/* 4 MiB */
-> -#define WINDOW_SIZE1	0x00400000
-> -#define BUSWIDTH1	8
-> -
-> -#define MSG_PREFIX "sbc8240:"	/* prefix for our printk()'s */
-> -#define MTDID	   "sbc8240-%d"	/* for mtdparts= partitioning */
-> -
-> -
-> -static struct map_info sbc8240_map[2] = {
-> -	{
-> -		.name           = "sbc8240 Flash Bank #0",
-> -		.size           = WINDOW_SIZE0,
-> -		.bankwidth       = BUSWIDTH0,
-> -	},
-> -	{
-> -		.name           = "sbc8240 Flash Bank #1",
-> -		.size           = WINDOW_SIZE1,
-> -		.bankwidth       = BUSWIDTH1,
-> -	}
-> -};
-> -
-> -#define NUM_FLASH_BANKS	ARRAY_SIZE(sbc8240_map)
-> -
-> -/*
-> - * The following defines the partition layout of SBC8240 boards.
-> - *
-> - * See include/linux/mtd/partitions.h for definition of the
-> - * mtd_partition structure.
-> - *
-> - * The *_max_flash_size is the maximum possible mapped flash size
-> - * which is not necessarily the actual flash size. It must correspond
-> - * to the value specified in the mapping definition defined by the
-> - * "struct map_desc *_io_desc" for the corresponding machine.
-> - */
-> -
-> -#ifdef CONFIG_MTD_PARTITIONS
-> -
-> -static struct mtd_partition sbc8240_uboot_partitions [] = {
-> -	/* Bank 0 */
-> -	{
-> -		.name =	"U-boot",			/* U-Boot Firmware	*/
-> -		.offset =	0,
-> -		.size =	0x00070000,			/*  7 x 64 KiB sectors 	*/
-> -		.mask_flags = MTD_WRITEABLE,		/*  force read-only	*/
-> -	},
-> -	{
-> -		.name =	"environment",			/* U-Boot environment	*/
-> -		.offset =	0x00070000,
-> -		.size =	0x00010000,			/*  1 x 64 KiB sector	*/
-> -	},
-> -};
-> -
-> -static struct mtd_partition sbc8240_fs_partitions [] = {
-> -	{
-> -		.name =	"jffs",				/* JFFS  filesystem	*/
-> -		.offset =	0,
-> -		.size =	0x003C0000,			/*  4 * 15 * 64KiB	*/
-> -	},
-> -	{
-> -		.name =	"tmp32",
-> -		.offset =	0x003C0000,
-> -		.size =	0x00020000,			/*  4 * 32KiB		*/
-> -	},
-> -	{
-> -		.name =	"tmp8a",
-> -		.offset =	0x003E0000,
-> -		.size =	0x00008000,			/*  4 * 8KiB		*/
-> -	},
-> -	{
-> -		.name =	"tmp8b",
-> -		.offset =	0x003E8000,
-> -		.size =	0x00008000,			/*  4 * 8KiB		*/
-> -	},
-> -	{
-> -		.name =	"tmp16",
-> -		.offset =	0x003F0000,
-> -		.size =	0x00010000,			/*  4 * 16KiB		*/
-> -	}
-> -};
-> -
-> -/* trivial struct to describe partition information */
-> -struct mtd_part_def
-> -{
-> -	int nums;
-> -	unsigned char *type;
-> -	struct mtd_partition* mtd_part;
-> -};
-> -
-> -static struct mtd_info *sbc8240_mtd[NUM_FLASH_BANKS];
-> -static struct mtd_part_def sbc8240_part_banks[NUM_FLASH_BANKS];
-> -
-> -
-> -#endif	/* CONFIG_MTD_PARTITIONS */
-> -
-> -
-> -static int __init init_sbc8240_mtd (void)
-> -{
-> -	static struct _cjs {
-> -		u_long addr;
-> -		u_long size;
-> -	} pt[NUM_FLASH_BANKS] = {
-> -		{
-> -			.addr = WINDOW_ADDR0,
-> -			.size = WINDOW_SIZE0
-> -		},
-> -		{
-> -			.addr = WINDOW_ADDR1,
-> -			.size = WINDOW_SIZE1
-> -		},
-> -	};
-> -
-> -	int devicesfound = 0;
-> -	int i,j;
-> -
-> -	for (i = 0; i < NUM_FLASH_BANKS; i++) {
-> -		printk (KERN_NOTICE MSG_PREFIX
-> -			"Probing 0x%08lx at 0x%08lx\n", pt[i].size, pt[i].addr);
-> -
-> -		sbc8240_map[i].map_priv_1 =
-> -			(unsigned long) ioremap (pt[i].addr, pt[i].size);
-> -		if (!sbc8240_map[i].map_priv_1) {
-> -			printk (MSG_PREFIX "failed to ioremap\n");
-> -			for (j = 0; j < i; j++) {
-> -				iounmap((void *) sbc8240_map[j].map_priv_1);
-> -				sbc8240_map[j].map_priv_1 = 0;
-> -			}
-> -			return -EIO;
-> -		}
-> -		simple_map_init(&sbc8240_mtd[i]);
-> -
-> -		sbc8240_mtd[i] = do_map_probe("jedec_probe", &sbc8240_map[i]);
-> -
-> -		if (sbc8240_mtd[i]) {
-> -			sbc8240_mtd[i]->module = THIS_MODULE;
-> -			devicesfound++;
-> -		} else {
-> -			if (sbc8240_map[i].map_priv_1) {
-> -				iounmap((void *) sbc8240_map[i].map_priv_1);
-> -				sbc8240_map[i].map_priv_1 = 0;
-> -			}
-> -		}
-> -	}
-> -
-> -	if (!devicesfound) {
-> -		printk(KERN_NOTICE MSG_PREFIX
-> -		       "No suppported flash chips found!\n");
-> -		return -ENXIO;
-> -	}
-> -
-> -#ifdef CONFIG_MTD_PARTITIONS
-> -	sbc8240_part_banks[0].mtd_part   = sbc8240_uboot_partitions;
-> -	sbc8240_part_banks[0].type       = "static image";
-> -	sbc8240_part_banks[0].nums       = ARRAY_SIZE(sbc8240_uboot_partitions);
-> -	sbc8240_part_banks[1].mtd_part   = sbc8240_fs_partitions;
-> -	sbc8240_part_banks[1].type       = "static file system";
-> -	sbc8240_part_banks[1].nums       = ARRAY_SIZE(sbc8240_fs_partitions);
-> -
-> -	for (i = 0; i < NUM_FLASH_BANKS; i++) {
-> -
-> -		if (!sbc8240_mtd[i]) continue;
-> -		if (sbc8240_part_banks[i].nums == 0) {
-> -			printk (KERN_NOTICE MSG_PREFIX
-> -				"No partition info available, registering whole device\n");
-> -			add_mtd_device(sbc8240_mtd[i]);
-> -		} else {
-> -			printk (KERN_NOTICE MSG_PREFIX
-> -				"Using %s partition definition\n", sbc8240_part_banks[i].mtd_part->name);
-> -			add_mtd_partitions (sbc8240_mtd[i],
-> -					    sbc8240_part_banks[i].mtd_part,
-> -					    sbc8240_part_banks[i].nums);
-> -		}
-> -	}
-> -#else
-> -	printk(KERN_NOTICE MSG_PREFIX
-> -	       "Registering %d flash banks at once\n", devicesfound);
-> -
-> -	for (i = 0; i < devicesfound; i++) {
-> -		add_mtd_device(sbc8240_mtd[i]);
-> -	}
-> -#endif	/* CONFIG_MTD_PARTITIONS */
-> -
-> -	return devicesfound == 0 ? -ENXIO : 0;
-> -}
-> -
-> -static void __exit cleanup_sbc8240_mtd (void)
-> -{
-> -	int i;
-> -
-> -	for (i = 0; i < NUM_FLASH_BANKS; i++) {
-> -		if (sbc8240_mtd[i]) {
-> -			del_mtd_device (sbc8240_mtd[i]);
-> -			map_destroy (sbc8240_mtd[i]);
-> -		}
-> -		if (sbc8240_map[i].map_priv_1) {
-> -			iounmap ((void *) sbc8240_map[i].map_priv_1);
-> -			sbc8240_map[i].map_priv_1 = 0;
-> -		}
-> -	}
-> -}
-> -
-> -module_init (init_sbc8240_mtd);
-> -module_exit (cleanup_sbc8240_mtd);
-> -
-> -MODULE_LICENSE ("GPL");
-> -MODULE_AUTHOR ("Carolyn Smith <carolyn.smith@tektronix.com>");
-> -MODULE_DESCRIPTION ("MTD map driver for SBC8240 boards");
-> -
-> 
-> ---
-> Regards--
-> Subrata
-> 
+-TZ
+
+On Tue, Jun 30, 2009 at 12:57 AM, Scott Wood<scottwood@freescale.com> wrote=
+:
+> On Mon, Jun 29, 2009 at 09:19:57PM +0530, kernel mailz wrote:
+>> I tried a small example
+>>
+>> int *p =3D 0x1000;
+>> int a =3D *p;
+>> asm("sync":::"memory");
+>> a =3D *p;
+>>
+>> and
+>>
+>> volatile int *p =3D 0x1000;
+>> int a =3D *p;
+>> asm("sync");
+>> a =3D *p
+>>
+>> Got the same assembly.
+>> Which is right.
+>>
+>> So does it mean, if proper use of volatile is done, there is no need
+>> of "memory" ?
+>
+> No. =A0As I understand it, volatile concerns deletion of the asm statemen=
+t
+> (if no outputs are used) and reordering with respect to other asm
+> statements (not sure whether GCC will actually do this), while the memory
+> clobber concerns optimization of non-asm loads/stores around the asm
+> statement.
+>
+>> static inline unsigned long
+>> __xchg_u32(volatile void *p, unsigned long val)
+>> {
+>> =A0 =A0 =A0 =A0unsigned long prev;
+>>
+>> =A0 =A0 =A0 =A0__asm__ __volatile__(
+>>
+>> "1: =A0 =A0 lwarx =A0 %0,0,%2 \n"
+>>
+>> " =A0 =A0 =A0 stwcx. =A0%3,0,%2 \n\
+>> =A0 =A0 =A0 =A0bne- =A0 =A01b"
+>>
+>> =A0 =A0 =A0 =A0: "=3D&r" (prev), "+m" (*(volatile unsigned int *)p)
+>> =A0 =A0 =A0 =A0: "r" (p), "r" (val)
+>> // =A0 =A0 =A0 =A0:"memory","cc");
+>>
+>> =A0 =A0 =A0 =A0return prev;
+>> }
+>> #define ADDR 0x1000
+>> int main()
+>> {
+>> =A0 =A0 =A0 =A0__xchg_u32((void*)ADDR, 0x2000);
+>> =A0 =A0 =A0 =A0__xchg_u32((void*)ADDR, 0x3000);
+>>
+>> =A0 =A0 =A0 =A0return 0;
+>>
+>> }
+>>
+>> Got the same asm, when compiled with O1 , with / without "memory" clobbe=
+r
+>
+> This isn't a good test case, because there's nothing other than inline
+> asm going on in that function for GCC to optimize. =A0Plus, it's generall=
+y
+> not a good idea, when talking about what the compiler is or isn't allowed
+> to do, to point to a single test case (or even several) and say that it
+> isn't required because you don't notice a difference. =A0Even if there we=
+re
+> no code at all with which it made a difference with GCC version X, it
+> could make a difference with GCC version X+1.
+>
+> -Scott
+>
