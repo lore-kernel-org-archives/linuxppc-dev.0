@@ -1,29 +1,26 @@
-Return-Path: <timur.tabi@gmail.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B8737B70B8
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 12A8EB70BB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jul 2009 10:12:32 +1000 (EST)
-Received: from mail-qy0-f188.google.com (mail-qy0-f188.google.com
-	[209.85.221.188]) by ozlabs.org (Postfix) with ESMTP id 4A78DDDF58
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 01:02:52 +1000 (EST)
-Received: by qyk26 with SMTP id 26so232820qyk.17
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 08:02:51 -0700 (PDT)
+	Wed,  1 Jul 2009 10:12:33 +1000 (EST)
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.227])
+	by ozlabs.org (Postfix) with ESMTP id D7B75DDF86
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 02:17:05 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id b25so84514rvf.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 09:17:03 -0700 (PDT)
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <20090629234035.12475.58493.stgit@localhost.localdomain>
-References: <20090629234035.12475.58493.stgit@localhost.localdomain>
-Date: Tue, 30 Jun 2009 10:02:49 -0500
-Message-ID: <ed82fe3e0906300802h2bcfb651q5f8a37423307e7ff@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Fix spin_event_timeout() to be robust over
-	context switches
-From: Timur Tabi <timur@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <29DC34A6B43468409F5A371CFE34E849D7EF7B@ex01.ads.ubidyne.de>
+References: <29DC34A6B43468409F5A371CFE34E849D7EF7B@ex01.ads.ubidyne.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 30 Jun 2009 10:16:43 -0600
+Message-ID: <fa686aa40906300916h3718e50er88e1408be25e21c0@mail.gmail.com>
+Subject: Re: Direct MII connection between MPC8313 and VIRTEX FPGA
+To: Frank Prepelica <Frank.Prepelica@ubidyne.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 29, 2009 at 6:40 PM, Grant Likely<grant.likely@secretlab.ca> wr=
-ote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+On Tue, Jun 30, 2009 at 2:35 AM, Frank
+Prepelica<Frank.Prepelica@ubidyne.com> wrote:
+>> What kernel version are you using?
 >
-> Current implementation of spin_event_timeout can be interrupted by an
-> IRQ or context switch after testing the condition, but before checking
-> the timeout. =A0This can cause the loop to report a timeout when the
-> condition actually became true in the middle.
+> We are using kernel version 2.6.24. I've searched for "current speed" in =
+version 2.6.28.7 and I've found that string.
 >
-> This patch adds one final check of the condition upon exit of the loop
-> if the last test of the condition was still false.
+>> Yes, you need to modify the DTB. =A0You have a back to back MII
+>> connection, not a phy, so you do *not* want to have a PHY node in the
+>> device tree.
 >
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> Hmm, but I do have a "PHY", don't I?. The "PHY" will be emulated in the F=
+PGA. Of course, it's not a physical PHY but it should look like one.
 
-Acked-by: Timur Tabi <timur@freescale.com>
+No, it sounds like you don't.  If you've got a back-to-back MII
+connection, then you can fix the link speed and you don't need to do
+any form of PHY emulation.  ie. you don't need to wire up the MDIO
+pins.
 
-Ben, please pick this up for the next rc of 2.6.31.
+> So, do I really need the remove the complete PHY description in the DTB?
+
+yes.
 
 --=20
-Timur Tabi
-Linux kernel developer at Freescale
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
