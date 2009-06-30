@@ -1,22 +1,32 @@
 Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CC000B70A8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 30 Jun 2009 20:43:27 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A1E4DB709E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 20:37:15 +1000 (EST)
-Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
+	by ozlabs.org (Postfix) with ESMTPS id B154FDDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 20:43:26 +1000 (EST)
+Subject: Re: Inline Assembly queries
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rob Landley <rob@landley.net>
-In-Reply-To: <200906291834.07902.rob@landley.net>
-References: <200906281033.09842.jk@ozlabs.org>
-	<200906291834.07902.rob@landley.net>
+To: David Howells <dhowells@redhat.com>
+In-Reply-To: <30098.1246291036@redhat.com>
+References: <abe8a1fd0906290849w1ba6bd33of60a9c2e110c10fd@mail.gmail.com>
+	<abe8a1fd0906271246q920124ard61422d9577e2d09@mail.gmail.com>
+	<abe8a1fd0906271249k479e5a87gfe1ee9c02798a234@mail.gmail.com>
+	<m3ab3t4623.fsf@google.com>
+	<abe8a1fd0906272157j4246e9d3hec2e374535a22c89@mail.gmail.com>
+	<30098.1246291036@redhat.com>
 Content-Type: text/plain
-Date: Tue, 30 Jun 2009 20:24:48 +1000
-Message-Id: <1246357488.31413.2.camel@pasglop>
+Date: Tue, 30 Jun 2009 20:43:03 +1000
+Message-Id: <1246358583.31413.11.camel@pasglop>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org,
-	Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org
+Cc: gcc-help@gcc.gnu.org, linuxppc-dev@ozlabs.org,
+	kernel mailz <kernelmailz@googlemail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +36,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-06-29 at 18:34 -0500, Rob Landley wrote:
+On Mon, 2009-06-29 at 16:57 +0100, David Howells wrote:
+> kernel mailz <kernelmailz@googlemail.com> wrote:
 > 
-> Which suggested that the problem was the new
-> CONFIG_PPC_OF_BOOT_TRAMPOLINE 
-> symbol wasn't set, and once I switched that on it started working
-> again.
-
-Ah, I might have forgot to set it to default y...
-
-> > linuxppc-dev@lists.ozlabs.org is the one you want for this:
-> >
-> >  https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > asm("sync");
 > 
-> Cool!  Is there a reason it's hidden?  (Or at least not listed in
-> either 
-> vger.kernel.org's list info page or in the "Maling lists" page linked
-> from 
-> ozlabs.org's top level web page.)  Just curious, I couldn't find it
-> when I 
-> looked in the obvious (to me) places.
-
-It's a glitch of the transition from ozlabs.org to lists.ozlabs.org for
-lists... they haven't all moved over yet so it's still a bit messy.
-
-> Rob
+> Isn't gcc free to discard this as it has no dependencies, no indicated side
+> effects, and isn't required to be kept?  I think this should probably be:
 > 
-> P.S.  Yes I tried google: top hit for "linux powerpc list" is
-> penguinppc.org, 
-> which links to mailing lists on the right which is the ozlabs.org page
-> that 
-> doesn't list linuxppc-dev.  In fact the entire first page of google
-> hits for 
-> that search doesn't give a hint of the existence of that list,
-> although some 
-> of the later ones might if I clicked through more of them...
+> 	asm volatile("sync");
 
-I'll check with Stephen if we can get the ozlabs.org page a link to the
-new lists.ozlabs.org or something like that...
+It should also have a "memory" clobber or it's pointless since gcc would
+otherwise be free to move load and stores accross that barrier.
 
 Cheers,
 Ben.
