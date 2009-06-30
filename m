@@ -1,28 +1,24 @@
-Return-Path: <jonsmirl@gmail.com>
+Return-Path: <martyn.welch@gefanuc.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5781EB70AD
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id ABFCAB70D0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jul 2009 10:12:33 +1000 (EST)
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id DD3BDDDEFA
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 04:33:20 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 5so155302qwd.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 11:33:18 -0700 (PDT)
+	Wed,  1 Jul 2009 10:12:34 +1000 (EST)
+Received: from exprod5og101.obsmtp.com (exprod5og101.obsmtp.com [64.18.0.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F2120DDE45
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 00:37:52 +1000 (EST)
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH] powerpc/86xx: Enable XMC site on GE Fanuc SBC310
+To: galak@kernel.crashing.org
+Date: Tue, 30 Jun 2009 15:32:38 +0100
+Message-ID: <20090630143238.10798.9863.stgit@ES-J7S4D2J.amer.consind.ge.com>
 MIME-Version: 1.0
-In-Reply-To: <fa686aa40906300950m15b7d48av953c0c738f6bf0e7@mail.gmail.com>
-References: <20090629234214.12670.9082.stgit@localhost.localdomain>
-	<20090630061847.GA24164@pengutronix.de>
-	<fa686aa40906300950m15b7d48av953c0c738f6bf0e7@mail.gmail.com>
-Date: Tue, 30 Jun 2009 14:33:18 -0400
-Message-ID: <9e4733910906301133n4928cfc4h3ce4ee2aef53fa73@mail.gmail.com>
-Subject: Re: [PATCH] alsa/soc: add locking to mpc5200-psc-ac97 driver
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 30, 2009 at 12:50 PM, Grant Likely<grant.likely@secretlab.ca> w=
-rote:
-> On Tue, Jun 30, 2009 at 12:18 AM, Wolfram Sang<w.sang@pengutronix.de> wro=
-te:
->>> +
->>> + =A0 =A0 /* Force clear the data valid bit */
->>> + =A0 =A0 in_be32(&psc_dma->psc_regs->ac97_data);
->>> +
->>
->> No mutex involved here. I think this is either a separate patch or it ne=
-eds at
->> least to be mentioned in the patch description.
->
-> Oops, that was sloppy. =A0Yes, I'll put this into a separate patch. =A0Th=
-anks.
+This patch enables the XMC (PCIe daughter card) site on the SBC310.
+STG enter the description for the patch above.
 
-Now that you have added the mutexes, do you ever need to force clear
-the valid bit?
-Maybe log an error if this happens so that we can track down why.
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+ arch/powerpc/boot/dts/gef_sbc310.dts |   37 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 37 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/gef_sbc310.dts b/arch/powerpc/boot/dts/gef_sbc310.dts
+index 0f4c9ec..7810ea9 100644
+--- a/arch/powerpc/boot/dts/gef_sbc310.dts
++++ b/arch/powerpc/boot/dts/gef_sbc310.dts
+@@ -376,4 +376,41 @@
+ 				  0x0 0x00400000>;
+ 		};
+ 	};
++
++	pci1: pcie@fef09000 {
++		compatible = "fsl,mpc8641-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xfef09000 0x1000>;
++		bus-range = <0x0 0xff>;
++		ranges = <0x02000000 0x0 0xc0000000 0xc0000000 0x0 0x20000000
++			  0x01000000 0x0 0x00000000 0xfe400000 0x0 0x00400000>;
++		clock-frequency = <33333333>;
++		interrupt-parent = <&mpic>;
++		interrupts = <0x19 0x2>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++			0x0000 0x0 0x0 0x1 &mpic 0x4 0x2
++			0x0000 0x0 0x0 0x2 &mpic 0x5 0x2
++			0x0000 0x0 0x0 0x3 &mpic 0x6 0x2
++			0x0000 0x0 0x0 0x4 &mpic 0x7 0x2
++			>;
++
++		pcie@0 {
++			reg = <0 0 0 0 0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <0x02000000 0x0 0xc0000000
++				  0x02000000 0x0 0xc0000000
++				  0x0 0x20000000
++
++				  0x01000000 0x0 0x00000000
++				  0x01000000 0x0 0x00000000
++				  0x0 0x00400000>;
++		};
++	};
++
+ };
