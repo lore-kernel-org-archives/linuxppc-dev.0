@@ -1,28 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1CB90B70FD
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jul 2009 10:12:35 +1000 (EST)
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.225])
-	by ozlabs.org (Postfix) with ESMTP id 645D6DDFAB
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 02:53:48 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id b25so94312rvf.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 09:53:46 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090630085917.GA13961@sirena.org.uk>
-References: <20090629234214.12670.9082.stgit@localhost.localdomain>
-	<9e4733910906291726h5cd5bdf8ve7e946aef855ac07@mail.gmail.com>
-	<20090630085917.GA13961@sirena.org.uk>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 30 Jun 2009 10:53:26 -0600
-Message-ID: <fa686aa40906300953n28016d4v179a1c7ed3198399@mail.gmail.com>
-Subject: Re: [PATCH] alsa/soc: add locking to mpc5200-psc-ac97 driver
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1246359020.31413.12.camel@pasglop>
+References: <200906281033.09842.jk@ozlabs.org>
+	<200906291834.07902.rob@landley.net>
+	<1246321478.4621.11.camel@concordia>
+	<1246359020.31413.12.camel@pasglop>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-b9CyhzJnrhz9IoEFlB1c"
+Date: Wed, 01 Jul 2009 00:04:56 +1000
+Message-Id: <1246370696.8542.2.camel@concordia>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org,
+	Jeremy Kerr <jk@ozlabs.org>, Rob Landley <rob@landley.net>,
+	linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,23 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 30, 2009 at 2:59 AM, Mark
-Brown<broonie@opensource.wolfsonmicro.com> wrote:
-> On Mon, Jun 29, 2009 at 08:26:12PM -0400, Jon Smirl wrote:
->
->> Does your touchscreen driver use this mutex? Or was this mutex needed
->> just for the AC97 driver?
->
-> It's in the register accesses so everything accessing the chip registers
-> will use it.
 
-The mutexes are needed.  The ac97 bus doesn't have any knowledge about
-what codec(s) will be wired up to it so it must protect against
-multiple access.  In my case both the wm9712 audio codec driver and
-the wm9712 touchscreen driver perform register accesses.
+--=-b9CyhzJnrhz9IoEFlB1c
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-g.
+On Tue, 2009-06-30 at 20:50 +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2009-06-30 at 10:24 +1000, Michael Ellerman wrote:
+> > On Mon, 2009-06-29 at 18:34 -0500, Rob Landley wrote:
+> > > Which suggested that the problem was the new CONFIG_PPC_OF_BOOT_TRAMP=
+OLINE=20
+> > > symbol wasn't set, and once I switched that on it started working aga=
+in.
+> >=20
+> > What defconfig are you using? It sounds like maybe something should be
+> > 'select'ing OF_BOOT_TRAMPOLINE.
+>=20
+> Right, pmac, pseries and chrp probably ... though I don't like select
+> for a user-visible option, I'd rather fix things if I inadvertently
+> forgot the "default y" here, after all, one may want to do a minimum
+> kdump kernel without prom_init.c in it.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Yeah true. In that case there's not much to do, it's default y, and the
+help text says "In case of doubt, say Y".
+
+Rob, do you remember saying "no" to this option when it came up, or did
+you run 'make <something defconfig>' and end up with it unset? The
+latter would be a bug, the former would not :)
+
+cheers
+
+--=-b9CyhzJnrhz9IoEFlB1c
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpKG4UACgkQdSjSd0sB4dJzrwCfVhAwipQ+UrYF4BRBzZNp2iS6
+aCsAoJ6fj/9iWISc1zBlrpCV/joX62F1
+=iO7M
+-----END PGP SIGNATURE-----
+
+--=-b9CyhzJnrhz9IoEFlB1c--
