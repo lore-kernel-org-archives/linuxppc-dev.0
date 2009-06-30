@@ -1,31 +1,23 @@
-Return-Path: <mzaturenskiy.st@gmail.com>
-Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.243])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id CA71BB70AA
+Return-Path: <lada.podivin@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id AD84AB70F4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jul 2009 14:36:47 +1000 (EST)
-Received: by rv-out-0708.google.com with SMTP id k29so235844rvb.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 21:36:45 -0700 (PDT)
+	Wed,  1 Jul 2009 10:12:34 +1000 (EST)
+Received: from mail-bw0-f208.google.com (mail-bw0-f208.google.com
+	[209.85.218.208]) by ozlabs.org (Postfix) with ESMTP id EED8CDDDE7
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 00:05:32 +1000 (EST)
+Received: by bwz4 with SMTP id 4so170546bwz.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 07:05:30 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <97dd5fd20906300911k7b1e72banf61bcb9ff500787@mail.gmail.com>
-References: <97dd5fd20906260913x351593c9raa429fd657eb42f0@mail.gmail.com>
-	<97dd5fd20906291053u1a07c3afla1c2ea0590d01f1e@mail.gmail.com>
-	<4A4901A8.5010402@mlbassoc.com>
-	<97dd5fd20906291113t5ea98285h2db6379ff1a940c@mail.gmail.com>
-	<4A490AE4.7000509@freescale.com>
-	<97dd5fd20906291324jf085addjaa61ff48dfca3d04@mail.gmail.com>
-	<4A49249C.5080101@freescale.com>
-	<97dd5fd20906291346s3ee60edbr1863c27280ae373c@mail.gmail.com>
-	<4A492C1A.6020302@freescale.com>
-	<97dd5fd20906300911k7b1e72banf61bcb9ff500787@mail.gmail.com>
-From: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
-Date: Tue, 30 Jun 2009 12:48:58 -0500
-Message-ID: <97dd5fd20906301048o30354271haf603a9bae29b0fe@mail.gmail.com>
-Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, Gary Thomas <gary@mlbassoc.com>
+Date: Tue, 30 Jun 2009 15:58:53 +0200
+Message-ID: <e35801cc0906300658q45d5ea00ub939ba73185efd72@mail.gmail.com>
+Subject: ppc405ex + gigabit ethernet
+From: Lada Podivin <lada.podivin@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=0016e6d7845b031cce046d913502
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,27 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> I'll still try to figure out how to get u-boot to fill all this in.
-Got it... thanks to
-"http://www.mail-archive.com/u-boot-users@lists.sourceforge.net/msg05111.html"
+--0016e6d7845b031cce046d913502
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I made sure that CONFIG_OF_LIBFDT and CONFIG_OF_BOARD_SETUP were both
-present in "u-boot-2009.03/include/configs/EP88x.h". Then added the
-following to the very end of "u-boot-2009.03/board/ep88x/ep88x.c":
+Hi,
 
-#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
-void ft_board_setup(void *blob, bd_t *bd)
-{
-         ft_cpu_setup(blob, bd);
-}
-#endif /* defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP) */
+I benchmarked performance of my network, which contains ppc405EX (Kilauea
+board, kernel 2.6.30 from Denx) connected with a linux desktop via gigabit
+ethernet. I used the netperf tool:
 
-I suppose I could have put this code in w/o the "#if defined..." and
-forget about the "CONFIG_OF_BOARD_SETUP" flag since I'm not really
-using the "fdt boardsetup" command, but whatever.
+netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768
 
-As for my device tree, I reverted back to the original version with
-nothing filled in and just replaced 0xfa20xxxx with 0xf000xxxx as Gary
-suggested earlier.
+So I was sending UDP packets to the desktop. The resulting speed was about
+370 Kb/s. I tried to send the packets to several different computers - with
+the same result. So the ppc board is the bottleneck in this case.
 
-Once again, thanks to all those who offered suggestions!
+Is there any possibility to improve the gigabit capabilities of the
+ppc405EX? Is there anyone who achieved a better performance with ppc4xx
+boards?
+
+Thanks!
+
+Best,
+Lada Podivin
+
+--0016e6d7845b031cce046d913502
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hi,<br><br>I benchmarked performance of my network, which contains ppc405EX (Kilauea board, kernel 2.6.30 from Denx) connected with a linux desktop via gigabit ethernet. I used the netperf tool: <br><br>netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768<br>
+<br>So I was sending UDP packets to the desktop. The resulting speed was about 370 Kb/s. I tried to send the packets to several different computers - with the same result. So the ppc board is the bottleneck in this case.<br>
+<br>Is there any possibility to improve the gigabit capabilities of the ppc405EX? Is there anyone who achieved a better performance with ppc4xx boards?<br><br>Thanks!<br><br>Best,<br>Lada Podivin<br><br>
+
+--0016e6d7845b031cce046d913502--
