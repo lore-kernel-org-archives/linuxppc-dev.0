@@ -1,24 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 606D2B70AF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 09:42:28 +1000 (EST)
-Received: from mail-px0-f182.google.com (mail-px0-f182.google.com
-	[209.85.216.182]) by ozlabs.org (Postfix) with ESMTP id A1CD3DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 09:42:27 +1000 (EST)
-Received: by pxi12 with SMTP id 12so4006935pxi.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 16:42:24 -0700 (PDT)
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] alsa/soc: add locking to mpc5200-psc-ac97 driver
-To: jonsmirl@gmail.com, linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	broonie@sirena.org.uk
-Date: Mon, 29 Jun 2009 17:42:21 -0600
-Message-ID: <20090629234214.12670.9082.stgit@localhost.localdomain>
+Return-Path: <tony@bakeyournoodle.com>
+Date: Tue, 30 Jun 2009 10:23:00 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Rob Landley <rob@landley.net>
+Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
+Message-ID: <20090630002300.GE9451@bilbo.ozlabs.org>
+References: <200906281033.09842.jk@ozlabs.org>
+	<200906291834.07902.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200906291834.07902.rob@landley.net>
+Cc: linuxppc-dev@lists.ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,110 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Mon, Jun 29, 2009 at 06:34:06PM -0500, Rob Landley wrote:
 
-AC97 bus register read/write hooks need to provide locking, but the
-mpc5200-psc-ac97 driver does not.  This patch adds a mutex around
-the register access routines.
+> Cool!  Is there a reason it's hidden?  (Or at least not listed in either 
+> vger.kernel.org's list info page
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Because it's not hosted on vger :( ... I guess we're controll freaks! :D
+
+>                                  or in the "Maling lists" page linked from 
+> ozlabs.org's top level web page.)
+
+Ahh this is becuase we're currently on the process of moving the lists to
+"lists.ozlabs.org", there is an alias in place so the old address still works.
+So at some level it's just bad timing :(
+
+We'll do what we can to make this easier during the transition.
+
+>                                    Just curious, I couldn't find it when I 
+> looked in the obvious (to me) places.
+
+Not to be flipant but it's in the MAINTAINERS file:
+
 ---
+LINUX FOR POWERPC (32-BIT AND 64-BIT)
+P:      Benjamin Herrenschmidt
+M:      benh@kernel.crashing.org
+P:      Paul Mackerras
+M:      paulus@samba.org
+W:      http://www.penguinppc.org/
+L:      linuxppc-dev@ozlabs.org
+T:      git git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
+S:      Supported
+---
+ 
+> P.S.  Yes I tried google: top hit for "linux powerpc list" is penguinppc.org, 
+> which links to mailing lists on the right which is the ozlabs.org page that 
+> doesn't list linuxppc-dev.  In fact the entire first page of google hits for 
+> that search doesn't give a hint of the existence of that list, although some 
+> of the later ones might if I clicked through more of them...
 
- sound/soc/fsl/mpc5200_dma.c      |    1 +
- sound/soc/fsl/mpc5200_dma.h      |    1 +
- sound/soc/fsl/mpc5200_psc_ac97.c |   17 ++++++++++++++++-
- 3 files changed, 18 insertions(+), 1 deletions(-)
+Rats, not really sure what we can do about that :(
 
-
-diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
-index efec33a..f0a2d40 100644
---- a/sound/soc/fsl/mpc5200_dma.c
-+++ b/sound/soc/fsl/mpc5200_dma.c
-@@ -456,6 +456,7 @@ int mpc5200_audio_dma_create(struct of_device *op)
- 		return -ENODEV;
- 
- 	spin_lock_init(&psc_dma->lock);
-+	mutex_init(&psc_dma->mutex);
- 	psc_dma->id = be32_to_cpu(*prop);
- 	psc_dma->irq = irq;
- 	psc_dma->psc_regs = regs;
-diff --git a/sound/soc/fsl/mpc5200_dma.h b/sound/soc/fsl/mpc5200_dma.h
-index 2000803..8d396bb 100644
---- a/sound/soc/fsl/mpc5200_dma.h
-+++ b/sound/soc/fsl/mpc5200_dma.h
-@@ -55,6 +55,7 @@ struct psc_dma {
- 	unsigned int irq;
- 	struct device *dev;
- 	spinlock_t lock;
-+	struct mutex mutex;
- 	u32 sicr;
- 	uint sysclk;
- 	int imr;
-diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_ac97.c
-index 794a247..7eb5499 100644
---- a/sound/soc/fsl/mpc5200_psc_ac97.c
-+++ b/sound/soc/fsl/mpc5200_psc_ac97.c
-@@ -34,13 +34,20 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
- 	int status;
- 	unsigned int val;
- 
-+	mutex_lock(&psc_dma->mutex);
-+
- 	/* Wait for command send status zero = ready */
- 	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
- 				MPC52xx_PSC_SR_CMDSEND), 100, 0);
- 	if (status == 0) {
- 		pr_err("timeout on ac97 bus (rdy)\n");
-+		mutex_unlock(&psc_dma->mutex);
- 		return -ENODEV;
- 	}
-+
-+	/* Force clear the data valid bit */
-+	in_be32(&psc_dma->psc_regs->ac97_data);
-+
- 	/* Send the read */
- 	out_be32(&psc_dma->psc_regs->ac97_cmd, (1<<31) | ((reg & 0x7f) << 24));
- 
-@@ -50,16 +57,19 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
- 	if (status == 0) {
- 		pr_err("timeout on ac97 read (val) %x\n",
- 				in_be16(&psc_dma->psc_regs->sr_csr.status));
-+		mutex_unlock(&psc_dma->mutex);
- 		return -ENODEV;
- 	}
- 	/* Get the data */
- 	val = in_be32(&psc_dma->psc_regs->ac97_data);
- 	if (((val >> 24) & 0x7f) != reg) {
- 		pr_err("reg echo error on ac97 read\n");
-+		mutex_unlock(&psc_dma->mutex);
- 		return -ENODEV;
- 	}
- 	val = (val >> 8) & 0xffff;
- 
-+	mutex_unlock(&psc_dma->mutex);
- 	return (unsigned short) val;
- }
- 
-@@ -68,16 +78,21 @@ static void psc_ac97_write(struct snd_ac97 *ac97,
- {
- 	int status;
- 
-+	mutex_lock(&psc_dma->mutex);
-+
- 	/* Wait for command status zero = ready */
- 	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
- 				MPC52xx_PSC_SR_CMDSEND), 100, 0);
- 	if (status == 0) {
- 		pr_err("timeout on ac97 bus (write)\n");
--		return;
-+		goto out;
- 	}
- 	/* Write data */
- 	out_be32(&psc_dma->psc_regs->ac97_cmd,
- 			((reg & 0x7f) << 24) | (val << 8));
-+
-+ out:
-+	mutex_unlock(&psc_dma->mutex);
- }
- 
- static void psc_ac97_warm_reset(struct snd_ac97 *ac97)
+Yours Tony
