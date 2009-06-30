@@ -1,16 +1,19 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Tue, 30 Jun 2009 10:23:00 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Rob Landley <rob@landley.net>
+Return-Path: <michael@ellerman.id.au>
 Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
-Message-ID: <20090630002300.GE9451@bilbo.ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Rob Landley <rob@landley.net>
+In-Reply-To: <200906291834.07902.rob@landley.net>
 References: <200906281033.09842.jk@ozlabs.org>
 	<200906291834.07902.rob@landley.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200906291834.07902.rob@landley.net>
-Cc: linuxppc-dev@lists.ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-09JIW95yaypzlhlHwAmq"
+Date: Tue, 30 Jun 2009 10:24:38 +1000
+Message-Id: <1246321478.4621.11.camel@concordia>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org,
+	Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,29 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 29, 2009 at 06:34:06PM -0500, Rob Landley wrote:
 
-> Cool!  Is there a reason it's hidden?  (Or at least not listed in either 
-> vger.kernel.org's list info page
+--=-09JIW95yaypzlhlHwAmq
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Because it's not hosted on vger :( ... I guess we're controll freaks! :D
+On Mon, 2009-06-29 at 18:34 -0500, Rob Landley wrote:
+> Which suggested that the problem was the new CONFIG_PPC_OF_BOOT_TRAMPOLIN=
+E=20
+> symbol wasn't set, and once I switched that on it started working again.
 
->                                  or in the "Maling lists" page linked from 
-> ozlabs.org's top level web page.)
+What defconfig are you using? It sounds like maybe something should be
+'select'ing OF_BOOT_TRAMPOLINE.
 
-Ahh this is becuase we're currently on the process of moving the lists to
-"lists.ozlabs.org", there is an alias in place so the old address still works.
-So at some level it's just bad timing :(
 
-We'll do what we can to make this easier during the transition.
-
->                                    Just curious, I couldn't find it when I 
+> > linuxppc-dev@lists.ozlabs.org is the one you want for this:
+> >
+> >  https://lists.ozlabs.org/listinfo/linuxppc-dev
+>=20
+> Cool!  Is there a reason it's hidden?  (Or at least not listed in either=20
+> vger.kernel.org's list info page or in the "Maling lists" page linked fro=
+m=20
+> ozlabs.org's top level web page.)  Just curious, I couldn't find it when =
+I=20
 > looked in the obvious (to me) places.
 
-Not to be flipant but it's in the MAINTAINERS file:
+It's not hidden, it's just in the process of moving from ozlabs.org to
+lists.ozlabs.org - and it's a bit hard to find in the process. I've
+updated the ozlabs.org page to point to it in the meantime.
 
----
-LINUX FOR POWERPC (32-BIT AND 64-BIT)
+It's also in maintainers :D
+
+LINUX FOR POWERPC (32-BIT AND 64-BIT)                                      =
+                                   =20
 P:      Benjamin Herrenschmidt
 M:      benh@kernel.crashing.org
 P:      Paul Mackerras
@@ -51,14 +64,20 @@ W:      http://www.penguinppc.org/
 L:      linuxppc-dev@ozlabs.org
 T:      git git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
 S:      Supported
----
- 
-> P.S.  Yes I tried google: top hit for "linux powerpc list" is penguinppc.org, 
-> which links to mailing lists on the right which is the ozlabs.org page that 
-> doesn't list linuxppc-dev.  In fact the entire first page of google hits for 
-> that search doesn't give a hint of the existence of that list, although some 
-> of the later ones might if I clicked through more of them...
 
-Rats, not really sure what we can do about that :(
 
-Yours Tony
+cheers
+
+--=-09JIW95yaypzlhlHwAmq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpJWzwACgkQdSjSd0sB4dIS5ACgt9cW2NcDis8oj/3Jr3JdhLy1
+hV4An02xbRKHME4V/dOd2kIc9gY4zWhz
+=n1Sd
+-----END PGP SIGNATURE-----
+
+--=-09JIW95yaypzlhlHwAmq--
