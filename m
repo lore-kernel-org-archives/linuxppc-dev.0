@@ -1,25 +1,23 @@
-Return-Path: <johnny.hacking@gmail.com>
-Received: from mail-yx0-f195.google.com (mail-yx0-f195.google.com
-	[209.85.210.195])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 18EFBB70B5
+Return-Path: <Frank.Prepelica@ubidyne.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5D728B70BB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 17:33:14 +1000 (EST)
-Received: by yxe33 with SMTP id 33so7824869yxe.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 00:33:12 -0700 (PDT)
+	Tue, 30 Jun 2009 18:35:52 +1000 (EST)
+Received: from mail.ubidyne.com (mail.ubidyne.com [212.211.133.238])
+	by ozlabs.org (Postfix) with ESMTP id 7C5A1DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 18:35:49 +1000 (EST)
 MIME-Version: 1.0
-In-Reply-To: <2ea1731b0906292329t30cdc9a6q1fc36dc2273a2931@mail.gmail.com>
-References: <cb9ecdfa0906290858x125b8149na037f33258c21426@mail.gmail.com>
-	<20090629165133.GC1323@b07421-ec1.am.freescale.net>
-	<cb9ecdfa0906291836mf74c41fn9c187e305771920a@mail.gmail.com>
-	<2ea1731b0906292329t30cdc9a6q1fc36dc2273a2931@mail.gmail.com>
-Date: Tue, 30 Jun 2009 15:33:11 +0800
-Message-ID: <cb9ecdfa0906300033x4dfcc315gfd67522b77f6004a@mail.gmail.com>
-Subject: Re: PCI device support in Open Firmware (device tree syntax)
-From: Johnny Hung <johnny.hacking@gmail.com>
-To: Marco Stornelli <marco.stornelli@gmail.com>, linux-embedded@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: AW: Direct MII connection between MPC8313 and VIRTEX FPGA
+Date: Tue, 30 Jun 2009 10:35:46 +0200
+Message-ID: <29DC34A6B43468409F5A371CFE34E849D7EF7B@ex01.ads.ubidyne.de>
+From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2009/6/30 Marco Stornelli <marco.stornelli@gmail.com>:
-> 2009/6/30 Johnny Hung <johnny.hacking@gmail.com>:
->> Thanks for your reply. So there are no PCI device resource info in
->> flat device tree.
->> How do PCI device resources be assign in general case or is there any example?
->> I am so confusing, would you please give me detailed describle?
->>
->> BRs, H. Johnny
->>>
->
-> You should look at your bootloader about the initial configuration of
-> the pci device, in general it should (more or less) do the work of
-> BIOS as you said. After that the kernel can probe them.
->
-> Marco
->
-You are right. u-boot do PCI device BAR resources assign and flat
-device tree describe PCI device interrupt-map. I use "lspci -s xxx -x"
-for the PCI device, the resources was assigned properly.
-Thanks.
+> What kernel version are you using?
 
-BRs, H. Johnny
+We are using kernel version 2.6.24. I've searched for "current speed" in =
+version 2.6.28.7 and I've found that string.
+
+> Yes, you need to modify the DTB.  You have a back to back MII
+> connection, not a phy, so you do *not* want to have a PHY node in the
+> device tree.
+
+Hmm, but I do have a "PHY", don't I?. The "PHY" will be emulated in the =
+FPGA. Of course, it's not a physical PHY but it should look like one.
+So, do I really need the remove the complete PHY description in the DTB?
+
+
+=09
+		=20
+=20
+
+Frank Prepelica
+Software Design Engineer
+
+Ubidyne GmbH
+Lise-Meitner-Str.-14
+89081 Ulm - Germany
+
+
+
+> -----Urspr=FCngliche Nachricht-----
+> Von: Grant Likely [mailto:grant.likely@secretlab.ca]
+> Gesendet: Montag, 29. Juni 2009 17:40
+> An: Frank Prepelica
+> Cc: linuxppc-dev@ozlabs.org
+> Betreff: Re: Direct MII connection between MPC8313 and VIRTEX FPGA
+>=20
+> On Mon, Jun 29, 2009 at 2:23 AM, Frank
+> Prepelica<Frank.Prepelica@ubidyne.com> wrote:
+> > Hi Grant
+> >
+> > Thanks for your response!
+> >
+> > I have searched for "current-speed" in drivers/net/fec_mpc52xx.c but =
+I
+> cannot find anything. However we are using the gianfar.c Ethernet =
+driver.
+> > Do you know whether this driver supports fixed MII links without =
+PHY?
+>=20
+> What kernel version are you using?
+>=20
+> > I've got another question regarding MII connection between and MPC =
+and a
+> Virtex FPGA. Whats about the PHY address which has to be set in the =
+DTB
+> file? Do I have to modify the DTB at all?
+>=20
+> Yes, you need to modify the DTB.  You have a back to back MII
+> connection, not a phy, so you do *not* want to have a PHY node in the
+> device tree.
+>=20
+> g.
+>=20
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
