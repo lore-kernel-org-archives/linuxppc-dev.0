@@ -1,19 +1,26 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Rob Landley <rob@landley.net>
-In-Reply-To: <200906291834.07902.rob@landley.net>
-References: <200906281033.09842.jk@ozlabs.org>
-	<200906291834.07902.rob@landley.net>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-09JIW95yaypzlhlHwAmq"
-Date: Tue, 30 Jun 2009 10:24:38 +1000
-Message-Id: <1246321478.4621.11.camel@concordia>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org,
-	Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <jonsmirl@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 167D3B7096
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 30 Jun 2009 10:26:16 +1000 (EST)
+Received: from mail-qy0-f188.google.com (mail-qy0-f188.google.com
+	[209.85.221.188]) by ozlabs.org (Postfix) with ESMTP id 71294DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2009 10:26:15 +1000 (EST)
+Received: by qyk26 with SMTP id 26so2351527qyk.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2009 17:26:13 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090629234214.12670.9082.stgit@localhost.localdomain>
+References: <20090629234214.12670.9082.stgit@localhost.localdomain>
+Date: Mon, 29 Jun 2009 20:26:12 -0400
+Message-ID: <9e4733910906291726h5cd5bdf8ve7e946aef855ac07@mail.gmail.com>
+Subject: Re: [PATCH] alsa/soc: add locking to mpc5200-psc-ac97 driver
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,61 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jun 29, 2009 at 7:42 PM, Grant Likely<grant.likely@secretlab.ca> wr=
+ote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> AC97 bus register read/write hooks need to provide locking, but the
+> mpc5200-psc-ac97 driver does not. =A0This patch adds a mutex around
+> the register access routines.
 
---=-09JIW95yaypzlhlHwAmq
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2009-06-29 at 18:34 -0500, Rob Landley wrote:
-> Which suggested that the problem was the new CONFIG_PPC_OF_BOOT_TRAMPOLIN=
-E=20
-> symbol wasn't set, and once I switched that on it started working again.
-
-What defconfig are you using? It sounds like maybe something should be
-'select'ing OF_BOOT_TRAMPOLINE.
+Does your touchscreen driver use this mutex? Or was this mutex needed
+just for the AC97 driver?
 
 
-> > linuxppc-dev@lists.ozlabs.org is the one you want for this:
-> >
-> >  https://lists.ozlabs.org/listinfo/linuxppc-dev
->=20
-> Cool!  Is there a reason it's hidden?  (Or at least not listed in either=20
-> vger.kernel.org's list info page or in the "Maling lists" page linked fro=
-m=20
-> ozlabs.org's top level web page.)  Just curious, I couldn't find it when =
-I=20
-> looked in the obvious (to me) places.
-
-It's not hidden, it's just in the process of moving from ozlabs.org to
-lists.ozlabs.org - and it's a bit hard to find in the process. I've
-updated the ozlabs.org page to point to it in the meantime.
-
-It's also in maintainers :D
-
-LINUX FOR POWERPC (32-BIT AND 64-BIT)                                      =
-                                   =20
-P:      Benjamin Herrenschmidt
-M:      benh@kernel.crashing.org
-P:      Paul Mackerras
-M:      paulus@samba.org
-W:      http://www.penguinppc.org/
-L:      linuxppc-dev@ozlabs.org
-T:      git git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
-S:      Supported
-
-
-cheers
-
---=-09JIW95yaypzlhlHwAmq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpJWzwACgkQdSjSd0sB4dIS5ACgt9cW2NcDis8oj/3Jr3JdhLy1
-hV4An02xbRKHME4V/dOd2kIc9gY4zWhz
-=n1Sd
------END PGP SIGNATURE-----
-
---=-09JIW95yaypzlhlHwAmq--
+--=20
+Jon Smirl
+jonsmirl@gmail.com
