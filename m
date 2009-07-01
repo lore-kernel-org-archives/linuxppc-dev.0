@@ -1,31 +1,24 @@
-Return-Path: <mzaturenskiy.st@gmail.com>
-Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.247])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 437CBB70C0
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 70060B70F0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jul 2009 15:17:16 +1000 (EST)
-Received: by rv-out-0708.google.com with SMTP id k29so1396967rvb.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Jun 2009 22:17:15 -0700 (PDT)
+	Wed,  1 Jul 2009 18:26:01 +1000 (EST)
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 2CFBDDDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 18:26:00 +1000 (EST)
+Message-ID: <4A4B1D8F.9090609@ru.mvista.com>
+Date: Wed, 01 Jul 2009 12:25:51 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-In-Reply-To: <4A492C1A.6020302@freescale.com>
-References: <97dd5fd20906260913x351593c9raa429fd657eb42f0@mail.gmail.com>
-	<1ba63b520906271401u5d012b0ex87a48820b616ae48@mail.gmail.com>
-	<97dd5fd20906291053u1a07c3afla1c2ea0590d01f1e@mail.gmail.com>
-	<4A4901A8.5010402@mlbassoc.com>
-	<97dd5fd20906291113t5ea98285h2db6379ff1a940c@mail.gmail.com>
-	<4A490AE4.7000509@freescale.com>
-	<97dd5fd20906291324jf085addjaa61ff48dfca3d04@mail.gmail.com>
-	<4A49249C.5080101@freescale.com>
-	<97dd5fd20906291346s3ee60edbr1863c27280ae373c@mail.gmail.com>
-	<4A492C1A.6020302@freescale.com>
-From: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
-Date: Tue, 30 Jun 2009 11:11:35 -0500
-Message-ID: <97dd5fd20906300911k7b1e72banf61bcb9ff500787@mail.gmail.com>
-Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, Gary Thomas <gary@mlbassoc.com>
+To: ashish kalra <ashish.kalra@freescale.com>
+Subject: Re: [PATCH][v2] sata_fsl: Add asynchronous notification support
+References: <Pine.WNT.4.64.0906292044150.5480@B00888-02.fsl.freescale.net>
+In-Reply-To: <Pine.WNT.4.64.0906292044150.5480@B00888-02.fsl.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,14 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Check the clock-frequency of the CPM BRG node. =A0If u-boot isn't setting=
- the
-> memory, it's probably not setting this either.
+Hello.
 
-I set the CPM BRG "clock-frequency =3D <153609>" (value obtained from
-u-boot's 'brginfo' command), set my CPU "clock-frequency =3D
-<100000000>" (down from 130000000) to match what u-boot is using, and
-used the "console=3DttyCPM0,9600n8" boot arg and I've finally got
-console output! Thanks everyone!
+ashish kalra wrote:
 
-I'll still try to figure out how to get u-boot to fill all this in.
+> Enable device hot-plug support on Port multiplier fan-out ports
+>
+> Signed-off-by: Ashish Kalra <Ashish.Kalra@freescale.com>
+[...]
+> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+> index 94eaa43..5751145 100644
+> --- a/drivers/ata/sata_fsl.c
+> +++ b/drivers/ata/sata_fsl.c
+> @@ -34,7 +34,7 @@ enum {
+>
+>      SATA_FSL_HOST_FLAGS    = (ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
+>                  ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
+> -                ATA_FLAG_PMP | ATA_FLAG_NCQ),
+> +                 ATA_FLAG_PMP | ATA_FLAG_NCQ | ATA_FLAG_AN),
+
+   Why are you breaking the alignment? There's alos trailing whitespace 
+here...
+
+> @@ -132,7 +132,7 @@ enum {
+>      INT_ON_SINGL_DEVICE_ERR = (1 << 1),
+>      INT_ON_CMD_COMPLETE = 1,
+>
+> -    INT_ON_ERROR = INT_ON_FATAL_ERR |
+> +    INT_ON_ERROR = INT_ON_FATAL_ERR | INT_ON_SNOTIFY_UPDATE |
+
+   Trailing whitespace.
+
+> @@ -154,6 +154,7 @@ enum {
+>
+>      DEFAULT_PORT_IRQ_ENABLE_MASK = IE_ON_FATAL_ERR | IE_ON_PHYRDY_CHG |
+>          IE_ON_SIGNATURE_UPDATE |
+> +        IE_ON_SNOTIFY_UPDATE |
+
+   Again.
+
+>          IE_ON_SINGL_DEVICE_ERR | IE_ON_CMD_COMPLETE,
+>
+>      EXT_INDIRECT_SEG_PRD_FLAG = (1 << 31),
+> @@ -1003,6 +1004,11 @@ static void sata_fsl_error_intr(struct ata_port 
+> *ap)
+>          freeze = 1;
+>      }
+>
+> +    /* Handle SDB FIS receive & notify update */
+> +    if (hstatus & INT_ON_SNOTIFY_UPDATE) {
+> +        sata_async_notification(ap);
+> +    }
+
+   And again -- on every line.
+
+MBR, Sergei
