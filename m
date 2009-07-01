@@ -3,28 +3,38 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 59841B7104
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1DD50B710A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jul 2009 22:37:41 +1000 (EST)
+	Wed,  1 Jul 2009 23:15:08 +1000 (EST)
 Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id E3051DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 22:37:40 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A661BDDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 23:15:06 +1000 (EST)
 Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1MLz4B-0002mY-CC
-	for linuxppc-dev@ozlabs.org; Wed, 01 Jul 2009 12:37:36 +0000
+	id 1MLyh2-0001nt-5c
+	for linuxppc-dev@ozlabs.org; Wed, 01 Jul 2009 12:13:40 +0000
 Received: from p4ff07fa4.dip.t-dialin.net ([79.240.127.164])
 	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
 	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Jul 2009 12:37:35 +0000
+	for <linuxppc-dev@ozlabs.org>; Wed, 01 Jul 2009 12:13:40 +0000
 Received: from dzu by p4ff07fa4.dip.t-dialin.net with local (Gmexim 0.1
 	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Jul 2009 12:37:35 +0000
+	for <linuxppc-dev@ozlabs.org>; Wed, 01 Jul 2009 12:13:40 +0000
 To: linuxppc-dev@ozlabs.org
 From: Detlev Zundel <dzu@denx.de>
-Subject: Re: ppc405ex + gigabit ethernet
-Date: Wed, 01 Jul 2009 14:37:24 +0200
-Message-ID: <m2ws6stw8r.fsf@ohwell.denx.de>
-References: <e35801cc0906300658q45d5ea00ub939ba73185efd72@mail.gmail.com>
+Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
+Date: Wed, 01 Jul 2009 14:13:29 +0200
+Message-ID: <m21vp0vbx2.fsf@ohwell.denx.de>
+References: <97dd5fd20906260913x351593c9raa429fd657eb42f0@mail.gmail.com>
+	<97dd5fd20906291053u1a07c3afla1c2ea0590d01f1e@mail.gmail.com>
+	<4A4901A8.5010402@mlbassoc.com>
+	<97dd5fd20906291113t5ea98285h2db6379ff1a940c@mail.gmail.com>
+	<4A490AE4.7000509@freescale.com>
+	<97dd5fd20906291324jf085addjaa61ff48dfca3d04@mail.gmail.com>
+	<4A49249C.5080101@freescale.com>
+	<97dd5fd20906291346s3ee60edbr1863c27280ae373c@mail.gmail.com>
+	<4A492C1A.6020302@freescale.com>
+	<97dd5fd20906300911k7b1e72banf61bcb9ff500787@mail.gmail.com>
+	<97dd5fd20906301048o30354271haf603a9bae29b0fe@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: news <news@ger.gmane.org>
@@ -37,41 +47,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Lada,
+Hi,
 
-> Hi,
->
-> I benchmarked performance of my network, which contains ppc405EX (Kilauea
-> board, kernel 2.6.30 from Denx) connected with a linux desktop via gigabit
-> ethernet. I used the netperf tool:
->
-> netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768
->
-> So I was sending UDP packets to the desktop. The resulting speed was about 370
-> Kb/s. I tried to send the packets to several different computers - with the
-> same result. So the ppc board is the bottleneck in this case.
->
-> Is there any possibility to improve the gigabit capabilities of the ppc405EX?
-> Is there anyone who achieved a better performance with ppc4xx boards?
+> As for my device tree, I reverted back to the original version with
+> nothing filled in and just replaced 0xfa20xxxx with 0xf000xxxx as Gary
+> suggested earlier.
 
-On our kilauea in the lab:
-
--bash-3.2# src/netperf -t UDP_STREAM -p 7776 -H 192.168.1.1 -fK -- -m 32768
-UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 192.168.1.1 (192.168.1.1) port 0 AF_INET
-Socket  Message  Elapsed      Messages                
-Size    Size     Time         Okay Errors   Throughput
-bytes   bytes    secs            #      #   KBytes/sec
-
-106496   32768   10.00        3601      0    11519.64
-124928           10.00        3601           11519.64
-
--bash-3.2# grep cpu /proc/cpuinfo 
-cpu             : 405EX
--bash-3.2# cat /proc/version
-Linux version 2.6.29.4 (dzu@pollux.denx.de) (gcc version 4.2.2) #9 Wed Jun 17 11:18:46 CEST 2009
--bash-3.2# 
-
-I can send you the kernel+dtb that I used for testing offlist.
+Would it be a problem to also dynamically fixup IMMR in the device tree
+from U-Boot?
 
 Cheers
   Detlev
