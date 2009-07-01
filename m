@@ -1,24 +1,27 @@
-Return-Path: <eemingliu@hotmail.com>
+Return-Path: <lada.podivin@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1126CB7100
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E5A15B70ED
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jul 2009 20:24:38 +1000 (EST)
-Received: from col0-omc2-s12.col0.hotmail.com (col0-omc2-s12.col0.hotmail.com
-	[65.55.34.86]) by ozlabs.org (Postfix) with ESMTP id 8EDC3DDD1B
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 20:24:37 +1000 (EST)
-Message-ID: <COL107-W41E84129BE81739BC96295B22E0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_6f5c4520-7b72-4b2a-9fa4-90e5d39b17ba_"
-From: LiuMing <eemingliu@hotmail.com>
-To: <lada.podivin@gmail.com>, <linuxppc-dev@ozlabs.org>
-Subject: RE: ppc405ex + gigabit ethernet
-Date: Wed, 1 Jul 2009 10:19:28 +0000
-In-Reply-To: <e35801cc0906300658q45d5ea00ub939ba73185efd72@mail.gmail.com>
-References: <e35801cc0906300658q45d5ea00ub939ba73185efd72@mail.gmail.com>
+	Wed,  1 Jul 2009 21:31:48 +1000 (EST)
+Received: from mail-fx0-f222.google.com (mail-fx0-f222.google.com
+	[209.85.220.222]) by ozlabs.org (Postfix) with ESMTP id 02DBEDDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 21:31:44 +1000 (EST)
+Received: by fxm22 with SMTP id 22so842750fxm.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 01 Jul 2009 04:31:42 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <COL107-W41E84129BE81739BC96295B22E0@phx.gbl>
+References: <e35801cc0906300658q45d5ea00ub939ba73185efd72@mail.gmail.com>
+	<COL107-W41E84129BE81739BC96295B22E0@phx.gbl>
+Date: Wed, 1 Jul 2009 13:24:41 +0200
+Message-ID: <e35801cc0907010424l66a7c4dem6f3f363c3b194ff4@mail.gmail.com>
+Subject: Re: ppc405ex + gigabit ethernet
+From: Lada Podivin <lada.podivin@gmail.com>
+To: LiuMing <eemingliu@hotmail.com>
+Content-Type: multipart/alternative; boundary=0016e6d7845b569f56046da32b07
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,73 +31,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_6f5c4520-7b72-4b2a-9fa4-90e5d39b17ba_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+--0016e6d7845b569f56046da32b07
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: quoted-printable
 
+Thank you for your reply!
+Yes, I agree the CPU is the bottleneck. But I have performed more tests wit=
+h
+the netperf tool and results seem strange to me. If I send 800 B of data,
+the resulting speed is aproximately 100 Kb/s. On the other hand, If I try t=
+o
+send 32KB chunk of data with jumbo frames turned on, resulting speed is
+about 600 Kb/s (300-400 without jumbo frames). My ppc405ex runs at 600 MHz.
 
-Hi,
-
-According to our experience on PPC405 + Gigabit Enet, your result is already very reasonable. For UDP transmission, it can be around 400 Kb/s because of the CPU bottleneck (in our case 300 MHz ppc405). If you want to further improve it, a faster CPU is needed to process the TCP/IP stack, or you may buy commercial TCP/IP stack rather than using the free Linux one. 
-
- 
-
-BR
-
-Ming
- 
-
-
-Date: Tue, 30 Jun 2009 15:58:53 +0200
-Subject: ppc405ex + gigabit ethernet
-From: lada.podivin@gmail.com
-To: linuxppc-dev@ozlabs.org
-
-Hi,
-
-I benchmarked performance of my network, which contains ppc405EX (Kilauea board, kernel 2.6.30 from Denx) connected with a linux desktop via gigabit ethernet. I used the netperf tool: 
-
-netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768
-
-So I was sending UDP packets to the desktop. The resulting speed was about 370 Kb/s. I tried to send the packets to several different computers - with the same result. So the ppc board is the bottleneck in this case.
-
-Is there any possibility to improve the gigabit capabilities of the ppc405EX? Is there anyone who achieved a better performance with ppc4xx boards?
+So it seems that it is definetely better idea to call sendto() less
+frequently with bigger amounts of data, than to call it more often with
+smaler amounts. Is it because smaller data means more frequent user
+space/kernel space switching? Or is it network related issue?
 
 Thanks!
 
 Best,
-Lada Podivin
+Lada
+
+2009/7/1 LiuMing <eemingliu@hotmail.com>
+
+>  Hi,
+> According to our experience on PPC405 + Gigabit Enet, your result is
+> already very reasonable. For UDP transmission, it can be around 400 Kb/s
+> because of the CPU bottleneck (in our case 300 MHz ppc405). If you want
+> to further improve it, a faster CPU is needed to process the TCP/IP stack=
+,
+> or you may buy commercial TCP/IP stack rather than using the free Linux o=
+ne.
+>
+>
+> BR
+> Ming
+>
+> ------------------------------
+> Date: Tue, 30 Jun 2009 15:58:53 +0200
+> Subject: ppc405ex + gigabit ethernet
+> From: lada.podivin@gmail.com
+> To: linuxppc-dev@ozlabs.org
+>
+>
+> Hi,
+>
+> I benchmarked performance of my network, which contains ppc405EX (Kilauea
+> board, kernel 2.6.30 from Denx) connected with a linux desktop via gigabi=
+t
+> ethernet. I used the netperf tool:
+>
+> netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768
+>
+> So I was sending UDP packets to the desktop. The resulting speed was abou=
+t
+> 370 Kb/s. I tried to send the packets to several different computers - wi=
+th
+> the same result. So the ppc board is the bottleneck in this case.
+>
+> Is there any possibility to improve the gigabit capabilities of the
+> ppc405EX? Is there anyone who achieved a better performance with ppc4xx
+> boards?
+>
+> Thanks!
+>
+> Best,
+> Lada Podivin
+>
+>
+> ------------------------------
+> =C1=A2=BF=CC=CF=C2=D4=D8 MSN =B1=A3=BB=A4=B6=DC=A3=AC=B1=A3=D5=CF MSN =B0=
+=B2=C8=AB=CE=C8=B6=A8=A3=A1 =CF=D6=D4=DA=BE=CD=CF=C2=D4=D8=A3=A1 <http://im=
+.live.cn/safe/>
+>
+
+--0016e6d7845b569f56046da32b07
+Content-Type: text/html; charset=GB2312
+Content-Transfer-Encoding: quoted-printable
+
+Thank you for your reply!<br>Yes, I agree the CPU is the bottleneck. But I =
+have performed more tests with the netperf tool and results seem strange to=
+ me. If I send 800 B of data, the resulting speed is aproximately 100 Kb/s.=
+ On the other hand, If I try to send 32KB chunk of data with jumbo frames t=
+urned on, resulting speed is about 600 Kb/s (300-400 without jumbo frames).=
+ My ppc405ex runs at 600 MHz.<br>
+<br>So it seems that it is definetely better idea to call sendto() less fre=
+quently with bigger amounts of data, than to call it more often with smaler=
+ amounts. Is it because smaller data means more frequent user space/kernel =
+space switching? Or is it network related issue?&nbsp; <br>
+<br>Thanks!<br><br>Best,<br>Lada<br><br><div class=3D"gmail_quote">2009/7/1=
+ LiuMing <span dir=3D"ltr">&lt;<a href=3D"mailto:eemingliu@hotmail.com">eem=
+ingliu@hotmail.com</a>&gt;</span><br><blockquote class=3D"gmail_quote" styl=
+e=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; =
+padding-left: 1ex;">
 
 
-_________________________________________________________________
-MSN 表情魔法书，改变你的对话时代！
-http://im.live.cn/emoticons/
---_6f5c4520-7b72-4b2a-9fa4-90e5d39b17ba_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: 8bit
 
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt;
-font-family:Verdana
-}
-</style>
-</head>
-<body class='hmmessage'>
-Hi,<BR>
-According to our experience on PPC405 + Gigabit Enet, your result is already very reasonable. For UDP transmission, it can be around 400 Kb/s because of the&nbsp;CPU bottleneck (in our case 300 MHz ppc405). If you want to&nbsp;further improve it, a faster CPU is needed to process the TCP/IP stack, or you may buy&nbsp;commercial TCP/IP stack&nbsp;rather than using the free Linux one. <BR>
-&nbsp;<BR>
-BR<BR>
-Ming<BR>&nbsp;<BR>
-<HR id=stopSpelling>
-Date: Tue, 30 Jun 2009 15:58:53 +0200<BR>Subject: ppc405ex + gigabit ethernet<BR>From: lada.podivin@gmail.com<BR>To: linuxppc-dev@ozlabs.org<BR><BR>Hi,<BR><BR>I benchmarked performance of my network, which contains ppc405EX (Kilauea board, kernel 2.6.30 from Denx) connected with a linux desktop via gigabit ethernet. I used the netperf tool: <BR><BR>netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768<BR><BR>So I was sending UDP packets to the desktop. The resulting speed was about 370 Kb/s. I tried to send the packets to several different computers - with the same result. So the ppc board is the bottleneck in this case.<BR><BR>Is there any possibility to improve the gigabit capabilities of the ppc405EX? Is there anyone who achieved a better performance with ppc4xx boards?<BR><BR>Thanks!<BR><BR>Best,<BR>Lada Podivin<BR><BR><br /><hr />立刻下载 MSN 保护盾，保障 MSN 安全稳定！ <a href='http://im.live.cn/safe/' target='_new'>现在就下载！</a></body>
-</html>
---_6f5c4520-7b72-4b2a-9fa4-90e5d39b17ba_--
+
+<div>
+Hi,<br>
+According to our experience on PPC405 + Gigabit Enet, your result is alread=
+y very reasonable. For UDP transmission, it can be around 400 Kb/s because =
+of the&nbsp;CPU bottleneck (in our case 300 MHz ppc405). If you want to&nbs=
+p;further improve it, a faster CPU is needed to process the TCP/IP stack, o=
+r you may buy&nbsp;commercial TCP/IP stack&nbsp;rather than using the free =
+Linux one. <br>
+
+&nbsp;<br>
+BR<br>
+Ming<br>&nbsp;<br>
+<hr>
+Date: Tue, 30 Jun 2009 15:58:53 +0200<br>Subject: ppc405ex + gigabit ethern=
+et<br>From: <a href=3D"mailto:lada.podivin@gmail.com" target=3D"_blank">lad=
+a.podivin@gmail.com</a><br>To: <a href=3D"mailto:linuxppc-dev@ozlabs.org" t=
+arget=3D"_blank">linuxppc-dev@ozlabs.org</a><div>
+<div></div><div class=3D"h5"><br><br>Hi,<br><br>I benchmarked performance o=
+f my network, which contains ppc405EX (Kilauea board, kernel 2.6.30 from De=
+nx) connected with a linux desktop via gigabit ethernet. I used the netperf=
+ tool: <br>
+<br>netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768<br><br>So I was sendin=
+g UDP packets to the desktop. The resulting speed was about 370 Kb/s. I tri=
+ed to send the packets to several different computers - with the same resul=
+t. So the ppc board is the bottleneck in this case.<br>
+<br>Is there any possibility to improve the gigabit capabilities of the ppc=
+405EX? Is there anyone who achieved a better performance with ppc4xx boards=
+?<br><br>Thanks!<br><br>Best,<br>Lada Podivin<br><br><br></div></div><div c=
+lass=3D"hm">
+<hr>=C1=A2=BF=CC=CF=C2=D4=D8 MSN =B1=A3=BB=A4=B6=DC=A3=AC=B1=A3=D5=CF MSN =
+=B0=B2=C8=AB=CE=C8=B6=A8=A3=A1 <a href=3D"http://im.live.cn/safe/" target=
+=3D"_blank">=CF=D6=D4=DA=BE=CD=CF=C2=D4=D8=A3=A1</a></div></div>
+</blockquote></div><br>
+
+--0016e6d7845b569f56046da32b07--
