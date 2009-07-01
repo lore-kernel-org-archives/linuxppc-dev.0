@@ -1,33 +1,44 @@
-Return-Path: <ashish.kalra@freescale.com>
+Return-Path: <scottwood@freescale.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id EF198B7121
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B9AACB70F2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jul 2009 01:30:24 +1000 (EST)
+	Thu,  2 Jul 2009 03:04:41 +1000 (EST)
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7E2A5DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2009 01:30:23 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 4D707DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2009 03:04:40 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n61FU4Lh014031
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jul 2009 08:30:14 -0700 (MST)
-Received: from zin33exm20.fsl.freescale.net (zin33exm20.ap.freescale.net
-	[10.232.192.5])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n61FU2LG009499
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jul 2009 10:30:03 -0500 (CDT)
-Date: Wed, 1 Jul 2009 20:59:43 +0530 (India Standard Time)
-From: ashish kalra <ashish.kalra@freescale.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH][v3] Add asynchronous notification support
-Message-ID: <Pine.WNT.4.64.0907012055100.868@B00888-02.fsl.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	n61H4aaP013886
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jul 2009 10:04:37 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n61H4atj023619
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jul 2009 12:04:36 -0500 (CDT)
+Date: Wed, 1 Jul 2009 12:04:36 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Detlev Zundel <dzu@denx.de>
+Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
+Message-ID: <20090701170436.GA502@b07421-ec1.am.freescale.net>
+References: <4A4901A8.5010402@mlbassoc.com>
+	<97dd5fd20906291113t5ea98285h2db6379ff1a940c@mail.gmail.com>
+	<4A490AE4.7000509@freescale.com>
+	<97dd5fd20906291324jf085addjaa61ff48dfca3d04@mail.gmail.com>
+	<4A49249C.5080101@freescale.com>
+	<97dd5fd20906291346s3ee60edbr1863c27280ae373c@mail.gmail.com>
+	<4A492C1A.6020302@freescale.com>
+	<97dd5fd20906300911k7b1e72banf61bcb9ff500787@mail.gmail.com>
+	<97dd5fd20906301048o30354271haf603a9bae29b0fe@mail.gmail.com>
+	<m21vp0vbx2.fsf@ohwell.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <m21vp0vbx2.fsf@ohwell.denx.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,60 +49,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable device hot-plug support on Port multiplier fan-out ports
-v3 fixes whitespace/identation issues
+On Wed, Jul 01, 2009 at 02:13:29PM +0200, Detlev Zundel wrote:
+> Hi,
+> 
+> > As for my device tree, I reverted back to the original version with
+> > nothing filled in and just replaced 0xfa20xxxx with 0xf000xxxx as Gary
+> > suggested earlier.
+> 
+> Would it be a problem to also dynamically fixup IMMR in the device tree
+> from U-Boot?
 
-Signed-off-by: Ashish Kalra <Ashish.Kalra@freescale.com>
----
-  drivers/ata/sata_fsl.c |   15 ++++++++++-----
-  1 files changed, 10 insertions(+), 5 deletions(-)
+Yes.  It can appear in multiple places in the device tree (for exmaple,
+in things like the localbus and pci nodes where we have some IMMR
+registers but need ranges to point outside IMMR); this introduces more
+dependencies between u-boot and the input dtb than just getting the
+address right in the first place.
 
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index 94eaa43..5a88b44 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -34,7 +34,7 @@ enum {
-
-  	SATA_FSL_HOST_FLAGS	= (ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
-  				ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
--				ATA_FLAG_PMP | ATA_FLAG_NCQ),
-+				ATA_FLAG_PMP | ATA_FLAG_NCQ | ATA_FLAG_AN),
-
-  	SATA_FSL_MAX_CMDS	= SATA_FSL_QUEUE_DEPTH,
-  	SATA_FSL_CMD_HDR_SIZE	= 16,	/* 4 DWORDS */
-@@ -132,8 +132,8 @@ enum {
-  	INT_ON_SINGL_DEVICE_ERR = (1 << 1),
-  	INT_ON_CMD_COMPLETE = 1,
-
--	INT_ON_ERROR = INT_ON_FATAL_ERR |
--	    INT_ON_PHYRDY_CHG | INT_ON_SINGL_DEVICE_ERR,
-+	INT_ON_ERROR = INT_ON_FATAL_ERR | INT_ON_SNOTIFY_UPDATE |
-+		INT_ON_PHYRDY_CHG | INT_ON_SINGL_DEVICE_ERR,
-
-  	/*
-  	 * Host Control Register (HControl) bitdefs
-@@ -153,8 +153,8 @@ enum {
-  	IE_ON_CMD_COMPLETE = 1,
-
-  	DEFAULT_PORT_IRQ_ENABLE_MASK = IE_ON_FATAL_ERR | IE_ON_PHYRDY_CHG |
--	    IE_ON_SIGNATURE_UPDATE |
--	    IE_ON_SINGL_DEVICE_ERR | IE_ON_CMD_COMPLETE,
-+		IE_ON_SIGNATURE_UPDATE | IE_ON_SNOTIFY_UPDATE |
-+		IE_ON_SINGL_DEVICE_ERR | IE_ON_CMD_COMPLETE,
-
-  	EXT_INDIRECT_SEG_PRD_FLAG = (1 << 31),
-  	DATA_SNOOP_ENABLE = (1 << 22),
-@@ -1003,6 +1003,11 @@ static void sata_fsl_error_intr(struct ata_port *ap)
-  		freeze = 1;
-  	}
-
-+	/* Handle SDB FIS receive & notify update */
-+	if (hstatus & INT_ON_SNOTIFY_UPDATE) {
-+		sata_async_notification(ap);
-+	}
-+
-  	/* Handle PHYRDY change notification */
-  	if (hstatus & INT_ON_PHYRDY_CHG) {
-  		DPRINTK("SATA FSL: PHYRDY change indication\n");
--- 
-1.6.0
+-Scott
