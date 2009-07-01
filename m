@@ -1,27 +1,38 @@
-Return-Path: <lada.podivin@gmail.com>
+Return-Path: <ashish.kalra@freescale.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E5A15B70ED
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 99DB3B7102
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  1 Jul 2009 21:31:48 +1000 (EST)
-Received: from mail-fx0-f222.google.com (mail-fx0-f222.google.com
-	[209.85.220.222]) by ozlabs.org (Postfix) with ESMTP id 02DBEDDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 21:31:44 +1000 (EST)
-Received: by fxm22 with SMTP id 22so842750fxm.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Jul 2009 04:31:42 -0700 (PDT)
+	Wed,  1 Jul 2009 22:27:29 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2D20DDDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2009 22:27:27 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n61CQoAo020641
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jul 2009 05:27:04 -0700 (MST)
+Received: from zin33exm20.fsl.freescale.net (zin33exm20.ap.freescale.net
+	[10.232.192.5])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n61CQmWL023399
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jul 2009 07:26:49 -0500 (CDT)
 MIME-Version: 1.0
-In-Reply-To: <COL107-W41E84129BE81739BC96295B22E0@phx.gbl>
-References: <e35801cc0906300658q45d5ea00ub939ba73185efd72@mail.gmail.com>
-	<COL107-W41E84129BE81739BC96295B22E0@phx.gbl>
-Date: Wed, 1 Jul 2009 13:24:41 +0200
-Message-ID: <e35801cc0907010424l66a7c4dem6f3f363c3b194ff4@mail.gmail.com>
-Subject: Re: ppc405ex + gigabit ethernet
-From: Lada Podivin <lada.podivin@gmail.com>
-To: LiuMing <eemingliu@hotmail.com>
-Content-Type: multipart/alternative; boundary=0016e6d7845b569f56046da32b07
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH][v2] sata_fsl: Add asynchronous notification support
+Date: Wed, 1 Jul 2009 17:56:45 +0530
+Message-ID: <16444A0F3094A24C83EAB7836A12C63B24FB60@zin33exm20.fsl.freescale.net>
+In-Reply-To: <4A4B1D8F.9090609@ru.mvista.com>
+References: <Pine.WNT.4.64.0906292044150.5480@B00888-02.fsl.freescale.net>
+	<4A4B1D8F.9090609@ru.mvista.com>
+From: "Kalra Ashish-B00888" <ashish.kalra@freescale.com>
+To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,137 +42,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e6d7845b569f56046da32b07
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: quoted-printable
+Hello Sergei,
 
-Thank you for your reply!
-Yes, I agree the CPU is the bottleneck. But I have performed more tests wit=
-h
-the netperf tool and results seem strange to me. If I send 800 B of data,
-the resulting speed is aproximately 100 Kb/s. On the other hand, If I try t=
-o
-send 32KB chunk of data with jumbo frames turned on, resulting speed is
-about 600 Kb/s (300-400 without jumbo frames). My ppc405ex runs at 600 MHz.
+It looks like that the email client has added these whitespaces and
+alignment mess-up,
+as the original patch file has none of these issues.=20
 
-So it seems that it is definetely better idea to call sendto() less
-frequently with bigger amounts of data, than to call it more often with
-smaler amounts. Is it because smaller data means more frequent user
-space/kernel space switching? Or is it network related issue?
+I will try using another email client and re-post the patch.
 
-Thanks!
+Thanks,
+Ashish
 
-Best,
-Lada
+-----Original Message-----
+From: Sergei Shtylyov [mailto:sshtylyov@ru.mvista.com]=20
+Sent: Wednesday, July 01, 2009 1:56 PM
+To: Kalra Ashish-B00888
+Cc: linux-ide@vger.kernel.org; linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH][v2] sata_fsl: Add asynchronous notification support
 
-2009/7/1 LiuMing <eemingliu@hotmail.com>
+Hello.
 
->  Hi,
-> According to our experience on PPC405 + Gigabit Enet, your result is
-> already very reasonable. For UDP transmission, it can be around 400 Kb/s
-> because of the CPU bottleneck (in our case 300 MHz ppc405). If you want
-> to further improve it, a faster CPU is needed to process the TCP/IP stack=
-,
-> or you may buy commercial TCP/IP stack rather than using the free Linux o=
-ne.
->
->
-> BR
-> Ming
->
-> ------------------------------
-> Date: Tue, 30 Jun 2009 15:58:53 +0200
-> Subject: ppc405ex + gigabit ethernet
-> From: lada.podivin@gmail.com
-> To: linuxppc-dev@ozlabs.org
->
->
-> Hi,
->
-> I benchmarked performance of my network, which contains ppc405EX (Kilauea
-> board, kernel 2.6.30 from Denx) connected with a linux desktop via gigabi=
-t
-> ethernet. I used the netperf tool:
->
-> netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768
->
-> So I was sending UDP packets to the desktop. The resulting speed was abou=
-t
-> 370 Kb/s. I tried to send the packets to several different computers - wi=
-th
-> the same result. So the ppc board is the bottleneck in this case.
->
-> Is there any possibility to improve the gigabit capabilities of the
-> ppc405EX? Is there anyone who achieved a better performance with ppc4xx
-> boards?
->
-> Thanks!
->
-> Best,
-> Lada Podivin
->
->
-> ------------------------------
-> =C1=A2=BF=CC=CF=C2=D4=D8 MSN =B1=A3=BB=A4=B6=DC=A3=AC=B1=A3=D5=CF MSN =B0=
-=B2=C8=AB=CE=C8=B6=A8=A3=A1 =CF=D6=D4=DA=BE=CD=CF=C2=D4=D8=A3=A1 <http://im=
-.live.cn/safe/>
->
+ashish kalra wrote:
 
---0016e6d7845b569f56046da32b07
-Content-Type: text/html; charset=GB2312
-Content-Transfer-Encoding: quoted-printable
+> Enable device hot-plug support on Port multiplier fan-out ports
+>
+> Signed-off-by: Ashish Kalra <Ashish.Kalra@freescale.com>
+[...]
+> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c index=20
+> 94eaa43..5751145 100644
+> --- a/drivers/ata/sata_fsl.c
+> +++ b/drivers/ata/sata_fsl.c
+> @@ -34,7 +34,7 @@ enum {
+>
+>      SATA_FSL_HOST_FLAGS    =3D (ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
+>                  ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
+> -                ATA_FLAG_PMP | ATA_FLAG_NCQ),
+> +                 ATA_FLAG_PMP | ATA_FLAG_NCQ | ATA_FLAG_AN),
 
-Thank you for your reply!<br>Yes, I agree the CPU is the bottleneck. But I =
-have performed more tests with the netperf tool and results seem strange to=
- me. If I send 800 B of data, the resulting speed is aproximately 100 Kb/s.=
- On the other hand, If I try to send 32KB chunk of data with jumbo frames t=
-urned on, resulting speed is about 600 Kb/s (300-400 without jumbo frames).=
- My ppc405ex runs at 600 MHz.<br>
-<br>So it seems that it is definetely better idea to call sendto() less fre=
-quently with bigger amounts of data, than to call it more often with smaler=
- amounts. Is it because smaller data means more frequent user space/kernel =
-space switching? Or is it network related issue?&nbsp; <br>
-<br>Thanks!<br><br>Best,<br>Lada<br><br><div class=3D"gmail_quote">2009/7/1=
- LiuMing <span dir=3D"ltr">&lt;<a href=3D"mailto:eemingliu@hotmail.com">eem=
-ingliu@hotmail.com</a>&gt;</span><br><blockquote class=3D"gmail_quote" styl=
-e=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; =
-padding-left: 1ex;">
+   Why are you breaking the alignment? There's alos trailing whitespace
+here...
 
+> @@ -132,7 +132,7 @@ enum {
+>      INT_ON_SINGL_DEVICE_ERR =3D (1 << 1),
+>      INT_ON_CMD_COMPLETE =3D 1,
+>
+> -    INT_ON_ERROR =3D INT_ON_FATAL_ERR |
+> +    INT_ON_ERROR =3D INT_ON_FATAL_ERR | INT_ON_SNOTIFY_UPDATE |
 
+   Trailing whitespace.
 
+> @@ -154,6 +154,7 @@ enum {
+>
+>      DEFAULT_PORT_IRQ_ENABLE_MASK =3D IE_ON_FATAL_ERR | =
+IE_ON_PHYRDY_CHG
+|
+>          IE_ON_SIGNATURE_UPDATE |
+> +        IE_ON_SNOTIFY_UPDATE |
 
-<div>
-Hi,<br>
-According to our experience on PPC405 + Gigabit Enet, your result is alread=
-y very reasonable. For UDP transmission, it can be around 400 Kb/s because =
-of the&nbsp;CPU bottleneck (in our case 300 MHz ppc405). If you want to&nbs=
-p;further improve it, a faster CPU is needed to process the TCP/IP stack, o=
-r you may buy&nbsp;commercial TCP/IP stack&nbsp;rather than using the free =
-Linux one. <br>
+   Again.
 
-&nbsp;<br>
-BR<br>
-Ming<br>&nbsp;<br>
-<hr>
-Date: Tue, 30 Jun 2009 15:58:53 +0200<br>Subject: ppc405ex + gigabit ethern=
-et<br>From: <a href=3D"mailto:lada.podivin@gmail.com" target=3D"_blank">lad=
-a.podivin@gmail.com</a><br>To: <a href=3D"mailto:linuxppc-dev@ozlabs.org" t=
-arget=3D"_blank">linuxppc-dev@ozlabs.org</a><div>
-<div></div><div class=3D"h5"><br><br>Hi,<br><br>I benchmarked performance o=
-f my network, which contains ppc405EX (Kilauea board, kernel 2.6.30 from De=
-nx) connected with a linux desktop via gigabit ethernet. I used the netperf=
- tool: <br>
-<br>netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768<br><br>So I was sendin=
-g UDP packets to the desktop. The resulting speed was about 370 Kb/s. I tri=
-ed to send the packets to several different computers - with the same resul=
-t. So the ppc board is the bottleneck in this case.<br>
-<br>Is there any possibility to improve the gigabit capabilities of the ppc=
-405EX? Is there anyone who achieved a better performance with ppc4xx boards=
-?<br><br>Thanks!<br><br>Best,<br>Lada Podivin<br><br><br></div></div><div c=
-lass=3D"hm">
-<hr>=C1=A2=BF=CC=CF=C2=D4=D8 MSN =B1=A3=BB=A4=B6=DC=A3=AC=B1=A3=D5=CF MSN =
-=B0=B2=C8=AB=CE=C8=B6=A8=A3=A1 <a href=3D"http://im.live.cn/safe/" target=
-=3D"_blank">=CF=D6=D4=DA=BE=CD=CF=C2=D4=D8=A3=A1</a></div></div>
-</blockquote></div><br>
+>          IE_ON_SINGL_DEVICE_ERR | IE_ON_CMD_COMPLETE,
+>
+>      EXT_INDIRECT_SEG_PRD_FLAG =3D (1 << 31), @@ -1003,6 +1004,11 @@=20
+> static void sata_fsl_error_intr(struct ata_port
+> *ap)
+>          freeze =3D 1;
+>      }
+>
+> +    /* Handle SDB FIS receive & notify update */
+> +    if (hstatus & INT_ON_SNOTIFY_UPDATE) {
+> +        sata_async_notification(ap);
+> +    }
 
---0016e6d7845b569f56046da32b07--
+   And again -- on every line.
+
+MBR, Sergei
