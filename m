@@ -1,26 +1,25 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1BBC4B70E0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jul 2009 08:13:30 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5CA03DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2009 08:13:29 +1000 (EST)
-Subject: Re: Preemption question (4xx related)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 53EB1B7107
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  2 Jul 2009 08:16:12 +1000 (EST)
+Subject: Re: PCI device support in Open Firmware (device tree syntax)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Felix Radensky <felix@embedded-sol.com>
-In-Reply-To: <24271342.post@talk.nabble.com>
-References: <24271342.post@talk.nabble.com>
+To: Johnny Hung <johnny.hacking@gmail.com>
+In-Reply-To: <cb9ecdfa0906300033x4dfcc315gfd67522b77f6004a@mail.gmail.com>
+References: <cb9ecdfa0906290858x125b8149na037f33258c21426@mail.gmail.com>
+	<20090629165133.GC1323@b07421-ec1.am.freescale.net>
+	<cb9ecdfa0906291836mf74c41fn9c187e305771920a@mail.gmail.com>
+	<2ea1731b0906292329t30cdc9a6q1fc36dc2273a2931@mail.gmail.com>
+	<cb9ecdfa0906300033x4dfcc315gfd67522b77f6004a@mail.gmail.com>
 Content-Type: text/plain
-Date: Thu, 02 Jul 2009 08:13:13 +1000
-Message-Id: <1246486393.14483.14.camel@pasglop>
+Date: Thu, 02 Jul 2009 08:15:57 +1000
+Message-Id: <1246486557.14483.16.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Marco Stornelli <marco.stornelli@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-embedded@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,20 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-06-30 at 05:55 -0700, Felix Radensky wrote:
-> Hi,
-> 
-> Preemption is disabled on the vast majority of powerpc
-> targets. Are there any known problems in this area ?
-> I'd like to enable CONFIG_PREEMPT_VOLUNTARY on
-> AMCC 405EX target, to increase application responsiveness.
-> Is it a bad idea ?
 
-In theory it should work, but as you may have noticed, it's generally
-disabled and thus not very well tested.
+> You are right. u-boot do PCI device BAR resources assign and flat
+> device tree describe PCI device interrupt-map. I use "lspci -s xxx -x"
+> for the PCI device, the resources was assigned properly.
 
-It would be a good idea for us, some of the core devs, to turn that on
-in our usual test configs in fact.
+Note that the device-tree -can- contain PCI devices, but it's not
+mandatory.
+
+If your bootloader does the probing and configuration of the PCI bus, it
+might be a good idea for that bootloader to also create the PCI device
+nodes in the tree, since this will allow in a near future the kernel to
+"instanciate" them from that tree instead of probing with config space,
+which is faster and more reliably. (Currently only ppc64 does that but
+it will become generic soon).
 
 Cheers,
 Ben.
