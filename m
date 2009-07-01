@@ -1,23 +1,30 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 62042B7124
+Return-Path: <mzaturenskiy.st@gmail.com>
+Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.243])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id C906AB7142
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jul 2009 03:39:29 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id B2130DDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2009 03:39:28 +1000 (EST)
-Date: Wed, 1 Jul 2009 21:39:25 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/85xx: Don't scan for TBI PHY addresses on
-	MPC8569E-MDS boards
-Message-ID: <20090701173925.GA22134@oksana.dev.rtsoft.ru>
+	Thu,  2 Jul 2009 03:41:18 +1000 (EST)
+Received: by rv-out-0708.google.com with SMTP id k29so404920rvb.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 01 Jul 2009 10:41:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <97dd5fd20906301048o30354271haf603a9bae29b0fe@mail.gmail.com>
+References: <97dd5fd20906260913x351593c9raa429fd657eb42f0@mail.gmail.com>
+	<4A4901A8.5010402@mlbassoc.com>
+	<97dd5fd20906291113t5ea98285h2db6379ff1a940c@mail.gmail.com>
+	<4A490AE4.7000509@freescale.com>
+	<97dd5fd20906291324jf085addjaa61ff48dfca3d04@mail.gmail.com>
+	<4A49249C.5080101@freescale.com>
+	<97dd5fd20906291346s3ee60edbr1863c27280ae373c@mail.gmail.com>
+	<4A492C1A.6020302@freescale.com>
+	<97dd5fd20906300911k7b1e72banf61bcb9ff500787@mail.gmail.com>
+	<97dd5fd20906301048o30354271haf603a9bae29b0fe@mail.gmail.com>
+From: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
+Date: Wed, 1 Jul 2009 12:40:57 -0500
+Message-ID: <97dd5fd20907011040t6d489596va7526ca39cb7c604@mail.gmail.com>
+Subject: Re: Trouble "Transferring control to Linux (at address 00000000)"
+To: Detlev Zundel <dzu@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +34,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sometimes (e.g. when there are no UEMs attached to a board)
-fsl_pq_mdio_find_free() fails to find a spare address for a TBI PHY,
-this is because get_phy_id() returns bogus 0x0000ffff values
-(0xffffffff is expected), and therefore mdio bus probing fails with
-the following message:
+>> As for my device tree, I reverted back to the original version with
+>> nothing filled in and just replaced 0xfa20xxxx with 0xf000xxxx as Gary
+>> suggested earlier.
+>
+>Would it be a problem to also dynamically fixup IMMR in the device tree
+>from U-Boot?
+>
+>Cheers
+> Detlev
 
-  fsl-pq_mdio: probe of e0082120.mdio failed with error -16
-
-And obviously ethernet doesn't work after this.
-
-This patch solves the problem by adding tbi-phy node into mdio node,
-so that we won't scan for spare addresses, we'll just use a fixed one.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc8569mds.dts |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc8569mds.dts b/arch/powerpc/boot/dts/mpc8569mds.dts
-index 2577f37..baa4ac7 100644
---- a/arch/powerpc/boot/dts/mpc8569mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8569mds.dts
-@@ -502,6 +502,10 @@
- 				reg = <0x6>;
- 				device_type = "ethernet-phy";
- 			};
-+			tbi-phy@11 {
-+				reg = <0x11>;
-+				device_type = "tbi-phy";
-+			};
- 		};
- 		mdio@3520 {
- 			#address-cells = <1>;
--- 
-1.6.3.3
+Hi Detlev, it would be nice but how do I do this?
