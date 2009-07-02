@@ -1,27 +1,24 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DC9D7B70E0
+Return-Path: <frank.svendsboe@gmail.com>
+Received: from mail-fx0-f205.google.com (mail-fx0-f205.google.com
+	[209.85.220.205])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 78E03B713B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jul 2009 16:18:58 +1000 (EST)
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5D03BDDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2009 16:18:56 +1000 (EST)
-In-Reply-To: <20090701211212.GA26231@oksana.dev.rtsoft.ru>
-References: <1246475772-10645-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20090701211212.GA26231@oksana.dev.rtsoft.ru>
-Subject: Re: [PATCH] [spi_mpc83xx] Always enable legacy support.
-To: avorontsov@ru.mvista.com
-Message-ID: <OFCF8CC091.F2420839-ONC12575E7.00216E4F-C12575E7.0022AF37@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 2 Jul 2009 08:18:50 +0200
+	Thu,  2 Jul 2009 17:10:15 +1000 (EST)
+Received: by fxm1 with SMTP id 1so1443690fxm.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 02 Jul 2009 00:10:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <97dd5fd20907011314j1974728fs745bbc62e2b1e6ec@mail.gmail.com>
+References: <97dd5fd20907011104t773c3fc9tca7f0fe56ea22477@mail.gmail.com>
+	<1ba63b520907011252w4c1e9abck65cba3791f57260f@mail.gmail.com>
+	<97dd5fd20907011314j1974728fs745bbc62e2b1e6ec@mail.gmail.com>
+Date: Thu, 2 Jul 2009 09:10:11 +0200
+Message-ID: <1ba63b520907020010u46a3b495h79672fc4f6d84c14@mail.gmail.com>
+Subject: Re: RAMDISK on EP88xc
+From: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>
+To: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,65 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 01/07/2009 23:12:12:
+On Wed, Jul 1, 2009 at 10:14 PM, Mikhail
+Zaturenskiy<mzaturenskiy.st@gmail.com> wrote:
+>> Hi Mikhail,
+>> Try setting CONFIG_EXT2_FS=y, then recompile your kernel and reboot.
 >
-> On Wed, Jul 01, 2009 at 09:16:12PM +0200, Joakim Tjernlund wrote:
-> > There are out of tree boards that need this legacy support too.
+> Hi Frank, just tried that but still getting the same "Unpacking
+> initramfs... failed!" output
 >
-> Heh.
->
-> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> > ---
-> > I hope this is OK. I just discovered that spi didn't work for
-> > me in 2.6.30 and I have no time to work on coverting my boards.
->
-> I'd convert them for you if they were in-tree. :-) But I don't
-> think that moving the kernel backwards because of out-of-tree
-> boards is a good thing.
 
-:), but allowing out-of-tree boards one or two kernel releases to catch up
-with a legacy printout would have been nice.
+Hmm... according to "Kernel command line: console=ttyCPM0,9600n8
+loglevel=7" you haven't
+specified where root is. Add root=/dev/ram to the kernel command line,
+and specify where the
+init process is located (for instance init=/sbin/init).
 
->
-> > I don't have a clue either on how to do that, any pointers
-> > how to add a few spidev devices via OF?
->
-> Something like this will work:
->
->       spi@4c0 {
->          #address-cells = <1>;
->          #size-cells = <0>;
->          cell-index = <0>;
->          compatible = "fsl,spi";
->          reg = <0x4c0 0x40>;
->          interrupts = <2>;
->          interrupt-parent = <&qeic>;
->          /* provide chip-selects here */
->          gpios = <&qe_pio_d 13 0   /* CS0 */
->              &qe_pio_d 14 0>; /* CS1 */
->          mode = "cpu-qe";
->
->          device@0 {
->             compatible = "spidev";
->             reg = <0>; /* CS0*/
->             spi-max-frequency = <50000000>;
->          };
->
->          device@0 {
->             compatible = "spidev";
->             reg = <1>; /* CS1 */
->             spi-max-frequency = <50000000>;
->          };
->       };
->
-> You can look at arch/powerpc/boot/dts/mpc832x_rdb.dts as an
-> example.
->
-> Note that "spidev" isn't correct compatible entry to use,
-> but it's quick and dirty solution. A proper solution is to
-> add a proper compatible entry into the device-tree, and
-> add "spidev" alias into drivers/of/base.c:of_modalias_table.
+I haven't tried Denks ramdisk image. You can create one for yourself
+using dd, gzip and U-Boots
+mkimage tool. If the ramdisk image is larger than 4MB, you must either
+change the default
+CONFIG_BLK_DEV_RAM_SIZE=4096, or set ramdisk size in the kernel command line.
 
-Thanks
+Btw, I use an older kernel than you use, but I have these defined:
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=4096
 
-  Jocke
+Maybe they're obsolete now, but you can try to add them to your defconfig file.
+
+Good luck ;-)
+
+- Frank
