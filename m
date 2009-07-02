@@ -1,18 +1,39 @@
-Return-Path: <nvbolhuis@aimvalley.nl>
-Received: from smtp-vbr6.xs4all.nl (smtp-vbr6.xs4all.nl [194.109.24.26])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 905B7B70C5
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E3281B70E4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jul 2009 20:31:08 +1000 (EST)
-Message-ID: <4A4C8C60.6060607@aimvalley.nl>
-Date: Thu, 02 Jul 2009 12:30:56 +0200
-From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+	Thu,  2 Jul 2009 21:13:27 +1000 (EST)
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 57F83DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2009 21:13:26 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n62B8NDI003744
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Jul 2009 07:08:23 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n62BDKZc232766
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Jul 2009 07:13:20 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n62BDKig029503
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Jul 2009 07:13:20 -0400
+Date: Thu, 2 Jul 2009 07:12:46 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Preemption question (4xx related)
+Message-ID: <20090702111246.GG6189@zod.rchland.ibm.com>
+References: <24271342.post@talk.nabble.com> <1246486393.14483.14.camel@pasglop>
+	<20090702001450.GF6189@zod.rchland.ibm.com>
+	<1246519992.7551.1.camel@pasglop>
 MIME-Version: 1.0
-To: Frank Prepelica <Frank.Prepelica@ubidyne.com>
-Subject: Re: AW: How to set DDR data bus width to 16Bit
-References: <29DC34A6B43468409F5A371CFE34E849D7F193@ex01.ads.ubidyne.de>
-In-Reply-To: <29DC34A6B43468409F5A371CFE34E849D7F193@ex01.ads.ubidyne.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1246519992.7551.1.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Felix Radensky <felix@embedded-sol.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,64 +43,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Frank,
+On Thu, Jul 02, 2009 at 05:33:12PM +1000, Benjamin Herrenschmidt wrote:
+>On Wed, 2009-07-01 at 20:14 -0400, Josh Boyer wrote:
+>
+>> I've toyed with that idea myself.  I keep coming back to the fact that you need
+>> a workload that would really leverage it, and I don't have one at the moment.
+>
+>To some extent that's true but just turning full preemption including
+>kernel side with all the associated debug bits and lockdep should make a
+>whole bunch of things show up even with ordinary workloads.
 
-Yes, it's 0xC3100000 for 16 bit. I showed the 32bit value.
+I can look at doing that for ppc44x_defconfig.  I'll be honest and say I don't
+expect it to go well, particularly with lockdep :).
 
-Yes, to go to 16 bit bus-width (1 DDR(2) device), this is the only
-change needed in u-boot, assuming you have 2 DDR(2) devices (like 8313E-RDB)
-which together provide 16+16 = 32bit bus-width.
+>For 440 tend to boot an ubuntu distro off NFS root with all X & DRI 3D
+>etc... and then run compiz :-)
 
-Since, surprisingly, the 16 bit application/u-boot performance was almost as
-good as 32 bit we even tested with I-cache and D-cache turned off.
-u-boot provides commands for this (which I didn't know, see some previous
-emails from me on this mailing-list).
-Also with I-cache and D-cache turned off the 16 bit bus-width performance was
-almost as good as 32 bit. So our conclusion was that the 16/32 bit DDR2 memory
-access is not the limiting factor when it comes to "SW performance".
-Therefore we decided to go for 16 bit bus-width for a new/tiny 8313 based
-design.
+Yes.  Because that's a totally realistic workload for a 440.  I'm surprised you
+don't have a p595 machine acting as your home router too!  ;)
 
-Please let me know your test results. I would expect you to conclude more
-or less the same.
-
-Best Regards,
-Norbert.
-
-
-
-
-
-
-Frank Prepelica wrote:
->> you have to do it via your bootloader (u-boot) which sets up
->> the DDR memory controller.
->> Linux (already) assumes memory is available.
->> Are you sure linux kernel is changing DDR_SDRAM_CFG ?
->> When our linux-2.6.28 kernel is up, it's still 0xc3080000 when I read
->> physical address 0xe0002110.
-> 
-> 
-> Hi Norbert, thank you for your fast reply!
-> 
-> You are absolutly right! I made a silly mistake. I've read the value of
-> the 0xe0002110 with a 8bit pointer.
-> 
-> The value is actually 0xC3100000 which means the 16bit bus width is set.
-> 
-> Just to be sure. Is this the only change (in the bootloader) I have to
-> make that all data accesses are 16bit wide?
-> 
->> Btw. We did some performance tests with 16 bit bus-width (DDR2 memory)
->> and surprisingly performance was almost as good as 32 bit bus-width
-> 
-> This is exactly our intention to test. Thanks for that hint. Very good
-> to
-> know!
-> 
-> Thank you.
-> 
-> Best regards
-> Frank
-> 
-> 
+josh
