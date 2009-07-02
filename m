@@ -1,39 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <martyn.welch@gefanuc.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B427AB70F4
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8E31DB70F4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jul 2009 00:10:26 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Fri,  3 Jul 2009 00:18:39 +1000 (EST)
+Received: from exprod5og103.obsmtp.com (exprod5og103.obsmtp.com [64.18.0.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D42ADDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 00:10:25 +1000 (EST)
-Message-Id: <70F1C213-8E4B-416D-9414-0D46710FAE32@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1246454380.3681.1634.camel@macbook.infradead.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] Support DMA-API debugging facility on PowerPC
-Date: Thu, 2 Jul 2009 09:09:41 -0500
-References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
-	<1227286492.4901.208.camel@macbook.infradead.org>
-	<20081121165722.GD1386@amd.com>
-	<1227287215.4901.213.camel@macbook.infradead.org>
-	<20081121171802.GK733@elte.hu> <20081121172046.GF1386@amd.com>
-	<1227288269.4901.222.camel@macbook.infradead.org>
-	<20081121172722.GG1386@amd.com>
-	<1233873842.8135.6.camel@macbook.infradead.org>
-	<1246454380.3681.1634.camel@macbook.infradead.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>,
-	Linux-Kernel List <linux-kernel@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	iommu@lists.linux-foundation.org,
-	Netdev <netdev@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
+	by ozlabs.org (Postfix) with ESMTPS id 614F7DDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 00:18:36 +1000 (EST)
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH] powerpc/86xx: Update GE Fanuc sbc310 DTS
+To: galak@kernel.crashing.org
+Date: Thu, 02 Jul 2009 15:18:25 +0100
+Message-ID: <20090702141825.22330.83064.stgit@ES-J7S4D2J.amer.consind.ge.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,25 +28,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Update GE Fanuc DTS to match the alterations suggested during the merge of the ppc9a DTS in commit 740d36ae6344f38c4da64c2ede765d7d2dd1f132
 
-On Jul 1, 2009, at 8:19 AM, David Woodhouse wrote:
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
 
->
-> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-> Tested-by: Johannes Berg <johannes@sipsolutions.net>
-> ---
-> Some fixing from Johannes to make it apply to a current kernel...
->
-> arch/powerpc/Kconfig                   |    1
-> arch/powerpc/include/asm/dma-mapping.h |   47 +++++++++++++++++++++++ 
-> +++++++---
-> arch/powerpc/kernel/dma.c              |   11 +++++++
-> 3 files changed, 55 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/dts/gef_sbc310.dts |   29 +++++++++++++----------------
+ 1 files changed, 13 insertions(+), 16 deletions(-)
 
-How about CC'ng linuxppc-dev ;)
-
-I'm not sure if Ben will take this for .31 at this point (with Linus's  
-post -rc merge constraints) and if so we will probably move to <asm- 
-generic/dma-mapping-common.h> for .32
-
-- k
+diff --git a/arch/powerpc/boot/dts/gef_sbc310.dts b/arch/powerpc/boot/dts/gef_sbc310.dts
+index 7810ea9..2107d3c 100644
+--- a/arch/powerpc/boot/dts/gef_sbc310.dts
++++ b/arch/powerpc/boot/dts/gef_sbc310.dts
+@@ -83,34 +83,34 @@
+ 
+ 		/* flash@0,0 is a mirror of part of the memory in flash@1,0
+ 		flash@0,0 {
+-			compatible = "cfi-flash";
+-			reg = <0 0 0x01000000>;
++			compatible = "gef,sbc310-firmware-mirror", "cfi-flash";
++			reg = <0x0 0x0 0x01000000>;
+ 			bank-width = <2>;
+ 			device-width = <2>;
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			partition@0 {
+ 				label = "firmware";
+-				reg = <0x00000000 0x01000000>;
++				reg = <0x0 0x01000000>;
+ 				read-only;
+ 			};
+ 		};
+ 		*/
+ 
+ 		flash@1,0 {
+-			compatible = "cfi-flash";
+-			reg = <1 0 0x8000000>;
++			compatible = "gef,sbc310-paged-flash", "cfi-flash";
++			reg = <0x1 0x0 0x8000000>;
+ 			bank-width = <2>;
+ 			device-width = <2>;
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			partition@0 {
+ 				label = "user";
+-				reg = <0x00000000 0x07800000>;
++				reg = <0x0 0x7800000>;
+ 			};
+ 			partition@7800000 {
+ 				label = "firmware";
+-				reg = <0x07800000 0x00800000>;
++				reg = <0x7800000 0x800000>;
+ 				read-only;
+ 			};
+ 		};
+@@ -121,18 +121,16 @@
+ 		};
+ 
+ 		wdt@4,2000 {
+-			#interrupt-cells = <2>;
+-			device_type = "watchdog";
+-			compatible = "gef,fpga-wdt";
++			compatible = "gef,sbc310-fpga-wdt", "gef,fpga-wdt-1.00",
++				"gef,fpga-wdt";
+ 			reg = <0x4 0x2000 0x8>;
+ 			interrupts = <0x1a 0x4>;
+ 			interrupt-parent = <&gef_pic>;
+ 		};
+ /*
+ 		wdt@4,2010 {
+-			#interrupt-cells = <2>;
+-			device_type = "watchdog";
+-			compatible = "gef,fpga-wdt";
++			compatible = "gef,sbc310-fpga-wdt", "gef,fpga-wdt-1.00",
++				"gef,fpga-wdt";
+ 			reg = <0x4 0x2010 0x8>;
+ 			interrupts = <0x1b 0x4>;
+ 			interrupt-parent = <&gef_pic>;
+@@ -141,7 +139,7 @@
+ 		gef_pic: pic@4,4000 {
+ 			#interrupt-cells = <1>;
+ 			interrupt-controller;
+-			compatible = "gef,fpga-pic";
++			compatible = "gef,sbc310-fpga-pic", "gef,fpga-pic";
+ 			reg = <0x4 0x4000 0x20>;
+ 			interrupts = <0x8
+ 				      0x9>;
+@@ -161,7 +159,7 @@
+ 		#size-cells = <1>;
+ 		#interrupt-cells = <2>;
+ 		device_type = "soc";
+-		compatible = "simple-bus";
++		compatible = "fsl,mpc8641-soc", "simple-bus";
+ 		ranges = <0x0 0xfef00000 0x00100000>;
+ 		bus-frequency = <33333333>;
+ 
+@@ -412,5 +410,4 @@
+ 				  0x0 0x00400000>;
+ 		};
+ 	};
+-
+ };
