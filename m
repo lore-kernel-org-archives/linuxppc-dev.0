@@ -3,20 +3,19 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 25877B77F4
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3D289B7C45
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jul 2009 02:12:35 +1000 (EST)
-Received: from exprod5og105.obsmtp.com (exprod5og105.obsmtp.com [64.18.0.180])
+	Fri,  3 Jul 2009 02:12:46 +1000 (EST)
+Received: from exprod5og107.obsmtp.com (exprod5og107.obsmtp.com [64.18.0.184])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EFDD8DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 02:12:33 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id D8776DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 02:12:44 +1000 (EST)
 From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH 2/5] Mechanism to enable use Generic NVRAM driver for
-	different size chips
+Subject: [PATCH 5/5] powerpc/86xx: Support for NVRAM on GE Fanuc's PPC9A
 To: linuxppc-dev@ozlabs.org
-Date: Thu, 02 Jul 2009 17:12:25 +0100
-Message-ID: <20090702161224.31202.65236.stgit@ES-J7S4D2J.amer.consind.ge.com>
+Date: Thu, 02 Jul 2009 17:12:44 +0100
+Message-ID: <20090702161244.31202.22026.stgit@ES-J7S4D2J.amer.consind.ge.com>
 In-Reply-To: <20090702154928.31202.65107.stgit@ES-J7S4D2J.amer.consind.ge.com>
 References: <20090702154928.31202.65107.stgit@ES-J7S4D2J.amer.consind.ge.com>
 MIME-Version: 1.0
@@ -30,123 +29,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the reliance on a staticly defined NVRAM size, allowing platforms to support NVRAMs with sizes differing from the standard. A fall back value is provided for platforms not supporting this extension.
+Add support for NVRAM on GE Fanuc's PPC9A.
 
 Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
 ---
 
- arch/powerpc/include/asm/nvram.h |    3 +++
- arch/powerpc/kernel/setup_32.c   |    8 ++++++++
- drivers/char/generic_nvram.c     |   27 ++++++++++++++++++++-------
- 3 files changed, 31 insertions(+), 7 deletions(-)
+ arch/powerpc/boot/dts/gef_ppc9a.dts           |    6 ++++++
+ arch/powerpc/configs/86xx/gef_ppc9a_defconfig |    4 ++--
+ arch/powerpc/platforms/86xx/Kconfig           |    1 +
+ arch/powerpc/platforms/86xx/gef_ppc9a.c       |    5 +++++
+ 4 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nvram.h b/arch/powerpc/include/asm/nvram.h
-index efde5ac..71df8b2 100644
---- a/arch/powerpc/include/asm/nvram.h
-+++ b/arch/powerpc/include/asm/nvram.h
-@@ -107,6 +107,9 @@ extern void	pmac_xpram_write(int xpaddr, u8 data);
- /* Synchronize NVRAM */
- extern void	nvram_sync(void);
+diff --git a/arch/powerpc/boot/dts/gef_ppc9a.dts b/arch/powerpc/boot/dts/gef_ppc9a.dts
+index 910944e..c86114e 100644
+--- a/arch/powerpc/boot/dts/gef_ppc9a.dts
++++ b/arch/powerpc/boot/dts/gef_ppc9a.dts
+@@ -118,6 +118,12 @@
+ 			};
+ 		};
  
-+/* Determine NVRAM size */
-+extern ssize_t nvram_size(void);
++		nvram@3,0 {
++			device_type = "nvram";
++			compatible = "simtek,stk14ca8";
++			reg = <0x3 0x0 0x20000>;
++		};
 +
- /* Normal access to NVRAM */
- extern unsigned char nvram_read_byte(int i);
- extern void nvram_write_byte(unsigned char c, int i);
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 1d15424..28f7570 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -208,6 +208,14 @@ void nvram_write_byte(unsigned char val, int addr)
- }
- EXPORT_SYMBOL(nvram_write_byte);
+ 		fpga@4,0 {
+ 			compatible = "gef,ppc9a-fpga-regs";
+ 			reg = <0x4 0x0 0x40>;
+diff --git a/arch/powerpc/configs/86xx/gef_ppc9a_defconfig b/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
+index d8354d9..e175abf 100644
+--- a/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
++++ b/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+ # Linux kernel version: 2.6.30
+-# Thu Jul  2 13:55:24 2009
++# Thu Jul  2 13:59:13 2009
+ #
+ # CONFIG_PPC64 is not set
  
-+ssize_t nvram_size(void)
-+{
-+	if (ppc_md.nvram_size)
-+		return ppc_md.nvram_size();
-+	return -1;
-+}
-+EXPORT_SYMBOL(nvram_size);
-+
- void nvram_sync(void)
- {
- 	if (ppc_md.nvram_sync)
-diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
-index a00869c..e5f71f3 100644
---- a/drivers/char/generic_nvram.c
-+++ b/drivers/char/generic_nvram.c
-@@ -2,7 +2,7 @@
-  * Generic /dev/nvram driver for architectures providing some
-  * "generic" hooks, that is :
-  *
-- * nvram_read_byte, nvram_write_byte, nvram_sync
-+ * nvram_read_byte, nvram_write_byte, nvram_sync, nvram_size
-  *
-  * Note that an additional hook is supported for PowerMac only
-  * for getting the nvram "partition" informations
-@@ -28,6 +28,8 @@
+@@ -214,7 +214,7 @@ CONFIG_MPIC=y
+ # CONFIG_MPIC_WEIRD is not set
+ # CONFIG_PPC_I8259 is not set
+ # CONFIG_PPC_RTAS is not set
+-# CONFIG_MMIO_NVRAM is not set
++CONFIG_MMIO_NVRAM=y
+ # CONFIG_PPC_MPC106 is not set
+ # CONFIG_PPC_970_NAP is not set
+ # CONFIG_PPC_INDIRECT_IO is not set
+diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
+index 6012022..2bbfd53 100644
+--- a/arch/powerpc/platforms/86xx/Kconfig
++++ b/arch/powerpc/platforms/86xx/Kconfig
+@@ -35,6 +35,7 @@ config MPC8610_HPCD
+ config GEF_PPC9A
+ 	bool "GE Fanuc PPC9A"
+ 	select DEFAULT_UIMAGE
++	select MMIO_NVRAM
+ 	select GENERIC_GPIO
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	help
+diff --git a/arch/powerpc/platforms/86xx/gef_ppc9a.c b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+index 287f7bd..a792e5d 100644
+--- a/arch/powerpc/platforms/86xx/gef_ppc9a.c
++++ b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+@@ -33,6 +33,7 @@
+ #include <asm/udbg.h>
  
- #define NVRAM_SIZE	8192
+ #include <asm/mpic.h>
++#include <asm/nvram.h>
  
-+static ssize_t nvram_len;
-+
- static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
- {
- 	lock_kernel();
-@@ -36,7 +38,7 @@ static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
- 		offset += file->f_pos;
- 		break;
- 	case 2:
--		offset += NVRAM_SIZE;
-+		offset += nvram_len;
- 		break;
+ #include <sysdev/fsl_pci.h>
+ #include <sysdev/fsl_soc.h>
+@@ -95,6 +96,10 @@ static void __init gef_ppc9a_setup_arch(void)
+ 			printk(KERN_WARNING "Unable to map board registers\n");
+ 		of_node_put(regs);
  	}
- 	if (offset < 0) {
-@@ -56,9 +58,9 @@ static ssize_t read_nvram(struct file *file, char __user *buf,
- 
- 	if (!access_ok(VERIFY_WRITE, buf, count))
- 		return -EFAULT;
--	if (*ppos >= NVRAM_SIZE)
-+	if (*ppos >= nvram_len)
- 		return 0;
--	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count)
-+	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
- 		if (__put_user(nvram_read_byte(i), p))
- 			return -EFAULT;
- 	*ppos = i;
-@@ -74,9 +76,9 @@ static ssize_t write_nvram(struct file *file, const char __user *buf,
- 
- 	if (!access_ok(VERIFY_READ, buf, count))
- 		return -EFAULT;
--	if (*ppos >= NVRAM_SIZE)
-+	if (*ppos >= nvram_len)
- 		return 0;
--	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count) {
-+	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
- 		if (__get_user(c, p))
- 			return -EFAULT;
- 		nvram_write_byte(c, i);
-@@ -133,9 +135,20 @@ static struct miscdevice nvram_dev = {
- 
- int __init nvram_init(void)
- {
-+	int ret = 0;
 +
- 	printk(KERN_INFO "Generic non-volatile memory driver v%s\n",
- 		NVRAM_VERSION);
--	return misc_register(&nvram_dev);
-+	ret = misc_register(&nvram_dev);
-+	if (ret != 0)
-+		goto out;
-+
-+	nvram_len = nvram_size();
-+	if (nvram_len < 0)
-+		nvram_len = NVRAM_SIZE;
-+
-+out:
-+	return ret;
++#if defined(CONFIG_MMIO_NVRAM)
++	mmio_nvram_init();
++#endif
  }
  
- void __exit nvram_cleanup(void)
+ /* Return the PCB revision */
