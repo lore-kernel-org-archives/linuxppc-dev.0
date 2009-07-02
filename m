@@ -1,31 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <kodiakuppercut@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1271EB7115
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D7A67B70F7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jul 2009 07:49:19 +1000 (EST)
-Message-ID: <4A4D2B70.1030505@freescale.com>
-Date: Thu, 02 Jul 2009 16:49:36 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Fri,  3 Jul 2009 07:56:41 +1000 (EST)
+Received: from mail-gx0-f216.google.com (mail-gx0-f216.google.com
+	[209.85.217.216]) by ozlabs.org (Postfix) with ESMTP id 403EEDDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 07:56:40 +1000 (EST)
+Received: by gxk12 with SMTP id 12so2992479gxk.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 02 Jul 2009 14:56:39 -0700 (PDT)
 MIME-Version: 1.0
-To: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
-Subject: Re: RAMDISK on EP88xc
-References: <97dd5fd20907011104t773c3fc9tca7f0fe56ea22477@mail.gmail.com>
-	<1ba63b520907011252w4c1e9abck65cba3791f57260f@mail.gmail.com>
-	<97dd5fd20907011314j1974728fs745bbc62e2b1e6ec@mail.gmail.com>
-	<1ba63b520907020010u46a3b495h79672fc4f6d84c14@mail.gmail.com>
-	<97dd5fd20907020643s52cc65aah8ee315c3592d5e1@mail.gmail.com>
-	<4A4CBC0C.1040001@mlbassoc.com>	<97dd5fd20907020927v2680a7f8m2657193394bd6323@mail.gmail.com>
-	<97dd5fd20907021142i663de6aavc093fbd6ac5025c@mail.gmail.com>
-	<1ba63b520907021338n3c0d6d33g11d4934ccc538a94@mail.gmail.com>
-	<97dd5fd20907021438ve8c72b9g168e4aa22e9f2f9f@mail.gmail.com>
-In-Reply-To: <97dd5fd20907021438ve8c72b9g168e4aa22e9f2f9f@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: =?UTF-8?B?RnJhbmsgU3ZlbmRzYsO4ZQ==?= <frank.svendsboe@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, Gary Thomas <gary@mlbassoc.com>
+In-Reply-To: <4A4D2332.1060607@freescale.com>
+References: <bc81dc640907021311y1395ed15l2d50cebb3749c29f@mail.gmail.com>
+	<4A4D2332.1060607@freescale.com>
+Date: Thu, 2 Jul 2009 15:56:39 -0600
+Message-ID: <bc81dc640907021456v2e7750cer5732d5c84953801a@mail.gmail.com>
+Subject: Re: Non-contiguous physical memory on 8572
+From: Aaron Pace <kodiakuppercut@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,19 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mikhail Zaturenskiy wrote:
->> This is very interesting. I recently experienced a similar problem when
->> upgrading from 2.6.26-rc6 to 2.6.31-rc1 (torvalds mainline kernel).
+On Thu, Jul 2, 2009 at 3:14 PM, Scott Wood<scottwood@freescale.com> wrote:
+> Aaron Pace wrote:
 >>
->> I didn't had the time to figure out what was happening, so I went back to
->> 2.6.26-rc6. Just for the test, could you try to go back to 2.6.26 and see if
->> the problem remains?
-> 
-> Frank! That worked like a charm! I downloaded linux-2.6.26 source from
-> git.kernel.org, inserted the config options previously mentioned,
-> compiled ok, keeping U-Boot ramdisk and my DTS same it booted right up
-> and no more "slow motion" issue.
+>> In MMU_init of arch/powerpc/mm/init_32.c, where the current code sets
+>> lmb.memory.cnt to zero, I instead walk through the memory regions and
+>> call lmb_reserve for each chunk of memory that lies in a 'hole'.
+>> There are then some minor fixups to make sure that total_memory and
+>> total_highmem get the right numbers. =A0This small change allows all
+>> four gigabytes of memory to be accessed and used in my tests.
+>>
+>> Am I missing something obvious?
+>
+> The main downsides that I see are wasted memory for bookkeeping of the ho=
+le
+> (how acceptable this is depends on how large the hole is relative to the
+> size of RAM -- it's a tradeoff against speed of looking up page structs),
+> and that the reserved area may still be mapped in the TLB without the
+> guarded bit set.
+>
+> -Scott
+>
+>
 
-If you have time, could you bisect to see when the slowdown was introduced?
+Ah, thanks for the response.
+A couple of followup  clarifications/questions, if you don't mind.
+As far as wasted memory for bookkeeping, aren't the reserved regions
+excluded from any zonelist/pagetable allocation?  I'm looking through
+to verify, but if you know off the top of your head where any extra
+data would be required to keep track, I'd like to take a look to
+further educate my memory manager understanding.
 
--Scott
+Secondly, can you elaborate on how/when the reserved area could be
+mapped into the TLB?  I don't by any means lay claim to a complete
+understanding of this area, but aside from a direct ioremap/mmap call,
+how would this area get mapped at all?
+
+Thanks again,
+Aaron
