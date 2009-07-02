@@ -1,27 +1,28 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0B075B70FF
+Return-Path: <mzaturenskiy.st@gmail.com>
+Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.241])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 497BAB70F4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jul 2009 03:50:32 +1000 (EST)
-Received: from col0-omc2-s3.col0.hotmail.com (col0-omc2-s3.col0.hotmail.com
-	[65.55.34.77]) by ozlabs.org (Postfix) with ESMTP id 17230DDDA0
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 03:50:30 +1000 (EST)
-Message-ID: <COL107-W5372858231522587839F1CB22F0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_d3bb6cf0-c3b6-46a3-aa8b-5b173721d486_"
-From: LiuMing <eemingliu@hotmail.com>
-To: <lada.podivin@gmail.com>
-Subject: RE: ppc405ex + gigabit ethernet
-Date: Thu, 2 Jul 2009 17:50:29 +0000
-In-Reply-To: <e35801cc0907010424l66a7c4dem6f3f363c3b194ff4@mail.gmail.com>
-References: <e35801cc0906300658q45d5ea00ub939ba73185efd72@mail.gmail.com>
-	<COL107-W41E84129BE81739BC96295B22E0@phx.gbl>
-	<e35801cc0907010424l66a7c4dem6f3f363c3b194ff4@mail.gmail.com>
+	Fri,  3 Jul 2009 04:42:50 +1000 (EST)
+Received: by rv-out-0708.google.com with SMTP id k29so716418rvb.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 02 Jul 2009 11:42:48 -0700 (PDT)
 MIME-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <97dd5fd20907020927v2680a7f8m2657193394bd6323@mail.gmail.com>
+References: <97dd5fd20907011104t773c3fc9tca7f0fe56ea22477@mail.gmail.com>
+	<1ba63b520907011252w4c1e9abck65cba3791f57260f@mail.gmail.com>
+	<97dd5fd20907011314j1974728fs745bbc62e2b1e6ec@mail.gmail.com>
+	<1ba63b520907020010u46a3b495h79672fc4f6d84c14@mail.gmail.com>
+	<97dd5fd20907020643s52cc65aah8ee315c3592d5e1@mail.gmail.com>
+	<4A4CBC0C.1040001@mlbassoc.com>
+	<97dd5fd20907020927v2680a7f8m2657193394bd6323@mail.gmail.com>
+From: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
+Date: Thu, 2 Jul 2009 13:42:28 -0500
+Message-ID: <97dd5fd20907021142i663de6aavc093fbd6ac5025c@mail.gmail.com>
+Subject: Re: RAMDISK on EP88xc
+To: Gary Thomas <gary@mlbassoc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,123 +32,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_d3bb6cf0-c3b6-46a3-aa8b-5b173721d486_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+> Just as an intermediate update on the issue, I've made progress and it
+> hangs later down the line, see below:
+> *************************************************************************=
+***********
+> Using Embedded Planet EP88xC machine description
+> Linux version 2.6.30-rc2-01402-gd4e2f68-dirty (devone@localhost.localdoma=
+in) (gc
+> c version 4.2.2) #3 Thu Jul 2 11:00:54 CDT 2009
+> Found initrd at 0xc3dbb000:0xc3f6d056
+> Zone PFN ranges:
+> =A0DMA =A0 =A0 =A00x00000000 -> 0x00004000
+> =A0Normal =A0 0x00004000 -> 0x00004000
+> Movable zone start PFN for each node
+> early_node_map[1] active PFN ranges
+> =A0 =A00: 0x00000000 -> 0x00004000
+> MMU: Allocated 72 bytes of context maps for 16 contexts
+> Built 1 zonelists in Zone order, mobility grouping on. =A0Total pages: 16=
+256
+> Kernel command line: console=3DttyCPM0,9600n8 root=3D/dev/ram loglevel=3D=
+7 init=3D/sbin/
+> init
+> NR_IRQS:512
+> PID hash table entries: 256 (order: 8, 1024 bytes)
+> Decrementer Frequency =3D 0x5f5e10
+> clocksource: timebase mult[28000000] shift[22] registered
+> console [ttyCPM0] enabled
+> Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+> Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+> Memory: 60716k/65536k available (2136k kernel code, 4752k reserved, 100k =
+data, 9
+> 9k bss, 112k init)
+> SLUB: Genslabs=3D12, HWalign=3D16, Order=3D0-3, MinObjects=3D0, CPUs=3D1,=
+ Nodes=3D1
+> Calibrating delay loop... 12.39 BogoMIPS (lpj=3D61952)
+> Mount-cache hash table entries: 512
+> net_namespace: 296 bytes
+> NET: Registered protocol family 16
+> bio: create slab <bio-0> at 0
+> NET: Registered protocol family 2
+> IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+> TCP established hash table entries: 2048 (order: 2, 16384 bytes)
+> TCP bind hash table entries: 2048 (order: 1, 8192 bytes)
+> TCP: Hash tables configured (established 2048 bind 2048)
+> TCP reno registered
+> NET: Registered protocol family 1
+> checking if image is initramfs...
+> rootfs image is not initramfs (no cpio magic); looks like an initrd
+> Freeing initrd memory: 1736k freed
+> msgmni has been set to 122
+> io scheduler noop registered
+> io scheduler deadline registered (default)
+> Generic RTC Driver v1.07
+> f0000a80.serial: ttyCPM0 at MMIO 0xc500ea80 (irq =3D 19) is a CPM UART
+> f0000a20.serial: ttyCPM1 at MMIO 0xc5016a20 (irq =3D 29) is a CPM UART
+> brd: module loaded
+> loop: module loaded
+> eth0: fs_enet: 00:00:00:00:00:00
+> eth1: fs_enet: 00:00:00:00:00:00
+> FEC MII Bus: probed
+> fe000000.flash: Found 2 x16 devices at 0x0 in 32-bit bank
+> =A0Amd/Fujitsu Extended Query Table at 0x0040
+> fe000000.flash: CFI does not contain boot bank location. Assuming top.
+> number of CFI chips: 1
+> cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+> TCP cubic registered
+> NET: Registered protocol family 17
+> RPC: Registered udp transport module.
+> RPC: Registered tcp transport module.
+> RAMDISK: gzip image found at block 0
+> VFS: Mounted root (ext2 filesystem) readonly on device 1:0.
+> Freeing unused kernel memory: 112k init
+> *************************************************************************=
+***********
+>
+> Now searching for cause, looks like it's "init" related...
+>
 
+Wow... I just found out that it's not actually "hanging" at this
+point.. it's just working in "slow motion"... I found out by leaving
+the machine and coming back half an hour later to find additional
+output and eventually even a prompt.
 
-Yes. If you enable jumbo frames, the results will be definitely better. My result is with jumbo frame of 8982 enabled. 
+Here is what's happening:
+*************************************************************************
+RAMDISK: gzip image found at block 0
+VFS: Mounted root (ext2 filesystem) on device 1:0.
+Freeing unused kernel memory: 112k init
 
- 
+<4 minutes pass>
 
-If you say your CPU is 600 MHz, I guess there is still potential for you to improve the speed. In our case we had only 300 MHz and got a similar value of yours. Of course, there are many other issues which can be enabled to improve the performance, such as interrupt coaleasing, hardware checksum processing, etc.. Since we used Xilinx FPGA with embedded PowerPC and HW TEMAC, some work can be done with FPGA hardware resources. I don't know your case and it's hard to say how can you further improve. 
+init started: BusyBox v1.7.1 (2008-04-02 09:14:47 MEST)
 
- 
+<2 minutes pass>
 
-BR
+starting pid 403, tty '': '/etc/rc.sh'
 
-Ming
- 
+< etc... >
+*************************************************************************
 
-
-Date: Wed, 1 Jul 2009 13:24:41 +0200
-Subject: Re: ppc405ex + gigabit ethernet
-From: lada.podivin@gmail.com
-To: eemingliu@hotmail.com
-CC: linuxppc-dev@ozlabs.org
-
-Thank you for your reply!
-Yes, I agree the CPU is the bottleneck. But I have performed more tests with the netperf tool and results seem strange to me. If I send 800 B of data, the resulting speed is aproximately 100 Kb/s. On the other hand, If I try to send 32KB chunk of data with jumbo frames turned on, resulting speed is about 600 Kb/s (300-400 without jumbo frames). My ppc405ex runs at 600 MHz.
-
-So it seems that it is definetely better idea to call sendto() less frequently with bigger amounts of data, than to call it more often with smaler amounts. Is it because smaller data means more frequent user space/kernel space switching? Or is it network related issue?  
-
-Thanks!
-
-Best,
-Lada
-
-
-2009/7/1 LiuMing <eemingliu@hotmail.com>
-
-
-Hi,
-According to our experience on PPC405 + Gigabit Enet, your result is already very reasonable. For UDP transmission, it can be around 400 Kb/s because of the CPU bottleneck (in our case 300 MHz ppc405). If you want to further improve it, a faster CPU is needed to process the TCP/IP stack, or you may buy commercial TCP/IP stack rather than using the free Linux one. 
- 
-BR
-Ming
- 
-
-
-Date: Tue, 30 Jun 2009 15:58:53 +0200
-Subject: ppc405ex + gigabit ethernet
-From: lada.podivin@gmail.com
-To: linuxppc-dev@ozlabs.org
-
-
-
-
-Hi,
-
-I benchmarked performance of my network, which contains ppc405EX (Kilauea board, kernel 2.6.30 from Denx) connected with a linux desktop via gigabit ethernet. I used the netperf tool: 
-
-netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768
-
-So I was sending UDP packets to the desktop. The resulting speed was about 370 Kb/s. I tried to send the packets to several different computers - with the same result. So the ppc board is the bottleneck in this case.
-
-Is there any possibility to improve the gigabit capabilities of the ppc405EX? Is there anyone who achieved a better performance with ppc4xx boards?
-
-Thanks!
-
-Best,
-Lada Podivin
-
-
-
-
-
-立刻下载 MSN 保护盾，保障 MSN 安全稳定！ 现在就下载！
-
-_________________________________________________________________
-Messenger安全保护中心，免费修复系统漏洞，保护Messenger安全！
-http://im.live.cn/safe/
---_d3bb6cf0-c3b6-46a3-aa8b-5b173721d486_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: 8bit
-
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt;
-font-family:Verdana
-}
-</style>
-</head>
-<body class='hmmessage'>
-Yes. If you enable jumbo frames, the results will be definitely better. My result is with jumbo frame of 8982 enabled. <BR>
-&nbsp;<BR>
-If you say your CPU is 600 MHz, I guess there is still potential for you to improve the&nbsp;speed. In our case we had only 300 MHz and got a similar value of yours. Of course, there are many other issues which can be enabled to improve the performance, such as interrupt coaleasing,&nbsp;hardware checksum processing, etc.. Since we&nbsp;used Xilinx FPGA with embedded PowerPC and HW TEMAC, some work can be done with FPGA hardware resources. I don't know your case and it's hard to say how can you further improve. <BR>
-&nbsp;<BR>
-BR<BR>
-Ming<BR>&nbsp;<BR>
-<HR id=stopSpelling>
-Date: Wed, 1 Jul 2009 13:24:41 +0200<BR>Subject: Re: ppc405ex + gigabit ethernet<BR>From: lada.podivin@gmail.com<BR>To: eemingliu@hotmail.com<BR>CC: linuxppc-dev@ozlabs.org<BR><BR>Thank you for your reply!<BR>Yes, I agree the CPU is the bottleneck. But I have performed more tests with the netperf tool and results seem strange to me. If I send 800 B of data, the resulting speed is aproximately 100 Kb/s. On the other hand, If I try to send 32KB chunk of data with jumbo frames turned on, resulting speed is about 600 Kb/s (300-400 without jumbo frames). My ppc405ex runs at 600 MHz.<BR><BR>So it seems that it is definetely better idea to call sendto() less frequently with bigger amounts of data, than to call it more often with smaler amounts. Is it because smaller data means more frequent user space/kernel space switching? Or is it network related issue?&nbsp; <BR><BR>Thanks!<BR><BR>Best,<BR>Lada<BR><BR>
-<DIV class=EC_gmail_quote>2009/7/1 LiuMing <SPAN dir=ltr>&lt;<A href="mailto:eemingliu@hotmail.com">eemingliu@hotmail.com</A>&gt;</SPAN><BR>
-<BLOCKQUOTE class=EC_gmail_quote style="PADDING-LEFT: 1ex">
-<DIV>Hi,<BR>According to our experience on PPC405 + Gigabit Enet, your result is already very reasonable. For UDP transmission, it can be around 400 Kb/s because of the&nbsp;CPU bottleneck (in our case 300 MHz ppc405). If you want to&nbsp;further improve it, a faster CPU is needed to process the TCP/IP stack, or you may buy&nbsp;commercial TCP/IP stack&nbsp;rather than using the free Linux one. <BR>&nbsp;<BR>BR<BR>Ming<BR>&nbsp;<BR>
-<HR>
-Date: Tue, 30 Jun 2009 15:58:53 +0200<BR>Subject: ppc405ex + gigabit ethernet<BR>From: <A href="mailto:lada.podivin@gmail.com">lada.podivin@gmail.com</A><BR>To: <A href="mailto:linuxppc-dev@ozlabs.org">linuxppc-dev@ozlabs.org</A>
-<DIV>
-<DIV></DIV>
-<DIV class=h5><BR><BR>Hi,<BR><BR>I benchmarked performance of my network, which contains ppc405EX (Kilauea board, kernel 2.6.30 from Denx) connected with a linux desktop via gigabit ethernet. I used the netperf tool: <BR><BR>netperf -t UDP_STREAM -H 192.168.1.1 -- -m 32768<BR><BR>So I was sending UDP packets to the desktop. The resulting speed was about 370 Kb/s. I tried to send the packets to several different computers - with the same result. So the ppc board is the bottleneck in this case.<BR><BR>Is there any possibility to improve the gigabit capabilities of the ppc405EX? Is there anyone who achieved a better performance with ppc4xx boards?<BR><BR>Thanks!<BR><BR>Best,<BR>Lada Podivin<BR><BR><BR></DIV></DIV>
-<DIV class=EC_hm>
-<HR>
-立刻下载 MSN 保护盾，保障 MSN 安全稳定！ <A href="http://im.live.cn/safe/">现在就下载！</A></DIV></DIV></BLOCKQUOTE></DIV><BR><br /><hr />使用新一代 Windows Live Messenger 轻松交流和共享！ <a href='http://im.live.cn/messenger.aspx' target='_new'>立刻下载！</a></body>
-</html>
---_d3bb6cf0-c3b6-46a3-aa8b-5b173721d486_--
+I've tried a couple different ramdisk images (another one with a much
+older version of busybox), with similar results. Anybody have an idea
+about what's going on here?
