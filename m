@@ -1,23 +1,30 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 13BE2B70F4
+Return-Path: <emillbrandt@dekaresearch.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D20C0B70F6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jul 2009 23:54:23 +1000 (EST)
-Message-ID: <4A4CBC0C.1040001@mlbassoc.com>
-Date: Thu, 02 Jul 2009 07:54:20 -0600
-From: Gary Thomas <gary@mlbassoc.com>
+	Fri,  3 Jul 2009 00:05:01 +1000 (EST)
+Received: from dekaexchange.deka.local (mail.dekaresearch.com [208.65.175.196])
+	by ozlabs.org (Postfix) with ESMTP id DC347DDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 00:05:00 +1000 (EST)
 MIME-Version: 1.0
-To: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
-Subject: Re: RAMDISK on EP88xc
-References: <97dd5fd20907011104t773c3fc9tca7f0fe56ea22477@mail.gmail.com>
-	<1ba63b520907011252w4c1e9abck65cba3791f57260f@mail.gmail.com>
-	<97dd5fd20907011314j1974728fs745bbc62e2b1e6ec@mail.gmail.com>
-	<1ba63b520907020010u46a3b495h79672fc4f6d84c14@mail.gmail.com>
-	<97dd5fd20907020643s52cc65aah8ee315c3592d5e1@mail.gmail.com>
-In-Reply-To: <97dd5fd20907020643s52cc65aah8ee315c3592d5e1@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] alsa/soc: add locking to mpc5200-psc-ac97 driver
+Date: Thu, 2 Jul 2009 09:51:07 -0400
+Message-ID: <A88094362DE0AE49A118AB9B4EB3612403F9DF6C@dekaexchange.deka.local>
+In-Reply-To: <fa686aa40907010744i21beefb2pa088a63fc5bae3d1@mail.gmail.com>
+References: <20090629234214.12670.9082.stgit@localhost.localdomain>
+	<20090630061847.GA24164@pengutronix.de><9e4733910906300642o4f1c0e2cn45423c426e3aff7e@mail.gmail.com>
+	<20090701085633.GB3144@pengutronix.de><9e4733910907010632g10706084o66720d4616e40865@mail.gmail.com>
+	<20090701135547.GD3144@pengutronix.de>
+	<fa686aa40907010744i21beefb2pa088a63fc5bae3d1@mail.gmail.com>
+From: "Eric Millbrandt" <emillbrandt@dekaresearch.com>
+To: "Wolfram Sang" <w.sang@pengutronix.de>,
+	"Jon Smirl" <jonsmirl@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, broonie@sirena.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +34,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mikhail Zaturenskiy wrote:
-> On Thu, Jul 2, 2009 at 2:10 AM, Frank
-> Svendsbøe<frank.svendsboe@gmail.com> wrote:
->> On Wed, Jul 1, 2009 at 10:14 PM, Mikhail
->> Zaturenskiy<mzaturenskiy.st@gmail.com> wrote:
->> Hmm... according to "Kernel command line: console=ttyCPM0,9600n8
->> loglevel=7" you haven't
->> specified where root is. Add root=/dev/ram to the kernel command line,
->> and specify where the
->> init process is located (for instance init=/sbin/init).
->>
->> I haven't tried Denks ramdisk image. You can create one for yourself
->> using dd, gzip and U-Boots
->> mkimage tool. If the ramdisk image is larger than 4MB, you must either
->> change the default
->> CONFIG_BLK_DEV_RAM_SIZE=4096, or set ramdisk size in the kernel command line.
->>
->> Btw, I use an older kernel than you use, but I have these defined:
->> CONFIG_BLK_DEV=y
->> CONFIG_BLK_DEV_LOOP=y
->> CONFIG_BLK_DEV_RAM=y
->> CONFIG_BLK_DEV_RAM_COUNT=16
->> CONFIG_BLK_DEV_RAM_SIZE=4096
->>
->> Maybe they're obsolete now, but you can try to add them to your defconfig file.
->>
->> Good luck ;-)
->>
-> 
-> Thanks Frank, this seems to be leading me down the right path. I tried
-> some of those defines out yesterday and they got the kernel to at
-> least attempt to load the ramdisk, so I'm getting somewhere. Also
-> added root=/dev/ram (also tried /dev/ram0) and init=/sbin/init but for
-> now things are failing before processing those args.
-> 
-> I haven't tried CONFIG_BLK_DEV or CONFIG_BLK_DEV_LOOP and am still
-> playing around with the values for CONFIG_BLK_DEV_RAM_COUNT and
-> CONFIG_BLK_DEV_RAM_SIZE. Strangely, the DEV_RAM defines are completely
-> missing from my config so I have to put them in manually... (as
-> opposed to via menuconfig). I'll post back when it's working or when
-> I've tried all of this and still am getting some error.
+-----Original Message-----
+From: =
+linuxppc-dev-bounces+emillbrandt=3Ddekaresearch.com@lists.ozlabs.org
+[mailto:linuxppc-dev-bounces+emillbrandt=3Ddekaresearch.com@lists.ozlabs.=
+o
+rg] On Behalf Of Grant Likely
+Sent: Wednesday, July 01, 2009 10:45
+To: Wolfram Sang
+Cc: linuxppc-dev@ozlabs.org; alsa-devel@alsa-project.org;
+broonie@sirena.org.uk
+Subject: Re: [PATCH] alsa/soc: add locking to mpc5200-psc-ac97 driver
 
-If you don't have CONFIG_BLK_DEV defined, you can't have CONFIG_BLK_DEV_RAM_COUNT
-or CONFIG_BLK_DEV_RAM_SIZE.  Use 'menuconfig' to help straighten this out.
+On Wed, Jul 1, 2009 at 7:55 AM, Wolfram Sang<w.sang@pengutronix.de>
+wrote:
+>
+>> > Sorry, I didn't get it: Shall I test something specific?
+>>
+>> I don't own a touchscreen.
+>>
+>> AFAIK no one has ever plugged a touchscreen into the PCM-973 to see
+if
+>> works since there hasn't been a driver previously.
+>> Just do a general
+>> test so that you can tell customers that it works.
+>
+> I am not sure, we have a suitable touchscreen. Also, I am afraid this
+is a bit
+> too much to do besides my regular day work right now. Sorry.
 
-> Meanwhile a side question - why does BLK_DEV_RAM_COUNT default to 16?
+I've now tested this on a client's board which uses the pcm030 with a
+custom base board (based on the development board) which uses the same
+codec.  It works there.  I don't have a discrete touchscreen to wire
+up to the PCM-973 though.
 
-This is just the number of unique RAM disk devices supported.
+g.
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+--=20
+
+There is a header on the phytec PCM-973 base board (X20) that brings out
+aux1, aux2, aux3, aux4 (wiper) ADCs from the wm9712.  The ADCs use chip
+registers the same way the touchscreen does.  There is even support for
+doing this through the wm97xx-core driver (wm97xx_read_aux_adc).  If you
+wanted to test it out I would put a pot or some fixed voltage divider on
+one of those inputs and give it a try.  I don't know what the internal
+ADC ref is, I think its 1.65V so whatever signal you put in should be
+less than that.
+
+Eric
+
+
+_________________________________________________________________________=
+________________
+
+This e-mail and the information, including any attachments, it contains =
+are intended to be a confidential communication only to the person or =
+entity to whom it is addressed and may contain information that is =
+privileged. If the reader of this message is not the intended recipient, =
+you are hereby notified that any dissemination, distribution or copying =
+of this communication is strictly prohibited. If you have received this =
+communication in error, please immediately notify the sender and destroy =
+the original message.
+
+Thank you.
+
+Please consider the environment before printing this email.
