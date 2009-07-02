@@ -1,27 +1,23 @@
-Return-Path: <michael@evidence.eu.com>
+Return-Path: <kodiakuppercut@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0F8A5B710B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F3E58B70DF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jul 2009 05:36:19 +1000 (EST)
-Received: from panicking.kicks-ass.org (unknown [77.224.194.88])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F1D08DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 05:36:17 +1000 (EST)
-Message-ID: <4A4D05AB.1090306@evidence.eu.com>
-Date: Thu, 02 Jul 2009 21:08:27 +0200
-From: michael <michael@evidence.eu.com>
+	Fri,  3 Jul 2009 06:16:54 +1000 (EST)
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 581A5DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 06:16:52 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id d40so794017and.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 02 Jul 2009 13:16:51 -0700 (PDT)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/2] ASoC: add locking to mpc5200-psc-ac97 driver
-References: <20090702175719.15773.58956.stgit@localhost.localdomain>
-	<20090702175725.15773.37291.stgit@localhost.localdomain>
-In-Reply-To: <20090702175725.15773.37291.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
+Date: Thu, 2 Jul 2009 14:11:15 -0600
+Message-ID: <bc81dc640907021311y1395ed15l2d50cebb3749c29f@mail.gmail.com>
+Subject: Non-contiguous physical memory on 8572
+From: Aaron Pace <kodiakuppercut@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,66 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hello,
 
-Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> AC97 bus register read/write hooks need to provide locking, but the
-> mpc5200-psc-ac97 driver does not.  This patch adds a mutex around
-> the register access routines.
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->
->  sound/soc/fsl/mpc5200_dma.c      |    1 +
->  sound/soc/fsl/mpc5200_dma.h      |    1 +
->  sound/soc/fsl/mpc5200_psc_ac97.c |   13 ++++++++++++-
->  3 files changed, 14 insertions(+), 1 deletions(-)
->
->
-> diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
-> index efec33a..f0a2d40 100644
-> --- a/sound/soc/fsl/mpc5200_dma.c
-> +++ b/sound/soc/fsl/mpc5200_dma.c
-> @@ -456,6 +456,7 @@ int mpc5200_audio_dma_create(struct of_device *op)
->  		return -ENODEV;
->  
->  	spin_lock_init(&psc_dma->lock);
-> +	mutex_init(&psc_dma->mutex);
->  	psc_dma->id = be32_to_cpu(*prop);
->  	psc_dma->irq = irq;
->  	psc_dma->psc_regs = regs;
-> diff --git a/sound/soc/fsl/mpc5200_dma.h b/sound/soc/fsl/mpc5200_dma.h
-> index 2000803..8d396bb 100644
-> --- a/sound/soc/fsl/mpc5200_dma.h
-> +++ b/sound/soc/fsl/mpc5200_dma.h
-> @@ -55,6 +55,7 @@ struct psc_dma {
->  	unsigned int irq;
->  	struct device *dev;
->  	spinlock_t lock;
-> +	struct mutex mutex;
->  	u32 sicr;
->  	uint sysclk;
->  	int imr;
-> diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_ac97.c
-> index 9b8503f..7eb5499 100644
-> --- a/sound/soc/fsl/mpc5200_psc_ac97.c
-> +++ b/sound/soc/fsl/mpc5200_psc_ac97.c
-> @@ -34,11 +34,14 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
->  	int status;
->  	unsigned int val;
->  
-> +	mutex_lock(&psc_dma->mutex);
-> +
->  	/* Wait for command send status zero = ready */
->  	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
->  				MPC52xx_PSC_SR_CMDSEND), 100, 0);
->  	if (status == 0) {
->  		pr_err("timeout on ac97 bus (rdy)\n");
-> +		mutex_unlock(&psc_dma->mutex);
->  		return -ENODEV;
->   
-maybe define an err variable and and a goto out.
+I wrote to this list quite some time ago concerning a board that has 2
+gigs of ram mapped in at 0x0.0000.0000 - 0x0.7fff.ffff, and a second 2
+gigs of ram at 0x1.0000.0000 - 0x1.7fff.ffff.  Kumar responded and
+mentioned that this wasn't currently supported in the powerpc
+architecture.  I've had this on my 'curiosity' back burner to take a
+look at for some time.
+I found a little time to look at this, and what I discovered is that
+this seems to actually have been a fairly trivial problem to solve.
+I'd like to get some feedback on the method I used, if possible, to
+see if I've overlooked something blatantly obvious.
 
-Michael
+In MMU_init of arch/powerpc/mm/init_32.c, where the current code sets
+lmb.memory.cnt to zero, I instead walk through the memory regions and
+call lmb_reserve for each chunk of memory that lies in a 'hole'.
+There are then some minor fixups to make sure that total_memory and
+total_highmem get the right numbers.  This small change allows all
+four gigabytes of memory to be accessed and used in my tests.
+
+Am I missing something obvious?
+Would you like this in a patch for 32 or next, or is there a reason
+that this would not be desirable in the powerpc branch?
+
+Thanks,
+Aaron
