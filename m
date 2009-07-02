@@ -1,24 +1,17 @@
-Return-Path: <michel@daenzer.net>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E7AE9B70D5
+Return-Path: <Frank.Prepelica@ubidyne.com>
+Received: from mail.ubidyne.com (mail.ubidyne.com [212.211.133.238])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id B4FADB70E5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  2 Jul 2009 19:24:03 +1000 (EST)
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
-	by ozlabs.org (Postfix) with ESMTP id 75C92DDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2009 19:24:03 +1000 (EST)
-Subject: Re: Preemption question (4xx related)
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1246486393.14483.14.camel@pasglop>
-References: <24271342.post@talk.nabble.com> <1246486393.14483.14.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 02 Jul 2009 11:14:29 +0200
-Message-Id: <1246526069.7938.1542.camel@thor>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Felix Radensky <felix@embedded-sol.com>
+	Thu,  2 Jul 2009 19:45:08 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: AW: How to set DDR data bus width to 16Bit
+Date: Thu, 2 Jul 2009 11:45:04 +0200
+Message-ID: <29DC34A6B43468409F5A371CFE34E849D7F193@ex01.ads.ubidyne.de>
+From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
+To: "Norbert van Bolhuis" <nvbolhuis@aimvalley.nl>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-07-02 at 08:13 +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2009-06-30 at 05:55 -0700, Felix Radensky wrote:
-> > Hi,
-> >=20
-> > Preemption is disabled on the vast majority of powerpc
-> > targets. Are there any known problems in this area ?
-> > I'd like to enable CONFIG_PREEMPT_VOLUNTARY on
-> > AMCC 405EX target, to increase application responsiveness.
-> > Is it a bad idea ?
->=20
-> In theory it should work, but as you may have noticed, it's generally
-> disabled and thus not very well tested.
->=20
-> It would be a good idea for us, some of the core devs, to turn that on
-> in our usual test configs in fact.
-
-FWIW, on my PowerBook I've been running with CONFIG_PREEMPT_VOLUNTARY
-enabled for a long time (more than a year). No problems so far, and it
-definitely seems to help a lot for interactivity.
+> you have to do it via your bootloader (u-boot) which sets up
+> the DDR memory controller.
+> Linux (already) assumes memory is available.
+> Are you sure linux kernel is changing DDR_SDRAM_CFG ?
+> When our linux-2.6.28 kernel is up, it's still 0xc3080000 when I read
+> physical address 0xe0002110.
 
 
---=20
-Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+Hi Norbert, thank you for your fast reply!
+
+You are absolutly right! I made a silly mistake. I've read the value of
+the 0xe0002110 with a 8bit pointer.
+
+The value is actually 0xC3100000 which means the 16bit bus width is set.
+
+Just to be sure. Is this the only change (in the bootloader) I have to
+make that all data accesses are 16bit wide?
+
+> Btw. We did some performance tests with 16 bit bus-width (DDR2 memory)
+> and surprisingly performance was almost as good as 32 bit bus-width
+
+This is exactly our intention to test. Thanks for that hint. Very good
+to
+know!
+
+Thank you.
+
+Best regards
+Frank
