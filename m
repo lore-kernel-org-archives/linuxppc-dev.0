@@ -1,31 +1,29 @@
-Return-Path: <mzaturenskiy.st@gmail.com>
-Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.249])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 77A2EB7119
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 947C8B7108
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jul 2009 07:57:57 +1000 (EST)
-Received: by rv-out-0708.google.com with SMTP id k29so751002rvb.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 02 Jul 2009 14:57:55 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <4A4D2B70.1030505@freescale.com>
-References: <97dd5fd20907011104t773c3fc9tca7f0fe56ea22477@mail.gmail.com>
-	<97dd5fd20907011314j1974728fs745bbc62e2b1e6ec@mail.gmail.com>
-	<1ba63b520907020010u46a3b495h79672fc4f6d84c14@mail.gmail.com>
-	<97dd5fd20907020643s52cc65aah8ee315c3592d5e1@mail.gmail.com>
-	<4A4CBC0C.1040001@mlbassoc.com>
-	<97dd5fd20907020927v2680a7f8m2657193394bd6323@mail.gmail.com>
-	<97dd5fd20907021142i663de6aavc093fbd6ac5025c@mail.gmail.com>
-	<1ba63b520907021338n3c0d6d33g11d4934ccc538a94@mail.gmail.com>
-	<97dd5fd20907021438ve8c72b9g168e4aa22e9f2f9f@mail.gmail.com>
-	<4A4D2B70.1030505@freescale.com>
-From: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
-Date: Thu, 2 Jul 2009 16:57:35 -0500
-Message-ID: <97dd5fd20907021457o7c70856bt3ce0158957f045ec@mail.gmail.com>
-Subject: Re: RAMDISK on EP88xc
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, Gary Thomas <gary@mlbassoc.com>
+	Fri,  3 Jul 2009 08:41:20 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E847CDDD04
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 08:41:19 +1000 (EST)
+Subject: Re: Preemption question (4xx related)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20090702111246.GG6189@zod.rchland.ibm.com>
+References: <24271342.post@talk.nabble.com> <1246486393.14483.14.camel@pasglop>
+	<20090702001450.GF6189@zod.rchland.ibm.com>
+	<1246519992.7551.1.camel@pasglop>
+	<20090702111246.GG6189@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Fri, 03 Jul 2009 08:41:00 +1000
+Message-Id: <1246574460.7551.6.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Felix Radensky <felix@embedded-sol.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,14 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Frank! That worked like a charm! I downloaded linux-2.6.26 source from
->> git.kernel.org, inserted the config options previously mentioned,
->> compiled ok, keeping U-Boot ramdisk and my DTS same it booted right up
->> and no more "slow motion" issue.
->
-> If you have time, could you bisect to see when the slowdown was introduced?
+On Thu, 2009-07-02 at 07:12 -0400, Josh Boyer wrote:
+> On Thu, Jul 02, 2009 at 05:33:12PM +1000, Benjamin Herrenschmidt wrote:
+> >On Wed, 2009-07-01 at 20:14 -0400, Josh Boyer wrote:
+> >
+> >> I've toyed with that idea myself.  I keep coming back to the fact that you need
+> >> a workload that would really leverage it, and I don't have one at the moment.
+> >
+> >To some extent that's true but just turning full preemption including
+> >kernel side with all the associated debug bits and lockdep should make a
+> >whole bunch of things show up even with ordinary workloads.
+> 
+> I can look at doing that for ppc44x_defconfig.  I'll be honest and say I don't
+> expect it to go well, particularly with lockdep :).
+> 
+> >For 440 tend to boot an ubuntu distro off NFS root with all X & DRI 3D
+> >etc... and then run compiz :-)
+> 
+> Yes.  Because that's a totally realistic workload for a 440.  I'm surprised you
+> don't have a p595 machine acting as your home router too!  ;)
 
-I'm leaving in 5 minutes, but I'll try to find some time next week to
-check this out.
+It doesn't need to be realistic. In fact, a "realistic" workload is the
+worst thing to test with because it won't exercise all the "uncommon"
+code path which are the ones likely to bite.
 
-Mikhail
+So yesm it's not a "realistic" workload, but it's a good "torture"
+workload to find bugs.
+
+Cheers,
+Ben.
