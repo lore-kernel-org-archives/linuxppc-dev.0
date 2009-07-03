@@ -1,26 +1,40 @@
-Return-Path: <david-b@pacbell.net>
+Return-Path: <Yu.Liu@freescale.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E8B77B7115
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 06ADEB70F4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  3 Jul 2009 10:51:20 +1000 (EST)
-Received: from n23a.bullet.mail.mud.yahoo.com (n23a.bullet.mail.mud.yahoo.com
-	[68.142.207.189]) by ozlabs.org (Postfix) with SMTP id 298B6DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 10:51:19 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: Subject: [PATCH v8] spi: Add PPC4xx SPI driver
-Date: Thu, 2 Jul 2009 17:44:27 -0700
-References: <4A44F643.3050505@harris.com>
-In-Reply-To: <4A44F643.3050505@harris.com>
+	Fri,  3 Jul 2009 11:35:10 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 94032DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2009 11:35:08 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n631Z3og025769
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Jul 2009 18:35:04 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n631Z2FI017489
+	for <linuxppc-dev@ozlabs.org>; Thu, 2 Jul 2009 20:35:02 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200907021744.27636.david-b@pacbell.net>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Stefan Roese <sr@denx.de>
+	charset="iso-8859-1"
+Subject: RE: [PATCH 1/2] KVM/PPC: Fix PPC KVM e500_tlb.c build error
+Date: Fri, 3 Jul 2009 09:35:00 +0800
+Message-ID: <0A1FE637C2C7E148B9573BB60CC630E531C70E@zch01exm26.fsl.freescale.net>
+In-Reply-To: <4A4C97C4.9090908@redhat.com>
+References: <47a7508d4561874c1a052cebe1b7f42b19831393.1246502441.git.yang.shi@windriver.com>
+	<0A1FE637C2C7E148B9573BB60CC630E531C59D@zch01exm26.fsl.freescale.net>
+	<4A4C97C4.9090908@redhat.com>
+From: "Liu Yu-B13201" <Yu.Liu@freescale.com>
+To: "Avi Kivity" <avi@redhat.com>
+Cc: linuxppc-dev@ozlabs.org, Yang Shi <yang.shi@windriver.com>,
+	kvm-ppc@vger.kernel.org, hollisb@us.ibm.com, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,24 +44,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 26 June 2009, Steven A. Falco wrote:
-> +
-> +       /*
-> +        * If there are no chip selects at all, or if this is the special
-> +        * case of a non-existent (dummy) chip select, do nothing.
-> +        */
-> +
-> +       if (!hw->master->num_chipselect || hw->gpios[cs] == -EEXIST)
-> +               return;
-> +
+=20
 
-I'm going to send this in, but please send a followup
-patch making all this "non-existent (dummy) chip select"
-stuff use the SPI_NO_CS flag.
+> -----Original Message-----
+> From: Avi Kivity [mailto:avi@redhat.com]=20
+> Sent: Thursday, July 02, 2009 7:20 PM
+> To: Liu Yu-B13201
+> Cc: Yang Shi; hollisb@us.ibm.com; kvm-ppc@vger.kernel.org;=20
+> kvm@vger.kernel.org; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 1/2] KVM/PPC: Fix PPC KVM e500_tlb.c build error
+>=20
+> On 07/02/2009 06:09 AM, Liu Yu-B13201 wrote:
+> > This fix is already accepted in kvm.git
+> >   =20
+>=20
+> What about the other?  Is it needed?
+>=20
 
-
-> +       /*
-> +        * A count of zero implies a single SPI device without any chip-select.
-> +        * Note that of_gpio_count counts all gpios assigned to this spi master.
-> +        * This includes both "null" gpio's and real ones.
-> +        */
+No, it's already fixed by commit =
+b57227e600f4ecc394d6ba3c2aaa558867b5addc.
