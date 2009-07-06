@@ -4,11 +4,11 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BF388B6F20
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 69B3CB707E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Jul 2009 06:14:46 +1000 (EST)
-Message-ID: <4A525B4C.5050600@freescale.com>
-Date: Mon, 06 Jul 2009 15:15:08 -0500
+	Tue,  7 Jul 2009 06:18:04 +1000 (EST)
+Message-ID: <4A525C12.3090804@freescale.com>
+Date: Mon, 06 Jul 2009 15:18:26 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
@@ -24,7 +24,8 @@ References: <97dd5fd20907011104t773c3fc9tca7f0fe56ea22477@mail.gmail.com>
 	<97dd5fd20907061150o303418a3m3967650433fbb061@mail.gmail.com>
 	<4A524A24.2010206@freescale.com>
 	<97dd5fd20907061228v131149c8ue5c3a02f6084e171@mail.gmail.com>
-In-Reply-To: <97dd5fd20907061228v131149c8ue5c3a02f6084e171@mail.gmail.com>
+	<4A525B4C.5050600@freescale.com>
+In-Reply-To: <4A525B4C.5050600@freescale.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,27 +37,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mikhail Zaturenskiy wrote:
->>> +       CONFIG_BLK_DEV = y
->> Hmm, missed this.  I'm not sure why the subsequent changes didn't take
->> effect -- what did the .config look like after sucking in the defconfig
->> changes, but without any Kconfig changes?
+Scott Wood wrote:
+> Mikhail Zaturenskiy wrote:
+>>>> +       CONFIG_BLK_DEV = y
+>>> Hmm, missed this.  I'm not sure why the subsequent changes didn't take
+>>> effect -- what did the .config look like after sucking in the defconfig
+>>> changes, but without any Kconfig changes?
+>>
+>> I reverted back all the Kconfig changes and made the changes just in
+>> ep88xc_defconfig. See attached files for details, (didn't want a
+>> mile-long email).
+>>
+>> Does this tell you anything?
 > 
-> I reverted back all the Kconfig changes and made the changes just in
-> ep88xc_defconfig. See attached files for details, (didn't want a
-> mile-long email).
+> CONFIG_BLK_DEV is enabled in that output.  That was the only change that 
+> I saw you make to the config in the previous e-mail -- no 
+> CONFIG_BLK_DEV_RAM, etc:
 > 
-> Does this tell you anything?
+>> ****************************************************
+>> in arch/powerpc/configs/ep88xc_defconfig:
+>> +    CONFIG_BLK_DEV = y
+>> -    CONFIG_BLK_DEV is not set
+>> -    CONFIG_BLK_DEV_INITRD is not set
+>> -    CONFIG_EXT2_FS is not set
 
-CONFIG_BLK_DEV is enabled in that output.  That was the only change that 
-I saw you make to the config in the previous e-mail -- no 
-CONFIG_BLK_DEV_RAM, etc:
+OK, looked at the attached defconfig (didn't notice that until after I 
+hit send).
 
-> ****************************************************
-> in arch/powerpc/configs/ep88xc_defconfig:
-> +	CONFIG_BLK_DEV = y
-> -	CONFIG_BLK_DEV is not set
-> -	CONFIG_BLK_DEV_INITRD is not set
-> -	CONFIG_EXT2_FS is not set
+Try omitting the spaces around the equal sign.  BLK_DEV likely worked 
+because it's default y and because you removed the "is not set" line, 
+not because you added the = y line.
 
 -Scott
