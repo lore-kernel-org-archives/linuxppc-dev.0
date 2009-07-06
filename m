@@ -1,23 +1,24 @@
-Return-Path: <olof@lixom.net>
+Return-Path: <jwboyer@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id ECDCFB7063
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 18CC0B7066
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Jul 2009 00:00:10 +1000 (EST)
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 8AC8FDDD1B
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jul 2009 00:00:09 +1000 (EST)
-Date: Mon, 6 Jul 2009 08:59:26 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/mpic: Fix MPIC_BROKEN_REGREAD on non broken MPICs
-Message-ID: <20090706135926.GA16205@lixom.net>
-References: <6c9c0889feaceeea55bd2b6fef0c19e408425ef5.1246846125.git.michael@ellerman.id.au>
+	Tue,  7 Jul 2009 00:07:50 +1000 (EST)
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.172])
+	by ozlabs.org (Postfix) with ESMTP id 77017DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jul 2009 00:07:47 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1478558wfg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 06 Jul 2009 07:07:45 -0700 (PDT)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Mon, 6 Jul 2009 10:07:41 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Please pull 'merge' branch of 4xx tree
+Message-ID: <20090706140741.GD19829@hansolo.jdub.homelinux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6c9c0889feaceeea55bd2b6fef0c19e408425ef5.1246846125.git.michael@ellerman.id.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,21 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 06, 2009 at 12:08:52PM +1000, Michael Ellerman wrote:
-> The workaround enabled by CONFIG_MPIC_BROKEN_REGREAD does not work
-> on non-broken MPICs. The symptom is no interrupts being received.
-> 
-> The fix is twofold. Firstly the code was broken for multiple isus,
-> we need to index into the shadow array with the src_no, not the idx.
-> Secondly, we always do the read, but only use the VECPRI_MASK and
-> VECPRI_ACTIVITY bits from the hardware, the rest of "val" comes
-> from the shadow.
+Hi Ben,
 
-I'm travelling without remote access to a machine to test this on. Given
-that it changes the errata workaround (subtly), I'd appreciate the chance
-to give it a go before it gets merged.
+Please pull the fixes below from the 4xx tree.  A few Warp platform updates
+that should fix the final issues Sean has reported.
 
-Unfortunately I forgot to make sure that my remote console server was
-up before I left. :-)
+thx,
+josh
 
--Olof
+The following changes since commit fd0cca754f3f6756bfdafe500e4f49b1b9e9723f:
+  Benjamin Herrenschmidt (1):
+        Merge commit 'kumar/next' into merge
+
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git merge
+
+Josh Boyer (1):
+      powerpc/44x: Fix build error with -Werror for Warp platform
+
+Sean MacLennan (2):
+      powerpc/44x: Update Warp defconfig
+      powerpc/4xx: Have Warp take advantage of GPIO LEDs default-state = keep
+
+ arch/powerpc/boot/dts/warp.dts          |    3 +-
+ arch/powerpc/configs/44x/warp_defconfig |  200 ++++++++++++++++++++++++-------
+ arch/powerpc/platforms/44x/warp.c       |   19 +--
+ 3 files changed, 166 insertions(+), 56 deletions(-)
