@@ -4,11 +4,11 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 998C0B6F20
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EA29CB7081
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Jul 2009 04:57:29 +1000 (EST)
-Message-ID: <4A52492E.1020707@freescale.com>
-Date: Mon, 06 Jul 2009 13:57:50 -0500
+	Tue,  7 Jul 2009 05:01:33 +1000 (EST)
+Message-ID: <4A524A24.2010206@freescale.com>
+Date: Mon, 06 Jul 2009 14:01:56 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
@@ -37,39 +37,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Mikhail Zaturenskiy wrote:
->>> After doing this testing I have a side question:
->>> If I modify just arch/powerpc/configs/ep88x_defconfig, not all changes
->>> are reflected in the resulting .config when i do "make
->>> ep88x_defconfig; make uImage". I ended up having to modify
->>> arch/powerpc/Kconfig, arch/powerpc/configs/ep88xc_defconfig,
->>> fs/ext2/Kconfig and init/Kconfig to get "make ep88x_defconfig; make
->>> uImage" to create a properly configured image, but this really doesn't
->>> feel right. What's the proper way to set up a defconfig?
->> What changes are you trying to make to the config, and what did you change
->> in the Kconfig files?
->>
-> 
 > ****************************************************
-> in arch/powerpc/Kconfig:
-> +	config BLK_DEV_LOOP
-> +		tristate
-> +		default y
-> 
-> +	config BLK_DEV_RAM
-> +		tristate
-> +		default y
-> 
-> +	config BLK_DEV_RAM_COUNT
-> +		int
-> +		default 16
-> 
-> +	config BLK_DEV_RAM_SIZE
-> +		int
-> +		default 32768
+> in arch/powerpc/configs/ep88xc_defconfig:
+> +	CONFIG_BLK_DEV = y
 
-You should definitely not do that.  In fact, I'm surprised kconfig 
-didn't complain about the duplicate symbols.
+Hmm, missed this.  I'm not sure why the subsequent changes didn't take 
+effect -- what did the .config look like after sucking in the defconfig 
+changes, but without any Kconfig changes?
 
-Perhaps CONFIG_BLK_DEV is unset?
+In any case, the best way to make changes is with one of the config 
+editors (menuconfig, etc).
 
 -Scott
