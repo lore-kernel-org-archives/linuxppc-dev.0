@@ -1,21 +1,22 @@
-Return-Path: <anton@ozlabs.org>
+Return-Path: <BLandau@nds.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 45110B6F20
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B98AFB7066
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  6 Jul 2009 22:19:12 +1000 (EST)
-Date: Mon, 6 Jul 2009 22:18:45 +1000
-From: Anton Blanchard <anton@samba.org>
-To: mingo@elte.hu, a.p.zijlstra@chello.nl, paulus@samba.org,
-	benh@kernel.crashing.org
-Subject: [PATCH] powerpc/perf_counter: Add alignment-faults and
-	emulation-faults sw events
-Message-ID: <20090706121845.GD4391@kryten>
+	Mon,  6 Jul 2009 22:10:21 +1000 (EST)
+Received: from ilsmtp.nds.com (ilsmtp.nds.com [192.118.32.12])
+	by ozlabs.org (Postfix) with ESMTP id B17CFDDD01
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Jul 2009 22:10:20 +1000 (EST)
+From: "Landau, Bracha" <BLandau@nds.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Mon, 6 Jul 2009 15:03:55 +0300
+Subject: tcsetattr doesn't change baud rate
+Message-ID: <065A7D06F7D4E546A18E80E08D066E18118A03BED7@ILMA1.IL.NDS.COM>
+Content-Type: multipart/alternative;
+	boundary="_000_065A7D06F7D4E546A18E80E08D066E18118A03BED7ILMA1ILNDSCOM_"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,134 +26,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--_000_065A7D06F7D4E546A18E80E08D066E18118A03BED7ILMA1ILNDSCOM_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Hook up the alignment-faults and emulation-faults events for powerpc.
+I have re-ported an application that ran (and worked) on linux kernel 2.6.1=
+4 (with Xenomai).
+Now it works on linux kernel 2.6.29.4.
+When I do tcsetattr to change the baud rate (from 9600 to 38400) the functi=
+on returns without an error, but does not actually change the baud rate, an=
+d it remains at 9600. This is despite using the flag "TCSANOW" when request=
+ing the change.
+Any ideas why this is happening?
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
 
-Lots of duplication between PPC_WARN_EMULATED() and perf_swcounter_event()
-here. Maybe we need to create PPC_WARN_ALIGNMENT(), use it and hide all
-calls to perf_swcounter_event in the macros.
+________________________________
+This e-mail is confidential, the property of NDS Ltd and intended for the a=
+ddressee only. Any dissemination, copying or distribution of this message o=
+r any attachments by anyone other than the intended recipient is strictly p=
+rohibited. If you have received this message in error, please immediately n=
+otify the postmaster@nds.com and destroy the original message. Messages sen=
+t to and from NDS may be monitored. NDS cannot guarantee any message delive=
+ry method is secure or error-free. Information could be intercepted, corrup=
+ted, lost, destroyed, arrive late or incomplete, or contain viruses. We do =
+not accept responsibility for any errors or omissions in this message and/o=
+r attachment that arise as a result of transmission. You should carry out y=
+our own virus checks before opening any attachment. Any views or opinions p=
+resented are solely those of the author and do not necessarily represent th=
+ose of NDS.
 
-Index: linux.trees.git/arch/powerpc/kernel/align.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/align.c	2009-07-06 21:50:53.000000000 +1000
-+++ linux.trees.git/arch/powerpc/kernel/align.c	2009-07-06 22:10:41.000000000 +1000
-@@ -25,6 +25,7 @@
- #include <asm/cache.h>
- #include <asm/cputable.h>
- #include <asm/emulated_ops.h>
-+#include <linux/perf_counter.h>
- 
- struct aligninfo {
- 	unsigned char len;
-@@ -707,6 +708,9 @@
- 	 */
- 	CHECK_FULL_REGS(regs);
- 
-+	perf_swcounter_event(PERF_COUNT_SW_ALIGNMENT_FAULTS, 1, 0, regs,
-+			     regs->nip);
-+
- 	dsisr = regs->dsisr;
- 
- 	/* Some processors don't provide us with a DSISR we can use here,
-Index: linux.trees.git/arch/powerpc/kernel/traps.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/traps.c	2009-07-06 21:50:53.000000000 +1000
-+++ linux.trees.git/arch/powerpc/kernel/traps.c	2009-07-06 22:11:52.000000000 +1000
-@@ -34,6 +34,7 @@
- #include <linux/bug.h>
- #include <linux/kdebug.h>
- #include <linux/debugfs.h>
-+#include <linux/perf_counter.h>
- 
- #include <asm/emulated_ops.h>
- #include <asm/pgtable.h>
-@@ -759,6 +760,8 @@
- 
- 	/* Emulate the mfspr rD, PVR. */
- 	if ((instword & PPC_INST_MFSPR_PVR_MASK) == PPC_INST_MFSPR_PVR) {
-+		perf_swcounter_event(PERF_COUNT_SW_EMULATION_FAULTS, 1, 0,
-+				     regs, regs->nip);
- 		PPC_WARN_EMULATED(mfpvr);
- 		rd = (instword >> 21) & 0x1f;
- 		regs->gpr[rd] = mfspr(SPRN_PVR);
-@@ -767,6 +770,8 @@
- 
- 	/* Emulating the dcba insn is just a no-op.  */
- 	if ((instword & PPC_INST_DCBA_MASK) == PPC_INST_DCBA) {
-+		perf_swcounter_event(PERF_COUNT_SW_EMULATION_FAULTS, 1, 0,
-+				     regs, regs->nip);
- 		PPC_WARN_EMULATED(dcba);
- 		return 0;
- 	}
-@@ -776,6 +781,8 @@
- 		int shift = (instword >> 21) & 0x1c;
- 		unsigned long msk = 0xf0000000UL >> shift;
- 
-+		perf_swcounter_event(PERF_COUNT_SW_EMULATION_FAULTS, 1, 0,
-+				     regs, regs->nip);
- 		PPC_WARN_EMULATED(mcrxr);
- 		regs->ccr = (regs->ccr & ~msk) | ((regs->xer >> shift) & msk);
- 		regs->xer &= ~0xf0000000UL;
-@@ -784,18 +791,24 @@
- 
- 	/* Emulate load/store string insn. */
- 	if ((instword & PPC_INST_STRING_GEN_MASK) == PPC_INST_STRING) {
-+		perf_swcounter_event(PERF_COUNT_SW_EMULATION_FAULTS, 1, 0,
-+				     regs, regs->nip);
- 		PPC_WARN_EMULATED(string);
- 		return emulate_string_inst(regs, instword);
- 	}
- 
- 	/* Emulate the popcntb (Population Count Bytes) instruction. */
- 	if ((instword & PPC_INST_POPCNTB_MASK) == PPC_INST_POPCNTB) {
-+		perf_swcounter_event(PERF_COUNT_SW_EMULATION_FAULTS, 1, 0,
-+				     regs, regs->nip);
- 		PPC_WARN_EMULATED(popcntb);
- 		return emulate_popcntb_inst(regs, instword);
- 	}
- 
- 	/* Emulate isel (Integer Select) instruction */
- 	if ((instword & PPC_INST_ISEL_MASK) == PPC_INST_ISEL) {
-+		perf_swcounter_event(PERF_COUNT_SW_EMULATION_FAULTS, 1, 0,
-+				     regs, regs->nip);
- 		PPC_WARN_EMULATED(isel);
- 		return emulate_isel(regs, instword);
- 	}
-@@ -994,8 +1007,11 @@
- 
- #ifdef CONFIG_MATH_EMULATION
- 	errcode = do_mathemu(regs);
--	if (errcode >= 0)
-+	if (errcode >= 0) {
-+		perf_swcounter_event(PERF_COUNT_SW_EMULATION_FAULTS, 1, 0,
-+				     regs, regs->nip);
- 		PPC_WARN_EMULATED(math);
-+	}
- 
- 	switch (errcode) {
- 	case 0:
-@@ -1017,8 +1033,11 @@
- 
- #elif defined(CONFIG_8XX_MINIMAL_FPEMU)
- 	errcode = Soft_emulate_8xx(regs);
--	if (errcode >= 0)
-+	if (errcode >= 0) {
-+		perf_swcounter_event(PERF_COUNT_SW_EMULATION_FAULTS, 1, 0,
-+				     regs, regs->nip);
- 		PPC_WARN_EMULATED(8xx);
-+	}
- 
- 	switch (errcode) {
- 	case 0:
-@@ -1129,6 +1148,8 @@
- 
- 	flush_altivec_to_thread(current);
- 
-+	perf_swcounter_event(PERF_COUNT_SW_EMULATION_FAULTS, 1, 0, regs,
-+			     regs->nip);
- 	PPC_WARN_EMULATED(altivec);
- 	err = emulate_altivec(regs);
- 	if (err == 0) {
+To protect the environment please do not print this e-mail unless necessary=
+.
+
+NDS Limited Registered Office: One London Road, Staines,Middlesex TW18 4EX,=
+ United Kingdom. A company registered in England and Wales Registered no. 3=
+080780 VAT no. GB 603 8808 40-00
+
+--_000_065A7D06F7D4E546A18E80E08D066E18118A03BED7ILMA1ILNDSCOM_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+>
+<meta content=3D"MSHTML 6.00.2900.3527" name=3D"GENERATOR">
+</head>
+<body>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"781185811-06072009">I h=
+ave re-ported an application that ran (and worked) on linux kernel 2.6.14 (=
+with Xenomai).</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"781185811-06072009">Now=
+ it works on linux kernel 2.6.29.4.</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"781185811-06072009">Whe=
+n I do tcsetattr to&nbsp;change the baud rate (from 9600 to 38400) the func=
+tion returns without an error, but does not actually change the baud rate, =
+and it remains at 9600. This is despite using
+ the flag &quot;TCSANOW&quot; when requesting the change.</span></font></di=
+v>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"781185811-06072009">Any=
+ ideas why this is happening?</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"781185811-06072009"></s=
+pan></font>&nbsp;</div>
+<br>
+<hr>
+<font face=3D"Arial" color=3D"Gray" size=3D"1">This e-mail is confidential,=
+ the property of NDS Ltd and intended for the addressee only. Any dissemina=
+tion, copying or distribution of this message or any attachments by anyone =
+other than the intended recipient is strictly
+ prohibited. If you have received this message in error, please immediately=
+ notify the postmaster@nds.com and destroy the original message. Messages s=
+ent to and from NDS may be monitored. NDS cannot guarantee any message deli=
+very method is secure or error-free.
+ Information could be intercepted, corrupted, lost, destroyed, arrive late =
+or incomplete, or contain viruses. We do not accept responsibility for any =
+errors or omissions in this message and/or attachment that arise as a resul=
+t of transmission. You should carry
+ out your own virus checks before opening any attachment. Any views or opin=
+ions presented are solely those of the author and do not necessarily repres=
+ent those of NDS.<br>
+<br>
+To protect the environment please do not print this e-mail unless necessary=
+.<br>
+<br>
+NDS Limited Registered Office: One London Road, Staines,Middlesex TW18 4EX,=
+ United Kingdom. A company registered in England and Wales Registered no. 3=
+080780 VAT no. GB 603 8808 40-00<br>
+</font>
+</body>
+</html>
+
+--_000_065A7D06F7D4E546A18E80E08D066E18118A03BED7ILMA1ILNDSCOM_--
