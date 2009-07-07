@@ -1,36 +1,23 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 27124B6F1F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F2892B6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Jul 2009 03:32:09 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9FB68DDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2009 03:32:07 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n67HVlSN005923
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Jul 2009 10:31:58 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n67HVk28003935
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Jul 2009 12:31:46 -0500 (CDT)
-Date: Tue, 7 Jul 2009 12:31:46 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Roman Fietze <roman.fietze@telemotive.de>
-Subject: Re: MTD OF parser problem
-Message-ID: <20090707173146.GA25939@b07421-ec1.am.freescale.net>
-References: <200907071545.30121.roman.fietze@telemotive.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200907071545.30121.roman.fietze@telemotive.de>
-Cc: linuxppc-dev@ozlabs.org
+	Wed,  8 Jul 2009 04:38:45 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 1D4ABDDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2009 04:38:44 +1000 (EST)
+Date: Tue, 7 Jul 2009 22:38:42 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH] ucc_geth: Add support for skb recycling
+Message-ID: <20090707183842.GA8425@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
+	Andy Fleming <afleming@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,35 +27,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 07, 2009 at 03:45:29PM +0200, Roman Fietze wrote:
-> Hallo,
-> 
-> I tried to define my MTD partitions in a device tree as
-> documented. The function of_flash_probe() inside teh file physmap_of.c
-> never compiled the code below
-> 
-> #ifdef CONFIG_MTD_OF_PARTS
-> 
-> because when the MTD subsystem is compiled as a module I can only find
-> CONFIG_MTD_OF_PARTS_MODULE beeing defined somewhere below my build
-> directory.
-> 
-> If I change the above define to
-> 
-> #if defined(CONFIG_MTD_OF_PARTS) || defined(CONFIG_MTD_OF_PARTS_MODULE)
-> 
-> everything is fine and MTD partition work as expected.
-> 
-> My fault? Other solution?
+We can reclaim transmitted skbs to use in the receive path, so-called
+skb recycling support.
 
-That would break if MTD_PHYSMAP_OF (or any other user) is built-in but
-MTD_OF_PARTS is a module.
+Also reorder ucc_geth_poll() steps, so that we'll clean tx ring firstly,
+thus maybe reclaim some skbs for rx.
 
-Perhaps there's some way we could hook OF partitions into the normal
-partition probing, so we don't have to refer to it by symbol?  The main
-obstacle would be communicating the device node.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/ucc_geth.c |   40 ++++++++++++++++++++++++++++------------
+ drivers/net/ucc_geth.h |    2 ++
+ 2 files changed, 30 insertions(+), 12 deletions(-)
 
-Or we could just disallow MTD_OF_PARTS from being modularized -- like
-MTD_PARTITIONS.
-
--Scott
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 40c6eba..beaa329 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -209,9 +209,10 @@ static struct sk_buff *get_new_skb(struct ucc_geth_private *ugeth,
+ {
+ 	struct sk_buff *skb = NULL;
+ 
+-	skb = dev_alloc_skb(ugeth->ug_info->uf_info.max_rx_buf_length +
+-				  UCC_GETH_RX_DATA_BUF_ALIGNMENT);
+-
++	skb = __skb_dequeue(&ugeth->rx_recycle);
++	if (!skb)
++		skb = dev_alloc_skb(ugeth->ug_info->uf_info.max_rx_buf_length +
++				    UCC_GETH_RX_DATA_BUF_ALIGNMENT);
+ 	if (skb == NULL)
+ 		return NULL;
+ 
+@@ -1986,6 +1987,8 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
+ 		iounmap(ugeth->ug_regs);
+ 		ugeth->ug_regs = NULL;
+ 	}
++
++	skb_queue_purge(&ugeth->rx_recycle);
+ }
+ 
+ static void ucc_geth_set_multi(struct net_device *dev)
+@@ -2202,6 +2205,8 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 		return -ENOMEM;
+ 	}
+ 
++	skb_queue_head_init(&ugeth->rx_recycle);
++
+ 	return 0;
+ }
+ 
+@@ -3208,8 +3213,10 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+ 			if (netif_msg_rx_err(ugeth))
+ 				ugeth_err("%s, %d: ERROR!!! skb - 0x%08x",
+ 					   __func__, __LINE__, (u32) skb);
+-			if (skb)
+-				dev_kfree_skb_any(skb);
++			if (skb) {
++				skb->data = skb->head + NET_SKB_PAD;
++				__skb_queue_head(&ugeth->rx_recycle, skb);
++			}
+ 
+ 			ugeth->rx_skbuff[rxQ][ugeth->skb_currx[rxQ]] = NULL;
+ 			dev->stats.rx_dropped++;
+@@ -3267,6 +3274,8 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
+ 
+ 	/* Normal processing. */
+ 	while ((bd_status & T_R) == 0) {
++		struct sk_buff *skb;
++
+ 		/* BD contains already transmitted buffer.   */
+ 		/* Handle the transmitted buffer and release */
+ 		/* the BD to be used with the current frame  */
+@@ -3276,9 +3285,16 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
+ 
+ 		dev->stats.tx_packets++;
+ 
+-		/* Free the sk buffer associated with this TxBD */
+-		dev_kfree_skb(ugeth->
+-				  tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]]);
++		skb = ugeth->tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]];
++
++		if (skb_queue_len(&ugeth->rx_recycle) < RX_BD_RING_LEN &&
++			     skb_recycle_check(skb,
++				    ugeth->ug_info->uf_info.max_rx_buf_length +
++				    UCC_GETH_RX_DATA_BUF_ALIGNMENT))
++			__skb_queue_head(&ugeth->rx_recycle, skb);
++		else
++			dev_kfree_skb(skb);
++
+ 		ugeth->tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]] = NULL;
+ 		ugeth->skb_dirtytx[txQ] =
+ 		    (ugeth->skb_dirtytx[txQ] +
+@@ -3307,16 +3323,16 @@ static int ucc_geth_poll(struct napi_struct *napi, int budget)
+ 
+ 	ug_info = ugeth->ug_info;
+ 
+-	howmany = 0;
+-	for (i = 0; i < ug_info->numQueuesRx; i++)
+-		howmany += ucc_geth_rx(ugeth, i, budget - howmany);
+-
+ 	/* Tx event processing */
+ 	spin_lock(&ugeth->lock);
+ 	for (i = 0; i < ug_info->numQueuesTx; i++)
+ 		ucc_geth_tx(ugeth->ndev, i);
+ 	spin_unlock(&ugeth->lock);
+ 
++	howmany = 0;
++	for (i = 0; i < ug_info->numQueuesRx; i++)
++		howmany += ucc_geth_rx(ugeth, i, budget - howmany);
++
+ 	if (howmany < budget) {
+ 		napi_complete(napi);
+ 		setbits32(ugeth->uccf->p_uccm, UCCE_RX_EVENTS | UCCE_TX_EVENTS);
+diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
+index 195ab26..cfb31af 100644
+--- a/drivers/net/ucc_geth.h
++++ b/drivers/net/ucc_geth.h
+@@ -1212,6 +1212,8 @@ struct ucc_geth_private {
+ 	/* index of the first skb which hasn't been transmitted yet. */
+ 	u16 skb_dirtytx[NUM_TX_QUEUES];
+ 
++	struct sk_buff_head rx_recycle;
++
+ 	struct ugeth_mii_info *mii_info;
+ 	struct phy_device *phydev;
+ 	phy_interface_t phy_interface;
+-- 
+1.6.3.3
