@@ -1,28 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <schwab@linux-m68k.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 138FDB707F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B3AE1B7086
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Jul 2009 21:08:44 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6EE21DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jul 2009 21:08:42 +1000 (EST)
-Subject: Re: dma_ops->map_page == NULL
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mark Nelson <markn@au1.ibm.com>
-In-Reply-To: <200907071015.24097.markn@au1.ibm.com>
-References: <4A523984.2080904@marel.com> <200907071015.24097.markn@au1.ibm.com>
-Content-Type: text/plain
-Date: Tue, 07 Jul 2009 21:08:25 +1000
-Message-Id: <1246964905.6066.41.camel@pasglop>
-Mime-Version: 1.0
-Cc: =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Kumar Gala <galak@gate.crashing.org>
+	Tue,  7 Jul 2009 22:40:40 +1000 (EST)
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id 273ABDDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jul 2009 22:40:38 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: Inline assembly queries [2]
+References: <abe8a1fd0907022344k2eb9874ejdbda3209a7cadf40@mail.gmail.com>
+	<20090703174031.GA12410@cynthia.pants.nu> <m23a9deb87.fsf@igel.home>
+	<20090706065627.GA12499@iram.es>
+Date: Tue, 07 Jul 2009 14:40:02 +0200
+In-Reply-To: <20090706065627.GA12499@iram.es> (Gabriel Paubert's message of
+	"Mon, 6 Jul 2009 08:56:27 +0200")
+Message-ID: <m37hykis4d.fsf@hase.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: gcc-help@gcc.gnu.org, kernel mailz <kernelmailz@googlemail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,24 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-07-07 at 10:15 +1000, Mark Nelson wrote:
-> 
-> When the 32 and 64bit DMA code was merged in .28 , map_/unmap_page() was
-> added in favour of map_/unmap_single() (which was later removed in .29)
-> so you'll have to replace your calls to dma_map_single() with
-> dma_map_page(). Just pass it the page and offset rather than the address.
+Gabriel Paubert <paubert@iram.es> writes:
 
-Wait a minute ... dma_map_single() should still work, it will just call
-dma_map_page() underneath. All dma_ops should have a ->map page
-callback.
+> On Fri, Jul 03, 2009 at 10:57:12PM +0200, Andreas Schwab wrote:
+>> The 'Z' constraint is required for a memory operand for insns that don't
+>> have an update form (which would be selected by the %U modifier).  
+>
+> Hmmm, I believed that it was for instructions that only have an indexed
+> form (all Altivec, byte reverse, and l?arx/st?cx for atomic operations).
+>
+> Of course none of these instructions have an update form, but they don't
+> have an offset encoded in the instruction either.
 
-Do you have any dma_ops set for your device at all ? I wonder how we
-set the dma_ops for platform devices nowadays ... We use to have this
-fallback to direct ops when the dma_ops are NULL but that is gone and
-I see no suitable replacement to set them on platform devices for
-embedded archs ... oops...
+Yes, you are right.  IIRC there are either all u/x/ux forms or only the
+x form.
 
-Kumar, Becky, what's the situation there ?
+Andreas.
 
-Cheers,
-Ben.
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
