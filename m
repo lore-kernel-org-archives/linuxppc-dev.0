@@ -1,27 +1,28 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <Kari.Davidsson@marel.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id AB96FB7066
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8B2DEB707C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Jul 2009 01:12:44 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 3CB33DDD1B
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2009 01:12:44 +1000 (EST)
-Date: Tue, 7 Jul 2009 19:12:41 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] net: fix OF fixed-link property handling on Freescale
-	network device drivers
-Message-ID: <20090707151241.GA26831@oksana.dev.rtsoft.ru>
-References: <20090703221851.23909.923.stgit@localhost.localdomain>
+	Wed,  8 Jul 2009 01:24:59 +1000 (EST)
+Received: from mail.marel.is (mail.marel.is [213.167.134.96])
+	by ozlabs.org (Postfix) with ESMTP id CC5F7DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2009 01:24:58 +1000 (EST)
+Message-ID: <4A5368C7.9020202@marel.com>
+Date: Tue, 7 Jul 2009 15:24:55 +0000
+From: =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090703221851.23909.923.stgit@localhost.localdomain>
-Cc: netdev@vger.kernel.org, leoli@freescale.com, afleming@freescale.com,
-	davem@davemloft.net, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: dma_ops->map_page == NULL
+References: <4A523984.2080904@marel.com> <200907071015.24097.markn@au1.ibm.com>
+	<1246964905.6066.41.camel@pasglop>
+	<A0ABEB1B-3A7A-4068-88EC-33D6D663C87A@kernel.crashing.org>
+In-Reply-To: <A0ABEB1B-3A7A-4068-88EC-33D6D663C87A@kernel.crashing.org>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Mark Nelson <markn@au1.ibm.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,90 +32,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 03, 2009 at 04:20:19PM -0600, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+Yes the device pointer was invalid.
+
+I was passing the of_device pointer instead of
+the address of of_device->dev.
+
+But I am sure this was working (passing of_device pointer) with
+earlier kernels.
+
+Thanks for the help.
+
+rg
+kd
+
+Kumar Gala wrote:
+> On Jul 7, 2009, at 6:08 AM, Benjamin Herrenschmidt wrote:
 > 
-> The MDIO rework patches broke the handling of fixed MII links.
-[...]
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> Anton, can you please review, comment and test?  I've tested it on an
-> mpc8349 board, but that is the only hardware that I have.  I've also
-> probably made mistakes and it needs to be split up into separate patches,
-> but this is probably a sufficient form for first review.  I'll also give
-> it another once over tomorrow when after I've had a decent night sleep.
-
-fs_enet this time...
-
-[..]
-> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-> index b892c3a..39244b2 100644
-> --- a/drivers/net/fs_enet/fs_enet-main.c
-> +++ b/drivers/net/fs_enet/fs_enet-main.c
-> @@ -722,8 +722,6 @@ static void generic_adjust_link(struct  net_device *dev)
->  	} else if (fep->oldlink) {
->  		new_state = 1;
->  		fep->oldlink = 0;
-> -		fep->oldspeed = 0;
-> -		fep->oldduplex = -1;
->  	}
->  
->  	if (new_state && netif_msg_link(fep))
-> @@ -749,25 +747,21 @@ static void fs_adjust_link(struct net_device *dev)
->  static int fs_init_phy(struct net_device *dev)
->  {
->  	struct fs_enet_private *fep = netdev_priv(dev);
-> -	struct phy_device *phydev;
->  
-> -	fep->oldlink = 0;
-> -	fep->oldspeed = 0;
-> -	fep->oldduplex = -1;
-> +	/* If a link is already flagged, then set up initial state */
-> +	if (fep->oldlink) {
-> +		netif_carrier_on(dev);
-> +		fep->ops->restart(dev);
-
-->restart() will dereference phydev, which is NULL.
-
-grep for 'phydev' in fs_enet/mac-*.c.
-
-Unable to handle kernel paging request for data at address 0x000000d0
-Faulting instruction address: 0xc01842cc
-Oops: Kernel access of bad area, sig: 11 [#1]
-[...]
-NIP [c01842cc] restart+0x3ac/0x434
-LR [c0184260] restart+0x340/0x434
-Call Trace:               
-[c3825e60] [c0184260] restart+0x340/0x434 (unreliable)
-[c3825e80] [c018231c] fs_init_phy+0x3c/0xbc
-[c3825e90] [c01838a4] fs_enet_open+0x110/0x1cc
-[c3825eb0] [c01b19b0] dev_open+0xcc/0x130
-[c3825ed0] [c01b0100] dev_change_flags+0xb8/0x18c
-[c3825ef0] [c030c4e4] ic_open_devs+0x188/0x284
-[c3825f30] [c030d770] ip_auto_config+0x7c/0x278
-[c3825f60] [c000393c] do_one_initcall+0x58/0x19c
-[c3825fd0] [c02f62e4] do_initcalls+0x30/0x50
-[c3825fe0] [c02f6374] kernel_init+0x38/0x94
-[c3825ff0] [c0010824] kernel_thread+0x4c/0x68
-Instruction dump:         
-901e0004 801c0060 2f800000 419e0020 7c0004ac 801e0004 0c000000 4c00012c
-64000002 7c0004ac 901e0004 813d0110 <800900d0> 2f800000 419e0024 7c0004ac
----[ end trace 1ae193a95823d5e4 ]---
-
-
-And the same comment regarding link speed/duplex reporting for
-userspace:
-
-# ethtool eth1
-Settings for eth1:
-Cannot get device settings: No such device
-        Current message level: 0x00000000 (0)
-        Link detected: yes
-
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+>> On Tue, 2009-07-07 at 10:15 +1000, Mark Nelson wrote:
+>>> When the 32 and 64bit DMA code was merged in .28 , map_/ 
+>>> unmap_page() was
+>>> added in favour of map_/unmap_single() (which was later removed in . 
+>>> 29)
+>>> so you'll have to replace your calls to dma_map_single() with
+>>> dma_map_page(). Just pass it the page and offset rather than the  
+>>> address.
+>> Wait a minute ... dma_map_single() should still work, it will just  
+>> call
+>> dma_map_page() underneath. All dma_ops should have a ->map page
+>> callback.
+>>
+>> Do you have any dma_ops set for your device at all ? I wonder how we
+>> set the dma_ops for platform devices nowadays ... We use to have this
+>> fallback to direct ops when the dma_ops are NULL but that is gone and
+>> I see no suitable replacement to set them on platform devices for
+>> embedded archs ... oops...
+>>
+>> Kumar, Becky, what's the situation there ?
+>>
+>> Cheers,
+>> Ben.
+> 
+> Is it possible the dev pointer is not valid?  I can't remember if that  
+> was a .29 or .30 change that requires us to start passing a valid dev  
+> pointer to get the proper dma_ops.
+> 
+> - k
