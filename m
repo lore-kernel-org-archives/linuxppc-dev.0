@@ -1,27 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A2A3AB7083
+Return-Path: <Kexin.Hao@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 22FC4B7069
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  7 Jul 2009 12:07:53 +1000 (EST)
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 5533BDDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jul 2009 12:07:52 +1000 (EST)
-Date: Mon, 06 Jul 2009 19:07:53 -0700 (PDT)
-Message-Id: <20090706.190753.85468651.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH] net: fix OF fixed-link property handling on Freescale
-	network device drivers
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090703221851.23909.923.stgit@localhost.localdomain>
-References: <20090703221851.23909.923.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, afleming@freescale.com, leoli@freescale.com,
-	linuxppc-dev@ozlabs.org
+	Tue,  7 Jul 2009 13:23:50 +1000 (EST)
+From: Kevin Hao <kexin.hao@windriver.com>
+To: avorontsov@ru.mvista.com, pierre@ossman.eu, sdhci-devel@lists.ossman.eu,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] mmc: add quirk for controller that doesn't have highspeed bit
+	in host control reg
+Date: Tue,  7 Jul 2009 10:04:52 +0800
+Message-Id: <1246932292-17766-1-git-send-email-kexin.hao@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,16 +19,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 03 Jul 2009 16:20:19 -0600
+FSL eSDHC controller doesn't have highspeed bit in its host control reg.
+And the corresponding bit is used to set up the bus width. So add a
+quirk to avoid set this bit. Tested on a mpc8377 RDB board.
 
-> Anton, can you please review, comment and test?  I've tested it on an
-> mpc8349 board, but that is the only hardware that I have.  I've also
-> probably made mistakes and it needs to be split up into separate patches,
-> but this is probably a sufficient form for first review.  I'll also give
-> it another once over tomorrow when after I've had a decent night sleep.
+Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
+---
+ drivers/mmc/host/sdhci-of.c |    3 ++-
+ drivers/mmc/host/sdhci.c    |   10 ++++++----
+ drivers/mmc/host/sdhci.h    |    2 ++
+ 3 files changed, 10 insertions(+), 5 deletions(-)
 
-Can we get some review and testing of this patch going so we
-can fix this regression as soon as possible?
-
-Thanks.
+diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
+index d79fa55..1377ec8 100644
+--- a/drivers/mmc/host/sdhci-of.c
++++ b/drivers/mmc/host/sdhci-of.c
+@@ -173,7 +173,8 @@ static struct sdhci_of_data sdhci_esdhc = {
+ 		  SDHCI_QUIRK_NONSTANDARD_CLOCK |
+ 		  SDHCI_QUIRK_PIO_NEEDS_DELAY |
+ 		  SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET |
+-		  SDHCI_QUIRK_NO_CARD_NO_RESET,
++		  SDHCI_QUIRK_NO_CARD_NO_RESET |
++		  SDHCI_QUIRK_NO_HIGHSPEED_BIT,
+ 	.ops = {
+ 		.readl = esdhc_readl,
+ 		.readw = esdhc_readw,
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 6779b4e..a08fa28 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -1143,10 +1143,12 @@ static void sdhci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ 	else
+ 		ctrl &= ~SDHCI_CTRL_4BITBUS;
+ 
+-	if (ios->timing == MMC_TIMING_SD_HS)
+-		ctrl |= SDHCI_CTRL_HISPD;
+-	else
+-		ctrl &= ~SDHCI_CTRL_HISPD;
++	if (!(host->quirks | SDHCI_QUIRK_NO_HIGHSPEED_BIT)) {
++		if (ios->timing == MMC_TIMING_SD_HS)
++			ctrl |= SDHCI_CTRL_HISPD;
++		else
++			ctrl &= ~SDHCI_CTRL_HISPD;
++	}
+ 
+ 	sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
+ 
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 831ddf7..404bb5f 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -232,6 +232,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_FORCE_1_BIT_DATA			(1<<22)
+ /* Controller needs 10ms delay between applying power and clock */
+ #define SDHCI_QUIRK_DELAY_AFTER_POWER			(1<<23)
++/* Controller doesn't have highspeed bit in host control reg */
++#define SDHCI_QUIRK_NO_HIGHSPEED_BIT			(1<<24)
+ 
+ 	int			irq;		/* Device IRQ */
+ 	void __iomem *		ioaddr;		/* Mapped address */
+-- 
+1.6.2.5
