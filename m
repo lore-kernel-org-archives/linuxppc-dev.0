@@ -1,26 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5029DB707B
+Return-Path: <mzaturenskiy.st@gmail.com>
+Received: from mail-qy0-f171.google.com (mail-qy0-f171.google.com
+	[209.85.221.171])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 6EAD1B7089
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Jul 2009 08:44:01 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A8787DDDE5
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Jul 2009 08:44:00 +1000 (EST)
-Message-Id: <09159ADA-39F9-419E-AE46-4CFAE612AFB9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Alan Modra <amodra@bigpond.net.au>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: binutils 2.19 issue with kernel link
-Date: Wed, 8 Jul 2009 17:41:39 -0500
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	bug-binutils@gnu.org, Edmar Wienskoski-RA8797 <Edmar@freescale.com>
+	Thu,  9 Jul 2009 08:56:23 +1000 (EST)
+Received: by qyk1 with SMTP id 1so6272587qyk.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 08 Jul 2009 15:56:21 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <97dd5fd20907081225g2dc4a8dep74407ece12223162@mail.gmail.com>
+References: <97dd5fd20907081225g2dc4a8dep74407ece12223162@mail.gmail.com>
+From: Mikhail Zaturenskiy <mzaturenskiy.st@gmail.com>
+Date: Wed, 8 Jul 2009 17:56:01 -0500
+Message-ID: <97dd5fd20907081556t8626132sf32c8a6c00c4264c@mail.gmail.com>
+Subject: Re: switching from initrd to initramfs
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,44 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alan,
+> I was hoping to convert this working initrd to initramfs before I try
+> and create my own initrd, I'm still learning about this process. I got
+> this to work yesterday morning, but I'm not sure what changed or what
+> I'm doing differently...
+> Can somebody help me figure out what's missing?
 
-We are seeing an issue w/ld and kernel linking of 32-bit kernels.
+Never mind, got it! :)  For reference, here is what I did:
+First I made a custom init file called "init_mz" with  the following contents:
+#!/bin/sh
+echo "hello! processing init_mz"
 
-The ld from fedora 11 (2.19.51.0.2-17.fc11 20090204) ends not  
-providing the proper address for _end.
+#Create all the symlinks to /bin/busybox
+echo "installing busybox links..."
+busybox --install -s
+echo "done installing busybox links..."
 
-Building stock v2.6.30 w/the mpc85xx_defconfig we get:
+#Mount things needed by this script
+echo "mounting proc..."
+mount -t proc proc /proc
+echo "done mounting proc..."
+echo "mounting sysfs..."
+mount -t sysfs sysfs /sys
+echo "done mounting sysfs..."
 
-00001000 A _end
+#Create device nodes
+echo "creating /dev nodes..."
+mknod /dev/null c 1 3
+mknod /dev/tty c 5 0
+mdev -s
+echo "done creating /dev nodes..."
 
-Using 2.18.50.20080215 we get:
+echo "exec-ing sh..."
+exec /bin/sh
 
-c0680000 A _end
+At this point booting with the "rdinit=/init_mz" kernel argument worked.
 
-If we modify the linker script:
+Then I removed pretty much everything unnecessary from my root tree,
+cross-compiled a busybox v1.14.2 with defconfg (except
+statically-linked), and created the few necessary links, so my tree
+looks like this:
 
-       _end2 = .;
-       _end3 = ALIGN(4096);
-       _end4 = ALIGN(PAGE_SIZE);
-       . = ALIGN(PAGE_SIZE);
-       _end = . ;
-       PROVIDE32 (end = .);
+************
+|-- bin
+|   |-- busybox
+|   |-- echo -> busybox
+|   |-- mount -> busybox
+|   `-- sh -> busybox
+|-- dev
+|-- init_mz
+|-- proc
+|-- sbin
+|-- sys
+`-- usr
+    |-- bin
+    `-- sbin
+**************
+I could probably also get rid of /dev /proc /sbin /sys /usr* /bin/echo
+and /bin/mount and just create those on the fly in the init_mz file.
 
-and the result is:
+I'm building the initramfs ramdisk using:
+find | cpio -ovc | gzip -v9 > ../initramfs.cpio.gz
+mkimage -T ramdisk -C gzip -n 'Test Ramdisk Image' -d
+../initramfs.cpio.gz ../uCpio
 
-00001000 A _end
-c067f678 A _end2
-c0680000 A _end3
-c0680000 A _end4
+For my kernel arguments I'm using "console=ttyCPM0,9600n8
+root=/dev/ram rw rdinit=/init_mz" and that is all! I now have a
+functional initramfs that's 0.97MB large.
 
-I used an old version of linker (2.18.50.20080215) and re-linked:
+For a while I was confused because "ls" output had file names with
+strange symbols such as "1;34mbin0m" for "bin", but I figured out that
+it's because supposedly those represent font colors and I'm using
+HyperTerminal which doesn't support them.
 
-c067f678 A _end2
-c0680000 A _end
-c0680000 A _end3
-c0680000 A _end4
+I hope somebody will find this useful.
 
-Any ideas?
-
-- k
+Mikhail Zaturenskiy
