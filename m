@@ -1,29 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <rdreier@cisco.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D8CE1B6F44
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 61897B707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Jul 2009 06:58:53 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3F8BDDDDE1
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Jul 2009 06:58:52 +1000 (EST)
-Message-Id: <6CF38C94-45EB-4FD7-B8E0-B9899F4EEF90@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-In-Reply-To: <20090708193355.GE2827@ovro.caltech.edu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] edac: mpc85xx: add support for mpc83xx memory controller
-Date: Wed, 8 Jul 2009 15:58:02 -0500
-References: <20090708161954.GC14979@ovro.caltech.edu>
-	<3887C2A7-3566-43A9-A863-4670B039E5DA@kernel.crashing.org>
-	<20090708193355.GE2827@ovro.caltech.edu>
-Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
-	Dave Jiang <djiang@mvista.com>
+	Thu,  9 Jul 2009 08:26:18 +1000 (EST)
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-6.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id CAA4EDDDE5
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Jul 2009 08:26:17 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ehca: use port autodetect mode as default
+References: <20090707160639.6b45bf4d@BL3D1974.boeblingen.de.ibm.com>
+Date: Wed, 08 Jul 2009 15:26:13 -0700
+In-Reply-To: <20090707160639.6b45bf4d@BL3D1974.boeblingen.de.ibm.com>
+	(Alexander Schmidt's message of "Tue, 7 Jul 2009 16:06:39 +0200")
+Message-ID: <adamy7e24my.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: of-ewg <ewg@lists.openfabrics.org>, lkml <linux-kernel@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	of-general <general@lists.openfabrics.org>,
+	Hoang-Nam Nguyen <HNGUYEN@linux.vnet.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,123 +36,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Jul 8, 2009, at 2:33 PM, Ira W. Snyder wrote:
-
-> On Wed, Jul 08, 2009 at 01:09:39PM -0500, Kumar Gala wrote:
->>
->> On Jul 8, 2009, at 11:19 AM, Ira W. Snyder wrote:
->>
->>> Add support for the Freescale MPC83xx memory controller to the
->>> existing
->>> driver for the Freescale MPC85xx memory controller. The only
->>> difference
->>> between the two processors are in the CS_BNDS register parsing code.
->>>
->>> The L2 cache controller does not exist on the MPC83xx, but the OF
->>> subsystem
->>> will not use the driver if the device is not present in the OF  
->>> device
->>> tree.
->>>
->>> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
->>> ---
->>>
->>> This was tested on an MPC8349EMDS-based board.
->>>
->>> I don't really like how the MCE disable works on mpc85xx (clearing  
->>> the
->>> HID1 register), but this can be revisited when mpc86xx support gets
->>> added. It sucks to have this happen before the probe() routine is
->>> called
->>> and we know what kind of hardware we're actually running on.
->>>
->>> drivers/edac/Kconfig        |    6 +++---
->>> drivers/edac/mpc85xx_edac.c |   38 +++++++++++++++++++++++++++
->>> +----------
->>> drivers/edac/mpc85xx_edac.h |    3 +++
->>> 3 files changed, 34 insertions(+), 13 deletions(-)
->>
->> [snip]
->>
->>> /************************ MC SYSFS parts
->>> ***********************************/
->>>
->>> @@ -738,7 +740,8 @@ static irqreturn_t mpc85xx_mc_isr(int irq, void
->>> *dev_id)
->>> 	return IRQ_HANDLED;
->>> }
->>>
->>> -static void __devinit mpc85xx_init_csrows(struct mem_ctl_info *mci)
->>> +static void __devinit mpc85xx_init_csrows(struct mem_ctl_info *mci,
->>> +					  const struct of_device_id *match)
->>> {
->>> 	struct mpc85xx_mc_pdata *pdata = mci->pvt_info;
->>> 	struct csrow_info *csrow;
->>> @@ -784,18 +787,26 @@ static void __devinit  
->>> mpc85xx_init_csrows(struct
->>> mem_ctl_info *mci)
->>> 	}
->>>
->>> 	for (index = 0; index < mci->nr_csrows; index++) {
->>> -		u32 start;
->>> -		u32 end;
->>> +		u32 start, end, extra;
->>>
->>> 		csrow = &mci->csrows[index];
->>> 		cs_bnds = in_be32(pdata->mc_vbase + MPC85XX_MC_CS_BNDS_0 +
->>> 				  (index * MPC85XX_MC_CS_BNDS_OFS));
->>> -		start = (cs_bnds & 0xfff0000) << 4;
->>> -		end = ((cs_bnds & 0xfff) << 20);
->>> +
->>> +		if (match->data && match->data == MPC83xx) {
->>> +			start = (cs_bnds & 0x00ff0000) << 8;
->>> +			end   = (cs_bnds & 0x000000ff) << 24;
->>> +			extra = 0x00ffffff;
->>> +		} else {
->>> +			start = (cs_bnds & 0x0fff0000) << 4;
->>> +			end   = (cs_bnds & 0x00000fff) << 20;
->>> +			extra = 0x000fffff;
->>> +		}
->>
->> I don't understand this at all.. The only difference between 83xx &  
->> 85xx
->> is that we should have an extra 4-bits for 36-bit physical addresses.
->>
->> We should be able to write this code in such a way that it works for
->> both 83xx & 85xx.
->>
->>                start = (cs_bnds & 0xffff0000) >> 16;
->>                end = (cs_bnds & 0xffff);
->>
->> 		if (start == end)
->> 			continue;
->> 		start <<= (20 - PAGE_SHIFT);
->> 		end <<= (20 - PAGE_SHIFT);
->> 		end |= (1 << (20 - PAGE_SHIFT)) - 1;
->>
->
-> Sorry, I don't know a thing about PAGE_SHIFT. Looking in
-> arch/powerpc/platforms/Kconfig.cputype, PPC_85xx doesn't seem to  
-> imply a
-> change in PAGE_SIZE, which changes the PAGE_SHIFT in
-> arch/powerpc/include/asm/page.h.
->
-> Also, are you sure you cannot use 4K pages on an 85xx? If you can  
-> use 4K
-> pages on 85xx, then PAGE_SHIFT == 12, and your solution breaks.
->
-> I admit I don't know much about all of the different powerpc  
-> platforms.
-
-PAGE_SHIFT is the same.. I was folding in the code from below the diff:
-
-                 csrow->first_page = start >> PAGE_SHIFT;
-                 csrow->last_page = end >> PAGE_SHIFT;
-
-into the calculation of start/end.  I know PAGE_SHIFT is a minimum 12  
-on any PPC based system (and at this point its always 12 on 85xx/ 
-83xx).  The idea is to ensure that when shift start/end up that it  
-still fits in 32-bits.  This is to handle the case of >4G of memory.
-
-- k
+looks good, applied
