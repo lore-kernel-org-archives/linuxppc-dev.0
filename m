@@ -1,35 +1,33 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BCB7AB708B
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CE690B708E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Jul 2009 10:42:46 +1000 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id n680ebZa029809
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2009 10:40:37 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n680gjnR1343724
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2009 10:42:45 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n680gjlM009211
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2009 10:42:45 +1000
-From: Mark Nelson <markn@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: dma_ops->map_page == NULL
-Date: Wed, 8 Jul 2009 10:44:58 +1000
-References: <4A523984.2080904@marel.com> <200907071015.24097.markn@au1.ibm.com>
-	<1246964905.6066.41.camel@pasglop>
-In-Reply-To: <1246964905.6066.41.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200907081044.59115.markn@au1.ibm.com>
-Cc: =?iso-8859-1?q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>,
-	Kumar Gala <galak@gate.crashing.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	Wed,  8 Jul 2009 11:15:50 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 59272DDEE0
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2009 11:15:48 +1000 (EST)
+Subject: Re: Delay on intialization ide subsystem(most likely)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrey Gusev <a.gusev1980@mail.ru>
+In-Reply-To: <20090708011802.74a7c21b@power-debian>
+References: <20090425170203.74603b9c@power-debian>
+	<200906101344.30057.bzolnier@gmail.com>
+	<20090705151754.6034ffad@power-debian>
+	<200907061704.38539.bzolnier@gmail.com>
+	<1246922623.22625.57.camel@pasglop>
+	<20090708011802.74a7c21b@power-debian>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 11:12:42 +1000
+Message-Id: <1247015562.6066.59.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-ide@vger.kernel.org, petkovbb@gmail.com,
+	David Miller <davem@davemloft.net>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,19 +37,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 07 July 2009 21:08:25 Benjamin Herrenschmidt wrote:
-> On Tue, 2009-07-07 at 10:15 +1000, Mark Nelson wrote:
-> > 
-> > When the 32 and 64bit DMA code was merged in .28 , map_/unmap_page() was
-> > added in favour of map_/unmap_single() (which was later removed in .29)
-> > so you'll have to replace your calls to dma_map_single() with
-> > dma_map_page(). Just pass it the page and offset rather than the address.
-> 
-> Wait a minute ... dma_map_single() should still work, it will just call
-> dma_map_page() underneath. All dma_ops should have a ->map page
-> callback.
+On Wed, 2009-07-08 at 01:18 +0400, Andrey Gusev wrote:
 
-Sorry my mistake - I was thinking of when we removed the map/unmap_single()
-from the dma_mapping_ops.
+> I tried this drive on ide1 and ide2, there are same issue. This drive worked
+> on P-III before (as separate on channel, with another hard drive and with cdrom)
+> and I didn't have any problem with it. There are chunks of dmesg.
 
-Mark.
+Wow... It also fails with MWDMA2 ! That's just plain weird. It fails as
+master as well as slave too. Hrm. I wonder if it could be your cable...
+Do you have other machines (non-powermac) you can try that drive again
+just in case it toast itself in some way too ?
+
+Bart, I don't suppose we know of any problem with those drive models ?
+(Q. FireballP LM20.5)
+
+Cheers,
+Ben.
