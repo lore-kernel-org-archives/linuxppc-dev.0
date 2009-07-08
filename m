@@ -3,22 +3,20 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id F1CFFB7089
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 47FE6B708D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Jul 2009 12:16:31 +1000 (EST)
+	Wed,  8 Jul 2009 12:23:05 +1000 (EST)
 Received: from sunset.davemloft.net
 	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id B0161DDDF4
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2009 12:16:31 +1000 (EST)
-Date: Tue, 07 Jul 2009 19:16:32 -0700 (PDT)
-Message-Id: <20090707.191632.192291073.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 0C4C0DDDFB
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2009 12:23:05 +1000 (EST)
+Date: Tue, 07 Jul 2009 19:23:07 -0700 (PDT)
+Message-Id: <20090707.192307.222215206.davem@davemloft.net>
 To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] net: fix OF fixed-link property handling on Freescale
-	network device drivers
+Subject: Re: [PATCH] ucc_geth: Add support for skb recycling
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090707151241.GA26831@oksana.dev.rtsoft.ru>
-References: <20090703221851.23909.923.stgit@localhost.localdomain>
-	<20090707151241.GA26831@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090707183842.GA8425@oksana.dev.rtsoft.ru>
+References: <20090707183842.GA8425@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: netdev@vger.kernel.org, leoli@freescale.com, afleming@freescale.com,
@@ -33,12 +31,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Tue, 7 Jul 2009 19:12:41 +0400
+Date: Tue, 7 Jul 2009 22:38:42 +0400
 
-> ->restart() will dereference phydev, which is NULL.
+> We can reclaim transmitted skbs to use in the receive path, so-called
+> skb recycling support.
 > 
-> grep for 'phydev' in fs_enet/mac-*.c.
+> Also reorder ucc_geth_poll() steps, so that we'll clean tx ring firstly,
+> thus maybe reclaim some skbs for rx.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Ok, so this patch still needs a little bit more work.
-
-Thanks for testing!
+Applied to net-next-2.6
