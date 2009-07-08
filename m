@@ -1,21 +1,35 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <markn@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 07C49B70AB
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BCB7AB708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  8 Jul 2009 07:25:22 +1000 (EST)
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id A71B4DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2009 07:25:19 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Tue, 07 Jul 2009 23:25:14 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Message-ID: <20090707212514.244120@gmx.net>
+	Wed,  8 Jul 2009 10:42:46 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id n680ebZa029809
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2009 10:40:37 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n680gjnR1343724
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2009 10:42:45 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n680gjlM009211
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2009 10:42:45 +1000
+From: Mark Nelson <markn@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: dma_ops->map_page == NULL
+Date: Wed, 8 Jul 2009 10:44:58 +1000
+References: <4A523984.2080904@marel.com> <200907071015.24097.markn@au1.ibm.com>
+	<1246964905.6066.41.camel@pasglop>
+In-Reply-To: <1246964905.6066.41.camel@pasglop>
 MIME-Version: 1.0
-Subject: How to correctly reassign PCI BARs
-To: linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200907081044.59115.markn@au1.ibm.com>
+Cc: =?iso-8859-1?q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>,
+	Kumar Gala <galak@gate.crashing.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +39,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tuesday 07 July 2009 21:08:25 Benjamin Herrenschmidt wrote:
+> On Tue, 2009-07-07 at 10:15 +1000, Mark Nelson wrote:
+> > 
+> > When the 32 and 64bit DMA code was merged in .28 , map_/unmap_page() was
+> > added in favour of map_/unmap_single() (which was later removed in .29)
+> > so you'll have to replace your calls to dma_map_single() with
+> > dma_map_page(). Just pass it the page and offset rather than the address.
+> 
+> Wait a minute ... dma_map_single() should still work, it will just call
+> dma_map_page() underneath. All dma_ops should have a ->map page
+> callback.
 
-I'm trying to implement some PCI quirks for the AmigaOne, as the
-firmware puts PCI devices with 16 bit BARs too high in the PCI I/O
-space (above 64k). Currently I'm just writing new values to the BARs
-before the PCI layer actually probes and allocates them:
+Sorry my mistake - I was thinking of when we removed the map/unmap_single()
+from the dma_mapping_ops.
 
-static void quirk_vt82c686_sound_iobases(struct pci_dev *dev)
-{
-	if (!machine_is(amigaone))
-		return;
-
-	pci_write_config_dword(dev, 0x10, 0x0000dc00);
-	pci_write_config_dword(dev, 0x14, 0x0000e000);
-	pci_write_config_dword(dev, 0x18, 0x00000330);
-}
-DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C686_5, quirk_vt82c686_sound_iobases);
-
-I wonder, if there is a better way to reassign PCI resources. Using
-ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC) seems to be an alternative,
-but it also relocates the BARs of the IDE controller, which operates
-in compatible mode (I would like to keep it in this mode).
-Is there a way to take out some PCI devices from the reassignment?
-
-Gerhard
-
--- 
-GRATIS für alle GMX-Mitglieder: Die maxdome Movie-FLAT!
-Jetzt freischalten unter http://portal.gmx.net/de/go/maxdome01
+Mark.
