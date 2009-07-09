@@ -1,28 +1,32 @@
-Return-Path: <mark@bish.net>
+Return-Path: <iws@ovro.caltech.edu>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id EC8ADB7079
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DE51BB707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jul 2009 05:11:54 +1000 (EST)
-Received: from vincent.bish.net (bish.net [209.241.232.100])
-	by ozlabs.org (Postfix) with ESMTP id 9D230DDDA0
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 05:11:54 +1000 (EST)
-Message-ID: <20090709152937.gbyjbk8n4wc4wkg4@www.bish.net>
-Date: Thu, 09 Jul 2009 15:29:37 -0400
-From: Mark Bishop <mark@bish.net>
-To: Baruch Siach <baruch@tkos.co.il>
-References: <20090709141648.ws3ak25ewwogwsc0@www.bish.net>
-	<20090709183855.GS16245@tarshish>
-In-Reply-To: <20090709183855.GS16245@tarshish>
+	Fri, 10 Jul 2009 05:35:23 +1000 (EST)
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 3743FDDDE7
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 05:35:22 +1000 (EST)
+Date: Thu, 9 Jul 2009 12:35:19 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] edac: mpc85xx: add support for mpc83xx memory controller
+Message-ID: <20090709193519.GE29383@ovro.caltech.edu>
+References: <20090708161954.GC14979@ovro.caltech.edu>
+	<3887C2A7-3566-43A9-A863-4670B039E5DA@kernel.crashing.org>
+	<20090708193355.GE2827@ovro.caltech.edu>
+	<6CF38C94-45EB-4FD7-B8E0-B9899F4EEF90@kernel.crashing.org>
+	<20090709165844.GB29383@ovro.caltech.edu>
+	<FC7C9C56-A1E7-4A02-BDEA-F55E10567313@kernel.crashing.org>
+	<20090709181705.GD29383@ovro.caltech.edu>
+	<A9AC0F1D-255E-4445-BC56-FF4024B91BF0@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Subject: Re: [spi-devel-general] Questions in spi_mpc83xx.c
-Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <A9AC0F1D-255E-4445-BC56-FF4024B91BF0@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+	Dave Jiang <djiang@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,17 +36,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Baruch Siach <baruch@tkos.co.il>:
-
-> Hi Mark,
+On Thu, Jul 09, 2009 at 01:25:43PM -0500, Kumar Gala wrote:
 >
-> On Thu, Jul 09, 2009 at 02:16:48PM -0400, Mark Bishop wrote:
->> I haven't seen this before - the '##' in the function name.  This  
->> is ANCII C?
+> On Jul 9, 2009, at 1:17 PM, Ira W. Snyder wrote:
 >
-> Of course. See pp. 90-91 in "The C Programming Language" second edition.
->
+>> On Thu, Jul 09, 2009 at 12:58:53PM -0500, Kumar Gala wrote:
+>>>> Hello Kumar,
+>>>>
+>>>> I must not understand something going on here. Your proposed code
+>>>> doesn't work at all on my board. The
+>>>> /sys/devices/system/edac/mc/mc0/size_mb doesn't come out correctly.
+>>>
+>>> What does it come out as?  How much memory do you have in the system?
+>>>
 >>
+>> The size_mb shows as 0 with your code. See the explanation below. With
+>> my code it shows as 256MB, as expected.
+>>
+>> I have 256MB memory in the system.
+>>
+>>>> The attached patch DOES work on my board, but I'm confident that it
+>>>> does
+>>>> NOT work on a system with PAGE_SIZE != 4096. Any idea what I did
+>>>> wrong?
+>>>>
+>>>> If I'm reading things correctly:
+>>>> csrow->first_page	full address of the first page (NOT pfn)
+>>>> csrow->last_page	full address of the last  page (NOT pfn)
+>>>> csrow->nr_pages		number of pages
+>>>>
+>>>> The EDAC subsystem does csrow->nr_pages * PAGE_SIZE to get the  
+>>>> size_mb
+>>>> sysfs value.
+>>>>
+>>>> If csrow->first_page and csrow->last_page ARE supposed to be the  
+>>>> pfn,
+>>>> then I think the original code got it wrong, and the calculation for
+>>>> csrow->nr_pages needs to be changed.
+>>>>
+>>>> Thanks,
+>>>> Ira
+>>>
+>>> [snip]
+>>>
+>>>> /************************ MC SYSFS parts
+>>>> ***********************************/
+>>>>
+>>>> @@ -790,18 +792,19 @@ static void __devinit  
+>>>> mpc85xx_init_csrows(struct
+>>>> mem_ctl_info *mci)
+>>>> 		csrow = &mci->csrows[index];
+>>>> 		cs_bnds = in_be32(pdata->mc_vbase + MPC85XX_MC_CS_BNDS_0 +
+>>>> 				  (index * MPC85XX_MC_CS_BNDS_OFS));
+>>>> -		start = (cs_bnds & 0xfff0000) << 4;
+>>>> -		end = ((cs_bnds & 0xfff) << 20);
+>>>> -		if (start)
+>>>> -			start |= 0xfffff;
+>>>> -		if (end)
+>>>> -			end |= 0xfffff;
+>>>
+>>> can you printk what cs_bnds values are in your setup.
+>>>
+>>
+>> I am only using a single chip select. CS0_BNDS (register 0xe0002000)  
+>> is
+>> 0x0000000F.
+>>
+>>>> +
+>>>> +		start = (cs_bnds & 0xffff0000) >> 16;
+>>>> +		end   = (cs_bnds & 0x0000ffff);
+>>>>
+>>
+>> This is the same in both our versions.
+>>
+>> start == 0x0
+>> end   == 0xF
+>>
+>>>> 		if (start == end)
+>>>> 			continue;	/* not populated */
+>>>>
+>>>> -		csrow->first_page = start >> PAGE_SHIFT;
+>>>> -		csrow->last_page = end >> PAGE_SHIFT;
+>>>> +		start <<= PAGE_SHIFT;
+>>>> +		end   <<= PAGE_SHIFT;
+>>>> +		end    |= (1 << PAGE_SHIFT) - 1;
+>>>> +
+>>
+>> MY VERSION
+>>
+>> start == 0x0
+>> end   == 0xffff
+>>
+>> first_page == 0x0
+>> last_page  == 0xffff
+>>
+>> YOUR VERSION (<<= (20 - PAGE_SHIFT), etc.)
+>
+> My math was wrong it should be ( <<= (24 - PAGE_SHIFT) )
+>
+> With that I think things work out.
+>
 
+Yep, that works out great. This solution is much better than my original
+code. The 83xx doesn't need to be special-cased anymore.
 
-Wow, thanks.  I missed that little nugget of info.
+I checked the math for a 85xx with 64GB of memory. Assuming it uses 64K
+pages (PAGE_SHIFT == 16), then everything works out.
+
+I'll submit a new patch now.
+
+Thanks for the help,
+Ira
