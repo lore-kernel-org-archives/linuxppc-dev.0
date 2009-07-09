@@ -1,35 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <wg@grandegger.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1ECA2B7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7BCC5B707D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jul 2009 06:17:28 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5A155DDDF6
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 06:17:26 +1000 (EST)
-Message-Id: <C720C7F4-B3FE-4C98-B04A-EE4F0BD40D5E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-In-Reply-To: <20090709193519.GE29383@ovro.caltech.edu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] edac: mpc85xx: add support for mpc83xx memory controller
-Date: Thu, 9 Jul 2009 15:15:29 -0500
-References: <20090708161954.GC14979@ovro.caltech.edu>
-	<3887C2A7-3566-43A9-A863-4670B039E5DA@kernel.crashing.org>
-	<20090708193355.GE2827@ovro.caltech.edu>
-	<6CF38C94-45EB-4FD7-B8E0-B9899F4EEF90@kernel.crashing.org>
-	<20090709165844.GB29383@ovro.caltech.edu>
-	<FC7C9C56-A1E7-4A02-BDEA-F55E10567313@kernel.crashing.org>
-	<20090709181705.GD29383@ovro.caltech.edu>
-	<A9AC0F1D-255E-4445-BC56-FF4024B91BF0@kernel.crashing.org>
-	<20090709193519.GE29383@ovro.caltech.edu>
-Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
-	Dave Jiang <djiang@mvista.com>
+	Fri, 10 Jul 2009 06:33:45 +1000 (EST)
+Message-ID: <4A565423.6010207@grandegger.com>
+Date: Thu, 09 Jul 2009 22:33:39 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: Bestcomm trouble with NAPI for MPC5200 FEC
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,123 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello,
 
-On Jul 9, 2009, at 2:35 PM, Ira W. Snyder wrote:
+I'm currently trying to implement NAPI for the FEC on the MPC5200 to
+solve the well known problem, that network packet storms can cause
+interrupt flooding, which may totally block the system. The NAPI
+implementation, in principle, is straight forward and works
+well under normal and moderate network load. It just calls disable_irq()
+in the receive interrupt handler to defer packet processing to the NAPI
+poll callback, which calls enable_irq() when it has processed all
+packets. Unfortunately, under heavy network load (packet storm),
+problems show up:
 
-> On Thu, Jul 09, 2009 at 01:25:43PM -0500, Kumar Gala wrote:
->>
->> On Jul 9, 2009, at 1:17 PM, Ira W. Snyder wrote:
->>
->>> On Thu, Jul 09, 2009 at 12:58:53PM -0500, Kumar Gala wrote:
->>>>> Hello Kumar,
->>>>>
->>>>> I must not understand something going on here. Your proposed code
->>>>> doesn't work at all on my board. The
->>>>> /sys/devices/system/edac/mc/mc0/size_mb doesn't come out  
->>>>> correctly.
->>>>
->>>> What does it come out as?  How much memory do you have in the  
->>>> system?
->>>>
->>>
->>> The size_mb shows as 0 with your code. See the explanation below.  
->>> With
->>> my code it shows as 256MB, as expected.
->>>
->>> I have 256MB memory in the system.
->>>
->>>>> The attached patch DOES work on my board, but I'm confident that  
->>>>> it
->>>>> does
->>>>> NOT work on a system with PAGE_SIZE != 4096. Any idea what I did
->>>>> wrong?
->>>>>
->>>>> If I'm reading things correctly:
->>>>> csrow->first_page	full address of the first page (NOT pfn)
->>>>> csrow->last_page	full address of the last  page (NOT pfn)
->>>>> csrow->nr_pages		number of pages
->>>>>
->>>>> The EDAC subsystem does csrow->nr_pages * PAGE_SIZE to get the
->>>>> size_mb
->>>>> sysfs value.
->>>>>
->>>>> If csrow->first_page and csrow->last_page ARE supposed to be the
->>>>> pfn,
->>>>> then I think the original code got it wrong, and the calculation  
->>>>> for
->>>>> csrow->nr_pages needs to be changed.
->>>>>
->>>>> Thanks,
->>>>> Ira
->>>>
->>>> [snip]
->>>>
->>>>> /************************ MC SYSFS parts
->>>>> ***********************************/
->>>>>
->>>>> @@ -790,18 +792,19 @@ static void __devinit
->>>>> mpc85xx_init_csrows(struct
->>>>> mem_ctl_info *mci)
->>>>> 		csrow = &mci->csrows[index];
->>>>> 		cs_bnds = in_be32(pdata->mc_vbase + MPC85XX_MC_CS_BNDS_0 +
->>>>> 				  (index * MPC85XX_MC_CS_BNDS_OFS));
->>>>> -		start = (cs_bnds & 0xfff0000) << 4;
->>>>> -		end = ((cs_bnds & 0xfff) << 20);
->>>>> -		if (start)
->>>>> -			start |= 0xfffff;
->>>>> -		if (end)
->>>>> -			end |= 0xfffff;
->>>>
->>>> can you printk what cs_bnds values are in your setup.
->>>>
->>>
->>> I am only using a single chip select. CS0_BNDS (register 0xe0002000)
->>> is
->>> 0x0000000F.
->>>
->>>>> +
->>>>> +		start = (cs_bnds & 0xffff0000) >> 16;
->>>>> +		end   = (cs_bnds & 0x0000ffff);
->>>>>
->>>
->>> This is the same in both our versions.
->>>
->>> start == 0x0
->>> end   == 0xF
->>>
->>>>> 		if (start == end)
->>>>> 			continue;	/* not populated */
->>>>>
->>>>> -		csrow->first_page = start >> PAGE_SHIFT;
->>>>> -		csrow->last_page = end >> PAGE_SHIFT;
->>>>> +		start <<= PAGE_SHIFT;
->>>>> +		end   <<= PAGE_SHIFT;
->>>>> +		end    |= (1 << PAGE_SHIFT) - 1;
->>>>> +
->>>
->>> MY VERSION
->>>
->>> start == 0x0
->>> end   == 0xffff
->>>
->>> first_page == 0x0
->>> last_page  == 0xffff
->>>
->>> YOUR VERSION (<<= (20 - PAGE_SHIFT), etc.)
->>
->> My math was wrong it should be ( <<= (24 - PAGE_SHIFT) )
->>
->> With that I think things work out.
->>
->
-> Yep, that works out great. This solution is much better than my  
-> original
-> code. The 83xx doesn't need to be special-cased anymore.
->
-> I checked the math for a 85xx with 64GB of memory. Assuming it uses  
-> 64K
-> pages (PAGE_SHIFT == 16), then everything works out.
+- With DENX 2.4.25, the Bestcomm RX task gets and remains stopped after
+  a while under additional system load. I have no idea how and when
+  Bestcom tasks are stopped. In the auto-start mode, the firmware should
+  poll forever for the next free descriptor block.
 
-Does the math work for a 64GB system w/4K pages?
+- With 2.6.31-rc2, the RFIFO error occurs quickly which does reset the
+  FEC and Bestcomm (unfortunately, this does trigger an oops because
+  it's called from the interrupt context, but that's another issue).
 
-- k
+I'm realized that working with Bestcomm is a pain :-( but so far I have
+little knowledge of the Bestcomm limitations and quirks. Any idea what
+might go wrong or how to implement NAPI for that FEC properly.
+
+TIA,
+
+Wolfgang.
