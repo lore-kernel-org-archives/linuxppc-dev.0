@@ -1,21 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <dale@farnsworth.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 437CFB7079
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 38CE2B7069
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jul 2009 04:36:49 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id D0674DDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 04:36:48 +1000 (EST)
-Date: Thu, 9 Jul 2009 22:36:44 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+	Fri, 10 Jul 2009 05:06:28 +1000 (EST)
+Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DB004DDDA0
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 05:06:27 +1000 (EST)
+Date: Thu, 9 Jul 2009 12:06:21 -0700
+From: Dale Farnsworth <dale@farnsworth.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/85xx: Add support for I2C EEPROMs on MPC8548CDS boards
-Message-ID: <20090709183644.GA1614@oksana.dev.rtsoft.ru>
+Message-ID: <20090709190621.GB6549@farnsworth.org>
+References: <09159ADA-39F9-419E-AE46-4CFAE612AFB9@kernel.crashing.org>
+	<20090709163900.GA6549@farnsworth.org>
+	<29A5B467-BD0F-4270-B5A4-EF79D9405E28@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <29A5B467-BD0F-4270-B5A4-EF79D9405E28@kernel.crashing.org>
+Subject: Re: binutils 2.19 issue with kernel link
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,50 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch simply adds four eeprom nodes to MPC8548CDS' device tree.
+On Thu, Jul 09, 2009 at 01:14:28PM -0500, Kumar Gala wrote:
+> On Jul 9, 2009, at 11:39 AM, Dale Farnsworth wrote:
+>> We have found the following workaround to be useful.
+>> Thanks to Andrew Jenner at Code Sourcery.
+>>
+>> -Dale
+>>
+>> Dale Farnsworth
+>> MontaVista Software
+>>
+>> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/ 
+>> vmlinux.lds.S
+>> index acf237f..34b0181 100644
+>> --- a/arch/powerpc/kernel/vmlinux.lds.S
+>> +++ b/arch/powerpc/kernel/vmlinux.lds.S
+>> @@ -282,4 +282,7 @@ SECTIONS
+>> 	. = ALIGN(PAGE_SIZE);
+>> 	_end = . ;
+>> 	PROVIDE32 (end = .);
+>> +
+>> +#undef PPC
+>> +	.PPC.EMB.apuinfo 0 : { *(.PPC.EMB.apuinfo) }
+>> }
+>
+> Is there any plans to fix binutils or is this viewed as not a binutils  
+> regression?
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc8548cds.dts |   20 ++++++++++++++++++++
- 1 files changed, 20 insertions(+), 0 deletions(-)
+It sure looks like a regression to me, but I don't have details on
+a potential fix.
 
-diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts/mpc8548cds.dts
-index 475be14..4173af3 100644
---- a/arch/powerpc/boot/dts/mpc8548cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8548cds.dts
-@@ -100,6 +100,21 @@
- 			interrupts = <43 2>;
- 			interrupt-parent = <&mpic>;
- 			dfsrr;
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
-+
-+			eeprom@56 {
-+				compatible = "atmel,24c64";
-+				reg = <0x56>;
-+			};
-+
-+			eeprom@57 {
-+				compatible = "atmel,24c64";
-+				reg = <0x57>;
-+			};
- 		};
- 
- 		i2c@3100 {
-@@ -111,6 +126,11 @@
- 			interrupts = <43 2>;
- 			interrupt-parent = <&mpic>;
- 			dfsrr;
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
- 		};
- 
- 		dma@21300 {
--- 
-1.6.3.3
+-Dale
