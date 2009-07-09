@@ -1,26 +1,31 @@
-Return-Path: <dale@farnsworth.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 41A7BB707B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 33529B6F44
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jul 2009 03:02:25 +1000 (EST)
-Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	Fri, 10 Jul 2009 04:00:25 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C2C03DDE04
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 03:02:24 +1000 (EST)
-Date: Thu, 9 Jul 2009 09:39:01 -0700
-From: Dale Farnsworth <dale@farnsworth.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Message-ID: <20090709163900.GA6549@farnsworth.org>
-References: <09159ADA-39F9-419E-AE46-4CFAE612AFB9@kernel.crashing.org>
-MIME-Version: 1.0
-In-Reply-To: <09159ADA-39F9-419E-AE46-4CFAE612AFB9@kernel.crashing.org>
-Subject: Re: binutils 2.19 issue with kernel link
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 74F20DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 04:00:23 +1000 (EST)
+Message-Id: <FC7C9C56-A1E7-4A02-BDEA-F55E10567313@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+In-Reply-To: <20090709165844.GB29383@ovro.caltech.edu>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH] edac: mpc85xx: add support for mpc83xx memory controller
+Date: Thu, 9 Jul 2009 12:58:53 -0500
+References: <20090708161954.GC14979@ovro.caltech.edu>
+	<3887C2A7-3566-43A9-A863-4670B039E5DA@kernel.crashing.org>
+	<20090708193355.GE2827@ovro.caltech.edu>
+	<6CF38C94-45EB-4FD7-B8E0-B9899F4EEF90@kernel.crashing.org>
+	<20090709165844.GB29383@ovro.caltech.edu>
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+	Dave Jiang <djiang@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,62 +35,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 08, 2009 at 05:41:39PM -0500, Kumar Gala wrote:
-> We are seeing an issue w/ld and kernel linking of 32-bit kernels.
+> Hello Kumar,
 >
-> The ld from fedora 11 (2.19.51.0.2-17.fc11 20090204) ends not providing 
-> the proper address for _end.
->
-> Building stock v2.6.30 w/the mpc85xx_defconfig we get:
->
-> 00001000 A _end
->
-> Using 2.18.50.20080215 we get:
->
-> c0680000 A _end
->
-> If we modify the linker script:
->
->       _end2 = .;
->       _end3 = ALIGN(4096);
->       _end4 = ALIGN(PAGE_SIZE);
->       . = ALIGN(PAGE_SIZE);
->       _end = . ;
->       PROVIDE32 (end = .);
->
-> and the result is:
->
-> 00001000 A _end
-> c067f678 A _end2
-> c0680000 A _end3
-> c0680000 A _end4
->
-> I used an old version of linker (2.18.50.20080215) and re-linked:
->
-> c067f678 A _end2
-> c0680000 A _end
-> c0680000 A _end3
-> c0680000 A _end4
->
-> Any ideas?
+> I must not understand something going on here. Your proposed code
+> doesn't work at all on my board. The
+> /sys/devices/system/edac/mc/mc0/size_mb doesn't come out correctly.
 
-We have found the following workaround to be useful.
-Thanks to Andrew Jenner at Code Sourcery.
+What does it come out as?  How much memory do you have in the system?
 
--Dale
+> The attached patch DOES work on my board, but I'm confident that it  
+> does
+> NOT work on a system with PAGE_SIZE != 4096. Any idea what I did  
+> wrong?
+>
+> If I'm reading things correctly:
+> csrow->first_page	full address of the first page (NOT pfn)
+> csrow->last_page	full address of the last  page (NOT pfn)
+> csrow->nr_pages		number of pages
+>
+> The EDAC subsystem does csrow->nr_pages * PAGE_SIZE to get the size_mb
+> sysfs value.
+>
+> If csrow->first_page and csrow->last_page ARE supposed to be the pfn,
+> then I think the original code got it wrong, and the calculation for
+> csrow->nr_pages needs to be changed.
+>
+> Thanks,
+> Ira
 
-Dale Farnsworth
-MontaVista Software
+[snip]
 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index acf237f..34b0181 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -282,4 +282,7 @@ SECTIONS
- 	. = ALIGN(PAGE_SIZE);
- 	_end = . ;
- 	PROVIDE32 (end = .);
-+
-+#undef PPC
-+	.PPC.EMB.apuinfo 0 : { *(.PPC.EMB.apuinfo) }
- }
+> /************************ MC SYSFS parts  
+> ***********************************/
+>
+> @@ -790,18 +792,19 @@ static void __devinit  
+> mpc85xx_init_csrows(struct mem_ctl_info *mci)
+> 		csrow = &mci->csrows[index];
+> 		cs_bnds = in_be32(pdata->mc_vbase + MPC85XX_MC_CS_BNDS_0 +
+> 				  (index * MPC85XX_MC_CS_BNDS_OFS));
+> -		start = (cs_bnds & 0xfff0000) << 4;
+> -		end = ((cs_bnds & 0xfff) << 20);
+> -		if (start)
+> -			start |= 0xfffff;
+> -		if (end)
+> -			end |= 0xfffff;
+
+can you printk what cs_bnds values are in your setup.
+
+> +
+> +		start = (cs_bnds & 0xffff0000) >> 16;
+> +		end   = (cs_bnds & 0x0000ffff);
+>
+> 		if (start == end)
+> 			continue;	/* not populated */
+>
+> -		csrow->first_page = start >> PAGE_SHIFT;
+> -		csrow->last_page = end >> PAGE_SHIFT;
+> +		start <<= PAGE_SHIFT;
+> +		end   <<= PAGE_SHIFT;
+> +		end    |= (1 << PAGE_SHIFT) - 1;
+> +
+> +		csrow->first_page = start;
+> +		csrow->last_page = end;
+
+This seems odd to me... I can't believe this is working out properly.
+
+>
+> 		csrow->nr_pages = csrow->last_page + 1 - csrow->first_page;
+> 		csrow->grain = 8;
+> 		csrow->mtype = mtype;
+>
+
+Lets get some real values on the table for your system so I can get a  
+sense of what's really going on.
+
+- k
