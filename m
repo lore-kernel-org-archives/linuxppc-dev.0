@@ -1,25 +1,30 @@
-Return-Path: <gerhard_pircher@gmx.net>
+Return-Path: <roman.fietze@telemotive.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id F1D28B7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 161D8B6F44
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  9 Jul 2009 21:22:45 +1000 (EST)
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id DD079DDDE7
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Jul 2009 21:22:43 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Thu, 09 Jul 2009 13:22:38 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <s5hfxd7qn49.wl%tiwai@suse.de>
-Message-ID: <20090709112238.34100@gmx.net>
+	Fri, 10 Jul 2009 00:24:32 +1000 (EST)
+Received: from mail.telemotive.de (mail.telemotive.de [62.206.149.210])
+	by ozlabs.org (Postfix) with ESMTP id 1A405DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 00:24:30 +1000 (EST)
+Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
+	[192.168.5.33])
+	by alderan.mit.telemotive.de (Postfix) with ESMTP id E8835B8390
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Jul 2009 16:24:26 +0200 (CEST)
+From: Roman Fietze <roman.fietze@telemotive.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH]: [MPC5200] Add ATA DMA support
+References: <633A55242A59C7488FAAF5A6850929984B814A@SRVEXC01.sts.saurer.vpn>
+	<633A55242A59C7488FAAF5A6850929984B816F@SRVEXC01.sts.saurer.vpn>
+	<fa686aa40901050731i3fb3ee2er221af3b174051aa@mail.gmail.com>
+In-Reply-To: <fa686aa40901050731i3fb3ee2er221af3b174051aa@mail.gmail.com>
 MIME-Version: 1.0
-References: <20090621181855.74980@gmx.net>	<1245623678.16880.27.camel@pasglop>
-	<1247022110.6066.65.camel@pasglop> <s5hfxd7qn49.wl%tiwai@suse.de>
-Subject: Re: ALSA fixes for non-coherent ppc32 again
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <200907091624.26593.roman.fietze@telemotive.de>
+Date: Thu, 9 Jul 2009 16:24:26 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,61 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hallo,
 
--------- Original-Nachricht --------
-> Datum: Wed, 08 Jul 2009 16:13:10 +0200
-> Von: Takashi Iwai <tiwai@suse.de>
-> An: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Gerhard Pircher <gerhard_pircher@gmx.net>, linuxppc-dev@ozlabs.org
-> Betreff: Re: ALSA fixes for non-coherent ppc32 again
+On Monday 05 January 2009 16:31:33 Grant Likely wrote:
 
-> At Wed, 08 Jul 2009 13:01:50 +1000,
-> Benjamin Herrenschmidt wrote:
-> > 
-> > On Mon, 2009-06-22 at 08:34 +1000, Benjamin Herrenschmidt wrote:
-> > > On Sun, 2009-06-21 at 20:18 +0200, Gerhard Pircher wrote:
-> > > > Hi,
-> > > > 
-> > > > Takashi Iwai posted patches to make ALSA work on non-coherent
-> > > > PPC32 systems (almost exactly) a year ago. See here:
-> > > >
-> > > > http://www.nabble.com/-PATCH-0-3--ALSA-fixes-for-non-coherent-ppc32-to17980027.html#a17980027
-> > > > 
-> > > > As far as I can see these patches never went upstream. Where
-> > > > there any objections or did we just forget about them? It would
-> > > > be cool, if the patches could be merged now, as at least two
-> > > > platforms need this bugfix (namely Sam440 and AmigaOne).
-> > > 
-> > > I definitely forgot about those... But I'm fine with what Takashi
-> > > did for now, I can always make the powerpc helper for
-> > > dma_mmap_coherent() smarter later on if necessary.
-> > 
-> > BTW. Can you guys send a "final" patch for adding mmap_coherent to
-> > powerpc ? Please make so that the dma_mmap_coherent() function doesn't
-> > explose if dma_ops->mmap_coherent is NULL though (either fail
-> > gracefully or fallback to some standard mmap).
-> 
-> The attached is the revised patch.  It falls backs to the standard
-> mmap.
-> 
-> The whole patch series are found in test/dma-fix branch of sound git
-> tree below:
->   git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
-> test/dma-fix
-> 
-> I had no time to play cross-build yet, so it'd be helpful if someone
-> can test it...
-> (BTW, any good minimal gcc and binutils package for kernel builds for
->  PPC32?)
-Okay, I cross-build it on a x86 machine and tested it on my AmigaOne with
-the VIA686 onboard sound and a Soundblaster 5.1. It worked fine after I
-applied the "ALSA: Fix SG-buffer DMA with non-coherent architectures"
-patch.
+> DMA support is now in mainline, but it is disabled by
+> default ...
 
-Thanks!
+I had problems using ATA DMA on an own MPC5200B board, too. This board
+has no problems at all using DMA33 with DENX 2.4.25, with all kinds of
+automotive disks from 20 to 40GB. I definitively tested all three
+listed drives below, but we are using other drives as well
+(e.g. Hitachi 20 and 40 GB variants).
 
-Gerhard
+On exactly those boards I'm now running the 2.6.30 from DENX. The
+following harddisks work well on this board, including network traffic
+in parallel (which sometimes was a problem on old kernels or MPC5200's
+w/o a 'B'):
 
--- 
-Neu: GMX Doppel-FLAT mit Internet-Flatrate + Telefon-Flatrate
-für nur 19,99 Euro/mtl.!* http://portal.gmx.net/de/go/dsl02
+=2D Toshiba MK4036GA
+=2D Hitachi HEJ423020F9AT00
+
+
+But an old 20GB Seagate ST940813AM shows the following problem when
+booting the system:
+
+PHY: f0003000:00 - Link is Up - 100/Half
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+ata1.00: BMDMA stat 0x5
+ata1.00: cmd ca/00:08:1f:10:9c/00:00:00:00:00/e0 tag 0 dma 4096 out
+         res 51/84:08:1f:10:9c/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
+ata1.00: status: { DRDY ERR }
+ata1.00: error: { ICRC ABRT }
+ata1: soft resetting link
+ata1.00: configured for UDMA/33
+ata1: EH complete
+
+
+I think this is similar to the errors reported after the ATA DMA patch
+for the MPC5200B was introduced in this mailing list.
+
+I even tried to use some modified timings from the 2.4.25 kernel, but
+(of course) w/o success.
+
+Are there any other patches I should try? Anything I could do to help
+you to get this problem fixed?
+
+
+Roman
+
+=2D-=20
+Roman Fietze  Telemotive AG  B=FCro M=FChlhausen
