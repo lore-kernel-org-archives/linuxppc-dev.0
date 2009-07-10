@@ -1,34 +1,22 @@
-Return-Path: <dedekind@infradead.org>
+Return-Path: <wg@grandegger.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 595AAB7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9AD5CB6F1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jul 2009 17:22:10 +1000 (EST)
-Subject: Re: [PATCH Resend2] Remove 'SBC8240 Wind River' Device Driver Code
-From: Artem Bityutskiy <dedekind@infradead.org>
-To: subrata@linux.vnet.ibm.com
-In-Reply-To: <1247209961.6630.3.camel@subratamodak.linux.ibm.com>
-References: <20090701135247.27488.10776.sendpatchset@subratamodak.linux.ibm.com>
-	<1246846628.5743.2.camel@subratamodak.linux.ibm.com>
-	<1247205588.20721.353.camel@localhost.localdomain>
-	<1247206539.6630.0.camel@subratamodak.linux.ibm.com>
-	<4A56DD51.5040703@gmail.com>
-	<1247209961.6630.3.camel@subratamodak.linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 10 Jul 2009 10:14:55 +0300
-Message-Id: <1247210095.20721.362.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: carolyn.j.smith@exgate.tek.com, Stephen Rothwell <sfr@canb.auug.org.au>,
-	Artem Bityutskiy <dedekind1@gmail.com>, Jim Cromie <jim.cromie@gmail.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	linux-next <linux-next@vger.kernel.org>, linux-mtd@lists.infradead.org,
-	Scott Wood <scottwood@freescale.com>, dwmw2@infradead.org,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: dedekind@infradead.org
+	Fri, 10 Jul 2009 17:37:33 +1000 (EST)
+Message-ID: <4A56EFB5.1020309@grandegger.com>
+Date: Fri, 10 Jul 2009 09:37:25 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Bestcomm trouble with NAPI for MPC5200 FEC
+References: <4A565423.6010207@grandegger.com>
+	<fa686aa40907091422v3e93fc50j5fc30f99077a8df6@mail.gmail.com>
+In-Reply-To: <fa686aa40907091422v3e93fc50j5fc30f99077a8df6@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,31 +26,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-07-10 at 12:42 +0530, Subrata Modak wrote:
-> On Fri, 2009-07-10 at 09:18 +0300, Artem Bityutskiy wrote:
-> > Subrata Modak wrote:
-> > > On Fri, 2009-07-10 at 08:59 +0300, Artem Bityutskiy wrote:
-> > >> On Mon, 2009-07-06 at 07:47 +0530, Subrata Modak wrote:
-> > >>> Hi,
-> > >>>
-> > >>> Is there somebody else whom i should also address to get an attention
-> > >>> for this patch ? I apolozise if i have not included someone. Kindly
-> > >>> connect to the concerned.
-> > >> I'm putting your patch to l2-mtd-2.6.git.
-> > > 
-> > > Thanks very much. Would i receive some automatic confirmation once it
-> > > make to Linus tree ?
-> > 
-> > I do not think so. I'm not MTD maintainer and in l2-mtd-2.6.git
-> > I just collect random patches, which the maintainer then usually
-> > takes from my tree.
+Grant Likely wrote:
+> On Thu, Jul 9, 2009 at 2:33 PM, Wolfgang Grandegger<wg@grandegger.com> wrote:
+>> Hello,
+>>
+>> I'm currently trying to implement NAPI for the FEC on the MPC5200 to
+>> solve the well known problem, that network packet storms can cause
+>> interrupt flooding, which may totally block the system.
 > 
-> Thanks. I just want this through before 2.6.31 stable is released, so
-> that the build fails does not occur on next trees based on that stable
-> one.
+> Good to hear it!  Thanks for this work.
+> 
+>> The NAPI
+>> implementation, in principle, is straight forward and works
+>> well under normal and moderate network load. It just calls disable_irq()
+>> in the receive interrupt handler to defer packet processing to the NAPI
+>> poll callback, which calls enable_irq() when it has processed all
+>> packets. Unfortunately, under heavy network load (packet storm),
+>> problems show up:
+>>
+>> - With DENX 2.4.25, the Bestcomm RX task gets and remains stopped after
+>>  a while under additional system load. I have no idea how and when
+>>  Bestcom tasks are stopped. In the auto-start mode, the firmware should
+>>  poll forever for the next free descriptor block.
 
-Then you should bug dwmw2.
+Do you know when the Bestcomm firmware does stop the task? I have the
+impression that it happens when all buffer descriptors are used (RX
+queue full).
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+>> - With 2.6.31-rc2, the RFIFO error occurs quickly which does reset the
+>>  FEC and Bestcomm (unfortunately, this does trigger an oops because
+>>  it's called from the interrupt context, but that's another issue).
+>>
+>> I'm realized that working with Bestcomm is a pain :-( but so far I have
+>> little knowledge of the Bestcomm limitations and quirks. Any idea what
+>> might go wrong or how to implement NAPI for that FEC properly.
+> 
+> Yes, I have a few ideas.  First, I suspect that the FEC rx queue isn't
+> big enough and I wouldn't be surprised if the RFIFO error is occurring
+> because Bestcomm gets overrun.  This scenario needs to be handled more
+> gracefully.
+
+The RFIFO error does not show up with DENX 2.4.25 and therefore I'm not
+sure if overruns are a real problem.
+
+> Second, I think resetting the PHY should be removed from the reset
+> path.  The phy doesn't at all need to be reset and doing this would
+> avoid the OOPS condition.  Also, in the RFIFO error path needs to be
+> audited to make sure that all the good received packets are processed
+> correctly before resetting the BCOM engine and to make sure that
+> skbufs are not getting leaked.
+
+Agreed, the manual says: "When this occurs, software must ensure both
+the FIFO Controller and BestComm are soft-reset."
+
+> Essentially, I think that the RFIFO error condition is currently
+> handled in far too heavy handed a manner and it should not be
+> expensive to recover from.
+
+Yep, it looks like.
+
+Wolfgang.
