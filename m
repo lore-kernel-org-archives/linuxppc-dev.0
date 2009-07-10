@@ -3,19 +3,19 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 72A7BB71E2
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3F521B7228
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jul 2009 11:20:50 +1000 (EST)
+	Fri, 10 Jul 2009 11:20:51 +1000 (EST)
 Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 200CDDDDD4
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 11:20:49 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id E4643DDDD4
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 11:20:50 +1000 (EST)
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 12/15] x86, IA64, powerpc: add phys_to_dma() and dma_to_phys()
-Date: Fri, 10 Jul 2009 10:05:01 +0900
-Message-Id: <1247187904-31999-13-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 09/15] swiotlb: use dma_capable()
+Date: Fri, 10 Jul 2009 10:04:58 +0900
+Message-Id: <1247187904-31999-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 In-Reply-To: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, x86@kernel.org,
@@ -29,79 +29,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds two functions, phys_to_dma() and dma_to_phys() to x86, IA64
-and powerpc. swiotlb uses them. phys_to_dma() converts a physical
-address to a dma address. dma_to_phys() does the opposite.
+This converts swiotlb to use dma_capable() instead of
+swiotlb_arch_address_needs_mapping() and is_buffer_dma_capable().
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- arch/ia64/include/asm/dma-mapping.h    |   10 ++++++++++
- arch/powerpc/include/asm/dma-mapping.h |   10 ++++++++++
- arch/x86/include/asm/dma-mapping.h     |   10 ++++++++++
- 3 files changed, 30 insertions(+), 0 deletions(-)
+ lib/swiotlb.c |   24 +++++-------------------
+ 1 files changed, 5 insertions(+), 19 deletions(-)
 
-diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
-index 88d0f86..f91829d 100644
---- a/arch/ia64/include/asm/dma-mapping.h
-+++ b/arch/ia64/include/asm/dma-mapping.h
-@@ -77,6 +77,16 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
- 	return addr + size <= *dev->dma_mask;
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 1a89c84..a0faeb0 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -130,12 +130,6 @@ static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
+ 	return swiotlb_phys_to_bus(hwdev, virt_to_phys(address));
  }
  
-+static inline dma_addr_t phys_to_dma(struct device *dev, phys_addr_t paddr)
-+{
-+	return paddr;
-+}
-+
-+static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
-+{
-+	return daddr;
-+}
-+
- extern int dma_get_cache_alignment(void);
- 
- static inline void
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 6ff1f85..0c34371 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -437,6 +437,16 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
- 	return addr + size <= *dev->dma_mask;
+-int __weak swiotlb_arch_address_needs_mapping(struct device *hwdev,
+-					       dma_addr_t addr, size_t size)
+-{
+-	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
+-}
+-
+ static void swiotlb_print_info(unsigned long bytes)
+ {
+ 	phys_addr_t pstart, pend;
+@@ -296,12 +290,6 @@ cleanup1:
+ 	return -ENOMEM;
  }
  
-+static inline dma_addr_t phys_to_dma(struct device *dev, phys_addr_t paddr)
-+{
-+	return paddr + get_dma_direct_offset(dev);
-+}
-+
-+static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
-+{
-+	return daddr - get_dma_direct_offset(dev);
-+}
-+
- #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
- #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
- #ifdef CONFIG_NOT_COHERENT_CACHE
-diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index adac59c..0ee770d 100644
---- a/arch/x86/include/asm/dma-mapping.h
-+++ b/arch/x86/include/asm/dma-mapping.h
-@@ -63,6 +63,16 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
- 	return addr + size <= *dev->dma_mask;
- }
+-static inline int
+-address_needs_mapping(struct device *hwdev, dma_addr_t addr, size_t size)
+-{
+-	return swiotlb_arch_address_needs_mapping(hwdev, addr, size);
+-}
+-
+ static int is_swiotlb_buffer(phys_addr_t paddr)
+ {
+ 	return paddr >= virt_to_phys(io_tlb_start) &&
+@@ -538,9 +526,7 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 		dma_mask = hwdev->coherent_dma_mask;
  
-+static inline dma_addr_t phys_to_dma(struct device *dev, phys_addr_t paddr)
-+{
-+	return paddr;
-+}
-+
-+static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t daddr)
-+{
-+	return daddr;
-+}
-+
- static inline void
- dma_cache_sync(struct device *dev, void *vaddr, size_t size,
- 	enum dma_data_direction dir)
+ 	ret = (void *)__get_free_pages(flags, order);
+-	if (ret &&
+-	    !is_buffer_dma_capable(dma_mask, swiotlb_virt_to_bus(hwdev, ret),
+-				   size)) {
++	if (ret && swiotlb_virt_to_bus(hwdev, ret) + size > dma_mask) {
+ 		/*
+ 		 * The allocated memory isn't reachable by the device.
+ 		 */
+@@ -562,7 +548,7 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 	dev_addr = swiotlb_virt_to_bus(hwdev, ret);
+ 
+ 	/* Confirm address can be DMA'd by device */
+-	if (!is_buffer_dma_capable(dma_mask, dev_addr, size)) {
++	if (dev_addr + size > dma_mask) {
+ 		printk("hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
+ 		       (unsigned long long)dma_mask,
+ 		       (unsigned long long)dev_addr);
+@@ -634,7 +620,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 	 * we can safely return the device addr and not worry about bounce
+ 	 * buffering it.
+ 	 */
+-	if (!address_needs_mapping(dev, dev_addr, size) && !swiotlb_force)
++	if (dma_capable(dev, dev_addr, size) && !swiotlb_force)
+ 		return dev_addr;
+ 
+ 	/*
+@@ -651,7 +637,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 	/*
+ 	 * Ensure that the address returned is DMA'ble
+ 	 */
+-	if (address_needs_mapping(dev, dev_addr, size))
++	if (!dma_capable(dev, dev_addr, size))
+ 		panic("map_single: bounce buffer is not DMA'ble");
+ 
+ 	return dev_addr;
+@@ -798,7 +784,7 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ 		dma_addr_t dev_addr = swiotlb_phys_to_bus(hwdev, paddr);
+ 
+ 		if (swiotlb_force ||
+-		    address_needs_mapping(hwdev, dev_addr, sg->length)) {
++		    !dma_capable(hwdev, dev_addr, sg->length)) {
+ 			void *map = map_single(hwdev, sg_phys(sg),
+ 					       sg->length, dir);
+ 			if (!map) {
 -- 
 1.6.0.6
