@@ -3,19 +3,19 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A99DFB7169
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6A62CB70F4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jul 2009 11:20:52 +1000 (EST)
+	Fri, 10 Jul 2009 11:20:53 +1000 (EST)
 Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5948BDDDD4
+	by ozlabs.org (Postfix) with ESMTPS id 10E6EDDDD4
 	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 11:20:52 +1000 (EST)
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 13/15] swiotlb: use phys_to_dma and dma_to_phys
-Date: Fri, 10 Jul 2009 10:05:02 +0900
-Message-Id: <1247187904-31999-14-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 04/15] swiotlb: remove unnecessary swiotlb_bus_to_virt
+Date: Fri, 10 Jul 2009 10:04:53 +0900
+Message-Id: <1247187904-31999-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 In-Reply-To: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, x86@kernel.org,
@@ -29,104 +29,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This converts swiotlb to use phys_to_dma and dma_to_phys instead of
-swiotlb_phys_to_bus() and swiotlb_bus_to_phys().
-
-swiotlb_phys_to_bus() and swiotlb_bus_to_phys() are not necessary so
-this patch also removes them.
+swiotlb_bus_to_virt is unncessary; we can use swiotlb_bus_to_phys and
+phys_to_virt instead.
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- include/linux/swiotlb.h |    5 -----
- lib/swiotlb.c           |   22 ++++++----------------
- 2 files changed, 6 insertions(+), 21 deletions(-)
+ arch/powerpc/kernel/dma-swiotlb.c |   10 ----------
+ lib/swiotlb.c                     |   34 ++++++++++++++++------------------
+ 2 files changed, 16 insertions(+), 28 deletions(-)
 
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index a977da2..73b1f1c 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -23,11 +23,6 @@ struct scatterlist;
- extern void
- swiotlb_init(void);
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 68ccf11..41534ae 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -24,16 +24,6 @@
+ int swiotlb __read_mostly;
+ unsigned int ppc_swiotlb_enable;
  
--extern dma_addr_t swiotlb_phys_to_bus(struct device *hwdev,
--				      phys_addr_t address);
--extern phys_addr_t swiotlb_bus_to_phys(struct device *hwdev,
--				       dma_addr_t address);
+-void *swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t addr)
+-{
+-	unsigned long pfn = PFN_DOWN(swiotlb_bus_to_phys(hwdev, addr));
+-	void *pageaddr = page_address(pfn_to_page(pfn));
 -
- extern void
- *swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 			dma_addr_t *dma_handle, gfp_t flags);
+-	if (pageaddr != NULL)
+-		return pageaddr + (addr % PAGE_SIZE);
+-	return NULL;
+-}
+-
+ dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
+ {
+ 	return paddr + get_dma_direct_offset(hwdev);
 diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index a0faeb0..de71dba 100644
+index dc1cd1f..1a89c84 100644
 --- a/lib/swiotlb.c
 +++ b/lib/swiotlb.c
-@@ -114,20 +114,10 @@ setup_io_tlb_npages(char *str)
- __setup("swiotlb=", setup_io_tlb_npages);
- /* make io_tlb_overflow tunable too? */
- 
--dma_addr_t __weak swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
--{
--	return paddr;
--}
--
--phys_addr_t __weak swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
--{
--	return baddr;
--}
--
- static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
- 				      volatile void *address)
- {
--	return swiotlb_phys_to_bus(hwdev, virt_to_phys(address));
-+	return phys_to_dma(hwdev, virt_to_phys(address));
+@@ -130,11 +130,6 @@ static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
+ 	return swiotlb_phys_to_bus(hwdev, virt_to_phys(address));
  }
  
- static void swiotlb_print_info(unsigned long bytes)
-@@ -566,7 +556,7 @@ void
+-void * __weak swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
+-{
+-	return phys_to_virt(swiotlb_bus_to_phys(hwdev, address));
+-}
+-
+ int __weak swiotlb_arch_address_needs_mapping(struct device *hwdev,
+ 					       dma_addr_t addr, size_t size)
+ {
+@@ -307,9 +302,10 @@ address_needs_mapping(struct device *hwdev, dma_addr_t addr, size_t size)
+ 	return swiotlb_arch_address_needs_mapping(hwdev, addr, size);
+ }
+ 
+-static int is_swiotlb_buffer(char *addr)
++static int is_swiotlb_buffer(phys_addr_t paddr)
+ {
+-	return addr >= io_tlb_start && addr < io_tlb_end;
++	return paddr >= virt_to_phys(io_tlb_start) &&
++		paddr < virt_to_phys(io_tlb_end);
+ }
+ 
+ /*
+@@ -582,11 +578,13 @@ EXPORT_SYMBOL(swiotlb_alloc_coherent);
+ 
+ void
  swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
- 		      dma_addr_t dev_addr)
+-		      dma_addr_t dma_handle)
++		      dma_addr_t dev_addr)
  {
--	phys_addr_t paddr = swiotlb_bus_to_phys(hwdev, dev_addr);
-+	phys_addr_t paddr = dma_to_phys(hwdev, dev_addr);
- 
++	phys_addr_t paddr = swiotlb_bus_to_phys(hwdev, dev_addr);
++
  	WARN_ON(irqs_disabled());
- 	if (!is_swiotlb_buffer(paddr))
-@@ -611,7 +601,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
- 			    struct dma_attrs *attrs)
- {
- 	phys_addr_t phys = page_to_phys(page) + offset;
--	dma_addr_t dev_addr = swiotlb_phys_to_bus(dev, phys);
-+	dma_addr_t dev_addr = phys_to_dma(dev, phys);
- 	void *map;
- 
- 	BUG_ON(dir == DMA_NONE);
-@@ -655,7 +645,7 @@ EXPORT_SYMBOL_GPL(swiotlb_map_page);
+-	if (!is_swiotlb_buffer(vaddr))
+-		free_pages((unsigned long) vaddr, get_order(size));
++	if (!is_swiotlb_buffer(paddr))
++		free_pages((unsigned long)vaddr, get_order(size));
+ 	else
+ 		/* DMA_TO_DEVICE to avoid memcpy in unmap_single */
+ 		do_unmap_single(hwdev, vaddr, size, DMA_TO_DEVICE);
+@@ -671,19 +669,19 @@ EXPORT_SYMBOL_GPL(swiotlb_map_page);
  static void unmap_single(struct device *hwdev, dma_addr_t dev_addr,
  			 size_t size, int dir)
  {
--	phys_addr_t paddr = swiotlb_bus_to_phys(hwdev, dev_addr);
-+	phys_addr_t paddr = dma_to_phys(hwdev, dev_addr);
+-	char *dma_addr = swiotlb_bus_to_virt(hwdev, dev_addr);
++	phys_addr_t paddr = swiotlb_bus_to_phys(hwdev, dev_addr);
  
  	BUG_ON(dir == DMA_NONE);
  
-@@ -692,7 +682,7 @@ static void
+-	if (is_swiotlb_buffer(dma_addr)) {
+-		do_unmap_single(hwdev, dma_addr, size, dir);
++	if (is_swiotlb_buffer(paddr)) {
++		do_unmap_single(hwdev, phys_to_virt(paddr), size, dir);
+ 		return;
+ 	}
+ 
+ 	if (dir != DMA_FROM_DEVICE)
+ 		return;
+ 
+-	dma_mark_clean(dma_addr, size);
++	dma_mark_clean(phys_to_virt(paddr), size);
+ }
+ 
+ void swiotlb_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
+@@ -708,19 +706,19 @@ static void
  swiotlb_sync_single(struct device *hwdev, dma_addr_t dev_addr,
  		    size_t size, int dir, int target)
  {
--	phys_addr_t paddr = swiotlb_bus_to_phys(hwdev, dev_addr);
-+	phys_addr_t paddr = dma_to_phys(hwdev, dev_addr);
+-	char *dma_addr = swiotlb_bus_to_virt(hwdev, dev_addr);
++	phys_addr_t paddr = swiotlb_bus_to_phys(hwdev, dev_addr);
  
  	BUG_ON(dir == DMA_NONE);
  
-@@ -781,7 +771,7 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+-	if (is_swiotlb_buffer(dma_addr)) {
+-		sync_single(hwdev, dma_addr, size, dir, target);
++	if (is_swiotlb_buffer(paddr)) {
++		sync_single(hwdev, phys_to_virt(paddr), size, dir, target);
+ 		return;
+ 	}
  
- 	for_each_sg(sgl, sg, nelems, i) {
- 		phys_addr_t paddr = sg_phys(sg);
--		dma_addr_t dev_addr = swiotlb_phys_to_bus(hwdev, paddr);
-+		dma_addr_t dev_addr = phys_to_dma(hwdev, paddr);
+ 	if (dir != DMA_FROM_DEVICE)
+ 		return;
  
- 		if (swiotlb_force ||
- 		    !dma_capable(hwdev, dev_addr, sg->length)) {
+-	dma_mark_clean(dma_addr, size);
++	dma_mark_clean(phys_to_virt(paddr), size);
+ }
+ 
+ void
 -- 
 1.6.0.6
