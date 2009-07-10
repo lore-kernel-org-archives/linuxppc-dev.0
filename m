@@ -3,19 +3,20 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id EBE79B7063
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A7FDAB7063
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jul 2009 11:20:42 +1000 (EST)
+	Fri, 10 Jul 2009 11:20:43 +1000 (EST)
 Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8D929DDDD4
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 11:20:42 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 4ED8BDDDD4
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 11:20:43 +1000 (EST)
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 11/15] remove is_buffer_dma_capable()
-Date: Fri, 10 Jul 2009 10:05:00 +0900
-Message-Id: <1247187904-31999-12-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 14/15] powerpc: remove unused swiotlb_phys_to_bus() and
+	swiotlb_bus_to_phys()
+Date: Fri, 10 Jul 2009 10:05:03 +0900
+Message-Id: <1247187904-31999-15-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 In-Reply-To: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, x86@kernel.org,
@@ -29,32 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-is_buffer_dma_capable() was replaced with dma_capable().
-
-is_buffer_dma_capable() tells if a buffer is dma-capable or
-not. However, it doesn't take a pointer to struct device so it doesn't
-work for POWERPC.
+phys_to_dma() and dma_to_phys() are used instead of
+swiotlb_phys_to_bus() and swiotlb_bus_to_phys().
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- include/linux/dma-mapping.h |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/dma-swiotlb.c |   11 -----------
+ 1 files changed, 0 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 07dfd46..c0f6c3c 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -98,11 +98,6 @@ static inline int is_device_dma_capable(struct device *dev)
- 	return dev->dma_mask != NULL && *dev->dma_mask != DMA_MASK_NONE;
- }
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index a3bbe02..e8a57de 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -24,17 +24,6 @@
+ int swiotlb __read_mostly;
+ unsigned int ppc_swiotlb_enable;
  
--static inline int is_buffer_dma_capable(u64 mask, dma_addr_t addr, size_t size)
+-dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
 -{
--	return addr + size <= mask;
+-	return paddr + get_dma_direct_offset(hwdev);
 -}
 -
- #ifdef CONFIG_HAS_DMA
- #include <asm/dma-mapping.h>
- #else
+-phys_addr_t swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
+-
+-{
+-	return baddr - get_dma_direct_offset(hwdev);
+-}
+-
+ /*
+  * Determine if an address is reachable by a pci device, or if we must bounce.
+  */
 -- 
 1.6.0.6
