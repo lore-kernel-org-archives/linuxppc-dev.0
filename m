@@ -1,30 +1,32 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 77900B6F1E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id AD61BB7084
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 10 Jul 2009 15:36:39 +1000 (EST)
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+	Fri, 10 Jul 2009 15:57:24 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 22704DDDF0
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 15:36:38 +1000 (EST)
-Date: Fri, 10 Jul 2009 14:35:10 +0900
-To: mingo@elte.hu
-Subject: Re: [00/15] swiotlb cleanup
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090710051236.GA22218@elte.hu>
-References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<20090710051236.GA22218@elte.hu>
+	by ozlabs.org (Postfix) with ESMTPS id ED1F3DDDEE
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 15:57:23 +1000 (EST)
+Subject: Re: [PATCH 00/11] swiotlb: Introduce architecture-specific APIs to
+	replace __weak functions (v2)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ian Campbell <ian.campbell@citrix.com>
+In-Reply-To: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
+References: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
+Content-Type: text/plain
+Date: Fri, 10 Jul 2009 15:55:56 +1000
+Message-Id: <1247205356.15530.18.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20090710143408A.fujita.tomonori@lab.ntt.co.jp>
-Cc: jeremy@goop.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
-	Ian.Campbell@citrix.com, x86@kernel.org,
-	linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
-	linuxppc-dev@ozlabs.org, joerg.roedel@amd.com
+Cc: x86@kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>,
+	Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+	Olaf Kirch <okir@suse.de>, Greg KH <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,85 +36,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 10 Jul 2009 07:12:36 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
+On Mon, 2009-06-01 at 16:32 +0100, Ian Campbell wrote:
+> This series:
+> * removes the swiotlb_(arch_)_phys_to_bus and bus_to_phys __weak
+>   hooks, replacing them with an architecture-specific phys_to_dma and
+>   dma_to_phys interface. These are used by both PowerPC and Xen to
+>   provide the correct mapping from physical to DMA addresses.
+> * removes the swiotlb_address_needs_mapping and
+>   swiotlb_range_needs_mapping __weak functions as well as
+>   is_buffer_dma_capable (which should never have been a generic
+>   function). All three are replaced by a single architecture-specific
+>   interface which meets the needs of both PowerPC and Xen.
+> * removes the swiotlb_virt_to_bus __weak function and replaces it with
+>   a CONFIG_HIGHMEM compatible version when high memory is in use. This
+>   is needed for 32 bit PowerPC swiotlb support.
+> * removes the swiotlb_alloc* __weak functions and replaces them with
+>   swiotlb_init_with_buffer which allows the use of a caller allocated
+>   buffer (and emergency pool).
 > 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> I think these new interfaces are cleaner than the existing __weak
+> functions and isolate the swiotlb code from architecture internals.
 > 
-> > - removes unused (and unnecessary) hooks in swiotlb.
-> > 
-> > - adds dma_capable() and converts swiotlb to use it. It can be used to
-> > know if a memory area is dma capable or not. I added
-> > is_buffer_dma_capable() for the same purpose long ago but it turned
-> > out that the function doesn't work on POWERPC.
-> > 
-> > This can be applied cleanly to linux-next, -mm, and mainline. This
-> > patchset touches multiple architectures (ia64, powerpc, x86) so I
-> > guess that -mm is appropriate for this patchset (I don't care much
-> > what tree would merge this though).
-> > 
-> > This is tested on x86 but only compile tested on POWERPC and IA64.
-> > 
-> > Thanks,
-> > 
-> > =
-> >  arch/ia64/include/asm/dma-mapping.h    |   18 ++++++
-> >  arch/powerpc/include/asm/dma-mapping.h |   23 +++++++
-> >  arch/powerpc/kernel/dma-swiotlb.c      |   48 +---------------
-> >  arch/x86/include/asm/dma-mapping.h     |   18 ++++++
-> >  arch/x86/kernel/pci-dma.c              |    2 +-
-> >  arch/x86/kernel/pci-gart_64.c          |    5 +-
-> >  arch/x86/kernel/pci-nommu.c            |    2 +-
-> >  arch/x86/kernel/pci-swiotlb.c          |   25 --------
-> >  include/linux/dma-mapping.h            |    5 --
-> >  include/linux/swiotlb.h                |   11 ----
-> >  lib/swiotlb.c                          |  102 +++++++++-----------------------
-> >  11 files changed, 92 insertions(+), 167 deletions(-)
+> This series does not contain any Xen or PowerPC specific changes, those
+> will follow in separate postings. The complete patchset has been boot
+> tested under Xen and native-x86 and compiled for IA64 and PowerPC
 > 
-> Hm, the functions and facilities you remove here were added as part 
-> of preparatory patches for Xen guest support. You were aware of 
-> them, you were involved in discussions about those aspects with Ian 
-> and Jeremy but still you chose not to Cc: either of them and you 
-> failed to address that aspect in the changelogs.
-> 
-> I'd like the Xen code to become cleaner more than anyone else here i 
-> guess, but patch submission methods like this are not really 
-> helpful. A far better method is to be open about such disagreements, 
-> to declare them, to Cc: everyone who disagrees, and to line out the 
-> arguments in the changelogs as well - instead of just curtly 
-> declaring those APIs 'unused' and failing to Cc: involved parties.
-> 
-> Alas, on the technical level the cleanups themselves look mostly 
-> fine to me. Ian, Jeremy, the changes will alter Xen's use of 
-> swiotlb, but can the Xen side still live with these new methods - in 
-> particular is dma_capable() sufficient as a mechanism and can the 
-> Xen side filter out DMA allocations to make them physically 
-> continuous?
+> Changes since v1: 
+> - Fixed compile error in swiotlb_dma_to_virt highmem version. Moved
+>   #ifdef into function to avoid prototype drift.
+> - checkpatch fixes.
+> - missed a swiotlb_arch_range_needs_mapping in swiotlb.h and x86
+>   pci-swiotlb.c and swiotlb_bus_to_phys/phys_to_bus implementations in
+>   x86.
+> - additionally replaced __weak swiotlb_alloc* with
+>   swiotlb_init_with_buffer.
 
-dma_capable() doesn't work for Xen in the way that Ian hopes.
+Looks like I was only CCed on part of them... it's not very handy for me
+as I end up having some of the patches in one folder and some
+elsewhere :-)
 
-As I said to him again and again, he tries to use arch code in the
-very original way, and it's unacceptable (of course, he disagreed with
-it).
+I don't have a firm objection but they will have to go through Becky
+and Kumar since they are the one who need swiotlb for their embedded
+platforms.
 
-I don't think that we need to take account of dom0 support; we don't
-have a clear idea about an acceptable dom0 design (it needs to use
-swiotlb code? I don't know yet), we don't even know we will have dom0
-support in mainline. That's why I didn't CC this patchset to Xen
-camp.
-
-I think that it's more reasonable to think about how the code can
-works for dom0 support when Xen people come with the new dom0 code.
-
-
-> Ben, Tony, Becky, any objections wrt. the PowerPC / IA64 impact? If 
-> everyone agrees i can apply them to the IOMMU tree, test it and push 
-> it out to -next, etc.
-> 
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Cheers,
+Ben.
