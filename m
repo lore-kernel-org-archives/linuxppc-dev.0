@@ -3,19 +3,19 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3F521B7228
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EC0C9B70F9
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Fri, 10 Jul 2009 11:20:51 +1000 (EST)
 Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E4643DDDD4
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 11:20:50 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 9ACB3DDDD4
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 11:20:51 +1000 (EST)
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 09/15] swiotlb: use dma_capable()
-Date: Fri, 10 Jul 2009 10:04:58 +0900
-Message-Id: <1247187904-31999-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 03/15] swiotlb: remove swiotlb_arch_range_needs_mapping
+Date: Fri, 10 Jul 2009 10:04:52 +0900
+Message-Id: <1247187904-31999-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 In-Reply-To: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, x86@kernel.org,
@@ -29,90 +29,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This converts swiotlb to use dma_capable() instead of
-swiotlb_arch_address_needs_mapping() and is_buffer_dma_capable().
+Nobody uses swiotlb_arch_range_needs_mapping().
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- lib/swiotlb.c |   24 +++++-------------------
- 1 files changed, 5 insertions(+), 19 deletions(-)
+ arch/x86/kernel/pci-swiotlb.c |    5 -----
+ include/linux/swiotlb.h       |    2 --
+ lib/swiotlb.c                 |   15 ++-------------
+ 3 files changed, 2 insertions(+), 20 deletions(-)
 
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 1a89c84..a0faeb0 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -130,12 +130,6 @@ static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
- 	return swiotlb_phys_to_bus(hwdev, virt_to_phys(address));
+diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
+index ea675cf..165bd7f 100644
+--- a/arch/x86/kernel/pci-swiotlb.c
++++ b/arch/x86/kernel/pci-swiotlb.c
+@@ -23,11 +23,6 @@ phys_addr_t swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
+ 	return baddr;
  }
  
--int __weak swiotlb_arch_address_needs_mapping(struct device *hwdev,
--					       dma_addr_t addr, size_t size)
+-int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
 -{
--	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
+-	return 0;
+-}
+-
+ static void *x86_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 					dma_addr_t *dma_handle, gfp_t flags)
+ {
+diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+index 6bc5094..a977da2 100644
+--- a/include/linux/swiotlb.h
++++ b/include/linux/swiotlb.h
+@@ -28,8 +28,6 @@ extern dma_addr_t swiotlb_phys_to_bus(struct device *hwdev,
+ extern phys_addr_t swiotlb_bus_to_phys(struct device *hwdev,
+ 				       dma_addr_t address);
+ 
+-extern int swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size);
+-
+ extern void
+ *swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 			dma_addr_t *dma_handle, gfp_t flags);
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 3c4c21c..dc1cd1f 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -141,11 +141,6 @@ int __weak swiotlb_arch_address_needs_mapping(struct device *hwdev,
+ 	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
+ }
+ 
+-int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
+-{
+-	return 0;
 -}
 -
  static void swiotlb_print_info(unsigned long bytes)
  {
  	phys_addr_t pstart, pend;
-@@ -296,12 +290,6 @@ cleanup1:
- 	return -ENOMEM;
+@@ -312,11 +307,6 @@ address_needs_mapping(struct device *hwdev, dma_addr_t addr, size_t size)
+ 	return swiotlb_arch_address_needs_mapping(hwdev, addr, size);
  }
  
--static inline int
--address_needs_mapping(struct device *hwdev, dma_addr_t addr, size_t size)
+-static inline int range_needs_mapping(phys_addr_t paddr, size_t size)
 -{
--	return swiotlb_arch_address_needs_mapping(hwdev, addr, size);
+-	return swiotlb_force || swiotlb_arch_range_needs_mapping(paddr, size);
 -}
 -
- static int is_swiotlb_buffer(phys_addr_t paddr)
+ static int is_swiotlb_buffer(char *addr)
  {
- 	return paddr >= virt_to_phys(io_tlb_start) &&
-@@ -538,9 +526,7 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 		dma_mask = hwdev->coherent_dma_mask;
- 
- 	ret = (void *)__get_free_pages(flags, order);
--	if (ret &&
--	    !is_buffer_dma_capable(dma_mask, swiotlb_virt_to_bus(hwdev, ret),
--				   size)) {
-+	if (ret && swiotlb_virt_to_bus(hwdev, ret) + size > dma_mask) {
- 		/*
- 		 * The allocated memory isn't reachable by the device.
- 		 */
-@@ -562,7 +548,7 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 	dev_addr = swiotlb_virt_to_bus(hwdev, ret);
- 
- 	/* Confirm address can be DMA'd by device */
--	if (!is_buffer_dma_capable(dma_mask, dev_addr, size)) {
-+	if (dev_addr + size > dma_mask) {
- 		printk("hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
- 		       (unsigned long long)dma_mask,
- 		       (unsigned long long)dev_addr);
-@@ -634,7 +620,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 	return addr >= io_tlb_start && addr < io_tlb_end;
+@@ -646,8 +636,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
  	 * we can safely return the device addr and not worry about bounce
  	 * buffering it.
  	 */
--	if (!address_needs_mapping(dev, dev_addr, size) && !swiotlb_force)
-+	if (dma_capable(dev, dev_addr, size) && !swiotlb_force)
+-	if (!address_needs_mapping(dev, dev_addr, size) &&
+-	    !range_needs_mapping(phys, size))
++	if (!address_needs_mapping(dev, dev_addr, size) && !swiotlb_force)
  		return dev_addr;
  
  	/*
-@@ -651,7 +637,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
- 	/*
- 	 * Ensure that the address returned is DMA'ble
- 	 */
--	if (address_needs_mapping(dev, dev_addr, size))
-+	if (!dma_capable(dev, dev_addr, size))
- 		panic("map_single: bounce buffer is not DMA'ble");
- 
- 	return dev_addr;
-@@ -798,7 +784,7 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+@@ -810,7 +799,7 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ 		phys_addr_t paddr = sg_phys(sg);
  		dma_addr_t dev_addr = swiotlb_phys_to_bus(hwdev, paddr);
  
- 		if (swiotlb_force ||
--		    address_needs_mapping(hwdev, dev_addr, sg->length)) {
-+		    !dma_capable(hwdev, dev_addr, sg->length)) {
+-		if (range_needs_mapping(paddr, sg->length) ||
++		if (swiotlb_force ||
+ 		    address_needs_mapping(hwdev, dev_addr, sg->length)) {
  			void *map = map_single(hwdev, sg_phys(sg),
  					       sg->length, dir);
- 			if (!map) {
 -- 
 1.6.0.6
