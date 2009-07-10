@@ -3,19 +3,20 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05C2EB71C3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BC844B70A7
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Fri, 10 Jul 2009 11:20:49 +1000 (EST)
 Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A83C8DDDD4
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 11:20:48 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 6B908DDDD4
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2009 11:20:49 +1000 (EST)
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 01/15] swiotlb: remove unused swiotlb_alloc_boot()
-Date: Fri, 10 Jul 2009 10:04:50 +0900
-Message-Id: <1247187904-31999-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 10/15] powerpc: remove unncesary
+	swiotlb_arch_address_needs_mapping
+Date: Fri, 10 Jul 2009 10:04:59 +0900
+Message-Id: <1247187904-31999-11-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 In-Reply-To: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, x86@kernel.org,
@@ -29,75 +30,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nobody uses swiotlb_alloc_boot().
+swiotlb doesn't use swiotlb_arch_address_needs_mapping(); it uses
+dma_capalbe(). We can remove unnecessary
+swiotlb_arch_address_needs_mapping().
+
+We can remove swiotlb_addr_needs_map() and is_buffer_dma_capable() in
+swiotlb_pci_addr_needs_map() too; dma_capable() handles the features
+that both provide.
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- arch/x86/kernel/pci-swiotlb.c |    5 -----
- include/linux/swiotlb.h       |    2 --
- lib/swiotlb.c                 |    7 +------
- 3 files changed, 1 insertions(+), 13 deletions(-)
+ arch/powerpc/kernel/dma-swiotlb.c |   27 +--------------------------
+ 1 files changed, 1 insertions(+), 26 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index 6af96ee..0ac7cd5 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -13,11 +13,6 @@
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 41534ae..a3bbe02 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -36,28 +36,11 @@ phys_addr_t swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
+ }
  
- int swiotlb __read_mostly;
- 
--void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
+ /*
+- * Determine if an address needs bounce buffering via swiotlb.
+- * Going forward I expect the swiotlb code to generalize on using
+- * a dma_ops->addr_needs_map, and this function will move from here to the
+- * generic swiotlb code.
+- */
+-int
+-swiotlb_arch_address_needs_mapping(struct device *hwdev, dma_addr_t addr,
+-				   size_t size)
 -{
--	return alloc_bootmem_low_pages(size);
+-	struct dma_mapping_ops *dma_ops = get_dma_ops(hwdev);
+-
+-	BUG_ON(!dma_ops);
+-	return dma_ops->addr_needs_map(hwdev, addr, size);
 -}
 -
- void *swiotlb_alloc(unsigned order, unsigned long nslabs)
- {
- 	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index cb1a663..94db704 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -14,7 +14,6 @@ struct scatterlist;
+-/*
+  * Determine if an address is reachable by a pci device, or if we must bounce.
   */
- #define IO_TLB_SEGSIZE	128
+ static int
+ swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
+ {
+-	u64 mask = dma_get_mask(hwdev);
+ 	dma_addr_t max;
+ 	struct pci_controller *hose;
+ 	struct pci_dev *pdev = to_pci_dev(hwdev);
+@@ -69,16 +52,9 @@ swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
+ 	if ((addr + size > max) | (addr < hose->dma_window_base_cur))
+ 		return 1;
+ 
+-	return !is_buffer_dma_capable(mask, addr, size);
+-}
+-
+-static int
+-swiotlb_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
+-{
+-	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
++	return 0;
+ }
  
 -
  /*
-  * log of the size of each IO TLB slab.  The number of slabs is command line
-  * controllable.
-@@ -24,7 +23,6 @@ struct scatterlist;
- extern void
- swiotlb_init(void);
- 
--extern void *swiotlb_alloc_boot(size_t bytes, unsigned long nslabs);
- extern void *swiotlb_alloc(unsigned order, unsigned long nslabs);
- 
- extern dma_addr_t swiotlb_phys_to_bus(struct device *hwdev,
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index bffe6d7..9edfdd4 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -114,11 +114,6 @@ setup_io_tlb_npages(char *str)
- __setup("swiotlb=", setup_io_tlb_npages);
- /* make io_tlb_overflow tunable too? */
- 
--void * __weak __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
--{
--	return alloc_bootmem_low_pages(size);
--}
--
- void * __weak swiotlb_alloc(unsigned order, unsigned long nslabs)
- {
- 	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
-@@ -189,7 +184,7 @@ swiotlb_init_with_default_size(size_t default_size)
- 	/*
- 	 * Get IO TLB memory from the low pages
- 	 */
--	io_tlb_start = swiotlb_alloc_boot(bytes, io_tlb_nslabs);
-+	io_tlb_start = alloc_bootmem_low_pages(bytes);
- 	if (!io_tlb_start)
- 		panic("Cannot allocate SWIOTLB buffer");
- 	io_tlb_end = io_tlb_start + bytes;
+  * At the moment, all platforms that use this code only require
+  * swiotlb to be used if we're operating on HIGHMEM.  Since
+@@ -94,7 +70,6 @@ struct dma_mapping_ops swiotlb_dma_ops = {
+ 	.dma_supported = swiotlb_dma_supported,
+ 	.map_page = swiotlb_map_page,
+ 	.unmap_page = swiotlb_unmap_page,
+-	.addr_needs_map = swiotlb_addr_needs_map,
+ 	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
+ 	.sync_single_range_for_device = swiotlb_sync_single_range_for_device,
+ 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
 -- 
 1.6.0.6
