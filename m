@@ -3,22 +3,22 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 88FE9B7063
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1C9B4B7082
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 11 Jul 2009 01:29:43 +1000 (EST)
+	Sat, 11 Jul 2009 01:36:50 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DE31BDDDFA
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Jul 2009 01:29:42 +1000 (EST)
-Message-Id: <4F69F333-8BCA-4BB8-A5C1-4B25EA5D1287@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 6DDD2DDDFA
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Jul 2009 01:36:49 +1000 (EST)
+Message-Id: <5B1EBBDB-CCB6-4D87-BBB2-912D34F016F1@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <D4C31507-B4F9-4979-A6E1-7971242D644B@kernel.crashing.org>
+To: Alan Modra <amodra@bigpond.net.au>
+In-Reply-To: <20090710041123.GD3181@bubble.grove.modra.org>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v935.3)
 Subject: Re: binutils 2.19 issue with kernel link
-Date: Fri, 10 Jul 2009 10:27:26 -0500
+Date: Fri, 10 Jul 2009 10:34:35 -0500
 References: <09159ADA-39F9-419E-AE46-4CFAE612AFB9@kernel.crashing.org>
 	<20090708233954.GA3181@bubble.grove.modra.org>
 	<E6EB8DA7-8B38-4C97-BE3C-4649DFA295C8@kernel.crashing.org>
@@ -26,12 +26,10 @@ References: <09159ADA-39F9-419E-AE46-4CFAE612AFB9@kernel.crashing.org>
 	<20090709044007.GB3181@bubble.grove.modra.org>
 	<4B3B917C-C8B0-416B-888D-13E6C0645BF8@kernel.crashing.org>
 	<4A5645A9.3080003@freescale.com>
-	<20090710041536.GE3181@bubble.grove.modra.org>
-	<D4C31507-B4F9-4979-A6E1-7971242D644B@kernel.crashing.org>
+	<20090710041123.GD3181@bubble.grove.modra.org>
 Cc: Scott Wood <scottwood@freescale.com>,
 	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Edmar Wienskoski-RA8797 <edmar@freescale.com>,
-	Alan Modra <amodra@bigpond.net.au>, bug-binutils@gnu.org
+	bug-binutils@gnu.org, Edmar Wienskoski-RA8797 <edmar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,55 +40,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 10, 2009, at 9:37 AM, Kumar Gala wrote:
+On Jul 9, 2009, at 11:11 PM, Alan Modra wrote:
 
+> Hmm, having said all that, the following linker patch seems reasonable
+> to me and probably won't break anything else (always some risk).
+> Please test it for me.
 >
-> On Jul 9, 2009, at 11:15 PM, Alan Modra wrote:
+> Index: ld/ldlang.c
+> ===================================================================
+> RCS file: /cvs/src/src/ld/ldlang.c,v
+> retrieving revision 1.311
+> diff -u -p -r1.311 ldlang.c
+> --- ld/ldlang.c	25 Jun 2009 13:18:46 -0000	1.311
+> +++ ld/ldlang.c	10 Jul 2009 04:04:57 -0000
+> @@ -1615,10 +1615,12 @@ output_prev_sec_find (lang_output_sectio
+>    idea is to skip over anything that might be inside a SECTIONS {}
+>    statement in a script, before we find another output section
+>    statement.  Assignments to "dot" before an output section statement
+> -   are assumed to belong to it.  An exception to this rule is made  
+> for
+> -   the first assignment to dot, otherwise we might put an orphan
+> -   before . = . + SIZEOF_HEADERS or similar assignments that set the
+> -   initial address.  */
+> +   are assumed to belong to it, except in two cases;  The first
+> +   assignment to dot, and assignments before non-alloc sections.
+> +   Otherwise we might put an orphan before . = . + SIZEOF_HEADERS or
+> +   similar assignments that set the initial address, or we might
+> +   insert non-alloc note sections among assignments setting end of
+> +   image symbols.  */
 >
->> On Thu, Jul 09, 2009 at 02:31:53PM -0500, Edmar Wienskoski-RA8797  
->> wrote:
->>> I understand your arguments, but there is something inconsistent  
->>> about this.
->>> If I change the script to be:
->>>      _end3 = . ;
->>>      . = _end3;
->>>      . = ALIGN(PAGE_SIZE);
->>>      _end = . ;
->>>      PROVIDE32 (end = .);
->>> }
->>> The result is corrected:
->>> c067f678 A _end3
->>> c0680000 A _end
->>>
->>> Why the apuinfo section with zero VMA sometimes interfere with "."  
->>> and
->>> sometimes not ?
->>
->> I said it was weird in my last email.  Not so.  The orphan gets  
->> placed
->> between
->>
->>      _end3 = . ;
->>      . = _end3;
->>
->> So dot is restored after the orphan section sets it.
+> static lang_statement_union_type **
+> insert_os_after (lang_output_section_statement_type *after)
+> @@ -1662,7 +1664,12 @@ insert_os_after (lang_output_section_sta
+> 	  continue;
+> 	case lang_output_section_statement_enum:
+> 	  if (assign != NULL)
+> -	    where = assign;
+> +	    {
+> +	      asection *s = (*where)->output_section_statement.bfd_section;
+> +
+> +	      if (s == NULL || (s->flags & SEC_ALLOC) != 0)
+> +		where = assign;
+> +	    }
+> 	  break;
+> 	case lang_input_statement_enum:
+> 	case lang_address_statement_enum:
 >
-> This seems to be a bit of a chick and egg scenario.  Older kernel  
-> linker scripts aren't going to cover all sections and thus may have  
-> orphan sections.  How do we ensure _end can be set properly under  
-> such conditions?
+> -- 
 
-Not sure if this helps, but I've isolated down the version of binutils  
-that changes to:
-
-binutils-2.19		_end is what we expect
-binutils-2.19.1		_end is what we expect
-binutils-2.19.50.0.1	_end is what we expect
-binutils-2.19.51.0.1	_end is 00001000
-
- From the release notes:
-
-binutils-2.19.50.0.1 is based on CVS binutils 2008 1007
-binutils-2.19.51.0.1 is based on CVS binutils 2009 0106
+This patch seems to "fix" things.
 
 - k
