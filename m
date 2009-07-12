@@ -1,24 +1,25 @@
-Return-Path: <hofrat@hofr.at>
+Return-Path: <julia@diku.dk>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 098DCB7082
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F004AB7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 11 Jul 2009 20:12:22 +1000 (EST)
-Received: from mail.hofr.at (unknown [212.69.189.236])
-	by ozlabs.org (Postfix) with ESMTP id 8E17DDDDF0
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Jul 2009 20:12:21 +1000 (EST)
-Date: Sat, 11 Jul 2009 12:05:48 +0200
-From: Nicholas Mc Guire <mcguire@lzu.edu.cn>
-To: G?nter Leonhardt <Guenter.Leonhardt@men.de>
-Subject: Re: Memory usage of a process
-Message-ID: <20090711100548.GB15785@opentech.at>
-References: <D0B748CCD5DF144CA5C56A9D860A31341DE613@men-exch1.intra.men.de>
+	Mon, 13 Jul 2009 06:43:27 +1000 (EST)
+Received: from mgw1.diku.dk (mgw1.diku.dk [130.225.96.91])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mgw1.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 82A34DDDE7
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Jul 2009 06:43:27 +1000 (EST)
+Date: Sun, 12 Jul 2009 22:03:42 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/5] drivers/char/hvc_console.c: Drop unnecessary NULL test
+Message-ID: <Pine.LNX.4.64.0907122203060.22658@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <D0B748CCD5DF144CA5C56A9D860A31341DE613@men-exch1.intra.men.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +29,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 10 Jul 2009, G?nter Leonhardt wrote:
+From: Julia Lawall <julia@diku.dk>
 
->  
-> Hello,
-> analysing the memory usage of a process, I found some questions.
-> I'am using a system with 128 MB physical RAM, no disk, 2.6.27 kernel.
-> 
-> Running top, I see 38 MB in use, 90 MB free, but a VSZ for my process of 158 MB.
-> Looking at /proc/<pid>/maps, I see that the process uses 140 MB without shared libs.
-> 
-> So how it is possible that the process can allocate more memory than there is, without posibility of swapping?
->
-> Why said top that 90 MB free? Does the kernel serve the allocation only if ist really used?
-> 
+The result of container_of should not be NULL.  In particular, in this case
+the argument to the enclosing function has passed though INIT_WORK, which
+dereferences it, implying that its container cannot be NULL.
 
-an allocation does not actually set aside any physical ram (unless you do an mlock and actually touch the memory) - it only reserves virtual memory areas (vma's) and when your process accesses the respective address the OS page-faults and prvides the physical RAM as needed (and possible) - if you have no swap and you allow overcommitting of memory then you are potentially going to see this application failing as soon as it tries to utilize the memory.
+A simplified version of the semantic patch that makes this change is as
+follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-This can be set in the system via /proc/sys/vm/overcommit_memory (see
-linux/Documentation/vm/overcommit-accounting for details).
+// <smpl>
+@@
+identifier fn,work,x,fld;
+type T;
+expression E1,E2;
+statement S;
+@@
+
+static fn(struct work_struct *work) {
+  ... when != work = E1
+  x = container_of(work,T,fld)
+  ... when != x = E2
+- if (x == NULL) S
+  ...
+}
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/char/hvc_console.c          |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 94e7e3c..e367630 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -516,8 +516,6 @@ static void hvc_set_winsz(struct work_struct *work)
+ 	struct winsize ws;
  
-hofrat
+ 	hp = container_of(work, struct hvc_struct, tty_resize);
+-	if (!hp)
+-		return;
+ 
+ 	spin_lock_irqsave(&hp->lock, hvc_flags);
+ 	if (!hp->tty) {
