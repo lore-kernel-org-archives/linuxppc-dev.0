@@ -1,20 +1,29 @@
-Return-Path: <beckyb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A19DCB7080
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2468BB7089
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jul 2009 07:51:02 +1000 (EST)
-Message-Id: <B6C36B32-6861-4FD9-B8A3-E8C328687E0F@kernel.crashing.org>
-From: Becky Bruce <beckyb@kernel.crashing.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090710104706I.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: removing addr_needs_map in struct dma_mapping_ops
-Date: Mon, 13 Jul 2009 16:50:43 -0500
-References: <20090710104706I.fujita.tomonori@lab.ntt.co.jp>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Tue, 14 Jul 2009 08:20:08 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 45E53DDDA2
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 08:20:06 +1000 (EST)
+Date: Tue, 14 Jul 2009 02:20:05 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH 0/2] Setting GPIOs simultaneously
+Message-ID: <20090713222005.GA19859@oksana.dev.rtsoft.ru>
+References: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
+	<OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
+	<20090713173455.GA9866@oksana.dev.rtsoft.ru>
+	<OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,74 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jul 13, 2009 at 09:59:54PM +0200, Joakim Tjernlund wrote:
+[...]
+> > > While being at it, the reason for me needing this is that the spi_mpc83xx driver
+> > > was recently converted to a OF only driver so I have no way of defining my own
+> > > CS function anymore. While OF is good I don't feel that OF drivers should
+> > block the native
+> > > method, OF should be a layer on top of the native methods.
+> >
+> > Um, I don't get it. You have a mux, which is a sort of GPIO controller.
+> > All you need to do is to write "of-gpio-mux" driver, that will get all
+> > the needed gpios from the underlaying GPIO controller.
+> 
+> Well, I already have a mux controller that is using the native spi methods. I
+> don't want to write a new one, far more complicated than what I got now.
+> While the OF system is very powerful and flexible I still think that
+> one should be able to use native SPI methods too. Why can they not
+> co-exist?
 
-On Jul 9, 2009, at 8:47 PM, FUJITA Tomonori wrote:
+I strongly believe that they can. You just need to post patches
+so that we could see them, and maybe discuss how to do things
+more generic. But if making things generic will be too hard (see
+below), I don't think anybody will object applying a non-generic
+solution (even permitting "legacy" bindings in the spi_8xxx driver).
 
-> I'm trying to convert POWERPC to use asm-generic/dma-mapping-common.h.
->
-> POWERPC needs addr_needs_map() in struct dma_mapping_ops for SWIOTLB
-> support but I want to avoid add addr_needs_map() in struct
-> dma_map_ops. IIRC, you guys think it as a temporary solution and
+But any users of the legacy bindings should be in-tree.
 
-That is correct - I was planning to update when the iotlb folks had  
-decided on a final scheme for this.  We don't like the additional  
-indirection we're getting with the current implementation.
+> > In the device tree it'll look like this:
+> 
+> I must admit that I just started to look at the GPIO subsystem, but
+> I do wonder if mpc83xx_spi_cs_control() can do this muxing
+> without any change.
+> 
+> Very good example BTW.
 
->
-> talked about defining something like struct dma_data. Then we could
->
-> struct dev_archdata {
->      ...
->
->      struct dma_data *ddata;
-> };
->
-> or
->
-> struct dev_archdata {
->      ...
->
->      struct dma_data ddata;
-> };
->
->
-> struct dma_data needs dma_direct_offset, iommu_table, dma_base, and
-> dma_window_size, anything else?
+Well, there is one caveat: the "GPIOs" aren't independent,
+so thinking about it more, I believe we should now discuss
+"chip-select framework", not gpio controllers (it could be
+that using gpio controllers for this purpose wasn't that
+good idea).
 
-IIRC, what we had talked about was simpler - we talked about changing  
-the current dev_archdata from this:
+http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg34738.html
+^^^ I'm dreaming about this framework. I.e. true addressing
+    for chip-selects. :-)
 
-struct dev_archdata {
-        struct device_node      *of_node;
-        struct dma_mapping_ops  *dma_ops;
-        void                    *dma_data;
-};
-
-to this:
-
-struct dev_archdata {
-	struct device_node *of_node;
-	struct dma_mapping_ops *dma_ops;
-	unsigned long long dma_data;
-#ifdef CONFIG_SWIOTLB
-	dma_addr_t max_direct_dma_addr;
-#endif
-};
-
-Where max_direct_dma_addr is the address beyond which a specific  
-device must use swiotlb, and dma_data is the offset like it is now  
-(but wider on 32-bit systems than void *). I believe Ben had mentioned  
-wanting to make the max_direct_dma_addr part conditional so we don't  
-bloat archdata on platforms that don't ever bounce.
-
-The change to the type of dma_data is actually in preparation for an  
-optimization I have planned for 64-bit PCI devices (and which probably  
-requires more discussion), so that doesn't need to happen now -  just  
-leave it as a void *, and I can post a followup patch.
-
-Let me know if I can help or do any testing - I've been meaning to  
-look into switching to dma_map_ops for a while now but it hasn't  
-managed to pop off my todo stack.
-
-Cheers,
-Becky
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
