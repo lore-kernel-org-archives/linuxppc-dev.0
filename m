@@ -1,31 +1,25 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Return-Path: <bounces@nabble.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9894FB7069
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B8380B7066
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 13 Jul 2009 14:21:54 +1000 (EST)
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2D644DDDEE
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Jul 2009 14:21:53 +1000 (EST)
-Date: Mon, 13 Jul 2009 13:20:26 +0900
-To: Ian.Campbell@citrix.com
-Subject: Re: [00/15] swiotlb cleanup
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1247234520.4002.418.camel@zakaz.uk.xensource.com>
-References: <20090710051236.GA22218@elte.hu>
-	<20090710143408A.fujita.tomonori@lab.ntt.co.jp>
-	<1247234520.4002.418.camel@zakaz.uk.xensource.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20090713131859N.fujita.tomonori@lab.ntt.co.jp>
-Cc: jeremy@goop.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
-	joerg.roedel@amd.com, mingo@elte.hu
+	Mon, 13 Jul 2009 17:00:40 +1000 (EST)
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 5531FDDDA2
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Jul 2009 17:00:40 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1MQFWb-0008Fz-PP
+	for linuxppc-dev@ozlabs.org; Mon, 13 Jul 2009 00:00:33 -0700
+Message-ID: <24457031.post@talk.nabble.com>
+Date: Mon, 13 Jul 2009 00:00:33 -0700 (PDT)
+From: "Sauce.Cheng" <chmhou@sina.com>
+To: linuxppc-dev@ozlabs.org
+Subject: mmap() problem in own driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,41 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 10 Jul 2009 15:02:00 +0100
-Ian Campbell <Ian.Campbell@citrix.com> wrote:
 
-> On Fri, 2009-07-10 at 14:35 +0900, FUJITA Tomonori wrote:
-> > I don't think that we need to take account of dom0 support; we don't
-> > have a clear idea about an acceptable dom0 design (it needs to use
-> > swiotlb code? I don't know yet), we don't even know we will have dom0
-> > support in mainline. That's why I didn't CC this patchset to Xen
-> > camp.
-> 
-> The core domain 0 patches which were the subject of the discussions a
-> few week back are completely orthogonal to the swiotlb side of things
+Hi everyone
+there is a problem of my own driver
 
-? If we don't merge dom0 patch, we don't need dom0 changes to
-swiotlb. We don't know we would have dom0 support in mainline. Or I
-overlooked something?
+I want to get data from kernel space to user space indirectly using mmap()
+but i dont know how I can do , anyone can give me some advices ?
 
+firstly, fetch data by DMA to a memory allocated by "kmalloc"
+then i want to mmap it to user space and save the data as a file 
 
-> and whatever form they eventually take I do not think it will have any
-> impact on the shape of the solution which we arrive at for swiotlb. I
-> don't think that assuming that domain 0 can never be done in a way which
-> everyone finds acceptable and therefore discounting all consideration of
-> it is a useful way to make progress with these issues.
-> 
-> The DMA use case is much more tightly tied to the paravirtualized MMU
-> (which is already in the kernel for domU purposes) than it is to "the
-> domain 0" patches anyway. Although domain 0 is probably the main use
-> case, at least today, swiotlb support is also used in a Xen domU as part
-> of the support for direct assignment of PCI devices to paravirtualised
-> guests (pci passthrough).
-> 
-> The pci frontend driver depends on some bits of the domain 0 physical
-> interrupt patches as well as swiotlb which is why I/we haven't tried to
-> upstream that particular series yet.
-
-As far as I know, you have not posted anything about changes to
-swiotlb for domU. I can't discuss it. If you want, please send
-patches.
+Cheers everyone~
+Martin
+-- 
+View this message in context: http://www.nabble.com/mmap%28%29-problem-in-own-driver-tp24457031p24457031.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
