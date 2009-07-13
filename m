@@ -1,24 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <joakim.tjernlund@transmode.se>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B3AC3B721B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DF653B707C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jul 2009 01:19:46 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id C9953DDDD4
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 01:19:45 +1000 (EST)
-Date: Mon, 13 Jul 2009 19:19:44 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 2/2] powerpc/qe: Implement set_sync() callback for QE GPIOs
-Message-ID: <20090713151944.GB4486@oksana.dev.rtsoft.ru>
-References: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 14 Jul 2009 02:01:13 +1000 (EST)
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6BB8EDDDA2
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 02:01:10 +1000 (EST)
 In-Reply-To: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 0/2] Setting GPIOs simultaneously
+To: avorontsov@ru.mvista.com
+Message-ID: <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Mon, 13 Jul 2009 18:01:02 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,80 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is needed to set GPIO's values synchronously.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/include/asm/gpio.h   |   11 +++++++++++
- arch/powerpc/sysdev/qe_lib/gpio.c |   27 +++++++++++++++++++++++++++
- 2 files changed, 38 insertions(+), 0 deletions(-)
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 13/07/2009 17:19:11:
+>
+> Hi all,
+>
+> I've been sitting on these patches for some time, but now it appears
+> that the set_sync() feature is needed elsewhere. So here are the
+> patches.
+>
+> Joakim, I think this is what you need.
 
-diff --git a/arch/powerpc/include/asm/gpio.h b/arch/powerpc/include/asm/gpio.h
-index ea04632..899f365 100644
---- a/arch/powerpc/include/asm/gpio.h
-+++ b/arch/powerpc/include/asm/gpio.h
-@@ -33,6 +33,17 @@ static inline void gpio_set_value(unsigned int gpio, int value)
- 	__gpio_set_value(gpio, value);
- }
- 
-+static inline int gpio_can_set_values_sync(unsigned num, unsigned *gpios)
-+{
-+	return __gpio_can_set_values_sync(num, gpios);
-+}
-+
-+static inline void gpio_set_values_sync(unsigned num, unsigned *gpios,
-+					int *values)
-+{
-+	__gpio_set_values_sync(num, gpios, values);
-+}
-+
- static inline int gpio_cansleep(unsigned int gpio)
- {
- 	return __gpio_cansleep(gpio);
-diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
-index 3485288..6cfe784 100644
---- a/arch/powerpc/sysdev/qe_lib/gpio.c
-+++ b/arch/powerpc/sysdev/qe_lib/gpio.c
-@@ -84,6 +84,32 @@ static void qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- 	spin_unlock_irqrestore(&qe_gc->lock, flags);
- }
- 
-+static void qe_gpio_set_sync(struct gpio_chip *gc, unsigned int num,
-+			     unsigned int *gpios, int *vals)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
-+	struct qe_pio_regs __iomem *regs = mm_gc->regs;
-+	unsigned long flags;
-+	int i;
-+
-+	spin_lock_irqsave(&qe_gc->lock, flags);
-+
-+	for (i = 0; i < num; i++) {
-+		unsigned int gpio = gpios[i] - gc->base;
-+		u32 pin_mask = 1 << (QE_PIO_PINS - 1 - gpio);
-+
-+		if (vals[i])
-+			qe_gc->cpdata |= pin_mask;
-+		else
-+			qe_gc->cpdata &= ~pin_mask;
-+	}
-+
-+	out_be32(&regs->cpdata, qe_gc->cpdata);
-+
-+	spin_unlock_irqrestore(&qe_gc->lock, flags);
-+}
-+
- static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- {
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-@@ -328,6 +354,7 @@ static int __init qe_add_gpiochips(void)
- 		gc->direction_output = qe_gpio_dir_out;
- 		gc->get = qe_gpio_get;
- 		gc->set = qe_gpio_set;
-+		gc->set_sync = qe_gpio_set_sync;
- 
- 		ret = of_mm_gpiochip_add(np, mm_gc);
- 		if (ret)
--- 
-1.6.3.3
+Yes, it sure looks so :) I will have to look closer later as
+I will be traveling the next few days.
+
+Question though, have you considered using a bitmask instead of
+an array:
+static void qe_gpio_set_sync(struct gpio_chip *gc, unsigned int num,
+	 		      unsigned int gpio_mask, unsigned int vals)
+If you want to set bit 0, 3 and 8 you would set positions 0, 3 and 8 in gpio_mask
+to ones. Similarly in vals, set bit positions 0, 3 and 8 to requested value.
+
+While being at it, the reason for me needing this is that the spi_mpc83xx driver
+was recently converted to a OF only driver so I have no way of defining my own
+CS function anymore. While OF is good I don't feel that OF drivers should block the native
+method, OF should be a layer on top of the native methods.
+
+ Jocke
