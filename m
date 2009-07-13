@@ -1,27 +1,23 @@
-Return-Path: <joakim.tjernlund@transmode.se>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DF653B707C
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7A61EB707C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jul 2009 02:01:13 +1000 (EST)
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6BB8EDDDA2
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 02:01:10 +1000 (EST)
-In-Reply-To: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
-References: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
-Subject: Re: [PATCH 0/2] Setting GPIOs simultaneously
-To: avorontsov@ru.mvista.com
-Message-ID: <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 13 Jul 2009 18:01:02 +0200
+	Tue, 14 Jul 2009 02:02:20 +1000 (EST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <6213bc560907130839t36e28d5fr34191ccb290c9cf8@mail.gmail.com>
+References: <6213bc560907130016n2f2d5066t3dc88032200da8ef@mail.gmail.com>
+	<fa686aa40907130802h3a6875f7gf21d41974974a7e4@mail.gmail.com>
+	<6213bc560907130839t36e28d5fr34191ccb290c9cf8@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 13 Jul 2009 10:01:57 -0600
+Message-ID: <fa686aa40907130901r181fea87k3f8da151a50edb75@mail.gmail.com>
+Subject: Re: Soft Reset for PPC44x Virtex 5 hangs saying Restarting System
+To: srikanth krishnakar <skrishnakar@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 13/07/2009 17:19:11:
+On Mon, Jul 13, 2009 at 9:39 AM, srikanth
+krishnakar<skrishnakar@gmail.com> wrote:
 >
-> Hi all,
 >
-> I've been sitting on these patches for some time, but now it appears
-> that the set_sync() feature is needed elsewhere. So here are the
-> patches.
+> On Mon, Jul 13, 2009 at 8:32 PM, Grant Likely <grant.likely@secretlab.ca>
+> wrote:
+>>
+>> On Mon, Jul 13, 2009 at 1:16 AM, srikanth
+>> krishnakar<skrishnakar@gmail.com> wrote:
+>> > Hi all,
+>> >
+>> > Kernel : Linux-2.6.29
+>> > Arch: Powerpc (ppc44x)
+>> > Target: Xilinx ML507 Virtex5
+>> >
+>> > I have an issue in "Reset System" of Xilinx ML507 target board. I am
+>> > using
+>> > Compact Flash to boot the target ( using system ACE file to boot the
+>> > target), during the process reset or reboot command on the target, I a=
+m
+>> > not
+>> > able to reboot the target completely, here is the snapshot:
+>>
+>> Where is your boot code located? =A0In BRAM? =A0or SDRAM?
 >
-> Joakim, I think this is what you need.
+> It is located in BRAM.
+>
 
-Yes, it sure looks so :) I will have to look closer later as
-I will be traveling the next few days.
+Then most likely the process of booting modifies the initial data in
+BRAM such that it will not be able to reboot the system.
 
-Question though, have you considered using a bitmask instead of
-an array:
-static void qe_gpio_set_sync(struct gpio_chip *gc, unsigned int num,
-	 		      unsigned int gpio_mask, unsigned int vals)
-If you want to set bit 0, 3 and 8 you would set positions 0, 3 and 8 in gpio_mask
-to ones. Similarly in vals, set bit positions 0, 3 and 8 to requested value.
+> How can I reboot the system, while resetting the FPGA core completely ?
 
-While being at it, the reason for me needing this is that the spi_mpc83xx driver
-was recently converted to a OF only driver so I have no way of defining my own
-CS function anymore. While OF is good I don't feel that OF drivers should block the native
-method, OF should be a layer on top of the native methods.
+To reset and reconfigure the FPGA, you need to modify the systemace
+driver to provide a system reset routine.  See the systemace user
+manual for details on how to do this.
 
- Jocke
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
