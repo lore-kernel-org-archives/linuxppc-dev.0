@@ -3,29 +3,29 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8F1A1B7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9894FB7069
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Mon, 13 Jul 2009 14:21:54 +1000 (EST)
 Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 29D2ADDDE9
+	by ozlabs.org (Postfix) with ESMTPS id 2D644DDDEE
 	for <linuxppc-dev@ozlabs.org>; Mon, 13 Jul 2009 14:21:53 +1000 (EST)
-Date: Mon, 13 Jul 2009 13:20:22 +0900
-To: mingo@elte.hu
+Date: Mon, 13 Jul 2009 13:20:26 +0900
+To: Ian.Campbell@citrix.com
 Subject: Re: [00/15] swiotlb cleanup
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090710141248.GE26264@elte.hu>
+In-Reply-To: <1247234520.4002.418.camel@zakaz.uk.xensource.com>
 References: <20090710051236.GA22218@elte.hu>
-	<1247234512.4002.417.camel@zakaz.uk.xensource.com>
-	<20090710141248.GE26264@elte.hu>
+	<20090710143408A.fujita.tomonori@lab.ntt.co.jp>
+	<1247234520.4002.418.camel@zakaz.uk.xensource.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20090713131157V.fujita.tomonori@lab.ntt.co.jp>
-Cc: fujita.tomonori@lab.ntt.co.jp, jeremy@goop.org, tony.luck@intel.com,
-	linux-ia64@vger.kernel.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, Ian.Campbell@eu.citrix.com,
-	linuxppc-dev@ozlabs.org, joerg.roedel@amd.com
+Message-Id: <20090713131859N.fujita.tomonori@lab.ntt.co.jp>
+Cc: jeremy@goop.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
+	joerg.roedel@amd.com, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,48 +35,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 10 Jul 2009 16:12:48 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 10 Jul 2009 15:02:00 +0100
+Ian Campbell <Ian.Campbell@citrix.com> wrote:
 
-> > functionality and reimplemented the surrounding infrastructure in 
-> > terms of that (and incorporating our additional requirements). I 
-> > prototyped this (it is currently unworking, in fact it seems to 
-> > have developed rather a taste for filesystems :-() but the 
-> > diffstat of my WIP patch is:
-> >
-> >          arch/x86/kernel/pci-swiotlb.c |    6 
-> >          arch/x86/xen/pci-swiotlb.c    |    2 
-> >          drivers/pci/xen-iommu.c       |  385 ++++++++++++++++++++++++++++++++++++++++--
-> >          include/linux/swiotlb.h       |   12 +
-> >          lib/swiotlb.c                 |   10 -
-> >          5 files changed, 385 insertions(+), 30 deletions(-)
-> >
-> > where a fair number of the lines in xen-iommu.c are copies of 
-> > functions from swiotlb.c with minor modifications. As I say it 
-> > doesn't work yet but I think it's roughly indicative of what such 
-> > an approach would look like. I don't like it much but am happy to 
-> > run with it if it looks to be the most acceptable approach. [...]
+> On Fri, 2009-07-10 at 14:35 +0900, FUJITA Tomonori wrote:
+> > I don't think that we need to take account of dom0 support; we don't
+> > have a clear idea about an acceptable dom0 design (it needs to use
+> > swiotlb code? I don't know yet), we don't even know we will have dom0
+> > support in mainline. That's why I didn't CC this patchset to Xen
+> > camp.
 > 
-> +400 lines of code to avoid much fewer lines of generic code impact 
-> on the lib/swiotlb.c side sounds like a bad technical choice to me. 
+> The core domain 0 patches which were the subject of the discussions a
+> few week back are completely orthogonal to the swiotlb side of things
 
-The amount of code is not the point. The way to impact on the
-lib/swiotlb.c is totally wrong from the perspective of the kernel
-design; it uses architecture code in the very original (xen) way.
-
-
-> It makes the swiotlb code less useful and basically forks a random 
-> implementation of it in drivers/pci/xen-iommu.c.
-
-I don't think so. We always have the reasonable amount of duplication
-rather than integration in a dirty way (at least about IOMMU
-code).
+? If we don't merge dom0 patch, we don't need dom0 changes to
+swiotlb. We don't know we would have dom0 support in mainline. Or I
+overlooked something?
 
 
-> Fujita-san, can you think of a solution that avoids the whole-sale 
-> copying of hundreds of lines of code?
+> and whatever form they eventually take I do not think it will have any
+> impact on the shape of the solution which we arrive at for swiotlb. I
+> don't think that assuming that domain 0 can never be done in a way which
+> everyone finds acceptable and therefore discounting all consideration of
+> it is a useful way to make progress with these issues.
+> 
+> The DMA use case is much more tightly tied to the paravirtualized MMU
+> (which is already in the kernel for domU purposes) than it is to "the
+> domain 0" patches anyway. Although domain 0 is probably the main use
+> case, at least today, swiotlb support is also used in a Xen domU as part
+> of the support for direct assignment of PCI devices to paravirtualised
+> guests (pci passthrough).
+> 
+> The pci frontend driver depends on some bits of the domain 0 physical
+> interrupt patches as well as swiotlb which is why I/we haven't tried to
+> upstream that particular series yet.
 
-Ian didn't give a pointer to his code in a public place so I'm not
-sure his claim is valid. But if his code does the right thing and
-the duplication is less than 400 lines, it doesn't sound that bad to
-me.
+As far as I know, you have not posted anything about changes to
+swiotlb for domU. I can't discuss it. If you want, please send
+patches.
