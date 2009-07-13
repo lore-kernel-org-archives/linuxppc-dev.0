@@ -1,18 +1,30 @@
-Return-Path: <skrishnakar@gmail.com>
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4A975B6F20
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EEC93B6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 13 Jul 2009 17:16:49 +1000 (EST)
-MIME-Version: 1.0
-Date: Mon, 13 Jul 2009 12:46:45 +0530
-Message-ID: <6213bc560907130016n2f2d5066t3dc88032200da8ef@mail.gmail.com>
-Subject: Soft Reset for PPC44x Virtex 5 hangs saying Restarting System
-From: srikanth krishnakar <skrishnakar@gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=000e0cd2e2f8c60374046e911ab6
+	Mon, 13 Jul 2009 19:20:00 +1000 (EST)
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 94D0CDDDE1
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Jul 2009 19:19:59 +1000 (EST)
+Date: Mon, 13 Jul 2009 18:16:30 +0900
+To: mingo@elte.hu
+Subject: Re: [00/15] swiotlb cleanup
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090713131157V.fujita.tomonori@lab.ntt.co.jp>
+References: <1247234512.4002.417.camel@zakaz.uk.xensource.com>
+	<20090710141248.GE26264@elte.hu>
+	<20090713131157V.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20090713181558B.fujita.tomonori@lab.ntt.co.jp>
+Cc: jeremy@goop.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	Ian.Campbell@eu.citrix.com, linuxppc-dev@ozlabs.org, joerg.roedel@amd.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,132 +34,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0cd2e2f8c60374046e911ab6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Mon, 13 Jul 2009 13:20:22 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-Hi all,
+> On Fri, 10 Jul 2009 16:12:48 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > functionality and reimplemented the surrounding infrastructure in 
+> > > terms of that (and incorporating our additional requirements). I 
+> > > prototyped this (it is currently unworking, in fact it seems to 
+> > > have developed rather a taste for filesystems :-() but the 
+> > > diffstat of my WIP patch is:
+> > >
+> > >          arch/x86/kernel/pci-swiotlb.c |    6 
+> > >          arch/x86/xen/pci-swiotlb.c    |    2 
+> > >          drivers/pci/xen-iommu.c       |  385 ++++++++++++++++++++++++++++++++++++++++--
+> > >          include/linux/swiotlb.h       |   12 +
+> > >          lib/swiotlb.c                 |   10 -
+> > >          5 files changed, 385 insertions(+), 30 deletions(-)
+> > >
+> > > where a fair number of the lines in xen-iommu.c are copies of 
+> > > functions from swiotlb.c with minor modifications. As I say it 
+> > > doesn't work yet but I think it's roughly indicative of what such 
+> > > an approach would look like. I don't like it much but am happy to 
+> > > run with it if it looks to be the most acceptable approach. [...]
+> > 
+> > +400 lines of code to avoid much fewer lines of generic code impact 
+> > on the lib/swiotlb.c side sounds like a bad technical choice to me. 
+> 
+> The amount of code is not the point. The way to impact on the
+> lib/swiotlb.c is totally wrong from the perspective of the kernel
+> design; it uses architecture code in the very original (xen) way.
 
-Kernel : Linux-2.6.29
-Arch: Powerpc (ppc44x)
-Target: Xilinx ML507 Virtex5
+btw, '+400 lines of code to avoid much fewer lines of generic code
+impact on the lib/swiotlb.c' doesn't sound true to me.
 
-I have an issue in "Reset System" of Xilinx ML507 target board. I am using
-Compact Flash to boot the target ( using system ACE file to boot the
-target), during the process reset or reboot command on the target, I am not
-able to reboot the target completely, here is the snapshot:
+Here is a patch in the way that Xen people want to do:
 
----------------------------------------------------------------------------------------------------
+http://patchwork.kernel.org/patch/26343/
 
-root@ml507:~# reboot
-
-INIT: Sending processes the TERM signalWed Jul
-INIT: Stopping OpenBSD Secure Shell server: sshdstopped /usr/sbin/sshd (pid
-1052)
-.
-Stopping Vixie-cron.
-Stopping network benchmark server: netserverstopped /usr/sbin/netserver (pid
-1058)
-.
-Stopping syslogd/klogd: stopped syslogd (pid 1061)
-stopped klogd (pid 1063)
-done
-NOT deconfiguring network interfaces: / is an NFS mount
-Sending all processes the TERM signal...
-Sending all processes the KILL signal...
-hwclock: can't open '/dev/misc/rtc': No such file or directory
-Unmounting remote filesystems...
-Deactivating swap...
-/etc/rc6.d/S40umountfs: line 9: swapoff: not found
-Unmounting local filesystems...
-umount2: Device or resource busy
-umount: none busy - remounted read-only
-Rebooting... Restarting system.                 <--------------- Target
-hangs here..
-
------------------------------------------------------------------------------------------------------
-
-The target again doesn't provide me the boot options as obtained when done
-hard reset :
-
-Welcome to the Xilinx Virtex-5 ML507 Evaluation Platform Bootloader
-Menu!
-
-
-Please choose a demo by typing in the number of the demo you want to
-use
-
-Or select a demo using the directional buttons (C,W,S,E,N)
-  (Then press the center (C) button to start the selected demo)
-
-1. Virtex-5 Slide Show
-2. Web Server Demo
-3. Simon Game
-4. Board Diagnostics (XROM)
-5. USB Demo
-6. My own ACE file
-7. Ring Tone Player
-Rebooting to System ACE Configuration Address 6...
-
-zImage starting: loaded at 0x00800000 (sp: 0x00a44fb0)
-Allocating 0x4e9138 bytes for kernel ...
-gunzipping (0x00000000 <- 0x0080e000:0x00a437cc)...done 0x4a1bcc bytes
+---
+ arch/x86/Kconfig                 |    4 +
+ arch/x86/include/asm/io.h        |    2 +
+ arch/x86/include/asm/pci_x86.h   |    1 +
+ arch/x86/include/asm/xen/iommu.h |   12 ++
+ arch/x86/kernel/pci-dma.c        |    3 +
+ arch/x86/pci/Makefile            |    1 +
+ arch/x86/pci/init.c              |    6 +
+ arch/x86/pci/xen.c               |   51 +++++++
+ drivers/pci/Makefile             |    2 +
+ drivers/pci/xen-iommu.c          |  271 ++++++++++++++++++++++++++++++++++++++
 
 
-Any comments or suggestions are appreciated !!
-
-
-
-Thanks
--Sriknt
-
---000e0cd2e2f8c60374046e911ab6
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi all,<br><br>Kernel : Linux-2.6.29<br>Arch: Powerpc (ppc44x)<br>Target: X=
-ilinx ML507 Virtex5<br><br>I have an issue in &quot;Reset System&quot; of X=
-ilinx ML507 target board. I am using Compact Flash to boot the target ( usi=
-ng system ACE file to boot the target), during the process reset or reboot =
-command on the target, I am not able to reboot the target completely, here =
-is the snapshot:<br>
-<br>-----------------------------------------------------------------------=
-----------------------------<br><br>root@ml507:~# reboot<br><br>INIT: Sendi=
-ng processes the TERM signalWed Jul<br>INIT: Stopping OpenBSD Secure Shell =
-server: sshdstopped /usr/sbin/sshd (pid 1052)<br>
-.<br>Stopping Vixie-cron.<br>Stopping network benchmark server: netserverst=
-opped /usr/sbin/netserver (pid 1058)<br>.<br>Stopping syslogd/klogd: stoppe=
-d syslogd (pid 1061)<br>stopped klogd (pid 1063)<br>done<br>NOT deconfiguri=
-ng network interfaces: / is an NFS mount<br>
-Sending all processes the TERM signal...<br>Sending all processes the KILL =
-signal...<br>hwclock: can&#39;t open &#39;/dev/misc/rtc&#39;: No such file =
-or directory<br>Unmounting remote filesystems...<br>Deactivating swap...<br=
->
-/etc/rc6.d/S40umountfs: line 9: swapoff: not found<br>Unmounting local file=
-systems...<br>umount2: Device or resource busy<br>umount: none busy - remou=
-nted read-only<br>Rebooting... Restarting system.=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0 &lt;--------------- Target hangs here..<br>
-<br clear=3D"all">---------------------------------------------------------=
---------------------------------------------<br><br>The target again doesn&=
-#39;t provide me the boot options as obtained when done hard reset :<br><br=
->
-Welcome to the Xilinx Virtex-5 ML507 Evaluation Platform Bootloader Menu!=
-=A0=A0=A0=A0=A0=A0 <br>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 <br>Please choose a demo by typing in =
-the number of the demo you want to use=A0=A0=A0=A0=A0=A0=A0 <br>
-<br>Or select a demo using the directional buttons (C,W,S,E,N)<br>=A0 (Then=
- press the center (C) button to start the selected demo)<br><br>1. Virtex-5=
- Slide Show<br>2. Web Server Demo=A0=A0=A0 <br>3. Simon Game=A0=A0=A0=A0=A0=
-=A0=A0=A0 <br>4. Board Diagnostics (XROM)<br>
-5. USB Demo=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 <br>6. My own ACE =
-file=A0=A0=A0=A0=A0=A0=A0=A0 <br>7. Ring Tone Player=A0=A0=A0=A0=A0=A0=A0 <=
-br>Rebooting to System ACE Configuration Address 6...<br><br>zImage startin=
-g: loaded at 0x00800000 (sp: 0x00a44fb0)<br>Allocating 0x4e9138 bytes for k=
-ernel ...=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 <br>
-gunzipping (0x00000000 &lt;- 0x0080e000:0x00a437cc)...done 0x4a1bcc bytes<b=
-r><br><br>Any comments or suggestions are appreciated !!<br><br><br><br>Tha=
-nks<br>-Sriknt<br><br><br><br><br>
-
---000e0cd2e2f8c60374046e911ab6--
+Even with the way that Xen people want to do, drivers/pci/xen-iommu.c
+is about 300 lines. And my patchset removes the nice amount of lines
+for dom0 support. I don't see much difference wrt lines.
