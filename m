@@ -1,29 +1,20 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 20FD0B7089
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jul 2009 06:00:01 +1000 (EST)
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5C08CDDDE6
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 05:59:58 +1000 (EST)
-In-Reply-To: <20090713173455.GA9866@oksana.dev.rtsoft.ru>
-References: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
-	<OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
-	<20090713173455.GA9866@oksana.dev.rtsoft.ru>
-Subject: Re: [PATCH 0/2] Setting GPIOs simultaneously
-To: avorontsov@ru.mvista.com
-Message-ID: <OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 13 Jul 2009 21:59:54 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A19DCB7080
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 14 Jul 2009 07:51:02 +1000 (EST)
+Message-Id: <B6C36B32-6861-4FD9-B8A3-E8C328687E0F@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090710104706I.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: removing addr_needs_map in struct dma_mapping_ops
+Date: Mon, 13 Jul 2009 16:50:43 -0500
+References: <20090710104706I.fujita.tomonori@lab.ntt.co.jp>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,96 +24,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 13/07/2009 19:34:55:
->
-> On Mon, Jul 13, 2009 at 06:01:02PM +0200, Joakim Tjernlund wrote:
-> >
-> > Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 13/07/2009 17:19:11:
-> > >
-> > > Hi all,
-> > >
-> > > I've been sitting on these patches for some time, but now it appears
-> > > that the set_sync() feature is needed elsewhere. So here are the
-> > > patches.
-> > >
-> > > Joakim, I think this is what you need.
-> >
-> > Yes, it sure looks so :) I will have to look closer later as
-> > I will be traveling the next few days.
-> >
-> > Question though, have you considered using a bitmask instead of
-> > an array:
-> > static void qe_gpio_set_sync(struct gpio_chip *gc, unsigned int num,
-> >                 unsigned int gpio_mask, unsigned int vals)
-> > If you want to set bit 0, 3 and 8 you would set positions 0, 3 and 8 in gpio_mask
-> > to ones. Similarly in vals, set bit positions 0, 3 and 8 to requested value.
->
-> Yeah, I thought about it. We could do the u64 masks (to handle up
-> to 64 bits parallel IO buses).
->
-> It's all easy with dumb memory-mapped GPIO controllers, because
-> we have a 8/16/32/64 bits registers with linear bit<->gpio mapping.
 
-Yes, this is gpio ..
+On Jul 9, 2009, at 8:47 PM, FUJITA Tomonori wrote:
+
+> I'm trying to convert POWERPC to use asm-generic/dma-mapping-common.h.
+>
+> POWERPC needs addr_needs_map() in struct dma_mapping_ops for SWIOTLB
+> support but I want to avoid add addr_needs_map() in struct
+> dma_map_ops. IIRC, you guys think it as a temporary solution and
+
+That is correct - I was planning to update when the iotlb folks had  
+decided on a final scheme for this.  We don't like the additional  
+indirection we're getting with the current implementation.
 
 >
-> But some gpio controllers aren't that easy. I know at least one
-> (FPGA-based) gpio controller that won't change any GPIO lines
-> for real unless changes are "commited". The controller has several
-> banks (registers) of PIOs (total count > 64 bits), but you can commit
-> all the changes to the banks at once (synchronously). This isn't
-> because the controller is uber-cool, it's just the controller has
-> sequential IO. So with masks approach you won't able to use _sync()
-> calls that easily for all GPIOs range.
-
-.. but this one I am not sure qualify as gpio. Feels more like
-its own device that should have its own driver.
-
+> talked about defining something like struct dma_data. Then we could
 >
-> But OK, if we throw away the special cases, I can't imagine any
-> clear api for this approach, all I can think of is something
-> along these lines:
+> struct dev_archdata {
+>      ...
 >
-> int num = 3;
-> u32 gpios[3];
-> u64 shifts[3];
+>      struct dma_data *ddata;
+> };
 >
-> /* this implies checks whether we can use _sync() */
-> if (!gpio_get_shifts(num, gpios, shifts))
->    return -EINVAL;
+> or
 >
-> gpio_set_values_sync(chip, 1 << shifts[0] | 1 << shifts[1],
->            val0 << shifts[0] | val1 << shifts[1]).
+> struct dev_archdata {
+>      ...
 >
-> We can implement it, if that's acceptable. But that's a bit
-> ugly, I think.
-
-I see, that doesn't look good that either.
-
+>      struct dma_data ddata;
+> };
 >
-> > While being at it, the reason for me needing this is that the spi_mpc83xx driver
-> > was recently converted to a OF only driver so I have no way of defining my own
-> > CS function anymore. While OF is good I don't feel that OF drivers should
-> block the native
-> > method, OF should be a layer on top of the native methods.
 >
-> Um, I don't get it. You have a mux, which is a sort of GPIO controller.
-> All you need to do is to write "of-gpio-mux" driver, that will get all
-> the needed gpios from the underlaying GPIO controller.
+> struct dma_data needs dma_direct_offset, iommu_table, dma_base, and
+> dma_window_size, anything else?
 
-Well, I already have a mux controller that is using the native spi methods. I
-don't want to write a new one, far more complicated than what I got now.
-While the OF system is very powerful and flexible I still think that
-one should be able to use native SPI methods too. Why can they not
-co-exist?
+IIRC, what we had talked about was simpler - we talked about changing  
+the current dev_archdata from this:
 
->
-> In the device tree it'll look like this:
+struct dev_archdata {
+        struct device_node      *of_node;
+        struct dma_mapping_ops  *dma_ops;
+        void                    *dma_data;
+};
 
-I must admit that I just started to look at the GPIO subsystem, but
-I do wonder if mpc83xx_spi_cs_control() can do this muxing
-without any change.
+to this:
 
-Very good example BTW.
+struct dev_archdata {
+	struct device_node *of_node;
+	struct dma_mapping_ops *dma_ops;
+	unsigned long long dma_data;
+#ifdef CONFIG_SWIOTLB
+	dma_addr_t max_direct_dma_addr;
+#endif
+};
 
-      Jocke
+Where max_direct_dma_addr is the address beyond which a specific  
+device must use swiotlb, and dma_data is the offset like it is now  
+(but wider on 32-bit systems than void *). I believe Ben had mentioned  
+wanting to make the max_direct_dma_addr part conditional so we don't  
+bloat archdata on platforms that don't ever bounce.
+
+The change to the type of dma_data is actually in preparation for an  
+optimization I have planned for 64-bit PCI devices (and which probably  
+requires more discussion), so that doesn't need to happen now -  just  
+leave it as a void *, and I can post a followup patch.
+
+Let me know if I can help or do any testing - I've been meaning to  
+look into switching to dma_map_ops for a while now but it hasn't  
+managed to pop off my todo stack.
+
+Cheers,
+Becky
