@@ -1,29 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <uzurpatorul@yahoo.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2468BB7089
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CCDABB7084
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jul 2009 08:20:08 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 45E53DDDA2
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 08:20:06 +1000 (EST)
-Date: Tue, 14 Jul 2009 02:20:05 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: [PATCH 0/2] Setting GPIOs simultaneously
-Message-ID: <20090713222005.GA19859@oksana.dev.rtsoft.ru>
-References: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
-	<OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
-	<20090713173455.GA9866@oksana.dev.rtsoft.ru>
-	<OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
+	Tue, 14 Jul 2009 05:07:08 +1000 (EST)
+Received: from web30308.mail.mud.yahoo.com (web30308.mail.mud.yahoo.com
+	[209.191.69.70]) by ozlabs.org (Postfix) with SMTP id 2779ADDDE2
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 05:07:07 +1000 (EST)
+Message-ID: <334139.60682.qm@web30308.mail.mud.yahoo.com>
+Date: Mon, 13 Jul 2009 12:00:26 -0700 (PDT)
+From: Robert Benea <uzurpatorul@yahoo.com>
+Subject: vmalloc issue on mpc8378
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: multipart/alternative; boundary="0-1925117692-1247511626=:60682"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,51 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 13, 2009 at 09:59:54PM +0200, Joakim Tjernlund wrote:
-[...]
-> > > While being at it, the reason for me needing this is that the spi_mpc83xx driver
-> > > was recently converted to a OF only driver so I have no way of defining my own
-> > > CS function anymore. While OF is good I don't feel that OF drivers should
-> > block the native
-> > > method, OF should be a layer on top of the native methods.
-> >
-> > Um, I don't get it. You have a mux, which is a sort of GPIO controller.
-> > All you need to do is to write "of-gpio-mux" driver, that will get all
-> > the needed gpios from the underlaying GPIO controller.
-> 
-> Well, I already have a mux controller that is using the native spi methods. I
-> don't want to write a new one, far more complicated than what I got now.
-> While the OF system is very powerful and flexible I still think that
-> one should be able to use native SPI methods too. Why can they not
-> co-exist?
 
-I strongly believe that they can. You just need to post patches
-so that we could see them, and maybe discuss how to do things
-more generic. But if making things generic will be too hard (see
-below), I don't think anybody will object applying a non-generic
-solution (even permitting "legacy" bindings in the spi_8xxx driver).
+--0-1925117692-1247511626=:60682
+Content-Type: text/plain; charset=us-ascii
 
-But any users of the legacy bindings should be in-tree.
+I have an mpc8378 system with 512MB ram and 256MB flash (NOR). When I start the system I get the infamous message vmalloc failure. If I do cat /proc/meminfo I can see that I have only 212MB of VMALLOC space. 
 
-> > In the device tree it'll look like this:
-> 
-> I must admit that I just started to look at the GPIO subsystem, but
-> I do wonder if mpc83xx_spi_cs_control() can do this muxing
-> without any change.
-> 
-> Very good example BTW.
+I tried the advanced options and change the KERNEL_START to 0xb0000000 (instead of 0xc0000000), however after doing that the system became unstable with crashes left and right. 
 
-Well, there is one caveat: the "GPIOs" aren't independent,
-so thinking about it more, I believe we should now discuss
-"chip-select framework", not gpio controllers (it could be
-that using gpio controllers for this purpose wasn't that
-good idea).
+The current work around is to set the command line mem=400M, however I like to use the whole RAM. What are the possible culprits that made my system unstable when making the KERNEL address space larger ?. Can it be because of PCIEs devices, I see that the PCIE memory is mapped to 0xa000000/0xc0000000.
 
-http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg34738.html
-^^^ I'm dreaming about this framework. I.e. true addressing
-    for chip-selects. :-)
+Regards,
+R.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
+
+
+      
+--0-1925117692-1247511626=:60682
+Content-Type: text/html; charset=us-ascii
+
+<table cellspacing="0" cellpadding="0" border="0" ><tr><td valign="top" style="font: inherit;">I have an mpc8378 system with 512MB ram and 256MB flash (NOR). When I start the system I get the infamous message vmalloc failure. If I do cat /proc/meminfo I can see that I have only 212MB of VMALLOC space. <br><br>I tried the advanced options and change the KERNEL_START to 0xb0000000 (instead of 0xc0000000), however after doing that the system became unstable with crashes left and right. <br><br>The current work around is to set the command line mem=400M, however I like to use the whole RAM. What are the possible culprits that made my system unstable when making the KERNEL address space larger ?. Can it be because of PCIEs devices, I see that the PCIE memory is mapped to 0xa000000/0xc0000000.<br><br>Regards,<br>R.<br><br></td></tr></table><br>
+
+      
+--0-1925117692-1247511626=:60682--
