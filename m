@@ -3,26 +3,30 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DA22AB7087
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3D0DAB7086
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jul 2009 12:23:53 +1000 (EST)
+	Tue, 14 Jul 2009 13:15:35 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3BF6EDDDA1
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 12:23:52 +1000 (EST)
-Message-Id: <5E909C02-3FA2-4BEB-8C73-F4E4A5A404BF@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 7AC22DDDE1
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 13:15:34 +1000 (EST)
+Message-Id: <68EFFAF6-EF5B-4148-BC54-70BF2AF2456E@kernel.crashing.org>
 From: Becky Bruce <beckyb@kernel.crashing.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1247187904-31999-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20090710051236.GA22218@elte.hu>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH 04/15] swiotlb: remove unnecessary swiotlb_bus_to_virt
-Date: Mon, 13 Jul 2009 21:17:21 -0500
+Subject: Re: [00/15] swiotlb cleanup
+Date: Mon, 13 Jul 2009 22:13:56 -0500
 References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1247187904-31999-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+	<20090710051236.GA22218@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, tony.luck@intel.com,
+	linux-ia64@vger.kernel.org,
+	Ian Campbell <Ian.Campbell@citrix.com>, x86@kernel.org,
+	linux-kernel@vger.kernel.org,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	linuxppc-dev@ozlabs.org, Joerg Roedel <joerg.roedel@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,168 +37,73 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 9, 2009, at 8:04 PM, FUJITA Tomonori wrote:
-
-> swiotlb_bus_to_virt is unncessary; we can use swiotlb_bus_to_phys and
-> phys_to_virt instead.
-
-phys_to_virt (also, virt_to_phys) is invalid for highmem addresses on  
-ppc.  In most of the uses in this file, it doesn't matter, as the  
-iotlb buffers themselves are alloc'd out of lowmem, but the  
-dma_mark_clean() calls could happen on a highmem addr.  Currently, on  
-powerpc, dma_mark_clean() doesn't do anything, so it isn't a  
-functional problem.  I'm fine with the bulk of this patch, because in  
-reality, if I need to do something with a virtual address of a highmem  
-page, I have to get a kmap for the page.  So the existing  
-swiotlb_bus_to_virt isn't really helping.
-
-What is dma_mark_clean used for?  Could it be made to take a paddr,  
-and let the implementation deal with making sure there's a valid vaddr  
-for the actual "clean" operation?
-
-I'd also like to see a comment with swiotlb_virt_to_bus() that notes  
-that it should only be called on addresses in lowmem.
-
-Cheers,
-Becky
+On Jul 10, 2009, at 12:12 AM, Ingo Molnar wrote:
 
 >
+> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 >
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
-> arch/powerpc/kernel/dma-swiotlb.c |   10 ----------
-> lib/swiotlb.c                     |   34 +++++++++++++++ 
-> +------------------
-> 2 files changed, 16 insertions(+), 28 deletions(-)
+>> - removes unused (and unnecessary) hooks in swiotlb.
+>>
+>> - adds dma_capable() and converts swiotlb to use it. It can be used  
+>> to
+>> know if a memory area is dma capable or not. I added
+>> is_buffer_dma_capable() for the same purpose long ago but it turned
+>> out that the function doesn't work on POWERPC.
+>>
+>> This can be applied cleanly to linux-next, -mm, and mainline. This
+>> patchset touches multiple architectures (ia64, powerpc, x86) so I
+>> guess that -mm is appropriate for this patchset (I don't care much
+>> what tree would merge this though).
+>>
+>> This is tested on x86 but only compile tested on POWERPC and IA64.
+>>
+>> Thanks,
+>>
+>> =
+>> arch/ia64/include/asm/dma-mapping.h    |   18 ++++++
+>> arch/powerpc/include/asm/dma-mapping.h |   23 +++++++
+>> arch/powerpc/kernel/dma-swiotlb.c      |   48 +---------------
+>> arch/x86/include/asm/dma-mapping.h     |   18 ++++++
+>> arch/x86/kernel/pci-dma.c              |    2 +-
+>> arch/x86/kernel/pci-gart_64.c          |    5 +-
+>> arch/x86/kernel/pci-nommu.c            |    2 +-
+>> arch/x86/kernel/pci-swiotlb.c          |   25 --------
+>> include/linux/dma-mapping.h            |    5 --
+>> include/linux/swiotlb.h                |   11 ----
+>> lib/swiotlb.c                          |  102 ++++++++ 
+>> +-----------------------
+>> 11 files changed, 92 insertions(+), 167 deletions(-)
 >
-> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/ 
-> dma-swiotlb.c
-> index 68ccf11..41534ae 100644
-> --- a/arch/powerpc/kernel/dma-swiotlb.c
-> +++ b/arch/powerpc/kernel/dma-swiotlb.c
-> @@ -24,16 +24,6 @@
-> int swiotlb __read_mostly;
-> unsigned int ppc_swiotlb_enable;
+> Hm, the functions and facilities you remove here were added as part
+> of preparatory patches for Xen guest support. You were aware of
+> them, you were involved in discussions about those aspects with Ian
+> and Jeremy but still you chose not to Cc: either of them and you
+> failed to address that aspect in the changelogs.
 >
-> -void *swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t addr)
-> -{
-> -	unsigned long pfn = PFN_DOWN(swiotlb_bus_to_phys(hwdev, addr));
-> -	void *pageaddr = page_address(pfn_to_page(pfn));
-> -
-> -	if (pageaddr != NULL)
-> -		return pageaddr + (addr % PAGE_SIZE);
-> -	return NULL;
-> -}
-> -
-> dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t  
-> paddr)
-> {
-> 	return paddr + get_dma_direct_offset(hwdev);
-> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> index dc1cd1f..1a89c84 100644
-> --- a/lib/swiotlb.c
-> +++ b/lib/swiotlb.c
-> @@ -130,11 +130,6 @@ static dma_addr_t swiotlb_virt_to_bus(struct  
-> device *hwdev,
-> 	return swiotlb_phys_to_bus(hwdev, virt_to_phys(address));
-> }
+> I'd like the Xen code to become cleaner more than anyone else here i
+> guess, but patch submission methods like this are not really
+> helpful. A far better method is to be open about such disagreements,
+> to declare them, to Cc: everyone who disagrees, and to line out the
+> arguments in the changelogs as well - instead of just curtly
+> declaring those APIs 'unused' and failing to Cc: involved parties.
 >
-> -void * __weak swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t  
-> address)
-> -{
-> -	return phys_to_virt(swiotlb_bus_to_phys(hwdev, address));
-> -}
-> -
-> int __weak swiotlb_arch_address_needs_mapping(struct device *hwdev,
-> 					       dma_addr_t addr, size_t size)
-> {
-> @@ -307,9 +302,10 @@ address_needs_mapping(struct device *hwdev,  
-> dma_addr_t addr, size_t size)
-> 	return swiotlb_arch_address_needs_mapping(hwdev, addr, size);
-> }
+> Alas, on the technical level the cleanups themselves look mostly
+> fine to me. Ian, Jeremy, the changes will alter Xen's use of
+> swiotlb, but can the Xen side still live with these new methods - in
+> particular is dma_capable() sufficient as a mechanism and can the
+> Xen side filter out DMA allocations to make them physically
+> continuous?
 >
-> -static int is_swiotlb_buffer(char *addr)
-> +static int is_swiotlb_buffer(phys_addr_t paddr)
-> {
-> -	return addr >= io_tlb_start && addr < io_tlb_end;
-> +	return paddr >= virt_to_phys(io_tlb_start) &&
-> +		paddr < virt_to_phys(io_tlb_end);
-> }
+> Ben, Tony, Becky, any objections wrt. the PowerPC / IA64 impact? If
+> everyone agrees i can apply them to the IOMMU tree, test it and push
+> it out to -next, etc.
 >
-> /*
-> @@ -582,11 +578,13 @@ EXPORT_SYMBOL(swiotlb_alloc_coherent);
->
-> void
-> swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
-> -		      dma_addr_t dma_handle)
-> +		      dma_addr_t dev_addr)
-> {
-> +	phys_addr_t paddr = swiotlb_bus_to_phys(hwdev, dev_addr);
-> +
-> 	WARN_ON(irqs_disabled());
-> -	if (!is_swiotlb_buffer(vaddr))
-> -		free_pages((unsigned long) vaddr, get_order(size));
-> +	if (!is_swiotlb_buffer(paddr))
-> +		free_pages((unsigned long)vaddr, get_order(size));
-> 	else
-> 		/* DMA_TO_DEVICE to avoid memcpy in unmap_single */
-> 		do_unmap_single(hwdev, vaddr, size, DMA_TO_DEVICE);
-> @@ -671,19 +669,19 @@ EXPORT_SYMBOL_GPL(swiotlb_map_page);
-> static void unmap_single(struct device *hwdev, dma_addr_t dev_addr,
-> 			 size_t size, int dir)
-> {
-> -	char *dma_addr = swiotlb_bus_to_virt(hwdev, dev_addr);
-> +	phys_addr_t paddr = swiotlb_bus_to_phys(hwdev, dev_addr);
->
-> 	BUG_ON(dir == DMA_NONE);
->
-> -	if (is_swiotlb_buffer(dma_addr)) {
-> -		do_unmap_single(hwdev, dma_addr, size, dir);
-> +	if (is_swiotlb_buffer(paddr)) {
-> +		do_unmap_single(hwdev, phys_to_virt(paddr), size, dir);
-> 		return;
-> 	}
->
-> 	if (dir != DMA_FROM_DEVICE)
-> 		return;
->
-> -	dma_mark_clean(dma_addr, size);
-> +	dma_mark_clean(phys_to_virt(paddr), size);
-> }
->
-> void swiotlb_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
-> @@ -708,19 +706,19 @@ static void
-> swiotlb_sync_single(struct device *hwdev, dma_addr_t dev_addr,
-> 		    size_t size, int dir, int target)
-> {
-> -	char *dma_addr = swiotlb_bus_to_virt(hwdev, dev_addr);
-> +	phys_addr_t paddr = swiotlb_bus_to_phys(hwdev, dev_addr);
->
-> 	BUG_ON(dir == DMA_NONE);
->
-> -	if (is_swiotlb_buffer(dma_addr)) {
-> -		sync_single(hwdev, dma_addr, size, dir, target);
-> +	if (is_swiotlb_buffer(paddr)) {
-> +		sync_single(hwdev, phys_to_virt(paddr), size, dir, target);
-> 		return;
-> 	}
->
-> 	if (dir != DMA_FROM_DEVICE)
-> 		return;
->
-> -	dma_mark_clean(dma_addr, size);
-> +	dma_mark_clean(phys_to_virt(paddr), size);
 
->
-> }
->
-> void
-> -- 
-> 1.6.0.6
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Ingo,
+
+With the exception of the patch I commented on, I think these look OK  
+from the powerpc point of view.  I've successfully booted one of my  
+test platforms with the entire series applied and will run some more  
+extensive (i.e. not "Whee!  A prompt!") tests tomorrow.
+
+-Becky
