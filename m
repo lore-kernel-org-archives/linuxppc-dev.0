@@ -1,26 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <wd@denx.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B5BC5B7B68
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BE91FB7089
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 14 Jul 2009 23:37:18 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 3FABEDDDA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 23:37:18 +1000 (EST)
-Date: Tue, 14 Jul 2009 17:37:16 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH RFC 1/2] Makefile: Never use -fno-omit-frame-pointer
-Message-ID: <20090714133716.GC28970@oksana.dev.rtsoft.ru>
-References: <20090616201630.GA4971@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090616201630.GA4971@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+	Tue, 14 Jul 2009 23:42:53 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 0DE82DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2009 23:42:51 +1000 (EST)
+From: Wolfgang Denk <wd@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] fs_enet/mii-fec.c: fix MII speed calculation
+Date: Tue, 14 Jul 2009 15:42:46 +0200
+Message-Id: <1247578966-9847-1-git-send-email-wd@denx.de>
+In-Reply-To: <1244751543-21977-2-git-send-email-wd@denx.de>
+References: <1244751543-21977-2-git-send-email-wd@denx.de>
+Cc: netdev@vger.kernel.org, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,59 +26,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 17, 2009 at 12:16:30AM +0400, Anton Vorontsov wrote:
-> According to Segher Boessenkool and GCC manual, -fomit-frame-pointer
-> is only the default when optimising on archs/ABIs where it doesn't
-> hinder debugging and -pg. So, we do not get it by default on x86,
-> not at any optimisation level.
-> 
-> On the other hand, *using* -fno-omit-frame-pointer causes gcc to
-> produce buggy code on PowerPC targets.
-> 
-> If Segher and GCC manual are right, this patch should be a no-op
-> for all arches except PowerPC, where the patch fixes gcc issues.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> 
-> See this thread for more discussion:
-> http://osdir.com/ml/linux-kernel/2009-05/msg01754.html
-> 
-> p.s.
-> Obviously, I didn't test this patch on anything else but PPC32. ;-)
-> 
-> Segher, do you know if all GCC versions that we support for
-> building Linux are behaving the way that GCC manual describe?
+The MII speed calculation was based on the CPU clock (ppc_proc_freq),
+but for MPC512x we must use the bus clock instead.
 
-No news is good news... Ingo, can we merge this into -tip for testing?
+This patch makes it use the correct clock and makes sure we don't
+clobber reserved bits in the MII_SPEED register.
 
-Thanks,
+Signed-off-by: Wolfgang Denk <wd@denx.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: <netdev@vger.kernel.org>
+---
+Note 1: This patch is a rewrite of a previous posting:
+        http://patchwork.ozlabs.org/patch/28584/
+Note 2: Function mpc5xxx_get_mii_speed() was introduced for re-use
+        in a later patch to drivers/net/fec_mpc52xx.c and
+	drivers/net/fec_mpc52xx_phy.c, which also contain code to
+	calculate the MII speed without taking care to check for
+	overflow or to write only the bits that belong to the
+	MII_SPEED field when setting the MII speed.
 
->  Makefile |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index ea63667..70ad1ff 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -535,7 +535,7 @@ KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
->  endif
->  
->  ifdef CONFIG_FRAME_POINTER
-> -KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
-> +KBUILD_CFLAGS	+= -fno-optimize-sibling-calls
->  else
->  KBUILD_CFLAGS	+= -fomit-frame-pointer
->  endif
-> -- 
-> 1.6.3.1
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+ arch/powerpc/sysdev/mpc5xxx_clocks.c |   37 ++++++++++++++++++++++++++++++++++
+ drivers/net/fs_enet/mii-fec.c        |   13 +++++++++--
+ 2 files changed, 47 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/sysdev/mpc5xxx_clocks.c b/arch/powerpc/sysdev/mpc5xxx_clocks.c
+index 34e12f9..e26d12b 100644
+--- a/arch/powerpc/sysdev/mpc5xxx_clocks.c
++++ b/arch/powerpc/sysdev/mpc5xxx_clocks.c
+@@ -31,3 +31,40 @@ mpc5xxx_get_bus_frequency(struct device_node *node)
+ 	return p_bus_freq ? *p_bus_freq : 0;
+ }
+ EXPORT_SYMBOL(mpc5xxx_get_bus_frequency);
++
++/**
++ *	mpc5xxx_get_mii_speed - Get the MII_SPEED value
++ *	@node:	device node
++ *
++ *	Returns the MII_SPEED value for MPC512x and MPC52xx systems.
++ *	The value gets computed such that the resulting MDC frequency
++ *	is 2.5 MHz or lower.
++ */
++
++int
++mpc5xxx_get_mii_speed(struct of_device *ofdev)
++{
++	unsigned int clock, speed;
++
++	clock = mpc5xxx_get_bus_frequency(ofdev->node);
++
++	if (!clock) {
++		dev_err(&ofdev->dev, "could not determine IPS/IPB clock\n");
++		return -ENODEV;
++	}
++
++	/* scale for a MII clock <= 2.5 MHz */
++	speed = (clock + 2499999) / 2500000;
++
++	/* only 6 bits available for MII speed */
++	if (speed > 0x3F) {
++		speed = 0x3F;
++		dev_err(&ofdev->dev,
++			"MII clock (%d MHz) exceeds max (2.5 MHz)\n",
++			clock / speed);
++	}
++
++	/* Field is in bits 25:30 of MII_SPEED register */
++	return speed << 1;
++}
++EXPORT_SYMBOL(mpc5xxx_get_mii_speed);
+diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
+index 75a0999..a28d39f 100644
+--- a/drivers/net/fs_enet/mii-fec.c
++++ b/drivers/net/fs_enet/mii-fec.c
+@@ -36,6 +36,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
++#include <asm/mpc5xxx.h>
+ 
+ #include "fs_enet.h"
+ #include "fec.h"
+@@ -103,7 +104,6 @@ static int fs_enet_fec_mii_reset(struct mii_bus *bus)
+ static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
+                                         const struct of_device_id *match)
+ {
+-	struct device_node *np = NULL;
+ 	struct resource res;
+ 	struct mii_bus *new_bus;
+ 	struct fec_info *fec;
+@@ -133,13 +133,20 @@ static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
+ 	if (!fec->fecp)
+ 		goto out_fec;
+ 
+-	fec->mii_speed = ((ppc_proc_freq + 4999999) / 5000000) << 1;
++	if (of_device_is_compatible(ofdev->node, "fsl,mpc5121-fec-mdio")) {
++		i = mpc5xxx_get_mii_speed(ofdev);
++		if (i < 0)
++			goto out_unmap_regs;
++		fec->mii_speed = i;
++	} else {
++		fec->mii_speed = ((ppc_proc_freq + 4999999) / 5000000) << 1;
++	}
+ 
+ 	setbits32(&fec->fecp->fec_r_cntrl, FEC_RCNTRL_MII_MODE);
+ 	setbits32(&fec->fecp->fec_ecntrl, FEC_ECNTRL_PINMUX |
+ 	                                  FEC_ECNTRL_ETHER_EN);
+ 	out_be32(&fec->fecp->fec_ievent, FEC_ENET_MII);
+-	out_be32(&fec->fecp->fec_mii_speed, fec->mii_speed);
++	clrsetbits_be32(&fec->fecp->fec_mii_speed, 0x7E, fec->mii_speed);
+ 
+ 	new_bus->phy_mask = ~0;
+ 	new_bus->irq = kmalloc(sizeof(int) * PHY_MAX_ADDR, GFP_KERNEL);
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.6.0.6
