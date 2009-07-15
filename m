@@ -3,14 +3,14 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 40364B7B7F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CE812B7BAD
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed, 15 Jul 2009 16:53:00 +1000 (EST)
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 15 Jul 2009 16:52:55 +1000
-Subject: [PATCH 3/4] powerpc: Remove use of a second scratch SPRG in STAB code
-Message-Id: <20090715065300.30F7BDDDD4@ozlabs.org>
+Date: Wed, 15 Jul 2009 16:52:56 +1000
+Subject: [PATCH 4/4] powerpc: Change PACA from SPRG3 to SPRG1
+Message-Id: <20090715065300.BECACDDDD4@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,174 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The STAB code used on Power3 and RS/64 uses a second scratch SPRG to
-save a GPR in order to decide whether to go to do_stab_bolted_* or
-to handle a normal data access exception.
-
-This prevents our scheme of freeing SPRG3 which is user visible for
-user uses since we cannot use SPRG0 which, on RS/64, seems to be
-read-only for supervisor mode (like POWER4).
-
-This reworks the STAB exception entry to use the PACA as temporary
-storage instead.
+This change the SPRG used to store the PACA on ppc64 from
+SPRG3 to SPRG1. SPRG3 is user readable on most processors
+and we want to use it for other things. We change the scratch
+SPRG used by exception vectors from SRPG1 to SPRG2.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/include/asm/exception-64s.h   |    7 ++++-
- arch/powerpc/include/asm/reg.h             |    3 --
- arch/powerpc/kernel/exceptions-64s.S       |   36 ++++++++++++++++++-----------
- arch/powerpc/platforms/iseries/exception.S |   34 ++++++++++++++++-----------
- 4 files changed, 50 insertions(+), 30 deletions(-)
+ arch/powerpc/include/asm/reg.h |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- linux-work.orig/arch/powerpc/include/asm/exception-64s.h	2009-07-15 15:07:50.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/exception-64s.h	2009-07-15 15:15:36.000000000 +1000
-@@ -66,8 +66,7 @@
- 	std	r9,area+EX_R13(r13);					\
- 	mfcr	r9
- 
--#define EXCEPTION_PROLOG_PSERIES(area, label)				\
--	EXCEPTION_PROLOG_1(area);					\
-+#define EXCEPTION_PROLOG_PSERIES_1(label)				\
- 	ld	r12,PACAKBASE(r13);	/* get high part of &label */	\
- 	ld	r10,PACAKMSR(r13);	/* get MSR value for kernel */	\
- 	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
-@@ -78,6 +77,10 @@
- 	rfid;								\
- 	b	.	/* prevent speculative execution */
- 
-+#define EXCEPTION_PROLOG_PSERIES(area, label)				\
-+	EXCEPTION_PROLOG_1(area);					\
-+	EXCEPTION_PROLOG_PSERIES_1(label);
-+
- /*
-  * The common exception prolog is used for all except a few exceptions
-  * such as a segment miss on a kernel address.  We have to be prepared
-Index: linux-work/arch/powerpc/kernel/exceptions-64s.S
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/exceptions-64s.S	2009-07-15 15:07:50.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/exceptions-64s.S	2009-07-15 15:39:12.000000000 +1000
-@@ -50,18 +50,26 @@ data_access_pSeries:
- 	HMT_MEDIUM
- 	mtspr	SPRN_SPRG_SCRATCH0,r13
- BEGIN_FTR_SECTION
--	mtspr	SPRN_SPRG_SCRATCH1,r12
--	mfspr	r13,SPRN_DAR
--	mfspr	r12,SPRN_DSISR
--	srdi	r13,r13,60
--	rlwimi	r13,r12,16,0x20
--	mfcr	r12
--	cmpwi	r13,0x2c
-+	mfspr	r13,SPRN_SPRG_PACA
-+	std	r9,PACA_EXSLB+EX_R9(r13)
-+	std	r10,PACA_EXSLB+EX_R10(r13)
-+	mfspr	r10,SPRN_DAR
-+	mfspr	r9,SPRN_DSISR
-+	srdi	r10,r10,60
-+	rlwimi	r10,r9,16,0x20
-+	mfcr	r9
-+	cmpwi	r10,0x2c
- 	beq	do_stab_bolted_pSeries
--	mtcrf	0x80,r12
--	mfspr	r12,SPRN_SPRG_SCRATCH1
-+	ld	r10,PACA_EXSLB+EX_R10(r13)
-+	std	r11,PACA_EXGEN+EX_R11(r13)
-+	ld	r11,PACA_EXSLB+EX_R9(r13)
-+	std	r12,PACA_EXGEN+EX_R12(r13)
-+	mfspr	r12,SPRN_SPRG_SCRATCH0
-+	std	r10,PACA_EXGEN+EX_R10(r13)
-+	std	r11,PACA_EXGEN+EX_R9(r13)
-+	std	r12,PACA_EXGEN+EX_R13(r13)
- END_FTR_SECTION_IFCLR(CPU_FTR_SLB)
--	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, data_access_common)
-+	EXCEPTION_PROLOG_PSERIES_1(data_access_common)
- 
- 	. = 0x380
- 	.globl data_access_slb_pSeries
-@@ -224,9 +232,11 @@ masked_interrupt:
- 
- 	.align	7
- do_stab_bolted_pSeries:
--	mtcrf	0x80,r12
--	mfspr	r12,SPRN_SPRG_SCRATCH1
--	EXCEPTION_PROLOG_PSERIES(PACA_EXSLB, .do_stab_bolted)
-+	std	r11,PACA_EXSLB+EX_R11(r13)
-+	std	r12,PACA_EXSLB+EX_R12(r13)
-+	mfspr	r10,SPRN_SPRG_SCRATCH0
-+	std	r10,PACA_EXSLB+EX_R13(r13)
-+	EXCEPTION_PROLOG_PSERIES_1(.do_stab_bolted)
- 
- #ifdef CONFIG_PPC_PSERIES
- /*
-Index: linux-work/arch/powerpc/platforms/iseries/exception.S
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/iseries/exception.S	2009-07-15 15:07:50.000000000 +1000
-+++ linux-work/arch/powerpc/platforms/iseries/exception.S	2009-07-15 15:39:14.000000000 +1000
-@@ -128,25 +128,33 @@ iSeries_secondary_smp_loop:
- data_access_iSeries:
- 	mtspr	SPRN_SPRG_SCRATCH0,r13
- BEGIN_FTR_SECTION
--	mtspr	SPRN_SPRG_SCRATCH1,r12
--	mfspr	r13,SPRN_DAR
--	mfspr	r12,SPRN_DSISR
--	srdi	r13,r13,60
--	rlwimi	r13,r12,16,0x20
--	mfcr	r12
--	cmpwi	r13,0x2c
-+	mfspr	r13,SPRN_SPRG_PACA
-+	std	r9,PACA_EXSLB+EX_R9(r13)
-+	std	r10,PACA_EXSLB+EX_R10(r13)
-+	mfspr	r10,SPRN_DAR
-+	mfspr	r9,SPRN_DSISR
-+	srdi	r10,r10,60
-+	rlwimi	r10,r9,16,0x20
-+	mfcr	r9
-+	cmpwi	r10,0x2c
- 	beq	.do_stab_bolted_iSeries
--	mtcrf	0x80,r12
--	mfspr	r12,SPRN_SPRG_SCRATCH1
-+	ld	r10,PACA_EXSLB+EX_R10(r13)
-+	std	r11,PACA_EXGEN+EX_R11(r13)
-+	ld	r11,PACA_EXSLB+EX_R9(r13)
-+	std	r12,PACA_EXGEN+EX_R12(r13)
-+	mfspr	r12,SPRN_SPRG_SCRATCH0
-+	std	r10,PACA_EXGEN+EX_R10(r13)
-+	std	r11,PACA_EXGEN+EX_R9(r13)
-+	std	r12,PACA_EXGEN+EX_R13(r13)
- END_FTR_SECTION_IFCLR(CPU_FTR_SLB)
--	EXCEPTION_PROLOG_1(PACA_EXGEN)
- 	EXCEPTION_PROLOG_ISERIES_1
- 	b	data_access_common
- 
- .do_stab_bolted_iSeries:
--	mtcrf	0x80,r12
--	mfspr	r12,SPRN_SPRG_SCRATCH1
--	EXCEPTION_PROLOG_1(PACA_EXSLB)
-+	std	r11,PACA_EXSLB+EX_R11(r13)
-+	std	r12,PACA_EXSLB+EX_R12(r13)
-+	mfspr	r10,SPRN_SPRG_SCRATCH0
-+	std	r10,PACA_EXSLB+EX_R13(r13)
- 	EXCEPTION_PROLOG_ISERIES_1
- 	b	.do_stab_bolted
- 
-Index: linux-work/arch/powerpc/include/asm/reg.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/reg.h	2009-07-15 15:23:52.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/reg.h	2009-07-15 15:24:07.000000000 +1000
-@@ -654,7 +654,7 @@
+--- linux-work.orig/arch/powerpc/include/asm/reg.h	2009-07-15 15:24:07.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/reg.h	2009-07-15 15:56:42.000000000 +1000
+@@ -649,12 +649,12 @@
+  * SPRG usage:
+  *
+  * All 64-bit:
+- *	- SPRG3 stores PACA pointer
++ *	- SPRG1 stores PACA pointer
+  *
   * 64-bit server:
   *	- SPRG0 unused (reserved for HV on Power4)
-  *	- SPRG1 scratch for exception vectors
-- *	- SPRG2 scratch for exception vectors
-+ *	- SPRG2 unused
+- *	- SPRG1 scratch for exception vectors
+- *	- SPRG2 unused
++ *	- SPRG2 scratch for exception vectors
++ *	- SPRG3 unused (user visible)
   *
   * All 32-bit:
   *	- SPRG3 current thread_info pointer
-@@ -707,7 +707,6 @@
+@@ -700,13 +700,13 @@
+  *
+  */
+ #ifdef CONFIG_PPC64
+-#define SPRN_SPRG_PACA 		SPRN_SPRG3
++#define SPRN_SPRG_PACA 		SPRN_SPRG1
+ #else
+ #define SPRN_SPRG_THREAD 	SPRN_SPRG3
+ #endif
  
  #ifdef CONFIG_PPC_BOOK3S_64
- #define SPRN_SPRG_SCRATCH0	SPRN_SPRG1
--#define SPRN_SPRG_SCRATCH1	SPRN_SPRG2
+-#define SPRN_SPRG_SCRATCH0	SPRN_SPRG1
++#define SPRN_SPRG_SCRATCH0	SPRN_SPRG2
  #endif
  
  #ifdef CONFIG_PPC_BOOK3S_32
