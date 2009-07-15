@@ -1,24 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 079EFB7089
+Return-Path: <Rupesh.Kumar@Lntemsys.com>
+Received: from mail87.messagelabs.com (mail87.messagelabs.com [216.82.250.19])
+	by bilbo.ozlabs.org (Postfix) with SMTP id 0D916B7083
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jul 2009 00:11:30 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4EC8DDDD1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 00:11:28 +1000 (EST)
-Message-Id: <761CE7B3-A7FD-41FD-A828-B9F17F73DF32@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: having access to interrupt specifier in map() function
-Date: Wed, 15 Jul 2009 09:11:22 -0500
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+	Thu, 16 Jul 2009 00:49:41 +1000 (EST)
+To: linuxppc-dev@lists.ozlabs.org
+Subject: booting MPC8313 based board with yaffs2 RFS
+MIME-Version: 1.0
+Message-ID: <OFB2EFC395.7BD1B8AD-ON652575F4.00512780-652575F4.00513235@lntemsys.com>
+From: Rupesh Kumar <Rupesh.Kumar@Lntemsys.com>
+Date: Wed, 15 Jul 2009 20:28:45 +0530
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+Hi
+I am using MPC8313 board which is currently booting with JFFS2 root file 
+system. 
+I am using linux kernel version 2.6.23 from FreeScale's LTIB for MPC8313. 
 
-Do you have any ideas on keeping access to the interrupt specifier  
-around so when we call map() we have access to it.  Our HV guys are  
-looking at using additional bits in the interrupt specifier to encode  
-information beyond just level/sense of the IRQ and want to make  
-decisions based on it during map().
+As, I want it to boot with YAFFS2 root file system, I did compile kernel 
+with yaffs2 support, craeted yaffs2 rootfile system and passed yaffs2 
+partiton of nand in bootargs. However it didnot work.
 
-Maybe we can keep it around in irq_map[].
 
-thoughts?
+If any one has done it successfully, can please share the steps to be 
+followed ?
 
-- k
+Thanks
+Rupesh
