@@ -3,14 +3,14 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CE812B7BAD
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 88DB0B70BA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jul 2009 16:53:00 +1000 (EST)
+	Wed, 15 Jul 2009 16:57:03 +1000 (EST)
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 15 Jul 2009 16:52:56 +1000
-Subject: [PATCH 4/4] powerpc: Change PACA from SPRG3 to SPRG1
-Message-Id: <20090715065300.BECACDDDD4@ozlabs.org>
+Date: Wed, 15 Jul 2009 16:56:58 +1000
+Subject: [PATCH] powerpc/pmac: Fix PowerSurge SMP IPI allocation
+Message-Id: <20090715065703.78B86DDDB6@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,48 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This change the SPRG used to store the PACA on ppc64 from
-SPRG3 to SPRG1. SPRG3 is user readable on most processors
-and we want to use it for other things. We change the scratch
-SPRG used by exception vectors from SRPG1 to SPRG2.
+The code for setting up the IPIs for SMP PowerSurge marchines bitrot,
+it needs to properly map the HW interrupt number
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+--
 
- arch/powerpc/include/asm/reg.h |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/powermac/smp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-work.orig/arch/powerpc/include/asm/reg.h	2009-07-15 15:24:07.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/reg.h	2009-07-15 15:56:42.000000000 +1000
-@@ -649,12 +649,12 @@
-  * SPRG usage:
-  *
-  * All 64-bit:
-- *	- SPRG3 stores PACA pointer
-+ *	- SPRG1 stores PACA pointer
-  *
-  * 64-bit server:
-  *	- SPRG0 unused (reserved for HV on Power4)
-- *	- SPRG1 scratch for exception vectors
-- *	- SPRG2 unused
-+ *	- SPRG2 scratch for exception vectors
-+ *	- SPRG3 unused (user visible)
-  *
-  * All 32-bit:
-  *	- SPRG3 current thread_info pointer
-@@ -700,13 +700,13 @@
-  *
-  */
- #ifdef CONFIG_PPC64
--#define SPRN_SPRG_PACA 		SPRN_SPRG3
-+#define SPRN_SPRG_PACA 		SPRN_SPRG1
- #else
- #define SPRN_SPRG_THREAD 	SPRN_SPRG3
- #endif
+--- linux-work.orig/arch/powerpc/platforms/powermac/smp.c	2009-07-15 16:55:28.000000000 +1000
++++ linux-work/arch/powerpc/platforms/powermac/smp.c	2009-07-15 16:55:36.000000000 +1000
+@@ -408,7 +408,7 @@ static void __init smp_psurge_setup_cpu(
+ 	/* reset the entry point so if we get another intr we won't
+ 	 * try to startup again */
+ 	out_be32(psurge_start, 0x100);
+-	if (setup_irq(30, &psurge_irqaction))
++	if (setup_irq(irq_create_mapping(NULL, 30), &psurge_irqaction))
+ 		printk(KERN_ERR "Couldn't get primary IPI interrupt");
+ }
  
- #ifdef CONFIG_PPC_BOOK3S_64
--#define SPRN_SPRG_SCRATCH0	SPRN_SPRG1
-+#define SPRN_SPRG_SCRATCH0	SPRN_SPRG2
- #endif
- 
- #ifdef CONFIG_PPC_BOOK3S_32
