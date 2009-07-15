@@ -1,24 +1,19 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C1762B7087
+Return-Path: <anildahiya80@gmail.com>
+Received: from mail-px0-f181.google.com (mail-px0-f181.google.com
+	[209.85.216.181])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id DD3A4B707D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jul 2009 09:01:21 +1000 (EST)
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 391C7DDDA2
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2009 09:01:20 +1000 (EST)
-Date: Tue, 14 Jul 2009 18:45:41 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Sachin Sant <sachinp@in.ibm.com>
-Subject: Re: [FTRACE] Enabling function_graph causes OOPS
-In-Reply-To: <4A5C5D65.3030906@in.ibm.com>
-Message-ID: <alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
-References: <4A5C5D65.3030906@in.ibm.com>
+	Wed, 15 Jul 2009 15:15:27 +1000 (EST)
+Received: by pxi11 with SMTP id 11so2948772pxi.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 14 Jul 2009 22:15:25 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Date: Wed, 15 Jul 2009 10:45:25 +0530
+Message-ID: <73afa9bf0907142215p1032f6adw7c7d7c7ab2eb0e01@mail.gmail.com>
+Subject: riscwatch shows up core status UNKNOWN for 970mp ppc processor
+From: anil kumar <anildahiya80@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=001636e0aa3387bf9e046eb7a43d
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,117 +23,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--001636e0aa3387bf9e046eb7a43d
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Tue, 14 Jul 2009, Sachin Sant wrote:
+Hello
+I am newbie to RISCWatch and debugging using JTAG interface .I want to debug
+Linux Kernel on target board
+using jtag interface provided on board.
 
-> While enabling function_graph tracer on a Power6 box, machine
-> crashed with following trace. Kernel version is 2.6.31-rc3.
+To  debug 970MP dual core ppc processor on traget board, I installed
+RISCWatch software on my window host.
 
-Thanks,
+My Setup:
+----------
+   Host <--(over ethernet)--> RISCWatch 13H6423 <--(jtag interface)--> 970MP
+Processor
 
-I've seen issues with my PPC box and function graph, but the bugs were
-also caused by other changes. I'll boot up my PPC64 box and see if
-I see the same issues you have.
+I am able to detect two core on target 970MP processor but it shows both
+cores as `UNKNOWN` . I have no idea,
+why riscwatch shows up status of both cores as UNKNOWN?
 
--- Steve
+I would like to mention:
+-------------------------
+1) After attaching JTAG cable & switching on riscwatch box, powered cycle
+was done on the target board
+   and restart RISCWatch. But still core status is shown `UNKNOWN`
+2) For PVR value 0x00440101, I used `REV = 1' in rwppc.env file. Correct us
+if I am wrong.
+3) I am able to ping RISCWatch 13H6423 from host system.
+4) When I reset target board, target status changes from "UNKNOWN to HALTED"
+and "HALTED to UNKNOWN"
 
-> 
-> :/debug/tracing # echo function_graph > current_tracer :/debug/tracing # cat
-> current_tracer function_graph
-> :/debug/tracing # echo 1 > tracing_enabled
-> 
-> cpu 0x0: Vector: 300 (Data Access) at [c00000003eb86de0]
->    pc: c000000000008f30: .mod_return_to_handler+0x2c/0x64
->    lr: c000000000008f04: .mod_return_to_handler+0x0/0x64
->    sp: c00000003eb87060
->   msr: 8000000000009032
->   dar: 8
-> dsisr: 40000000
->  current = 0xc00000003e83c080
->  paca    = 0xc000000000ff2400
->    pid   = 2700, comm = sshd
-> enter ? for help
-> [c00000003eb870d0] c000000000008f04 .mod_return_to_handler+0x0/0x64
-> [c00000003eb871a0] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87290] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87330] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb873e0] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87470] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87500] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87640] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87730] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87830] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb878d0] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87a00] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87b30] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87cd0] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87d80] c000000000008ed0 .return_to_handler+0x0/0x34
-> [c00000003eb87e30] c000000000008ed0 .return_to_handler+0x0/0x34
-> --- Exception: c01 (System Call) at 00000fffb640a8f8
-> SP (fffe5b9b960) is in userspace
-> 0:mon> di c000000000008f04
-> c000000000008f04  f881ffe0      std     r4,-32(r1)
-> c000000000008f08  f861ffe8      std     r3,-24(r1)
-> c000000000008f0c  f841fff0      std     r2,-16(r1)
-> c000000000008f10  fbe1fff8      std     r31,-8(r1)
-> c000000000008f14  7c3f0b78      mr      r31,r1
-> c000000000008f18  f821ff91      stdu    r1,-112(r1)
-> c000000000008f1c  3c800000      lis     r4,0
-> c000000000008f20  60840000      ori     r4,r4,0
-> c000000000008f24  788407c6      rldicr  r4,r4,32,31
-> c000000000008f28  64840000      oris    r4,r4,0
-> c000000000008f2c  60840000      ori     r4,r4,0
-> c000000000008f30  e8440008      ld      r2,8(r4)  ^^^^^ PC points to this
-> ^^^^^^^
-> c000000000008f34  48123431      bl      c00000000012c364        #
-> .ftrace_return_to_handler+0x0/0x110
-> c000000000008f38  60000000      nop
-> c000000000008f3c  7c6803a6      mtlr    r3
-> c000000000008f40  e8210000      ld      r1,0(r1)
-> 0:xmon> r
-> R00 = c000000000008f04   R16 = 00000fffb741d6a0
-> R01 = c00000003ea4b7e0   R17 = 00000fffb7406c38
-> R02 = d0000000010bec80   R18 = c00000003de41838
-> R03 = 0000000000000000   R19 = fffffffffffff000
-> R04 = 0000000000000000   R20 = c00000003cfc8c80
-> R05 = 0000000066000000   R21 = c00000003ea4bdf8
-> R06 = 00000000000010bf   R22 = c00000003ea4bba8
-> R07 = 0000000000000000   R23 = 00000fff8eb60000
-> R08 = 0000000000000000   R24 = fffffffffffff000
-> R09 = 800000010021c740   R25 = 8001000003000000
-> R10 = 00000000000000ff   R26 = ffe0000000000000
-> R11 = 800000010021c760   R27 = 0000000000000009
-> R12 = 0000000000000002   R28 = c00000006f850000
-> R13 = c000000000ff2400   R29 = 0000000000020000
-> R14 = 0000000000000000   R30 = d0000000010bd9c8
-> R15 = ffffffffeffdff68   R31 = c00000003ea4b850
-> pc  = c000000000008f30 .mod_return_to_handler+0x2c/0x64
-> lr  = c000000000008f04 .mod_return_to_handler+0x0/0x64
-> msr = 8000000000009032   cr  = 24000442
-> ctr = 80000000000f6d68   xer = 0000000000000020   trap =  300
-> dar = 0000000000000008   dsisr = 40000000
-> 0:xmon>
-> 
-> Following tracers are supported by the kernel.
-> :/debug/tracing # cat available_tracers function_graph function sched_switch
-> nop
-> 
-> Other tracers function and sched_switch work fine. Having problem
-> only with function_graph.
-> 
-> Have attached the .config.
-> 
-> Thanks
-> -Sachin
-> 
-> 
-> -- 
-> 
-> ---------------------------------
-> Sachin Sant
-> IBM Linux Technology Center
-> India Systems and Technology Labs
-> Bangalore, India
-> ---------------------------------
-> 
-> 
+I noticed that PVR register value is 0x00440101. I am not sure if this
+confirms that revision of the processor(970mp) is 1.
+
+
+Please find the rwppc.env file (C:\Program Files\RISCWatch\rwppc.env) that I
+configured:
+----------------------------------------------------------------------------------------
+PROC = 970MP
+REV =  1
+TARGET_TYPE = jtag_eth
+TARGET_NAME = 192.168.10.5
+RWPPC_DIR = .
+SEARCH_PATH = .
+LOG_FILE_DIR = .
+SAVE_LAYOUT = no
+PRD_FILE = rwppc.prd
+
+
+
+Please find board information:
+------------------------------
+
+KAT2000 970MP (1.0)=> boardinfo
+board config data version: 1.0
+processor name           : 970MP
+processor PVR value      : 0x00440101
+timer clock frequency    : 112500000
+total SDRAM memory       : 4096MB
+SDRAM frequency          : 533333333
+system clk frequency (Hz): 225000000
+CPU frequency            : 1800000000
+CPU frequency ind. est.  : 1800001200
+CPU to EI speed ratio    : 2:1
+frequency scaling divider: 1
+serial clk frequency     : 1843200
+HID0 value               : 0011008180000000
+HID1 value               : fd3c200000000000
+HID4 value               : 0000001000000000
+HID5 value               : 0000000000000080
+SDR1 value               : 0000000000d00002
+PIR  value               : 00000000
+Ethernet hardware addr 0 : FFFFFFFFFFFF
+
+
+RISCWatch log:
+--------------
+
+12:37:18 - RISCWatch program start
+12:37:18 - RISCWatch  v7.1 for Windows XP
+12:37:18 - Current directory: C:\Program Files\RISCWatch
+12:37:18 - Environment file: RWPPC.ENV
+12:37:18 - RWPPC_DIR = .
+12:37:18 - TARGET_TYPE = JTAG_Ethernet
+12:37:18 - TARGET_NAME = 192.168.10.5
+12:37:18 - Requested Processor 970MPRev1:CORE1
+12:37:18 - Requested Processor 970MPRev1:CORE2
+12:37:18 - Unable to get port number for jtag_eth service, using 6470
+default 12:37:30 - Configuring probe 12:37:30 - cf default; jtagch a32,a32
+12:37:31 - HPE8130A Series Emulation System
+12:37:31 -     Version:   A.01.20 04Apr02 Unreleased
+12:37:31 -     Location:  Generics
+12:37:31 - HPEGPUL  PowerPC 970 JTAG Emulator
+12:37:31 -     Version:   A.00.I0 22Jul08 13:48 Proto
+12:37:31 -  WARNING : Could not read processor status, slowing JTAG clock
+and retrying
+12:37:31 -  ERROR : bad status received, see README for possible causes
+12:37:36 - Starting MPS mode
+12:43:18 -  STATUS : CORE1 status changed from UNKNOWN to HALTED
+12:43:18 -  STATUS : CORE2 status changed from UNKNOWN to HALTED
+      Note---> Status become HALTED because I reset target board
+
+12:43:19 -  ERROR : CORE1 status changed from HALTED to UNKNOWN
+12:43:19 -  ERROR : CORE2 status changed from HALTED to UNKNOWN
+
+
+Regards,
+Anil
+
+--001636e0aa3387bf9e046eb7a43d
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hello <br>I am newbie to RISCWatch and debugging using JTAG interface .I wa=
+nt to debug Linux Kernel on target board <br>using jtag interface provided =
+on board.<br><br>To=A0 debug 970MP dual core ppc processor on traget board,=
+ I installed RISCWatch software on my window host. <br>
+<br>My Setup:<br>
+----------<br>
+=A0=A0 Host &lt;--(over ethernet)--&gt; RISCWatch 13H6423 &lt;--(jtag inter=
+face)--&gt; 970MP Processor=A0 <br>
+<br>I am able to detect two core on target 970MP processor but it shows bot=
+h cores as `UNKNOWN` . I have no idea, <br>why riscwatch shows up status of=
+ both cores as UNKNOWN?<br><br>I would like to mention:<br>----------------=
+---------<br>
+1) After attaching JTAG cable &amp; switching on riscwatch box, powered cyc=
+le was done on the target board <br>=A0=A0 and restart RISCWatch. But still=
+ core status is shown `UNKNOWN`<br>2) For PVR value 0x00440101, I used `REV=
+ =3D 1&#39; in rwppc.env file. Correct us if I am wrong.<br>
+3) I am able to ping RISCWatch 13H6423 from host system.<br>4) When I reset=
+ target board, target status changes from &quot;UNKNOWN to HALTED&quot; and=
+ &quot;HALTED to UNKNOWN&quot;<br><br>I noticed that PVR register value is =
+0x00440101. I am not sure if this confirms that revision of the processor(9=
+70mp) is 1.<br>
+
+<br><br>Please find the rwppc.env file (C:\Program Files\RISCWatch\rwppc.en=
+v) that I configured:<br>
+---------------------------------------------------------------------------=
+-------------<br>
+PROC =3D 970MP<br>
+REV =3D=A0 1<br>
+TARGET_TYPE =3D jtag_eth<br>
+TARGET_NAME =3D 192.168.10.5<br>
+RWPPC_DIR =3D .<br>
+SEARCH_PATH =3D .<br>
+LOG_FILE_DIR =3D .<br>
+SAVE_LAYOUT =3D no<br>
+PRD_FILE =3D rwppc.prd<br>
+=A0<br>
+<br><br>Please find board information:<br>------------------------------<br=
+><br>KAT2000 970MP (1.0)=3D&gt; boardinfo<br>board config data version: 1.0=
+<br>processor name=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 : 970MP<br>processor PVR v=
+alue=A0=A0=A0=A0=A0 : 0x00440101<br>
+timer clock frequency=A0=A0=A0 : 112500000<br>total SDRAM memory=A0=A0=A0=
+=A0=A0=A0 : 4096MB<br>SDRAM frequency=A0=A0=A0=A0=A0=A0=A0=A0=A0 : 53333333=
+3<br>system clk frequency (Hz): 225000000<br>CPU frequency=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0 : 1800000000<br>CPU frequency ind. est.=A0 : 1800001200<=
+br>
+CPU to EI speed ratio=A0=A0=A0 : 2:1<br>frequency scaling divider: 1<br>ser=
+ial clk frequency=A0=A0=A0=A0 : 1843200<br>HID0 value=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0 : 0011008180000000<br>HID1 value=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0 : fd3c200000000000<br>HID4 value=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0 : 0000001000000000<br>
+HID5 value=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 : 0000000000000080<br>=
+SDR1 value=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 : 0000000000d00002<br>=
+PIR=A0 value=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 : 00000000<br>Ethern=
+et hardware addr 0 : FFFFFFFFFFFF<br>=A0<br>=A0<br>RISCWatch log:<br>------=
+--------<br>
+<br>12:37:18 - RISCWatch program start<br>12:37:18 - RISCWatch=A0 v7.1 for =
+Windows XP<br>12:37:18 - Current directory: C:\Program Files\RISCWatch<br>1=
+2:37:18 - Environment file: RWPPC.ENV<br>12:37:18 - RWPPC_DIR =3D .<br>12:3=
+7:18 - TARGET_TYPE =3D JTAG_Ethernet<br>
+12:37:18 - TARGET_NAME =3D 192.168.10.5<br>12:37:18 - Requested Processor 9=
+70MPRev1:CORE1<br>12:37:18 - Requested Processor 970MPRev1:CORE2<br>12:37:1=
+8 - Unable to get port number for jtag_eth service, using 6470 default 12:3=
+7:30 - Configuring probe 12:37:30 - cf default; jtagch a32,a32<br>
+12:37:31 - HPE8130A Series Emulation System<br>12:37:31 -=A0=A0=A0=A0 Versi=
+on:=A0=A0 A.01.20 04Apr02 Unreleased=A0=A0=A0=A0=A0=A0=A0=A0=A0 <br>12:37:3=
+1 -=A0=A0=A0=A0 Location:=A0 Generics<br>12:37:31 - HPEGPUL=A0 PowerPC 970 =
+JTAG Emulator=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 <br>12:37:31 -=
+=A0=A0=A0=A0 Version:=A0=A0 A.00.I0 22Jul08 13:48 Proto=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0 <br>
+12:37:31 -=A0 WARNING : Could not read processor status, slowing JTAG clock=
+ and retrying<br>12:37:31 -=A0 ERROR : bad status received, see README for =
+possible causes<br>12:37:36 - Starting MPS mode<br>12:43:18 -=A0 STATUS : C=
+ORE1 status changed from UNKNOWN to HALTED<br>
+12:43:18 -=A0 STATUS : CORE2 status changed from UNKNOWN to HALTED<br>=A0=
+=A0=A0=A0=A0 Note---&gt; Status become HALTED because I reset target board<=
+br>=A0=A0=A0=A0=A0=A0=A0=A0 <br>12:43:19 -=A0 ERROR : CORE1 status changed =
+from HALTED to UNKNOWN<br>12:43:19 -=A0 ERROR : CORE2 status changed from H=
+ALTED to UNKNOWN<br>
+<br><br>Regards,<br>Anil<br><br><br>
+
+--001636e0aa3387bf9e046eb7a43d--
