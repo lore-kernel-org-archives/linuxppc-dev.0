@@ -1,19 +1,30 @@
-Return-Path: <Sylvain.Cote@verint.com>
-Received: from exprod7og116.obsmtp.com (exprod7og116.obsmtp.com [64.18.2.219])
-	by bilbo.ozlabs.org (Postfix) with SMTP id E48B7B708D
+Return-Path: <npiggin@suse.de>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B4C41B70B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 15 Jul 2009 22:22:37 +1000 (EST)
-From: "Cote, Sylvain" <Sylvain.Cote@verint.com>
-To: sudheer a <a.sudheer443@gmail.com>
-Date: Wed, 15 Jul 2009 08:22:23 -0400
-Subject: RE: ethernet driver - problem capturing own packet in promiscous mode
-Message-ID: <579B119545DAEF4689C8FBEEFEC5793F01D4FF0A202C@ATLMBX.verint.corp.verintsystems.com>
-References: <4312c3250907150136y4c98c78ak1b4fe50534248442@mail.gmail.com>
-In-Reply-To: <4312c3250907150136y4c98c78ak1b4fe50534248442@mail.gmail.com>
-Content-Type: multipart/alternative;
-	boundary="_000_579B119545DAEF4689C8FBEEFEC5793F01D4FF0A202CATLMBXverin_"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+	Wed, 15 Jul 2009 23:56:29 +1000 (EST)
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 478BDDDD1C
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2009 23:56:29 +1000 (EST)
+Date: Wed, 15 Jul 2009 15:56:20 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te, ud,
+	md}_free_tlb()
+Message-ID: <20090715135620.GD7298@wotan.suse.de>
+References: <20090715074952.A36C7DDDB2@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090715074952.A36C7DDDB2@ozlabs.org>
+Cc: Linux-Arch <linux-arch@vger.kernel.org>,
+	Linux Memory Management <linux-mm@kvack.org>,
+	Hugh Dickins <hugh@tiscali.co.uk>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,281 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_579B119545DAEF4689C8FBEEFEC5793F01D4FF0A202CATLMBXverin_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-> Hi all
-
-> In ethernet driver  i need to enable promiscous mode and have to capture =
-the packet that is sent by the same ethernet.
-
-> The board is connected to a packet generator and could send/receive packe=
-ts  whenever i need .
-
-> In the board ethernet driver , I made sure that am sending only broadcast=
- packets and promisc mode is enabled but the packets are not captured. If i=
- am sending a packet to the board from packetgenerator it is receiving.
-
-> Could any one please suggest me any clues.
-
-> Having the promisc enabled:
-> Packet sent by packetgenerator is received by board.
-> Packet sent by board is received by packetgenerator, The same packet shou=
-ld be captured by board as promiscuous is enabled. but not happening.
-
-
-The Ethernet interface that sent the packet will never receive the packet i=
-t sent even if you are in promiscuous mode.  To be able to do that you shou=
-ld put your interface in loopback mode.
-In promiscuous mode, you will be able to receive any packets sent by other =
-interfaces (broadcast, multicast and also unicast that is not directed to y=
-ou interface MAC address).  But not
-from your interface.
-
-Regards
-
-Sylvain
-
-This electronic message may contain proprietary and confidential informat=
-ion of Verint Systems Inc., its affiliates and/or subsidiaries.
-The information is intended to be for the use of the individual(s) or
-entity(ies) named above.  If you are not the intended recipient (or autho=
-rized to receive this e-mail for the intended recipient), you may not use=
-, copy, disclose or distribute to anyone this message or any information =
-contained in this message.  If you have received this electronic message =
-in error, please notify us by replying to this e-mail.
-=0D
---_000_579B119545DAEF4689C8FBEEFEC5793F01D4FF0A202CATLMBXverin_
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
-hemas-microsoft-com:office:word" xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-ascii"=
->
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-reply;
-	font-family:Arial;
-	color:navy;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-CA link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New Roman"><=
-span
-lang=3DEN-US style=3D'font-size:12.0pt;color:navy'>&gt; </span></font>Hi al=
-l<o:p></o:p></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span style=3D=
-'font-size:
-12.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New Roman"><=
-span
-style=3D'font-size:12.0pt;color:navy'>&gt; </span></font>In ethernet driver
-&nbsp;i need to enable promiscous mode and have to capture the packet that =
-is
-sent by the same ethernet. <o:p></o:p></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span style=3D=
-'font-size:
-12.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New Roman"><=
-span
-style=3D'font-size:12.0pt;color:navy'>&gt; </span></font>The board is conne=
-cted
-to a packet generator and could send/receive packets &nbsp;whenever i need =
-.<o:p></o:p></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span style=3D=
-'font-size:
-12.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New Roman"><=
-span
-style=3D'font-size:12.0pt;color:navy'>&gt; </span></font>In the board ether=
-net
-driver , I made sure that am sending only broadcast packets and promisc mod=
-e is
-enabled but the packets are not captured. If i am sending a packet to
-the&nbsp;board from&nbsp;packetgenerator it is receiving.<o:p></o:p></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span style=3D=
-'font-size:
-12.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New Roman"><=
-span
-style=3D'font-size:12.0pt;color:navy'>&gt; </span></font>Could any one plea=
-se
-suggest me any clues.<o:p></o:p></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span style=3D=
-'font-size:
-12.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New Roman"><=
-span
-style=3D'font-size:12.0pt;color:navy'>&gt; </span></font>Having the promisc
-enabled:<o:p></o:p></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New Roman"><=
-span
-style=3D'font-size:12.0pt;color:navy'>&gt; </span></font>Packet sent by
-packetgenerator is received by board.<o:p></o:p></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New Roman"><=
-span
-style=3D'font-size:12.0pt;color:navy'>&gt; </span></font>Packet sent by boa=
-rd is
-received by packetgenerator, The same packet should be captured by board as
-promiscuous is enabled. but not happening.<font color=3Dnavy><span
-style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New Roman"><=
-span
-style=3D'font-size:12.0pt;color:navy'>The Ethernet interface that sent the =
-packet
-will never receive the packet it sent even if you are in promiscuous mode.&=
-nbsp; To
-be able to do that you should put your interface in loopback mode.&nbsp; <o=
-:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New Roman"><=
-span
-style=3D'font-size:12.0pt;color:navy'>In promiscuous mode, you will be able=
- to
-receive any packets sent by other interfaces (broadcast, multicast and also
-unicast that is not directed to you interface MAC address). &nbsp;But not<o=
-:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>from your interface.<o:p></o:p></span>=
-</font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Regards<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Sylvain<o:p></o:p></span></font></p>
-
-</div>
-
-</div>
-
-</body>
-
-</html>
-
-<pre>This electronic message may contain proprietary and confidential inf=
-ormation of Verint Systems Inc., its affiliates and/or subsidiaries.
-The information is intended to be for the use of the individual(s) or
-entity(ies) named above.  If you are not the intended recipient (or autho=
-rized to receive this e-mail for the intended recipient), you may not use=
-, copy, disclose or distribute to anyone this message or any information =
-contained in this message.  If you have received this electronic message =
-in error, please notify us by replying to this e-mail.
-=0D
---_000_579B119545DAEF4689C8FBEEFEC5793F01D4FF0A202CATLMBXverin_--
+On Wed, Jul 15, 2009 at 05:49:47PM +1000, Benjamin Herrenschmidt wrote:
+> Upcoming paches to support the new 64-bit "BookE" powerpc architecture
+> will need to have the virtual address corresponding to PTE page when
+> freeing it, due to the way the HW table walker works.
+> 
+> Basically, the TLB can be loaded with "large" pages that cover the whole
+> virtual space (well, sort-of, half of it actually) represented by a PTE
+> page, and which contain an "indirect" bit indicating that this TLB entry
+> RPN points to an array of PTEs from which the TLB can then create direct
+> entries.
+
+RPN is PFN in ppc speak, right?
+
+
+> Thus, in order to invalidate those when PTE pages are deleted,
+> we need the virtual address to pass to tlbilx or tlbivax instructions.
+
+Interesting arrangement. So are these last level ptes modifieable
+from userspace or something? If not, I wonder if you could manage
+them as another level of pointers with the existing pagetable
+functions?
+ 
+
+> The old trick of sticking it somewhere in the PTE page struct page sucks
+> too much, the address is almost readily available in all call sites and
+> almost everybody implemets these as macros, so we may as well add the
+> argument everywhere. I added it to the pmd and pud variants for consistency.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> I would like to merge the new support that depends on this in 2.6.32,
+> so unless there's major objections, I'd like this to go in early during
+> the merge window. We can sort out separately how to carry the patch
+> around in -next until then since the powerpc tree will have a dependency
+> on it.
+
+Can't see any problem with that.
