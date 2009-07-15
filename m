@@ -3,17 +3,18 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BACAFB7096
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 85691B7B67
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jul 2009 01:19:00 +1000 (EST)
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id EF91EDDD1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 01:18:58 +1000 (EST)
+	Thu, 16 Jul 2009 01:19:02 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id ABAA6DDD1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 01:19:01 +1000 (EST)
 From: Wolfgang Denk <wd@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2 v3] fs_enet/mii-fec.c: fix MII speed calculation
-Date: Wed, 15 Jul 2009 17:18:52 +0200
-Message-Id: <1247671133-12148-1-git-send-email-wd@denx.de>
+Subject: [PATCH 2/2] MPC52xx FEC: be more conservative when setting MII_SPEED
+	register
+Date: Wed, 15 Jul 2009 17:18:53 +0200
+Message-Id: <1247671133-12148-2-git-send-email-wd@denx.de>
 In-Reply-To: <1247578966-9847-1-git-send-email-wd@denx.de>
 References: <1247578966-9847-1-git-send-email-wd@denx.de>
 Cc: netdev@vger.kernel.org, Wolfgang Denk <wd@denx.de>
@@ -26,135 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The MII speed calculation was based on the CPU clock (ppc_proc_freq),
-but for MPC512x we must use the bus clock instead.
-
-This patch makes it use the correct clock and makes sure we don't
-clobber reserved bits in the MII_SPEED register.
+This patch adds error checking and prevents clobbering unrelated bits
+(reserved bits or the DIS_PREAMBLE bit) when writing the MII_SPEED
+register on MPC52xx systems.
 
 Signed-off-by: Wolfgang Denk <wd@denx.de>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: Kumar Gala <galak@kernel.crashing.org>
 Cc: <netdev@vger.kernel.org>
 ---
-Please ignore patch v2, it's crap.
-Hope this is a bit better.
+ drivers/net/fec_mpc52xx.c     |    2 +-
+ drivers/net/fec_mpc52xx_phy.c |    6 ++++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
- arch/powerpc/include/asm/mpc5xxx.h   |   10 +++++++++
- arch/powerpc/sysdev/mpc5xxx_clocks.c |   37 ++++++++++++++++++++++++++++++++++
- drivers/net/fs_enet/mii-fec.c        |   13 +++++++++--
- 3 files changed, 57 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mpc5xxx.h b/arch/powerpc/include/asm/mpc5xxx.h
-index 5ce9c5f..86ab29f 100644
---- a/arch/powerpc/include/asm/mpc5xxx.h
-+++ b/arch/powerpc/include/asm/mpc5xxx.h
-@@ -15,8 +15,18 @@
- 
- #ifndef __ASM_POWERPC_MPC5xxx_H__
- #define __ASM_POWERPC_MPC5xxx_H__
-+#include <linux/of_platform.h>
- 
- extern unsigned long mpc5xxx_get_bus_frequency(struct device_node *node);
- 
-+#if defined(CONFIG_PPC_MPC512x) || defined(CONFIG_PPC_MPC52xx)
-+extern int mpc5xxx_get_mii_speed(struct of_device *ofdev);
-+#else
-+static inline int mpc5xxx_get_mii_speed(struct of_device *ofdev)
-+{
-+	return -1;
-+}
-+#endif
-+
- #endif /* __ASM_POWERPC_MPC5xxx_H__ */
- 
-diff --git a/arch/powerpc/sysdev/mpc5xxx_clocks.c b/arch/powerpc/sysdev/mpc5xxx_clocks.c
-index 34e12f9..e26d12b 100644
---- a/arch/powerpc/sysdev/mpc5xxx_clocks.c
-+++ b/arch/powerpc/sysdev/mpc5xxx_clocks.c
-@@ -31,3 +31,40 @@ mpc5xxx_get_bus_frequency(struct device_node *node)
- 	return p_bus_freq ? *p_bus_freq : 0;
+diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+index cc78633..b69d440 100644
+--- a/drivers/net/fec_mpc52xx.c
++++ b/drivers/net/fec_mpc52xx.c
+@@ -639,7 +639,7 @@ static void mpc52xx_fec_hw_init(struct net_device *dev)
+ 	/* set phy speed.
+ 	 * this can't be done in phy driver, since it needs to be called
+ 	 * before fec stuff (even on resume) */
+-	out_be32(&fec->mii_speed, priv->mdio_speed);
++	clrsetbits_be32(&fec->mii_speed, 0x7E, priv->mdio_speed);
  }
- EXPORT_SYMBOL(mpc5xxx_get_bus_frequency);
-+
-+/**
-+ *	mpc5xxx_get_mii_speed - Get the MII_SPEED value
-+ *	@node:	device node
-+ *
-+ *	Returns the MII_SPEED value for MPC512x and MPC52xx systems.
-+ *	The value gets computed such that the resulting MDC frequency
-+ *	is 2.5 MHz or lower.
-+ */
-+
-+int
-+mpc5xxx_get_mii_speed(struct of_device *ofdev)
-+{
-+	unsigned int clock, speed;
-+
-+	clock = mpc5xxx_get_bus_frequency(ofdev->node);
-+
-+	if (!clock) {
-+		dev_err(&ofdev->dev, "could not determine IPS/IPB clock\n");
-+		return -ENODEV;
-+	}
-+
-+	/* scale for a MII clock <= 2.5 MHz */
-+	speed = (clock + 2499999) / 2500000;
-+
-+	/* only 6 bits available for MII speed */
-+	if (speed > 0x3F) {
-+		speed = 0x3F;
-+		dev_err(&ofdev->dev,
-+			"MII clock (%d MHz) exceeds max (2.5 MHz)\n",
-+			clock / speed);
-+	}
-+
-+	/* Field is in bits 25:30 of MII_SPEED register */
-+	return speed << 1;
-+}
-+EXPORT_SYMBOL(mpc5xxx_get_mii_speed);
-diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
-index 75a0999..a28d39f 100644
---- a/drivers/net/fs_enet/mii-fec.c
-+++ b/drivers/net/fs_enet/mii-fec.c
-@@ -36,6 +36,7 @@
- #include <asm/pgtable.h>
- #include <asm/irq.h>
- #include <asm/uaccess.h>
-+#include <asm/mpc5xxx.h>
  
- #include "fs_enet.h"
- #include "fec.h"
-@@ -103,7 +104,6 @@ static int fs_enet_fec_mii_reset(struct mii_bus *bus)
- static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
-                                         const struct of_device_id *match)
- {
--	struct device_node *np = NULL;
- 	struct resource res;
- 	struct mii_bus *new_bus;
- 	struct fec_info *fec;
-@@ -133,13 +133,20 @@ static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
- 	if (!fec->fecp)
- 		goto out_fec;
+ /**
+diff --git a/drivers/net/fec_mpc52xx_phy.c b/drivers/net/fec_mpc52xx_phy.c
+index 31e6d62..f733d43 100644
+--- a/drivers/net/fec_mpc52xx_phy.c
++++ b/drivers/net/fec_mpc52xx_phy.c
+@@ -105,8 +105,10 @@ static int mpc52xx_fec_mdio_probe(struct of_device *of,
+ 	dev_set_drvdata(dev, bus);
  
--	fec->mii_speed = ((ppc_proc_freq + 4999999) / 5000000) << 1;
-+	if (of_device_is_compatible(ofdev->node, "fsl,mpc5121-fec-mdio")) {
-+		i = mpc5xxx_get_mii_speed(ofdev);
-+		if (i < 0)
-+			goto out_unmap_regs;
-+		fec->mii_speed = i;
-+	} else {
-+		fec->mii_speed = ((ppc_proc_freq + 4999999) / 5000000) << 1;
-+	}
+ 	/* set MII speed */
+-	out_be32(&priv->regs->mii_speed,
+-		((mpc5xxx_get_bus_frequency(of->node) >> 20) / 5) << 1);
++	i = mpc5xxx_get_mii_speed(of);
++	if (i<0)
++		goto out_unmap;
++	clrsetbits_be32(&priv->regs->mii_speed, 0x7E, i);
  
- 	setbits32(&fec->fecp->fec_r_cntrl, FEC_RCNTRL_MII_MODE);
- 	setbits32(&fec->fecp->fec_ecntrl, FEC_ECNTRL_PINMUX |
- 	                                  FEC_ECNTRL_ETHER_EN);
- 	out_be32(&fec->fecp->fec_ievent, FEC_ENET_MII);
--	out_be32(&fec->fecp->fec_mii_speed, fec->mii_speed);
-+	clrsetbits_be32(&fec->fecp->fec_mii_speed, 0x7E, fec->mii_speed);
- 
- 	new_bus->phy_mask = ~0;
- 	new_bus->irq = kmalloc(sizeof(int) * PHY_MAX_ADDR, GFP_KERNEL);
+ 	err = of_mdiobus_register(bus, np);
+ 	if (err)
 -- 
 1.6.0.6
