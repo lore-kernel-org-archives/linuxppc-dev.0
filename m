@@ -1,31 +1,30 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BE96DB7B6E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6153EB7B68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jul 2009 11:41:47 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	Thu, 16 Jul 2009 11:54:27 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B13BEDDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 11:41:47 +1000 (EST)
-Subject: Re: [PATCH] Hold reference to device_node during EEH event handling
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Mike Mason <mmlnx@us.ibm.com>
-In-Reply-To: <4A5E4D68.6070909@us.ibm.com>
-References: <4A5E4D68.6070909@us.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-bS8kw8IZH90R2J9vXjKX"
-Date: Thu, 16 Jul 2009 11:41:46 +1000
-Message-Id: <1247708506.9851.8.camel@concordia>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ADCCEDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 11:54:26 +1000 (EST)
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20090715135620.GD7298@wotan.suse.de>
+References: <20090715074952.A36C7DDDB2@ozlabs.org>
+	<20090715135620.GD7298@wotan.suse.de>
+Content-Type: text/plain
+Date: Thu, 16 Jul 2009 11:54:15 +1000
+Message-Id: <1247709255.27937.5.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Cc: Linux-Arch <linux-arch@vger.kernel.org>,
+	Linux Memory Management <linux-mm@kvack.org>,
+	Hugh Dickins <hugh@tiscali.co.uk>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,65 +34,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2009-07-15 at 15:56 +0200, Nick Piggin wrote:
+> On Wed, Jul 15, 2009 at 05:49:47PM +1000, Benjamin Herrenschmidt wrote:
+> > Upcoming paches to support the new 64-bit "BookE" powerpc architecture
+> > will need to have the virtual address corresponding to PTE page when
+> > freeing it, due to the way the HW table walker works.
+> > 
+> > Basically, the TLB can be loaded with "large" pages that cover the whole
+> > virtual space (well, sort-of, half of it actually) represented by a PTE
+> > page, and which contain an "indirect" bit indicating that this TLB entry
+> > RPN points to an array of PTEs from which the TLB can then create direct
+> > entries.
+> 
+> RPN is PFN in ppc speak, right?
 
---=-bS8kw8IZH90R2J9vXjKX
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Ah right, real page number in ppc slang :-)
 
-On Wed, 2009-07-15 at 14:43 -0700, Mike Mason wrote:
-> This patch increments the device_node reference counter when an EEH
-> error occurs and decrements the counter when the event has been
-> handled.  This is to prevent the device_node from being released until
-> eeh_event_handler() has had a chance to deal with the event.  We've
-> seen cases where the device_node is released too soon when an EEH
-> event occurs during a dlpar remove, causing the event handler to
-> attempt to access bad memory locations.
->=20
-> Please review and let me know of any concerns.
+> > Thus, in order to invalidate those when PTE pages are deleted,
+> > we need the virtual address to pass to tlbilx or tlbivax instructions.
+> 
+> Interesting arrangement. So are these last level ptes modifieable
+> from userspace or something? If not, I wonder if you could manage
+> them as another level of pointers with the existing pagetable
+> functions?
 
-Taking a reference sounds sane, but ...
+I don't understand what you mean. Basically, the TLB contains PMD's.
+There's nothing to change to the existing page table layout :-) But
+because they appear as large page TLB entries that cover the virtual
+space covered by a PMD, they need to be invalidated using virtual
+addresses when PMDs are removed.
 
-> Signed-off-by: Mike Mason <mmlnx@us.ibm.com>=20
->=20
-> --- a/arch/powerpc/platforms/pseries/eeh_event.c	2008-10-09 15:13:53.0000=
-00000 -0700
-> +++ b/arch/powerpc/platforms/pseries/eeh_event.c	2009-07-14 14:14:00.0000=
-00000 -0700
-> @@ -75,6 +75,14 @@ static int eeh_event_handler(void * dumm
->  	if (event =3D=3D NULL)
->  		return 0;
-> =20
-> +	/* EEH holds a reference to the device_node, so if it
-> +	 * equals 1 it's no longer valid and the event should
-> +	 * be ignored */
-> +	if (atomic_read(&event->dn->kref.refcount) =3D=3D 1) {
-> +		of_node_put(event->dn);
-> +		return 0;
-> +	}
+> > The old trick of sticking it somewhere in the PTE page struct page sucks
+> > too much, the address is almost readily available in all call sites and
+> > almost everybody implemets these as macros, so we may as well add the
+> > argument everywhere. I added it to the pmd and pud variants for consistency.
+> > 
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> > 
+> > I would like to merge the new support that depends on this in 2.6.32,
+> > so unless there's major objections, I'd like this to go in early during
+> > the merge window. We can sort out separately how to carry the patch
+> > around in -next until then since the powerpc tree will have a dependency
+> > on it.
+> 
+> Can't see any problem with that.
 
-That's really gross :)
+Thanks, can I get an Ack then ? :-)
 
-And what happens if the refcount goes to 1 just after the check? ie.
-here.
-
->  	/* Serialize processing of EEH events */
->  	mutex_lock(&eeh_event_mutex);
->  	eeh_mark_slot(event->dn, EEH_MODE_RECOVERING);
-
-
-cheers
-
-
---=-bS8kw8IZH90R2J9vXjKX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpehVcACgkQdSjSd0sB4dKtrQCgomOFRLtqbHtB4q6NoMnGM3tK
-NdoAoJrS5rvFuAdwTefsXEmC+3hSVX4Y
-=FS4t
------END PGP SIGNATURE-----
-
---=-bS8kw8IZH90R2J9vXjKX--
+Cheers,
+Ben.
