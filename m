@@ -1,24 +1,28 @@
-Return-Path: <Catalin.Marinas@arm.com>
+Return-Path: <jacmet@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 82B4CB708A
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 42720B7087
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 03:52:29 +1000 (EST)
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
-	[193.131.176.58]) by ozlabs.org (Postfix) with ESMTP id A352EDDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 03:52:27 +1000 (EST)
-Subject: Re: [PATCH] kmemleak: Allow kmemleak to be built on powerpc
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: michael@ellerman.id.au
-In-Reply-To: <1247730230.18228.5.camel@concordia>
-References: <f18967360113efe4354a9ad0d71ead9a0f7579ea.1247707485.git.michael@ellerman.id.au>
-	<1247730230.18228.5.camel@concordia>
-Content-Type: text/plain
-Date: Thu, 16 Jul 2009 18:52:19 +0100
-Message-Id: <1247766739.27689.63.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
+	Fri, 17 Jul 2009 06:55:55 +1000 (EST)
+Received: from mail-fx0-f222.google.com (mail-fx0-f222.google.com
+	[209.85.220.222]) by ozlabs.org (Postfix) with ESMTP id 1A9D7DDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 06:55:52 +1000 (EST)
+Received: by fxm22 with SMTP id 22so361894fxm.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 13:55:50 -0700 (PDT)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] mpc83xx/usb.c: fix usb mux setup for mpc834x
+References: <1244547812-3811-1-git-send-email-jacmet@sunsite.dk>
+	<E3FB2692-D60E-4C06-BEDD-45441E67458E@kernel.crashing.org>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Thu, 16 Jul 2009 22:55:47 +0200
+In-Reply-To: <E3FB2692-D60E-4C06-BEDD-45441E67458E@kernel.crashing.org> (Kumar
+	Gala's message of "Wed\, 10 Jun 2009 22\:32\:39 -0500")
+Message-ID: <878wiojqjw.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,22 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-07-16 at 17:43 +1000, Michael Ellerman wrote:
-> On Thu, 2009-07-16 at 11:25 +1000, Michael Ellerman wrote:
-> > Very lightly tested, doesn't crash the kernel.
-> > 
-> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> > ---
-> > 
-> > It doesn't look like we actually need to add any support in the
-> > arch code - or is there something I'm missing?
-> 
-> Hmm, I think we want to add annotations in lib/lmb.c don't we? That's
-> our low-level pre-bootmem allocator.
+>>>>> "Kumar" == Kumar Gala <galak@kernel.crashing.org> writes:
 
-Yes, I think so (I'm not using this on ARM or x86 so I can't really test
-it). Without these hooks, there kmemleak reports aren't that useful
-(probably too many).
+Hi,
+
+ Kumar> On Jun 9, 2009, at 6:43 AM, Peter Korsgaard wrote:
+
+ >> usb0 and usb1 mux settings in the sicrl register were swapped (twice!)
+ >> in mpc834x_usb_cfg(), leading to various strange issues with fsl-ehci
+ >> and full speed devices.
+ >> 
+ >> The USB port config on mpc834x is done using 2 muxes: Port 0 is
+ >> always used for MPH port 0, and port 1 can either be used for MPH
+ >> port 1 or DR (unless DR uses TMDI phy or OTG, then it uses both
+ >> ports) - See 8349 RM figure 1-4..
+ >> 
+ >> mpc8349_usb_cfg() had this inverted for the DR, and it also had
+ >> the bit positions of the usb0 / usb1 mux settings swapped. It
+ >> would basically work if you specified port1 instead of port0 for
+ >> the MPH controller (and happened to use ULPI phys), which is what
+ >> all the 834x dts have done, even though that configuration is
+ >> physically invalid.
+ >> 
+ >> Instead fix mpc8349_usb_cfg() and adjust the dts files to match
+ >> reality.
+ >> 
+ >> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+
+ Kumar> applied.. Please remind me to send this linux-stable for .30 and .29
+
+*Remind*
 
 -- 
-Catalin
+Bye, Peter Korsgaard
