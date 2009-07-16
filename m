@@ -3,27 +3,28 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1A957B7B72
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 07282B7080
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jul 2009 11:56:21 +1000 (EST)
+	Thu, 16 Jul 2009 13:41:32 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5D64DDDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 11:56:20 +1000 (EST)
-Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
+	by ozlabs.org (Postfix) with ESMTPS id 56123DDD1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 13:41:31 +1000 (EST)
+Subject: Re: [PATCH 04/15] swiotlb: remove unnecessary swiotlb_bus_to_virt
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1247708177.9851.4.camel@concordia>
-References: <20090715074952.A36C7DDDB2@ozlabs.org>
-	<1247708177.9851.4.camel@concordia>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+In-Reply-To: <5E909C02-3FA2-4BEB-8C73-F4E4A5A404BF@kernel.crashing.org>
+References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1247187904-31999-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<5E909C02-3FA2-4BEB-8C73-F4E4A5A404BF@kernel.crashing.org>
 Content-Type: text/plain
-Date: Thu, 16 Jul 2009 11:56:05 +1000
-Message-Id: <1247709365.27937.6.camel@pasglop>
+Date: Thu, 16 Jul 2009 13:40:18 +1000
+Message-Id: <1247715618.27937.36.camel@pasglop>
 Mime-Version: 1.0
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-	linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
-	linux-kernel@vger.kernel.org, Linux Memory Management <linux-mm@kvack.org>
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, x86@kernel.org,
+	linux-kernel@vger.kernel.org,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,18 +34,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-07-16 at 11:36 +1000, Michael Ellerman wrote:
+On Mon, 2009-07-13 at 21:17 -0500, Becky Bruce wrote:
 > 
-> Builds for the important architectures, powerpc, ia64, arm, sparc,
-> sparc64, oh and x86:
-> 
-> http://kisskb.ellerman.id.au/kisskb/head/1976/
-> 
-> (based on your test branch 34f25476)
+> phys_to_virt (also, virt_to_phys) is invalid for highmem addresses on  
+> ppc. 
 
-Note for all lurkers: the fails in there are unrelated to the patch
-(mostly warnings triggering our new Werror and probably mostly fixed
-upstream already).
+I would be surprised if x86 was any different here. Most of our highmem
+implementation comes straight from x86 :-)
 
 Cheers,
 Ben.
