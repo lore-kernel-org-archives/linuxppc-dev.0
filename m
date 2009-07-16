@@ -1,25 +1,17 @@
-Return-Path: <ben@codiert.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1B57DB7079
+Return-Path: <Rupesh.Kumar@Lntemsys.com>
+Received: from mail130.messagelabs.com (mail130.messagelabs.com
+	[216.82.250.163])
+	by bilbo.ozlabs.org (Postfix) with SMTP id 3287EB7066
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jul 2009 23:39:37 +1000 (EST)
-Received: from cursor.subgra.de (cursor.subgra.de [78.46.252.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "cursor.subgra.de", Issuer "cursor.subgra.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 9DE61DDD1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 23:39:36 +1000 (EST)
-Date: Thu, 16 Jul 2009 15:12:46 +0200
-From: Benjamin Krill <ben@codiert.org>
-To: enjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Michael Ellerman <michael@ellerman.id.au>
-Subject: rtas instantiation when commandline contains mem
-Message-ID: <20090716131246.GB22901@codiert.org>
+	Fri, 17 Jul 2009 00:54:12 +1000 (EST)
+To: linuxppc-dev@lists.ozlabs.org
+Subject: ECC & Magic bitmask errors with JFFS2 file system on 6.23 kernel for
+	powerpc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <OF4DA6695F.B8912DE2-ON652575F5.004F0DE0-652575F5.00519736@lntemsys.com>
+From: Rupesh Kumar <Rupesh.Kumar@Lntemsys.com>
+Date: Thu, 16 Jul 2009 20:33:11 +0530
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,16 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi
 
-the rtas instantiation (prom_init.c) doesn't work correctly if the
-kernel parameter "mem=" is used. The current code doesn't evaluate
-the kernel parameter which causes the issue that alloc_down
-allocates somewhere in the "real" memory space. So it can
-happen that the allocation space is above "mem=".
+We are using Linux kernel 2.6.23 from freescale LTIB 
+(MPC8313E_RDB_K26_20081226-LTIB.iso) on our custom board. 
+JFFS2 is used as RFS and  nand write.jffs2 utility in the u-boot is used 
+to burn the image on to the nand flash. 
 
-Commit 2babf5c2ec2f2d5de3e38d20f7df7fd815fd10c9 removes the
-evaluation of "mem=".
+When we boot for the first time everything seems to be OK. On subsequent 
+reboots we are seeing following error messages reported by kernel on 
+bootup. 
+In addition we also see Magic bitmask errors being reported. 
 
-cheers
- ben
+///////////////////////////
+mtd->read(0x400 bytes from 0x1b00000) returned ECC error
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x01b001d0: 
+0xfffe instead
+mtd->read(0x400 bytes from 0x2500000) returned ECC error
+mtd->read(0x400 bytes from 0x27c0000) returned ECC error
+mtd->read(0x400 bytes from 0x2c20000) returned ECC error
+mtd->read(0x400 bytes from 0x2cc0000) returned ECC error
+mtd->read(0x400 bytes from 0x2d00000) returned ECC error
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x02d00074: 
+0xfffe instead
+Empty flash at 0x02d00078 ends at 0x02d003e4
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x02d003e4: 
+0xffef instead
+Empty flash at 0x02d003e8 ends at 0x02d00780
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x02d00780: 
+0xfffb instead
+mtd->read(0x400 bytes from 0x3320000) returned ECC error
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x03320190: 
+0xffff instead
+Empty flash at 0x03320194 ends at 0x0332047c
+////////////////////////////
+
+We verified erase size passed as an argument for creating jffs2 file 
+system (initial googling on the issue).
+After contacting freescale we came to know that, it is a known issue and 
+they dont have planned to work on this in near future. :(
+Please give your valuable suggestions so that we can fix this problem and 
+make our board running properly.
+
+Thanks
+Rupesh
