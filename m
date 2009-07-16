@@ -1,18 +1,26 @@
-Return-Path: <Bo.Liu@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 8AC0CB708C
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8612AB7093
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 07:55:15 +1000 (EST)
-Message-ID: <4A5FDCDF.9010005@windriver.com>
-Date: Fri, 17 Jul 2009 10:07:27 +0800
-From: tonyliu <Bo.Liu@windriver.com>
-MIME-Version: 1.0
-To: Rupesh Kumar <Rupesh.Kumar@Lntemsys.com>
-Subject: Re: booting MPC8313 based board with yaffs2 RFS
-References: <OFB2EFC395.7BD1B8AD-ON652575F4.00512780-652575F4.00513235@lntemsys.com>
-In-Reply-To: <OFB2EFC395.7BD1B8AD-ON652575F4.00512780-652575F4.00513235@lntemsys.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+	Fri, 17 Jul 2009 08:36:26 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E91D8DDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 08:36:25 +1000 (EST)
+Subject: Re: rtas instantiation when commandline contains mem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Benjamin Krill <ben@codiert.org>
+In-Reply-To: <20090716131246.GB22901@codiert.org>
+References: <20090716131246.GB22901@codiert.org>
+Content-Type: text/plain
+Date: Fri, 17 Jul 2009 08:36:10 +1000
+Message-Id: <1247783770.27937.61.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,36 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2009-07-16 at 15:12 +0200, Benjamin Krill wrote:
+> Hi,
+> 
+> the rtas instantiation (prom_init.c) doesn't work correctly if the
+> kernel parameter "mem=" is used. The current code doesn't evaluate
+> the kernel parameter which causes the issue that alloc_down
+> allocates somewhere in the "real" memory space. So it can
+> happen that the allocation space is above "mem=".
+> 
+> Commit 2babf5c2ec2f2d5de3e38d20f7df7fd815fd10c9 removes the
+> evaluation of "mem=".
 
-Rupesh Kumar wrote:
-> Hi
-> I am using MPC8313 board which is currently booting with JFFS2 root file 
-> system. 
-> I am using linux kernel version 2.6.23 from FreeScale's LTIB for MPC8313. 
->
-> As, I want it to boot with YAFFS2 root file system, I did compile kernel 
-> with yaffs2 support, craeted yaffs2 rootfile system and passed yaffs2 
-> partiton of nand in bootargs. However it didnot work.
->
->
-> If any one has done it successfully, can please share the steps to be 
-> followed ?
->   
-More detailed info maybe helpful for debugging this issue.
+Ah yes, we don't constraint prom_init.c to mem=, only the kernel
 
-1. What nand flash is on-board? what's the size of the nand flash page 
-size, 512/2048?
-2. what's the version of mkyaffs2image you are using?
-3. Can you mount an empty nand flash partition using yaffs2 type,
-mount  /dev/mtdblock##x   xxx
-4. It's better to attatch bootup message.
-
-Tony
-> Thanks
-> Rupesh
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->   
+Cheers,
+Ben.
