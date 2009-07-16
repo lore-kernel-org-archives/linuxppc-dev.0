@@ -1,26 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8612AB7093
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 40157B7096
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 08:36:26 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E91D8DDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 08:36:25 +1000 (EST)
-Subject: Re: rtas instantiation when commandline contains mem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Benjamin Krill <ben@codiert.org>
-In-Reply-To: <20090716131246.GB22901@codiert.org>
-References: <20090716131246.GB22901@codiert.org>
-Content-Type: text/plain
-Date: Fri, 17 Jul 2009 08:36:10 +1000
-Message-Id: <1247783770.27937.61.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	Fri, 17 Jul 2009 08:37:55 +1000 (EST)
+Received: from mail-yx0-f199.google.com (mail-yx0-f199.google.com
+	[209.85.210.199]) by ozlabs.org (Postfix) with ESMTP id 9DEF9DDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 08:37:53 +1000 (EST)
+Received: by yxe37 with SMTP id 37so754414yxe.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 15:37:51 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20090716212129.70710832E416@gemini.denx.de>
+References: <1247578966-9847-1-git-send-email-wd@denx.de>
+	<1247671133-12148-1-git-send-email-wd@denx.de>
+	<fa686aa40907151017n76524708tdb028689adad4b5f@mail.gmail.com>
+	<20090716212129.70710832E416@gemini.denx.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 16 Jul 2009 16:37:31 -0600
+Message-ID: <fa686aa40907161537t46f24258h5f320d196b715843@mail.gmail.com>
+Subject: Re: [PATCH 1/2 v3] fs_enet/mii-fec.c: fix MII speed calculation
+To: Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,19 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-07-16 at 15:12 +0200, Benjamin Krill wrote:
-> Hi,
-> 
-> the rtas instantiation (prom_init.c) doesn't work correctly if the
-> kernel parameter "mem=" is used. The current code doesn't evaluate
-> the kernel parameter which causes the issue that alloc_down
-> allocates somewhere in the "real" memory space. So it can
-> happen that the allocation space is above "mem=".
-> 
-> Commit 2babf5c2ec2f2d5de3e38d20f7df7fd815fd10c9 removes the
-> evaluation of "mem=".
+On Thu, Jul 16, 2009 at 3:21 PM, Wolfgang Denk<wd@denx.de> wrote:
+> Dear Grant Likely,
+>
+> In message <fa686aa40907151017n76524708tdb028689adad4b5f@mail.gmail.com> =
+you wrote:
+>> On Wed, Jul 15, 2009 at 9:18 AM, Wolfgang Denk<wd@denx.de> wrote:
+>> > The MII speed calculation was based on the CPU clock (ppc_proc_freq),
+>> > but for MPC512x we must use the bus clock instead.
+>> >
+>> > This patch makes it use the correct clock and makes sure we don't
+>> > clobber reserved bits in the MII_SPEED register.
+> ...
+>> Drop the common code bit. =A0The 5200 and 5121 are different devices and
+>> it is a tiny bit of code. =A0I don't think there is any benefit to
+>> having it as a common function. =A0Just roll the get_mii_speed function
+>> in the mii-fec driver itself.
+>
+> I don't like to see the code repeated - it makes maintenance harder
+> and increases the memory footprint. But if you like it that way I'll
+> do that.
 
-Ah yes, we don't constraint prom_init.c to mem=, only the kernel
+Neither do I, but in this case has some mitigating factors.  diff stat
+is interesting:
 
-Cheers,
-Ben.
+Old:
+ arch/powerpc/include/asm/mpc5xxx.h   |   10 +++++++++
+ arch/powerpc/sysdev/mpc5xxx_clocks.c |   37 ++++++++++++++++++++++++++++++=
+++++
+ drivers/net/fs_enet/mii-fec.c        |   13 +++++++++--
+ drivers/net/fec_mpc52xx.c     |    2 +-
+ drivers/net/fec_mpc52xx_phy.c |    6 ++++--
+ 5 files changed, 62 insertions(+), 6 deletions(-)
+
+New:
+ drivers/net/fs_enet/mii-fec.c |   35 +++++++++++++++++++++++++++++++----
+ drivers/net/fec_mpc52xx.c     |    2 +-
+ drivers/net/fec_mpc52xx_phy.c |   21 ++++++++++++++++++---
+ 3 files changed, 50 insertions(+), 8 deletions(-)
+
+If the two devices were somewhat related then my opinion might be
+different.  However the combination of the tiny amount of calculation
+code, the drivers being kept completely separate (or at least as
+separate as they were before), the smaller code impact, and the lower
+driver complexity (because the calculation code is inline instead of
+in a different file) makes me like the second approach is better.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
