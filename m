@@ -3,29 +3,28 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B9005B7B6B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BE96DB7B6E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jul 2009 11:36:18 +1000 (EST)
+	Thu, 16 Jul 2009 11:41:47 +1000 (EST)
 Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A117FDDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 11:36:18 +1000 (EST)
-Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
+	by ozlabs.org (Postfix) with ESMTPS id B13BEDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 11:41:47 +1000 (EST)
+Subject: Re: [PATCH] Hold reference to device_node during EEH event handling
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090715074952.A36C7DDDB2@ozlabs.org>
-References: <20090715074952.A36C7DDDB2@ozlabs.org>
+To: Mike Mason <mmlnx@us.ibm.com>
+In-Reply-To: <4A5E4D68.6070909@us.ibm.com>
+References: <4A5E4D68.6070909@us.ibm.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-3sW64rSI2yIG/UuMyqDm"
-Date: Thu, 16 Jul 2009 11:36:17 +1000
-Message-Id: <1247708177.9851.4.camel@concordia>
+	boundary="=-bS8kw8IZH90R2J9vXjKX"
+Date: Thu, 16 Jul 2009 11:41:46 +1000
+Message-Id: <1247708506.9851.8.camel@concordia>
 Mime-Version: 1.0
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-	linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
-	linux-kernel@vger.kernel.org, Linux Memory Management <linux-mm@kvack.org>
+Cc: linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
+	Paul Mackerras <paulus@samba.org>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,38 +36,64 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-3sW64rSI2yIG/UuMyqDm
+--=-bS8kw8IZH90R2J9vXjKX
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2009-07-15 at 17:49 +1000, Benjamin Herrenschmidt wrote:
-> Upcoming paches to support the new 64-bit "BookE" powerpc architecture
-> will need to have the virtual address corresponding to PTE page when
-> freeing it, due to the way the HW table walker works.
+On Wed, 2009-07-15 at 14:43 -0700, Mike Mason wrote:
+> This patch increments the device_node reference counter when an EEH
+> error occurs and decrements the counter when the event has been
+> handled.  This is to prevent the device_node from being released until
+> eeh_event_handler() has had a chance to deal with the event.  We've
+> seen cases where the device_node is released too soon when an EEH
+> event occurs during a dlpar remove, causing the event handler to
+> attempt to access bad memory locations.
+>=20
+> Please review and let me know of any concerns.
 
-> I haven't had a chance to test or even build on most architectures, the
-> patch is reasonably trivial but I may have screwed up regardless, I
-> appologize in advance, let me know if something is wrong.
+Taking a reference sounds sane, but ...
 
-Builds for the important architectures, powerpc, ia64, arm, sparc,
-sparc64, oh and x86:
+> Signed-off-by: Mike Mason <mmlnx@us.ibm.com>=20
+>=20
+> --- a/arch/powerpc/platforms/pseries/eeh_event.c	2008-10-09 15:13:53.0000=
+00000 -0700
+> +++ b/arch/powerpc/platforms/pseries/eeh_event.c	2009-07-14 14:14:00.0000=
+00000 -0700
+> @@ -75,6 +75,14 @@ static int eeh_event_handler(void * dumm
+>  	if (event =3D=3D NULL)
+>  		return 0;
+> =20
+> +	/* EEH holds a reference to the device_node, so if it
+> +	 * equals 1 it's no longer valid and the event should
+> +	 * be ignored */
+> +	if (atomic_read(&event->dn->kref.refcount) =3D=3D 1) {
+> +		of_node_put(event->dn);
+> +		return 0;
+> +	}
 
-http://kisskb.ellerman.id.au/kisskb/head/1976/
+That's really gross :)
 
-(based on your test branch 34f25476)
+And what happens if the refcount goes to 1 just after the check? ie.
+here.
+
+>  	/* Serialize processing of EEH events */
+>  	mutex_lock(&eeh_event_mutex);
+>  	eeh_mark_slot(event->dn, EEH_MODE_RECOVERING);
+
 
 cheers
 
---=-3sW64rSI2yIG/UuMyqDm
+
+--=-bS8kw8IZH90R2J9vXjKX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkpehAQACgkQdSjSd0sB4dIe4QCgsEWUeUUCjt33SGp2XpLqD/1W
-/QsAn37UyeAeK5Msl22yj/kzj0VYowyT
-=Lbt0
+iEYEABECAAYFAkpehVcACgkQdSjSd0sB4dKtrQCgomOFRLtqbHtB4q6NoMnGM3tK
+NdoAoJrS5rvFuAdwTefsXEmC+3hSVX4Y
+=FS4t
 -----END PGP SIGNATURE-----
 
---=-3sW64rSI2yIG/UuMyqDm--
+--=-bS8kw8IZH90R2J9vXjKX--
