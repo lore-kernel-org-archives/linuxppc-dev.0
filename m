@@ -1,17 +1,23 @@
-Return-Path: <sumeshkkn@hotmail.com>
-Received: from blu0-omc3-s21.blu0.hotmail.com (blu0-omc3-s21.blu0.hotmail.com
-	[65.55.116.96])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 233F2B7080
+Return-Path: <anildahiya80@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 14538B707C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jul 2009 22:15:28 +1000 (EST)
-Message-ID: <BLU124-W13E23FC260877718FE8353B4210@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_dbcbff76-b1ec-4de7-afd9-b201946874f7_"
-From: Sumesh Kaana <sumeshkkn@hotmail.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Linux with RAM mapped other than zero.
-Date: Thu, 16 Jul 2009 12:08:46 +0000
+	Thu, 16 Jul 2009 22:40:51 +1000 (EST)
+Received: from mail-pz0-f204.google.com (mail-pz0-f204.google.com
+	[209.85.222.204]) by ozlabs.org (Postfix) with ESMTP id 46C0FDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 22:40:48 +1000 (EST)
+Received: by pzk42 with SMTP id 42so64438pzk.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 05:40:47 -0700 (PDT)
 MIME-Version: 1.0
+Date: Thu, 16 Jul 2009 18:02:58 +0530
+Message-ID: <73afa9bf0907160532l5525124cg72bee2631e3dab66@mail.gmail.com>
+Subject: riscwatch shows up core status UNKNOWN for 970mp ppc processor
+From: anil kumar <anildahiya80@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=000e0cd28d52373116046ed1dff8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,136 +27,214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_dbcbff76-b1ec-4de7-afd9-b201946874f7_
-Content-Type: text/plain; charset="iso-8859-1"
+--000e0cd28d52373116046ed1dff8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hello
+I am newbie to RISCWatch and debugging using JTAG interface .I want to debug
+Linux Kernel on target board
+using jtag interface provided on board.
+
+To  debug 970MP dual core ppc processor on traget board, I installed
+RISCWatch software on my window host.
+
+My Setup:
+----------
+   Host <--(over ethernet)--> RISCWatch 13H6423 <--(jtag interface)--> 970MP
+Processor
+
+I am able to detect two core on target 970MP processor but it shows both
+cores as `UNKNOWN` . I have no idea,
+why riscwatch shows up status of both cores as UNKNOWN?
+
+I would like to mention:
+-------------------------
+1) After attaching JTAG cable & switching on riscwatch box, powered cycle
+was done on the target board
+   and restart RISCWatch. But still core status is shown `UNKNOWN`
+2) For PVR value 0x00440101, I used `REV = 1' in rwppc.env file. Correct us
+if I am wrong.
+3) I am able to ping RISCWatch 13H6423 from host system.
+4) When I reset target board, target status changes from "UNKNOWN to HALTED"
+and "HALTED to UNKNOWN"
+
+I noticed that PVR register value is 0x00440101. I am not sure if this
+confirms that revision of the processor(970mp) is 1.
+
+
+Please find the rwppc.env file (C:\Program Files\RISCWatch\rwppc.env) that I
+configured:
+------------------------------
+----------------------------------------------------------
+PROC = 970MP
+REV =  1
+TARGET_TYPE = jtag_eth
+TARGET_NAME = 192.168.10.5
+RWPPC_DIR = .
+SEARCH_PATH = .
+LOG_FILE_DIR = .
+SAVE_LAYOUT = no
+PRD_FILE = rwppc.prd
+
+
+
+Please find board information:
+------------------------------
+
+KAT2000 970MP (1.0)=> boardinfo
+board config data version: 1.0
+processor name           : 970MP
+processor PVR value      : 0x00440101
+timer clock frequency    : 112500000
+total SDRAM memory       : 4096MB
+SDRAM frequency          : 533333333
+system clk frequency (Hz): 225000000
+CPU frequency            : 1800000000
+CPU frequency ind. est.  : 1800001200
+CPU to EI speed ratio    : 2:1
+frequency scaling divider: 1
+serial clk frequency     : 1843200
+HID0 value               : 0011008180000000
+HID1 value               : fd3c200000000000
+HID4 value               : 0000001000000000
+HID5 value               : 0000000000000080
+SDR1 value               : 0000000000d00002
+PIR  value               : 00000000
+Ethernet hardware addr 0 : FFFFFFFFFFFF
+
+
+RISCWatch log:
+--------------
+
+12:37:18 - RISCWatch program start
+12:37:18 - RISCWatch  v7.1 for Windows XP
+12:37:18 - Current directory: C:\Program Files\RISCWatch
+12:37:18 - Environment file: RWPPC.ENV
+12:37:18 - RWPPC_DIR = .
+12:37:18 - TARGET_TYPE = JTAG_Ethernet
+12:37:18 - TARGET_NAME = 192.168.10.5
+12:37:18 - Requested Processor 970MPRev1:CORE1
+12:37:18 - Requested Processor 970MPRev1:CORE2
+12:37:18 - Unable to get port number for jtag_eth service, using 6470
+default 12:37:30 - Configuring probe 12:37:30 - cf default; jtagch a32,a32
+12:37:31 - HPE8130A Series Emulation System
+12:37:31 -     Version:   A.01.20 04Apr02 Unreleased
+12:37:31 -     Location:  Generics
+12:37:31 - HPEGPUL  PowerPC 970 JTAG Emulator
+12:37:31 -     Version:   A.00.I0 22Jul08 13:48 Proto
+12:37:31 -  WARNING : Could not read processor status, slowing JTAG clock
+and retrying
+12:37:31 -  ERROR : bad status received, see README for possible causes
+12:37:36 - Starting MPS mode
+12:43:18 -  STATUS : CORE1 status changed from UNKNOWN to HALTED
+12:43:18 -  STATUS : CORE2 status changed from UNKNOWN to HALTED
+      Note---> Status become HALTED because I reset target board
+
+12:43:19 -  ERROR : CORE1 status changed from HALTED to UNKNOWN
+12:43:19 -  ERROR : CORE2 status changed from HALTED to UNKNOWN
+
+Thanks in advance.
+
+Regards,
+Anil
+
+--000e0cd28d52373116046ed1dff8
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
+Hello <br>I am newbie to RISCWatch and debugging using JTAG interface .I wa=
+nt to debug Linux Kernel on target board <br>using jtag interface provided =
+on board.<br><br>To=A0 debug 970MP dual core ppc processor on traget board,=
+ I installed RISCWatch software on my window host. <br>
 
-Hi all=2C I've a system design  (32 bit) with SDRAM mapped at 0xf8000000 ra=
-ther than at 0. what are the changes i should make to successfully boot a k=
-ernel..? my design with SDRAM at 0 (64MB) is working fine with xilinx git l=
-ine kernel(2.6.27).  i was using 'make simpleImage.xilinx (where xilinx.dts=
- is my device tree file) i tried to change the link_address in arch/powerpc=
-/boot/wrapper from 0x400000 to 0xf4000000. when i analysed the dump with st=
-ep mode in xmd=2C it fails in platform_init()function in arch/powerpc/boot/=
-simpleboot.c may be at /* Only interested in memory based at 0 */
- for (i =3D 0=3B i < *na=3B i++)
-  if (*reg++ !=3D 0)
-   fatal("Memory range is not based at address 0\n")=3B  can anyone tell wh=
-at are the changes i shoud do if my memory ranges from 0xf8000000 to 0xfbff=
-ffff..? (64MB)
-is it possible to change the  physical address of kernel from 0 to any othe=
-r location..? is the option provided in menuconfig..? or in any linker scri=
-pt..? =20
-  Thanks in advance=2CSumesh.
-_________________________________________________________________
-Looking for a new car this winter? Let us help with car news=2C reviews and=
- more
-http://a.ninemsn.com.au/b.aspx?URL=3Dhttp%3A%2F%2Fsecure%2Dau%2Eimrworldwid=
-e%2Ecom%2Fcgi%2Dbin%2Fa%2Fci%5F450304%2Fet%5F2%2Fcg%5F801459%2Fpi%5F1004813=
-%2Fai%5F859641&_t=3D762955845&_r=3Dtig_OCT07&_m=3DEXT=
+<br>My Setup:<br>
+----------<br>
+=A0=A0 Host &lt;--(over ethernet)--&gt; RISCWatch 13H6423 &lt;--(jtag inter=
+face)--&gt; 970MP Processor=A0 <br>
+<br>I am able to detect two core on target 970MP processor but it shows bot=
+h cores as `UNKNOWN` . I have no idea, <br>why riscwatch shows up status of=
+ both cores as UNKNOWN?<br><br>I would like to mention:<br>----------------=
+---------<br>
 
---_dbcbff76-b1ec-4de7-afd9-b201946874f7_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+1) After attaching JTAG cable &amp; switching on riscwatch box, powered cyc=
+le was done on the target board <br>=A0=A0 and restart RISCWatch. But still=
+ core status is shown `UNKNOWN`<br>2) For PVR value 0x00440101, I used `REV=
+ =3D 1&#39; in rwppc.env file. Correct us if I am wrong.<br>
 
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt=3B
-font-family:Verdana
-}
-</style>
-</head>
-<body class=3D'hmmessage'>
-<span class=3D"Apple-style-span" style=3D"color: rgb(0=2C 0=2C 0)=3B font-f=
-amily: Arial=3B -webkit-border-horizontal-spacing: 2px=3B -webkit-border-ve=
-rtical-spacing: 2px=3B "><p style=3D"margin-top: 0px=3B margin-right: 0px=
-=3B margin-bottom: 0px=3B margin-left: 0px=3B padding-top: 0px=3B padding-r=
-ight: 0px=3B padding-bottom: 0px=3B padding-left: 0px=3B ">Hi all=2C</p><p =
-style=3D"margin-top: 0px=3B margin-right: 0px=3B margin-bottom: 0px=3B marg=
-in-left: 0px=3B padding-top: 0px=3B padding-right: 0px=3B padding-bottom: 0=
-px=3B padding-left: 0px=3B ">&nbsp=3B</p><p style=3D"margin-top: 0px=3B mar=
-gin-right: 0px=3B margin-bottom: 0px=3B margin-left: 0px=3B padding-top: 0p=
-x=3B padding-right: 0px=3B padding-bottom: 0px=3B padding-left: 0px=3B ">I'=
-ve a system design&nbsp=3B&nbsp=3B(32 bit)&nbsp=3Bwith SDRAM mapped at 0xf8=
-000000 rather than at 0. what are the changes i should make to successfully=
- boot a kernel..?</p><p style=3D"margin-top: 0px=3B margin-right: 0px=3B ma=
-rgin-bottom: 0px=3B margin-left: 0px=3B padding-top: 0px=3B padding-right: =
-0px=3B padding-bottom: 0px=3B padding-left: 0px=3B ">&nbsp=3B</p><p style=
-=3D"margin-top: 0px=3B margin-right: 0px=3B margin-bottom: 0px=3B margin-le=
-ft: 0px=3B padding-top: 0px=3B padding-right: 0px=3B padding-bottom: 0px=3B=
- padding-left: 0px=3B "><em>my design with SDRAM at 0 (64MB) is working fin=
-e with xilinx git line kernel(2.6.27).&nbsp=3B i was using 'make simpleImag=
-e.xilinx (where xilinx.dts is my device tree file)</em></p><p style=3D"marg=
-in-top: 0px=3B margin-right: 0px=3B margin-bottom: 0px=3B margin-left: 0px=
-=3B padding-top: 0px=3B padding-right: 0px=3B padding-bottom: 0px=3B paddin=
-g-left: 0px=3B ">&nbsp=3B</p><p style=3D"margin-top: 0px=3B margin-right: 0=
-px=3B margin-bottom: 0px=3B margin-left: 0px=3B padding-top: 0px=3B padding=
--right: 0px=3B padding-bottom: 0px=3B padding-left: 0px=3B ">i tried to cha=
-nge the link_address in arch/powerpc/boot/wrapper from 0x400000 to 0xf40000=
-00. when i analysed the dump with step mode&nbsp=3Bin xmd=2C it fails in&nb=
-sp=3B<strong>platform_init()</strong>function in&nbsp=3B<strong>arch/powerp=
-c/boot/simpleboot.c</strong></p><p style=3D"margin-top: 0px=3B margin-right=
-: 0px=3B margin-bottom: 0px=3B margin-left: 0px=3B padding-top: 0px=3B padd=
-ing-right: 0px=3B padding-bottom: 0px=3B padding-left: 0px=3B ">&nbsp=3B</p=
-><p style=3D"margin-top: 0px=3B margin-right: 0px=3B margin-bottom: 0px=3B =
-margin-left: 0px=3B padding-top: 0px=3B padding-right: 0px=3B padding-botto=
-m: 0px=3B padding-left: 0px=3B ">may be at</p><p style=3D"margin-top: 0px=
-=3B margin-right: 0px=3B margin-bottom: 0px=3B margin-left: 0px=3B padding-=
-top: 0px=3B padding-right: 0px=3B padding-bottom: 0px=3B padding-left: 0px=
-=3B ">&nbsp=3B</p><p style=3D"margin-top: 0px=3B margin-right: 0px=3B margi=
-n-bottom: 0px=3B margin-left: 0px=3B padding-top: 0px=3B padding-right: 0px=
-=3B padding-bottom: 0px=3B padding-left: 0px=3B "><em>/* Only interested in=
- memory based at 0 */<br>&nbsp=3Bfor (i =3D 0=3B i &lt=3B *na=3B i++)<br>&n=
-bsp=3B&nbsp=3Bif (*reg++ !=3D 0)<br>&nbsp=3B&nbsp=3B&nbsp=3Bfatal("Memory r=
-ange is not based at address 0\n")=3B</em></p><p style=3D"margin-top: 0px=
-=3B margin-right: 0px=3B margin-bottom: 0px=3B margin-left: 0px=3B padding-=
-top: 0px=3B padding-right: 0px=3B padding-bottom: 0px=3B padding-left: 0px=
-=3B ">&nbsp=3B</p><p style=3D"margin-top: 0px=3B margin-right: 0px=3B margi=
-n-bottom: 0px=3B margin-left: 0px=3B padding-top: 0px=3B padding-right: 0px=
-=3B padding-bottom: 0px=3B padding-left: 0px=3B ">&nbsp=3B</p><p style=3D"m=
-argin-top: 0px=3B margin-right: 0px=3B margin-bottom: 0px=3B margin-left: 0=
-px=3B padding-top: 0px=3B padding-right: 0px=3B padding-bottom: 0px=3B padd=
-ing-left: 0px=3B ">can anyone tell what are the changes i shoud do if my me=
-mory ranges from 0xf8000000 to 0xfbffffff..? (64MB)</p><p style=3D"margin-t=
-op: 0px=3B margin-right: 0px=3B margin-bottom: 0px=3B margin-left: 0px=3B p=
-adding-top: 0px=3B padding-right: 0px=3B padding-bottom: 0px=3B padding-lef=
-t: 0px=3B "><br></p><p style=3D"margin-top: 0px=3B margin-right: 0px=3B mar=
-gin-bottom: 0px=3B margin-left: 0px=3B padding-top: 0px=3B padding-right: 0=
-px=3B padding-bottom: 0px=3B padding-left: 0px=3B ">is it possible to chang=
-e the &nbsp=3Bphysical address of kernel from 0 to any other location..? is=
- the option provided in menuconfig..? or in any linker script..?</p><p styl=
-e=3D"margin-top: 0px=3B margin-right: 0px=3B margin-bottom: 0px=3B margin-l=
-eft: 0px=3B padding-top: 0px=3B padding-right: 0px=3B padding-bottom: 0px=
-=3B padding-left: 0px=3B ">&nbsp=3B</p><p style=3D"margin-top: 0px=3B margi=
-n-right: 0px=3B margin-bottom: 0px=3B margin-left: 0px=3B padding-top: 0px=
-=3B padding-right: 0px=3B padding-bottom: 0px=3B padding-left: 0px=3B ">&nb=
-sp=3B</p><p style=3D"margin-top: 0px=3B margin-right: 0px=3B margin-bottom:=
- 0px=3B margin-left: 0px=3B padding-top: 0px=3B padding-right: 0px=3B paddi=
-ng-bottom: 0px=3B padding-left: 0px=3B "><br></p><p style=3D"margin-top: 0p=
-x=3B margin-right: 0px=3B margin-bottom: 0px=3B margin-left: 0px=3B padding=
--top: 0px=3B padding-right: 0px=3B padding-bottom: 0px=3B padding-left: 0px=
-=3B ">&nbsp=3B</p><p style=3D"margin-top: 0px=3B margin-right: 0px=3B margi=
-n-bottom: 0px=3B margin-left: 0px=3B padding-top: 0px=3B padding-right: 0px=
-=3B padding-bottom: 0px=3B padding-left: 0px=3B ">&nbsp=3B</p><p style=3D"m=
-argin-top: 0px=3B margin-right: 0px=3B margin-bottom: 0px=3B margin-left: 0=
-px=3B padding-top: 0px=3B padding-right: 0px=3B padding-bottom: 0px=3B padd=
-ing-left: 0px=3B ">Thanks in advance=2C</p><p style=3D"margin-top: 0px=3B m=
-argin-right: 0px=3B margin-bottom: 0px=3B margin-left: 0px=3B padding-top: =
-0px=3B padding-right: 0px=3B padding-bottom: 0px=3B padding-left: 0px=3B ">=
-Sumesh.</p></span><br /><hr />Let us help with car news=2C reviews and more=
- <a href=3D'http://a.ninemsn.com.au/b.aspx?URL=3Dhttp%3A%2F%2Fsecure%2Dau%2=
-Eimrworldwide%2Ecom%2Fcgi%2Dbin%2Fa%2Fci%5F450304%2Fet%5F2%2Fcg%5F801459%2F=
-pi%5F1004813%2Fai%5F859641&_t=3D762955845&_r=3Dtig_OCT07&_m=3DEXT' target=
-=3D'_new'>Looking for a new car this winter?</a></body>
-</html>=
+3) I am able to ping RISCWatch 13H6423 from host system.<br>4) When I reset=
+ target board, target status changes from &quot;UNKNOWN to HALTED&quot; and=
+ &quot;HALTED to UNKNOWN&quot;<br><br>I noticed that PVR register value is =
+0x00440101. I am not sure if this confirms that revision of the processor(9=
+70mp) is 1.<br>
 
---_dbcbff76-b1ec-4de7-afd9-b201946874f7_--
+
+<br><br>Please find the rwppc.env file (C:\Program Files\RISCWatch\rwppc.en=
+v) that I configured:<br>
+------------------------------<div id=3D":ww" class=3D"ii gt">-------------=
+---------------------------------------------<br>
+PROC =3D 970MP<br>
+REV =3D=A0 1<br>
+TARGET_TYPE =3D jtag_eth<br>
+TARGET_NAME =3D 192.168.10.5<br>
+RWPPC_DIR =3D .<br>
+SEARCH_PATH =3D .<br>
+LOG_FILE_DIR =3D .<br>
+SAVE_LAYOUT =3D no<br>
+PRD_FILE =3D rwppc.prd<br>
+=A0<br>
+<br><br>Please find board information:<br>------------------------------<br=
+><br>KAT2000 970MP (1.0)=3D&gt; boardinfo<br>board config data version: 1.0=
+<br>processor name=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 : 970MP<br>processor PVR v=
+alue=A0=A0=A0=A0=A0 : 0x00440101<br>
+
+timer clock frequency=A0=A0=A0 : 112500000<br>total SDRAM memory=A0=A0=A0=
+=A0=A0=A0 : 4096MB<br>SDRAM frequency=A0=A0=A0=A0=A0=A0=A0=A0=A0 : 53333333=
+3<br>system clk frequency (Hz): 225000000<br>CPU frequency=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0 : 1800000000<br>CPU frequency ind. est.=A0 : 1800001200<=
+br>
+
+CPU to EI speed ratio=A0=A0=A0 : 2:1<br>frequency scaling divider: 1<br>ser=
+ial clk frequency=A0=A0=A0=A0 : 1843200<br>HID0 value=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0 : 0011008180000000<br>HID1 value=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0 : fd3c200000000000<br>HID4 value=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0 : 0000001000000000<br>
+
+HID5 value=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 : 0000000000000080<br>=
+SDR1 value=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 : 0000000000d00002<br>=
+PIR=A0 value=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 : 00000000<br>Ethern=
+et hardware addr 0 : FFFFFFFFFFFF<br>=A0<br>=A0<br>RISCWatch log:<br>------=
+--------<br>
+
+<br>12:37:18 - RISCWatch program start<br>12:37:18 - RISCWatch=A0 v7.1 for =
+Windows XP<br>12:37:18 - Current directory: C:\Program Files\RISCWatch<br>1=
+2:37:18 - Environment file: RWPPC.ENV<br>12:37:18 - RWPPC_DIR =3D .<br>12:3=
+7:18 - TARGET_TYPE =3D JTAG_Ethernet<br>
+
+12:37:18 - TARGET_NAME =3D 192.168.10.5<br>12:37:18 - Requested Processor 9=
+70MPRev1:CORE1<br>12:37:18 - Requested Processor 970MPRev1:CORE2<br>12:37:1=
+8
+- Unable to get port number for jtag_eth service, using 6470 default
+12:37:30 - Configuring probe 12:37:30 - cf default; jtagch a32,a32<br>
+12:37:31 - HPE8130A Series Emulation System<br>12:37:31 -=A0=A0=A0=A0 Versi=
+on:=A0=A0 A.01.20 04Apr02 Unreleased=A0=A0=A0=A0=A0=A0=A0=A0=A0 <br>12:37:3=
+1 -=A0=A0=A0=A0 Location:=A0 Generics<br>12:37:31 - HPEGPUL=A0 PowerPC 970 =
+JTAG Emulator=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 <br>12:37:31 -=
+=A0=A0=A0=A0 Version:=A0=A0 A.00.I0 22Jul08 13:48 Proto=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0 <br>
+
+12:37:31 -=A0 WARNING : Could not read processor status, slowing JTAG clock=
+ and retrying<br>12:37:31 -=A0 ERROR : bad status received, see README for =
+possible causes<br>12:37:36 - Starting MPS mode<br>12:43:18 -=A0 STATUS : C=
+ORE1 status changed from UNKNOWN to HALTED<br>
+
+12:43:18 -=A0 STATUS : CORE2 status changed from UNKNOWN to HALTED<br>=A0=
+=A0=A0=A0=A0 Note---&gt; Status become HALTED because I reset target board<=
+br>=A0=A0=A0=A0=A0=A0=A0=A0 <br>12:43:19 -=A0 ERROR : CORE1 status changed =
+from HALTED to UNKNOWN<br>12:43:19 -=A0 ERROR : CORE2 status changed from H=
+ALTED to UNKNOWN<br>
+
+<br>Thanks in advance.<br><br>Regards,<br><font color=3D"#888888">Anil<br><=
+/font></div>
+
+--000e0cd28d52373116046ed1dff8--
