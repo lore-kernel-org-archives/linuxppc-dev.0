@@ -1,29 +1,26 @@
-Return-Path: <jacmet@gmail.com>
+Return-Path: <wd@denx.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 42720B7087
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 333E3B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 06:55:55 +1000 (EST)
-Received: from mail-fx0-f222.google.com (mail-fx0-f222.google.com
-	[209.85.220.222]) by ozlabs.org (Postfix) with ESMTP id 1A9D7DDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 06:55:52 +1000 (EST)
-Received: by fxm22 with SMTP id 22so361894fxm.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 13:55:50 -0700 (PDT)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] mpc83xx/usb.c: fix usb mux setup for mpc834x
-References: <1244547812-3811-1-git-send-email-jacmet@sunsite.dk>
-	<E3FB2692-D60E-4C06-BEDD-45441E67458E@kernel.crashing.org>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Thu, 16 Jul 2009 22:55:47 +0200
-In-Reply-To: <E3FB2692-D60E-4C06-BEDD-45441E67458E@kernel.crashing.org> (Kumar
-	Gala's message of "Wed\, 10 Jun 2009 22\:32\:39 -0500")
-Message-ID: <878wiojqjw.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+	Fri, 17 Jul 2009 07:21:35 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 73774DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 07:21:33 +1000 (EST)
+To: Grant Likely <grant.likely@secretlab.ca>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 1/2 v3] fs_enet/mii-fec.c: fix MII speed calculation
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <fa686aa40907151017n76524708tdb028689adad4b5f@mail.gmail.com>
+References: <1247578966-9847-1-git-send-email-wd@denx.de>
+	<1247671133-12148-1-git-send-email-wd@denx.de>
+	<fa686aa40907151017n76524708tdb028689adad4b5f@mail.gmail.com>
+Date: Thu, 16 Jul 2009 23:21:29 +0200
+Message-Id: <20090716212129.70710832E416@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,36 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>> "Kumar" == Kumar Gala <galak@kernel.crashing.org> writes:
+Dear Grant Likely,
 
-Hi,
+In message <fa686aa40907151017n76524708tdb028689adad4b5f@mail.gmail.com> you wrote:
+> On Wed, Jul 15, 2009 at 9:18 AM, Wolfgang Denk<wd@denx.de> wrote:
+> > The MII speed calculation was based on the CPU clock (ppc_proc_freq),
+> > but for MPC512x we must use the bus clock instead.
+> >
+> > This patch makes it use the correct clock and makes sure we don't
+> > clobber reserved bits in the MII_SPEED register.
+...
+> Drop the common code bit.  The 5200 and 5121 are different devices and
+> it is a tiny bit of code.  I don't think there is any benefit to
+> having it as a common function.  Just roll the get_mii_speed function
+> in the mii-fec driver itself.
 
- Kumar> On Jun 9, 2009, at 6:43 AM, Peter Korsgaard wrote:
+I don't like to see the code repeated - it makes maintenance harder
+and increases the memory footprint. But if you like it that way I'll
+do that.
 
- >> usb0 and usb1 mux settings in the sicrl register were swapped (twice!)
- >> in mpc834x_usb_cfg(), leading to various strange issues with fsl-ehci
- >> and full speed devices.
- >> 
- >> The USB port config on mpc834x is done using 2 muxes: Port 0 is
- >> always used for MPH port 0, and port 1 can either be used for MPH
- >> port 1 or DR (unless DR uses TMDI phy or OTG, then it uses both
- >> ports) - See 8349 RM figure 1-4..
- >> 
- >> mpc8349_usb_cfg() had this inverted for the DR, and it also had
- >> the bit positions of the usb0 / usb1 mux settings swapped. It
- >> would basically work if you specified port1 instead of port0 for
- >> the MPH controller (and happened to use ULPI phys), which is what
- >> all the 834x dts have done, even though that configuration is
- >> physically invalid.
- >> 
- >> Instead fix mpc8349_usb_cfg() and adjust the dts files to match
- >> reality.
- >> 
- >> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+> Also, this patch can be quite a bit simpler if you use the .data
+> pointer in the drivers match table to specify the function used to
+> return the bus clock speed.  Something like this:
 
- Kumar> applied.. Please remind me to send this linux-stable for .30 and .29
+OK, will do that, too.
 
-*Remind*
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Bye, Peter Korsgaard
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Weekends were made for programming.                 - Karl Lehenbauer
