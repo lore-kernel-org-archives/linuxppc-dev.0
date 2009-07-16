@@ -1,26 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CDF52B7086
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6A470B7080
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 16 Jul 2009 18:01:11 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Thu, 16 Jul 2009 21:31:40 +1000 (EST)
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3C3E5DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 18:01:10 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 16 Jul 2009 18:00:58 +1000
-Message-Id: <1247731258.27937.44.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C87D9DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 21:31:39 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n6GBPwhX010534
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 07:25:58 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n6GBVYIA254100
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 07:31:34 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n6GBVY6X018835
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2009 07:31:34 -0400
+Date: Thu, 16 Jul 2009 07:31:00 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] kmemleak: Allow kmemleak to be built on powerpc
+Message-ID: <20090716113100.GB7102@zod.rchland.ibm.com>
+References: <f18967360113efe4354a9ad0d71ead9a0f7579ea.1247707485.git.michael@ellerman.id.au>
+	<1247730230.18228.5.camel@concordia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1247730230.18228.5.camel@concordia>
+Cc: catalin.marinas@arm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,24 +42,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Thu, Jul 16, 2009 at 05:43:50PM +1000, Michael Ellerman wrote:
+>On Thu, 2009-07-16 at 11:25 +1000, Michael Ellerman wrote:
+>> Very lightly tested, doesn't crash the kernel.
+>> 
+>> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+>> ---
+>> 
+>> It doesn't look like we actually need to add any support in the
+>> arch code - or is there something I'm missing?
+>
+>Hmm, I think we want to add annotations in lib/lmb.c don't we? That's
+>our low-level pre-bootmem allocator.
+>
+>And we have the same problem with _edata as x86.
 
-Here are a couple of fixes for powerpc for 2.6.31.
+I'll point out that the Fedora developers enabled this in the rawhide kernels
+for 3 days, and then turned it back off because most of the things found were
+false positives.
 
-The following changes since commit e9e961c9a818a2f24711af493b907a8e40a69efc:
-  Linus Torvalds (1):
-        Merge branch 'i2c-for-2631-rc3' of git://aeryn.fluff.org.uk/bjdooks/linux
+Might still be worth poking at, but until it gets a bit less buggy itself it
+could be a timesink.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Andreas Schwab (1):
-      powerpc: Fix another bug in move of altivec code to vector.S
-
-Dave Kleikamp (1):
-      powerpc: Fix booke user_disable_single_step()
-
- arch/powerpc/kernel/ptrace.c |   17 +++++++++--------
- arch/powerpc/kernel/vector.S |    6 +++---
- 2 files changed, 12 insertions(+), 11 deletions(-)
+josh
