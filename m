@@ -1,19 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from mail-px0-f181.google.com (mail-px0-f181.google.com
 	[209.85.216.181])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 88ABFB7BBB
+	by bilbo.ozlabs.org (Postfix) with ESMTP id E05CCB7B97
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 17:31:39 +1000 (EST)
+	Fri, 17 Jul 2009 17:31:44 +1000 (EST)
 Received: by mail-px0-f181.google.com with SMTP id 11so451959pxi.26
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 00:31:39 -0700 (PDT)
+	Fri, 17 Jul 2009 00:31:44 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2 2/4] fs_enet: Revive fixed link support
+Subject: [PATCH v2 3/4] gianfar: Revive fixed link support
 To: avorontsov@ru.mvista.com, davem@davemloft.net, afleming@freescale.com,
 	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 17 Jul 2009 01:31:36 -0600
-Message-ID: <20090717073136.15652.80098.stgit@localhost.localdomain>
+Date: Fri, 17 Jul 2009 01:31:42 -0600
+Message-ID: <20090717073141.15652.13215.stgit@localhost.localdomain>
 In-Reply-To: <20090717065220.15652.93331.stgit@localhost.localdomain>
 References: <20090717065220.15652.93331.stgit@localhost.localdomain>
 MIME-Version: 1.0
@@ -30,63 +30,76 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Since commit aa73832c5a80d6c52c69b18af858d88fa595dd3c ("Rework
-fs_enet driver to use of_mdio infrastructure") the fixed-link support
-is broken in the fs_enet driver.
+Since commit fe192a49118f5b1272317d60c7930ece4e13ae49 ("Rework gianfar
+driver to use of_mdio infrastructure") the fixed-link support is
+broken, the driver oopses at init_phy():
 
-This patch fixes the support by removing a check for phy_node, and adding
-a call to of_phy_connect_fixed_link().
+  Unable to handle kernel paging request for data at address 0x000000e4
+  Faulting instruction address: 0xc01cf298
+  Oops: Kernel access of bad area, sig: 11 [#1]
+  [...]
+  NIP [c01cf298] init_phy+0x80/0xdc
+  LR [c01cf250] init_phy+0x38/0xdc
+  Call Trace:
+  [cf81fe80] [c01d1cf8] gfar_enet_open+0x6c/0x19c
+  [cf81fea0] [c024494c] dev_open+0xfc/0x134
+  [cf81fec0] [c0242edc] dev_change_flags+0x84/0x1ac
+  [cf81fee0] [c0399ee0] ic_open_devs+0x168/0x2d8
+  [cf81ff20] [c039b2e8] ip_auto_config+0x90/0x2a4
+  [cf81ff60] [c0003884] do_one_initcall+0x34/0x1a8
 
-Also set netdev parent device via SET_NETDEV_DEV() call, this is needed
-so that OF MDIO core could find a node pointer for a device.
+This patch fixes the oops, and removes phy_node checks, and adds a call
+to of_phy_connect_fixed_link() if a phy isn't attached..
 
-Plus, fix "if (IS_ERR(phydev))" check, in case of errors,
-of_phy_connect() returns NULL, not ERR_PTR as phy_connect().
+Also, remove an old fixed-link code that we don't use any longer.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/net/fs_enet/fs_enet-main.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/net/gianfar.c |   24 ++++++++----------------
+ 1 files changed, 8 insertions(+), 16 deletions(-)
 
 
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index b892c3a..2bc2d2b 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -754,17 +754,16 @@ static int fs_init_phy(struct net_device *dev)
- 	fep->oldlink = 0;
- 	fep->oldspeed = 0;
- 	fep->oldduplex = -1;
--	if(fep->fpi->phy_node)
--		phydev = of_phy_connect(dev, fep->fpi->phy_node,
--					&fs_adjust_link, 0,
--					PHY_INTERFACE_MODE_MII);
--	else {
--		printk("No phy bus ID specified in BSP code\n");
--		return -EINVAL;
-+
-+	phydev = of_phy_connect(dev, fep->fpi->phy_node, &fs_adjust_link, 0,
-+				PHY_INTERFACE_MODE_MII);
-+	if (!phydev) {
-+		phydev = of_phy_connect_fixed_link(dev, &fs_adjust_link,
-+						   PHY_INTERFACE_MODE_MII);
- 	}
--	if (IS_ERR(phydev)) {
--		printk(KERN_ERR "%s: Could not attach to PHY\n", dev->name);
--		return PTR_ERR(phydev);
-+	if (!phydev) {
-+		dev_err(&dev->dev, "Could not attach to PHY\n");
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 4ae1d25..79fcc2c 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -262,15 +262,6 @@ static int gfar_of_init(struct net_device *dev)
+ 		priv->device_flags |= FSL_GIANFAR_DEV_HAS_MAGIC_PACKET;
+ 
+ 	priv->phy_node = of_parse_phandle(np, "phy-handle", 0);
+-	if (!priv->phy_node) {
+-		u32 *fixed_link;
+-
+-		fixed_link = (u32 *)of_get_property(np, "fixed-link", NULL);
+-		if (!fixed_link) {
+-			err = -ENODEV;
+-			goto err_out;
+-		}
+-	}
+ 
+ 	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+ 	priv->tbi_node = of_parse_phandle(np, "tbi-handle", 0);
+@@ -657,13 +648,14 @@ static int init_phy(struct net_device *dev)
+ 
+ 	interface = gfar_get_interface(dev);
+ 
+-	if (priv->phy_node) {
+-		priv->phydev = of_phy_connect(dev, priv->phy_node, &adjust_link,
+-					      0, interface);
+-		if (!priv->phydev) {
+-			dev_err(&dev->dev, "error: Could not attach to PHY\n");
+-			return -ENODEV;
+-		}
++	priv->phydev = of_phy_connect(dev, priv->phy_node, &adjust_link, 0,
++				      interface);
++	if (!priv->phydev)
++		priv->phydev = of_phy_connect_fixed_link(dev, &adjust_link,
++							 interface);
++	if (!priv->phydev) {
++		dev_err(&dev->dev, "could not attach to PHY\n");
 +		return -ENODEV;
  	}
  
- 	fep->phydev = phydev;
-@@ -1005,6 +1004,7 @@ static int __devinit fs_enet_probe(struct of_device *ofdev,
- 		goto out_free_fpi;
- 	}
- 
-+	SET_NETDEV_DEV(ndev, &ofdev->dev);
- 	dev_set_drvdata(&ofdev->dev, ndev);
- 
- 	fep = netdev_priv(ndev);
+ 	if (interface == PHY_INTERFACE_MODE_SGMII)
