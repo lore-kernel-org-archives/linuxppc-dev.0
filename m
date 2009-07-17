@@ -1,23 +1,32 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 07343B80D8
+Return-Path: <michael@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5FB99B70E5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 17:31:51 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id j5so93673wah.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 00:31:49 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2 4/4] ucc_geth: Revive fixed link support
-To: avorontsov@ru.mvista.com, davem@davemloft.net, afleming@freescale.com,
-	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 17 Jul 2009 01:31:47 -0600
-Message-ID: <20090717073147.15652.21395.stgit@localhost.localdomain>
-In-Reply-To: <20090717065220.15652.93331.stgit@localhost.localdomain>
-References: <20090717065220.15652.93331.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: leoli@freescale.com
+	Fri, 17 Jul 2009 17:53:47 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 51025DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 17:53:47 +1000 (EST)
+Subject: Re: rtas instantiation when commandline contains mem
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Krill <ben@codiert.org>
+In-Reply-To: <20090717063620.GC22901@codiert.org>
+References: <20090716131246.GB22901@codiert.org>
+	<1247783770.27937.61.camel@pasglop>
+	<20090717063620.GC22901@codiert.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-aKGSmjiOfl6ud03nGVTe"
+Date: Fri, 17 Jul 2009 17:53:46 +1000
+Message-Id: <1247817226.19156.5.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,82 +36,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Since commit 0b9da337dca972e7a4144e298ec3adb8f244d4a4 ("Rework
-ucc_geth driver to use of_mdio infrastructure") the fixed-link
-support is broken.
+--=-aKGSmjiOfl6ud03nGVTe
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This patch fixes the support by removing !ug_info->phy_node check,
-and adds a call to of_phy_connect_fixed_link() if a phy is not attached
-to the MAC.
+On Fri, 2009-07-17 at 08:36 +0200, Benjamin Krill wrote:
+> >> the rtas instantiation (prom_init.c) doesn't work correctly if the
+> >> kernel parameter "mem=3D" is used. The current code doesn't evaluate
+> >> the kernel parameter which causes the issue that alloc_down
+> >> allocates somewhere in the "real" memory space. So it can
+> >> happen that the allocation space is above "mem=3D".
+> >>=20
+> >> Commit 2babf5c2ec2f2d5de3e38d20f7df7fd815fd10c9 removes the
+> >> evaluation of "mem=3D".
+> >
+> >Ah yes, we don't constraint prom_init.c to mem=3D, only the kernel
+>=20
+> Is that with intent? Or should I provide a patch to include it again?
 
-Also, remove an old fixed-link code that we don't use any longer.
+It was, it seemed to me that mem=3Dx was about limiting kernel memory,
+which RTAS isn't really. But I guess it depends how you look at it, and
+what you're trying to do.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+cheers
 
- drivers/net/ucc_geth.c |   23 +++++++----------------
- 1 files changed, 7 insertions(+), 16 deletions(-)
+--=-aKGSmjiOfl6ud03nGVTe
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 40c6eba..3b957e6 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -1590,13 +1590,13 @@ static int init_phy(struct net_device *dev)
- 	priv->oldspeed = 0;
- 	priv->oldduplex = -1;
- 
--	if (!ug_info->phy_node)
--		return 0;
--
- 	phydev = of_phy_connect(dev, ug_info->phy_node, &adjust_link, 0,
- 				priv->phy_interface);
-+	if (!phydev)
-+		phydev = of_phy_connect_fixed_link(dev, &adjust_link,
-+						   priv->phy_interface);
- 	if (!phydev) {
--		printk("%s: Could not attach to PHY\n", dev->name);
-+		dev_err(&dev->dev, "Could not attach to PHY\n");
- 		return -ENODEV;
- 	}
- 
-@@ -3608,9 +3608,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 	struct ucc_geth_private *ugeth = NULL;
- 	struct ucc_geth_info *ug_info;
- 	struct resource res;
--	struct device_node *phy;
- 	int err, ucc_num, max_speed = 0;
--	const u32 *fixed_link;
- 	const unsigned int *prop;
- 	const char *sprop;
- 	const void *mac_addr;
-@@ -3708,15 +3706,8 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 
- 	ug_info->uf_info.regs = res.start;
- 	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
--	fixed_link = of_get_property(np, "fixed-link", NULL);
--	if (fixed_link) {
--		phy = NULL;
--	} else {
--		phy = of_parse_phandle(np, "phy-handle", 0);
--		if (phy == NULL)
--			return -ENODEV;
--	}
--	ug_info->phy_node = phy;
-+
-+	ug_info->phy_node = of_parse_phandle(np, "phy-handle", 0);
- 
- 	/* Find the TBI PHY node.  If it's not there, we don't support SGMII */
- 	ug_info->tbi_node = of_parse_phandle(np, "tbi-handle", 0);
-@@ -3725,7 +3716,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 	prop = of_get_property(np, "phy-connection-type", NULL);
- 	if (!prop) {
- 		/* handle interface property present in old trees */
--		prop = of_get_property(phy, "interface", NULL);
-+		prop = of_get_property(ug_info->phy_node, "interface", NULL);
- 		if (prop != NULL) {
- 			phy_interface = enet_to_phy_interface[*prop];
- 			max_speed = enet_to_speed[*prop];
+iEYEABECAAYFAkpgLgoACgkQdSjSd0sB4dLkygCePFdmgJleio4jaCdAqZi2AvLe
+qZgAoIQBnddV42Lyy1P3ngv/vc+WsxYO
+=/91K
+-----END PGP SIGNATURE-----
+
+--=-aKGSmjiOfl6ud03nGVTe--
