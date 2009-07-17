@@ -1,32 +1,27 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <Catalin.Marinas@arm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5FB99B70E5
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05F65B708A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 17:53:47 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 51025DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 17:53:47 +1000 (EST)
-Subject: Re: rtas instantiation when commandline contains mem
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Krill <ben@codiert.org>
-In-Reply-To: <20090717063620.GC22901@codiert.org>
-References: <20090716131246.GB22901@codiert.org>
-	<1247783770.27937.61.camel@pasglop>
-	<20090717063620.GC22901@codiert.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-aKGSmjiOfl6ud03nGVTe"
-Date: Fri, 17 Jul 2009 17:53:46 +1000
-Message-Id: <1247817226.19156.5.camel@concordia>
+	Fri, 17 Jul 2009 18:26:47 +1000 (EST)
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+	[193.131.176.58]) by ozlabs.org (Postfix) with ESMTP id 3211FDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 18:26:44 +1000 (EST)
+Subject: Re: [PATCH] kmemleak: Allow kmemleak to be built on powerpc
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1247790558.16836.4.camel@concordia>
+References: <f18967360113efe4354a9ad0d71ead9a0f7579ea.1247707485.git.michael@ellerman.id.au>
+	<1247730230.18228.5.camel@concordia>
+	<1247766739.27689.63.camel@pc1117.cambridge.arm.com>
+	<1247790558.16836.4.camel@concordia>
+Content-Type: text/plain
+Date: Fri, 17 Jul 2009 09:26:35 +0100
+Message-Id: <1247819195.32760.7.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,41 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2009-07-17 at 10:29 +1000, Michael Ellerman wrote:
+> On Thu, 2009-07-16 at 18:52 +0100, Catalin Marinas wrote:
+> > On Thu, 2009-07-16 at 17:43 +1000, Michael Ellerman wrote:
+> > > On Thu, 2009-07-16 at 11:25 +1000, Michael Ellerman wrote:
+> > > > Very lightly tested, doesn't crash the kernel.
+> > > > 
+> > > > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > > > ---
+> > > > 
+> > > > It doesn't look like we actually need to add any support in the
+> > > > arch code - or is there something I'm missing?
+> > > 
+> > > Hmm, I think we want to add annotations in lib/lmb.c don't we? That's
+> > > our low-level pre-bootmem allocator.
+> > 
+> > Yes, I think so (I'm not using this on ARM or x86 so I can't really test
+> > it). Without these hooks, there kmemleak reports aren't that useful
+> > (probably too many).
+> 
+> The wrinkle is that lmb never frees, so by definition it can't leak :)
 
---=-aKGSmjiOfl6ud03nGVTe
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+You can pass min_count = 0 to kmemleak_alloc() so that it would never
+report such blocks as leaks (see the alloc_bootmem hooks).
 
-On Fri, 2009-07-17 at 08:36 +0200, Benjamin Krill wrote:
-> >> the rtas instantiation (prom_init.c) doesn't work correctly if the
-> >> kernel parameter "mem=3D" is used. The current code doesn't evaluate
-> >> the kernel parameter which causes the issue that alloc_down
-> >> allocates somewhere in the "real" memory space. So it can
-> >> happen that the allocation space is above "mem=3D".
-> >>=20
-> >> Commit 2babf5c2ec2f2d5de3e38d20f7df7fd815fd10c9 removes the
-> >> evaluation of "mem=3D".
-> >
-> >Ah yes, we don't constraint prom_init.c to mem=3D, only the kernel
->=20
-> Is that with intent? Or should I provide a patch to include it again?
+> But we could have memory allocated with lmb that has pointers to other
+> objects allocated later, and we want kmemleak to scan the lmb allocated
+> blocks to find those references.
+> 
+> So the question is do we need to annotate lmb so that will happen, or
+> does kmemleak scan all kernel memory, regardless of where it's
+> allocated?
 
-It was, it seemed to me that mem=3Dx was about limiting kernel memory,
-which RTAS isn't really. But I guess it depends how you look at it, and
-what you're trying to do.
+Apart from the data and bss sections, it only scans the memory which was
+explicitly allocated. So, you need these hooks in the lmb code.
 
-cheers
+The mainline kernel scans for the task stacks by going through the full
+tasks list. However, traversing this list requires a lock which
+increases the latency quite a lot. For the next merging window, I added
+hooks to the alloc_thread_info/free_thread_info functions. If the ppc
+code has __HAVE_ARCH_THREAD_INFO_ALLOCATOR defined, you may need to add
+some hooks in there as well (but note that kmallloc/kmem_cache_alloc are
+tracked by kmemleak already, so you only need the hooks if the
+thread_info allocator uses __get_free_pages).
 
---=-aKGSmjiOfl6ud03nGVTe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpgLgoACgkQdSjSd0sB4dLkygCePFdmgJleio4jaCdAqZi2AvLe
-qZgAoIQBnddV42Lyy1P3ngv/vc+WsxYO
-=/91K
------END PGP SIGNATURE-----
-
---=-aKGSmjiOfl6ud03nGVTe--
+-- 
+Catalin
