@@ -1,23 +1,27 @@
-Return-Path: <arnd@arndb.de>
+Return-Path: <davem@davemloft.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 991D9B713B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0C898B7080
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 18 Jul 2009 01:56:50 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Roel Kluin <roel.kluin@gmail.com>
-Subject: Re: [PATCH] powerpc/cell: strncpy does not null terminate string
-Date: Fri, 17 Jul 2009 17:56:21 +0200
-References: <4A607185.6020302@gmail.com> <4A608A69.4060204@gmail.com>
-In-Reply-To: <4A608A69.4060204@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200907171756.22224.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	cbe-oss-dev@ozlabs.org
+	Sat, 18 Jul 2009 02:21:47 +1000 (EST)
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id C1D27DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Jul 2009 02:21:46 +1000 (EST)
+Date: Fri, 17 Jul 2009 09:21:49 -0700 (PDT)
+Message-Id: <20090717.092149.116211946.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Subject: Re: [PATCH 1/2 v5] fs_enet/mii-fec.c: fix MII speed calculation
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <fa686aa40907170741n121d3e4cqdfddaf4d23d4d1fc@mail.gmail.com>
+References: <1247780546-4426-1-git-send-email-wd@denx.de>
+	<1247833628-15952-1-git-send-email-wd@denx.de>
+	<fa686aa40907170741n121d3e4cqdfddaf4d23d4d1fc@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +31,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 17 July 2009, Roel Kluin wrote:
-> 
->  static int __init celleb_machine_type_hack(char *ptr)
->  {
-> -       strncpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
-> +       strlcpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
->         celleb_machine_type[sizeof(celleb_machine_type)-1] = 0;
->         return 0;
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 17 Jul 2009 08:41:08 -0600
 
-This still is pointless as long as you keep the explicit null-termination
-in the next line, the patch still doesn't change anything significant.
+> David, this isn't a critical bug fix or a regression, so I think it
+> should be merged for -next.
 
-The file is maintained by Ishizaki Kou, if he would prefer to take a
-patch replacing the two lines with one, that's fine with me, otherwise
-I just wouldn't bother. You still only gain a few bytes of inittext, but
-that is discarded at boot time.
-
-	Arnd <><
+Ok.
