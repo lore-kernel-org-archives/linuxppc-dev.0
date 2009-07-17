@@ -1,27 +1,27 @@
-Return-Path: <davem@davemloft.net>
+Return-Path: <wd@denx.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 34045B70B0
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7D4A9B7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 18 Jul 2009 02:48:38 +1000 (EST)
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id EAF4ADDD04
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Jul 2009 02:48:37 +1000 (EST)
-Date: Fri, 17 Jul 2009 09:48:41 -0700 (PDT)
-Message-Id: <20090717.094841.175615379.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 1/2 v5] fs_enet/mii-fec.c: fix MII speed calculation
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <fa686aa40907170741n121d3e4cqdfddaf4d23d4d1fc@mail.gmail.com>
-References: <1247780546-4426-1-git-send-email-wd@denx.de>
-	<1247833628-15952-1-git-send-email-wd@denx.de>
-	<fa686aa40907170741n121d3e4cqdfddaf4d23d4d1fc@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, wd@denx.de
+	Sat, 18 Jul 2009 03:51:47 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id C0A4FDDD1C
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Jul 2009 03:51:44 +1000 (EST)
+To: Grant Likely <grant.likely@secretlab.ca>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 2/2 v4] MPC52xx FEC: be more conservative when setting
+	MII_SPEED register
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <fa686aa40907170745h6c5fae6bia0cff0926c93393c@mail.gmail.com>
+References: <1247833628-15952-2-git-send-email-wd@denx.de>
+	<1247835545-18650-1-git-send-email-wd@denx.de>
+	<fa686aa40907170745h6c5fae6bia0cff0926c93393c@mail.gmail.com>
+Date: Fri, 17 Jul 2009 19:51:38 +0200
+Message-Id: <20090717175138.97CB2832E416@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 17 Jul 2009 08:41:08 -0600
+Dear Grant Likely,
 
-> On Fri, Jul 17, 2009 at 6:27 AM, Wolfgang Denk<wd@denx.de> wrote:
->> The MII speed calculation was based on the CPU clock (ppc_proc_freq),
->> but for MPC512x we must use the bus clock instead.
->>
->> This patch makes it use the correct clock and makes sure we don't
->> clobber reserved bits in the MII_SPEED register.
->>
->> Signed-off-by: Wolfgang Denk <wd@denx.de>
->> Cc: Grant Likely <grant.likely@secretlab.ca>
->> Cc: Kumar Gala <galak@kernel.crashing.org>
->> Cc: <netdev@vger.kernel.org>
-> 
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+In message <fa686aa40907170745h6c5fae6bia0cff0926c93393c@mail.gmail.com> you wrote:
+>
+> >  drivers/net/fec_mpc52xx.c     |   25 ++++++++++++++++++++++---
+> >  drivers/net/fec_mpc52xx_phy.c |   23 ++++++++++++++++++++---
+>
+> Blech.  now this block of duplicated code I don't like.  This is all
+> one device, so surely the mdio speed can be calculated once and used
+> for both drivers.... let me think about this for a bit.  'course this
+> problem is all rolled up in the nastiness of having two drivers
+> working on the same device.  I suspect is was a mistake to split up
+> all the powerpc ethernet drivers into separate of_platform drivers.
 
-Applied to net-next-2.6
+If you like, I can re-introduce the mpc5xxx_get_mii_speed() I unrolled
+upon your request (with or without re-using it for the MPC512x case).
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+What is mind?  No matter.  What is matter?  Never mind.
+                                      -- Thomas Hewitt Key, 1799-1875
