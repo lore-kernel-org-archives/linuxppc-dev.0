@@ -1,28 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 289C3B7085
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-px0-f181.google.com (mail-px0-f181.google.com
+	[209.85.216.181])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 2CE23B7083
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 16:49:07 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 821C0DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 16:49:06 +1000 (EST)
-Subject: Re: rtas instantiation when commandline contains mem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Benjamin Krill <ben@codiert.org>
-In-Reply-To: <20090717063620.GC22901@codiert.org>
-References: <20090716131246.GB22901@codiert.org>
-	<1247783770.27937.61.camel@pasglop>
-	<20090717063620.GC22901@codiert.org>
-Content-Type: text/plain
-Date: Fri, 17 Jul 2009 16:48:49 +1000
-Message-Id: <1247813329.6101.7.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	Fri, 17 Jul 2009 17:31:35 +1000 (EST)
+Received: by pxi11 with SMTP id 11so451959pxi.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 17 Jul 2009 00:31:33 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH v2 1/4] of/mdio: Add support function for Ethernet fixed-link
+	property
+To: avorontsov@ru.mvista.com, davem@davemloft.net, afleming@freescale.com,
+	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 17 Jul 2009 01:31:31 -0600
+Message-ID: <20090717073131.15652.83355.stgit@localhost.localdomain>
+In-Reply-To: <20090717065220.15652.93331.stgit@localhost.localdomain>
+References: <20090717065220.15652.93331.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: leoli@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +29,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-07-17 at 08:36 +0200, Benjamin Krill wrote:
-> >> the rtas instantiation (prom_init.c) doesn't work correctly if the
-> >> kernel parameter "mem=" is used. The current code doesn't evaluate
-> >> the kernel parameter which causes the issue that alloc_down
-> >> allocates somewhere in the "real" memory space. So it can
-> >> happen that the allocation space is above "mem=".
-> >> 
-> >> Commit 2babf5c2ec2f2d5de3e38d20f7df7fd815fd10c9 removes the
-> >> evaluation of "mem=".
-> >
-> >Ah yes, we don't constraint prom_init.c to mem=, only the kernel
-> 
-> Is that with intent? Or should I provide a patch to include it again?
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Well I suppose it makes sense to include it again, not sure about that,
-there's potentially a similar issue with TCE tables.
+Fixed-link support is broken for the ucc_eth, gianfar, and fs_enet
+device drivers.  The "OF MDIO rework" patches removed most of the
+support. Instead of re-adding fixed-link stuff to the drivers, this
+patch adds a support function for parsing the fixed-link property
+and obtaining a dummy phy to match.
 
-I understand what you are trying to do (though I told you I don't think
-it's the right approach ;-) but heh... send a patch we'll see what it
-looks like.
+Note: the dummy phy handling in arch/powerpc is a bit of a hack and
+needs to be reworked.  This function is being added now to solve the
+regression in the Ethernet drivers, but it should be considered a
+temporary measure until the fixed link handling can be reworked.
 
-Cheers,
-Ben.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+
+ drivers/of/of_mdio.c    |   42 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of_mdio.h |    3 +++
+ 2 files changed, 45 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
+index aee967d..bacaa53 100644
+--- a/drivers/of/of_mdio.c
++++ b/drivers/of/of_mdio.c
+@@ -9,6 +9,10 @@
+  * out of the OpenFirmware device tree and using it to populate an mii_bus.
+  */
+ 
++#include <linux/kernel.h>
++#include <linux/device.h>
++#include <linux/netdevice.h>
++#include <linux/err.h>
+ #include <linux/phy.h>
+ #include <linux/of.h>
+ #include <linux/of_mdio.h>
+@@ -137,3 +141,41 @@ struct phy_device *of_phy_connect(struct net_device *dev,
+ 	return phy_connect_direct(dev, phy, hndlr, flags, iface) ? NULL : phy;
+ }
+ EXPORT_SYMBOL(of_phy_connect);
++
++/**
++ * of_phy_connect_fixed_link - Parse fixed-link property and return a dummy phy
++ * @dev: pointer to net_device claiming the phy
++ * @hndlr: Link state callback for the network device
++ * @iface: PHY data interface type
++ *
++ * This function is a temporary stop-gap and will be removed soon.  It is
++ * only to support the fs_enet, ucc_geth and gianfar Ethernet drivers.  Do
++ * not call this function from new drivers.
++ */
++struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
++					     void (*hndlr)(struct net_device *),
++					     phy_interface_t iface)
++{
++	struct device_node *net_np;
++	char bus_id[MII_BUS_ID_SIZE + 3];
++	struct phy_device *phy;
++	const u32 *phy_id;
++	int sz;
++
++	if (!dev->dev.parent)
++		return NULL;
++
++	net_np = dev_archdata_get_node(&dev->dev.parent->archdata);
++	if (!net_np)
++		return NULL;
++
++	phy_id = of_get_property(net_np, "fixed-link", &sz);
++	if (!phy_id || sz < sizeof(*phy_id))
++		return NULL;
++
++	sprintf(bus_id, PHY_ID_FMT, "0", phy_id[0]);
++
++	phy = phy_connect(dev, bus_id, hndlr, 0, iface);
++	return IS_ERR(phy) ? NULL : phy;
++}
++EXPORT_SYMBOL(of_phy_connect_fixed_link);
+diff --git a/include/linux/of_mdio.h b/include/linux/of_mdio.h
+index c9663c6..53b94e0 100644
+--- a/include/linux/of_mdio.h
++++ b/include/linux/of_mdio.h
+@@ -18,5 +18,8 @@ extern struct phy_device *of_phy_connect(struct net_device *dev,
+ 					 struct device_node *phy_np,
+ 					 void (*hndlr)(struct net_device *),
+ 					 u32 flags, phy_interface_t iface);
++extern struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
++					 void (*hndlr)(struct net_device *),
++					 phy_interface_t iface);
+ 
+ #endif /* __LINUX_OF_MDIO_H */
