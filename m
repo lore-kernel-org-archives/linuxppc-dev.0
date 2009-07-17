@@ -1,12 +1,26 @@
-Return-Path: <gurumurthy.gm@gmail.com>
-MIME-Version: 1.0
-Date: Fri, 17 Jul 2009 16:01:29 +0530
-Message-ID: <adaf92990907170331x1ff6aa44h517785ed1b07df16@mail.gmail.com>
-Subject: USB Device not working in MPC8280 PowerPC
-From: Gurumurthy Gowdar <gurumurthy.gm@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=0016364ef3c48e8219046ee44afc
-Cc: dev-owner@lists.ozlabs.org
+Return-Path: <wd@denx.de>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CD75BB7079
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 17 Jul 2009 22:24:40 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 6DB34DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 22:24:38 +1000 (EST)
+To: Grant Likely <grant.likely@secretlab.ca>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 1/2 v4] fs_enet/mii-fec.c: fix MII speed calculation
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <fa686aa40907161544je92317dy7abea6819746847@mail.gmail.com>
+References: <1247671133-12148-1-git-send-email-wd@denx.de>
+	<1247780546-4426-1-git-send-email-wd@denx.de>
+	<fa686aa40907161544je92317dy7abea6819746847@mail.gmail.com>
+Date: Fri, 17 Jul 2009 14:24:33 +0200
+Message-Id: <20090717122433.6E7D0832E416@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,78 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016364ef3c48e8219046ee44afc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Dear Grant Likely,
 
-Dear LinuxPPC members,
-                                      am facing problem on writing USB
-device port driver for MPC8280,when i connect it to the host PC through USB
-cable .device descriptor is happening host is setting the address but device
-configuration is not happening properly...it hangs there in USB busy
-handler.
+In message <fa686aa40907161544je92317dy7abea6819746847@mail.gmail.com> you wrote:
+>
+> I assume this is tested.  I have not tested this on my board, and I've
 
+It was tested, but as it turns out not quite well :-(
 
-below is the output of the snippet in hyperterminal for usb debugging
+> got one question below, but otherwise I think I can say....
+...
+> The calculation has changed here for non mpc5121 users.  Shouldn't the
+> "clock = ppc_proc_freq;" line above be "clock = ppc_proc_freq / 2;"?
+> Or was this also a bug in the original driver?
 
-Debug statements
+You are right. That's a bug in the new code. Fixed in next version of
+the patch.
 
-GetDescriptor request length = 0x40
-Device Descriptor...
-bd status = 3ec0
- In TX USB event register = 108
-Recieved PID token = 0x3cc0
-USB:SetAddress 2
-bd status = 3800
-bd status = 3ac0
- In TX USB event register = 108
-GetDescriptor request length = 0x12
-Device Descriptor...
-bd status = 3ec0
- In TX USB event register = 109
-Recieved PID token = 0x3cc0
-In USB_BUSY HANDLER : 0x108
+Best regards,
 
-it hangs in usb busy handler , am feeling data pid toggling may be the
-issue.
-
-please help me out to sort this issue....let me know if any codes are
-available for USB Device & USB Host testing for MPC8280.
-
-am testing in FreeScale Code Warrior IDE
-
-waiting for the reply ASAP
-
-Regards,
-Gurumurthy
+Wolfgang Denk
 
 -- 
-Gurumurthy Gowdar
-
---0016364ef3c48e8219046ee44afc
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Dear LinuxPPC members,<br>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 am facing p=
-roblem on writing USB device port driver for MPC8280,when i connect it to t=
-he host PC through USB cable .device descriptor is happening host is settin=
-g the address but device configuration is not happening properly...it hangs=
- there in USB busy handler.<br>
-<br><br>below is the output of the snippet in hyperterminal for usb debuggi=
-ng <br><br>Debug statements<br><br>GetDescriptor request length =3D 0x40<br=
->Device Descriptor...<br>bd status =3D 3ec0<br>=A0In TX USB event register =
-=3D 108<br>
-Recieved PID token =3D 0x3cc0<br>USB:SetAddress 2<br>bd status =3D 3800<br>=
-bd status =3D 3ac0<br>=A0In TX USB event register =3D 108<br>GetDescriptor =
-request length =3D 0x12<br>Device Descriptor...<br>bd status =3D 3ec0<br>=
-=A0In TX USB event register =3D 109<br>
-Recieved PID token =3D 0x3cc0<br>In USB_BUSY HANDLER : 0x108<br><br>it hang=
-s in usb busy handler , am feeling data pid toggling may be the issue. <br>=
-<br>please help me out to sort this issue....let me know if any codes are a=
-vailable for USB Device &amp; USB Host testing for MPC8280.<br>
-<br>am testing in FreeScale Code Warrior IDE<br><br>waiting for the reply A=
-SAP<br><br>Regards,<br>Gurumurthy<br clear=3D"all"><br>-- <br>Gurumurthy Go=
-wdar<br>
-
---0016364ef3c48e8219046ee44afc--
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Swap read error.  You lose your mind.
