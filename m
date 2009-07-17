@@ -1,18 +1,12 @@
-Return-Path: <kn.zahirkhan@gmail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A3E3CB6F20
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 17:16:37 +1000 (EST)
+Return-Path: <gurumurthy.gm@gmail.com>
 MIME-Version: 1.0
-Date: Fri, 17 Jul 2009 16:16:33 +0900
-Message-ID: <f970d83a0907170016s239cc390s63f8d2d3987e3142@mail.gmail.com>
-Subject: RE::New dma-noncoherent code, looking for comment and people to test
-From: Zaahir Khan <kn.zahirkhan@gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=000e0cd172e6708308046ee19188
+Date: Fri, 17 Jul 2009 16:01:29 +0530
+Message-ID: <adaf92990907170331x1ff6aa44h517785ed1b07df16@mail.gmail.com>
+Subject: USB Device not working in MPC8280 PowerPC
+From: Gurumurthy Gowdar <gurumurthy.gm@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=0016364ef3c48e8219046ee44afc
+Cc: dev-owner@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,63 +16,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0cd172e6708308046ee19188
+--0016364ef3c48e8219046ee44afc
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
-Hi Remi Machet,
+Dear LinuxPPC members,
+                                      am facing problem on writing USB
+device port driver for MPC8280,when i connect it to the host PC through USB
+cable .device descriptor is happening host is setting the address but device
+configuration is not happening properly...it hangs there in USB busy
+handler.
 
 
-I am using sequoia PPC440EPx.
+below is the output of the snippet in hyperterminal for usb debugging
 
-with
+Debug statements
 
-CONFIG_NOT_COHERENT_CACHE=y
+GetDescriptor request length = 0x40
+Device Descriptor...
+bd status = 3ec0
+ In TX USB event register = 108
+Recieved PID token = 0x3cc0
+USB:SetAddress 2
+bd status = 3800
+bd status = 3ac0
+ In TX USB event register = 108
+GetDescriptor request length = 0x12
+Device Descriptor...
+bd status = 3ec0
+ In TX USB event register = 109
+Recieved PID token = 0x3cc0
+In USB_BUSY HANDLER : 0x108
 
+it hangs in usb busy handler , am feeling data pid toggling may be the
+issue.
 
-I applied your patch
+please help me out to sort this issue....let me know if any codes are
+available for USB Device & USB Host testing for MPC8280.
 
-    file -->    arch/powerpc/lib/dma-noncoherent.c
+am testing in FreeScale Code Warrior IDE
 
+waiting for the reply ASAP
 
-After applying my board is not booting up on NFS.
-If I use the old file its booting up normal.
-Is this a bug or I missed something.
+Regards,
+Gurumurthy
 
-Error message ::
+-- 
+Gurumurthy Gowdar
 
-Looking up port of RPC 100003/2 on 192.168.1.10
-Looking up port of RPC 100005/1 on 192.168.1.10
-mount: server 192.168.1.10 not responding, timed out
-Root-NFS: Server returned error -5 while mounting /opt/eldk/ppc_4xxFP
-VFS: Unable to mount root fs via NFS, trying floppy.
-VFS: Cannot open root device "nfs" or unknown-block(2,0)
-Please append a correct "root=" boot option; here are the available
-partitions:
-
-
-
-
-Thanks & regards,
-
-Zaahir Khan
-
---000e0cd172e6708308046ee19188
+--0016364ef3c48e8219046ee44afc
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Hi Remi Machet,<br><br><br>I am using sequoia PPC440EPx.<br><pre>with <br><=
-br>CONFIG_NOT_COHERENT_CACHE=3Dy</pre><br>I applied your patch <br><br>=A0=
-=A0=A0 file --&gt;=A0=A0=A0 arch/powerpc/lib/dma-noncoherent.c <br><br><br>=
-After applying my board is not booting up on NFS.<br>
-If I use the old file its booting up normal. <br>Is this a bug or I missed =
-something.<br><br>Error message ::<br><br>Looking up port of RPC 100003/2 o=
-n 192.168.1.10<br>Looking up port of RPC 100005/1 on 192.168.1.10<br>mount:=
- server 192.168.1.10 not responding, timed out<br>
-Root-NFS: Server returned error -5 while mounting /opt/eldk/ppc_4xxFP<br>VF=
-S: Unable to mount root fs via NFS, trying floppy.<br>VFS: Cannot open root=
- device &quot;nfs&quot; or unknown-block(2,0)<br>Please append a correct &q=
-uot;root=3D&quot; boot option; here are the available partitions:<br>
-<br><br><br><br clear=3D"all">Thanks &amp; regards,<br><br>Zaahir Khan<br>
+Dear LinuxPPC members,<br>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 am facing p=
+roblem on writing USB device port driver for MPC8280,when i connect it to t=
+he host PC through USB cable .device descriptor is happening host is settin=
+g the address but device configuration is not happening properly...it hangs=
+ there in USB busy handler.<br>
+<br><br>below is the output of the snippet in hyperterminal for usb debuggi=
+ng <br><br>Debug statements<br><br>GetDescriptor request length =3D 0x40<br=
+>Device Descriptor...<br>bd status =3D 3ec0<br>=A0In TX USB event register =
+=3D 108<br>
+Recieved PID token =3D 0x3cc0<br>USB:SetAddress 2<br>bd status =3D 3800<br>=
+bd status =3D 3ac0<br>=A0In TX USB event register =3D 108<br>GetDescriptor =
+request length =3D 0x12<br>Device Descriptor...<br>bd status =3D 3ec0<br>=
+=A0In TX USB event register =3D 109<br>
+Recieved PID token =3D 0x3cc0<br>In USB_BUSY HANDLER : 0x108<br><br>it hang=
+s in usb busy handler , am feeling data pid toggling may be the issue. <br>=
+<br>please help me out to sort this issue....let me know if any codes are a=
+vailable for USB Device &amp; USB Host testing for MPC8280.<br>
+<br>am testing in FreeScale Code Warrior IDE<br><br>waiting for the reply A=
+SAP<br><br>Regards,<br>Gurumurthy<br clear=3D"all"><br>-- <br>Gurumurthy Go=
+wdar<br>
 
---000e0cd172e6708308046ee19188--
+--0016364ef3c48e8219046ee44afc--
