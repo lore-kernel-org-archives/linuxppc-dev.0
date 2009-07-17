@@ -1,19 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-px0-f181.google.com (mail-px0-f181.google.com
-	[209.85.216.181])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 2E69AB806F
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 07343B80D8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 17:31:50 +1000 (EST)
-Received: by mail-px0-f181.google.com with SMTP id 11so451959pxi.26
+	Fri, 17 Jul 2009 17:31:51 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id j5so93673wah.2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 00:31:50 -0700 (PDT)
+	Fri, 17 Jul 2009 00:31:49 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2 0/4] net: Revive fixed link support
+Subject: [PATCH v2 4/4] ucc_geth: Revive fixed link support
 To: avorontsov@ru.mvista.com, davem@davemloft.net, afleming@freescale.com,
 	netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 17 Jul 2009 01:31:25 -0600
-Message-ID: <20090717065220.15652.93331.stgit@localhost.localdomain>
+Date: Fri, 17 Jul 2009 01:31:47 -0600
+Message-ID: <20090717073147.15652.21395.stgit@localhost.localdomain>
+In-Reply-To: <20090717065220.15652.93331.stgit@localhost.localdomain>
+References: <20090717065220.15652.93331.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: leoli@freescale.com
@@ -26,69 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series is based on the "Net: Revive fixed link support" series
-posted by Anton Vorontsov on June 26.
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-On June 26, Anton Vorontsov wrote:
-> The fixed link support is broken since The Big OF MDIO Rework,
-> the rework simply removed most of the code that was needed for
-> fixed links.
-> 
-> Too bad I didn't notice this earlier, I saw a bunch of patches
-> on the ml, but unfortunately I didn't look very close presuming
-> that Grant knew what he was doing. :-) And obviously I didn't
-> test linux-next on anything that requires a fixed link.
-> 
-> Anyway, here are four patches. The first one adds the fixed link
-> support to a framework, otherwise we'd duplicate the code across
-> the drivers (as we did previously), and I tried to keep drivers'
-> changes minimal.
+Since commit 0b9da337dca972e7a4144e298ec3adb8f244d4a4 ("Rework
+ucc_geth driver to use of_mdio infrastructure") the fixed-link
+support is broken.
 
-I took issue with the approach on the basis of
-a) I find the whole dummy phy approach to be a hack and an abuse of the
-   mdio bus,
-b) Handling the lack of a phy is trivial and should just be done within
-   the MAC driver itself, and
-c) the approach caused all drivers using of_phy_connect() to parse the
-   'fixed-link' property, when only three drivers actually define and
-   use it.
+This patch fixes the support by removing !ug_info->phy_node check,
+and adds a call to of_phy_connect_fixed_link() if a phy is not attached
+to the MAC.
 
-I wrote and posted a competing patch which removed the usage of a dummy
-phy and made each driver handle the lack of a phy gracefully.  However,
-Anton rightly pointed out that my patch still leaves the regression of
-userspace no longer being able to use ethtool to query the link speed
-because the affected drivers all depend on phylib for the ethtool
-ioctl implementations.
+Also, remove an old fixed-link code that we don't use any longer.
 
-Part of the problem I think is that the phylib code merges two separate
-constructs; the construct of an MDIO bus (on which many device may
-reside, not all of them PHYs), and the construct of an MII link whose
-speed and configuration need to be manipulated.  I've run into problems
-myself on how best to handle things like Ethernet switches which
-definitely do not behave like PHYs and the phylib state machine cannot
-be used on them.  It seems to me that the whole 'dummy phy' approach
-is just an artifact of the phylib model not being quite right yet. I
-want to investigate the possibility of separating the two concepts, but
-that will require a fair bit of thought and experimentation.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-Right now this is a regression situation during the 2.6.31
-stabilization, so I don't think it is appropriate to write a new set
-of ioctl handlers at this late stage when there is another solution.
-I've reworked Anton's patches to constrain the effects to just the
-three drivers which use 'fixed-link'.
-
-It kills me to leave the dummy phy approach in place, but the
-alternative is to invasive and risky to apply at this stage.
-It irks me to say so, but I think Anton's approach of reenabling
-the dummy phy is the right think to do,
-
-Anton, once again I don't have hardware to test this, so I rely on you
-to tell be if I screwed it up.  It has been compile tested.
-
-Cheers,
-g.
+ drivers/net/ucc_geth.c |   23 +++++++----------------
+ 1 files changed, 7 insertions(+), 16 deletions(-)
 
 
---
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 40c6eba..3b957e6 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -1590,13 +1590,13 @@ static int init_phy(struct net_device *dev)
+ 	priv->oldspeed = 0;
+ 	priv->oldduplex = -1;
+ 
+-	if (!ug_info->phy_node)
+-		return 0;
+-
+ 	phydev = of_phy_connect(dev, ug_info->phy_node, &adjust_link, 0,
+ 				priv->phy_interface);
++	if (!phydev)
++		phydev = of_phy_connect_fixed_link(dev, &adjust_link,
++						   priv->phy_interface);
+ 	if (!phydev) {
+-		printk("%s: Could not attach to PHY\n", dev->name);
++		dev_err(&dev->dev, "Could not attach to PHY\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -3608,9 +3608,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	struct ucc_geth_private *ugeth = NULL;
+ 	struct ucc_geth_info *ug_info;
+ 	struct resource res;
+-	struct device_node *phy;
+ 	int err, ucc_num, max_speed = 0;
+-	const u32 *fixed_link;
+ 	const unsigned int *prop;
+ 	const char *sprop;
+ 	const void *mac_addr;
+@@ -3708,15 +3706,8 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 
+ 	ug_info->uf_info.regs = res.start;
+ 	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
+-	fixed_link = of_get_property(np, "fixed-link", NULL);
+-	if (fixed_link) {
+-		phy = NULL;
+-	} else {
+-		phy = of_parse_phandle(np, "phy-handle", 0);
+-		if (phy == NULL)
+-			return -ENODEV;
+-	}
+-	ug_info->phy_node = phy;
++
++	ug_info->phy_node = of_parse_phandle(np, "phy-handle", 0);
+ 
+ 	/* Find the TBI PHY node.  If it's not there, we don't support SGMII */
+ 	ug_info->tbi_node = of_parse_phandle(np, "tbi-handle", 0);
+@@ -3725,7 +3716,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	prop = of_get_property(np, "phy-connection-type", NULL);
+ 	if (!prop) {
+ 		/* handle interface property present in old trees */
+-		prop = of_get_property(phy, "interface", NULL);
++		prop = of_get_property(ug_info->phy_node, "interface", NULL);
+ 		if (prop != NULL) {
+ 			phy_interface = enet_to_phy_interface[*prop];
+ 			max_speed = enet_to_speed[*prop];
