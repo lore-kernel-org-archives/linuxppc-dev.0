@@ -1,23 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 936BBB7087
+Return-Path: <Bo.Liu@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 8AC0CB708C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 17 Jul 2009 07:42:30 +1000 (EST)
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id D2156DDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2009 07:42:29 +1000 (EST)
-From: Wolfgang Denk <wd@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2 v2] MPC52xx FEC: be more conservative when setting
-	MII_SPEED register
-Date: Thu, 16 Jul 2009 23:42:26 +0200
-Message-Id: <1247780546-4426-2-git-send-email-wd@denx.de>
-In-Reply-To: <1247671133-12148-1-git-send-email-wd@denx.de>
-References: <1247671133-12148-1-git-send-email-wd@denx.de>
-Cc: netdev@vger.kernel.org, Wolfgang Denk <wd@denx.de>
+	Fri, 17 Jul 2009 07:55:15 +1000 (EST)
+Message-ID: <4A5FDCDF.9010005@windriver.com>
+Date: Fri, 17 Jul 2009 10:07:27 +0800
+From: tonyliu <Bo.Liu@windriver.com>
+MIME-Version: 1.0
+To: Rupesh Kumar <Rupesh.Kumar@Lntemsys.com>
+Subject: Re: booting MPC8313 based board with yaffs2 RFS
+References: <OFB2EFC395.7BD1B8AD-ON652575F4.00512780-652575F4.00513235@lntemsys.com>
+In-Reply-To: <OFB2EFC395.7BD1B8AD-ON652575F4.00512780-652575F4.00513235@lntemsys.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,70 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds error checking and prevents clobbering unrelated bits
-(reserved bits or the DIS_PREAMBLE bit) when writing the MII_SPEED
-register on MPC52xx systems.
 
-Signed-off-by: Wolfgang Denk <wd@denx.de>
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: <netdev@vger.kernel.org>
----
- drivers/net/fec_mpc52xx.c     |    2 +-
- drivers/net/fec_mpc52xx_phy.c |   21 ++++++++++++++++++---
- 2 files changed, 19 insertions(+), 4 deletions(-)
+Rupesh Kumar wrote:
+> Hi
+> I am using MPC8313 board which is currently booting with JFFS2 root file 
+> system. 
+> I am using linux kernel version 2.6.23 from FreeScale's LTIB for MPC8313. 
+>
+> As, I want it to boot with YAFFS2 root file system, I did compile kernel 
+> with yaffs2 support, craeted yaffs2 rootfile system and passed yaffs2 
+> partiton of nand in bootargs. However it didnot work.
+>
+>
+> If any one has done it successfully, can please share the steps to be 
+> followed ?
+>   
+More detailed info maybe helpful for debugging this issue.
 
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index cc78633..b69d440 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -639,7 +639,7 @@ static void mpc52xx_fec_hw_init(struct net_device *dev)
- 	/* set phy speed.
- 	 * this can't be done in phy driver, since it needs to be called
- 	 * before fec stuff (even on resume) */
--	out_be32(&fec->mii_speed, priv->mdio_speed);
-+	clrsetbits_be32(&fec->mii_speed, 0x7E, priv->mdio_speed);
- }
- 
- /**
-diff --git a/drivers/net/fec_mpc52xx_phy.c b/drivers/net/fec_mpc52xx_phy.c
-index 31e6d62..4c33dc5 100644
---- a/drivers/net/fec_mpc52xx_phy.c
-+++ b/drivers/net/fec_mpc52xx_phy.c
-@@ -70,7 +70,7 @@ static int mpc52xx_fec_mdio_probe(struct of_device *of,
- 	struct mpc52xx_fec_mdio_priv *priv;
- 	struct resource res = {};
- 	int err;
--	int i;
-+	int i, clock, speed;
- 
- 	bus = mdiobus_alloc();
- 	if (bus == NULL)
-@@ -105,8 +105,23 @@ static int mpc52xx_fec_mdio_probe(struct of_device *of,
- 	dev_set_drvdata(dev, bus);
- 
- 	/* set MII speed */
--	out_be32(&priv->regs->mii_speed,
--		((mpc5xxx_get_bus_frequency(of->node) >> 20) / 5) << 1);
-+	clock = mpc5xxx_get_bus_frequency(of->node);
-+	if (!clock) {
-+		dev_err(&of->dev, "could not determine IPS/IPB clock\n");
-+		goto out_unmap;
-+	}
-+
-+	/* scale for a MII clock <= 2.5 MHz */
-+	speed = (clock + 2499999) / 2500000;
-+
-+	/* only 6 bits (25:30) available for MII speed */
-+	if (speed > 0x3F) {
-+		speed = 0x3F;
-+		dev_err(&of->dev, "MII clock (%d Hz) exceeds max (2.5 MHz)\n",
-+			clock / speed);
-+	}
-+
-+	clrsetbits_be32(&priv->regs->mii_speed, 0x7E, speed << 1);
- 
- 	err = of_mdiobus_register(bus, np);
- 	if (err)
--- 
-1.6.0.6
+1. What nand flash is on-board? what's the size of the nand flash page 
+size, 512/2048?
+2. what's the version of mkyaffs2image you are using?
+3. Can you mount an empty nand flash partition using yaffs2 type,
+mount  /dev/mtdblock##x   xxx
+4. It's better to attatch bootup message.
+
+Tony
+> Thanks
+> Rupesh
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>   
