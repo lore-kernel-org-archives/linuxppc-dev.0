@@ -1,28 +1,18 @@
-Return-Path: <mingo@elte.hu>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B9076B6F1F
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id A7531B7080
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 18 Jul 2009 22:02:53 +1000 (EST)
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3F0B9DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Jul 2009 22:02:52 +1000 (EST)
-Date: Sat, 18 Jul 2009 14:01:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH RFC 1/2] Makefile: Never use -fno-omit-frame-pointer
-Message-ID: <20090718120145.GB31007@elte.hu>
-References: <20090616201630.GA4971@oksana.dev.rtsoft.ru>
-	<20090714133716.GC28970@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090714133716.GC28970@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+	Sat, 18 Jul 2009 23:02:26 +1000 (EST)
+To: Valentine <vbarshak@ru.mvista.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Simple question about powerpc asm.
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <4A61A48D.8060601@ru.mvista.com>
+References: <4A6194D8.9090602@gmail.com> <4A61A48D.8060601@ru.mvista.com>
+Date: Sat, 18 Jul 2009 14:54:52 +0200
+Message-Id: <20090718125452.3760D832E416@gemini.denx.de>
+Cc: HongWoo Lee <hongwoo7@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Dear Valentine,
 
-* Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-
-> On Wed, Jun 17, 2009 at 12:16:30AM +0400, Anton Vorontsov wrote:
-> > According to Segher Boessenkool and GCC manual, -fomit-frame-pointer
-> > is only the default when optimising on archs/ABIs where it doesn't
-> > hinder debugging and -pg. So, we do not get it by default on x86,
-> > not at any optimisation level.
-> > 
-> > On the other hand, *using* -fno-omit-frame-pointer causes gcc to
-> > produce buggy code on PowerPC targets.
-> > 
-> > If Segher and GCC manual are right, this patch should be a no-op
-> > for all arches except PowerPC, where the patch fixes gcc issues.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
-> > 
-> > See this thread for more discussion:
-> > http://osdir.com/ml/linux-kernel/2009-05/msg01754.html
-> > 
-> > p.s.
-> > Obviously, I didn't test this patch on anything else but PPC32. ;-)
-> > 
-> > Segher, do you know if all GCC versions that we support for
-> > building Linux are behaving the way that GCC manual describe?
+In message <4A61A48D.8060601@ru.mvista.com> you wrote:
+>
+> PowerPC instructions are 32-bit long. So, there are only 16 bits 
+> available within the instruction for constant values. Since address can 
+> be up to 64 bits, we have to load it a piece at a time. The "@" within 
+> the assembler instruct it to give a specially-processed form of a symbol 
+> value:
 > 
-> No news is good news... Ingo, can we merge this into -tip for 
-> testing?
+> @highest -- refers to bits 48-63 of a constant
+> @higher -- refers to bits 32-47 of a constant
+> @h -- refers to bits 16-31 of a constant
+> @l -- refers to bits 0-15 of a constant
 
-Changes to the top level Makefile should really go via Sam's kbuild 
-tree.
+Actually these bit numbers are wrong, as bit 0 is the MSB for PowerPC
+;-)
 
-	Ingo
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Emotions are alien to me.  I'm a scientist.
+	-- Spock, "This Side of Paradise", stardate 3417.3
