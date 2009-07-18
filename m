@@ -1,25 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f208.google.com (mail-gx0-f208.google.com
-	[209.85.217.208])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id D302CB7080
+Return-Path: <aaronleefly@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EFC65B708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 19 Jul 2009 04:37:57 +1000 (EST)
-Received: by gxk4 with SMTP id 4so2496771gxk.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 18 Jul 2009 11:37:54 -0700 (PDT)
+	Sat, 18 Jul 2009 23:03:25 +1000 (EST)
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.175])
+	by ozlabs.org (Postfix) with ESMTP id 0ADE7DDD01
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Jul 2009 23:03:24 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so434229wfg.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Jul 2009 06:03:22 -0700 (PDT)
+From: "Li Jun (Aaron)" <aaronleefly@gmail.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: how do linux active the ppc405 cache?
+Date: Sat, 18 Jul 2009 20:55:31 +0800
+Message-ID: <001701ca07a7$0ba86a80$22f93f80$@com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20090718180448.GA3252@oksana.dev.rtsoft.ru>
-References: <20090717065220.15652.93331.stgit@localhost.localdomain>
-	<20090718180448.GA3252@oksana.dev.rtsoft.ru>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 18 Jul 2009 12:37:34 -0600
-Message-ID: <fa686aa40907181137v4a0ed1ednfed3194d1308296a@mail.gmail.com>
-Subject: Re: [PATCH v2 0/4] net: Revive fixed link support
-To: avorontsov@ru.mvista.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: leoli@freescale.com, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	afleming@freescale.com, davem@davemloft.net
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0018_01CA07EA.19CBAA80"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +28,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jul 18, 2009 at 12:04 PM, Anton
-Vorontsov<avorontsov@ru.mvista.com> wrote:
-> On Fri, Jul 17, 2009 at 01:31:25AM -0600, Grant Likely wrote:
-> [...]
->> Part of the problem I think is that the phylib code merges two separate
->> constructs; the construct of an MDIO bus (on which many device may
->> reside, not all of them PHYs), and the construct of an MII link whose
->> speed and configuration need to be manipulated. =A0I've run into problem=
-s
->> myself on how best to handle things like Ethernet switches which
->> definitely do not behave like PHYs and the phylib state machine cannot
->> be used on them. =A0It seems to me that the whole 'dummy phy' approach
->> is just an artifact of the phylib model not being quite right yet.
->
-> Yep. With a bit of phylib rework we can remove all the MDIO emulation
-> stuff from phy/fixed.c driver, and leave there just speed/duplex/pause
-> assignments.
->
-> Though, I still believe that we should avoid two code paths in the
-> drivers. One of the code paths will be constantly broken if we do so.
+This is a multi-part message in MIME format.
 
-Yes, I agree.  Splitting the concepts also has the added advantage
-that non-phy devices will have an interface to manipulate the link
-speed without modifying drivers.
+------=_NextPart_000_0018_01CA07EA.19CBAA80
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
->> Anton, once again I don't have hardware to test this, so I rely on you
->> to tell be if I screwed it up. =A0It has been compile tested.
->
-> Works fine here, thanks!
+Hi all,
 
-Awesome.  Dave, can you please pick up this series?
+I have a question about cache activation on the Xilinx Virtex4 ML403 board.
 
-Thanks,
-g.
+I know that PowerPC instruction and data caches have to be activated
+manually with the command 
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+XCache_EnableICache(); 
+
+XCache_EnableDCache();
+
+It works well with the standalone application, but how about it in Linux
+system?
+
+ When porting a linux 2.6 on the board, how the  cache can be activated by
+the OS?
+
+Thanks 
+
+ 
+
+
+------=_NextPart_000_0018_01CA07EA.19CBAA80
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:\5B8B\4F53;
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+@font-face
+	{font-family:\5B8B\4F53;
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:"\@\5B8B\4F53";
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+p
+	{mso-style-priority:99;
+	mso-margin-top-alt:auto;
+	margin-right:0cm;
+	mso-margin-bottom-alt:auto;
+	margin-left:0cm;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page Section1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p>Hi all,<o:p></o:p></p>
+
+<p>I have a question about cache activation on the Xilinx Virtex4 ML403 =
+board.<o:p></o:p></p>
+
+<p>I know that PowerPC instruction and data caches have to be activated
+manually&nbsp;with the command <o:p></o:p></p>
+
+<p>XCache_EnableICache(); <o:p></o:p></p>
+
+<p>XCache_EnableDCache();<o:p></o:p></p>
+
+<p>It works well with the standalone application, but how about it in =
+Linux
+system?<o:p></o:p></p>
+
+<p>&nbsp;When porting a linux 2.6 on the board, how the&nbsp; cache can =
+be
+activated by the OS?<o:p></o:p></p>
+
+<p>Thanks <o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0018_01CA07EA.19CBAA80--
