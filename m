@@ -1,20 +1,19 @@
-Return-Path: <mb@bu3sch.de>
-Received: from vs166246.vserver.de (bu3sch.de [62.75.166.246])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B8627B7087
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id A9FC7B70B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 18 Jul 2009 23:48:41 +1000 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] viotape: Fix memory and semaphore leak
-Date: Sat, 18 Jul 2009 15:06:33 +0200
+	Sat, 18 Jul 2009 23:54:46 +1000 (EST)
+Message-ID: <4A61D457.2030105@ru.mvista.com>
+Date: Sat, 18 Jul 2009 17:55:35 +0400
+From: Valentine <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200907181506.33499.mb@bu3sch.de>
-Cc: Dave Boutcher <boutcher@us.ibm.com>, Ryan Arnold <ryanarn@us.ibm.com>,
-	Colin Devilbiss <devilbis@us.ibm.com>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: Simple question about powerpc asm.
+References: <4A6194D8.9090602@gmail.com> <4A61A48D.8060601@ru.mvista.com>
+	<20090718125452.3760D832E416@gemini.denx.de>
+In-Reply-To: <20090718125452.3760D832E416@gemini.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: HongWoo Lee <hongwoo7@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,61 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes a memory and semaphore leak in the viotape driver's
-char device write op. It leaks the DMA memory and the semaphore lock
-in case the device was opened with O_NONBLOCK.
+Wolfgang Denk wrote:
+> Dear Valentine,
+> 
+> In message <4A61A48D.8060601@ru.mvista.com> you wrote:
+>> PowerPC instructions are 32-bit long. So, there are only 16 bits 
+>> available within the instruction for constant values. Since address can 
+>> be up to 64 bits, we have to load it a piece at a time. The "@" within 
+>> the assembler instruct it to give a specially-processed form of a symbol 
+>> value:
+>>
+>> @highest -- refers to bits 48-63 of a constant
+>> @higher -- refers to bits 32-47 of a constant
+>> @h -- refers to bits 16-31 of a constant
+>> @l -- refers to bits 0-15 of a constant
+> 
+> Actually these bit numbers are wrong, as bit 0 is the MSB for PowerPC
+> ;-)
 
-This patch is only compile tested, because I do not have the hardware.
+All right, you got me ;)
+Even copy-pasting from the IBM docs, one has to double-check :)
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Regards,
+Val.
 
----
- drivers/char/viotape.c |   19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
-
---- linux-2.6.orig/drivers/char/viotape.c
-+++ linux-2.6/drivers/char/viotape.c
-@@ -401,30 +401,31 @@ static ssize_t viotap_write(struct file 
- 			viopath_targetinst(viopath_hostLp),
- 			(u64)(unsigned long)op, VIOVERSION << 16,
- 			((u64)devi.devno << 48) | op->dmaaddr, count, 0, 0);
- 	if (hvrc != HvLpEvent_Rc_Good) {
- 		printk(VIOTAPE_KERN_WARN "hv error on op %d\n",
- 				(int)hvrc);
- 		ret = -EIO;
- 		goto free_dma;
- 	}
- 
--	if (noblock)
--		return count;
--
--	wait_for_completion(&op->com);
-+	if (noblock) {
-+		ret = count;
-+	} else {
-+		wait_for_completion(&op->com);
- 
--	if (op->rc)
--		ret = tape_rc_to_errno(op->rc, "write", devi.devno);
--	else {
--		chg_state(devi.devno, VIOT_WRITING, file);
--		ret = op->count;
-+		if (op->rc)
-+			ret = tape_rc_to_errno(op->rc, "write", devi.devno);
-+		else {
-+			chg_state(devi.devno, VIOT_WRITING, file);
-+			ret = op->count;
-+		}
- 	}
- 
- free_dma:
- 	dma_free_coherent(op->dev, count, op->buffer, op->dmaaddr);
- up_sem:
- 	up(&reqSem);
- free_op:
- 	free_op_struct(op);
- 	return ret;
- }
-
--- 
-Greetings, Michael.
+> 
+> Best regards,
+> 
+> Wolfgang Denk
+> 
