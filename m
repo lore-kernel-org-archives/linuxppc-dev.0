@@ -1,26 +1,28 @@
-Return-Path: <dhowells@redhat.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D372AB7088
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9A32AB7079
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 20 Jul 2009 22:46:12 +1000 (EST)
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 58EF0DDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Jul 2009 22:46:11 +1000 (EST)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090715074952.A36C7DDDB2@ozlabs.org>
-References: <20090715074952.A36C7DDDB2@ozlabs.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te, ud,
-	md}_free_tlb()
-Date: Mon, 20 Jul 2009 13:46:03 +0100
-Message-ID: <13548.1248093963@redhat.com>
-Sender: dhowells@redhat.com
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-	linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
-	linux-kernel@vger.kernel.org, Linux Memory Management <linux-mm@kvack.org>
+	Tue, 21 Jul 2009 00:59:55 +1000 (EST)
+Received: from mail-yx0-f199.google.com (mail-yx0-f199.google.com
+	[209.85.210.199]) by ozlabs.org (Postfix) with ESMTP id AA260DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2009 00:59:53 +1000 (EST)
+Received: by yxe37 with SMTP id 37so3784533yxe.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Jul 2009 07:59:51 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <4A646117.1030409@elphinstone.net>
+References: <4A646117.1030409@elphinstone.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 20 Jul 2009 08:59:31 -0600
+Message-ID: <fa686aa40907200759h1e4ec8cfh8a35890127a899a1@mail.gmail.com>
+Subject: Re: [RFC/PATCH] net: Rework mdio-ofgpio driver to use of_mdio
+	infrastructure
+To: Mark Ware <mware@elphinstone.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,24 +32,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+(adding cc:linuxppc-dev@ozlabs.org)
 
-> Upcoming paches to support the new 64-bit "BookE" powerpc architecture
-> will need to have the virtual address corresponding to PTE page when
-> freeing it, due to the way the HW table walker works.
-> 
-> Basically, the TLB can be loaded with "large" pages that cover the whole
-> virtual space (well, sort-of, half of it actually) represented by a PTE
-> page, and which contain an "indirect" bit indicating that this TLB entry
-> RPN points to an array of PTEs from which the TLB can then create direct
-> entries. Thus, in order to invalidate those when PTE pages are deleted,
-> we need the virtual address to pass to tlbilx or tlbivax instructions.
+On Mon, Jul 20, 2009 at 6:20 AM, Mark Ware<mware@elphinstone.net> wrote:
+> Changes to the fs_enet driver (aa73832c5a80d6c52c69b18af858d88fa595dd3c)
+> cause kernel crashes when using the mdio-ofgpio driver.
 >
-> The old trick of sticking it somewhere in the PTE page struct page sucks
-> too much, the address is almost readily available in all call sites and
-> almost everybody implemets these as macros, so we may as well add the
-> argument everywhere. I added it to the pmd and pud variants for consistency.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> The following patch is a fairly naive attempt to replicate similar change=
+s
+> made to the fs_enet mii-bitbang drivers.
 
-Acked-by: David Howells <dhowells@redhat.com> [MN10300 & FRV]
+For a naive attempt, it's really quite good.  However, I'd do it
+slightly differently.
+
+You should refactor mdio_gpio_bus_init() to not call
+mdiobus_register() at all, and instead just return a pointer to the
+unregistered new_bus.  Then mdio_gpio_probe() and mdio_ofgpio_probe()
+can call the correct register variant directly.  Fewer ugly #ifdefs
+this way.  It also eliminates the need to cast the void* pointer.
+
+Thanks for catching this.
+
+g.
+
+> =A0drivers/net/phy/mdio-gpio.c | =A0 39 +++++++++++++--------------------=
+------
+> =A01 files changed, 13 insertions(+), 26 deletions(-)
+>
+> diff --git a/drivers/net/phy/mdio-gpio.c b/drivers/net/phy/mdio-gpio.c
+> index 33984b7..6568176 100644
+> --- a/drivers/net/phy/mdio-gpio.c
+> +++ b/drivers/net/phy/mdio-gpio.c
+> @@ -30,6 +30,7 @@
+>
+> =A0#ifdef CONFIG_OF_GPIO
+> =A0#include <linux/of_gpio.h>
+> +#include <linux/of_mdio.h>
+> =A0#include <linux/of_platform.h>
+> =A0#endif
+>
+> @@ -83,7 +84,8 @@ static struct mdiobb_ops mdio_gpio_ops =3D {
+>
+> =A0static int __devinit mdio_gpio_bus_init(struct device *dev,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0struct mdio_gpio_platform_data
+> *pdata,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 int bus_id)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 int bus_id,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0void *ofdev)
+> =A0{
+> =A0 =A0 =A0 =A0struct mii_bus *new_bus;
+> =A0 =A0 =A0 =A0struct mdio_gpio_info *bitbang;
+> @@ -129,7 +131,14 @@ static int __devinit mdio_gpio_bus_init(struct devic=
+e
+> *dev,
+>
+> =A0 =A0 =A0 =A0dev_set_drvdata(dev, new_bus);
+>
+> - =A0 =A0 =A0 ret =3D mdiobus_register(new_bus);
+> +#ifdef CONFIG_OF_GPIO
+> + =A0 =A0if (ofdev)
+> + =A0 =A0 =A0 =A0ret =3D of_mdiobus_register(new_bus, ((struct of_device =
+*)
+> ofdev)->node);
+> + =A0 =A0else
+> +#else
+> + =A0 =A0 =A0 =A0 =A0 ret =3D mdiobus_register(new_bus);
+> +#endif
+> +
+> =A0 =A0 =A0 =A0if (ret)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto out_free_all;
+>
+> @@ -168,7 +177,7 @@ static int __devinit mdio_gpio_probe(struct
+> platform_device *pdev)
+> =A0 =A0 =A0 =A0if (!pdata)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -ENODEV;
+>
+> - =A0 =A0 =A0 return mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id);
+> + =A0 =A0 =A0 return mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id, NULL=
+);
+> =A0}
+>
+> =A0static int __devexit mdio_gpio_remove(struct platform_device *pdev)
+> @@ -179,28 +188,10 @@ static int __devexit mdio_gpio_remove(struct
+> platform_device *pdev)
+> =A0}
+>
+> =A0#ifdef CONFIG_OF_GPIO
+> -static void __devinit add_phy(struct mdio_gpio_platform_data *pdata,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct device_n=
+ode *np)
+> -{
+> - =A0 =A0 =A0 const u32 *data;
+> - =A0 =A0 =A0 int len, id, irq;
+> -
+> - =A0 =A0 =A0 data =3D of_get_property(np, "reg", &len);
+> - =A0 =A0 =A0 if (!data || len !=3D 4)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+> -
+> - =A0 =A0 =A0 id =3D *data;
+> - =A0 =A0 =A0 pdata->phy_mask &=3D ~(1 << id);
+> -
+> - =A0 =A0 =A0 irq =3D of_irq_to_resource(np, 0, NULL);
+> - =A0 =A0 =A0 if (irq)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata->irqs[id] =3D irq;
+> -}
+>
+> =A0static int __devinit mdio_ofgpio_probe(struct of_device *ofdev,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 const struct of_device_id *match)
+> =A0{
+> - =A0 =A0 =A0 struct device_node *np =3D NULL;
+> =A0 =A0 =A0 =A0struct mdio_gpio_platform_data *pdata;
+> =A0 =A0 =A0 =A0int ret;
+>
+> @@ -218,11 +209,7 @@ static int __devinit mdio_ofgpio_probe(struct of_dev=
+ice
+> *ofdev,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out_free;
+> =A0 =A0 =A0 =A0pdata->mdio =3D ret;
+>
+> - =A0 =A0 =A0 while ((np =3D of_get_next_child(ofdev->node, np)))
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!strcmp(np->type, "ethernet-phy"))
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 add_phy(pdata, np);
+> -
+> - =A0 =A0 =A0 return mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc);
+> + =A0 =A0 =A0 return mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc, o=
+fdev);
+>
+> =A0out_free:
+> =A0 =A0 =A0 =A0kfree(pdata);
+> --
+> 1.5.6.5
+>
+
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
