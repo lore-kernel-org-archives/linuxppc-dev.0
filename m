@@ -1,28 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <wd@denx.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9A32AB7079
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F0989B7079
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Jul 2009 00:59:55 +1000 (EST)
-Received: from mail-yx0-f199.google.com (mail-yx0-f199.google.com
-	[209.85.210.199]) by ozlabs.org (Postfix) with ESMTP id AA260DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2009 00:59:53 +1000 (EST)
-Received: by yxe37 with SMTP id 37so3784533yxe.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Jul 2009 07:59:51 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4A646117.1030409@elphinstone.net>
-References: <4A646117.1030409@elphinstone.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 20 Jul 2009 08:59:31 -0600
-Message-ID: <fa686aa40907200759h1e4ec8cfh8a35890127a899a1@mail.gmail.com>
-Subject: Re: [RFC/PATCH] net: Rework mdio-ofgpio driver to use of_mdio
-	infrastructure
-To: Mark Ware <mware@elphinstone.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
+	Tue, 21 Jul 2009 03:40:46 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 27875DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2009 03:40:45 +1000 (EST)
+To: vijay sharma <vjai22@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: PPCboot and latest kernel
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <e571380d0907191136j37d341d7k514f46396a38abc3@mail.gmail.com>
+References: <e571380d0907191132u3985423aiacc7ec8c75c0534b@mail.gmail.com>
+	<e571380d0907191136j37d341d7k514f46396a38abc3@mail.gmail.com>
+Date: Mon, 20 Jul 2009 19:40:41 +0200
+Message-Id: <20090720174041.1873A832E416@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,144 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(adding cc:linuxppc-dev@ozlabs.org)
+Dear vijay sharma,
 
-On Mon, Jul 20, 2009 at 6:20 AM, Mark Ware<mware@elphinstone.net> wrote:
-> Changes to the fs_enet driver (aa73832c5a80d6c52c69b18af858d88fa595dd3c)
-> cause kernel crashes when using the mdio-ofgpio driver.
->
-> The following patch is a fairly naive attempt to replicate similar change=
-s
-> made to the fs_enet mii-bitbang drivers.
+In message <e571380d0907191136j37d341d7k514f46396a38abc3@mail.gmail.com> you wrote:
+> 
+> I have been woking on upgrading an embedded system based on MPC8241 from
+> 2.4.17 linux to 2.6.30 kernel.
 
-For a naive attempt, it's really quite good.  However, I'd do it
-slightly differently.
+Wow, that's a big leap...
 
-You should refactor mdio_gpio_bus_init() to not call
-mdiobus_register() at all, and instead just return a pointer to the
-unregistered new_bus.  Then mdio_gpio_probe() and mdio_ofgpio_probe()
-can call the correct register variant directly.  Fewer ugly #ifdefs
-this way.  It also eliminates the need to cast the void* pointer.
+You should also consider to update to the latest version of U-Boot;
+the time when it was still called PPCBoot is long, long past.
 
-Thanks for catching this.
+> I am currently struck one point.
+> 
+> Here is the console output where I am struck:
+> =================================
+> cpboot> bootm
+> ## Booting image at 08000000 ...
+>    Image Name:   Linux-2.6.30
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>    Data Size:    21729342 Bytes = 21220 kB = 20 MB
+>    Load Address: 01900000
+>    Entry Point:  01900570
+>    Verifying Checksum ... OK
+>    Uncompressing Kernel Image ... OK
+> Memory <- <0x0 0x10000000> (256MB)
+> CPU clock-frequency <- 0xbebc1fe (200MHz)
+> CPU timebase-frequency <- 0x17d783f (25MHz)
+> CPU bus-frequency <- 0x5f5e0ff (100MHz)
+> 
+> zImage starting: loaded at 0x01900000 (sp: 0x0fdc3a08)
+> Allocating 0x165ca04 bytes for kernel ...
+> gunzipping (0x00000000 <- 0x0190c000:0x02f58efc)...done 0x1637b54 bytes
 
-g.
+You loaded the image at 01900000, but the uncompr4essed image extends
+until 02f58efc, i. e. there is a good chance that you will overwrite
+parts of the still uncompressed image.
 
-> =A0drivers/net/phy/mdio-gpio.c | =A0 39 +++++++++++++--------------------=
-------
-> =A01 files changed, 13 insertions(+), 26 deletions(-)
->
-> diff --git a/drivers/net/phy/mdio-gpio.c b/drivers/net/phy/mdio-gpio.c
-> index 33984b7..6568176 100644
-> --- a/drivers/net/phy/mdio-gpio.c
-> +++ b/drivers/net/phy/mdio-gpio.c
-> @@ -30,6 +30,7 @@
->
-> =A0#ifdef CONFIG_OF_GPIO
-> =A0#include <linux/of_gpio.h>
-> +#include <linux/of_mdio.h>
-> =A0#include <linux/of_platform.h>
-> =A0#endif
->
-> @@ -83,7 +84,8 @@ static struct mdiobb_ops mdio_gpio_ops =3D {
->
-> =A0static int __devinit mdio_gpio_bus_init(struct device *dev,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0struct mdio_gpio_platform_data
-> *pdata,
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 int bus_id)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 int bus_id,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0void *ofdev)
-> =A0{
-> =A0 =A0 =A0 =A0struct mii_bus *new_bus;
-> =A0 =A0 =A0 =A0struct mdio_gpio_info *bitbang;
-> @@ -129,7 +131,14 @@ static int __devinit mdio_gpio_bus_init(struct devic=
-e
-> *dev,
->
-> =A0 =A0 =A0 =A0dev_set_drvdata(dev, new_bus);
->
-> - =A0 =A0 =A0 ret =3D mdiobus_register(new_bus);
-> +#ifdef CONFIG_OF_GPIO
-> + =A0 =A0if (ofdev)
-> + =A0 =A0 =A0 =A0ret =3D of_mdiobus_register(new_bus, ((struct of_device =
-*)
-> ofdev)->node);
-> + =A0 =A0else
-> +#else
-> + =A0 =A0 =A0 =A0 =A0 ret =3D mdiobus_register(new_bus);
-> +#endif
-> +
-> =A0 =A0 =A0 =A0if (ret)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto out_free_all;
->
-> @@ -168,7 +177,7 @@ static int __devinit mdio_gpio_probe(struct
-> platform_device *pdev)
-> =A0 =A0 =A0 =A0if (!pdata)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -ENODEV;
->
-> - =A0 =A0 =A0 return mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id);
-> + =A0 =A0 =A0 return mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id, NULL=
-);
-> =A0}
->
-> =A0static int __devexit mdio_gpio_remove(struct platform_device *pdev)
-> @@ -179,28 +188,10 @@ static int __devexit mdio_gpio_remove(struct
-> platform_device *pdev)
-> =A0}
->
-> =A0#ifdef CONFIG_OF_GPIO
-> -static void __devinit add_phy(struct mdio_gpio_platform_data *pdata,
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct device_n=
-ode *np)
-> -{
-> - =A0 =A0 =A0 const u32 *data;
-> - =A0 =A0 =A0 int len, id, irq;
-> -
-> - =A0 =A0 =A0 data =3D of_get_property(np, "reg", &len);
-> - =A0 =A0 =A0 if (!data || len !=3D 4)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
-> -
-> - =A0 =A0 =A0 id =3D *data;
-> - =A0 =A0 =A0 pdata->phy_mask &=3D ~(1 << id);
-> -
-> - =A0 =A0 =A0 irq =3D of_irq_to_resource(np, 0, NULL);
-> - =A0 =A0 =A0 if (irq)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata->irqs[id] =3D irq;
-> -}
->
-> =A0static int __devinit mdio_ofgpio_probe(struct of_device *ofdev,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 const struct of_device_id *match)
-> =A0{
-> - =A0 =A0 =A0 struct device_node *np =3D NULL;
-> =A0 =A0 =A0 =A0struct mdio_gpio_platform_data *pdata;
-> =A0 =A0 =A0 =A0int ret;
->
-> @@ -218,11 +209,7 @@ static int __devinit mdio_ofgpio_probe(struct of_dev=
-ice
-> *ofdev,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out_free;
-> =A0 =A0 =A0 =A0pdata->mdio =3D ret;
->
-> - =A0 =A0 =A0 while ((np =3D of_get_next_child(ofdev->node, np)))
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!strcmp(np->type, "ethernet-phy"))
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 add_phy(pdata, np);
-> -
-> - =A0 =A0 =A0 return mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc);
-> + =A0 =A0 =A0 return mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc, o=
-fdev);
->
-> =A0out_free:
-> =A0 =A0 =A0 =A0kfree(pdata);
-> --
-> 1.5.6.5
->
+> Linux/PowerPC load:
+> Finalizing device tree... flat tree at 0x2f65300 <== Beyond this point no
+> output is available.
+
+Your device tree might be wrong, too.
 
 
+Best regards,
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Any sufficiently advanced bug is indistinguishable from a feature.
+                                                      - Rich Kulawiec
