@@ -1,32 +1,26 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <dhowells@redhat.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1B49EB7088
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D372AB7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 20 Jul 2009 22:19:07 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n6KCHRxs005932
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2009 06:17:27 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n6KCJ3iB208194
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2009 06:19:03 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n6KCJ2YV004738
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2009 06:19:02 -0600
-Date: Mon, 20 Jul 2009 08:18:57 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Mohd Arif <mohd.arif@nechclst.in>
-Subject: Re: ethtool support in ethernet driver
-Message-ID: <20090720121857.GB24196@zod.rchland.ibm.com>
-References: <0A8CFEC45B7F4C419F7543867C47442303189F8B@mailserver.nechclst.in>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0A8CFEC45B7F4C419F7543867C47442303189F8B@mailserver.nechclst.in>
-Cc: linuxppc-dev@lists.ozlabs.org
+	Mon, 20 Jul 2009 22:46:12 +1000 (EST)
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id 58EF0DDD01
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Jul 2009 22:46:11 +1000 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090715074952.A36C7DDDB2@ozlabs.org>
+References: <20090715074952.A36C7DDDB2@ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te, ud,
+	md}_free_tlb()
+Date: Mon, 20 Jul 2009 13:46:03 +0100
+Message-ID: <13548.1248093963@redhat.com>
+Sender: dhowells@redhat.com
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+	linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
+	linux-kernel@vger.kernel.org, Linux Memory Management <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,22 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jul 19, 2009 at 05:12:11PM +0530, Mohd Arif wrote:
->Dear All,
->    Happy to be a part of this mailing list!!!!!
->    The issue is that i want to give support of ethtool in ethernet
->driver.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-You didn't say whether this is related to PowerPC or not.
+> Upcoming paches to support the new 64-bit "BookE" powerpc architecture
+> will need to have the virtual address corresponding to PTE page when
+> freeing it, due to the way the HW table walker works.
+> 
+> Basically, the TLB can be loaded with "large" pages that cover the whole
+> virtual space (well, sort-of, half of it actually) represented by a PTE
+> page, and which contain an "indirect" bit indicating that this TLB entry
+> RPN points to an array of PTEs from which the TLB can then create direct
+> entries. Thus, in order to invalidate those when PTE pages are deleted,
+> we need the virtual address to pass to tlbilx or tlbivax instructions.
+>
+> The old trick of sticking it somewhere in the PTE page struct page sucks
+> too much, the address is almost readily available in all call sites and
+> almost everybody implemets these as macros, so we may as well add the
+> argument everywhere. I added it to the pmd and pud variants for consistency.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
->    Where do i need to make changes in the driver?
-
-You didn't say which driver.  There are a lot of them.
-
->    I have never been into driver stuff.
->    So kindly suggest me accordingly.
-
-If this is just a generic ethernet driver question, you probably want the
-netdev mailing list, not this one.
-
-josh
+Acked-by: David Howells <dhowells@redhat.com> [MN10300 & FRV]
