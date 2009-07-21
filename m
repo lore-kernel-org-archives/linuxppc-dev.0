@@ -1,23 +1,26 @@
-Return-Path: <david.jander@protonic.nl>
+Return-Path: <mware@elphinstone.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E1CECB70BA
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5DFE8B70BA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Jul 2009 19:47:46 +1000 (EST)
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 6708DDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2009 19:47:46 +1000 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-dev@ozlabs.org
-Subject: Best hardware platform for native compiling...
-Date: Tue, 21 Jul 2009 11:16:52 +0200
+	Tue, 21 Jul 2009 19:50:37 +1000 (EST)
+Received: from ipmail04.adl2.internode.on.net (ipmail04.adl2.internode.on.net
+	[203.16.214.57]) by ozlabs.org (Postfix) with ESMTP id 0CF09DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2009 19:50:35 +1000 (EST)
+Message-ID: <4A658F69.7020002@elphinstone.net>
+Date: Tue, 21 Jul 2009 19:50:33 +1000
+From: Mark Ware <mware@elphinstone.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200907211116.52963.david.jander@protonic.nl>
-Cc: Wolfgang Denk <wd@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>, netdev@vger.kernel.org,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH v2] net: Rework mdio-ofgpio driver to use of_mdio
+	infrastructure
+References: <4A646117.1030409@elphinstone.net>
+	<fa686aa40907200759h1e4ec8cfh8a35890127a899a1@mail.gmail.com>
+In-Reply-To: <fa686aa40907200759h1e4ec8cfh8a35890127a899a1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +30,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Changes to the fs_enet driver (aa73832c5a80d6c52c69b18af858d88fa595dd3c) cause kernel crashes when using the mdio-ofgpio driver.
 
-Hi all,
+The following patch replicates similar changes made to the fs_enet mii-bitbang drivers.
+---
 
-This might sound as a stupid question (and maybe sligtly off-topic), but I 
-have not found an (easy) answer and I suspect many on this list will have a 
-good suggestion to make:
+This version attempts to address Grant's comments below:
 
-We are developing (and maintaining) different embedded linux systems based on 
-different PowerPC processors. From small MPC852T with little RAM and Flash, 
-up to 400MHz MPC5200- and MPC5121e based systems that resemble more a PC or 
-netbook than an embedded system in terms of RAM and storage.
+Grant Likely wrote:
+ >
+ > You should refactor mdio_gpio_bus_init() to not call
+ > mdiobus_register() at all, and instead just return a pointer to the
+ > unregistered new_bus.  Then mdio_gpio_probe() and mdio_ofgpio_probe()
+ > can call the correct register variant directly.  Fewer ugly #ifdefs
+ > this way.  It also eliminates the need to cast the void* pointer.
+ >
 
-For smaller systems we use a customized ELDK-based OS and cross-compile almost 
-everything on a PC.
+  drivers/net/phy/mdio-gpio.c |   77 ++++++++++++++++++++-----------------------
+  1 files changed, 36 insertions(+), 41 deletions(-)
 
-For bigger systems we often run a debian-derived OS like Ubuntu, and many 
-pieces are compiled natively on the target... just because it is easy and 
-quick to do, and cross-compiling certain packages can be a real pain.
-But, a 400 MHz e300 core is not really fast for compiling, so I have been 
-considering buying some sort of PowerPC-based system with a faster processor, 
-just as a "build-server" (a G5 would do wonders I guess).
+diff --git a/drivers/net/phy/mdio-gpio.c b/drivers/net/phy/mdio-gpio.c
+index 33984b7..22cdd45 100644
+--- a/drivers/net/phy/mdio-gpio.c
++++ b/drivers/net/phy/mdio-gpio.c
+@@ -30,6 +30,7 @@
 
-It seems like the only real option is one of the smaller IBM Power servers, 
-but that seems overkill to me. We also don't feel like buying some old 
-second-hand Apple gear.
+  #ifdef CONFIG_OF_GPIO
+  #include <linux/of_gpio.h>
++#include <linux/of_mdio.h>
+  #include <linux/of_platform.h>
+  #endif
 
-Is there any other available and affordable platform that can be used to run 
-linux and compile software natively for 32-bit PowerPC?
+@@ -81,13 +82,12 @@ static struct mdiobb_ops mdio_gpio_ops = {
+  	.get_mdio_data = mdio_get,
+  };
 
-Any suggestion is welcome!
+-static int __devinit mdio_gpio_bus_init(struct device *dev,
++static struct mii_bus * __devinit mdio_gpio_bus_init(struct device *dev,
+  					struct mdio_gpio_platform_data *pdata,
+  					int bus_id)
+  {
+  	struct mii_bus *new_bus;
+  	struct mdio_gpio_info *bitbang;
+-	int ret = -ENOMEM;
+  	int i;
 
-Best regards,
+  	bitbang = kzalloc(sizeof(*bitbang), GFP_KERNEL);
+@@ -104,8 +104,6 @@ static int __devinit mdio_gpio_bus_init(struct device *dev,
 
-P.S.: I am writing this while running "dpkg-buildpackage -rfakeroot" on the 
-package "xserver-xfbdev" from ubuntu 9.04 on a MPC5121e.... it will take 40 
-minutes ;-)
+  	new_bus->name = "GPIO Bitbanged MDIO",
 
+-	ret = -ENODEV;
+-
+  	new_bus->phy_mask = pdata->phy_mask;
+  	new_bus->irq = pdata->irqs;
+  	new_bus->parent = dev;
+@@ -129,15 +127,8 @@ static int __devinit mdio_gpio_bus_init(struct device *dev,
+
+  	dev_set_drvdata(dev, new_bus);
+
+-	ret = mdiobus_register(new_bus);
+-	if (ret)
+-		goto out_free_all;
+-
+-	return 0;
++	return new_bus;
+
+-out_free_all:
+-	dev_set_drvdata(dev, NULL);
+-	gpio_free(bitbang->mdio);
+  out_free_mdc:
+  	gpio_free(bitbang->mdc);
+  out_free_bus:
+@@ -145,30 +136,47 @@ out_free_bus:
+  out_free_bitbang:
+  	kfree(bitbang);
+  out:
+-	return ret;
++	return NULL;
+  }
+
+-static void __devexit mdio_gpio_bus_destroy(struct device *dev)
++static void __devinit mdio_gpio_bus_deinit(struct device *dev)
+  {
+  	struct mii_bus *bus = dev_get_drvdata(dev);
+  	struct mdio_gpio_info *bitbang = bus->priv;
+
+-	mdiobus_unregister(bus);
+-	free_mdio_bitbang(bus);
+  	dev_set_drvdata(dev, NULL);
+-	gpio_free(bitbang->mdc);
+  	gpio_free(bitbang->mdio);
++	gpio_free(bitbang->mdc);
++	free_mdio_bitbang(bus);
+  	kfree(bitbang);
+  }
+
++static void __devexit mdio_gpio_bus_destroy(struct device *dev)
++{
++	struct mii_bus *bus = dev_get_drvdata(dev);
++
++	mdiobus_unregister(bus);
++	mdio_gpio_bus_deinit(dev);
++}
++
+  static int __devinit mdio_gpio_probe(struct platform_device *pdev)
+  {
+  	struct mdio_gpio_platform_data *pdata = pdev->dev.platform_data;
++	struct mii_bus *new_bus;
++	int ret;
+
+  	if (!pdata)
+  		return -ENODEV;
+
+-	return mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id);
++	new_bus = mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id);
++	if (!new_bus)
++		return -ENODEV;
++
++	ret = mdiobus_register(new_bus);
++	if (ret)
++		mdio_gpio_bus_deinit(&pdev->dev);
++
++	return ret;
+  }
+
+  static int __devexit mdio_gpio_remove(struct platform_device *pdev)
+@@ -179,29 +187,12 @@ static int __devexit mdio_gpio_remove(struct platform_device *pdev)
+  }
+
+  #ifdef CONFIG_OF_GPIO
+-static void __devinit add_phy(struct mdio_gpio_platform_data *pdata,
+-			      struct device_node *np)
+-{
+-	const u32 *data;
+-	int len, id, irq;
+-
+-	data = of_get_property(np, "reg", &len);
+-	if (!data || len != 4)
+-		return;
+-
+-	id = *data;
+-	pdata->phy_mask &= ~(1 << id);
+-
+-	irq = of_irq_to_resource(np, 0, NULL);
+-	if (irq)
+-		pdata->irqs[id] = irq;
+-}
+
+  static int __devinit mdio_ofgpio_probe(struct of_device *ofdev,
+                                          const struct of_device_id *match)
+  {
+-	struct device_node *np = NULL;
+  	struct mdio_gpio_platform_data *pdata;
++	struct mii_bus *new_bus;
+  	int ret;
+
+  	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
+@@ -215,14 +206,18 @@ static int __devinit mdio_ofgpio_probe(struct of_device *ofdev,
+
+  	ret = of_get_gpio(ofdev->node, 1);
+  	if (ret < 0)
+-                goto out_free;
++		goto out_free;
+  	pdata->mdio = ret;
+
+-	while ((np = of_get_next_child(ofdev->node, np)))
+-		if (!strcmp(np->type, "ethernet-phy"))
+-			add_phy(pdata, np);
++	new_bus = mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc);
++	if (!new_bus)
++		return -ENODEV;
+
+-	return mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc);
++	ret = of_mdiobus_register(new_bus, ofdev->node);
++	if (ret)
++		mdio_gpio_bus_deinit(&ofdev->dev);
++
++	return ret;
+
+  out_free:
+  	kfree(pdata);
 -- 
-David Jander
-Protonic Holland.
+1.5.6.5
