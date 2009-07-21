@@ -1,31 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <kenneth@southpole.se>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 37E04B707B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E1D82B70AD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jul 2009 03:16:20 +1000 (EST)
-Received: from mail-gx0-f216.google.com (mail-gx0-f216.google.com
-	[209.85.217.216]) by ozlabs.org (Postfix) with ESMTP id 47E8ADDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2009 03:16:18 +1000 (EST)
-Received: by gxk12 with SMTP id 12so5638817gxk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2009 10:16:16 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4A658F69.7020002@elphinstone.net>
-References: <4A646117.1030409@elphinstone.net>
-	<fa686aa40907200759h1e4ec8cfh8a35890127a899a1@mail.gmail.com>
-	<4A658F69.7020002@elphinstone.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 21 Jul 2009 11:09:46 -0600
-Message-ID: <fa686aa40907211009o473020e2wb0ea79130b6f1d09@mail.gmail.com>
-Subject: Re: [PATCH v2] net: Rework mdio-ofgpio driver to use of_mdio
-	infrastructure
-To: Mark Ware <mware@elphinstone.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+	Wed, 22 Jul 2009 03:37:28 +1000 (EST)
+Received: from mail.southpole.se (mail.southpole.se [193.12.106.18])
+	by ozlabs.org (Postfix) with ESMTP id 03429DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2009 03:37:27 +1000 (EST)
+Received: from [127.0.0.1] (ssh.southpole.se [193.12.106.19])
+	by mail.southpole.se (Postfix) with ESMTPSA id 3BC1A4D4298
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2009 19:16:46 +0200 (CEST)
+Subject: mpc5121 Power Managment errata.
+From: Kenneth Johansson <kenneth@southpole.se>
+To: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/mixed; boundary="=-eyA6VYjd5cRsDZD360BU"
+Date: Tue, 21 Jul 2009 19:16:43 +0200
+Message-Id: <1248196603.17765.65.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,223 +28,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 21, 2009 at 3:50 AM, Mark Ware<mware@elphinstone.net> wrote:
-> Changes to the fs_enet driver (aa73832c5a80d6c52c69b18af858d88fa595dd3c)
-> cause kernel crashes when using the mdio-ofgpio driver.
->
-> The following patch replicates similar changes made to the fs_enet
-> mii-bitbang drivers.
 
-This looks good to me.  I've not tested it though (no hardware that
-uses it).  You should specify the testing you've done in the commit
-log.  Your signed-off-by: line is also missing.
+--=-eyA6VYjd5cRsDZD360BU
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+I have a bit of a problem with arch/powerpc/platforms/512x/mpc512x_pm.c
+Since this one is not included in mainline (yet) I have attached it 
 
-David, once the above issues are solved, this one needs to be merged for 2.=
-6.31.
+Now I have a number of questions and one mystery.
 
-Cheers,
-g.
+1: why relocate the code ?? is there a reason why the code must be
+located at address 0 
 
-> ---
->
-> This version attempts to address Grant's comments below:
->
-> Grant Likely wrote:
->>
->> You should refactor mdio_gpio_bus_init() to not call
->> mdiobus_register() at all, and instead just return a pointer to the
->> unregistered new_bus. =A0Then mdio_gpio_probe() and mdio_ofgpio_probe()
->> can call the correct register variant directly. =A0Fewer ugly #ifdefs
->> this way. =A0It also eliminates the need to cast the void* pointer.
->>
->
-> =A0drivers/net/phy/mdio-gpio.c | =A0 77
-> ++++++++++++++++++++-----------------------
-> =A01 files changed, 36 insertions(+), 41 deletions(-)
->
-> diff --git a/drivers/net/phy/mdio-gpio.c b/drivers/net/phy/mdio-gpio.c
-> index 33984b7..22cdd45 100644
-> --- a/drivers/net/phy/mdio-gpio.c
-> +++ b/drivers/net/phy/mdio-gpio.c
-> @@ -30,6 +30,7 @@
->
-> =A0#ifdef CONFIG_OF_GPIO
-> =A0#include <linux/of_gpio.h>
-> +#include <linux/of_mdio.h>
-> =A0#include <linux/of_platform.h>
-> =A0#endif
->
-> @@ -81,13 +82,12 @@ static struct mdiobb_ops mdio_gpio_ops =3D {
-> =A0 =A0 =A0 =A0.get_mdio_data =3D mdio_get,
-> =A0};
->
-> -static int __devinit mdio_gpio_bus_init(struct device *dev,
-> +static struct mii_bus * __devinit mdio_gpio_bus_init(struct device *dev,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0struct mdio_gpio_platform_data
-> *pdata,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0int bus_id)
-> =A0{
-> =A0 =A0 =A0 =A0struct mii_bus *new_bus;
-> =A0 =A0 =A0 =A0struct mdio_gpio_info *bitbang;
-> - =A0 =A0 =A0 int ret =3D -ENOMEM;
-> =A0 =A0 =A0 =A0int i;
->
-> =A0 =A0 =A0 =A0bitbang =3D kzalloc(sizeof(*bitbang), GFP_KERNEL);
-> @@ -104,8 +104,6 @@ static int __devinit mdio_gpio_bus_init(struct device
-> *dev,
->
-> =A0 =A0 =A0 =A0new_bus->name =3D "GPIO Bitbanged MDIO",
->
-> - =A0 =A0 =A0 ret =3D -ENODEV;
-> -
-> =A0 =A0 =A0 =A0new_bus->phy_mask =3D pdata->phy_mask;
-> =A0 =A0 =A0 =A0new_bus->irq =3D pdata->irqs;
-> =A0 =A0 =A0 =A0new_bus->parent =3D dev;
-> @@ -129,15 +127,8 @@ static int __devinit mdio_gpio_bus_init(struct devic=
-e
-> *dev,
->
-> =A0 =A0 =A0 =A0dev_set_drvdata(dev, new_bus);
->
-> - =A0 =A0 =A0 ret =3D mdiobus_register(new_bus);
-> - =A0 =A0 =A0 if (ret)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out_free_all;
-> -
-> - =A0 =A0 =A0 return 0;
-> + =A0 =A0 =A0 return new_bus;
->
-> -out_free_all:
-> - =A0 =A0 =A0 dev_set_drvdata(dev, NULL);
-> - =A0 =A0 =A0 gpio_free(bitbang->mdio);
-> =A0out_free_mdc:
-> =A0 =A0 =A0 =A0gpio_free(bitbang->mdc);
-> =A0out_free_bus:
-> @@ -145,30 +136,47 @@ out_free_bus:
-> =A0out_free_bitbang:
-> =A0 =A0 =A0 =A0kfree(bitbang);
-> =A0out:
-> - =A0 =A0 =A0 return ret;
-> + =A0 =A0 =A0 return NULL;
-> =A0}
->
-> -static void __devexit mdio_gpio_bus_destroy(struct device *dev)
-> +static void __devinit mdio_gpio_bus_deinit(struct device *dev)
-> =A0{
-> =A0 =A0 =A0 =A0struct mii_bus *bus =3D dev_get_drvdata(dev);
-> =A0 =A0 =A0 =A0struct mdio_gpio_info *bitbang =3D bus->priv;
->
-> - =A0 =A0 =A0 mdiobus_unregister(bus);
-> - =A0 =A0 =A0 free_mdio_bitbang(bus);
-> =A0 =A0 =A0 =A0dev_set_drvdata(dev, NULL);
-> - =A0 =A0 =A0 gpio_free(bitbang->mdc);
-> =A0 =A0 =A0 =A0gpio_free(bitbang->mdio);
-> + =A0 =A0 =A0 gpio_free(bitbang->mdc);
-> + =A0 =A0 =A0 free_mdio_bitbang(bus);
-> =A0 =A0 =A0 =A0kfree(bitbang);
-> =A0}
->
-> +static void __devexit mdio_gpio_bus_destroy(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct mii_bus *bus =3D dev_get_drvdata(dev);
-> +
-> + =A0 =A0 =A0 mdiobus_unregister(bus);
-> + =A0 =A0 =A0 mdio_gpio_bus_deinit(dev);
-> +}
-> +
-> =A0static int __devinit mdio_gpio_probe(struct platform_device *pdev)
-> =A0{
-> =A0 =A0 =A0 =A0struct mdio_gpio_platform_data *pdata =3D pdev->dev.platfo=
-rm_data;
-> + =A0 =A0 =A0 struct mii_bus *new_bus;
-> + =A0 =A0 =A0 int ret;
->
-> =A0 =A0 =A0 =A0if (!pdata)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -ENODEV;
->
-> - =A0 =A0 =A0 return mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id);
-> + =A0 =A0 =A0 new_bus =3D mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id)=
-;
-> + =A0 =A0 =A0 if (!new_bus)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
-> +
-> + =A0 =A0 =A0 ret =3D mdiobus_register(new_bus);
-> + =A0 =A0 =A0 if (ret)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdio_gpio_bus_deinit(&pdev->dev);
-> +
-> + =A0 =A0 =A0 return ret;
-> =A0}
->
-> =A0static int __devexit mdio_gpio_remove(struct platform_device *pdev)
-> @@ -179,29 +187,12 @@ static int __devexit mdio_gpio_remove(struct
-> platform_device *pdev)
-> =A0}
->
-> =A0#ifdef CONFIG_OF_GPIO
-> -static void __devinit add_phy(struct mdio_gpio_platform_data *pdata,
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct device_n=
-ode *np)
-> -{
-> - =A0 =A0 =A0 const u32 *data;
-> - =A0 =A0 =A0 int len, id, irq;
-> -
-> - =A0 =A0 =A0 data =3D of_get_property(np, "reg", &len);
-> - =A0 =A0 =A0 if (!data || len !=3D 4)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
-> -
-> - =A0 =A0 =A0 id =3D *data;
-> - =A0 =A0 =A0 pdata->phy_mask &=3D ~(1 << id);
-> -
-> - =A0 =A0 =A0 irq =3D of_irq_to_resource(np, 0, NULL);
-> - =A0 =A0 =A0 if (irq)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata->irqs[id] =3D irq;
-> -}
->
-> =A0static int __devinit mdio_ofgpio_probe(struct of_device *ofdev,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 const struct of_device_id *match)
-> =A0{
-> - =A0 =A0 =A0 struct device_node *np =3D NULL;
-> =A0 =A0 =A0 =A0struct mdio_gpio_platform_data *pdata;
-> + =A0 =A0 =A0 struct mii_bus *new_bus;
-> =A0 =A0 =A0 =A0int ret;
->
-> =A0 =A0 =A0 =A0pdata =3D kzalloc(sizeof(*pdata), GFP_KERNEL);
-> @@ -215,14 +206,18 @@ static int __devinit mdio_ofgpio_probe(struct
-> of_device *ofdev,
->
-> =A0 =A0 =A0 =A0ret =3D of_get_gpio(ofdev->node, 1);
-> =A0 =A0 =A0 =A0if (ret < 0)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto out_free;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out_free;
-> =A0 =A0 =A0 =A0pdata->mdio =3D ret;
->
-> - =A0 =A0 =A0 while ((np =3D of_get_next_child(ofdev->node, np)))
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!strcmp(np->type, "ethernet-phy"))
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 add_phy(pdata, np);
-> + =A0 =A0 =A0 new_bus =3D mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->m=
-dc);
-> + =A0 =A0 =A0 if (!new_bus)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
->
-> - =A0 =A0 =A0 return mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc);
-> + =A0 =A0 =A0 ret =3D of_mdiobus_register(new_bus, ofdev->node);
-> + =A0 =A0 =A0 if (ret)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdio_gpio_bus_deinit(&ofdev->dev);
-> +
-> + =A0 =A0 =A0 return ret;
->
-> =A0out_free:
-> =A0 =A0 =A0 =A0kfree(pdata);
-> --
-> 1.5.6.5
->
+http://www.bitshrine.org/gpp/linux-2.6.24.6-mpc5121-99-PM-alternate-external-int-vector.patch
+
+say that this is due to a bug in the PMC module with status bits. Could
+this not be worked around by avoiding modifying the exception handler
+and just taken care of by C code in ipic.c
+
+2: does it work ??? 
+I ask since it do self modifying code but no invalidation of the
+instruction cache.
 
 
+Mystery: If I fix the cache issue with the code and force store of data
+with dcbst and invalidate with icbi. I get a very unreliable resume
+function that often end up in machine check all over the place 
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+This machine check also happens on unmodified version but much much more
+seldom. I'm just now running some test on a system that only patch this
+in once and thus always run with this workaround without constantly
+modifying the exception handler . but I wont know if it makes a
+difference until tomorrow.
+
+
+I have inserted this code in the end of both 
+mpc5121_copy_pmcclr
+mpc5121_reinstall_handler
+Is there some reason why this would not work ?? 
+-----------------------------------------
+	/*
+	dcbst |update memory
+	sync |wait for update
+	icbi |remove (invalidate) copy in instruction cache
+	isync |remove copy in own instruction buffer
+	*/
+
+	lis	r3, CONFIG_KERNEL_START@h
+	ori	r3, r3, CONFIG_KERNEL_START@l
+
+	/* flush and invalidate from 0 to 0x600 */
+	li	r5, 0x0
+	li	r4, 0x600/L1_CACHE_BYTES
+	mtctr	r4
+1:
+	dcbst	r5,r3
+	sync
+	icbi	r5,r3
+	isync
+	addi	r5, r5, L1_CACHE_BYTES    /* Next line, please */
+
+	bdnz	1b
+	sync
+	isync
+
+--=-eyA6VYjd5cRsDZD360BU
+Content-Disposition: attachment; filename="mpc512x.S"
+Content-Type: text/x-csrc; name="mpc512x.S"; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+
+#include <asm/reg.h>
+#include <asm/ppc_asm.h>
+#include <asm/processor.h>
+#include <asm/page.h>
+#include <asm/cache.h>
+
+#define NUM_CACHE_LINES (128*8)
+
+	/* this variable added to reserve 0x20*4 bytes.
+	 * This value has been derived by counting the
+	 * number of lines of the function "code_atzero".
+	 * In case if the size of this function increases
+	 * the number of bytes have to increased accordi-
+	 * ngly.
+	 */
+        .data
+mpc5121_data_temp:
+        .space 0x20*4
+
+        .text
+	.globl mpc5121_copy_pmcclr
+mpc5121_copy_pmcclr:
+	/* Coming here with interrupts disabled */
+	/* storing the content at 0x0 location
+	 * to mpc512_data_temp space */
+	lis     r6, CONFIG_KERNEL_START@h
+	mr	r4, r6
+	li	r3, (code_atzero_end - code_atzero)/4
+	mtctr	r3
+        lis     r3, mpc5121_data_temp@h
+        ori     r3, r3, mpc5121_data_temp@l
+	/* loops here till the counter is zero */
+loop:
+        lwz     r5, 0(r4)
+        stw     r5, 0(r3)
+        addi    r3, r3, 4
+        addi    r4, r4, 4
+        bdnz    loop
+
+	/* Copy code to Location 0x0 */
+	mr	r4, r6
+	li	r3, (code_atzero_end - code_atzero)/4
+	mtctr	r3
+	lis	r3, code_atzero@h
+	ori	r3, r3, code_atzero@l
+1:
+	lwz	r5, 0(r3)
+	stw	r5, 0(r4)
+	addi	r3, r3, 4
+	addi	r4, r4, 4
+	bdnz	1b
+
+	/* Copy the jump to 0x0 code at 0x500*/
+	lwz	r5, 0x500(r6)
+	stw	r5, 0(r6)
+	lwz	r5, 8(r6)
+	stw	r5, 0x500(r6)
+
+	/* Flush the cache */
+	lis	r3, CONFIG_KERNEL_START@h
+	ori	r3, r3, CONFIG_KERNEL_START@l
+
+	/* Let us load data starting from 0x600 loc */
+	addi	r3, r3, 0x600
+	li	r4, NUM_CACHE_LINES
+	mtctr	r4
+1:
+	lwz	r4, 0(r3)
+	addi	r3, r3, L1_CACHE_BYTES    /* Next line, please */
+	bdnz	1b
+	sync; isync
+	blr
+
+	.globl mpc5121_reinstall_handler
+mpc5121_reinstall_handler:
+
+	/* Rewrite original code at 0x500 */
+	lis	r6, CONFIG_KERNEL_START@h
+	lwz	r5, 0(r6)
+	stw	r5, 0x500(r6)
+	/* restoring content at 0x0 location */
+        mr      r4, r6
+        li      r3, (code_atzero_end - code_atzero)/4
+        mtctr   r3
+        lis     r3, mpc5121_data_temp@h
+        ori     r3, r3, mpc5121_data_temp@l
+        /* loops here till the counter is zero */
+loop1:
+        lwz     r5, 0(r3)
+        stw     r5, 0(r4)
+        addi    r3, r3, 4
+        addi    r4, r4, 4
+        bdnz    loop1
+	blr
+
+code_atzero:
+	.long 0x0  /*Space reserved for copying first word of code from 0x500 */
+	ba 0x504
+	ba 0xc  /* This code is not executed. This code is copied to 0x500 */
+	mtspr	SPRN_SPRG0, r3
+	mtspr	SPRN_SPRG1, r4
+	mfspr	r3, 311
+	addi	r3, r3, 0x1000  /* Assuming that MBAR is aligned to this size */
+	lwz	r4, 0x4(r3)
+	stw	r4, 0x4(r3)
+        /* clearing GPIO evnet registers */
+        mfspr   r3, 311
+        /* getting offset of GPIO */
+        addi    r3, r3,0x1100
+        lwz     r4, 0xC(r3)
+        stw     r4, 0xC(r3)
+	mfspr	r3, SPRN_SPRG0
+	mfspr	r4, SPRN_SPRG1
+	ba	0x0
+code_atzero_end:
+	b 	code_atzero_end   /* Should never reach here*/
+
+
+--=-eyA6VYjd5cRsDZD360BU--
