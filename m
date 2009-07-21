@@ -1,22 +1,34 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C402CB7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2EF1BB6F44
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 21 Jul 2009 07:36:48 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id E72E5DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2009 07:36:46 +1000 (EST)
-Date: Tue, 21 Jul 2009 01:36:43 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/83xx: Fix PCI IO base address on MPC837xE-RDB boards
-Message-ID: <20090720213643.GA4209@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
+	Tue, 21 Jul 2009 10:02:39 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8DBE7DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2009 10:02:38 +1000 (EST)
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20090720103835.GB7070@wotan.suse.de>
+References: <20090715074952.A36C7DDDB2@ozlabs.org>
+	<20090715135620.GD7298@wotan.suse.de>
+	<1247709255.27937.5.camel@pasglop>
+	<20090720081054.GH7298@wotan.suse.de>
+	<1248084041.30899.7.camel@pasglop>
+	<20090720103835.GB7070@wotan.suse.de>
+Content-Type: text/plain
+Date: Tue, 21 Jul 2009 10:02:26 +1000
+Message-Id: <1248134546.30899.27.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux-Arch <linux-arch@vger.kernel.org>,
+	Linux Memory Management <linux-mm@kvack.org>,
+	Hugh Dickins <hugh@tiscali.co.uk>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,71 +38,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-U-Boot maps PCI IO at 0xe0300000, while current dts files specify
-0xe2000000. This leads to the following oops with CONFIG_8139TOO_PIO=y.
+On Mon, 2009-07-20 at 12:38 +0200, Nick Piggin wrote:
+> On Mon, Jul 20, 2009 at 08:00:41PM +1000, Benjamin Herrenschmidt wrote:
+> > On Mon, 2009-07-20 at 10:10 +0200, Nick Piggin wrote:
+> > > 
+> > > Maybe I don't understand your description correctly. The TLB contains
+> > > PMDs, but you say the HW still logically performs another translation
+> > > step using entries in the PMD pages? If I understand that correctly,
+> > > then generic mm does not actually care and would logically fit better
+> > > if those entries were "linux ptes". 
+> > 
+> > They are :-)
+> > 
+> > > The pte invalidation routines
+> > > give the virtual address, which you could use to invalidate the TLB.
+> > 
+> > For PTEs, yes, but not for those PMD entries. IE. I need the virtual
+> > address when destroying PMDs so that I can invalidate those "indirect"
+> > pages. PTEs are already taken care of by existing mechanisms.
+> 
+> Hmm, so even after having invalidated all the pte translations
+> then you still need to invalidate the empty indirect page? (or
+> maybe you don't even invalidate the ptes if they're not cached
+> in a TLB).
 
-8139too Fast Ethernet driver 0.9.28
-Machine check in kernel mode.
-Caused by (from SRR1=41000): Transfer error ack signal
-Oops: Machine check, sig: 7 [#1]
-MPC837x RDB
-[...]
-NIP [00000900] 0x900
-LR [c0439df8] rtl8139_init_board+0x238/0x524
-Call Trace:
-[cf831d90] [c0439dcc] rtl8139_init_board+0x20c/0x524 (unreliable)
-[cf831de0] [c043a15c] rtl8139_init_one+0x78/0x65c
-[cf831e40] [c0235250] pci_call_probe+0x20/0x30
-[...]
+The PTEs are cached in the TLB (ie, they turn into normal TLB entries). 
 
-This patch fixes the issue by specifying the correct PCI IO base
-address.
+We need to invalidate the indirect entries when the PMD value change
+(ie, when the PTE page is freed) or the TLB would potentially continue
+loading PTEs from a stale PTE page :-)
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc8377_rdb.dts |    2 +-
- arch/powerpc/boot/dts/mpc8378_rdb.dts |    2 +-
- arch/powerpc/boot/dts/mpc8379_rdb.dts |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Hence my patch adding the virtual address to pte_free_tlb() which is the
+freeing of a PTE page. I'm adding it to the pmd/pud variants too for
+consistency and because I believe there's no cost.
 
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index 224b4f0..4f06dbc 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -410,7 +410,7 @@
- 		bus-range = <0 0>;
- 		ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
- 		          0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
--		          0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
-+		          0x01000000 0x0 0x00000000 0xe0300000 0x0 0x00100000>;
- 		sleep = <&pmc 0x00010000>;
- 		clock-frequency = <66666666>;
- 		#interrupt-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 474ea2f..aabf343 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -394,7 +394,7 @@
- 		bus-range = <0 0>;
- 		ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
- 		          0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
--		          0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
-+		          0x01000000 0x0 0x00000000 0xe0300000 0x0 0x00100000>;
- 		sleep = <&pmc 0x00010000>;
- 		clock-frequency = <66666666>;
- 		#interrupt-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index d4838af..9b1da86 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -424,7 +424,7 @@
- 		bus-range = <0x0 0x0>;
- 		ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
- 		          0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
--		          0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
-+		          0x01000000 0x0 0x00000000 0xe0300000 0x0 0x00100000>;
- 		sleep = <&pmc 0x00010000>;
- 		clock-frequency = <66666666>;
- 		#interrupt-cells = <1>;
--- 
-1.6.3.3
+> I believe x86 is also allowed to cache higher level page tables
+> in non-cache coherent storage, and I think it just avoids this
+> issue by flushing the entire TLB when potentially tearing down
+> upper levels. So in theory I think your patch could allow x86 to
+> use invlpg more often as well (in practice the flush-all case
+> and TLB refills are so fast in comparison with invlpg that it
+> probably doesn't gain much especially when talking about
+> invalidating upper levels). So making the generic VM more
+> flexible like that is no problem for me.
+
+Ah that's good to know. I don't know that much about the x86 way of
+doing these things :-)
+
+Cheers,
+Ben.
