@@ -1,26 +1,27 @@
-Return-Path: <davem@davemloft.net>
+Return-Path: <olof@lixom.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1042AB7087
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D7C09B7063
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 02:40:56 +1000 (EST)
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id C58EDDDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 02:40:55 +1000 (EST)
-Date: Wed, 22 Jul 2009 09:40:59 -0700 (PDT)
-Message-Id: <20090722.094059.113003489.davem@davemloft.net>
-To: mware@elphinstone.net
-Subject: Re: [PATCH v3] net: Rework mdio-ofgpio driver to use of_mdio
-	infrastructure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A66400F.3090309@elphinstone.net>
-References: <4A66400F.3090309@elphinstone.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+	Thu, 23 Jul 2009 06:10:47 +1000 (EST)
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 83106DDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 06:10:47 +1000 (EST)
+Date: Wed, 22 Jul 2009 15:18:07 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Best hardware platform for native compiling...
+Message-ID: <20090722201807.GA11949@lixom.net>
+References: <200907211116.52963.david.jander@protonic.nl>
+	<20090721095251.GG32034@lisas.de>
+	<200907211231.37299.david.jander@protonic.nl>
+	<20090721120007.GA23164@iram.es> <1248180459.31121.9.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1248180459.31121.9.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, David Jander <david.jander@protonic.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mark Ware <mware@elphinstone.net>
-Date: Wed, 22 Jul 2009 08:24:15 +1000
-
-> Changes to the fs_enet driver
-> (aa73832c5a80d6c52c69b18af858d88fa595dd3c) cause kernel crashes when
-> using the mdio-ofgpio driver.
+On Tue, Jul 21, 2009 at 10:47:39PM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2009-07-21 at 14:00 +0200, Gabriel Paubert wrote:
+> > Well, I got one recently here in Spain. Shipping charges are fairly 
+> > large (it's not exactly a light and compact machine). But the current 
+> > dollar exchange rate helps ;-)
+> > 
+> > Now I have not yet found the way to install Debian on it
+> > (it refuses to boot Debian's CDROM), but I have not had
+> > time to investigate either.
 > 
-> This patch replicates similar changes made to the fs_enet mii-bitbang
-> drivers.  It has been tested on a custom mpc8280 based board using an
-> NFS mounted root.
-> 
-> Signed-off-by: Mark Ware <mware@elphinstone.net>
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> It uses SLOF which should be capable of decent netbooting, so it should
+> be possible to either netboot yaboot and have it load the kernel and
+> initramfs, or maybe make a zImage with both included and netboot that.
 
-Your email client has massively corrupted this patch, I even tried
-to fix it up but it's so bad that I just gave up half-way through.
+Placing the debian (netinst) installer ramdisk and kernel on the /boot
+partition and booting it from there should work too (after adding it to
+the yaboot config).
 
-Please use an attachment or whatever is necessary to get this
-patch submitted cleanly and without it getting damaged.  Read:
 
-linux/Documentation/email-clients.txt
-
-for tips.
-
-Thanks.
+-Olof
