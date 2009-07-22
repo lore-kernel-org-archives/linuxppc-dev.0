@@ -1,38 +1,29 @@
-Return-Path: <ken.kawakami@toshiba.co.jp>
+Return-Path: <sgayda2@uiuc.edu>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DD8EFB7C2B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 83F39B7089
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 22 Jul 2009 14:22:11 +1000 (EST)
-Received: from imx9.toshiba.co.jp (imx9.toshiba.co.jp [202.33.96.51])
-	by ozlabs.org (Postfix) with ESMTP id 83ECCDDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2009 14:22:11 +1000 (EST)
-Received: from imx12.toshiba.co.jp (imx12 [61.202.160.132])
-	by imx9.toshiba.co.jp  with ESMTP id n6M4M9Mi010105
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2009 13:22:10 +0900 (JST)
-Received: from arc11.toshiba.co.jp ([133.199.90.127])
-	by imx12.toshiba.co.jp  with ESMTP id n6M4M5d5018369
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2009 13:22:05 +0900 (JST)
-Received: (from root@localhost) by arc11.toshiba.co.jp  id n6M4M5G5021745
-	for linuxppc-dev@ozlabs.org; Wed, 22 Jul 2009 13:22:05 +0900 (JST)
-Received: from mx2.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp11.toshiba.co.jp  with ESMTP id n6M4M4vJ002490
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2009 13:22:04 +0900 (JST)
-Date: Wed, 22 Jul 2009 13:22:02 +0900 (JST)
-Message-Id: <20090722.132202.783373790.kk@toshiba.co.jp>
-To: roel.kluin@gmail.com
-Subject: Re: [PATCH] powerpc/cell: replace strncpy by strlcpy
-From: Ken Kawakami <ken.kawakami@toshiba.co.jp>
-In-Reply-To: <4A6595AD.9000209@gmail.com>
-References: <4A607185.6020302@gmail.com>
-	<4A6595AD.9000209@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, cbe-oss-dev@ozlabs.org,
-	arnd@arndb.de
+	Wed, 22 Jul 2009 13:08:37 +1000 (EST)
+Received: from dscas1.ad.uiuc.edu (dscas1.ad.uiuc.edu [128.174.68.119])
+	by ozlabs.org (Postfix) with ESMTP id 0F98CDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2009 13:08:37 +1000 (EST)
+From: Stoyan Gaydarov <sgayda2@uiuc.edu>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 5/7] [powerpc] ARRAY_SIZE changes
+Date: Tue, 21 Jul 2009 22:02:31 -0500
+Message-ID: <1248231753-8344-6-git-send-email-sgayda2@uiuc.edu>
+In-Reply-To: <1248231753-8344-5-git-send-email-sgayda2@uiuc.edu>
+References: <1248231753-8344-1-git-send-email-sgayda2@uiuc.edu>
+	<1248231753-8344-2-git-send-email-sgayda2@uiuc.edu>
+	<1248231753-8344-3-git-send-email-sgayda2@uiuc.edu>
+	<1248231753-8344-4-git-send-email-sgayda2@uiuc.edu>
+	<1248231753-8344-5-git-send-email-sgayda2@uiuc.edu>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Stoyan Gaydarov <sgayda2@uiuc.edu>, paulus@samba.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,38 +33,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnd-san, Roel-san,
+These changes were a direct result of using a semantic patch
+More information can be found at http://www.emn.fr/x-info/coccinelle/
 
-It works fine. Thanks.
-
+Signed-off-by: Stoyan Gaydarov <sgayda2@uiuc.edu>
 ---
-Regards,
-Ken Kawakami
+ arch/powerpc/platforms/pasemi/idle.c      |    2 +-
+ arch/powerpc/platforms/powermac/feature.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-> Replace strncpy() and explicit null-termination by strlcpy()
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> Arnd-san, Ken-san,
-> 
-> Thanks for reviewing,
-> 
-> > We prefer to take the patch which is replacing the two lines with one.
-> 
-> Doozo.
-> 
-> diff --git a/arch/powerpc/platforms/cell/celleb_setup.c b/arch/powerpc/platforms/cell/celleb_setup.c
-> index 07c234f..e538455 100644
-> --- a/arch/powerpc/platforms/cell/celleb_setup.c
-> +++ b/arch/powerpc/platforms/cell/celleb_setup.c
-> @@ -80,8 +80,7 @@ static void celleb_show_cpuinfo(struct seq_file *m)
->  
->  static int __init celleb_machine_type_hack(char *ptr)
->  {
-> -	strncpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
-> -	celleb_machine_type[sizeof(celleb_machine_type)-1] = 0;
-> +	strlcpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
->  	return 0;
->  }
->  
-> 
+diff --git a/arch/powerpc/platforms/pasemi/idle.c b/arch/powerpc/platforms/pasemi/idle.c
+index 43911d8..75b296b 100644
+--- a/arch/powerpc/platforms/pasemi/idle.c
++++ b/arch/powerpc/platforms/pasemi/idle.c
+@@ -90,7 +90,7 @@ machine_late_initcall(pasemi, pasemi_idle_init);
+ static int __init idle_param(char *p)
+ {
+ 	int i;
+-	for (i = 0; i < sizeof(modes)/sizeof(struct sleep_mode); i++) {
++	for (i = 0; i < ARRAY_SIZE(modes); i++) {
+ 		if (!strcmp(modes[i].name, p)) {
+ 			current_mode = i;
+ 			break;
+diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
+index e6c0040..095de32 100644
+--- a/arch/powerpc/platforms/powermac/feature.c
++++ b/arch/powerpc/platforms/powermac/feature.c
+@@ -2419,13 +2419,13 @@ static int __init probe_motherboard(void)
+ 	dt = of_find_node_by_name(NULL, "device-tree");
+ 	if (dt != NULL)
+ 		model = of_get_property(dt, "model", NULL);
+-	for(i=0; model && i<(sizeof(pmac_mb_defs)/sizeof(struct pmac_mb_def)); i++) {
++	for(i=0; model && i<ARRAY_SIZE(pmac_mb_defs); i++) {
+ 	    if (strcmp(model, pmac_mb_defs[i].model_string) == 0) {
+ 		pmac_mb = pmac_mb_defs[i];
+ 		goto found;
+ 	    }
+ 	}
+-	for(i=0; i<(sizeof(pmac_mb_defs)/sizeof(struct pmac_mb_def)); i++) {
++	for(i=0; i<ARRAY_SIZE(pmac_mb_defs); i++) {
+ 	    if (machine_is_compatible(pmac_mb_defs[i].model_string)) {
+ 		pmac_mb = pmac_mb_defs[i];
+ 		goto found;
+-- 
+1.6.3.3
