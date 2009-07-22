@@ -1,21 +1,22 @@
-Return-Path: <lgrijincu@ixiacom.com>
+Return-Path: <skrishnakar@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 894E3B7087
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C710FB7079
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 01:33:14 +1000 (EST)
-Received: from ixro-ex1.ixiacom.com (ixro-out-rtc.ixiacom.com [92.87.192.98])
-	by ozlabs.org (Postfix) with ESMTP id 75F2CDDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 01:33:12 +1000 (EST)
-Message-ID: <4A672E56.2070309@ixiacom.com>
-Date: Wed, 22 Jul 2009 18:20:54 +0300
-From: Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+	Thu, 23 Jul 2009 01:38:37 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: update wrapper to point to the new location of dtc
-Content-Type: multipart/mixed; boundary="------------030801040803010807030801"
+In-Reply-To: <2A0DDADE-5C3C-43F2-9487-98A8A735DC8D@kernel.crashing.org>
+References: <6213bc560907210233l17aa3e75pcb7c20e3faa24195@mail.gmail.com>
+	<2A0DDADE-5C3C-43F2-9487-98A8A735DC8D@kernel.crashing.org>
+Date: Wed, 22 Jul 2009 21:08:35 +0530
+Message-ID: <6213bc560907220838h49e5c273qa543e538bb37923a@mail.gmail.com>
+Subject: Re: [LTP] msgctl10 fails on Powerpc Linux-2.6.29.6
+From: srikanth krishnakar <skrishnakar@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: multipart/alternative; boundary=000e0cd30470111c18046f4d2ae3
+Cc: Linuxppc-dev@ozlabs.org, Ltp-list@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030801040803010807030801
-Content-Type: text/plain; charset=UTF-8; format=flowed
+--000e0cd30470111c18046f4d2ae3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
+On Wed, Jul 22, 2009 at 8:52 PM, Kumar Gala <galak@kernel.crashing.org>wrote:
 
-dtc was moved in 9fffb55f66127b52c937ede5196ebfa0c0d50bce from
-arch/powerpc/boot/ to scripts/dtc/
+> I'm not seeing any BUG* in traps.c @ line 904.
+>
+> On Jul 21, 2009, at 4:33 AM, srikanth krishnakar wrote:
+>
+>  The LTP test case msgctl10.c fails on linux-2.6.29.6 for PowerPC
+>> architecture (ppc440)
+>>
+>>
+>> msgctl10    1  B------------[ cut here ]------------
+>> kernel BUG at arch/powerpc/kernel/traps.c:904!
+>> Oops: Exception in kernel mode, sig: 5 [#9]
+>>
+>
+> I'm not seeing any BUG* in traps.c @ line 904.  Do you have some other
+> patches on top of 2.6.29.6?
+>
+> - k
+>
+>
+I have LTTng patches on top of linux-2.6.29.6.
 
-This patch updates the wrapper script to point to the new location of dtc.
+-- 
+"The Good You Do, The Best You GET"
 
-Signed-off-by: Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
----
-  arch/powerpc/boot/wrapper |    3 ++-
-  1 files changed, 2 insertions(+), 1 deletions(-)
+Regards
+Srikanth Krishnakar
+**********************
 
+--000e0cd30470111c18046f4d2ae3
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
+<br><br><div class=3D"gmail_quote">On Wed, Jul 22, 2009 at 8:52 PM, Kumar G=
+ala <span dir=3D"ltr">&lt;<a href=3D"mailto:galak@kernel.crashing.org">gala=
+k@kernel.crashing.org</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_q=
+uote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0=
+pt 0.8ex; padding-left: 1ex;">
+I&#39;m not seeing any BUG* in traps.c @ line 904.<div class=3D"im"><br>
+<br>
+On Jul 21, 2009, at 4:33 AM, srikanth krishnakar wrote:<br>
+<br>
+<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
+204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+The LTP test case msgctl10.c fails on linux-2.6.29.6 for PowerPC architectu=
+re (ppc440)<br>
+<br>
+<br>
+msgctl10 =A0 =A01 =A0B------------[ cut here ]------------<br>
+kernel BUG at arch/powerpc/kernel/traps.c:904!<br>
+Oops: Exception in kernel mode, sig: 5 [#9]<br>
+</blockquote>
+<br></div>
+I&#39;m not seeing any BUG* in traps.c @ line 904. =A0Do you have some othe=
+r patches on top of 2.6.29.6?<br><font color=3D"#888888">
+<br>
+- k<br>
+<br>
+</font></blockquote></div><br>I have LTTng patches on top of linux-2.6.29.6=
+.<br clear=3D"all"><br>-- <br>&quot;The Good You Do, The Best You GET&quot;=
+<br><br>Regards<br>Srikanth Krishnakar<br>**********************<br>
 
---------------030801040803010807030801
-Content-Type: text/x-patch;
- name="0001-powerpc-update-wrapper-to-point-to-the-new-location-.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-powerpc-update-wrapper-to-point-to-the-new-location-.pa";
- filename*1="tch"
-
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index e964489..c907540 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -46,6 +46,7 @@ CROSS=
- # directory for object and other files used by this script
- object=arch/powerpc/boot
- objbin=$object
-+dtc=scripts/dtc/dtc
- 
- # directory for working files
- tmpdir=.
-@@ -124,7 +125,7 @@ if [ -n "$dts" ]; then
-     if [ -z "$dtb" ]; then
- 	dtb="$platform.dtb"
-     fi
--    $object/dtc -O dtb -o "$dtb" -b 0 "$dts"
-+    $dtc -O dtb -o "$dtb" -b 0 "$dts"
- fi
- 
- if [ -z "$kernel" ]; then
-
-
---------------030801040803010807030801--
+--000e0cd30470111c18046f4d2ae3--
