@@ -1,27 +1,21 @@
-Return-Path: <olof@lixom.net>
+Return-Path: <lgrijincu@ixiacom.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D7C09B7063
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 894E3B7087
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 06:10:47 +1000 (EST)
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 83106DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 06:10:47 +1000 (EST)
-Date: Wed, 22 Jul 2009 15:18:07 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Best hardware platform for native compiling...
-Message-ID: <20090722201807.GA11949@lixom.net>
-References: <200907211116.52963.david.jander@protonic.nl>
-	<20090721095251.GG32034@lisas.de>
-	<200907211231.37299.david.jander@protonic.nl>
-	<20090721120007.GA23164@iram.es> <1248180459.31121.9.camel@pasglop>
+	Thu, 23 Jul 2009 01:33:14 +1000 (EST)
+Received: from ixro-ex1.ixiacom.com (ixro-out-rtc.ixiacom.com [92.87.192.98])
+	by ozlabs.org (Postfix) with ESMTP id 75F2CDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 01:33:12 +1000 (EST)
+Message-ID: <4A672E56.2070309@ixiacom.com>
+Date: Wed, 22 Jul 2009 18:20:54 +0300
+From: Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1248180459.31121.9.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, David Jander <david.jander@protonic.nl>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: update wrapper to point to the new location of dtc
+Content-Type: multipart/mixed; boundary="------------030801040803010807030801"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 21, 2009 at 10:47:39PM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2009-07-21 at 14:00 +0200, Gabriel Paubert wrote:
-> > Well, I got one recently here in Spain. Shipping charges are fairly 
-> > large (it's not exactly a light and compact machine). But the current 
-> > dollar exchange rate helps ;-)
-> > 
-> > Now I have not yet found the way to install Debian on it
-> > (it refuses to boot Debian's CDROM), but I have not had
-> > time to investigate either.
-> 
-> It uses SLOF which should be capable of decent netbooting, so it should
-> be possible to either netboot yaboot and have it load the kernel and
-> initramfs, or maybe make a zImage with both included and netboot that.
-
-Placing the debian (netinst) installer ramdisk and kernel on the /boot
-partition and booting it from there should work too (after adding it to
-the yaboot config).
+This is a multi-part message in MIME format.
+--------------030801040803010807030801
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
 
--Olof
+dtc was moved in 9fffb55f66127b52c937ede5196ebfa0c0d50bce from
+arch/powerpc/boot/ to scripts/dtc/
+
+This patch updates the wrapper script to point to the new location of dtc.
+
+Signed-off-by: Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+---
+  arch/powerpc/boot/wrapper |    3 ++-
+  1 files changed, 2 insertions(+), 1 deletions(-)
+
+
+
+--------------030801040803010807030801
+Content-Type: text/x-patch;
+ name="0001-powerpc-update-wrapper-to-point-to-the-new-location-.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-powerpc-update-wrapper-to-point-to-the-new-location-.pa";
+ filename*1="tch"
+
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index e964489..c907540 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -46,6 +46,7 @@ CROSS=
+ # directory for object and other files used by this script
+ object=arch/powerpc/boot
+ objbin=$object
++dtc=scripts/dtc/dtc
+ 
+ # directory for working files
+ tmpdir=.
+@@ -124,7 +125,7 @@ if [ -n "$dts" ]; then
+     if [ -z "$dtb" ]; then
+ 	dtb="$platform.dtb"
+     fi
+-    $object/dtc -O dtb -o "$dtb" -b 0 "$dts"
++    $dtc -O dtb -o "$dtb" -b 0 "$dts"
+ fi
+ 
+ if [ -z "$kernel" ]; then
+
+
+--------------030801040803010807030801--
