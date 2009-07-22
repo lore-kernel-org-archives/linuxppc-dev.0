@@ -1,32 +1,26 @@
-Return-Path: <torvalds@linux-foundation.org>
+Return-Path: <davem@davemloft.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 895B1B707B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1042AB7087
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 02:32:08 +1000 (EST)
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F004CDDD1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 02:32:07 +1000 (EST)
-Date: Wed, 22 Jul 2009 09:31:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
-In-Reply-To: <1248073873.13067.31.camel@pasglop>
-Message-ID: <alpine.LFD.2.01.0907220930320.19335@localhost.localdomain>
-References: <20090715074952.A36C7DDDB2@ozlabs.org>
-	<20090715135620.GD7298@wotan.suse.de>
-	<1248073873.13067.31.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Nick Piggin <npiggin@suse.de>, Linux-Arch <linux-arch@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
-	linux-kernel@vger.kernel.org, Linux Memory Management <linux-mm@kvack.org>
+	Thu, 23 Jul 2009 02:40:56 +1000 (EST)
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id C58EDDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 02:40:55 +1000 (EST)
+Date: Wed, 22 Jul 2009 09:40:59 -0700 (PDT)
+Message-Id: <20090722.094059.113003489.davem@davemloft.net>
+To: mware@elphinstone.net
+Subject: Re: [PATCH v3] net: Rework mdio-ofgpio driver to use of_mdio
+	infrastructure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4A66400F.3090309@elphinstone.net>
+References: <4A66400F.3090309@elphinstone.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,24 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Mark Ware <mware@elphinstone.net>
+Date: Wed, 22 Jul 2009 08:24:15 +1000
 
-
-On Mon, 20 Jul 2009, Benjamin Herrenschmidt wrote:
-
-> On Wed, 2009-07-15 at 15:56 +0200, Nick Piggin wrote:
-> > > I would like to merge the new support that depends on this in 2.6.32,
-> > > so unless there's major objections, I'd like this to go in early during
-> > > the merge window. We can sort out separately how to carry the patch
-> > > around in -next until then since the powerpc tree will have a dependency
-> > > on it.
-> > 
-> > Can't see any problem with that.
+> Changes to the fs_enet driver
+> (aa73832c5a80d6c52c69b18af858d88fa595dd3c) cause kernel crashes when
+> using the mdio-ofgpio driver.
 > 
-> CC'ing Linus here. How do you want to proceed with that merge ? (IE. so
-> far nobody objected to the patch itself)
+> This patch replicates similar changes made to the fs_enet mii-bitbang
+> drivers.  It has been tested on a custom mpc8280 based board using an
+> NFS mounted root.
+> 
+> Signed-off-by: Mark Ware <mware@elphinstone.net>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-Maybe you can put it as a separate branch in -next, and have it merged 
-before the stuff that depends on it, and then just sending it to me (as a 
-git branch or patch or whatever) in the first day of the merge window?
+Your email client has massively corrupted this patch, I even tried
+to fix it up but it's so bad that I just gave up half-way through.
 
-		Linus
+Please use an attachment or whatever is necessary to get this
+patch submitted cleanly and without it getting damaged.  Read:
+
+linux/Documentation/email-clients.txt
+
+for tips.
+
+Thanks.
