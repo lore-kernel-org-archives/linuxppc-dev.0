@@ -1,26 +1,29 @@
-Return-Path: <mware@elphinstone.net>
+Return-Path: <martyn.welch@gefanuc.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7558AB6F1E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 66454B7B66
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 21:20:30 +1000 (EST)
-Received: from ipmail04.adl2.internode.on.net (ipmail04.adl2.internode.on.net
-	[203.16.214.57]) by ozlabs.org (Postfix) with ESMTP id 38B6EDDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 21:20:28 +1000 (EST)
-Message-ID: <4A68477B.4090505@elphinstone.net>
-Date: Thu, 23 Jul 2009 21:20:27 +1000
-From: Mark Ware <mware@elphinstone.net>
+	Thu, 23 Jul 2009 21:30:50 +1000 (EST)
+Received: from exprod5og112.obsmtp.com (exprod5og112.obsmtp.com [64.18.0.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2862FDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 21:30:46 +1000 (EST)
+Message-ID: <4A684A03.5010803@gefanuc.com>
+Date: Thu, 23 Jul 2009 12:31:15 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH v3 RESEND] net: Rework mdio-ofgpio driver to use of_mdio
-	infrastructure
-References: <4A66400F.3090309@elphinstone.net>
-	<20090722.094059.113003489.davem@davemloft.net>
-In-Reply-To: <20090722.094059.113003489.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] Mechanism to enable use Generic NVRAM driver for
+	different size chips
+References: <20090702154928.31202.65107.stgit@ES-J7S4D2J.amer.consind.ge.com>	
+	<20090702161224.31202.65236.stgit@ES-J7S4D2J.amer.consind.ge.com>
+	<1248334988.3367.77.camel@pasglop>
+In-Reply-To: <1248334988.3367.77.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,182 +33,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changes to the fs_enet driver (aa73832c5a80d6c52c69b18af858d88fa595dd3c) cause kernel crashes when using the mdio-ofgpio driver.
- 
-This patch replicates similar changes made to the fs_enet mii-bitbang drivers.  It has been tested on a custom mpc8280 based board using an NFS mounted root.
- 
-Signed-off-by: Mark Ware <mware@elphinstone.net>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
----
- 
-The only changes in v3 are to the commit message.
-Resent due to patch mangling by mail client.
-This time for sure...
- 
- drivers/net/phy/mdio-gpio.c |   77 ++++++++++++++++++++-----------------------
- 1 files changed, 36 insertions(+), 41 deletions(-)
- 
-diff --git a/drivers/net/phy/mdio-gpio.c b/drivers/net/phy/mdio-gpio.c
-index 33984b7..22cdd45 100644
---- a/drivers/net/phy/mdio-gpio.c
-+++ b/drivers/net/phy/mdio-gpio.c
-@@ -30,6 +30,7 @@
- 
- #ifdef CONFIG_OF_GPIO
- #include <linux/of_gpio.h>
-+#include <linux/of_mdio.h>
- #include <linux/of_platform.h>
- #endif
- 
-@@ -81,13 +82,12 @@ static struct mdiobb_ops mdio_gpio_ops = {
- 	.get_mdio_data = mdio_get,
- };
- 
--static int __devinit mdio_gpio_bus_init(struct device *dev,
-+static struct mii_bus * __devinit mdio_gpio_bus_init(struct device *dev,
- 					struct mdio_gpio_platform_data *pdata,
- 					int bus_id)
- {
- 	struct mii_bus *new_bus;
- 	struct mdio_gpio_info *bitbang;
--	int ret = -ENOMEM;
- 	int i;
- 
- 	bitbang = kzalloc(sizeof(*bitbang), GFP_KERNEL);
-@@ -104,8 +104,6 @@ static int __devinit mdio_gpio_bus_init(struct device *dev,
- 
- 	new_bus->name = "GPIO Bitbanged MDIO",
- 
--	ret = -ENODEV;
--
- 	new_bus->phy_mask = pdata->phy_mask;
- 	new_bus->irq = pdata->irqs;
- 	new_bus->parent = dev;
-@@ -129,15 +127,8 @@ static int __devinit mdio_gpio_bus_init(struct device *dev,
- 
- 	dev_set_drvdata(dev, new_bus);
- 
--	ret = mdiobus_register(new_bus);
--	if (ret)
--		goto out_free_all;
--
--	return 0;
-+	return new_bus;
- 
--out_free_all:
--	dev_set_drvdata(dev, NULL);
--	gpio_free(bitbang->mdio);
- out_free_mdc:
- 	gpio_free(bitbang->mdc);
- out_free_bus:
-@@ -145,30 +136,47 @@ out_free_bus:
- out_free_bitbang:
- 	kfree(bitbang);
- out:
--	return ret;
-+	return NULL;
- }
- 
--static void __devexit mdio_gpio_bus_destroy(struct device *dev)
-+static void __devinit mdio_gpio_bus_deinit(struct device *dev)
- {
- 	struct mii_bus *bus = dev_get_drvdata(dev);
- 	struct mdio_gpio_info *bitbang = bus->priv;
- 
--	mdiobus_unregister(bus);
--	free_mdio_bitbang(bus);
- 	dev_set_drvdata(dev, NULL);
--	gpio_free(bitbang->mdc);
- 	gpio_free(bitbang->mdio);
-+	gpio_free(bitbang->mdc);
-+	free_mdio_bitbang(bus);
- 	kfree(bitbang);
- }
- 
-+static void __devexit mdio_gpio_bus_destroy(struct device *dev)
-+{
-+	struct mii_bus *bus = dev_get_drvdata(dev);
-+
-+	mdiobus_unregister(bus);
-+	mdio_gpio_bus_deinit(dev);
-+}
-+
- static int __devinit mdio_gpio_probe(struct platform_device *pdev)
- {
- 	struct mdio_gpio_platform_data *pdata = pdev->dev.platform_data;
-+	struct mii_bus *new_bus;
-+	int ret;
- 
- 	if (!pdata)
- 		return -ENODEV;
- 
--	return mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id);
-+	new_bus = mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id);
-+	if (!new_bus)
-+		return -ENODEV;
-+
-+	ret = mdiobus_register(new_bus);
-+	if (ret)
-+		mdio_gpio_bus_deinit(&pdev->dev);
-+
-+	return ret;
- }
- 
- static int __devexit mdio_gpio_remove(struct platform_device *pdev)
-@@ -179,29 +187,12 @@ static int __devexit mdio_gpio_remove(struct platform_device *pdev)
- }
- 
- #ifdef CONFIG_OF_GPIO
--static void __devinit add_phy(struct mdio_gpio_platform_data *pdata,
--			      struct device_node *np)
--{
--	const u32 *data;
--	int len, id, irq;
--
--	data = of_get_property(np, "reg", &len);
--	if (!data || len != 4)
--		return;
--
--	id = *data;
--	pdata->phy_mask &= ~(1 << id);
--
--	irq = of_irq_to_resource(np, 0, NULL);
--	if (irq)
--		pdata->irqs[id] = irq;
--}
- 
- static int __devinit mdio_ofgpio_probe(struct of_device *ofdev,
-                                         const struct of_device_id *match)
- {
--	struct device_node *np = NULL;
- 	struct mdio_gpio_platform_data *pdata;
-+	struct mii_bus *new_bus;
- 	int ret;
- 
- 	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
-@@ -215,14 +206,18 @@ static int __devinit mdio_ofgpio_probe(struct of_device *ofdev,
- 
- 	ret = of_get_gpio(ofdev->node, 1);
- 	if (ret < 0)
--                goto out_free;
-+		goto out_free;
- 	pdata->mdio = ret;
- 
--	while ((np = of_get_next_child(ofdev->node, np)))
--		if (!strcmp(np->type, "ethernet-phy"))
--			add_phy(pdata, np);
-+	new_bus = mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc);
-+	if (!new_bus)
-+		return -ENODEV;
- 
--	return mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc);
-+	ret = of_mdiobus_register(new_bus, ofdev->node);
-+	if (ret)
-+		mdio_gpio_bus_deinit(&ofdev->dev);
-+
-+	return ret;
- 
- out_free:
- 	kfree(pdata);
+Benjamin Herrenschmidt wrote:
+> On Thu, 2009-07-02 at 17:12 +0100, Martyn Welch wrote:
+>   
+>> Remove the reliance on a staticly defined NVRAM size, allowing platforms to support NVRAMs with sizes differing from the standard. A fall back value is provided for platforms not supporting this extension.
+>>
+>> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+>>     
+>
+> What about other archs that use this driver ? They would also need
+> that new nvram_size() ...
+>   
+I'm fairly confident that this driver is solely used by the PowerPC 
+architecture. The config option being set in  arch/powerpc/Kconfig[1]. 
+Other than the obvious matches in drivers/char/Makefile[2] and powerpc 
+defconfigs, the only other places I can find the option being used are:
+
+* As a requirement for CONFIG_NVRAM on the PowerPC platform in 
+drivers/char/Kconfig[3]
+* In "include/config/auto.conf" and "include/linux/autoconf.h". Are 
+these for generation of generic configs?
+
+Martyn
+
+[1] 
+http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/benh/powerpc.git;a=blob;f=arch/powerpc/Kconfig#l145
+[2] 
+http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/benh/powerpc.git;a=blob;f=drivers/char/Makefile#l83
+[3] 
+http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/benh/powerpc.git;a=blob;f=drivers/char/Kconfig#l777
+> BTW. This patch touches non-arch code so should at least be CCed to lkml
+>
+> Cheers,
+> Ben.
+>
+>   
+>> ---
+>>
+>>  arch/powerpc/include/asm/nvram.h |    3 +++
+>>  arch/powerpc/kernel/setup_32.c   |    8 ++++++++
+>>  drivers/char/generic_nvram.c     |   27 ++++++++++++++++++++-------
+>>  3 files changed, 31 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/nvram.h b/arch/powerpc/include/asm/nvram.h
+>> index efde5ac..71df8b2 100644
+>> --- a/arch/powerpc/include/asm/nvram.h
+>> +++ b/arch/powerpc/include/asm/nvram.h
+>> @@ -107,6 +107,9 @@ extern void	pmac_xpram_write(int xpaddr, u8 data);
+>>  /* Synchronize NVRAM */
+>>  extern void	nvram_sync(void);
+>>  
+>> +/* Determine NVRAM size */
+>> +extern ssize_t nvram_size(void);
+>> +
+>>  /* Normal access to NVRAM */
+>>  extern unsigned char nvram_read_byte(int i);
+>>  extern void nvram_write_byte(unsigned char c, int i);
+>> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+>> index 1d15424..28f7570 100644
+>> --- a/arch/powerpc/kernel/setup_32.c
+>> +++ b/arch/powerpc/kernel/setup_32.c
+>> @@ -208,6 +208,14 @@ void nvram_write_byte(unsigned char val, int addr)
+>>  }
+>>  EXPORT_SYMBOL(nvram_write_byte);
+>>  
+>> +ssize_t nvram_size(void)
+>> +{
+>> +	if (ppc_md.nvram_size)
+>> +		return ppc_md.nvram_size();
+>> +	return -1;
+>> +}
+>> +EXPORT_SYMBOL(nvram_size);
+>> +
+>>  void nvram_sync(void)
+>>  {
+>>  	if (ppc_md.nvram_sync)
+>> diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
+>> index a00869c..e5f71f3 100644
+>> --- a/drivers/char/generic_nvram.c
+>> +++ b/drivers/char/generic_nvram.c
+>> @@ -2,7 +2,7 @@
+>>   * Generic /dev/nvram driver for architectures providing some
+>>   * "generic" hooks, that is :
+>>   *
+>> - * nvram_read_byte, nvram_write_byte, nvram_sync
+>> + * nvram_read_byte, nvram_write_byte, nvram_sync, nvram_size
+>>   *
+>>   * Note that an additional hook is supported for PowerMac only
+>>   * for getting the nvram "partition" informations
+>> @@ -28,6 +28,8 @@
+>>  
+>>  #define NVRAM_SIZE	8192
+>>  
+>> +static ssize_t nvram_len;
+>> +
+>>  static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
+>>  {
+>>  	lock_kernel();
+>> @@ -36,7 +38,7 @@ static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
+>>  		offset += file->f_pos;
+>>  		break;
+>>  	case 2:
+>> -		offset += NVRAM_SIZE;
+>> +		offset += nvram_len;
+>>  		break;
+>>  	}
+>>  	if (offset < 0) {
+>> @@ -56,9 +58,9 @@ static ssize_t read_nvram(struct file *file, char __user *buf,
+>>  
+>>  	if (!access_ok(VERIFY_WRITE, buf, count))
+>>  		return -EFAULT;
+>> -	if (*ppos >= NVRAM_SIZE)
+>> +	if (*ppos >= nvram_len)
+>>  		return 0;
+>> -	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count)
+>> +	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
+>>  		if (__put_user(nvram_read_byte(i), p))
+>>  			return -EFAULT;
+>>  	*ppos = i;
+>> @@ -74,9 +76,9 @@ static ssize_t write_nvram(struct file *file, const char __user *buf,
+>>  
+>>  	if (!access_ok(VERIFY_READ, buf, count))
+>>  		return -EFAULT;
+>> -	if (*ppos >= NVRAM_SIZE)
+>> +	if (*ppos >= nvram_len)
+>>  		return 0;
+>> -	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count) {
+>> +	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
+>>  		if (__get_user(c, p))
+>>  			return -EFAULT;
+>>  		nvram_write_byte(c, i);
+>> @@ -133,9 +135,20 @@ static struct miscdevice nvram_dev = {
+>>  
+>>  int __init nvram_init(void)
+>>  {
+>> +	int ret = 0;
+>> +
+>>  	printk(KERN_INFO "Generic non-volatile memory driver v%s\n",
+>>  		NVRAM_VERSION);
+>> -	return misc_register(&nvram_dev);
+>> +	ret = misc_register(&nvram_dev);
+>> +	if (ret != 0)
+>> +		goto out;
+>> +
+>> +	nvram_len = nvram_size();
+>> +	if (nvram_len < 0)
+>> +		nvram_len = NVRAM_SIZE;
+>> +
+>> +out:
+>> +	return ret;
+>>  }
+>>  
+>>  void __exit nvram_cleanup(void)
+>>     
+>
+>   
+
+
 -- 
-1.5.6.5
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
