@@ -3,19 +3,19 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4EB4AB707B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 64341B7087
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 10:02:11 +1000 (EST)
-Received: from ipmail01.adl6.internode.on.net (ipmail01.adl6.internode.on.net
-	[203.16.214.146]) by ozlabs.org (Postfix) with ESMTP id 0A37BDDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 10:02:09 +1000 (EST)
+	Thu, 23 Jul 2009 10:10:12 +1000 (EST)
+Received: from ipmail04.adl2.internode.on.net (ipmail04.adl2.internode.on.net
+	[203.16.214.57]) by ozlabs.org (Postfix) with ESMTP id 413E9DDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 10:10:11 +1000 (EST)
 MIME-Version: 1.0
-Message-ID: <16811.1248307327@internode.on.net>
+Message-ID: <16861.1248307810@internode.on.net>
 To: <davem@davemloft.net>
 Content-Type: text/plain; charset="utf-8"
-Date: Thu, 23 Jul 2009 09:02:07 +0900
-Subject: Re: [PATCH v3] net: Rework mdio-ofgpio driver to use
-	of_mdioinfrastructure
+Date: Thu, 23 Jul 2009 09:40:10 +0930
+Subject: Re: Re: [PATCH v3] net: Rework mdio-ofgpio driver to use of_mdio
+	infrastructure
 From: Mark Ware <mware@elphinstone.net>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 Reply-To: mware@elphinstone.net
@@ -35,18 +35,18 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > Please use an attachment or whatever is necessary to get this
 > patch submitted cleanly and without it getting damaged.  Read:
 >=20
-> linux/Documentation/email-clients.txt for tips.
+> linux/Documentation/email-clients.txt
+>=20
+> for tips.
 >=20
 > Thanks.
 
-Sorry for the waste of time.  I've obviously somehow broken my thunderbird =
-config.
+Dave,
 
-Patch is attached, hopefully with correct MIME type - this webmail client i=
-s worse than Outlook.
+The patch is actually attached this time.  (I hope - did I mention my disli=
+ke for this webmail interface?)
 
-(Incidently, I was able to apply the corrupted patch after the following tw=
-o substitutions: s/^  / / and s/^$/ /)
+Sorry for the further noise.
 
 Regards,
 Mark
