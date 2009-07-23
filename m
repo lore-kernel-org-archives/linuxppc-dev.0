@@ -3,14 +3,15 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9EF95B7CDA
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2916EB7D10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 15:59:56 +1000 (EST)
+	Thu, 23 Jul 2009 15:59:57 +1000 (EST)
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 23 Jul 2009 15:59:45 +1000
-Subject: [PATCH 10/20] powerpc: Clean ifdef usage in copy_thread()
-Message-Id: <20090723055956.91CDBDDD1B@ozlabs.org>
+Date: Thu, 23 Jul 2009 15:59:46 +1000
+Subject: [PATCH 11/20] powerpc: Move definitions of secondary CPU spinloop to
+	header file
+Message-Id: <20090723055957.19D28DDD1B@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, a single ifdef covers SLB related bits and more generic ppc64
-related bits, split this in two separate ifdef's since 64-bit BookE will
-need one but not the other.
+Those definitions are currently declared extern in the .c file where
+they are used, move them to a header file instead.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+--
 
- arch/powerpc/kernel/process.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/include/asm/smp.h |    5 +++++
+ arch/powerpc/kernel/setup_64.c |    3 ---
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
---- linux-work.orig/arch/powerpc/kernel/process.c	2009-07-22 16:30:49.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/process.c	2009-07-22 16:31:02.000000000 +1000
-@@ -664,6 +664,7 @@ int copy_thread(unsigned long clone_flag
- 		sp_vsid |= SLB_VSID_KERNEL | llp;
- 		p->thread.ksp_vsid = sp_vsid;
- 	}
-+#endif /* CONFIG_PPC_STD_MMU_64 */
+--- linux-work.orig/arch/powerpc/include/asm/smp.h	2009-07-22 16:38:32.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/smp.h	2009-07-22 16:46:59.000000000 +1000
+@@ -148,6 +148,11 @@ extern struct smp_ops_t *smp_ops;
+ extern void arch_send_call_function_single_ipi(int cpu);
+ extern void arch_send_call_function_ipi(cpumask_t mask);
  
- 	/*
- 	 * The PPC64 ABI makes use of a TOC to contain function 
-@@ -671,6 +672,7 @@ int copy_thread(unsigned long clone_flag
- 	 * to the TOC entry.  The first entry is a pointer to the actual
- 	 * function.
-  	 */
 +#ifdef CONFIG_PPC64
- 	kregs->nip = *((unsigned long *)ret_from_fork);
- #else
- 	kregs->nip = (unsigned long)ret_from_fork;
++extern void generic_secondary_smp_init(void);
++extern unsigned long __secondary_hold_spinloop;
++#endif /* CONFIG_PPC64 */
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* __KERNEL__ */
+Index: linux-work/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/setup_64.c	2009-07-22 16:38:12.000000000 +1000
++++ linux-work/arch/powerpc/kernel/setup_64.c	2009-07-22 16:46:59.000000000 +1000
+@@ -230,9 +230,6 @@ void early_setup_secondary(void)
+ #endif /* CONFIG_SMP */
+ 
+ #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC)
+-extern unsigned long __secondary_hold_spinloop;
+-extern void generic_secondary_smp_init(void);
+-
+ void smp_release_cpus(void)
+ {
+ 	unsigned long *ptr;
