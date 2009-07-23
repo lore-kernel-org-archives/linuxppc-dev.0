@@ -1,28 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2AD3EB7B5F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 54786B7BBE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 16:38:46 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 707E7DDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 16:38:44 +1000 (EST)
-Subject: Re: [PATCH 1/2] powerpc: Allow perf_counters to access user memory
-	at interrupt time
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <19013.44646.549261.100582@cargo.ozlabs.ibm.com>
-References: <19013.44646.549261.100582@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 23 Jul 2009 16:38:08 +1000
-Message-Id: <1248331088.3367.71.camel@pasglop>
+	Thu, 23 Jul 2009 16:46:33 +1000 (EST)
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 45D48DDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 16:46:33 +1000 (EST)
+Date: Thu, 23 Jul 2009 16:46:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 12/20] powerpc/mm: Add hook to flush pgtables when a PTE
+	page is freed
+Message-Id: <20090723164630.c61c5d54.sfr@canb.auug.org.au>
+In-Reply-To: <20090723055957.9D90EDDD1B@ozlabs.org>
+References: <20090723055957.9D90EDDD1B@ozlabs.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__23_Jul_2009_16_46_30_+1000_lb3paItgeI_C5LKW"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,182 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2009-06-27 at 15:30 +1000, Paul Mackerras wrote:
-> This provides a mechanism to allow the perf_counters code to access
-> user memory in a PMU interrupt routine on a 64-bit kernel.  Such an
-> access can cause a SLB miss interrupt and/or a MMU hash table miss
-> interrupt.
-> 
-> An SLB miss interrupt on a user address will update the slb_cache and
-> slb_cache_ptr fields in the paca.  This is OK except in the case where
-> a PMU interrupt occurs in switch_slb, which also accesses those fields.
-> To prevent this, we hard-disable interrupts in switch_slb.  Interrupts
-> are already soft-disabled in switch-slb, and will get hard-enabled
-> when they get soft-enabled later.
+--Signature=_Thu__23_Jul_2009_16_46_30_+1000_lb3paItgeI_C5LKW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So while looking at this, I noticed that we only clear
-paca->slb_cache_ptr in switch_slb(), which means that we don't clear it
-whenever we call slb_flush_and_rebolt() for any other reason (such as
-segment demotion, etc...). Not a huge deal, but probably a small perf
-tweak to fix it.
+Hi Ben,
 
-Now there is another little concern here, is what happens if you take
-your interrupt at the wrong time in the context switch code ? IE, if
-switch_mm has already changed the context.id for example, but "current"
-is still the previous task, you'll get a disconnect between the memory
-you see which is the new task and what you think the task actually is.
+On Thu, 23 Jul 2009 15:59:46 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> +#ifdef CONFIG_PPC_BOOK3E
+> +extern void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long addr=
+ess);
+> +#else
+> +#define tlb_flush_pgtable(tlb, address)	do { } while(0)
 
-I don't think there's any other problem with SLBs, ie, your
-hard_irq_disable() in switch_slb() will also take care of ensuring that
-paca->context is updated atomically vs. interrupts, thus the hash code
-will see a consistent slice map etc... so that's ok.
+static inline void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long =
+address) {}
 
-But what about STAB ? We may not have perfmon interrupt support for
-these but maybe one day ? :-)
+>  #else
+> -#define __pte_free_tlb(tlb, pte, address)	pte_free((tlb)->mm, (pte))
+> +#define __pte_free_tlb(tlb,pte,address)			\
+> +do { 							\
+> +	tlb_flush_pgtable(tlb, address);		\
+> +	pte_free((tlb)->mm, (pte));  			\
+> +} while (0)
 
-> If a MMU hashtable miss interrupt occurs, normally we would call
-> hash_page to look up the Linux PTE for the address and create a HPTE.
-> However, hash_page is fairly complex and takes some locks, so to
-> avoid the possibility of deadlock, we add a flag to the paca to
-> indicate to the MMU hashtable miss handler that it should not call
-> hash_page but instead treat it like a bad access that will get
-> reported up through the exception table mechanism.  The PMU interrupt
-> code should then set this flag (get_paca()->in_pmu_nmi)
+This could (should?) be a static inline as well.
 
-I would prefer a more generic name, such as "disable_hashing" or
-something like that, after all, we may use that for other things
-in the future... 
-
->  and use
-> __get_user_inatomic to read user memory.  If there is no HPTE for
-> the address, __get_user_inatomic will return -EFAULT.
-> 
-> On a 32-bit processor, there is no SLB.  The 32-bit hash_page appears
-> to be safe to call in an interrupt handler since we don't do soft
-> disabling of interrupts on 32-bit, and the only lock that hash_page
-> takes is the mmu_hash_lock, which is always taken with interrupts
-> hard-disabled.
-
-This is going to be broken for 32-bit hash with 64-bit PTEs in UP
-mode :-) On those, we don't do set_pte atomically and we don't enforce
-any ordering between the two halves, though I suppose we could lift that
-"optimization". (See our pgtable.h, in __set_pte_at, we could remove the
-defined(CONFIG_SMP) part of that statement).
-
-The same problem is true to SW loaded TLB processors if they use 64-bit
-PTEs though the same fix should hopefully apply. I don't know whether
-that would be a significant performance degradation or not.
-
-So the patch per-se is fine (minus maybe the name of the PACA variable)
-but I believe it's insufficient.
-
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
->  arch/powerpc/include/asm/paca.h      |    3 ++-
->  arch/powerpc/kernel/asm-offsets.c    |    2 ++
->  arch/powerpc/kernel/exceptions-64s.S |   21 +++++++++++++++++++++
->  arch/powerpc/mm/slb.c                |   10 +++++++++-
->  4 files changed, 34 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> index c8a3cbf..17b29b1 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -105,7 +105,8 @@ struct paca_struct {
->  	u8 soft_enabled;		/* irq soft-enable flag */
->  	u8 hard_enabled;		/* set if irqs are enabled in MSR */
->  	u8 io_sync;			/* writel() needs spin_unlock sync */
-> -	u8 perf_counter_pending;	/* PM interrupt while soft-disabled */
-> +	u8 perf_counter_pending;	/* perf_counter stuff needs wakeup */
-> +	u8 in_pmu_nmi;			/* PM interrupt while soft-disabled */
->  
->  	/* Stuff for accurate time accounting */
->  	u64 user_time;			/* accumulated usermode TB ticks */
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index 561b646..5347780 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -130,6 +130,7 @@ int main(void)
->  	DEFINE(PACASOFTIRQEN, offsetof(struct paca_struct, soft_enabled));
->  	DEFINE(PACAHARDIRQEN, offsetof(struct paca_struct, hard_enabled));
->  	DEFINE(PACAPERFPEND, offsetof(struct paca_struct, perf_counter_pending));
-> +	DEFINE(PACAPERFNMI, offsetof(struct paca_struct, in_pmu_nmi));
->  	DEFINE(PACACONTEXTID, offsetof(struct paca_struct, context.id));
->  #ifdef CONFIG_PPC_MM_SLICES
->  	DEFINE(PACALOWSLICESPSIZE, offsetof(struct paca_struct,
-> @@ -398,6 +399,7 @@ int main(void)
->  	DEFINE(VCPU_TIMING_LAST_ENTER_TBL, offsetof(struct kvm_vcpu,
->  					arch.timing_last_enter.tv32.tbl));
->  #endif
-> +	DEFINE(SIGSEGV, SIGSEGV);
->  
->  	return 0;
->  }
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index eb89811..02d96b0 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -722,6 +722,12 @@ _STATIC(do_hash_page)
->  	std	r3,_DAR(r1)
->  	std	r4,_DSISR(r1)
->  
-> +#ifdef CONFIG_PERF_COUNTERS
-> +	lbz	r0,PACAPERFNMI(r13)
-> +	cmpwi	r0,0
-> +	bne	77f			/* if we don't want to hash_page now */
-> +#endif /* CONFIG_PERF_COUNTERS */
-> +
->  	andis.	r0,r4,0xa450		/* weird error? */
->  	bne-	handle_page_fault	/* if not, try to insert a HPTE */
->  BEGIN_FTR_SECTION
-> @@ -833,6 +839,21 @@ handle_page_fault:
->  	bl	.low_hash_fault
->  	b	.ret_from_except
->  
-> +#ifdef CONFIG_PERF_COUNTERS
-> +/*
-> + * We come here as a result of a DSI when accessing memory (possibly
-> + * user memory) inside a PMU interrupt that occurred while interrupts
-> + * were soft-disabled, so we just want to invoke the exception handler
-> + * for the access, or panic if there isn't a handler.
-> + */
-> +77:	bl	.save_nvgprs
-> +	mr	r4,r3
-> +	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +	li	r5,SIGSEGV
-> +	bl	.bad_page_fault
-> +	b	.ret_from_except
-> +#endif
-> +
->  	/* here we have a segment miss */
->  do_ste_alloc:
->  	bl	.ste_allocate		/* try to insert stab entry */
-> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index 3b52c80..ebfb8df 100644
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -187,12 +187,20 @@ static inline int esids_match(unsigned long addr1, unsigned long addr2)
->  /* Flush all user entries from the segment table of the current processor. */
->  void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
->  {
-> -	unsigned long offset = get_paca()->slb_cache_ptr;
-> +	unsigned long offset;
->  	unsigned long slbie_data = 0;
->  	unsigned long pc = KSTK_EIP(tsk);
->  	unsigned long stack = KSTK_ESP(tsk);
->  	unsigned long unmapped_base;
->  
-> +	/*
-> +	 * We need interrupts hard-disabled here, not just soft-disabled,
-> +	 * so that a PMU interrupt can't occur, which might try to access
-> +	 * user memory (to get a stack trace) and possible cause an SLB miss
-> +	 * which would update the slb_cache/slb_cache_ptr fields in the PACA.
-> +	 */
-> +	hard_irq_disable();
-> +	offset = get_paca()->slb_cache_ptr;
->  	if (!cpu_has_feature(CPU_FTR_NO_SLBIE_B) &&
->  	    offset <= SLB_CACHE_ENTRIES) {
->  		int i;
+--Signature=_Thu__23_Jul_2009_16_46_30_+1000_lb3paItgeI_C5LKW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpoB0YACgkQjjKRsyhoI8wsyACdHwOEZS3VmSkHcgiOwdDAUo5C
+S6gAoIEogCiDHq4xwNV9m+kXFuskwqjh
+=oPuB
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__23_Jul_2009_16_46_30_+1000_lb3paItgeI_C5LKW--
