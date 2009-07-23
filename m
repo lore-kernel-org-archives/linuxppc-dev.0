@@ -1,26 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7973C1054FE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5354AB7D16
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 16:02:30 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C226BDDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 16:02:29 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n6N62JLj002677
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 01:02:20 -0500
-Subject: [PATCH 0/20] powerpc: base 64-bit Book3E processor support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 23 Jul 2009 16:02:18 +1000
-Message-Id: <1248328938.3367.46.camel@pasglop>
+	Thu, 23 Jul 2009 16:22:58 +1000 (EST)
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 44079DDD1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 16:22:58 +1000 (EST)
+Date: Thu, 23 Jul 2009 16:22:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 9/20] powerpc/mm: Call mmu_context_init() from ppc64
+Message-Id: <20090723162254.6ba0cb51.sfr@canb.auug.org.au>
+In-Reply-To: <20090723055955.757B4DDD1B@ozlabs.org>
+References: <20090723055955.757B4DDD1B@ozlabs.org>
 Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__23_Jul_2009_16_22_54_+1000_452cZw/zOvFkoNv3"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Here is a series of patches that implement some basic support
-for 64-bit Book3E processors that comply to architecture 2.06.
+--Signature=_Thu__23_Jul_2009_16_22_54_+1000_452cZw/zOvFkoNv3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There is no specific processor announced yet. The patches make
-some shortcut which means they currently rely on an implementation
-that supports MMU v2 with support for the "HES" feature (HW entry
-select) and with support for the "TLB reservation" feature. They
-also assume a single unified TLB array. I shouldn't be very hard
-to implement support for other variants of the architecture on
-top of this though.
+Hi Ben,
 
-The current set of patch has no proper support yet for hugetlb,
-nor for "special" interrupt levels (debug, critical and machine
-check). Some minimal support for debug/critical levels is provided
-specifically for the "Debug" interrupt (single step etc...) only
-when it occurs from within user space code. 
+On Thu, 23 Jul 2009 15:59:44 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> Index: linux-work/arch/powerpc/mm/mmu_context_hash64.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-work.orig/arch/powerpc/mm/mmu_context_hash64.c	2009-07-22 16:24=
+:43.000000000 +1000
+> +++ linux-work/arch/powerpc/mm/mmu_context_hash64.c	2009-07-22 16:24:56.0=
+00000000 +1000
+> @@ -76,3 +76,4 @@ void destroy_context(struct mm_struct *m
+> =20
+>  	mm->context.id =3D NO_CONTEXT;
+>  }
+> +
 
-The intend is to merge these in 2.6.32. They rely on pretty much
-all the other patches I've been posting lately including the
-generic changes to add the virtual address argument to pte_free_tlb.
+Really? :-(
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__23_Jul_2009_16_22_54_+1000_452cZw/zOvFkoNv3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpoAb4ACgkQjjKRsyhoI8wTUQCgifZWw/FAcVWh21MEL7YDuWBs
+4dsAniZR+rPUu9R7UjScxUTA5wqGXNh/
+=Gjwc
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__23_Jul_2009_16_22_54_+1000_452cZw/zOvFkoNv3--
