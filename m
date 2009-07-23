@@ -1,26 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 50DDEB7BD5
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 957CBB7BDA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 17:02:41 +1000 (EST)
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 39C19DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 17:02:41 +1000 (EST)
-Date: Thu, 23 Jul 2009 17:02:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 15/20] powerpc: Add definitions used by exception
-	handling on 64-bit Book3E
-Message-Id: <20090723170236.8b87e72f.sfr@canb.auug.org.au>
-In-Reply-To: <20090723060000.22008DDD1B@ozlabs.org>
-References: <20090723060000.22008DDD1B@ozlabs.org>
+	Thu, 23 Jul 2009 17:08:18 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BA24DDDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 17:08:17 +1000 (EST)
+Subject: Re: [PATCH 9/20] powerpc/mm: Call mmu_context_init() from ppc64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20090723162254.6ba0cb51.sfr@canb.auug.org.au>
+References: <20090723055955.757B4DDD1B@ozlabs.org>
+	<20090723162254.6ba0cb51.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Thu, 23 Jul 2009 17:07:59 +1000
+Message-Id: <1248332879.3367.72.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__23_Jul_2009_17_02_36_+1000_v7mMX_0aozKqGIc5"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,38 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__23_Jul_2009_17_02_36_+1000_v7mMX_0aozKqGIc5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2009-07-23 at 16:22 +1000, Stephen Rothwell wrote:
+> Hi Ben,
+> 
+> On Thu, 23 Jul 2009 15:59:44 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >
+> > Index: linux-work/arch/powerpc/mm/mmu_context_hash64.c
+> > ===================================================================
+> > --- linux-work.orig/arch/powerpc/mm/mmu_context_hash64.c	2009-07-22 16:24:43.000000000 +1000
+> > +++ linux-work/arch/powerpc/mm/mmu_context_hash64.c	2009-07-22 16:24:56.000000000 +1000
+> > @@ -76,3 +76,4 @@ void destroy_context(struct mm_struct *m
+> >  
+> >  	mm->context.id = NO_CONTEXT;
+> >  }
+> > +
+> 
+> Really? :-(
 
-Hi Ben,
+Little mechanical problem, I used to have something in there in a
+previous rev of the patch, I'll re-spin that one without that bit.
 
-Another trivial one.
-
-On Thu, 23 Jul 2009 15:59:49 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> +#ifndef __EXCEPTION_64E_H__
-> +#define __EXCEPTION_64E_H__
-
-To be consistent with most of our headers, please use
-_ASM_POWERPC_EXCEPTION_64E_H.
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__23_Jul_2009_17_02_36_+1000_v7mMX_0aozKqGIc5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpoCwwACgkQjjKRsyhoI8yuuQCcC+wZYat+neewI0sPX0JHunY0
-ZnUAnRpKLwpUI11vv25FdK4ltxhgm0EP
-=bj39
------END PGP SIGNATURE-----
-
---Signature=_Thu__23_Jul_2009_17_02_36_+1000_v7mMX_0aozKqGIc5--
+Ben.
