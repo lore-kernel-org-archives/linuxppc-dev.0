@@ -1,25 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A8656B70AD
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 47177B7099
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 11:03:16 +1000 (EST)
-Message-Id: <13B0CDE8-B974-4CFA-A4B9-8AC4374B4694@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: srikanth krishnakar <skrishnakar@gmail.com>
-In-Reply-To: <6213bc560907220932u3b771af2q743ae55dda5a2198@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [LTP] msgctl10 fails on Powerpc Linux-2.6.29.6
-Date: Wed, 22 Jul 2009 20:03:06 -0500
-References: <6213bc560907210233l17aa3e75pcb7c20e3faa24195@mail.gmail.com>
-	<2A0DDADE-5C3C-43F2-9487-98A8A735DC8D@kernel.crashing.org>
-	<6213bc560907220838h49e5c273qa543e538bb37923a@mail.gmail.com>
-	<578FBC09-589D-4691-82FF-985FCFE8ADC9@kernel.crashing.org>
-	<6213bc560907220932u3b771af2q743ae55dda5a2198@mail.gmail.com>
-Cc: Linuxppc-dev@ozlabs.org, Ltp-list@lists.sourceforge.net
+	Thu, 23 Jul 2009 11:21:44 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E0FD4DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 11:21:43 +1000 (EST)
+Subject: Re: [PATCH] Hold reference to device_node during EEH event handling
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Mike Mason <mmlnx@us.ibm.com>
+In-Reply-To: <4A67A3A2.4050508@us.ibm.com>
+References: <4A5E4D68.6070909@us.ibm.com>
+	<1247708506.9851.8.camel@concordia> <4A5F5675.6040104@us.ibm.com>
+	<1247790973.16836.11.camel@concordia>  <4A67A3A2.4050508@us.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-TqUv7DC9d1TUKFSFpgG9"
+Date: Thu, 23 Jul 2009 11:21:42 +1000
+Message-Id: <1248312102.6543.1.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
+	Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,61 +38,83 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 22, 2009, at 11:32 AM, srikanth krishnakar wrote:
+--=-TqUv7DC9d1TUKFSFpgG9
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->
->
-> On Wed, Jul 22, 2009 at 9:14 PM, Kumar Gala  
-> <galak@kernel.crashing.org> wrote:
->
-> On Jul 22, 2009, at 10:38 AM, srikanth krishnakar wrote:
->
->
->
-> On Wed, Jul 22, 2009 at 8:52 PM, Kumar Gala  
-> <galak@kernel.crashing.org> wrote:
-> I'm not seeing any BUG* in traps.c @ line 904.
->
->
-> On Jul 21, 2009, at 4:33 AM, srikanth krishnakar wrote:
->
-> The LTP test case msgctl10.c fails on linux-2.6.29.6 for PowerPC  
-> architecture (ppc440)
->
->
-> msgctl10    1  B------------[ cut here ]------------
-> kernel BUG at arch/powerpc/kernel/traps.c:904!
-> Oops: Exception in kernel mode, sig: 5 [#9]
->
-> I'm not seeing any BUG* in traps.c @ line 904.  Do you have some  
-> other patches on top of 2.6.29.6?
->
-> - k
->
->
-> I have LTTng patches on top of linux-2.6.29.6.
->
-> Does it modify traps.c?  Can you see what the code around line 904  
-> looks like and post that.
->
-> - k
->  896
->  897 #if defined(CONFIG_XILINX_VIRTEX_5_FXT) &&  
-> defined(CONFIG_PPC_FPU)
->  898         if (reason & REASON_ILLEGAL) {
->  899                 if (excep_state < 1) {
->  900                         excep_state++;
->  901                         return;
->  902                 }
->  903                 /* should never get here */
->  904                 BUG();
->  905         }
->  906 #endif
->  907
->  908         /* Try to emulate it if we should. */
->
+On Wed, 2009-07-22 at 16:41 -0700, Mike Mason wrote:
+> Michael Ellerman wrote:
+> > On Thu, 2009-07-16 at 09:33 -0700, Mike Mason wrote:
+> >> Michael Ellerman wrote:
+> >>> On Wed, 2009-07-15 at 14:43 -0700, Mike Mason wrote:
+> >>>> This patch increments the device_node reference counter when an EEH
+> >>>> error occurs and decrements the counter when the event has been
+> >>>> handled.  This is to prevent the device_node from being released unt=
+il
+> >>>> eeh_event_handler() has had a chance to deal with the event.  We've
+> >>>> seen cases where the device_node is released too soon when an EEH
+> >>>> event occurs during a dlpar remove, causing the event handler to
+> >>>> attempt to access bad memory locations.
+> >>>>
+> >>>> Please review and let me know of any concerns.
+> >>> Taking a reference sounds sane, but ...
+> >>>
+> >>>> Signed-off-by: Mike Mason <mmlnx@us.ibm.com>=20
+> >>>>
+> >>>> --- a/arch/powerpc/platforms/pseries/eeh_event.c	2008-10-09 15:13:53=
+.000000000 -0700
+> >>>> +++ b/arch/powerpc/platforms/pseries/eeh_event.c	2009-07-14 14:14:00=
+.000000000 -0700
+> >>>> @@ -75,6 +75,14 @@ static int eeh_event_handler(void * dumm
+> >>>>  	if (event =3D=3D NULL)
+> >>>>  		return 0;
+> >>>> =20
+> >>>> +	/* EEH holds a reference to the device_node, so if it
+> >>>> +	 * equals 1 it's no longer valid and the event should
+> >>>> +	 * be ignored */
+> >>>> +	if (atomic_read(&event->dn->kref.refcount) =3D=3D 1) {
+> >>>> +		of_node_put(event->dn);
+> >>>> +		return 0;
+> >>>> +	}
+> >>> That's really gross :)
+> >> Agreed.  I'll look for another way to determine if device is gone and
+> >> the event should be ignored.  Suggestions are welcome :-)
+>=20
+> Actually, it turns out the atomic_read() isn't necessary.  I just need
+> to take the reference to the device_node when the EEH error is
+> detected and let EEH try to handle the error.  EEH detects the fact
+> that the device is no longer valid, aborts the recovery attempt, then
+> gives the device_node reference back.  Works as expected.
 
-Are you sure this is coming from the LTTng patches?  Which actual  
-patch makes this change?
+How does it detect that the device is no longer valid?
 
-- k
+> I'll resubmit the patch without the atomic_read().
+>=20
+> >=20
+> > Benh and I had a quick chat about it, and were wondering whether what
+> > you really should be doing is taking a reference to the pci device
+> > (perhaps as well as the device node).
+>=20
+> EEH already does that 3 lines before the of_node_get (see below).
+
+Ah right, while you're touching the code, mind changing it to the
+simpler and more obvious:
+
+>         event->dev =3D pci_dev_get(dev);
+
+cheers
+
+
+--=-TqUv7DC9d1TUKFSFpgG9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpnuyMACgkQdSjSd0sB4dJReQCgvlsRk0D4fTmRG8Yay9cplmXr
+/hQAoMR2IUoTPVsd7DKTNe1iOCRJaJau
+=PZ2P
+-----END PGP SIGNATURE-----
+
+--=-TqUv7DC9d1TUKFSFpgG9--
