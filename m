@@ -1,27 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <cndougla@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id ACB94B70B3
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A42F9B6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 00:51:37 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F2848DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jul 2009 00:51:36 +1000 (EST)
-Message-Id: <9D0737C4-EA82-41B8-B109-ED4FDB901C00@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090723055957.19D28DDD1B@ozlabs.org>
+	Fri, 24 Jul 2009 01:16:42 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n6NFBgVR003724
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2009 09:11:42 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n6NFCTm8155818
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2009 09:12:29 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n6NFCRT1026120
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2009 09:12:28 -0600
+Message-Id: <8349EEAE-34B9-4D7E-837F-1320057E59D2@linux.vnet.ibm.com>
+From: Chase Douglas <cndougla@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH 11/20] powerpc: Move definitions of secondary CPU spinloop
-	to header file
-Date: Thu, 23 Jul 2009 09:51:28 -0500
-References: <20090723055957.19D28DDD1B@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Add compat_sys_truncate
+Date: Thu, 23 Jul 2009 11:12:26 -0400
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,66 +33,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The truncate syscall has a signed long parameter, so when using a 32- 
+bit userspace with a 64-bit kernel the argument is zero-extended  
+instead of sign-extended. Adding the compat_sys_truncate function  
+fixes the issue.
 
-On Jul 23, 2009, at 12:59 AM, Benjamin Herrenschmidt wrote:
+This was noticed during an LSB truncate test failure. The test was  
+checking for the correct error number set when truncate is called with  
+a length of -1. The test can be found at:
 
-> Those definitions are currently declared extern in the .c file where
-> they are used, move them to a header file instead.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> --
->
-> arch/powerpc/include/asm/smp.h |    5 +++++
-> arch/powerpc/kernel/setup_64.c |    3 ---
-> 2 files changed, 5 insertions(+), 3 deletions(-)
+http://bzr.linuxfoundation.org/lsb/devel/runtime-test?cmd=inventory;rev=stewb%40linux-foundation.org-20090626205411-sfb23cc0tjj7jzgm;path=modules/vsx-pcts/tset/POSIX.os/files/truncate/
 
-Can we not get rid of the externs in:
+Signed-off-by: Chase Douglas <cndougla@linux.vnet.ibm.com>
 
-arch/powerpc/platforms/cell/smp.c:extern void  
-generic_secondary_smp_init(unsigned long);
-arch/powerpc/platforms/pseries/smp.c:extern void  
-generic_secondary_smp_init(unsigned long);
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/ 
+asm/systbl.h
+index 370600c..3cca167 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -95,7 +95,7 @@ SYSCALL(reboot)
+SYSX(sys_ni_syscall,compat_sys_old_readdir,sys_old_readdir)
+SYSCALL_SPU(mmap)
+SYSCALL_SPU(munmap)
+-SYSCALL_SPU(truncate)
++COMPAT_SYS_SPU(truncate)
+SYSCALL_SPU(ftruncate)
+SYSCALL_SPU(fchmod)
+SYSCALL_SPU(fchown)
+diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/ 
+sys_ppc32.c
+index bb1cfcf..da9a65b 100644
+--- a/arch/powerpc/kernel/sys_ppc32.c
++++ b/arch/powerpc/kernel/sys_ppc32.c
+@@ -343,6 +343,12 @@ off_t ppc32_lseek(unsigned int fd, u32 offset,  
+unsigned int origin)
+        return sys_lseek(fd, (int)offset, origin);
+}
 
-arch/powerpc/kernel/prom_init.c:extern unsigned long  
-__secondary_hold_spinloop;
-
-- k
-
->
->
-> --- linux-work.orig/arch/powerpc/include/asm/smp.h	2009-07-22  
-> 16:38:32.000000000 +1000
-> +++ linux-work/arch/powerpc/include/asm/smp.h	2009-07-22  
-> 16:46:59.000000000 +1000
-> @@ -148,6 +148,11 @@ extern struct smp_ops_t *smp_ops;
-> extern void arch_send_call_function_single_ipi(int cpu);
-> extern void arch_send_call_function_ipi(cpumask_t mask);
->
-> +#ifdef CONFIG_PPC64
-> +extern void generic_secondary_smp_init(void);
-> +extern unsigned long __secondary_hold_spinloop;
-> +#endif /* CONFIG_PPC64 */
-> +
-> #endif /* __ASSEMBLY__ */
->
-> #endif /* __KERNEL__ */
-> Index: linux-work/arch/powerpc/kernel/setup_64.c
-> ===================================================================
-> --- linux-work.orig/arch/powerpc/kernel/setup_64.c	2009-07-22  
-> 16:38:12.000000000 +1000
-> +++ linux-work/arch/powerpc/kernel/setup_64.c	2009-07-22  
-> 16:46:59.000000000 +1000
-> @@ -230,9 +230,6 @@ void early_setup_secondary(void)
-> #endif /* CONFIG_SMP */
->
-> #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC)
-> -extern unsigned long __secondary_hold_spinloop;
-> -extern void generic_secondary_smp_init(void);
-> -
-> void smp_release_cpus(void)
-> {
-> 	unsigned long *ptr;
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
++long compat_sys_truncate(const char __user * path, u32 length)
++{
++       /* sign extend length */
++       return sys_truncate(path, (int)length);
++}
++
+/* Note: it is necessary to treat bufsiz as an unsigned int,
+  * with the corresponding cast to a signed int to insure that the
+  * proper conversion (sign extension) between the register  
+representation of a signed int (msr in 32-bit mode)
