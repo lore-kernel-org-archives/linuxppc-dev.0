@@ -3,32 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6D2CBB7099
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A8656B70AD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 10:59:20 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ACF9ADDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 10:59:19 +1000 (EST)
-Message-Id: <74BA64FD-0DFF-45A2-868D-A001D9BA496F@kernel.crashing.org>
+	Thu, 23 Jul 2009 11:03:16 +1000 (EST)
+Message-Id: <13B0CDE8-B974-4CFA-A4B9-8AC4374B4694@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1248310415.3367.22.camel@pasglop>
+To: srikanth krishnakar <skrishnakar@gmail.com>
+In-Reply-To: <6213bc560907220932u3b771af2q743ae55dda5a2198@mail.gmail.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te, ud,
-	md}_free_tlb()
-Date: Wed, 22 Jul 2009 19:59:08 -0500
-References: <20090715074952.A36C7DDDB2@ozlabs.org>
-	<20090715135620.GD7298@wotan.suse.de>
-	<1248073873.13067.31.camel@pasglop>
-	<alpine.LFD.2.01.0907220930320.19335@localhost.localdomain>
-	<1248310415.3367.22.camel@pasglop>
-Cc: Nick Piggin <npiggin@suse.de>, Linux-Arch <linux-arch@vger.kernel.org>,
-	Linux Memory Management <linux-mm@kvack.org>,
-	Hugh Dickins <hugh@tiscali.co.uk>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [LTP] msgctl10 fails on Powerpc Linux-2.6.29.6
+Date: Wed, 22 Jul 2009 20:03:06 -0500
+References: <6213bc560907210233l17aa3e75pcb7c20e3faa24195@mail.gmail.com>
+	<2A0DDADE-5C3C-43F2-9487-98A8A735DC8D@kernel.crashing.org>
+	<6213bc560907220838h49e5c273qa543e538bb37923a@mail.gmail.com>
+	<578FBC09-589D-4691-82FF-985FCFE8ADC9@kernel.crashing.org>
+	<6213bc560907220932u3b771af2q743ae55dda5a2198@mail.gmail.com>
+Cc: Linuxppc-dev@ozlabs.org, Ltp-list@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,24 +30,61 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 22, 2009, at 7:53 PM, Benjamin Herrenschmidt wrote:
+On Jul 22, 2009, at 11:32 AM, srikanth krishnakar wrote:
 
-> On Wed, 2009-07-22 at 09:31 -0700, Linus Torvalds wrote:
->>> CC'ing Linus here. How do you want to proceed with that merge ?  
->>> (IE. so
->>> far nobody objected to the patch itself)
->>
->> Maybe you can put it as a separate branch in -next, and have it  
->> merged
->> before the stuff that depends on it, and then just sending it to me  
->> (as a
->> git branch or patch or whatever) in the first day of the merge  
->> window?
 >
-> Hrm... my powerpc-next branch will contain stuff that depend on it, so
-> I'll probably have to pull it in though, unless I tell all my
-> sub-maintainers to also pull from that other branch first :-)
+>
+> On Wed, Jul 22, 2009 at 9:14 PM, Kumar Gala  
+> <galak@kernel.crashing.org> wrote:
+>
+> On Jul 22, 2009, at 10:38 AM, srikanth krishnakar wrote:
+>
+>
+>
+> On Wed, Jul 22, 2009 at 8:52 PM, Kumar Gala  
+> <galak@kernel.crashing.org> wrote:
+> I'm not seeing any BUG* in traps.c @ line 904.
+>
+>
+> On Jul 21, 2009, at 4:33 AM, srikanth krishnakar wrote:
+>
+> The LTP test case msgctl10.c fails on linux-2.6.29.6 for PowerPC  
+> architecture (ppc440)
+>
+>
+> msgctl10    1  B------------[ cut here ]------------
+> kernel BUG at arch/powerpc/kernel/traps.c:904!
+> Oops: Exception in kernel mode, sig: 5 [#9]
+>
+> I'm not seeing any BUG* in traps.c @ line 904.  Do you have some  
+> other patches on top of 2.6.29.6?
+>
+> - k
+>
+>
+> I have LTTng patches on top of linux-2.6.29.6.
+>
+> Does it modify traps.c?  Can you see what the code around line 904  
+> looks like and post that.
+>
+> - k
+>  896
+>  897 #if defined(CONFIG_XILINX_VIRTEX_5_FXT) &&  
+> defined(CONFIG_PPC_FPU)
+>  898         if (reason & REASON_ILLEGAL) {
+>  899                 if (excep_state < 1) {
+>  900                         excep_state++;
+>  901                         return;
+>  902                 }
+>  903                 /* should never get here */
+>  904                 BUG();
+>  905         }
+>  906 #endif
+>  907
+>  908         /* Try to emulate it if we should. */
+>
 
-Can you not cherry pick it into powerpc-next to 'pull it through'?
+Are you sure this is coming from the LTTng patches?  Which actual  
+patch makes this change?
 
 - k
