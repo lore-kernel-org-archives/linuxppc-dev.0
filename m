@@ -1,15 +1,26 @@
-Return-Path: <lgrijincu@ixiacom.com>
-Received: from ixro-ex1.ixiacom.com (ixro-out-rtc.ixiacom.com [92.87.192.98])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 380FBB6F1F
+Return-Path: <mware@elphinstone.net>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7558AB6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 20:26:00 +1000 (EST)
-Message-ID: <4A6837D1.3070604@ixiacom.com>
-Date: Thu, 23 Jul 2009 13:13:37 +0300
-From: Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+	Thu, 23 Jul 2009 21:20:30 +1000 (EST)
+Received: from ipmail04.adl2.internode.on.net (ipmail04.adl2.internode.on.net
+	[203.16.214.57]) by ozlabs.org (Postfix) with ESMTP id 38B6EDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 21:20:28 +1000 (EST)
+Message-ID: <4A68477B.4090505@elphinstone.net>
+Date: Thu, 23 Jul 2009 21:20:27 +1000
+From: Mark Ware <mware@elphinstone.net>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: update wrapper to point to the new location of dtc
-Content-Type: multipart/mixed; boundary="------------080300080406040103020208"
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH v3 RESEND] net: Rework mdio-ofgpio driver to use of_mdio
+	infrastructure
+References: <4A66400F.3090309@elphinstone.net>
+	<20090722.094059.113003489.davem@davemloft.net>
+In-Reply-To: <20090722.094059.113003489.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,53 +30,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------080300080406040103020208
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-
-dtc was moved in 9fffb55f66127b52c937ede5196ebfa0c0d50bce from
-arch/powerpc/boot/ to scripts/dtc/
-
-This patch updates the wrapper script to point to the new location of dtc.
-
-Signed-off-by: Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+Changes to the fs_enet driver (aa73832c5a80d6c52c69b18af858d88fa595dd3c) cause kernel crashes when using the mdio-ofgpio driver.
+ 
+This patch replicates similar changes made to the fs_enet mii-bitbang drivers.  It has been tested on a custom mpc8280 based board using an NFS mounted root.
+ 
+Signed-off-by: Mark Ware <mware@elphinstone.net>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 ---
-  arch/powerpc/boot/wrapper |    3 ++-
-  1 files changed, 2 insertions(+), 1 deletions(-)
-
-
-
---------------080300080406040103020208
-Content-Type: text/x-patch;
- name="0001-powerpc-update-wrapper-to-point-to-the-new-location-.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-powerpc-update-wrapper-to-point-to-the-new-location-.pa";
- filename*1="tch"
-
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index e964489..c907540 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -46,6 +46,7 @@ CROSS=
- # directory for object and other files used by this script
- object=arch/powerpc/boot
- objbin=$object
-+dtc=scripts/dtc/dtc
  
- # directory for working files
- tmpdir=.
-@@ -124,7 +125,7 @@ if [ -n "$dts" ]; then
-     if [ -z "$dtb" ]; then
- 	dtb="$platform.dtb"
-     fi
--    $object/dtc -O dtb -o "$dtb" -b 0 "$dts"
-+    $dtc -O dtb -o "$dtb" -b 0 "$dts"
- fi
+The only changes in v3 are to the commit message.
+Resent due to patch mangling by mail client.
+This time for sure...
  
- if [ -z "$kernel" ]; then
-
-
---------------080300080406040103020208--
+ drivers/net/phy/mdio-gpio.c |   77 ++++++++++++++++++++-----------------------
+ 1 files changed, 36 insertions(+), 41 deletions(-)
+ 
+diff --git a/drivers/net/phy/mdio-gpio.c b/drivers/net/phy/mdio-gpio.c
+index 33984b7..22cdd45 100644
+--- a/drivers/net/phy/mdio-gpio.c
++++ b/drivers/net/phy/mdio-gpio.c
+@@ -30,6 +30,7 @@
+ 
+ #ifdef CONFIG_OF_GPIO
+ #include <linux/of_gpio.h>
++#include <linux/of_mdio.h>
+ #include <linux/of_platform.h>
+ #endif
+ 
+@@ -81,13 +82,12 @@ static struct mdiobb_ops mdio_gpio_ops = {
+ 	.get_mdio_data = mdio_get,
+ };
+ 
+-static int __devinit mdio_gpio_bus_init(struct device *dev,
++static struct mii_bus * __devinit mdio_gpio_bus_init(struct device *dev,
+ 					struct mdio_gpio_platform_data *pdata,
+ 					int bus_id)
+ {
+ 	struct mii_bus *new_bus;
+ 	struct mdio_gpio_info *bitbang;
+-	int ret = -ENOMEM;
+ 	int i;
+ 
+ 	bitbang = kzalloc(sizeof(*bitbang), GFP_KERNEL);
+@@ -104,8 +104,6 @@ static int __devinit mdio_gpio_bus_init(struct device *dev,
+ 
+ 	new_bus->name = "GPIO Bitbanged MDIO",
+ 
+-	ret = -ENODEV;
+-
+ 	new_bus->phy_mask = pdata->phy_mask;
+ 	new_bus->irq = pdata->irqs;
+ 	new_bus->parent = dev;
+@@ -129,15 +127,8 @@ static int __devinit mdio_gpio_bus_init(struct device *dev,
+ 
+ 	dev_set_drvdata(dev, new_bus);
+ 
+-	ret = mdiobus_register(new_bus);
+-	if (ret)
+-		goto out_free_all;
+-
+-	return 0;
++	return new_bus;
+ 
+-out_free_all:
+-	dev_set_drvdata(dev, NULL);
+-	gpio_free(bitbang->mdio);
+ out_free_mdc:
+ 	gpio_free(bitbang->mdc);
+ out_free_bus:
+@@ -145,30 +136,47 @@ out_free_bus:
+ out_free_bitbang:
+ 	kfree(bitbang);
+ out:
+-	return ret;
++	return NULL;
+ }
+ 
+-static void __devexit mdio_gpio_bus_destroy(struct device *dev)
++static void __devinit mdio_gpio_bus_deinit(struct device *dev)
+ {
+ 	struct mii_bus *bus = dev_get_drvdata(dev);
+ 	struct mdio_gpio_info *bitbang = bus->priv;
+ 
+-	mdiobus_unregister(bus);
+-	free_mdio_bitbang(bus);
+ 	dev_set_drvdata(dev, NULL);
+-	gpio_free(bitbang->mdc);
+ 	gpio_free(bitbang->mdio);
++	gpio_free(bitbang->mdc);
++	free_mdio_bitbang(bus);
+ 	kfree(bitbang);
+ }
+ 
++static void __devexit mdio_gpio_bus_destroy(struct device *dev)
++{
++	struct mii_bus *bus = dev_get_drvdata(dev);
++
++	mdiobus_unregister(bus);
++	mdio_gpio_bus_deinit(dev);
++}
++
+ static int __devinit mdio_gpio_probe(struct platform_device *pdev)
+ {
+ 	struct mdio_gpio_platform_data *pdata = pdev->dev.platform_data;
++	struct mii_bus *new_bus;
++	int ret;
+ 
+ 	if (!pdata)
+ 		return -ENODEV;
+ 
+-	return mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id);
++	new_bus = mdio_gpio_bus_init(&pdev->dev, pdata, pdev->id);
++	if (!new_bus)
++		return -ENODEV;
++
++	ret = mdiobus_register(new_bus);
++	if (ret)
++		mdio_gpio_bus_deinit(&pdev->dev);
++
++	return ret;
+ }
+ 
+ static int __devexit mdio_gpio_remove(struct platform_device *pdev)
+@@ -179,29 +187,12 @@ static int __devexit mdio_gpio_remove(struct platform_device *pdev)
+ }
+ 
+ #ifdef CONFIG_OF_GPIO
+-static void __devinit add_phy(struct mdio_gpio_platform_data *pdata,
+-			      struct device_node *np)
+-{
+-	const u32 *data;
+-	int len, id, irq;
+-
+-	data = of_get_property(np, "reg", &len);
+-	if (!data || len != 4)
+-		return;
+-
+-	id = *data;
+-	pdata->phy_mask &= ~(1 << id);
+-
+-	irq = of_irq_to_resource(np, 0, NULL);
+-	if (irq)
+-		pdata->irqs[id] = irq;
+-}
+ 
+ static int __devinit mdio_ofgpio_probe(struct of_device *ofdev,
+                                         const struct of_device_id *match)
+ {
+-	struct device_node *np = NULL;
+ 	struct mdio_gpio_platform_data *pdata;
++	struct mii_bus *new_bus;
+ 	int ret;
+ 
+ 	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
+@@ -215,14 +206,18 @@ static int __devinit mdio_ofgpio_probe(struct of_device *ofdev,
+ 
+ 	ret = of_get_gpio(ofdev->node, 1);
+ 	if (ret < 0)
+-                goto out_free;
++		goto out_free;
+ 	pdata->mdio = ret;
+ 
+-	while ((np = of_get_next_child(ofdev->node, np)))
+-		if (!strcmp(np->type, "ethernet-phy"))
+-			add_phy(pdata, np);
++	new_bus = mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc);
++	if (!new_bus)
++		return -ENODEV;
+ 
+-	return mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc);
++	ret = of_mdiobus_register(new_bus, ofdev->node);
++	if (ret)
++		mdio_gpio_bus_deinit(&ofdev->dev);
++
++	return ret;
+ 
+ out_free:
+ 	kfree(pdata);
+-- 
+1.5.6.5
