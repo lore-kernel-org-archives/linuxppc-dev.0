@@ -1,26 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 72A6FB7C53
+Return-Path: <lgrijincu@ixiacom.com>
+Received: from ixro-ex1.ixiacom.com (ixro-out-rtc.ixiacom.com [92.87.192.98])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 380FBB6F1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 17:44:57 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9C0C5DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 17:44:56 +1000 (EST)
-Subject: Re: [PATCH 0/5] Generic NVRAM support for large MMIO devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <20090702154928.31202.65107.stgit@ES-J7S4D2J.amer.consind.ge.com>
-References: <20090702154928.31202.65107.stgit@ES-J7S4D2J.amer.consind.ge.com>
-Content-Type: text/plain
-Date: Thu, 23 Jul 2009 17:44:37 +1000
-Message-Id: <1248335077.3367.79.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	Thu, 23 Jul 2009 20:26:00 +1000 (EST)
+Message-ID: <4A6837D1.3070604@ixiacom.com>
+Date: Thu, 23 Jul 2009 13:13:37 +0300
+From: Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: update wrapper to point to the new location of dtc
+Content-Type: multipart/mixed; boundary="------------080300080406040103020208"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +19,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-07-02 at 17:12 +0100, Martyn Welch wrote:
-> The following series allows the generic NVRAM driver to access MMIO
-> based NVRAMs. In addition it enables support for NVRAMs of sizes
-> differing from those found on PowerPC Macs (providing a safe
-> fallback). Patches are also included to enable support for the NVRAM
-> found on the GE Fanuc PPC9A, SBC310 and SBC610.
-> 
-> If this patch series is unsuitable this late in the day for 2.6.31,
-> please concider it for 2.6.32.
+This is a multi-part message in MIME format.
+--------------080300080406040103020208
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-No major issue with the series other than the change to the generic
-nvram code which needs to not break other architectures :-) Also,
-it will probably need to go through Andrew Morton, unless there's
-a maintainer for that driver, is there ?
 
-Once you sort out that aspect of the patch series, I'm happy to take
-the rest in powerpc.git
+dtc was moved in 9fffb55f66127b52c937ede5196ebfa0c0d50bce from
+arch/powerpc/boot/ to scripts/dtc/
 
-Cheers,
-Ben.
+This patch updates the wrapper script to point to the new location of dtc.
+
+Signed-off-by: Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+---
+  arch/powerpc/boot/wrapper |    3 ++-
+  1 files changed, 2 insertions(+), 1 deletions(-)
+
+
+
+--------------080300080406040103020208
+Content-Type: text/x-patch;
+ name="0001-powerpc-update-wrapper-to-point-to-the-new-location-.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-powerpc-update-wrapper-to-point-to-the-new-location-.pa";
+ filename*1="tch"
+
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index e964489..c907540 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -46,6 +46,7 @@ CROSS=
+ # directory for object and other files used by this script
+ object=arch/powerpc/boot
+ objbin=$object
++dtc=scripts/dtc/dtc
+ 
+ # directory for working files
+ tmpdir=.
+@@ -124,7 +125,7 @@ if [ -n "$dts" ]; then
+     if [ -z "$dtb" ]; then
+ 	dtb="$platform.dtb"
+     fi
+-    $object/dtc -O dtb -o "$dtb" -b 0 "$dts"
++    $dtc -O dtb -o "$dtb" -b 0 "$dts"
+ fi
+ 
+ if [ -z "$kernel" ]; then
+
+
+--------------080300080406040103020208--
