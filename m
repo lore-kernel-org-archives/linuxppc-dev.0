@@ -1,28 +1,24 @@
-Return-Path: <davem@davemloft.net>
+Return-Path: <elendil@planet.nl>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B0D14B7087
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E9F7AB6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 03:56:53 +1000 (EST)
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 5A1DADDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jul 2009 03:56:53 +1000 (EST)
-Date: Thu, 23 Jul 2009 10:56:57 -0700 (PDT)
-Message-Id: <20090723.105657.127470596.davem@davemloft.net>
-To: mware@elphinstone.net
-Subject: Re: [PATCH v3 RESEND] net: Rework mdio-ofgpio driver to use
-	of_mdio infrastructure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A68477B.4090505@elphinstone.net>
-References: <4A66400F.3090309@elphinstone.net>
-	<20090722.094059.113003489.davem@davemloft.net>
-	<4A68477B.4090505@elphinstone.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+	Fri, 24 Jul 2009 04:57:23 +1000 (EST)
+Received: from CPSMTPM-EML104.kpnxchange.com (cpsmtpm-eml104.kpnxchange.com
+	[195.121.3.8]) by ozlabs.org (Postfix) with ESMTP id 3D7AADDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jul 2009 04:57:22 +1000 (EST)
+From: Frans Pop <elendil@planet.nl>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: minor Makefile simplification through use of
+	cc-ifversion
+Date: Thu, 23 Jul 2009 20:57:18 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200907232057.19942.elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,14 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mark Ware <mware@elphinstone.net>
-Date: Thu, 23 Jul 2009 21:20:27 +1000
+Signed-off-by: Frans Pop <elendil@planet.nl>
+---
 
-> Changes to the fs_enet driver (aa73832c5a80d6c52c69b18af858d88fa595dd3c) cause kernel crashes when using the mdio-ofgpio driver.
->  
-> This patch replicates similar changes made to the fs_enet mii-bitbang drivers.  It has been tested on a custom mpc8280 based board using an NFS mounted root.
->  
-> Signed-off-by: Mark Ware <mware@elphinstone.net>
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Change was suggested by Sam Ravnborg; see http://lkml.org/lkml/2009/7/18/15.
+Untested.
 
-Applied.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index bc35f4e..952a396 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -77,7 +77,7 @@ CPP		= $(CC) -E $(KBUILD_CFLAGS)
+ CHECKFLAGS	+= -m$(CONFIG_WORD_SIZE) -D__powerpc__ -D__powerpc$(CONFIG_WORD_SIZE)__
+ 
+ ifeq ($(CONFIG_PPC64),y)
+-GCC_BROKEN_VEC	:= $(shell if [ $(call cc-version) -lt 0400 ] ; then echo "y"; fi)
++GCC_BROKEN_VEC	:= $(call cc-ifversion, -lt, 0400, y)
+ 
+ ifeq ($(CONFIG_POWER4_ONLY),y)
+ ifeq ($(CONFIG_ALTIVEC),y)
