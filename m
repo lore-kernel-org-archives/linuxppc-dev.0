@@ -1,27 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <davem@davemloft.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 04A18B7B68
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B0D14B7087
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 01:55:37 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 341B1DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jul 2009 01:55:35 +1000 (EST)
-Message-Id: <883C2E2A-F904-4FDE-9363-BF813B90676D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090723055951.7867DDDD1B@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH 4/20] powerpc/mm: Add opcode definitions for tlbivax and
-	tlbsrx.
-Date: Thu, 23 Jul 2009 10:55:26 -0500
-References: <20090723055951.7867DDDD1B@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+	Fri, 24 Jul 2009 03:56:53 +1000 (EST)
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 5A1DADDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jul 2009 03:56:53 +1000 (EST)
+Date: Thu, 23 Jul 2009 10:56:57 -0700 (PDT)
+Message-Id: <20090723.105657.127470596.davem@davemloft.net>
+To: mware@elphinstone.net
+Subject: Re: [PATCH v3 RESEND] net: Rework mdio-ofgpio driver to use
+	of_mdio infrastructure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4A68477B.4090505@elphinstone.net>
+References: <4A66400F.3090309@elphinstone.net>
+	<20090722.094059.113003489.davem@davemloft.net>
+	<4A68477B.4090505@elphinstone.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,20 +32,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Mark Ware <mware@elphinstone.net>
+Date: Thu, 23 Jul 2009 21:20:27 +1000
 
-On Jul 23, 2009, at 12:59 AM, Benjamin Herrenschmidt wrote:
+> Changes to the fs_enet driver (aa73832c5a80d6c52c69b18af858d88fa595dd3c) cause kernel crashes when using the mdio-ofgpio driver.
+>  
+> This patch replicates similar changes made to the fs_enet mii-bitbang drivers.  It has been tested on a custom mpc8280 based board using an NFS mounted root.
+>  
+> Signed-off-by: Mark Ware <mware@elphinstone.net>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-> This adds the opcode definitions to ppc-opcode.h for the two  
-> instructions
-> tlbivax and tlbsrx. as defined by Book3E 2.06
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->
-> arch/powerpc/include/asm/ppc-opcode.h |    6 ++++++
-> 1 file changed, 6 insertions(+)
-
-Do we really have binutils that don't have tlbivax properly at this  
-point?
-
-- k
+Applied.
