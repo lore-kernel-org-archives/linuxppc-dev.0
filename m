@@ -3,15 +3,15 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 21EF0B7BB3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EFA45B7BCE
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 23 Jul 2009 15:59:52 +1000 (EST)
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Thu, 23 Jul 2009 15:59:41 +1000
-Subject: [PATCH 5/20] powerpc/mm: Add more bit definitions for Book3E MMU
-	registers
-Message-Id: <20090723055952.14950DDD1B@ozlabs.org>
+Subject: [PATCH 6/20] powerpc/mm: Add support for early ioremap on non-hash
+	64-bit processors
+Message-Id: <20090723055952.E2DCCDDD1B@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,192 +21,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds various additional bit definitions for various MMU related
-SPRs used on Book3E.
+This adds some code to do early ioremap's using page tables instead of
+bolting entries in the hash table. This will be used by the upcoming
+64-bits BookE port.
+
+The patch also changes the test for early vs. late ioremap to use
+slab_is_available() instead of our old hackish mem_init_done.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/include/asm/mmu-book3e.h |  168 ++++++++++++++++++++++++----------
- 1 file changed, 119 insertions(+), 49 deletions(-)
+ arch/powerpc/mm/pgtable_64.c |   59 +++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 54 insertions(+), 5 deletions(-)
 
---- linux-work.orig/arch/powerpc/include/asm/mmu-book3e.h	2009-07-22 15:19:22.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/mmu-book3e.h	2009-07-22 15:30:58.000000000 +1000
-@@ -38,58 +38,128 @@
- #define BOOK3E_PAGESZ_1TB	30
- #define BOOK3E_PAGESZ_2TB	31
+--- linux-work.orig/arch/powerpc/mm/pgtable_64.c	2009-07-22 15:49:09.000000000 +1000
++++ linux-work/arch/powerpc/mm/pgtable_64.c	2009-07-23 14:56:39.000000000 +1000
+@@ -33,6 +33,8 @@
+ #include <linux/stddef.h>
+ #include <linux/vmalloc.h>
+ #include <linux/init.h>
++#include <linux/bootmem.h>
++#include <linux/lmb.h>
  
--#define MAS0_TLBSEL(x)	((x << 28) & 0x30000000)
--#define MAS0_ESEL(x)	((x << 16) & 0x0FFF0000)
--#define MAS0_NV(x)	((x) & 0x00000FFF)
--
--#define MAS1_VALID 	0x80000000
--#define MAS1_IPROT	0x40000000
--#define MAS1_TID(x)	((x << 16) & 0x3FFF0000)
--#define MAS1_IND	0x00002000
--#define MAS1_TS		0x00001000
--#define MAS1_TSIZE(x)	((x << 7) & 0x00000F80)
--
--#define MAS2_EPN	0xFFFFF000
--#define MAS2_X0		0x00000040
--#define MAS2_X1		0x00000020
--#define MAS2_W		0x00000010
--#define MAS2_I		0x00000008
--#define MAS2_M		0x00000004
--#define MAS2_G		0x00000002
--#define MAS2_E		0x00000001
-+/* MAS registers bit definitions */
-+
-+#define MAS0_TLBSEL(x)		((x << 28) & 0x30000000)
-+#define MAS0_ESEL(x)		((x << 16) & 0x0FFF0000)
-+#define MAS0_NV(x)		((x) & 0x00000FFF)
-+#define MAS0_HES		0x00004000
-+#define MAS0_WQ_ALLWAYS		0x00000000
-+#define MAS0_WQ_COND		0x00001000
-+#define MAS0_WQ_CLR_RSRV       	0x00002000
-+
-+#define MAS1_VALID		0x80000000
-+#define MAS1_IPROT		0x40000000
-+#define MAS1_TID(x)		((x << 16) & 0x3FFF0000)
-+#define MAS1_IND		0x00002000
-+#define MAS1_TS			0x00001000
-+#define MAS1_TSIZE_MASK		0x00000f80
-+#define MAS1_TSIZE_SHIFT	7
-+#define MAS1_TSIZE(x)		((x << MAS1_TSIZE_SHIFT) & MAS1_TSIZE_MASK)
-+
-+#define MAS2_EPN		0xFFFFF000
-+#define MAS2_X0			0x00000040
-+#define MAS2_X1			0x00000020
-+#define MAS2_W			0x00000010
-+#define MAS2_I			0x00000008
-+#define MAS2_M			0x00000004
-+#define MAS2_G			0x00000002
-+#define MAS2_E			0x00000001
- #define MAS2_EPN_MASK(size)		(~0 << (size + 10))
- #define MAS2_VAL(addr, size, flags)	((addr) & MAS2_EPN_MASK(size) | (flags))
+ #include <asm/pgalloc.h>
+ #include <asm/page.h>
+@@ -55,19 +57,36 @@
  
--#define MAS3_RPN	0xFFFFF000
--#define MAS3_U0		0x00000200
--#define MAS3_U1		0x00000100
--#define MAS3_U2		0x00000080
--#define MAS3_U3		0x00000040
--#define MAS3_UX		0x00000020
--#define MAS3_SX		0x00000010
--#define MAS3_UW		0x00000008
--#define MAS3_SW		0x00000004
--#define MAS3_UR		0x00000002
--#define MAS3_SR		0x00000001
--
--#define MAS4_TLBSELD(x) MAS0_TLBSEL(x)
--#define MAS4_INDD	0x00008000
--#define MAS4_TSIZED(x)	MAS1_TSIZE(x)
--#define MAS4_X0D	0x00000040
--#define MAS4_X1D	0x00000020
--#define MAS4_WD		0x00000010
--#define MAS4_ID		0x00000008
--#define MAS4_MD		0x00000004
--#define MAS4_GD		0x00000002
--#define MAS4_ED		0x00000001
--
--#define MAS6_SPID0	0x3FFF0000
--#define MAS6_SPID1	0x00007FFE
--#define MAS6_ISIZE(x)	MAS1_TSIZE(x)
--#define MAS6_SAS	0x00000001
--#define MAS6_SPID	MAS6_SPID0
--
--#define MAS7_RPN	0xFFFFFFFF
-+#define MAS3_RPN		0xFFFFF000
-+#define MAS3_U0			0x00000200
-+#define MAS3_U1			0x00000100
-+#define MAS3_U2			0x00000080
-+#define MAS3_U3			0x00000040
-+#define MAS3_UX			0x00000020
-+#define MAS3_SX			0x00000010
-+#define MAS3_UW			0x00000008
-+#define MAS3_SW			0x00000004
-+#define MAS3_UR			0x00000002
-+#define MAS3_SR			0x00000001
-+#define MAS3_SPSIZE		0x0000003e
-+#define MAS3_SPSIZE_SHIFT	1
-+
-+#define MAS4_TLBSELD(x) 	MAS0_TLBSEL(x)
-+#define MAS4_INDD		0x00008000	/* Default IND */
-+#define MAS4_TSIZED(x)		MAS1_TSIZE(x)
-+#define MAS4_X0D		0x00000040
-+#define MAS4_X1D		0x00000020
-+#define MAS4_WD			0x00000010
-+#define MAS4_ID			0x00000008
-+#define MAS4_MD			0x00000004
-+#define MAS4_GD			0x00000002
-+#define MAS4_ED			0x00000001
-+#define MAS4_WIMGED_MASK	0x0000001f	/* Default WIMGE */
-+#define MAS4_WIMGED_SHIFT	0
-+#define MAS4_VLED		MAS4_X1D	/* Default VLE */
-+#define MAS4_ACMD		0x000000c0	/* Default ACM */
-+#define MAS4_ACMD_SHIFT		6
-+#define MAS4_TSIZED_MASK	0x00000f80	/* Default TSIZE */
-+#define MAS4_TSIZED_SHIFT	7
-+
-+#define MAS6_SPID0		0x3FFF0000
-+#define MAS6_SPID1		0x00007FFE
-+#define MAS6_ISIZE(x)		MAS1_TSIZE(x)
-+#define MAS6_SAS		0x00000001
-+#define MAS6_SPID		MAS6_SPID0
-+#define MAS6_SIND 		0x00000002	/* Indirect page */
-+#define MAS6_SIND_SHIFT		1
-+#define MAS6_SPID_MASK		0x3fff0000
-+#define MAS6_SPID_SHIFT		16
-+#define MAS6_ISIZE_MASK		0x00000f80
-+#define MAS6_ISIZE_SHIFT	7
-+
-+#define MAS7_RPN		0xFFFFFFFF
-+
-+/* TLBnCFG encoding */
-+#define TLBnCFG_N_ENTRY		0x00000fff	/* number of entries */
-+#define TLBnCFG_HES		0x00002000	/* HW select supported */
-+#define TLBnCFG_IPROT		0x00008000	/* IPROT supported */
-+#define TLBnCFG_GTWE		0x00010000	/* Guest can write */
-+#define TLBnCFG_IND		0x00020000	/* IND entries supported */
-+#define TLBnCFG_PT		0x00040000	/* Can load from page table */
-+#define TLBnCFG_ASSOC		0xff000000	/* Associativity */
-+
-+/* TLBnPS encoding */
-+#define TLBnPS_4K		0x00000004
-+#define TLBnPS_8K		0x00000008
-+#define TLBnPS_16K		0x00000010
-+#define TLBnPS_32K		0x00000020
-+#define TLBnPS_64K		0x00000040
-+#define TLBnPS_128K		0x00000080
-+#define TLBnPS_256K		0x00000100
-+#define TLBnPS_512K		0x00000200
-+#define TLBnPS_1M 		0x00000400
-+#define TLBnPS_2M 		0x00000800
-+#define TLBnPS_4M 		0x00001000
-+#define TLBnPS_8M 		0x00002000
-+#define TLBnPS_16M		0x00004000
-+#define TLBnPS_32M		0x00008000
-+#define TLBnPS_64M		0x00010000
-+#define TLBnPS_128M		0x00020000
-+#define TLBnPS_256M		0x00040000
-+#define TLBnPS_512M		0x00080000
-+#define TLBnPS_1G		0x00100000
-+#define TLBnPS_2G		0x00200000
-+#define TLBnPS_4G		0x00400000
-+#define TLBnPS_8G		0x00800000
-+#define TLBnPS_16G		0x01000000
-+#define TLBnPS_32G		0x02000000
-+#define TLBnPS_64G		0x04000000
-+#define TLBnPS_128G		0x08000000
-+#define TLBnPS_256G		0x10000000
-+
-+/* tlbilx action encoding */
-+#define TLBILX_T_ALL			0
-+#define TLBILX_T_TID			1
-+#define TLBILX_T_FULLMATCH		3
-+#define TLBILX_T_CLASS0			4
-+#define TLBILX_T_CLASS1			5
-+#define TLBILX_T_CLASS2			6
-+#define TLBILX_T_CLASS3			7
+ unsigned long ioremap_bot = IOREMAP_BASE;
  
- #ifndef __ASSEMBLY__
++
++#ifdef CONFIG_PPC_MMU_NOHASH
++static void *early_alloc_pgtable(unsigned long size)
++{
++	void *pt;
++
++	if (init_bootmem_done)
++		pt = __alloc_bootmem(size, size, __pa(MAX_DMA_ADDRESS));
++	else
++		pt = __va(lmb_alloc_base(size, size,
++					 __pa(MAX_DMA_ADDRESS)));
++	memset(pt, 0, size);
++
++	return pt;
++}
++#endif /* CONFIG_PPC_MMU_NOHASH */
++
+ /*
+- * map_io_page currently only called by __ioremap
+- * map_io_page adds an entry to the ioremap page table
++ * map_kernel_page currently only called by __ioremap
++ * map_kernel_page adds an entry to the ioremap page table
+  * and adds an entry to the HPT, possibly bolting it
+  */
+-static int map_io_page(unsigned long ea, unsigned long pa, int flags)
++static int map_kernel_page(unsigned long ea, unsigned long pa, int flags)
+ {
+ 	pgd_t *pgdp;
+ 	pud_t *pudp;
+ 	pmd_t *pmdp;
+ 	pte_t *ptep;
  
+-	if (mem_init_done) {
++	if (slab_is_available()) {
+ 		pgdp = pgd_offset_k(ea);
+ 		pudp = pud_alloc(&init_mm, pgdp, ea);
+ 		if (!pudp)
+@@ -81,6 +100,35 @@ static int map_io_page(unsigned long ea,
+ 		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
+ 							  __pgprot(flags)));
+ 	} else {
++#ifdef CONFIG_PPC_MMU_NOHASH
++		/* Warning ! This will blow up if bootmem is not initialized
++		 * which our ppc64 code is keen to do that, we'll need to
++		 * fix it and/or be more careful
++		 */
++		pgdp = pgd_offset_k(ea);
++#ifdef PUD_TABLE_SIZE
++		if (pgd_none(*pgdp)) {
++			pudp = early_alloc_pgtable(PUD_TABLE_SIZE);
++			BUG_ON(pudp == NULL);
++			pgd_populate(&init_mm, pgdp, pudp);
++		}
++#endif /* PUD_TABLE_SIZE */
++		pudp = pud_offset(pgdp, ea);
++		if (pud_none(*pudp)) {
++			pmdp = early_alloc_pgtable(PMD_TABLE_SIZE);
++			BUG_ON(pmdp == NULL);
++			pud_populate(&init_mm, pudp, pmdp);
++		}
++		pmdp = pmd_offset(pudp, ea);
++		if (!pmd_present(*pmdp)) {
++			ptep = early_alloc_pgtable(PAGE_SIZE);
++			BUG_ON(ptep == NULL);
++			pmd_populate_kernel(&init_mm, pmdp, ptep);
++		}
++		ptep = pte_offset_kernel(pmdp, ea);
++		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
++							  __pgprot(flags)));
++#else /* CONFIG_PPC_MMU_NOHASH */
+ 		/*
+ 		 * If the mm subsystem is not fully up, we cannot create a
+ 		 * linux page table entry for this mapping.  Simply bolt an
+@@ -93,6 +141,7 @@ static int map_io_page(unsigned long ea,
+ 			       "memory at %016lx !\n", pa);
+ 			return -ENOMEM;
+ 		}
++#endif /* !CONFIG_PPC_MMU_NOHASH */
+ 	}
+ 	return 0;
+ }
+@@ -124,7 +173,7 @@ void __iomem * __ioremap_at(phys_addr_t 
+ 	WARN_ON(size & ~PAGE_MASK);
+ 
+ 	for (i = 0; i < size; i += PAGE_SIZE)
+-		if (map_io_page((unsigned long)ea+i, pa+i, flags))
++		if (map_kernel_page((unsigned long)ea+i, pa+i, flags))
+ 			return NULL;
+ 
+ 	return (void __iomem *)ea;
