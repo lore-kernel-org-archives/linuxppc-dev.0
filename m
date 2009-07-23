@@ -1,26 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <linasvepstas@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 43C0BB70B3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 23E0CB70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 00:44:37 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 80E88DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jul 2009 00:44:36 +1000 (EST)
-Message-Id: <1E595D96-6A35-42E4-B2E4-8766AF8FDED7@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090723055959.0D67DDDD1B@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH 13/20] powerpc: Add SPR definitions for new 64-bit BookE
-Date: Thu, 23 Jul 2009 09:44:29 -0500
-References: <20090723055959.0D67DDDD1B@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+	Fri, 24 Jul 2009 00:44:38 +1000 (EST)
+Received: from mail-yx0-f199.google.com (mail-yx0-f199.google.com
+	[209.85.210.199]) by ozlabs.org (Postfix) with ESMTP id 738A3DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jul 2009 00:44:34 +1000 (EST)
+Received: by yxe37 with SMTP id 37so1629917yxe.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 07:44:33 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <4A5E23D0.9020906@us.ibm.com>
+References: <4A5CCFDF.7000901@us.ibm.com> <4A5E23D0.9020906@us.ibm.com>
+Date: Thu, 23 Jul 2009 09:44:33 -0500
+Message-ID: <3ae3aa420907230744ya3a9342w4f29e150b3b5658f@mail.gmail.com>
+Subject: Re: [PATCH] Support for PCI Express reset type in EEH
+From: Linas Vepstas <linasvepstas@gmail.com>
+To: Mike Mason <mmlnx@us.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Richard Lary <rlary@us.ibm.com>, linux-pci@vger.kernel.org
+Reply-To: linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +32,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+2009/7/15 Mike Mason <mmlnx@us.ibm.com>:
+> By default, EEH does what's known as a "hot reset" during error recovery =
+of
+> a PCI Express device. =C2=A0We've found a case where the device needs a
+> "fundamental reset" to recover properly. =C2=A0The current PCI error reco=
+very and
+> EEH frameworks do not support this distinction.
+>
+> The attached patch (courtesy of Richard Lary) adds a bit field to pci_dev
+> that indicates whether the device requires a fundamental reset during err=
+or
+> recovery. =C2=A0This bit can be checked by EEH to determine which reset t=
+ype is
+> required.
+>
+> This patch supersedes the previously submitted patch that implemented a
+> reset type callback.
+>
+> Please review and let me know of any concerns.
 
-On Jul 23, 2009, at 12:59 AM, Benjamin Herrenschmidt wrote:
+I like this patch a *lot* better .. it is vastly simpler, more direct.
 
-> +/* Bit definitions for EPCR */
-> +#define SPRN_EPCR_EXTGS		0x80000000
-> +#define SPRN_EPCR_DTLBGS	0x40000000
-> +#define SPRN_EPCR_ITLBGS	0x20000000
-> +#define SPRN_EPCR_DSIGS		0x10000000
-> +#define SPRN_EPCR_ISIGS		0x08000000
-> +#define SPRN_EPCR_DUVD		0x04000000
-> +#define SPRN_EPCR_ICM		0x02000000
-> +#define SPRN_EPCR_GICM		0x01000000
-> +#define SPRN_EPCR_DGTMI		0x00800000
-> +#define SPRN_EPCR_DMIUH		0x00400000
-> +
-> +
 
-how about adding some comments as to what these fields are called.
+> diff -uNrp a/include/linux/pci.h b/include/linux/pci.h
+> --- a/include/linux/pci.h =C2=A0 =C2=A0 =C2=A0 2009-07-13 14:25:37.000000=
+000 -0700
+> +++ b/include/linux/pci.h =C2=A0 =C2=A0 =C2=A0 2009-07-15 10:25:37.000000=
+000 -0700
+> @@ -273,6 +273,7 @@ struct pci_dev {
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned int =C2=A0 =C2=A0ari_enabled:1; =C2=
+=A0/* ARI forwarding */
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned int =C2=A0 =C2=A0is_managed:1;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned int =C2=A0 =C2=A0is_pcie:1;
+> + =C2=A0 =C2=A0 =C2=A0 unsigned int =C2=A0 =C2=A0fndmntl_rst_rqd:1; /* De=
+v requires fundamental reset
+> */
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned int =C2=A0 =C2=A0state_saved:1;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned int =C2=A0 =C2=A0is_physfn:1;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned int =C2=A0 =C2=A0is_virtfn:1;
 
-- k
+As Ben points out, the name is awkward.  How about needs_freset ?
+
+Since this affects the entire pci subsystem, it should be documented
+properly.  The "pci error recovery" subsystem was designed to be
+usable in other architectures, and so the error recovery docs should
+take at least a paragraph to describe what this flag means, and when
+its supposed to be used.
+
+Providing the docs patch together with the pci.h patch *only* would
+probably simplify acceptance by the PCI community.
+
+--linas
