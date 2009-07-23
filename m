@@ -3,24 +3,22 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 48B5EB7C19
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 72A6FB7C53
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 23 Jul 2009 17:43:20 +1000 (EST)
+	Thu, 23 Jul 2009 17:44:57 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 82CEBDDDB2
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 17:43:19 +1000 (EST)
-Subject: Re: [PATCH 2/5] Mechanism to enable use Generic NVRAM driver for
-	different size chips
+	by ozlabs.org (Postfix) with ESMTPS id 9C0C5DDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jul 2009 17:44:56 +1000 (EST)
+Subject: Re: [PATCH 0/5] Generic NVRAM support for large MMIO devices
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <20090702161224.31202.65236.stgit@ES-J7S4D2J.amer.consind.ge.com>
+In-Reply-To: <20090702154928.31202.65107.stgit@ES-J7S4D2J.amer.consind.ge.com>
 References: <20090702154928.31202.65107.stgit@ES-J7S4D2J.amer.consind.ge.com>
-	<20090702161224.31202.65236.stgit@ES-J7S4D2J.amer.consind.ge.com>
 Content-Type: text/plain
-Date: Thu, 23 Jul 2009 17:43:08 +1000
-Message-Id: <1248334988.3367.77.camel@pasglop>
+Date: Thu, 23 Jul 2009 17:44:37 +1000
+Message-Id: <1248335077.3367.79.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,132 +31,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, 2009-07-02 at 17:12 +0100, Martyn Welch wrote:
-> Remove the reliance on a staticly defined NVRAM size, allowing platforms to support NVRAMs with sizes differing from the standard. A fall back value is provided for platforms not supporting this extension.
+> The following series allows the generic NVRAM driver to access MMIO
+> based NVRAMs. In addition it enables support for NVRAMs of sizes
+> differing from those found on PowerPC Macs (providing a safe
+> fallback). Patches are also included to enable support for the NVRAM
+> found on the GE Fanuc PPC9A, SBC310 and SBC610.
 > 
-> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+> If this patch series is unsuitable this late in the day for 2.6.31,
+> please concider it for 2.6.32.
 
-What about other archs that use this driver ? They would also need
-that new nvram_size() ...
+No major issue with the series other than the change to the generic
+nvram code which needs to not break other architectures :-) Also,
+it will probably need to go through Andrew Morton, unless there's
+a maintainer for that driver, is there ?
 
-BTW. This patch touches non-arch code so should at least be CCed to lkml
+Once you sort out that aspect of the patch series, I'm happy to take
+the rest in powerpc.git
 
 Cheers,
 Ben.
-
-> ---
-> 
->  arch/powerpc/include/asm/nvram.h |    3 +++
->  arch/powerpc/kernel/setup_32.c   |    8 ++++++++
->  drivers/char/generic_nvram.c     |   27 ++++++++++++++++++++-------
->  3 files changed, 31 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/nvram.h b/arch/powerpc/include/asm/nvram.h
-> index efde5ac..71df8b2 100644
-> --- a/arch/powerpc/include/asm/nvram.h
-> +++ b/arch/powerpc/include/asm/nvram.h
-> @@ -107,6 +107,9 @@ extern void	pmac_xpram_write(int xpaddr, u8 data);
->  /* Synchronize NVRAM */
->  extern void	nvram_sync(void);
->  
-> +/* Determine NVRAM size */
-> +extern ssize_t nvram_size(void);
-> +
->  /* Normal access to NVRAM */
->  extern unsigned char nvram_read_byte(int i);
->  extern void nvram_write_byte(unsigned char c, int i);
-> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-> index 1d15424..28f7570 100644
-> --- a/arch/powerpc/kernel/setup_32.c
-> +++ b/arch/powerpc/kernel/setup_32.c
-> @@ -208,6 +208,14 @@ void nvram_write_byte(unsigned char val, int addr)
->  }
->  EXPORT_SYMBOL(nvram_write_byte);
->  
-> +ssize_t nvram_size(void)
-> +{
-> +	if (ppc_md.nvram_size)
-> +		return ppc_md.nvram_size();
-> +	return -1;
-> +}
-> +EXPORT_SYMBOL(nvram_size);
-> +
->  void nvram_sync(void)
->  {
->  	if (ppc_md.nvram_sync)
-> diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
-> index a00869c..e5f71f3 100644
-> --- a/drivers/char/generic_nvram.c
-> +++ b/drivers/char/generic_nvram.c
-> @@ -2,7 +2,7 @@
->   * Generic /dev/nvram driver for architectures providing some
->   * "generic" hooks, that is :
->   *
-> - * nvram_read_byte, nvram_write_byte, nvram_sync
-> + * nvram_read_byte, nvram_write_byte, nvram_sync, nvram_size
->   *
->   * Note that an additional hook is supported for PowerMac only
->   * for getting the nvram "partition" informations
-> @@ -28,6 +28,8 @@
->  
->  #define NVRAM_SIZE	8192
->  
-> +static ssize_t nvram_len;
-> +
->  static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
->  {
->  	lock_kernel();
-> @@ -36,7 +38,7 @@ static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
->  		offset += file->f_pos;
->  		break;
->  	case 2:
-> -		offset += NVRAM_SIZE;
-> +		offset += nvram_len;
->  		break;
->  	}
->  	if (offset < 0) {
-> @@ -56,9 +58,9 @@ static ssize_t read_nvram(struct file *file, char __user *buf,
->  
->  	if (!access_ok(VERIFY_WRITE, buf, count))
->  		return -EFAULT;
-> -	if (*ppos >= NVRAM_SIZE)
-> +	if (*ppos >= nvram_len)
->  		return 0;
-> -	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count)
-> +	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
->  		if (__put_user(nvram_read_byte(i), p))
->  			return -EFAULT;
->  	*ppos = i;
-> @@ -74,9 +76,9 @@ static ssize_t write_nvram(struct file *file, const char __user *buf,
->  
->  	if (!access_ok(VERIFY_READ, buf, count))
->  		return -EFAULT;
-> -	if (*ppos >= NVRAM_SIZE)
-> +	if (*ppos >= nvram_len)
->  		return 0;
-> -	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count) {
-> +	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
->  		if (__get_user(c, p))
->  			return -EFAULT;
->  		nvram_write_byte(c, i);
-> @@ -133,9 +135,20 @@ static struct miscdevice nvram_dev = {
->  
->  int __init nvram_init(void)
->  {
-> +	int ret = 0;
-> +
->  	printk(KERN_INFO "Generic non-volatile memory driver v%s\n",
->  		NVRAM_VERSION);
-> -	return misc_register(&nvram_dev);
-> +	ret = misc_register(&nvram_dev);
-> +	if (ret != 0)
-> +		goto out;
-> +
-> +	nvram_len = nvram_size();
-> +	if (nvram_len < 0)
-> +		nvram_len = NVRAM_SIZE;
-> +
-> +out:
-> +	return ret;
->  }
->  
->  void __exit nvram_cleanup(void)
