@@ -1,29 +1,23 @@
-Return-Path: <cndougla@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A42F9B6F20
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E406EB70B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 01:16:42 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n6NFBgVR003724
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2009 09:11:42 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n6NFCTm8155818
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2009 09:12:29 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n6NFCRT1026120
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2009 09:12:28 -0600
-Message-Id: <8349EEAE-34B9-4D7E-837F-1320057E59D2@linux.vnet.ibm.com>
-From: Chase Douglas <cndougla@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
+	Fri, 24 Jul 2009 01:44:48 +1000 (EST)
+Message-Id: <26996510-F41B-4B4C-8AA1-80CD23E4F435@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090723160855S.fujita.tomonori@lab.ntt.co.jp>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: [PATCH] powerpc: Add compat_sys_truncate
-Date: Thu, 23 Jul 2009 11:12:26 -0400
+Subject: Re: removing addr_needs_map in struct dma_mapping_ops
+Date: Thu, 23 Jul 2009 10:44:25 -0500
+References: <B6C36B32-6861-4FD9-B8A3-E8C328687E0F@kernel.crashing.org>
+	<20090714094919V.fujita.tomonori@lab.ntt.co.jp>
+	<79B7CF70-0A66-43DA-91ED-3C8638FED141@kernel.crashing.org>
+	<20090723160855S.fujita.tomonori@lab.ntt.co.jp>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,50 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The truncate syscall has a signed long parameter, so when using a 32- 
-bit userspace with a 64-bit kernel the argument is zero-extended  
-instead of sign-extended. Adding the compat_sys_truncate function  
-fixes the issue.
 
-This was noticed during an LSB truncate test failure. The test was  
-checking for the correct error number set when truncate is called with  
-a length of -1. The test can be found at:
+On Jul 23, 2009, at 2:09 AM, FUJITA Tomonori wrote:
 
-http://bzr.linuxfoundation.org/lsb/devel/runtime-test?cmd=inventory;rev=stewb%40linux-foundation.org-20090626205411-sfb23cc0tjj7jzgm;path=modules/vsx-pcts/tset/POSIX.os/files/truncate/
+>>> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/
+>>> powerpc/platforms/86xx/mpc86xx_hpcn.c
+>>> index 6632702..d1878f3 100644
+>>> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+>>> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+>>> @@ -187,5 +187,6 @@ define_machine(mpc86xx_hpcn) {
+>>> 	.progress		= udbg_progress,
+>>> #ifdef CONFIG_PCI
+>>> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+>>> +	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
+>>> #endif
+>>> };
+>>
+>> Instead of initializing this here (which has problems if !
+>> CONFIG_SWIOTLB),
+>
+> Oops, I overlooked it.
+>
+>
+>> place this in the xxxxx_xxxx_setup_arch function in
+>> the same files, which already have an #ifdef CONFIG_SWIOTLB in which
+>> this can be embedded.
+>
+> But the xxxxx_xxxx_setup_arch function doesn't access to each device
+> so we need to add something like for_each_pci_dev()? You prefer that?
 
-Signed-off-by: Chase Douglas <cndougla@linux.vnet.ibm.com>
+No.. I think what we want is:
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/ 
-asm/systbl.h
-index 370600c..3cca167 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -95,7 +95,7 @@ SYSCALL(reboot)
-SYSX(sys_ni_syscall,compat_sys_old_readdir,sys_old_readdir)
-SYSCALL_SPU(mmap)
-SYSCALL_SPU(munmap)
--SYSCALL_SPU(truncate)
-+COMPAT_SYS_SPU(truncate)
-SYSCALL_SPU(ftruncate)
-SYSCALL_SPU(fchmod)
-SYSCALL_SPU(fchown)
-diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/ 
-sys_ppc32.c
-index bb1cfcf..da9a65b 100644
---- a/arch/powerpc/kernel/sys_ppc32.c
-+++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -343,6 +343,12 @@ off_t ppc32_lseek(unsigned int fd, u32 offset,  
-unsigned int origin)
-        return sys_lseek(fd, (int)offset, origin);
-}
+#ifdef CONFIG_SWIOTLB
+         if (lmb_end_of_DRAM() > max) {
+                 ppc_swiotlb_enable = 1;
+                 set_pci_dma_ops(&swiotlb_pci_dma_ops);
+		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+         }
+#endif
 
-+long compat_sys_truncate(const char __user * path, u32 length)
-+{
-+       /* sign extend length */
-+       return sys_truncate(path, (int)length);
-+}
-+
-/* Note: it is necessary to treat bufsiz as an unsigned int,
-  * with the corresponding cast to a signed int to insure that the
-  * proper conversion (sign extension) between the register  
-representation of a signed int (msr in 32-bit mode)
+Buts its been a few days since Becky & I chatted about this and I feel  
+like I'm forgetting something.
+
+- k
