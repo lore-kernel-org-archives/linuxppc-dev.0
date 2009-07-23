@@ -1,18 +1,18 @@
 Return-Path: <solomon@linux-wlan.com>
 Received: from cdptpa-omtalb.mail.rr.com (cdptpa-omtalb.mail.rr.com
 	[75.180.132.121])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 69776B70BA
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 3D661B70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 01:26:56 +1000 (EST)
+	Fri, 24 Jul 2009 02:31:38 +1000 (EST)
 Received: from chef.ghq.linux-wlan.com ([24.73.236.122])
 	by cdptpa-omta03.mail.rr.com with ESMTP
-	id <20090723152154267.WKHM29330@cdptpa-omta03.mail.rr.com>
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2009 15:21:54 +0000
+	id <20090723143853417.UUIG29330@cdptpa-omta03.mail.rr.com>
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2009 14:38:53 +0000
 From: Solomon Peachy <solomon@linux-wlan.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] Add support for the ESTeem 195E (PPC405EP) SBC
-Date: Thu, 23 Jul 2009 11:21:45 -0400
-Message-Id: <1248362505-17167-1-git-send-email-solomon@linux-wlan.com>
+Subject: 
+Date: Thu, 23 Jul 2009 10:38:48 -0400
+Message-Id: <1248359928-16624-1-git-send-email-solomon@linux-wlan.com>
 Cc: Solomon Peachy <solomon@linux-wlan.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,8 +23,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support for the ESTeem 195E Hotfoot SBC.  
-We've been maintaining this out-of-tree for some time now for
+This patch (against 2.6.30) adds support for the ESTeem 195E Hotfoot
+SBC.  We've been maintaining this out-of-tree for some time now for
 older kernels, but recently I ported it to the new unified powerpc tree
 with the intent of pushing it upstream.
 
