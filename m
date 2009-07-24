@@ -1,29 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B11DDB707B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 14:52:30 +1000 (EST)
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10371DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jul 2009 14:52:29 +1000 (EST)
-Message-Id: <7DC40085-9572-4C29-82EC-81CC9EE7F577@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1248387158.25467.3.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH 4/20] powerpc/mm: Add opcode definitions for tlbivax and
-	tlbsrx.
-Date: Thu, 23 Jul 2009 23:52:23 -0500
-References: <20090723055951.7867DDDD1B@ozlabs.org>
-	<883C2E2A-F904-4FDE-9363-BF813B90676D@kernel.crashing.org>
-	<1248387158.25467.3.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 59F6BB6F1F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 24 Jul 2009 18:52:40 +1000 (EST)
+Subject: Re: BUG in dma-mapping.h:218 // MESH SCSI driver not working
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stef Simoens <stef.simoens@scarlet.be>
+In-Reply-To: <4A68E1CE.4040307@scarlet.be>
+References: <4A68E1CE.4040307@scarlet.be>
+Content-Type: text/plain
+Date: Fri, 24 Jul 2009 18:52:33 +1000
+Message-Id: <1248425553.25467.20.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2009-07-24 at 00:18 +0200, Stef Simoens wrote:
+> I tried the latest 2.6.31-rc3-git3 (without any other patch).
+> However, I have the same behaviour as the patched 2.6.30 (so: no BUG, 
+> but the mesh_abort messages).
+> 
+> Anybody knows what's going wrong, and how to fix it? I've read the 
+> history of this list of June and July ... but I didn't find any other 
+> reports of the problem I'm encountering...
+> 
+Would it be possible for you to roughly find out at what kernel version
+it stopped working ? (Some kernels may need my patch to avoid crashing)
 
-On Jul 23, 2009, at 5:12 PM, Benjamin Herrenschmidt wrote:
+I have a machine with a MESH here that -appears- to work, at least it
+did last time I tried it which was a couple of weeks ago, I'll try again
+just to be sure.
 
-> On Thu, 2009-07-23 at 10:55 -0500, Kumar Gala wrote:
->> On Jul 23, 2009, at 12:59 AM, Benjamin Herrenschmidt wrote:
->>
->>> This adds the opcode definitions to ppc-opcode.h for the two
->>> instructions
->>> tlbivax and tlbsrx. as defined by Book3E 2.06
->>>
->>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> ---
->>>
->>> arch/powerpc/include/asm/ppc-opcode.h |    6 ++++++
->>> 1 file changed, 6 insertions(+)
->>
->> Do we really have binutils that don't have tlbivax properly at this
->> point?
->
-> I don't know for sure, I like being consistent with the rest though
-> and so I use those macros for all those MMU opcodes. Also means that
-> I have no problem building with my current toolchain without passing
-> a specific -mcpu option or anything like that :-)
->
-> We can change that back later if you want.
-
-ok, just wondering.. at some point we should decide which way we want  
-to go, since we use "tlbivax" today on e500/fsl-booke.
-
-- k
+Cheers,
+Ben.
