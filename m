@@ -3,15 +3,15 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BB873B7C9B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7265CB7CE8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 19:15:39 +1000 (EST)
+	Fri, 24 Jul 2009 19:15:40 +1000 (EST)
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 24 Jul 2009 19:15:26 +1000
-Subject: [PATCH 9/20] powerpc/mm: Call mmu_context_init() from ppc64 (v2)
+Date: Fri, 24 Jul 2009 19:15:27 +1000
+Subject: [PATCH 10/20] powerpc: Clean ifdef usage in copy_thread()
 In-Reply-To: <1248426902.401617.944220131651.qpush@grosgo>
-Message-Id: <20090724091539.AD25FDDD1B@ozlabs.org>
+Message-Id: <20090724091540.60EC6DDD1B@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,56 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Our 64-bit hash context handling has no init function, but 64-bit Book3E
-will use the common mmu_context_nohash.c code which does, so define an
-empty inline mmu_context_init() for 64-bit server and call it from
-our 64-bit setup_arch()
+Currently, a single ifdef covers SLB related bits and more generic ppc64
+related bits, split this in two separate ifdef's since 64-bit BookE will
+need one but not the other.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-v2. Remove whitespace addition to mmu_context_hash64.c
+ arch/powerpc/kernel/process.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
- arch/powerpc/include/asm/mmu_context.h |    7 ++++++-
- arch/powerpc/kernel/setup_64.c         |    4 ++++
- 2 files changed, 10 insertions(+), 1 deletion(-)
-
---- linux-work.orig/arch/powerpc/include/asm/mmu_context.h	2009-07-22 16:25:25.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/mmu_context.h	2009-07-22 16:25:50.000000000 +1000
-@@ -14,7 +14,6 @@
- /*
-  * Most if the context management is out of line
-  */
--extern void mmu_context_init(void);
- extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
- extern void destroy_context(struct mm_struct *mm);
+--- linux-work.orig/arch/powerpc/kernel/process.c	2009-07-22 16:30:49.000000000 +1000
++++ linux-work/arch/powerpc/kernel/process.c	2009-07-22 16:31:02.000000000 +1000
+@@ -664,6 +664,7 @@ int copy_thread(unsigned long clone_flag
+ 		sp_vsid |= SLB_VSID_KERNEL | llp;
+ 		p->thread.ksp_vsid = sp_vsid;
+ 	}
++#endif /* CONFIG_PPC_STD_MMU_64 */
  
-@@ -23,6 +22,12 @@ extern void switch_stab(struct task_stru
- extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
- extern void set_context(unsigned long id, pgd_t *pgd);
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+static inline void mmu_context_init(void) { }
-+#else
-+extern void mmu_context_init(void);
-+#endif
-+
- /*
-  * switch_mm is the entry point called from the architecture independent
-  * code in kernel/sched.c
-Index: linux-work/arch/powerpc/kernel/setup_64.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/setup_64.c	2009-07-22 16:26:23.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/setup_64.c	2009-07-22 16:26:31.000000000 +1000
-@@ -534,6 +534,10 @@ void __init setup_arch(char **cmdline_p)
- #endif
- 
- 	paging_init();
-+
-+	/* Initialize the MMU context management stuff */
-+	mmu_context_init();
-+
- 	ppc64_boot_msg(0x15, "Setup Done");
- }
- 
+ 	/*
+ 	 * The PPC64 ABI makes use of a TOC to contain function 
+@@ -671,6 +672,7 @@ int copy_thread(unsigned long clone_flag
+ 	 * to the TOC entry.  The first entry is a pointer to the actual
+ 	 * function.
+  	 */
++#ifdef CONFIG_PPC64
+ 	kregs->nip = *((unsigned long *)ret_from_fork);
+ #else
+ 	kregs->nip = (unsigned long)ret_from_fork;
