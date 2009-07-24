@@ -3,16 +3,16 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BDDF6B87D5
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0BD2EB7DA8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 19:15:51 +1000 (EST)
+	Fri, 24 Jul 2009 19:15:55 +1000 (EST)
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 24 Jul 2009 19:15:36 +1000
-Subject: [PATCH 14/20] powerpc: Add memory management headers for new 64-bit
-	BookE (v2)
+Date: Fri, 24 Jul 2009 19:15:39 +1000
+Subject: [PATCH 15/20] powerpc: Add definitions used by exception handling on
+	64-bit Book3E (v2)
 In-Reply-To: <1248426902.401617.944220131651.qpush@grosgo>
-Message-Id: <20090724091551.A4546DDD1C@ozlabs.org>
+Message-Id: <20090724091554.E4160DDD1B@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,431 +22,258 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds the PTE and pgtable format definitions, along with changes
-to the kernel memory map and other definitions related to implementing
-support for 64-bit Book3E. This also shields some asm-offset bits that
-are currently only relevant on 32-bit
+This adds various definitions and macros used by the exception and TLB
+miss handling on 64-bit BookE
 
-We also move the definition of the "linux" page size constants to
-the common mmu.h file and add a few sizes that are relevant to
-embedded processors.
+It also adds the definitions of the SPRGs used for various exception types
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-v2. Move the list of page size constants to a generic location for
-    use by all cpu types
+v2. Change __EXCEPTION_64E_H__ to _ASM_POWERPC_EXCEPTION_64E_H
 
- arch/powerpc/include/asm/mmu-book3e.h    |   27 +++++++++++
- arch/powerpc/include/asm/mmu-hash64.h    |   20 --------
- arch/powerpc/include/asm/mmu.h           |   32 ++++++++++++++
- arch/powerpc/include/asm/page.h          |    4 +
- arch/powerpc/include/asm/page_64.h       |   10 ++++
- arch/powerpc/include/asm/pgtable-ppc64.h |   61 +++++++++++++++++++--------
- arch/powerpc/include/asm/pte-book3e.h    |   70 +++++++++++++++++++++++++++++++
- arch/powerpc/include/asm/pte-common.h    |    3 +
- arch/powerpc/kernel/asm-offsets.c        |    5 +-
- 9 files changed, 194 insertions(+), 38 deletions(-)
+ arch/powerpc/include/asm/exception-64e.h |  201 +++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/reg.h           |   19 ++
+ 2 files changed, 220 insertions(+)
 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/arch/powerpc/include/asm/pte-book3e.h	2009-07-24 18:14:49.000000000 +1000
-@@ -0,0 +1,70 @@
-+#ifndef _ASM_POWERPC_PTE_BOOK3E_H
-+#define _ASM_POWERPC_PTE_BOOK3E_H
-+#ifdef __KERNEL__
-+
-+/* PTE bit definitions for processors compliant to the Book3E
-+ * architecture 2.06 or later. The position of the PTE bits
-+ * matches the HW definition of the optional Embedded Page Table
-+ * category.
-+ */
-+
-+/* Architected bits */
-+#define _PAGE_PRESENT	0x000001 /* software: pte contains a translation */
-+#define _PAGE_FILE	0x000002 /* (!present only) software: pte holds file offset */
-+#define _PAGE_SW1	0x000002
-+#define _PAGE_BAP_SR	0x000004
-+#define _PAGE_BAP_UR	0x000008
-+#define _PAGE_BAP_SW	0x000010
-+#define _PAGE_BAP_UW	0x000020
-+#define _PAGE_BAP_SX	0x000040
-+#define _PAGE_BAP_UX	0x000080
-+#define _PAGE_PSIZE_MSK	0x000f00
-+#define _PAGE_PSIZE_4K	0x000200
-+#define _PAGE_PSIZE_64K	0x000600
-+#define _PAGE_PSIZE_1M	0x000a00
-+#define _PAGE_PSIZE_16M	0x000e00
-+#define _PAGE_DIRTY	0x001000 /* C: page changed */
-+#define _PAGE_SW0	0x002000
-+#define _PAGE_U3	0x004000
-+#define _PAGE_U2	0x008000
-+#define _PAGE_U1	0x010000
-+#define _PAGE_U0	0x020000
-+#define _PAGE_ACCESSED	0x040000
-+#define _PAGE_LENDIAN	0x080000
-+#define _PAGE_GUARDED	0x100000
-+#define _PAGE_COHERENT	0x200000 /* M: enforce memory coherence */
-+#define _PAGE_NO_CACHE	0x400000 /* I: cache inhibit */
-+#define _PAGE_WRITETHRU	0x800000 /* W: cache write-through */
-+
-+/* "Higher level" linux bit combinations */
-+#define _PAGE_EXEC	_PAGE_BAP_SX /* Can be executed from potentially */
-+#define _PAGE_HWEXEC	_PAGE_BAP_UX /* .. and was cache cleaned */
-+#define _PAGE_RW	(_PAGE_BAP_SW | _PAGE_BAP_UW) /* User write permission */
-+#define _PAGE_KERNEL_RW	(_PAGE_BAP_SW | _PAGE_BAP_SR | _PAGE_DIRTY)
-+#define _PAGE_KERNEL_RO	(_PAGE_BAP_SR)
-+#define _PAGE_USER	(_PAGE_BAP_UR | _PAGE_BAP_SR) /* Can be read */
-+
-+#define _PAGE_HASHPTE	0
-+#define _PAGE_BUSY	0
-+
-+#define _PAGE_SPECIAL	_PAGE_SW0
-+
-+/* Flags to be preserved on PTE modifications */
-+#define _PAGE_HPTEFLAGS	_PAGE_BUSY
-+
-+/* Base page size */
-+#ifdef CONFIG_PPC_64K_PAGES
-+#define _PAGE_PSIZE	_PAGE_PSIZE_64K
-+#define PTE_RPN_SHIFT	(28)
-+#else
-+#define _PAGE_PSIZE	_PAGE_PSIZE_4K
-+#define	PTE_RPN_SHIFT	(24)
-+#endif
-+
-+/* On 32-bit, we never clear the top part of the PTE */
-+#ifdef CONFIG_PPC32
-+#define _PTE_NONE_MASK	0xffffffff00000000ULL
-+#endif
-+
-+#endif /* __KERNEL__ */
-+#endif /*  _ASM_POWERPC_PTE_FSL_BOOKE_H */
-Index: linux-work/arch/powerpc/include/asm/pgtable-ppc64.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc64.h	2009-07-24 18:14:35.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/pgtable-ppc64.h	2009-07-24 18:15:35.000000000 +1000
-@@ -5,11 +5,6 @@
-  * the ppc64 hashed page table.
-  */
- 
--#ifndef __ASSEMBLY__
--#include <linux/stddef.h>
--#include <asm/tlbflush.h>
--#endif /* __ASSEMBLY__ */
--
- #ifdef CONFIG_PPC_64K_PAGES
- #include <asm/pgtable-ppc64-64k.h>
- #else
-@@ -38,26 +33,46 @@
+--- linux-work.orig/arch/powerpc/include/asm/reg.h	2009-07-24 15:57:39.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/reg.h	2009-07-24 15:58:22.000000000 +1000
+@@ -652,6 +652,16 @@
+  *	- SPRG2 scratch for exception vectors
+  *	- SPRG3 unused (user visible)
+  *
++ * 64-bit embedded
++ *	- SPRG0 generic exception scratch
++ *	- SPRG2 TLB exception stack
++ *	- SPRG3 unused (user visible)
++ *	- SPRG4 unused (user visible)
++ *	- SPRG6 TLB miss scratch (user visible, sorry !)
++ *	- SPRG7 critical exception scratch
++ *	- SPRG8 machine check exception scratch
++ *	- SPRG9 debug exception scratch
++ *
+  * All 32-bit:
+  *	- SPRG3 current thread_info pointer
+  *        (virtual on BookE, physical on others)
+@@ -705,6 +715,15 @@
+ #define SPRN_SPRG_SCRATCH0	SPRN_SPRG2
  #endif
  
- /*
-- * Define the address range of the vmalloc VM area.
-+ * Define the address range of the kernel non-linear virtual area
-+ */
-+
-+#ifdef CONFIG_PPC_BOOK3E
-+#define KERN_VIRT_START ASM_CONST(0x8000000000000000)
-+#else
-+#define KERN_VIRT_START ASM_CONST(0xD000000000000000)
++#ifdef CONFIG_PPC_BOOK3E_64
++#define SPRN_SPRG_MC_SCRATCH	SPRN_SPRG8
++#define SPRN_SPRG_CRIT_SCRATCH	SPRN_SPRG7
++#define SPRN_SPRG_DBG_SCRATCH	SPRN_SPRG9
++#define SPRN_SPRG_TLB_EXFRAME	SPRN_SPRG2
++#define SPRN_SPRG_TLB_SCRATCH	SPRN_SPRG6
++#define SPRN_SPRG_GEN_SCRATCH	SPRN_SPRG0
 +#endif
-+#define KERN_VIRT_SIZE	PGTABLE_RANGE
++
+ #ifdef CONFIG_PPC_BOOK3S_32
+ #define SPRN_SPRG_SCRATCH0	SPRN_SPRG0
+ #define SPRN_SPRG_SCRATCH1	SPRN_SPRG1
+Index: linux-work/arch/powerpc/include/asm/exception-64e.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/arch/powerpc/include/asm/exception-64e.h	2009-07-24 15:59:09.000000000 +1000
+@@ -0,0 +1,201 @@
++/*
++ *  Definitions for use by exception code on Book3-E
++ *
++ *  Copyright (C) 2008 Ben. Herrenschmidt (benh@kernel.crashing.org), IBM Corp.
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ */
++#ifndef _ASM_POWERPC_EXCEPTION_64E_H
++#define _ASM_POWERPC_EXCEPTION_64E_H
 +
 +/*
-+ * The vmalloc space starts at the beginning of that region, and
-+ * occupies half of it on hash CPUs and a quarter of it on Book3E
-  */
--#define VMALLOC_START ASM_CONST(0xD000000000000000)
--#define VMALLOC_SIZE  (PGTABLE_RANGE >> 1)
--#define VMALLOC_END   (VMALLOC_START + VMALLOC_SIZE)
-+#define VMALLOC_START	KERN_VIRT_START
-+#ifdef CONFIG_PPC_BOOK3E
-+#define VMALLOC_SIZE	(KERN_VIRT_SIZE >> 2)
-+#else
-+#define VMALLOC_SIZE	(KERN_VIRT_SIZE >> 1)
-+#endif
-+#define VMALLOC_END	(VMALLOC_START + VMALLOC_SIZE)
- 
- /*
-- * Define the address ranges for MMIO and IO space :
-+ * The second half of the kernel virtual space is used for IO mappings,
-+ * it's itself carved into the PIO region (ISA and PHB IO space) and
-+ * the ioremap space
-  *
-- *  ISA_IO_BASE = VMALLOC_END, 64K reserved area
-+ *  ISA_IO_BASE = KERN_IO_START, 64K reserved area
-  *  PHB_IO_BASE = ISA_IO_BASE + 64K to ISA_IO_BASE + 2G, PHB IO spaces
-  * IOREMAP_BASE = ISA_IO_BASE + 2G to VMALLOC_START + PGTABLE_RANGE
-  */
-+#define KERN_IO_START	(KERN_VIRT_START + (KERN_VIRT_SIZE >> 1))
- #define FULL_IO_SIZE	0x80000000ul
--#define  ISA_IO_BASE	(VMALLOC_END)
--#define  ISA_IO_END	(VMALLOC_END + 0x10000ul)
-+#define  ISA_IO_BASE	(KERN_IO_START)
-+#define  ISA_IO_END	(KERN_IO_START + 0x10000ul)
- #define  PHB_IO_BASE	(ISA_IO_END)
--#define  PHB_IO_END	(VMALLOC_END + FULL_IO_SIZE)
-+#define  PHB_IO_END	(KERN_IO_START + FULL_IO_SIZE)
- #define IOREMAP_BASE	(PHB_IO_END)
--#define IOREMAP_END	(VMALLOC_START + PGTABLE_RANGE)
-+#define IOREMAP_END	(KERN_VIRT_START + KERN_VIRT_SIZE)
-+
- 
- /*
-  * Region IDs
-@@ -72,19 +87,28 @@
- #define USER_REGION_ID		(0UL)
- 
- /*
-- * Defines the address of the vmemap area, in its own region
-+ * Defines the address of the vmemap area, in its own region on
-+ * hash table CPUs and after the vmalloc space on Book3E
-  */
-+#ifdef CONFIG_PPC_BOOK3E
-+#define VMEMMAP_BASE		VMALLOC_END
-+#define VMEMMAP_END		KERN_IO_START
-+#else
- #define VMEMMAP_BASE		(VMEMMAP_REGION_ID << REGION_SHIFT)
-+#endif
- #define vmemmap			((struct page *)VMEMMAP_BASE)
- 
- 
- /*
-  * Include the PTE bits definitions
-  */
-+#ifdef CONFIG_PPC_BOOK3S
- #include <asm/pte-hash64.h>
-+#else
-+#include <asm/pte-book3e.h>
-+#endif
- #include <asm/pte-common.h>
- 
--
- #ifdef CONFIG_PPC_MM_SLICES
- #define HAVE_ARCH_UNMAPPED_AREA
- #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
-@@ -92,6 +116,9 @@
- 
- #ifndef __ASSEMBLY__
- 
-+#include <linux/stddef.h>
-+#include <asm/tlbflush.h>
-+
- /*
-  * This is the default implementation of various PTE accessors, it's
-  * used in all cases except Book3S with 64K pages where we have a
-Index: linux-work/arch/powerpc/include/asm/pte-common.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/pte-common.h	2009-07-24 18:14:35.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/pte-common.h	2009-07-24 18:14:49.000000000 +1000
-@@ -34,6 +34,9 @@
- #ifndef _PAGE_4K_PFN
- #define _PAGE_4K_PFN		0
- #endif
-+#ifndef _PAGE_SAO
-+#define _PAGE_SAO	0
-+#endif
- #ifndef _PAGE_PSIZE
- #define _PAGE_PSIZE		0
- #endif
-Index: linux-work/arch/powerpc/include/asm/mmu-book3e.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/mmu-book3e.h	2009-07-24 18:14:35.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/mmu-book3e.h	2009-07-24 18:15:35.000000000 +1000
-@@ -170,6 +170,33 @@ typedef struct {
- 	unsigned int	active;
- 	unsigned long	vdso_base;
- } mm_context_t;
-+
-+/* Page size definitions, common between 32 and 64-bit
++ * SPRGs usage an other considerations...
 + *
-+ *    shift : is the "PAGE_SHIFT" value for that page size
-+ *    penc  : is the pte encoding mask
++ * Since TLB miss and other standard exceptions can be interrupted by
++ * critical exceptions which can themselves be interrupted by machine
++ * checks, and since the two later can themselves cause a TLB miss when
++ * hitting the linear mapping for the kernel stacks, we need to be a bit
++ * creative on how we use SPRGs.
 + *
-+ */
-+struct mmu_psize_def
-+{
-+	unsigned int	shift;	/* number of bits */
-+	unsigned int	enc;	/* PTE encoding */
-+};
-+extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
-+
-+/* The page sizes use the same names as 64-bit hash but are
-+ * constants
-+ */
-+#if defined(CONFIG_PPC_4K_PAGES)
-+#define mmu_virtual_psize	MMU_PAGE_4K
-+#elif defined(CONFIG_PPC_64K_PAGES)
-+#define mmu_virtual_psize	MMU_PAGE_64K
-+#else
-+#error Unsupported page size
-+#endif
-+
-+extern int mmu_linear_psize;
-+
- #endif /* !__ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_MMU_BOOK3E_H_ */
-Index: linux-work/arch/powerpc/include/asm/page_64.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/page_64.h	2009-07-24 18:14:35.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/page_64.h	2009-07-24 18:14:49.000000000 +1000
-@@ -135,12 +135,22 @@ extern void slice_set_range_psize(struct
- #endif /* __ASSEMBLY__ */
- #else
- #define slice_init()
-+#ifdef CONFIG_PPC_STD_MMU_64
- #define get_slice_psize(mm, addr)	((mm)->context.user_psize)
- #define slice_set_user_psize(mm, psize)		\
- do {						\
- 	(mm)->context.user_psize = (psize);	\
- 	(mm)->context.sllp = SLB_VSID_USER | mmu_psize_defs[(psize)].sllp; \
- } while (0)
-+#else /* CONFIG_PPC_STD_MMU_64 */
-+#ifdef CONFIG_PPC_64K_PAGES
-+#define get_slice_psize(mm, addr)	MMU_PAGE_64K
-+#else /* CONFIG_PPC_64K_PAGES */
-+#define get_slice_psize(mm, addr)	MMU_PAGE_4K
-+#endif /* !CONFIG_PPC_64K_PAGES */
-+#define slice_set_user_psize(mm, psize)	do { BUG(); } while(0)
-+#endif /* !CONFIG_PPC_STD_MMU_64 */
-+
- #define slice_set_range_psize(mm, start, len, psize)	\
- 	slice_set_user_psize((mm), (psize))
- #define slice_mm_new_context(mm)	1
-Index: linux-work/arch/powerpc/include/asm/mmu.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/mmu.h	2009-07-24 18:14:35.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/mmu.h	2009-07-24 18:21:12.000000000 +1000
-@@ -17,6 +17,7 @@
- #define MMU_FTR_TYPE_40x		ASM_CONST(0x00000004)
- #define MMU_FTR_TYPE_44x		ASM_CONST(0x00000008)
- #define MMU_FTR_TYPE_FSL_E		ASM_CONST(0x00000010)
-+#define MMU_FTR_TYPE_3E			ASM_CONST(0x00000020)
- 
- /*
-  * This is individual features
-@@ -73,6 +74,36 @@ extern void early_init_mmu_secondary(voi
- 
- #endif /* !__ASSEMBLY__ */
- 
-+/* The kernel use the constants below to index in the page sizes array.
-+ * The use of fixed constants for this purpose is better for performances
-+ * of the low level hash refill handlers.
++ * The base idea is that we have one SRPG reserved for critical and one
++ * for machine check interrupts. Those are used to save a GPR that can
++ * then be used to get the PACA, and store as much context as we need
++ * to save in there. That includes saving the SPRGs used by the TLB miss
++ * handler for linear mapping misses and the associated SRR0/1 due to
++ * the above re-entrancy issue.
 + *
-+ * A non supported page size has a "shift" field set to 0
++ * So here's the current usage pattern. It's done regardless of which
++ * SPRGs are user-readable though, thus we might have to change some of
++ * this later. In order to do that more easily, we use special constants
++ * for naming them
 + *
-+ * Any new page size being implemented can get a new entry in here. Whether
-+ * the kernel will use it or not is a different matter though. The actual page
-+ * size used by hugetlbfs is not defined here and may be made variable
-+ *
-+ * Note: This array ended up being a false good idea as it's growing to the
-+ * point where I wonder if we should replace it with something different,
-+ * to think about, feedback welcome. --BenH.
++ * WARNING: Some of these SPRGs are user readable. We need to do something
++ * about it as some point by making sure they can't be used to leak kernel
++ * critical data
 + */
 +
-+/* There are #define as they have to be used in assembly */
-+#define MMU_PAGE_4K	0
-+#define MMU_PAGE_16K	1
-+#define MMU_PAGE_64K	2
-+#define MMU_PAGE_64K_AP	3	/* "Admixed pages" (hash64 only) */
-+#define MMU_PAGE_256K	4
-+#define MMU_PAGE_1M	5
-+#define MMU_PAGE_8M	6
-+#define MMU_PAGE_16M	7
-+#define MMU_PAGE_256M	8
-+#define MMU_PAGE_1G	9
-+#define MMU_PAGE_16G	10
-+#define MMU_PAGE_64G	11
-+#define MMU_PAGE_COUNT	12
 +
- 
- #if defined(CONFIG_PPC_STD_MMU_64)
- /* 64-bit classic hash table MMU */
-@@ -94,5 +125,6 @@ extern void early_init_mmu_secondary(voi
- #  include <asm/mmu-8xx.h>
- #endif
- 
++/* We are out of SPRGs so we save some things in the PACA. The normal
++ * exception frame is smaller than the CRIT or MC one though
++ */
++#define EX_R1		(0 * 8)
++#define EX_CR		(1 * 8)
++#define EX_R10		(2 * 8)
++#define EX_R11		(3 * 8)
++#define EX_R14		(4 * 8)
++#define EX_R15		(5 * 8)
 +
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_MMU_H_ */
-Index: linux-work/arch/powerpc/kernel/asm-offsets.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/asm-offsets.c	2009-07-24 18:14:35.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/asm-offsets.c	2009-07-24 18:19:55.000000000 +1000
-@@ -52,9 +52,11 @@
- #include <linux/kvm_host.h>
- #endif
- 
-+#ifdef CONFIG_PPC32
- #if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
- #include "head_booke.h"
- #endif
-+#endif
- 
- #if defined(CONFIG_FSL_BOOKE)
- #include "../mm/mmu_decl.h"
-@@ -260,6 +262,7 @@ int main(void)
- 	DEFINE(_SRR1, STACK_FRAME_OVERHEAD+sizeof(struct pt_regs)+8);
- #endif /* CONFIG_PPC64 */
- 
-+#if defined(CONFIG_PPC32)
- #if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
- 	DEFINE(EXC_LVL_SIZE, STACK_EXC_LVL_FRAME_SIZE);
- 	DEFINE(MAS0, STACK_INT_FRAME_SIZE+offsetof(struct exception_regs, mas0));
-@@ -278,7 +281,7 @@ int main(void)
- 	DEFINE(_DSRR1, STACK_INT_FRAME_SIZE+offsetof(struct exception_regs, dsrr1));
- 	DEFINE(SAVED_KSP_LIMIT, STACK_INT_FRAME_SIZE+offsetof(struct exception_regs, saved_ksp_limit));
- #endif
--
-+#endif
- 	DEFINE(CLONE_VM, CLONE_VM);
- 	DEFINE(CLONE_UNTRACED, CLONE_UNTRACED);
- 
-Index: linux-work/arch/powerpc/include/asm/page.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/page.h	2009-07-24 18:14:35.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/page.h	2009-07-24 18:14:49.000000000 +1000
-@@ -139,7 +139,11 @@ extern phys_addr_t kernstart_addr;
-  * Don't compare things with KERNELBASE or PAGE_OFFSET to test for
-  * "kernelness", use is_kernel_addr() - it should do what you want.
-  */
-+#ifdef CONFIG_PPC_BOOK3E_64
-+#define is_kernel_addr(x)	((x) >= 0x8000000000000000ul)
++/* The TLB miss exception uses different slots */
++
++#define EX_TLB_R10	( 0 * 8)
++#define EX_TLB_R11	( 1 * 8)
++#define EX_TLB_R12	( 2 * 8)
++#define EX_TLB_R13	( 3 * 8)
++#define EX_TLB_R14	( 4 * 8)
++#define EX_TLB_R15	( 5 * 8)
++#define EX_TLB_R16	( 6 * 8)
++#define EX_TLB_CR	( 7 * 8)
++#define EX_TLB_DEAR	( 8 * 8) /* Level 0 and 2 only */
++#define EX_TLB_ESR	( 9 * 8) /* Level 0 and 2 only */
++#define EX_TLB_SRR0	(10 * 8)
++#define EX_TLB_SRR1	(11 * 8)
++#define EX_TLB_MMUCR0	(12 * 8) /* Level 0 */
++#define EX_TLB_MAS1	(12 * 8) /* Level 0 */
++#define EX_TLB_MAS2	(13 * 8) /* Level 0 */
++#ifdef CONFIG_BOOK3E_MMU_TLB_STATS
++#define EX_TLB_R8	(14 * 8)
++#define EX_TLB_R9	(15 * 8)
++#define EX_TLB_LR	(16 * 8)
++#define EX_TLB_SIZE	(17 * 8)
 +#else
- #define is_kernel_addr(x)	((x) >= PAGE_OFFSET)
++#define EX_TLB_SIZE	(14 * 8)
 +#endif
- 
- #ifndef __ASSEMBLY__
- 
-Index: linux-work/arch/powerpc/include/asm/mmu-hash64.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/mmu-hash64.h	2009-07-24 18:14:35.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/mmu-hash64.h	2009-07-24 18:14:49.000000000 +1000
-@@ -139,26 +139,6 @@ struct mmu_psize_def
- #endif /* __ASSEMBLY__ */
- 
- /*
-- * The kernel use the constants below to index in the page sizes array.
-- * The use of fixed constants for this purpose is better for performances
-- * of the low level hash refill handlers.
-- *
-- * A non supported page size has a "shift" field set to 0
-- *
-- * Any new page size being implemented can get a new entry in here. Whether
-- * the kernel will use it or not is a different matter though. The actual page
-- * size used by hugetlbfs is not defined here and may be made variable
-- */
--
--#define MMU_PAGE_4K		0	/* 4K */
--#define MMU_PAGE_64K		1	/* 64K */
--#define MMU_PAGE_64K_AP		2	/* 64K Admixed (in a 4K segment) */
--#define MMU_PAGE_1M		3	/* 1M */
--#define MMU_PAGE_16M		4	/* 16M */
--#define MMU_PAGE_16G		5	/* 16G */
--#define MMU_PAGE_COUNT		6
--
--/*
-  * Segment sizes.
-  * These are the values used by hardware in the B field of
-  * SLB entries and the first dword of MMU hashtable entries.
++
++#define	START_EXCEPTION(label)						\
++	.globl exc_##label##_book3e;					\
++exc_##label##_book3e:
++
++/* TLB miss exception prolog
++ *
++ * This prolog handles re-entrancy (up to 3 levels supported in the PACA
++ * though we currently don't test for overflow). It provides you with a
++ * re-entrancy safe working space of r10...r16 and CR with r12 being used
++ * as the exception area pointer in the PACA for that level of re-entrancy
++ * and r13 containing the PACA pointer.
++ *
++ * SRR0 and SRR1 are saved, but DEAR and ESR are not, since they don't apply
++ * as-is for instruction exceptions. It's up to the actual exception code
++ * to save them as well if required.
++ */
++#define TLB_MISS_PROLOG							    \
++	mtspr	SPRN_SPRG_TLB_SCRATCH,r12;				    \
++	mfspr	r12,SPRN_SPRG_TLB_EXFRAME;				    \
++	std	r10,EX_TLB_R10(r12);					    \
++	mfcr	r10;							    \
++	std	r11,EX_TLB_R11(r12);					    \
++	mfspr	r11,SPRN_SPRG_TLB_SCRATCH;				    \
++	std	r13,EX_TLB_R13(r12);					    \
++	mfspr	r13,SPRN_SPRG_PACA;					    \
++	std	r14,EX_TLB_R14(r12);					    \
++	addi	r14,r12,EX_TLB_SIZE;					    \
++	std	r15,EX_TLB_R15(r12);					    \
++	mfspr	r15,SPRN_SRR1;						    \
++	std	r16,EX_TLB_R16(r12);					    \
++	mfspr	r16,SPRN_SRR0;						    \
++	std	r10,EX_TLB_CR(r12);					    \
++	std	r11,EX_TLB_R12(r12);					    \
++	mtspr	SPRN_SPRG_TLB_EXFRAME,r14;				    \
++	std	r15,EX_TLB_SRR1(r12);					    \
++	std	r16,EX_TLB_SRR0(r12);					    \
++	TLB_MISS_PROLOG_STATS
++
++/* And these are the matching epilogs that restores things
++ *
++ * There are 3 epilogs:
++ *
++ * - SUCCESS       : Unwinds one level
++ * - ERROR         : restore from level 0 and reset
++ * - ERROR_SPECIAL : restore from current level and reset
++ *
++ * Normal errors use ERROR, that is, they restore the initial fault context
++ * and trigger a fault. However, there is a special case for linear mapping
++ * errors. Those should basically never happen, but if they do happen, we
++ * want the error to point out the context that did that linear mapping
++ * fault, not the initial level 0 (basically, we got a bogus PGF or something
++ * like that). For userland errors on the linear mapping, there is no
++ * difference since those are always level 0 anyway
++ */
++
++#define TLB_MISS_RESTORE(freg)						    \
++	ld	r14,EX_TLB_CR(r12);					    \
++	ld	r10,EX_TLB_R10(r12);					    \
++	ld	r15,EX_TLB_SRR0(r12);					    \
++	ld	r16,EX_TLB_SRR1(r12);					    \
++	mtspr	SPRN_SPRG_TLB_EXFRAME,freg;				    \
++	ld	r11,EX_TLB_R11(r12);					    \
++	mtcr	r14;							    \
++	ld	r13,EX_TLB_R13(r12);					    \
++	ld	r14,EX_TLB_R14(r12);					    \
++	mtspr	SPRN_SRR0,r15;						    \
++	ld	r15,EX_TLB_R15(r12);					    \
++	mtspr	SPRN_SRR1,r16;						    \
++	TLB_MISS_RESTORE_STATS						    \
++	ld	r16,EX_TLB_R16(r12);					    \
++	ld	r12,EX_TLB_R12(r12);					    \
++
++#define TLB_MISS_EPILOG_SUCCESS						    \
++	TLB_MISS_RESTORE(r12)
++
++#define TLB_MISS_EPILOG_ERROR						    \
++	addi	r12,r13,PACA_EXTLB;					    \
++	TLB_MISS_RESTORE(r12)
++
++#define TLB_MISS_EPILOG_ERROR_SPECIAL					    \
++	addi	r11,r13,PACA_EXTLB;					    \
++	TLB_MISS_RESTORE(r11)
++
++#ifdef CONFIG_BOOK3E_MMU_TLB_STATS
++#define TLB_MISS_PROLOG_STATS						    \
++	mflr	r10;							    \
++	std	r8,EX_TLB_R8(r12);					    \
++	std	r9,EX_TLB_R9(r12);					    \
++	std	r10,EX_TLB_LR(r12);
++#define TLB_MISS_RESTORE_STATS					            \
++	ld	r16,EX_TLB_LR(r12);					    \
++	ld	r9,EX_TLB_R9(r12);					    \
++	ld	r8,EX_TLB_R8(r12);					    \
++	mtlr	r16;
++#define TLB_MISS_STATS_D(name)						    \
++	addi	r9,r13,MMSTAT_DSTATS+name;				    \
++	bl	.tlb_stat_inc;
++#define TLB_MISS_STATS_I(name)						    \
++	addi	r9,r13,MMSTAT_ISTATS+name;				    \
++	bl	.tlb_stat_inc;
++#define TLB_MISS_STATS_X(name)						    \
++	ld	r8,PACA_EXTLB+EX_TLB_ESR(r13);				    \
++	cmpdi	cr2,r8,-1;						    \
++	beq	cr2,61f;						    \
++	addi	r9,r13,MMSTAT_DSTATS+name;				    \
++	b	62f;							    \
++61:	addi	r9,r13,MMSTAT_ISTATS+name;				    \
++62:	bl	.tlb_stat_inc;
++#define TLB_MISS_STATS_SAVE_INFO					    \
++	std	r14,EX_TLB_ESR(r12);	/* save ESR */			    \
++
++
++#else
++#define TLB_MISS_PROLOG_STATS
++#define TLB_MISS_RESTORE_STATS
++#define TLB_MISS_STATS_D(name)
++#define TLB_MISS_STATS_I(name)
++#define TLB_MISS_STATS_X(name)
++#define TLB_MISS_STATS_Y(name)
++#define TLB_MISS_STATS_SAVE_INFO
++#endif
++
++
++#endif /* _ASM_POWERPC_EXCEPTION_64E_H */
++
