@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <benh@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 59F6BB6F1F
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A7130B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 18:52:40 +1000 (EST)
-Subject: Re: BUG in dma-mapping.h:218 // MESH SCSI driver not working
+	Fri, 24 Jul 2009 19:15:16 +1000 (EST)
+To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stef Simoens <stef.simoens@scarlet.be>
-In-Reply-To: <4A68E1CE.4040307@scarlet.be>
-References: <4A68E1CE.4040307@scarlet.be>
-Content-Type: text/plain
-Date: Fri, 24 Jul 2009 18:52:33 +1000
-Message-Id: <1248425553.25467.20.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 24 Jul 2009 19:15:02 +1000
+Subject: [PATCH 0/20] powerpc: base 64-bit Book3E processor support (v2)
+Message-Id: <1248426902.401617.944220131651.qpush@grosgo>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-07-24 at 00:18 +0200, Stef Simoens wrote:
-> I tried the latest 2.6.31-rc3-git3 (without any other patch).
-> However, I have the same behaviour as the patched 2.6.30 (so: no BUG, 
-> but the mesh_abort messages).
-> 
-> Anybody knows what's going wrong, and how to fix it? I've read the 
-> history of this list of June and July ... but I didn't find any other 
-> reports of the problem I'm encountering...
-> 
-Would it be possible for you to roughly find out at what kernel version
-it stopped working ? (Some kernels may need my patch to avoid crashing)
+Here is a series of patches that implement some basic support
+for 64-bit Book3E processors that comply to architecture 2.06.
 
-I have a machine with a MESH here that -appears- to work, at least it
-did last time I tried it which was a couple of weeks ago, I'll try again
-just to be sure.
+There is no specific processor announced yet. The patches make
+some shortcut which means they currently rely on an implementation
+that supports MMU v2 with support for the "HES" feature (HW entry
+select) and with support for the "TLB reservation" feature. They
+also assume a single unified TLB array. I shouldn't be very hard
+to implement support for other variants of the architecture on
+top of this though.
 
-Cheers,
-Ben.
+The current set of patch has no proper support yet for hugetlb,
+nor for "special" interrupt levels (debug, critical and machine
+check). Some minimal support for debug/critical levels is provided
+specifically for the "Debug" interrupt (single step etc...) only
+when it occurs from within user space code. 
+
+The intend is to merge these in 2.6.32. They rely on pretty much
+all the other patches I've been posting lately including the
+generic changes to add the virtual address argument to pte_free_tlb.
+
+v2. Various fixes, some addressing comments recieved and a whole
+bunch fixing other issues including breakage of existing platforms
