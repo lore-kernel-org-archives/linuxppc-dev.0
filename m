@@ -3,21 +3,22 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C6BF2B7F32
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D4A81B70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 25 Jul 2009 07:42:32 +1000 (EST)
+	Sat, 25 Jul 2009 07:55:07 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id E14ACDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Jul 2009 07:42:31 +1000 (EST)
-Date: Sat, 25 Jul 2009 01:42:30 +0400
+	by ozlabs.org (Postfix) with ESMTP id 0935DDDD01
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Jul 2009 07:55:07 +1000 (EST)
+Date: Sat, 25 Jul 2009 01:55:05 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 2/2] powerpc/83xx: Add eSDHC support for MPC837xE-RDB/WLAN
-	boards
-Message-ID: <20090724214230.GB2718@oksana.dev.rtsoft.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] sdhci: Get rid of "frequency too high" flood when using eSDHC
+Message-ID: <20090724215505.GA5726@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: Ben Dooks <ben@fluff.org>, sdhci-devel@lists.ossman.eu,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Pierre Ossman <pierre@ossman.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,130 +28,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Actually, the support is already there, but it requires newer U-Boots
-(to fill-in clock-frequency, and setup pin multiplexing).
+Since commit 8dfd0374be84793360db7fff2e635d2cd3bbcb21 ("MMC core: limit
+minimum initialization frequency to 400kHz") MMC core checks for minimum
+frequency, and that causes following messages flood when using eSDHC
+controllers:
 
-Though, it appears that on RDB boards USBB pins aren't multiplexed
-between USB and eSDHC (unlike MDS boards, where USB and eSDHC share
-pctl and pwrfault pins).
+  ...
+  mmc0: Minimum clock frequency too high for identification mode
+  mmc0: Minimum clock frequency too high for identification mode
+  ...
 
-So, for RDB boards we can safely setup pinmux and manually fill-in
-clock-frequency, thus making eSDHC work even with older u-boots.
+The warnings are legitimate, since if we'd use 133 MHz clocks for
+standard SDHCI controllers, we'd not able to scale frequency down
+to 400 kHz.
+
+But eSDHC controllers have a non-standard SD clock management, so
+we can divide clock by 256 * 16, not just 256.
+
+This patch introduces get_min_clock() callback for sdhci core and
+implements it for sdhci-of driver, and thus fixes the issue.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/boot/dts/mpc8377_rdb.dts     |    2 +-
- arch/powerpc/boot/dts/mpc8378_rdb.dts     |    2 +-
- arch/powerpc/boot/dts/mpc8379_rdb.dts     |    2 +-
- arch/powerpc/platforms/83xx/mpc837x_rdb.c |   23 +++++++++++++++++++++++
- arch/powerpc/platforms/83xx/mpc83xx.h     |    4 ++++
- 5 files changed, 30 insertions(+), 3 deletions(-)
+ drivers/mmc/host/sdhci-of.c |    8 ++++++++
+ drivers/mmc/host/sdhci.c    |    5 ++++-
+ drivers/mmc/host/sdhci.h    |    1 +
+ 3 files changed, 13 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index 224b4f0..1913974 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -174,7 +174,7 @@
- 				interrupts = <42 0x8>;
- 				interrupt-parent = <&ipic>;
- 				/* Filled in by U-Boot */
--				clock-frequency = <0>;
-+				clock-frequency = <111111111>;
- 			};
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 474ea2f..4306901 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -174,7 +174,7 @@
- 				interrupts = <42 0x8>;
- 				interrupt-parent = <&ipic>;
- 				/* Filled in by U-Boot */
--				clock-frequency = <0>;
-+				clock-frequency = <111111111>;
- 			};
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index d4838af..897b70c 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -172,7 +172,7 @@
- 				interrupts = <42 0x8>;
- 				interrupt-parent = <&ipic>;
- 				/* Filled in by U-Boot */
--				clock-frequency = <0>;
-+				clock-frequency = <111111111>;
- 			};
- 		};
- 
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-index 91d19ab..a1908d2 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-@@ -17,10 +17,32 @@
- #include <asm/time.h>
- #include <asm/ipic.h>
- #include <asm/udbg.h>
-+#include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- 
- #include "mpc83xx.h"
- 
-+static void mpc837x_rdb_sd_cfg(void)
-+{
-+	void __iomem *im;
-+
-+	im = ioremap(get_immrbase(), 0x1000);
-+	if (!im) {
-+		WARN_ON(1);
-+		return;
-+	}
-+
-+	/*
-+	 * On RDB boards (in contrast to MDS) USBB pins are used for SD only,
-+	 * so we can safely mux them away from the USB block.
-+	 */
-+	clrsetbits_be32(im + MPC83XX_SICRL_OFFS, MPC837X_SICRL_USBB_MASK,
-+						 MPC837X_SICRL_SD);
-+	clrsetbits_be32(im + MPC83XX_SICRH_OFFS, MPC837X_SICRH_SPI_MASK,
-+						 MPC837X_SICRH_SD);
-+	iounmap(im);
-+}
-+
- /* ************************************************************************
-  *
-  * Setup the architecture
-@@ -42,6 +64,7 @@ static void __init mpc837x_rdb_setup_arch(void)
- 		mpc83xx_add_bridge(np);
- #endif
- 	mpc837x_usb_cfg();
-+	mpc837x_rdb_sd_cfg();
+diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
+index d79fa55..9088443 100644
+--- a/drivers/mmc/host/sdhci-of.c
++++ b/drivers/mmc/host/sdhci-of.c
+@@ -158,6 +158,13 @@ static unsigned int esdhc_get_max_clock(struct sdhci_host *host)
+ 	return of_host->clock;
  }
  
- static struct of_device_id mpc837x_ids[] = {
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index d1dc5b0..0fea881 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -30,6 +30,8 @@
- #define MPC8315_SICRL_USB_ULPI     0x00000054
- #define MPC837X_SICRL_USB_MASK     0xf0000000
- #define MPC837X_SICRL_USB_ULPI     0x50000000
-+#define MPC837X_SICRL_USBB_MASK    0x30000000
-+#define MPC837X_SICRL_SD           0x20000000
++static unsigned int esdhc_get_min_clock(struct sdhci_host *host)
++{
++	struct sdhci_of_host *of_host = sdhci_priv(host);
++
++	return of_host->clock / 256 / 16;
++}
++
+ static unsigned int esdhc_get_timeout_clock(struct sdhci_host *host)
+ {
+ 	struct sdhci_of_host *of_host = sdhci_priv(host);
+@@ -184,6 +191,7 @@ static struct sdhci_of_data sdhci_esdhc = {
+ 		.set_clock = esdhc_set_clock,
+ 		.enable_dma = esdhc_enable_dma,
+ 		.get_max_clock = esdhc_get_max_clock,
++		.get_min_clock = esdhc_get_min_clock,
+ 		.get_timeout_clock = esdhc_get_timeout_clock,
+ 	},
+ };
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 6779b4e..62041c7 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -1766,7 +1766,10 @@ int sdhci_add_host(struct sdhci_host *host)
+ 	 * Set host parameters.
+ 	 */
+ 	mmc->ops = &sdhci_ops;
+-	mmc->f_min = host->max_clk / 256;
++	if (host->ops->get_min_clock)
++		mmc->f_min = host->ops->get_min_clock(host);
++	else
++		mmc->f_min = host->max_clk / 256;
+ 	mmc->f_max = host->max_clk;
+ 	mmc->caps = MMC_CAP_SDIO_IRQ;
  
- /* system i/o configuration register high */
- #define MPC83XX_SICRH_OFFS         0x118
-@@ -38,6 +40,8 @@
- #define MPC831X_SICRH_USB_ULPI     0x000000a0
- #define MPC8315_SICRH_USB_MASK     0x0000ff00
- #define MPC8315_SICRH_USB_ULPI     0x00000000
-+#define MPC837X_SICRH_SPI_MASK     0x00000003
-+#define MPC837X_SICRH_SD           0x00000001
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 831ddf7..c77e9ff 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -302,6 +302,7 @@ struct sdhci_ops {
  
- /* USB Control Register */
- #define FSL_USB2_CONTROL_OFFS      0x500
+ 	int		(*enable_dma)(struct sdhci_host *host);
+ 	unsigned int	(*get_max_clock)(struct sdhci_host *host);
++	unsigned int	(*get_min_clock)(struct sdhci_host *host);
+ 	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
+ };
+ 
 -- 
 1.6.3.3
