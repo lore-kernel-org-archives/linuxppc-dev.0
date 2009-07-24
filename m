@@ -3,14 +3,15 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A7130B6F1E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6F808B7C10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 24 Jul 2009 19:15:16 +1000 (EST)
+	Fri, 24 Jul 2009 19:15:19 +1000 (EST)
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 24 Jul 2009 19:15:02 +1000
-Subject: [PATCH 0/20] powerpc: base 64-bit Book3E processor support (v2)
-Message-Id: <1248426902.401617.944220131651.qpush@grosgo>
+Date: Fri, 24 Jul 2009 19:15:04 +1000
+Subject: [PATCH 1/20] powerpc/mm: Fix misplaced #endif in pgtable-ppc64-64k.h
+In-Reply-To: <1248426902.401617.944220131651.qpush@grosgo>
+Message-Id: <20090724091519.600E3DDD1B@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,26 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Here is a series of patches that implement some basic support
-for 64-bit Book3E processors that comply to architecture 2.06.
+A misplaced #endif causes more definitions than intended to be
+protected by #ifndef __ASSEMBLY__. This breaks upcoming 64-bit
+BookE support patch when using 64k pages.
 
-There is no specific processor announced yet. The patches make
-some shortcut which means they currently rely on an implementation
-that supports MMU v2 with support for the "HES" feature (HW entry
-select) and with support for the "TLB reservation" feature. They
-also assume a single unified TLB array. I shouldn't be very hard
-to implement support for other variants of the architecture on
-top of this though.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-The current set of patch has no proper support yet for hugetlb,
-nor for "special" interrupt levels (debug, critical and machine
-check). Some minimal support for debug/critical levels is provided
-specifically for the "Debug" interrupt (single step etc...) only
-when it occurs from within user space code. 
+ arch/powerpc/include/asm/pgtable-ppc64-64k.h |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-The intend is to merge these in 2.6.32. They rely on pretty much
-all the other patches I've been posting lately including the
-generic changes to add the virtual address argument to pte_free_tlb.
-
-v2. Various fixes, some addressing comments recieved and a whole
-bunch fixing other issues including breakage of existing platforms
+--- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc64-64k.h	2009-07-22 11:45:34.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/pgtable-ppc64-64k.h	2009-07-22 11:45:47.000000000 +1000
+@@ -10,10 +10,10 @@
+ #define PGD_INDEX_SIZE  4
+ 
+ #ifndef __ASSEMBLY__
+-
+ #define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
+ #define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
+ #define PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
++#endif	/* __ASSEMBLY__ */
+ 
+ #define PTRS_PER_PTE	(1 << PTE_INDEX_SIZE)
+ #define PTRS_PER_PMD	(1 << PMD_INDEX_SIZE)
+@@ -32,8 +32,6 @@
+ #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
+ #define PGDIR_MASK	(~(PGDIR_SIZE-1))
+ 
+-#endif	/* __ASSEMBLY__ */
+-
+ /* Bits to mask out from a PMD to get to the PTE page */
+ #define PMD_MASKED_BITS		0x1ff
+ /* Bits to mask out from a PGD/PUD to get to the PMD page */
