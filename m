@@ -1,20 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 768D7B708B
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A5663B7099
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 27 Jul 2009 09:38:30 +1000 (EST)
-Subject: Re:
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Solomon Peachy <solomon@linux-wlan.com>
-In-Reply-To: <1248359928-16624-1-git-send-email-solomon@linux-wlan.com>
-References: <1248359928-16624-1-git-send-email-solomon@linux-wlan.com>
-Content-Type: text/plain
-Date: Mon, 27 Jul 2009 09:38:18 +1000
-Message-Id: <1248651498.28464.16.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Mon, 27 Jul 2009 10:12:09 +1000 (EST)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 872A6DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 10:12:09 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id n6RA1bQL016107
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 20:01:37 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n6R0C8Dc483346
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 10:12:08 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n6R0C7T5015524
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 10:12:08 +1000
+Date: Mon, 27 Jul 2009 05:41:52 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org
+Subject: [Patch 0/6] [Patch 0/6] PPC64-HWBKPT: Hardware Breakpoint
+	interfaces - ver VIII
+Message-ID: <20090727001152.GA13562@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org, Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,578 +42,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-07-23 at 10:38 -0400, Solomon Peachy wrote:
-> This patch (against 2.6.30) adds support for the ESTeem 195E Hotfoot
-> SBC.  We've been maintaining this out-of-tree for some time now for
-> older kernels, but recently I ported it to the new unified powerpc tree
-> with the intent of pushing it upstream.
+Hi David,
+	I'm back with a new version of patches after a brief hiatus!
 
-Please always have a subject or it will end up in patchwork without
-a link I can clock on :-)
+After much deliberation about modifying the code to change the timing of signal
+delivery to user-space, it has been decided to retain the existing behaviour
+i.e. SIGTRAP delivered to user-space after execution of causative instruction
+although exception is raised before execution of it.
 
-Cheersm
-Ben.
+One-shot behaviour will now be restricted only to ptrace requests. Kernel-space
+and non-ptrace user-space requests will result in persistent breakpoints.
 
-> The board uses an ancient version of u-boot and a slightly mangled
-> verison of the oft-abused ppcboot header.
-> 
-> There are several variants of the SBC deployed, single/dual
-> ethernet/serial, and also 4MB/8MB flash units.  In the interest of
-> having a single kernel image boot on all boards, the cuboot shim detects
-> the differences and mangles the DTS tree appropriately.
-> 
-> With the exception of the CF interface that was never populated on
-> production boards, this code/DTS supports all boardpop options.
-> 
-> Signed-off-by:  Solomon Peachy <solomon@linux-wlan.com>
-> 
-> diff -Naur linux-2.6.30/arch/powerpc/boot/Makefile linux-2.6.30.hotfoot/arch/powerpc/boot/Makefile
-> --- linux-2.6.30/arch/powerpc/boot/Makefile	2009-06-09 23:05:27.000000000 -0400
-> +++ linux-2.6.30.hotfoot/arch/powerpc/boot/Makefile	2009-07-07 12:55:18.000000000 -0400
-> @@ -39,6 +39,7 @@
->  
->  $(obj)/4xx.o: BOOTCFLAGS += -mcpu=405
->  $(obj)/ebony.o: BOOTCFLAGS += -mcpu=405
-> +$(obj)/cuboot-hotfoot.o: BOOTCFLAGS += -mcpu=405
->  $(obj)/cuboot-taishan.o: BOOTCFLAGS += -mcpu=405
->  $(obj)/cuboot-katmai.o: BOOTCFLAGS += -mcpu=405
->  $(obj)/cuboot-acadia.o: BOOTCFLAGS += -mcpu=405
-> @@ -67,7 +68,7 @@
->  		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
->  		fsl-soc.c mpc8xx.c pq2.c
->  src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c \
-> -		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
-> +		cuboot-ebony.c cuboot-hotfoot.c treeboot-ebony.c prpmc2800.c \
->  		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
->  		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c \
->  		cuboot-bamboo.c cuboot-mpc7448hpc2.c cuboot-taishan.c \
-> @@ -190,6 +191,7 @@
->  
->  # Board ports in arch/powerpc/platform/40x/Kconfig
->  image-$(CONFIG_EP405)			+= dtbImage.ep405
-> +image-$(CONFIG_HOTFOOT)			+= cuImage.hotfoot
->  image-$(CONFIG_WALNUT)			+= treeImage.walnut
->  image-$(CONFIG_ACADIA)			+= cuImage.acadia
->  
-> diff -Naur linux-2.6.30/arch/powerpc/boot/cuboot-hotfoot.c linux-2.6.30.hotfoot/arch/powerpc/boot/cuboot-hotfoot.c
-> --- linux-2.6.30/arch/powerpc/boot/cuboot-hotfoot.c	1969-12-31 19:00:00.000000000 -0500
-> +++ linux-2.6.30.hotfoot/arch/powerpc/boot/cuboot-hotfoot.c	2009-07-07 12:55:23.000000000 -0400
-> @@ -0,0 +1,142 @@
-> +/*
-> + * Old U-boot compatibility for Esteem 195E Hotfoot CPU Board
-> + *
-> + * Author: Solomon Peachy <solomon@linux-wlan.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License version 2 as published
-> + * by the Free Software Foundation.
-> + */
-> +
-> +#include "ops.h"
-> +#include "stdio.h"
-> +#include "reg.h"
-> +#include "dcr.h"
-> +#include "4xx.h"
-> +#include "cuboot.h"
-> +
-> +#define TARGET_4xx
-> +#define TARGET_HOTFOOT
-> +
-> +#include "ppcboot.h"
-> +
-> +static bd_t bd;
-> +
-> +#define NUM_REGS 3
-> +
-> +static void hotfoot_fixups(void)
-> +{
-> +	u32 uart = mfdcr(DCRN_CPC0_UCR) & 0x7f;
-> +
-> +	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize); 
-> +
-> +	dt_fixup_cpu_clocks(bd.bi_procfreq, bd.bi_procfreq, 0);
-> +	dt_fixup_clock("/plb", bd.bi_plb_busfreq);
-> +	dt_fixup_clock("/plb/opb", bd.bi_opbfreq);
-> +	dt_fixup_clock("/plb/ebc", bd.bi_pci_busfreq);
-> +	dt_fixup_clock("/plb/opb/serial@ef600300", bd.bi_procfreq / uart); 
-> +	dt_fixup_clock("/plb/opb/serial@ef600400", bd.bi_procfreq / uart); 
-> +	
-> +	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
-> +	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
-> +
-> +	/* Is this a single eth/serial board? */
-> +	if ((bd.bi_enet1addr[0] == 0) && 
-> +	    (bd.bi_enet1addr[1] == 0) &&
-> +	    (bd.bi_enet1addr[2] == 0) &&
-> +	    (bd.bi_enet1addr[3] == 0) &&
-> +	    (bd.bi_enet1addr[4] == 0) &&
-> +	    (bd.bi_enet1addr[5] == 0)) {
-> +		void *devp;
-> +
-> +		printf("Trimming devtree for single eth board\n");
-> +
-> +		devp = finddevice("/plb/opb/serial@ef600300");
-> +		if (!devp)
-> +			fatal("Can't find node for /plb/opb/serial@ef600300");
-> +		del_node(devp);
-> +
-> +		devp = finddevice("/plb/opb/ethernet@ef600900");
-> +		if (!devp)
-> +			fatal("Can't find node for /plb/opb/ethernet@ef600900");
-> +		del_node(devp);
-> +	}
-> +
-> +	ibm4xx_quiesce_eth((u32 *)0xef600800, (u32 *)0xef600900);
-> +
-> +	/* Fix up flash size in fdt for 4M boards. */
-> +	if (bd.bi_flashsize < 0x800000) {
-> +		u32 regs[NUM_REGS];
-> +		void *devp = finddevice("/plb/ebc/nor_flash@0");
-> +		if (!devp)
-> +			fatal("Can't find FDT node for nor_flash!??");
-> +
-> +		printf("Fixing devtree for 4M Flash\n");
-> +		
-> +		/* First fix up the base addresse */
-> +		getprop(devp, "reg", regs, sizeof(regs));
-> +		regs[0] = 0;
-> +		regs[1] = 0xffc00000;
-> +		regs[2] = 0x00400000;
-> +		setprop(devp, "reg", regs, sizeof(regs));
-> +		
-> +		/* Then the offsets */
-> +		devp = finddevice("/plb/ebc/nor_flash@0/partition@0");
-> +		if (!devp)
-> +			fatal("Can't find FDT node for partition@0");
-> +		getprop(devp, "reg", regs, 2*sizeof(u32));
-> +		regs[0] -= 0x400000;
-> +		setprop(devp, "reg", regs,  2*sizeof(u32));
-> +
-> +		devp = finddevice("/plb/ebc/nor_flash@0/partition@1");
-> +		if (!devp)
-> +			fatal("Can't find FDT node for partition@1");
-> +		getprop(devp, "reg", regs, 2*sizeof(u32));
-> +		regs[0] -= 0x400000;
-> +		setprop(devp, "reg", regs,  2*sizeof(u32));
-> +
-> +		devp = finddevice("/plb/ebc/nor_flash@0/partition@2");
-> +		if (!devp)
-> +			fatal("Can't find FDT node for partition@2");
-> +		getprop(devp, "reg", regs, 2*sizeof(u32));
-> +		regs[0] -= 0x400000;
-> +		setprop(devp, "reg", regs,  2*sizeof(u32));
-> +
-> +		devp = finddevice("/plb/ebc/nor_flash@0/partition@3");
-> +		if (!devp)
-> +			fatal("Can't find FDT node for partition@3");
-> +		getprop(devp, "reg", regs, 2*sizeof(u32));
-> +		regs[0] -= 0x400000;
-> +		setprop(devp, "reg", regs,  2*sizeof(u32));
-> +
-> +		devp = finddevice("/plb/ebc/nor_flash@0/partition@4");
-> +		if (!devp)
-> +			fatal("Can't find FDT node for partition@4");
-> +		getprop(devp, "reg", regs, 2*sizeof(u32));
-> +		regs[0] -= 0x400000;
-> +		setprop(devp, "reg", regs,  2*sizeof(u32));
-> +
-> +		devp = finddevice("/plb/ebc/nor_flash@0/partition@6");
-> +		if (!devp)
-> +			fatal("Can't find FDT node for partition@6");
-> +		getprop(devp, "reg", regs, 2*sizeof(u32));
-> +		regs[0] -= 0x400000;
-> +		setprop(devp, "reg", regs,  2*sizeof(u32));
-> +
-> +		/* Delete the FeatFS node */
-> +		devp = finddevice("/plb/ebc/nor_flash@0/partition@5");
-> +		if (!devp)
-> +			fatal("Can't find FDT node for partition@5");
-> +		del_node(devp);
-> +	}
-> +}
-> +
-> +void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-> +		   unsigned long r6, unsigned long r7)
-> +{
-> +	CUBOOT_INIT();
-> +	platform_ops.fixups = hotfoot_fixups;
-> +        platform_ops.exit = ibm40x_dbcr_reset;
-> +	fdt_init(_dtb_start);
-> +	serial_console_init();
-> +}
-> diff -Naur linux-2.6.30/arch/powerpc/boot/dts/hotfoot.dts linux-2.6.30.hotfoot/arch/powerpc/boot/dts/hotfoot.dts
-> --- linux-2.6.30/arch/powerpc/boot/dts/hotfoot.dts	1969-12-31 19:00:00.000000000 -0500
-> +++ linux-2.6.30.hotfoot/arch/powerpc/boot/dts/hotfoot.dts	2009-07-07 12:55:23.000000000 -0400
-> @@ -0,0 +1,299 @@
-> +/*
-> + * Device Tree Source for ESTeem 195E Hotfoot
-> + *
-> + * Copyright 2009 AbsoluteValue Systems <solomon@linux-wlan.com>
-> + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without
-> + * any warranty of any kind, whether express or implied.
-> + */
-> +
-> +/dts-v1/;
-> +
-> +/ {
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	model = "est,hotfoot";
-> +	compatible = "est,hotfoot";
-> +	dcr-parent = <&{/cpus/cpu@0}>;
-> +
-> +	aliases {
-> +		ethernet0 = &EMAC0;
-> +		ethernet1 = &EMAC1;
-> +		serial0 = &UART0;
-> +		serial1 = &UART1;
-> +	};
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		cpu@0 {
-> +			device_type = "cpu";
-> +			model = "PowerPC,405EP";
-> +			reg = <0x00000000>;
-> +			clock-frequency = <0>; /* Filled in by zImage */
-> +			timebase-frequency = <0>; /* Filled in by zImage */
-> +			i-cache-line-size = <0x20>;
-> +			d-cache-line-size = <0x20>;
-> +			i-cache-size = <0x4000>;
-> +			d-cache-size = <0x4000>;
-> +			dcr-controller;
-> +			dcr-access-method = "native";
-> +		};
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <0x00000000 0x00000000>; /* Filled in by zImage */
-> +	};
-> +
-> +	UIC0: interrupt-controller {
-> +		compatible = "ibm,uic";
-> +		interrupt-controller;
-> +		cell-index = <0>;
-> +		dcr-reg = <0x0c0 0x009>;
-> +		#address-cells = <0>;
-> +		#size-cells = <0>;
-> +		#interrupt-cells = <2>;
-> +	};
-> +
-> +	plb {
-> +		compatible = "ibm,plb3";
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +		clock-frequency = <0>; /* Filled in by zImage */
-> +
-> +		SDRAM0: memory-controller {
-> +			compatible = "ibm,sdram-405ep";
-> +			dcr-reg = <0x010 0x002>;
-> +		};
-> +
-> +		MAL: mcmal {
-> +			compatible = "ibm,mcmal-405ep", "ibm,mcmal";
-> +			dcr-reg = <0x180 0x062>;
-> +			num-tx-chans = <4>;
-> +			num-rx-chans = <2>;
-> +			interrupt-parent = <&UIC0>;
-> +			interrupts = <
-> +				0xb 0x4 /* TXEOB */
-> +				0xc 0x4 /* RXEOB */
-> +				0xa 0x4 /* SERR */
-> +				0xd 0x4 /* TXDE */
-> +				0xe 0x4 /* RXDE */>;
-> +		};
-> +
-> +		POB0: opb {
-> +			compatible = "ibm,opb-405ep", "ibm,opb";
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			ranges = <0xef600000 0xef600000 0x00a00000>;
-> +			dcr-reg = <0x0a0 0x005>;
-> +			clock-frequency = <0>; /* Filled in by zImage */
-> +
-> +			/* Hotfoot has UART0/UART1 swapped */
-> +
-> +			UART0: serial@ef600400 {
-> +				device_type = "serial";
-> +				compatible = "ns16550";
-> +				reg = <0xef600400 0x00000008>;
-> +				virtual-reg = <0xef600400>;
-> +				clock-frequency = <0>; /* Filled in by zImage */
-> +				current-speed = <0x9600>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <0x1 0x4>;
-> +			};
-> +
-> +			UART1: serial@ef600300 {
-> +				device_type = "serial";
-> +				compatible = "ns16550";
-> +				reg = <0xef600300 0x00000008>;
-> +				virtual-reg = <0xef600300>;
-> +				clock-frequency = <0>; /* Filled in by zImage */
-> +				current-speed = <0x9600>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <0x0 0x4>;
-> +			};
-> +
-> +
-> +			IIC: i2c@ef600500 {
-> +				compatible = "ibm,iic-405ep", "ibm,iic";
-> +				reg = <0xef600500 0x00000011>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <0x2 0x4>;
-> +
-> +				rtc@68 {
-> +				      /* Actually a DS1339 */
-> +				      compatible = "dallas,ds1307"; 
-> +				      reg = <0x68>;
-> +				};
-> +
-> +				temp@4a { 
-> +				      /* Not present on all boards */
-> +				      compatible = "national,lm75";
-> +				      reg = <0x4a>;
-> +				};				
-> +			};
-> +
-> +			GPIO: gpio@ef600700 {
-> +			        #gpio-cells = <2>;
-> +				compatible = "ibm,ppc4xx-gpio";
-> +				reg = <0xef600700 0x00000020>;
-> +				gpio-controller;
-> +			};
-> +
-> +			gpio-leds {
-> +			     compatible = "gpio-leds";
-> +			     status {
-> +			     	    label = "Status";
-> +			     	    gpios = <&GPIO 1 0>;
-> +				    /* linux,default=trigger = ".."; */
-> +			     };
-> +			     radiorx {
-> +			     	    label = "Rx";
-> +			     	    gpios = <&GPIO 0xe 0>;
-> +				    /* linux,default=trigger = ".."; */
-> +			     };
-> +			};
-> +
-> +
-> +			EMAC0: ethernet@ef600800 {
-> +				linux,network-index = <0x0>;
-> +				device_type = "network";
-> +				compatible = "ibm,emac-405ep", "ibm,emac";
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <
-> +					0xf 0x4 /* Ethernet */
-> +					0x9 0x4 /* Ethernet Wake Up */>;
-> +				local-mac-address = [000000000000]; /* Filled in by zImage */
-> +				reg = <0xef600800 0x00000070>;
-> +				mal-device = <&MAL>;
-> +				mal-tx-channel = <0>;
-> +				mal-rx-channel = <0>;
-> +				cell-index = <0>;
-> +				max-frame-size = <0x5dc>;
-> +				rx-fifo-size = <0x1000>;
-> +				tx-fifo-size = <0x800>;
-> +				phy-mode = "mii";
-> +				phy-map = <0x00000000>;
-> +			};
-> +
-> +			EMAC1: ethernet@ef600900 {
-> +				linux,network-index = <0x1>;
-> +				device_type = "network";
-> +				compatible = "ibm,emac-405ep", "ibm,emac";
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <
-> +					0x11 0x4 /* Ethernet */
-> +					0x9 0x4 /* Ethernet Wake Up */>;
-> +				local-mac-address = [000000000000]; /* Filled in by zImage */
-> +				reg = <0xef600900 0x00000070>;
-> +				mal-device = <&MAL>;
-> +				mal-tx-channel = <2>;
-> +				mal-rx-channel = <1>;
-> +				cell-index = <1>;
-> +				max-frame-size = <0x5dc>;
-> +				rx-fifo-size = <0x1000>;
-> +				tx-fifo-size = <0x800>;
-> +                                mdio-device = <&EMAC0>;
-> +				phy-mode = "mii";
-> +				phy-map = <0x0000001>;
-> +			};
-> +		};
-> +
-> +		EBC0: ebc {
-> +			compatible = "ibm,ebc-405ep", "ibm,ebc";
-> +			dcr-reg = <0x012 0x002>;
-> +			#address-cells = <2>;
-> +			#size-cells = <1>;
-> +
-> +			/* The ranges property is supplied by the bootwrapper
-> +			 * and is based on the firmware's configuration of the
-> +			 * EBC bridge
-> +			 */
-> +			clock-frequency = <0>; /* Filled in by zImage */
-> +
-> +                        nor_flash@0 {
-> +                                compatible = "cfi-flash";
-> +                                bank-width = <2>;
-> +                                reg = <0x0 0xff800000 0x00800000>;
-> +                                #address-cells = <1>;
-> +                                #size-cells = <1>;
-> +
-> +				/* This mapping is for the 8M flash
-> +				   4M flash has all ofssets -= 4M,
-> +				   and FeatFS partition is not present */
-> +				
-> +                                partition@0 {
-> +                                        label = "Bootloader";
-> +                                        reg = <0x7c0000 0x40000>;
-> +                                        /* read-only; */
-> +                                };
-> +                                partition@1 {
-> +                                        label = "Env_and_Config_Primary";
-> +                                        reg = <0x400000 0x10000>;
-> +                                };
-> +                                partition@2 {
-> +                                        label = "Kernel";
-> +                                        reg = <0x420000 0x100000>;
-> +                                };
-> +                                partition@3 {
-> +                                        label = "Filesystem";
-> +                                        reg = <0x520000 0x2a0000>;
-> +                                };
-> +                                partition@4 {
-> +                                        label = "Env_and_Config_Secondary";
-> +                                        reg = <0x410000 0x10000>;
-> +                                };
-> +                                partition@5 {
-> +                                        label = "FeatFS";
-> +                                        reg = <0x000000 0x400000>;
-> +                                };
-> +                                partition@6 {
-> +                                        label = "Bootloader_Env";
-> +                                        reg = <0x7d0000 0x10000>;
-> +                                };
-> +			};
-> +		};
-> +
-> +                PCI0: pci@ec000000 {
-> +                        device_type = "pci";
-> +                        #interrupt-cells = <1>;
-> +                        #size-cells = <2>;
-> +                        #address-cells = <3>;
-> +                        compatible = "ibm,plb405ep-pci", "ibm,plb-pci";
-> +                        primary;
-> +                        reg = <0xeec00000 0x00000008    /* Config space access */
-> +                               0xeed80000 0x00000004    /* IACK */
-> +                               0xeed80000 0x00000004    /* Special cycle */
-> +                               0xef480000 0x00000040>;  /* Internal registers */
-> +
-> +                        /* Outbound ranges, one memory and one IO,
-> +                         * later cannot be changed. Chip supports a second
-> +                         * IO range but we don't use it for now
-> +                         */
-> +                        ranges = <0x02000000 0x00000000 0x80000000 0x80000000 0x00000000 0x20000000
-> +                                  0x01000000 0x00000000 0x00000000 0xe8000000 0x00000000 0x00010000>;
-> +
-> +                        /* Inbound 2GB range starting at 0 */
-> +                        dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
-> +
-> +			interrupt-parent = <&UIC0>;
-> +                        interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-> +                        interrupt-map = <
-> +                                /* IDSEL 3 -- slot1 (optional) 27/29 A/B IRQ2/4 */
-> +                                0x1800 0x0 0x0 0x1 &UIC0 0x1b 0x8
-> +                                0x1800 0x0 0x0 0x2 &UIC0 0x1d 0x8
-> +
-> +                                /* IDSEL 4 -- slot0, 26/28 A/B IRQ1/3 */
-> +                                0x2000 0x0 0x0 0x1 &UIC0 0x1a 0x8
-> +                                0x2000 0x0 0x0 0x2 &UIC0 0x1c 0x8
-> +                        >;
-> +                };
-> +	};
-> +
-> +	chosen {
-> +		linux,stdout-path = &UART0;
-> +	};
-> +};
-> diff -Naur linux-2.6.30/arch/powerpc/boot/ppcboot.h linux-2.6.30.hotfoot/arch/powerpc/boot/ppcboot.h
-> --- linux-2.6.30/arch/powerpc/boot/ppcboot.h	2009-06-09 23:05:27.000000000 -0400
-> +++ linux-2.6.30.hotfoot/arch/powerpc/boot/ppcboot.h	2009-07-07 12:55:18.000000000 -0400
-> @@ -52,6 +52,11 @@
->  	unsigned long	bi_bootflags;	/* boot / reboot flag (for LynxOS) */
->  	unsigned long	bi_ip_addr;	/* IP Address */
->  	unsigned char	bi_enetaddr[6];	/* Ethernet address */
-> +#if defined(TARGET_HOTFOOT)
-> +	/* second onboard ethernet port */
-> +	unsigned char	bi_enet1addr[6];
-> +#define HAVE_ENET1ADDR
-> +#endif /* TARGET_HOOTFOOT */
->  	unsigned short	bi_ethspeed;	/* Ethernet speed in Mbps */
->  	unsigned long	bi_intfreq;	/* Internal Freq, in MHz */
->  	unsigned long	bi_busfreq;	/* Bus Freq, in MHz */
-> @@ -74,6 +79,9 @@
->  	unsigned int	bi_pci_busfreq;	/* PCI Bus speed, in Hz */
->  	unsigned char	bi_pci_enetaddr[6];	/* PCI Ethernet MAC address */
->  #endif
-> +#if defined(TARGET_HOTFOOT)
-> +	unsigned int     bi_pllouta_freq;       /* PLL OUTA speed, in Hz */
-> +#endif
->  #if defined(TARGET_HYMOD)
->  	hymod_conf_t	bi_hymod_conf;	/* hymod configuration information */
->  #endif
-> @@ -94,6 +102,10 @@
->  	unsigned char	bi_enet3addr[6];
->  #define HAVE_ENET3ADDR
->  #endif
-> +#if defined(TARGET_HOTFOOT)
-> +        int             bi_phynum[2];           /* Determines phy mapping */
-> +        int             bi_phymode[2];          /* Determines phy mode */
-> +#endif
->  #if defined(TARGET_4xx)
->  	unsigned int	bi_opbfreq;		/* OB clock in Hz */
->  	int		bi_iic_fast[2];		/* Use fast i2c mode */
-> diff -Naur linux-2.6.30/arch/powerpc/platforms/40x/Kconfig linux-2.6.30.hotfoot/arch/powerpc/platforms/40x/Kconfig
-> --- linux-2.6.30/arch/powerpc/platforms/40x/Kconfig	2009-06-09 23:05:27.000000000 -0400
-> +++ linux-2.6.30.hotfoot/arch/powerpc/platforms/40x/Kconfig	2009-07-07 12:55:18.000000000 -0400
-> @@ -40,6 +40,16 @@
->  	help
->  	  This option enables support for the Nestal Maschinen HCU4 board.
->  
-> +config HOTFOOT
-> +        bool "Hotfoot"
-> +	depends on 40x
-> +	default n
-> +	select 405EP
-> +	select PPC40x_SIMPLE
-> +	select PCI
-> +        help
-> +	 This option enables support for the ESTEEM 195E Hotfoot board.
-> +
->  config KILAUEA
->  	bool "Kilauea"
->  	depends on 40x
-> diff -Naur linux-2.6.30/arch/powerpc/platforms/40x/ppc40x_simple.c linux-2.6.30.hotfoot/arch/powerpc/platforms/40x/ppc40x_simple.c
-> --- linux-2.6.30/arch/powerpc/platforms/40x/ppc40x_simple.c	2009-06-09 23:05:27.000000000 -0400
-> +++ linux-2.6.30.hotfoot/arch/powerpc/platforms/40x/ppc40x_simple.c	2009-07-07 12:55:18.000000000 -0400
-> @@ -51,7 +51,8 @@
->   * board.c file for it rather than adding it to this list.
->   */
->  static char *board[] __initdata = {
-> -	"amcc,acadia"
-> +	"amcc,acadia",
-> +	"est,hotfoot"
->  };
->  
->  static int __init ppc40x_probe(void)
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Reasons
+--------
+- Signal delivery before execution of instruction requires complex workarounds
+- One of the plausible workarounds is a two-pass hw-breakpoint handler which
+  delivers the signal after the first pass (with the breakpoints enabled).
+  In the second pass, it follows the existing semantics of
+  disable_hbp-->enable_ss-->single_step-->disable_ss-->enable_hbp.
+- Possibility of nested exceptions is a problem here.
+- Proper identification of a  second-pass of first exception and a new nested
+  exception is difficult. Possibility of stray exceptions due to accesses in
+  neighbouring memory regions of the breakpoint address further complicates it.
+- Alternatives are i)use one-shot for all user-space requests ii)disable signal
+  delivery for non-ptrace requests, allow the user-defined callback routine to
+  generate signal.
+- Using one-shot for all user-space requests will break the register/unregister
+  interface semantics.
+- Disabling signal delivery for non-ptrace requests is one of the options
+  but will be a digression from x86 behaviour, or would require changes in x86
+  code too. Even user-defined callback routines cannot deliver signal
+  before instruction execution.
+
+Considering all the above, we propose a behaviour that delivers the signal to
+user-space after breakpoint execution. In due course, it will be good to have
+ptrace on PPC64 follow the same behaviour.
+
+Changelog - ver VIII
+-------------------
+- Reverting changes to allow one-shot breakpoints only for ptrace requests.
+- Minor changes in sanity checking in arch_validate_hwbkpt_settings().
+- put_cpu_no_resched() is no longer available. Converted to put_cpu().
+
+Thanks,
+K.Prasad
+
+Previous changelogs
+-------------------
+Changelog - ver VII
+-------------------
+- Allow the one-shot behaviour for exception handlers to be defined by the user.
+  A new 'is_one_shot' flag is added to 'struct arch_hw_breakpoint'.
+
+Changelog - ver VI
+------------------
+The task of identifying 'genuine' breakpoint exceptions from those caused by
+'out-of-range' accesses turned out to be more tricky than originally thought.
+Some changes to this effect were made in version IV of this patchset, but they
+were not sufficient for user-space. Basically the breakpoint address received
+through ptrace is always aligned to 8-bytes since ptrace receives an encoded
+'data' (consisting of address | translation_enable | bkpt_type), and the size of
+the symbol is not known. However for kernel-space addresses, the symbol-size can
+be determined using kallsyms_lookup_size_offset() and this is used to check if
+DAR (in the exception context) is
+'bkpt_address <= DAR <= (bkpt_address + symbol_size)', failing which we conclude
+it as a stray exception.
+
+The following changes are made to enable check:
+- Addition of a symbolsize field in 'struct arch_hw_breakpoint' field.
+- Store the size of the 'watched' kernel symbol into 'symbolsize' field in
+  arch_store_info(0 routine.
+- Verify if the above described condition is true when is_one_shot is FALSE in
+  hw_breakpoint_handler().
+
+Changelog - ver V
+------------------
+- Breakpoint requests from ptrace (for user-space) are designed to be one-shot
+in PPC64. The patch contains changes to retain this behaviour by returning early
+in hw_breakpoint_handler() [without re-initialising DABR] and unregistering the
+user-space request in ptrace_triggered(). It is safe to make a
+unregister_user_hw_breakpoint() call from the breakpoint exception context
+[through ptrace_triggered()] without giving rise to circular locking-dependancy.
+This is because there can be no kernel code running on the CPU (which received
+the exception) with the same spinlock held.
+
+- Minor change in 'type' member of 'struct arch_hw_breakpoint' from u8 to 'int'.
+
+Changelog - ver IV
+------------------
+- While DABR register requires double-word (8 bytes) aligned addresses, i.e.
+the breakpoint is active over a range of 8 bytes, PPC64 allows byte-level
+addressability. This may lead to stray exceptions which have to be ignored in
+hw_breakpoint_handler(), when DAR != (Breakpoint request address). However DABR
+will be populated with the requested breakpoint address aligned to the previous
+double-word address. The code is now modified to store user-requested address
+in 'bp->info.address' but update the DABR with a double-word aligned address.
+- Please note that the Data Breakpoint facility in Xmon is broken as of 2.6.29
+and the same has not been integrated into this facility as described in Ver I.
+
+Changelog - ver III
+------------------
+- Patches are based on commit 08f16e060bf54bdc34f800ed8b5362cdeda75d8b of -tip
+tree.
+- The declarations in arch/powerpc/include/asm/hw_breakpoint.h are done only if
+CONFIG_PPC64 is defined. This eliminates the need to conditionally include this
+header file.
+- load_debug_registers() is done in start_secondary() i.e. during CPU
+initialisation.
+- arch_check_va_<> routines in hw_breakpoint.c are now replaced with a much
+simpler is_kernel_addr() check in arch_validate_hwbkpt_settings()
+- Return code of hw_breakpoint_handler() when triggered due to Lazy debug
+register switching is now changed to NOTIFY_STOP.
+- The ptrace code no longer sets the TIF_DEBUG task flag as it is proposed to
+be done in register_user_hw_breakpoint() routine.
+- hw_breakpoint_handler() is now modified to use hbp_kernel_pos value to
+  determine if the trigger was a user/kernel space address. The DAR register
+  value is checked with the address stored in 'struct hw_breakpoint' to avoid
+  handling of exceptions that belong to kprobe/Xmon.
+
+
+Changelog - ver II
+------------------
+- Split the monolithic patch into six logical patches
+- Changed the signature of arch_check_va_in_<user><kernel>space functions. They
+  are now marked static.
+- HB_NUM is now called as HBP_NUM (to preserve a consistent short-name
+  convention)
+- Introduced hw_breakpoint_disable() and changes to kexec code to disable
+  breakpoints before a reboot.
+- Minor changes in ptrace code to use macro-defined constants instead of
+  numbers.
+- Introduced a new constant definition INSTRUCTION_LEN in reg.h
