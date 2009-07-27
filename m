@@ -3,29 +3,30 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 65426B70D7
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9782DB7DF9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 27 Jul 2009 10:18:42 +1000 (EST)
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [59.145.155.8])
+	Mon, 27 Jul 2009 10:18:52 +1000 (EST)
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [59.145.155.7])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3C077DDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 10:18:40 +1000 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28smtp08.in.ibm.com (8.14.3/8.13.1) with ESMTP id n6R0G5Be002397
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 05:46:05 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n6R0IWKS2719860
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 05:48:32 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.13.1/8.13.3) with ESMTP id n6R0IVvf016648
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 10:18:31 +1000
-Date: Mon, 27 Jul 2009 05:48:27 +0530
+	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BD4B6DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 10:18:51 +1000 (EST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+	by e28smtp07.in.ibm.com (8.14.3/8.13.1) with ESMTP id n6R0Ifpq000999
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 05:48:41 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n6R0Ifj41642730
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 05:48:41 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.13.1/8.13.3) with ESMTP id n6R0IeX1003775
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 10:18:40 +1000
+Date: Mon, 27 Jul 2009 05:48:36 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: [Patch 3/6] Modify ptrace code to use Hardware Breakpoint interfaces
-Message-ID: <20090727001324.GD13562@in.ibm.com>
+Subject: [Patch 4/6] Modify process and processor handling code to
+	recognise hardware debug registers
+Message-ID: <20090727001836.GE13562@in.ibm.com>
 References: <20090726235854.574539012@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -42,83 +43,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Modify the ptrace code to use the hardware breakpoint interfaces for user-space.
+Modify process handling code to recognise hardware debug registers during copy
+and flush operations. Introduce a new TIF_DEBUG task flag to indicate a
+process's use of debug register. Load the debug register values into a
+new CPU during initialisation.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/ptrace.c |   43 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ arch/powerpc/kernel/process.c |   15 +++++++++++++++
+ arch/powerpc/kernel/smp.c     |    2 ++
+ 2 files changed, 17 insertions(+)
 
-Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/ptrace.c
+Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/process.c
 ===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/ptrace.c
-+++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/ptrace.c
-@@ -37,6 +37,7 @@
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/system.h>
+--- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/process.c
++++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/process.c
+@@ -50,6 +50,7 @@
+ #include <asm/syscalls.h>
+ #ifdef CONFIG_PPC64
+ #include <asm/firmware.h>
 +#include <asm/hw_breakpoint.h>
+ #endif
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
+@@ -254,8 +255,10 @@ void do_dabr(struct pt_regs *regs, unsig
+ 			11, SIGSEGV) == NOTIFY_STOP)
+ 		return;
  
- /*
-  * does not yet catch signals sent when the child dies.
-@@ -757,11 +758,24 @@ void user_disable_single_step(struct tas
++#ifndef CONFIG_PPC64
+ 	if (debugger_dabr_match(regs))
+ 		return;
++#endif
  
- void ptrace_triggered(struct hw_breakpoint *bp, struct pt_regs *regs)
+ 	/* Clear the DAC and struct entries.  One shot trigger */
+ #if defined(CONFIG_BOOKE)
+@@ -372,8 +375,13 @@ struct task_struct *__switch_to(struct t
+ 
+ #endif /* CONFIG_SMP */
+ 
++#ifdef CONFIG_PPC64
++		if (unlikely(test_tsk_thread_flag(new, TIF_DEBUG)))
++			arch_install_thread_hw_breakpoint(new);
++#else
+ 	if (unlikely(__get_cpu_var(current_dabr) != new->thread.dabr))
+ 		set_dabr(new->thread.dabr);
++#endif /* CONFIG_PPC64 */
+ 
+ #if defined(CONFIG_BOOKE)
+ 	/* If new thread DAC (HW breakpoint) is the same then leave it */
+@@ -550,6 +558,10 @@ void show_regs(struct pt_regs * regs)
+ void exit_thread(void)
  {
-+	/*
-+	 * Unregister the breakpoint request here since ptrace has defined a
-+	 * one-shot behaviour for breakpoint exceptions in PPC64.
-+	 * The SIGTRAP signal is generated automatically for us in do_dabr().
-+	 * We don't have to do anything here
-+	 */
-+	unregister_user_hw_breakpoint(current, bp);
-+	kfree(bp);
+ 	discard_lazy_cpu_state();
++#ifdef CONFIG_PPC64
++	if (unlikely(test_tsk_thread_flag(current, TIF_DEBUG)))
++		flush_thread_hw_breakpoint(current);
++#endif /* CONFIG_PPC64 */
  }
  
- int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
- 			       unsigned long data)
- {
-+#ifdef CONFIG_PPC64
-+	struct thread_struct *thread = &(task->thread);
-+	struct hw_breakpoint *bp;
-+	int ret;
-+#endif
- 	/* For ppc64 we support one DABR and no IABR's at the moment (ppc64).
- 	 *  For embedded processors we support one DAC and no IAC's at the
- 	 *  moment.
-@@ -791,6 +805,35 @@ int ptrace_set_debugreg(struct task_stru
- 	if (data && !(data & DABR_TRANSLATION))
- 		return -EIO;
+ void flush_thread(void)
+@@ -672,6 +684,9 @@ int copy_thread(unsigned long clone_flag
+ 	 * function.
+  	 */
+ 	kregs->nip = *((unsigned long *)ret_from_fork);
++
++	if (unlikely(test_tsk_thread_flag(current, TIF_DEBUG)))
++		copy_thread_hw_breakpoint(current, p, clone_flags);
+ #else
+ 	kregs->nip = (unsigned long)ret_from_fork;
+ #endif
+Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/smp.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/smp.c
++++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/smp.c
+@@ -48,6 +48,7 @@
+ #include <asm/vdso_datapage.h>
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
++#include <asm/hw_breakpoint.h>
+ #endif
  
-+#ifdef CONFIG_PPC64
-+	bp = thread->hbp[0];
-+	if (data == 0) {
-+		if (bp) {
-+			unregister_user_hw_breakpoint(task, bp);
-+			kfree(bp);
-+		}
-+		return 0;
-+	}
-+
-+	if (bp) {
-+		bp->info.type = data & HW_BREAKPOINT_RW;
-+		task->thread.dabr = bp->info.address = data;
-+		return modify_user_hw_breakpoint(task, bp);
-+	}
-+	bp = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
-+	if (!bp)
-+		return -ENOMEM;
-+
-+	/* Store the type of breakpoint */
-+	bp->info.type = data & HW_BREAKPOINT_RW;
-+	bp->triggered = ptrace_triggered;
-+	task->thread.dabr = bp->info.address = data;
-+
-+	ret = register_user_hw_breakpoint(task, bp);
-+	if (ret)
-+		return ret;
-+#endif /* CONFIG_PPC64 */
-+
- 	/* Move contents to the DABR register */
- 	task->thread.dabr = data;
+ #ifdef DEBUG
+@@ -537,6 +538,7 @@ int __devinit start_secondary(void *unus
  
+ 	local_irq_enable();
+ 
++	load_debug_registers();
+ 	cpu_idle();
+ 	return 0;
+ }
