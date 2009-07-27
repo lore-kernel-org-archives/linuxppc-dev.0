@@ -1,25 +1,22 @@
-Return-Path: <eddie@embeddedarm.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3D63FB6F1E
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F2CA3B7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jul 2009 06:15:10 +1000 (EST)
-Received: from oz.embeddedARM.com (oz.embeddedarm.com [67.40.67.44])
-	by ozlabs.org (Postfix) with ESMTP id 60297DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2009 06:15:08 +1000 (EST)
-Message-ID: <4A6E0AE2.3090600@embeddedarm.com>
-Date: Mon, 27 Jul 2009 13:15:30 -0700
-From: Eddie Dawydiuk <eddie@embeddedarm.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: image/wrapper script questions
-References: <4A6DDF80.209@embeddedarm.com>
-	<20090727183155.7FA16832E416@gemini.denx.de>
-In-Reply-To: <20090727183155.7FA16832E416@gemini.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	Tue, 28 Jul 2009 07:02:18 +1000 (EST)
+Message-Id: <AAD5D15E-F1CA-4595-A434-728423DBAFDE@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1248405855-15546-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH 1/5] powerpc: remove addr_needs_map in struct
+	dma_mapping_ops
+Date: Mon, 27 Jul 2009 16:02:07 -0500
+References: <1248405855-15546-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1248405855-15546-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,68 +26,233 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wolfgang,
 
-> In message <4A6DDF80.209@embeddedarm.com> you wrote:
->> I'm working on a custom board using an AMCC 440EP that is using a proprietary 
->> bootloader(optimized for fast boot time). Currently our bootloader loads a 
->> simpleImage.initrd into RAM and jumps into it. I originally chose to use a 
->> simpleImage with an initial ramdisk embedded because it was the simplest 
->> solution to debug the hardware and get a kernel and initial ramdisk running for 
->> development. For production I would prefer to put the initial ramdisk on it's 
-> 
-> Hm... isn't that an oxymoron? Trying to optimize  for  speed  on  one
-> hand, and using an initrd which is one of the slowest ways to boot on
-> the other hand?
+On Jul 23, 2009, at 10:24 PM, FUJITA Tomonori wrote:
 
-We advertise the amount of time from a cold boot until one is sitting at a 
-command prompt(< 2 s). A Debian filesystem(from Nand or SD card) is then mounted 
-in the background. This gives one the power of Debian in a very short amount of 
-time. From a technical stand point we have to use an initial ramdisk as we are a 
-member of the SD association so we signed an NDA agreeing not to release any 
-details of the SD spec. As a result we have code we can't release under the GPL 
-so we have to load a proprietary SD card driver as a module.
+> This patch adds max_direct_dma_addr to struct dev_archdata to remove
+> addr_needs_map in struct dma_mapping_ops. It also converts
+> dma_capable() to use max_direct_dma_addr.
+>
+> max_direct_dma_addr is initialized in pci_dma_dev_setup_swiotlb(),
+> called via ppc_md.pci_dma_dev_setup hook.
+>
+> For further information:
+> http://marc.info/?t=124719060200001&r=1&w=2
+>
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-I guess it depends upon how you define boot, that is we define it as how long it 
-takes to get to a Linux shell prompt :) Even without the licensing issue I'm not 
-sure we could boot faster(by the definition above) via some other method. All of 
-the products I've seen that advertise a fast Linux boot time, boot to an initial 
-ramdisk.
+Acked-by: Becky Bruce <beckyb@kernel.crashing.org>
 
-http://www.mvista.com/press_release_detail.php?fid=news/2009/Ultra-fast-boot.html
-
->> Thanks for any suggestions :)
-> 
-> Use another file system (and another fstype) and separate it from the
-> kernel image.
-> 
-> See also http://www.denx.de/wiki/view/DULG/RootFileSystemSelection
-
-Thanks for the link. Although, I'm not looking for info on optimizing boot time. 
-Rather I'm looking for information on what the path of least resistance is to 
-boot a kernel with an initrd being loaded from it's own partition. To clarify 
-currently I am using a simpleImage.initrd which is a single image with the 
-flattened device tree, kernel, and initial ramdisk in a single file. One can 
-simply load this image in RAM(assuming 1 to 1 MMU mapping) and jump into it. Now 
-what I would like to do is to load a kernel, device tree, and initial ramdisk 
-into RAM at different locations.
-
-I'm in the process of coming back up to speed on the low-level boot details of 
-the powerpc kernel/architecture. It looks like one can accomplish this by 
-loading R3 with the phys address of the device tree block, R4 with the phys 
-address of the kernel, and R5 with Null. It also looks like the kernel, already 
-has several routines which know about these details(prom_init() and __start()) 
-and I was hoping I could reuse this code to accomplish this rather than 
-rewriting the bootrom to handle this. That is I was hoping there is a boot 
-wrapper image that would allow me to accomplish my goal of creating a single 
-image containing a kernel and device tree block, and an interface to specify 
-where the bootrom loads the initial ramdisk in RAM. I'll continue reading 
-through the docs and code, but if anyone could provide any pointers on how to do 
-this I would really appreciate it.
-
--- 
-Best Regards,
-________________________________________________________________
-  Eddie Dawydiuk, Technologic Systems | voice:  (480) 837-5200
-  16525 East Laser Drive              | fax:    (480) 837-5300
-  Fountain Hills, AZ 85268            | web: www.embeddedARM.com
+>
+> ---
+> arch/powerpc/include/asm/device.h          |    3 ++
+> arch/powerpc/include/asm/dma-mapping.h     |    8 +++---
+> arch/powerpc/include/asm/swiotlb.h         |    5 +--
+> arch/powerpc/kernel/dma-swiotlb.c          |   36 ++++++++++ 
+> +----------------
+> arch/powerpc/platforms/85xx/mpc8536_ds.c   |    1 +
+> arch/powerpc/platforms/85xx/mpc85xx_ds.c   |    1 +
+> arch/powerpc/platforms/85xx/mpc85xx_mds.c  |    1 +
+> arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 +
+> 8 files changed, 28 insertions(+), 28 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/ 
+> include/asm/device.h
+> index 7d2277c..0086f8d 100644
+> --- a/arch/powerpc/include/asm/device.h
+> +++ b/arch/powerpc/include/asm/device.h
+> @@ -16,6 +16,9 @@ struct dev_archdata {
+> 	/* DMA operations on that device */
+> 	struct dma_mapping_ops	*dma_ops;
+> 	void			*dma_data;
+> +#ifdef CONFIG_SWIOTLB
+> +	dma_addr_t		max_direct_dma_addr;
+> +#endif
+> };
+>
+> static inline void dev_archdata_set_node(struct dev_archdata *ad,
+> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/ 
+> include/asm/dma-mapping.h
+> index 0c34371..1765c37 100644
+> --- a/arch/powerpc/include/asm/dma-mapping.h
+> +++ b/arch/powerpc/include/asm/dma-mapping.h
+> @@ -87,8 +87,6 @@ struct dma_mapping_ops {
+> 				dma_addr_t dma_address, size_t size,
+> 				enum dma_data_direction direction,
+> 				struct dma_attrs *attrs);
+> -	int		(*addr_needs_map)(struct device *dev, dma_addr_t addr,
+> -				size_t size);
+> #ifdef CONFIG_PPC_NEED_DMA_SYNC_OPS
+> 	void            (*sync_single_range_for_cpu)(struct device *hwdev,
+> 				dma_addr_t dma_handle, unsigned long offset,
+> @@ -426,10 +424,12 @@ static inline int dma_mapping_error(struct  
+> device *dev, dma_addr_t dma_addr)
+>
+> static inline bool dma_capable(struct device *dev, dma_addr_t addr,  
+> size_t size)
+> {
+> -	struct dma_mapping_ops *ops = get_dma_ops(dev);
+> +#ifdef CONFIG_SWIOTLB
+> +	struct dev_archdata *sd = &dev->archdata;
+>
+> -	if (ops->addr_needs_map && ops->addr_needs_map(dev, addr, size))
+> +	if (sd->max_direct_dma_addr && addr + size > sd- 
+> >max_direct_dma_addr)
+> 		return 0;
+> +#endif
+>
+> 	if (!dev->dma_mask)
+> 		return 0;
+> diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/ 
+> include/asm/swiotlb.h
+> index 30891d6..31e0e43 100644
+> --- a/arch/powerpc/include/asm/swiotlb.h
+> +++ b/arch/powerpc/include/asm/swiotlb.h
+> @@ -16,12 +16,11 @@
+> extern struct dma_mapping_ops swiotlb_dma_ops;
+> extern struct dma_mapping_ops swiotlb_pci_dma_ops;
+>
+> -int swiotlb_arch_address_needs_mapping(struct device *, dma_addr_t,
+> -				       size_t size);
+> -
+> static inline void dma_mark_clean(void *addr, size_t size) {}
+>
+> extern unsigned int ppc_swiotlb_enable;
+> int __init swiotlb_setup_bus_notifier(void);
+>
+> +extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
+> +
+> #endif /* __ASM_SWIOTLB_H */
+> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/ 
+> dma-swiotlb.c
+> index e8a57de..c9f6a30 100644
+> --- a/arch/powerpc/kernel/dma-swiotlb.c
+> +++ b/arch/powerpc/kernel/dma-swiotlb.c
+> @@ -25,26 +25,6 @@ int swiotlb __read_mostly;
+> unsigned int ppc_swiotlb_enable;
+>
+> /*
+> - * Determine if an address is reachable by a pci device, or if we  
+> must bounce.
+> - */
+> -static int
+> -swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr,  
+> size_t size)
+> -{
+> -	dma_addr_t max;
+> -	struct pci_controller *hose;
+> -	struct pci_dev *pdev = to_pci_dev(hwdev);
+> -
+> -	hose = pci_bus_to_host(pdev->bus);
+> -	max = hose->dma_window_base_cur + hose->dma_window_size;
+> -
+> -	/* check that we're within mapped pci window space */
+> -	if ((addr + size > max) | (addr < hose->dma_window_base_cur))
+> -		return 1;
+> -
+> -	return 0;
+> -}
+> -
+> -/*
+>  * At the moment, all platforms that use this code only require
+>  * swiotlb to be used if we're operating on HIGHMEM.  Since
+>  * we don't ever call anything other than map_sg, unmap_sg,
+> @@ -73,22 +53,36 @@ struct dma_mapping_ops swiotlb_pci_dma_ops = {
+> 	.dma_supported = swiotlb_dma_supported,
+> 	.map_page = swiotlb_map_page,
+> 	.unmap_page = swiotlb_unmap_page,
+> -	.addr_needs_map = swiotlb_pci_addr_needs_map,
+> 	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
+> 	.sync_single_range_for_device = swiotlb_sync_single_range_for_device,
+> 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
+> 	.sync_sg_for_device = swiotlb_sync_sg_for_device
+> };
+>
+> +void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
+> +{
+> +	struct pci_controller *hose;
+> +	struct dev_archdata *sd;
+> +
+> +	hose = pci_bus_to_host(pdev->bus);
+> +	sd = &pdev->dev.archdata;
+> +	sd->max_direct_dma_addr =
+> +		hose->dma_window_base_cur + hose->dma_window_size;
+> +}
+> +
+> static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
+> 				  unsigned long action, void *data)
+> {
+> 	struct device *dev = data;
+> +	struct dev_archdata *sd;
+>
+> 	/* We are only intereted in device addition */
+> 	if (action != BUS_NOTIFY_ADD_DEVICE)
+> 		return 0;
+>
+> +	sd = &dev->archdata;
+> +	sd->max_direct_dma_addr = 0;
+> +
+> 	/* May need to bounce if the device can't address all of DRAM */
+> 	if (dma_get_mask(dev) < lmb_end_of_DRAM())
+> 		set_dma_ops(dev, &swiotlb_dma_ops);
+> diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/ 
+> platforms/85xx/mpc8536_ds.c
+> index 055ff41..bf052c0 100644
+> --- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+> @@ -97,6 +97,7 @@ static void __init mpc8536_ds_setup_arch(void)
+> 	if (lmb_end_of_DRAM() > max) {
+> 		ppc_swiotlb_enable = 1;
+> 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
+> +		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> 	}
+> #endif
+>
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/ 
+> platforms/85xx/mpc85xx_ds.c
+> index 849c0ac..c6f92cc 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> @@ -193,6 +193,7 @@ static void __init mpc85xx_ds_setup_arch(void)
+> 	if (lmb_end_of_DRAM() > max) {
+> 		ppc_swiotlb_enable = 1;
+> 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
+> +		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> 	}
+> #endif
+>
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/ 
+> powerpc/platforms/85xx/mpc85xx_mds.c
+> index 60ed9c0..8b8e5f9 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> @@ -242,6 +242,7 @@ static void __init mpc85xx_mds_setup_arch(void)
+> 	if (lmb_end_of_DRAM() > max) {
+> 		ppc_swiotlb_enable = 1;
+> 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
+> +		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> 	}
+> #endif
+> }
+> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/ 
+> powerpc/platforms/86xx/mpc86xx_hpcn.c
+> index 6632702..8032301 100644
+> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+> @@ -106,6 +106,7 @@ mpc86xx_hpcn_setup_arch(void)
+> 	if (lmb_end_of_DRAM() > max) {
+> 		ppc_swiotlb_enable = 1;
+> 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
+> +		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> 	}
+> #endif
+> }
+> -- 
+> 1.6.0.6
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
