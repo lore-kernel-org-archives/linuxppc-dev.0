@@ -1,38 +1,25 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2474AB7089
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E0E9FB7DEE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jul 2009 07:59:24 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A48DFDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2009 07:59:22 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n6RLx35R009432
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 14:59:13 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n6RLx2VI025717
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 16:59:02 -0500 (CDT)
-Date: Mon, 27 Jul 2009 16:59:01 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: PPCboot and latest kernel
-Message-ID: <20090727215901.GA19572@b07421-ec1.am.freescale.net>
-References: <e571380d0907191132u3985423aiacc7ec8c75c0534b@mail.gmail.com>
-	<e571380d0907191136j37d341d7k514f46396a38abc3@mail.gmail.com>
-	<20090720174041.1873A832E416@gemini.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090720174041.1873A832E416@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, vijay sharma <vjai22@gmail.com>
+	Tue, 28 Jul 2009 07:59:31 +1000 (EST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <4A6E0AE2.3090600@embeddedarm.com>
+References: <4A6DDF80.209@embeddedarm.com>
+	<20090727183155.7FA16832E416@gemini.denx.de>
+	<4A6E0AE2.3090600@embeddedarm.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 27 Jul 2009 15:53:01 -0600
+Message-ID: <fa686aa40907271453sd6463c2h62d798af1baf720a@mail.gmail.com>
+Subject: Re: image/wrapper script questions
+To: Eddie Dawydiuk <eddie@embeddedarm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss <devicetree-discuss@ozlabs.org>,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,27 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 20, 2009 at 07:40:41PM +0200, Wolfgang Denk wrote:
-> > zImage starting: loaded at 0x01900000 (sp: 0x0fdc3a08)
-> > Allocating 0x165ca04 bytes for kernel ...
-> > gunzipping (0x00000000 <- 0x0190c000:0x02f58efc)...done 0x1637b54 bytes
-> 
-> You loaded the image at 01900000, but the uncompr4essed image extends
-> until 02f58efc, i. e. there is a good chance that you will overwrite
-> parts of the still uncompressed image.
+(Adding cc:devicetree-discuss)
 
-I think the above output says that the compressed image extends to
-0x02f58efc, and that the uncompressed image goes from zero to 0x165ca04. 
-So no conflict (you should get an error message in case of conflict) with
-0x01900000.
+On Mon, Jul 27, 2009 at 2:15 PM, Eddie Dawydiuk <eddie@embeddedarm.com> wro=
+te:
+> Thanks for the link. Although, I'm not looking for info on optimizing
+> boot time. Rather I'm looking for information on what the path of least
+> resistance is to boot a kernel with an initrd being loaded from it's
+> own partition. To clarify currently I am using a simpleImage.initrd which
+> is a single image with the flattened device tree, kernel, and initial
+> ramdisk in a single file. One can simply load this image in RAM(assuming
+> 1 to 1 MMU mapping) and jump into it. Now what I would like to do is to
+> load a kernel, device tree, and initial ramdisk into RAM at different
+> locations.
 
-> > Linux/PowerPC load:
-> > Finalizing device tree... flat tree at 0x2f65300 <== Beyond this point no
-> > output is available.
-> 
-> Your device tree might be wrong, too.
+Quick word of warning, if you do split the kernel and .dtb images (which
+is a good thing to do for several reasons, and I strongly recommend it),
+make sure you do *not* hard code the .dtb image into firmware.=A0 If the
+end user isn't able to update the .dtb image as easily as updating the
+kernel image, then you are asking for a world of hurt for yourself and
+your users.
 
-Either that or something is wrong with the kernel itself.  This is the
-point at which it transfers control to the main kernel.
+> I'm in the process of coming back up to speed on the low-level boot
+> details of the powerpc kernel/architecture. It looks like one can
+> accomplish this by loading R3 with the phys address of the device
+> tree block, R4 with the phys address of the kernel, and R5 with Null.
+> It also looks like the kernel, already has several routines which know
+> about these details(prom_init() and __start()) and I was hoping I could
+> reuse this code to accomplish this rather than rewriting the bootrom to
+> handle this. That is I was hoping there is a boot wrapper image that
+> would allow me to accomplish my goal of creating a single image
+> containing a kernel and device tree block, and an interface to specify
+> where the bootrom loads the initial ramdisk in RAM. I'll continue
+> reading through the docs and code, but if anyone could provide any
+> pointers on how to do this I would really appreciate it.
 
--Scott
+It really sounds like you're asking for a new board-specific dtbImage
+(which is what dtbImages are designed for).  simpleImage is really just
+a dtbImage with the assumption that firmware provides no boot information.
+
+*HOWEVER* dtbImages were really designed for older firmware that cannot
+handle the kernel and .dtb images separately.  If you've got control of
+the firmware then I strongly recommend *not* relying on the dtbImage
+approach of binding the device tree into the kernel image.  You ignore
+a lot of the advantages of the device tree model if you do.  In particular
+you take on maintenance of a new dtbImage variant in the kernel tree and
+loose the ability to build and boot a more or less 'standard' 440 kernel
+image.
+
+Honestly, I think you'd be better off adapting your firmware to parse and
+boot either a raw vmlinux elf image or a u-boot uImage wrapped image and
+pass in the .dtb and initrd pointers.  I predict it will result in far
+less confusion for your users (they don't need to know about a particular
+'dtbImage.<board>', less maintenance pain for you, and less cursing from
+the rest of the powerpc community about an oddball firmware that behaves
+differently from everything else (from a boot perspective).
+
+In other words, don't try to adapt the kernel boot to your firmware;
+adapt the firmware to an established boot mechanism.
+
+g.
+
+--
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
