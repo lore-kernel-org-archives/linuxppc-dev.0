@@ -1,28 +1,34 @@
-Return-Path: <CFRIESEN@nortel.com>
+Return-Path: <torvalds@linux-foundation.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D5EB8B6EDF
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 55BB1B6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jul 2009 04:43:50 +1000 (EST)
-Received: from zcars04e.nortel.com (zcars04e.nortel.com [47.129.242.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 10B1FDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2009 04:43:49 +1000 (EST)
-Received: from zcarhxs1.corp.nortel.com (casmtp.ca.nortel.com [47.129.230.89])
-	by zcars04e.nortel.com (Switch-2.2.0/Switch-2.2.0) with ESMTP id
-	n6RIfrt01768
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2009 18:41:53 GMT
-Message-ID: <4A6DF55A.9050707@nortel.com>
-Date: Mon, 27 Jul 2009 12:43:38 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+	Tue, 28 Jul 2009 05:11:44 +1000 (EST)
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D4434DDD01
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2009 05:11:43 +1000 (EST)
+Date: Mon, 27 Jul 2009 12:11:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
+In-Reply-To: <1248310415.3367.22.camel@pasglop>
+Message-ID: <alpine.LFD.2.01.0907271210210.25224@localhost.localdomain>
+References: <20090715074952.A36C7DDDB2@ozlabs.org>
+	<20090715135620.GD7298@wotan.suse.de>
+	<1248073873.13067.31.camel@pasglop>
+	<alpine.LFD.2.01.0907220930320.19335@localhost.localdomain>
+	<1248310415.3367.22.camel@pasglop>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: anyone know of a patch to support mcpn905/cpci6115 on recent-ish
-	kernels?
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Nick Piggin <npiggin@suse.de>, Linux-Arch <linux-arch@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
+	linux-kernel@vger.kernel.org, Linux Memory Management <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,18 +39,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-We've got some people that are currently running an older linux kernel
-(from before the ppc/ppc64 merge and the conversion to device tree) on
-an Emerson/Motorola cpci6115 (also known as mcpn905) compactPCI board.
-They're wondering if it's possible to upgrade to a more recent kernel.
 
-I don't see support for these boards in mainline, but is anyone aware of
-patches adding support for more recent kernels?
+On Thu, 23 Jul 2009, Benjamin Herrenschmidt wrote:
+> 
+> Hrm... my powerpc-next branch will contain stuff that depend on it, so
+> I'll probably have to pull it in though, unless I tell all my
+> sub-maintainers to also pull from that other branch first :-)
 
-Barring that, are there any tutorials out there on how to build a dts
-file from scratch?  I think we've got the hardware specs, and we've got
-a running earlier kernel.
+Ok, I'll just apply the patch. It does look obvious enough.
 
-Thanks,
-
-Chris
+			Linus
