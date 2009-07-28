@@ -1,23 +1,26 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Return-Path: <julia@diku.dk>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 88108B7B63
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 20D65B7B61
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jul 2009 23:53:28 +1000 (EST)
-Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 1FC54DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2009 23:53:28 +1000 (EST)
-Date: Tue, 28 Jul 2009 15:33:22 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: sequoia: The final kernel image would overwrite the device tree
-Message-ID: <alpine.LRH.2.00.0907281524510.29006@vixen.sonytel.be>
+	Wed, 29 Jul 2009 02:02:10 +1000 (EST)
+Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mgw2.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id AD3DADDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 02:02:09 +1000 (EST)
+Date: Tue, 28 Jul 2009 17:56:00 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: avorontsov@ru.mvista.com, linuxppc-dev@ozlabs.org,
+	sdhci-devel@lists.ossman.eu, linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org
+Subject: [PATCH 8/9] drivers/mmc: correct error-handling code
+Message-ID: <Pine.LNX.4.64.0907281755340.28189@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,59 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	Hi Ben,
+From: Julia Lawall <julia@diku.dk>
 
-Current kernel (2.6.31-rc4) fails to boot on sequoia:
+sdhci_alloc_host returns an ERR_PTR value in an error case instead of NULL.
 
-| ## Booting image at 00100000 ...
-|    Image Name:   Linux-2.6.31-rc4-00003-g52c6890-
-|    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-|    Data Size:    1680490 Bytes =  1.6 MB
-|    Load Address: 00400000
-|    Entry Point:  00400458
-|    Verifying Checksum ... OK
-|    Uncompressing Kernel Image ... OK
-| CPU clock-frequency <- 0x27bc86a4 (667MHz)
-| CPU timebase-frequency <- 0x27bc86a4 (667MHz)
-| /plb: clock-frequency <- 9ef21a9 (167MHz)
-| /plb/opb: clock-frequency <- 4f790d4 (83MHz)
-| /plb/opb/ebc: clock-frequency <- 34fb5e3 (56MHz)
-| /plb/opb/serial@ef600300: clock-frequency <- a8c000 (11MHz)
-| /plb/opb/serial@ef600400: clock-frequency <- a8c000 (11MHz)
-| /plb/opb/serial@ef600500: clock-frequency <- 42ecac (4MHz)
-| /plb/opb/serial@ef600600: clock-frequency <- 42ecac (4MHz)
-| Memory <- <0x0 0x0 0xffff000> (255MB)
-| ethernet0: local-mac-address <- 00:10:ec:00:f1:df
-| ethernet1: local-mac-address <- 00:10:ec:80:f1:df
-| 
-| zImage starting: loaded at 0x00400000 (sp: 0x0ff2ba18)
-| Allocating 0x85e77c bytes for kernel ...
-| The final kernel image would overwrite the device tree?
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
 
-Git bisect told me the bad guy is:
+// <smpl>
+@match exists@
+expression x, E;
+statement S1, S2;
+@@
 
-| commit 5d38902c483881645ba16058cffaa478b81e5cfa
-| Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-| Date:   Wed Jun 17 17:43:59 2009 +0000
-| 
-|     powerpc: Add irqtrace support for 32-bit powerpc
+x = sdhci_alloc_host(...)
+... when != x = E
+(
+*  if (x == NULL || ...) S1 else S2
+|
+*  if (x == NULL && ...) S1 else S2
+)
+// </smpl>
 
-However, disabling CONFIG_PROVE_LOCKING also fixes the problem.
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-With kind regards,
+---
+ drivers/mmc/host/sdhci-of.c         |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
+index d79fa55..fb00bc5 100644
+--- a/drivers/mmc/host/sdhci-of.c
++++ b/drivers/mmc/host/sdhci-of.c
+@@ -226,7 +226,7 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
+ 		return -ENODEV;
+ 
+ 	host = sdhci_alloc_host(&ofdev->dev, sizeof(*of_host));
+-	if (!host)
++	if (IS_ERR(host))
+ 		return -ENOMEM;
+ 
+ 	of_host = sdhci_priv(host);
