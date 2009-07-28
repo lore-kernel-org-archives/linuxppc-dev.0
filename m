@@ -1,20 +1,33 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id D4FBCB7B5F
+Return-Path: <albrecht.dress@arcor.de>
+Received: from mail-in-16.arcor-online.net (mail-in-16.arcor-online.net
+	[151.189.21.56])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9ECD5B7B70
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 28 Jul 2009 18:48:04 +1000 (EST)
-Date: Tue, 28 Jul 2009 10:31:00 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: "B.J. Buchalter" <bj@mhlabs.com>
-Subject: Re: Question about tracking freescale patches for Linux
-Message-ID: <20090728083059.GB3170@pengutronix.de>
-References: <06A91D45-B506-44F8-A234-D9E55301349D@mhlabs.com>
+	Tue, 28 Jul 2009 22:50:59 +1000 (EST)
+Received: from mail-in-16-z2.arcor-online.net (mail-in-16-z2.arcor-online.net
+	[151.189.8.33]) by mx.arcor.de (Postfix) with ESMTP id A5B3D257116
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 28 Jul 2009 14:50:51 +0200 (CEST)
+Received: from mail-in-17.arcor-online.net (mail-in-17.arcor-online.net
+	[151.189.21.57])
+	by mail-in-16-z2.arcor-online.net (Postfix) with ESMTP id 91AD32543ED
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 28 Jul 2009 14:50:51 +0200 (CEST)
+Received: from webmail10.arcor-online.net (webmail10.arcor-online.net
+	[151.189.8.93])
+	by mail-in-17.arcor-online.net (Postfix) with ESMTP id 79C753B23F3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 28 Jul 2009 14:50:51 +0200 (CEST)
+Message-ID: <24979490.1248785451446.JavaMail.ngmail@webmail10.arcor-online.net>
+Date: Tue, 28 Jul 2009 14:50:51 +0200 (CEST)
+From: "Albrecht Dreﬂ" <albrecht.dress@arcor.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [5200] ATA and (BAD) interrupts question
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5/uDoXvLw7AC5HRs"
-In-Reply-To: <06A91D45-B506-44F8-A234-D9E55301349D@mhlabs.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,58 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi all,
 
---5/uDoXvLw7AC5HRs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I run linux 2.6.29.1 from kernel.org on a custom Freescale MPC5200B based b=
+oard, which has a CF card attached to the 5200's ATA.  The CF seems to run =
+nicely, but I am somewhat confused by the interrupts reproted by the kernel=
+.
 
+Immediately after the boot, /proc/interrupts reports (inter alia)
 
-> I have contacted Freescale, but they basically say that they provide the=
-=20
-> BSP, and make no commitments to supporting any other version of the linux=
-=20
-> kernel.
+135:          8  MPC52xx Peripherals Edge      mpc52xx_ata
+194:          0  MPC52xx SDMA Edge      ATA task
+BAD:         44
 
-So true :(
+Then I say 'mount -t vfat -o noatime /dev/sda1 /mnt/cf0', and I get
 
-> 1) is there any way to determine if any these patches are currently =20
-> being worked into the mainline kernel, or if they have been abandoned =20
-> for some reason?
+135:         41  MPC52xx Peripherals Edge      mpc52xx_ata
+194:          0  MPC52xx SDMA Edge      ATA task
+BAD:         44
 
-I usually use search engines (which often lead to linux-ppc threads) and
-patchwork.ozlabs.org.
+Then, I recursively copy a folder to the CF card:
 
->
-> 2) Is it worth trying to move these patches up to the head of =20
-> development and trying to get them merged into the mainline kernel, or =
-=20
-> is that really just up to freescale to do?
+135:     125111  MPC52xx Peripherals Edge      mpc52xx_ata
+194:          0  MPC52xx SDMA Edge      ATA task
+BAD:     121863
 
-It surely is worth (and is often done by people not involved with fsl). But=
- be
-warned, some patches are in a terrible state, meaning half a rewrite is
-necessary.
+Is it correct that the "ATA task" interrupts are still 0, and that I get su=
+ch a high number of BAD ones?  Is there a way to detect which source actual=
+ly triggered the BAD interrupts?
 
-Regards,
+Thanks in advance,
+Albrecht.
 
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---5/uDoXvLw7AC5HRs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkput0MACgkQD27XaX1/VRvVbgCfaW42IpC7zKqlADX0X6OiuTBb
-BHUAn3CpWn1R3Y7hTMbakML8GrHjkhaK
-=GuCV
------END PGP SIGNATURE-----
-
---5/uDoXvLw7AC5HRs--
+Der E-Mail-Dienst PIA basic belegt im Test der Stiftung Warentest unter den=
+ kostenfreien Angeboten mit dem Qualit=E4tsurteil 3,0  den zweiten Platz!
+(Testheft Juli 2009, Artikel "E-Mail-Dienste - Besser gratis")
+JETZT TESTEN: www.arcor.de/rd/pia_sw
