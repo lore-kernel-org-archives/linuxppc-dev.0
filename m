@@ -1,34 +1,26 @@
-Return-Path: <ashish.kalra@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 03917B70AD
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 67705B70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jul 2009 02:05:55 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 94061DDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 02:05:53 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n6TG5VeF018053
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 09:05:43 -0700 (MST)
-Received: from zin33exm20.fsl.freescale.net (zin33exm20.ap.freescale.net
-	[10.232.192.5])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n6TG5Tm3021468
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 11:05:30 -0500 (CDT)
-Date: Wed, 29 Jul 2009 21:33:27 +0530 (India Standard Time)
-From: ashish kalra <ashish.kalra@freescale.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH][sata_fsl] Defer non-ncq commands when ncq commands active
-Message-ID: <Pine.WNT.4.64.0907292129310.4440@B00888-02.fsl.freescale.net>
+	Thu, 30 Jul 2009 03:03:49 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id F1CCEDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 03:03:48 +1000 (EST)
+Date: Wed, 29 Jul 2009 21:03:45 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/7] Device table matching for SPI subsystem
+Message-ID: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Jean Delvare <khali@linux-fr.org>, David Woodhouse <dwmw2@infradead.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,28 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ashish Kalra <Ashish.Kalra@freescale.com>
-Date: Wed, 29 Jul 2009 21:15:49 +0530
+Hi all,
 
-Fix for non-ncq & ncq commands causing timeouts when both are issued 
-simultaneously to the same device.
+This patch set implements standard device table matching mechanism
+for SPI subsystem, the same device id tables as we use in I2C drivers.
 
-Signed-off-by: Ashish Kalra <Ashish.Kalra@freescale.com>
----
-  drivers/ata/sata_fsl.c |    1 +
-  1 files changed, 1 insertions(+), 0 deletions(-)
+I started this work because m25p80 driver misdetects non-JEDEC
+chips when it is used on OpenFirmware platforms (cause we don't pass
+platform_data). platform_data is overkill for m25p80 chips, the
+driver only needs to know exact chip model, and that's what device
+tables are for.
 
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index 5a88b44..a33f130 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -1262,6 +1262,7 @@ static struct scsi_host_template sata_fsl_sht = {
-  static struct ata_port_operations sata_fsl_ops = {
-  	.inherits		= &sata_pmp_port_ops,
+So the patches:
 
-+	.qc_defer = ata_std_qc_defer;
-  	.qc_prep = sata_fsl_qc_prep,
-  	.qc_issue = sata_fsl_qc_issue,
-  	.qc_fill_rtf = sata_fsl_qc_fill_rtf,
+  [1/7] spi: Add support for device table matching
+  [2/7] mtd: m25p80: Convert to device table matching
+  [3/7] of: Remove "stm,m25p40" alias
+
+The three patches above do real work. I tried to keep the 1/7 patch as
+small as possible, and factor out the subsystem cleanups into other,
+"cleanup" patches:
+
+  [PATCH 4/7] spi: Prefix modalias with "spi:"
+  [PATCH 5/7] spi: Merge probe and probe_id callbacks
+
+These two patches I consider as cleanups, they should not introduce
+any behavioural change, but they touch quite a lot of files.
+
+  [PATCH 6/7] hwmon: adxx: Convert to device table matching
+  [PATCH 7/7] hwmon: lm70: Convert to device table matching
+
+These two are here because I couldn't stop. :-) Also cleanups.
+
 -- 
-1.6.0
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
