@@ -1,28 +1,26 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 958AFB70B0
+Return-Path: <galak@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8F4AEB6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Jul 2009 22:40:09 +1000 (EST)
-Date: Wed, 29 Jul 2009 14:06:42 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/cell: Move CBE_IOPTE_* to <asm/cell-regs.h> (was:
-	Re: [PATCH 10/33] powerpc/cell: Extract duplicated IOPTE_* to
-	<asm/iommu.h>)
-In-Reply-To: <1245049942.19217.57.camel@pasglop>
-Message-ID: <alpine.LRH.2.00.0907291402520.26399@vixen.sonytel.be>
-References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1244644748-24211-11-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1245030085.19217.5.camel@pasglop>
-	<200906150905.30744.arnd@arndb.de>
-	<1245049942.19217.57.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Jens Axboe <axboe@kernel.dk>, Arnd Bergmann <arnd@arndb.de>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
-	cbe-oss-dev@ozlabs.org
+	Wed, 29 Jul 2009 23:40:39 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E32C2DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 23:40:38 +1000 (EST)
+Message-Id: <820BFB98-F940-4B5C-8D4A-9C069B3DC199@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: hs@denx.de
+In-Reply-To: <4A70091E.7000002@denx.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: 82xx, mgcoge: updates for 2.6.32
+Date: Wed, 29 Jul 2009 08:40:29 -0500
+References: <4A70091E.7000002@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,157 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 15 Jun 2009, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-06-15 at 09:05 +0200, Arnd Bergmann wrote:
-> > Good point, that file does not contain hardware specific definitions
-> > but
-> > only interfaces.
-> > 
-> > Geert, how about putting them into
-> > arch/powerpc/include/asm/cell-regs.h
-> > instead?
-> 
-> I've put the patch in powerpc-next for now. But you may want to send
-> another patch later on to move things.
 
-At your service!
+On Jul 29, 2009, at 3:32 AM, Heiko Schocher wrote:
 
----
->From bb2fab2f78b24a80669cc6424bf621e4d113cfe4 Mon Sep 17 00:00:00 2001
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Date: Wed, 29 Jul 2009 13:56:57 +0200
-Subject: [PATCH] powerpc/cell: Move CBE_IOPTE_* to <asm/cell-regs.h>
+> - add I2C support
+> - add FCC1 and FCC2 support
+> - fix bogus gpio numbering in plattformcode
+>
+> Signed-off-by: Heiko Schocher <hs@denx.de>
+> ---
+> - based on git://git.kernel.org/pub/scm/linux/kernel/git/benh/ 
+> powerpc.git
+>  next branch
+> - checked with checkpatch.pl:
+> $ ./scripts/checkpatch.pl 0001-82xx-mgcoge-updates-for-2.6.32.patch
+> total: 0 errors, 0 warnings, 531 lines checked
+>
+> 0001-82xx-mgcoge-updates-for-2.6.32.patch has no obvious style  
+> problems and is ready for submission.
+> $
+>
+> BTW: Who is PPC82XX Maintainer? I couldn;t find such an entry
+>     in the MAINTAINERS file ...
 
-As <asm/iommu.h> doesn't contain any other hardware specific definitions
-but only interfaces.
+its me.
 
-Reported-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Jens Axboe <axboe@kernel.dk>
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- arch/powerpc/include/asm/cell-regs.h    |   11 +++++++++++
- arch/powerpc/include/asm/iommu.h        |   10 ----------
- arch/powerpc/platforms/ps3/mm.c         |    2 +-
- arch/powerpc/platforms/ps3/system-bus.c |    2 +-
- drivers/block/ps3vram.c                 |    2 +-
- drivers/video/ps3fb.c                   |    2 +-
- 6 files changed, 15 insertions(+), 14 deletions(-)
+> arch/powerpc/boot/dts/mgcoge.dts      |   56 ++++++++++
+> arch/powerpc/configs/mgcoge_defconfig |  178 ++++++++++++++++++++++++ 
+> +-------
 
-diff --git a/arch/powerpc/include/asm/cell-regs.h b/arch/powerpc/include/asm/cell-regs.h
-index fd6fd00..fdf64fd 100644
---- a/arch/powerpc/include/asm/cell-regs.h
-+++ b/arch/powerpc/include/asm/cell-regs.h
-@@ -303,6 +303,17 @@ struct cbe_mic_tm_regs {
- extern struct cbe_mic_tm_regs __iomem *cbe_get_mic_tm_regs(struct device_node *np);
- extern struct cbe_mic_tm_regs __iomem *cbe_get_cpu_mic_tm_regs(int cpu);
- 
-+
-+/* Cell page table entries */
-+#define CBE_IOPTE_PP_W		0x8000000000000000ul /* protection: write */
-+#define CBE_IOPTE_PP_R		0x4000000000000000ul /* protection: read */
-+#define CBE_IOPTE_M		0x2000000000000000ul /* coherency required */
-+#define CBE_IOPTE_SO_R		0x1000000000000000ul /* ordering: writes */
-+#define CBE_IOPTE_SO_RW		0x1800000000000000ul /* ordering: r & w */
-+#define CBE_IOPTE_RPN_Mask	0x07fffffffffff000ul /* RPN */
-+#define CBE_IOPTE_H		0x0000000000000800ul /* cache hint */
-+#define CBE_IOPTE_IOID_Mask	0x00000000000007fful /* ioid */
-+
- /* some utility functions to deal with SMT */
- extern u32 cbe_get_hw_thread_id(int cpu);
- extern u32 cbe_cpu_to_node(int cpu);
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 7ead7c1..7464c0d 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -35,16 +35,6 @@
- #define IOMMU_PAGE_MASK       (~((1 << IOMMU_PAGE_SHIFT) - 1))
- #define IOMMU_PAGE_ALIGN(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE)
- 
--/* Cell page table entries */
--#define CBE_IOPTE_PP_W		0x8000000000000000ul /* protection: write */
--#define CBE_IOPTE_PP_R		0x4000000000000000ul /* protection: read */
--#define CBE_IOPTE_M		0x2000000000000000ul /* coherency required */
--#define CBE_IOPTE_SO_R		0x1000000000000000ul /* ordering: writes */
--#define CBE_IOPTE_SO_RW		0x1800000000000000ul /* ordering: r & w */
--#define CBE_IOPTE_RPN_Mask	0x07fffffffffff000ul /* RPN */
--#define CBE_IOPTE_H		0x0000000000000800ul /* cache hint */
--#define CBE_IOPTE_IOID_Mask	0x00000000000007fful /* ioid */
--
- /* Boot time flags */
- extern int iommu_is_off;
- extern int iommu_force_on;
-diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
-index 846eb8b..189a25b 100644
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -23,8 +23,8 @@
- #include <linux/memory_hotplug.h>
- #include <linux/lmb.h>
- 
-+#include <asm/cell-regs.h>
- #include <asm/firmware.h>
--#include <asm/iommu.h>
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/lv1call.h>
-diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-index 3f763c5..676f989 100644
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -27,7 +27,7 @@
- #include <asm/udbg.h>
- #include <asm/lv1call.h>
- #include <asm/firmware.h>
--#include <asm/iommu.h>
-+#include <asm/cell-regs.h>
- 
- #include "platform.h"
- 
-diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index 095f97e..c8753a9 100644
---- a/drivers/block/ps3vram.c
-+++ b/drivers/block/ps3vram.c
-@@ -13,8 +13,8 @@
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- 
-+#include <asm/cell-regs.h>
- #include <asm/firmware.h>
--#include <asm/iommu.h>
- #include <asm/lv1call.h>
- #include <asm/ps3.h>
- #include <asm/ps3gpu.h>
-diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
-index c0af638..9c0144e 100644
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -32,7 +32,7 @@
- #include <linux/init.h>
- 
- #include <asm/abs_addr.h>
--#include <asm/iommu.h>
-+#include <asm/cell-regs.h>
- #include <asm/lv1call.h>
- #include <asm/ps3av.h>
- #include <asm/ps3fb.h>
--- 
-1.6.2.4
+Can we hold off or pull the defconfig update into a separate patch.  I  
+normally update defconfigs in a late -rc series and that will probably  
+generate merge conflicts.
 
-With kind regards,
+>
+> arch/powerpc/platforms/82xx/mgcoge.c  |   69 +++++++++++--
+> 3 files changed, 255 insertions(+), 48 deletions(-)
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+- k
