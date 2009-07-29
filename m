@@ -1,26 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <mware@elphinstone.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 48567B7B5F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C17B1B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Jul 2009 02:11:19 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id CEFFBDDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 02:11:18 +1000 (EST)
-Date: Tue, 28 Jul 2009 20:11:15 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 8/9] drivers/mmc: correct error-handling code
-Message-ID: <20090728161115.GA8091@oksana.dev.rtsoft.ru>
-References: <Pine.LNX.4.64.0907281755340.28189@ask.diku.dk>
+	Wed, 29 Jul 2009 13:46:07 +1000 (EST)
+Received: from ipmail04.adl2.internode.on.net (ipmail04.adl2.internode.on.net
+	[203.16.214.57]) by ozlabs.org (Postfix) with ESMTP id 5671BDDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 13:46:05 +1000 (EST)
+Message-ID: <4A6FC5FA.4040405@elphinstone.net>
+Date: Wed, 29 Jul 2009 13:46:02 +1000
+From: Mark Ware <mware@elphinstone.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <Pine.LNX.4.64.0907281755340.28189@ask.diku.dk>
-Cc: linuxppc-dev@ozlabs.org, kernel-janitors@vger.kernel.org,
-	sdhci-devel@lists.ossman.eu, linux-kernel@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC/PATCH] powerpc: Don't use alloc_bootmem in cpm_uart_cpm2.c
+References: <4A645A27.7040002@elphinstone.net>
+	<20090727221601.GC19572@b07421-ec1.am.freescale.net>
+In-Reply-To: <20090727221601.GC19572@b07421-ec1.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,54 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 28, 2009 at 05:56:00PM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+Scott Wood wrote:
+> On Mon, Jul 20, 2009 at 09:51:03PM +1000, Mark Ware wrote:
+>> This is another alloc_bootmem() -> kzalloc() change, this time to
+>> fix the non-fatal badness caused when booting with a cpm2_uart console.
+>>
+>> Signed-Off-By: Mark Ware <mware@elphinstone.net>
+>>
+>> ---
+>>  drivers/serial/cpm_uart/cpm_uart_cpm2.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c 
+>> b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+>> index 141c0a3..a9802e7 100644
+>> --- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+>> +++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+>> @@ -132,7 +132,7 @@ int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, 
+>> unsigned int is_con)
+>>  	memsz = L1_CACHE_ALIGN(pinfo->rx_nrfifos * pinfo->rx_fifosize) +
+>>  	    L1_CACHE_ALIGN(pinfo->tx_nrfifos * pinfo->tx_fifosize);
+>>  	if (is_con) {
+>> -		mem_addr = alloc_bootmem(memsz);
+>> +		mem_addr = kzalloc(memsz, GFP_NOWAIT);
+>>  		dma_addr = virt_to_bus(mem_addr);
+>>  	}
 > 
-> sdhci_alloc_host returns an ERR_PTR value in an error case instead of NULL.
+> Hmm, is dma_alloc_coherent() now available this early as well?  If so, we
+> could get rid of the separate "is_con" handling altogether.
 > 
-> A simplified version of the semantic match that finds this problem is as
-> follows: (http://coccinelle.lip6.fr/)
+> -Scott
 > 
-> // <smpl>
-> @match exists@
-> expression x, E;
-> statement S1, S2;
-> @@
-> 
-> x = sdhci_alloc_host(...)
-> ... when != x = E
-> (
-> *  if (x == NULL || ...) S1 else S2
-> |
-> *  if (x == NULL && ...) S1 else S2
-> )
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+This was my first thought as well, but calling dma_alloc_coherent() on a console resulted in a hang on boot before any console output.
+I have no actual proof, but it seems likely that it is not available at that point in the boot.
 
-Thanks,
-
-> ---
->  drivers/mmc/host/sdhci-of.c         |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-> index d79fa55..fb00bc5 100644
-> --- a/drivers/mmc/host/sdhci-of.c
-> +++ b/drivers/mmc/host/sdhci-of.c
-> @@ -226,7 +226,7 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
->  		return -ENODEV;
->  
->  	host = sdhci_alloc_host(&ofdev->dev, sizeof(*of_host));
-> -	if (!host)
-> +	if (IS_ERR(host))
->  		return -ENOMEM;
->  
->  	of_host = sdhci_priv(host);
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Regards,
+Mark
