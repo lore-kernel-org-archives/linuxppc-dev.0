@@ -1,27 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 59AEEB7B66
+Return-Path: <stef.simoens@scarlet.be>
+Received: from smtp2.tech.numericable.fr (smtp2.tech.numericable.fr
+	[82.216.111.38])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 7996DB7B5F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jul 2009 03:05:23 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 74335DDD1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 03:05:22 +1000 (EST)
-Date: Wed, 29 Jul 2009 21:05:21 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 7/7] hwmon: lm70: Convert to device table matching
-Message-ID: <20090729170521.GG4803@oksana.dev.rtsoft.ru>
-References: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
+	Thu, 30 Jul 2009 04:23:01 +1000 (EST)
+Message-ID: <4A70937B.7040201@scarlet.be>
+Date: Wed, 29 Jul 2009 20:22:51 +0200
+From: Stef Simoens <stef.simoens@scarlet.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Jean Delvare <khali@linux-fr.org>, David Woodhouse <dwmw2@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: BUG in dma-mapping.h:218 // MESH SCSI driver not working
+References: <4A68E1CE.4040307@scarlet.be> <1248425553.25467.20.camel@pasglop>
+In-Reply-To: <1248425553.25467.20.camel@pasglop>
+Content-Type: multipart/alternative;
+	boundary="------------080505020409050903020209"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,124 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch makes the code a little bit nicer, and shorter.
+This is a multi-part message in MIME format.
+--------------080505020409050903020209
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/hwmon/lm70.c |   58 +++++++++++++++++--------------------------------
- 1 files changed, 20 insertions(+), 38 deletions(-)
+Hello,
 
-diff --git a/drivers/hwmon/lm70.c b/drivers/hwmon/lm70.c
-index 3953c22..b4be110 100644
---- a/drivers/hwmon/lm70.c
-+++ b/drivers/hwmon/lm70.c
-@@ -32,6 +32,7 @@
- #include <linux/sysfs.h>
- #include <linux/hwmon.h>
- #include <linux/mutex.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/spi/spi.h>
- 
- 
-@@ -130,11 +131,21 @@ static DEVICE_ATTR(name, S_IRUGO, lm70_show_name, NULL);
- 
- /*----------------------------------------------------------------------*/
- 
--static int __devinit common_probe(struct spi_device *spi, int chip)
-+static int __devinit lm70_probe(struct spi_device *spi,
-+				const struct spi_device_id *id)
- {
-+	int chip = (int)id->data;
- 	struct lm70 *p_lm70;
- 	int status;
- 
-+	/* signaling is SPI_MODE_0 for both LM70 and TMP121 */
-+	if (spi->mode & (SPI_CPOL | SPI_CPHA))
-+		return -EINVAL;
-+
-+	/* 3-wire link (shared SI/SO) for LM70 */
-+	if (chip == LM70_CHIP_LM70 && !(spi->mode & SPI_3WIRE))
-+		return -EINVAL;
-+
- 	/* NOTE:  we assume 8-bit words, and convert to 16 bits manually */
- 
- 	p_lm70 = kzalloc(sizeof *p_lm70, GFP_KERNEL);
-@@ -170,26 +181,6 @@ out_dev_reg_failed:
- 	return status;
- }
- 
--static int __devinit lm70_probe(struct spi_device *spi,
--				const struct spi_device_id *id)
--{
--	/* signaling is SPI_MODE_0 on a 3-wire link (shared SI/SO) */
--	if ((spi->mode & (SPI_CPOL | SPI_CPHA)) || !(spi->mode & SPI_3WIRE))
--		return -EINVAL;
--
--	return common_probe(spi, LM70_CHIP_LM70);
--}
--
--static int __devinit tmp121_probe(struct spi_device *spi,
--				  const struct spi_device_id *id)
--{
--	/* signaling is SPI_MODE_0 with only MISO connected */
--	if (spi->mode & (SPI_CPOL | SPI_CPHA))
--		return -EINVAL;
--
--	return common_probe(spi, LM70_CHIP_TMP121);
--}
--
- static int __devexit lm70_remove(struct spi_device *spi)
- {
- 	struct lm70 *p_lm70 = dev_get_drvdata(&spi->dev);
-@@ -203,41 +194,32 @@ static int __devexit lm70_remove(struct spi_device *spi)
- 	return 0;
- }
- 
--static struct spi_driver tmp121_driver = {
--	.driver = {
--		.name	= "tmp121",
--		.owner	= THIS_MODULE,
--	},
--	.probe	= tmp121_probe,
--	.remove	= __devexit_p(lm70_remove),
-+
-+static const struct spi_device_id lm70_ids[] = {
-+	{ "lm70",   (void *)LM70_CHIP_LM70 },
-+	{ "tmp121", (void *)LM70_CHIP_TMP121 },
-+	{ },
- };
-+MODULE_DEVICE_TABLE(spi, lm70_ids);
- 
- static struct spi_driver lm70_driver = {
- 	.driver = {
- 		.name	= "lm70",
- 		.owner	= THIS_MODULE,
- 	},
-+	.id_table = lm70_ids,
- 	.probe	= lm70_probe,
- 	.remove	= __devexit_p(lm70_remove),
- };
- 
- static int __init init_lm70(void)
- {
--	int ret = spi_register_driver(&lm70_driver);
--	if (ret)
--		return ret;
--
--	ret = spi_register_driver(&tmp121_driver);
--	if (ret)
--		spi_unregister_driver(&lm70_driver);
--
--	return ret;
-+	return spi_register_driver(&lm70_driver);
- }
- 
- static void __exit cleanup_lm70(void)
- {
- 	spi_unregister_driver(&lm70_driver);
--	spi_unregister_driver(&tmp121_driver);
- }
- 
- module_init(init_lm70);
+Benjamin Herrenschmidt schreef:
+> On Fri, 2009-07-24 at 00:18 +0200, Stef Simoens wrote:
+>   
+>> I tried the latest 2.6.31-rc3-git3 (without any other patch).
+>> However, I have the same behaviour as the patched 2.6.30 (so: no BUG, 
+>> but the mesh_abort messages).
+>>     
+> Would it be possible for you to roughly find out at what kernel version
+> it stopped working ? (Some kernels may need my patch to avoid crashing)
+>   
+2.6.29 works OK
+2.6.30-rc1 doesn't work (BUG...)
+2.6.30-rc1 with your patch ... seems to hang when it should be mounting 
+the root directory.
+
+Is it worthwhile doing a git bisect?
+
 -- 
-1.6.3.3
+Kind regards,
+
+Stef Simoens
+
+
+
+--------------080505020409050903020209
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Hello,<br>
+<br>
+Benjamin Herrenschmidt schreef:
+<blockquote cite="mid:1248425553.25467.20.camel@pasglop" type="cite">
+  <pre wrap="">On Fri, 2009-07-24 at 00:18 +0200, Stef Simoens wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">I tried the latest 2.6.31-rc3-git3 (without any other patch).
+However, I have the same behaviour as the patched 2.6.30 (so: no BUG, 
+but the mesh_abort messages).
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->Would it be possible for you to roughly find out at what kernel version
+it stopped working ? (Some kernels may need my patch to avoid crashing)
+  </pre>
+</blockquote>
+2.6.29 works OK<br>
+2.6.30-rc1 doesn't work (BUG...)<br>
+2.6.30-rc1 with your patch ... seems to hang when it should be mounting
+the root directory.<br>
+<br>
+Is it worthwhile doing a git bisect?<br>
+<pre class="moz-signature" cols="72">-- 
+Kind regards,
+
+Stef Simoens
+
+</pre>
+</body>
+</html>
+
+--------------080505020409050903020209--
