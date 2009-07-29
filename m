@@ -1,20 +1,26 @@
-Return-Path: <stef.simoens@scarlet.be>
-Received: from smtp2.tech.numericable.fr (smtp2.tech.numericable.fr
-	[82.216.111.38])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 7996DB7B5F
+Return-Path: <hancockrwd@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 62617B7079
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jul 2009 04:23:01 +1000 (EST)
-Message-ID: <4A70937B.7040201@scarlet.be>
-Date: Wed, 29 Jul 2009 20:22:51 +0200
-From: Stef Simoens <stef.simoens@scarlet.be>
+	Thu, 30 Jul 2009 06:20:24 +1000 (EST)
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
+	by ozlabs.org (Postfix) with ESMTP id A3EEDDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 06:20:23 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so148920waf.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 13:20:22 -0700 (PDT)
+Message-ID: <4A70A78D.7070601@gmail.com>
+Date: Wed, 29 Jul 2009 13:48:29 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: BUG in dma-mapping.h:218 // MESH SCSI driver not working
-References: <4A68E1CE.4040307@scarlet.be> <1248425553.25467.20.camel@pasglop>
-In-Reply-To: <1248425553.25467.20.camel@pasglop>
-Content-Type: multipart/alternative;
-	boundary="------------080505020409050903020209"
-Cc: linuxppc-dev@lists.ozlabs.org
+To: ashish kalra <ashish.kalra@freescale.com>
+Subject: Re: [PATCH][sata_fsl] Defer non-ncq commands when ncq commands active
+References: <Pine.WNT.4.64.0907292129310.4440@B00888-02.fsl.freescale.net>
+In-Reply-To: <Pine.WNT.4.64.0907292129310.4440@B00888-02.fsl.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,76 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------080505020409050903020209
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On 07/29/2009 10:03 AM, ashish kalra wrote:
+> From: Ashish Kalra <Ashish.Kalra@freescale.com>
+> Date: Wed, 29 Jul 2009 21:15:49 +0530
+>
+> Fix for non-ncq & ncq commands causing timeouts when both are issued
+> simultaneously to the same device.
+>
+> Signed-off-by: Ashish Kalra <Ashish.Kalra@freescale.com>
+> ---
+> drivers/ata/sata_fsl.c | 1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+> index 5a88b44..a33f130 100644
+> --- a/drivers/ata/sata_fsl.c
+> +++ b/drivers/ata/sata_fsl.c
+> @@ -1262,6 +1262,7 @@ static struct scsi_host_template sata_fsl_sht = {
+> static struct ata_port_operations sata_fsl_ops = {
+> .inherits = &sata_pmp_port_ops,
+>
+> + .qc_defer = ata_std_qc_defer;
+> .qc_prep = sata_fsl_qc_prep,
+> .qc_issue = sata_fsl_qc_issue,
+> .qc_fill_rtf = sata_fsl_qc_fill_rtf,
 
-Hello,
-
-Benjamin Herrenschmidt schreef:
-> On Fri, 2009-07-24 at 00:18 +0200, Stef Simoens wrote:
->   
->> I tried the latest 2.6.31-rc3-git3 (without any other patch).
->> However, I have the same behaviour as the patched 2.6.30 (so: no BUG, 
->> but the mesh_abort messages).
->>     
-> Would it be possible for you to roughly find out at what kernel version
-> it stopped working ? (Some kernels may need my patch to avoid crashing)
->   
-2.6.29 works OK
-2.6.30-rc1 doesn't work (BUG...)
-2.6.30-rc1 with your patch ... seems to hang when it should be mounting 
-the root directory.
-
-Is it worthwhile doing a git bisect?
-
--- 
-Kind regards,
-
-Stef Simoens
-
-
-
---------------080505020409050903020209
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Hello,<br>
-<br>
-Benjamin Herrenschmidt schreef:
-<blockquote cite="mid:1248425553.25467.20.camel@pasglop" type="cite">
-  <pre wrap="">On Fri, 2009-07-24 at 00:18 +0200, Stef Simoens wrote:
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">I tried the latest 2.6.31-rc3-git3 (without any other patch).
-However, I have the same behaviour as the patched 2.6.30 (so: no BUG, 
-but the mesh_abort messages).
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->Would it be possible for you to roughly find out at what kernel version
-it stopped working ? (Some kernels may need my patch to avoid crashing)
-  </pre>
-</blockquote>
-2.6.29 works OK<br>
-2.6.30-rc1 doesn't work (BUG...)<br>
-2.6.30-rc1 with your patch ... seems to hang when it should be mounting
-the root directory.<br>
-<br>
-Is it worthwhile doing a git bisect?<br>
-<pre class="moz-signature" cols="72">-- 
-Kind regards,
-
-Stef Simoens
-
-</pre>
-</body>
-</html>
-
---------------080505020409050903020209--
+This doesn't look like it should change anything. sata_fsl_ops inherits 
+from sata_pmp_port_ops, which inherits from sata_port_ops, which already 
+sets qc_defer to ata_std_qc_defer.
