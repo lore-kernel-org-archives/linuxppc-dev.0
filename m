@@ -1,25 +1,33 @@
-Return-Path: <mware@elphinstone.net>
+Return-Path: <LeoLi@freescale.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C17B1B6F1E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CB404B7063
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 29 Jul 2009 13:46:07 +1000 (EST)
-Received: from ipmail04.adl2.internode.on.net (ipmail04.adl2.internode.on.net
-	[203.16.214.57]) by ozlabs.org (Postfix) with ESMTP id 5671BDDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 13:46:05 +1000 (EST)
-Message-ID: <4A6FC5FA.4040405@elphinstone.net>
-Date: Wed, 29 Jul 2009 13:46:02 +1000
-From: Mark Ware <mware@elphinstone.net>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC/PATCH] powerpc: Don't use alloc_bootmem in cpm_uart_cpm2.c
-References: <4A645A27.7040002@elphinstone.net>
-	<20090727221601.GC19572@b07421-ec1.am.freescale.net>
-In-Reply-To: <20090727221601.GC19572@b07421-ec1.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+	Wed, 29 Jul 2009 18:19:52 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 633C1DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 18:19:51 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n6T8JZuX014277
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 01:19:45 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n6T8JkjE016704
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2009 03:19:47 -0500 (CDT)
+From: Li Yang <leoli@freescale.com>
+To: davem@davemloft.net
+Subject: [PATCH] gianfar: fix coalescing setup in ethtool support 
+Date: Wed, 29 Jul 2009 16:51:57 +0800
+Message-Id: <1248857517-8270-1-git-send-email-leoli@freescale.com>
+Cc: netdev@vger.kernel.org, Jiajun Wu <b06378@freescale.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> On Mon, Jul 20, 2009 at 09:51:03PM +1000, Mark Ware wrote:
->> This is another alloc_bootmem() -> kzalloc() change, this time to
->> fix the non-fatal badness caused when booting with a cpm2_uart console.
->>
->> Signed-Off-By: Mark Ware <mware@elphinstone.net>
->>
->> ---
->>  drivers/serial/cpm_uart/cpm_uart_cpm2.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c 
->> b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
->> index 141c0a3..a9802e7 100644
->> --- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
->> +++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
->> @@ -132,7 +132,7 @@ int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, 
->> unsigned int is_con)
->>  	memsz = L1_CACHE_ALIGN(pinfo->rx_nrfifos * pinfo->rx_fifosize) +
->>  	    L1_CACHE_ALIGN(pinfo->tx_nrfifos * pinfo->tx_fifosize);
->>  	if (is_con) {
->> -		mem_addr = alloc_bootmem(memsz);
->> +		mem_addr = kzalloc(memsz, GFP_NOWAIT);
->>  		dma_addr = virt_to_bus(mem_addr);
->>  	}
-> 
-> Hmm, is dma_alloc_coherent() now available this early as well?  If so, we
-> could get rid of the separate "is_con" handling altogether.
-> 
-> -Scott
-> 
+From: Jiajun Wu <b06378@freescale.com>
 
-This was my first thought as well, but calling dma_alloc_coherent() on a console resulted in a hang on boot before any console output.
-I have no actual proof, but it seems likely that it is not available at that point in the boot.
+Parameter order for using mk_ic_value(count, time) was reversed,
+the patch fixes this.
 
-Regards,
-Mark
+Signed-off-by: Jiajun Wu <b06378@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ drivers/net/gianfar_ethtool.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/gianfar_ethtool.c b/drivers/net/gianfar_ethtool.c
+index 2a7edfa..3109f4b 100644
+--- a/drivers/net/gianfar_ethtool.c
++++ b/drivers/net/gianfar_ethtool.c
+@@ -373,9 +373,8 @@ static int gfar_scoalesce(struct net_device *dev, struct ethtool_coalesce *cvals
+ 		return -EINVAL;
+ 	}
+ 
+-	priv->rxic = mk_ic_value(
+-		gfar_usecs2ticks(priv, cvals->rx_coalesce_usecs),
+-		cvals->rx_max_coalesced_frames);
++	priv->rxic = mk_ic_value(cvals->rx_max_coalesced_frames,
++		gfar_usecs2ticks(priv, cvals->rx_coalesce_usecs));
+ 
+ 	/* Set up tx coalescing */
+ 	if ((cvals->tx_coalesce_usecs == 0) ||
+@@ -397,9 +396,8 @@ static int gfar_scoalesce(struct net_device *dev, struct ethtool_coalesce *cvals
+ 		return -EINVAL;
+ 	}
+ 
+-	priv->txic = mk_ic_value(
+-		gfar_usecs2ticks(priv, cvals->tx_coalesce_usecs),
+-		cvals->tx_max_coalesced_frames);
++	priv->txic = mk_ic_value(cvals->tx_max_coalesced_frames,
++		gfar_usecs2ticks(priv, cvals->tx_coalesce_usecs));
+ 
+ 	gfar_write(&priv->regs->rxic, 0);
+ 	if (priv->rxcoalescing)
+-- 
+1.5.6.3
