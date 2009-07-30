@@ -3,24 +3,27 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A70F1B7BBF
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A971AB7B77
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 31 Jul 2009 00:11:35 +1000 (EST)
+	Fri, 31 Jul 2009 00:30:04 +1000 (EST)
 Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mgw2.diku.dk",
 	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 12CEADDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 00:11:34 +1000 (EST)
-Date: Thu, 30 Jul 2009 16:11:24 +0200 (CEST)
+	by ozlabs.org (Postfix) with ESMTPS id 3240CDDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 00:30:04 +1000 (EST)
+Date: Thu, 30 Jul 2009 16:29:54 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: johannes@sipsolutions.net, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/5] sound/aoa: Add kmalloc NULL tests
-Message-ID: <Pine.LNX.4.64.0907301610550.8734@ask.diku.dk>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 5/5] sound/aoa: Add kmalloc NULL tests
+In-Reply-To: <1248963420.16129.0.camel@johannes.local>
+Message-ID: <Pine.LNX.4.64.0907301627260.8734@ask.diku.dk>
+References: <Pine.LNX.4.64.0907301610550.8734@ask.diku.dk>
+	<1248963420.16129.0.camel@johannes.local>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,55 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
+On Thu, 30 Jul 2009, Johannes Berg wrote:
 
-Check that the result of kzalloc is not NULL before a dereference.
+> On Thu, 2009-07-30 at 16:11 +0200, Julia Lawall wrote:
+> > From: Julia Lawall <julia@diku.dk>
+> > 
+> > Check that the result of kzalloc is not NULL before a dereference.
+> 
+> >  		irq_client = kzalloc(sizeof(struct pmf_irq_client),
+> >  				     GFP_KERNEL);
+> > +		if (!irq_client) {
+> > +			err = -ENOMEM;
+> > +			printk(KERN_ERR "snd-aoa: gpio layer failed to"
+> > +				" register %s irq (%d)\n", name, err);
+> > +			goto out_unlock;
+> > +		}
+> 
+> Looks good, thanks, but I'd really drop the printk if only to not have
+> the string there, that doesn't really seem interesting.
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+The printk is based on similar error handling code a few lines later:
 
-// <smpl>
-@@
-expression *x;
-identifier f;
-constant char *C;
-@@
+               if (err) {
+                        printk(KERN_ERR "snd-aoa: gpio layer failed to"
+                                        " register %s irq (%d)\n", name, 
+err);
+                        kfree(irq_client);
+                        goto out_unlock;
+                }
 
-x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-... when != x == NULL
-    when != x != NULL
-    when != (x || ...)
-(
-kfree(x)
-|
-f(...,C,...,x,...)
-|
-*f(...,x,...)
-|
-*x->f
-)
-// </smpl>
+Should the printk be removed in this case as well?  Or is it ok to fail 
+silently in one case and not in the other?
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- sound/aoa/core/gpio-pmf.c           |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/sound/aoa/core/gpio-pmf.c b/sound/aoa/core/gpio-pmf.c
-index 5ca2220..b4439ce 100644
---- a/sound/aoa/core/gpio-pmf.c
-+++ b/sound/aoa/core/gpio-pmf.c
-@@ -182,6 +182,12 @@ static int pmf_set_notify(struct gpio_runtime *rt,
- 	if (!old && notify) {
- 		irq_client = kzalloc(sizeof(struct pmf_irq_client),
- 				     GFP_KERNEL);
-+		if (!irq_client) {
-+			err = -ENOMEM;
-+			printk(KERN_ERR "snd-aoa: gpio layer failed to"
-+				" register %s irq (%d)\n", name, err);
-+			goto out_unlock;
-+		}
- 		irq_client->data = notif;
- 		irq_client->handler = pmf_handle_notify_irq;
- 		irq_client->owner = THIS_MODULE;
+julia
