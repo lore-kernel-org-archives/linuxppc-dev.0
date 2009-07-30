@@ -1,34 +1,24 @@
-Return-Path: <hs@denx.de>
+Return-Path: <martyn.welch@gefanuc.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 041F9B7B9F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DE21CB7B99
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jul 2009 15:26:56 +1000 (EST)
-Received: from b.relay.invitel.net (b.relay.invitel.net [62.77.203.4])
-	by ozlabs.org (Postfix) with ESMTP id 95F31DDD1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 15:26:55 +1000 (EST)
-Received: from mail.invitel.hu (mail.invitel.hu [213.163.59.4])
-	by b.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
-	30F9031A7F8
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 07:26:54 +0200 (CEST)
-Received: from [192.168.1.6] ([87.97.88.130])
-	by mail.invitel.hu (Invitel Messaging Server)
-	with ESMTPA id <0KNK00DC3XST67A0@invitel.hu> for
-	linuxppc-dev@ozlabs.org; Thu, 30 Jul 2009 07:26:54 +0200 (CEST)
-Date: Thu, 30 Jul 2009 07:31:44 +0200
-From: Heiko Schocher <hs@denx.de>
-Subject: Re: 82xx, mgcoge: updates for 2.6.32
-In-reply-to: <820BFB98-F940-4B5C-8D4A-9C069B3DC199@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Message-id: <4A713040.3060005@denx.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-References: <4A70091E.7000002@denx.de>
-	<820BFB98-F940-4B5C-8D4A-9C069B3DC199@kernel.crashing.org>
+	Thu, 30 Jul 2009 18:15:15 +1000 (EST)
+Received: from exprod5og104.obsmtp.com (exprod5og104.obsmtp.com [64.18.0.178])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B2F26DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 18:15:13 +1000 (EST)
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH v2] powerpc/86xx: Update GE Fanuc sbc310 DTS
+To: galak@kernel.crashing.org
+Date: Thu, 30 Jul 2009 09:13:45 +0100
+Message-ID: <20090730080651.27000.18194.stgit@ES-J7S4D2J.amer.consind.ge.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,50 +28,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Kumar,
+Update GE Fanuc DTS to match the alterations suggested during the merge of
+the ppc9a DTS in commit 740d36ae6344f38c4da64c2ede765d7d2dd1f132
 
-Kumar Gala wrote:
-> 
-> On Jul 29, 2009, at 3:32 AM, Heiko Schocher wrote:
-> 
->> - add I2C support
->> - add FCC1 and FCC2 support
->> - fix bogus gpio numbering in plattformcode
->>
->> Signed-off-by: Heiko Schocher <hs@denx.de>
->> ---
->> - based on git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
->>  next branch
->> - checked with checkpatch.pl:
->> $ ./scripts/checkpatch.pl 0001-82xx-mgcoge-updates-for-2.6.32.patch
->> total: 0 errors, 0 warnings, 531 lines checked
->>
->> 0001-82xx-mgcoge-updates-for-2.6.32.patch has no obvious style
->> problems and is ready for submission.
->> $
->>
->> BTW: Who is PPC82XX Maintainer? I couldn;t find such an entry
->>     in the MAINTAINERS file ...
-> 
-> its me.
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
 
-Ah, thought it, but I wasn;t sure ... Hmm, maybe you can update
-the MAINTAINERS entry?
+v2: Fixed run on message.
 
->> arch/powerpc/boot/dts/mgcoge.dts      |   56 ++++++++++
->> arch/powerpc/configs/mgcoge_defconfig |  178
->> +++++++++++++++++++++++++-------
-> 
-> Can we hold off or pull the defconfig update into a separate patch.  I
-> normally update defconfigs in a late -rc series and that will probably
-> generate merge conflicts.
+Kumar: I think the problem may be that this patch depends on a previous patch:
 
-I make a seperate patch for the defconfig.
+http://patchwork.ozlabs.org/patch/29335/
 
-Thanks. I wait for more comments, before I post the next version
-of this patch.
-bye
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Martyn
+
+ arch/powerpc/boot/dts/gef_sbc310.dts |   29 +++++++++++++----------------
+ 1 files changed, 13 insertions(+), 16 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/gef_sbc310.dts b/arch/powerpc/boot/dts/gef_sbc310.dts
+index 7810ea9..2107d3c 100644
+--- a/arch/powerpc/boot/dts/gef_sbc310.dts
++++ b/arch/powerpc/boot/dts/gef_sbc310.dts
+@@ -83,34 +83,34 @@
+ 
+ 		/* flash@0,0 is a mirror of part of the memory in flash@1,0
+ 		flash@0,0 {
+-			compatible = "cfi-flash";
+-			reg = <0 0 0x01000000>;
++			compatible = "gef,sbc310-firmware-mirror", "cfi-flash";
++			reg = <0x0 0x0 0x01000000>;
+ 			bank-width = <2>;
+ 			device-width = <2>;
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			partition@0 {
+ 				label = "firmware";
+-				reg = <0x00000000 0x01000000>;
++				reg = <0x0 0x01000000>;
+ 				read-only;
+ 			};
+ 		};
+ 		*/
+ 
+ 		flash@1,0 {
+-			compatible = "cfi-flash";
+-			reg = <1 0 0x8000000>;
++			compatible = "gef,sbc310-paged-flash", "cfi-flash";
++			reg = <0x1 0x0 0x8000000>;
+ 			bank-width = <2>;
+ 			device-width = <2>;
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			partition@0 {
+ 				label = "user";
+-				reg = <0x00000000 0x07800000>;
++				reg = <0x0 0x7800000>;
+ 			};
+ 			partition@7800000 {
+ 				label = "firmware";
+-				reg = <0x07800000 0x00800000>;
++				reg = <0x7800000 0x800000>;
+ 				read-only;
+ 			};
+ 		};
+@@ -121,18 +121,16 @@
+ 		};
+ 
+ 		wdt@4,2000 {
+-			#interrupt-cells = <2>;
+-			device_type = "watchdog";
+-			compatible = "gef,fpga-wdt";
++			compatible = "gef,sbc310-fpga-wdt", "gef,fpga-wdt-1.00",
++				"gef,fpga-wdt";
+ 			reg = <0x4 0x2000 0x8>;
+ 			interrupts = <0x1a 0x4>;
+ 			interrupt-parent = <&gef_pic>;
+ 		};
+ /*
+ 		wdt@4,2010 {
+-			#interrupt-cells = <2>;
+-			device_type = "watchdog";
+-			compatible = "gef,fpga-wdt";
++			compatible = "gef,sbc310-fpga-wdt", "gef,fpga-wdt-1.00",
++				"gef,fpga-wdt";
+ 			reg = <0x4 0x2010 0x8>;
+ 			interrupts = <0x1b 0x4>;
+ 			interrupt-parent = <&gef_pic>;
+@@ -141,7 +139,7 @@
+ 		gef_pic: pic@4,4000 {
+ 			#interrupt-cells = <1>;
+ 			interrupt-controller;
+-			compatible = "gef,fpga-pic";
++			compatible = "gef,sbc310-fpga-pic", "gef,fpga-pic";
+ 			reg = <0x4 0x4000 0x20>;
+ 			interrupts = <0x8
+ 				      0x9>;
+@@ -161,7 +159,7 @@
+ 		#size-cells = <1>;
+ 		#interrupt-cells = <2>;
+ 		device_type = "soc";
+-		compatible = "simple-bus";
++		compatible = "fsl,mpc8641-soc", "simple-bus";
+ 		ranges = <0x0 0xfef00000 0x00100000>;
+ 		bus-frequency = <33333333>;
+ 
+@@ -412,5 +410,4 @@
+ 				  0x0 0x00400000>;
+ 		};
+ 	};
+-
+ };
