@@ -3,24 +3,24 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 09BC1B7B86
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3A75AB7B86
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jul 2009 14:14:39 +1000 (EST)
+	Thu, 30 Jul 2009 14:17:05 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 63CACDDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 14:14:38 +1000 (EST)
-Message-Id: <BF196D82-DE80-4273-A2EE-FEFCFFF34F55@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 7BD03DDDA0
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 14:17:04 +1000 (EST)
+Message-Id: <C6080F55-7EEE-4178-97D5-B5D8D25755B4@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090624163028.GA18825@oksana.dev.rtsoft.ru>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+In-Reply-To: <20090701173925.GA22134@oksana.dev.rtsoft.ru>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] powerpc/85xx: Fix ethernet link detection on MPC8569E-MDS
-	boards
-Date: Wed, 29 Jul 2009 23:14:30 -0500
-References: <20090624163028.GA18825@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH] powerpc/85xx: Don't scan for TBI PHY addresses on
+	MPC8569E-MDS boards
+Date: Wed, 29 Jul 2009 23:16:56 -0500
+References: <20090701173925.GA22134@oksana.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,22 +32,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jun 24, 2009, at 11:30 AM, Anton Vorontsov wrote:
+On Jul 1, 2009, at 12:39 PM, Anton Vorontsov wrote:
 
-> Linux isn't able to detect link changes on ethernet ports that were
-> used by U-Boot. This is because U-Boot wrongly clears interrupt
-> polarity bit (INTPOL, 0x400) in the extended status register (EXT_SR,
-> 0x1b) of Marvell PHYs.
+> Sometimes (e.g. when there are no UEMs attached to a board)
+> fsl_pq_mdio_find_free() fails to find a spare address for a TBI PHY,
+> this is because get_phy_id() returns bogus 0x0000ffff values
+> (0xffffffff is expected), and therefore mdio bus probing fails with
+> the following message:
 >
-> There is no easy way for PHY drivers to know IRQ line polarity (we
-> could extract it from the device tree and pass it to phydevs, but
-> that'll be quite a lot of work), so for now just reset the PHYs to
-> their default states.
+>  fsl-pq_mdio: probe of e0082120.mdio failed with error -16
+>
+> And obviously ethernet doesn't work after this.
+>
+> This patch solves the problem by adding tbi-phy node into mdio node,
+> so that we won't scan for spare addresses, we'll just use a fixed one.
 >
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> arch/powerpc/platforms/85xx/mpc85xx_mds.c |   13 +++++++++++++
-> 1 files changed, 13 insertions(+), 0 deletions(-)
+> arch/powerpc/boot/dts/mpc8569mds.dts |    4 ++++
+> 1 files changed, 4 insertions(+), 0 deletions(-)
 
 applied to merge
 
