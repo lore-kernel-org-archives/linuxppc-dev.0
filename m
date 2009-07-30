@@ -1,39 +1,25 @@
-Return-Path: <mmlnx@us.ibm.com>
+Return-Path: <bounces@nabble.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7C302B7BD9
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 898C0B7BC5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 31 Jul 2009 08:42:45 +1000 (EST)
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 050C0DDDA2
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 08:42:44 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n6UMers6009603
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 16:40:53 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n6UMgf1h197630
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 16:42:41 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n6UMgfGB006668
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 16:42:41 -0600
-Message-ID: <4A7221DF.5040402@us.ibm.com>
-Date: Thu, 30 Jul 2009 15:42:39 -0700
-From: Mike Mason <mmlnx@us.ibm.com>
+	Fri, 31 Jul 2009 00:33:31 +1000 (EST)
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 38B90DDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 00:33:30 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1MWWhA-0006Bw-TS
+	for linuxppc-dev@ozlabs.org; Thu, 30 Jul 2009 07:33:24 -0700
+Message-ID: <24628615.post@talk.nabble.com>
+Date: Thu, 30 Jul 2009 07:33:24 -0700 (PDT)
+From: skateaboard <skateaboard@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Help, please... Multi-Media Distro for PPC?
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org, linasvepstas@gmail.com,
-	benh@kernel.crashing.org, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 3/3] Support for PCI Express reset type
-References: <4A722121.4010307@us.ibm.com>
-In-Reply-To: <4A722121.4010307@us.ibm.com>
-Content-Type: multipart/mixed; boundary="------------030805050604000501020405"
-Cc: Richard Lary <rlary@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,56 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030805050604000501020405
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-This is the third of three patches that implement a bit field that PCI Express device drivers can use to indicate they need a fundamental reset during error recovery.
+Ok so I'm really new to this but a single line answer will do, like "One of
+the best and noob friendly PPC Multi media distributors would be _________."
 
-By default, the EEH framework on powerpc does what's known as a "hot reset" during recovery of a PCI Express device.  We've found a case where the device needs a "fundamental reset" to recover properly.  The current PCI error recovery and EEH frameworks do not support this distinction.
+What I have:
+A PPC ibook G3 laptop
 
-The attached patch makes changes to EEH to utilize the new bit field.
+What I need help with:
+Finding a linux based multi-media workstation
 
-These patches supersede the previously submitted patch that implemented a fundamental reset bit field.
+Why:
+I really want to become more savvy with linux and I need this element added
+to my physical studio's repertoire. My artist studio needs a computer
+workstation and linux seems the best way for me to go.
 
-Please review and let me know of any concerns.
+Specifically:
+I've been searching around the web for a while now and have not yet found a
+PPC optimized(or even kind-of) distro for a multi-media studio for PPC based
+macs. I need some sort of: 
+-image, video, audio editing and layering software package.
 
-Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
-Signed-off-by: Richard Lary <rlary@us.ibm.com>
+So, Does this even exist? I've seen "Umbutu Studio"; that seems to do the
+job, however I've read that it would not work with my hardware, true? or is
+there a similar type package for PPC? 
 
+Thank you all so much and any input is much appreciated!
 
---------------030805050604000501020405
-Content-Type: text/plain;
- name="eeh_fundamental_reset.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="eeh_fundamental_reset.patch"
-
-ZGlmZiAtdU5ycCBhL2FyY2gvcG93ZXJwYy9rZXJuZWwvcGNpXzY0LmMgYi9hcmNoL3Bvd2Vy
-cGMva2VybmVsL3BjaV82NC5jDQotLS0gYS9hcmNoL3Bvd2VycGMva2VybmVsL3BjaV82NC5j
-CTIwMDktMDctMTMgMTQ6MjU6MjQuMDAwMDAwMDAwIC0wNzAwDQorKysgYi9hcmNoL3Bvd2Vy
-cGMva2VybmVsL3BjaV82NC5jCTIwMDktMDctMTUgMTA6MjY6MjYuMDAwMDAwMDAwIC0wNzAw
-DQpAQCAtMTQzLDYgKzE0Myw3IEBAIHN0cnVjdCBwY2lfZGV2ICpvZl9jcmVhdGVfcGNpX2Rl
-dihzdHJ1Y3QNCiAJZGV2LT5kZXYuYnVzID0gJnBjaV9idXNfdHlwZTsNCiAJZGV2LT5kZXZm
-biA9IGRldmZuOw0KIAlkZXYtPm11bHRpZnVuY3Rpb24gPSAwOwkJLyogbWF5YmUgYSBsaWU/
-ICovDQorCWRldi0+bmVlZHNfZnJlc2V0ID0gMDsgICAgICAgLyogcGNpZSBmdW5kYW1lbnRh
-bCByZXNldCByZXF1aXJlZCAqLw0KDQogCWRldi0+dmVuZG9yID0gZ2V0X2ludF9wcm9wKG5v
-ZGUsICJ2ZW5kb3ItaWQiLCAweGZmZmYpOw0KIAlkZXYtPmRldmljZSA9IGdldF9pbnRfcHJv
-cChub2RlLCAiZGV2aWNlLWlkIiwgMHhmZmZmKTsNCmRpZmYgLXVOcnAgYS9hcmNoL3Bvd2Vy
-cGMvcGxhdGZvcm1zL3BzZXJpZXMvZWVoLmMgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL3Bz
-ZXJpZXMvZWVoLmMNCi0tLSBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvcHNlcmllcy9lZWgu
-YwkyMDA5LTA2LTA5IDIwOjA1OjI3LjAwMDAwMDAwMCAtMDcwMA0KKysrIGIvYXJjaC9wb3dl
-cnBjL3BsYXRmb3Jtcy9wc2VyaWVzL2VlaC5jCTIwMDktMDctMTUgMTA6Mjk6MDQuMDAwMDAw
-MDAwIC0wNzAwDQpAQCAtNzQ0LDcgKzc0NCwxNSBAQCBpbnQgcGNpYmlvc19zZXRfcGNpZV9y
-ZXNldF9zdGF0ZShzdHJ1Y3QNCg0KIHN0YXRpYyB2b2lkIF9fcnRhc19zZXRfc2xvdF9yZXNl
-dChzdHJ1Y3QgcGNpX2RuICpwZG4pDQogew0KLQlydGFzX3BjaV9zbG90X3Jlc2V0IChwZG4s
-IDEpOw0KKwlzdHJ1Y3QgcGNpX2RldiAqZGV2ID0gcGRuLT5wY2lkZXY7DQorDQorCS8qIERl
-dGVybWluZSB0eXBlIG9mIEVFSCByZXNldCByZXF1aXJlZCBieSBkZXZpY2UsDQorCSAqIGRl
-ZmF1bHQgaG90IHJlc2V0IG9yIGZ1bmRhbWVudGFsIHJlc2V0DQorCSAqLw0KKwlpZiAoZGV2
-LT5uZWVkc19mcmVzZXQpDQorCQlydGFzX3BjaV9zbG90X3Jlc2V0KHBkbiwgMyk7DQorCWVs
-c2UNCisJCXJ0YXNfcGNpX3Nsb3RfcmVzZXQocGRuLCAxKTsNCg0KIAkvKiBUaGUgUENJIGJ1
-cyByZXF1aXJlcyB0aGF0IHRoZSByZXNldCBiZSBoZWxkIGhpZ2ggZm9yIGF0IGxlYXN0DQog
-CSAqIGEgMTAwIG1pbGxpc2Vjb25kcy4gV2Ugd2FpdCBhIGJpdCBsb25nZXIgJ2p1c3QgaW4g
-Y2FzZScuICAqLw==
---------------030805050604000501020405--
+-Andrew
+-- 
+View this message in context: http://www.nabble.com/Help%2C-please...-Multi-Media-Distro-for-PPC--tp24628615p24628615.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
