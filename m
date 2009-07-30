@@ -1,28 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <ashish.kalra@freescale.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7AE14B7BAA
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1E075B7087
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jul 2009 22:30:49 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Thu, 30 Jul 2009 23:27:03 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B54D3DDD1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 22:30:48 +1000 (EST)
-Subject: Re: Next July 29 : Hugetlb test failure (OOPS free_hugepte_range)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sachin Sant <sachinp@in.ibm.com>
-In-Reply-To: <4A719129.5030302@in.ibm.com>
-References: <20090729173611.b82478cd.sfr@canb.auug.org.au>
-	<4A706504.6040704@in.ibm.com>  <4A719129.5030302@in.ibm.com>
-Content-Type: text/plain
-Date: Thu, 30 Jul 2009 22:30:28 +1000
-Message-Id: <1248957028.1509.85.camel@pasglop>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A7DD0DDD1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 23:27:01 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n6UDQgrN016612
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 06:26:53 -0700 (MST)
+Received: from zin33exm20.fsl.freescale.net (zin33exm20.ap.freescale.net
+	[10.232.192.5])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n6UDQuL3028104
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 08:26:57 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CA1119.5E8FEC8E"
+Subject: RE: [PATCH][sata_fsl] Defer non-ncq commands when ncq commands active
+Date: Thu, 30 Jul 2009 18:53:17 +0530
+Message-ID: <16444A0F3094A24C83EAB7836A12C63B032E5A@zin33exm20.fsl.freescale.net>
+References: <Pine.WNT.4.64.0907292129310.4440@B00888-02.fsl.freescale.net>
+	<4A70A78D.7070601@gmail.com>
+From: "Kalra Ashish-B00888" <ashish.kalra@freescale.com>
+To: "Robert Hancock" <hancockrwd@gmail.com>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,90 +41,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-07-30 at 17:55 +0530, Sachin Sant wrote:
-> Sachin Sant wrote:
-> > next-20090728 worked fine. Last commit that changed
-> > arch/powerpc/mm/hugetlbpage.c was 
-> > cb7f3f2d92d1b26c13e30e639b6ee4a78e9a3afa
-> >
-> > powerpc: Add memory management headers for new 64-bit BookE
-> >
-> > I will try reverting that commit and check if that helps.
-> Hi Ben,
-> 
-> Reverting the above patch helped. The tests ran fine against the
-> patched kernel. But ofcourse that's not the solution :-)
-> 
-> Here is some data from xmon that might help find the reason for
-> the failure. This is with today's next.
+This is a multi-part message in MIME format.
 
-Thanks. I'll have a look next week. I think when I changed the indices
-I may have forgotten to update something.
+------_=_NextPart_001_01CA1119.5E8FEC8E
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+Hello,=20
 
-> : ------------[ cut here ]------------
-> cpu 0x0: Vector: 700 (Program Check) at [c000000038923560]
->     pc: c0000000000486d4: .free_hugepte_range+0x68/0xa0
->     lr: c000000000048954: .hugetlb_free_pgd_range+0x248/0x38c
->     sp: c0000000389237e0
->    msr: 8000000000029032
->   current = 0xc00000003b1d7780
->   paca    = 0xc000000001002400
->     pid   = 2839, comm = readback
-> kernel BUG at /home/linux-2.6.31-rc4/arch/powerpc/include/asm/pgalloc.h:36!
-> enter ? for help
-> [c000000038923880] c000000000048954 .hugetlb_free_pgd_range+0x248/0x38c
-> [c000000038923970] c000000000165a48 .free_pgtables+0xa0/0x154
-> [c000000038923a30] c000000000167f78 .exit_mmap+0x13c/0x1cc
-> [c000000038923ae0] c0000000000997ec .mmput+0x68/0x14c
-> [c000000038923b70] c00000000009f1d4 .exit_mm+0x190/0x1b8
-> [c000000038923c20] c0000000000a16e8 .do_exit+0x214/0x784
-> [c000000038923d00] c0000000000a1d1c .do_group_exit+0xc4/0xf8
-> [c000000038923da0] c0000000000a1d7c .SyS_exit_group+0x2c/0x48
-> [c000000038923e30] c0000000000085b4 syscall_exit+0x0/0x40
-> --- Exception: c01 (System Call) at 000000000fe15038
-> SP (ffb8e030) is in userspace
-> 0:mon> e
-> cpu 0x0: Vector: 700 (Program Check) at [c000000038923560]
->     pc: c0000000000486d4: .free_hugepte_range+0x68/0xa0
->     lr: c000000000048954: .hugetlb_free_pgd_range+0x248/0x38c
->     sp: c0000000389237e0
->    msr: 8000000000029032
->   current = 0xc00000003b1d7780
->   paca    = 0xc000000001002400
->     pid   = 2839, comm = readback
-> kernel BUG at /home/linux-2.6.31-rc4/arch/powerpc/include/asm/pgalloc.h:36!
-> 0:mon> r
-> R00 = 0000000000000001   R16 = 0000000000000000
-> R01 = c0000000389237e0   R17 = 0000000000000001
-> R02 = c000000000f165a8   R18 = 000000003fffffff
-> R03 = c0000000014504d0   R19 = 0000000000000000
-> R04 = c000000039390001   R20 = 0000000000000000
-> R05 = 0000000000000007   R21 = 0000010000000000
-> R06 = 0000000000000000   R22 = 0000000040000000
-> R07 = 0000000040000000   R23 = c0000000014504d0
-> R08 = c00000003d708188   R24 = 000000003fffffff
-> R09 = c00000003eb40000   R25 = 0000000000000007
-> R10 = c00000003d708188   R26 = c00000003ebd41b8
-> R11 = 0000000000000018   R27 = c0000000014504d0
-> R12 = 0000000040000448   R28 = c00000003eb40018
-> R13 = c000000001002400   R29 = 0000000000000008
-> R14 = 00000000ffffffff   R30 = 0000000040000000
-> R15 = 00000000ffffffff   R31 = c0000000389237e0
-> pc  = c0000000000486d4 .free_hugepte_range+0x68/0xa0
-> lr  = c000000000048954 .hugetlb_free_pgd_range+0x248/0x38c
-> msr = 8000000000029032   cr  = 20042444
-> ctr = 800000000000b6f4   xer = 0000000000000001   trap =  700
-> 0:mon> 
-> 
-> Line 36 of arch/powerpc/include/asm/pgalloc.h corresponds to
-> 
-> BUG_ON(cachenum > PGF_CACHENUM_MASK);
-> 
-> May be something to do with number of elements in huge_pgtable_cache_name ??
-> 
-> Thanks
-> -Sachin
-> 
+>> Signed-off-by: Ashish Kalra <Ashish.Kalra@freescale.com>
+>> ---
+>> drivers/ata/sata_fsl.c | 1 +
+>> 1 files changed, 1 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+>> index 5a88b44..a33f130 100644
+>> --- a/drivers/ata/sata_fsl.c
+>> +++ b/drivers/ata/sata_fsl.c
+>> @@ -1262,6 +1262,7 @@ static struct scsi_host_template sata_fsl_sht =
+=3D {
+>> static struct ata_port_operations sata_fsl_ops =3D {
+>> .inherits =3D &sata_pmp_port_ops,
+>>
+>> + .qc_defer =3D ata_std_qc_defer;
+>> .qc_prep =3D sata_fsl_qc_prep,
+>> .qc_issue =3D sata_fsl_qc_issue,
+>> .qc_fill_rtf =3D sata_fsl_qc_fill_rtf,
+
+> This doesn't look like it should change anything. sata_fsl_ops =
+inherits
+> from sata_pmp_port_ops, which inherits from sata_port_ops, which =
+already
+> sets qc_defer to ata_std_qc_defer.
+
+Oh, yes. Actually this patch was for older kernels where there =
+inheritence was not there. As you mentioned, this patch is not required =
+now.
+
+Thanks,
+
+Ashish
+
+
+
+
+------_=_NextPart_001_01CA1119.5E8FEC8E
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<HTML dir=3Dltr><HEAD><TITLE>Re: [PATCH][sata_fsl] Defer non-ncq =
+commands when ncq commands active</TITLE>=0A=
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
+<META content=3D"MSHTML 6.00.2900.3562" name=3DGENERATOR></HEAD>=0A=
+<BODY>=0A=
+<DIV id=3DidOWAReplyText21890 dir=3Dltr>=0A=
+<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>Hello, =
+</FONT></DIV></DIV>=0A=
+<DIV dir=3Dltr><BR><FONT size=3D2>&gt;&gt; Signed-off-by: Ashish Kalra =
+&lt;Ashish.Kalra@freescale.com&gt;<BR>&gt;&gt; ---<BR>&gt;&gt; =
+drivers/ata/sata_fsl.c | 1 +<BR>&gt;&gt; 1 files changed, 1 =
+insertions(+), 0 deletions(-)<BR>&gt;&gt;<BR>&gt;&gt; diff --git =
+a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c<BR>&gt;&gt; index =
+5a88b44..a33f130 100644<BR>&gt;&gt; --- =
+a/drivers/ata/sata_fsl.c<BR>&gt;&gt; +++ =
+b/drivers/ata/sata_fsl.c<BR>&gt;&gt; @@ -1262,6 +1262,7 @@ static struct =
+scsi_host_template sata_fsl_sht =3D {<BR>&gt;&gt; static struct =
+ata_port_operations sata_fsl_ops =3D {<BR>&gt;&gt; .inherits =3D =
+&amp;sata_pmp_port_ops,<BR>&gt;&gt;<BR>&gt;&gt; + .qc_defer =3D =
+ata_std_qc_defer;<BR>&gt;&gt; .qc_prep =3D sata_fsl_qc_prep,<BR>&gt;&gt; =
+.qc_issue =3D sata_fsl_qc_issue,<BR>&gt;&gt; .qc_fill_rtf =3D =
+sata_fsl_qc_fill_rtf,<BR><BR>&gt; This doesn't look like it should =
+change anything. sata_fsl_ops inherits<BR>&gt; from sata_pmp_port_ops, =
+which inherits from sata_port_ops, which already<BR>&gt; sets qc_defer =
+to ata_std_qc_defer.</FONT></DIV>=0A=
+<P><FONT size=3D2>Oh, yes. Actually this patch was for older kernels =
+where there inheritence was&nbsp;not there. As you mentioned, this patch =
+is not required now.</FONT></P>=0A=
+<P><FONT size=3D2>Thanks,</FONT></P>=0A=
+<P><FONT size=3D2>Ashish</FONT></P>=0A=
+<DIV dir=3Dltr><FONT size=3D2><BR></FONT></DIV></BODY></HTML>
+------_=_NextPart_001_01CA1119.5E8FEC8E--
