@@ -1,22 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5B272B7B7D
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id AC2CAB7B88
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jul 2009 10:52:38 +1000 (EST)
-Subject: Re: BUG in dma-mapping.h:218 // MESH SCSI driver not working
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stef Simoens <stef.simoens@scarlet.be>
-In-Reply-To: <4A70DE54.5090406@scarlet.be>
-References: <4A68E1CE.4040307@scarlet.be>
-	<1248425553.25467.20.camel@pasglop>  <4A70937B.7040201@scarlet.be>
-	<1248910358.1509.27.camel@pasglop>  <4A70DE54.5090406@scarlet.be>
-Content-Type: text/plain
-Date: Thu, 30 Jul 2009 10:52:29 +1000
-Message-Id: <1248915149.1509.29.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Thu, 30 Jul 2009 12:12:53 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 24955DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 12:12:52 +1000 (EST)
+Date: Thu, 30 Jul 2009 06:12:50 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Subject: Re: [PATCH 1/7] spi: Add support for device table matching
+Message-ID: <20090730021250.GA12001@oksana.dev.rtsoft.ru>
+References: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
+	<20090729170457.GA4803@oksana.dev.rtsoft.ru>
+	<20090729214446.GB1728@fluff.org.uk>
+	<20090729223223.GA15280@oksana.dev.rtsoft.ru>
+	<20090729224050.GA17902@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20090729224050.GA17902@oksana.dev.rtsoft.ru>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Jean Delvare <khali@linux-fr.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +38,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-07-30 at 01:42 +0200, Stef Simoens wrote:
-> What would be the best approach?
-> - if the kernel boots, it's obviously 'good'
-> - but what if the kernel hits the 'BUG', should I apply your patch
-> then? If it doesn't work with your patch, would it be 'bad' then? 
+On Thu, Jul 30, 2009 at 02:40:50AM +0400, Anton Vorontsov wrote:
+[...]
+> - If you don't store "id" in the device struct, you'll have
+>   to look up the device table twice (at first during bus->match(),
+>   and second time in drivers' probe() hook, i.e.
+>   probe(struct bus_dev *dev) {
+>   	id = bus_get_devid(dev); /* here */
+>   }
 
-Yes.
+Hm... actually, we're doing this anyway, but in spi core.
 
-> > One thing I know is that the MESH HW has "issues" that make it very
-> > sensitive to alignment DMA buffers, it's possible that the SCSI stack no
-> > longer aligns some stuff ?
-> >   
-> Hmm, great... how can I verify this? 
+So, doing something like spi_get_device_id() might be a good
+idea.
 
-I will once we get a closer idea of where the bug started to happen.
+Thanks,
 
-Thanks !
-
-Cheers,
-Ben.
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
