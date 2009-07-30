@@ -1,29 +1,27 @@
-Return-Path: <johannes@sipsolutions.net>
+Return-Path: <nvbolhuis@aimvalley.nl>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 14E27B7BA9
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 66CEDB7B9D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 31 Jul 2009 00:56:27 +1000 (EST)
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8CFCDDDD1B
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 00:56:26 +1000 (EST)
-Subject: Re: [PATCH 5/5] sound/aoa: Add kmalloc NULL tests
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Julia Lawall <julia@diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0907301610550.8734@ask.diku.dk>
-References: <Pine.LNX.4.64.0907301610550.8734@ask.diku.dk>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-1aAgYaYXl+i4hAkpYGaf"
-Date: Thu, 30 Jul 2009 16:17:00 +0200
-Message-Id: <1248963420.16129.0.camel@johannes.local>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+	Fri, 31 Jul 2009 01:52:41 +1000 (EST)
+Received: from smtp-vbr6.xs4all.nl (smtp-vbr6.xs4all.nl [194.109.24.26])
+	by ozlabs.org (Postfix) with ESMTP id A2C14DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 01:52:40 +1000 (EST)
+Received: from mail3.aimsys.nl (a80-127-156-242.adsl.xs4all.nl
+	[80.127.156.242])
+	by smtp-vbr6.xs4all.nl (8.13.8/8.13.8) with ESMTP id n6UFkNr8082711
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 17:46:24 +0200 (CEST)
+	(envelope-from nvbolhuis@aimvalley.nl)
+Message-ID: <4A71C04E.6060506@aimvalley.nl>
+Date: Thu, 30 Jul 2009 17:46:22 +0200
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: can the kernel show user task stack backtrace ?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,48 +32,86 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-1aAgYaYXl+i4hAkpYGaf
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Afaik the kernel only shows the stack backtrace of the kernel stack
+(of a task).
 
-On Thu, 2009-07-30 at 16:11 +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
->=20
-> Check that the result of kzalloc is not NULL before a dereference.
+I wonder if there would be anything wrong with letting it show
+the user task stack backtrace in certain cases.
 
->  		irq_client =3D kzalloc(sizeof(struct pmf_irq_client),
->  				     GFP_KERNEL);
-> +		if (!irq_client) {
-> +			err =3D -ENOMEM;
-> +			printk(KERN_ERR "snd-aoa: gpio layer failed to"
-> +				" register %s irq (%d)\n", name, err);
-> +			goto out_unlock;
-> +		}
+Read the rest to see what I mean.
 
-Looks good, thanks, but I'd really drop the printk if only to not have
-the string there, that doesn't really seem interesting.
 
-johannes
+If kernel.print-fatal-signals has been enabled a crashing
+application makes the kernel show this:
+ca2/943: potentially unexpected fatal signal 11.
 
---=-1aAgYaYXl+i4hAkpYGaf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+NIP: 1000044c LR: 10000444 CTR: 00000000
+REGS: ce73df50 TRAP: 0300   Not tainted  (2.6.28)
+MSR: 0000d032 <EE,PR,ME,IR,DR>  CR: 22000422  XER: 20000000
+DAR: d0000003, DSISR: 22000000
+TASK = ceb7a3e0[943] 'ca2' THREAD: ce73c000
 
------BEGIN PGP SIGNATURE-----
+GPR00: 0000000e bf963b30 48025450 0000000a 0ff0ac2c 22000422 00000001 0ff5e6b0
+GPR08: 00000001 d0000003 00001032 00000000 ffffffff 1001896c 0ffe9000 00000000
+GPR16: 0ffca59c 00000000 1009b940 100a8b6a 100bf234 bfea22b8 100bf224 00000000
+GPR24: 100bf008 1009b960 4801e858 4802dd34 4802e7e0 00000000 0ffec8d8 bf963b30
+Call Trace:
+Segmentation fault
+#
 
-iQIcBAABAgAGBQJKcatZAAoJEODzc/N7+QmaC/kP/1WQTpl1VPuF4Gxnf9ihDUe0
-U0Oo+Zi0PZy87OMRTXTXEEwhzDEH6lC1wETlI3NIofQ5Md13G9/jJUR9fUMDWi7O
-j7EKy+1iwrNmGeif8Yaicx3ZSUj+/hKDQFc6mg1NyxB3V2Cf1L7PJEE6fqqXLpHA
-tt/irChip+rpWaFBy+r1yD0wUw2rGwB/CVsN9zasH91fbzg6pU6xU3dwQpaUPzt9
-bIxNd7ucne/TtYKRYSpEYSCjy/XfKctgNspyD2O1MmnrotpaW33YcGo5PAZekvJj
-LKoc0ScM7XxrBjT/W6oKmueQzrSu4PFqenKgJlBZI6O1fmPZig2GkFDdcfIW3qXK
-13A9TBAofWd4p4uQRAUVRJ/25RBKLdSZ3J0SlB3Pd7jDB7lcl0dfFI9ofO8OqHCP
-rlklAyAv9GEtns2oqq3IIkgAnz6g5eJgsuaeh+ZNfbvLvmFjGU8D41FMeidW4BNW
-/1iww2ENSafqe8hkR1LYmcP+OOlIqHebKywqp/9Fw3V69fwy0gSYhFsqZDj3MW7o
-q3VksjHoMI333dwg/A/+5kR+xiijFORYNfRJ4esaEpvG7eTVB3CBqbnR7aYn7GYa
-mcZLW5aZ+hG4glkC6ijGwm3gyQwZLkqBFt2ohv4fC0XQvgie2XyiAdn9oEQlBXgB
-hZSmSHQCTc/yGIA7+O5h
-=sGsV
------END PGP SIGNATURE-----
+It's a real pity the user task stack backtrace isn't shown.
+We're dealing with some complex (3rd party) applications and I like to see a
+user task stack backtrace.
 
---=-1aAgYaYXl+i4hAkpYGaf--
+(Of course the way to go here is to use a debugger (gdb) and
+  do a backtrace (with the coredump file).
+  However, debugging takes some time. Besides the info is there
+  it only needs to be shown. Often just this info is enough to
+  pinpoint the problem)
+
+Obviously the arch/powerpc/kernel/process.c:show_stack function
+isn't meant for doing this. It only shows the kernel stack.
+
+Btw. this doesn't work in my case since validate_sp returns 0 (because
+sp is assigned the user-space stack (bf963b30) while kernel stack starts at ce73c000).
+Though if it would work it isn't very usefull I guess since the crashing app
+not enters kernel-mode (via sys-calls).
+
+If I change arch/powerpc/kernel/process.c:show_stack (of kernel 2.6.28) like this:
+
+	do {
+#if 0
+		if (!validate_sp(sp, tsk, STACK_FRAME_OVERHEAD))
+			return;
+#endif
+		 .
+		 .
+		 .
+	} while ((count++ < kstack_depth_to_print) && (sp != 0));
+
+
+the following is shown:
+
+ca2/943: potentially unexpected fatal signal 11.
+
+NIP: 1000044c LR: 10000444 CTR: c001fd7c
+
+REGS: ce73df50 TRAP: 0300   Not tainted  (2.6.28)
+MSR: 0000f932 <EE,PR,FP,ME,IR,DR>  CR: 22000422  XER: 20000000
+DAR: d0000003, DSISR: 22000000
+TASK = cf09b340[943] 'ca2' THREAD: ce73c000
+GPR00: 0000000e bfd65b30 48025450 0000000a 0ff0ac2c 22000422 00000001 0ff5e6b0
+GPR08: 00000001 d0000003 00001032 00000000 ffffffff 1001896c 0ffe9000 00000000
+GPR16: 0ffca59c 00000000 1009b940 100a8b6a 100bf234 bfb532b8 100bf224 00000000
+GPR24: 100bf008 1009b960 4801e858 4802dd34 4802e7e0 00000000 0ffec8d8 bfd65b30
+Call Trace:
+[bfd65b30] [10000444] 0x10000444 (unreliable)
+[bfd65b60] [10000490] 0x10000490
+[bfd65b90] [100004cc] 0x100004cc
+[bfd65ba0] [0feb39c8] 0xfeb39c8
+[bfd65dd0] [0feb3ad4] 0xfeb3ad4
+[bfd65de0] [00000000] 0x000000
+Segmentation fault
+#
+
+which is what I want.
