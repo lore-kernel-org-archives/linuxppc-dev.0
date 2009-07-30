@@ -1,24 +1,27 @@
-Return-Path: <roel.kluin@gmail.com>
+Return-Path: <rubini@mail.gnudd.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8E0F2B7BB2
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5F4ABB7B8E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 31 Jul 2009 01:59:24 +1000 (EST)
-Received: from mail-ew0-f225.google.com (mail-ew0-f225.google.com
-	[209.85.219.225]) by ozlabs.org (Postfix) with ESMTP id BDFFEDDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 01:59:22 +1000 (EST)
-Received: by ewy25 with SMTP id 25so1803389ewy.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 08:59:19 -0700 (PDT)
-Message-ID: <4A71C40A.2060606@gmail.com>
-Date: Thu, 30 Jul 2009 18:02:18 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
+	Fri, 31 Jul 2009 02:28:08 +1000 (EST)
+Received: from mail.gnudd.com (mail2.gnudd.com [213.203.150.91])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5C25FDDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 02:28:06 +1000 (EST)
+Date: Thu, 30 Jul 2009 18:19:42 +0200
+From: Alessandro Rubini <rubini@gnudd.com>
+To: nvbolhuis@aimvalley.nl
+Subject: Re: can the kernel show user task stack backtrace ?
+Message-ID: <20090730161941.GA14988@mail.gnudd.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] powerpc: missing tests after ioremap()?
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
+Sender: rubini@gnudd.com
+In-Reply-To: <4A71C04E.6060506@aimvalley.nl>
+References: <4A71C04E.6060506@aimvalley.nl> 
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Missing tests after ioremap()
+> We're dealing with some complex (3rd party) applications and I like to see a
+> user task stack backtrace.
+> 
+> (Of course the way to go here is to use a debugger (gdb) and
+>   do a backtrace (with the coredump file).
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Shouldn't we test whether ioremaps fail?
+Actually, you can intercept SIGSEGV and print your own stack from within
+the signal handler. You can also open /proc/self/maps and print it, to
+ease understanding the various pointers in there, especially if the
+application is using a number of shared libs.
 
-diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
-index e6c0040..3a4ebd3 100644
---- a/arch/powerpc/platforms/powermac/feature.c
-+++ b/arch/powerpc/platforms/powermac/feature.c
-@@ -2589,9 +2589,16 @@ static void __init probe_uninorth(void)
- 	if (address == 0)
- 		return;
- 	uninorth_base = ioremap(address, 0x40000);
-+	if (uninorth_base == NULL)
-+		return;
- 	uninorth_rev = in_be32(UN_REG(UNI_N_VERSION));
--	if (uninorth_maj == 3 || uninorth_maj == 4)
-+	if (uninorth_maj == 3 || uninorth_maj == 4) {
- 		u3_ht_base = ioremap(address + U3_HT_CONFIG_BASE, 0x1000);
-+		if (u3_ht_base == NULL) {
-+			iounmap(uninorth_base);
-+			return;
-+		}
-+	}
- 
- 	printk(KERN_INFO "Found %s memory controller & host bridge"
- 	       " @ 0x%08x revision: 0x%02x\n", uninorth_maj == 3 ? "U3" :
+This is usually easier than getting to a core dump, although there is
+less information than what the core offers.
+
+I have the code for ARM and I've it on ppc once, but I must dig for the actual
+code.
+
+/alessandro
