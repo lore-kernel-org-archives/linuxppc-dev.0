@@ -1,26 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <sachinp@in.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4A6D2B7B97
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B09A0B7BA5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 30 Jul 2009 21:14:07 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Thu, 30 Jul 2009 22:25:25 +1000 (EST)
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [59.145.155.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A50AFDDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 21:14:06 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 30 Jul 2009 21:13:24 +1000
-Message-Id: <1248952404.1509.84.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 85EEDDDD1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 22:25:23 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp04.in.ibm.com (8.14.3/8.13.1) with ESMTP id n6UCPGGx029720
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 17:55:16 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n6UCPF5r880726
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 17:55:16 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n6UCPF33029943
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2009 22:25:15 +1000
+Message-ID: <4A719129.5030302@in.ibm.com>
+Date: Thu, 30 Jul 2009 17:55:13 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Next July 29 : Hugetlb test failure (OOPS free_hugepte_range)
+References: <20090729173611.b82478cd.sfr@canb.auug.org.au>
+	<4A706504.6040704@in.ibm.com>
+In-Reply-To: <4A706504.6040704@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,94 +43,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Sachin Sant wrote:
+> next-20090728 worked fine. Last commit that changed
+> arch/powerpc/mm/hugetlbpage.c was 
+> cb7f3f2d92d1b26c13e30e639b6ee4a78e9a3afa
+>
+> powerpc: Add memory management headers for new 64-bit BookE
+>
+> I will try reverting that commit and check if that helps.
+Hi Ben,
 
-Here's a bunch of defconfig updates for freescale embedded platforms
-along with a handful of fixes for those from Kumar, and one important
-one liner fix for a thinko/typo by myself in the embedded CPU context
-management code on SMP.
+Reverting the above patch helped. The tests ran fine against the
+patched kernel. But ofcourse that's not the solution :-)
 
-The following changes since commit 658874f05d040ca96eb5ba9b1c30ce0ff287d762:
-  Linus Torvalds (1):
-        Merge branch 'i2c-fixes-rc4' of git://aeryn.fluff.org.uk/bjdooks/linux
+Here is some data from xmon that might help find the reason for
+the failure. This is with today's next.
 
-are available in the git repository at:
+: ------------[ cut here ]------------
+cpu 0x0: Vector: 700 (Program Check) at [c000000038923560]
+    pc: c0000000000486d4: .free_hugepte_range+0x68/0xa0
+    lr: c000000000048954: .hugetlb_free_pgd_range+0x248/0x38c
+    sp: c0000000389237e0
+   msr: 8000000000029032
+  current = 0xc00000003b1d7780
+  paca    = 0xc000000001002400
+    pid   = 2839, comm = readback
+kernel BUG at /home/linux-2.6.31-rc4/arch/powerpc/include/asm/pgalloc.h:36!
+enter ? for help
+[c000000038923880] c000000000048954 .hugetlb_free_pgd_range+0x248/0x38c
+[c000000038923970] c000000000165a48 .free_pgtables+0xa0/0x154
+[c000000038923a30] c000000000167f78 .exit_mmap+0x13c/0x1cc
+[c000000038923ae0] c0000000000997ec .mmput+0x68/0x14c
+[c000000038923b70] c00000000009f1d4 .exit_mm+0x190/0x1b8
+[c000000038923c20] c0000000000a16e8 .do_exit+0x214/0x784
+[c000000038923d00] c0000000000a1d1c .do_group_exit+0xc4/0xf8
+[c000000038923da0] c0000000000a1d7c .SyS_exit_group+0x2c/0x48
+[c000000038923e30] c0000000000085b4 syscall_exit+0x0/0x40
+--- Exception: c01 (System Call) at 000000000fe15038
+SP (ffb8e030) is in userspace
+0:mon> e
+cpu 0x0: Vector: 700 (Program Check) at [c000000038923560]
+    pc: c0000000000486d4: .free_hugepte_range+0x68/0xa0
+    lr: c000000000048954: .hugetlb_free_pgd_range+0x248/0x38c
+    sp: c0000000389237e0
+   msr: 8000000000029032
+  current = 0xc00000003b1d7780
+  paca    = 0xc000000001002400
+    pid   = 2839, comm = readback
+kernel BUG at /home/linux-2.6.31-rc4/arch/powerpc/include/asm/pgalloc.h:36!
+0:mon> r
+R00 = 0000000000000001   R16 = 0000000000000000
+R01 = c0000000389237e0   R17 = 0000000000000001
+R02 = c000000000f165a8   R18 = 000000003fffffff
+R03 = c0000000014504d0   R19 = 0000000000000000
+R04 = c000000039390001   R20 = 0000000000000000
+R05 = 0000000000000007   R21 = 0000010000000000
+R06 = 0000000000000000   R22 = 0000000040000000
+R07 = 0000000040000000   R23 = c0000000014504d0
+R08 = c00000003d708188   R24 = 000000003fffffff
+R09 = c00000003eb40000   R25 = 0000000000000007
+R10 = c00000003d708188   R26 = c00000003ebd41b8
+R11 = 0000000000000018   R27 = c0000000014504d0
+R12 = 0000000040000448   R28 = c00000003eb40018
+R13 = c000000001002400   R29 = 0000000000000008
+R14 = 00000000ffffffff   R30 = 0000000040000000
+R15 = 00000000ffffffff   R31 = c0000000389237e0
+pc  = c0000000000486d4 .free_hugepte_range+0x68/0xa0
+lr  = c000000000048954 .hugetlb_free_pgd_range+0x248/0x38c
+msr = 8000000000029032   cr  = 20042444
+ctr = 800000000000b6f4   xer = 0000000000000001   trap =  700
+0:mon> 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+Line 36 of arch/powerpc/include/asm/pgalloc.h corresponds to
 
-Anton Vorontsov (3):
-      powerpc/85xx: Fix ethernet link detection on MPC8569E-MDS boards
-      powerpc/85xx: Don't scan for TBI PHY addresses on MPC8569E-MDS boards
-      powerpc/83xx: Fix PCI IO base address on MPC837xE-RDB boards
+BUG_ON(cachenum > PGF_CACHENUM_MASK);
 
-Kumar Gala (2):
-      powerpc/mm: Fix SMP issue with MMU context handling code
-      powerpc: Update defconfigs for embedded 6xx/7xxx, 8xx, 8{3,5,6}xxx
+May be something to do with number of elements in huge_pgtable_cache_name ??
 
-Mark Ware (1):
-      cpm_uart: Don't use alloc_bootmem in cpm_uart_cpm2.c
+Thanks
+-Sachin
 
-Martyn Welch (2):
-      powerpc/86xx: Update defconfig for GE Fanuc's PPC9A
-      powerpc/86xx: Update GE Fanuc sbc310 default configuration
+-- 
 
- arch/powerpc/boot/dts/mpc8377_rdb.dts             |    2 +-
- arch/powerpc/boot/dts/mpc8378_rdb.dts             |    2 +-
- arch/powerpc/boot/dts/mpc8379_rdb.dts             |    2 +-
- arch/powerpc/boot/dts/mpc8569mds.dts              |    4 +
- arch/powerpc/configs/83xx/asp8347_defconfig       |  106 +++--
- arch/powerpc/configs/83xx/kmeter1_defconfig       |  176 +++++---
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  168 +++++--
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  168 +++++--
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  111 +++--
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  120 +++--
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  114 +++--
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  114 +++--
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  104 +++--
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  111 +++--
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |  104 +++--
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  110 +++--
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  162 +++++---
- arch/powerpc/configs/83xx/sbc834x_defconfig       |  103 +++--
- arch/powerpc/configs/85xx/ksi8560_defconfig       |   93 +++--
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   91 +++--
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   99 +++--
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   99 +++--
- arch/powerpc/configs/85xx/sbc8548_defconfig       |   96 +++--
- arch/powerpc/configs/85xx/sbc8560_defconfig       |   91 +++--
- arch/powerpc/configs/85xx/socrates_defconfig      |  165 +++++---
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |  119 +++--
- arch/powerpc/configs/85xx/tqm8540_defconfig       |  100 +++--
- arch/powerpc/configs/85xx/tqm8541_defconfig       |  101 +++--
- arch/powerpc/configs/85xx/tqm8548_defconfig       |  100 +++--
- arch/powerpc/configs/85xx/tqm8555_defconfig       |  101 +++--
- arch/powerpc/configs/85xx/tqm8560_defconfig       |  101 +++--
- arch/powerpc/configs/85xx/xes_mpc85xx_defconfig   |  118 +++--
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |  521 ++++++++-------------
- arch/powerpc/configs/86xx/gef_sbc310_defconfig    |  216 +++++++---
- arch/powerpc/configs/86xx/gef_sbc610_defconfig    |  130 ++++--
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |  118 +++--
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |  186 ++++----
- arch/powerpc/configs/86xx/sbc8641d_defconfig      |  112 +++--
- arch/powerpc/configs/adder875_defconfig           |   97 +++--
- arch/powerpc/configs/c2k_defconfig                |  121 +++--
- arch/powerpc/configs/ep8248e_defconfig            |   97 +++--
- arch/powerpc/configs/ep88xc_defconfig             |   91 +++--
- arch/powerpc/configs/linkstation_defconfig        |  116 +++--
- arch/powerpc/configs/mgcoge_defconfig             |   97 +++--
- arch/powerpc/configs/mgsuvd_defconfig             |   89 ++--
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |  103 +++--
- arch/powerpc/configs/mpc8272_ads_defconfig        |  104 +++--
- arch/powerpc/configs/mpc83xx_defconfig            |  162 +++++---
- arch/powerpc/configs/mpc85xx_defconfig            |  193 ++++----
- arch/powerpc/configs/mpc85xx_smp_defconfig        |  193 ++++----
- arch/powerpc/configs/mpc866_ads_defconfig         |   92 ++--
- arch/powerpc/configs/mpc86xx_defconfig            |  186 ++++----
- arch/powerpc/configs/mpc885_ads_defconfig         |   91 +++--
- arch/powerpc/configs/pq2fads_defconfig            |  110 +++--
- arch/powerpc/configs/prpmc2800_defconfig          |  158 +++++--
- arch/powerpc/configs/storcenter_defconfig         |  108 +++--
- arch/powerpc/mm/mmu_context_nohash.c              |    1 +
- arch/powerpc/platforms/85xx/mpc85xx_mds.c         |   13 +
- drivers/serial/cpm_uart/cpm_uart_cpm2.c           |    2 +-
- 59 files changed, 4007 insertions(+), 2755 deletions(-)
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
