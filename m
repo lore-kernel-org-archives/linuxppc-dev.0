@@ -1,27 +1,18 @@
-Return-Path: <andrew.vasquez@qlogic.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <BATV+aedc8c2b8b4ea4ab6c83+2168+infradead.org+dwmw2@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5513EB7BAA
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D2DE5B7B6D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  1 Aug 2009 02:59:06 +1000 (EST)
-Received: from avexch1.qlogic.com (avexch1.qlogic.com [198.70.193.115])
-	by ozlabs.org (Postfix) with ESMTP id D950FDDDA0
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Aug 2009 02:59:05 +1000 (EST)
-Date: Fri, 31 Jul 2009 09:47:00 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 1/3] Support for PCI Express reset type
-Message-ID: <20090731164700.GC23800@n5105in79bv1s.qlogic.org>
-References: <4A721FB1.4040903@us.ibm.com> <87hbws3jvx.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87hbws3jvx.fsf@basil.nowhere.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Richard Lary <rlary@us.ibm.com>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	"linasvepstas@gmail.com" <linasvepstas@gmail.com>
+	Sat,  1 Aug 2009 05:41:59 +1000 (EST)
+Subject: [PATCH] Stop pci_set_dma_mask() from failing when RAM doesn't
+	exceed the mask anyway
+From: David Woodhouse <dwmw2@infradead.org>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Date: Fri, 31 Jul 2009 20:41:50 +0100
+Message-Id: <1249069310.20192.220.camel@macbook.infradead.org>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 31 Jul 2009, Andi Kleen wrote:
+On an iMac G5, the b43 driver is failing to initialise because trying to
+set the dma mask to 30-bit fails. Even though there's only 512MiB of RAM
+in the machine anyway:
+	https://bugzilla.redhat.com/show_bug.cgi?id=514787
 
-> Mike Mason <mmlnx@us.ibm.com> writes:
-> >
-> > These patches supersede the previously submitted patch that
-> > implemented a fundamental reset bit field. 
-> >
-> > Please review and let me know of any concerns.
-> 
-> Any plans to implement that for x86 too? Right now it seems to be a PPC
-> specific hack.
+We should probably let it succeed if the available RAM in the system
+doesn't exceed the requested limit.
 
-Are there any non-PPC platforms which support EEH slot-reset?
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 
-> And where is the driver that is using it?
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 20a60d6..1769a8e 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -90,11 +90,11 @@ static void dma_direct_unmap_sg(struct device *dev,
+struct scatterlist *sg,
+ static int dma_direct_dma_supported(struct device *dev, u64 mask)
+ {
+ #ifdef CONFIG_PPC64
+-	/* Could be improved to check for memory though it better be
+-	 * done via some global so platforms can set the limit in case
++	extern unsigned long highest_memmap_pfn;
++	/* Could be improved so platforms can set the limit in case
+ 	 * they have limited DMA windows
+ 	 */
+-	return mask >= DMA_BIT_MASK(32);
++	return (mask >> PAGE_SHIFT) >= highest_memmap_pfn;
+ #else
+ 	return 1;
+ #endif
 
-That would be the qla2xxx (FC/FCoE storage) and qlge (10gb NIC
-) drivers.  Changes to the drivers could look something like:
-
-Index: b/drivers/net/qlge/qlge_main.c
-===================================================================
---- a/drivers/net/qlge/qlge_main.c
-+++ b/drivers/net/qlge/qlge_main.c
-@@ -4289,6 +4289,9 @@ static int __devinit qlge_probe(struct p
- 		return err;
- 	}
- 
-+	/* Set EEH reset type to fundamental for this device */
-+	pdev->needs_freset = 1;
-+
- 	qdev = netdev_priv(ndev);
- 	SET_NETDEV_DEV(ndev, &pdev->dev);
- 	ndev->features = (0
-Index: b/drivers/scsi/qla2xxx/qla_os.c
-===================================================================
---- a/drivers/scsi/qla2xxx/qla_os.c
-+++ b/drivers/scsi/qla2xxx/qla_os.c
-@@ -1773,6 +1773,10 @@ qla2x00_probe_one(struct pci_dev *pdev, 
- 	/* Set ISP-type information. */
- 	qla2x00_set_isp_flags(ha);
- 
-+	/* Set EEH reset type to fundamental if required by hba  */
-+	if (IS_QLA24XX(ha) || IS_QLA25XX(ha) || IS_QLA81XX(ha))
-+		pdev->needs_freset = 1;
-+
- 	/* Configure PCI I/O space */
- 	ret = qla2x00_iospace_config(ha);
- 	if (ret)
-
-
-once the infrastructure changes were hashed out.
-
--- av
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
