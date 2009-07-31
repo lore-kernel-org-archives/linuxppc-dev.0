@@ -1,18 +1,25 @@
-Return-Path: <BATV+aedc8c2b8b4ea4ab6c83+2168+infradead.org+dwmw2@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <albrecht.dress@arcor.de>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D2DE5B7B6D
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 63EC3B7BB1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  1 Aug 2009 05:41:59 +1000 (EST)
-Subject: [PATCH] Stop pci_set_dma_mask() from failing when RAM doesn't
-	exceed the mask anyway
-From: David Woodhouse <dwmw2@infradead.org>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain
-Date: Fri, 31 Jul 2009 20:41:50 +0100
-Message-Id: <1249069310.20192.220.camel@macbook.infradead.org>
-Mime-Version: 1.0
+	Sat,  1 Aug 2009 06:16:15 +1000 (EST)
+Date: Fri, 31 Jul 2009 21:47:10 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: [PATCH] mtd/maps: add mtd-ram support to physmap_of
+To: Wolfram Sang <w.sang@pengutronix.de>
+In-Reply-To: <1247834363-28198-1-git-send-email-w.sang@pengutronix.de> (from
+	w.sang@pengutronix.de on Fri Jul 17 14:39:23 2009)
+Message-Id: <1249069643.3687.0@antares>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-6wC/KUIJ0WEPnkpS4mA1"
+Cc: devicetree-discuss@ozlabs.org, Vitaly Wool <vwool@ru.mvista.com>,
+	Artem Bityutskiy <dedekind@infradead.org>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Ken MacLeod <ken@bitsko.slc.ut.us>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,37 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On an iMac G5, the b43 driver is failing to initialise because trying to
-set the dma mask to 30-bit fails. Even though there's only 512MiB of RAM
-in the machine anyway:
-	https://bugzilla.redhat.com/show_bug.cgi?id=514787
+--=-6wC/KUIJ0WEPnkpS4mA1
+Content-Type: text/plain; charset=ISO-8859-1; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-We should probably let it succeed if the available RAM in the system
-doesn't exceed the requested limit.
+Am 17.07.09 14:39 schrieb(en) Wolfram Sang:
+> Use physmap_of to access RAMs as mtd and add documenation for it. =20
+> This approach is a lot less intrusive as adding an of-wrapper around =20
+> plat-ram.c. As most extensions of plat-ram.c (e.g. custom =20
+> map-functions) can't be mapped to the device tree anyhow, extending =20
+> physmap_of seems to be the cleanest approach.
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+The patch works nicely on a custom (roughly Icecube) based 5200B board, =20
+with a Renesas static ram, no partitions and a jffs2 file system on =20
+it.  I had to add some more tweaks to physmap_of.c as to work around =20
+the 5200's limitations accessing chips in 16-bit mode through the local =20
+bus, which is a lot easier and cleaner with this patch than with the =20
+old one (of 05 June 09).
 
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index 20a60d6..1769a8e 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -90,11 +90,11 @@ static void dma_direct_unmap_sg(struct device *dev,
-struct scatterlist *sg,
- static int dma_direct_dma_supported(struct device *dev, u64 mask)
- {
- #ifdef CONFIG_PPC64
--	/* Could be improved to check for memory though it better be
--	 * done via some global so platforms can set the limit in case
-+	extern unsigned long highest_memmap_pfn;
-+	/* Could be improved so platforms can set the limit in case
- 	 * they have limited DMA windows
- 	 */
--	return mask >= DMA_BIT_MASK(32);
-+	return (mask >> PAGE_SHIFT) >= highest_memmap_pfn;
- #else
- 	return 1;
- #endif
+Acked-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+--=-6wC/KUIJ0WEPnkpS4mA1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQBKc0pLn/9unNAn/9ERAndaAJ46tL+3fxURYv2K1m+v4Z9UJ00B2QCcCv19
+sk5JUodhOC7jIvauB43/ImU=
+=kGsX
+-----END PGP SIGNATURE-----
+
+--=-6wC/KUIJ0WEPnkpS4mA1--
