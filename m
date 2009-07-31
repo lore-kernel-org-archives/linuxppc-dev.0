@@ -1,32 +1,27 @@
-Return-Path: <julia@diku.dk>
+Return-Path: <nvbolhuis@aimvalley.nl>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7B4AAB7C0C
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6ADD3B707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 31 Jul 2009 16:32:19 +1000 (EST)
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 01900DDDA0
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 16:32:19 +1000 (EST)
-Date: Fri, 31 Jul 2009 08:32:03 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [PATCH 5/5] sound/aoa: Add kmalloc NULL tests
-In-Reply-To: <s5hws5pid6u.wl%tiwai@suse.de>
-Message-ID: <Pine.LNX.4.64.0907310831330.13462@ask.diku.dk>
-References: <Pine.LNX.4.64.0907301610550.8734@ask.diku.dk>
-	<1248963420.16129.0.camel@johannes.local>
-	<Pine.LNX.4.64.0907301627260.8734@ask.diku.dk>
-	<s5hws5pid6u.wl%tiwai@suse.de>
+	Fri, 31 Jul 2009 18:02:09 +1000 (EST)
+Received: from smtp-vbr17.xs4all.nl (smtp-vbr17.xs4all.nl [194.109.24.37])
+	by ozlabs.org (Postfix) with ESMTP id 9C349DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 18:02:07 +1000 (EST)
+Message-ID: <4A72A4E5.1000301@aimvalley.nl>
+Date: Fri, 31 Jul 2009 10:01:41 +0200
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
-	kernel-janitors@vger.kernel.org, alsa-devel@alsa-project.org,
-	linux-kernel@vger.kernel.org
+To: linuxppc-dev@ozlabs.org
+Subject: Re: can the kernel show user task stack backtrace ?
+References: <4A71C04E.6060506@aimvalley.nl>
+	<20090730161941.GA14988@mail.gnudd.com>
+	<20090730165555.GA5476@opentech.at>
+In-Reply-To: <20090730165555.GA5476@opentech.at>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Nicholas Mc Guire <mcguire@lzu.edu.cn>,
+	Alessandro Rubini <rubini@gnudd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,53 +31,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
 
-Check that the result of kzalloc is not NULL before a dereference.
+Thanks for the answers!
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
-
-// <smpl>
-@@
-expression *x;
-identifier f;
-constant char *C;
-@@
-
-x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-... when != x == NULL
-    when != x != NULL
-    when != (x || ...)
-(
-kfree(x)
-|
-f(...,C,...,x,...)
-|
-*f(...,x,...)
-|
-*x->f
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- sound/aoa/core/gpio-pmf.c           |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/var/linuxes/linux-next/sound/aoa/core/gpio-pmf.c b/var/julia/linuxcopy/sound/aoa/core/gpio-pmf.c
-index 5ca2220..1dd0c28 100644
---- a/var/linuxes/linux-next/sound/aoa/core/gpio-pmf.c
-+++ b/var/julia/linuxcopy/sound/aoa/core/gpio-pmf.c
-@@ -182,6 +182,10 @@ static int pmf_set_notify(struct gpio_runtime *rt,
- 	if (!old && notify) {
- 		irq_client = kzalloc(sizeof(struct pmf_irq_client),
- 				     GFP_KERNEL);
-+		if (!irq_client) {
-+			err = -ENOMEM;
-+			goto out_unlock;
-+		}
- 		irq_client->data = notif;
- 		irq_client->handler = pmf_handle_notify_irq;
- 		irq_client->owner = THIS_MODULE;
+libSegFault.so seems to do what I want. I'll replace
+sysctl -w kernel.print-fatal-signals=1
+with
+export LD_PRELOAD=/lib/libSegFault.so
+since it better suits my needs.
