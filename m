@@ -1,28 +1,41 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <dwg@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 597DEB7BFA
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9BA0FB7BCD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 31 Jul 2009 13:35:54 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Fri, 31 Jul 2009 16:20:16 +1000 (EST)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8E3F0DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 13:35:53 +1000 (EST)
-Message-Id: <6FD94305-B60D-4DAF-8296-88345D11187F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <2E027F3C-8FAA-42EC-99B2-9B7EC470094E@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH 3/20] powerpc/mm: Add HW threads support to no_hash TLB
-	management
-Date: Thu, 30 Jul 2009 22:35:47 -0500
-References: <20090724091523.8AD8CDDD1B@ozlabs.org>
-	<2E027F3C-8FAA-42EC-99B2-9B7EC470094E@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 839F6DDDB2
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 16:20:16 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp03.au.ibm.com (8.14.3/8.13.1) with ESMTP id n6V6I0U1016593
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 16:18:00 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n6V6KETX1277990
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 16:20:14 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n6V6KDVO024749
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2009 16:20:14 +1000
+Date: Fri, 31 Jul 2009 16:10:13 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [Patch 0/6] [Patch 0/6] PPC64-HWBKPT: Hardware Breakpoint
+	interfaces - ver VIII
+Message-ID: <20090731061013.GG3950@yookeroo.seuss>
+References: <20090727001152.GA13562@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090727001152.GA13562@in.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,96 +45,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jul 27, 2009 at 05:41:52AM +0530, K.Prasad wrote:
+> Hi David,
+> 	I'm back with a new version of patches after a brief hiatus!
+> 
+> After much deliberation about modifying the code to change the timing of signal
+> delivery to user-space, it has been decided to retain the existing behaviour
+> i.e. SIGTRAP delivered to user-space after execution of causative instruction
+> although exception is raised before execution of it.
 
-On Jul 30, 2009, at 10:12 PM, Kumar Gala wrote:
+Ok.  Except, presumably for ptrace, since changing that would break
+gdb.
 
->
-> On Jul 24, 2009, at 4:15 AM, Benjamin Herrenschmidt wrote:
->
->> The current "no hash" MMU context management code is written with
->> the assumption that one CPU == one TLB. This is not the case on
->> implementations that support HW multithreading, where several
->> linux CPUs can share the same TLB.
->>
->> This adds some basic support for this to our context management
->> and our TLB flushing code.
->>
->> It also cleans up the optional debugging output a bit
->>
->> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> ---
->
-> I'm getting this nice oops on 32-bit book-e SMP (and I'm guessing  
-> its because of this patch)
->
-> Unable to handle kernel paging request for data at address 0x00000000
-> Faulting instruction address: 0xc0016dac
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=8 MPC8572 DS
-> Modules linked in:
-> NIP: c0016dac LR: c0016d58 CTR: 0000001e
-> REGS: eed77ce0 TRAP: 0300   Not tainted  (2.6.31-rc4-00442-gdb4c9c5)
-> MSR: 00021000 <ME,CE>  CR: 24288482  XER: 20000000
-> DEAR: 00000000, ESR: 00000000
-> TASK = eecfe140[1581] 'msgctl08' THREAD: eed76000 CPU: 0
-> GPR00: 00400000 eed77d90 eecfe140 00000000 00000000 00000001  
-> c05bf074 c05c0cf4
-> GPR08: 00000003 00000002 ff7fffff 00000000 00009b05 1004f894  
-> c05bdd24 00000001
-> GPR16: ffffffff c05ab890 c05c0ce8 c04e0f58 c04da364 c05c0000  
-> 00000000 c04cfa04
-> GPR24: 00000002 00000000 00000000 c05c0cd8 00000080 00000000  
-> ef056380 00000017
-> NIP [c0016dac] switch_mmu_context+0x15c/0x520
-> LR [c0016d58] switch_mmu_context+0x108/0x520
-> Call Trace:
-> [eed77d90] [c0016d58] switch_mmu_context+0x108/0x520 (unreliable)
-> [eed77df0] [c040efec] schedule+0x2bc/0x800
-> [eed77e70] [c01b9268] do_msgrcv+0x198/0x420
-> [eed77ef0] [c01b9520] sys_msgrcv+0x30/0xa0
-> [eed77f10] [c0003fe8] sys_ipc+0x1a8/0x2c0
-> [eed77f40] [c00116c4] ret_from_syscall+0x0/0x3c
-> Instruction dump:
-> 57402834 7c00f850 3920fffe 5d2a003e 397b0010 5500103a 7ceb0214  
-> 60000000
-> 60000000 81670000 39080001 38e70004 <7c0be82e> 7c005038 7c0be92e  
-> 81260000
-> ---[ end trace 3c4c3106446e1bd8 ]---
+> One-shot behaviour will now be restricted only to ptrace
+> requests. Kernel-space and non-ptrace user-space requests will
+> result in persistent breakpoints.
 
+Ok.
 
-On Jul 24, 2009, at 4:15 AM, Benjamin Herrenschmidt wrote:
+> Reasons
+> --------
+> - Signal delivery before execution of instruction requires complex workarounds
+> - One of the plausible workarounds is a two-pass hw-breakpoint handler which
+>   delivers the signal after the first pass (with the breakpoints enabled).
+>   In the second pass, it follows the existing semantics of
+>   disable_hbp-->enable_ss-->single_step-->disable_ss-->enable_hbp.
 
-> @@ -247,15 +261,20 @@ void switch_mmu_context(struct mm_struct
-> 	 * local TLB for it and unmark it before we use it
-> 	 */
-> 	if (test_bit(id, stale_map[cpu])) {
-> -		pr_devel("[%d] flushing stale context %d for mm @%p !\n",
-> -			 cpu, id, next);
-> +		pr_hardcont(" | stale flush %d [%d..%d]",
-> +			    id, cpu_first_thread_in_core(cpu),
-> +			    cpu_last_thread_in_core(cpu));
-> +
-> 		local_flush_tlb_mm(next);
->
-> 		/* XXX This clear should ultimately be part of local_flush_tlb_mm */
-> -		__clear_bit(id, stale_map[cpu]);
-> +		for (cpu = cpu_first_thread_in_core(cpu);
-> +		     cpu <= cpu_last_thread_in_core(cpu); cpu++)
-> +			__clear_bit(id, stale_map[cpu]);
-> 	}
+Yes, that's the only way I can see to do it.
 
-This looks a bit dodgy.  using 'cpu' as both the loop variable and  
-what you are computing to determine loop start/end..
+> - Possibility of nested exceptions is a problem here.
 
-Changing this to:
+Ok, why?
 
-unsigned int i;
-...
+> - Proper identification of a  second-pass of first exception and a new nested
+>   exception is difficult. Possibility of stray exceptions due to accesses in
+>   neighbouring memory regions of the breakpoint address further complicates it.
+> - Alternatives are i)use one-shot for all user-space requests ii)disable signal
+>   delivery for non-ptrace requests, allow the user-defined callback routine to
+>   generate signal.
+> - Using one-shot for all user-space requests will break the register/unregister
+>   interface semantics.
+> - Disabling signal delivery for non-ptrace requests is one of the options
+>   but will be a digression from x86 behaviour, or would require changes in x86
+>   code too. Even user-defined callback routines cannot deliver signal
+>   before instruction execution.
+> 
+> Considering all the above, we propose a behaviour that delivers the signal to
+> user-space after breakpoint execution. In due course, it will be good to have
+> ptrace on PPC64 follow the same behaviour.
 
-for (i = cpu_first_thread_in_core(cpu);
-	i <= cpu_last_thread_in_core(cpu); i++)
-	   __clear_bit(id, stale_map[i]);
+Um.. except we can't change ptrace semantics in this way.  It could
+break existing users.
 
-seems to clear up the oops.
-
-- k
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
