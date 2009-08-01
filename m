@@ -1,26 +1,24 @@
-Return-Path: <julia@diku.dk>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <BATV+f268737823f173ec3b40+2169+infradead.org+dwmw2@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E147BB7BBF
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B45FAB7BC0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  1 Aug 2009 18:59:28 +1000 (EST)
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 6963DDDDA0
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Aug 2009 18:59:28 +1000 (EST)
-Date: Sat, 1 Aug 2009 10:53:14 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: benh@kernel.crashing.org, paulus@samba.org,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/10] arch/powerpc: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0908011052510.23408@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat,  1 Aug 2009 19:00:27 +1000 (EST)
+Subject: Re: [PATCH] Stop pci_set_dma_mask() from failing when RAM doesn't
+	exceed the mask anyway
+From: David Woodhouse <dwmw2@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1249113656.1509.125.camel@pasglop>
+References: <1249069310.20192.220.camel@macbook.infradead.org>
+	<1249079105.1509.95.camel@pasglop>
+	<1249113285.20192.961.camel@macbook.infradead.org>
+	<1249113656.1509.125.camel@pasglop>
+Content-Type: text/plain
+Date: Sat, 01 Aug 2009 10:00:20 +0100
+Message-Id: <1249117220.20192.1083.camel@macbook.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,68 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
+On Sat, 2009-08-01 at 18:00 +1000, Benjamin Herrenschmidt wrote:
+> On Sat, 2009-08-01 at 08:54 +0100, David Woodhouse wrote:
+> > On Sat, 2009-08-01 at 08:25 +1000, Benjamin Herrenschmidt wrote:
+> > > On Fri, 2009-07-31 at 20:41 +0100, David Woodhouse wrote:
+> > > > On an iMac G5, the b43 driver is failing to initialise because trying to
+> > > > set the dma mask to 30-bit fails. Even though there's only 512MiB of RAM
+> > > > in the machine anyway:
+> > > > 	https://bugzilla.redhat.com/show_bug.cgi?id=514787
+> > > > 
+> > > > We should probably let it succeed if the available RAM in the system
+> > > > doesn't exceed the requested limit.
+> > > > 
+> > > > Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+> > > 
+> > > Also, isn't our iommu code smart enough to clamp allocations to the DMA
+> > > mask nowadays ? In that case, we could probably just force iommu on
+> > > always...
+> > 
+> > We're not using the IOMMU on this box:
+> > 
+> > PowerMac motherboard: iMac G5
+> > DART: table not allocated, using direct DMA
+> 
+> I know, I was suggesting we do :-)
 
-Error handling code following a kzalloc should free the allocated data.
+I'm not sure. Losing 16MiB on a machine which only has 512MiB anyway
+doesn't seem ideal, and we'll want to make the no-iommu code DTRT
+_anyway_, surely?
 
-The semantic match that finds the problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+So we might as well let the DART keep its existing logic (which is only
+to bother if we have more than 1GiB of RAM; a limit chosen specifically
+because of the Broadcom brokenness).
 
-// <smpl>
-@r exists@
-local idexpression x;
-statement S;
-expression E;
-identifier f,f1,l;
-position p1,p2;
-expression *ptr != NULL;
-@@
-
-x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-...
-if (x == NULL) S
-<... when != x
-     when != if (...) { <+...x...+> }
-(
-x->f1 = E
-|
- (x->f1 == NULL || ...)
-|
- f(...,x->f1,...)
-)
-...>
-(
- return \(0\|<+...x...+>\|ptr\);
-|
- return@p2 ...;
-)
-
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
-@@
-
-print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
- arch/powerpc/sysdev/ipic.c          |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-index 69e2630..040144e 100644
---- a/arch/powerpc/sysdev/ipic.c
-+++ b/arch/powerpc/sysdev/ipic.c
-@@ -735,8 +735,10 @@ struct ipic * __init ipic_init(struct device_node *node, unsigned int flags)
- 	ipic->irqhost = irq_alloc_host(node, IRQ_HOST_MAP_LINEAR,
- 				       NR_IPIC_INTS,
- 				       &ipic_host_ops, 0);
--	if (ipic->irqhost == NULL)
-+	if (ipic->irqhost == NULL) {
-+		kfree(ipic);
- 		return NULL;
-+	}
- 
- 	ipic->regs = ioremap(res.start, res.end - res.start + 1);
- 
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
