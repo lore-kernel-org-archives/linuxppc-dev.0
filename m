@@ -1,24 +1,28 @@
-Return-Path: <BATV+f268737823f173ec3b40+2169+infradead.org+dwmw2@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <timur.tabi@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B45FAB7BC0
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A7FAAB6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  1 Aug 2009 19:00:27 +1000 (EST)
-Subject: Re: [PATCH] Stop pci_set_dma_mask() from failing when RAM doesn't
-	exceed the mask anyway
-From: David Woodhouse <dwmw2@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1249113656.1509.125.camel@pasglop>
-References: <1249069310.20192.220.camel@macbook.infradead.org>
-	<1249079105.1509.95.camel@pasglop>
-	<1249113285.20192.961.camel@macbook.infradead.org>
-	<1249113656.1509.125.camel@pasglop>
-Content-Type: text/plain
-Date: Sat, 01 Aug 2009 10:00:20 +0100
-Message-Id: <1249117220.20192.1083.camel@macbook.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Sat,  1 Aug 2009 22:25:28 +1000 (EST)
+Received: from mail-fx0-f222.google.com (mail-fx0-f222.google.com
+	[209.85.220.222]) by ozlabs.org (Postfix) with ESMTP id CC914DDDA0
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Aug 2009 22:25:26 +1000 (EST)
+Received: by fxm22 with SMTP id 22so1888753fxm.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 01 Aug 2009 05:25:24 -0700 (PDT)
+MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
+In-Reply-To: <Pine.LNX.4.64.0908011052290.23408@ask.diku.dk>
+References: <Pine.LNX.4.64.0908011052290.23408@ask.diku.dk>
+Date: Sat, 1 Aug 2009 07:25:24 -0500
+Message-ID: <ed82fe3e0908010525w56e93f6cl1d4c1bcc84d9e014@mail.gmail.com>
+Subject: Re: [PATCH 1/10] arch/powerpc/sysdev/qe_lib: introduce missing kfree
+From: Timur Tabi <timur@freescale.com>
+To: Julia Lawall <julia@diku.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2009-08-01 at 18:00 +1000, Benjamin Herrenschmidt wrote:
-> On Sat, 2009-08-01 at 08:54 +0100, David Woodhouse wrote:
-> > On Sat, 2009-08-01 at 08:25 +1000, Benjamin Herrenschmidt wrote:
-> > > On Fri, 2009-07-31 at 20:41 +0100, David Woodhouse wrote:
-> > > > On an iMac G5, the b43 driver is failing to initialise because trying to
-> > > > set the dma mask to 30-bit fails. Even though there's only 512MiB of RAM
-> > > > in the machine anyway:
-> > > > 	https://bugzilla.redhat.com/show_bug.cgi?id=514787
-> > > > 
-> > > > We should probably let it succeed if the available RAM in the system
-> > > > doesn't exceed the requested limit.
-> > > > 
-> > > > Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-> > > 
-> > > Also, isn't our iommu code smart enough to clamp allocations to the DMA
-> > > mask nowadays ? In that case, we could probably just force iommu on
-> > > always...
-> > 
-> > We're not using the IOMMU on this box:
-> > 
-> > PowerMac motherboard: iMac G5
-> > DART: table not allocated, using direct DMA
-> 
-> I know, I was suggesting we do :-)
+On Sat, Aug 1, 2009 at 3:52 AM, Julia Lawall<julia@diku.dk> wrote:
+> From: Julia Lawall <julia@diku.dk>
+>
+> Error handling code following a kzalloc should free the allocated data.
+>
 
-I'm not sure. Losing 16MiB on a machine which only has 512MiB anyway
-doesn't seem ideal, and we'll want to make the no-iommu code DTRT
-_anyway_, surely?
+...
 
-So we might as well let the DART keep its existing logic (which is only
-to bother if we have more than 1GiB of RAM; a limit chosen specifically
-because of the Broadcom brokenness).
+>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> ---
+> =A0arch/powerpc/sysdev/qe_lib/qe_ic.c =A0| =A0 =A05 ++++-
+> =A01 files changed, 4 insertions(+), 1 deletions(-)
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Acked-by: Timur Tabi <timur@freescale.com>
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
