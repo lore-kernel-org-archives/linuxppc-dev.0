@@ -3,20 +3,20 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 271E3B7087
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3E394B70BA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  2 Aug 2009 08:43:21 +1000 (EST)
-Received: from mail-yw0-f171.google.com (mail-yw0-f171.google.com
-	[209.85.211.171]) by ozlabs.org (Postfix) with ESMTP id 79159DDD1B
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Aug 2009 08:43:20 +1000 (EST)
-Received: by ywh1 with SMTP id 1so3148738ywh.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 01 Aug 2009 15:43:18 -0700 (PDT)
+	Sun,  2 Aug 2009 08:50:23 +1000 (EST)
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id D6C16DDD1B
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Aug 2009 08:50:20 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id b6so1403380ana.39
+	for <linuxppc-dev@ozlabs.org>; Sat, 01 Aug 2009 15:50:18 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <4A721FB1.4040903@us.ibm.com>
-References: <4A721FB1.4040903@us.ibm.com>
-Date: Sat, 1 Aug 2009 17:43:18 -0500
-Message-ID: <3ae3aa420908011543t1260b971g41ee80fa78c4f471@mail.gmail.com>
-Subject: Re: [PATCH 1/3] Support for PCI Express reset type
+In-Reply-To: <4A722121.4010307@us.ibm.com>
+References: <4A722121.4010307@us.ibm.com>
+Date: Sat, 1 Aug 2009 17:17:09 -0500
+Message-ID: <3ae3aa420908011517l4573a430s778745a2dae17d89@mail.gmail.com>
+Subject: Re: [PATCH 2/3] Support for PCI Express reset type
 From: Linas Vepstas <linasvepstas@gmail.com>
 To: Mike Mason <mmlnx@us.ibm.com>
 Content-Type: text/plain; charset=UTF-8
@@ -33,7 +33,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 2009/7/30 Mike Mason <mmlnx@us.ibm.com>:
-> This is the first of three patches that implement a bit field that PCI
+> This is the second of three patches that implement a bit field that PCI
 > Express device drivers can use to indicate they need a fundamental reset
 > during error recovery.
 >
@@ -45,9 +45,10 @@ he
  PCI
 > error recovery and EEH frameworks do not support this distinction.
 >
-> The attached patch (courtesy of Richard Lary) adds a bit field to pci_dev
-> that indicates whether the device requires a fundamental reset during
-> recovery.
+> The attached patch updates the Documentation/PCI/pci-error-recovery.txt f=
+ile
+> with changes related to this new bit field, as well a few unrelated updat=
+es.
 >
 > These patches supersede the previously submitted patch that implemented a
 > fundamental reset bit field.
@@ -56,5 +57,6 @@ he
 > Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
 > Signed-off-by: Richard Lary <rlary@us.ibm.com>
 
+FWIW,
 
 Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
