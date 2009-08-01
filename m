@@ -1,28 +1,18 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <BATV+f268737823f173ec3b40+2169+infradead.org+dwmw2@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A7FAAB6F20
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D4B02B6F31
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  1 Aug 2009 22:25:28 +1000 (EST)
-Received: from mail-fx0-f222.google.com (mail-fx0-f222.google.com
-	[209.85.220.222]) by ozlabs.org (Postfix) with ESMTP id CC914DDDA0
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Aug 2009 22:25:26 +1000 (EST)
-Received: by fxm22 with SMTP id 22so1888753fxm.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 01 Aug 2009 05:25:24 -0700 (PDT)
-MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <Pine.LNX.4.64.0908011052290.23408@ask.diku.dk>
-References: <Pine.LNX.4.64.0908011052290.23408@ask.diku.dk>
-Date: Sat, 1 Aug 2009 07:25:24 -0500
-Message-ID: <ed82fe3e0908010525w56e93f6cl1d4c1bcc84d9e014@mail.gmail.com>
-Subject: Re: [PATCH 1/10] arch/powerpc/sysdev/qe_lib: introduce missing kfree
-From: Timur Tabi <timur@freescale.com>
-To: Julia Lawall <julia@diku.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+	Sat,  1 Aug 2009 23:29:37 +1000 (EST)
+Subject: [PATCH] Fix perfctr oops on ppc32
+From: David Woodhouse <dwmw2@infradead.org>
+To: benh@kernel.crashing.org
+Content-Type: text/plain
+Date: Sat, 01 Aug 2009 14:29:30 +0100
+Message-Id: <1249133370.24204.3.camel@macbook.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Aug 1, 2009 at 3:52 AM, Julia Lawall<julia@diku.dk> wrote:
-> From: Julia Lawall <julia@diku.dk>
->
-> Error handling code following a kzalloc should free the allocated data.
->
+This seems to be the reason why the Fedora rawhide 2.6.31-rc kernel
+doesn't boot. With some CPUs, cur_cpu_spec->oprofile_cpu_type can be
+NULL -- which makes strcmp() unhappy.
 
-...
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+---
+At first glance, it looks like there are a bunch of other places which
+use cur_cpu_spec->oprofile_cpu_type without first checking if it's
+non-NULL, but maybe those are all 64-bit and all 64-bit cpu types have
+it set?
 
->
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> ---
-> =A0arch/powerpc/sysdev/qe_lib/qe_ic.c =A0| =A0 =A05 ++++-
-> =A01 files changed, 4 insertions(+), 1 deletions(-)
+diff --git a/arch/powerpc/kernel/mpc7450-pmu.c b/arch/powerpc/kernel/mpc7450-pmu.c
+index 75ff47f..ea383c1 100644
+--- a/arch/powerpc/kernel/mpc7450-pmu.c
++++ b/arch/powerpc/kernel/mpc7450-pmu.c
+@@ -408,7 +408,8 @@ struct power_pmu mpc7450_pmu = {
+ 
+ static int init_mpc7450_pmu(void)
+ {
+-	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/7450"))
++	if (cur_cpu_spec->oprofile_cpu_type &&
++	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/7450"))
+ 		return -ENODEV;
+ 
+ 	return register_power_pmu(&mpc7450_pmu);
 
-Acked-by: Timur Tabi <timur@freescale.com>
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
