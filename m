@@ -1,28 +1,20 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5264CB70B0
+Return-Path: <wilbur512@gmail.com>
+Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
+	[209.85.210.178])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 64511B70D7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  2 Aug 2009 08:56:02 +1000 (EST)
-Received: from mail-yw0-f171.google.com (mail-yw0-f171.google.com
-	[209.85.211.171]) by ozlabs.org (Postfix) with ESMTP id A1F7CDDDA0
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Aug 2009 08:56:00 +1000 (EST)
-Received: by ywh1 with SMTP id 1so3156731ywh.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 01 Aug 2009 15:55:58 -0700 (PDT)
+	Sun,  2 Aug 2009 11:25:46 +1000 (EST)
+Received: by yxe8 with SMTP id 8so1365435yxe.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 01 Aug 2009 18:25:43 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <4A7221DF.5040402@us.ibm.com>
-References: <4A722121.4010307@us.ibm.com> <4A7221DF.5040402@us.ibm.com>
-Date: Sat, 1 Aug 2009 17:55:58 -0500
-Message-ID: <3ae3aa420908011555r72136e4cy7141f541019f13a3@mail.gmail.com>
-Subject: Re: [PATCH 3/3] Support for PCI Express reset type
-From: Linas Vepstas <linasvepstas@gmail.com>
-To: Mike Mason <mmlnx@us.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Richard Lary <rlary@us.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org
-Reply-To: linasvepstas@gmail.com
+Date: Sun, 2 Aug 2009 09:25:43 +0800
+Message-ID: <e997b7420908011825n4ba2df16u71d53953d6774c21@mail.gmail.com>
+Subject: Re:[PATCH 1/2] powerpc: add kexec support on FSL-Book-E
+From: "wilbur.chan" <wilbur512@gmail.com>
+To: bigeasy@linutronix.de
+Content-Type: text/plain; charset=GB2312
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2009/7/30 Mike Mason <mmlnx@us.ibm.com>:
-> This is the third of three patches that implement a bit field that PCI
-> Express device drivers can use to indicate they need a fundamental reset
-> during error recovery.
->
-> By default, the EEH framework on powerpc does what's known as a "hot rese=
-t"
-> during recovery of a PCI Express device. =C2=A0We've found a case where t=
-he
-> device needs a "fundamental reset" to recover properly. =C2=A0The current=
- PCI
-> error recovery and EEH frameworks do not support this distinction.
->
-> The attached patch makes changes to EEH to utilize the new bit field.
->
-> These patches supersede the previously submitted patch that implemented a
-> fundamental reset bit field.
->
-> Please review and let me know of any concerns.
->
-> Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
-> Signed-off-by: Richard Lary <rlary@us.ibm.com>
+Hi, Sebastian,
 
-Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
+>From: Sebastian Andrzej Siewior <bigeasy at linutronix.de>
 
-> + =C2=A0 =C2=A0 =C2=A0 /* Determine type of EEH reset required by device,
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0* default hot reset or fundamental reset
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0*/
-> + =C2=A0 =C2=A0 =C2=A0 if (dev->needs_freset)
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 rtas_pci_slot_reset(pd=
-n, 3);
-> + =C2=A0 =C2=A0 =C2=A0 else
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 rtas_pci_slot_reset(pd=
-n, 1);
+>The relocate_new_kernel() code usually disables the MMU and the small code
+>operates on physicall pages while moving the kernel to its final position.
+>Book-E doesn't support this so a 1:1 mapping must be created.
+>This patch adds support for FSL-BOOK-E implementation.
 
-Gack!  I remember deluges of emails and conference calls
-where the hardware guys went on about this; and I admit I didn't
-quite get it, which I guess is why this patch is showing up many
-years late.
+>Signed-off-by: Sebastian Andrzej Siewior <bigeasy at linutronix.de>
 
-FWIW some of the variants of the IPR chipset almost surely
-need the freset  bit set.
 
---linas
+
+
+>+      xori    r6,r4,1                 /* Setup TMP mapping in the other A=
+ddress space */
+>+      slwi    r6,r6,12
+>+      oris    r6,r6,(MAS1_VALID|MAS1_IPROT)@h
+>+      ori     r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_1GB))@l
+>+      mtspr   SPRN_MAS1,r6
+
+>.........
+
+>+      /* find our address */
+>+      addi    r7, r30, final_copy_code - relocate_new_kernel
+>+
+>+      mtspr   SPRN_SRR0,r7
+>+      mtspr   SPRN_SRR1,r6
+>+      rfi
+
+...........................................................................=
+.................................................................
+
+In your patch of Booke support for kexec , it setup a 1GB TMP mapping
+and jump to it.
+
+But I saw that, the max size for an e500 entry is 256M=A3=ACso I changed
+your code to setup 4*256M entries, and it works well on mpc8541.
+
+Howerver,it didn't work on mpc8548(e500 v2)  and
+P2020ds(SMP,e500 v2) , and  'rfi' to final_copy_code failed.(I also
+setup a 1:1 mapping for serial ,so I can trap the flowchart in
+relocate_new_kernel)
+
+
+Any suggestions about this ?   Thank you very much.
+
+
+regards,
+
+wilbur
