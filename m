@@ -3,22 +3,22 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4AB28B7080
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B68A8B70B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  2 Aug 2009 18:46:40 +1000 (EST)
+	Sun,  2 Aug 2009 18:50:19 +1000 (EST)
 Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mgw2.diku.dk",
 	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C0D29DDDA0
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Aug 2009 18:46:39 +1000 (EST)
-Date: Sun, 2 Aug 2009 10:44:53 +0200 (CEST)
+	by ozlabs.org (Postfix) with ESMTPS id 5556DDDDA0
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Aug 2009 18:50:19 +1000 (EST)
+Date: Sun, 2 Aug 2009 10:48:27 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
 To: benh@kernel.crashing.org, paulus@samba.org,
 	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/10] arch/powerpc: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0908021044330.15557@ask.diku.dk>
+Subject: [PATCH 11/15] arch/powerpc: Use DIV_ROUND_CLOSEST
+Message-ID: <Pine.LNX.4.64.0908021048090.15557@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,66 +32,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Julia Lawall <julia@diku.dk>
 
-Error handling code following a kzalloc should free the allocated data.
+The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
+but is perhaps more readable.
 
-The semantic match that finds the problem is as follows:
+The semantic patch that makes this change is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
-@r exists@
-local idexpression x;
-statement S;
-expression E;
-identifier f,f1,l;
-position p1,p2;
-expression *ptr != NULL;
+@haskernel@
 @@
 
-x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-...
-if (x == NULL) S
-<... when != x
-     when != if (...) { <+...x...+> }
-(
-x->f1 = E
-|
- (x->f1 == NULL || ...)
-|
- f(...,x->f1,...)
-)
-...>
-(
- return \(0\|<+...x...+>\|ptr\);
-|
- return@p2 ...;
-)
+#include <linux/kernel.h>
 
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
+@depends on haskernel@
+expression x,__divisor;
 @@
 
-print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+- (((x) + ((__divisor) / 2)) / (__divisor))
++ DIV_ROUND_CLOSEST(x,__divisor)
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
----
- arch/powerpc/sysdev/ipic.c          |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-index 69e2630..040144e 100644
---- a/arch/powerpc/sysdev/ipic.c
-+++ b/arch/powerpc/sysdev/ipic.c
-@@ -735,8 +735,10 @@ struct ipic * __init ipic_init(struct device_node *node, unsigned int flags)
- 	ipic->irqhost = irq_alloc_host(node, IRQ_HOST_MAP_LINEAR,
- 				       NR_IPIC_INTS,
- 				       &ipic_host_ops, 0);
--	if (ipic->irqhost == NULL)
-+	if (ipic->irqhost == NULL) {
-+		kfree(ipic);
- 		return NULL;
-+	}
- 
- 	ipic->regs = ioremap(res.start, res.end - res.start + 1);
- 
+---
+ arch/powerpc/kernel/time.c          |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index eae4511..edb1edb 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -479,7 +479,8 @@ static int __init iSeries_tb_recal(void)
+ 		unsigned long tb_ticks = tb - iSeries_recal_tb;
+ 		unsigned long titan_usec = (titan - iSeries_recal_titan) >> 12;
+ 		unsigned long new_tb_ticks_per_sec   = (tb_ticks * USEC_PER_SEC)/titan_usec;
+-		unsigned long new_tb_ticks_per_jiffy = (new_tb_ticks_per_sec+(HZ/2))/HZ;
++		unsigned long new_tb_ticks_per_jiffy =
++			DIV_ROUND_CLOSEST(new_tb_ticks_per_sec, HZ);
+ 		long tick_diff = new_tb_ticks_per_jiffy - tb_ticks_per_jiffy;
+ 		char sign = '+';		
+ 		/* make sure tb_ticks_per_sec and tb_ticks_per_jiffy are consistent */
