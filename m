@@ -1,20 +1,25 @@
-Return-Path: <wilbur512@gmail.com>
-Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
-	[209.85.210.178])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 64511B70D7
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 77112B708C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  2 Aug 2009 11:25:46 +1000 (EST)
-Received: by yxe8 with SMTP id 8so1365435yxe.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 01 Aug 2009 18:25:43 -0700 (PDT)
-MIME-Version: 1.0
-Date: Sun, 2 Aug 2009 09:25:43 +0800
-Message-ID: <e997b7420908011825n4ba2df16u71d53953d6774c21@mail.gmail.com>
-Subject: Re:[PATCH 1/2] powerpc: add kexec support on FSL-Book-E
-From: "wilbur.chan" <wilbur512@gmail.com>
-To: bigeasy@linutronix.de
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Sun,  2 Aug 2009 17:51:05 +1000 (EST)
+Subject: Re: [PATCH] Stop pci_set_dma_mask() from failing when RAM doesn't
+	exceed the mask anyway
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1249117220.20192.1083.camel@macbook.infradead.org>
+References: <1249069310.20192.220.camel@macbook.infradead.org>
+	<1249079105.1509.95.camel@pasglop>
+	<1249113285.20192.961.camel@macbook.infradead.org>
+	<1249113656.1509.125.camel@pasglop>
+	<1249117220.20192.1083.camel@macbook.infradead.org>
+Content-Type: text/plain
+Date: Sun, 02 Aug 2009 17:50:37 +1000
+Message-Id: <1249199437.12047.11.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, Sebastian,
+On Sat, 2009-08-01 at 10:00 +0100, David Woodhouse wrote:
+> I'm not sure. Losing 16MiB on a machine which only has 512MiB anyway
+> doesn't seem ideal, and we'll want to make the no-iommu code DTRT
+> _anyway_, surely?
+>
+> So we might as well let the DART keep its existing logic (which is
+> only
+> to bother if we have more than 1GiB of RAM; 
 
->From: Sebastian Andrzej Siewior <bigeasy at linutronix.de>
+Ah right, so when do we enable the DART ? Above 1G ? I though it was
+above 2G but we may well have moved that down to 1G just for b43 indeed.
 
->The relocate_new_kernel() code usually disables the MMU and the small code
->operates on physicall pages while moving the kernel to its final position.
->Book-E doesn't support this so a 1:1 mapping must be created.
->This patch adds support for FSL-BOOK-E implementation.
+I definitely agree on the fix to the mask so it only compares to the
+available RAM. I'll check that in when I'm back from the snow fields 
+on tuesday :-)
 
->Signed-off-by: Sebastian Andrzej Siewior <bigeasy at linutronix.de>
-
-
-
-
->+      xori    r6,r4,1                 /* Setup TMP mapping in the other A=
-ddress space */
->+      slwi    r6,r6,12
->+      oris    r6,r6,(MAS1_VALID|MAS1_IPROT)@h
->+      ori     r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_1GB))@l
->+      mtspr   SPRN_MAS1,r6
-
->.........
-
->+      /* find our address */
->+      addi    r7, r30, final_copy_code - relocate_new_kernel
->+
->+      mtspr   SPRN_SRR0,r7
->+      mtspr   SPRN_SRR1,r6
->+      rfi
-
-...........................................................................=
-.................................................................
-
-In your patch of Booke support for kexec , it setup a 1GB TMP mapping
-and jump to it.
-
-But I saw that, the max size for an e500 entry is 256M=A3=ACso I changed
-your code to setup 4*256M entries, and it works well on mpc8541.
-
-Howerver,it didn't work on mpc8548(e500 v2)  and
-P2020ds(SMP,e500 v2) , and  'rfi' to final_copy_code failed.(I also
-setup a 1:1 mapping for serial ,so I can trap the flowchart in
-relocate_new_kernel)
-
-
-Any suggestions about this ?   Thank you very much.
-
-
-regards,
-
-wilbur
+Cheers,
+Ben,
