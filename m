@@ -1,20 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <julia@diku.dk>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E7C24B7257
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4AB28B7080
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  2 Aug 2009 17:55:00 +1000 (EST)
-Subject: Re: [PATCH] Fix perfctr oops on ppc32
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1249133370.24204.3.camel@macbook.infradead.org>
-References: <1249133370.24204.3.camel@macbook.infradead.org>
-Content-Type: text/plain
-Date: Sun, 02 Aug 2009 17:54:47 +1000
-Message-Id: <1249199687.12047.12.camel@pasglop>
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+	Sun,  2 Aug 2009 18:46:40 +1000 (EST)
+Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mgw2.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C0D29DDDA0
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Aug 2009 18:46:39 +1000 (EST)
+Date: Sun, 2 Aug 2009 10:44:53 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: benh@kernel.crashing.org, paulus@samba.org,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/10] arch/powerpc: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0908021044330.15557@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +30,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2009-08-01 at 14:29 +0100, David Woodhouse wrote:
-> This seems to be the reason why the Fedora rawhide 2.6.31-rc kernel
-> doesn't boot. With some CPUs, cur_cpu_spec->oprofile_cpu_type can be
-> NULL -- which makes strcmp() unhappy.
-> 
-> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+From: Julia Lawall <julia@diku.dk>
 
-Thanks David !
+Error handling code following a kzalloc should free the allocated data.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+The semantic match that finds the problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@r exists@
+local idexpression x;
+statement S;
+expression E;
+identifier f,f1,l;
+position p1,p2;
+expression *ptr != NULL;
+@@
+
+x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+...
+if (x == NULL) S
+<... when != x
+     when != if (...) { <+...x...+> }
+(
+x->f1 = E
+|
+ (x->f1 == NULL || ...)
+|
+ f(...,x->f1,...)
+)
+...>
+(
+ return \(0\|<+...x...+>\|ptr\);
+|
+ return@p2 ...;
+)
+
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
+
+print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
+ arch/powerpc/sysdev/ipic.c          |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-Paulus, do you want to put that in your new perfctr-powerpc tree or I'll
-just stick that in my merge brange next week along with other fixes ?
-
-Cheers,
-Ben.
-
-> ---
-> At first glance, it looks like there are a bunch of other places which
-> use cur_cpu_spec->oprofile_cpu_type without first checking if it's
-> non-NULL, but maybe those are all 64-bit and all 64-bit cpu types have
-> it set?
-> 
-> diff --git a/arch/powerpc/kernel/mpc7450-pmu.c b/arch/powerpc/kernel/mpc7450-pmu.c
-> index 75ff47f..ea383c1 100644
-> --- a/arch/powerpc/kernel/mpc7450-pmu.c
-> +++ b/arch/powerpc/kernel/mpc7450-pmu.c
-> @@ -408,7 +408,8 @@ struct power_pmu mpc7450_pmu = {
->  
->  static int init_mpc7450_pmu(void)
->  {
-> -	if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/7450"))
-> +	if (cur_cpu_spec->oprofile_cpu_type &&
-> +	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/7450"))
->  		return -ENODEV;
->  
->  	return register_power_pmu(&mpc7450_pmu);
-> 
-> 
+diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
+index 69e2630..040144e 100644
+--- a/arch/powerpc/sysdev/ipic.c
++++ b/arch/powerpc/sysdev/ipic.c
+@@ -735,8 +735,10 @@ struct ipic * __init ipic_init(struct device_node *node, unsigned int flags)
+ 	ipic->irqhost = irq_alloc_host(node, IRQ_HOST_MAP_LINEAR,
+ 				       NR_IPIC_INTS,
+ 				       &ipic_host_ops, 0);
+-	if (ipic->irqhost == NULL)
++	if (ipic->irqhost == NULL) {
++		kfree(ipic);
+ 		return NULL;
++	}
+ 
+ 	ipic->regs = ioremap(res.start, res.end - res.start + 1);
+ 
