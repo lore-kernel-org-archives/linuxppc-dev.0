@@ -1,25 +1,31 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3442EB6F1F
+Return-Path: <chris@ilovelinux.de>
+Received: from mail.sigmos.de (mail.sigmos.de [89.28.140.11])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id C48DCB6F2B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Aug 2009 04:46:50 +1000 (EST)
-Received: from smtp3.netcologne.de (smtp3.netcologne.de [194.8.194.66])
-	by ozlabs.org (Postfix) with ESMTP id 6AB33DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Aug 2009 04:46:49 +1000 (EST)
-Date: Mon, 03 Aug 2009 20:46:38 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH] powerpc/mpc52xx/wdt: Fix 5200 wdt always being used as gpt
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40908031050g2d03abb5s9dfe4dceb2072af6@mail.gmail.com>
-	(from grant.likely@secretlab.ca on Mon Aug  3 19:50:05 2009)
-Message-Id: <1249325206.3404.1@antares>
+	Tue,  4 Aug 2009 05:57:41 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.sigmos.de (Postfix) with ESMTP id 5A17813188A1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  3 Aug 2009 21:35:19 +0200 (CEST)
+Received: from mail.sigmos.de ([127.0.0.1])
+	by localhost (mail.sigmos.de [127.0.0.1]) (amavisd-maia, port 10024)
+	with ESMTP id 22839-10 for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  3 Aug 2009 21:35:18 +0200 (CEST)
+Received: from chris.localnet (e183146156.adsl.alicedsl.de [85.183.146.156])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	(Authenticated sender: chris@ilovelinux.de)
+	by mail.sigmos.de (Postfix) with ESMTP id A3C6713188A0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  3 Aug 2009 21:35:18 +0200 (CEST)
+From: Christian Schmitt <chris@ilovelinux.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: G4 radeon 9500 KMS issues
+Date: Mon, 3 Aug 2009 21:35:14 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=PGP-SHA1; boundary="=-r1vhCBVLESF+MM4S8TB7"
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>, wim@iguana.be
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200908032135.14281.chris@ilovelinux.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,54 +35,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-r1vhCBVLESF+MM4S8TB7
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello,
 
-Am 03.08.09 19:50 schrieb(en) Grant Likely:
-> Just about all mpc5200 device trees have the fsl,has-wdt property on =20
-> GPT0 even when it isn't used as a watchdog.
+I'm testing KMS on my G4 machine, but it is making problems. I tried different 
+approaches:
+When booting with KMS and agpmode=1 i get this output:
 
-Sorry, I do not understand...  The file =20
-Documentation/powerpc/dts-bindings/fsl/mpc5200.txt says
+[drm] Initialized drm 1.1.0 20060810                                                           
+[drm] radeon kernel modesetting enabled.                                                       
+[drm:drm_init],                                                                                
+[drm:drm_get_dev],                                                                             
+radeon 0000:00:10.0: enabling device (0006 -> 0007)                                            
+[drm:drm_get_minor],                                                                           
+[drm:drm_get_minor], new minor assigned 64                                                     
+[drm:drm_get_minor],                                                                           
+[drm:drm_get_minor], new minor assigned 0                                                      
+[drm] radeon: Initializing kernel modesetting.                                                 
+[drm] register mmio base: 0x90000000                                                           
+[drm] register mmio size: 65536                                                                
+radeon 0000:00:10.0: Invalid ROM contents                                                      
+radeon 0000:00:10.0: Invalid ROM contents                                                      
+[drm:radeon_get_bios] *ERROR* Unable to locate a BIOS ROM                                      
+[drm] GPU reset succeed (RBBM_STATUS=0x00000140)                                               
+[drm] Using generic clock info                                                                 
+[drm] Clocks initialized !                                                                     
+[drm] Generation 2 PCI interface, using max accessible memory                                  
+[drm] Detected VRAM RAM=32M, BAR=128M                                                          
+[drm] RAM width 64bits DDR                                                                     
+[drm] radeon: 1 pipes initialized.                                                             
+agpgart-uninorth 0000:00:0b.0: putting AGP V2 device into 4x mode                              
+radeon 0000:00:10.0: putting AGP V2 device into 4x mode                                        
+[drm] radeon: VRAM 32M                                                                         
+[drm] radeon: VRAM from 0x04000000 to 0x07FFFFFF                                               
+[drm] radeon: VRAM less than aperture workaround enabled                                       
+[drm] radeon: GTT 32M
+[drm] radeon: GTT from 0x00000000 to 0x01FFFFFF
+[drm:drm_irq_install], irq=48
+[drm] radeon: irq initialized.
+[TTM] TTM available graphics memory: 757 MiB
+[TTM] TTM available object memory: 373 MiB
+[drm] radeon: 32M of VRAM memory ready
+[drm] radeon: 32M of GTT memory ready.
+[drm] radeon: cp idle (0x10000C03)
+[drm] Loading R300 Microcode
+[drm] radeon: ring at 0x0000000000000000
+[drm] ring test succeeded in 1 usecs
+[drm] radeon: ib pool ready.
+[drm:radeon_fence_wait] *ERROR* fence(efb3fea0:0x00000001) 510ms timeout going 
+to reset GPU
+[drm] CP reset succeed (RBBM_STATUS=0x00000140)
+[drm] radeon: cp idle (0x10000000)
+[drm] Loading R300 Microcode
+[drm] radeon: ring at 0x0000000000000000
+[drm:radeon_ring_test] *ERROR* radeon: ring test failed 
+(sracth(0x15E8)=0xCAFEDEAD)
+[drm:r100_cp_init] *ERROR* radeon: cp isn't working (-22).
+[drm:r300_gpu_reset] *ERROR* Failed to reset GPU (RBBM_STATUS=0x80010140)
+[drm:radeon_fence_wait] *ERROR* fence(efb3fea0:0x00000001) 666ms timeout
+[drm:radeon_fence_wait] *ERROR* last signaled fence(0x00000001)
+[drm:radeon_ib_test] *ERROR* radeon: ib test failed 
+(sracth(0x15E4)=0xCAFEDEAD)
+[drm:radeon_device_init] *ERROR* radeon: failled testing IB (-22).
+[drm:radeon_driver_load_kms] *ERROR* Failed to initialize radeon, disabling 
+IOCTL
+[drm] radeon: finishing device.
+[drm] radeon: cp finalized
+[TTM] Used total memory is 0 bytes.
+[drm] radeon: ttm finalized
+[drm:drm_irq_uninstall], irq=48
+[drm] radeon: fence finalized
+[drm:drm_put_minor], release secondary minor 0
+[drm:drm_put_minor], release secondary minor 64
+radeon: probe of 0000:00:10.0 failed with error -22
 
-<snip>
-On the mpc5200 and 5200b, GPT0 has a watchdog timer function.  If the =20
-board design supports the internal wdt, then the device node for GPT0 =20
-should include the empty property 'fsl,has-wdt'.
-</snip>
 
-I interpreted this as "if you don't want to have the wdt function of =20
-gpt0, remove this property".  If this assumption is wrong, how is the =20
-kernel supposed to decide if a device shall be used as gpt or as wdt?
 
-> The boards using GPT0 as a GPIO or timer will be broken by this patch.
+When I try to disable AGP, the machine crashes badly. The problem is that I 
+can hardly get any debug output, as the console is not working (see above) and 
+I have to use a SSH session to get any access at all. Here is the log i get:
 
-A wdt is a security device which will (IMHO) either not be used as =20
-such, or it is a *must not* be used for something else on a particular =20
-board (you may even want u-boot to activate it, e.g. to detect a =20
-hanging boot process).  In both cases, a "tuned" device tree is needed.
+radeon agpmode=-1
+ 
+Aug  3 13:17:08 [kernel] [drm] radeon kernel modesetting enabled.
+Aug  3 13:17:08 [kernel] [drm:drm_init],
+Aug  3 13:17:08 [kernel] [drm:drm_get_dev],
+Aug  3 13:17:08 [kernel] [drm:drm_get_minor],
+Aug  3 13:17:08 [kernel] [drm:drm_get_minor], new minor assigned 64
+Aug  3 13:17:08 [kernel] [drm:drm_get_minor],
+Aug  3 13:17:08 [kernel] [drm:drm_get_minor], new minor assigned 0
+Aug  3 13:17:08 [kernel] [drm] radeon: Initializing kernel modesetting.
+Aug  3 13:17:08 [kernel] [drm] Forcing AGP to PCI mode
+Aug  3 13:17:08 [kernel] [drm] register mmio base: 0x90000000
+Aug  3 13:17:08 [kernel] [drm] register mmio size: 65536
+Aug  3 13:17:08 [kernel] radeon 0000:00:10.0: Invalid ROM contents
+                - Last output repeated twice -
+Aug  3 13:17:08 [kernel] [drm:radeon_get_bios] *ERROR* Unable to locate a BIOS 
+ROM
+Aug  3 13:17:08 [kernel] [drm] GPU reset succeed (RBBM_STATUS=0x00000140)
+Aug  3 13:17:08 [kernel] [drm] Using generic clock info
+Aug  3 13:17:08 [kernel] [drm] Clocks initialized !
+Aug  3 13:17:08 [kernel] [drm] Generation 2 PCI interface, using max 
+accessible memory
+Aug  3 13:17:08 [kernel] [drm] Detected VRAM RAM=32M, BAR=128M
+Aug  3 13:17:08 [kernel] [drm] RAM width 64bits DDR
+Aug  3 13:17:08 [kernel] [drm] radeon: 1 pipes initialized.
+Aug  3 13:17:08 [kernel] [drm] radeon: VRAM 32M
+Aug  3 13:17:08 [kernel] [drm] radeon: VRAM from 0x00000000 to 0x03FFFFFF
+Aug  3 13:17:08 [kernel] [drm] radeon: VRAM less than aperture workaround 
+enabled
+Aug  3 13:17:08 [kernel] [drm] radeon: GTT 512M
+Aug  3 13:17:08 [kernel] [drm] radeon: GTT from 0x04000000 to 0x23FFFFFF
+Aug  3 13:17:08 [kernel] [drm:drm_irq_install], irq=48
+Aug  3 13:17:08 [kernel] [drm] radeon: irq initialized.
+Aug  3 13:17:08 [kernel] [TTM] TTM available graphics memory: 757 MiB
+Aug  3 13:17:08 [kernel] [TTM] TTM available object memory: 373 MiB
+Aug  3 13:17:08 [kernel] [drm] radeon: 32M of VRAM memory ready
+Aug  3 13:17:08 [kernel] [drm] radeon: 512M of GTT memory ready.
+Aug  3 13:17:08 [kernel] [drm] GART: num cpu pages 131072, num gpu pages 
+131072
+Aug  3 13:17:08 [kernel] [drm] radeon: cp idle (0x10000000)
+Aug  3 13:17:08 [kernel] [drm] Loading R300 Microcode
+Aug  3 13:17:08 [kernel] [drm] radeon: ring at 0x0000000004000000
+Aug  3 13:17:08 [kernel] [drm] ring test succeeded in 1 usecs
+Aug  3 13:17:08 [kernel] [drm] radeon: ib pool ready.
+Aug  3 13:17:08 [kernel] [drm] ib test succeeded in 0 usecs
+Aug  3 13:17:08 [kernel] [drm] Connector Table: 2 (ibook)
+Aug  3 13:17:08 [kernel] [drm] Panel info derived from registers
+Aug  3 13:17:08 [kernel] [drm] Panel Size 1024x768
+Aug  3 13:17:08 [kernel] [drm:drm_sysfs_connector_add], adding "LVDS-1" to 
+sysfs
+Aug  3 13:17:08 [kernel] [drm:drm_sysfs_hotplug_event], generating hotplug 
+event
+Aug  3 13:17:08 [kernel] [drm:drm_sysfs_connector_add], adding "VGA-1" to 
+sysfs
+Aug  3 13:17:08 [kernel] [drm:drm_sysfs_hotplug_event], generating hotplug 
+event
+Aug  3 13:17:08 [kernel] [drm] Radeon Display Connectors
+Aug  3 13:17:08 [kernel] [drm] Connector 0:
+Aug  3 13:17:08 [kernel] [drm]   LVDS
+Aug  3 13:17:08 [kernel] [drm]   DDC: 0x64 0x64 0x64 0x64 0x64 0x64 0x64 0x64
+Aug  3 13:17:08 [kernel] [drm]   Encoders:
+Aug  3 13:17:08 [kernel] [drm]     LCD1: INTERNAL_LVDS
+Aug  3 13:17:08 [kernel] [drm] Connector 1:
+Aug  3 13:17:08 [kernel] [drm]   VGA
+Aug  3 13:17:08 [kernel] [drm]   DDC: 0x60 0x60 0x60 0x60 0x60 0x60 0x60 0x60
+Aug  3 13:17:08 [kernel] [drm]   Encoders:
+Aug  3 13:17:08 [kernel] [drm]     CRT2: INTERNAL_DAC2
 
-> I know it is a lot more work, but the correct solution is to merge =20
-> the GPT watchdog driver into the regular GPT driver so that we don't =20
-> have two device drivers trying to bind against the same device.
 
-I see the benefit of removing some duplicate code and of having gpio =20
-access in parallel with the wdt, but it wouldn't solve the general =20
-confusion above!  Will look into that, though...
+It is really difficult to get more debug output. Any help would be 
+appreciated.
 
-Best, Albrecht.
-
---=-r1vhCBVLESF+MM4S8TB7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBKdzCWn/9unNAn/9ERAt5xAJ9D5RltzE3BNHxmIob2pU9rX4+a1QCfVqiL
-tsS0zdELefKXXimd8ka/m/A=
-=58vU
------END PGP SIGNATURE-----
-
---=-r1vhCBVLESF+MM4S8TB7--
+Cheers,
+Chris
