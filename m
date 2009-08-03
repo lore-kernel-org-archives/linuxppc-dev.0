@@ -1,26 +1,44 @@
-Return-Path: <BATV+e70a4c9cfe7deb4f1558+2171+infradead.org+dwmw2@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <luisgpm@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4AEC6B7B64
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1F1B0B6F1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  3 Aug 2009 23:14:11 +1000 (EST)
-Subject: Re: [PATCH] Stop pci_set_dma_mask() from failing when RAM doesn't
-	exceed the mask anyway
-From: David Woodhouse <dwmw2@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1249199437.12047.11.camel@pasglop>
-References: <1249069310.20192.220.camel@macbook.infradead.org>
-	<1249079105.1509.95.camel@pasglop>
-	<1249113285.20192.961.camel@macbook.infradead.org>
-	<1249113656.1509.125.camel@pasglop>
-	<1249117220.20192.1083.camel@macbook.infradead.org>
-	<1249199437.12047.11.camel@pasglop>
+	Tue,  4 Aug 2009 02:14:59 +1000 (EST)
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e24smtp05.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 30576DDDA0
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Aug 2009 02:14:57 +1000 (EST)
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+	by e24smtp05.br.ibm.com (8.14.3/8.13.1) with ESMTP id n73GDpoI021019
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Aug 2009 13:13:51 -0300
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.18.232.46])
+	by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n73HDsqZ3625114
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Aug 2009 14:13:54 -0300
+Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
+	by d24av01.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n73GEmwB032761
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Aug 2009 13:14:49 -0300
+Subject: Re: [Patch 0/6] [Patch 0/6] PPC64-HWBKPT: Hardware Breakpoint
+	interfaces - ver VIII
+From: Luis Machado <luisgpm@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+In-Reply-To: <20090731061013.GG3950@yookeroo.seuss>
+References: <20090727001152.GA13562@in.ibm.com>
+	<20090731061013.GG3950@yookeroo.seuss>
 Content-Type: text/plain
-Date: Mon, 03 Aug 2009 14:14:04 +0100
-Message-Id: <1249305244.15714.3.camel@macbook.infradead.org>
+Date: Mon, 03 Aug 2009 13:14:56 -0300
+Message-Id: <1249316097.3362.13.camel@gargoyle>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Alan Stern <stern@rowland.harvard.edu>,
+	"K.Prasad" <prasad@linux.vnet.ibm.com>, Roland McGrath <roland@redhat.com>
+Reply-To: luisgpm@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,52 +48,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2009-08-02 at 17:50 +1000, Benjamin Herrenschmidt wrote:
-> On Sat, 2009-08-01 at 10:00 +0100, David Woodhouse wrote:
-> > I'm not sure. Losing 16MiB on a machine which only has 512MiB anyway
-> > doesn't seem ideal, and we'll want to make the no-iommu code DTRT
-> > _anyway_, surely?
-> >
-> > So we might as well let the DART keep its existing logic (which is
-> > only
-> > to bother if we have more than 1GiB of RAM; 
+Hi,
+
+On Fri, 2009-07-31 at 16:10 +1000, David Gibson wrote:
+> On Mon, Jul 27, 2009 at 05:41:52AM +0530, K.Prasad wrote:
+> > Hi David,
+> > 	I'm back with a new version of patches after a brief hiatus!
+> > 
+> > After much deliberation about modifying the code to change the timing of signal
+> > delivery to user-space, it has been decided to retain the existing behaviour
+> > i.e. SIGTRAP delivered to user-space after execution of causative instruction
+> > although exception is raised before execution of it.
 > 
-> Ah right, so when do we enable the DART ? Above 1G ? I though it was
-> above 2G but we may well have moved that down to 1G just for b43 indeed.
+> Ok.  Except, presumably for ptrace, since changing that would break
+> gdb.
 
-void __init alloc_dart_table(void)
-{
-        /* Only reserve DART space if machine has more than 1GB of RAM
-         * or if requested with iommu=on on cmdline.
-         *
-         * 1GB of RAM is picked as limit because some default devices
-         * (i.e. Airport Extreme) have 30 bit address range limits.
-         */
+Yes. GDB works with some assumptions in mind. Hardware breakpoints
+(they're not supported right now) trigger before execution, then GDB
+just removes them and stepi's until we're past the breakpoint.
 
-        if (iommu_is_off)
-                return;
+As for HW watchpoints, we always stop before execution (by ppc design
+presumably). GDB will check the value before the trigger, remove the HW
+watch, stepi it, and will check the value again to see if it has
+changed.
 
-        if (!iommu_force_on && lmb_end_of_DRAM() <= 0x40000000ull)
-                return;
+If we're to trigger after the data load/store has happened, we could
+have breakage in GDB.
 
-
-> I definitely agree on the fix to the mask so it only compares to the
-> available RAM. I'll check that in when I'm back from the snow fields 
-> on tuesday :-)
-
-I see one potential failure mode with this. You need:
- - No IOMMU
- - Crappy devices
- - Hotpluggable memory
- - Boot with only "low" memory, and allow a pci_set_dma_mask() to
-   succeed because you don't have that much memory anyway.
- - Hotplug some "high" memory that the crappy device can't reach.
-
-Do we care about that scenario? I think we might be able to "fix" it by
-setting the memory_limit when we allow pci_set_dma_mask() to succeed?
-That will effectively prevent the addition of memory that our crappy
-device can't reach, won't it?
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Regards,
+Luis
