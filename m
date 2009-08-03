@@ -1,18 +1,34 @@
-Return-Path: <wilbur512@gmail.com>
-Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.240])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 3AE12B708B
+Return-Path: <michael@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 297C9B7087
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  3 Aug 2009 09:59:16 +1000 (EST)
-Received: by rv-out-0708.google.com with SMTP id c5so427123rvf.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 02 Aug 2009 16:59:14 -0700 (PDT)
-MIME-Version: 1.0
-Date: Mon, 3 Aug 2009 07:59:14 +0800
-Message-ID: <e997b7420908021659t7a55b649rfcaf50cfb0de4de1@mail.gmail.com>
-Subject: How to setup a 1:1 mapping on E500 v2 ?
-From: "wilbur.chan" <wilbur512@gmail.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon,  3 Aug 2009 12:03:31 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 187C9DDD1B
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Aug 2009 12:03:31 +1000 (EST)
+Subject: Re: [PATCH 3/20] powerpc/mm: Add HW threads support to no_hash TLB
+	management
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1249079342.1509.99.camel@pasglop>
+References: <20090724091523.8AD8CDDD1B@ozlabs.org>
+	<2E027F3C-8FAA-42EC-99B2-9B7EC470094E@kernel.crashing.org>
+	<6FD94305-B60D-4DAF-8296-88345D11187F@kernel.crashing.org>
+	<1249079342.1509.99.camel@pasglop>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-xqGm679u6XmLmgpMHrfp"
+Date: Mon, 03 Aug 2009 12:03:30 +1000
+Message-Id: <1249265010.5516.31.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,89 +38,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As we know, we can't turn off MMU on E500.
 
-I want to setup a 1:1 mapping on SMP  E500 v2, and I used 4 Entries of
-256M to form a 1G mapping.
+--=-xqGm679u6XmLmgpMHrfp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Here are my codes, but when I used rfi , it didn't jump to the
-required  instruction.
+On Sat, 2009-08-01 at 08:29 +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2009-07-30 at 22:35 -0500, Kumar Gala wrote:
+> > >               /* XXX This clear should ultimately be part of
+> > local_flush_tlb_mm */
+> > > -             __clear_bit(id, stale_map[cpu]);
+> > > +             for (cpu =3D cpu_first_thread_in_core(cpu);
+> > > +                  cpu <=3D cpu_last_thread_in_core(cpu); cpu++)
+> > > +                     __clear_bit(id, stale_map[cpu]);
+> > >       }
+> >=20
+> > This looks a bit dodgy.  using 'cpu' as both the loop variable and =20
+> > what you are computing to determine loop start/end..
+> >=20
+> Hrm... I would have thought that it was still correct... do you see any
+> reason why the above code is wrong ? because if not we may be hitting a
+> gcc issue...
+>=20
+> IE. At loop init, cpu gets clamped down to the first thread in the core,
+> which should be fine. Then, we compare CPU to the last thread in core
+> for the current CPU which should always return the same value.
+>=20
+> So I'm very interested to know what is actually wrong, ie, either I'm
+> just missing something obvious, or you are just pushing a bug under the
+> carpet which could come back and bit us later :-)
 
-0---256M:
-                lis     r6,FSL_BOOKE_MAS0(1, 14, 0)@h
-	ori     r6,r6,FSL_BOOKE_MAS0(1, 14, 0)@l
+for (cpu =3D cpu_first_thread_in_core(cpu);
+     cpu <=3D cpu_last_thread_in_core(cpu); cpu++)
+        __clear_bit(id, stale_map[cpu]);
 
-	lis     r7,FSL_BOOKE_MAS1(1, 1, 0, 0, BOOKE_PAGESZ_4M)@h
-	ori     r7,r7,FSL_BOOKE_MAS1(1, 1, 0, 0, BOOKE_PAGESZ_4M)@l
+=3D=3D
 
-	lis     r8,FSL_BOOKE_MAS2(0x00000000, (MAS2_I|MAS2_G))@h
-	ori     r8,r8,FSL_BOOKE_MAS2(0x00000000, (MAS2_I|MAS2_G))@l
+cpu =3D cpu_first_thread_in_core(cpu);
+while (cpu <=3D cpu_last_thread_in_core(cpu)) {
+	__clear_bit(id, stale_map[cpu]);
+	cpu++;
+}
 
-               lis     r9,FSL_BOOKE_MAS3(0x00000000, 0,
-(MAS3_SX|MAS3_SW|MAS3_SR))@h
-	ori     r9,r9,FSL_BOOKE_MAS3(0x00000000, 0, (MAS3_SX|MAS3_SW|MAS3_SR))@l
+cpu =3D 0
+cpu <=3D 1
+cpu++ (1)
+cpu <=3D 1
+cpu++ (2)
+cpu <=3D 3
+...
 
-256---512M:
-                 lis     r6,FSL_BOOKE_MAS0(1, 13, 0)@h
-	ori     r6,r6,FSL_BOOKE_MAS0(1, 13, 0)@l
+:)
 
-	lis     r7,FSL_BOOKE_MAS1(1, 1, 0, 0, BOOKE_PAGESZ_4M)@h
-	ori     r7,r7,FSL_BOOKE_MAS1(1, 1, 0, 0, BOOKE_PAGESZ_4M)@l
+cheers
 
-	lis     r8,FSL_BOOKE_MAS2(0x10000000, (MAS2_I|MAS2_G))@h
-	ori     r8,r8,FSL_BOOKE_MAS2(0x10000000, (MAS2_I|MAS2_G))@l
+--=-xqGm679u6XmLmgpMHrfp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-                lis     r9,FSL_BOOKE_MAS3(0x10000000, 0,
-(MAS3_SX|MAS3_SW|MAS3_SR))@h
-	ori     r9,r9,FSL_BOOKE_MAS3(0x10000000, 0, (MAS3_SX|MAS3_SW|MAS3_SR))@l
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-So are 512---768M, 768M----1GB...
+iEYEABECAAYFAkp2RXIACgkQdSjSd0sB4dIAkgCgyV+3z9PGQpSusUykDZC8ONNg
+kK8AoJ0J5uN/JAEj6kH9UXHis7n6K8z3
+=Wjlp
+-----END PGP SIGNATURE-----
 
-#define FSL_BOOKE_MAS0(tlbsel,esel,nv) \
-		(MAS0_TLBSEL(tlbsel) | MAS0_ESEL(esel) | MAS0_NV(nv))
-#define FSL_BOOKE_MAS1(v,iprot,tid,ts,tsize) \
-		((((v) << 31) & MAS1_VALID)             |\
-		(((iprot) << 30) & MAS1_IPROT)          |\
-		(MAS1_TID(tid))				|\
-		(((ts) << 12) & MAS1_TS)                |\
-		(MAS1_TSIZE(tsize)))
-#define FSL_BOOKE_MAS2(epn, wimge) \
-		(((epn) & MAS3_RPN) | (wimge))
-#define FSL_BOOKE_MAS3(rpn, user, perms) \
-		(((rpn) & MAS3_RPN) | (user) | (perms))
-
-
-
-
-I also setup a 1MB mapping for serial,so I can trap the codes,and it
-works well.However, rfi doesn't:
-
-Pseudo-code :
-
-relocate_new_kernel:
-
-     setup_entry_for_serial();
-
-     print('x');
-
-     setup_entry(EPN=512M,RPN=512M,size=256M);
-
-     addi      r8, r4, 1f - relocate_new_kernel
-
-     mtspr     SPRN_SRR0, r8
-
-    rfi
-
-1:  print('y');
-
-Here, x is printed, but y isn't.
-
-
-Anyone please tell me why ?
-
-Thank you very much.
-
-
-regards,
-
-wilbur
+--=-xqGm679u6XmLmgpMHrfp--
