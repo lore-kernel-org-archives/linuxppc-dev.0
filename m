@@ -1,40 +1,33 @@
-Return-Path: <hannes.hering@linux.vnet.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0C8B1B7080
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0E4A0B7B75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Aug 2009 00:21:57 +1000 (EST)
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3CDB8DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 00:21:55 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.14.3/8.13.8) with ESMTP id n74EKIJN765104
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2009 14:20:18 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id n74EKHhW2703614
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2009 16:20:17 +0200
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id n74EKGpv027969
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2009 16:20:17 +0200
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH 2.6.31] ehea: Fix napi list corruption on ifconfig down
-Date: Tue, 4 Aug 2009 16:20:15 +0200
+	Wed,  5 Aug 2009 00:22:55 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 21BE3DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 00:22:52 +1000 (EST)
+Date: Tue, 4 Aug 2009 18:22:50 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: Ang: Re: [PATCH 0/2] Setting GPIOs simultaneously
+Message-ID: <20090804142250.GA17398@oksana.dev.rtsoft.ru>
+References: <20090713222005.GA19859@oksana.dev.rtsoft.ru>
+	<20090713151911.GA28114@oksana.dev.rtsoft.ru>
+	<OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
+	<20090713173455.GA9866@oksana.dev.rtsoft.ru>
+	<OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
+	<OF613F53BF.1FD77EDB-ONC12575F3.00753535-C12575F3.00753537@transmode.se>
+	<20090714220931.GA11378@oksana.dev.rtsoft.ru>
+	<OF9A2BDEDE.DC0DE0D4-ONC1257608.004A7A59-C1257608.004AF3BF@transmode.se>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <200908041620.16542.hannes.hering@linux.vnet.ibm.com>
-Cc: themann@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	raisch@de.ibm.com, ossrosch@linux.vnet.ibm.com,
-	linuxppc-dev@ozlabs.org, ossthema@de.ibm.com, osstklei@de.ibm.com
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <OF9A2BDEDE.DC0DE0D4-ONC1257608.004A7A59-C1257608.004AF3BF@transmode.se>
+Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,35 +37,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes the napi list handling when an ehea interface is shut down to
-avoid corruption of the napi list.
+On Tue, Aug 04, 2009 at 03:38:40PM +0200, Joakim Tjernlund wrote:
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 15/07/2009 00:09:31:
+> >
+> > On Tue, Jul 14, 2009 at 11:20:13PM +0200, Joakim Tjernlund wrote:
+> > [...]
+> > > >But any users of the legacy bindings should be in-tree.
+> > >
+> > > ehh, it was working until you made it OF only. Why do call the native
+> > > way legacy?  It is the method all non OF arch uses.
+> >
+> > It's legacy because there are no in-tree users anymore. Nowadays
+> > we're trying to pass all needed information via OF, and we're
+> > trying to avoid ugly platform-dependant hacks. Your SPI scheme
+> > can be easily described via OF, but sure, it's hard to implement
+> > it with the current SPI/OF subsystem.
+> 
+> Sorry for the long delay, I have been on vaction and been busy with other stuff.
+> 
+> Tell me, how does this new OF SPI device scheme work out if you want
+> to use the bitbanged SPI driver?
 
-Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+spi-controller {
+	...
+	compatible = "generic-bitbang-spi";
+	gpios = <GPIO_CLK GPIO_MOSI GPIO_MISO>;
+	spi,chip-select-machines = <&gpio_csm &board_csm>;
 
----
+	gpio_csm: chip-select-machine {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "generic-gpio-csm";
+		gpios = <GPIO_CS1 GPIO_CS2>;
 
-diff -Nurp -X dontdiff linux-2.6.31-rc5/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.31-rc5/drivers/net/ehea/ehea.h	2009-08-01 02:40:45.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea.h	2009-08-03 17:59:26.696079433 +0200
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0101"
-+#define DRV_VERSION	"EHEA_0102"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff -Nurp -X dontdiff linux-2.6.31-rc5/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.31-rc5/drivers/net/ehea/ehea_main.c	2009-08-01 02:40:45.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2009-08-03 17:59:26.696079433 +0200
-@@ -1545,6 +1545,9 @@ static int ehea_clean_portres(struct ehe
- {
- 	int ret, i;
- 
-+	if (pr->qp)
-+		netif_napi_del(&pr->napi);
-+
- 	ret = ehea_destroy_qp(pr->qp);
- 
- 	if (!ret) {
+		touchscreen@0 {
+			reg = <0>; /* using GPIO CS1 */
+		};
+
+		eeprom@1 {
+			reg = <1>; /* using GPIO CS2 */
+		};
+	};
+};
+
+localbus {
+	...
+	board_csm: chip-select-machine {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatibe = "board-specific-csm";
+
+		light-sensor@0 {
+			reg = <0>; /* using board-specific "CS3" */
+		};
+
+		battery@1 {
+			reg = <1>; /* using board-specific "CS4" */
+		};
+	};
+};
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
