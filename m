@@ -1,30 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 19B30B6EDF
+Return-Path: <stbohne@googlemail.com>
+Received: from mail-yw0-f172.google.com (mail-yw0-f172.google.com
+	[209.85.211.172])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id BC34EB6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Aug 2009 12:31:29 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0B197DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Aug 2009 12:31:29 +1000 (EST)
-Subject: Re: Kernel fault with simple UIO interrupt driver in 2.6.30.4
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Frank Prepelica <Frank.Prepelica@ubidyne.com>
-In-Reply-To: <29DC34A6B43468409F5A371CFE34E849DFC9A1@ex01.ads.ubidyne.de>
-References: <29DC34A6B43468409F5A371CFE34E849DFC9A1@ex01.ads.ubidyne.de>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-/4SX1oi2vobFo5LhjBt+"
-Date: Tue, 04 Aug 2009 12:31:25 +1000
-Message-Id: <1249353085.5517.29.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+	Tue,  4 Aug 2009 16:06:06 +1000 (EST)
+Received: by ywh2 with SMTP id 2so9987642ywh.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 03 Aug 2009 23:06:04 -0700 (PDT)
+MIME-Version: 1.0
+Sender: stbohne@googlemail.com
+Date: Tue, 4 Aug 2009 08:06:03 +0200
+Message-ID: <c42b3320908032306y51770c97lb8e5769dd3ecbdb9@mail.gmail.com>
+Subject: Memory mapped IO and Direct File IO
+From: Stefan Bohne <Stefan.Bohne@senTec-Elektronik.de>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,37 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Greetings, everyone,
 
---=-/4SX1oi2vobFo5LhjBt+
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I'm trying to save some data block from a memory mapped device into a
+file - real fast, i.e., without any copying.
 
-On Mon, 2009-08-03 at 15:07 +0200, Frank Prepelica wrote:
-> Hi all,
->=20
-> due to a new revision of our custimized board, i need to port our current=
- kernel (2.6.24)
-> to the latest kernel version 2.6.30.4.
->=20
-> Among other things the UIO interrupt driver makes some trouble. The drive=
-r runs
-> smoothly on 2.6.24 but I'll get kernel faults when running in 2.6.30.4.
+My approach so far was to get a pointer to the io memory via mmap-ing
+/dev/mem, and then writing this pointer to a file (in user space).
+This works, if I don't use O_DIRECT, but this is slow of course. Using
+O_DIRECT, write returns EFAULT (bad address). Coyping the data to a
+user-space buffer and then writing with O_DIRECT works, though.
 
-You seem to have forgotten to post the log of the oops :)
+I tracked this down to __get_user_pages in mm/memory.c where IO pages
+are refused. And this is as deep as my current knowledge allows me to
+go into the kernel. I don't understand why IO pointers are not
+allowed.
 
-cheers
+Ultra-Fast disk IO is a requirement for our project, so any copying in
+between is not an option. Any hint is appreciated.
 
-
---=-/4SX1oi2vobFo5LhjBt+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkp3nX0ACgkQdSjSd0sB4dI2iACgoK33PC0GLKrVjLx/rSrnWS2L
-AJsAoMA7Fo/QeihaukvtUkBU7zneMCvB
-=dYO+
------END PGP SIGNATURE-----
-
---=-/4SX1oi2vobFo5LhjBt+--
+Stefan
