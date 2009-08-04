@@ -1,27 +1,30 @@
-Return-Path: <sebastian@breakpoint.cc>
+Return-Path: <david-b@pacbell.net>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DB126B6EDE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3CC4FB6F31
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Aug 2009 09:06:16 +1000 (EST)
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2499DDDD04
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 09:06:15 +1000 (EST)
-Received: id: bigeasy by Chamillionaire.breakpoint.cc with local
-	(easymta 1.00 BETA 1) id 1MYT54-0007hS-0x
-	for linuxppc-dev@ozlabs.org; Wed, 05 Aug 2009 01:06:06 +0200
-Date: Wed, 5 Aug 2009 01:06:06 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: linuxppc-dev@ozlabs.org
-Subject: kexec on e300 core / mpc5121
-Message-ID: <20090804230605.GA28753@Chamillionaire.breakpoint.cc>
+	Wed,  5 Aug 2009 10:28:32 +1000 (EST)
+Received: from n24.bullet.mail.mud.yahoo.com (n24.bullet.mail.mud.yahoo.com
+	[68.142.206.163]) by ozlabs.org (Postfix) with SMTP id 785CDDDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 10:28:31 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 0/7] Device table matching for SPI subsystem
+Date: Mon, 3 Aug 2009 19:16:02 -0700
+References: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200908031916.02880.david-b@pacbell.net>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Jean Delvare <khali@linux-fr.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,57 +34,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I've tried kexec on e300 core which should be easy since it is possible
-to disable the MMU on that core. However it does not work.
-Once I disable the MMU, I can't access my MBAR and print chars on the
-serial port. Is this "normal" or do I have still some caches on?
-After I've setup two BATs one for SDRAM and the other for MBAR and
-enabled the MMU again, I could trace it and see that it jumped into the
-new kernel. I got lost after the turn off mmu part. So the new kernel
-does not boot but it gets there.
+On Wednesday 29 July 2009, Anton Vorontsov wrote:
+> 	platform_data is overkill for m25p80 chips, the
+> driver only needs to know exact chip model, and that's what device
+> tables are for.
 
-I noticed that if I boot from u-boot, my I & Dcache are switched off and
-in kexec mode there are on. So I tried to disable them in my kernel
-wrapper with the following sequence which I borrowed from u-boot:
-
-|icache_disable:
-|        mfspr   r3, HID0
-|        lis     r4, 0
-|        ori     r4, r4, HID0_ICE|HID0_ILOCK
-|        andc    r3, r3, r4
-|        ori     r4, r3, HID0_ICFI
-|        isync
-|        mtspr   HID0, r4     /* sets invalidate, clears enable and lock*/
-|        isync
-|        mtspr   HID0, r3        /* clears invalidate */
-|        blr
-|dcache_disable:
-|        mfspr   r3, HID0
-|        lis     r4, 0
-|        ori     r4, r4, HID0_DCE|HID0_DLOCK
-|        andc    r3, r3, r4
-|        ori     r4, r3, HID0_DCI
-|        sync
-|        mtspr   HID0, r4        /* sets invalidate, clears enable and lock */
-|        sync
-|        mtspr   HID0, r3        /* clears invalidate */
-|        blr
-
-First icache, followed by dcache.
-This has the side effect that my LR which was saved on stack suddenly
-become 0x0 in the function where I disable the caches.
-So it looks like the sequence above is not correct and it is probably a
-cache thing why the kernel does not boot.
-
-So I tried not to enable I & Dcache in first place. The kernel booted
-uncached and then I tried to kexec into my kernel. This did not succeed,
-I saw my last char printed in kernel code but nothing more. So it looks
-like the same result like the cached attempt.
-
-The HID0 register differs only in powermanagement, MSR differs in IR,DR
-and PR. Is there another register which could be different? There should
-be one, since I can't write anything on my serial line unless I setup
-BATs and enable data address translation.
-Does someone have an idea?
-
-Sebastian
+To be fair, the platform_data also supports partitioning
+and labeling e.g. for cmdlinepart ... though I'd tend to
+agree that most SPI flash chips are kind of small (so
+they're mostly just one smallish partition).
