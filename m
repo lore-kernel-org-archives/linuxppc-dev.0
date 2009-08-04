@@ -1,33 +1,31 @@
-Return-Path: <joakim.tjernlund@transmode.se>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5DDBFB7B63
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1E8DBB7B96
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Aug 2009 23:49:28 +1000 (EST)
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	Wed,  5 Aug 2009 00:15:51 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E21F7DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Aug 2009 23:49:25 +1000 (EST)
-In-Reply-To: <20090714220931.GA11378@oksana.dev.rtsoft.ru>
-References: <20090713222005.GA19859@oksana.dev.rtsoft.ru>
-	<20090713151911.GA28114@oksana.dev.rtsoft.ru>
-	<OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
-	<20090713173455.GA9866@oksana.dev.rtsoft.ru>
-	<OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
-	<OF613F53BF.1FD77EDB-ONC12575F3.00753535-C12575F3.00753537@transmode.se>
-	<20090714220931.GA11378@oksana.dev.rtsoft.ru>
-Subject: Re: Ang: Re: [PATCH 0/2] Setting GPIOs simultaneously
-To: avorontsov@ru.mvista.com
-Message-ID: <OF9A2BDEDE.DC0DE0D4-ONC1257608.004A7A59-C1257608.004AF3BF@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 4 Aug 2009 15:38:40 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	linux-kernel@vger.kernel.org
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0DCB4DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 00:15:51 +1000 (EST)
+Subject: Re: 2.6.31-rc5-git2 crash [net/core/flow.c:flow_cache_new_hashrnd]
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sachin Sant <sachinp@in.ibm.com>
+In-Reply-To: <4A783B1F.7000602@in.ibm.com>
+References: <4A78292A.5000607@in.ibm.com>  <4A783B1F.7000602@in.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-c/6DjyA9naNp3wCGmgoS"
+Date: Wed, 05 Aug 2009 00:15:50 +1000
+Message-Id: <1249395350.8016.5.camel@concordia>
+Mime-Version: 1.0
+Cc: netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,46 +35,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 15/07/2009 00:09:31:
->
-> On Tue, Jul 14, 2009 at 11:20:13PM +0200, Joakim Tjernlund wrote:
-> [...]
-> > >But any users of the legacy bindings should be in-tree.
-> >
-> > ehh, it was working until you made it OF only. Why do call the native
-> > way legacy?  It is the method all non OF arch uses.
->
-> It's legacy because there are no in-tree users anymore. Nowadays
-> we're trying to pass all needed information via OF, and we're
-> trying to avoid ugly platform-dependant hacks. Your SPI scheme
-> can be easily described via OF, but sure, it's hard to implement
-> it with the current SPI/OF subsystem.
 
-Sorry for the long delay, I have been on vaction and been busy with other stuff.
+--=-c/6DjyA9naNp3wCGmgoS
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Tell me, how does this new OF SPI device scheme work out if you want
-to use the bitbanged SPI driver?
+On Tue, 2009-08-04 at 19:13 +0530, Sachin Sant wrote:
+> Forgot to copy netdev in my original message. Forwarding ..
+>=20
+> I have a power6 blade [IBM,7998-61X] running 2.6.31-rc5-git2
+> kernel (a33a052f19a21d727847391c8c1aff3fb221c472). After some
+> period of inactivity the machine drops into xmon with following
+> traces.
+>=20
+> cpu 0x0: Vector: 700 (Program Check) at [c00000000ffffa90]
+>    pc: c000000000600000: .flow_cache_new_hashrnd+0x3c/0xcc
+>    lr: c0000000000c6038: .run_timer_softirq+0x20c/0x2f4
+>    sp: c00000000ffffd10
+>   msr: 8000000000089032
+>  current =3D 0xc000000000f58b70
+>  paca    =3D 0xc0000000010b2400
+>    pid   =3D 0, comm =3D swapper
+> enter ? for help
+> [c00000000ffffda0] c0000000000c6038 .run_timer_softirq+0x20c/0x2f4
+> [c00000000ffffea0] c0000000000be8a0 .__do_softirq+0x174/0x2c8
+> [c00000000fffff90] c0000000000307b0 .call_do_softirq+0x14/0x24
+> [c000000001013870] c00000000000ecf8 .do_softirq+0xa0/0x104
+> [c000000001013910] c0000000000be1d0 .irq_exit+0x74/0xd4
+> [c000000001013990] c00000000002ce20 .timer_interrupt+0x1cc/0x200
+> [c000000001013a30] c000000000003728 decrementer_common+0x128/0x180
+> --- Exception: 901 (Decrementer) at c00000000000ec3c .raw_local_irq_resto=
+re+0xc0/0xdc
+> [c000000001013dc0] c000000000015824 .cpu_idle+0x13c/0x1e0
+> [c000000001013e60] c000000000009fe8 .rest_init+0x94/0xcc
+> [c000000001013ee0] c000000000990cf4 .start_kernel+0x484/0x4a8
+> [c000000001013f90] c000000000008408 .start_here_common+0x2c/0xa4
+> 0:mon> di $.flow_cache_new_hashrnd
+> c0000000005fffc4  7c0802a6      mflr    r0
+> c0000000005fffc8  f8010010      std     r0,16(r1)
+> c0000000005fffcc  fb81ffe0      std     r28,-32(r1)
+> c0000000005fffd0  fba1ffe8      std     r29,-24(r1)
+> c0000000005fffd4  fbc1fff0      std     r30,-16(r1)
+> c0000000005fffd8  fbe1fff8      std     r31,-8(r1)
+> c0000000005fffdc  f821ff71      stdu    r1,-144(r1)
+> c0000000005fffe0  7c3f0b78      mr      r31,r1
+> c0000000005fffe4  ebc2dc90      ld      r30,-9072(r2)
+> c0000000005fffe8  3b800001      li      r28,1
+> c0000000005fffec  60000000      nop
+> ...
+> c0000000005ffff4  e93e8048      ld      r9,-32696(r30)
+> c0000000005ffff8  38a0ffff      li      r5,-1
+> c0000000005ffffc  eba90000      ld      r29,0(r9)
+> c000000000600000  00001010      .long 0x1010
+> 0:mon>
+> c000000000600004  00000008      .long 0x8
+> c000000000600008  00001013      .long 0x1013
+> c00000000060000c  0000000f      .long 0xf
+> c000000000600010  7961626f      rldimi. r1,r11,44,41
+> c000000000600014  6f740000      xoris   r20,r27,0
+> c000000000600018  00101600      .long 0x101600
+> c00000000060001c  00000c00      .long 0xc00
+> c000000000600020  00000400      .long 0x400
+> c000000000600024  00101100      .long 0x101100
+> c000000000600028  000008e9      .long 0x8e9
 
->
-> [...]
-> > >http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg34738.html
-> > >^^^ I'm dreaming about this framework. I.e. true addressing
-> > >    for chip-selects. :-)
-> >
-> > This is probably needed to support most SPI users out there, but until
-> > such framework is in place I think the native methods need to stay, right?
->
-> I'm not the right person to ask. I can only express my opinions.
-> The maintainer make final decision.
->
-> But if you ask for my opinion, I don't think that they should stay
-> unless we'll see a user in the mainline.
->
-> > As is now, SPI has regressed w.r.t earlier releases.
->
-> Yes and no. Yes, it has "regressed" for out-of-tree code, and no,
-> I don't feel sorry about that. :-)
+What's going on here? How does the above disassembly compare with an
+objdump -d of your vmlinux?
 
-That is a Yes and some bla bla so the answer is yes.
+It looks like either:
+      * gcc is generating some weird code sequences
+      * xmon doesn't know how to disassemble those instructions
+      * someone crapped on your kernel text
 
-   Jocke
+cheers
+
+
+--=-c/6DjyA9naNp3wCGmgoS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkp4QpIACgkQdSjSd0sB4dKbJQCgxLmN1soiVk76X3gG07D06zC0
+2g8AmgPkbKRWvfwRjItJns6GQqXUpLb8
+=3aqg
+-----END PGP SIGNATURE-----
+
+--=-c/6DjyA9naNp3wCGmgoS--
