@@ -3,24 +3,25 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3CC4FB6F31
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B6A55B6F34
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed,  5 Aug 2009 10:28:32 +1000 (EST)
-Received: from n24.bullet.mail.mud.yahoo.com (n24.bullet.mail.mud.yahoo.com
-	[68.142.206.163]) by ozlabs.org (Postfix) with SMTP id 785CDDDD04
+Received: from n15.bullet.mail.mud.yahoo.com (n15.bullet.mail.mud.yahoo.com
+	[68.142.206.42]) by ozlabs.org (Postfix) with SMTP id EDA68DDD0C
 	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 10:28:31 +1000 (EST)
 From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 0/7] Device table matching for SPI subsystem
-Date: Mon, 3 Aug 2009 19:16:02 -0700
+To: Ben Dooks <ben-linux@fluff.org>
+Subject: Re: [PATCH 1/7] spi: Add support for device table matching
+Date: Mon, 3 Aug 2009 19:21:22 -0700
 References: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
+	<20090729170457.GA4803@oksana.dev.rtsoft.ru>
+	<20090729214446.GB1728@fluff.org.uk>
+In-Reply-To: <20090729214446.GB1728@fluff.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200908031916.02880.david-b@pacbell.net>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+  charset="iso-8859-1"
+Message-Id: <200908031921.23126.david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
 	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
 	Jean Delvare <khali@linux-fr.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
@@ -34,12 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 29 July 2009, Anton Vorontsov wrote:
-> 	platform_data is overkill for m25p80 chips, the
-> driver only needs to know exact chip model, and that's what device
-> tables are for.
+On Wednesday 29 July 2009, Ben Dooks wrote:
+> >  struct spi_driver {
+> > +     const struct spi_device_id *id_table;
+> > +     int                     (*probe_id)(struct spi_device *spi,
+> > +                                         const struct spi_device_id *id);
+> 
+> how about leaving it at just probe and have either a call or a field
+> in the device that you can look at to see if this was a new style of
+> call?
+> 
+> >       int                     (*probe)(struct spi_device *spi);
 
-To be fair, the platform_data also supports partitioning
-and labeling e.g. for cmdlinepart ... though I'd tend to
-agree that most SPI flash chips are kind of small (so
-they're mostly just one smallish partition).
+For the record, if this is going to happen I think the
+appropriate long-term solution is to have probe() take
+the device_id just as it does with other busses.
+
+Of course that involves changing *every* SPI driver...
+and I'd rather not do that quite yet.
