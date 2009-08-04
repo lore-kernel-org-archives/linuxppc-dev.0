@@ -3,32 +3,35 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 525BCB6F20
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DD6ECB707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Aug 2009 22:27:43 +1000 (EST)
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
+	Tue,  4 Aug 2009 23:44:17 +1000 (EST)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DC8E4DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Aug 2009 22:27:34 +1000 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id n74CROge032284
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2009 17:57:24 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n74CRN891261570
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2009 17:57:23 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n74CRNps027575
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2009 22:27:23 +1000
-Message-ID: <4A78292A.5000607@in.ibm.com>
-Date: Tue, 04 Aug 2009 17:57:22 +0530
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 009E4DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Aug 2009 23:44:13 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n74Di1iU007240
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2009 23:44:01 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n74Di5lI1065024
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2009 23:44:06 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n74Di5Ru019137
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2009 23:44:05 +1000
+Message-ID: <4A783B1F.7000602@in.ibm.com>
+Date: Tue, 04 Aug 2009 19:13:59 +0530
 From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: 2.6.31-rc5-git2 crash on a idle system.
-Content-Type: multipart/mixed; boundary="------------080901090106000408020700"
+To: netdev <netdev@vger.kernel.org>
+Subject: 2.6.31-rc5-git2 crash [net/core/flow.c:flow_cache_new_hashrnd]
+References: <4A78292A.5000607@in.ibm.com>
+In-Reply-To: <4A78292A.5000607@in.ibm.com>
+Content-Type: multipart/mixed; boundary="------------030508010404070300070801"
+Cc: linuxppc-dev@ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,23 +42,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------080901090106000408020700
+--------------030508010404070300070801
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+
+Forgot to copy netdev in my original message. Forwarding ..
 
 I have a power6 blade [IBM,7998-61X] running 2.6.31-rc5-git2
 kernel (a33a052f19a21d727847391c8c1aff3fb221c472). After some
 period of inactivity the machine drops into xmon with following
 traces.
 
- cpu 0x0: Vector: 700 (Program Check) at [c00000000ffffa90]
-    pc: c000000000600000: .flow_cache_new_hashrnd+0x3c/0xcc
-    lr: c0000000000c6038: .run_timer_softirq+0x20c/0x2f4
-    sp: c00000000ffffd10
-   msr: 8000000000089032
-  current = 0xc000000000f58b70
-  paca    = 0xc0000000010b2400
-    pid   = 0, comm = swapper
+cpu 0x0: Vector: 700 (Program Check) at [c00000000ffffa90]
+   pc: c000000000600000: .flow_cache_new_hashrnd+0x3c/0xcc
+   lr: c0000000000c6038: .run_timer_softirq+0x20c/0x2f4
+   sp: c00000000ffffd10
+  msr: 8000000000089032
+ current = 0xc000000000f58b70
+ paca    = 0xc0000000010b2400
+   pid   = 0, comm = swapper
 enter ? for help
 [c00000000ffffda0] c0000000000c6038 .run_timer_softirq+0x20c/0x2f4
 [c00000000ffffea0] c0000000000be8a0 .__do_softirq+0x174/0x2c8
@@ -81,12 +86,12 @@ c0000000005fffe0  7c3f0b78      mr      r31,r1
 c0000000005fffe4  ebc2dc90      ld      r30,-9072(r2)
 c0000000005fffe8  3b800001      li      r28,1
 c0000000005fffec  60000000      nop
- ...
+...
 c0000000005ffff4  e93e8048      ld      r9,-32696(r30)
 c0000000005ffff8  38a0ffff      li      r5,-1
 c0000000005ffffc  eba90000      ld      r29,0(r9)
 c000000000600000  00001010      .long 0x1010
-0:mon> 
+0:mon>
 c000000000600004  00000008      .long 0x8
 c000000000600008  00001013      .long 0x1013
 c00000000060000c  0000000f      .long 0xf
@@ -133,8 +138,7 @@ vanilla kernel that worked fine was 2.6.31-rc4-git2
 dmesg log and .config attached.
 
 Thanks
--Sachin
-
+-Sachin 
 
 
 -- 
@@ -147,7 +151,7 @@ Bangalore, India
 ---------------------------------
 
 
---------------080901090106000408020700
+--------------030508010404070300070801
 Content-Type: text/plain;
  name="rc5-git2-log"
 Content-Transfer-Encoding: 7bit
@@ -584,7 +588,7 @@ ctr = c0000000005fffc4   xer = 0000000000000000   trap =  700
 0:mon> 
 
 
---------------080901090106000408020700
+--------------030508010404070300070801
 Content-Type: text/plain;
  name="config_rc5-git2"
 Content-Transfer-Encoding: 7bit
@@ -4467,4 +4471,4 @@ CONFIG_VIRTIO_RING=m
 CONFIG_VIRTIO_PCI=m
 CONFIG_VIRTIO_BALLOON=m
 
---------------080901090106000408020700--
+--------------030508010404070300070801--
