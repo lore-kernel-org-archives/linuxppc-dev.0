@@ -3,17 +3,18 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 01AC2B7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 116B6B7080
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed,  5 Aug 2009 07:51:14 +1000 (EST)
 Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
-	by ozlabs.org (Postfix) with ESMTP id 0AC1CDDDA0
+	by ozlabs.org (Postfix) with ESMTP id 0AA58DDD04
 	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 07:51:12 +1000 (EST)
 From: =?utf-8?q?Michel=20D=C3=A4nzer?= <michel@daenzer.net>
 To: Dave Airlie <airlied@linux.ie>
-Subject: [PATCH 2/3] agp/uninorth: Simplify cache flushing.
-Date: Tue,  4 Aug 2009 23:51:04 +0200
-Message-Id: <1249422665-24437-2-git-send-email-michel@daenzer.net>
+Subject: [PATCH 3/3] agp/uninorth: Unify U3 and pre-U3 insert_memory and
+	remove_memory hooks.
+Date: Tue,  4 Aug 2009 23:51:05 +0200
+Message-Id: <1249422665-24437-3-git-send-email-michel@daenzer.net>
 In-Reply-To: <1249422665-24437-1-git-send-email-michel@daenzer.net>
 References: <1249422665-24437-1-git-send-email-michel@daenzer.net>
 MIME-Version: 1.0
@@ -30,110 +31,119 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Michel Dänzer <daenzer@vmware.com>
 
-Map the GART table uncached, so we don't always need to flush the CPU caches
-explicitly after updates.
-
 Signed-off-by: Michel Dänzer <daenzer@vmware.com>
 ---
- drivers/char/agp/uninorth-agp.c |   33 +++++++++++++++++++++++++--------
- 1 files changed, 25 insertions(+), 8 deletions(-)
+ drivers/char/agp/uninorth-agp.c |   64 +++++++--------------------------------
+ 1 files changed, 11 insertions(+), 53 deletions(-)
 
 diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-agp.c
-index eed2195..bc8b43a 100644
+index bc8b43a..75aa33a 100644
 --- a/drivers/char/agp/uninorth-agp.c
 +++ b/drivers/char/agp/uninorth-agp.c
-@@ -7,6 +7,7 @@
- #include <linux/pagemap.h>
- #include <linux/agp_backend.h>
- #include <linux/delay.h>
-+#include <linux/vmalloc.h>
- #include <asm/uninorth.h>
- #include <asm/pci-bridge.h>
- #include <asm/prom.h>
-@@ -184,8 +185,6 @@ static int uninorth_insert_memory(struct agp_memory *mem, off_t pg_start,
- 	}
- 	(void)in_le32((volatile u32*)&agp_bridge->gatt_table[pg_start]);
- 	mb();
--	flush_dcache_range((unsigned long)&agp_bridge->gatt_table[pg_start],
--		(unsigned long)&agp_bridge->gatt_table[pg_start + mem->page_count]);
- 
- 	uninorth_tlbflush(mem);
+@@ -144,53 +144,7 @@ static int uninorth_configure(void)
  	return 0;
-@@ -232,7 +231,6 @@ static int u3_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
- 				   (unsigned long)__va(page_to_phys(mem->pages[i]))+0x1000);
- 	}
- 	mb();
--	flush_dcache_range((unsigned long)gp, (unsigned long) &gp[i]);
- 	uninorth_tlbflush(mem);
- 
- 	return 0;
-@@ -260,7 +258,6 @@ int u3_remove_memory(struct agp_memory *mem, off_t pg_start, int type)
- 	for (i = 0; i < mem->page_count; ++i)
- 		gp[i] = 0;
- 	mb();
--	flush_dcache_range((unsigned long)gp, (unsigned long) &gp[i]);
- 	uninorth_tlbflush(mem);
- 
- 	return 0;
-@@ -413,6 +410,7 @@ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
- 	int i;
- 	void *temp;
- 	struct page *page;
-+	struct page **pages;
- 
- 	/* We can't handle 2 level gatt's */
- 	if (bridge->driver->size_type == LVL2_APER_SIZE)
-@@ -441,21 +439,39 @@ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
- 	if (table == NULL)
- 		return -ENOMEM;
- 
-+	pages = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
-+	if (pages == NULL)
-+		goto enomem;
-+
- 	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
- 
--	for (page = virt_to_page(table); page <= virt_to_page(table_end); page++)
-+	for (page = virt_to_page(table), i = 0; page <= virt_to_page(table_end);
-+	     page++, i++) {
- 		SetPageReserved(page);
-+		pages[i] = page;
-+	}
- 
- 	bridge->gatt_table_real = (u32 *) table;
--	bridge->gatt_table = (u32 *)table;
-+	/* Need to clear out any dirty data still sitting in caches */
-+	flush_dcache_range((unsigned long)table,
-+			   (unsigned long)(table_end + PAGE_SIZE));
-+	bridge->gatt_table = vmap(pages, (1 << page_order), 0, PAGE_KERNEL_NCG);
-+
-+	if (bridge->gatt_table == NULL)
-+		goto enomem;
-+
- 	bridge->gatt_bus_addr = virt_to_gart(table);
- 
- 	for (i = 0; i < num_entries; i++)
- 		bridge->gatt_table[i] = 0;
- 
--	flush_dcache_range((unsigned long)table, (unsigned long)table_end);
--
- 	return 0;
-+
-+enomem:
-+	kfree(pages);
-+	if (table)
-+		free_pages((unsigned long)table, page_order);
-+	return -ENOMEM;
  }
  
- static int uninorth_free_gatt_table(struct agp_bridge_data *bridge)
-@@ -473,6 +489,7 @@ static int uninorth_free_gatt_table(struct agp_bridge_data *bridge)
- 	 * from the table.
- 	 */
+-static int uninorth_insert_memory(struct agp_memory *mem, off_t pg_start,
+-				int type)
+-{
+-	int i, j, num_entries;
+-	void *temp;
+-	int mask_type;
+-
+-	if (type != mem->type)
+-		return -EINVAL;
+-
+-	mask_type = agp_bridge->driver->agp_type_to_mask_type(agp_bridge, type);
+-	if (mask_type != 0) {
+-		/* We know nothing of memory types */
+-		return -EINVAL;
+-	}
+-
+-	if (mem->page_count == 0)
+-		return 0;
+-
+-	temp = agp_bridge->current_size;
+-	num_entries = A_SIZE_32(temp)->num_entries;
+-
+-	if ((pg_start + mem->page_count) > num_entries)
+-		return -EINVAL;
+-
+-	j = pg_start;
+-
+-	while (j < (pg_start + mem->page_count)) {
+-		if (agp_bridge->gatt_table[j])
+-			return -EBUSY;
+-		j++;
+-	}
+-
+-	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
+-		agp_bridge->gatt_table[j] =
+-			cpu_to_le32((page_to_phys(mem->pages[i]) & 0xFFFFF000UL) | 0x1UL);
+-		flush_dcache_range((unsigned long)__va(page_to_phys(mem->pages[i])),
+-				   (unsigned long)__va(page_to_phys(mem->pages[i]))+0x1000);
+-	}
+-	(void)in_le32((volatile u32*)&agp_bridge->gatt_table[pg_start]);
+-	mb();
+-
+-	uninorth_tlbflush(mem);
+-	return 0;
+-}
+-
+-static int u3_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
++static int uninorth_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
+ {
+ 	int i, num_entries;
+ 	void *temp;
+@@ -219,14 +173,18 @@ static int u3_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
+ 	for (i = 0; i < mem->page_count; ++i) {
+ 		if (gp[i]) {
+ 			dev_info(&agp_bridge->dev->dev,
+-				 "u3_insert_memory: entry 0x%x occupied (%x)\n",
++				 "uninorth_insert_memory: entry 0x%x occupied (%x)\n",
+ 				 i, gp[i]);
+ 			return -EBUSY;
+ 		}
+ 	}
  
-+	vunmap(bridge->gatt_table);
- 	table = (char *) bridge->gatt_table_real;
- 	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
+ 	for (i = 0; i < mem->page_count; i++) {
+-		gp[i] = (page_to_phys(mem->pages[i]) >> PAGE_SHIFT) | 0x80000000UL;
++		if (is_u3)
++			gp[i] = (page_to_phys(mem->pages[i]) >> PAGE_SHIFT) | 0x80000000UL;
++		else
++			gp[i] =	cpu_to_le32((page_to_phys(mem->pages[i]) & 0xFFFFF000UL) |
++					    0x1UL);
+ 		flush_dcache_range((unsigned long)__va(page_to_phys(mem->pages[i])),
+ 				   (unsigned long)__va(page_to_phys(mem->pages[i]))+0x1000);
+ 	}
+@@ -236,7 +194,7 @@ static int u3_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
+ 	return 0;
+ }
  
+-int u3_remove_memory(struct agp_memory *mem, off_t pg_start, int type)
++int uninorth_remove_memory(struct agp_memory *mem, off_t pg_start, int type)
+ {
+ 	size_t i;
+ 	u32 *gp;
+@@ -551,7 +509,7 @@ const struct agp_bridge_driver uninorth_agp_driver = {
+ 	.create_gatt_table	= uninorth_create_gatt_table,
+ 	.free_gatt_table	= uninorth_free_gatt_table,
+ 	.insert_memory		= uninorth_insert_memory,
+-	.remove_memory		= agp_generic_remove_memory,
++	.remove_memory		= uninorth_remove_memory,
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
+@@ -577,8 +535,8 @@ const struct agp_bridge_driver u3_agp_driver = {
+ 	.agp_enable		= uninorth_agp_enable,
+ 	.create_gatt_table	= uninorth_create_gatt_table,
+ 	.free_gatt_table	= uninorth_free_gatt_table,
+-	.insert_memory		= u3_insert_memory,
+-	.remove_memory		= u3_remove_memory,
++	.insert_memory		= uninorth_insert_memory,
++	.remove_memory		= uninorth_remove_memory,
+ 	.alloc_by_type		= agp_generic_alloc_by_type,
+ 	.free_by_type		= agp_generic_free_by_type,
+ 	.agp_alloc_page		= agp_generic_alloc_page,
 -- 
 1.6.3.3
