@@ -1,27 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <michael@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 463B3B6F1E
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 19B30B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  4 Aug 2009 07:06:00 +1000 (EST)
-Subject: Re: [PATCH] Stop pci_set_dma_mask() from failing when RAM doesn't
-	exceed the mask anyway
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1249305244.15714.3.camel@macbook.infradead.org>
-References: <1249069310.20192.220.camel@macbook.infradead.org>
-	<1249079105.1509.95.camel@pasglop>
-	<1249113285.20192.961.camel@macbook.infradead.org>
-	<1249113656.1509.125.camel@pasglop>
-	<1249117220.20192.1083.camel@macbook.infradead.org>
-	<1249199437.12047.11.camel@pasglop>
-	<1249305244.15714.3.camel@macbook.infradead.org>
-Content-Type: text/plain
-Date: Tue, 04 Aug 2009 07:05:48 +1000
-Message-Id: <1249333548.18245.17.camel@pasglop>
+	Tue,  4 Aug 2009 12:31:29 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0B197DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Aug 2009 12:31:29 +1000 (EST)
+Subject: Re: Kernel fault with simple UIO interrupt driver in 2.6.30.4
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Frank Prepelica <Frank.Prepelica@ubidyne.com>
+In-Reply-To: <29DC34A6B43468409F5A371CFE34E849DFC9A1@ex01.ads.ubidyne.de>
+References: <29DC34A6B43468409F5A371CFE34E849DFC9A1@ex01.ads.ubidyne.de>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-/4SX1oi2vobFo5LhjBt+"
+Date: Tue, 04 Aug 2009 12:31:25 +1000
+Message-Id: <1249353085.5517.29.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,14 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-08-03 at 14:14 +0100, David Woodhouse wrote:
 
-> Do we care about that scenario? I think we might be able to "fix" it by
-> setting the memory_limit when we allow pci_set_dma_mask() to succeed?
-> That will effectively prevent the addition of memory that our crappy
-> device can't reach, won't it?
+--=-/4SX1oi2vobFo5LhjBt+
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-We don't support hotplug memory on those machines anyway, do we ?
+On Mon, 2009-08-03 at 15:07 +0200, Frank Prepelica wrote:
+> Hi all,
+>=20
+> due to a new revision of our custimized board, i need to port our current=
+ kernel (2.6.24)
+> to the latest kernel version 2.6.30.4.
+>=20
+> Among other things the UIO interrupt driver makes some trouble. The drive=
+r runs
+> smoothly on 2.6.24 but I'll get kernel faults when running in 2.6.30.4.
 
-Cheers,
-Ben.
+You seem to have forgotten to post the log of the oops :)
+
+cheers
+
+
+--=-/4SX1oi2vobFo5LhjBt+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkp3nX0ACgkQdSjSd0sB4dI2iACgoK33PC0GLKrVjLx/rSrnWS2L
+AJsAoMA7Fo/QeihaukvtUkBU7zneMCvB
+=dYO+
+-----END PGP SIGNATURE-----
+
+--=-/4SX1oi2vobFo5LhjBt+--
