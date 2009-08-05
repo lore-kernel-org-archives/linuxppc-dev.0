@@ -2,14 +2,16 @@ Return-Path: <fujita.tomonori@lab.ntt.co.jp>
 Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8348FB7063
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BFC84B7079
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Wed,  5 Aug 2009 15:10:11 +1000 (EST)
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org
-Subject: [PATCH -v2 0/7] powerpc: use asm-generic/dma-mapping-common.h
-Date: Wed,  5 Aug 2009 14:08:21 +0900
-Message-Id: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH -v2 5/7] powerpc: use asm-generic/dma-mapping-common.h
+Date: Wed,  5 Aug 2009 14:08:26 +0900
+Message-Id: <1249448908-18985-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org,
 	galak@kernel.crashing.orga
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,52 +23,310 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is the second version of the patchset to convert POWERPC to use
-asm-generic/dma-mapping-common.h:
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Acked-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/Kconfig                   |    6 +-
+ arch/powerpc/include/asm/dma-mapping.h |  242 +-------------------------------
+ 2 files changed, 7 insertions(+), 241 deletions(-)
 
-http://marc.info/?l=linux-kernel&m=124840628128189&w=2
-
-There are some minor changes since the first version are:
-
-- removed unused CONFIG_PPC_NEED_DMA_SYNC_OPS [5/7] (Becky pointed
-  out).
-
-- added Becky's Acked-by
-
-- added two new patches ([6/7] and [7/7]). [6/7] fixes SWIOTLB's
-  dma_mapping_error(). [7/7] addes CONFIG_DMA_API_DEBUG support.
-
-
-This is on the top of my swiotlb cleanup patchset:
-
-http://marc.info/?l=linuxppc-embedded&m=124718920320951&w=2
-
-
-The above swiotlb patchset was merged in -tip so I think that merging
-this patchset via -tip too is the easiest way to handle this patchset.
-
-The patchset also is available via a git tree:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git powerpc
-
-
-=
- arch/powerpc/Kconfig                       |    7 +-
- arch/powerpc/include/asm/device.h          |    7 +-
- arch/powerpc/include/asm/dma-mapping.h     |  318 +++-------------------------
- arch/powerpc/include/asm/pci.h             |    4 +-
- arch/powerpc/include/asm/swiotlb.h         |    8 +-
- arch/powerpc/kernel/dma-iommu.c            |    2 +-
- arch/powerpc/kernel/dma-swiotlb.c          |   53 ++---
- arch/powerpc/kernel/dma.c                  |   13 +-
- arch/powerpc/kernel/ibmebus.c              |    2 +-
- arch/powerpc/kernel/pci-common.c           |    6 +-
- arch/powerpc/kernel/vio.c                  |    2 +-
- arch/powerpc/platforms/85xx/mpc8536_ds.c   |    3 +-
- arch/powerpc/platforms/85xx/mpc85xx_ds.c   |    3 +-
- arch/powerpc/platforms/85xx/mpc85xx_mds.c  |    3 +-
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    3 +-
- arch/powerpc/platforms/cell/iommu.c        |    2 +-
- arch/powerpc/platforms/ps3/system-bus.c    |    4 +-
- include/linux/dma-mapping.h                |    1 +
- 18 files changed, 89 insertions(+), 352 deletions(-)
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d00131c..fb3f4ff 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -120,7 +120,7 @@ config PPC
+ 	select HAVE_KRETPROBES
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_LMB
+-	select HAVE_DMA_ATTRS if PPC64
++	select HAVE_DMA_ATTRS
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+ 	select HAVE_OPROFILE
+ 	select HAVE_SYSCALL_WRAPPERS if PPC64
+@@ -307,10 +307,6 @@ config SWIOTLB
+ 	  platforms where the size of a physical address is larger
+ 	  than the bus address.  Not all platforms support this.
+ 
+-config PPC_NEED_DMA_SYNC_OPS
+-	def_bool y
+-	depends on (NOT_COHERENT_CACHE || SWIOTLB)
+-
+ config HOTPLUG_CPU
+ 	bool "Support for enabling/disabling CPUs"
+ 	depends on SMP && HOTPLUG && EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC)
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 8ca2b51..91217e4 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -14,6 +14,7 @@
+ #include <linux/mm.h>
+ #include <linux/scatterlist.h>
+ #include <linux/dma-attrs.h>
++#include <linux/dma-debug.h>
+ #include <asm/io.h>
+ #include <asm/swiotlb.h>
+ 
+@@ -89,6 +90,11 @@ static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
+ 	dev->archdata.dma_ops = ops;
+ }
+ 
++/* this will be removed soon */
++#define flush_write_buffers()
++
++#include <asm-generic/dma-mapping-common.h>
++
+ static inline int dma_supported(struct device *dev, u64 mask)
+ {
+ 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+@@ -117,87 +123,6 @@ static inline int dma_set_mask(struct device *dev, u64 dma_mask)
+ 	return 0;
+ }
+ 
+-/*
+- * map_/unmap_single actually call through to map/unmap_page now that all the
+- * dma_map_ops have been converted over. We just have to get the page and
+- * offset to pass through to map_page
+- */
+-static inline dma_addr_t dma_map_single_attrs(struct device *dev,
+-					      void *cpu_addr,
+-					      size_t size,
+-					      enum dma_data_direction direction,
+-					      struct dma_attrs *attrs)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-
+-	return dma_ops->map_page(dev, virt_to_page(cpu_addr),
+-				 (unsigned long)cpu_addr % PAGE_SIZE, size,
+-				 direction, attrs);
+-}
+-
+-static inline void dma_unmap_single_attrs(struct device *dev,
+-					  dma_addr_t dma_addr,
+-					  size_t size,
+-					  enum dma_data_direction direction,
+-					  struct dma_attrs *attrs)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-
+-	dma_ops->unmap_page(dev, dma_addr, size, direction, attrs);
+-}
+-
+-static inline dma_addr_t dma_map_page_attrs(struct device *dev,
+-					    struct page *page,
+-					    unsigned long offset, size_t size,
+-					    enum dma_data_direction direction,
+-					    struct dma_attrs *attrs)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-
+-	return dma_ops->map_page(dev, page, offset, size, direction, attrs);
+-}
+-
+-static inline void dma_unmap_page_attrs(struct device *dev,
+-					dma_addr_t dma_address,
+-					size_t size,
+-					enum dma_data_direction direction,
+-					struct dma_attrs *attrs)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-
+-	dma_ops->unmap_page(dev, dma_address, size, direction, attrs);
+-}
+-
+-static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
+-				   int nents, enum dma_data_direction direction,
+-				   struct dma_attrs *attrs)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-	return dma_ops->map_sg(dev, sg, nents, direction, attrs);
+-}
+-
+-static inline void dma_unmap_sg_attrs(struct device *dev,
+-				      struct scatterlist *sg,
+-				      int nhwentries,
+-				      enum dma_data_direction direction,
+-				      struct dma_attrs *attrs)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-	dma_ops->unmap_sg(dev, sg, nhwentries, direction, attrs);
+-}
+-
+ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+ 				       dma_addr_t *dma_handle, gfp_t flag)
+ {
+@@ -216,161 +141,6 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
+ 	dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
+ }
+ 
+-static inline dma_addr_t dma_map_single(struct device *dev, void *cpu_addr,
+-					size_t size,
+-					enum dma_data_direction direction)
+-{
+-	return dma_map_single_attrs(dev, cpu_addr, size, direction, NULL);
+-}
+-
+-static inline void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
+-				    size_t size,
+-				    enum dma_data_direction direction)
+-{
+-	dma_unmap_single_attrs(dev, dma_addr, size, direction, NULL);
+-}
+-
+-static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
+-				      unsigned long offset, size_t size,
+-				      enum dma_data_direction direction)
+-{
+-	return dma_map_page_attrs(dev, page, offset, size, direction, NULL);
+-}
+-
+-static inline void dma_unmap_page(struct device *dev, dma_addr_t dma_address,
+-				  size_t size,
+-				  enum dma_data_direction direction)
+-{
+-	dma_unmap_page_attrs(dev, dma_address, size, direction, NULL);
+-}
+-
+-static inline int dma_map_sg(struct device *dev, struct scatterlist *sg,
+-			     int nents, enum dma_data_direction direction)
+-{
+-	return dma_map_sg_attrs(dev, sg, nents, direction, NULL);
+-}
+-
+-static inline void dma_unmap_sg(struct device *dev, struct scatterlist *sg,
+-				int nhwentries,
+-				enum dma_data_direction direction)
+-{
+-	dma_unmap_sg_attrs(dev, sg, nhwentries, direction, NULL);
+-}
+-
+-#ifdef CONFIG_PPC_NEED_DMA_SYNC_OPS
+-static inline void dma_sync_single_for_cpu(struct device *dev,
+-		dma_addr_t dma_handle, size_t size,
+-		enum dma_data_direction direction)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-
+-	if (dma_ops->sync_single_range_for_cpu)
+-		dma_ops->sync_single_range_for_cpu(dev, dma_handle, 0,
+-					   size, direction);
+-}
+-
+-static inline void dma_sync_single_for_device(struct device *dev,
+-		dma_addr_t dma_handle, size_t size,
+-		enum dma_data_direction direction)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-
+-	if (dma_ops->sync_single_range_for_device)
+-		dma_ops->sync_single_range_for_device(dev, dma_handle,
+-					      0, size, direction);
+-}
+-
+-static inline void dma_sync_sg_for_cpu(struct device *dev,
+-		struct scatterlist *sgl, int nents,
+-		enum dma_data_direction direction)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-
+-	if (dma_ops->sync_sg_for_cpu)
+-		dma_ops->sync_sg_for_cpu(dev, sgl, nents, direction);
+-}
+-
+-static inline void dma_sync_sg_for_device(struct device *dev,
+-		struct scatterlist *sgl, int nents,
+-		enum dma_data_direction direction)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-
+-	if (dma_ops->sync_sg_for_device)
+-		dma_ops->sync_sg_for_device(dev, sgl, nents, direction);
+-}
+-
+-static inline void dma_sync_single_range_for_cpu(struct device *dev,
+-		dma_addr_t dma_handle, unsigned long offset, size_t size,
+-		enum dma_data_direction direction)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-
+-	if (dma_ops->sync_single_range_for_cpu)
+-		dma_ops->sync_single_range_for_cpu(dev, dma_handle,
+-					   offset, size, direction);
+-}
+-
+-static inline void dma_sync_single_range_for_device(struct device *dev,
+-		dma_addr_t dma_handle, unsigned long offset, size_t size,
+-		enum dma_data_direction direction)
+-{
+-	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-
+-	BUG_ON(!dma_ops);
+-
+-	if (dma_ops->sync_single_range_for_device)
+-		dma_ops->sync_single_range_for_device(dev, dma_handle, offset,
+-					      size, direction);
+-}
+-#else /* CONFIG_PPC_NEED_DMA_SYNC_OPS */
+-static inline void dma_sync_single_for_cpu(struct device *dev,
+-		dma_addr_t dma_handle, size_t size,
+-		enum dma_data_direction direction)
+-{
+-}
+-
+-static inline void dma_sync_single_for_device(struct device *dev,
+-		dma_addr_t dma_handle, size_t size,
+-		enum dma_data_direction direction)
+-{
+-}
+-
+-static inline void dma_sync_sg_for_cpu(struct device *dev,
+-		struct scatterlist *sgl, int nents,
+-		enum dma_data_direction direction)
+-{
+-}
+-
+-static inline void dma_sync_sg_for_device(struct device *dev,
+-		struct scatterlist *sgl, int nents,
+-		enum dma_data_direction direction)
+-{
+-}
+-
+-static inline void dma_sync_single_range_for_cpu(struct device *dev,
+-		dma_addr_t dma_handle, unsigned long offset, size_t size,
+-		enum dma_data_direction direction)
+-{
+-}
+-
+-static inline void dma_sync_single_range_for_device(struct device *dev,
+-		dma_addr_t dma_handle, unsigned long offset, size_t size,
+-		enum dma_data_direction direction)
+-{
+-}
+-#endif
+-
+ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ {
+ #ifdef CONFIG_PPC64
+-- 
+1.6.0.6
