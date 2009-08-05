@@ -1,22 +1,22 @@
 Return-Path: <ego@in.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [59.145.155.1])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 49ECAB7F58
+	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 51327B82FB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Aug 2009 00:26:13 +1000 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp01.in.ibm.com (8.14.3/8.13.1) with ESMTP id n75EQ003006098
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2009 19:56:00 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n75EQ0Op1609752
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2009 19:56:00 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n75EPwGo015115
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2009 00:26:00 +1000
-Subject: [PATCH 1/3] cpu: Offline state Framework.
+	Thu,  6 Aug 2009 00:26:22 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id n75EQ9dA029566
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2009 19:56:09 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n75EQ91t1208438
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2009 19:56:09 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+	by d28av02.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n75EQ8q2019219
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2009 00:26:09 +1000
+Subject: [PATCH 3/3] pSeries: cpu: Cede CPU during a deactivate-offline
 To: Joel Schopp <jschopp@austin.ibm.com>, len.brown@intel.com,
 	Peter Zijlstra <a.p.zijlstra@chello.nl>, Balbir Singh <balbir@in.ibm.com>,
 	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -25,8 +25,8 @@ To: Joel Schopp <jschopp@austin.ibm.com>, len.brown@intel.com,
 	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
 	Dipankar Sarma <dipankar@in.ibm.com>, "Darrick J. Wong" <djwong@us.ibm.com>
 From: Gautham R Shenoy <ego@in.ibm.com>
-Date: Wed, 05 Aug 2009 19:55:58 +0530
-Message-ID: <20090805142558.553.44602.stgit@sofia.in.ibm.com>
+Date: Wed, 05 Aug 2009 19:56:08 +0530
+Message-ID: <20090805142608.553.70914.stgit@sofia.in.ibm.com>
 In-Reply-To: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
 References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
@@ -41,196 +41,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Provide an interface by which the system administrator can decide what state
-should the CPU go to when it is offlined.
-
-To query the available offline states, on needs to perform a read on:
-/sys/devices/system/cpu/cpu<number>/available_offline_states
-
-To query or set the preferred offline state for a particular CPU, one needs to
-use the sysfs interface
-
-/sys/devices/system/cpu/cpu<number>/preferred_offline_state
-
-This patch implements the architecture independent bits of the
-cpu-offline-state framework.
-
-The architecture specific bits are expected to register the actual code which
-implements the callbacks when the above mentioned sysfs interfaces are read or
-written into. Thus the values provided by reading available_offline_states are
-expected to vary with the architecture.
+Implements the pSeries specific code bits to put the CPU into
+rtas_stop_self() state or H_CEDE state depending on the
+preferred_offline_state value for that CPU.
 
 Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
- drivers/base/cpu.c  |  111 +++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/cpu.h |   15 +++++++
- 2 files changed, 126 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |   70 +++++++++++++++++++++--
+ arch/powerpc/platforms/pseries/offline_driver.h |    3 +
+ arch/powerpc/platforms/pseries/plpar_wrappers.h |    6 ++
+ arch/powerpc/platforms/pseries/smp.c            |   18 ++++++
+ 4 files changed, 88 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index e62a4cc..1a63de0 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -56,26 +56,137 @@ static ssize_t __ref store_online(struct sys_device *dev, struct sysdev_attribut
- }
- static SYSDEV_ATTR(online, 0644, show_online, store_online);
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index f15de99..5b47d6c 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -41,6 +41,8 @@ struct cpu_offline_state {
+ };
  
-+static struct cpu_offline_driver *cpu_offline_driver;
-+static SYSDEV_ATTR(available_offline_states, 0444, NULL, NULL);
-+static SYSDEV_ATTR(preferred_offline_state, 0644, NULL, NULL);
+ DEFINE_PER_CPU(enum cpu_state_vals, preferred_offline_state) = CPU_DEALLOCATE;
++DEFINE_PER_CPU(enum cpu_state_vals, cpu_current_state);
++DEFINE_PER_CPU(int, cpu_offline_ack);
+ 
+ ssize_t pSeries_show_available_states(struct sys_device *dev,
+ 			struct sysdev_attribute *attr, char *buf)
+@@ -148,8 +150,47 @@ static void pseries_mach_cpu_die(void)
+ 	local_irq_disable();
+ 	idle_task_exit();
+ 	xics_teardown_cpu();
+-	unregister_slb_shadow(hard_smp_processor_id(), __pa(get_slb_shadow()));
+-	rtas_stop_self();
++	if (__get_cpu_var(preferred_offline_state) == CPU_DEACTIVATE) {
 +
-+/* Should be called with cpu_add_remove_lock held */
-+void cpu_offline_driver_add_cpu(struct sys_device *cpu_sys_dev)
++		__get_cpu_var(cpu_offline_ack) = 1;
++		get_lppaca()->idle = 1;
++		if (!get_lppaca()->shared_proc)
++			get_lppaca()->donate_dedicated_cpu = 1;
++
++		printk(KERN_INFO "cpu %u (hwid %u) ceding\n",
++			smp_processor_id(), hard_smp_processor_id());
++
++		while (__get_cpu_var(cpu_current_state)	== CPU_DEACTIVATE) {
++			cede_processor();
++			printk(KERN_INFO "cpu %u (hwid %u) Returned from cede.\
++				Decrementer value: %x. Timebase value:%llx \n",
++			       smp_processor_id(), hard_smp_processor_id(),
++			       get_dec(), get_tb());
++		}
++
++		printk(KERN_INFO "cpu %u (hwid %u) Received online PROD \n",
++		       smp_processor_id(), hard_smp_processor_id());
++
++		if (!get_lppaca()->shared_proc)
++			get_lppaca()->donate_dedicated_cpu = 0;
++		get_lppaca()->idle = 0;
++
++		unregister_slb_shadow(hard_smp_processor_id(),
++						__pa(get_slb_shadow()));
++
++		/**
++		 * NOTE: Calling start_secondary() here, is not a very nice
++		 * way of beginning a new context.
++		 *
++		 * We need to reset the stack-pointer.
++		 * Find a cleaner way to do this.
++		 */
++		start_secondary(NULL);
++	} else {
++		unregister_slb_shadow(hard_smp_processor_id(),
++						__pa(get_slb_shadow()));
++		rtas_stop_self();
++	}
+ 	/* Should never get here... */
+ 	BUG();
+ 	for(;;);
+@@ -192,6 +233,10 @@ static int pseries_cpu_disable(void)
+ 
+ 	/* FIXME: abstract this to not be platform specific later on */
+ 	xics_migrate_irqs_away();
++	__get_cpu_var(cpu_current_state) =
++		__get_cpu_var(preferred_offline_state);
++
++	__get_cpu_var(cpu_offline_ack) = 0;
+ 	return 0;
+ }
+ 
+@@ -201,11 +246,22 @@ static void pseries_cpu_die(unsigned int cpu)
+ 	int cpu_status;
+ 	unsigned int pcpu = get_hard_smp_processor_id(cpu);
+ 
+-	for (tries = 0; tries < 25; tries++) {
+-		cpu_status = query_cpu_stopped(pcpu);
+-		if (cpu_status == 0 || cpu_status == -1)
+-			break;
+-		cpu_relax();
++	if (per_cpu(preferred_offline_state, cpu) == CPU_DEACTIVATE) {
++		/* Wait for some Ack */
++		for (tries = 0; tries < 10000; tries++) {
++			cpu_status = !per_cpu(cpu_offline_ack, cpu);
++			if (!cpu_status)
++				break;
++			cpu_relax();
++		}
++
++	} else {
++		for (tries = 0; tries < 25; tries++) {
++			cpu_status = query_cpu_stopped(pcpu);
++			if (cpu_status == 0 || cpu_status == -1)
++				break;
++			cpu_relax();
++		}
+ 	}
+ 	if (cpu_status != 0) {
+ 		printk("Querying DEAD? cpu %i (%i) shows %i\n",
+diff --git a/arch/powerpc/platforms/pseries/offline_driver.h b/arch/powerpc/platforms/pseries/offline_driver.h
+index bdae76a..571e085 100644
+--- a/arch/powerpc/platforms/pseries/offline_driver.h
++++ b/arch/powerpc/platforms/pseries/offline_driver.h
+@@ -12,5 +12,6 @@ enum cpu_state_vals {
+ };
+ 
+ DECLARE_PER_CPU(enum cpu_state_vals, preferred_offline_state);
+-
++DECLARE_PER_CPU(enum cpu_state_vals, cpu_current_state);
++extern int start_secondary(void *unused);
+ #endif
+diff --git a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+index a24a6b2..ab7f5ab 100644
+--- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
++++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+@@ -14,6 +14,12 @@ static inline long cede_processor(void)
+ 	return plpar_hcall_norets(H_CEDE);
+ }
+ 
++static inline long prod_processor(unsigned long cpu)
 +{
-+	if (!cpu_offline_driver)
-+		return;
-+
-+	sysdev_create_file(cpu_sys_dev, &attr_available_offline_states);
-+	sysdev_create_file(cpu_sys_dev, &attr_preferred_offline_state);
++	unsigned long hcpuid = get_hard_smp_processor_id(cpu);
++	return plpar_hcall_norets(H_PROD, hcpuid);
 +}
 +
-+/* Should be called with cpu_add_remove_lock held */
-+void cpu_offline_driver_remove_cpu(struct sys_device *cpu_sys_dev)
-+{
-+	if (!cpu_offline_driver)
-+		return;
-+
-+	sysdev_remove_file(cpu_sys_dev, &attr_available_offline_states);
-+	sysdev_remove_file(cpu_sys_dev, &attr_preferred_offline_state);
-+
-+}
-+
- static void __cpuinit register_cpu_control(struct cpu *cpu)
+ static inline long vpa_call(unsigned long flags, unsigned long cpu,
+ 		unsigned long vpa)
  {
- 	sysdev_create_file(&cpu->sysdev, &attr_online);
-+	cpu_offline_driver_add_cpu(&cpu->sysdev);
- }
+diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+index 1f8f6cf..15d96a2 100644
+--- a/arch/powerpc/platforms/pseries/smp.c
++++ b/arch/powerpc/platforms/pseries/smp.c
+@@ -48,6 +48,7 @@
+ #include "plpar_wrappers.h"
+ #include "pseries.h"
+ #include "xics.h"
++#include "offline_driver.h"
+ 
+ 
+ /*
+@@ -86,7 +87,10 @@ static inline int __devinit smp_startup_cpu(unsigned int lcpu)
+ 	/* Fixup atomic count: it exited inside IRQ handler. */
+ 	task_thread_info(paca[lcpu].__current)->preempt_count	= 0;
+ 
+-	/* 
++	if (per_cpu(preferred_offline_state, lcpu) == CPU_DEACTIVATE)
++		goto out;
 +
- void unregister_cpu(struct cpu *cpu)
++	/*
+ 	 * If the RTAS start-cpu token does not exist then presume the
+ 	 * cpu is already spinning.
+ 	 */
+@@ -100,6 +104,7 @@ static inline int __devinit smp_startup_cpu(unsigned int lcpu)
+ 		return 0;
+ 	}
+ 
++out:
+ 	return 1;
+ }
+ 
+@@ -119,6 +124,7 @@ static void __devinit smp_xics_setup_cpu(int cpu)
+ 
+ static void __devinit smp_pSeries_kick_cpu(int nr)
  {
- 	int logical_cpu = cpu->sysdev.id;
++	long rc;
+ 	BUG_ON(nr < 0 || nr >= NR_CPUS);
  
- 	unregister_cpu_under_node(logical_cpu, cpu_to_node(logical_cpu));
- 
-+	cpu_offline_driver_remove_cpu(&cpu->sysdev);
- 	sysdev_remove_file(&cpu->sysdev, &attr_online);
- 
- 	sysdev_unregister(&cpu->sysdev);
- 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
- 	return;
+ 	if (!smp_startup_cpu(nr))
+@@ -130,6 +136,16 @@ static void __devinit smp_pSeries_kick_cpu(int nr)
+ 	 * the processor will continue on to secondary_start
+ 	 */
+ 	paca[nr].cpu_start = 1;
++
++	per_cpu(cpu_current_state, nr) = CPU_STATE_ONLINE;
++	if (per_cpu(preferred_offline_state, nr) == CPU_DEACTIVATE) {
++
++		printk(KERN_INFO "Prodding processor %d to go online\n", nr);
++		rc = prod_processor(nr);
++		if (rc != H_SUCCESS)
++			panic("Prod to wake up processor %d returned \
++				with error code: %ld. Dying\n", nr, rc);
++	}
  }
-+
-+static int __cpuinit
-+cpu_driver_callback(struct notifier_block *nfb, unsigned long action,
-+								void *hcpu)
-+{
-+	struct sys_device *cpu_sysdev = per_cpu(cpu_sys_devices,
-+						(unsigned long)(hcpu));
-+
-+	switch (action) {
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+		cpu_offline_driver_remove_cpu(cpu_sysdev);
-+		break;
-+
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		cpu_offline_driver_add_cpu(cpu_sysdev);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block __cpuinitdata cpu_driver_notifier = {
-+	.notifier_call = cpu_driver_callback,
-+	.priority = 0
-+};
-+
-+int register_cpu_offline_driver(struct cpu_offline_driver *arch_cpu_driver)
-+{
-+	int ret = 0;
-+	cpu_maps_update_begin();
-+
-+	if (cpu_offline_driver != NULL) {
-+		ret = -EEXIST;
-+		goto out_unlock;
-+	}
-+
-+	if (!(arch_cpu_driver->show_available_states &&
-+	      arch_cpu_driver->show_preferred_state &&
-+	      arch_cpu_driver->store_preferred_state)) {
-+		ret = -EINVAL;
-+		goto out_unlock;
-+	}
-+
-+	attr_available_offline_states.show =
-+		arch_cpu_driver->show_available_states;
-+	attr_preferred_offline_state.show =
-+		arch_cpu_driver->show_preferred_state;
-+	attr_preferred_offline_state.store =
-+		arch_cpu_driver->store_preferred_state;
-+
-+	cpu_offline_driver = arch_cpu_driver;
-+
-+out_unlock:
-+	cpu_maps_update_done();
-+	if (!ret)
-+		register_cpu_notifier(&cpu_driver_notifier);
-+	return ret;
-+}
-+
-+void unregister_cpu_offline_driver(struct cpu_offline_driver *arch_cpu_driver)
-+{
-+	cpu_maps_update_begin();
-+
-+	if (!cpu_offline_driver) {
-+		WARN_ON(1);
-+		cpu_maps_update_done();
-+		return;
-+	}
-+
-+	cpu_offline_driver = NULL;
-+	attr_available_offline_states.show = NULL;
-+	attr_preferred_offline_state.show = NULL;
-+	attr_preferred_offline_state.store = NULL;
-+
-+	cpu_maps_update_done();
-+	unregister_cpu_notifier(&cpu_driver_notifier);
-+}
-+
- #else /* ... !CONFIG_HOTPLUG_CPU */
- static inline void register_cpu_control(struct cpu *cpu)
- {
- }
-+
- #endif /* CONFIG_HOTPLUG_CPU */
  
- #ifdef CONFIG_KEXEC
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index 4d668e0..e2150be 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -51,6 +51,21 @@ struct notifier_block;
- #ifdef CONFIG_HOTPLUG_CPU
- extern int register_cpu_notifier(struct notifier_block *nb);
- extern void unregister_cpu_notifier(struct notifier_block *nb);
-+
-+struct cpu_offline_driver {
-+	ssize_t (*show_available_states)(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf);
-+	ssize_t (*show_preferred_state)(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf);
-+
-+	ssize_t (*store_preferred_state)(struct sys_device *dev,
-+			struct sysdev_attribute *attr,
-+			const char *buf, size_t count);
-+};
-+
-+extern int register_cpu_offline_driver(struct cpu_offline_driver *driver);
-+extern void unregister_cpu_offline_driver(struct cpu_offline_driver *driver);
-+
- #else
- 
- #ifndef MODULE
+ static int smp_pSeries_cpu_bootable(unsigned int nr)
