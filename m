@@ -1,21 +1,32 @@
-Return-Path: <nst@gersys.de>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id F29D7B7063
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D7606B6F31
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Aug 2009 22:14:05 +1000 (EST)
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 3F4F6DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 22:14:05 +1000 (EST)
-Message-ID: <4A797655.6060205@gersys.de>
-Date: Wed, 05 Aug 2009 14:08:53 +0200
-From: Stefan Strobl <nst@gersys.de>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: ethernet phy attached to wrong driver
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed,  5 Aug 2009 22:52:23 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C5DD5DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 22:52:23 +1000 (EST)
+Subject: Re: [PATCH] powerpc/mm: Fix switch_mmu_context to iterate of the
+	proper list of cpus
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20090805113230.GB8985@zod.rchland.ibm.com>
+References: <1249443212-25588-1-git-send-email-galak@kernel.crashing.org>
+	<20090805113230.GB8985@zod.rchland.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-jotcjenMHQOXMH/QC1h/"
+Date: Wed, 05 Aug 2009 22:52:22 +1000
+Message-Id: <1249476742.5607.2.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi
 
-I'm having trouble with my Ethernet device on a TQM5200 based board with
-LXT971 Phy. I'm running U-Boot 2009.03 and a Kernel 2.6.30.
+--=-jotcjenMHQOXMH/QC1h/
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-When doing a ping under U-Boot before booting into Linux, Ethernet works
-fine in Linux also. Dmesg reads:
-[  262.369444] net eth0: Using PHY at MDIO address 0
-[  263.265903] net eth0: attached phy 0 to driver LXT971
+On Wed, 2009-08-05 at 07:32 -0400, Josh Boyer wrote:
+> On Tue, Aug 04, 2009 at 10:33:32PM -0500, Kumar Gala wrote:
+> >Introduced a temporary variable into our iterating over the list cpus
+> >that are threads on the same core.  For some reason Ben forgot how for
+> >loops work.
+>=20
+> Have the powerpoint demons corrupted him already??
 
-But if I start Linux without prior use of the fec under U-Boot, Ethernet
-is not working in Linux. The wrong drivers seems to be attached to the
-phy. Dmesg reads:
-[    2.068285] net eth0: Using PHY at MDIO address 0
-[    2.964774] net eth0: attached phy 0 to driver Generic PHY
-                                                  ^^^^^^^^^^^
-Is there a bootarg to tell linux which driver to use? Any ideas what I'm
-doing wrong?
+No I think one of his kids gave him swine flu.
 
-Regards
-Stefan.
+cheers
+
+--=-jotcjenMHQOXMH/QC1h/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkp5gIYACgkQdSjSd0sB4dKHzgCfXjHwHXaQ0gTgBI8DzNPdhTOI
+NmkAn0N19ZAIJRNZiZ2Dy4OJuK78vsdd
+=rnQ/
+-----END PGP SIGNATURE-----
+
+--=-jotcjenMHQOXMH/QC1h/--
