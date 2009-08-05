@@ -1,29 +1,31 @@
-Return-Path: <sebastian@breakpoint.cc>
+Return-Path: <hch@lst.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6C7B2B6F2B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EF162B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Aug 2009 07:33:12 +1000 (EST)
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	Thu,  6 Aug 2009 08:34:49 +1000 (EST)
+Received: from verein.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0586DDDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 07:33:12 +1000 (EST)
-Received: id: bigeasy by Chamillionaire.breakpoint.cc with local
-	(easymta 1.00 BETA 1) id 1MYo6e-0001hc-1H
-	for linuxppc-dev@ozlabs.org; Wed, 05 Aug 2009 23:33:08 +0200
-Date: Wed, 5 Aug 2009 23:33:08 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+	by ozlabs.org (Postfix) with ESMTPS id 1C9DDDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 08:34:48 +1000 (EST)
+Received: from verein.lst.de (localhost [127.0.0.1])
+	by verein.lst.de (8.12.3/8.12.3/Debian-7.1) with ESMTP id
+	n75MOjVL030991
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2009 00:24:45 +0200
+Received: (from hch@localhost)
+	by verein.lst.de (8.12.3/8.12.3/Debian-7.2) id n75MOjiZ030990
+	for linuxppc-dev@ozlabs.org; Thu, 6 Aug 2009 00:24:45 +0200
+Date: Thu, 6 Aug 2009 00:24:45 +0200
+From: Christoph Hellwig <hch@lst.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: kexec on e300 core / mpc5121
-Message-ID: <20090805213308.GC6233@Chamillionaire.breakpoint.cc>
-References: <20090804230605.GA28753@Chamillionaire.breakpoint.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20090804230605.GA28753@Chamillionaire.breakpoint.cc>
+Subject: [PATCH] powerpc: switch to asm-generic/hardirq.h
+Message-ID: <20090805222445.GB30900@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,11 +35,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Sebastian Andrzej Siewior | 2009-08-05 01:06:06 [+0200]:
-[long mail]
->Does someone have an idea?
-Issue fixed, it was the ipic. The missing data while disabling the
-caches was my fault because I invalidated the caches before I've flushed
-them.
+hardirq.h on powerpc defines a __last_jiffy_stamp field, but it's not
+actually used anywhere.
 
-Sebastian
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Index: linux-2.6/arch/powerpc/include/asm/hardirq.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/hardirq.h	2009-08-05 19:19:57.391342973 -0300
++++ linux-2.6/arch/powerpc/include/asm/hardirq.h	2009-08-05 19:20:38.658365423 -0300
+@@ -1,29 +1 @@
+-#ifndef _ASM_POWERPC_HARDIRQ_H
+-#define _ASM_POWERPC_HARDIRQ_H
+-#ifdef __KERNEL__
+-
+-#include <asm/irq.h>
+-#include <asm/bug.h>
+-
+-/* The __last_jiffy_stamp field is needed to ensure that no decrementer
+- * interrupt is lost on SMP machines. Since on most CPUs it is in the same
+- * cache line as local_irq_count, it is cheap to access and is also used on UP
+- * for uniformity.
+- */
+-typedef struct {
+-	unsigned int __softirq_pending;	/* set_bit is used on this */
+-	unsigned int __last_jiffy_stamp;
+-} ____cacheline_aligned irq_cpustat_t;
+-
+-#include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above */
+-
+-#define last_jiffy_stamp(cpu) __IRQ_STAT((cpu), __last_jiffy_stamp)
+-
+-static inline void ack_bad_irq(int irq)
+-{
+-	printk(KERN_CRIT "illegal vector %d received!\n", irq);
+-	BUG();
+-}
+-
+-#endif /* __KERNEL__ */
+-#endif /* _ASM_POWERPC_HARDIRQ_H */
++#include <asm-generic/hardirq.h>
