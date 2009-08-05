@@ -1,40 +1,26 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
+Return-Path: <julia@diku.dk>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 46D81B6EDE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EC702B6EDE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Aug 2009 23:16:18 +1000 (EST)
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+	Wed,  5 Aug 2009 23:25:22 +1000 (EST)
+Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A643FDDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 23:16:17 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e9.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n75DFew9001360
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 09:15:40 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n75DGCPr242658
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 09:16:13 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n75DGCIZ012178
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 09:16:12 -0400
-Date: Wed, 5 Aug 2009 09:16:08 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/mm: Fix switch_mmu_context to iterate of the
-	proper list of cpus
-Message-ID: <20090805131608.GC8985@zod.rchland.ibm.com>
-References: <1249443212-25588-1-git-send-email-galak@kernel.crashing.org>
-	<20090805113230.GB8985@zod.rchland.ibm.com>
-	<1249476742.5607.2.camel@concordia>
+	(Client CN "mgw2.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 8609EDDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 23:25:22 +1000 (EST)
+Date: Wed, 5 Aug 2009 15:25:08 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/4] drivers/serial/mpc52xx_uart.c: Use UPIO_MEM rather than
+	SERIAL_IO_MEM
+Message-ID: <Pine.LNX.4.64.0908051524220.20453@pc-004.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1249476742.5607.2.camel@concordia>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,17 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 05, 2009 at 10:52:22PM +1000, Michael Ellerman wrote:
->On Wed, 2009-08-05 at 07:32 -0400, Josh Boyer wrote:
->> On Tue, Aug 04, 2009 at 10:33:32PM -0500, Kumar Gala wrote:
->> >Introduced a temporary variable into our iterating over the list cpus
->> >that are threads on the same core.  For some reason Ben forgot how for
->> >loops work.
->> 
->> Have the powerpoint demons corrupted him already??
->
->No I think one of his kids gave him swine flu.
+From: Julia Lawall <julia@diku.dk>
 
-Whew.  You can recover from that at least ;)
+As in the commit 9b4a1617772d6d5ab5eeda0cd95302fae119e359, use UPIO_MEM
+rather than SERIAL_IO_MEM.  Both have the same value.
 
-josh
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@has_sc@
+@@
+
+#include <linux/serial_core.h>
+
+@depends on has_sc@
+@@
+
+- SERIAL_IO_MEM
++ UPIO_MEM
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/serial/mpc52xx_uart.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -u -p a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -705,7 +705,7 @@ mpc52xx_uart_verify_port(struct uart_por
+ 		return -EINVAL;
+ 
+ 	if ((ser->irq != port->irq) ||
+-	    (ser->io_type != SERIAL_IO_MEM) ||
++	    (ser->io_type != UPIO_MEM) ||
+ 	    (ser->baud_base != port->uartclk)  ||
+ 	    (ser->iomem_base != (void *)port->mapbase) ||
+ 	    (ser->hub6 != 0))
