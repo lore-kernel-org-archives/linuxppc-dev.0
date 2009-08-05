@@ -1,21 +1,26 @@
-Return-Path: <bharrosh@panasas.com>
-Received: from daytona.int.panasas.com
-	(ip67-152-220-66.z220-152-67.customer.algx.net [67.152.220.66])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 91CA6B6EDE
+Return-Path: <galak@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 08430B7063
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Aug 2009 23:40:32 +1000 (EST)
-Message-ID: <4A7988F0.2010208@panasas.com>
-Date: Wed, 05 Aug 2009 16:28:16 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: Tree for August 5
-References: <20090805172337.b0688db1.sfr@canb.auug.org.au>	<4A793EA8.50306@panasas.com>
-	<20090805201336.fd2de2ad.sfr@canb.auug.org.au>
-In-Reply-To: <20090805201336.fd2de2ad.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>
+	Thu,  6 Aug 2009 06:04:31 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7019EDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 06:04:30 +1000 (EST)
+Message-Id: <92176A7D-89C7-484F-B4C8-8E510271A512@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+In-Reply-To: <20090805194112.GA18204@www.tglx.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH] powerpc/ipic: unmask all interrupt sources
+Date: Wed, 5 Aug 2009 15:04:16 -0500
+References: <20090805194112.GA18204@www.tglx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/05/2009 01:13 PM, Stephen Rothwell wrote:
-> Hi Boaz,
-> 
-> On Wed, 05 Aug 2009 11:11:20 +0300 Boaz Harrosh <bharrosh@panasas.com> wrote:
->>
->> On 08/05/2009 10:23 AM, Stephen Rothwell wrote:
->>>
->>> This tree fails to build for powerpc allyesconfig (final link problem).
->>
->> Above is reported for a long time. Is it related to this:
->> http://www.spinics.net/lists/kernel/msg921978.html
-> 
-> No, it is this:
-> 
-> powerpc-linux-ld: TOC section size exceeds 64k
-> 
-> It is powerpc specific and the only way we can think of fixing it
-> involves stopping building the built-in.o files and linking the entire
-> kernel in one go at the end.  We just haven't had time (or the energy) to
-> try to fix it properly while it only affects the final link of the
-> allyesconfig kernel. 
-> 
 
-Ha, OK allyesconfig. Last time I attempted an allyesconfig for i386 I got
-me the OOM killer attack on my KDE, half way into the final link.
+On Aug 5, 2009, at 2:41 PM, Sebastian Andrzej Siewior wrote:
 
-That's why I use allmodconfig for when I need "try to compile everything ++"
-I get just as much compilation coverage if not more. And is faster.
-It'll not show symbol conflicts if any exist, though.
+> in case the interrupt controller was used in an earlier life then it  
+> is
+> possible it is that some of its sources were used and are still  
+> unmask.
+> If the (unmasked) device is active and is creating interrupts (or one
+> interrupts was pending since the interrupts were disabled) then the  
+> boot
+> process "ends" very soon. Once external interrupts are enabled, we  
+> land in
+> -> do_IRQ
+>  -> call ppc_md.get_irq()
+>     -> ipic_read() gets the source number
+>     -> irq_linear_revmap(source)
+>        -> revmap[source] == NO_IRQ
+>           -> irq_find_mapping(source) returns NO_IRQ because no source
+>              is registered
+>  -> source is NO_IRQ, ppc_spurious_interrupts gets incremented, no
+>     further action.
+>
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> ---
+> This solves my kexec problem I had earlier. I could disable the device
+> in ->shutdown path but the device in question could been used in the
+> boot loader. Usually one gets the "nobody cared" message for unhandled
+> interrupts but in this (rare) case nothing happens and box stands  
+> still.
+>
+> arch/powerpc/sysdev/ipic.c |    3 +++
+> 1 files changed, 3 insertions(+), 0 deletions(-)
 
-Thanks
-Boaz
+looks good.. I'll pick this up for .32 since it doesn't seem to be a  
+bug until we have kexec.
+
+- k
