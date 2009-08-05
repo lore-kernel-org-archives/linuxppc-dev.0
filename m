@@ -1,29 +1,40 @@
-Return-Path: <Matthias.Lange@beissbarth.com>
+Return-Path: <sachinp@in.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2B37CB707B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1EB6AB6F1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Aug 2009 00:59:38 +1000 (EST)
-Received: from smtp2-v.fe.bosch.de (smtp2-v.fe.bosch.de [139.15.237.6])
-	by ozlabs.org (Postfix) with ESMTP id 51F5CDDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 00:59:36 +1000 (EST)
-Received: from vsmta3.fe.internet.bosch.com (unknown [10.4.98.30])
-	by imta5.fe.bosch.de (Postfix) with ESMTP id C4E62140074
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 16:59:22 +0200 (CEST)
-Received: from fe-imc01.de.bosch.com (vsgw1.fe.internet.bosch.com [10.4.98.15])
-	by vsmta3.fe.internet.bosch.com (Postfix) with ESMTP id 843EA158185
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 16:59:31 +0200 (CEST)
-From: "EXTERNAL Lange Matthias (AA-DGW/ENG1)" <Matthias.Lange@beissbarth.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Date: Wed, 5 Aug 2009 16:59:29 +0200
-Subject: RE: Spansion S25FL128-Flash and MTD
-Message-ID: <44C5CFA72BC0E242A53B64DC1E67DEB80FB98D011D@SI-MBX10.de.bosch.com>
-References: <44C5CFA72BC0E242A53B64DC1E67DEB80FB989659B@SI-MBX10.de.bosch.com>
-In-Reply-To: <44C5CFA72BC0E242A53B64DC1E67DEB80FB989659B@SI-MBX10.de.bosch.com>
-Content-Type: text/plain; charset="us-ascii"
+	Thu,  6 Aug 2009 01:33:55 +1000 (EST)
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [59.145.155.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 398D6DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 01:33:52 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp08.in.ibm.com (8.14.3/8.13.1) with ESMTP id n75FT69i007869
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 20:59:06 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n75FXk0o1151046
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 21:03:46 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+	by d28av04.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n75FXj7Z013270
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2009 01:33:46 +1000
+Message-ID: <4A79A658.8000105@in.ibm.com>
+Date: Wed, 05 Aug 2009 21:03:44 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Next July 29 : Hugetlb test failure (OOPS free_hugepte_range)
+References: <20090729173611.b82478cd.sfr@canb.auug.org.au>
+	<4A706504.6040704@in.ibm.com>
+	<E0A64FA0-C835-4361-A203-E9CB5377599C@kernel.crashing.org>
+In-Reply-To: <E0A64FA0-C835-4361-A203-E9CB5377599C@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,120 +44,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I solved part of my problem. The flash now gets detected during boot up. I =
-had to change the compatible property from ""amd,s25sl12800", "jedec-flash"=
-" to ""amd,m25p80", "jedec-flash"".
+Kumar Gala wrote:
+>
+> On Jul 29, 2009, at 10:04 AM, Sachin Sant wrote:
+>
+>> While executing hugetlb tests against today's Next tree on
+>> a Power 6 box came across following OOPS.
+>
+> out of interest what tests are you running for hugetlb?
+The one maintained at : http://libhugetlbfs.ozlabs.org/ which points
+to the sourceforge libhugetlbfs project.
 
-What remains is creating the mtd partitions which are specified in the devi=
-ce tree as follows
+Latest release can be downloaded from sourceforge using
+http://sourceforge.net/projects/libhugetlbfs/files/
 
-partition@0 {
-        label =3D "firmware";
-        reg =3D <0x0 0x800000>;
-};
-partition@800000 {
-        label =3D "rootfs";
-        reg =3D <0x800000 0x800000>;
-};
+I am using version 2.5
 
-During boot no partitions are created and "cat /proc/mtd" just gives me
+Thanks
+-Sachin
 
-dev:    size   erasesize  name
-mtd0: 01000000 00010000 "spi32766.0"
 
-Any ideas?
 
-Regards,
-Matthias.
+-- 
 
-> -----Original Message-----
-> From:
-> linuxppc-dev-bounces+matthias.lange=3Dbeissbarth.com@lists.ozlab
-> s.org
-> [mailto:linuxppc-dev-bounces+matthias.lange=3Dbeissbarth.com@lis
-ts.ozlabs.org] On Behalf Of EXTERNAL Lange Matthias (AA-DGW/ENG1)
-> Sent: Wednesday, August 05, 2009 9:17 AM
-> To: linuxppc-dev@ozlabs.org
-> Subject: Spansion S25FL128-Flash and MTD
->
-> Hi,
->
-> I am trying to get a MTD running on my embedded PowerPC
-> board. I am using a Xilinx Virtex4 with an embedded PowerPC
-> 405. In the FPGA there is a Xilinx SPI controller implemented
-> to which a Spansion S25FL128 SPI-flash (16MB) is connected.
->
-> The problem is that with my setup the flash chips gets not
-> detected and the MTD partitions won't be setup.
->
-> In the kernel config I have configured the following options:
->
-> In the device drivers section:
-> [x] SPI support
->         [x] Xilinx SPI controller
-> [x] Memory Technology Device (MTD) support
->         [x] MTD partitioning support
->         [x] Flash partition map based on OF description
->         RAM/ROM/Flash chip drivers
->                 [x] Detect non-CFI AMD/JEDEC-compatible flash chips
->         Self-contained MTD device drivers
->                 [x] Support most SPI Flash chips (AT26DF,
-> M25P, W25X, ...)
->
-> As filesystem I have configured JFFS2.
->
-> In my device tree I have declared the SPI controller and the
-> connected flash as follows:
->
-> SPI_Flash: xps-spi@83400000 {
->         compatible =3D "xlnx,xps-spi-2.00.b";
->         interrupt-parent =3D <&int_ctrl>;
->         interrupts =3D < 3 2 >;
->         reg =3D < 0x83400000 0x10000 >;
->         xlnx,family =3D "virtex4";
->         xlnx,fifo-exist =3D <0x0>;
->         xlnx,num-offchip-ss-bits =3D <0x1>;
->         xlnx,num-ss-bits =3D <0x1>;
->         xlnx,sck-ratio =3D <0x20>;
->         #address-cells =3D <1>;
->         #size-cells =3D <1>;
->         nor_flash@0,1000000 {
->                 compatible =3D "amd,s25sl12800", "jedec-flash";
->                 reg =3D <0x0 0x1000000>;
->                 spi-max-frequency =3D <25000000>;
->                 bank-width =3D <1>;
->                 device-width =3D <1>;
->                 #address-cells =3D <1>;
->                 #size-cells =3D <1>;
->                 rootfs@800000 {
->                         label =3D "rootfs";
->                         reg =3D <0x800000 0x800000>;
->                 };
->         };
-> };
->
-> When the kernel boots I can see from the console that the
-> drivers for JFFS2 and the SPI controller get successfully loaded:
->
-> ...
-> JFFS2 version 2.2. (NAND) (c) 2001-2006 Red Hat, Inc.
-> ...
-> xilinx-xps-spi 83400000.xps-spi: at 0x83400000 mapped to
-> 0xC9060000, irq=3D17
-> ...
->
-> While debugging the boot process I couldn't see any calls to
-> jedec_probe() resp. m25p_probe() from m25p80.c which to my
-> understanding should be called in result to a successfull
-> match of my compatible property (jedec-flash).
->
-> The question is: What am I missing? Is there a problem with
-> my device tree definition? What else am I doing wrong?
->
-> Any help is appreciated. Regards,
-> Matthias.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
