@@ -1,26 +1,35 @@
-Return-Path: <julia@diku.dk>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <ego@in.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id EC702B6EDE
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BC43AB6EDE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Aug 2009 23:25:22 +1000 (EST)
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8609EDDD04
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 23:25:22 +1000 (EST)
-Date: Wed, 5 Aug 2009 15:25:08 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/4] drivers/serial/mpc52xx_uart.c: Use UPIO_MEM rather than
-	SERIAL_IO_MEM
-Message-ID: <Pine.LNX.4.64.0908051524220.20453@pc-004.diku.dk>
+	Thu,  6 Aug 2009 00:26:03 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id n75ENX1H004500
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2009 00:23:33 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n75EPwP21110202
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2009 00:25:58 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n75EPvXo008139
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2009 00:25:58 +1000
+Subject: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+To: Joel Schopp <jschopp@austin.ibm.com>, len.brown@intel.com,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, Balbir Singh <balbir@in.ibm.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	shaohua.li@intel.com, Ingo Molnar <mingo@elte.hu>,
+	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+	Dipankar Sarma <dipankar@in.ibm.com>, "Darrick J. Wong" <djwong@us.ibm.com>
+From: Gautham R Shenoy <ego@in.ibm.com>
+Date: Wed, 05 Aug 2009 19:55:53 +0530
+Message-ID: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,42 +39,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
+Hi,
 
-As in the commit 9b4a1617772d6d5ab5eeda0cd95302fae119e359, use UPIO_MEM
-rather than SERIAL_IO_MEM.  Both have the same value.
+**** RFC not for inclusion ****
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+When we perform a CPU-Offline operation today, we do not put the CPU
+into the most energy efficient state. On x86, it loops in hlt as opposed to
+going to one of the low-power C-states. On pSeries, we call rtas_stop_self()
+and hand over the vCPU back to the resource pool, thereby deallocating
+the vCPU.
 
-// <smpl>
-@has_sc@
-@@
+Thus, when applications or platforms desire to put a particular CPU
+to an extended low-power state for a short while, currently they have to
+piggy-back on scheduler heuristics such as sched_mc_powersavings or play with
+exclusive Cpusets. The former does a good job based on the workload, but fails
+to provide any guarentee that the CPU won't be used for the next <> seconds,
+while the latter might conflict with the existing CPUsets configurations.
 
-#include <linux/serial_core.h>
+There were efforts to alleviate these problems and various proposals have been
+put forth. They include putting the CPU to the deepest possible idle-state
+when offlined [1], removing the desired CPU from the topmost-cpuset [2],
+a driver which forces a high-priority idle thread to run on the desired CPU
+thereby putting it to idle [3].
 
-@depends on has_sc@
-@@
+In this patch-series, we propose to extend the CPU-Hotplug infrastructure
+and allow the system administrator to choose the desired state the CPU should
+go to when it is offlined. We think this approach addresses the concerns about
+determinism as well as transparency, since CPU-Hotplug already provides
+notification mechanism which the userspace can listen to for any change
+in the configuration and correspondingly readjust any previously set
+cpu-affinities. Also, approaches such as [1] can make use of this
+extended infrastructure instead of putting the CPU to an arbitrary C-state
+when it is offlined, thereby providing the system administrator a rope to hang
+himself with should he feel the need to do so.
 
-- SERIAL_IO_MEM
-+ UPIO_MEM
-// </smpl>
+This patch-series tries to achieve this by implementing an architecture
+independent framework that exposes sysfs tunables to allow the
+system-adminstrator to choose the offline-state of a CPU.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+	/sys/devices/system/cpu/cpu<number>/available_offline_states
+and
+	/sys/devices/system/cpu/cpu<number>/preferred_offline_states
 
+For the purpose of proof-of-concept, we've implemented the backend for
+pSeries. For pSeries, we define two available_offline_states. They are:
+
+	deallocate: This is default behaviour which on an offline, deallocates
+	the vCPU by invoking rtas_stop_self() and hands it back to
+	the resource pool.
+
+	deactivate: This calls H_CEDE, which will request the hypervisor to
+	idle the vCPU in the lowest power mode and give it back as soon as
+	we need it.
+
+
+Any feedback on the patchset will be immensely valuable.
+
+References:
+-----------
+[1] Pallipadi, Venkatesh: x86: Make offline cpus to go to deepest idle state
+using mwait (URL: http://lkml.org/lkml/2009/5/22/431)
+
+[2] Li, Shaohua: cpuset: add new API to change cpuset top group's cpus
+(URL: http://lkml.org/lkml/2009/5/19/54)
+
+[3] Li, Shaohua: new ACPI processor driver to force CPUs idle
+(URL: http://www.spinics.net/lists/linux-acpi/msg22863.html)
+
+
+Changelog:
 ---
- drivers/serial/mpc52xx_uart.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -705,7 +705,7 @@ mpc52xx_uart_verify_port(struct uart_por
- 		return -EINVAL;
- 
- 	if ((ser->irq != port->irq) ||
--	    (ser->io_type != SERIAL_IO_MEM) ||
-+	    (ser->io_type != UPIO_MEM) ||
- 	    (ser->baud_base != port->uartclk)  ||
- 	    (ser->iomem_base != (void *)port->mapbase) ||
- 	    (ser->hub6 != 0))
+Gautham R Shenoy (3):
+      pSeries: cpu: Cede CPU during a deactivate-offline
+      cpu: Implement cpu-offline-state callbacks for pSeries.
+      cpu: Offline state Framework.
+
+
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |  160 ++++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/offline_driver.h |   17 ++
+ arch/powerpc/platforms/pseries/plpar_wrappers.h |    6 +
+ arch/powerpc/platforms/pseries/smp.c            |   18 ++-
+ drivers/base/cpu.c                              |  111 ++++++++++++++++
+ include/linux/cpu.h                             |   15 ++
+ 6 files changed, 319 insertions(+), 8 deletions(-)
+ create mode 100644 arch/powerpc/platforms/pseries/offline_driver.h
+
+-- 
+Thanks and Regards
+gautham.
