@@ -3,37 +3,38 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5AE79B6EDE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CB644B707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Aug 2009 12:46:39 +1000 (EST)
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+	Wed,  5 Aug 2009 13:31:04 +1000 (EST)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C9C4FDDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 12:46:37 +1000 (EST)
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6C394DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 13:31:04 +1000 (EST)
 Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp04.au.ibm.com (8.14.3/8.13.1) with ESMTP id n752htZ6006555
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 12:43:55 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by e23smtp03.au.ibm.com (8.14.3/8.13.1) with ESMTP id n753Skga007108
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 13:28:46 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
 	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n752kX6e1323198
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 12:46:33 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n752kWLK020968
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 12:46:33 +1000
-Date: Wed, 5 Aug 2009 12:08:30 +1000
+	n753V1oL978950
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 13:31:01 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n753V0AE022910
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 13:31:01 +1000
+Date: Wed, 5 Aug 2009 12:55:32 +1000
 From: David Gibson <dwg@au1.ibm.com>
 To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [Patch 0/6] [Patch 0/6] PPC64-HWBKPT: Hardware Breakpoint
-	interfaces - ver VIII
-Message-ID: <20090805020830.GB3464@yookeroo.seuss>
-References: <20090727001152.GA13562@in.ibm.com>
-	<20090731061013.GG3950@yookeroo.seuss>
-	<20090803205316.GA3914@in.ibm.com>
+Subject: Re: [Patch 2/6] Introduce PPC64 specific Hardware Breakpoint
+	interfaces
+Message-ID: <20090805025532.GA5358@yookeroo.seuss>
+References: <20090726235854.574539012@prasadkr_t60p.in.ibm.com>
+	<20090727001317.GC13562@in.ibm.com>
+	<20090731061646.GH3950@yookeroo.seuss>
+	<20090803205938.GB3914@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090803205316.GA3914@in.ibm.com>
+In-Reply-To: <20090803205938.GB3914@in.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
 	Benjamin Herrenschmidt <benh@au1.ibm.com>,
 	linuxppc-dev@ozlabs.org, paulus@samba.org,
@@ -47,47 +48,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 04, 2009 at 02:23:16AM +0530, K.Prasad wrote:
-> On Fri, Jul 31, 2009 at 04:10:13PM +1000, David Gibson wrote:
-> > On Mon, Jul 27, 2009 at 05:41:52AM +0530, K.Prasad wrote:
-> 
-> <edited>
-> 
-> > > Reasons
-> > > --------
-> > > - Signal delivery before execution of instruction requires complex workarounds
-> > > - One of the plausible workarounds is a two-pass hw-breakpoint handler which
-> > >   delivers the signal after the first pass (with the breakpoints enabled).
-> > >   In the second pass, it follows the existing semantics of
-> > >   disable_hbp-->enable_ss-->single_step-->disable_ss-->enable_hbp.
+On Tue, Aug 04, 2009 at 02:29:38AM +0530, K.Prasad wrote:
+> On Fri, Jul 31, 2009 at 04:16:46PM +1000, David Gibson wrote:
+> > On Mon, Jul 27, 2009 at 05:43:17AM +0530, K.Prasad wrote:
+[snip]
+> > > +	/* Verify if dar lies within the address range occupied by the symbol
+> > > +	 * being watched. Since we cannot get the symbol size for
+> > > +	 * user-space requests we skip this check in that case
+> > > +	 */
+> > > +	if (is_kernel &&
+> > > +	    !((bp->info.address <= dar) &&
+> > > +	     (dar <= (bp->info.address + bp->info.symbolsize))))
+> > > +		/*
+> > > +		 * This exception is triggered not because of a memory access on
+> > > +		 * the monitored variable but in the double-word address range
+> > > +		 * in which it is contained. We will consume this exception,
+> > > +		 * considering it as 'noise'.
+> > > +		 */
+> > > +		goto out;
+> > > +
+> > > +	(bp->triggered)(bp, regs);
 > > 
-> > Yes, that's the only way I can see to do it.
+> > It bothers me that the trigger function is executed before the
+> > trapping instruction, but the SIGTRAP occurs afterwards.  Since
+> > they're both responses to the trap, it seems logical to me that they
+> > should occur at the same time (from the trapping program's point of
+> > view, at least).
 > > 
-> > > - Possibility of nested exceptions is a problem here.
-> > 
-> > Ok, why?
-> > 
 > 
-> Reason as described in the para below.
+> How about moving the triggered function to the single-step handler code
+> for both kernel- and user-space?
 > 
-> > > - Proper identification of a  second-pass of first exception and a new nested
-> > >   exception is difficult. Possibility of stray exceptions due to accesses in
-> > >   neighbouring memory regions of the breakpoint address further complicates it.
-> 
-> To elaborate, consider a case where a user-space address 'x' is
-> monitored for read or write, and the following happens (assume the
-> existence of the two-pass method for signal delivery).
-> 
-> - Instruction 'i' attempts to read/write in address 'x'
-> - hw-bkpt exception generated (pass I)
-> - Signal generated and hw-bkpt exception returns to user-space
-> - Signal is handled before 'i' is executed. Handler code reads/writes
->   data in 'x' again. Generates nested exception.
-> - hw-breakpoint handler code is unable to distinguish if the new
->   exception is from signal handler (nested) or due to second-pass (as
->   per design above).
+> That would make it behave like a trigger-after-execute (and synchronised
+> with the signal-delivery timing).
 
-Ah, ok, I understand now.  Hrm.  I'll have to think about this.
+I think that would be an improvement, yes.  I definitely think the
+SIGTRAP and the callback function should happen at the same time in
+all cases.  Possibly even have the callback function issue the SIGTRAP
+rather than special casing that.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
