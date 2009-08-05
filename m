@@ -1,20 +1,30 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+Return-Path: <Matthias.Lange@beissbarth.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3E25AB7C21
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 99A29B6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Aug 2009 15:10:16 +1000 (EST)
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org
-Subject: [PATCH -v2 1/7] powerpc: remove addr_needs_map in struct
-	dma_mapping_ops
-Date: Wed,  5 Aug 2009 14:08:22 +0900
-Message-Id: <1249448908-18985-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org,
-	galak@kernel.crashing.orga
+	Wed,  5 Aug 2009 17:24:17 +1000 (EST)
+Received: from imta2.fe.bosch.de (imta2.fe.bosch.de [139.15.238.165])
+	by ozlabs.org (Postfix) with ESMTP id C9541DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 17:24:16 +1000 (EST)
+Received: from smtp2-v.fe.bosch.de (smtp2-v.fe.bosch.de [139.15.237.6])
+	by imta2.fe.bosch.de (Postfix) with ESMTP id 2E50BD0544
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 09:17:09 +0200 (CEST)
+Received: from vsmta2.fe.internet.bosch.com (unknown [10.4.98.30])
+	by imta5.fe.bosch.de (Postfix) with ESMTP id 78FC214003E
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 09:16:55 +0200 (CEST)
+Received: from fe-imc01.de.bosch.com (vsgw3.fe.internet.bosch.com [10.4.98.16])
+	by vsmta2.fe.internet.bosch.com (Postfix) with ESMTP id 1DB7822359C
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 09:17:04 +0200 (CEST)
+From: "EXTERNAL Lange Matthias (AA-DGW/ENG1)" <Matthias.Lange@beissbarth.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Wed, 5 Aug 2009 09:16:58 +0200
+Subject: Spansion S25FL128-Flash and MTD
+Message-ID: <44C5CFA72BC0E242A53B64DC1E67DEB80FB989659B@SI-MBX10.de.bosch.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,206 +34,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds max_direct_dma_addr to struct dev_archdata to remove
-addr_needs_map in struct dma_mapping_ops. It also converts
-dma_capable() to use max_direct_dma_addr.
+Hi,
 
-max_direct_dma_addr is initialized in pci_dma_dev_setup_swiotlb(),
-called via ppc_md.pci_dma_dev_setup hook.
+I am trying to get a MTD running on my embedded PowerPC board. I am using a=
+ Xilinx Virtex4 with an embedded PowerPC 405. In the FPGA there is a Xilinx=
+ SPI controller implemented to which a Spansion S25FL128 SPI-flash (16MB) i=
+s connected.
 
-For further information:
-http://marc.info/?t=124719060200001&r=1&w=2
+The problem is that with my setup the flash chips gets not detected and the=
+ MTD partitions won't be setup.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Acked-by: Becky Bruce <beckyb@kernel.crashing.org>
----
- arch/powerpc/include/asm/device.h          |    3 ++
- arch/powerpc/include/asm/dma-mapping.h     |    8 +++---
- arch/powerpc/include/asm/swiotlb.h         |    5 +--
- arch/powerpc/kernel/dma-swiotlb.c          |   36 +++++++++++----------------
- arch/powerpc/platforms/85xx/mpc8536_ds.c   |    1 +
- arch/powerpc/platforms/85xx/mpc85xx_ds.c   |    1 +
- arch/powerpc/platforms/85xx/mpc85xx_mds.c  |    1 +
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 +
- 8 files changed, 28 insertions(+), 28 deletions(-)
+In the kernel config I have configured the following options:
 
-diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
-index 7d2277c..0086f8d 100644
---- a/arch/powerpc/include/asm/device.h
-+++ b/arch/powerpc/include/asm/device.h
-@@ -16,6 +16,9 @@ struct dev_archdata {
- 	/* DMA operations on that device */
- 	struct dma_mapping_ops	*dma_ops;
- 	void			*dma_data;
-+#ifdef CONFIG_SWIOTLB
-+	dma_addr_t		max_direct_dma_addr;
-+#endif
- };
- 
- static inline void dev_archdata_set_node(struct dev_archdata *ad,
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 0c34371..1765c37 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -87,8 +87,6 @@ struct dma_mapping_ops {
- 				dma_addr_t dma_address, size_t size,
- 				enum dma_data_direction direction,
- 				struct dma_attrs *attrs);
--	int		(*addr_needs_map)(struct device *dev, dma_addr_t addr,
--				size_t size);
- #ifdef CONFIG_PPC_NEED_DMA_SYNC_OPS
- 	void            (*sync_single_range_for_cpu)(struct device *hwdev,
- 				dma_addr_t dma_handle, unsigned long offset,
-@@ -426,10 +424,12 @@ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- 
- static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
- {
--	struct dma_mapping_ops *ops = get_dma_ops(dev);
-+#ifdef CONFIG_SWIOTLB
-+	struct dev_archdata *sd = &dev->archdata;
- 
--	if (ops->addr_needs_map && ops->addr_needs_map(dev, addr, size))
-+	if (sd->max_direct_dma_addr && addr + size > sd->max_direct_dma_addr)
- 		return 0;
-+#endif
- 
- 	if (!dev->dma_mask)
- 		return 0;
-diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
-index 30891d6..31e0e43 100644
---- a/arch/powerpc/include/asm/swiotlb.h
-+++ b/arch/powerpc/include/asm/swiotlb.h
-@@ -16,12 +16,11 @@
- extern struct dma_mapping_ops swiotlb_dma_ops;
- extern struct dma_mapping_ops swiotlb_pci_dma_ops;
- 
--int swiotlb_arch_address_needs_mapping(struct device *, dma_addr_t,
--				       size_t size);
--
- static inline void dma_mark_clean(void *addr, size_t size) {}
- 
- extern unsigned int ppc_swiotlb_enable;
- int __init swiotlb_setup_bus_notifier(void);
- 
-+extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
-+
- #endif /* __ASM_SWIOTLB_H */
-diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-index e8a57de..c9f6a30 100644
---- a/arch/powerpc/kernel/dma-swiotlb.c
-+++ b/arch/powerpc/kernel/dma-swiotlb.c
-@@ -25,26 +25,6 @@ int swiotlb __read_mostly;
- unsigned int ppc_swiotlb_enable;
- 
- /*
-- * Determine if an address is reachable by a pci device, or if we must bounce.
-- */
--static int
--swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
--{
--	dma_addr_t max;
--	struct pci_controller *hose;
--	struct pci_dev *pdev = to_pci_dev(hwdev);
--
--	hose = pci_bus_to_host(pdev->bus);
--	max = hose->dma_window_base_cur + hose->dma_window_size;
--
--	/* check that we're within mapped pci window space */
--	if ((addr + size > max) | (addr < hose->dma_window_base_cur))
--		return 1;
--
--	return 0;
--}
--
--/*
-  * At the moment, all platforms that use this code only require
-  * swiotlb to be used if we're operating on HIGHMEM.  Since
-  * we don't ever call anything other than map_sg, unmap_sg,
-@@ -73,22 +53,36 @@ struct dma_mapping_ops swiotlb_pci_dma_ops = {
- 	.dma_supported = swiotlb_dma_supported,
- 	.map_page = swiotlb_map_page,
- 	.unmap_page = swiotlb_unmap_page,
--	.addr_needs_map = swiotlb_pci_addr_needs_map,
- 	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
- 	.sync_single_range_for_device = swiotlb_sync_single_range_for_device,
- 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
- 	.sync_sg_for_device = swiotlb_sync_sg_for_device
- };
- 
-+void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
-+{
-+	struct pci_controller *hose;
-+	struct dev_archdata *sd;
-+
-+	hose = pci_bus_to_host(pdev->bus);
-+	sd = &pdev->dev.archdata;
-+	sd->max_direct_dma_addr =
-+		hose->dma_window_base_cur + hose->dma_window_size;
-+}
-+
- static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
- 				  unsigned long action, void *data)
- {
- 	struct device *dev = data;
-+	struct dev_archdata *sd;
- 
- 	/* We are only intereted in device addition */
- 	if (action != BUS_NOTIFY_ADD_DEVICE)
- 		return 0;
- 
-+	sd = &dev->archdata;
-+	sd->max_direct_dma_addr = 0;
-+
- 	/* May need to bounce if the device can't address all of DRAM */
- 	if (dma_get_mask(dev) < lmb_end_of_DRAM())
- 		set_dma_ops(dev, &swiotlb_dma_ops);
-diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-index 055ff41..bf052c0 100644
---- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-@@ -97,6 +97,7 @@ static void __init mpc8536_ds_setup_arch(void)
- 	if (lmb_end_of_DRAM() > max) {
- 		ppc_swiotlb_enable = 1;
- 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
-+		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
- 	}
- #endif
- 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 849c0ac..c6f92cc 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -193,6 +193,7 @@ static void __init mpc85xx_ds_setup_arch(void)
- 	if (lmb_end_of_DRAM() > max) {
- 		ppc_swiotlb_enable = 1;
- 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
-+		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
- 	}
- #endif
- 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index bfb3283..e1f82f8 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -255,6 +255,7 @@ static void __init mpc85xx_mds_setup_arch(void)
- 	if (lmb_end_of_DRAM() > max) {
- 		ppc_swiotlb_enable = 1;
- 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
-+		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
- 	}
- #endif
- }
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 6632702..8032301 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -106,6 +106,7 @@ mpc86xx_hpcn_setup_arch(void)
- 	if (lmb_end_of_DRAM() > max) {
- 		ppc_swiotlb_enable = 1;
- 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
-+		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
- 	}
- #endif
- }
--- 
-1.6.0.6
+In the device drivers section:
+[x] SPI support
+        [x] Xilinx SPI controller
+[x] Memory Technology Device (MTD) support
+        [x] MTD partitioning support
+        [x] Flash partition map based on OF description
+        RAM/ROM/Flash chip drivers
+                [x] Detect non-CFI AMD/JEDEC-compatible flash chips
+        Self-contained MTD device drivers
+                [x] Support most SPI Flash chips (AT26DF, M25P, W25X, ...)
+
+As filesystem I have configured JFFS2.
+
+In my device tree I have declared the SPI controller and the connected flas=
+h as follows:
+
+SPI_Flash: xps-spi@83400000 {
+        compatible =3D "xlnx,xps-spi-2.00.b";
+        interrupt-parent =3D <&int_ctrl>;
+        interrupts =3D < 3 2 >;
+        reg =3D < 0x83400000 0x10000 >;
+        xlnx,family =3D "virtex4";
+        xlnx,fifo-exist =3D <0x0>;
+        xlnx,num-offchip-ss-bits =3D <0x1>;
+        xlnx,num-ss-bits =3D <0x1>;
+        xlnx,sck-ratio =3D <0x20>;
+        #address-cells =3D <1>;
+        #size-cells =3D <1>;
+        nor_flash@0,1000000 {
+                compatible =3D "amd,s25sl12800", "jedec-flash";
+                reg =3D <0x0 0x1000000>;
+                spi-max-frequency =3D <25000000>;
+                bank-width =3D <1>;
+                device-width =3D <1>;
+                #address-cells =3D <1>;
+                #size-cells =3D <1>;
+                rootfs@800000 {
+                        label =3D "rootfs";
+                        reg =3D <0x800000 0x800000>;
+                };
+        };
+};
+
+When the kernel boots I can see from the console that the drivers for JFFS2=
+ and the SPI controller get successfully loaded:
+
+...
+JFFS2 version 2.2. (NAND) (c) 2001-2006 Red Hat, Inc.
+...
+xilinx-xps-spi 83400000.xps-spi: at 0x83400000 mapped to 0xC9060000, irq=3D=
+17
+...
+
+While debugging the boot process I couldn't see any calls to jedec_probe() =
+resp. m25p_probe() from m25p80.c which to my understanding should be called=
+ in result to a successfull match of my compatible property (jedec-flash).
+
+The question is: What am I missing? Is there a problem with my device tree =
+definition? What else am I doing wrong?
+
+Any help is appreciated. Regards,
+Matthias.
