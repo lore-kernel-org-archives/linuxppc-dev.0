@@ -2,14 +2,15 @@ Return-Path: <fujita.tomonori@lab.ntt.co.jp>
 Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 35DABB7B68
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3E25AB7C21
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Aug 2009 15:10:14 +1000 (EST)
+	Wed,  5 Aug 2009 15:10:16 +1000 (EST)
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org
-Subject: [PATCH -v2 7/7] powerpc: add CONFIG_DMA_API_DEBUG support
-Date: Wed,  5 Aug 2009 14:08:28 +0900
-Message-Id: <1249448908-18985-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH -v2 1/7] powerpc: remove addr_needs_map in struct
+	dma_mapping_ops
+Date: Wed,  5 Aug 2009 14:08:22 +0900
+Message-Id: <1249448908-18985-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 In-Reply-To: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org,
@@ -23,81 +24,206 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/powerpc/Kconfig                   |    1 +
- arch/powerpc/include/asm/dma-mapping.h |   11 ++++++++++-
- arch/powerpc/kernel/dma.c              |   11 +++++++++++
- 3 files changed, 22 insertions(+), 1 deletions(-)
+This patch adds max_direct_dma_addr to struct dev_archdata to remove
+addr_needs_map in struct dma_mapping_ops. It also converts
+dma_capable() to use max_direct_dma_addr.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index fb3f4ff..4459b78 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -121,6 +121,7 @@ config PPC
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_LMB
- 	select HAVE_DMA_ATTRS
-+	select HAVE_DMA_API_DEBUG
- 	select USE_GENERIC_SMP_HELPERS if SMP
- 	select HAVE_OPROFILE
- 	select HAVE_SYSCALL_WRAPPERS if PPC64
+max_direct_dma_addr is initialized in pci_dma_dev_setup_swiotlb(),
+called via ppc_md.pci_dma_dev_setup hook.
+
+For further information:
+http://marc.info/?t=124719060200001&r=1&w=2
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Acked-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/device.h          |    3 ++
+ arch/powerpc/include/asm/dma-mapping.h     |    8 +++---
+ arch/powerpc/include/asm/swiotlb.h         |    5 +--
+ arch/powerpc/kernel/dma-swiotlb.c          |   36 +++++++++++----------------
+ arch/powerpc/platforms/85xx/mpc8536_ds.c   |    1 +
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c   |    1 +
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c  |    1 +
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 +
+ 8 files changed, 28 insertions(+), 28 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index 7d2277c..0086f8d 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -16,6 +16,9 @@ struct dev_archdata {
+ 	/* DMA operations on that device */
+ 	struct dma_mapping_ops	*dma_ops;
+ 	void			*dma_data;
++#ifdef CONFIG_SWIOTLB
++	dma_addr_t		max_direct_dma_addr;
++#endif
+ };
+ 
+ static inline void dev_archdata_set_node(struct dev_archdata *ad,
 diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 4bd41b4..cb2ca41 100644
+index 0c34371..1765c37 100644
 --- a/arch/powerpc/include/asm/dma-mapping.h
 +++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -127,9 +127,15 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- 				       dma_addr_t *dma_handle, gfp_t flag)
+@@ -87,8 +87,6 @@ struct dma_mapping_ops {
+ 				dma_addr_t dma_address, size_t size,
+ 				enum dma_data_direction direction,
+ 				struct dma_attrs *attrs);
+-	int		(*addr_needs_map)(struct device *dev, dma_addr_t addr,
+-				size_t size);
+ #ifdef CONFIG_PPC_NEED_DMA_SYNC_OPS
+ 	void            (*sync_single_range_for_cpu)(struct device *hwdev,
+ 				dma_addr_t dma_handle, unsigned long offset,
+@@ -426,10 +424,12 @@ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ 
+ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
  {
- 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
-+	void *cpu_addr;
+-	struct dma_mapping_ops *ops = get_dma_ops(dev);
++#ifdef CONFIG_SWIOTLB
++	struct dev_archdata *sd = &dev->archdata;
  
- 	BUG_ON(!dma_ops);
--	return dma_ops->alloc_coherent(dev, size, dma_handle, flag);
+-	if (ops->addr_needs_map && ops->addr_needs_map(dev, addr, size))
++	if (sd->max_direct_dma_addr && addr + size > sd->max_direct_dma_addr)
+ 		return 0;
++#endif
+ 
+ 	if (!dev->dma_mask)
+ 		return 0;
+diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
+index 30891d6..31e0e43 100644
+--- a/arch/powerpc/include/asm/swiotlb.h
++++ b/arch/powerpc/include/asm/swiotlb.h
+@@ -16,12 +16,11 @@
+ extern struct dma_mapping_ops swiotlb_dma_ops;
+ extern struct dma_mapping_ops swiotlb_pci_dma_ops;
+ 
+-int swiotlb_arch_address_needs_mapping(struct device *, dma_addr_t,
+-				       size_t size);
+-
+ static inline void dma_mark_clean(void *addr, size_t size) {}
+ 
+ extern unsigned int ppc_swiotlb_enable;
+ int __init swiotlb_setup_bus_notifier(void);
+ 
++extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
 +
-+	cpu_addr = dma_ops->alloc_coherent(dev, size, dma_handle, flag);
-+
-+	debug_dma_alloc_coherent(dev, size, *dma_handle, cpu_addr);
-+
-+	return cpu_addr;
- }
+ #endif /* __ASM_SWIOTLB_H */
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index e8a57de..c9f6a30 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -25,26 +25,6 @@ int swiotlb __read_mostly;
+ unsigned int ppc_swiotlb_enable;
  
- static inline void dma_free_coherent(struct device *dev, size_t size,
-@@ -138,6 +144,9 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
- 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
- 
- 	BUG_ON(!dma_ops);
-+
-+	debug_dma_free_coherent(dev, size, cpu_addr, dma_handle);
-+
- 	dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
- }
- 
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index 3e8bb9a..c6d730e 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -7,6 +7,7 @@
- 
- #include <linux/device.h>
- #include <linux/dma-mapping.h>
-+#include <linux/dma-debug.h>
- #include <asm/bug.h>
- #include <asm/abs_addr.h>
- 
-@@ -156,3 +157,13 @@ struct dma_map_ops dma_direct_ops = {
- #endif
+ /*
+- * Determine if an address is reachable by a pci device, or if we must bounce.
+- */
+-static int
+-swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
+-{
+-	dma_addr_t max;
+-	struct pci_controller *hose;
+-	struct pci_dev *pdev = to_pci_dev(hwdev);
+-
+-	hose = pci_bus_to_host(pdev->bus);
+-	max = hose->dma_window_base_cur + hose->dma_window_size;
+-
+-	/* check that we're within mapped pci window space */
+-	if ((addr + size > max) | (addr < hose->dma_window_base_cur))
+-		return 1;
+-
+-	return 0;
+-}
+-
+-/*
+  * At the moment, all platforms that use this code only require
+  * swiotlb to be used if we're operating on HIGHMEM.  Since
+  * we don't ever call anything other than map_sg, unmap_sg,
+@@ -73,22 +53,36 @@ struct dma_mapping_ops swiotlb_pci_dma_ops = {
+ 	.dma_supported = swiotlb_dma_supported,
+ 	.map_page = swiotlb_map_page,
+ 	.unmap_page = swiotlb_unmap_page,
+-	.addr_needs_map = swiotlb_pci_addr_needs_map,
+ 	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
+ 	.sync_single_range_for_device = swiotlb_sync_single_range_for_device,
+ 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
+ 	.sync_sg_for_device = swiotlb_sync_sg_for_device
  };
- EXPORT_SYMBOL(dma_direct_ops);
-+
-+#define PREALLOC_DMA_DEBUG_ENTRIES (1 << 16)
-+
-+static int __init dma_init(void)
+ 
++void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
 +{
-+       dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
++	struct pci_controller *hose;
++	struct dev_archdata *sd;
 +
-+       return 0;
++	hose = pci_bus_to_host(pdev->bus);
++	sd = &pdev->dev.archdata;
++	sd->max_direct_dma_addr =
++		hose->dma_window_base_cur + hose->dma_window_size;
 +}
-+fs_initcall(dma_init);
++
+ static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
+ 				  unsigned long action, void *data)
+ {
+ 	struct device *dev = data;
++	struct dev_archdata *sd;
+ 
+ 	/* We are only intereted in device addition */
+ 	if (action != BUS_NOTIFY_ADD_DEVICE)
+ 		return 0;
+ 
++	sd = &dev->archdata;
++	sd->max_direct_dma_addr = 0;
++
+ 	/* May need to bounce if the device can't address all of DRAM */
+ 	if (dma_get_mask(dev) < lmb_end_of_DRAM())
+ 		set_dma_ops(dev, &swiotlb_dma_ops);
+diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+index 055ff41..bf052c0 100644
+--- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+@@ -97,6 +97,7 @@ static void __init mpc8536_ds_setup_arch(void)
+ 	if (lmb_end_of_DRAM() > max) {
+ 		ppc_swiotlb_enable = 1;
+ 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
++		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+ 	}
+ #endif
+ 
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index 849c0ac..c6f92cc 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -193,6 +193,7 @@ static void __init mpc85xx_ds_setup_arch(void)
+ 	if (lmb_end_of_DRAM() > max) {
+ 		ppc_swiotlb_enable = 1;
+ 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
++		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+ 	}
+ #endif
+ 
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index bfb3283..e1f82f8 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -255,6 +255,7 @@ static void __init mpc85xx_mds_setup_arch(void)
+ 	if (lmb_end_of_DRAM() > max) {
+ 		ppc_swiotlb_enable = 1;
+ 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
++		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+ 	}
+ #endif
+ }
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index 6632702..8032301 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -106,6 +106,7 @@ mpc86xx_hpcn_setup_arch(void)
+ 	if (lmb_end_of_DRAM() > max) {
+ 		ppc_swiotlb_enable = 1;
+ 		set_pci_dma_ops(&swiotlb_pci_dma_ops);
++		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+ 	}
+ #endif
+ }
 -- 
 1.6.0.6
