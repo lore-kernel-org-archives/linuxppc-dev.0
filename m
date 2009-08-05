@@ -1,40 +1,49 @@
-Return-Path: <sachinp@in.ibm.com>
+Return-Path: <mohan@in.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1EB6AB6F1F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 42764B7063
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Aug 2009 01:33:55 +1000 (EST)
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [59.145.155.8])
+	Thu,  6 Aug 2009 02:49:58 +1000 (EST)
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [59.145.155.7])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 398D6DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 01:33:52 +1000 (EST)
+	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5A4B5DDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 02:49:55 +1000 (EST)
 Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp08.in.ibm.com (8.14.3/8.13.1) with ESMTP id n75FT69i007869
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 20:59:06 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+	by e28smtp07.in.ibm.com (8.14.3/8.13.1) with ESMTP id n75Gnkql009158
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 22:19:46 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
 	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n75FXk0o1151046
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 21:03:46 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n75FXj7Z013270
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2009 01:33:46 +1000
-Message-ID: <4A79A658.8000105@in.ibm.com>
-Date: Wed, 05 Aug 2009 21:03:44 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+	n75GnkmE1417298
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 22:19:46 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n75GnjgP025490
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Aug 2009 22:19:46 +0530
+Date: Wed, 5 Aug 2009 22:19:38 +0530
+From: "M. Mohan Kumar" <mohan@in.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Do not inline putprops function
+Message-ID: <20090805164938.GA2970@in.ibm.com>
+References: <1245241595.4269.15.camel@concordia>
+	<20090617130413.GB2774@localhost.localdomain>
+	<20090617133435.GB4059@in.ibm.com>
+	<20090617140514.GB31383@hmsreliant.think-freely.org>
+	<20090617142652.GC4059@in.ibm.com>
+	<20090617144007.GC31383@hmsreliant.think-freely.org>
+	<20090623125534.GA8664@in.ibm.com>
+	<20090623135604.GC1157@hmsreliant.think-freely.org>
+	<1245803263.9237.3.camel@concordia>
+	<20090803054919.GA19594@in.ibm.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Next July 29 : Hugetlb test failure (OOPS free_hugepte_range)
-References: <20090729173611.b82478cd.sfr@canb.auug.org.au>
-	<4A706504.6040704@in.ibm.com>
-	<E0A64FA0-C835-4361-A203-E9CB5377599C@kernel.crashing.org>
-In-Reply-To: <E0A64FA0-C835-4361-A203-E9CB5377599C@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090803054919.GA19594@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Neil Horman <nhorman@redhat.com>,
+	Simon Horman <horms@verge.net.au>, kexec@lists.infradead.org,
+	miltonm@bga.com
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,32 +53,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->
-> On Jul 29, 2009, at 10:04 AM, Sachin Sant wrote:
->
->> While executing hugetlb tests against today's Next tree on
->> a Power 6 box came across following OOPS.
->
-> out of interest what tests are you running for hugetlb?
-The one maintained at : http://libhugetlbfs.ozlabs.org/ which points
-to the sourceforge libhugetlbfs project.
+Hi,
 
-Latest release can be downloaded from sourceforge using
-http://sourceforge.net/projects/libhugetlbfs/files/
+When I align the dtstruct variable to 8 bytes, I am able to invoke kdump.
 
-I am using version 2.5
+When the line
+	static unsigned dtstruct[TREEWORDS], *dt;
+changed to 
+	static unsigned dtstruct[TREEWORDS] __attribute__ ((aligned (8))), *dt;
 
-Thanks
--Sachin
+kexec-tool works.
 
+Regards,
+M. Mohan Kumar
 
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+On Mon, Aug 03, 2009 at 11:19:19AM +0530, M. Mohan Kumar wrote:
+> On Wed, Jun 24, 2009 at 10:27:43AM +1000, Michael Ellerman wrote:
+> > On Tue, 2009-06-23 at 09:56 -0400, Neil Horman wrote:
+> > > On Tue, Jun 23, 2009 at 06:25:34PM +0530, M. Mohan Kumar wrote:
+> > > > 
+> > > Well it definately looks like removing that variable had some code changes.
+> > > It'll take some time to match it up to source, but Most interesting I think is
+> > > the variance in putprops around address f34.  Looks like its doing some string
+> > > maniuplation in a reversed order, using a huge offset.  Might be worthwhile to
+> > > check to see if theres any string overruns in this code.
+> > 
+> > Yeah I still suspect it's just a bug in the code that's being exposed
+> > now.
+> > 
+> Hi,
+> 
+> The same code works with gcc-3.4.
+> 
+> > Mohan, can you try running it under valgrind?
+> 
+> Still I am not able to use valgrind to debug kexec-tools
+> 
+> Regards,
+> M. Mohan Kumar.
+> 
+> 
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
