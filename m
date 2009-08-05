@@ -1,23 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 566BFB6F1E
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E031CB7099
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 Aug 2009 11:12:02 +1000 (EST)
-Subject: Re: BUG in dma-mapping.h:218 // MESH SCSI driver not working
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090805100424U.fujita.tomonori@lab.ntt.co.jp>
-References: <1248915149.1509.29.camel@pasglop> <4A7553E7.6030804@scarlet.be>
-	<1249254817.18245.1.camel@pasglop>
-	<20090805100424U.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Wed, 05 Aug 2009 11:11:50 +1000
-Message-Id: <1249434710.18245.48.camel@pasglop>
-Mime-Version: 1.0
-Cc: James.Bottomley@HansenPartnership.com, linuxppc-dev@lists.ozlabs.org,
-	linux-scsi@vger.kernel.org, stef.simoens@scarlet.be
+	Wed,  5 Aug 2009 11:13:03 +1000 (EST)
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id ABA3DDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Aug 2009 11:13:02 +1000 (EST)
+Date: Wed, 5 Aug 2009 05:06:20 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 1/7] spi: Add support for device table matching
+Message-ID: <20090805010620.GB14451@oksana.dev.rtsoft.ru>
+References: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
+	<20090729170457.GA4803@oksana.dev.rtsoft.ru>
+	<20090729214446.GB1728@fluff.org.uk>
+	<200908031921.23126.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200908031921.23126.david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +36,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-08-05 at 10:04 +0900, FUJITA Tomonori wrote:
+On Mon, Aug 03, 2009 at 07:21:22PM -0700, David Brownell wrote:
+> On Wednesday 29 July 2009, Ben Dooks wrote:
+> > >  struct spi_driver {
+> > > +     const struct spi_device_id *id_table;
+> > > +     int                     (*probe_id)(struct spi_device *spi,
+> > > +                                         const struct spi_device_id *id);
+> > 
+> > how about leaving it at just probe and have either a call or a field
+> > in the device that you can look at to see if this was a new style of
+> > call?
+> > 
+> > >       int                     (*probe)(struct spi_device *spi);
 > 
-> Looks like that READ CAPACITY fails. We use kmalloc'ed buffer for READ
-> CAPACITY so I'm not sure about an alignment issue that you mentioned
-> in this thread earlier.
-> 
-> You said your machine with a MESH appears to work. Did you confirm it?
-> 
-Not yet. It's a fishy machine that needs other patches to get back to
-working condition, I haven't had time yet (everybody's sick at home so
-I've been mostly off the office and the machine is there).
+> For the record, if this is going to happen I think the
+> appropriate long-term solution is to have probe() take
+> the device_id just as it does with other busses.
 
-I'm pretty sure the MESH will have issues though if the DMA buffers
-aren't at least 16 (or maybe it's 32) bytes aligned. I don't think it's
-a cache alignment issue, I suspect it's an issue with the DBDMA engine
-queue on those chips though (it -could- be cache coherency bugs too,
-never know with those old Apple home made chipsets).
+Just curious. Why you prefer another argument in the probe()
+instead of calling some helper function? Most drivers don't
+need the "id" argument, so why spend memory and cpu cycles
+for it?
 
-I remember we had problems in the past with IDENTIFY iirc, which would
-work normally as kmalloc() would return something cache line aligned...
-until one enabled SLAB debugging.
-
-Cheers,
-Ben.
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
