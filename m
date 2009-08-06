@@ -1,28 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <akpm@linux-foundation.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 063BBB6F2B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 48408B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 08:23:28 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Fri,  7 Aug 2009 09:00:44 +1000 (EST)
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 57A77DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 08:23:27 +1000 (EST)
-Subject: Re: 2.6.31-rc5-git2 crash [net/core/flow.c:flow_cache_new_hashrnd]
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1249395350.8016.5.camel@concordia>
-References: <4A78292A.5000607@in.ibm.com>  <4A783B1F.7000602@in.ibm.com>
-	<1249395350.8016.5.camel@concordia>
-Content-Type: text/plain
-Date: Fri, 07 Aug 2009 08:23:05 +1000
-Message-Id: <1249597385.24311.10.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
-	linuxppc-dev@ozlabs.org
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A56D1DDDA0
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 09:00:43 +1000 (EST)
+Message-Id: <200908062300.n76N0bnS028871@imap1.linux-foundation.org>
+Subject: [patch 2/3] powerpc/fsl-booke: read buffer overflow
+To: benh@kernel.crashing.org
+From: akpm@linux-foundation.org
+Date: Thu, 06 Aug 2009 16:00:37 -0700
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, roel.kluin@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-08-05 at 00:15 +1000, Michael Ellerman wrote:
+From: Roel Kluin <roel.kluin@gmail.com>
 
-> > c000000000600000  00001010      .long 0x1010
-> > 0:mon>
-> > c000000000600004  00000008      .long 0x8
-> > c000000000600008  00001013      .long 0x1013
-> > c00000000060000c  0000000f      .long 0xf
-> > c000000000600010  7961626f      rldimi. r1,r11,44,41
-> > c000000000600014  6f740000      xoris   r20,r27,0
-> > c000000000600018  00101600      .long 0x101600
-> > c00000000060001c  00000c00      .long 0xc00
-> > c000000000600020  00000400      .long 0x400
-> > c000000000600024  00101100      .long 0x101100
-> > c000000000600028  000008e9      .long 0x8e9
+cam[tlbcam_index] is checked before tlbcam_index < ARRAY_SIZE(cam)
 
-BTW. Corruption looks like bi_recs... ie, broken yaboot. This was fixed
-recently, yaboot would eventually crap over the kernel for certain sizes
-of the kernel image.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-0x1010 = BI_FIRST
-0x1013 = BI_BOOTLOADER_ID followed by 0x7961626f6f74 which is
-"yaboot" :-)
-0x1016 = BI_MACHTYPE
+ arch/powerpc/mm/fsl_booke_mmu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-etc...
-
-Cheers,
-Ben.
+diff -puN arch/powerpc/mm/fsl_booke_mmu.c~powerpc-fsl-booke-read-buffer-overflow arch/powerpc/mm/fsl_booke_mmu.c
+--- a/arch/powerpc/mm/fsl_booke_mmu.c~powerpc-fsl-booke-read-buffer-overflow
++++ a/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -161,7 +161,7 @@ unsigned long __init mmu_mapin_ram(void)
+ 	unsigned long virt = PAGE_OFFSET;
+ 	phys_addr_t phys = memstart_addr;
+ 
+-	while (cam[tlbcam_index] && tlbcam_index < ARRAY_SIZE(cam)) {
++	while (tlbcam_index < ARRAY_SIZE(cam) && cam[tlbcam_index]) {
+ 		settlbcam(tlbcam_index, virt, phys, cam[tlbcam_index], PAGE_KERNEL_X, 0);
+ 		virt += cam[tlbcam_index];
+ 		phys += cam[tlbcam_index];
+_
