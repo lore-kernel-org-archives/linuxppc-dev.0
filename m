@@ -1,25 +1,40 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from viefep32-int.chello.at (viefep32-int.chello.at [62.179.121.50])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id A51E5B6F1F
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A1598B6F2B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 01:14:47 +1000 (EST)
-Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: svaidy@linux.vnet.ibm.com
-In-Reply-To: <20090806043351.GC14333@dirshya.in.ibm.com>
-References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
-	<20090806015855.GA20596@sli10-desk.sh.intel.com>
-	<20090806043351.GC14333@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Thu, 06 Aug 2009 17:03:18 +0200
-Message-Id: <1249570998.32113.499.camel@twins>
+	Fri,  7 Aug 2009 01:55:11 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 382F0DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 01:55:09 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n76FsoJp000931
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2009 08:55:00 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n76FsnWc002906
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2009 10:54:49 -0500 (CDT)
+Date: Thu, 6 Aug 2009 10:54:48 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kenneth Johansson <kenneth@southpole.se>
+Subject: Re: kexec on e300 core / mpc5121
+Message-ID: <20090806155448.GB31581@b07421-ec1.am.freescale.net>
+References: <20090804230605.GA28753@Chamillionaire.breakpoint.cc>
+	<1249512585.13069.9.camel@localhost>
+	<20090805234737.GA26183@b07421-ec1.am.freescale.net>
+	<1249518050.13069.21.camel@localhost>
 Mime-Version: 1.0
-Cc: "Brown, Len" <len.brown@intel.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-	Shaohua Li <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"Darrick J. Wong" <djwong@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1249518050.13069.21.camel@localhost>
+Cc: linuxppc-dev@ozlabs.org,
+	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,12 +44,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-08-06 at 10:03 +0530, Vaidyanathan Srinivasan wrote:
-> This was the
-> main objection to Venki's deepest sleep state for offline cpus patch.
+On Thu, Aug 06, 2009 at 02:20:50AM +0200, Kenneth Johansson wrote:
+> > > Before you turn off the cache you need to flush out all dirty data. best
+> > > done by simply reading in 32kb of crap from somewhere. otherwise you are
+> > > sure to loose at least the stack and you do not want that.
+> > 
+> > 32KiB is usually not sufficient -- depending on the initial state, an
+> > 8-way 32KiB cache with PLRU (such as in e300) can require up to 52KiB of
+> > data (13 loads per set) to fully flush if you simply load+dcbf (in
+> > separate passes) an arbitrary chunk of data which may already be in the
+> > cache.
+> 
+> if you have 
+> int crap[1024*32/4] __attribute__((aligned(32)))
+> 
+> What will happen with the cache if you just load data into a register
+> from that array ?? Wont it force out everything else in the cache to
+> make room for the crap ? 
 
-Well, my main objection was that is was a single raw function pointer
-without any management layer around it.
+Under certain circumstances, the newly loaded flush data will replace
+previous flush data rather than the actual data you're trying to displace
+-- especially if some of the "crap" is already in the cache, or if there
+were some empty cache lines at the start of the process.  It's not a true
+LRU.
 
-We have the exact same mess with the idle routine - and that has bitten
-us in the past.
+If you read 52K, and then dcbf that same 52K, with interrupts disabled
+(they can disturb the PLRU), you should be OK.  It doesn't even need to
+be dedicated junk, any memory will work.
+
+-Scott
