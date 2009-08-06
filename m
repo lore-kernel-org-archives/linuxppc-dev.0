@@ -1,22 +1,30 @@
-Return-Path: <Frank.Prepelica@ubidyne.com>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 966C4B6F20
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2505CB6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Aug 2009 17:56:12 +1000 (EST)
-Received: from mail.ubidyne.com (mail.ubidyne.com [212.211.133.238])
-	by ozlabs.org (Postfix) with ESMTP id AB269DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 17:56:09 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: uio driver cannot be registered to uio subsystem
-Date: Thu, 6 Aug 2009 09:56:06 +0200
-Message-ID: <29DC34A6B43468409F5A371CFE34E849DFCBD0@ex01.ads.ubidyne.de>
-From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
-To: <linuxppc-dev@ozlabs.org>
+	Thu,  6 Aug 2009 21:03:08 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 13658DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 21:03:08 +1000 (EST)
+Subject: Re: [PATCH] powerpc/perfctr: Check oprofile_cpu_type for NULL
+	before using it
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1249531356.18245.73.camel@pasglop>
+References: <1249531356.18245.73.camel@pasglop>
+Content-Type: text/plain
+Date: Thu, 06 Aug 2009 21:03:06 +1000
+Message-Id: <1249556586.4800.79.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>,
+	Paul Mackerras <paulus@samba.org>, David Woodhouse <dwmw2@infradead.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,136 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi everbody,
+On Thu, 2009-08-06 at 14:02 +1000, Benjamin Herrenschmidt wrote:
+> If the current CPU doesn't support performance counters,
+> cur_cpu_spec->oprofile_cpu_type can be NULL. The current
+> perfctr modules don't test for that case and would thus
+> crash.
 
-I've got an custom uio interrupt driver. The driver will be registered
-as platfrom driver.
+> +	if (!cur_cpu_spec->oprofile_cpu_type ||
+..
+> +	if (!cur_cpu_spec->oprofile_cpu_type ||
+..
+> +	if (!cur_cpu_spec->oprofile_cpu_type ||
+..
+> +	if (!cur_cpu_spec->oprofile_cpu_type ||
+..
+> +	if (!cur_cpu_spec->oprofile_cpu_type ||
+..
+> +	if (!cur_cpu_spec->oprofile_cpu_type ||
+..
+> +	if (!cur_cpu_spec->oprofile_cpu_type ||
 
-static int __init uio_irq3_init(void)
-{
-   return platform_driver_register(&uio_irq3_driver);
-}
+Typing it seven times didn't make you think "how about a helper?" :)
 
-After starting the kernel the driver is registered under
-/sys/bus/platform/drivers. (I guess this is supposed to happen)
-BUT as I can see the uio_irq3_probe() function isn't called and
-therefore the driver will not be registered to the
-UIO subsystem! (there are no devices in /sys/class/)
+Perhaps:
 
-What went wrong? Which process is responsible for calling the probe
-function?=20
-
-I also tried to compile the uio drivers which are provided by the kernel
-itself. But after starting the kernel not one of these drivers appears
-in /sys/class/ too!=20
-
-Can anybody please tell what I am doing wrong? Pls see below, too!
-
-Thanks in advance!
-Kind regrads
-
-Frank Prepelica
-Software Design Engineer
-
-Ubidyne GmbH
-Lise-Meitner-Str.-14
-89081 Ulm - Germany
-
-
-Here is the code for the driver if needed!
-<------- snip
-
-#include <linux/uio_driver.h>
-#include <linux/platform_device.h>
-#include <linux/module.h>
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cput
+index 80f315e..956cbc3 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -123,6 +123,11 @@ struct cpu_spec {
+ 
+ extern struct cpu_spec         *cur_cpu_spec;
+ 
++static inline int oprofile_cpu_type_matches(const char *s)
++{
++       return s && (strcmp(cur_cpu_spec->oprofile_cpu_type, s) == 0);
++}
++
+ extern unsigned int __start___ftr_fixup, __stop___ftr_fixup;
+ 
+ extern struct cpu_spec *identify_cpu(unsigned long offset, unsigned int pvr);
 
 
-struct uio_pdrv_irq3 {
-	struct uio_info *uioinfo;
-	spinlock_t lock;
-	unsigned long flags;
-};
+And then callsites become:
+
+ static int init_mpc7450_pmu(void)
+ {
+        if (!oprofile_cpu_type_matches("ppc/7450"))
+                return -ENODEV;
 
 
-static irqreturn_t interrupt_handler_irq3(int irq, struct uio_info
-*dev_info)
-{
-	eturn IRQ_HANDLED;
-}
-
-
-static int uio_irq3_irqcontrol(struct uio_info *dev_info, s32 irq_on)
-{
-    printk("IRQCONTROL");
-    return 0;
-}
-
-
-static int uio_irq3_probe(struct platform_device *pdev)
-{
-	struct uio_info *uioinfo =3D pdev->dev.platform_data;
-	struct uio_pdrv_irq3 *priv;
-	int ret =3D -EINVAL;   =20
-   =20
-	priv =3D kzalloc(sizeof(*priv), GFP_KERNEL);
-	if (!priv) {
-		ret =3D -ENOMEM;
-		dev_err(&pdev->dev, "unable to kmalloc\n");
-		goto bad0;
-	}   =20
-   =20
-    priv->uioinfo =3D uioinfo;
-    priv->flags =3D 0;
-    uioinfo->irq_flags |=3D IRQF_DISABLED | IRQF_TRIGGER_FALLING;
-    uioinfo->irq =3D 19;
-    uioinfo->handler =3D interrupt_handler_irq3;
-    uioinfo->irqcontrol =3D uio_irq3_irqcontrol;
-    uioinfo->priv =3D priv;
-
-    uio_register_device(&pdev->dev, priv->uioinfo);
-        return -ENODEV;
-   =20
-	platform_set_drvdata(pdev, priv);
-	return 0;   =20
-   =20
- bad0:
-	return ret;   =20
-}
-
-static int uio_irq3_remove(struct platform_device *pdev)
-{
-    struct uio_pdrv_irq3 *priv =3D platform_get_drvdata(pdev);
-	uio_unregister_device(priv->uioinfo);
-	return 0;
-}
-
-
-static struct platform_driver uio_irq3_driver =3D {
-	.probe		=3D uio_irq3_probe,
-	.remove		=3D uio_irq3_remove,
-    	.driver =3D {
-        .name =3D "IRQ3",
-        .owner =3D THIS_MODULE,
-    },
-};
-
-static int __init uio_irq3_init(void)
-{
-	return platform_driver_register(&uio_irq3_driver);
-}
-
-static void __exit uio_irq3_exit(void)
-{
-	platform_device_unregister(&uio_irq3_driver);
-}
-
-
-module_init(uio_irq3_init);
-module_exit(uio_irq3_exit);
-
-
-MODULE_LICENSE("tbd");
-MODULE_AUTHOR("tbd");
-MODULE_DESCRIPTION("IRQ3 Interrupt Handler - CPLD Interrupts");
-
-<------- snap
+cheers
