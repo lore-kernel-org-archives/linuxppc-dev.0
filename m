@@ -1,25 +1,26 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
+Return-Path: <felix@embedded-sol.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CC41BB7257
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9DF36B6F31
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Aug 2009 14:58:46 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	Thu,  6 Aug 2009 16:29:20 +1000 (EST)
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B2C15DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 14:58:46 +1000 (EST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D625BDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 16:29:18 +1000 (EST)
+Message-ID: <4A7A776D.7080400@embedded-sol.com>
+Date: Thu, 06 Aug 2009 09:25:49 +0300
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <19066.25278.925555.133212@drongo.ozlabs.ibm.com>
-Date: Thu, 6 Aug 2009 14:57:34 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] powerpc: Allow perf_counters to access user memory at
-	interrupt time
+To: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Subject: Re: [PATCH][powerpc/85xx] P2020RDB Platform Support Added
+References: <1249532639-20070-1-git-send-email-poonam.aggrwal@freescale.com>
+In-Reply-To: <1249532639-20070-1-git-send-email-poonam.aggrwal@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linuxppc-release@webnode01-prod1.am.freescale.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,238 +30,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This provides a mechanism to allow the perf_counters code to access
-user memory in a PMU interrupt routine.  Such an access can cause
-various kinds of interrupt: SLB miss, MMU hash table miss, segment
-table miss, or TLB miss, depending on the processor.  This commit
-only deals with the classic/server processors that use an MMU hash
-table, not processors that have software-loaded TLBs.
+Hi, Poonam
 
-On 64-bit processors, an SLB miss interrupt on a user address will
-update the slb_cache and slb_cache_ptr fields in the paca.  This is
-OK except in the case where a PMU interrupt occurs in switch_slb,
-which also accesses those fields.  To prevent this, we hard-disable
-interrupts in switch_slb.  Interrupts are already soft-disabled at
-this point, and will get hard-enabled when they get soft-enabled
-later.
+Poonam Aggrwal wrote:
+> Adds P2020RDB basic support in linux.
+> Overview of P2020RDB platform
+> 	- DDR
+> 	  DDR2 1G
+> 	- NOR Flash
+> 	  16MByte
+> 	- NAND Flash
+> 	  32MByte
+> 	- 3 Ethernet interfaces
+> 	  1) etSEC1
+> 		- RGMII
+> 		- connected to a 5 port Vitesse Switch(VSC7385)
+> 		- Switch is memory mapped through eLBC interface(CS#2)
+> 		- IRQ1
+> 	  2) etSEC2
+> 		- SGMII
+> 		- connected to VSC8221
+> 		- IRQ2
+> 	  3) etSEC3
+> 		- RGMII
+> 		- connected to VSC8641
+> 		- IRQ3
+> 	- 2 1X PCIe interfaces
+> 	- SD/MMC ,USB
+> 	- SPI EEPROM
+> 	- Serial I2C EEPROM
+>
+> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+> ---
+> based on http://www.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+>  arch/powerpc/boot/dts/p2020rdb.dts        |  586 +++++++++++++++++++++++++++++
+>  arch/powerpc/configs/mpc85xx_defconfig    |    1 +
+>  arch/powerpc/platforms/85xx/Kconfig       |    9 +
+>  arch/powerpc/platforms/85xx/Makefile      |    3 +-
+>  arch/powerpc/platforms/85xx/mpc85xx_rdb.c |  141 +++++++
+>  5 files changed, 739 insertions(+), 1 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/p2020rdb.dts
+>  create mode 100644 arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+>
+> diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
+> new file mode 100644
+> index 0000000..d6d8131
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/p2020rdb.dts
+> @@ -0,0 +1,586 @@
+> +/*
+> + * P2020 RDB Device Tree Source
+> + *
+> + * Copyright 2009 Freescale Semiconductor Inc.
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +/dts-v1/;
+> +/ {
+> +	model = "fsl,P2020";
+> +	compatible = "fsl,P2020RDB";
+> +	#address-cells = <2>;
+> +	#size-cells = <2>;
+> +
+> +	aliases {
+> +		ethernet0 = &enet0;
+> +		ethernet1 = &enet1;
+> +		ethernet2 = &enet2;
+> +		serial0 = &serial0;
+> +		serial1 = &serial1;
+> +		pci0 = &pci0;
+> +		pci1 = &pci1;
+> +	};
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		PowerPC,P2020@0 {
+> +			device_type = "cpu";
+> +			reg = <0x0>;
+> +			next-level-cache = <&L2>;
+> +		};
+> +
+> +		PowerPC,P2020@1 {
+> +			device_type = "cpu";
+> +			reg = <0x1>;
+> +			next-level-cache = <&L2>;
+> +		};
+> +	};
+> +
+> +	memory {
+> +		device_type = "memory";
+> +	};
+> +
+> +	localbus@ffe05000 {
+> +		#address-cells = <2>;
+> +		#size-cells = <1>;
+> +		compatible = "fsl,p2020-elbc", "fsl,elbc", "simple-bus";
+> +		reg = <0 0xffe05000 0 0x1000>;
+> +		interrupts = <19 2>;
+> +		interrupt-parent = <&mpic>;
+> +
+> +		/* NOR and NAND Flashes */
+> +		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
+> +			  0x1 0x0 0x0 0xffa00000 0x00040000
+> +			  0x2 0x0 0x0 0xffb00000 0x08000000>;
+>   
 
-This also reworks slb_flush_and_rebolt: to avoid hard-disabling twice,
-and to make sure that it clears the slb_cache_ptr when called from
-other callers than switch_slb, the existing routine is renamed to
-__slb_flush_and_rebolt, which is called by switch_slb and the new
-version of slb_flush_and_rebolt.
+The comment is a bit misleading, CS2 is L2 switch. Also, are you sure
+the CS2 range shouldn't look like
+      
+0x2 0x0 0x0 0xffb00000 0x00020000
 
-Similarly, switch_stab (used on POWER3 and RS64 processors) gets a
-hard_irq_disable() to protect the per-cpu variables used there and
-in ste_allocate.
+That's what L2switch reg property suggests.            
+> +
+> +		nor@0,0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "cfi-flash";
+> +			reg = <0x0 0x0 0x1000000>;
+> +			bank-width = <2>;
+> +			device-width = <1>;
+> +
+> +			vitesse-7385-fw@0 {
+> +				/* This location must not be altered  */
+> +				/* 256KB for Vitesse 7385 Switch firmware */
+> +				reg = <0x0 0x00040000>;
+> +				label = "NOR (RO) Vitesse-7385 Firmware";
+> +				read-only;
+> +			};
+>   
+Partitions should be declared as
 
-If a MMU hashtable miss interrupt occurs, normally we would call
-hash_page to look up the Linux PTE for the address and create a HPTE.
-However, hash_page is fairly complex and takes some locks, so to
-avoid the possibility of deadlock, we check the preemption count
-to see if we are in a (pseudo-)NMI handler, and if so, we don't call
-hash_page but instead treat it like a bad access that will get
-reported up through the exception table mechanism.  An interrupt
-whose handler runs even though the interrupt occurred when
-soft-disabled (such as the PMU interrupt) is considered a pseudo-NMI
-handler, which should use nmi_enter()/nmi_exit() rather than
-irq_enter()/irq_exit().
+       partition@0 {
+                   reg = ...
+                   label = ...
+                   ...
+        } 
 
-32-bit processors with an MMU hash table are already able to access
-user memory at interrupt time.  Since we don't soft-disable on 32-bit,
-we avoid the possibility of reentering hash_page, which runs with
-interrupts disabled.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-Note, this version uses the NMI bit in the preempt count instead of
-adding a paca field.
-
- arch/powerpc/include/asm/paca.h      |    2 +-
- arch/powerpc/kernel/asm-offsets.c    |    2 +
- arch/powerpc/kernel/exceptions-64s.S |   19 +++++++++++++++++
- arch/powerpc/mm/slb.c                |   37 +++++++++++++++++++++++----------
- arch/powerpc/mm/stab.c               |   11 +++++++++-
- 5 files changed, 58 insertions(+), 13 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index c8a3cbf..63f8415 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -105,7 +105,7 @@ struct paca_struct {
- 	u8 soft_enabled;		/* irq soft-enable flag */
- 	u8 hard_enabled;		/* set if irqs are enabled in MSR */
- 	u8 io_sync;			/* writel() needs spin_unlock sync */
--	u8 perf_counter_pending;	/* PM interrupt while soft-disabled */
-+	u8 perf_counter_pending;	/* perf_counter stuff needs wakeup */
- 
- 	/* Stuff for accurate time accounting */
- 	u64 user_time;			/* accumulated usermode TB ticks */
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 561b646..197b156 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -67,6 +67,8 @@ int main(void)
- 	DEFINE(MMCONTEXTID, offsetof(struct mm_struct, context.id));
- #ifdef CONFIG_PPC64
- 	DEFINE(AUDITCONTEXT, offsetof(struct task_struct, audit_context));
-+	DEFINE(SIGSEGV, SIGSEGV);
-+	DEFINE(NMI_MASK, NMI_MASK);
- #else
- 	DEFINE(THREAD_INFO, offsetof(struct task_struct, stack));
- #endif /* CONFIG_PPC64 */
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index eb89811..8ac85e0 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -729,6 +729,11 @@ BEGIN_FTR_SECTION
- 	bne-	do_ste_alloc		/* If so handle it */
- END_FTR_SECTION_IFCLR(CPU_FTR_SLB)
- 
-+	clrrdi	r11,r1,THREAD_SHIFT
-+	lwz	r0,TI_PREEMPT(r11)	/* If we're in an "NMI" */
-+	andis.	r0,r0,NMI_MASK@h	/* (i.e. an irq when soft-disabled) */
-+	bne	77f			/* then don't call hash_page now */
-+
- 	/*
- 	 * On iSeries, we soft-disable interrupts here, then
- 	 * hard-enable interrupts so that the hash_page code can spin on
-@@ -833,6 +838,20 @@ handle_page_fault:
- 	bl	.low_hash_fault
- 	b	.ret_from_except
- 
-+/*
-+ * We come here as a result of a DSI at a point where we don't want
-+ * to call hash_page, such as when we are accessing memory (possibly
-+ * user memory) inside a PMU interrupt that occurred while interrupts
-+ * were soft-disabled.  We want to invoke the exception handler for
-+ * the access, or panic if there isn't a handler.
-+ */
-+77:	bl	.save_nvgprs
-+	mr	r4,r3
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	li	r5,SIGSEGV
-+	bl	.bad_page_fault
-+	b	.ret_from_except
-+
- 	/* here we have a segment miss */
- do_ste_alloc:
- 	bl	.ste_allocate		/* try to insert stab entry */
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 5b7038f..a685652 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -92,15 +92,13 @@ static inline void create_shadowed_slbe(unsigned long ea, int ssize,
- 		     : "memory" );
- }
- 
--void slb_flush_and_rebolt(void)
-+static void __slb_flush_and_rebolt(void)
- {
- 	/* If you change this make sure you change SLB_NUM_BOLTED
- 	 * appropriately too. */
- 	unsigned long linear_llp, vmalloc_llp, lflags, vflags;
- 	unsigned long ksp_esid_data, ksp_vsid_data;
- 
--	WARN_ON(!irqs_disabled());
--
- 	linear_llp = mmu_psize_defs[mmu_linear_psize].sllp;
- 	vmalloc_llp = mmu_psize_defs[mmu_vmalloc_psize].sllp;
- 	lflags = SLB_VSID_KERNEL | linear_llp;
-@@ -117,12 +115,6 @@ void slb_flush_and_rebolt(void)
- 		ksp_vsid_data = get_slb_shadow()->save_area[2].vsid;
- 	}
- 
--	/*
--	 * We can't take a PMU exception in the following code, so hard
--	 * disable interrupts.
--	 */
--	hard_irq_disable();
--
- 	/* We need to do this all in asm, so we're sure we don't touch
- 	 * the stack between the slbia and rebolting it. */
- 	asm volatile("isync\n"
-@@ -139,6 +131,21 @@ void slb_flush_and_rebolt(void)
- 		     : "memory");
- }
- 
-+void slb_flush_and_rebolt(void)
-+{
-+
-+	WARN_ON(!irqs_disabled());
-+
-+	/*
-+	 * We can't take a PMU exception in the following code, so hard
-+	 * disable interrupts.
-+	 */
-+	hard_irq_disable();
-+
-+	__slb_flush_and_rebolt();
-+	get_paca()->slb_cache_ptr = 0;
-+}
-+
- void slb_vmalloc_update(void)
- {
- 	unsigned long vflags;
-@@ -180,12 +187,20 @@ static inline int esids_match(unsigned long addr1, unsigned long addr2)
- /* Flush all user entries from the segment table of the current processor. */
- void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- {
--	unsigned long offset = get_paca()->slb_cache_ptr;
-+	unsigned long offset;
- 	unsigned long slbie_data = 0;
- 	unsigned long pc = KSTK_EIP(tsk);
- 	unsigned long stack = KSTK_ESP(tsk);
- 	unsigned long unmapped_base;
- 
-+	/*
-+	 * We need interrupts hard-disabled here, not just soft-disabled,
-+	 * so that a PMU interrupt can't occur, which might try to access
-+	 * user memory (to get a stack trace) and possible cause an SLB miss
-+	 * which would update the slb_cache/slb_cache_ptr fields in the PACA.
-+	 */
-+	hard_irq_disable();
-+	offset = get_paca()->slb_cache_ptr;
- 	if (!cpu_has_feature(CPU_FTR_NO_SLBIE_B) &&
- 	    offset <= SLB_CACHE_ENTRIES) {
- 		int i;
-@@ -200,7 +215,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- 		}
- 		asm volatile("isync" : : : "memory");
- 	} else {
--		slb_flush_and_rebolt();
-+		__slb_flush_and_rebolt();
- 	}
- 
- 	/* Workaround POWER5 < DD2.1 issue */
-diff --git a/arch/powerpc/mm/stab.c b/arch/powerpc/mm/stab.c
-index 98cd1dc..ab5fb48 100644
---- a/arch/powerpc/mm/stab.c
-+++ b/arch/powerpc/mm/stab.c
-@@ -164,7 +164,7 @@ void switch_stab(struct task_struct *tsk, struct mm_struct *mm)
- {
- 	struct stab_entry *stab = (struct stab_entry *) get_paca()->stab_addr;
- 	struct stab_entry *ste;
--	unsigned long offset = __get_cpu_var(stab_cache_ptr);
-+	unsigned long offset;
- 	unsigned long pc = KSTK_EIP(tsk);
- 	unsigned long stack = KSTK_ESP(tsk);
- 	unsigned long unmapped_base;
-@@ -172,6 +172,15 @@ void switch_stab(struct task_struct *tsk, struct mm_struct *mm)
- 	/* Force previous translations to complete. DRENG */
- 	asm volatile("isync" : : : "memory");
- 
-+	/*
-+	 * We need interrupts hard-disabled here, not just soft-disabled,
-+	 * so that a PMU interrupt can't occur, which might try to access
-+	 * user memory (to get a stack trace) and possible cause an STAB miss
-+	 * which would update the stab_cache/stab_cache_ptr per-cpu variables.
-+	 */
-+	hard_irq_disable();
-+
-+	offset = __get_cpu_var(stab_cache_ptr);
- 	if (offset <= NR_STAB_CACHE_ENTRIES) {
- 		int i;
- 
--- 
-1.5.5.rc3.7.gba13
+Felix.
