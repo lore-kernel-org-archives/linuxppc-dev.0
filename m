@@ -3,26 +3,26 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E4726B6EDE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 063BBB6F2B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 07:51:23 +1000 (EST)
+	Fri,  7 Aug 2009 08:23:28 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 55DD8DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 07:51:22 +1000 (EST)
-Subject: Re: 2.6.31-rc5-git2 crash on a idle system.
+	by ozlabs.org (Postfix) with ESMTPS id 57A77DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 08:23:27 +1000 (EST)
+Subject: Re: 2.6.31-rc5-git2 crash [net/core/flow.c:flow_cache_new_hashrnd]
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sachin Sant <sachinp@in.ibm.com>
-In-Reply-To: <4A7ADBB1.3050906@in.ibm.com>
-References: <4A78292A.5000607@in.ibm.com>
-	<1249421223.18245.36.camel@pasglop> <4A794E26.8080207@in.ibm.com>
-	<1249465934.18245.54.camel@pasglop>  <4A7ADBB1.3050906@in.ibm.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1249395350.8016.5.camel@concordia>
+References: <4A78292A.5000607@in.ibm.com>  <4A783B1F.7000602@in.ibm.com>
+	<1249395350.8016.5.camel@concordia>
 Content-Type: text/plain
-Date: Fri, 07 Aug 2009 07:51:09 +1000
-Message-Id: <1249595469.24311.5.camel@pasglop>
+Date: Fri, 07 Aug 2009 08:23:05 +1000
+Message-Id: <1249597385.24311.10.camel@pasglop>
 Mime-Version: 1.0
-Cc: neilb@suse.de, linuxppc-dev@ozlabs.org, linux-raid@vger.kernel.org
+Cc: netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,23 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-08-06 at 19:03 +0530, Sachin Sant wrote:
-> I added few printks in the initcall debug code patch. The o/p suggests
-> that by the time first initicall debug message is printed the code is
-> already corrupted. Further debug suggests, when start_kernel() is
-> called the code at address(0xc000000000600000) is already corrupted.
-> About 28 bytes of code starting from the above address is
-> overwritten. 
-> 
-> I will try to add few more debug statements to find the place where
-> this corruption might me happening.
+On Wed, 2009-08-05 at 00:15 +1000, Michael Ellerman wrote:
 
-Hrm... start_kernel is very very early... strange. Can you double check
-that the actual kernel image contains the right stuff ? Also, what
-distro are you using to test that and how are you booting that kernel ?
+> > c000000000600000  00001010      .long 0x1010
+> > 0:mon>
+> > c000000000600004  00000008      .long 0x8
+> > c000000000600008  00001013      .long 0x1013
+> > c00000000060000c  0000000f      .long 0xf
+> > c000000000600010  7961626f      rldimi. r1,r11,44,41
+> > c000000000600014  6f740000      xoris   r20,r27,0
+> > c000000000600018  00101600      .long 0x101600
+> > c00000000060001c  00000c00      .long 0xc00
+> > c000000000600020  00000400      .long 0x400
+> > c000000000600024  00101100      .long 0x101100
+> > c000000000600028  000008e9      .long 0x8e9
 
-You can always add something to prom_init.c to test (though beware you
-aren't relocated yet so you need to offset the addresses).
+BTW. Corruption looks like bi_recs... ie, broken yaboot. This was fixed
+recently, yaboot would eventually crap over the kernel for certain sizes
+of the kernel image.
+
+0x1010 = BI_FIRST
+0x1013 = BI_BOOTLOADER_ID followed by 0x7961626f6f74 which is
+"yaboot" :-)
+0x1016 = BI_MACHTYPE
+
+etc...
 
 Cheers,
 Ben.
