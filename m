@@ -1,32 +1,38 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [59.145.155.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7225BB6F1F
+	(Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 13164B6EDE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 Aug 2009 23:40:48 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 62486DDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2009 23:40:48 +1000 (EST)
-Subject: Re: 2.6.31-rc5-git2 crash on a idle system.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Sachin Sant <sachinp@in.ibm.com>
-In-Reply-To: <4A7ADBB1.3050906@in.ibm.com>
-References: <4A78292A.5000607@in.ibm.com>
-	<1249421223.18245.36.camel@pasglop> <4A794E26.8080207@in.ibm.com>
-	<1249465934.18245.54.camel@pasglop>  <4A7ADBB1.3050906@in.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-sY2mzGgcVxmEYJHgLlQX"
-Date: Thu, 06 Aug 2009 23:40:46 +1000
-Message-Id: <1249566046.4800.178.camel@concordia>
-Mime-Version: 1.0
-Cc: neilb@suse.de, linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+	Thu,  6 Aug 2009 23:48:57 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp09.in.ibm.com (8.14.3/8.13.1) with ESMTP id n76Dk4AD001178
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2009 19:16:04 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n76DmoNH1892356
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2009 19:18:50 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+	by d28av02.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n76DmnQh008168
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2009 23:48:50 +1000
+Date: Thu, 6 Aug 2009 19:18:44 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090806134844.GA19146@in.ibm.com>
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
+	<20090806015855.GA20596@sli10-desk.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090806015855.GA20596@sli10-desk.sh.intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"Darrick J. Wong" <djwong@us.ibm.com>
+Reply-To: ego@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,53 +42,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Shaohua,
 
---=-sY2mzGgcVxmEYJHgLlQX
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Thu, Aug 06, 2009 at 09:58:55AM +0800, Shaohua Li wrote:
+> Hi,
+> 
+> On Wed, Aug 05, 2009 at 10:25:53PM +0800, Gautham R Shenoy wrote:
+> > In this patch-series, we propose to extend the CPU-Hotplug infrastructure
+> > and allow the system administrator to choose the desired state the CPU should
+> > go to when it is offlined. We think this approach addresses the concerns about
+> > determinism as well as transparency, since CPU-Hotplug already provides
+> > notification mechanism which the userspace can listen to for any change
+> > in the configuration and correspondingly readjust any previously set
+> > cpu-affinities.
+> Peter dislikes any approach (including cpuhotplug) which breaks userspace policy,
+> even userspace can get a notification.
 
-On Thu, 2009-08-06 at 19:03 +0530, Sachin Sant wrote:
-> Benjamin Herrenschmidt wrote:
-> > Thanks. Since it's a memory corruption (or seems to be) however, it's
-> > possible that the bisection will mislead you. IE. The culprit could be
-> > somewhere else, and the commit you'll find via bisection just happens t=
-o
-> > move things around in the kernel in such a way that the corruption hits
-> > that code path instead of another rarely used one.
-> >
-> > I would suggest using printk to print out the content of memory where
-> > the code appears to have been smashed at different stages during boot
-> > (maybe even in the initcalls loop in init/main.c) to try to point out
-> > what appears to be causing the corruption.
-> >  =20
-> By the time machine is up and running the particular memory location
-> in question is already overwritten. So seems like the corruption occurs
-> during the boot.
->=20
-> I added few printks in the initcall debug code patch. The o/p suggests
-> that by the time first initicall debug message is printed the code is
-> already corrupted. Further debug suggests, when start_kernel() is
-> called the code at address(0xc000000000600000) is already corrupted.
-> About 28 bytes of code starting from the above address is overwritten.=20
->=20
-> I will try to add few more debug statements to find the place where
-> this corruption might me happening.
+I think Peter's problem was more to do with the kernel offlining the CPUs
+behind the scenes, right ?
 
-Is it always the exact same pattern at the exact same address? Or does
-it change and if so how?
+We don't do that in this patch series. The option to offline the CPUs is
+very much with the admin. The patch-series only provides the interface
+that helps the admin choose the state the CPU must reside in when it
+goes offline.
 
-cheers
+> 
+> > Also, approaches such as [1] can make use of this
+> > extended infrastructure instead of putting the CPU to an arbitrary C-state
+> > when it is offlined, thereby providing the system administrator a rope to hang
+> > himself with should he feel the need to do so.
+> I didn't see the reason why administrator needs to know which state offline cpu
+> should stay. Don't know about powerpc side, but in x86 side, it appears deepest
+> C-state is already preferred.
 
---=-sY2mzGgcVxmEYJHgLlQX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+We can still provide a sane default value based on what states are
+available and what the BIOS limits us to. Thus we can still use the
+idle-state-offline patch that Venki posted sometime ago, right ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> 
+> Thanks,
+> Shaohua
 
-iEYEABECAAYFAkp63V4ACgkQdSjSd0sB4dJ6bwCfVZDxUvTSHvekSmtpoYSE8KOf
-I3cAoJYboxAdcfglEqfJPSyjxWPSg2/W
-=5F/U
------END PGP SIGNATURE-----
-
---=-sY2mzGgcVxmEYJHgLlQX--
+-- 
+Thanks and Regards
+gautham
