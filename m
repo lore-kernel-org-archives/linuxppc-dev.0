@@ -1,25 +1,29 @@
-Return-Path: <akpm@linux-foundation.org>
+Return-Path: <smaclennan@pikatech.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 210A1B8367
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 45C6AB6F31
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 09:01:06 +1000 (EST)
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 94E1FDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 09:01:05 +1000 (EST)
-Message-Id: <200908062300.n76N0cS2028910@imap1.linux-foundation.org>
-Subject: [patch 3/3] powerpc: avoid calculating possibly-invalid address
-To: benh@kernel.crashing.org
-From: akpm@linux-foundation.org
-Date: Thu, 06 Aug 2009 16:00:37 -0700
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, roel.kluin@gmail.com,
-	bernd@firmix.at
+	Fri,  7 Aug 2009 09:36:58 +1000 (EST)
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 547A5DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 09:36:57 +1000 (EST)
+Date: Thu, 6 Aug 2009 19:30:02 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Aggrwal Poonam-B10812" <Poonam.Aggrwal@freescale.com>
+Subject: Re: [PATCH][powerpc/85xx] P2020RDB Platform Support Added
+Message-ID: <20090806193002.18c096af@lappy.seanm.ca>
+In-Reply-To: <1BD5CFC378ED0946B688E0C9BA2EF0951931A6@zin33exm24.fsl.freescale.net>
+References: <1249532639-20070-1-git-send-email-poonam.aggrwal@freescale.com>
+	<4A7A776D.7080400@embedded-sol.com>
+	<1BD5CFC378ED0946B688E0C9BA2EF09519312F@zin33exm24.fsl.freescale.net>
+	<4A7A7C45.4040800@embedded-sol.com>
+	<1BD5CFC378ED0946B688E0C9BA2EF0951931A6@zin33exm24.fsl.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Felix Radensky <felix@embedded-sol.com>,
+	linuxppc-release@webnode01-prod1.am.freescale.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,35 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Roel Kluin <roel.kluin@gmail.com>
+On Thu, 6 Aug 2009 17:04:18 +0530
+"Aggrwal Poonam-B10812" <Poonam.Aggrwal@freescale.com> wrote:
 
-Check whether index is within bounds prior to calculating a
-possibly-invalid address.
+> Can u point me to some reference of this, shud they be partition@0,
+> partition@1, etc...
+> I am not able to configure all the partitions successfully.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-Cc: Bernd Petrovitsch <bernd@firmix.at>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+Not unless all your partitions are 1 byte long ;)
 
- drivers/char/hvsi.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+The number is the offset into the device. Here is an example partition
+table from the warp:
 
-diff -puN drivers/char/hvsi.c~powerpc-avoid-calculating-possibly-invalid-address drivers/char/hvsi.c
---- a/drivers/char/hvsi.c~powerpc-avoid-calculating-possibly-invalid-address
-+++ a/drivers/char/hvsi.c
-@@ -1230,11 +1230,12 @@ static struct tty_driver *hvsi_console_d
- 
- static int __init hvsi_console_setup(struct console *console, char *options)
- {
--	struct hvsi_struct *hp = &hvsi_ports[console->index];
-+	struct hvsi_struct *hp;
- 	int ret;
- 
- 	if (console->index < 0 || console->index >= hvsi_count)
- 		return -1;
-+	hp = &hvsi_ports[console->index];
- 
- 	/* give the FSP a chance to change the baud rate when we re-open */
- 	hvsi_close_protocol(hp);
-_
+partition@0 {
+	label = "kernel";
+	reg = <0x00000000 0x00200000>;
+};
+partition@200000 {
+	label = "root";
+	reg = <0x00200000 0x03E00000>;
+};
+partition@40000000 {
+	label = "persistent";
+	reg = <0x04000000 0x04000000>;
+};
+
+Cheers,
+   Sean
