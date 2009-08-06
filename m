@@ -1,20 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <julia@diku.dk>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9B4C0B6F2B
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 11CDCB6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 05:17:12 +1000 (EST)
-Message-Id: <8731B515-14B1-4580-A196-75E57543C3F9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Lutz Jaenicke <ljaenicke@innominate.com>
-In-Reply-To: <20090806180035.GA19088@lutz.bln.innominate.local>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: MPC8313 performance evaluation
-Date: Thu, 6 Aug 2009 14:16:55 -0500
-References: <20090806180035.GA19088@lutz.bln.innominate.local>
-Cc: linuxppc-dev@lists.ozlabs.org
+	Fri,  7 Aug 2009 06:04:59 +1000 (EST)
+Received: from mgw1.diku.dk (mgw1.diku.dk [130.225.96.91])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mgw1.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 06234DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 06:04:57 +1000 (EST)
+Date: Thu, 6 Aug 2009 22:04:28 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: benh@kernel.crashing.org, paulus@samba.org,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/3] arch/powerpc: Add kmalloc NULL tests
+Message-ID: <Pine.LNX.4.64.0908062203380.19100@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,56 +30,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Julia Lawall <julia@diku.dk>
 
-On Aug 6, 2009, at 1:00 PM, Lutz Jaenicke wrote:
+Check that the result of kmalloc/kzalloc is not NULL before dereferencing it.
 
-> Hi!
->
-> I am currently evaluating the performance of the MPC8313E for firewall
-> (and VPN) purposes.
-> The results obtained do not match my expectations so I would be  
-> interested
-> in some discussion.
->
-> Test setup:
-> -----------
-> A linux 2.6.27 based firewall software is used. The software is the
-> same among
-> To be replaced: IXP42x custom made board (266MHz and 533MHz)
-> * MPC8343 custom made board (400MHz)
-> * MPC8313E-RDB Rev. C (333/333)
-> As a software firewall the throughput is determined by looking into
-> the routing information and IP headers, hence the performance is best
-> characterized by "frames/s" which is constant over the frame size
-> (as long as no limit is hit like the 100Mbit/s limit on the IXP42x).
->
-> With the MPC8343@400MHz I get a throughput of approx. 24500 frames/s
-> using the predefined firewall rules.
-> With the MPC8313 I get a significantly lower value:
-> MPC8313@250MHz          12500fps
-> MPC8313@333MHz          14500fps
-> MPC8313@416MHz          15500fps      (333MHz type, overclocked)
-> Kernel 2.6.27 with SKB recycling from later versions and the
-> e300c2/c3/c4 TLB errata workaround. Some pure computational benchmark
-> with small footprint (namely "openssl speed") which should fit into
-> the cache size indicates the perfect 3/4/5 ratio used.
->
-> Some discussion with the the freescale rep. lead to the CSB frequency
-> of the 8313 (166MHz) being significantly lower than that of the 8343.
-> Is the CSB the critical point here?
-> Note: the IXP42x uses an internal bus speed of 133MHz and operates
-> at frame rates similar to the 8343...
->
-> Does anybody else have numbers for a firewall scenario using 8313
-> and/or other processors of the family?
->
-> Best regards,
-> 	Lutz
-> PS: Yes, I know that absolute numbers will be hard to compare with
-> other scenarios but relative values would be quite interesting as
-> well.
+The semantic match that finds this problem is as follows:
+(http://coccinelle.lip6.fr/)
 
-What DDR frequencies (and width) are you running the 8343 vs 8313 at.   
-This can have a significant impact on performance.
+// <smpl>
+@@
+expression *x;
+identifier f;
+constant char *C;
+@@
 
-- k
+x = \(kmalloc\|kcalloc\|kzalloc\)(...);
+... when != x == NULL
+    when != x != NULL
+    when != (x || ...)
+(
+kfree(x)
+|
+f(...,C,...,x,...)
+|
+*f(...,x,...)
+|
+*x->f
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ arch/powerpc/sysdev/fsl_rio.c       |   18 ++++++++++++++----
+ 1 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+index cbb3bed..598789c 100644
+--- a/arch/powerpc/sysdev/fsl_rio.c
++++ b/arch/powerpc/sysdev/fsl_rio.c
+@@ -1057,6 +1057,10 @@ int fsl_rio_setup(struct of_device *dev)
+ 			law_start, law_size);
+ 
+ 	ops = kmalloc(sizeof(struct rio_ops), GFP_KERNEL);
++	if (!ops) {
++		rc = -ENOMEM;
++		goto err_ops;
++	}
+ 	ops->lcread = fsl_local_config_read;
+ 	ops->lcwrite = fsl_local_config_write;
+ 	ops->cread = fsl_rio_config_read;
+@@ -1064,6 +1068,10 @@ int fsl_rio_setup(struct of_device *dev)
+ 	ops->dsend = fsl_rio_doorbell_send;
+ 
+ 	port = kzalloc(sizeof(struct rio_mport), GFP_KERNEL);
++	if (!port) {
++		rc = -ENOMEM;
++		goto err_port;
++	}
+ 	port->id = 0;
+ 	port->index = 0;
+ 
+@@ -1071,7 +1079,7 @@ int fsl_rio_setup(struct of_device *dev)
+ 	if (!priv) {
+ 		printk(KERN_ERR "Can't alloc memory for 'priv'\n");
+ 		rc = -ENOMEM;
+-		goto err;
++		goto err_priv;
+ 	}
+ 
+ 	INIT_LIST_HEAD(&port->dbells);
+@@ -1169,13 +1177,15 @@ int fsl_rio_setup(struct of_device *dev)
+ 
+ 	return 0;
+ err:
+-	if (priv)
+-		iounmap(priv->regs_win);
+-	kfree(ops);
++	iounmap(priv->regs_win);
++err_priv:
+ 	kfree(priv);
++err_port:
+ 	kfree(port);
++err_ops:
++	kfree(ops);
+ 	return rc;
+ }
+ 
