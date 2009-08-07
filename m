@@ -1,26 +1,24 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B8B38B82B8
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E911FB6EDE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  8 Aug 2009 02:50:25 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 54A53DDD04
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 02:50:25 +1000 (EST)
-Date: Fri, 7 Aug 2009 20:50:24 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 4/4] sdhci-of: Cleanup eSDHC's set_clock() a little bit
-Message-ID: <20090807165024.GC524@oksana.dev.rtsoft.ru>
-References: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
+	Sat,  8 Aug 2009 04:30:02 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
-Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
-	sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org,
-	Pierre Ossman <pierre@ossman.eu>
+Sender: glikely@secretlab.ca
+In-Reply-To: <9e4733910908070934se43b2a9lfe72e89e0e247ea3@mail.gmail.com>
+References: <9e4733910908070903p539b8987p8351df5b3d328fdd@mail.gmail.com>
+	<fa686aa40908070915x7e04cbb8ofccd106230d5f76c@mail.gmail.com>
+	<9e4733910908070934se43b2a9lfe72e89e0e247ea3@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 7 Aug 2009 12:29:40 -0600
+Message-ID: <fa686aa40908071129i638e0e2ay9ad1a87d59d95615@mail.gmail.com>
+Subject: Re: PSC clock divider
+To: Jon Smirl <jonsmirl@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,60 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-- Get rid of incomprehensible "if { for { if } }" construction for the
-  exponential divisor calculation. The first if statement isn't correct
-  at all, since it should check for "host->max_clk / pre_div / 16 >
-  clock". The error doesn't cause any bugs because the check in the for
-  loop does the right thing, and so the outer check becomes useless;
+On Fri, Aug 7, 2009 at 10:34 AM, Jon Smirl<jonsmirl@gmail.com> wrote:
+> On Fri, Aug 7, 2009 at 12:15 PM, Grant Likely<grant.likely@secretlab.ca> wrote:
+>>> Should I modify mpc52xx_set_psc_clkdiv() to take in a frequency and
+>>> them move this code into mpc52xx_common.c? That allows the sysclk
+>>> parameter to be eliminated for SPI.
+>>
+>> Yes, please do.
+>
+> Can mpc5xxx_clocks.c be eliminated and this function:
+>
+> mpc5xxx_get_bus_frequency(struct device_node *node)
+>
+> be moved into mpc52cc_common.c?
 
-- For the linear divisor do the same: a single while statement is more
-  readable than for + if construction;
+No.  mpc5xxx_get_bus_frequency is not mpc5200 specific.  It is used by
+mpc5121 also.
 
-- Add dev_dbg() that prints desired and actual clock frequency.
+g.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mmc/host/sdhci-of.c |   19 ++++++++-----------
- 1 files changed, 8 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index b6ff2e8..bbdd468 100644
---- a/drivers/mmc/host/sdhci-of.c
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -120,8 +120,8 @@ static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
- 
- static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
- {
--	int div;
- 	int pre_div = 2;
-+	int div = 1;
- 
- 	clrbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
- 		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN | ESDHC_CLOCK_MASK);
-@@ -129,17 +129,14 @@ static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
- 	if (clock == 0)
- 		goto out;
- 
--	if (host->max_clk / 16 > clock) {
--		for (; pre_div < 256; pre_div *= 2) {
--			if (host->max_clk / pre_div < clock * 16)
--				break;
--		}
--	}
-+	while (host->max_clk / pre_div / 16 > clock && pre_div < 256)
-+		pre_div *= 2;
- 
--	for (div = 1; div <= 16; div++) {
--		if (host->max_clk / (div * pre_div) <= clock)
--			break;
--	}
-+	while (host->max_clk / pre_div / div > clock && div < 16)
-+		div++;
-+
-+	dev_dbg(mmc_dev(host->mmc), "desired SD clock: %d, actual: %d\n",
-+		clock, host->max_clk / pre_div / div);
- 
- 	pre_div >>= 1;
- 	div--;
 -- 
-1.6.3.3
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
