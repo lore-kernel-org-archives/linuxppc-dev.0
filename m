@@ -1,17 +1,26 @@
-Return-Path: <sumeshkkn@hotmail.com>
-Received: from blu0-omc3-s35.blu0.hotmail.com (blu0-omc3-s35.blu0.hotmail.com
-	[65.55.116.110])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 79CE0B708B
+Return-Path: <felix@embedded-sol.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A736CB6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 19:02:06 +1000 (EST)
-Message-ID: <BLU124-W247F8F54D67DB56A0DC30CB40B0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_6fdff2b4-2842-4a68-979a-18aa4998b591_"
-From: Sumesh Kaana <sumeshkkn@hotmail.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Linux booting problem
-Date: Fri, 7 Aug 2009 09:02:03 +0000
+	Fri,  7 Aug 2009 21:12:23 +1000 (EST)
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 81546DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 21:12:22 +1000 (EST)
+Message-ID: <4A7C0BF5.8010503@embedded-sol.com>
+Date: Fri, 07 Aug 2009 14:11:49 +0300
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
+To: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Subject: Re: [PATCH][v2][powerpc/85xx] P2020RDB Platform Support Added
+References: <1249633286-21663-1-git-send-email-poonam.aggrwal@freescale.com>
+In-Reply-To: <1249633286-21663-1-git-send-email-poonam.aggrwal@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,267 +30,846 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_6fdff2b4-2842-4a68-979a-18aa4998b591_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hi, Poonam
+
+See some more comments below.
+
+Poonam Aggrwal wrote:
+> Adds P2020RDB basic support in linux.
+> Overview of P2020RDB platform
+> 	- DDR
+> 	  DDR2 1G
+> 	- NOR Flash
+> 	  16MByte
+> 	- NAND Flash
+> 	  32MByte
+> 	- 3 Ethernet interfaces
+> 	  1) etSEC1
+> 		- RGMII
+> 		- connected to a 5 port Vitesse Switch(VSC7385)
+> 		- Switch is memory mapped through eLBC interface(CS#2)
+> 		- IRQ1
+> 	  2) etSEC2
+> 		- SGMII
+> 		- connected to VSC8221
+> 		- IRQ2
+> 	  3) etSEC3
+> 		- RGMII
+> 		- connected to VSC8641
+> 		- IRQ3
+> 	- 2 1X PCIe interfaces
+> 	- SD/MMC ,USB
+> 	- SPI EEPROM
+> 	- Serial I2C EEPROM
+> 
+> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+> ---
+> based on http://www.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+> incorporated Felix feedback regarding the partition names.
+> fixed the vitesse switch ranges entry in device tree.
+>  arch/powerpc/boot/dts/p2020rdb.dts        |  586 +++++++++++++++++++++++++++++
+>  arch/powerpc/configs/mpc85xx_defconfig    |    1 +
+>  arch/powerpc/platforms/85xx/Kconfig       |    9 +
+>  arch/powerpc/platforms/85xx/Makefile      |    3 +-
+>  arch/powerpc/platforms/85xx/mpc85xx_rdb.c |  141 +++++++
+>  5 files changed, 739 insertions(+), 1 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/p2020rdb.dts
+>  create mode 100644 arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+> 
+> diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
+> new file mode 100644
+> index 0000000..617029f
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/p2020rdb.dts
+> @@ -0,0 +1,586 @@
+> +/*
+> + * P2020 RDB Device Tree Source
+> + *
+> + * Copyright 2009 Freescale Semiconductor Inc.
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +/dts-v1/;
+> +/ {
+> +	model = "fsl,P2020";
+> +	compatible = "fsl,P2020RDB";
+> +	#address-cells = <2>;
+> +	#size-cells = <2>;
+> +
+> +	aliases {
+> +		ethernet0 = &enet0;
+> +		ethernet1 = &enet1;
+> +		ethernet2 = &enet2;
+> +		serial0 = &serial0;
+> +		serial1 = &serial1;
+> +		pci0 = &pci0;
+> +		pci1 = &pci1;
+> +	};
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		PowerPC,P2020@0 {
+> +			device_type = "cpu";
+> +			reg = <0x0>;
+> +			next-level-cache = <&L2>;
+> +		};
+> +
+> +		PowerPC,P2020@1 {
+> +			device_type = "cpu";
+> +			reg = <0x1>;
+> +			next-level-cache = <&L2>;
+> +		};
+> +	};
+> +
+> +	memory {
+> +		device_type = "memory";
+> +	};
+> +
+> +	localbus@ffe05000 {
+> +		#address-cells = <2>;
+> +		#size-cells = <1>;
+> +		compatible = "fsl,p2020-elbc", "fsl,elbc", "simple-bus";
+> +		reg = <0 0xffe05000 0 0x1000>;
+> +		interrupts = <19 2>;
+> +		interrupt-parent = <&mpic>;
+> +
+> +		/* NOR and NAND Flashes */
+> +		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
+> +			  0x1 0x0 0x0 0xffa00000 0x00040000
+> +			  0x2 0x0 0x0 0xffb00000 0x00020000>;
+> +
+> +		nor@0,0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "cfi-flash";
+> +			reg = <0x0 0x0 0x1000000>;
+> +			bank-width = <2>;
+> +			device-width = <1>;
+> +
+> +			partition@0 {
+> +				/* This location must not be altered  */
+> +				/* 256KB for Vitesse 7385 Switch firmware */
+> +				reg = <0x0 0x00040000>;
+> +				label = "NOR (RO) Vitesse-7385 Firmware";
+> +				read-only;
+> +			};
+> +
+> +			partition@40000 {
+> +				/* 256KB for DTB Image */
+> +				reg = <0x00040000 0x00040000>;
+> +				label = "NOR (RO) DTB Image";
+> +				read-only;
+> +			};
+> +
+> +			partition@80000 {
+> +				/* 3.5 MB for Linux Kernel Image */
+> +				reg = <0x00080000 0x00380000>;
+> +				label = "NOR (RO) Linux Kernel Image";
+> +				read-only;
+> +			};
+> +
+> +			partition@400000 {
+> +				/* 11MB for JFFS2 based Root file System */
+> +				reg = <0x00400000 0x00b00000>;
+> +				label = "NOR (RW) JFFS2 Root File System";
+> +			};
+> +
+> +			partition@f00000 {
+> +				/* This location must not be altered  */
+> +				/* 512KB for u-boot Bootloader Image */
+> +				/* 512KB for u-boot Environment Variables */
+> +				reg = <0x00f00000 0x00100000>;
+> +				label = "NOR (RO) U-Boot Image";
+> +				read-only;
+> +			};
+> +		};
+> +
+> +		nand@1,0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "fsl,p2020-fcm-nand",
+> +				     "fsl,elbc-fcm-nand";
+> +			reg = <0x1 0x0 0x40000>;
+> +
+> +			u-boot@0 {
+> +				/* This location must not be altered  */
+> +				/* 1MB for u-boot Bootloader Image */
+> +				reg = <0x0 0x00100000>;
+> +				label = "NAND (RO) U-Boot Image";
+> +				read-only;
+> +			};
+> +
+> +			dtb@100000 {
+> +				/* 1MB for DTB Image */
+> +				reg = <0x00100000 0x00100000>;
+> +				label = "NAND (RO) DTB Image";
+> +				read-only;
+> +			};
+> +
+> +			uImage@200000 {
+> +				/* 4MB for Linux Kernel Image */
+> +				reg = <0x00200000 0x00400000>;
+> +				label = "NAND (RO) Linux Kernel Image";
+> +				read-only;
+> +			};
+> +
+> +			rfs@600000 {
+> +				/* 4MB for Compressed Root file System Image */
+> +				reg = <0x00600000 0x00400000>;
+> +				label = "NAND (RO) Compressed RFS Image";
+> +				read-only;
+> +			};
+> +
+> +			jffs2@a00000 {
+> +				/* 7MB for JFFS2 based Root file System */
+> +				reg = <0x00a00000 0x00700000>;
+> +				label = "NAND (RW) JFFS2 Root File System";
+> +			};
+> +
+> +			user@1100000 {
+> +				/* 15MB for JFFS2 based Root file System */
+> +				reg = <0x01100000 0x00f00000>;
+> +				label = "NAND (RW) Writable User area";
+> +			};
+> +		};
+
+NAND partitions should also be declared using new syntax.
 
 
-Hi all=2C
-I am trying to boot linux kernel (2.6.30) on a custom built board.I am usin=
-g simple ppc platform and attached are my dts file and boot log..
-I've 26Mb of RAM=2CUART and UIC with powerpc 440x5 processor.Kernel Image s=
-ize is less than 1 mb.
-cgc=2Cskybeam  board is added in arch/powerpc/platforms/44x/ppc44x_simple.c
-device tree file as bellow:----------------------------
-/dts-v1/=3B
-/ {	model =3D "cgc=2Cskybeam"=3B	compatible =3D "cgc=2Cskybeam"=3B	#address=
--cells =3D <1>=3B	#size-cells =3D <1>=3B	dcr-parent =3D <&SKYBEAM_PPC>=3B		=
-chosen	{		bootargs =3D "console=3DttyS0 root=3D/dev/ram"=3B	       	linux=
-=2Cstdout-path =3D "/plb/serial@02080000"=3B	} =3B		aliases {		serial0 =3D =
-&STD_UART=3B	} =3B		memory	{		device_type =3D "memory"=3B		reg =3D < 0x0 0x=
-01A00000 >=3B	} =3B		cpus {		#address-cells =3D <1>=3B		#size-cells =3D <0>=
-=3B			SKYBEAM_PPC: cpu@0 {			device_type =3D "cpu"=3B			#address-cells =3D =
-<1>=3B			#size-cells =3D <1>=3B			reg =3D <0>=3B			clock-frequency =3D <250=
-00000>=3B			compatible =3D "PowerPC=2C440"=2C "ibm=2Cppc440"=3B			d-cache-l=
-ine-size =3D <0x20>=3B			d-cache-size =3D <0x8000>=3B			dcr-access-method =
-=3D "native"=3B			dcr-controller =3B			i-cache-line-size =3D <0x20>=3B			i-=
-cache-size =3D <0x8000>=3B			model =3D "PowerPC=2C440"=3B			timebase-freque=
-ncy =3D <25000000>=3B		} =3B	} =3B		UIC0: interrupt-controller0 {		compatib=
-le =3D "ibm=2Cuic-440ep"=2C"ibm=2Cuic"=3B		interrupt-controller=3B		cell-in=
-dex =3D <0>=3B		dcr-reg =3D <0x1c0 0x009>=3B		#address-cells =3D <0>=3B		#s=
-ize-cells =3D <0>=3B		#interrupt-cells =3D <2>=3B	}=3B		PLB: plb {		#addres=
-s-cells =3D <1>=3B		#size-cells =3D <1>=3B		compatible =3D "simple-bus"=3B	=
-	ranges =3B				STD_UART: serial@02080000 {			device_type =3D "serial"=3B			=
-compatible =3D "ns16550"=3B			reg =3D <0x02080000 0x00000008>=3B			virtual-=
-reg =3D <0x02080000>=3B            clock-frequency =3D <125000000>=3B			cur=
-rent-speed =3D <9600>=3B			interrupt-parent =3D <&UIC0>=3B			interrupts =3D=
- <0x5 0x4>=3B		} =3B	} =3B}  =3B
-boot log is as below:---------------------
+> +
+> +		L2switch@2,0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "vitesse-7385";
+> +			reg = <0x2 0x0 0x20000>;
+> +		};
+> +
+> +	};
+> +
+> +	soc@ffe00000 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		device_type = "soc";
+> +		compatible = "fsl,p2020-immr", "simple-bus";
+> +		ranges = <0x0  0x0 0xffe00000 0x100000>;
+> +		bus-frequency = <0>;		// Filled out by uboot.
+> +
+> +		ecm-law@0 {
+> +			compatible = "fsl,ecm-law";
+> +			reg = <0x0 0x1000>;
+> +			fsl,num-laws = <12>;
+> +		};
+> +
+> +		ecm@1000 {
+> +			compatible = "fsl,p2020-ecm", "fsl,ecm";
+> +			reg = <0x1000 0x1000>;
+> +			interrupts = <17 2>;
+> +			interrupt-parent = <&mpic>;
+> +		};
+> +
+> +		memory-controller@2000 {
+> +			compatible = "fsl,p2020-memory-controller";
+> +			reg = <0x2000 0x1000>;
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <18 2>;
+> +		};
+> +
+> +		i2c@3000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			cell-index = <0>;
+> +			compatible = "fsl-i2c";
+> +			reg = <0x3000 0x100>;
+> +			interrupts = <43 2>;
+> +			interrupt-parent = <&mpic>;
+> +			dfsrr;
+> +			rtc@68 {
+> +				compatible = "dallas,ds1339";
+> +				reg = <0x68>;
+> +			};
+> +		};
+> +
+> +		i2c@3100 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			cell-index = <1>;
+> +			compatible = "fsl-i2c";
+> +			reg = <0x3100 0x100>;
+> +			interrupts = <43 2>;
+> +			interrupt-parent = <&mpic>;
+> +			dfsrr;
+> +		};
+> +
+> +		serial0: serial@4500 {
+> +			cell-index = <0>;
+> +			device_type = "serial";
+> +			compatible = "ns16550";
+> +			reg = <0x4500 0x100>;
+> +			clock-frequency = <0>;
+> +			interrupts = <42 2>;
+> +			interrupt-parent = <&mpic>;
+> +		};
+> +
+> +		serial1: serial@4600 {
+> +			cell-index = <1>;
+> +			device_type = "serial";
+> +			compatible = "ns16550";
+> +			reg = <0x4600 0x100>;
+> +			clock-frequency = <0>;
+> +			interrupts = <42 2>;
+> +			interrupt-parent = <&mpic>;
+> +		};
+> +
+> +		spi@7000 {
+> +			cell-index = <0>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			compatible = "fsl,espi";
+> +			reg = <0x7000 0x1000>;
+> +			interrupts = <59 0x2>;
+> +			interrupt-parent = <&mpic>;
+> +			mode = "cpu";
+> +
+> +			fsl_m25p80@0 {
+> +				#address-cells = <1>;
+> +				#size-cells = <1>;
+> +				compatible = "fsl,espi-flash";
+> +				reg = <0>;
+> +				linux,modalias = "fsl_m25p80";
+> +				modal = "s25sl128b";
+> +				spi-max-frequency = <50000000>;
+> +				mode = <0>;
+> +
+> +				partition@0 {
+> +					/* 512KB for u-boot Bootloader Image */
+> +					reg = <0x0 0x00080000>;
+> +					label = "SPI (RO) U-Boot Image";
+> +					read-only;
+> +				};
+> +
+> +				partition@80000 {
+> +					/* 512KB for DTB Image */
+> +					reg = <0x00080000 0x00080000>;
+> +					label = "SPI (RO) DTB Image";
+> +					read-only;
+> +				};
+> +
+> +				partition@100000 {
+> +					/* 4MB for Linux Kernel Image */
+> +					reg = <0x00100000 0x00400000>;
+> +					label = "SPI (RO) Linux Kernel Image";
+> +					read-only;
+> +				};
+> +
+> +				partition@500000 {
+> +					/* 4MB for Compressed RFS Image */
+> +					reg = <0x00500000 0x00400000>;
+> +					label = "SPI (RO) Compressed RFS Image";
+> +					read-only;
+> +				};
+> +
+> +				partition@900000 {
+> +					/* 7MB for JFFS2 based RFS */
+> +					reg = <0x00900000 0x00700000>;
+> +					label = "SPI (RW) JFFS2 RFS";
+> +				};
+> +			};
+> +		};
+> +
+> +		dma@c300 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "fsl,eloplus-dma";
+> +			reg = <0xc300 0x4>;
+> +			ranges = <0x0 0xc100 0x200>;
+> +			cell-index = <1>;
+> +			dma-channel@0 {
+> +				compatible = "fsl,eloplus-dma-channel";
+> +				reg = <0x0 0x80>;
+> +				cell-index = <0>;
+> +				interrupt-parent = <&mpic>;
+> +				interrupts = <76 2>;
+> +			};
+> +			dma-channel@80 {
+> +				compatible = "fsl,eloplus-dma-channel";
+> +				reg = <0x80 0x80>;
+> +				cell-index = <1>;
+> +				interrupt-parent = <&mpic>;
+> +				interrupts = <77 2>;
+> +			};
+> +			dma-channel@100 {
+> +				compatible = "fsl,eloplus-dma-channel";
+> +				reg = <0x100 0x80>;
+> +				cell-index = <2>;
+> +				interrupt-parent = <&mpic>;
+> +				interrupts = <78 2>;
+> +			};
+> +			dma-channel@180 {
+> +				compatible = "fsl,eloplus-dma-channel";
+> +				reg = <0x180 0x80>;
+> +				cell-index = <3>;
+> +				interrupt-parent = <&mpic>;
+> +				interrupts = <79 2>;
+> +			};
+> +		};
+> +
+> +		gpio: gpio-controller@f000 {
+> +			#gpio-cells = <2>;
+> +			compatible = "fsl,mpc8572-gpio";
+> +			reg = <0xf000 0x100>;
+> +			interrupts = <47 0x2>;
+> +			interrupt-parent = <&mpic>;
+> +			gpio-controller;
+> +		};
+> +
+> +		L2: l2-cache-controller@20000 {
+> +			compatible = "fsl,p2020-l2-cache-controller";
+> +			reg = <0x20000 0x1000>;
+> +			cache-line-size = <32>;	// 32 bytes
+> +			cache-size = <0x80000>; // L2,512K
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <16 2>;
+> +		};
+> +
+> +		dma@21300 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "fsl,eloplus-dma";
+> +			reg = <0x21300 0x4>;
+> +			ranges = <0x0 0x21100 0x200>;
+> +			cell-index = <0>;
+> +			dma-channel@0 {
+> +				compatible = "fsl,eloplus-dma-channel";
+> +				reg = <0x0 0x80>;
+> +				cell-index = <0>;
+> +				interrupt-parent = <&mpic>;
+> +				interrupts = <20 2>;
+> +			};
+> +			dma-channel@80 {
+> +				compatible = "fsl,eloplus-dma-channel";
+> +				reg = <0x80 0x80>;
+> +				cell-index = <1>;
+> +				interrupt-parent = <&mpic>;
+> +				interrupts = <21 2>;
+> +			};
+> +			dma-channel@100 {
+> +				compatible = "fsl,eloplus-dma-channel";
+> +				reg = <0x100 0x80>;
+> +				cell-index = <2>;
+> +				interrupt-parent = <&mpic>;
+> +				interrupts = <22 2>;
+> +			};
+> +			dma-channel@180 {
+> +				compatible = "fsl,eloplus-dma-channel";
+> +				reg = <0x180 0x80>;
+> +				cell-index = <3>;
+> +				interrupt-parent = <&mpic>;
+> +				interrupts = <23 2>;
+> +			};
+> +		};
+> +
+> +		usb@22000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			compatible = "fsl-usb2-dr";
+> +			reg = <0x22000 0x1000>;
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <28 0x2>;
+> +			phy_type = "ulpi";
+> +		};
+> +
+> +		enet0: ethernet@24000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			cell-index = <0>;
+> +			device_type = "network";
+> +			model = "eTSEC";
+> +			compatible = "gianfar";
+> +			reg = <0x24000 0x1000>;
+> +			ranges = <0x0 0x24000 0x1000>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			interrupts = <29 2 30 2 34 2>;
+> +			interrupt-parent = <&mpic>;
+> +			fixed-link = <1 1 1000 0 0>;
+> +			phy-connection-type = "rgmii-id";
+> +
+> +			mdio@520 {
+> +				#address-cells = <1>;
+> +				#size-cells = <0>;
+> +				compatible = "fsl,gianfar-mdio";
+> +				reg = <0x520 0x20>;
+> +
+> +				phy0: ethernet-phy@0 {
+> +					interrupt-parent = <&mpic>;
+> +					interrupts = <3 1>;
+> +					reg = <0x0>;
+> +				};
+> +				phy1: ethernet-phy@1 {
+> +					interrupt-parent = <&mpic>;
+> +					interrupts = <3 1>;
+> +					reg = <0x1>;
+> +				};
+> +			};
+> +		};
+> +
+> +		enet1: ethernet@25000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			cell-index = <1>;
+> +			device_type = "network";
+> +			model = "eTSEC";
+> +			compatible = "gianfar";
+> +			reg = <0x25000 0x1000>;
+> +			ranges = <0x0 0x25000 0x1000>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			interrupts = <35 2 36 2 40 2>;
+> +			interrupt-parent = <&mpic>;
+> +			tbi-handle = <&tbi0>;
+> +			phy-handle = <&phy0>;
+> +			phy-connection-type = "sgmii";
+> +
+> +			mdio@520 {
+> +				#address-cells = <1>;
+> +				#size-cells = <0>;
+> +				compatible = "fsl,gianfar-tbi";
+> +				reg = <0x520 0x20>;
+> +
+> +				tbi0: tbi-phy@11 {
+> +					reg = <0x11>;
+> +					device_type = "tbi-phy";
+> +				};
+> +			};
+> +		};
+> +
+> +		enet2: ethernet@26000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			cell-index = <2>;
+> +			device_type = "network";
+> +			model = "eTSEC";
+> +			compatible = "gianfar";
+> +			reg = <0x26000 0x1000>;
+> +			ranges = <0x0 0x26000 0x1000>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			interrupts = <31 2 32 2 33 2>;
+> +			interrupt-parent = <&mpic>;
+> +			phy-handle = <&phy1>;
+> +			phy-connection-type = "rgmii-id";
+> +		}; 
+> +
 
-zImage starting: loaded at 0x00400000 (sp: 0x004deeb0)Allocating 0x1dad84 b=
-ytes for kernel ...gunzipping (0x00000000 <- 0x0040c000:0x004dd3fc)...done =
-0x1c31cc bytes
-Linux/PowerPC load: console=3DttyS0 root=3D/dev/ramFinalizing device tree..=
-. flat tree at 0x4eb300Debug print:This worksDebug print:############!!!!##=
-#########Memory hole size: 0MB
-Unable to handle kernel paging request for data at address 0x01a00000Faulti=
-ng instruction address: 0xc0011434Oops: Kernel access of bad area=2C sig: 1=
-1 [#1]PREEMPT PowerPC 44x PlatformModules linked in:NIP: c0011434 LR: c010d=
-cb0 CTR: 00000001REGS: c01bfe60 TRAP: 0300   Not tainted  (2.6.30)MSR: 0002=
-1000 <ME=2CCE>  CR: 22000024  XER: 20000000DEAR: 01a00000=2C ESR: 00000000T=
-ASK =3D c01a94b8[0] 'swapper' THREAD: c01be000GPR00: fffffff4 c01bff10 c01a=
-94b8 01a00000 019fffff 0000000c c01958b0 00000000GPR08: 00000037 c0110000 0=
-0000042 00003fff 22000022 00000000 fffff104 00000000GPR16: 00000000 0000000=
-0 00000000 00000000 00000000 00000000 c010d750 c01958b0GPR24: 0000000c 0000=
-0000 c01a1dfc 01a00000 c01a1dfc 00003fff 0000000c 00000000NIP [c0011434] st=
-rlen+0x4/0x18LR [c010dcb0] match_token+0x1a0/0x228Call Trace:[c01bff50] [c0=
-1962f4] free_area_init_nodes+0x48/0x3a0[c01bff80] [c0191738] paging_init+0x=
-80/0xa0[c01bffb0] [c01909b4] setup_arch+0x1c4/0x1dc[c01bffc0] [c018c648] st=
-art_kernel+0x54/0x288[c01bfff0] [c0000200] skpinv+0x190/0x1ccInstruction du=
-mp:4d820020 7ca903a6 38a3ffff 3884ffff 8c650001 2c830000 8c040001 7c6018514=
-d860020 4102ffec 4e800020 3883ffff <8c040001> 2c000000 4082fff8 7c632050---=
-[ end trace 31fd0ba7d8756001 ]---Kernel panic - not syncing: Attempted to k=
-ill the idle task!Call Trace:[c01bfd40] [c0005d5c] show_stack+0x4c/0x16c (u=
-nreliable)[c01bfd80] [c002f174] panic+0xa0/0x168[c01bfdd0] [c0032eb0] do_ex=
-it+0x61c/0x638[c01bfe10] [c000b60c] kernel_bad_stack+0x0/0x4c[c01bfe40] [c0=
-00f328] bad_page_fault+0x90/0xd8[c01bfe50] [c000e19c] handle_page_fault+0x7=
-c/0x80[c01bff10] [00000000] (null)[c01bff50] [c01962f4] free_area_init_node=
-s+0x48/0x3a0[c01bff80] [c0191738] paging_init+0x80/0xa0[c01bffb0] [c01909b4=
-] setup_arch+0x1c4/0x1dc[c01bffc0] [c018c648] start_kernel+0x54/0x288[c01bf=
-ff0] [c0000200] skpinv+0x190/0x1ccRebooting in 180 seconds..
+Shouldn't mdio node be associated with enet2 ?
 
 
-Can anyone tell what would be the problem..?
-
-
-thanks=2CSumesh.
-
-
-Check the daily blob for the latest on what's happening around the web What=
- goes online=2C stays online
-_________________________________________________________________
-Need a new model in your life? Sell your car fast.
-http://a.ninemsn.com.au/b.aspx?URL=3Dhttp%3A%2F%2Fsecure%2Dau%2Eimrworldwid=
-e%2Ecom%2Fcgi%2Dbin%2Fa%2Fci%5F450304%2Fet%5F2%2Fcg%5F801459%2Fpi%5F1004813=
-%2Fai%5F866383&_t=3D758314219&_r=3Dcarpoint_tagline&_m=3DEXT=
-
---_6fdff2b4-2842-4a68-979a-18aa4998b591_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt=3B
-font-family:Verdana
-}
-</style>
-</head>
-<body class=3D'hmmessage'>
-Hi all=2C<div><br></div><div>I am trying to boot linux kernel (2.6.30) on a=
- custom built board.</div><div>I am using simple ppc platform and attached =
-are my dts file and boot log..<br></div><div>I've 26Mb of RAM=2CUART and UI=
-C with powerpc 440x5 processor.</div><div>Kernel Image size is less than 1 =
-mb.</div><div><br></div><div>cgc=2Cskybeam &nbsp=3Bboard is added in arch/p=
-owerpc/platforms/44x/ppc44x_simple.c</div><div><br></div><div><div>device t=
-ree file as bellow:</div><div>----------------------------</div><div><br></=
-div><div>/dts-v1/=3B</div><div><br></div><div>/ {</div><div><span class=3D"=
-EC_Apple-tab-span" style=3D"white-space:pre">	</span>model =3D "cgc=2Cskybe=
-am"=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre=
-">	</span>compatible =3D "cgc=2Cskybeam"=3B</div><div><span class=3D"EC_App=
-le-tab-span" style=3D"white-space:pre">	</span>#address-cells =3D &lt=3B1&g=
-t=3B=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pr=
-e">	</span>#size-cells =3D &lt=3B1&gt=3B=3B</div><div><span class=3D"EC_App=
-le-tab-span" style=3D"white-space:pre">	</span>dcr-parent =3D &lt=3B&amp=3B=
-SKYBEAM_PPC&gt=3B=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"w=
-hite-space:pre">	</span></div><div><span class=3D"EC_Apple-tab-span" style=
-=3D"white-space:pre">	</span>chosen<span class=3D"EC_Apple-tab-span" style=
-=3D"white-space:pre">	</span>{</div><div><span class=3D"EC_Apple-tab-span" =
-style=3D"white-space:pre">		</span>bootargs =3D "console=3DttyS0 root=3D/de=
-v/ram"=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:=
-pre">	</span> &nbsp=3B &nbsp=3B &nbsp=3B <span class=3D"EC_Apple-tab-span" =
-style=3D"white-space:pre">	</span>linux=2Cstdout-path =3D "/plb/serial@0208=
-0000"=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:p=
-re">	</span>} =3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"whit=
-e-space:pre">	</span></div><div><span class=3D"EC_Apple-tab-span" style=3D"=
-white-space:pre">	</span>aliases {</div><div><span class=3D"EC_Apple-tab-sp=
-an" style=3D"white-space:pre">		</span>serial0 =3D &amp=3BSTD_UART=3B</div>=
-<div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">	</span>} =
-=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">	=
-</span></div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pr=
-e">	</span>memory<span class=3D"EC_Apple-tab-span" style=3D"white-space:pre=
-">	</span>{</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-spac=
-e:pre">		</span>device_type =3D "memory"=3B</div><div><span class=3D"EC_App=
-le-tab-span" style=3D"white-space:pre">		</span>reg =3D &lt=3B 0x0 0x01A000=
-00 &gt=3B=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-spa=
-ce:pre">	</span>} =3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"=
-white-space:pre">	</span></div><div><span class=3D"EC_Apple-tab-span" style=
-=3D"white-space:pre">	</span>cpus {</div><div><span class=3D"EC_Apple-tab-s=
-pan" style=3D"white-space:pre">		</span>#address-cells =3D &lt=3B1&gt=3B=3B=
-</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">		</=
-span>#size-cells =3D &lt=3B0&gt=3B=3B</div><div><span class=3D"EC_Apple-tab=
--span" style=3D"white-space:pre">	</span></div><div><span class=3D"EC_Apple=
--tab-span" style=3D"white-space:pre">		</span>SKYBEAM_PPC: cpu@0 {</div><di=
-v><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">			</span>dev=
-ice_type =3D "cpu"=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"=
-white-space:pre">			</span>#address-cells =3D &lt=3B1&gt=3B=3B</div><div><s=
-pan class=3D"EC_Apple-tab-span" style=3D"white-space:pre">			</span>#size-c=
-ells =3D &lt=3B1&gt=3B=3B</div><div><span class=3D"EC_Apple-tab-span" style=
-=3D"white-space:pre">			</span>reg =3D &lt=3B0&gt=3B=3B</div><div><span cla=
-ss=3D"EC_Apple-tab-span" style=3D"white-space:pre">			</span>clock-frequenc=
-y =3D &lt=3B25000000&gt=3B=3B</div><div><span class=3D"EC_Apple-tab-span" s=
-tyle=3D"white-space:pre">			</span>compatible =3D "PowerPC=2C440"=2C "ibm=
-=2Cppc440"=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-sp=
-ace:pre">			</span>d-cache-line-size =3D &lt=3B0x20&gt=3B=3B</div><div><spa=
-n class=3D"EC_Apple-tab-span" style=3D"white-space:pre">			</span>d-cache-s=
-ize =3D &lt=3B0x8000&gt=3B=3B</div><div><span class=3D"EC_Apple-tab-span" s=
-tyle=3D"white-space:pre">			</span>dcr-access-method =3D "native"=3B</div><=
-div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">			</span>d=
-cr-controller =3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"whit=
-e-space:pre">			</span>i-cache-line-size =3D &lt=3B0x20&gt=3B=3B</div><div>=
-<span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">			</span>i-cac=
-he-size =3D &lt=3B0x8000&gt=3B=3B</div><div><span class=3D"EC_Apple-tab-spa=
-n" style=3D"white-space:pre">			</span>model =3D "PowerPC=2C440"=3B</div><d=
-iv><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">			</span>ti=
-mebase-frequency =3D &lt=3B25000000&gt=3B=3B</div><div><span class=3D"EC_Ap=
-ple-tab-span" style=3D"white-space:pre">		</span>} =3B</div><div><span clas=
-s=3D"EC_Apple-tab-span" style=3D"white-space:pre">	</span>} =3B</div><div><=
-span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">	</span></div><d=
-iv><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">	</span>UIC0=
-: interrupt-controller0 {</div><div><span class=3D"EC_Apple-tab-span" style=
-=3D"white-space:pre">		</span>compatible =3D "ibm=2Cuic-440ep"=2C"ibm=2Cuic=
-"=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">=
-		</span>interrupt-controller=3B</div><div><span class=3D"EC_Apple-tab-span=
-" style=3D"white-space:pre">		</span>cell-index =3D &lt=3B0&gt=3B=3B</div><=
-div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">		</span>dc=
-r-reg =3D &lt=3B0x1c0 0x009&gt=3B=3B</div><div><span class=3D"EC_Apple-tab-=
-span" style=3D"white-space:pre">		</span>#address-cells =3D &lt=3B0&gt=3B=
-=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">	=
-	</span>#size-cells =3D &lt=3B0&gt=3B=3B</div><div><span class=3D"EC_Apple-=
-tab-span" style=3D"white-space:pre">		</span>#interrupt-cells =3D &lt=3B2&g=
-t=3B=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pr=
-e">	</span>}=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-=
-space:pre">	</span></div><div><span class=3D"EC_Apple-tab-span" style=3D"wh=
-ite-space:pre">	</span>PLB: plb {</div><div><span class=3D"EC_Apple-tab-spa=
-n" style=3D"white-space:pre">		</span>#address-cells =3D &lt=3B1&gt=3B=3B</=
-div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">		</sp=
-an>#size-cells =3D &lt=3B1&gt=3B=3B</div><div><span class=3D"EC_Apple-tab-s=
-pan" style=3D"white-space:pre">		</span>compatible =3D "simple-bus"=3B</div=
-><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">		</span>=
-ranges =3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space=
-:pre">		</span></div><div><span class=3D"EC_Apple-tab-span" style=3D"white-=
-space:pre">		</span>STD_UART: serial@02080000 {</div><div><span class=3D"EC=
-_Apple-tab-span" style=3D"white-space:pre">			</span>device_type =3D "seria=
-l"=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre"=
->			</span>compatible =3D "ns16550"=3B</div><div><span class=3D"EC_Apple-ta=
-b-span" style=3D"white-space:pre">			</span>reg =3D &lt=3B0x02080000 0x0000=
-0008&gt=3B=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"white-sp=
-ace:pre">			</span>virtual-reg =3D &lt=3B0x02080000&gt=3B=3B</div><div>&nbs=
-p=3B&nbsp=3B &nbsp=3B &nbsp=3B &nbsp=3B &nbsp=3B &nbsp=3Bclock-frequency =
-=3D &lt=3B125000000&gt=3B=3B</div><div><span class=3D"EC_Apple-tab-span" st=
-yle=3D"white-space:pre">			</span>current-speed =3D &lt=3B9600&gt=3B=3B</di=
-v><div><span class=3D"EC_Apple-tab-span" style=3D"white-space:pre">			</spa=
-n>interrupt-parent =3D &lt=3B&amp=3BUIC0&gt=3B=3B</div><div><span class=3D"=
-EC_Apple-tab-span" style=3D"white-space:pre">			</span>interrupts =3D &lt=
-=3B0x5 0x4&gt=3B=3B</div><div><span class=3D"EC_Apple-tab-span" style=3D"wh=
-ite-space:pre">		</span>} =3B</div><div><span class=3D"EC_Apple-tab-span" s=
-tyle=3D"white-space:pre">	</span>} =3B</div><div>} &nbsp=3B=3B</div><div><b=
-r></div></div><div>boot log is as below:</div><div>---------------------</d=
-iv><div><br></div><div><br></div><div><div>zImage starting: loaded at 0x004=
-00000 (sp: 0x004deeb0)</div><div>Allocating 0x1dad84 bytes for kernel ...</=
-div><div>gunzipping (0x00000000 &lt=3B- 0x0040c000:0x004dd3fc)...done 0x1c3=
-1cc bytes</div><div><br></div><div>Linux/PowerPC load: console=3DttyS0 root=
-=3D/dev/ram</div><div>Finalizing device tree... flat tree at 0x4eb300</div>=
-<div>Debug print:This works</div><div>Debug print:############!!!!#########=
-##</div><div>Memory hole size: 0MB<br></div><div>Unable to handle kernel pa=
-ging request for data at address 0x01a00000</div><div>Faulting instruction =
-address: 0xc0011434</div><div>Oops: Kernel access of bad area=2C sig: 11 [#=
-1]</div><div>PREEMPT PowerPC 44x Platform</div><div>Modules linked in:</div=
-><div>NIP: c0011434 LR: c010dcb0 CTR: 00000001</div><div>REGS: c01bfe60 TRA=
-P: 0300 &nbsp=3B Not tainted &nbsp=3B(2.6.30)</div><div>MSR: 00021000 &lt=
-=3BME=2CCE&gt=3B &nbsp=3BCR: 22000024 &nbsp=3BXER: 20000000</div><div>DEAR:=
- 01a00000=2C ESR: 00000000</div><div>TASK =3D c01a94b8[0] 'swapper' THREAD:=
- c01be000</div><div>GPR00: fffffff4 c01bff10 c01a94b8 01a00000 019fffff 000=
-0000c c01958b0 00000000</div><div>GPR08: 00000037 c0110000 00000042 00003ff=
-f 22000022 00000000 fffff104 00000000</div><div>GPR16: 00000000 00000000 00=
-000000 00000000 00000000 00000000 c010d750 c01958b0</div><div>GPR24: 000000=
-0c 00000000 c01a1dfc 01a00000 c01a1dfc 00003fff 0000000c 00000000</div><div=
->NIP [c0011434] strlen+0x4/0x18</div><div>LR [c010dcb0] match_token+0x1a0/0=
-x228</div><div>Call Trace:</div><div>[c01bff50] [c01962f4] free_area_init_n=
-odes+0x48/0x3a0</div><div>[c01bff80] [c0191738] paging_init+0x80/0xa0</div>=
-<div>[c01bffb0] [c01909b4] setup_arch+0x1c4/0x1dc</div><div>[c01bffc0] [c01=
-8c648] start_kernel+0x54/0x288</div><div>[c01bfff0] [c0000200] skpinv+0x190=
-/0x1cc</div><div>Instruction dump:</div><div>4d820020 7ca903a6 38a3ffff 388=
-4ffff 8c650001 2c830000 8c040001 7c601851</div><div>4d860020 4102ffec 4e800=
-020 3883ffff &lt=3B8c040001&gt=3B 2c000000 4082fff8 7c632050</div><div>---[=
- end trace 31fd0ba7d8756001 ]---</div><div>Kernel panic - not syncing: Atte=
-mpted to kill the idle task!</div><div>Call Trace:</div><div>[c01bfd40] [c0=
-005d5c] show_stack+0x4c/0x16c (unreliable)</div><div>[c01bfd80] [c002f174] =
-panic+0xa0/0x168</div><div>[c01bfdd0] [c0032eb0] do_exit+0x61c/0x638</div><=
-div>[c01bfe10] [c000b60c] kernel_bad_stack+0x0/0x4c</div><div>[c01bfe40] [c=
-000f328] bad_page_fault+0x90/0xd8</div><div>[c01bfe50] [c000e19c] handle_pa=
-ge_fault+0x7c/0x80</div><div>[c01bff10] [00000000] (null)</div><div>[c01bff=
-50] [c01962f4] free_area_init_nodes+0x48/0x3a0</div><div>[c01bff80] [c01917=
-38] paging_init+0x80/0xa0</div><div>[c01bffb0] [c01909b4] setup_arch+0x1c4/=
-0x1dc</div><div>[c01bffc0] [c018c648] start_kernel+0x54/0x288</div><div>[c0=
-1bfff0] [c0000200] skpinv+0x190/0x1cc</div><div>Rebooting in 180 seconds..<=
-/div><div><br></div><div><br></div><div><br></div><div>Can anyone tell what=
- would be the problem..?</div><div><br></div><div><br></div><div><br></div>=
-<div>thanks=2C</div><div>Sumesh.</div><div><br></div><div><br></div></div><=
-br><hr>Check the daily blob for the latest on what's happening around the w=
-eb <a href=3D"http://windowslive.ninemsn.com.au/blog.aspx">What goes online=
-=2C stays online</a><br /><hr />Sell your car fast. <a href=3D'http://a.nin=
-emsn.com.au/b.aspx?URL=3Dhttp%3A%2F%2Fsecure%2Dau%2Eimrworldwide%2Ecom%2Fcg=
-i%2Dbin%2Fa%2Fci%5F450304%2Fet%5F2%2Fcg%5F801459%2Fpi%5F1004813%2Fai%5F8663=
-83&_t=3D758314219&_r=3Dcarpoint_tagline&_m=3DEXT' target=3D'_new'>Need a ne=
-w model in your life?</a></body>
-</html>=
-
---_6fdff2b4-2842-4a68-979a-18aa4998b591_--
+> +		sdhci@2e000 {
+> +			compatible = "fsl,p2020-esdhc", "fsl,esdhc";
+> +			reg = <0x2e000 0x1000>;
+> +			interrupts = <72 0x2>;
+> +			interrupt-parent = <&mpic>;
+> +			/* Filled in by U-Boot */
+> +			clock-frequency = <0>;
+> +		};
+> +
+> +		crypto@30000 {
+> +			compatible = "fsl,sec3.1", "fsl,sec3.0", "fsl,sec2.4",
+> +				     "fsl,sec2.2", "fsl,sec2.1", "fsl,sec2.0";
+> +			reg = <0x30000 0x10000>;
+> +			interrupts = <45 2 58 2>;
+> +			interrupt-parent = <&mpic>;
+> +			fsl,num-channels = <4>;
+> +			fsl,channel-fifo-len = <24>;
+> +			fsl,exec-units-mask = <0xbfe>;
+> +			fsl,descriptor-types-mask = <0x3ab0ebf>;
+> +		};
+> +
+> +		mpic: pic@40000 {
+> +			interrupt-controller;
+> +			#address-cells = <0>;
+> +			#interrupt-cells = <2>;
+> +			reg = <0x40000 0x40000>;
+> +			compatible = "chrp,open-pic";
+> +			device_type = "open-pic";
+> +		};
+> +
+> +		msi@41600 {
+> +			compatible = "fsl,p2020-msi", "fsl,mpic-msi";
+> +			reg = <0x41600 0x80>;
+> +			msi-available-ranges = <0 0x100>;
+> +			interrupts = <
+> +				0xe0 0
+> +				0xe1 0
+> +				0xe2 0
+> +				0xe3 0
+> +				0xe4 0
+> +				0xe5 0
+> +				0xe6 0
+> +				0xe7 0>;
+> +			interrupt-parent = <&mpic>;
+> +		};
+> +
+> +		global-utilities@e0000 {	//global utilities block
+> +			compatible = "fsl,p2020-guts";
+> +			reg = <0xe0000 0x1000>;
+> +			fsl,has-rstcr;
+> +		};
+> +	};
+> +
+> +	pci0: pcie@ffe09000 {
+> +		compatible = "fsl,mpc8548-pcie";
+> +		device_type = "pci";
+> +		#interrupt-cells = <1>;
+> +		#size-cells = <2>;
+> +		#address-cells = <3>;
+> +		reg = <0 0xffe09000 0 0x1000>;
+> +		bus-range = <0 255>;
+> +		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+> +			  0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
+> +		clock-frequency = <33333333>;
+> +		interrupt-parent = <&mpic>;
+> +		interrupts = <25 2>;
+> +		pcie@0 {
+> +			reg = <0x0 0x0 0x0 0x0 0x0>;
+> +			#size-cells = <2>;
+> +			#address-cells = <3>;
+> +			device_type = "pci";
+> +			ranges = <0x2000000 0x0 0xa0000000
+> +				  0x2000000 0x0 0xa0000000
+> +				  0x0 0x20000000
+> +
+> +				  0x1000000 0x0 0x0
+> +				  0x1000000 0x0 0x0
+> +				  0x0 0x100000>;
+> +		};
+> +	};
+> +
+> +	pci1: pcie@ffe0a000 {
+> +		compatible = "fsl,mpc8548-pcie";
+> +		device_type = "pci";
+> +		#interrupt-cells = <1>;
+> +		#size-cells = <2>;
+> +		#address-cells = <3>;
+> +		reg = <0 0xffe0a000 0 0x1000>;
+> +		bus-range = <0 255>;
+> +		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
+> +			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
+> +		clock-frequency = <33333333>;
+> +		interrupt-parent = <&mpic>;
+> +		interrupts = <26 2>;
+> +		pcie@0 {
+> +			reg = <0x0 0x0 0x0 0x0 0x0>;
+> +			#size-cells = <2>;
+> +			#address-cells = <3>;
+> +			device_type = "pci";
+> +			ranges = <0x2000000 0x0 0xc0000000
+> +				  0x2000000 0x0 0xc0000000
+> +				  0x0 0x20000000
+> +
+> +				  0x1000000 0x0 0x0
+> +				  0x1000000 0x0 0x0
+> +				  0x0 0x100000>;
+> +		};
+> +	};
+> +};
+> diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+> index c162724..dc4819c 100644
+> --- a/arch/powerpc/configs/mpc85xx_defconfig
+> +++ b/arch/powerpc/configs/mpc85xx_defconfig
+> @@ -189,6 +189,7 @@ CONFIG_MPC85xx_CDS=y
+>  CONFIG_MPC85xx_MDS=y
+>  CONFIG_MPC8536_DS=y
+>  CONFIG_MPC85xx_DS=y
+> +CONFIG_MPC85xx_RDB=y
+>  CONFIG_SOCRATES=y
+>  CONFIG_KSI8560=y
+>  CONFIG_STX_GP3=y
+> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+> index a9b4166..d3a975e 100644
+> --- a/arch/powerpc/platforms/85xx/Kconfig
+> +++ b/arch/powerpc/platforms/85xx/Kconfig
+> @@ -55,6 +55,15 @@ config MPC85xx_DS
+>  	help
+>  	  This option enables support for the MPC85xx DS (MPC8544 DS) board
+>  
+> +config MPC85xx_RDB
+> +	bool "Freescale MPC85xx RDB"
+> +	select PPC_I8259
+> +	select DEFAULT_UIMAGE
+> +	select FSL_ULI1575
+> +	select SWIOTLB
+> +	help
+> +	  This option enables support for the MPC85xx RDB (P2020 RDB) board
+> +
+>  config SOCRATES
+>  	bool "Socrates"
+>  	select DEFAULT_UIMAGE
+> diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+> index 835733f..4efcc63 100644
+> --- a/arch/powerpc/platforms/85xx/Makefile
+> +++ b/arch/powerpc/platforms/85xx/Makefile
+> @@ -9,10 +9,11 @@ obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
+>  obj-$(CONFIG_MPC8536_DS)  += mpc8536_ds.o
+>  obj-$(CONFIG_MPC85xx_DS)  += mpc85xx_ds.o
+>  obj-$(CONFIG_MPC85xx_MDS) += mpc85xx_mds.o
+> +obj-$(CONFIG_MPC85xx_RDB)  += mpc85xx_rdb.o
+>  obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
+>  obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
+>  obj-$(CONFIG_SBC8560)     += sbc8560.o
+>  obj-$(CONFIG_SBC8548)     += sbc8548.o
+>  obj-$(CONFIG_SOCRATES)    += socrates.o socrates_fpga_pic.o
+>  obj-$(CONFIG_KSI8560)	  += ksi8560.o
+> -obj-$(CONFIG_XES_MPC85xx) += xes_mpc85xx.o
+> \ No newline at end of file
+> +obj-$(CONFIG_XES_MPC85xx) += xes_mpc85xx.o
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+> new file mode 100644
+> index 0000000..c8468de
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+> @@ -0,0 +1,141 @@
+> +/*
+> + * MPC85xx RDB Board Setup
+> + *
+> + * Copyright 2009 Freescale Semiconductor Inc.
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +#include <linux/stddef.h>
+> +#include <linux/kernel.h>
+> +#include <linux/pci.h>
+> +#include <linux/kdev_t.h>
+> +#include <linux/delay.h>
+> +#include <linux/seq_file.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/of_platform.h>
+> +
+> +#include <asm/system.h>
+> +#include <asm/time.h>
+> +#include <asm/machdep.h>
+> +#include <asm/pci-bridge.h>
+> +#include <mm/mmu_decl.h>
+> +#include <asm/prom.h>
+> +#include <asm/udbg.h>
+> +#include <asm/mpic.h>
+> +
+> +#include <sysdev/fsl_soc.h>
+> +#include <sysdev/fsl_pci.h>
+> +
+> +#undef DEBUG
+> +
+> +#ifdef DEBUG
+> +#define DBG(fmt, args...) printk(KERN_ERR "%s: " fmt, __func__, ## args)
+> +#else
+> +#define DBG(fmt, args...)
+> +#endif
+> +
+> +
+> +void __init mpc85xx_rdb_pic_init(void)
+> +{
+> +	struct mpic *mpic;
+> +	struct resource r;
+> +	struct device_node *np;
+> +
+> +	np = of_find_node_by_type(NULL, "open-pic");
+> +	if (np == NULL) {
+> +		printk(KERN_ERR "Could not find open-pic node\n");
+> +		return;
+> +	}
+> +
+> +	if (of_address_to_resource(np, 0, &r)) {
+> +		printk(KERN_ERR "Failed to map mpic register space\n");
+> +		of_node_put(np);
+> +		return;
+> +	}
+> +
+> +	mpic = mpic_alloc(np, r.start,
+> +		  MPIC_PRIMARY | MPIC_WANTS_RESET |
+> +		  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+> +		  MPIC_SINGLE_DEST_CPU,
+> +		  0, 256, " OpenPIC  ");
+> +
+> +	BUG_ON(mpic == NULL);
+> +	of_node_put(np);
+> +
+> +	mpic_init(mpic);
+> +
+> +}
+> +
+> +/*
+> + * Setup the architecture
+> + */
+> +#ifdef CONFIG_SMP
+> +extern void __init mpc85xx_smp_init(void);
+> +#endif
+> +static void __init mpc85xx_rdb_setup_arch(void)
+> +{
+> +#ifdef CONFIG_PCI
+> +	struct device_node *np;
+> +#endif
+> +
+> +	if (ppc_md.progress)
+> +		ppc_md.progress("mpc85xx_rdb_setup_arch()", 0);
+> +
+> +#ifdef CONFIG_PCI
+> +	for_each_node_by_type(np, "pci") {
+> +		if (of_device_is_compatible(np, "fsl,mpc8548-pcie"))
+> +			fsl_add_bridge(np, 0);
+> +	}
+> +
+> +#endif
+> +
+> +#ifdef CONFIG_SMP
+> +	mpc85xx_smp_init();
+> +#endif
+> +
+> +	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
+> +}
+> +
+> +static struct of_device_id __initdata mpc85xxrdb_ids[] = {
+> +	{ .type = "soc", },
+> +	{ .compatible = "soc", },
+> +	{ .compatible = "simple-bus", },
+> +	{ .compatible = "gianfar", },
+> +	{},
+> +};
+> +
+> +static int __init mpc85xxrdb_publish_devices(void)
+> +{
+> +	return of_platform_bus_probe(NULL, mpc85xxrdb_ids, NULL);
+> +}
+> +machine_device_initcall(p2020_rdb, mpc85xxrdb_publish_devices);
+> +
+> +/*
+> + * Called very early, device-tree isn't unflattened
+> + */
+> +static int __init p2020_rdb_probe(void)
+> +{
+> +	unsigned long root = of_get_flat_dt_root();
+> +
+> +	if (of_flat_dt_is_compatible(root, "fsl,P2020RDB"))
+> +		return 1;
+> +	return 0;
+> +}
+> +
+> +define_machine(p2020_rdb) {
+> +	.name			= "P2020 RDB",
+> +	.probe			= p2020_rdb_probe,
+> +	.setup_arch		= mpc85xx_rdb_setup_arch,
+> +	.init_IRQ		= mpc85xx_rdb_pic_init,
+> +#ifdef CONFIG_PCI
+> +	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+> +#endif
+> +	.get_irq		= mpic_get_irq,
+> +	.restart		= fsl_rstcr_restart,
+> +	.calibrate_decr		= generic_calibrate_decr,
+> +	.progress		= udbg_progress,
+> +};
