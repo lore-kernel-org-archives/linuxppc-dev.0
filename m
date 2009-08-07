@@ -1,26 +1,38 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <David.Vrabel@csr.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9917BB843F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 35924B708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  8 Aug 2009 05:58:24 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 0AECCDDD0C
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 05:58:24 +1000 (EST)
-Date: Fri, 7 Aug 2009 23:58:22 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 7/7] powerpc/85xx: Add eSDHC support for MPC8536DS boards
-Message-ID: <20090807195822.GG2735@oksana.dev.rtsoft.ru>
-References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
+	Sat,  8 Aug 2009 03:48:39 +1000 (EST)
+Received: from cluster-d.mailcontrol.com (cluster-d.mailcontrol.com
+	[85.115.60.190])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.mailcontrol.com",
+	Issuer "DigiCert Global CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3C37FDDD01
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 03:47:01 +1000 (EST)
+Received: from rly44d.srv.mailcontrol.com (localhost.localdomain [127.0.0.1])
+	by rly44d.srv.mailcontrol.com (MailControl) with ESMTP id
+	n77HBwrc007291
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2009 18:12:00 +0100
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+	by rly44d.srv.mailcontrol.com (MailControl) id n77HAcaM024550
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2009 18:10:38 +0100
+Message-ID: <4A7C5FAB.2020304@csr.com>
+Date: Fri, 07 Aug 2009 18:08:59 +0100
+From: David Vrabel <david.vrabel@csr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 3/4] sdhci-of: Fix high-speed cards recognition
+References: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
+	<20090807165015.GB524@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090807165015.GB524@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8
 Cc: Ben Dooks <ben@fluff.org>, sdhci-devel@lists.ossman.eu,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Pierre Ossman <pierre@ossman.eu>, David Vrabel <david.vrabel@csr.com>
+	Andrew Morton <akpm@linux-foundation.org>, Pierre Ossman <pierre@ossman.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +42,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch simply adds sdhci node to the device tree.
+Anton Vorontsov wrote:
+> eSDHC fails to recognize some SDHS cards, throwing timeout errors:
+> 
+>   mmc0: error -110 whilst initialising SD card
+> 
+> That's because we calculate timeout value in a wrong way: on eSDHC
+> hosts the timeout clock is derivied from the SD clock, which is set
+> dynamically.
 
-We specify clock-frequency manually, so that eSDHC will work without
-upgrading U-Boot. Though, that'll only work for default setup (1500
-MHz) on new board revisions. For non-default setups, it's recommended
-to upgrade U-Boot, since it will fixup clock-frequency automatically.
+I've seen an reference design for an SDHC controller do this also.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc8536ds.dts |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+> +/* Controller has dynamic timeout clock management */
+> +#define SDHCI_QUIRK_DYNAMIC_TIMEOUT_CLOCK		(1<<24)
 
-diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
-index 22caf69..815cebb 100644
---- a/arch/powerpc/boot/dts/mpc8536ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8536ds.dts
-@@ -250,6 +250,14 @@
- 			phy_type = "ulpi";
- 		};
- 
-+		sdhci@2e000 {
-+			compatible = "fsl,mpc8536-esdhc", "fsl,esdhc";
-+			reg = <0x2e000 0x1000>;
-+			interrupts = <72 0x2>;
-+			interrupt-parent = <&mpic>;
-+			clock-frequency = <250000000>;
-+		};
-+
- 		serial0: serial@4500 {
- 			cell-index = <0>;
- 			device_type = "serial";
+This comment and define would be better if it matched terms used in the
+spec.  Suggest:
+
+/* Controller uses SDCLK instead of TMCLK for data timeouts. */
+#define SDHCI_QUIRK_DATA_TIMEOUT_USES_SDCLK  (1 << 24)
+
+David
 -- 
-1.6.3.3
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+
+
+'member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom'
