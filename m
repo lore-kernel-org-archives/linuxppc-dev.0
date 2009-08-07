@@ -3,18 +3,17 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 72BB4B7E83
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DE167B7FA1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  8 Aug 2009 05:58:12 +1000 (EST)
+	Sat,  8 Aug 2009 05:58:13 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 9B62DDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 05:58:11 +1000 (EST)
-Date: Fri, 7 Aug 2009 23:58:10 +0400
+	by ozlabs.org (Postfix) with ESMTP id 1C4CFDDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 05:58:13 +1000 (EST)
+Date: Fri, 7 Aug 2009 23:58:11 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 4/7] powerpc: Introduce and document sdhci,wp-inverted
-	property for eSDHC
-Message-ID: <20090807195810.GD2735@oksana.dev.rtsoft.ru>
+Subject: [PATCH 5/7] sdhci-of: Don't hard-code inverted write-protect quirk
+Message-ID: <20090807195811.GE2735@oksana.dev.rtsoft.ru>
 References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -31,120 +30,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-eSDHC block in MPC837x SOCs reports inverted write-protect state,
-soon sdhci-of driver will look for sdhci,wp-inverted properties to
-decide whether apply a specific quirk.
+MPC85xx SOCs have normal write-protect state reporting, so we shouldn't
+hard-code the quirk.
 
-So, document the property and add it to device tree source files.
+Instead, look for "sdhci,wp-inverted" property, plus check for
+mpc837x_{rdb,mds} machines since older device trees don't specify the
+new property.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- Documentation/powerpc/dts-bindings/fsl/esdhc.txt |    2 ++
- arch/powerpc/boot/dts/mpc8377_mds.dts            |    1 +
- arch/powerpc/boot/dts/mpc8377_rdb.dts            |    1 +
- arch/powerpc/boot/dts/mpc8377_wlan.dts           |    1 +
- arch/powerpc/boot/dts/mpc8378_mds.dts            |    1 +
- arch/powerpc/boot/dts/mpc8378_rdb.dts            |    1 +
- arch/powerpc/boot/dts/mpc8379_mds.dts            |    1 +
- arch/powerpc/boot/dts/mpc8379_rdb.dts            |    1 +
- 8 files changed, 9 insertions(+), 0 deletions(-)
+ drivers/mmc/host/sdhci-of.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/esdhc.txt b/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
-index 3ed3797..8a00407 100644
---- a/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
-@@ -10,6 +10,8 @@ Required properties:
-   - interrupts : should contain eSDHC interrupt.
-   - interrupt-parent : interrupt source phandle.
-   - clock-frequency : specifies eSDHC base clock frequency.
-+  - sdhci,wp-inverted : (optional) specifies that eSDHC controller
-+    reports inverted write-protect state;
-   - sdhci,1-bit-only : (optional) specifies that a controller can
-     only handle 1-bit data transfers.
+diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
+index 004f24d..87aaf4b 100644
+--- a/drivers/mmc/host/sdhci-of.c
++++ b/drivers/mmc/host/sdhci-of.c
+@@ -21,6 +21,7 @@
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
+ #include <linux/mmc/host.h>
++#include <asm/machdep.h>
+ #include "sdhci.h"
  
-diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-index f32c281..855782c 100644
---- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -159,6 +159,7 @@
- 				reg = <0x2e000 0x1000>;
- 				interrupts = <42 0x8>;
- 				interrupt-parent = <&ipic>;
-+				sdhci,wp-inverted;
- 				/* Filled in by U-Boot */
- 				clock-frequency = <0>;
- 			};
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index 28e022a..9e2264b 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -173,6 +173,7 @@
- 				reg = <0x2e000 0x1000>;
- 				interrupts = <42 0x8>;
- 				interrupt-parent = <&ipic>;
-+				sdhci,wp-inverted;
- 				/* Filled in by U-Boot */
- 				clock-frequency = <111111111>;
- 			};
-diff --git a/arch/powerpc/boot/dts/mpc8377_wlan.dts b/arch/powerpc/boot/dts/mpc8377_wlan.dts
-index 3febc4e..9a60369 100644
---- a/arch/powerpc/boot/dts/mpc8377_wlan.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_wlan.dts
-@@ -150,6 +150,7 @@
- 				reg = <0x2e000 0x1000>;
- 				interrupts = <42 0x8>;
- 				interrupt-parent = <&ipic>;
-+				sdhci,wp-inverted;
- 				clock-frequency = <133333333>;
- 			};
- 		};
-diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
-index f720ab9..f70cf60 100644
---- a/arch/powerpc/boot/dts/mpc8378_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
-@@ -159,6 +159,7 @@
- 				reg = <0x2e000 0x1000>;
- 				interrupts = <42 0x8>;
- 				interrupt-parent = <&ipic>;
-+				sdhci,wp-inverted;
- 				/* Filled in by U-Boot */
- 				clock-frequency = <0>;
- 			};
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index a11ead8..4e6a1a4 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -173,6 +173,7 @@
- 				reg = <0x2e000 0x1000>;
- 				interrupts = <42 0x8>;
- 				interrupt-parent = <&ipic>;
-+				sdhci,wp-inverted;
- 				/* Filled in by U-Boot */
- 				clock-frequency = <111111111>;
- 			};
-diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
-index 4fa221f..645ec51 100644
---- a/arch/powerpc/boot/dts/mpc8379_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
-@@ -157,6 +157,7 @@
- 				reg = <0x2e000 0x1000>;
- 				interrupts = <42 0x8>;
- 				interrupt-parent = <&ipic>;
-+				sdhci,wp-inverted;
- 				/* Filled in by U-Boot */
- 				clock-frequency = <0>;
- 			};
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index e35dfba..72336d5 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -171,6 +171,7 @@
- 				reg = <0x2e000 0x1000>;
- 				interrupts = <42 0x8>;
- 				interrupt-parent = <&ipic>;
-+				sdhci,wp-inverted;
- 				/* Filled in by U-Boot */
- 				clock-frequency = <111111111>;
- 			};
+ struct sdhci_of_data {
+@@ -175,7 +176,6 @@ static unsigned int esdhc_get_min_clock(struct sdhci_host *host)
+ static struct sdhci_of_data sdhci_esdhc = {
+ 	.quirks = SDHCI_QUIRK_FORCE_BLK_SZ_2048 |
+ 		  SDHCI_QUIRK_BROKEN_CARD_DETECTION |
+-		  SDHCI_QUIRK_INVERTED_WRITE_PROTECT |
+ 		  SDHCI_QUIRK_NO_BUSY_IRQ |
+ 		  SDHCI_QUIRK_NONSTANDARD_CLOCK |
+ 		  SDHCI_QUIRK_DATA_TIMEOUT_USES_SDCLK |
+@@ -219,6 +219,15 @@ static int sdhci_of_resume(struct of_device *ofdev)
+ 
+ #endif
+ 
++static bool __devinit sdhci_of_wp_inverted(struct device_node *np)
++{
++	if (of_get_property(np, "sdhci,wp-inverted", NULL))
++		return true;
++
++	/* Old device trees don't have the wp-inverted property. */
++	return machine_is(mpc837x_rdb) || machine_is(mpc837x_mds);
++}
++
+ static int __devinit sdhci_of_probe(struct of_device *ofdev,
+ 				 const struct of_device_id *match)
+ {
+@@ -261,6 +270,9 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
+ 	if (of_get_property(np, "sdhci,1-bit-only", NULL))
+ 		host->quirks |= SDHCI_QUIRK_FORCE_1_BIT_DATA;
+ 
++	if (sdhci_of_wp_inverted(np))
++		host->quirks |= SDHCI_QUIRK_INVERTED_WRITE_PROTECT;
++
+ 	clk = of_get_property(np, "clock-frequency", &size);
+ 	if (clk && size == sizeof(*clk) && *clk)
+ 		of_host->clock = *clk;
 -- 
 1.6.3.3
