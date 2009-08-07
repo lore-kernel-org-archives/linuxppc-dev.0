@@ -1,27 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <kim.phillips@freescale.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E4CB0B7B88
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0CE69B7B6F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  8 Aug 2009 07:03:27 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Sat,  8 Aug 2009 09:40:39 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 343FCDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 07:03:26 +1000 (EST)
-Subject: Re: sequoia: The final kernel image would overwrite the device tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <alpine.LRH.2.00.0908071740410.22357@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0907281524510.29006@vixen.sonytel.be>
-	<alpine.LRH.2.00.0908071740410.22357@vixen.sonytel.be>
-Content-Type: text/plain
-Date: Sat, 08 Aug 2009 07:03:11 +1000
-Message-Id: <1249678991.10143.1.camel@pasglop>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9084BDDD04
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 09:40:37 +1000 (EST)
+Date: Fri, 7 Aug 2009 18:39:58 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linux-crypto@vger.kernel.org
+Subject: [PATCH 1/3] crypto: talitos - simplify hmac data size calculation
+Message-Id: <20090807183958.94650fb7.kim.phillips@freescale.com>
 Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Stefan Roese <sr@denx.de>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,31 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-08-07 at 17:48 +0200, Geert Uytterhoeven wrote:
-> | Allocating 0x85e784 bytes for kernel ...
-> | platform_ops.vmlinux_alloc = 0x00000000
-> | _end = 0x792000
-> | The final kernel image would overwrite the device tree?
-> 
-> and it reboots.
-> 
-> However, nm says _end = c085f000.
-> 
-> So in both cases _end is not correct in
-> arch/powerpc/boot/main.c:prep_kernel()?
-> But depending on CONFIG_PROVE_LOCKING, the test for
-> ((unsigned long)_end < ei.memsize) gives different results, and the
-> kernel
-> boots or doesn't boot?
-> 
-Well, "Allocating 0x85e784" looks right...
+don't do request->src vs. assoc pointer math - it's the same as adding
+assoclen and ivsize (just with more effort).
 
-My experience, however, with a Canyonlands board, is that uBoot has
-a bug that makes it always allocate the device-tree below 8M and clash
-with the kernel when it gets too big.
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+ drivers/crypto/talitos.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-I think Stefan fixed that recently, you may need to rebuild your uboot,
-I'll let him tell you the details about the fix.
-
-Cheers,
-Ben.
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index c70775f..b1a651c 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -970,7 +970,7 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
+ 	struct talitos_desc *desc = &edesc->desc;
+ 	unsigned int cryptlen = areq->cryptlen;
+ 	unsigned int authsize = ctx->authsize;
+-	unsigned int ivsize;
++	unsigned int ivsize = crypto_aead_ivsize(aead);
+ 	int sg_count, ret;
+ 	int sg_link_tbl_len;
+ 
+@@ -978,11 +978,9 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
+ 	map_single_talitos_ptr(dev, &desc->ptr[0], ctx->authkeylen, &ctx->key,
+ 			       0, DMA_TO_DEVICE);
+ 	/* hmac data */
+-	map_single_talitos_ptr(dev, &desc->ptr[1], sg_virt(areq->src) -
+-			       sg_virt(areq->assoc), sg_virt(areq->assoc), 0,
+-			       DMA_TO_DEVICE);
++	map_single_talitos_ptr(dev, &desc->ptr[1], areq->assoclen + ivsize,
++			       sg_virt(areq->assoc), 0, DMA_TO_DEVICE);
+ 	/* cipher iv */
+-	ivsize = crypto_aead_ivsize(aead);
+ 	map_single_talitos_ptr(dev, &desc->ptr[2], ivsize, giv ?: areq->iv, 0,
+ 			       DMA_TO_DEVICE);
+ 
+-- 
+1.6.3
