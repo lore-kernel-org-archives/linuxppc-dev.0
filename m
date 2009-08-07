@@ -1,22 +1,26 @@
-Return-Path: <jonsmirl@gmail.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C31C9B7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B4477B7B5F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  8 Aug 2009 02:40:42 +1000 (EST)
+	Sat,  8 Aug 2009 02:40:58 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 50D5CDDD04
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 02:40:58 +1000 (EST)
+Date: Fri, 7 Aug 2009 20:40:57 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/4] sdhci-of: Fix SD clock calculation
+Message-ID: <20090807164057.GA13464@oksana.dev.rtsoft.ru>
+References: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-In-Reply-To: <fa686aa40908070915x7e04cbb8ofccd106230d5f76c@mail.gmail.com>
-References: <9e4733910908070903p539b8987p8351df5b3d328fdd@mail.gmail.com>
-	<fa686aa40908070915x7e04cbb8ofccd106230d5f76c@mail.gmail.com>
-Date: Fri, 7 Aug 2009 12:34:19 -0400
-Message-ID: <9e4733910908070934se43b2a9lfe72e89e0e247ea3@mail.gmail.com>
-Subject: Re: PSC clock divider
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20090807163940.GA29192@oksana.dev.rtsoft.ru>
+Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
+	sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org,
+	Pierre Ossman <pierre@ossman.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,20 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 7, 2009 at 12:15 PM, Grant Likely<grant.likely@secretlab.ca> wrote:
->> Should I modify mpc52xx_set_psc_clkdiv() to take in a frequency and
->> them move this code into mpc52xx_common.c? That allows the sysclk
->> parameter to be eliminated for SPI.
->
-> Yes, please do.
+Linear divisor's values in a register start at 0 (zero means
+"divide by 1"). Before this patch the code didn't account that
+fact, so SD cards were running underclocked.
 
-Can mpc5xxx_clocks.c be eliminated and this function:
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/mmc/host/sdhci-of.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-mpc5xxx_get_bus_frequency(struct device_node *node)
-
-be moved into mpc52cc_common.c?
-
-
+diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
+index 9088443..92b5667 100644
+--- a/drivers/mmc/host/sdhci-of.c
++++ b/drivers/mmc/host/sdhci-of.c
+@@ -136,6 +136,7 @@ static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	}
+ 
+ 	pre_div >>= 1;
++	div--;
+ 
+ 	setbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
+ 		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN |
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.6.3.3
