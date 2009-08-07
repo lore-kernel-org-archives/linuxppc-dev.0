@@ -1,18 +1,20 @@
-Return-Path: <hongwoo7@gmail.com>
-Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.245])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 732F4B6F1F
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 87A01B708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 18:46:58 +1000 (EST)
-Received: by rv-out-0708.google.com with SMTP id f25so433256rvb.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 07 Aug 2009 01:46:57 -0700 (PDT)
-Message-ID: <4A7BEA04.7030006@gmail.com>
-Date: Fri, 07 Aug 2009 17:47:00 +0900
-From: HongWoo Lee <hongwoo7@gmail.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Question about powerpc branch instructions
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri,  7 Aug 2009 18:52:28 +1000 (EST)
+Subject: Re: Question about powerpc branch instructions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: HongWoo Lee <hongwoo7@gmail.com>
+In-Reply-To: <4A7BEA04.7030006@gmail.com>
+References: <4A7BEA04.7030006@gmail.com>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 18:52:16 +1000
+Message-Id: <1249635136.24311.12.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,46 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi~
+On Fri, 2009-08-07 at 17:47 +0900, HongWoo Lee wrote:
 
-I want to know about bl instruction and the difference between branch 
-instructions.
-I found this code segment.
+> #1: Is there any special reason to concatenate 0b00 ?  Why 0b00 ??
 
-{{{
-....
-bl  go_to_real
-insrdi  r18, r19, 32, 0
-....
-}}}
+Because instructions have to be aligned on 4 bytes boundaries ?
 
-And I found the explanation about branch instructions in PowerISA 2.06 
-document.
+> #2: Is b similar to the jmp in x86 ? and bl is similar to the call in x86 ?
 
-{{{
-b target_addr (AA=0 LK=0)
-ba target_addr (AA=1 LK=0)
-bl target_addr (AA=0 LK=1)
-bla target_addr (AA=1 LK=1)
+I'm not totally familiar with x86 but I "sounds" like it, though of
+course they can be (ab)used in some more subtle ways.
 
-If AA=0 then the branch target address is the sum of LI || 0b00 
-sign-extended and the address of this instruction,
-with the high-order 32 bits of the branch target address set to 0 in 
-32-bit mode.
+Cheers,
+Ben.
 
-If AA=1 then the branch target address is the value LI || 0b00 
-sign-extended,
-with the high-order 32 bits of the branch target address set to 0 in 
-32-bit mode.
-
-If LK=1 then the effective address of the instruction following the 
-Branch instruction is placed into the Link Register.
-}}}
-
-Questions
-#1: Is there any special reason to concatenate 0b00 ?  Why 0b00 ??
-#2: Is b similar to the jmp in x86 ? and bl is similar to the call in x86 ?
-
-Thanks in advance.
-
-HongWoo.
+> Thanks in advance.
+> 
+> HongWoo.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
