@@ -3,23 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 03F5CB6EDE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 16DA2B7E7F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 12:08:29 +1000 (EST)
+	Fri,  7 Aug 2009 12:08:36 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 67967DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 12:08:27 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id E29A4DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 12:08:34 +1000 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n7728NSG019337
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2009 21:08:24 -0500
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n7728T2G019341
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2009 21:08:29 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: Move mpc8536ds.dts to address-cells/size-cells
-	= <2>
-Date: Thu,  6 Aug 2009 21:08:23 -0500
-Message-Id: <1249610903-7016-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/85xx: Added 36-bit physical device tree for mpc8572ds
+	board
+Date: Thu,  6 Aug 2009 21:08:29 -0500
+Message-Id: <1249610909-7040-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,106 +29,487 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change the top-level #address-cells and #size-cells to <2> so the
-mpc8536ds.dts is easier to deal with both a true 32-bit physical
-or 36-bit physical address space.
+Added a device tree that should be similiar to mpc8536ds.dtb except
+the physical addresses for all IO are above the 4G boundary.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/mpc8536ds.dts |   32 ++++++++++++++++----------------
- 1 files changed, 16 insertions(+), 16 deletions(-)
+ arch/powerpc/boot/dts/mpc8536ds_36b.dts |  467 +++++++++++++++++++++++++++++++
+ 1 files changed, 467 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc8536ds_36b.dts
 
-diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
-index e781ad2..22caf69 100644
---- a/arch/powerpc/boot/dts/mpc8536ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8536ds.dts
-@@ -14,8 +14,8 @@
- / {
- 	model = "fsl,mpc8536ds";
- 	compatible = "fsl,mpc8536ds";
--	#address-cells = <1>;
--	#size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/mpc8536ds_36b.dts b/arch/powerpc/boot/dts/mpc8536ds_36b.dts
+new file mode 100644
+index 0000000..113ed8b
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8536ds_36b.dts
+@@ -0,0 +1,467 @@
++/*
++ * MPC8536 DS Device Tree Source
++ *
++ * Copyright 2008-2009 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++
++/ {
++	model = "fsl,mpc8536ds";
++	compatible = "fsl,mpc8536ds";
 +	#address-cells = <2>;
 +	#size-cells = <2>;
- 
- 	aliases {
- 		ethernet0 = &enet0;
-@@ -42,7 +42,7 @@
- 
- 	memory {
- 		device_type = "memory";
--		reg = <00000000 00000000>;	// Filled by U-Boot
++
++	aliases {
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++		pci1 = &pci1;
++		pci2 = &pci2;
++		pci3 = &pci3;
++	};
++
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,8536@0 {
++			device_type = "cpu";
++			reg = <0>;
++			next-level-cache = <&L2>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
 +		reg = <0 0 0 0>;	// Filled by U-Boot
- 	};
- 
- 	soc@ffe00000 {
-@@ -50,7 +50,7 @@
- 		#size-cells = <1>;
- 		device_type = "soc";
- 		compatible = "simple-bus";
--		ranges = <0x0 0xffe00000 0x100000>;
-+		ranges = <0x0 0 0xffe00000 0x100000>;
- 		bus-frequency = <0>;		// Filled out by uboot.
- 
- 		ecm-law@0 {
-@@ -347,13 +347,13 @@
- 		interrupt-parent = <&mpic>;
- 		interrupts = <24 0x2>;
- 		bus-range = <0 0xff>;
--		ranges = <0x02000000 0 0x80000000 0x80000000 0 0x10000000
--			  0x01000000 0 0x00000000 0xffc00000 0 0x00010000>;
-+		ranges = <0x02000000 0 0x80000000 0 0x80000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0 0xffc00000 0 0x00010000>;
- 		clock-frequency = <66666666>;
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xffe08000 0x1000>;
-+		reg = <0 0xffe08000 0 0x1000>;
- 	};
- 
- 	pci1: pcie@ffe09000 {
-@@ -362,10 +362,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xffe09000 0x1000>;
-+		reg = <0 0xffe09000 0 0x1000>;
- 		bus-range = <0 0xff>;
--		ranges = <0x02000000 0 0x98000000 0x98000000 0 0x08000000
--			  0x01000000 0 0x00000000 0xffc20000 0 0x00010000>;
-+		ranges = <0x02000000 0 0x98000000 0 0x98000000 0 0x08000000
-+			  0x01000000 0 0x00000000 0 0xffc20000 0 0x00010000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <25 0x2>;
-@@ -398,10 +398,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xffe0a000 0x1000>;
-+		reg = <0 0xffe0a000 0 0x1000>;
- 		bus-range = <0 0xff>;
--		ranges = <0x02000000 0 0x90000000 0x90000000 0 0x08000000
--			  0x01000000 0 0x00000000 0xffc10000 0 0x00010000>;
-+		ranges = <0x02000000 0 0x90000000 0 0x90000000 0 0x08000000
-+			  0x01000000 0 0x00000000 0 0xffc10000 0 0x00010000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <26 0x2>;
-@@ -434,10 +434,10 @@
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
--		reg = <0xffe0b000 0x1000>;
-+		reg = <0 0xffe0b000 0 0x1000>;
- 		bus-range = <0 0xff>;
--		ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x20000000
--			  0x01000000 0 0x00000000 0xffc30000 0 0x00010000>;
-+		ranges = <0x02000000 0 0xa0000000 0 0xa0000000 0 0x20000000
-+			  0x01000000 0 0x00000000 0 0xffc30000 0 0x00010000>;
- 		clock-frequency = <33333333>;
- 		interrupt-parent = <&mpic>;
- 		interrupts = <27 0x2>;
++	};
++
++	soc@fffe00000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		compatible = "simple-bus";
++		ranges = <0x0 0xf 0xffe00000 0x100000>;
++		bus-frequency = <0>;		// Filled out by uboot.
++
++		ecm-law@0 {
++			compatible = "fsl,ecm-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <12>;
++		};
++
++		ecm@1000 {
++			compatible = "fsl,mpc8536-ecm", "fsl,ecm";
++			reg = <0x1000 0x1000>;
++			interrupts = <17 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		memory-controller@2000 {
++			compatible = "fsl,mpc8536-memory-controller";
++			reg = <0x2000 0x1000>;
++			interrupt-parent = <&mpic>;
++			interrupts = <18 0x2>;
++		};
++
++		L2: l2-cache-controller@20000 {
++			compatible = "fsl,mpc8536-l2-cache-controller";
++			reg = <0x20000 0x1000>;
++			interrupt-parent = <&mpic>;
++			interrupts = <16 0x2>;
++		};
++
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <43 0x2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
++
++		i2c@3100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <1>;
++			compatible = "fsl-i2c";
++			reg = <0x3100 0x100>;
++			interrupts = <43 0x2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++			rtc@68 {
++				compatible = "dallas,ds3232";
++				reg = <0x68>;
++				interrupts = <0 0x1>;
++				interrupt-parent = <&mpic>;
++			};
++		};
++
++		dma@21300 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8536-dma", "fsl,eloplus-dma";
++			reg = <0x21300 4>;
++			ranges = <0 0x21100 0x200>;
++			cell-index = <0>;
++			dma-channel@0 {
++				compatible = "fsl,mpc8536-dma-channel",
++					     "fsl,eloplus-dma-channel";
++				reg = <0x0 0x80>;
++				cell-index = <0>;
++				interrupt-parent = <&mpic>;
++				interrupts = <20 2>;
++			};
++			dma-channel@80 {
++				compatible = "fsl,mpc8536-dma-channel",
++					     "fsl,eloplus-dma-channel";
++				reg = <0x80 0x80>;
++				cell-index = <1>;
++				interrupt-parent = <&mpic>;
++				interrupts = <21 2>;
++			};
++			dma-channel@100 {
++				compatible = "fsl,mpc8536-dma-channel",
++					     "fsl,eloplus-dma-channel";
++				reg = <0x100 0x80>;
++				cell-index = <2>;
++				interrupt-parent = <&mpic>;
++				interrupts = <22 2>;
++			};
++			dma-channel@180 {
++				compatible = "fsl,mpc8536-dma-channel",
++					     "fsl,eloplus-dma-channel";
++				reg = <0x180 0x80>;
++				cell-index = <3>;
++				interrupt-parent = <&mpic>;
++				interrupts = <23 2>;
++			};
++		};
++
++		usb@22000 {
++			compatible = "fsl,mpc8536-usb2-mph", "fsl-usb2-mph";
++			reg = <0x22000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = <&mpic>;
++			interrupts = <28 0x2>;
++			phy_type = "ulpi";
++		};
++
++		usb@23000 {
++			compatible = "fsl,mpc8536-usb2-mph", "fsl-usb2-mph";
++			reg = <0x23000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = <&mpic>;
++			interrupts = <46 0x2>;
++			phy_type = "ulpi";
++		};
++
++		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <0>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <29 2 30 2 34 2>;
++			interrupt-parent = <&mpic>;
++			tbi-handle = <&tbi0>;
++			phy-handle = <&phy1>;
++			phy-connection-type = "rgmii-id";
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 0x1>;
++					reg = <0>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 0x1>;
++					reg = <1>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
++		};
++
++		enet1: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <1>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <31 2 32 2 33 2>;
++			interrupt-parent = <&mpic>;
++			tbi-handle = <&tbi1>;
++			phy-handle = <&phy0>;
++			phy-connection-type = "rgmii-id";
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
++		};
++
++		usb@2b000 {
++			compatible = "fsl,mpc8536-usb2-dr", "fsl-usb2-dr";
++			reg = <0x2b000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = <&mpic>;
++			interrupts = <60 0x2>;
++			dr_mode = "peripheral";
++			phy_type = "ulpi";
++		};
++
++		serial0: serial@4500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4500 0x100>;
++			clock-frequency = <0>;
++			interrupts = <42 0x2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		serial1: serial@4600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4600 0x100>;
++			clock-frequency = <0>;
++			interrupts = <42 0x2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		crypto@30000 {
++			compatible = "fsl,sec3.0", "fsl,sec2.4", "fsl,sec2.2",
++				     "fsl,sec2.1", "fsl,sec2.0";
++			reg = <0x30000 0x10000>;
++			interrupts = <45 2 58 2>;
++			interrupt-parent = <&mpic>;
++			fsl,num-channels = <4>;
++			fsl,channel-fifo-len = <24>;
++			fsl,exec-units-mask = <0x9fe>;
++			fsl,descriptor-types-mask = <0x3ab0ebf>;
++		};
++
++		sata@18000 {
++			compatible = "fsl,mpc8536-sata", "fsl,pq-sata";
++			reg = <0x18000 0x1000>;
++			cell-index = <1>;
++			interrupts = <74 0x2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		sata@19000 {
++			compatible = "fsl,mpc8536-sata", "fsl,pq-sata";
++			reg = <0x19000 0x1000>;
++			cell-index = <2>;
++			interrupts = <41 0x2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		global-utilities@e0000 {	//global utilities block
++			compatible = "fsl,mpc8548-guts";
++			reg = <0xe0000 0x1000>;
++			fsl,has-rstcr;
++		};
++
++		mpic: pic@40000 {
++			clock-frequency = <0>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x40000 0x40000>;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++			big-endian;
++		};
++
++		msi@41600 {
++			compatible = "fsl,mpc8536-msi", "fsl,mpic-msi";
++			reg = <0x41600 0x80>;
++			msi-available-ranges = <0 0x100>;
++			interrupts = <
++				0xe0 0
++				0xe1 0
++				0xe2 0
++				0xe3 0
++				0xe4 0
++				0xe5 0
++				0xe6 0
++				0xe7 0>;
++			interrupt-parent = <&mpic>;
++		};
++	};
++
++	pci0: pci@fffe08000 {
++		compatible = "fsl,mpc8540-pci";
++		device_type = "pci";
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++
++			/* IDSEL 0x11 J17 Slot 1 */
++			0x8800 0 0 1 &mpic 1 1
++			0x8800 0 0 2 &mpic 2 1
++			0x8800 0 0 3 &mpic 3 1
++			0x8800 0 0 4 &mpic 4 1>;
++
++		interrupt-parent = <&mpic>;
++		interrupts = <24 0x2>;
++		bus-range = <0 0xff>;
++		ranges = <0x02000000 0 0xf0000000 0xc 0x00000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xffc00000 0 0x00010000>;
++		clock-frequency = <66666666>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xf 0xffe08000 0 0x1000>;
++	};
++
++	pci1: pcie@fffe09000 {
++		compatible = "fsl,mpc8548-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xf 0xffe09000 0 0x1000>;
++		bus-range = <0 0xff>;
++		ranges = <0x02000000 0 0xf8000000 0xc 0x18000000 0 0x08000000
++			  0x01000000 0 0x00000000 0xf 0xffc20000 0 0x00010000>;
++		clock-frequency = <33333333>;
++		interrupt-parent = <&mpic>;
++		interrupts = <25 0x2>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 4 1
++			0000 0 0 2 &mpic 5 1
++			0000 0 0 3 &mpic 6 1
++			0000 0 0 4 &mpic 7 1
++			>;
++		pcie@0 {
++			reg = <0 0 0 0 0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <0x02000000 0 0xf8000000
++				  0x02000000 0 0xf8000000
++				  0 0x08000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci2: pcie@fffe0a000 {
++		compatible = "fsl,mpc8548-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xf 0xffe0a000 0 0x1000>;
++		bus-range = <0 0xff>;
++		ranges = <0x02000000 0 0xf8000000 0xc 0x10000000 0 0x08000000
++			  0x01000000 0 0x00000000 0xf 0xffc10000 0 0x00010000>;
++		clock-frequency = <33333333>;
++		interrupt-parent = <&mpic>;
++		interrupts = <26 0x2>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 0 1
++			0000 0 0 2 &mpic 1 1
++			0000 0 0 3 &mpic 2 1
++			0000 0 0 4 &mpic 3 1
++			>;
++		pcie@0 {
++			reg = <0 0 0 0 0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <0x02000000 0 0xf8000000
++				  0x02000000 0 0xf8000000
++				  0 0x08000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci3: pcie@fffe0b000 {
++		compatible = "fsl,mpc8548-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xf 0xffe0b000 0 0x1000>;
++		bus-range = <0 0xff>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x20000000
++			  0x01000000 0 0x00000000 0xf 0xffc30000 0 0x00010000>;
++		clock-frequency = <33333333>;
++		interrupt-parent = <&mpic>;
++		interrupts = <27 0x2>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 8 1
++			0000 0 0 2 &mpic 9 1
++			0000 0 0 3 &mpic 10 1
++			0000 0 0 4 &mpic 11 1
++			>;
++
++		pcie@0 {
++			reg = <0 0 0 0 0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x20000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00100000>;
++		};
++	};
++};
 -- 
 1.6.0.6
