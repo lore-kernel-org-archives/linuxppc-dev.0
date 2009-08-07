@@ -3,24 +3,24 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6B38CB84F4
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4A552B7BB7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 12:44:15 +1000 (EST)
+	Fri,  7 Aug 2009 12:44:39 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C4ECBDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 12:44:14 +1000 (EST)
-Message-Id: <E3956396-3DA5-45B9-9360-309C7F0DC4E1@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id A6548DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 12:44:38 +1000 (EST)
+Message-Id: <A67874B9-1BEE-4F11-99CF-546F01A9BC8D@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090709183644.GA1614@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Martyn Welch <martyn.welch@gefanuc.com>
+In-Reply-To: <20090630143226.10778.29002.stgit@ES-J7S4D2J.amer.consind.ge.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH] powerpc/85xx: Add support for I2C EEPROMs on MPC8548CDS
-	boards
-Date: Thu, 6 Aug 2009 21:44:09 -0500
-References: <20090709183644.GA1614@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH] powerpc/86xx: Correct reading of information presented in
+	cpuinfo
+Date: Thu, 6 Aug 2009 21:44:29 -0500
+References: <20090630143226.10778.29002.stgit@ES-J7S4D2J.amer.consind.ge.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,17 +32,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 9, 2009, at 1:36 PM, Anton Vorontsov wrote:
+On Jun 30, 2009, at 9:32 AM, Martyn Welch wrote:
 
-> This patch simply adds four eeprom nodes to MPC8548CDS' device tree.
+> /proc/cpuinfo should be showing the boards revision and the revision  
+> of the FPGA fitted. The functions currently used to access this  
+> information as incorrect.
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Additionally the VME geographical address of the PPC9A and it's  
+> status as system contoller are available in the board registers.  
+> Show these in cpuinfo.
+>
+> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
 > ---
-> arch/powerpc/boot/dts/mpc8548cds.dts |   20 ++++++++++++++++++++
-> 1 files changed, 20 insertions(+), 0 deletions(-)
 >
+> arch/powerpc/platforms/86xx/gef_ppc9a.c |   37 ++++++++++++++++++++++ 
+> +++------
+> 1 files changed, 30 insertions(+), 7 deletions(-)
 
 
 applied to next.
+
+(Fixed the comment formatting to wrap properly)
 
 - k
