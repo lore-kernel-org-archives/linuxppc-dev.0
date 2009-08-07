@@ -3,17 +3,18 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A4359B70C4
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CB9F1B7BD0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  8 Aug 2009 05:58:06 +1000 (EST)
+	Sat,  8 Aug 2009 05:58:08 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 3B94BDDD01
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 05:58:06 +1000 (EST)
-Date: Fri, 7 Aug 2009 23:58:04 +0400
+	by ozlabs.org (Postfix) with ESMTP id 5F353DDD01
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 05:58:08 +1000 (EST)
+Date: Fri, 7 Aug 2009 23:58:06 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/7] sdhci-of: Fix SD clock calculation
-Message-ID: <20090807195804.GA2735@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/7] sdhci-of: Avoid writing reserved bits into host
+	control register
+Message-ID: <20090807195806.GB2735@oksana.dev.rtsoft.ru>
 References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -30,26 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Linear divisor's values in a register start at 0 (zero means
-"divide by 1"). Before this patch the code didn't account that
-fact, so SD cards were running underclocked.
+SDHCI core tries to write HISPD bit into the host control register,
+but the eSDHC controllers don't have that bit, and that causes
+all sorts of misbehaviour when using 4-bit mode capable SD cards.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci-of.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/mmc/host/sdhci-of.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index 9088443..92b5667 100644
+index 92b5667..8440fd9 100644
 --- a/drivers/mmc/host/sdhci-of.c
 +++ b/drivers/mmc/host/sdhci-of.c
-@@ -136,6 +136,7 @@ static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
- 	}
+@@ -48,6 +48,8 @@ struct sdhci_of_host {
+ #define ESDHC_CLOCK_HCKEN	0x00000002
+ #define ESDHC_CLOCK_IPGEN	0x00000001
  
- 	pre_div >>= 1;
-+	div--;
++#define ESDHC_HOST_CONTROL_RES	0x05
++
+ static u32 esdhc_readl(struct sdhci_host *host, int reg)
+ {
+ 	return in_be32(host->ioaddr + reg);
+@@ -109,6 +111,10 @@ static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
+ 	int base = reg & ~0x3;
+ 	int shift = (reg & 0x3) * 8;
  
- 	setbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
- 		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN |
++	/* Prevent SDHCI core from writing reserved bits (e.g. HISPD). */
++	if (reg == SDHCI_HOST_CONTROL)
++		val &= ~ESDHC_HOST_CONTROL_RES;
++
+ 	clrsetbits_be32(host->ioaddr + base , 0xff << shift, val << shift);
+ }
+ 
 -- 
 1.6.3.3
