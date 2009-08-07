@@ -1,24 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 716A8B7B9C
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B1A9EB7BA3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 13:09:58 +1000 (EST)
+	Fri,  7 Aug 2009 13:14:19 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D30E3DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 13:09:57 +1000 (EST)
-Date: Thu, 6 Aug 2009 22:09:48 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull from 'next' branch
-Message-ID: <Pine.LNX.4.64.0908062209340.7477@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id B8665DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 13:14:18 +1000 (EST)
+Subject: Re: 2.6.31-rc5-git2 crash [net/core/flow.c:flow_cache_new_hashrnd]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@gmail.com>
+In-Reply-To: <20090807025454.GL3095@hansolo.jdub.homelinux.org>
+References: <4A78292A.5000607@in.ibm.com> <4A783B1F.7000602@in.ibm.com>
+	<1249395350.8016.5.camel@concordia> <1249597385.24311.10.camel@pasglop>
+	<20090807025454.GL3095@hansolo.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Fri, 07 Aug 2009 13:13:54 +1000
+Message-Id: <1249614835.24311.11.camel@pasglop>
+Mime-Version: 1.0
+Cc: netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,56 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Please pull from 'next' branch of
+On Thu, 2009-08-06 at 22:54 -0400, Josh Boyer wrote:
+> On Fri, Aug 07, 2009 at 08:23:05AM +1000, Benjamin Herrenschmidt wrote:
+> >On Wed, 2009-08-05 at 00:15 +1000, Michael Ellerman wrote:
+> >
+> >> > c000000000600000  00001010      .long 0x1010
+> >> > 0:mon>
+> >> > c000000000600004  00000008      .long 0x8
+> >> > c000000000600008  00001013      .long 0x1013
+> >> > c00000000060000c  0000000f      .long 0xf
+> >> > c000000000600010  7961626f      rldimi. r1,r11,44,41
+> >> > c000000000600014  6f740000      xoris   r20,r27,0
+> >> > c000000000600018  00101600      .long 0x101600
+> >> > c00000000060001c  00000c00      .long 0xc00
+> >> > c000000000600020  00000400      .long 0x400
+> >> > c000000000600024  00101100      .long 0x101100
+> >> > c000000000600028  000008e9      .long 0x8e9
+> >
+> >BTW. Corruption looks like bi_recs... ie, broken yaboot. This was fixed
+> >recently, yaboot would eventually crap over the kernel for certain sizes
+> >of the kernel image.
+> >
+> >0x1010 = BI_FIRST
+> >0x1013 = BI_BOOTLOADER_ID followed by 0x7961626f6f74 which is
+> >"yaboot" :-)
+> >0x1016 = BI_MACHTYPE
+> 
+> I know we fixed it in Fedora for F11/F12.  Did it get fixed upstream?
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
+I think Tony did yes. Not sure what's the status with the "enterprise"
+distros.
 
-to receive the following updates:
-
- arch/powerpc/boot/dts/gef_sbc310.dts      |   64 +++-
- arch/powerpc/boot/dts/mgcoge.dts          |   53 +++
- arch/powerpc/boot/dts/mpc8377_rdb.dts     |    2
- arch/powerpc/boot/dts/mpc8377_wlan.dts    |  464 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/mpc8378_rdb.dts     |    2
- arch/powerpc/boot/dts/mpc8379_rdb.dts     |    2
- arch/powerpc/boot/dts/mpc8536ds.dts       |   32 +-
- arch/powerpc/boot/dts/mpc8536ds_36b.dts   |  467 ++++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/mpc8548cds.dts      |   20 +
- arch/powerpc/mm/fsl_booke_mmu.c           |    2
- arch/powerpc/platforms/82xx/mgcoge.c      |   69 +++-
- arch/powerpc/platforms/83xx/Kconfig       |    4
- arch/powerpc/platforms/83xx/mpc837x_rdb.c |   28 +
- arch/powerpc/platforms/83xx/mpc83xx.h     |    4
- arch/powerpc/platforms/86xx/gef_ppc9a.c   |   37 +-
- arch/powerpc/sysdev/fsl_rio.c             |   18 -
- arch/powerpc/sysdev/ipic.c                |    7
- arch/powerpc/sysdev/qe_lib/qe_ic.c        |    5
- 18 files changed, 1219 insertions(+), 61 deletions(-)
-
-Anton Vorontsov (3):
-      powerpc/83xx: Add support for MPC8377E-WLAN boards
-      powerpc/85xx: Add support for I2C EEPROMs on MPC8548CDS boards
-      powerpc/83xx: Add eSDHC support for MPC837xE-RDB/WLAN boards
-
-Heiko Schocher (1):
-      powerpc/82xx: mgcoge - updates for 2.6.32
-
-Julia Lawall (3):
-      powerpc/fsl_rio: Add kmalloc NULL tests
-      powerpc/ipic: introduce missing kfree
-      powerpc/qe: introduce missing kfree
-
-Kumar Gala (2):
-      powerpc/85xx: Move mpc8536ds.dts to address-cells/size-cells = <2>
-      powerpc/85xx: Added 36-bit physical device tree for mpc8572ds board
-
-Martyn Welch (3):
-      powerpc/86xx: Correct reading of information presented in cpuinfo
-      powerpc/86xx: Enable XMC site on GE Fanuc SBC310
-      powerpc/86xx: Update GE Fanuc sbc310 DTS
-
-Roel Kluin (1):
-      powerpc/fsl-booke: read buffer overflow
-
-Sebastian Andrzej Siewior (1):
-      powerpc/ipic: unmask all interrupt sources
+Cheers,
+Ben.
