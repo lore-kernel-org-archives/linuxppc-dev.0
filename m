@@ -1,29 +1,34 @@
-Return-Path: <julia@diku.dk>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <ljaenicke@innominate.com>
+Received: from home.innominate.com (home.innominate.com [77.245.32.75])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 02675B7B5F
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1A705B7099
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  7 Aug 2009 17:05:51 +1000 (EST)
-Received: from mgw1.diku.dk (mgw1.diku.dk [130.225.96.91])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw1.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C2734DDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2009 17:05:49 +1000 (EST)
-Date: Fri, 7 Aug 2009 09:00:34 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: "Daniel K." <dk@uw.no>
-Subject: Re: [PATCH 1/3] arch/powerpc: Add kmalloc NULL tests
-In-Reply-To: <4A7BCAF1.5070605@uw.no>
-Message-ID: <Pine.LNX.4.64.0908070859540.20445@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0908062203380.19100@ask.diku.dk>
-	<4A7BCAF1.5070605@uw.no>
+	Fri,  7 Aug 2009 17:48:09 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by home.innominate.com (Postfix) with ESMTP id 0ED40232BA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  7 Aug 2009 09:48:02 +0200 (CEST)
+Received: from home.innominate.com ([127.0.0.1])
+	by localhost (localhost.localdomain [127.0.0.1]) (amavisd-new,
+	port 10024)
+	with ESMTP id 0yifutb8SOhs for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  7 Aug 2009 09:48:01 +0200 (CEST)
+Received: from lutz.bln.innominate.local (lutz.bln.innominate.local
+	[10.1.0.160])
+	by home.innominate.com (Postfix) with ESMTP id DA18823143
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  7 Aug 2009 09:48:01 +0200 (CEST)
+Date: Fri, 7 Aug 2009 09:48:01 +0200
+From: Lutz Jaenicke <ljaenicke@innominate.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: MPC8313 performance evaluation
+Message-ID: <20090807074801.GA19763@lutz.bln.innominate.local>
+References: <20090806180035.GA19088@lutz.bln.innominate.local>
+	<8731B515-14B1-4580-A196-75E57543C3F9@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: kernel-janitors@vger.kernel.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <8731B515-14B1-4580-A196-75E57543C3F9@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,90 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
+On Thu, Aug 06, 2009 at 02:16:55PM -0500, Kumar Gala wrote:
+>
+> On Aug 6, 2009, at 1:00 PM, Lutz Jaenicke wrote:
+>> With the MPC8343@400MHz I get a throughput of approx. 24500 frames/s
+>> using the predefined firewall rules.
 
-Check that the result of kmalloc/kzalloc is not NULL before dereferencing it.
+>> With the MPC8313 I get a significantly lower value:
+>> MPC8313@250MHz          12500fps
+>> MPC8313@333MHz          14500fps
+>> MPC8313@416MHz          15500fps      (333MHz type, overclocked)
 
-The semantic match that finds this problem is as follows:
-(http://coccinelle.lip6.fr/)
+> What DDR frequencies (and width) are you running the 8343 vs 8313 at.   
+> This can have a significant impact on performance.
 
-// <smpl>
-@@
-expression *x;
-identifier f;
-constant char *C;
-@@
+The 8343 is running DDR2 32bit at 266MHz (CSB 266MHz)
+The 8313 is running DDR2 32bit at 333MHz (CSB 166MHz)
 
-x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-... when != x == NULL
-    when != x != NULL
-    when != (x || ...)
-(
-kfree(x)
-|
-f(...,C,...,x,...)
-|
-*f(...,x,...)
-|
-*x->f
-)
-// </smpl>
+The test were performed with 128byte frames so that the overall
+bandwidth needed is far below even 100Mbit/s.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+Best regards,
+	Lutz
+-- 
+Dr.-Ing. Lutz Jänicke
+CTO
+Innominate Security Technologies AG  /protecting industrial networks/
+tel: +49.30.921028-200
+fax: +49.30.921028-020
+Rudower Chaussee 13
+D-12489 Berlin, Germany
+www.innominate.com
 
----
- arch/powerpc/sysdev/fsl_rio.c       |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index cbb3bed..757a83f 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -1057,6 +1057,10 @@ int fsl_rio_setup(struct of_device *dev)
- 			law_start, law_size);
- 
- 	ops = kmalloc(sizeof(struct rio_ops), GFP_KERNEL);
-+	if (!ops) {
-+		rc = -ENOMEM;
-+		goto err_ops;
-+	}
- 	ops->lcread = fsl_local_config_read;
- 	ops->lcwrite = fsl_local_config_write;
- 	ops->cread = fsl_rio_config_read;
-@@ -1064,6 +1068,10 @@ int fsl_rio_setup(struct of_device *dev)
- 	ops->dsend = fsl_rio_doorbell_send;
- 
- 	port = kzalloc(sizeof(struct rio_mport), GFP_KERNEL);
-+	if (!port) {
-+		rc = -ENOMEM;
-+		goto err_port;
-+	}
- 	port->id = 0;
- 	port->index = 0;
- 
-@@ -1071,7 +1079,7 @@ int fsl_rio_setup(struct of_device *dev)
- 	if (!priv) {
- 		printk(KERN_ERR "Can't alloc memory for 'priv'\n");
- 		rc = -ENOMEM;
--		goto err;
-+		goto err_priv;
- 	}
- 
- 	INIT_LIST_HEAD(&port->dbells);
-@@ -1169,11 +1177,13 @@ int fsl_rio_setup(struct of_device *dev)
- 
- 	return 0;
- err:
--	if (priv)
--		iounmap(priv->regs_win);
--	kfree(ops);
-+	iounmap(priv->regs_win);
- 	kfree(priv);
-+err_priv:
- 	kfree(port);
-+err_port:
-+	kfree(ops);
-+err_ops:
- 	return rc;
- }
- 
+Register Court: AG Charlottenburg, HR B 81603
+Management Board: Dirk Seewald
+Chairman of the Supervisory Board: Volker Bibelhausen
