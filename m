@@ -1,23 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f208.google.com (mail-gx0-f208.google.com
-	[209.85.217.208])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 4901FB7B6B
+Return-Path: <wd@denx.de>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F3BDAB7B70
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  8 Aug 2009 15:49:08 +1000 (EST)
-Received: by gxk4 with SMTP id 4so2467359gxk.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 07 Aug 2009 22:49:06 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <24979490.1248785451446.JavaMail.ngmail@webmail10.arcor-online.net>
-References: <24979490.1248785451446.JavaMail.ngmail@webmail10.arcor-online.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 7 Aug 2009 23:48:46 -0600
-Message-ID: <fa686aa40908072248n22324ec6p17e21c5dcea6812e@mail.gmail.com>
-Subject: Re: [5200] ATA and (BAD) interrupts question
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+	Sat,  8 Aug 2009 17:38:14 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 30AB8DDD04
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Aug 2009 17:38:12 +1000 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: sequoia: The final kernel image would overwrite the device tree
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <1249678991.10143.1.camel@pasglop>
+References: <alpine.LRH.2.00.0907281524510.29006@vixen.sonytel.be>
+	<alpine.LRH.2.00.0908071740410.22357@vixen.sonytel.be>
+	<1249678991.10143.1.camel@pasglop>
+Date: Sat, 08 Aug 2009 09:38:07 +0200
+Message-Id: <20090808073807.18C4B832E416@gemini.denx.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 28, 2009 at 6:50 AM, Albrecht Dre=DF<albrecht.dress@arcor.de> w=
-rote:
-> Hi all,
->
-> I run linux 2.6.29.1 from kernel.org on a custom Freescale MPC5200B based=
- board, which has a CF card attached to the 5200's ATA. =A0The CF seems to =
-run nicely, but I am somewhat confused by the interrupts reproted by the ke=
-rnel.
->
-> Immediately after the boot, /proc/interrupts reports (inter alia)
->
-> 135: =A0 =A0 =A0 =A0 =A08 =A0MPC52xx Peripherals Edge =A0 =A0 =A0mpc52xx_=
-ata
-> 194: =A0 =A0 =A0 =A0 =A00 =A0MPC52xx SDMA Edge =A0 =A0 =A0ATA task
-> BAD: =A0 =A0 =A0 =A0 44
->
-> Then I say 'mount -t vfat -o noatime /dev/sda1 /mnt/cf0', and I get
->
-> 135: =A0 =A0 =A0 =A0 41 =A0MPC52xx Peripherals Edge =A0 =A0 =A0mpc52xx_at=
-a
-> 194: =A0 =A0 =A0 =A0 =A00 =A0MPC52xx SDMA Edge =A0 =A0 =A0ATA task
-> BAD: =A0 =A0 =A0 =A0 44
->
-> Then, I recursively copy a folder to the CF card:
->
-> 135: =A0 =A0 125111 =A0MPC52xx Peripherals Edge =A0 =A0 =A0mpc52xx_ata
-> 194: =A0 =A0 =A0 =A0 =A00 =A0MPC52xx SDMA Edge =A0 =A0 =A0ATA task
-> BAD: =A0 =A0 121863
->
-> Is it correct that the "ATA task" interrupts are still 0, and that I get =
-such a high number of BAD ones? =A0Is there a way to detect which source ac=
-tually triggered the BAD interrupts?
+Dear Ben,
 
-No, not really, but I'd spend some time looking at the DMA portion of
-the IRQ handler.  Either edge IRQs are not getting acked correctly, or
-the interrupt controller driver is not reading the pending IRQs
-correctly.
+In message <1249678991.10143.1.camel@pasglop> you wrote:
+> 
+> My experience, however, with a Canyonlands board, is that uBoot has
+> a bug that makes it always allocate the device-tree below 8M and clash
+> with the kernel when it gets too big.
+> 
+> I think Stefan fixed that recently, you may need to rebuild your uboot,
+> I'll let him tell you the details about the fix.
 
-g.
+Right. These are the relevant commits; they went into mainline some
+time ago:
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+commit 27dd5f8e1062684f1ba685760409d9b2ab6691bf
+Author: Stefan Roese <sr@denx.de>
+Date:   Tue Jul 28 10:56:03 2009 +0200
+
+    ppc4xx: amcc: Move "kernel_addr_r" etc to higher locations (> 16MB)
+    
+    This patch moves the load addresses for kernel, fdt and ramdisk to higher
+    addresses (>= 16MB). This enables booting of bigger kernel images (e.g.
+    lockdep enabled).
+    
+    Signed-off-by: Stefan Roese <sr@denx.de>
+
+commit 6942efc2be1b90054fa4afa5cda7023469fe08b9
+Author: Stefan Roese <sr@denx.de>
+Date:   Tue Jul 28 10:50:32 2009 +0200
+
+    ppc4xx: amcc: Set CONFIG_SYS_BOOTMAPSZ to 16MB for big kernels
+    
+    This patch changes CONFIG_SYS_BOOTMAPSZ from 8MB to 16MB which is the
+    initial TLB on 40x PPC's in the Linux kernel. With this change even bigger
+    Linux kernels (> 8MB) can be booted.
+    
+    This patch also sets CONFIG_SYS_BOOTM_LEN to 16MB (default 8MB) to enable
+    decompression of bigger images.
+    
+    Signed-off-by: Stefan Roese <sr@denx.de>
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Every solution breeds new problems.
