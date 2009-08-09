@@ -1,32 +1,27 @@
-Return-Path: <dedekind@infradead.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D3852B7B6D
+Return-Path: <pavel@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+	[195.113.26.193])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id BE0FAB7B60
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  9 Aug 2009 15:19:42 +1000 (EST)
-Received: from mgw-mx03.nokia.com (smtp.nokia.com [192.100.122.230])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.nokia.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F341DDDD01
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Aug 2009 15:19:41 +1000 (EST)
-Subject: Re: [PATCH] mtd/maps: add mtd-ram support to physmap_of
-From: Artem Bityutskiy <dedekind@infradead.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40908072243x56d2160fk688149f4b7b912ae@mail.gmail.com>
-References: <1247834363-28198-1-git-send-email-w.sang@pengutronix.de>
-	<fa686aa40908072243x56d2160fk688149f4b7b912ae@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 09 Aug 2009 08:17:23 +0300
-Message-Id: <1249795043.9157.37.camel@localhost>
-Mime-Version: 1.0
-Cc: devicetree-discuss@ozlabs.org, Vitaly Wool <vwool@ru.mvista.com>,
-	Albrecht =?ISO-8859-1?Q?Dre=DF?= <albrecht.dress@arcor.de>,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Ken MacLeod <ken@bitsko.slc.ut.us>, David Woodhouse <dwmw2@infradead.org>
-Reply-To: dedekind@infradead.org
+	Sun,  9 Aug 2009 22:40:21 +1000 (EST)
+Date: Sun, 9 Aug 2009 14:08:36 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090809120836.GB1338@ucw.cz>
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
+	<20090806015855.GA20596@sli10-desk.sh.intel.com>
+	<20090806043351.GC14333@dirshya.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090806043351.GC14333@dirshya.in.ibm.com>
+Cc: "Brown, Len" <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Gautham R Shenoy <ego@in.ibm.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+	Shaohua Li <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,23 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-08-07 at 23:43 -0600, Grant Likely wrote:
-> On Fri, Jul 17, 2009 at 6:39 AM, Wolfram Sang<w.sang@pengutronix.de> wrote:
-> > Use physmap_of to access RAMs as mtd and add documenation for it. This approach
-> > is a lot less intrusive as adding an of-wrapper around plat-ram.c. As most
-> > extensions of plat-ram.c (e.g. custom map-functions) can't be mapped to the
-> > device tree anyhow, extending physmap_of seems to be the cleanest approach.
-> >
-> > Tested with a phyCORE-MPC5121e.
-> >
-> > Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> 
-> Looks good to me.
-> 
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Hi!
 
-This patch is sitting in my l2-mtd-2.6.git tree.
+> > > Also, approaches such as [1] can make use of this
+> > > extended infrastructure instead of putting the CPU to an arbitrary C-state
+> > > when it is offlined, thereby providing the system administrator a rope to hang
+> > > himself with should he feel the need to do so.
+> > I didn't see the reason why administrator needs to know which state offline cpu
+> > should stay. Don't know about powerpc side, but in x86 side, it appears deepest
+> > C-state is already preferred.
+> 
+> Yes that is what we would expect, but the deepest sleep state may be
+> restricted by BIOS or other system level parameters.  This was the
+> main objection to Venki's deepest sleep state for offline cpus
+> patch.
+
+'May be restricted'? Kernel already needs to know about that
+restriction, just do the right thing...
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
