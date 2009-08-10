@@ -1,25 +1,30 @@
-Return-Path: <nathan.french@onrampwireless.com>
+Return-Path: <w.sang@pengutronix.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id F3A99B6F1E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2D80FB6F34
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 Aug 2009 02:13:02 +1000 (EST)
-Received: from relay.ihostexchange.net (relay.ihostexchange.net [66.46.182.55])
-	by ozlabs.org (Postfix) with ESMTP id 6156BDDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 02:13:02 +1000 (EST)
-Subject: Re: need help getting SPI controller working on 405EX
-From: Nathan French <nathan.french@onrampwireless.com>
-To: Lorenz Kolb <lorenz.kolb.newsgroups.nospam@lkmail.de>
-In-Reply-To: <h5mjg0$rqs$1@ger.gmane.org>
-References: <1249574886.3747.2650.camel__48649.694157257$1249575290$gmane$org@localhost.localdomain>
-	<h5mjg0$rqs$1@ger.gmane.org>
-Content-Type: text/plain
-Date: Mon, 10 Aug 2009 09:07:15 -0700
-Message-ID: <1249920435.3747.8569.camel@localhost.localdomain>
+	Tue, 11 Aug 2009 02:19:59 +1000 (EST)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id ABA48DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 02:19:58 +1000 (EST)
+Date: Mon, 10 Aug 2009 18:19:42 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Subject: Re: [PATCH] mtd/maps: add mtd-ram support to physmap_of
+Message-ID: <20090810161942.GA27833@pengutronix.de>
+References: <1247834363-28198-1-git-send-email-w.sang@pengutronix.de>
+	<fa686aa40908072243x56d2160fk688149f4b7b912ae@mail.gmail.com>
+	<1249795043.9157.37.camel@localhost>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Nq2Wo0NMKNjxTN9z"
+In-Reply-To: <1249795043.9157.37.camel@localhost>
+Cc: devicetree-discuss@ozlabs.org, Vitaly Wool <vwool@ru.mvista.com>,
+	Albrecht =?iso-8859-15?Q?Dre=DF?= <albrecht.dress@arcor.de>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Ken MacLeod <ken@bitsko.slc.ut.us>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Lorenz, thanks for the reply.
 
-> For getting spidev devices you have to add entries for an spidev device 
-> to your newly created spi-"bus". So what you are currently missing are 
-> the spidev child-nodes in the device tree.
-> As I'm currently cut off from some device to test, no guaranty that it 
-> will work, but your dts entry should look something like:
-> 
->               SPI0: spi@ef600600 {
->                   cell-index = <0>;
->                   compatible = "ibm,spi-405ex", "ibm,spi";
->                   reg = <ef600600 6>;
->                   interrupts = <8 4>;
->                   interrupt-parent = <&UIC0>;
->                   mode = "cpu";
-> 
->                   yourdevice@0 {
->                       compatible = "spidev";
->                       spi-max-frequency = <1000000>; /* what ever your 
-> max-freq. is */
->                       reg = <0>; /* Chipselect-address */
->                   };
->               };
+--Nq2Wo0NMKNjxTN9z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This did not appear to have any effect.
+On Sun, Aug 09, 2009 at 08:17:23AM +0300, Artem Bityutskiy wrote:
+> On Fri, 2009-08-07 at 23:43 -0600, Grant Likely wrote:
+> > On Fri, Jul 17, 2009 at 6:39 AM, Wolfram Sang<w.sang@pengutronix.de> wr=
+ote:
+> > > Use physmap_of to access RAMs as mtd and add documenation for it. Thi=
+s approach
+> > > is a lot less intrusive as adding an of-wrapper around plat-ram.c. As=
+ most
+> > > extensions of plat-ram.c (e.g. custom map-functions) can't be mapped =
+to the
+> > > device tree anyhow, extending physmap_of seems to be the cleanest app=
+roach.
+> > >
+> > > Tested with a phyCORE-MPC5121e.
+> > >
+> > > Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> >=20
+> > Looks good to me.
+> >=20
+> > Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>=20
+> This patch is sitting in my l2-mtd-2.6.git tree.
 
-> At least something similar worked for me some months ago (before we 
-> switched to a "real" driver for some custom peripheral).
+Great, thanks a lot (and for your l2-tree in general!). One question: Are t=
+he
+additional Acked-bys added later? I could think they might be useful for
+David's review...
 
-Did this work on a 4xx PowerPC platform?  Or something else?  I've been
-told that there is no SPI driver for 4xx.  If you have done this on 4xx
-then I'm very interested.
+Kind regards,
 
-Thanks,
+   Wolfram
 
-Nathan
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--Nq2Wo0NMKNjxTN9z
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqASJ4ACgkQD27XaX1/VRtxLwCeKVSaOJ+BJhVWeZMsFQ17Mpqt
+uWEAn3VzrFmKQpaJo8EcQPP1/DAgMgLr
+=k6lN
+-----END PGP SIGNATURE-----
+
+--Nq2Wo0NMKNjxTN9z--
