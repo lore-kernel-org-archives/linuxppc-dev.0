@@ -1,27 +1,36 @@
-Return-Path: <gary@mlbassoc.com>
+Return-Path: <mohan@in.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7F31DB6F2B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F0A82B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 10 Aug 2009 22:07:10 +1000 (EST)
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
-	by ozlabs.org (Postfix) with ESMTP id CDFB0DDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 22:07:09 +1000 (EST)
-Message-ID: <4A800B08.4020708@mlbassoc.com>
-Date: Mon, 10 Aug 2009 05:56:56 -0600
-From: Gary Thomas <gary@mlbassoc.com>
+	Tue, 11 Aug 2009 00:13:58 +1000 (EST)
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 09800DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 00:13:57 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id n7AEDmfq001366
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 19:43:48 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7AEDmhj909380
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 19:43:48 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n7AEDmpg031805
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 19:43:48 +0530
+Date: Mon, 10 Aug 2009 19:43:51 +0530
+From: "M. Mohan Kumar" <mohan@in.ibm.com>
+To: horms@verge.net.au, kexec@lists.infradead.org
+Subject: [PATCH 1/2] Make dtstruct variable to be 8 byte aligned
+Message-ID: <20090810141351.GD3110@in.ibm.com>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 03/14] powerpc: use printk_once
-References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>	<1249847649-11631-4-git-send-email-marcin.slusarz@gmail.com>	<20090810080049.GA3132@pengutronix.de>
-	<1249904809.4958.4.camel@concordia>
-In-Reply-To: <1249904809.4958.4.camel@concordia>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Marcin Slusarz <marcin.slusarz@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, nhorman@redhat.com, miltonm@bga.com
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,76 +40,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Mon, 2009-08-10 at 10:00 +0200, Wolfram Sang wrote:
->> On Sun, Aug 09, 2009 at 09:53:58PM +0200, Marcin Slusarz wrote:
->>> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Cc: Paul Mackerras <paulus@samba.org>
->>> Cc: linuxppc-dev@ozlabs.org
->>> ---
->>>  arch/powerpc/kernel/iommu.c      |    6 +-----
->>>  arch/powerpc/kernel/irq.c        |    5 ++---
->>>  arch/powerpc/sysdev/ppc4xx_pci.c |    9 ++-------
->>>  3 files changed, 5 insertions(+), 15 deletions(-)
->>>
->>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->>> index fd51578..c7fa258 100644
->>> --- a/arch/powerpc/kernel/iommu.c
->>> +++ b/arch/powerpc/kernel/iommu.c
->>> @@ -502,7 +502,6 @@ static void iommu_table_clear(struct iommu_table *tbl)
->>>  struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
->>>  {
->>>  	unsigned long sz;
->>> -	static int welcomed = 0;
->>>  	struct page *page;
->>>  
->>>  	/* Set aside 1/4 of the table for large allocations. */
->>> @@ -523,11 +522,8 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
->>>  
->>>  	iommu_table_clear(tbl);
->>>  
->>> -	if (!welcomed) {
->>> -		printk(KERN_INFO "IOMMU table initialized, virtual merging %s\n",
->>> +	printk_once(KERN_INFO "IOMMU table initialized, virtual merging %s\n",
->>>  		       novmerge ? "disabled" : "enabled");
->>> -		welcomed = 1;
->>> -	}
->>>  
->>>  	return tbl;
->>>  }
->>> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
->>> index f7f376e..05ebd21 100644
->>> --- a/arch/powerpc/kernel/irq.c
->>> +++ b/arch/powerpc/kernel/irq.c
->>> @@ -231,7 +231,6 @@ skip:
->>>  void fixup_irqs(cpumask_t map)
->>>  {
->>>  	unsigned int irq;
->>> -	static int warned;
->>>  
->>>  	for_each_irq(irq) {
->>>  		cpumask_t mask;
->>> @@ -246,8 +245,8 @@ void fixup_irqs(cpumask_t map)
->>>  		}
->>>  		if (irq_desc[irq].chip->set_affinity)
->>>  			irq_desc[irq].chip->set_affinity(irq, &mask);
->>> -		else if (irq_desc[irq].action && !(warned++))
->>> -			printk("Cannot set affinity for irq %i\n", irq);
->>> +		else if (irq_desc[irq].action)
->>> +			printk_once("Cannot set affinity for irq %i\n", irq);
->> Maybe we should add a loglevel to this printk (and the other one in fix_irqs)
->> while we are here?
-> 
-> I think you should drop it, it's stupid. If we actually care about irqs
-> that don't have a set affinity we should keep a count and report that at
-> the end of the loop.
+[PATCH 1/2] Make dtstruct variable to be 8 byte aligned
 
-In addition, this change would prevent reporting missing
-affinity on more than one IRQ if there were such.
+kexec is creating a version 3 device tree to be backwards compatible. This
+version of the struct has 8-byte alignment for properties whose value is 8 or
+more bytes. As the code directly checks the pointer when deciding to add the
+alignment word, the struct memory must start on an 8 byte boundary. Force the
+dtstruct variable to be always 8 bytes aligned.
 
+Signed-off-by: M. Mohan Kumar <mohan@in.ibm.com>
+---
+ kexec/arch/ppc64/fs2dt.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kexec/arch/ppc64/fs2dt.c b/kexec/arch/ppc64/fs2dt.c
+index 1f551fd..b01ff86 100644
+--- a/kexec/arch/ppc64/fs2dt.c
++++ b/kexec/arch/ppc64/fs2dt.c
+@@ -41,7 +41,7 @@
+ 
+ static char pathname[MAXPATH], *pathstart;
+ static char propnames[NAMESPACE] = { 0 };
+-static unsigned dtstruct[TREEWORDS], *dt;
++static unsigned dtstruct[TREEWORDS] __attribute__ ((aligned (8))), *dt;
+ static unsigned long long mem_rsrv[2*MEMRESERVE] = { 0, 0 };
+ 
+ static int crash_param = 0;
 -- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+1.6.2.5
