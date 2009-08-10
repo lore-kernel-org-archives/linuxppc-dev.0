@@ -1,41 +1,16 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [59.145.155.1])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6A1CBB7B70
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4BA1FB6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 10 Aug 2009 12:00:50 +1000 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp01.in.ibm.com (8.14.3/8.13.1) with ESMTP id n7A20iIc028071
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2009 07:30:44 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7A20iHj483332
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2009 07:30:44 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n7A20hXZ023929
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2009 07:30:44 +0530
-Date: Mon, 10 Aug 2009 07:30:05 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
-Message-ID: <20090810020005.GA1395@dirshya.in.ibm.com>
-References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
-	<20090806015855.GA20596@sli10-desk.sh.intel.com>
-	<20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200908091522.02898.rjw@sisk.pl>
-Cc: "Brown, Len" <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Gautham R Shenoy <ego@in.ibm.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Pavel Machek <pavel@ucw.cz>, "Pallipadi,
-	Venkatesh" <venkatesh.pallipadi@intel.com>,
-	Shaohua Li <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"Darrick J. Wong" <djwong@us.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
+	Mon, 10 Aug 2009 15:02:51 +1000 (EST)
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <01690a659df1551b20c20c7cb98dbfe790c7c28d.1249880560.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc: Enable GCOV
+Date: Mon, 10 Aug 2009 15:02:51 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,39 +20,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Rafael J. Wysocki <rjw@sisk.pl> [2009-08-09 15:22:02]:
+Make it possible to enable GCOV code coverage measurement on powerpc.
 
-> On Sunday 09 August 2009, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > Also, approaches such as [1] can make use of this
-> > > > extended infrastructure instead of putting the CPU to an arbitrary C-state
-> > > > when it is offlined, thereby providing the system administrator a rope to hang
-> > > > himself with should he feel the need to do so.
-> > > I didn't see the reason why administrator needs to know which state offline cpu
-> > > should stay. Don't know about powerpc side, but in x86 side, it appears deepest
-> > > C-state is already preferred.
-> > > 
-> > 
-> > Agreed, deepest c-state is always best, there's no need to make it configurable.
-> 
-> Unless it doesn't work.
+Lightly tested on 64-bit, seems to work as expected.
 
-Yes, this is one of the reason.  Kernel will know about the deepest
-sleep state and any restrictions and should set that as default in the
-preferred_offline state. End-users and sys-admins need not change it,
-default will be the deepest sleep state supported and allowed by the
-system which may be different than the one supported by the processor.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/kernel/Makefile        |    7 +++++++
+ arch/powerpc/kernel/vdso32/Makefile |    1 +
+ arch/powerpc/kernel/vdso64/Makefile |    2 ++
+ arch/powerpc/xmon/Makefile          |    2 ++
+ kernel/gcov/Kconfig                 |    2 +-
+ 5 files changed, 13 insertions(+), 1 deletions(-)
 
-This framework could allow the default to be set easily by other
-userspace tools.  These restrictions apply to cpuidle governor as
-well, hence at some level both these subsystems should be in sync.
-
-As described in this patch series, the meaning of offline cpu is
-different in a virtualized system and this framework provides
-flexibility of choice there.  Platforms today do have a choice on what
-state an offline cpu should reside, this framework is one of the
-possible methods to exploit that choice and not restrict it due to
-lack of OS flexibility.
-
---Vaidy
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 035946f..720e8c3 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -115,6 +115,13 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
+ obj-y				+= ppc_save_regs.o
+ endif
+ 
++# Disable GCOV in odd or sensitive code
++GCOV_PROFILE_prom_init.o := n
++GCOV_PROFILE_ftrace.o := n
++GCOV_PROFILE_machine_kexec_64.o := n
++GCOV_PROFILE_machine_kexec_32.o := n
++GCOV_PROFILE_kprobes.o := n
++
+ extra-$(CONFIG_PPC_FPU)		+= fpu.o
+ extra-$(CONFIG_ALTIVEC)		+= vector.o
+ extra-$(CONFIG_PPC64)		+= entry_64.o
+diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
+index c3d57bd..b54b816 100644
+--- a/arch/powerpc/kernel/vdso32/Makefile
++++ b/arch/powerpc/kernel/vdso32/Makefile
+@@ -12,6 +12,7 @@ endif
+ targets := $(obj-vdso32) vdso32.so vdso32.so.dbg
+ obj-vdso32 := $(addprefix $(obj)/, $(obj-vdso32))
+ 
++GCOV_PROFILE := n
+ 
+ EXTRA_CFLAGS := -shared -fno-common -fno-builtin
+ EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso32.so.1 \
+diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
+index fa7f1b8..dd0c8e9 100644
+--- a/arch/powerpc/kernel/vdso64/Makefile
++++ b/arch/powerpc/kernel/vdso64/Makefile
+@@ -7,6 +7,8 @@ obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o
+ targets := $(obj-vdso64) vdso64.so vdso64.so.dbg
+ obj-vdso64 := $(addprefix $(obj)/, $(obj-vdso64))
+ 
++GCOV_PROFILE := n
++
+ EXTRA_CFLAGS := -shared -fno-common -fno-builtin
+ EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso64.so.1 \
+ 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
+diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
+index 85ab97a..faa81b6 100644
+--- a/arch/powerpc/xmon/Makefile
++++ b/arch/powerpc/xmon/Makefile
+@@ -2,6 +2,8 @@
+ 
+ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
+ 
++GCOV_PROFILE := n
++
+ ifdef CONFIG_PPC64
+ EXTRA_CFLAGS += -mno-minimal-toc
+ endif
+diff --git a/kernel/gcov/Kconfig b/kernel/gcov/Kconfig
+index 22e9dcf..654efd0 100644
+--- a/kernel/gcov/Kconfig
++++ b/kernel/gcov/Kconfig
+@@ -34,7 +34,7 @@ config GCOV_KERNEL
+ config GCOV_PROFILE_ALL
+ 	bool "Profile entire Kernel"
+ 	depends on GCOV_KERNEL
+-	depends on S390 || X86
++	depends on S390 || X86 || (PPC && EXPERIMENTAL)
+ 	default n
+ 	---help---
+ 	This options activates profiling for the entire kernel.
+-- 
+1.6.2.1
