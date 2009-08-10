@@ -1,26 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <dedekind1@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8CCBEB7257
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 80A65B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 10 Aug 2009 16:59:04 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Mon, 10 Aug 2009 17:45:54 +1000 (EST)
+Received: from mgw-mx03.nokia.com (smtp.nokia.com [192.100.122.230])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C5032DDDA0
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 16:59:03 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 10 Aug 2009 16:58:29 +1000
-Message-Id: <1249887509.9841.23.camel@pasglop>
+	(Client CN "smtp.nokia.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AA512DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 17:45:52 +1000 (EST)
+Received: from mgw-mx09.nokia.com ([192.100.105.134])
+	by mgw-mx03.nokia.com (Switch-3.3.3/Switch-3.3.3) with ESMTP id
+	n7A7jQTM015930
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 10:45:28 +0300
+Subject: Re: [PATCH v2 0/6] Device table matching for SPI subsystem
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20090731003957.GA23982@oksana.dev.rtsoft.ru>
+References: <20090731003957.GA23982@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 10 Aug 2009 10:35:23 +0300
+Message-Id: <1249889723.19638.13.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+Cc: Ben Dooks <ben@fluff.org>, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Jean Delvare <khali@linux-fr.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	David Woodhouse <dwmw2@infradead.org>
+Reply-To: dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,24 +42,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Fri, 2009-07-31 at 04:39 +0400, Anton Vorontsov wrote:
+> Andrew,
+> 
+> This new patch set overwrites following patches:
+> 
+>   hwmon-lm70-convert-to-device-table-matching.patch
+>   hwmon-adxx-convert-to-device-table-matching.patch
+>   spi-merge-probe-and-probe_id-callbacks.patch
+>   spi-prefix-modalias-with-spi.patch
+>   of-remove-stmm25p40-alias.patch
+>   mtd-m25p80-convert-to-device-table-matching.patch
+>   spi-add-support-for-device-table-matching.patch
 
-This is a simple enough fix that I decided was worth having now, it
-basically allow "direct" DMA (non-iommu) to work for devices that have a
-< 32-bit DMA mask (such as some infamous broadcom wireless chips) when
-the machine simply has not enough memory to go over the chip addressing
-limit. This fixes various smallish G5 (like old iMac G5) wireless.
+Are you going to send v3 and address David's comments?
+Do you want some of these patches to go via the MTD tree or
+they better go as a series via some other tree?
 
-The following changes since commit f4b9a988685da6386d7f9a72df3098bcc3270526:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.infradead.org/ubi-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Benjamin Herrenschmidt (1):
-      powerpc/dma: pci_set_dma_mask() shouldn't fail if mask fits in RAM
-
- arch/powerpc/kernel/dma.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
