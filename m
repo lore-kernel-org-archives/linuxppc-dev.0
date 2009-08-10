@@ -1,40 +1,41 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [59.145.155.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 628AAB7B74
+	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6A1CBB7B70
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 10 Aug 2009 11:51:52 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 52279DDD04
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 11:51:52 +1000 (EST)
-Subject: Re: [PATCH] Do not inline putprops function
-From: Michael Ellerman <michael@ellerman.id.au>
-To: mohan@in.ibm.com
-In-Reply-To: <20090807145405.GB3110@in.ibm.com>
-References: <20090617140514.GB31383@hmsreliant.think-freely.org>
-	<20090617142652.GC4059@in.ibm.com>
-	<20090617144007.GC31383@hmsreliant.think-freely.org>
-	<20090623125534.GA8664@in.ibm.com>
-	<20090623135604.GC1157@hmsreliant.think-freely.org>
-	<1245803263.9237.3.camel@concordia> <20090803054919.GA19594@in.ibm.com>
-	<20090805164938.GA2970@in.ibm.com>
-	<1249568660.20200.23.camel@concordia>
-	<20090807143549.GA3110@in.ibm.com> <20090807145405.GB3110@in.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-0JeGcxyHP8j/+1A5qOHP"
-Date: Mon, 10 Aug 2009 11:51:49 +1000
-Message-Id: <1249869109.27744.41.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Neil Horman <nhorman@redhat.com>,
-	Simon Horman <horms@verge.net.au>, kexec@lists.infradead.org,
-	miltonm@bga.com
-Reply-To: michael@ellerman.id.au
+	Mon, 10 Aug 2009 12:00:50 +1000 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp01.in.ibm.com (8.14.3/8.13.1) with ESMTP id n7A20iIc028071
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2009 07:30:44 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7A20iHj483332
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2009 07:30:44 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n7A20hXZ023929
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2009 07:30:44 +0530
+Date: Mon, 10 Aug 2009 07:30:05 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090810020005.GA1395@dirshya.in.ibm.com>
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
+	<20090806015855.GA20596@sli10-desk.sh.intel.com>
+	<20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200908091522.02898.rjw@sisk.pl>
+Cc: "Brown, Len" <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Gautham R Shenoy <ego@in.ibm.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Pavel Machek <pavel@ucw.cz>, "Pallipadi,
+	Venkatesh" <venkatesh.pallipadi@intel.com>,
+	Shaohua Li <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"Darrick J. Wong" <djwong@us.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,86 +45,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+* Rafael J. Wysocki <rjw@sisk.pl> [2009-08-09 15:22:02]:
 
---=-0JeGcxyHP8j/+1A5qOHP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Sunday 09 August 2009, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > Also, approaches such as [1] can make use of this
+> > > > extended infrastructure instead of putting the CPU to an arbitrary C-state
+> > > > when it is offlined, thereby providing the system administrator a rope to hang
+> > > > himself with should he feel the need to do so.
+> > > I didn't see the reason why administrator needs to know which state offline cpu
+> > > should stay. Don't know about powerpc side, but in x86 side, it appears deepest
+> > > C-state is already preferred.
+> > > 
+> > 
+> > Agreed, deepest c-state is always best, there's no need to make it configurable.
+> 
+> Unless it doesn't work.
 
-On Fri, 2009-08-07 at 20:24 +0530, M. Mohan Kumar wrote:
-> On Fri, Aug 07, 2009 at 08:05:49PM +0530, M. Mohan Kumar wrote:
-> > Hi,
-> >=20
-> > After enabling EARLY_DEBUG (and DEBUG in some of the files in
-> > arch/powerpc/kernel directory), without forcing the dtstruct variable t=
-o 8
-> > byte alignment:=20
-> >=20
-> > # ./kexec -e
-> > Starting new kernel
-> > console [udbg0] enabled
-> >  -> early_setup(), dt_ptr: 0x7723000
-> >  -> early_init_devtree(c000000007723000)
-> > Invalid tag 5 scanning flattened device tree !
-> > search "chosen", depth: 0, uname:
-> > Invalid tag 5 scanning flattened device tree !
-> > dt_root_size_cells =3D 2
-> > dt_root_addr_cells =3D 2
-> > Invalid tag 5 scanning flattened device tree !
-> > reserving: 128c000 -> 5ec1f7
-> > reserving: 7734000 -> 8cc000
-> > reserving: 7723000 -> f698
-> > Phys. mem: 0
-> > -> move_device_tree
-> > <- move_device_tree
-> > Scanning CPUs ...
-> > Invalid tag 5 scanning flattened device tree !
-> >  <- early_init_devtree()
-> > Probing machine type ...
-> >   pSeries ...
-> > No suitable machine found !
-> >=20
-> >=20
-> > So device-tree is getting corrupted when dtstruct variable is not align=
-ed to
-> > 8 byte variable. This problem is not seen with gcc-3.4. Is it compiler
-> > issue? or bug in the code.
-> >=20
->=20
-> I tried writing the device tree to a binary file with and without dt_len =
-and
-> compared the files after hexdump:
+Yes, this is one of the reason.  Kernel will know about the deepest
+sleep state and any restrictions and should set that as default in the
+preferred_offline state. End-users and sys-admins need not change it,
+default will be the deepest sleep state supported and allowed by the
+system which may be different than the one supported by the processor.
 
-That sounds like a good idea.
+This framework could allow the default to be set easily by other
+userspace tools.  These restrictions apply to cpuidle governor as
+well, hence at some level both these subsystems should be in sync.
 
-> 0000 0001 2f00 0000 0000 0003 0000 0004                 0000 0001 2f00 00=
-00 0000 0003 0000 0004
-> 0000 0000 0000 0002 0000 0003 0000 0004                 0000 0000 0000 00=
-02 0000 0003 0000 0004
-> 0000 000f 0000 0002 0000 0003 0000 0004                 0000 000f 0000 00=
-02 0000 0003 0000 0004
-> 0000 001b 3ef1 4800 0000 0003 0000 000d                 0000 001b 3ef1 48=
-00 0000 0003 0000 000d
-> 0000 002b 0000 0000 4942 4d2c 3931 3135               | 0000 002b 4942 4d=
-2c 3931 3135 2d35 3035
-> 2d35 3035 0000 0000 0000 0003 0000 0005               | 0000 0000 0000 00=
-03 0000 0005 0000 0036
+As described in this patch series, the meaning of offline cpu is
+different in a virtualized system and this framework provides
+flexibility of choice there.  Platforms today do have a choice on what
+state an offline cpu should reside, this framework is one of the
+possible methods to exploit that choice and not restrict it due to
+lack of OS flexibility.
 
-So the one on the left (which is ?) - has extra padding after 0x2b,
-which is the property data length, before the property value
-"IBM,9115-505". There shouldn't be any padding there.
-
-cheers
-
---=-0JeGcxyHP8j/+1A5qOHP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkp/fTUACgkQdSjSd0sB4dJp2gCfRPbLvGz0zdV8B46amUsUzeah
-xHMAn3/nLekoM569PsDspQUi2eD+rkeK
-=ho37
------END PGP SIGNATURE-----
-
---=-0JeGcxyHP8j/+1A5qOHP--
+--Vaidy
