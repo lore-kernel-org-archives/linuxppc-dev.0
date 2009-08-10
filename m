@@ -1,36 +1,25 @@
-Return-Path: <mohan@in.ibm.com>
+Return-Path: <nathan.french@onrampwireless.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 62BAFB6F2B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F3A99B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 Aug 2009 00:14:53 +1000 (EST)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0E053DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 00:14:52 +1000 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id n7AEDUZM024272
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 00:13:30 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7AEEocs1229028
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 00:14:50 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n7AEEnGN025344
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 00:14:50 +1000
-Date: Mon, 10 Aug 2009 19:44:42 +0530
-From: "M. Mohan Kumar" <mohan@in.ibm.com>
-To: horms@verge.net.au, kexec@lists.infradead.org
-Subject: [PATCH 2/2] Support R_PPC64_REL32 relocation type
-Message-ID: <20090810141442.GE3110@in.ibm.com>
+	Tue, 11 Aug 2009 02:13:02 +1000 (EST)
+Received: from relay.ihostexchange.net (relay.ihostexchange.net [66.46.182.55])
+	by ozlabs.org (Postfix) with ESMTP id 6156BDDD01
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 02:13:02 +1000 (EST)
+Subject: Re: need help getting SPI controller working on 405EX
+From: Nathan French <nathan.french@onrampwireless.com>
+To: Lorenz Kolb <lorenz.kolb.newsgroups.nospam@lkmail.de>
+In-Reply-To: <h5mjg0$rqs$1@ger.gmane.org>
+References: <1249574886.3747.2650.camel__48649.694157257$1249575290$gmane$org@localhost.localdomain>
+	<h5mjg0$rqs$1@ger.gmane.org>
+Content-Type: text/plain
+Date: Mon, 10 Aug 2009 09:07:15 -0700
+Message-ID: <1249920435.3747.8569.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, nhorman@redhat.com, miltonm@bga.com
-Reply-To: mohan@in.ibm.com
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,30 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[PATCH 2/2] Support R_PPC64_REL32 relocation type
+Lorenz, thanks for the reply.
 
-gcc-4.4 compiler creates R_PPC64_REL32 relocation type in the ppc64
-purgatory code. Add support to handle R_PPC64_REL32 relocation type.
+> For getting spidev devices you have to add entries for an spidev device 
+> to your newly created spi-"bus". So what you are currently missing are 
+> the spidev child-nodes in the device tree.
+> As I'm currently cut off from some device to test, no guaranty that it 
+> will work, but your dts entry should look something like:
+> 
+>               SPI0: spi@ef600600 {
+>                   cell-index = <0>;
+>                   compatible = "ibm,spi-405ex", "ibm,spi";
+>                   reg = <ef600600 6>;
+>                   interrupts = <8 4>;
+>                   interrupt-parent = <&UIC0>;
+>                   mode = "cpu";
+> 
+>                   yourdevice@0 {
+>                       compatible = "spidev";
+>                       spi-max-frequency = <1000000>; /* what ever your 
+> max-freq. is */
+>                       reg = <0>; /* Chipselect-address */
+>                   };
+>               };
 
-Signed-off-by: M. Mohan Kumar <mohan@in.ibm.com>
----
- kexec/arch/ppc64/kexec-elf-rel-ppc64.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+This did not appear to have any effect.
 
-diff --git a/kexec/arch/ppc64/kexec-elf-rel-ppc64.c b/kexec/arch/ppc64/kexec-elf-rel-ppc64.c
-index 80543af..97aa34c 100644
---- a/kexec/arch/ppc64/kexec-elf-rel-ppc64.c
-+++ b/kexec/arch/ppc64/kexec-elf-rel-ppc64.c
-@@ -62,6 +62,10 @@ void machine_apply_elf_rel(struct mem_ehdr *ehdr, unsigned long r_type,
- 		*(uint64_t *)location = value;
- 		break;
- 
-+	case R_PPC64_REL32:
-+		*(uint32_t *)location = value - (uint32_t)location;
-+		break;
-+
- 	case R_PPC64_TOC:
- 		*(uint64_t *)location = my_r2(ehdr);
- 		break;
--- 
-1.6.2.5
+> At least something similar worked for me some months ago (before we 
+> switched to a "real" driver for some custom peripheral).
+
+Did this work on a 4xx PowerPC platform?  Or something else?  I've been
+told that there is no SPI driver for 4xx.  If you have done this on 4xx
+then I'm very interested.
+
+Thanks,
+
+Nathan
