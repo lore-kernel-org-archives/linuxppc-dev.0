@@ -1,22 +1,27 @@
-Return-Path: <miltonm@bga.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9B47DB70B0
+Return-Path: <pavel@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+	[195.113.26.193])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 9B6D2B6F2B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 10 Aug 2009 18:04:17 +1000 (EST)
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 98C96DDD04
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 18:04:16 +1000 (EST)
-From: Milton Miller <miltonm@bga.com>
-To: M. Mohan Kumar <mohan@in.ibm.com>
-Subject: Re: [PATCH] Do not inline putprops function
-In-Reply-To: <20090805164938.GA2970@in.ibm.com>
-Date: Mon, 10 Aug 2009 02:37:49 -0500
-Message-ID: <1249889869_10618@mercury.realtime.net>
-Cc: kexec@lists.infradead.org, Simon Horman <horms@verge.net.au>,
-	linuxppc-dev@lists.ozlabs.org
+	Mon, 10 Aug 2009 18:19:51 +1000 (EST)
+Date: Mon, 10 Aug 2009 10:19:41 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090810081941.GA18649@elf.ucw.cz>
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
+	<20090806015855.GA20596@sli10-desk.sh.intel.com>
+	<20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200908091522.02898.rjw@sisk.pl>
+Cc: "Brown, Len" <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Gautham R Shenoy <ego@in.ibm.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+	Shaohua Li <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu Aug 6 at about 02:49:38 EST in 2009, M. Mohan Kumar  wrote:
->
-> When I align the dtstruct variable to 8 bytes, I am able to invoke kdump.
+On Sun 2009-08-09 15:22:02, Rafael J. Wysocki wrote:
+> On Sunday 09 August 2009, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > Also, approaches such as [1] can make use of this
+> > > > extended infrastructure instead of putting the CPU to an arbitrary C-state
+> > > > when it is offlined, thereby providing the system administrator a rope to hang
+> > > > himself with should he feel the need to do so.
+> > > I didn't see the reason why administrator needs to know which state offline cpu
+> > > should stay. Don't know about powerpc side, but in x86 side, it appears deepest
+> > > C-state is already preferred.
+> > > 
+> > 
+> > Agreed, deepest c-state is always best, there's no need to make it configurable.
 > 
-> When the line
-> 	static unsigned dtstruct[TREEWORDS], *dt;
-> changed to 
-> 	static unsigned dtstruct[TREEWORDS] __attribute__ ((aligned (8))), *dt;
-> 
-> kexec-tool works.
+> Unless it doesn't work.
 
+If it does not work, machine will not boot. We already have
+max_cstate= kernel command line option to work around that...
 
-Doh.  that is the correct fix.
-
-kexec is creating a version 3 device tree, to be backwards compatible
-as far as possible.  (Well, that and it was written before version 3
-existed).  This version of the struct has 8-byte alignment for properties
-whose value is 8 or more bytes.  As the code directly checks the pointer
-when deciding to add the alignment word, the struct memory must start on
-an 8 byte boundary.
-
-Mohan, please prepare a patch with the above text in the changelog 
-and send it to Simon.
-
-thanks.
-milton
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
