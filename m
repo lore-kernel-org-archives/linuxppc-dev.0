@@ -1,21 +1,26 @@
 Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8CCBEB7257
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 10 Aug 2009 16:59:04 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 40758B7099
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 10 Aug 2009 16:46:40 +1000 (EST)
-Subject: Re: [PATCH] Stop pci_set_dma_mask() from failing when RAM doesn't
-	exceed the mask anyway
+	by ozlabs.org (Postfix) with ESMTPS id C5032DDDA0
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 16:59:03 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1249069310.20192.220.camel@macbook.infradead.org>
-References: <1249069310.20192.220.camel@macbook.infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain
-Date: Mon, 10 Aug 2009 16:46:19 +1000
-Message-Id: <1249886779.9841.19.camel@pasglop>
+Date: Mon, 10 Aug 2009 16:58:29 +1000
+Message-Id: <1249887509.9841.23.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-07-31 at 20:41 +0100, David Woodhouse wrote:
-> On an iMac G5, the b43 driver is failing to initialise because trying to
-> set the dma mask to 30-bit fails. Even though there's only 512MiB of RAM
-> in the machine anyway:
-> 	https://bugzilla.redhat.com/show_bug.cgi?id=514787
-> 
-> We should probably let it succeed if the available RAM in the system
-> doesn't exceed the requested limit.
+Hi Linus !
 
-I've slightly modified the patch to use lmb_end_of_DRAM() instead
-of highest_memmap_pfn because the later is an mm internal.h thing,
-it looked too fishy to rely on it form arch code with a local
-"extern" in the C code :-) It's not going to cause much more overhead
-and it's not a hot path anyway afaik.
+This is a simple enough fix that I decided was worth having now, it
+basically allow "direct" DMA (non-iommu) to work for devices that have a
+< 32-bit DMA mask (such as some infamous broadcom wireless chips) when
+the machine simply has not enough memory to go over the chip addressing
+limit. This fixes various smallish G5 (like old iMac G5) wireless.
 
-Below is a copy of what I've commited to my merge branch and will
-ask Linus to pull in a few minutes.
+The following changes since commit f4b9a988685da6386d7f9a72df3098bcc3270526:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.infradead.org/ubi-2.6
 
->From 10ba96df690618632a8786494b2359f5ee350048 Mon Sep 17 00:00:00 2001
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Fri, 31 Jul 2009 09:41:50 +0000
-Subject: [PATCH] powerpc/dma: pci_set_dma_mask() shouldn't fail if mask fits in RAM
+are available in the git repository at:
 
-On an iMac G5, the b43 driver is failing to initialise because trying to
-set the dma mask to 30-bit fails. Even though there's only 512MiB of RAM
-in the machine anyway:
-	https://bugzilla.redhat.com/show_bug.cgi?id=514787
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-We should probably let it succeed if the available RAM in the system
-doesn't exceed the requested limit.
+Benjamin Herrenschmidt (1):
+      powerpc/dma: pci_set_dma_mask() shouldn't fail if mask fits in RAM
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
  arch/powerpc/kernel/dma.c |    6 +++---
  1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index 20a60d6..ccf129d 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -7,6 +7,7 @@
- 
- #include <linux/device.h>
- #include <linux/dma-mapping.h>
-+#include <linux/lmb.h>
- #include <asm/bug.h>
- #include <asm/abs_addr.h>
- 
-@@ -90,11 +91,10 @@ static void dma_direct_unmap_sg(struct device *dev, struct scatterlist *sg,
- static int dma_direct_dma_supported(struct device *dev, u64 mask)
- {
- #ifdef CONFIG_PPC64
--	/* Could be improved to check for memory though it better be
--	 * done via some global so platforms can set the limit in case
-+	/* Could be improved so platforms can set the limit in case
- 	 * they have limited DMA windows
- 	 */
--	return mask >= DMA_BIT_MASK(32);
-+	return mask >= (lmb_end_of_DRAM() - 1);
- #else
- 	return 1;
- #endif
--- 
-1.6.1.2.14.gf26b5
