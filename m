@@ -1,29 +1,27 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Return-Path: <w.sang@pengutronix.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2A3C2B6F2B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DA85EB708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 10 Aug 2009 17:49:05 +1000 (EST)
-Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id B2039DDDA2
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 17:49:04 +1000 (EST)
-Date: Mon, 10 Aug 2009 09:49:01 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: sequoia: The final kernel image would overwrite the device
- tree
-In-Reply-To: <20090808073807.18C4B832E416@gemini.denx.de>
-Message-ID: <alpine.LRH.2.00.0908100948280.787@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0907281524510.29006@vixen.sonytel.be>
-	<alpine.LRH.2.00.0908071740410.22357@vixen.sonytel.be>
-	<1249678991.10143.1.camel@pasglop>
-	<20090808073807.18C4B832E416@gemini.denx.de>
+	Mon, 10 Aug 2009 18:01:07 +1000 (EST)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 5B5DDDDD01
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2009 18:01:06 +1000 (EST)
+Date: Mon, 10 Aug 2009 10:00:49 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: [PATCH 03/14] powerpc: use printk_once
+Message-ID: <20090810080049.GA3132@pengutronix.de>
+References: <1249847649-11631-1-git-send-email-marcin.slusarz@gmail.com>
+	<1249847649-11631-4-git-send-email-marcin.slusarz@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Cc: Stefan Roese <sr@denx.de>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
+In-Reply-To: <1249847649-11631-4-git-send-email-marcin.slusarz@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,46 +31,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 8 Aug 2009, Wolfgang Denk wrote:
-> In message <1249678991.10143.1.camel@pasglop> you wrote:
-> > My experience, however, with a Canyonlands board, is that uBoot has
-> > a bug that makes it always allocate the device-tree below 8M and clash
-> > with the kernel when it gets too big.
-> > 
-> > I think Stefan fixed that recently, you may need to rebuild your uboot,
-> > I'll let him tell you the details about the fix.
-> 
-> Right. These are the relevant commits; they went into mainline some
-> time ago:
-> 
-> commit 27dd5f8e1062684f1ba685760409d9b2ab6691bf
-> Author: Stefan Roese <sr@denx.de>
-> Date:   Tue Jul 28 10:56:03 2009 +0200
-> 
->     ppc4xx: amcc: Move "kernel_addr_r" etc to higher locations (> 16MB)
->     
->     This patch moves the load addresses for kernel, fdt and ramdisk to higher
->     addresses (>= 16MB). This enables booting of bigger kernel images (e.g.
->     lockdep enabled).
 
-Ah, thanks, that explains it.
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'll make sure my kernel images get smaller again ;-)
 
-With kind regards,
+On Sun, Aug 09, 2009 at 09:53:58PM +0200, Marcin Slusarz wrote:
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@ozlabs.org
+> ---
+>  arch/powerpc/kernel/iommu.c      |    6 +-----
+>  arch/powerpc/kernel/irq.c        |    5 ++---
+>  arch/powerpc/sysdev/ppc4xx_pci.c |    9 ++-------
+>  3 files changed, 5 insertions(+), 15 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index fd51578..c7fa258 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -502,7 +502,6 @@ static void iommu_table_clear(struct iommu_table *tbl)
+>  struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+>  {
+>  	unsigned long sz;
+> -	static int welcomed =3D 0;
+>  	struct page *page;
+> =20
+>  	/* Set aside 1/4 of the table for large allocations. */
+> @@ -523,11 +522,8 @@ struct iommu_table *iommu_init_table(struct iommu_ta=
+ble *tbl, int nid)
+> =20
+>  	iommu_table_clear(tbl);
+> =20
+> -	if (!welcomed) {
+> -		printk(KERN_INFO "IOMMU table initialized, virtual merging %s\n",
+> +	printk_once(KERN_INFO "IOMMU table initialized, virtual merging %s\n",
+>  		       novmerge ? "disabled" : "enabled");
+> -		welcomed =3D 1;
+> -	}
+> =20
+>  	return tbl;
+>  }
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index f7f376e..05ebd21 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -231,7 +231,6 @@ skip:
+>  void fixup_irqs(cpumask_t map)
+>  {
+>  	unsigned int irq;
+> -	static int warned;
+> =20
+>  	for_each_irq(irq) {
+>  		cpumask_t mask;
+> @@ -246,8 +245,8 @@ void fixup_irqs(cpumask_t map)
+>  		}
+>  		if (irq_desc[irq].chip->set_affinity)
+>  			irq_desc[irq].chip->set_affinity(irq, &mask);
+> -		else if (irq_desc[irq].action && !(warned++))
+> -			printk("Cannot set affinity for irq %i\n", irq);
+> +		else if (irq_desc[irq].action)
+> +			printk_once("Cannot set affinity for irq %i\n", irq);
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
+Maybe we should add a loglevel to this printk (and the other one in fix_irq=
+s)
+while we are here?
 
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+Other than that:
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--vtzGhvizbBRQ85DL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp/07EACgkQD27XaX1/VRv0WwCfUhSxu3pv3YoG2OWL5O4vahPc
+NksAoL0PRBVRNKHAvWqoYKMChO+5RSN6
+=svFT
+-----END PGP SIGNATURE-----
+
+--vtzGhvizbBRQ85DL--
