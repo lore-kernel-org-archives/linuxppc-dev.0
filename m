@@ -1,18 +1,42 @@
-Return-Path: <msridhar87@gmail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <dipankar@in.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [59.145.155.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 66A3AB7099
+	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F1BD9B6F1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 Aug 2009 00:10:01 +1000 (EST)
+	Wed, 12 Aug 2009 03:53:52 +1000 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp04.in.ibm.com (8.14.3/8.13.1) with ESMTP id n7BHriLI008417
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2009 23:23:44 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7BHrieN1626160
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2009 23:23:44 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n7BHrhpN016649
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2009 03:53:44 +1000
+Date: Tue, 11 Aug 2009 23:23:41 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090811175341.GA6328@in.ibm.com>
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
+	<20090806015855.GA20596@sli10-desk.sh.intel.com>
+	<20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl>
+	<20090810081941.GA18649@elf.ucw.cz>
+	<1249950137.11545.38184.camel@localhost.localdomain>
 MIME-Version: 1.0
-Date: Tue, 11 Aug 2009 19:39:57 +0530
-Message-ID: <70ca52c20908110709m41b1535ep4c8ed900163f3b18@mail.gmail.com>
-Subject: cross compiling wind river linux for ppc architecture
-From: Sridhar Mahadevan <msridhar87@gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=0016367f96e0e82f980470de41b8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1249950137.11545.38184.camel@localhost.localdomain>
+Cc: "Brown, Len" <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Gautham R Shenoy <ego@in.ibm.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+	"Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"Darrick J. Wong" <djwong@us.ibm.com>
+Reply-To: dipankar@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,73 +46,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016367f96e0e82f980470de41b8
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Mon, Aug 10, 2009 at 05:22:17PM -0700, Pallipadi, Venkatesh wrote:
+> Also, I don't think using just the ACPI/BIOS supplied states in _CST is
+> right thing to do for offline. _CST is meant for C-state and BIOS may
+> not include some C-state in _CST if the system manufacturer thinks that
+> the latency is too high for the state to be used as a C-state. That
+> limitation applies for C-state as the cpu is expected to come out of
+> C-state often and execute code handle interrupts etc. But, that
+> restriction does not apply for offline online which is not as frequent
+> as C-state entry and it already has big latency with startup IPI, and a
+> whole baggage of CPU setup code. So, using BIOS CST info for CPU offline
+> state doesn't seem right.
+> 
+> May be having (to pick a number) 3 possible offline states for all
+> platforms with one for halt equivalent and one for deepest possible that
+> CPU can handle and one for deepest possible that platform likes for
+> C-states may make sense. Will keeps things simpler in terms of usage
+> expectations and possibly reduce the misuse oppurtubity?
 
-Hi,
-Am trying to compile my WRL 2.6.21 kernel for PPC architecture.
-The processor am using is AMCC powerpc 440EP .
-I just built the file system by running the configure command with
---enable-rootfs=glibc-small and --enable-cpu-ppc-440 and i got a cross
-compiler.
-I took the linux kernel image and updated the PATH variable to the path of
-my cross compiler.I did a make with ARCH=powerpc and CROSS_COMPILER=/my
-cross compiler,except gcc/.
+Yes, I think we should let specific archs advertise a small set
+of possible offline states and let the cpu state be set to one of
+those only keeping the platform implementation robust.
 
-When I try to do this I get the following error.
- arch/powerpc/mm/44x_mmu.c: In function 'mmu_mapin_ram':
-arch/powerpc/mm/44x_mmu.c:106: error: 'PPC_PIN_SIZE' undeclared (first use
-in this function)
-arch/powerpc/mm/44x_mmu.c:106: error: (Each undeclared identifier is
-reported only once
-arch/powerpc/mm/44x_mmu.c:106: error: for each function it appears in.)
-arch/powerpc/mm/44x_mmu.c:106: error: 'PPC44x_PIN_SHIFT' undeclared (first
-use in this function)
-arch/powerpc/mm/44x_mmu.c:109: error: 'PPC44x_LOW_SLOT' undeclared (first
-use in this function)
-make[1]: *** [arch/powerpc/mm/44x_mmu.o] Error 1
-make: *** [arch/powerpc/mm] Error 2
-It ll be very helpful for me if I could get a solution for this.
+Here is variant of the original proposal from Gautham -
 
-Regards
-Sridhar M
+/sys/devices/system/cpu/cpu<number>/available_states
 
---0016367f96e0e82f980470de41b8
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+For example, available state for an Intel platform could be exported as
+"online dealloc C1 C6"
 
-<div>Hi,</div>
-<div>Am trying to compile my WRL 2.6.21 kernel for PPC architecture.</div>
-<div>The processor am using is AMCC powerpc 440EP .</div>
-<div>I just built the file system by running the configure command with --e=
-nable-rootfs=3Dglibc-small and --enable-cpu-ppc-440 and i got a cross compi=
-ler.</div>
-<div>I took the linux kernel image and updated the PATH variable to the pat=
-h of my cross compiler.I did a make with ARCH=3Dpowerpc and CROSS_COMPILER=
-=3D/my cross compiler,except gcc/.</div>
-<div>=A0</div>
-<div>When I try to do this I get the following error.</div>
-<div>
-<div><font face=3D"Arial" size=3D"2"><span class=3D"730463712-11082009">arc=
-h/powerpc/mm/44x_mmu.c: In function &#39;mmu_mapin_ram&#39;:<br>arch/powerp=
-c/mm/44x_mmu.c:106: error: &#39;PPC_PIN_SIZE&#39; undeclared (first use in =
-this function)<br>
-arch/powerpc/mm/44x_mmu.c:106: error: (Each undeclared identifier is report=
-ed only once<br>arch/powerpc/mm/44x_mmu.c:106: error: for each function it =
-appears in.)<br>arch/powerpc/mm/44x_mmu.c:106: error: &#39;PPC44x_PIN_SHIFT=
-&#39; undeclared (first use in this function)<br>
-arch/powerpc/mm/44x_mmu.c:109: error: &#39;PPC44x_LOW_SLOT&#39; undeclared =
-(first use in this function)<br>make[1]: *** [arch/powerpc/mm/44x_mmu.o] Er=
-ror 1<br>make: *** [arch/powerpc/mm] Error 2<br></span></font></div>
-<div><font face=3D"Arial" size=3D"2"><span class=3D"730463712-11082009">It =
-ll be very helpful for me if I could get a solution for this.</span></font>=
-</div>
-<div><font face=3D"Arial" size=3D"2"><span class=3D"730463712-11082009"></s=
-pan></font>=A0</div>
-<div><font face=3D"Arial" size=3D"2"><span class=3D"730463712-11082009">Reg=
-ards</span></font></div>
-<div><font face=3D"Arial" size=3D"2"><span class=3D"730463712-11082009">Sri=
-dhar M</span></font></div></div>
+online = fully up
+dealloc = offline and de-allocated (as in virtualized environment)
+C1 = C1 or C1E halt
+C6 = C6 sleep
 
---0016367f96e0e82f980470de41b8--
+/sys/devices/system/cpu/cpu<number>/state
+
+Writing any of the available states to this file triggers transition to that 
+state barring some transitions that are disallowed to keep things simple
+(e.g. dealloc cpus support only transition to online).
+
+/sys/devices/system/cpu/cpu<number>/online
+
+Backward compatibility - online = 0 changes state to C6 or dealloc depending
+on the platform. online = 1 changes state to online.
+
+Would this make sense ?
+
+Thanks
+Dipankar
