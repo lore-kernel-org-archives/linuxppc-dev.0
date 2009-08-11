@@ -3,23 +3,25 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B1A97B6EDF
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05200B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 Aug 2009 23:28:55 +1000 (EST)
+	Tue, 11 Aug 2009 23:34:04 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 081C8DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 23:28:54 +1000 (EST)
-Message-Id: <18A44FCA-CBA9-47DB-AC76-66EFEEF1CAFA@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 648B5DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 23:34:03 +1000 (EST)
+Message-Id: <FFAF330C-4FAF-46EA-A7E3-8D66A18880DA@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Felix Radensky <felix@embedded-sol.com>
-In-Reply-To: <1249981458-16102-1-git-send-email-felix@embedded-sol.com>
+In-Reply-To: <4A811B4F.905@embedded-sol.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH] powerpc/85xx: Workaround MPC8536 GPIO 1 errata.
-Date: Tue, 11 Aug 2009 08:28:38 -0500
-References: <> <1249981458-16102-1-git-send-email-felix@embedded-sol.com>
+Subject: Re: [PATCH] powerpc/85xx: Added 36-bit physical device tree for
+	mpc8572ds board
+Date: Tue, 11 Aug 2009 08:33:53 -0500
+References: <1249610909-7040-1-git-send-email-galak@kernel.crashing.org>
+	<4A811B4F.905@embedded-sol.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,45 +33,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 11, 2009, at 4:04 AM, Felix Radensky wrote:
+On Aug 11, 2009, at 2:18 AM, Felix Radensky wrote:
 
-> On MPC8536 Rev 1.0 the status of GPIO pins configured
-> as output cannot be determined by reading GPDAT register.
-> Workaround by reading the status of input pins from GPDAT
-> and the status of output pins from a shadow register.
+> Hi, Kumar
 >
-> Signed-off-by: Felix Radensky <felix@embedded-sol.com>
-> ---
-> arch/powerpc/sysdev/mpc8xxx_gpio.c |    6 +++++-
-> 1 files changed, 5 insertions(+), 1 deletions(-)
+> Patch subject does not match the contents. The patch is about  
+> mpc8536ds.
 >
-> diff --git a/arch/powerpc/sysdev/mpc8xxx_gpio.c b/arch/powerpc/ 
-> sysdev/mpc8xxx_gpio.c
-> index 103eace..0b996f3 100644
-> --- a/arch/powerpc/sysdev/mpc8xxx_gpio.c
-> +++ b/arch/powerpc/sysdev/mpc8xxx_gpio.c
-> @@ -56,9 +56,13 @@ static void mpc8xxx_gpio_save_regs(struct  
-> of_mm_gpio_chip *mm)
->
-> static int mpc8xxx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
-> {
-> +	u32 val;
-> 	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
-> +	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
-> +	
-> +	val = in_be32(mm->regs + GPIO_DAT) && ~in_be32(mm->regs + GPIO_DIR);
+> Felix.
 
-it would be good to add a comment in the code about working around the  
-errata.
-
->
-> -	return in_be32(mm->regs + GPIO_DAT) & mpc8xxx_gpio2mask(gpio);
-> +	return (val | mpc8xxx_gc->data) & mpc8xxx_gpio2mask(gpio);
-> }
->
-> static void mpc8xxx_gpio_set(struct gpio_chip *gc, unsigned int  
-> gpio, int val)
-> -- 
-> 1.5.4.3
+Oops, copy/paste error on my part.  The subject is the one that is  
+wrong.
 
 - k
