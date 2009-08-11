@@ -3,25 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05200B6F1E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9D9F1B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 Aug 2009 23:34:04 +1000 (EST)
+	Tue, 11 Aug 2009 23:43:34 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 648B5DDD1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 23:34:03 +1000 (EST)
-Message-Id: <FFAF330C-4FAF-46EA-A7E3-8D66A18880DA@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id C60E8DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 23:43:33 +1000 (EST)
+Message-Id: <BAFDE07A-DC01-46A5-A36E-7F8FB508CBFD@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Felix Radensky <felix@embedded-sol.com>
-In-Reply-To: <4A811B4F.905@embedded-sol.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+In-Reply-To: <1249659316-22927-1-git-send-email-poonam.aggrwal@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH] powerpc/85xx: Added 36-bit physical device tree for
-	mpc8572ds board
-Date: Tue, 11 Aug 2009 08:33:53 -0500
-References: <1249610909-7040-1-git-send-email-galak@kernel.crashing.org>
-	<4A811B4F.905@embedded-sol.com>
+Subject: Re: [v3][PATCH][powerpc/85xx] P2020RDB Platform Support Added
+Date: Tue, 11 Aug 2009 08:41:21 -0500
+References: <1249659316-22927-1-git-send-email-poonam.aggrwal@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,16 +31,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 11, 2009, at 2:18 AM, Felix Radensky wrote:
+On Aug 7, 2009, at 10:35 AM, Poonam Aggrwal wrote:
 
-> Hi, Kumar
 >
-> Patch subject does not match the contents. The patch is about  
-> mpc8536ds.
->
-> Felix.
+> +		enet2: ethernet@26000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			cell-index = <2>;
+> +			device_type = "network";
+> +			model = "eTSEC";
+> +			compatible = "gianfar";
+> +			reg = <0x26000 0x1000>;
+> +			ranges = <0x0 0x26000 0x1000>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			interrupts = <31 2 32 2 33 2>;
+> +			interrupt-parent = <&mpic>;
+> +			phy-handle = <&phy1>;
+> +			phy-connection-type = "rgmii-id";
+> +		};
 
-Oops, copy/paste error on my part.  The subject is the one that is  
-wrong.
+was there an answer to why we don't have an mdio node for enet2?
 
 - k
