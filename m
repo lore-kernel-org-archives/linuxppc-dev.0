@@ -1,25 +1,16 @@
-Return-Path: <joe@perches.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CD801B6F1E
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 79A56B6EDE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 Aug 2009 13:01:36 +1000 (EST)
-Received: from mail.perches.com (136-022.dsl.LABridge.com [206.117.136.22])
-	by ozlabs.org (Postfix) with ESMTP id D9350DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2009 13:01:34 +1000 (EST)
-Subject: Re: [PATCH] usb/gadget: Update Freescale UDC entry in MAINTAINERS
-From: Joe Perches <joe@perches.com>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <1249960271-3400-1-git-send-email-leoli@freescale.com>
-References: <1249960271-3400-1-git-send-email-leoli@freescale.com>
-Content-Type: text/plain
-Date: Mon, 10 Aug 2009 20:00:15 -0700
-Message-Id: <1249959615.8895.140.camel@Joe-Laptop.home>
+	Tue, 11 Aug 2009 13:15:03 +1000 (EST)
+Date: Tue, 11 Aug 2009 13:14:55 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: use consistent types in mktree
+Message-Id: <20090811131455.eceea05e.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, lg@denx.de,
-	linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +20,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-08-11 at 11:11 +0800, Li Yang wrote:
-> Change the F entry for file rename, and make it also cover fsl_qe_udc
-> driver.  Update the name accordingly.
-> 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> Liakhovetski,
-> 
-> Is it ok that it also covers your fsl_mx3_udc.c file.  It's much easier
-> to use the wildcard.
->  MAINTAINERS |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index b1114cf..cf1e22c 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2067,12 +2067,12 @@ S:	Supported
->  F:	arch/powerpc/sysdev/qe_lib/
->  F:	arch/powerpc/include/asm/*qe.h
->  
-> -FREESCALE HIGHSPEED USB DEVICE DRIVER
-> +FREESCALE USB PERIPHERIAL DRIVERS
->  M:	Li Yang <leoli@freescale.com>
->  L:	linux-usb@vger.kernel.org
->  L:	linuxppc-dev@ozlabs.org
->  S:	Maintained
-> -F:	drivers/usb/gadget/fsl_usb2_udc.c
-> +F:	drivers/usb/gadget/fsl*
+gcc v4.4 currently produces this build warning:
 
-If you want, you can add an "X:" entry as well
+arch/powerpc/boot/mktree.c: In function 'main':
+arch/powerpc/boot/mktree.c:104: warning: dereferencing type-punned pointer will break strict-aliasing rules
 
-X:	drivers/usb/gadget/fsl_mx3_udc.c
+tmpbuf is only used as an array of unsigned ints, so declare it that way.
 
-which excludes that file.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/boot/mktree.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Excludes are tested before includes.
+diff --git a/arch/powerpc/boot/mktree.c b/arch/powerpc/boot/mktree.c
+index c2baae0..e2ae243 100644
+--- a/arch/powerpc/boot/mktree.c
++++ b/arch/powerpc/boot/mktree.c
+@@ -36,7 +36,7 @@ typedef struct boot_block {
+ } boot_block_t;
+ 
+ #define IMGBLK	512
+-char	tmpbuf[IMGBLK];
++unsigned int	tmpbuf[IMGBLK / sizeof(unsigned int)];
+ 
+ int main(int argc, char *argv[])
+ {
+@@ -95,13 +95,13 @@ int main(int argc, char *argv[])
+ 
+ 	/* Assume zImage is an ELF file, and skip the 64K header.
+ 	*/
+-	if (read(in_fd, tmpbuf, IMGBLK) != IMGBLK) {
++	if (read(in_fd, tmpbuf, sizeof(tmpbuf)) != sizeof(tmpbuf)) {
+ 		fprintf(stderr, "%s is too small to be an ELF image\n",
+ 				argv[1]);
+ 		exit(4);
+ 	}
+ 
+-	if ((*(unsigned int *)tmpbuf) != htonl(0x7f454c46)) {
++	if (tmpbuf[0] != htonl(0x7f454c46)) {
+ 		fprintf(stderr, "%s is not an ELF image\n", argv[1]);
+ 		exit(4);
+ 	}
+@@ -121,11 +121,11 @@ int main(int argc, char *argv[])
+ 	}
+ 
+ 	while (nblks-- > 0) {
+-		if (read(in_fd, tmpbuf, IMGBLK) < 0) {
++		if (read(in_fd, tmpbuf, sizeof(tmpbuf)) < 0) {
+ 			perror("zImage read");
+ 			exit(5);
+ 		}
+-		cp = (unsigned int *)tmpbuf;
++		cp = tmpbuf;
+ 		for (i = 0; i < sizeof(tmpbuf) / sizeof(unsigned int); i++)
+ 			cksum += *cp++;
+ 		if (write(out_fd, tmpbuf, sizeof(tmpbuf)) != sizeof(tmpbuf)) {
+-- 
+1.6.3.3
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
