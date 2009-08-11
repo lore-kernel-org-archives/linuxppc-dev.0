@@ -1,16 +1,27 @@
-Return-Path: <JuddG@tanisys.com>
-Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 619B9B7B60
+Return-Path: <venkatesh.pallipadi@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 878CDB7B70
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 Aug 2009 07:26:12 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CA19FF.7AB681D2"
-Subject: PPC460EX with 2 Ethernet Transceivers
-Date: Mon, 10 Aug 2009 16:13:59 -0500
-Message-ID: <16691A8B34B5D9458EA3A1C37A11555A01351D84@tanisys-ex2.Tanisys.Local>
-From: "Judd Gilbert" <JuddG@tanisys.com>
-To: <linuxppc-dev@lists.ozlabs.org>
+	Tue, 11 Aug 2009 10:34:42 +1000 (EST)
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <20090810081941.GA18649@elf.ucw.cz>
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
+	<20090806015855.GA20596@sli10-desk.sh.intel.com>
+	<20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl>
+	<20090810081941.GA18649@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 10 Aug 2009 17:22:17 -0700
+Message-Id: <1249950137.11545.38184.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: "Brown, Len" <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Gautham R Shenoy <ego@in.ibm.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, "Li,
+	Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,305 +31,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Mon, 2009-08-10 at 01:19 -0700, Pavel Machek wrote:
+> On Sun 2009-08-09 15:22:02, Rafael J. Wysocki wrote:
+> > On Sunday 09 August 2009, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > > Also, approaches such as [1] can make use of this
+> > > > > extended infrastructure instead of putting the CPU to an arbitrary C-state
+> > > > > when it is offlined, thereby providing the system administrator a rope to hang
+> > > > > himself with should he feel the need to do so.
+> > > > I didn't see the reason why administrator needs to know which state offline cpu
+> > > > should stay. Don't know about powerpc side, but in x86 side, it appears deepest
+> > > > C-state is already preferred.
+> > > > 
+> > > 
+> > > Agreed, deepest c-state is always best, there's no need to make it configurable.
+> > 
+> > Unless it doesn't work.
+> 
+> If it does not work, machine will not boot. We already have
+> max_cstate= kernel command line option to work around that...
+> 
 
-------_=_NextPart_001_01CA19FF.7AB681D2
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On x86, my earlier patch was selecting deepest C-state based on CPU
+capability. There, "unless it doesn't work" will not hold good. If a CPU
+C-state is reported in cpuid it will work. If there is any errata we
+will workaround it as we do with anything else in the kernel.
 
-Hi,
-=20
-I am currently running linux 2.6.28.4 on a PPC460EX with 2 Marvell
-Alaska 88EIIII Ethernet transceivers connected to it. If I hold one of
-the transceivers in reset on power on I get the following messages when
-the linux kernel boots and eth0 and eth1 both work fine...
-=20
-eth0: EMAC-0 /plb/opb/ethernet@ef600e00, MAC 00:13:a8:00:0d:c6
-eth0: found Generic MII PHY (0x00)
-/plb/opb/emac-rgmii@ef601500: input 1 in RGMII mode
-eth1: EMAC-1 /plb/opb/ethernet@ef600f00, MAC 00:13:a8:00:0d:c7
-eth1: found Generic MII PHY (0x02)
-=20
-Now if I don't hold one of the chips in reset (I'm doing it manually
-with a switch BTW) I get the following (and eth1 does not work):
-=20
-eth0: EMAC-0 /plb/opb/ethernet@ef600e00, MAC 00:13:a8:00:0d:c6
-eth0: found Generic MII PHY (0x00)
-/plb/opb/emac-rgmii@ef601500: input 1 in RGMII mode
-/plb/opb/ethernet@ef600f00: can't find PHY!
-=20
-At first I thought maybe this is a problem with u-boot, but I'm not sure
-now. I was going to start modifying the kernel - but thought I would ask
-on here first if anyone has seen this issue.
-=20
-Thanks for your time,
-=20
-Judd Gilbert
-=20
+My concern about having this interface for offline CPU is
+- How are we going to populate this possible states. On x86, there are
+2-3 CPU mwait cstates with each having few sub C-states. And there can
+be some BIOS supplied C-states which are IO port invocations which will
+map to some CPU mwait state,sub state pair mentioned above and we won't
+know anything about this mapping. So, we want to give all these options
+in sysfs?
+- Having all these states and having no information on what basis one
+should change this or on what reasons one should change this will result
+in some userspace superpowersaver daemon using this in a wrong way and
+some distro shipping it.
 
-------_=_NextPart_001_01CA19FF.7AB681D2
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Also, I don't think using just the ACPI/BIOS supplied states in _CST is
+right thing to do for offline. _CST is meant for C-state and BIOS may
+not include some C-state in _CST if the system manufacturer thinks that
+the latency is too high for the state to be used as a C-state. That
+limitation applies for C-state as the cpu is expected to come out of
+C-state often and execute code handle interrupts etc. But, that
+restriction does not apply for offline online which is not as frequent
+as C-state entry and it already has big latency with startup IPI, and a
+whole baggage of CPU setup code. So, using BIOS CST info for CPU offline
+state doesn't seem right.
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+May be having (to pick a number) 3 possible offline states for all
+platforms with one for halt equivalent and one for deepest possible that
+CPU can handle and one for deepest possible that platform likes for
+C-states may make sense. Will keeps things simpler in terms of usage
+expectations and possibly reduce the misuse oppurtubity?
 
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DProgId content=3DWord.Document>
-<meta name=3DGenerator content=3D"Microsoft Word 10">
-<meta name=3DOriginator content=3D"Microsoft Word 10">
-<link rel=3DFile-List href=3D"cid:filelist.xml@01CA19D5.91B33610">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"State"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"place"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"PersonName"/>
-<!--[if gte mso 9]><xml>
- <o:OfficeDocumentSettings>
-  <o:DoNotRelyOnCSS/>
- </o:OfficeDocumentSettings>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:WordDocument>
-  <w:SpellingState>Clean</w:SpellingState>
-  <w:GrammarState>Clean</w:GrammarState>
-  <w:DocumentKind>DocumentEmail</w:DocumentKind>
-  <w:EnvelopeVis/>
-  <w:Compatibility>
-   <w:BreakWrappedTables/>
-   <w:SnapToGridInCell/>
-   <w:WrapTextWithPunct/>
-   <w:UseAsianBreakRules/>
-  </w:Compatibility>
-  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
- </w:WordDocument>
-</xml><![endif]--><!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{mso-style-parent:"";
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;
-	text-underline:single;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;
-	text-underline:single;}
-p.code, li.code, div.code
-	{mso-style-name:code;
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Courier New";
-	mso-fareast-font-family:"Times New Roman";
-	mso-bidi-font-family:Arial;
-	color:navy;}
-span.EmailStyle18
-	{mso-style-type:personal-compose;
-	mso-style-noshow:yes;
-	mso-ansi-font-size:10.0pt;
-	mso-bidi-font-size:10.0pt;
-	font-family:Arial;
-	mso-ascii-font-family:Arial;
-	mso-hansi-font-family:Arial;
-	mso-bidi-font-family:Arial;
-	color:windowtext;}
-span.SpellE
-	{mso-style-name:"";
-	mso-spl-e:yes;}
-span.GramE
-	{mso-style-name:"";
-	mso-gram-e:yes;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;
-	mso-header-margin:.5in;
-	mso-footer-margin:.5in;
-	mso-paper-source:0;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 10]>
-<style>
- /* Style Definitions */=20
- table.MsoNormalTable
-	{mso-style-name:"Table Normal";
-	mso-tstyle-rowband-size:0;
-	mso-tstyle-colband-size:0;
-	mso-style-noshow:yes;
-	mso-style-parent:"";
-	mso-padding-alt:0in 5.4pt 0in 5.4pt;
-	mso-para-margin:0in;
-	mso-para-margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Times New Roman";}
-</style>
-<![endif]-->
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple =
-style=3D'tab-interval:.5in'>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I am currently running <span =
-class=3DSpellE>linux</span> 2.6.28.4
-on a PPC460EX with 2 Marvell </span></font><st1:State><st1:place><font =
-size=3D2
-  face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Alaska</span></font></st1:pl=
-ace></st1:State><font
-size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'> 88EIIII Ethernet
-transceivers connected to it. If I hold one of the transceivers in reset =
-on
-power on I get the following messages when the <span =
-class=3DSpellE>linux</span>
-kernel boots and eth0 and eth1 both work =
-fine&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>eth0: EMAC-0 /plb/opb/ethernet@ef600e00, MAC =
-00:13:a8:00:0d<span
-class=3DGramE>:c6</span><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>eth0: found Generic MII PHY =
-(0x00)<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>/plb/opb/emac-rgmii@ef601500: input 1 in RGMII =
-mode<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>eth1: EMAC-1 /plb/opb/ethernet@ef600f00, MAC =
-00:13:a8:00:0d<span
-class=3DGramE>:c7</span><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>eth1: found Generic MII PHY =
-(0x02)<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Now if I don&#8217;t hold one of the chips in reset =
-(I&#8217;m
-doing it manually with a switch BTW) I get the following (and eth1 does =
-not
-work):<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>eth0: EMAC-0 /plb/opb/ethernet@ef600e00, MAC =
-00:13:a8:00:0d<span
-class=3DGramE>:c6</span><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>eth0: found Generic MII PHY =
-(0x00)<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>/plb/opb/emac-rgmii@ef601500: input 1 in RGMII =
-mode<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>/plb/opb/ethernet@ef600f00: can't find =
-PHY!<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>At first I thought maybe this is a problem with =
-u-boot, but
-I&#8217;m not sure now. I was going to start modifying the kernel =
-&#8211; but thought
-I would ask on here first if anyone has seen this =
-issue.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks for your time,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><st1:PersonName><font size=3D2 face=3DArial><span
- style=3D'font-size:10.0pt;font-family:Arial'>Judd =
-Gilbert</span></font></st1:PersonName><font
-size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'><o:p></o:p></span></font></p=
->
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-=00
-------_=_NextPart_001_01CA19FF.7AB681D2--
+Thanks,
+Venki
