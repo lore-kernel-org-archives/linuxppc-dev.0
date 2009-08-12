@@ -1,19 +1,25 @@
-Return-Path: <leonardo.lists@gmail.com>
-Received: from mail-ew0-f217.google.com (mail-ew0-f217.google.com
-	[209.85.219.217])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 50CC0B6EDF
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C0124B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 Aug 2009 05:40:05 +1000 (EST)
-Received: by ewy17 with SMTP id 17so284308ewy.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 Aug 2009 12:40:02 -0700 (PDT)
+	Thu, 13 Aug 2009 05:40:26 +1000 (EST)
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 99E29DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2009 05:40:24 +1000 (EST)
+Date: Wed, 12 Aug 2009 21:40:14 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH] usb/gadget: Update Freescale UDC entry in MAINTAINERS
+In-Reply-To: <1249960271-3400-1-git-send-email-leoli@freescale.com>
+Message-ID: <Pine.LNX.4.64.0908122139160.27544@axis700.grange>
+References: <1249960271-3400-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
-Date: Wed, 12 Aug 2009 16:40:02 -0300
-Message-ID: <c2d0b6ec0908121240v60446ebdjc9dc35fe1b5b544e@mail.gmail.com>
-Subject: The infamous ppc_spurious_interrupt
-From: Leonardo Chiquitto <leonardo.lists@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: joe@perches.com, linuxppc-dev@ozlabs.org, gregkh@suse.de,
+	linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,48 +29,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Tue, 11 Aug 2009, Li Yang wrote:
 
-I'm trying to understand the rationale behind "ppc_spurious_interrupts" without
-luck so far. I'm seeing the BAD interrupt counter incrementing with kernels of
-different ages (2.6.5, 2.6.16, 2.6.27) and on different hardware (IBM P5 and P6
-64 bit, Apple PPC 32 bit). Here is the code snip that performs the increment:
+> Change the F entry for file rename, and make it also cover fsl_qe_udc
+> driver.  Update the name accordingly.
+> 
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> Liakhovetski,
+> 
+> Is it ok that it also covers your fsl_mx3_udc.c file.  It's much easier
+> to use the wildcard.
 
-void do_IRQ(struct pt_regs *regs)
-{
-(...)
-        irq = ppc_md.get_irq();
+Sure, no problem, if you like
 
-        if (irq != NO_IRQ && irq != NO_IRQ_IGNORE)
-                handle_one_irq(irq);
-        else if (irq != NO_IRQ_IGNORE)
-                /* That's not SMP safe ... but who cares ? */
-                ppc_spurious_interrupts++;
-(...)
-}
+Acked-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-I see that the counter is incremented only when ppc_md.get_irq() returns NO_IRQ.
-This seems to happen with some frequency here (32 million "bad" interrupts in
-~16 days of uptime, or ~23 int/sec).
+>  MAINTAINERS |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index b1114cf..cf1e22c 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2067,12 +2067,12 @@ S:	Supported
+>  F:	arch/powerpc/sysdev/qe_lib/
+>  F:	arch/powerpc/include/asm/*qe.h
+>  
+> -FREESCALE HIGHSPEED USB DEVICE DRIVER
+> +FREESCALE USB PERIPHERIAL DRIVERS
+>  M:	Li Yang <leoli@freescale.com>
+>  L:	linux-usb@vger.kernel.org
+>  L:	linuxppc-dev@ozlabs.org
+>  S:	Maintained
+> -F:	drivers/usb/gadget/fsl_usb2_udc.c
+> +F:	drivers/usb/gadget/fsl*
+>  
+>  FREESCALE QUICC ENGINE UCC ETHERNET DRIVER
+>  M:	Li Yang <leoli@freescale.com>
+> -- 
+> 1.6.3.1.6.g4bf1f
+> 
+> 
+> 
 
-I did some research in the archives and found some references, like this comment
-from Rob Baxter (http://marc.info/?l=linuxppc-dev&m=119579052741562&w=2):
-
-> A good example is an interrupt request from a PCI bus device.  Many device
-> driver interrupt handlers will clear the source of the interrupt by either
-> reading or writing some register within the device, perform some necessary
-> actions, and return from the handler.  The PCI device is slow to negate its
-> interrupt request and the interrupt controller sees the interrupt request
-> from the device again.  With the platforms that I'm associated with I've
-> seen this happen more frequently (i.e., BAD interrupts) as processor
-> internal core frequencies increase, especially with the 7457.
-
-Is this correct? Why we see this behavior only on PPC and not on all
-architectures
-that support the PCI bus?
-
-If the "bad interrupts" are harmless (I suppose they are), why are we counting
-them and displaying the counter as BAD in /proc/interrupts?
-
-Best regards,
-Leonardo
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
