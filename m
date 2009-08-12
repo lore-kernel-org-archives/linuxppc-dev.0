@@ -1,13 +1,13 @@
 Return-Path: <Jonathan.Haws@sdl.usu.edu>
 Received: from kronos.usurf.usu.edu (kronos.usurf.usu.edu [129.123.194.129])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 535F3B70B3
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 60C46B7334
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 Aug 2009 08:15:34 +1000 (EST)
+	Thu, 13 Aug 2009 08:16:00 +1000 (EST)
 From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
 To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 12 Aug 2009 16:11:54 -0600
+Date: Wed, 12 Aug 2009 16:09:59 -0600
 Subject: Jumbo Frames, sil24 SATA driver, and kswapd0 page allocation failures
-Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F01FE4C90DE@midas.usurf.usu.edu>
+Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F01FE4C90D0@midas.usurf.usu.edu>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
