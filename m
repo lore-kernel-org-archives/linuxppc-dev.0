@@ -3,25 +3,29 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 49D3CB708C
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 215D6B7B99
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 Aug 2009 01:08:23 +1000 (EST)
+	Thu, 13 Aug 2009 01:08:47 +1000 (EST)
 Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail7.windriver.com",
 	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0DCF3DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2009 01:08:20 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 70D6EDDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2009 01:08:45 +1000 (EST)
 Received: from ALA-MAIL03.corp.ad.wrs.com (ala-mail03 [147.11.57.144])
-	by mail.windriver.com (8.14.3/8.14.3) with ESMTP id n7CDYqfR025216
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2009 06:34:52 -0700 (PDT)
+	by mail.windriver.com (8.14.3/8.14.3) with ESMTP id n7CDYrsi025222
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2009 06:34:53 -0700 (PDT)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4] Remove second USB node from SBC834x DTS
-Date: Wed, 12 Aug 2009 09:34:28 -0400
-Message-Id: <87b9869d069308d2ed12324ea924e284c85a6765.1250036189.git.paul.gortmaker@windriver.com>
-In-Reply-To: <1250084071-26418-1-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 3/4] Fix incorrect PCI interrupt map in SBC834x DTS
+Date: Wed, 12 Aug 2009 09:34:30 -0400
+Message-Id: <764194b0524e1baccb737668f5aeb198989ac2d1.1250036189.git.paul.gortmaker@windriver.com>
+In-Reply-To: <22f17c810cb3e567a842300c553121a574d9b139.1250036189.git.paul.gortmaker@windriver.com>
 References: <1250084071-26418-1-git-send-email-paul.gortmaker@windriver.com>
+	<87b9869d069308d2ed12324ea924e284c85a6765.1250036189.git.paul.gortmaker@windriver.com>
+	<22f17c810cb3e567a842300c553121a574d9b139.1250036189.git.paul.gortmaker@windriver.com>
+In-Reply-To: <87b9869d069308d2ed12324ea924e284c85a6765.1250036189.git.paul.gortmaker@windriver.com>
+References: <87b9869d069308d2ed12324ea924e284c85a6765.1250036189.git.paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,39 +37,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Liang Li <liang.li@windriver.com>
 
-Since only one of the SoC USB devices is brought out to a physical
-connector on the board, remove the 2nd (USB-DR) node from the DTS.
-Having it present and USB enabled will cause a hang at boot.
+Allows interrupts to occur on the sbc834x. Currently PCI devices
+get assigned an incorrect IRQ and so the interrupt count never
+increases. This was tested with the 82546GB based dual port E1000
+PCI-X NIC which uses two distinct IRQ lines on the one card.
+
+root@localhost:/root> cat /proc/interrupts | grep eth
+17:         78   IPIC   Level     eth1
+48:      27121   IPIC   Level     eth0
 
 Signed-off-by: Liang Li <liang.li@windriver.com>
 Signed-off-by: Yang Shi <yang.shi@windriver.com>
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- arch/powerpc/boot/dts/sbc8349.dts |   12 ------------
- 1 files changed, 0 insertions(+), 12 deletions(-)
+ arch/powerpc/boot/dts/sbc8349.dts |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/boot/dts/sbc8349.dts b/arch/powerpc/boot/dts/sbc8349.dts
-index 2d9fa68..d93e5be 100644
+index b83036a..0dc90f9 100644
 --- a/arch/powerpc/boot/dts/sbc8349.dts
 +++ b/arch/powerpc/boot/dts/sbc8349.dts
-@@ -146,18 +146,6 @@
- 			phy_type = "ulpi";
- 			port0;
- 		};
--		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
--		usb@23000 {
--			device_type = "usb";
--			compatible = "fsl-usb2-dr";
--			reg = <0x23000 0x1000>;
--			#address-cells = <1>;
--			#size-cells = <0>;
--			interrupt-parent = <&ipic>;
--			interrupts = <38 0x8>;
--			dr_mode = "otg";
--			phy_type = "ulpi";
--		};
+@@ -310,10 +310,10 @@
+ 		interrupt-map = <
  
- 		enet0: ethernet@24000 {
- 			#address-cells = <1>;
+ 				/* IDSEL 0x11 */
+-				 0x8800 0x0 0x0 0x1 &ipic 20 0x8
+-				 0x8800 0x0 0x0 0x2 &ipic 21 0x8
+-				 0x8800 0x0 0x0 0x3 &ipic 22 0x8
+-				 0x8800 0x0 0x0 0x4 &ipic 23 0x8>;
++				 0x8800 0x0 0x0 0x1 &ipic 48 0x8
++				 0x8800 0x0 0x0 0x2 &ipic 17 0x8
++				 0x8800 0x0 0x0 0x3 &ipic 18 0x8
++				 0x8800 0x0 0x0 0x4 &ipic 19 0x8>;
+ 
+ 		interrupt-parent = <&ipic>;
+ 		interrupts = <0x42 0x8>;
 -- 
 1.6.3.3
