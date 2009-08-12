@@ -1,29 +1,41 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 53751B6F1E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0EBE1B708C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 Aug 2009 19:56:59 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Wed, 12 Aug 2009 21:20:16 +1000 (EST)
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9AEE3DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2009 19:56:57 +1000 (EST)
-Subject: Re: Problem with PCIe -> PCI bridge on MPC8377E-RDB
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <705D9914-7AC7-42AB-A7F9-AD2447B9DDD8@kernel.crashing.org>
-References: <4D3BDC67-986A-482D-BB3F-497F64C68531@mhlabs.com>
-	<9E566D12-1A26-41BC-BB71-27D4CCE54E20@kernel.crashing.org>
-	<2D2EDFA8-E51F-4A2D-BEB7-8F9258518DA1@mhlabs.com>
-	<705D9914-7AC7-42AB-A7F9-AD2447B9DDD8@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 12 Aug 2009 19:56:47 +1000
-Message-Id: <1250071007.3587.2.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, "B.J. Buchalter" <bj@mhlabs.com>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8A036DDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2009 21:20:14 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7CBBAVC007286
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2009 05:11:10 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7CBK0LB212004
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2009 05:20:00 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n7CBJwrf012647
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2009 05:20:00 -0600
+Date: Wed, 12 Aug 2009 07:19:54 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: ARM clock API to PowerPC
+Message-ID: <20090812111954.GB31596@zod.rchland.ibm.com>
+References: <1250063825.15143.43.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1250063825.15143.43.camel@pasglop>
+Cc: John Jacques <john.jacques@lsi.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss@lists.ozlabs.org, Torez Smith <torez@us.ibm.com>,
+	Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,15 +45,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-08-12 at 00:20 -0500, Kumar Gala wrote:
-> It is suppose to.  I would recommend updating u-boot to something  
-> newer and see what you get on that side.
-> 
-> Also I'll try see if we have a PCIe board w/a p2p bridge on it.  I'm  
-> guessing no one has tried PCIe on 83xx w/a p2p bridge on it.
+On Wed, Aug 12, 2009 at 05:57:05PM +1000, Benjamin Herrenschmidt wrote:
+>Hi folks !
+>
+>(Russell, let us know if you want to dropped from the CC list, but I
+>felt you may have some useful input to provide here).
+>
+>So I think it would be valuable to provide the ARM clock API exposed by
+>include/linux/clk.h on various PowerPC embedded hardware.
 
-A few off-the-shelves FW + USB2 PCIe cards have that bridge and have
-shown weird issues, might be worth shopping at your local Fry's :-)
+I'm probably being particularly dense, and I haven't had my coffee yet this
+morning, but you never actually said _why_ you think this is valuable?
 
-Cheers,
-Ben.
+I'm a bit confused as to what problem you are trying to solve with the API.
+
+josh
