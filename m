@@ -1,29 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 10E7AB7093
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 Aug 2009 23:42:24 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <thirumalai.p@datapatterns.co.in>
+Received: from ns0.datapatterns.co.in (ns0.datapatterns.co.in [121.242.18.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7D6F4DDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2009 23:42:23 +1000 (EST)
-Message-Id: <4A90486C-8BF5-428C-9FD8-830D822C0D40@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20090812111954.GB31596@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: ARM clock API to PowerPC
-Date: Wed, 12 Aug 2009 08:40:35 -0500
-References: <1250063825.15143.43.camel@pasglop>
-	<20090812111954.GB31596@zod.rchland.ibm.com>
-Cc: devicetree-discuss@lists.ozlabs.org, John Jacques <john.jacques@lsi.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Torez Smith <torez@us.ibm.com>, Russell King <rmk@arm.linux.org.uk>
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1AE72B6EDF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 13 Aug 2009 00:13:39 +1000 (EST)
+Received: from itd210 (itd210.datapatterns [10.5.4.110]) (authenticated bits=0)
+	by ns0.datapatterns.co.in (8.14.2/8.14.2) with ESMTP id n7CE1580026499
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2009 19:31:05 +0530
+Message-ID: <04CE892647C64383B7CB93BDBF365654@itd210>
+From: "Thirumalai" <thirumalai.p@datapatterns.co.in>
+To: <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 12 Aug 2009 19:27:50 +0530
+MIME-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
+Subject: Regarding initial PCI configuration
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,28 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
+    I need some clarification on powerpc linux-2.6.30 kernels PCI 
+enumeration. Please correct me if i am wrong on this. I am having mpc7448 
+based custom board on which i am trying to port linux 2.6.30(Note : Earlier 
+i have ported linux2.6.23 kernel for this board and its successfully 
+booted). So i have choosen mpc7448hpc2 as my model BSP. . On this the first 
+call to pci related thing was called. (i.e from 
+linux/arch/powerpc/platform/mpc7448hpc2.c/setup_arch() ) which will again 
+call my sysdev/tsi108_pci.c/setup_pci() function. At the end of this 
+function we use to call the pci_OF_process() function for assigning MEM/IO 
+addresses to my kernel. again this function was defined on 
+kernel/pci-common.c function. So here the mess starts. On this function the 
+code is getting pci_addr and pci_size from ranges property that i used to 
+pass on my device tree. But the cpu_addr whatever used will get the 
+translated address from prom_parse.c file. This one is always returning 
+0xFFFFFFFF. When we just dig into the internals i came to know that the 
+implementation is totally different from the previos kernel means from 
+linux-2.6.23 this change has come. Now the latest kernel is exhibiting the 
+64 bit PCI implementation. But the prom_parse.c code is designed in that 
+manner i think. because whenever the of_translate_addr() function is called 
+the function will get the parent node for getting the system bus address 
+information which we used to have 0xc0000000 and size 0x10000 on the device 
+tree. This will do for all the devices but when try to use these function 
+PCI mapping. This will create mess. I don't know how to go further.
+    Kindly let me know any changes is required on device tree or kernel 
+itself to get out this problem.
 
-On Aug 12, 2009, at 6:19 AM, Josh Boyer wrote:
+Regards,
+T. 
 
-> On Wed, Aug 12, 2009 at 05:57:05PM +1000, Benjamin Herrenschmidt  
-> wrote:
->> Hi folks !
->>
->> (Russell, let us know if you want to dropped from the CC list, but I
->> felt you may have some useful input to provide here).
->>
->> So I think it would be valuable to provide the ARM clock API  
->> exposed by
->> include/linux/clk.h on various PowerPC embedded hardware.
->
-> I'm probably being particularly dense, and I haven't had my coffee  
-> yet this
-> morning, but you never actually said _why_ you think this is valuable?
->
-> I'm a bit confused as to what problem you are trying to solve with  
-> the API.
 
-I'm in the same boat as you Josh.  I think there is value and utility  
-here but not sure what problem Ben's trying to solve.
-
-- k
+**************** CAUTION - Disclaimer *****************This email may contain confidential and privileged material for the
+sole use of the intended recipient(s). Any review, use, retention, distribution or disclosure by others is strictly prohibited. If you are not the intended recipient (or authorized to receive for the recipient), please contact the sender by reply email and delete all copies of this message. Also, email is susceptible to data corruption, interception, tampering, unauthorized amendment and viruses. We only send and receive emails on the basis that we are not liable for any such corruption, interception, tampering, amendment or viruses or any consequence thereof. 
+*********** End of Disclaimer ***********DataPatterns ITS Group**********
