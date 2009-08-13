@@ -1,27 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <felix@embedded-sol.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D6D2FB6F2B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 13 Aug 2009 23:46:38 +1000 (EST)
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id ACF13B6F2B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 Aug 2009 23:31:47 +1000 (EST)
-Message-Id: <F7570C22-925A-4B34-AA27-04079071FD07@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1250159900.24143.7.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH -v2 0/7] powerpc: use asm-generic/dma-mapping-common.h
-Date: Thu, 13 Aug 2009 08:31:13 -0500
-References: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1250142522.3587.110.camel@pasglop>
-	<20090813160625B.fujita.tomonori@lab.ntt.co.jp>
-	<20090813074131.GH12143@elte.hu>
-	<1250150981.3587.157.camel@pasglop>
-	<20090813085505.GA10671@elte.hu> <1250159900.24143.7.camel@pasglop>
-Cc: Linux-Kernel List <linux-kernel@vger.kernel.org>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id 88F9DDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2009 23:46:38 +1000 (EST)
+Message-ID: <4A841933.8090808@embedded-sol.com>
+Date: Thu, 13 Aug 2009 16:46:27 +0300
+From: Felix Radensky <felix@embedded-sol.com>
+MIME-Version: 1.0
+To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Scott Wood <scottwood@freescale.com>
+Subject: Adding MTD concat support to FSL ELBC NAND driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,25 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Aug 13, 2009, at 5:38 AM, Benjamin Herrenschmidt wrote:
+I'd like to be able to concatenate several NAND banks (each bank on 
+separate chip select)
+into a single MTD device, and define partition table on a concatenated 
+device.
 
-> On Thu, 2009-08-13 at 10:55 +0200, Ingo Molnar wrote:
->
->>> Or we can have the patches in core/iommu and I pull the whole
->>> thing in powerpc-next. [...]
->>
->> Ok! We could also stage it a bit (one or two weeks) in a separate
->> branch and allow a rebase, should you find any bugs during testing?
->
-> Sounds like a plan.
->
-> I'll try to sort that out tomorrow, I can stick them in my -test  
-> branch
-> (which is rebase friendly) for a while too.
+Currently concatenation support is implemented in physmap_of driver. The 
+syntax used
+to define a concatenation device involves multiple reg tuples, as 
+described in
+Documentation/powerpc/dts-bindings/mtd-physmap.txt. Will same syntax be 
+acceptable
+for NAND chips ?
 
-Getting them all in your -test branch gives Becky and I an opportunity  
-to test them w/all the other PPC changes on the platforms we have that  
-enable SWIOTLB today.
+Thanks.
 
-- k
+Felix.
