@@ -1,15 +1,25 @@
 Return-Path: <Paul.Gortmaker@windriver.com>
-Message-ID: <4A84716A.90907@windriver.com>
-Date: Thu, 13 Aug 2009 16:02:50 -0400
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 44A57B6F34
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 14 Aug 2009 09:06:27 +1000 (EST)
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail7.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 4B3CEDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2009 09:06:24 +1000 (EST)
+Received: from ALA-MAIL03.corp.ad.wrs.com (ala-mail03 [147.11.57.144])
+	by mail.windriver.com (8.14.3/8.14.3) with ESMTP id n7DN6GVW016827
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2009 16:06:17 -0700 (PDT)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] powerpc: derive COMMAND_LINE_SIZE from asm-generic
-References: <1250192224-22772-1-git-send-email-paul.gortmaker@windriver.com>
-	<200908131948.48103.arnd@arndb.de>
-In-Reply-To: <200908131948.48103.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: Linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] sbc8560: Fix warm reboot with board specific reset function
+Date: Thu, 13 Aug 2009 19:06:15 -0400
+Message-Id: <1250204775-5001-1-git-send-email-paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,38 +29,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Thursday 13 August 2009 19:37:04 Paul Gortmaker wrote:
->> The default COMMAND_LINE_SIZE in asm-generic is 512, so the
->> net effect of this change is nil, aside from the cleanup
->> factor.  See also commit 2b74b8569.
->>
->> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> 
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> 
-> Just to clarify why this is good: There is a patch from Remis
-> to kbuild that can automatically create the trivial wrappers,
-> so we can remove arch/powerpc/include/asm/setup.h from the
-> kernel once that patch is applied.
-> 
-> I was also planning to submit a series to clean up more powerpc
-> in this way headers where applicable, see
-> http://git.kernel.org/?p=linux/kernel/git/arnd/asm-generic.git;a=shortlog;h=powerpc
+From: Liang Li <Liang.Li@windriver.com>
 
-I'd looked at master and next in your tree; I didn't
-list all the branches and so I'd not noticed powerpc in there
-as well.
+The existing fsl_rstcr_restart function fails to reset the sbc8560
+board. This implements a board specific reset function that uses
+the RCR(Reset Control Register) of the board's EPLD to do a reset.
 
-> 
-> The series needs some forward porting to 2.6.31 as well as testing.
-> If you or someone else wants to help with that, please go ahead!
+Signed-off-by: Liang Li <Liang.Li@windriver.com>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/platforms/85xx/sbc8560.c |   39 ++++++++++++++++++++++++++++++++-
+ 1 files changed, 38 insertions(+), 1 deletions(-)
 
-I'll definitely have a look at what is in there.
-
-Paul.
-
-> 
-> Thanks,
-> 
-> 	Arnd <><
+diff --git a/arch/powerpc/platforms/85xx/sbc8560.c b/arch/powerpc/platforms/85xx/sbc8560.c
+index cc27807..86dcca2 100644
+--- a/arch/powerpc/platforms/85xx/sbc8560.c
++++ b/arch/powerpc/platforms/85xx/sbc8560.c
+@@ -267,6 +267,43 @@ arch_initcall(sbc8560_rtc_init);
+ 
+ #endif	/* M48T59 */
+ 
++static __u8 __iomem *brstcr;
++
++static int __init sbc8560_bdrstcr_init(void)
++{
++	struct device_node *np;
++	struct resource res;
++
++	np = of_find_compatible_node(NULL, NULL, "wrs,sbc8560-brstcr");
++	if (np == NULL) {
++		printk(KERN_WARNING "sbc8560: No board specific RSTCR in DTB.\n");
++		return -ENODEV;
++	}
++
++	of_address_to_resource(np, 0, &res);
++
++	printk(KERN_INFO "sbc8560: Found BRSTCR at i/o 0x%x\n", res.start);
++
++	brstcr = ioremap(res.start, res.end - res.start);
++	if(!brstcr)
++		printk(KERN_WARNING "sbc8560: ioremap of brstcr failed.\n");
++
++	of_node_put(np);
++
++	return 0;
++}
++
++arch_initcall(sbc8560_bdrstcr_init);
++
++void sbc8560_rstcr_restart(char * cmd)
++{
++	local_irq_disable();
++	if(brstcr)
++		out_8(brstcr,in_8(brstcr) & 0x7f);
++
++	while(1);
++}
++
+ define_machine(sbc8560) {
+ 	.name			= "SBC8560",
+ 	.probe			= sbc8560_probe,
+@@ -274,7 +311,7 @@ define_machine(sbc8560) {
+ 	.init_IRQ		= sbc8560_pic_init,
+ 	.show_cpuinfo		= sbc8560_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+-	.restart		= fsl_rstcr_restart,
++	.restart		= sbc8560_rstcr_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+-- 
+1.6.3.3
