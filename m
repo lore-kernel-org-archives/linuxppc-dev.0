@@ -1,36 +1,36 @@
-Return-Path: <lenb@kernel.org>
-Received: from vms173009pub.verizon.net (vms173009pub.verizon.net
-	[206.46.173.9])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 7BCA6B7067
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8A7F6B70B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 Aug 2009 11:46:22 +1000 (EST)
-Received: from localhost.localdomain ([64.140.212.33])
-	by vms173009.mailsrvcs.net
-	(Sun Java(tm) System Messaging Server 6.3-7.04 (built Sep 26 2008;
-	32bit)) with ESMTPA id <0KOA002FWI3O6VL0@vms173009.mailsrvcs.net> for
-	linuxppc-dev@lists.ozlabs.org; Wed, 12 Aug 2009 19:45:30 -0500 (CDT)
-Date: Wed, 12 Aug 2009 20:45:18 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-To: Dipankar Sarma <dipankar@in.ibm.com>
-Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
-In-reply-to: <20090812195753.GA14649@in.ibm.com>
-Message-id: <alpine.LFD.2.00.0908122036580.22946@localhost.localdomain>
-References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
-	<20090806015855.GA20596@sli10-desk.sh.intel.com>
-	<20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl>
-	<20090810081941.GA18649@elf.ucw.cz>
-	<1249950137.11545.38184.camel@localhost.localdomain>
-	<20090812115806.GK24339@elf.ucw.cz> <20090812195753.GA14649@in.ibm.com>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Cc: "Brown, Len" <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Gautham R Shenoy <ego@in.ibm.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, "Li,
-	Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"Darrick J. Wong" <djwong@us.ibm.com>
+	Thu, 13 Aug 2009 13:46:18 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D92A9DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2009 13:46:17 +1000 (EST)
+Subject: Re: ARM clock API to PowerPC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <20090812234048.GB7118@flint.arm.linux.org.uk>
+References: <1250063825.15143.43.camel@pasglop>
+	<20090812123551.GC11227@sirena.org.uk>
+	<1250112847.3587.26.camel@pasglop>
+	<20090812214444.GA4731@sirena.org.uk>
+	<1250114192.3587.41.camel@pasglop>
+	<20090812222843.GA7118@flint.arm.linux.org.uk>
+	<1250117569.3587.64.camel@pasglop>
+	<20090812234048.GB7118@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Thu, 13 Aug 2009 13:45:46 +1000
+Message-Id: <1250135146.3587.87.camel@pasglop>
+Mime-Version: 1.0
+Cc: John Jacques <john.jacques@lsi.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss@lists.ozlabs.org, Torez Smith <torez@us.ibm.com>,
+	Mark Brown <broonie@sirena.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,67 +40,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 13 Aug 2009, Dipankar Sarma wrote:
+On Thu, 2009-08-13 at 00:40 +0100, Russell King wrote:
 
-> On Wed, Aug 12, 2009 at 01:58:06PM +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > May be having (to pick a number) 3 possible offline states for all
-> > > platforms with one for halt equivalent and one for deepest possible that
-> > > CPU can handle and one for deepest possible that platform likes for
-> > > C-states may make sense. Will keeps things simpler in terms of usage
-> > > expectations and possibly reduce the misuse oppurtubity?
-> > 
-> > Maybe just going to the deepest offline state automatically is the
-> > easiest option?
+> Maybe - and since you're just starting to look at clkdev, I'll point
+> out that it's actually not intuitive which way around the "wildcard"
+> matching works in clkdev.  The clk_get() arguments aren't the
+> wildcards, they're in the clk_lookup structure.  Yes, it seems odd,
+> but if you consider it from the point of view of the platform code
+> wanting to match clocks to a specific set of devices and clock inputs,
+> it's actually the way around that you want.
 
-I agree with Pavel and PeterZ on this.
+Ok so I had a look, it's basically a list of bindings between a device
+"ID" (dev_name(dev)) and a clock input name, matched to a struct clk *.
 
-> In a native system, I think we should the platform-specific code
-> export what makes sense. That may be just the lowest possible
-> state only. Or may be more than one.
+I'm not entirely sure I want to port that over, because I believe that I
+can do better with the device-tree, but then, it will mostly depend
+whether we end up wanting to use drivers that do rely on the clkdev
+mechanism.
 
-For x86, it is 1 state.
+For one, I'm not 100% certain that our dev_id's are unique. Then, that
+means that at some stage, the clock source provider need to create the
+struct clk for anything devices -may- need, so for all the device clock
+connections in the system, it cannot be done on-demand.
 
-> In a virtualized system, we would want to do at least the following -
+I'm thus tempted to pursue for now an approach where the connection is
+provided by the device-tree exclusively (or override platform code but
+that's to be avoided most of the time), we'll see where it takes us.
+IE. 
 
-Are you talking about Linux as a para-virtualized guest here?
+In case you haven't looked at what I had in mind there, basically the
+device-node of a device contains properties linking each clock input to
+the device node of the clock provider, along with the ID of that clock
+within the provider space. So all I need is register clock providers,
+that get passed in clk_get() with the "translated" clock ID and that can
+spit out struct clk* "on demand".
 
-> 1. An offline configuration state where the hypervisor can
-> take the cpu back and allocate it to another VM.
+For example, if I have an external PLL chip that provides 4 clocks, I
+can register a clock provider driver attached to that device-node (which
+can then also contain properties indicating to the driver how to program
+the said PLL chip if so desired).
 
-The hypervisor gets control no matter what idle state
-the guest enters, yes?
+Then, if 2 of those lines (PLL1 and PLL3) go respectively to a device
+SYS_CLK and PHY_CLK inputs, for example, then all I need is to have a
+"clock-names" and "clock-map" properties in that device node. The first
+one contains "SYS_CLK" and "PHY_CLK", and the second one, a list of two
+items, each being the the phandle to the PLL and respectively 1 and 3.
 
-> 2. A low-power state where the guest indicates it doesn't need the
-> CPU (and can be put in low power state) but doesn't want to give up 
-> its allocated cpu share. IOW, no visible configuration changes.
-> 
-> So, in any case we would probably want more than one states.
+I could just parse the tree and generate all the struct clk* at boot
+time and somewhat generate clkdev for them etc... but I believe that
+isn't needed, ie, clkdev is an ARM specific mechanism for expressing the
+linkage between devices and clock sources but not something that we
+would benefit from moving over since we can do better, I believe, with
+the device-tree.
 
-How are #1 and #2 different when the hypervisor
-gets control in all idle states?  I assert that
-they are the same, and thus 1 state will suffice.
+Or am I missing something still ? :-)
 
-> > cpu hotplug/unplug should be rare-enough operation that the latencies
-> > do not really matter, right?
-> 
-> As of now, from the platform perspective, I don't think low-power
-> state latencies matter in this code path.
-
-Yay, something we all agree on.
-
-> The only thing that might
-> have any relevance is electrical power-off technology and whether
-> there may be any h/w specific issues restricting its use.
-> I don't know that there will be any, but it may not be a good idea to prevent
-> platforms from requiring the use of multiple "offline" states.
-
-Can you give an example of such restrictions? (I can't)
-
-I do not advocate integrating features into the kernel
-if they can not be tested and it is uncear that they are needed.
-Keep it simple.  Add complexity only when it is clear that you must.
-
-thanks,
-Len Brown, Intel Open Source Technology Center.
+Cheers,
+Ben.
