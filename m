@@ -1,28 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 36689B707B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 Aug 2009 17:06:37 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 799AFDDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2009 17:06:36 +1000 (EST)
-Subject: Re: [PATCH 3/3] agp/uninorth: Unify U3 and pre-U3 insert_memory
-	and remove_memory hooks.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-In-Reply-To: <1249422665-24437-3-git-send-email-michel@daenzer.net>
-References: <1249422665-24437-1-git-send-email-michel@daenzer.net>
-	<1249422665-24437-3-git-send-email-michel@daenzer.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 13 Aug 2009 17:05:48 +1000
-Message-Id: <1250147148.3587.115.camel@pasglop>
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B0DE9B7080
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 13 Aug 2009 17:07:37 +1000 (EST)
+Date: Thu, 13 Aug 2009 16:07:20 +0900
+To: benh@kernel.crashing.org, mingo@elte.hu
+Subject: Re: [PATCH -v2 0/7] powerpc: use asm-generic/dma-mapping-common.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1250142522.3587.110.camel@pasglop>
+References: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1250142522.3587.110.camel@pasglop>
 Mime-Version: 1.0
-Cc: Dave Airlie <airlied@linux.ie>, linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20090813160625B.fujita.tomonori@lab.ntt.co.jp>
+Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, galak@kernel.crashing.orga
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,145 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-08-04 at 23:51 +0200, Michel Dänzer wrote:
-> From: Michel Dänzer <daenzer@vmware.com>
+On Thu, 13 Aug 2009 15:48:42 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Wed, 2009-08-05 at 14:08 +0900, FUJITA Tomonori wrote:
 > 
-> Signed-off-by: Michel Dänzer <daenzer@vmware.com>
-> ---
-
-Hi Michel !
-
-While your two previous patches apply just fine, this one doesn't,
-the uninorth_insert_memory() function seems to be slightly different
-upstream. Does this depend on some separate yet unapplied patches ?
-
-I'm putting 1/3 and 2/3 into my -test branch and they should hit my
--next branch in a couple of days.
-
-Or do you prefer us to merge that via Dave ?
-
-The thing is, stuff in -powerpc is much more likely to get some amount
-of testing on actual ppc hardware than stuff in random other trees :-)
-
-Cheers,
-Ben.
-
->  drivers/char/agp/uninorth-agp.c |   64 +++++++--------------------------------
->  1 files changed, 11 insertions(+), 53 deletions(-)
+> > The above swiotlb patchset was merged in -tip so I think that merging
+> > this patchset via -tip too is the easiest way to handle this patchset.
+> > 
+> > The patchset also is available via a git tree:
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git powerpc
 > 
-> diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-agp.c
-> index bc8b43a..75aa33a 100644
-> --- a/drivers/char/agp/uninorth-agp.c
-> +++ b/drivers/char/agp/uninorth-agp.c
-> @@ -144,53 +144,7 @@ static int uninorth_configure(void)
->  	return 0;
->  }
->  
-> -static int uninorth_insert_memory(struct agp_memory *mem, off_t pg_start,
-> -				int type)
-> -{
-> -	int i, j, num_entries;
-> -	void *temp;
-> -	int mask_type;
-> -
-> -	if (type != mem->type)
-> -		return -EINVAL;
-> -
-> -	mask_type = agp_bridge->driver->agp_type_to_mask_type(agp_bridge, type);
-> -	if (mask_type != 0) {
-> -		/* We know nothing of memory types */
-> -		return -EINVAL;
-> -	}
-> -
-> -	if (mem->page_count == 0)
-> -		return 0;
-> -
-> -	temp = agp_bridge->current_size;
-> -	num_entries = A_SIZE_32(temp)->num_entries;
-> -
-> -	if ((pg_start + mem->page_count) > num_entries)
-> -		return -EINVAL;
-> -
-> -	j = pg_start;
-> -
-> -	while (j < (pg_start + mem->page_count)) {
-> -		if (agp_bridge->gatt_table[j])
-> -			return -EBUSY;
-> -		j++;
-> -	}
-> -
-> -	for (i = 0, j = pg_start; i < mem->page_count; i++, j++) {
-> -		agp_bridge->gatt_table[j] =
-> -			cpu_to_le32((page_to_phys(mem->pages[i]) & 0xFFFFF000UL) | 0x1UL);
-> -		flush_dcache_range((unsigned long)__va(page_to_phys(mem->pages[i])),
-> -				   (unsigned long)__va(page_to_phys(mem->pages[i]))+0x1000);
-> -	}
-> -	(void)in_le32((volatile u32*)&agp_bridge->gatt_table[pg_start]);
-> -	mb();
-> -
-> -	uninorth_tlbflush(mem);
-> -	return 0;
-> -}
-> -
-> -static int u3_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
-> +static int uninorth_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
->  {
->  	int i, num_entries;
->  	void *temp;
-> @@ -219,14 +173,18 @@ static int u3_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
->  	for (i = 0; i < mem->page_count; ++i) {
->  		if (gp[i]) {
->  			dev_info(&agp_bridge->dev->dev,
-> -				 "u3_insert_memory: entry 0x%x occupied (%x)\n",
-> +				 "uninorth_insert_memory: entry 0x%x occupied (%x)\n",
->  				 i, gp[i]);
->  			return -EBUSY;
->  		}
->  	}
->  
->  	for (i = 0; i < mem->page_count; i++) {
-> -		gp[i] = (page_to_phys(mem->pages[i]) >> PAGE_SHIFT) | 0x80000000UL;
-> +		if (is_u3)
-> +			gp[i] = (page_to_phys(mem->pages[i]) >> PAGE_SHIFT) | 0x80000000UL;
-> +		else
-> +			gp[i] =	cpu_to_le32((page_to_phys(mem->pages[i]) & 0xFFFFF000UL) |
-> +					    0x1UL);
->  		flush_dcache_range((unsigned long)__va(page_to_phys(mem->pages[i])),
->  				   (unsigned long)__va(page_to_phys(mem->pages[i]))+0x1000);
->  	}
-> @@ -236,7 +194,7 @@ static int u3_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
->  	return 0;
->  }
->  
-> -int u3_remove_memory(struct agp_memory *mem, off_t pg_start, int type)
-> +int uninorth_remove_memory(struct agp_memory *mem, off_t pg_start, int type)
->  {
->  	size_t i;
->  	u32 *gp;
-> @@ -551,7 +509,7 @@ const struct agp_bridge_driver uninorth_agp_driver = {
->  	.create_gatt_table	= uninorth_create_gatt_table,
->  	.free_gatt_table	= uninorth_free_gatt_table,
->  	.insert_memory		= uninorth_insert_memory,
-> -	.remove_memory		= agp_generic_remove_memory,
-> +	.remove_memory		= uninorth_remove_memory,
->  	.alloc_by_type		= agp_generic_alloc_by_type,
->  	.free_by_type		= agp_generic_free_by_type,
->  	.agp_alloc_page		= agp_generic_alloc_page,
-> @@ -577,8 +535,8 @@ const struct agp_bridge_driver u3_agp_driver = {
->  	.agp_enable		= uninorth_agp_enable,
->  	.create_gatt_table	= uninorth_create_gatt_table,
->  	.free_gatt_table	= uninorth_free_gatt_table,
-> -	.insert_memory		= u3_insert_memory,
-> -	.remove_memory		= u3_remove_memory,
-> +	.insert_memory		= uninorth_insert_memory,
-> +	.remove_memory		= uninorth_remove_memory,
->  	.alloc_by_type		= agp_generic_alloc_by_type,
->  	.free_by_type		= agp_generic_free_by_type,
->  	.agp_alloc_page		= agp_generic_alloc_page,
-> -- 
-> 1.6.3.3
+> Hi !
 > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> While I generally agree here with the patches, I'm not sure it should be
+> merged via -tip since it mostly touches arch/powerpc files (and I need
+> to review it a bit more carefully, hopefully you'll have Ack's hitting
+> your mailbox later today).
+
+Thanks!
+
+This patchset depends on my swiotlb cleanup patchset:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git swiotlb
+
+http://marc.info/?l=linux-ia64&m=124718816520156&w=2
+
+
+My swiotlb cleanup patchset has been in -tip. It might be easier to
+merge both the swiotlb patchset and this patchset in powerpc tree?
