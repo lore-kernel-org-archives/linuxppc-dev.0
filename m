@@ -1,26 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mb@bu3sch.de>
+Received: from vs166246.vserver.de (bu3sch.de [62.75.166.246])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5FC01B7063
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E301BB6F2B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 Aug 2009 20:38:39 +1000 (EST)
-Subject: Re: [PATCH -v2 0/7] powerpc: use asm-generic/dma-mapping-common.h
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090813085505.GA10671@elte.hu>
-References: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1250142522.3587.110.camel@pasglop>
-	<20090813160625B.fujita.tomonori@lab.ntt.co.jp>
-	<20090813074131.GH12143@elte.hu> <1250150981.3587.157.camel@pasglop>
-	<20090813085505.GA10671@elte.hu>
-Content-Type: text/plain
-Date: Thu, 13 Aug 2009 20:38:20 +1000
-Message-Id: <1250159900.24143.7.camel@pasglop>
-Mime-Version: 1.0
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	galak@kernel.crashing.orga
+	Thu, 13 Aug 2009 23:18:21 +1000 (EST)
+From: Michael Buesch <mb@bu3sch.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] viotape: Fix memory and semaphore leak
+Date: Thu, 13 Aug 2009 15:18:07 +0200
+References: <200907181506.33499.mb@bu3sch.de>
+	<1250139603.3587.106.camel@pasglop>
+In-Reply-To: <1250139603.3587.106.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200908131518.07707.mb@bu3sch.de>
+Cc: Dave Boutcher <boutcher@us.ibm.com>, Ryan Arnold <ryanarn@us.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Colin Devilbiss <devilbis@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,18 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-08-13 at 10:55 +0200, Ingo Molnar wrote:
-
-> > Or we can have the patches in core/iommu and I pull the whole 
-> > thing in powerpc-next. [...]
+On Thursday 13 August 2009 07:00:03 Benjamin Herrenschmidt wrote:
+> On Sat, 2009-07-18 at 15:06 +0200, Michael Buesch wrote:
+> > This patch fixes a memory and semaphore leak in the viotape driver's
+> > char device write op. It leaks the DMA memory and the semaphore lock
+> > in case the device was opened with O_NONBLOCK.
+> > 
+> > This patch is only compile tested, because I do not have the hardware.
+> > 
+> > Signed-off-by: Michael Buesch <mb@bu3sch.de>
 > 
-> Ok! We could also stage it a bit (one or two weeks) in a separate 
-> branch and allow a rebase, should you find any bugs during testing?
+> (going trough my backlog ...)
+> 
+> Thanks Michael, but I don't think that's right...
+> 
+> IE. We aren't waiting for the write to complete, which means that it can
+> be happening asynchronously, thus we must not free the DMA memory until
+> it has actually complete.
+> 
+> Now, if you look at vioHandleTapeEvent(), it does appear that when the
+> completion happens, the DMA memory will eventually be released and the
+> mutex up'ed. 
+> 
+> Or am I missing something ?
 
-Sounds like a plan.
+I think you are right.
 
-I'll try to sort that out tomorrow, I can stick them in my -test branch
-(which is rebase friendly) for a while too.
 
-Cheers,
-Ben.
+-- 
+Greetings, Michael.
