@@ -1,34 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 813F9B70CF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 14 Aug 2009 22:08:34 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D4F3EDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2009 22:08:33 +1000 (EST)
-Subject: RE: ARM clock API to PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-In-Reply-To: <Pine.LNX.4.64.0908141255230.5980@axis700.grange>
-References: <1250063825.15143.43.camel@pasglop>
-	<20090812111954.GB31596@zod.rchland.ibm.com>
-	<4A90486C-8BF5-428C-9FD8-830D822C0D40@kernel.crashing.org>
-	<1250112599.3587.21.camel@pasglop>
-	<3A45394FD742FA419B760BB8D398F9ED59DE33@zch01exm26.fsl.freescale.net>
-	<1250242149.24143.36.camel@pasglop>
-	<Pine.LNX.4.64.0908141255230.5980@axis700.grange>
-Content-Type: text/plain
-Date: Fri, 14 Aug 2009 22:07:44 +1000
-Message-Id: <1250251664.24143.39.camel@pasglop>
-Mime-Version: 1.0
-Cc: devicetree-discuss@lists.ozlabs.org, John Jacques <john.jacques@lsi.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Torez Smith <torez@us.ibm.com>, Russell King <rmk@arm.linux.org.uk>
+Return-Path: <Paul.Gortmaker@windriver.com>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] sbc8560: Fix warm reboot with board specific reset function
+Date: Fri, 14 Aug 2009 10:36:14 -0400
+Message-Id: <1250260574-13747-1-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1456507C-E9F9-436B-9901-6F127A5FDD1F@kernel.crashing.org>
+References: <1456507C-E9F9-436B-9901-6F127A5FDD1F@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,39 +15,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-08-14 at 13:29 +0200, Guennadi Liakhovetski wrote:
-> but since they are quite long, in short, in them a patch has been 
-> discussed, that allowed to re-use an MMC driver, used on some MFDs, on 
-> SuperH SoCs. The patch was taking the "easy route" of adding the 
-> possibility to use the clock API to the tmio_mmc.c driver, while leaving 
-> it to use static clock configurations with MFD drivers. This approach has 
-> been rejected and initially it has been suggested to implement a 
-> platform-independent clock API like what had been proposed by clocklib, 
-> but since the future of clocklib is unclear, it has then been decided to 
-> remove the clock (and power) management from the driver proper and move 
-> them to some callbacks. I.e., there would be more users interested in a 
-> unified clock API, including other platforms and platform-independent 
-> drivers like MFD. Currently the reason, why MFD drivers cannot implement 
-> their own clock devices is that the "struct clk" differs between 
-> platforms.
+From: Liang Li <Liang.Li@windriver.com>
 
-But there is no reason for it to differ !
+The existing fsl_rstcr_restart function is not applicable to the
+mpc8560. The Global Utilities Block on this earlier CPU doesn't have
+the control/reset register at 0xe00b0.  This implements a board
+specific reset function that uses the RCR(Reset Control Register) of
+the sbc8560's EPLD to do a reset.
 
-My idea is that struct clock would contain function pointers for the
-enable/disable/get_rate/ etc... methods
+Signed-off-by: Liang Li <Liang.Li@windriver.com>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
 
-Thus it's up to clk_get() to provide an object with the right pointers.
+v2: update comment, change outb(x, inb(x)&0x7f) --> clrbits(x,0x80)
 
-Now, on ARM, it's currently done in such a way that it's mostly up to
-the platform (though that's less true with clkdev).
+ arch/powerpc/platforms/85xx/sbc8560.c |   39 ++++++++++++++++++++++++++++++++-
+ 1 files changed, 38 insertions(+), 1 deletions(-)
 
-But with the help of the device-tree, it becomes trivial to have
-somebody register clock providers (ie, objects that can product struct
-clk *) and bind them to driver.
-
-I think struct clk is the way to go. The problem is to sort out the
-binding between the clock provider and the driver. The DT is an easy and
-nice way to do it for archs that have it. But there are other ways.
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/platforms/85xx/sbc8560.c b/arch/powerpc/platforms/85xx/sbc8560.c
+index cc27807..a5ad1c7 100644
+--- a/arch/powerpc/platforms/85xx/sbc8560.c
++++ b/arch/powerpc/platforms/85xx/sbc8560.c
+@@ -267,6 +267,43 @@ arch_initcall(sbc8560_rtc_init);
+ 
+ #endif	/* M48T59 */
+ 
++static __u8 __iomem *brstcr;
++
++static int __init sbc8560_bdrstcr_init(void)
++{
++	struct device_node *np;
++	struct resource res;
++
++	np = of_find_compatible_node(NULL, NULL, "wrs,sbc8560-brstcr");
++	if (np == NULL) {
++		printk(KERN_WARNING "sbc8560: No board specific RSTCR in DTB.\n");
++		return -ENODEV;
++	}
++
++	of_address_to_resource(np, 0, &res);
++
++	printk(KERN_INFO "sbc8560: Found BRSTCR at i/o 0x%x\n", res.start);
++
++	brstcr = ioremap(res.start, res.end - res.start);
++	if(!brstcr)
++		printk(KERN_WARNING "sbc8560: ioremap of brstcr failed.\n");
++
++	of_node_put(np);
++
++	return 0;
++}
++
++arch_initcall(sbc8560_bdrstcr_init);
++
++void sbc8560_rstcr_restart(char * cmd)
++{
++	local_irq_disable();
++	if(brstcr)
++		clrbits8(brstcr, 0x80);
++
++	while(1);
++}
++
+ define_machine(sbc8560) {
+ 	.name			= "SBC8560",
+ 	.probe			= sbc8560_probe,
+@@ -274,7 +311,7 @@ define_machine(sbc8560) {
+ 	.init_IRQ		= sbc8560_pic_init,
+ 	.show_cpuinfo		= sbc8560_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+-	.restart		= fsl_rstcr_restart,
++	.restart		= sbc8560_rstcr_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+-- 
+1.6.3.3
