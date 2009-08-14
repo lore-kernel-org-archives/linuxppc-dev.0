@@ -1,26 +1,16 @@
-Return-Path: <jesse.barnes@intel.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C77E3B70C4
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E1C9CB6F31
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 15 Aug 2009 03:05:26 +1000 (EST)
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-	by ozlabs.org (Postfix) with ESMTP id 4A5CCDDD1B
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Aug 2009 03:05:25 +1000 (EST)
-Date: Fri, 14 Aug 2009 09:54:38 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Mike Mason <mmlnx@us.ibm.com>
-Subject: Re: [PATCH 1/3] Support for PCI Express reset type
-Message-ID: <20090814095438.217810c6@jbarnes-g45>
-In-Reply-To: <4A721FB1.4040903@us.ibm.com>
-References: <4A721FB1.4040903@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Richard Lary <rlary@us.ibm.com>, linux-pci@vger.kernel.org,
-	linasvepstas@gmail.com
+	Sat, 15 Aug 2009 05:47:25 +1000 (EST)
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Fix __tlb_remove_tlb_entry for PPC_STD_MMU_32
+Date: Fri, 14 Aug 2009 14:47:18 -0500
+Message-Id: <1250279238-15616-1-git-send-email-beckyb@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 30 Jul 2009 15:33:21 -0700
-Mike Mason <mmlnx@us.ibm.com> wrote:
+Ben's recent patches are missing the CONFIG_ prefix to
+PPC_STD_MMU_32, which results in not properly flushing hash
+entries.  On 8641, this showed up as a platform that would boot,
+but deny logins.
 
-> This is the first of three patches that implement a bit field that
-> PCI Express device drivers can use to indicate they need a
-> fundamental reset during error recovery.
-> 
-> By default, the EEH framework on powerpc does what's known as a "hot
-> reset" during recovery of a PCI Express device.  We've found a case
-> where the device needs a "fundamental reset" to recover properly.
-> The current PCI error recovery and EEH frameworks do not support this
-> distinction.
-> 
-> The attached patch (courtesy of Richard Lary) adds a bit field to
-> pci_dev that indicates whether the device requires a fundamental
-> reset during recovery.
-> 
-> These patches supersede the previously submitted patch that
-> implemented a fundamental reset bit field. 
-> 
-> Please review and let me know of any concerns.
-> 
-> Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
-> Signed-off-by: Richard Lary <rlary@us.ibm.com>
+Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/tlb.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Ok, applied this series to my linux-next branch, it looks pretty
-reasonable to me.
-
-For future patches, please cc me, and include the subsystem in the
-subject, along with a specific description of the patch, e.g. "PCI: add
-PCIe fundamental reset interface", "PCI: document PCIe fundamental
-reset", or for arch specific patches, "PCI/powerpc: implement support
-for PCIe fundamental reset".
-
-Thanks,
+diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
+index 5db9910..e2b428b 100644
+--- a/arch/powerpc/include/asm/tlb.h
++++ b/arch/powerpc/include/asm/tlb.h
+@@ -39,7 +39,7 @@ extern void flush_hash_entry(struct mm_struct *mm, pte_t *ptep,
+ static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
+ 					  unsigned long address)
+ {
+-#ifdef PPC_STD_MMU_32
++#ifdef CONFIG_PPC_STD_MMU_32
+ 	if (pte_val(*ptep) & _PAGE_HASHPTE)
+ 		flush_hash_entry(tlb->mm, ptep, address);
+ #endif
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+1.6.0.6
