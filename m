@@ -1,27 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <beckyb@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B9CC0B8D4B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 40508B7BDE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 15 Aug 2009 08:26:22 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id D9400DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Aug 2009 08:26:20 +1000 (EST)
-Date: Sat, 15 Aug 2009 02:26:19 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 8/8] spi_mpc8xxx: Add support for QE DMA mode and CPM1/CPM2
-	chips
-Message-ID: <20090814222619.GH14458@oksana.dev.rtsoft.ru>
-References: <20090814222453.GA9568@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090814222453.GA9568@oksana.dev.rtsoft.ru>
-Cc: spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+	Sat, 15 Aug 2009 08:39:51 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EEAC9DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Aug 2009 08:39:49 +1000 (EST)
+Message-Id: <FBB5798A-EE85-4B18-8883-F6182B203996@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1248766373.30993.50.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH/RFC] powerpc/mm: Cleanup handling of execute permission
+Date: Fri, 14 Aug 2009 17:39:42 -0500
+References: <1248766373.30993.50.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,759 +31,599 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds QE buffer descriptors mode support for the
-spi_mpc8xxx driver, and as a side effect we now support CPM1
-and CPM2 SPI controllers.
+Ben,
 
-That means that today we support almost all MPC SPI controllers:
+This breaks the boot on 8572.  I don't know why yet (and I'm probably  
+not going to figure it out before I go home, because, frankly, it's  
+late on a Friday afternoon and I need a glass of wine or, perhaps, a  
+beer).
 
-- MPC834x-style controllers (support PIO mode only);
-- CPM1 and CPM2 controllers (support DMA mode only);
-- QE SPI controllers in CPU mode (PIO mode with shift quirks);
-- QE SPI controllers in buffer descriptors (DMA) mode;
+Kumar and I will poke into this more and let you know what we find out  
+- in the meantime, if you have any brilliant flashes, pony up!
 
-The only controller we don't currently support is a newer eSPI
-(with a dedicated chip selects and a bit different registers map).
+-Becky
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/spi/Kconfig       |    3 -
- drivers/spi/spi_mpc8xxx.c |  540 +++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 500 insertions(+), 43 deletions(-)
+On Jul 28, 2009, at 2:32 AM, Benjamin Herrenschmidt wrote:
 
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 2c733c2..b22a4b4 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -146,9 +146,6 @@ config SPI_MPC8xxx
- 	  This enables using the Freescale MPC8xxx SPI controllers in master
- 	  mode.
- 
--	  This driver uses a simple set of shift registers for data (opposed
--	  to the CPM based descriptor model).
--
- config SPI_OMAP_UWIRE
- 	tristate "OMAP1 MicroWire"
- 	depends on ARCH_OMAP1
-diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
-index 80374df..bf56202 100644
---- a/drivers/spi/spi_mpc8xxx.c
-+++ b/drivers/spi/spi_mpc8xxx.c
-@@ -5,6 +5,10 @@
-  *
-  * Copyright (C) 2006 Polycom, Inc.
-  *
-+ * CPM SPI and QE buffer descriptors mode support:
-+ * Copyright (c) 2009  MontaVista Software, Inc.
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-  * Free Software Foundation;  either version 2 of the  License, or (at your
-@@ -27,6 +31,9 @@
- #include <linux/spi/spi_bitbang.h>
- #include <linux/platform_device.h>
- #include <linux/fsl_devices.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/mm.h>
-+#include <linux/mutex.h>
- #include <linux/of.h>
- #include <linux/of_platform.h>
- #include <linux/gpio.h>
-@@ -34,8 +41,19 @@
- #include <linux/of_spi.h>
- 
- #include <sysdev/fsl_soc.h>
-+#include <asm/cpm.h>
-+#include <asm/qe.h>
- #include <asm/irq.h>
- 
-+/* CPM1 and CPM2 are mutually exclusive. */
-+#ifdef CONFIG_CPM1
-+#include <asm/cpm1.h>
-+#define CPM_SPI_CMD mk_cr_cmd(CPM_CR_CH_SPI, 0)
-+#else
-+#include <asm/cpm2.h>
-+#define CPM_SPI_CMD mk_cr_cmd(CPM_CR_SPI_PAGE, CPM_CR_SPI_SBLOCK, 0, 0)
-+#endif
-+
- /* SPI Controller registers */
- struct mpc8xxx_spi_reg {
- 	u8 res1[0x20];
-@@ -47,6 +65,28 @@ struct mpc8xxx_spi_reg {
- 	__be32 receive;
- };
- 
-+/* SPI Parameter RAM */
-+struct spi_pram {
-+	__be16	rbase;	/* Rx Buffer descriptor base address */
-+	__be16	tbase;	/* Tx Buffer descriptor base address */
-+	u8	rfcr;	/* Rx function code */
-+	u8	tfcr;	/* Tx function code */
-+	__be16	mrblr;	/* Max receive buffer length */
-+	__be32	rstate;	/* Internal */
-+	__be32	rdp;	/* Internal */
-+	__be16	rbptr;	/* Internal */
-+	__be16	rbc;	/* Internal */
-+	__be32	rxtmp;	/* Internal */
-+	__be32	tstate;	/* Internal */
-+	__be32	tdp;	/* Internal */
-+	__be16	tbptr;	/* Internal */
-+	__be16	tbc;	/* Internal */
-+	__be32	txtmp;	/* Internal */
-+	__be32	res;	/* Tx temp. */
-+	__be16  rpbase;	/* Relocation pointer (CPM1 only) */
-+	__be16	res1;	/* Reserved */
-+};
-+
- /* SPI Controller mode register definitions */
- #define	SPMODE_LOOP		(1 << 30)
- #define	SPMODE_CI_INACTIVEHIGH	(1 << 29)
-@@ -75,14 +115,40 @@ struct mpc8xxx_spi_reg {
- #define	SPIM_NE		0x00000200	/* Not empty */
- #define	SPIM_NF		0x00000100	/* Not full */
- 
-+#define	SPIE_TXB	0x00000200	/* Last char is written to tx fifo */
-+#define	SPIE_RXB	0x00000100	/* Last char is written to rx buf */
-+
-+/* SPCOM register values */
-+#define	SPCOM_STR	(1 << 23)	/* Start transmit */
-+
-+#define	SPI_PRAM_SIZE	0x100
-+#define	SPI_MRBLR	((unsigned int)PAGE_SIZE)
-+
- /* SPI Controller driver's private data. */
- struct mpc8xxx_spi {
-+	struct device *dev;
- 	struct mpc8xxx_spi_reg __iomem *base;
- 
- 	/* rx & tx bufs from the spi_transfer */
- 	const void *tx;
- 	void *rx;
- 
-+	int subblock;
-+	struct spi_pram __iomem *pram;
-+	struct cpm_buf_desc __iomem *tx_bd;
-+	struct cpm_buf_desc __iomem *rx_bd;
-+
-+	struct spi_transfer *xfer_in_progress;
-+
-+	/* dma addresses for CPM transfers */
-+	dma_addr_t tx_dma;
-+	dma_addr_t rx_dma;
-+	bool map_tx_dma;
-+	bool map_rx_dma;
-+
-+	dma_addr_t dma_dummy_tx;
-+	dma_addr_t dma_dummy_rx;
-+
- 	/* functions to deal with different sized buffers */
- 	void (*get_rx) (u32 rx_data, struct mpc8xxx_spi *);
- 	u32(*get_tx) (struct mpc8xxx_spi *);
-@@ -98,6 +164,10 @@ struct mpc8xxx_spi {
- 
- 	unsigned int flags;
- #define SPI_QE_CPU_MODE		(1 << 0) /* QE CPU ("PIO") mode */
-+#define SPI_CPM_MODE		(1 << 1) /* CPM2/QE ("DMA") mode */
-+#define SPI_CPM1		(1 << 2) /* SPI unit is in CPM1 block */
-+#define SPI_CPM2		(1 << 3) /* SPI unit is in CPM2 block */
-+#define SPI_QE			(1 << 4) /* SPI unit is in QE block */
- 
- 	struct workqueue_struct *workqueue;
- 	struct work_struct work;
-@@ -108,6 +178,10 @@ struct mpc8xxx_spi {
- 	struct completion done;
- };
- 
-+static void *mpc8xxx_dummy_rx;
-+static DEFINE_MUTEX(mpc8xxx_dummy_rx_lock);
-+static int mpc8xxx_dummy_rx_refcnt;
-+
- struct spi_mpc8xxx_cs {
- 	/* functions to deal with different sized buffers */
- 	void (*get_rx) (u32 rx_data, struct mpc8xxx_spi *);
-@@ -173,6 +247,22 @@ static void mpc8xxx_spi_change_mode(struct spi_device *spi)
- 	mpc8xxx_spi_write_reg(mode, cs->hw_mode & ~SPMODE_ENABLE);
- 	mpc8xxx_spi_write_reg(mode, cs->hw_mode);
- 
-+	/* When in CPM mode, we need to reinit tx and rx. */
-+	if (mspi->flags & SPI_CPM_MODE) {
-+		if (mspi->flags & SPI_QE)
-+			qe_issue_cmd(QE_INIT_TX_RX, mspi->subblock,
-+				     QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+		else {
-+			cpm_command(CPM_SPI_CMD, CPM_CR_INIT_TRX);
-+			if (mspi->flags & SPI_CPM1) {
-+				out_be16(&mspi->pram->rbptr,
-+					 in_be16(&mspi->pram->rbase));
-+				out_be16(&mspi->pram->tbptr,
-+					 in_be16(&mspi->pram->tbase));
-+			}
-+		}
-+	}
-+
- 	local_irq_restore(flags);
- }
- 
-@@ -298,19 +388,133 @@ int mpc8xxx_spi_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
- 	return 0;
- }
- 
--static int mpc8xxx_spi_bufs(struct spi_device *spi, struct spi_transfer *t)
-+static void mpc8xxx_spi_cpm_bufs_start(struct mpc8xxx_spi *mspi)
- {
--	struct mpc8xxx_spi *mpc8xxx_spi;
--	u32 word, len, bits_per_word;
-+	struct cpm_buf_desc __iomem *tx_bd = mspi->tx_bd;
-+	struct cpm_buf_desc __iomem *rx_bd = mspi->rx_bd;
-+	unsigned int xfer_len = min(mspi->count, SPI_MRBLR);
-+	unsigned int xfer_ofs;
- 
--	mpc8xxx_spi = spi_master_get_devdata(spi->master);
-+	xfer_ofs = mspi->xfer_in_progress->len - mspi->count;
-+
-+	out_be32(&rx_bd->cbd_bufaddr, mspi->rx_dma + xfer_ofs);
-+	out_be16(&rx_bd->cbd_datlen, 0);
-+	out_be16(&rx_bd->cbd_sc, BD_SC_EMPTY | BD_SC_INTRPT | BD_SC_WRAP);
-+
-+	out_be32(&tx_bd->cbd_bufaddr, mspi->tx_dma + xfer_ofs);
-+	out_be16(&tx_bd->cbd_datlen, xfer_len);
-+	out_be16(&tx_bd->cbd_sc, BD_SC_READY | BD_SC_INTRPT | BD_SC_WRAP |
-+				 BD_SC_LAST);
-+
-+	/* start transfer */
-+	mpc8xxx_spi_write_reg(&mspi->base->command, SPCOM_STR);
-+}
-+
-+static int mpc8xxx_spi_cpm_bufs(struct mpc8xxx_spi *mspi,
-+				struct spi_transfer *t, bool is_dma_mapped)
-+{
-+	struct device *dev = mspi->dev;
-+
-+	if (is_dma_mapped) {
-+		mspi->map_tx_dma = 0;
-+		mspi->map_rx_dma = 0;
-+	} else {
-+		mspi->map_tx_dma = 1;
-+		mspi->map_rx_dma = 1;
-+	}
-+
-+	if (!t->tx_buf) {
-+		mspi->tx_dma = mspi->dma_dummy_tx;
-+		mspi->map_tx_dma = 0;
-+	}
-+
-+	if (!t->rx_buf) {
-+		mspi->rx_dma = mspi->dma_dummy_rx;
-+		mspi->map_rx_dma = 0;
-+	}
-+
-+	if (mspi->map_tx_dma) {
-+		void *nonconst_tx = (void *)mspi->tx; /* shut up gcc */
-+
-+		mspi->tx_dma = dma_map_single(dev, nonconst_tx, t->len,
-+					      DMA_TO_DEVICE);
-+		if (dma_mapping_error(dev, mspi->tx_dma)) {
-+			dev_err(dev, "unable to map tx dma\n");
-+			return -ENOMEM;
-+		}
-+	} else {
-+		mspi->tx_dma = t->tx_dma;
-+	}
-+
-+	if (mspi->map_rx_dma) {
-+		mspi->rx_dma = dma_map_single(dev, mspi->rx, t->len,
-+					      DMA_FROM_DEVICE);
-+		if (dma_mapping_error(dev, mspi->rx_dma)) {
-+			dev_err(dev, "unable to map rx dma\n");
-+			goto err_rx_dma;
-+		}
-+	} else {
-+		mspi->rx_dma = t->rx_dma;
-+	}
-+
-+	/* enable rx ints */
-+	mpc8xxx_spi_write_reg(&mspi->base->mask, SPIE_RXB);
-+
-+	mspi->xfer_in_progress = t;
-+	mspi->count = t->len;
-+
-+	/* start CPM transfers */
-+	mpc8xxx_spi_cpm_bufs_start(mspi);
-+
-+	return 0;
-+
-+err_rx_dma:
-+	if (mspi->map_tx_dma)
-+		dma_unmap_single(dev, mspi->tx_dma, t->len, DMA_TO_DEVICE);
-+	return -ENOMEM;
-+}
-+
-+static void mpc8xxx_spi_cpm_bufs_complete(struct mpc8xxx_spi *mspi)
-+{
-+	struct device *dev = mspi->dev;
-+	struct spi_transfer *t = mspi->xfer_in_progress;
-+
-+	if (mspi->map_tx_dma)
-+		dma_unmap_single(dev, mspi->tx_dma, t->len, DMA_TO_DEVICE);
-+	if (mspi->map_tx_dma)
-+		dma_unmap_single(dev, mspi->rx_dma, t->len, DMA_FROM_DEVICE);
-+	mspi->xfer_in_progress = NULL;
-+}
-+
-+static int mpc8xxx_spi_cpu_bufs(struct mpc8xxx_spi *mspi,
-+				struct spi_transfer *t, unsigned int len)
-+{
-+	u32 word;
-+
-+	mspi->count = len;
-+
-+	/* enable rx ints */
-+	mpc8xxx_spi_write_reg(&mspi->base->mask, SPIM_NE);
-+
-+	/* transmit word */
-+	word = mspi->get_tx(mspi);
-+	mpc8xxx_spi_write_reg(&mspi->base->transmit, word);
-+
-+	return 0;
-+}
-+
-+static int mpc8xxx_spi_bufs(struct spi_device *spi, struct spi_transfer *t,
-+			    bool is_dma_mapped)
-+{
-+	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
-+	unsigned int len = t->len;
-+	u8 bits_per_word;
-+	int ret;
- 
--	mpc8xxx_spi->tx = t->tx_buf;
--	mpc8xxx_spi->rx = t->rx_buf;
- 	bits_per_word = spi->bits_per_word;
- 	if (t->bits_per_word)
- 		bits_per_word = t->bits_per_word;
--	len = t->len;
-+
- 	if (bits_per_word > 8) {
- 		/* invalid length? */
- 		if (len & 1)
-@@ -323,22 +527,27 @@ static int mpc8xxx_spi_bufs(struct spi_device *spi, struct spi_transfer *t)
- 			return -EINVAL;
- 		len /= 2;
- 	}
--	mpc8xxx_spi->count = len;
- 
--	INIT_COMPLETION(mpc8xxx_spi->done);
-+	mpc8xxx_spi->tx = t->tx_buf;
-+	mpc8xxx_spi->rx = t->rx_buf;
- 
--	/* enable rx ints */
--	mpc8xxx_spi_write_reg(&mpc8xxx_spi->base->mask, SPIM_NE);
-+	INIT_COMPLETION(mpc8xxx_spi->done);
- 
--	/* transmit word */
--	word = mpc8xxx_spi->get_tx(mpc8xxx_spi);
--	mpc8xxx_spi_write_reg(&mpc8xxx_spi->base->transmit, word);
-+	if (mpc8xxx_spi->flags & SPI_CPM_MODE)
-+		ret = mpc8xxx_spi_cpm_bufs(mpc8xxx_spi, t, is_dma_mapped);
-+	else
-+		ret = mpc8xxx_spi_cpu_bufs(mpc8xxx_spi, t, len);
-+	if (ret)
-+		return ret;
- 
- 	wait_for_completion(&mpc8xxx_spi->done);
- 
- 	/* disable rx ints */
- 	mpc8xxx_spi_write_reg(&mpc8xxx_spi->base->mask, 0);
- 
-+	if (mpc8xxx_spi->flags & SPI_CPM_MODE)
-+		mpc8xxx_spi_cpm_bufs_complete(mpc8xxx_spi);
-+
- 	return mpc8xxx_spi->count;
- }
- 
-@@ -369,7 +578,7 @@ static void mpc8xxx_spi_do_one_msg(struct spi_message *m)
- 		}
- 		cs_change = t->cs_change;
- 		if (t->len)
--			status = mpc8xxx_spi_bufs(spi, t);
-+			status = mpc8xxx_spi_bufs(spi, t, m->is_dma_mapped);
- 		if (status) {
- 			status = -EMSGSIZE;
- 			break;
-@@ -458,45 +667,80 @@ static int mpc8xxx_spi_setup(struct spi_device *spi)
- 	return 0;
- }
- 
--static irqreturn_t mpc8xxx_spi_irq(s32 irq, void *context_data)
-+static void mpc8xxx_spi_cpm_irq(struct mpc8xxx_spi *mspi, u32 events)
- {
--	struct mpc8xxx_spi *mpc8xxx_spi = context_data;
--	u32 event;
--	irqreturn_t ret = IRQ_NONE;
-+	u16 len;
- 
--	/* Get interrupt events(tx/rx) */
--	event = mpc8xxx_spi_read_reg(&mpc8xxx_spi->base->event);
-+	dev_dbg(mspi->dev, "%s: bd datlen %d, count %d\n", __func__,
-+		in_be16(&mspi->rx_bd->cbd_datlen), mspi->count);
- 
--	/* We need handle RX first */
--	if (event & SPIE_NE) {
--		u32 rx_data = mpc8xxx_spi_read_reg(&mpc8xxx_spi->base->receive);
-+	len = in_be16(&mspi->rx_bd->cbd_datlen);
-+	if (len > mspi->count) {
-+		WARN_ON(1);
-+		len = mspi->count;
-+	}
- 
--		if (mpc8xxx_spi->rx)
--			mpc8xxx_spi->get_rx(rx_data, mpc8xxx_spi);
-+	/* Clear the events */
-+	mpc8xxx_spi_write_reg(&mspi->base->event, events);
- 
--		ret = IRQ_HANDLED;
-+	mspi->count -= len;
-+	if (mspi->count)
-+		mpc8xxx_spi_cpm_bufs_start(mspi);
-+	else
-+		complete(&mspi->done);
-+}
-+
-+static void mpc8xxx_spi_cpu_irq(struct mpc8xxx_spi *mspi, u32 events)
-+{
-+	/* We need handle RX first */
-+	if (events & SPIE_NE) {
-+		u32 rx_data = mpc8xxx_spi_read_reg(&mspi->base->receive);
-+
-+		if (mspi->rx)
-+			mspi->get_rx(rx_data, mspi);
- 	}
- 
--	if ((event & SPIE_NF) == 0)
-+	if ((events & SPIE_NF) == 0)
- 		/* spin until TX is done */
--		while (((event =
--			 mpc8xxx_spi_read_reg(&mpc8xxx_spi->base->event)) &
-+		while (((events =
-+			mpc8xxx_spi_read_reg(&mspi->base->event)) &
- 						SPIE_NF) == 0)
- 			cpu_relax();
- 
--	mpc8xxx_spi->count -= 1;
--	if (mpc8xxx_spi->count) {
--		u32 word = mpc8xxx_spi->get_tx(mpc8xxx_spi);
--		mpc8xxx_spi_write_reg(&mpc8xxx_spi->base->transmit, word);
-+	/* Clear the events */
-+	mpc8xxx_spi_write_reg(&mspi->base->event, events);
-+
-+	mspi->count -= 1;
-+	if (mspi->count) {
-+		u32 word = mspi->get_tx(mspi);
-+
-+		mpc8xxx_spi_write_reg(&mspi->base->transmit, word);
- 	} else {
--		complete(&mpc8xxx_spi->done);
-+		complete(&mspi->done);
- 	}
-+}
- 
--	/* Clear the events */
--	mpc8xxx_spi_write_reg(&mpc8xxx_spi->base->event, event);
-+static irqreturn_t mpc8xxx_spi_irq(s32 irq, void *context_data)
-+{
-+	struct mpc8xxx_spi *mspi = context_data;
-+	irqreturn_t ret = IRQ_NONE;
-+	u32 events;
-+
-+	/* Get interrupt events(tx/rx) */
-+	events = mpc8xxx_spi_read_reg(&mspi->base->event);
-+	if (events)
-+		ret = IRQ_HANDLED;
-+
-+	dev_dbg(mspi->dev, "%s: events %x\n", __func__, events);
-+
-+	if (mspi->flags & SPI_CPM_MODE)
-+		mpc8xxx_spi_cpm_irq(mspi, events);
-+	else
-+		mpc8xxx_spi_cpu_irq(mspi, events);
- 
- 	return ret;
- }
-+
- static int mpc8xxx_spi_transfer(struct spi_device *spi,
- 				struct spi_message *m)
- {
-@@ -520,10 +764,212 @@ static void mpc8xxx_spi_cleanup(struct spi_device *spi)
- 	kfree(spi->controller_state);
- }
- 
-+static void *mpc8xxx_spi_alloc_dummy_rx(void)
-+{
-+	mutex_lock(&mpc8xxx_dummy_rx_lock);
-+
-+	if (!mpc8xxx_dummy_rx)
-+		mpc8xxx_dummy_rx = kmalloc(SPI_MRBLR, GFP_KERNEL);
-+	if (mpc8xxx_dummy_rx)
-+		mpc8xxx_dummy_rx_refcnt++;
-+
-+	mutex_unlock(&mpc8xxx_dummy_rx_lock);
-+
-+	return mpc8xxx_dummy_rx;
-+}
-+
-+static void mpc8xxx_spi_free_dummy_rx(void)
-+{
-+	mutex_lock(&mpc8xxx_dummy_rx_lock);
-+
-+	switch (mpc8xxx_dummy_rx_refcnt) {
-+	case 0:
-+		WARN_ON(1);
-+		break;
-+	case 1:
-+		kfree(mpc8xxx_dummy_rx);
-+		mpc8xxx_dummy_rx = NULL;
-+		/* fall through */
-+	default:
-+		mpc8xxx_dummy_rx_refcnt--;
-+		break;
-+	}
-+
-+	mutex_unlock(&mpc8xxx_dummy_rx_lock);
-+}
-+
-+static unsigned long mpc8xxx_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
-+{
-+	struct device *dev = mspi->dev;
-+	struct device_node *np = dev_archdata_get_node(&dev->archdata);
-+	const u32 *iprop;
-+	int size;
-+	unsigned long spi_base_ofs;
-+	unsigned long pram_ofs = -ENOMEM;
-+
-+	/* Can't use of_address_to_resource(), QE muram isn't at 0. */
-+	iprop = of_get_property(np, "reg", &size);
-+
-+	/* QE with a fixed pram location? */
-+	if (mspi->flags & SPI_QE && iprop && size == sizeof(*iprop) * 4)
-+		return cpm_muram_alloc_fixed(iprop[2], SPI_PRAM_SIZE);
-+
-+	/* QE but with a dynamic pram location? */
-+	if (mspi->flags & SPI_QE) {
-+		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
-+		qe_issue_cmd(QE_ASSIGN_PAGE_TO_DEVICE, mspi->subblock,
-+				QE_CR_PROTOCOL_UNSPECIFIED, pram_ofs);
-+		return pram_ofs;
-+	}
-+
-+	/* CPM1 and CPM2 pram must be at a fixed addr. */
-+	if (!iprop || size != sizeof(*iprop) * 4)
-+		return -ENOMEM;
-+
-+	spi_base_ofs = cpm_muram_alloc_fixed(iprop[2], 2);
-+	if (IS_ERR_VALUE(spi_base_ofs))
-+		return -ENOMEM;
-+
-+	if (mspi->flags & SPI_CPM2) {
-+		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
-+		if (!IS_ERR_VALUE(pram_ofs)) {
-+			u16 __iomem *spi_base = cpm_muram_addr(spi_base_ofs);
-+
-+			out_be16(spi_base, pram_ofs);
-+		}
-+	} else {
-+		struct spi_pram __iomem *pram = cpm_muram_addr(spi_base_ofs);
-+		u16 rpbase = in_be16(&pram->rpbase);
-+
-+		/* Microcode relocation patch applied? */
-+		if (rpbase)
-+			pram_ofs = rpbase;
-+		else
-+			return spi_base_ofs;
-+	}
-+
-+	cpm_muram_free(spi_base_ofs);
-+	return pram_ofs;
-+}
-+
-+static int mpc8xxx_spi_cpm_init(struct mpc8xxx_spi *mspi)
-+{
-+	struct device *dev = mspi->dev;
-+	struct device_node *np = dev_archdata_get_node(&dev->archdata);
-+	const u32 *iprop;
-+	int size;
-+	unsigned long pram_ofs;
-+	unsigned long bds_ofs;
-+
-+	if (!(mspi->flags & SPI_CPM_MODE))
-+		return 0;
-+
-+	if (!mpc8xxx_spi_alloc_dummy_rx())
-+		return -ENOMEM;
-+
-+	if (mspi->flags & SPI_QE) {
-+		iprop = of_get_property(np, "cell-index", &size);
-+		if (iprop && size == sizeof(*iprop))
-+			mspi->subblock = *iprop;
-+
-+		switch (mspi->subblock) {
-+		default:
-+			dev_warn(dev, "cell-index unspecified, assuming SPI1");
-+			/* fall through */
-+		case 0:
-+			mspi->subblock = QE_CR_SUBBLOCK_SPI1;
-+			break;
-+		case 1:
-+			mspi->subblock = QE_CR_SUBBLOCK_SPI2;
-+			break;
-+		}
-+	}
-+
-+	pram_ofs = mpc8xxx_spi_cpm_get_pram(mspi);
-+	if (IS_ERR_VALUE(pram_ofs)) {
-+		dev_err(dev, "can't allocate spi parameter ram\n");
-+		goto err_pram;
-+	}
-+
-+	bds_ofs = cpm_muram_alloc(sizeof(*mspi->tx_bd) +
-+				  sizeof(*mspi->rx_bd), 8);
-+	if (IS_ERR_VALUE(bds_ofs)) {
-+		dev_err(dev, "can't allocate bds\n");
-+		goto err_bds;
-+	}
-+
-+	mspi->dma_dummy_tx = dma_map_single(dev, empty_zero_page, PAGE_SIZE,
-+					    DMA_TO_DEVICE);
-+	if (dma_mapping_error(dev, mspi->dma_dummy_tx)) {
-+		dev_err(dev, "unable to map dummy tx buffer\n");
-+		goto err_dummy_tx;
-+	}
-+
-+	mspi->dma_dummy_rx = dma_map_single(dev, mpc8xxx_dummy_rx, SPI_MRBLR,
-+					    DMA_FROM_DEVICE);
-+	if (dma_mapping_error(dev, mspi->dma_dummy_rx)) {
-+		dev_err(dev, "unable to map dummy rx buffer\n");
-+		goto err_dummy_rx;
-+	}
-+
-+	mspi->pram = cpm_muram_addr(pram_ofs);
-+
-+	mspi->tx_bd = cpm_muram_addr(bds_ofs);
-+	mspi->rx_bd = cpm_muram_addr(bds_ofs + sizeof(*mspi->tx_bd));
-+
-+	/* Initialize parameter ram. */
-+	out_be16(&mspi->pram->tbase, cpm_muram_offset(mspi->tx_bd));
-+	out_be16(&mspi->pram->rbase, cpm_muram_offset(mspi->rx_bd));
-+	out_8(&mspi->pram->tfcr, CPMFCR_EB | CPMFCR_GBL);
-+	out_8(&mspi->pram->rfcr, CPMFCR_EB | CPMFCR_GBL);
-+	out_be16(&mspi->pram->mrblr, SPI_MRBLR);
-+	out_be32(&mspi->pram->rstate, 0);
-+	out_be32(&mspi->pram->rdp, 0);
-+	out_be16(&mspi->pram->rbptr, 0);
-+	out_be16(&mspi->pram->rbc, 0);
-+	out_be32(&mspi->pram->rxtmp, 0);
-+	out_be32(&mspi->pram->tstate, 0);
-+	out_be32(&mspi->pram->tdp, 0);
-+	out_be16(&mspi->pram->tbptr, 0);
-+	out_be16(&mspi->pram->tbc, 0);
-+	out_be32(&mspi->pram->txtmp, 0);
-+
-+	return 0;
-+
-+err_dummy_rx:
-+	dma_unmap_single(dev, mspi->dma_dummy_tx, PAGE_SIZE, DMA_TO_DEVICE);
-+err_dummy_tx:
-+	cpm_muram_free(bds_ofs);
-+err_bds:
-+	cpm_muram_free(pram_ofs);
-+err_pram:
-+	mpc8xxx_spi_free_dummy_rx();
-+	return -ENOMEM;
-+}
-+
-+static void mpc8xxx_spi_cpm_free(struct mpc8xxx_spi *mspi)
-+{
-+	struct device *dev = mspi->dev;
-+
-+	dma_unmap_single(dev, mspi->dma_dummy_rx, SPI_MRBLR, DMA_FROM_DEVICE);
-+	dma_unmap_single(dev, mspi->dma_dummy_tx, PAGE_SIZE, DMA_TO_DEVICE);
-+	cpm_muram_free(cpm_muram_offset(mspi->tx_bd));
-+	cpm_muram_free(cpm_muram_offset(mspi->pram));
-+	mpc8xxx_spi_free_dummy_rx();
-+}
-+
- static const char *mpc8xxx_spi_strmode(unsigned int flags)
- {
--	if (flags & SPI_QE_CPU_MODE)
-+	if (flags & SPI_QE_CPU_MODE) {
- 		return "QE CPU";
-+	} else if (flags & SPI_CPM_MODE) {
-+		if (flags & SPI_QE)
-+			return "QE";
-+		else if (flags & SPI_CPM2)
-+			return "CPM2";
-+		else
-+			return "CPM1";
-+	}
- 	return "CPU";
- }
- 
-@@ -553,11 +999,16 @@ mpc8xxx_spi_probe(struct device *dev, struct resource *mem, unsigned int irq)
- 	master->cleanup = mpc8xxx_spi_cleanup;
- 
- 	mpc8xxx_spi = spi_master_get_devdata(master);
-+	mpc8xxx_spi->dev = dev;
- 	mpc8xxx_spi->get_rx = mpc8xxx_spi_rx_buf_u8;
- 	mpc8xxx_spi->get_tx = mpc8xxx_spi_tx_buf_u8;
- 	mpc8xxx_spi->flags = pdata->flags;
- 	mpc8xxx_spi->spibrg = pdata->sysclk;
- 
-+	ret = mpc8xxx_spi_cpm_init(mpc8xxx_spi);
-+	if (ret)
-+		goto err_cpm_init;
-+
- 	mpc8xxx_spi->rx_shift = 0;
- 	mpc8xxx_spi->tx_shift = 0;
- 	if (mpc8xxx_spi->flags & SPI_QE_CPU_MODE) {
-@@ -570,7 +1021,7 @@ mpc8xxx_spi_probe(struct device *dev, struct resource *mem, unsigned int irq)
- 	mpc8xxx_spi->base = ioremap(mem->start, mem->end - mem->start + 1);
- 	if (mpc8xxx_spi->base == NULL) {
- 		ret = -ENOMEM;
--		goto put_master;
-+		goto err_ioremap;
- 	}
- 
- 	mpc8xxx_spi->irq = irq;
-@@ -624,7 +1075,9 @@ free_irq:
- 	free_irq(mpc8xxx_spi->irq, mpc8xxx_spi);
- unmap_io:
- 	iounmap(mpc8xxx_spi->base);
--put_master:
-+err_ioremap:
-+	mpc8xxx_spi_cpm_free(mpc8xxx_spi);
-+err_cpm_init:
- 	spi_master_put(master);
- err:
- 	return ERR_PTR(ret);
-@@ -644,6 +1097,7 @@ static int __devexit mpc8xxx_spi_remove(struct device *dev)
- 
- 	free_irq(mpc8xxx_spi->irq, mpc8xxx_spi);
- 	iounmap(mpc8xxx_spi->base);
-+	mpc8xxx_spi_cpm_free(mpc8xxx_spi);
- 
- 	return 0;
- }
-@@ -806,6 +1260,12 @@ static int __devinit of_mpc8xxx_spi_probe(struct of_device *ofdev,
- 	prop = of_get_property(np, "mode", NULL);
- 	if (prop && !strcmp(prop, "cpu-qe"))
- 		pdata->flags = SPI_QE_CPU_MODE;
-+	else if (prop && !strcmp(prop, "qe"))
-+		pdata->flags = SPI_CPM_MODE | SPI_QE;
-+	else if (of_device_is_compatible(np, "fsl,cpm2-spi"))
-+		pdata->flags = SPI_CPM_MODE | SPI_CPM2;
-+	else if (of_device_is_compatible(np, "fsl,cpm1-spi"))
-+		pdata->flags = SPI_CPM_MODE | SPI_CPM1;
- 
- 	ret = of_mpc8xxx_spi_get_chipselects(dev);
- 	if (ret)
--- 
-1.6.3.3
+> This is an attempt at cleaning up a bit the way we handle execute
+> permission on powerpc (again !).
+>
+> _PAGE_HWEXEC is gone, _PAGE_EXEC is now only defined by CPUs that
+> can do something with it, and the myriad of #ifdef's in the I$/D$
+> coherency code is reduced to 2 cases that hopefully should cover
+> everything.
+>
+> The logic on BookE is a little bit different than what it was though
+> not by much. Since now, _PAGE_EXEC will be set by the generic code
+> for executable pages, we need to filter out if they are unclean and
+> recover it. However, I don't expect the code to be more bloated than
+> it already was in that area due to that change.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>
+> I could boast that this brings proper enforcing of per-page execute
+> permissions to all BookE and 40x but in fact, we've had that now for
+> some time as a side effect of my previous rework in that area (and
+> I didn't even know it :-) We would only enable execute permission if
+> the page was cache clean and we would only cache clean it if we took
+> and exec fault. Since we now enforce that the later only work if
+> VM_EXEC is part of the VMA flags, we de-fact already enforce per-page
+> execute permissions... Unless I missed something
+>
+> Kumar, Becky, I could really use some review here :-) I tested on
+> 440 and that's about it, I'll do more testing tomorrow. Basically, I
+> _think_ we already enforce execute permission fully on all BookE today
+> (test case welcome) but at least after that patch it becomes more
+> obvious what is happening in the code.
+>
+> arch/powerpc/include/asm/pgtable-ppc32.h |    7 +-
+> arch/powerpc/include/asm/pgtable-ppc64.h |    3 +-
+> arch/powerpc/include/asm/pte-40x.h       |    2 +-
+> arch/powerpc/include/asm/pte-44x.h       |    2 +-
+> arch/powerpc/include/asm/pte-8xx.h       |    1 -
+> arch/powerpc/include/asm/pte-book3e.h    |   13 ++-
+> arch/powerpc/include/asm/pte-common.h    |   22 ++--
+> arch/powerpc/include/asm/pte-fsl-booke.h |    2 +-
+> arch/powerpc/include/asm/pte-hash32.h    |    1 -
+> arch/powerpc/kernel/head_44x.S           |    2 +-
+> arch/powerpc/kernel/head_fsl_booke.S     |    4 +-
+> arch/powerpc/mm/40x_mmu.c                |    4 +-
+> arch/powerpc/mm/pgtable.c                |  148 +++++++++++++++++++ 
+> +----------
+> arch/powerpc/mm/pgtable_32.c             |    2 +-
+> arch/powerpc/mm/tlb_low_64e.S            |    4 +-
+> 15 files changed, 132 insertions(+), 85 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/ 
+> include/asm/pgtable-ppc32.h
+> index c9ff9d7..f2c52e2 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+> @@ -186,7 +186,7 @@ static inline unsigned long pte_update(pte_t *p,
+> #endif /* !PTE_ATOMIC_UPDATES */
+>
+> #ifdef CONFIG_44x
+> -	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
+> +	if ((old & _PAGE_USER) && (old & _PAGE_EXEC))
+> 		icache_44x_need_flush = 1;
+> #endif
+> 	return old;
+> @@ -217,7 +217,7 @@ static inline unsigned long long  
+> pte_update(pte_t *p,
+> #endif /* !PTE_ATOMIC_UPDATES */
+>
+> #ifdef CONFIG_44x
+> -	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
+> +	if ((old & _PAGE_USER) && (old & _PAGE_EXEC))
+> 		icache_44x_need_flush = 1;
+> #endif
+> 	return old;
+> @@ -267,8 +267,7 @@ static inline void  
+> huge_ptep_set_wrprotect(struct mm_struct *mm,
+> static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+> {
+> 	unsigned long bits = pte_val(entry) &
+> -		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW |
+> -		 _PAGE_HWEXEC | _PAGE_EXEC);
+> +		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+> 	pte_update(ptep, 0, bits);
+> }
+>
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/ 
+> include/asm/pgtable-ppc64.h
+> index 200ec2d..806abe7 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+> @@ -313,8 +313,7 @@ static inline void pte_clear(struct mm_struct  
+> *mm, unsigned long addr,
+> static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+> {
+> 	unsigned long bits = pte_val(entry) &
+> -		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW |
+> -		 _PAGE_EXEC | _PAGE_HWEXEC);
+> +		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+>
+> #ifdef PTE_ATOMIC_UPDATES
+> 	unsigned long old, tmp;
+> diff --git a/arch/powerpc/include/asm/pte-40x.h b/arch/powerpc/ 
+> include/asm/pte-40x.h
+> index 07630fa..6c3e1f4 100644
+> --- a/arch/powerpc/include/asm/pte-40x.h
+> +++ b/arch/powerpc/include/asm/pte-40x.h
+> @@ -46,7 +46,7 @@
+> #define	_PAGE_RW	0x040	/* software: Writes permitted */
+> #define	_PAGE_DIRTY	0x080	/* software: dirty page */
+> #define _PAGE_HWWRITE	0x100	/* hardware: Dirty & RW, set in  
+> exception */
+> -#define _PAGE_HWEXEC	0x200	/* hardware: EX permission */
+> +#define _PAGE_EXEC	0x200	/* hardware: EX permission */
+> #define _PAGE_ACCESSED	0x400	/* software: R: page referenced */
+>
+> #define _PMD_PRESENT	0x400	/* PMD points to page of PTEs */
+> diff --git a/arch/powerpc/include/asm/pte-44x.h b/arch/powerpc/ 
+> include/asm/pte-44x.h
+> index 37e98bc..4192b9b 100644
+> --- a/arch/powerpc/include/asm/pte-44x.h
+> +++ b/arch/powerpc/include/asm/pte-44x.h
+> @@ -78,7 +78,7 @@
+> #define _PAGE_PRESENT	0x00000001		/* S: PTE valid */
+> #define _PAGE_RW	0x00000002		/* S: Write permission */
+> #define _PAGE_FILE	0x00000004		/* S: nonlinear file mapping */
+> -#define _PAGE_HWEXEC	0x00000004		/* H: Execute permission */
+> +#define _PAGE_EXEC	0x00000004		/* H: Execute permission */
+> #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
+> #define _PAGE_DIRTY	0x00000010		/* S: Page dirty */
+> #define _PAGE_SPECIAL	0x00000020		/* S: Special page */
+> diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/ 
+> include/asm/pte-8xx.h
+> index 8c6e312..94e9797 100644
+> --- a/arch/powerpc/include/asm/pte-8xx.h
+> +++ b/arch/powerpc/include/asm/pte-8xx.h
+> @@ -36,7 +36,6 @@
+> /* These five software bits must be masked out when the entry is  
+> loaded
+>  * into the TLB.
+>  */
+> -#define _PAGE_EXEC	0x0008	/* software: i-cache coherency required */
+> #define _PAGE_GUARDED	0x0010	/* software: guarded access */
+> #define _PAGE_DIRTY	0x0020	/* software: page changed */
+> #define _PAGE_RW	0x0040	/* software: user write access allowed */
+> diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/ 
+> include/asm/pte-book3e.h
+> index 1d27c77..9800565 100644
+> --- a/arch/powerpc/include/asm/pte-book3e.h
+> +++ b/arch/powerpc/include/asm/pte-book3e.h
+> @@ -37,12 +37,13 @@
+> #define _PAGE_WRITETHRU	0x800000 /* W: cache write-through */
+>
+> /* "Higher level" linux bit combinations */
+> -#define _PAGE_EXEC	_PAGE_BAP_SX /* Can be executed from potentially  
+> */
+> -#define _PAGE_HWEXEC	_PAGE_BAP_UX /* .. and was cache cleaned */
+> -#define _PAGE_RW	(_PAGE_BAP_SW | _PAGE_BAP_UW) /* User write  
+> permission */
+> -#define _PAGE_KERNEL_RW	(_PAGE_BAP_SW | _PAGE_BAP_SR | _PAGE_DIRTY)
+> -#define _PAGE_KERNEL_RO	(_PAGE_BAP_SR)
+> -#define _PAGE_USER	(_PAGE_BAP_UR | _PAGE_BAP_SR) /* Can be read */
+> +#define _PAGE_EXEC		_PAGE_BAP_UX /* .. and was cache cleaned */
+> +#define _PAGE_RW		(_PAGE_BAP_SW | _PAGE_BAP_UW) /* User write  
+> permission */
+> +#define _PAGE_KERNEL_RW		(_PAGE_BAP_SW | _PAGE_BAP_SR | _PAGE_DIRTY)
+> +#define _PAGE_KERNEL_RO		(_PAGE_BAP_SR)
+> +#define _PAGE_KERNEL_RWX	(_PAGE_BAP_SW | _PAGE_BAP_SR | _PAGE_DIRTY  
+> | _PAGE_BAP_SX)
+> +#define _PAGE_KERNEL_ROX	(_PAGE_BAP_SR | _PAGE_BAP_SX)
+> +#define _PAGE_USER		(_PAGE_BAP_UR | _PAGE_BAP_SR) /* Can be read */
+>
+> #define _PAGE_HASHPTE	0
+> #define _PAGE_BUSY	0
+> diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/ 
+> include/asm/pte-common.h
+> index 8bb6464..c3b6507 100644
+> --- a/arch/powerpc/include/asm/pte-common.h
+> +++ b/arch/powerpc/include/asm/pte-common.h
+> @@ -13,9 +13,6 @@
+> #ifndef _PAGE_HWWRITE
+> #define _PAGE_HWWRITE	0
+> #endif
+> -#ifndef _PAGE_HWEXEC
+> -#define _PAGE_HWEXEC	0
+> -#endif
+> #ifndef _PAGE_EXEC
+> #define _PAGE_EXEC	0
+> #endif
+> @@ -48,10 +45,16 @@
+> #define PMD_PAGE_SIZE(pmd)	bad_call_to_PMD_PAGE_SIZE()
+> #endif
+> #ifndef _PAGE_KERNEL_RO
+> -#define _PAGE_KERNEL_RO	0
+> +#define _PAGE_KERNEL_RO		0
+> +#endif
+> +#ifndef _PAGE_KERNEL_ROX
+> +#define _PAGE_KERNEL_ROX	(_PAGE_EXEC)
+> #endif
+> #ifndef _PAGE_KERNEL_RW
+> -#define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
+> +#define _PAGE_KERNEL_RW		(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
+> +#endif
+> +#ifndef _PAGE_KERNEL_RWX
+> +#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE |  
+> _PAGE_EXEC)
+> #endif
+> #ifndef _PAGE_HPTEFLAGS
+> #define _PAGE_HPTEFLAGS _PAGE_HASHPTE
+> @@ -96,8 +99,7 @@ extern unsigned long  
+> bad_call_to_PMD_PAGE_SIZE(void);
+> #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT |  
+> _PAGE_NO_CACHE | \
+> 			 _PAGE_WRITETHRU | _PAGE_ENDIAN | _PAGE_4K_PFN | \
+> 			 _PAGE_USER | _PAGE_ACCESSED | \
+> -			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | \
+> -			 _PAGE_EXEC | _PAGE_HWEXEC)
+> +			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | _PAGE_EXEC)
+>
+> /*
+>  * We define 2 sets of base prot bits, one for basic pages (ie,
+> @@ -154,11 +156,9 @@ extern unsigned long  
+> bad_call_to_PMD_PAGE_SIZE(void);
+> 				 _PAGE_NO_CACHE)
+> #define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
+> 				 _PAGE_NO_CACHE | _PAGE_GUARDED)
+> -#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW |  
+> _PAGE_EXEC | \
+> -				 _PAGE_HWEXEC)
+> +#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RWX)
+> #define PAGE_KERNEL_RO	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
+> -#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO |  
+> _PAGE_EXEC | \
+> -				 _PAGE_HWEXEC)
+> +#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_ROX)
+>
+> /* Protection used for kernel text. We want the debuggers to be able  
+> to
+>  * set breakpoints anywhere, so don't write protect the kernel text
+> diff --git a/arch/powerpc/include/asm/pte-fsl-booke.h b/arch/powerpc/ 
+> include/asm/pte-fsl-booke.h
+> index 10820f5..ce8a9e9 100644
+> --- a/arch/powerpc/include/asm/pte-fsl-booke.h
+> +++ b/arch/powerpc/include/asm/pte-fsl-booke.h
+> @@ -23,7 +23,7 @@
+> #define _PAGE_FILE	0x00002	/* S: when !present: nonlinear file  
+> mapping */
+> #define _PAGE_RW	0x00004	/* S: Write permission (SW) */
+> #define _PAGE_DIRTY	0x00008	/* S: Page dirty */
+> -#define _PAGE_HWEXEC	0x00010	/* H: SX permission */
+> +#define _PAGE_EXEC	0x00010	/* H: SX permission */
+> #define _PAGE_ACCESSED	0x00020	/* S: Page referenced */
+>
+> #define _PAGE_ENDIAN	0x00040	/* H: E bit */
+> diff --git a/arch/powerpc/include/asm/pte-hash32.h b/arch/powerpc/ 
+> include/asm/pte-hash32.h
+> index 16e571c..4aad413 100644
+> --- a/arch/powerpc/include/asm/pte-hash32.h
+> +++ b/arch/powerpc/include/asm/pte-hash32.h
+> @@ -26,7 +26,6 @@
+> #define _PAGE_WRITETHRU	0x040	/* W: cache write-through */
+> #define _PAGE_DIRTY	0x080	/* C: page changed */
+> #define _PAGE_ACCESSED	0x100	/* R: page referenced */
+> -#define _PAGE_EXEC	0x200	/* software: i-cache coherency required */
+> #define _PAGE_RW	0x400	/* software: user write access allowed */
+> #define _PAGE_SPECIAL	0x800	/* software: Special page */
+>
+> diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/ 
+> head_44x.S
+> index 656cfb2..711368b 100644
+> --- a/arch/powerpc/kernel/head_44x.S
+> +++ b/arch/powerpc/kernel/head_44x.S
+> @@ -497,7 +497,7 @@ tlb_44x_patch_hwater_D:
+> 	mtspr	SPRN_MMUCR,r12
+>
+> 	/* Make up the required permissions */
+> -	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_HWEXEC
+> +	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
+>
+> 	/* Compute pgdir/pmd offset */
+> 	rlwinm 	r12, r10, PPC44x_PGD_OFF_SHIFT, PPC44x_PGD_OFF_MASK_BIT, 29
+> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/ 
+> kernel/head_fsl_booke.S
+> index eca8048..2c5af52 100644
+> --- a/arch/powerpc/kernel/head_fsl_booke.S
+> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+> @@ -643,7 +643,7 @@ interrupt_base:
+>
+> 4:
+> 	/* Make up the required permissions */
+> -	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_HWEXEC
+> +	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
+>
+> 	FIND_PTE
+> 	andc.	r13,r13,r11		/* Check permission */
+> @@ -742,7 +742,7 @@ finish_tlb_load:
+> #endif
+> 	mtspr	SPRN_MAS2, r12
+>
+> -	li	r10, (_PAGE_HWEXEC | _PAGE_PRESENT)
+> +	li	r10, (_PAGE_EXEC | _PAGE_PRESENT)
+> 	rlwimi	r10, r11, 31, 29, 29	/* extract _PAGE_DIRTY into SW */
+> 	and	r12, r11, r10
+> 	andi.	r10, r11, _PAGE_USER	/* Test for _PAGE_USER */
+> diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
+> index 29954dc..f5e7b9c 100644
+> --- a/arch/powerpc/mm/40x_mmu.c
+> +++ b/arch/powerpc/mm/40x_mmu.c
+> @@ -105,7 +105,7 @@ unsigned long __init mmu_mapin_ram(void)
+>
+> 	while (s >= LARGE_PAGE_SIZE_16M) {
+> 		pmd_t *pmdp;
+> -		unsigned long val = p | _PMD_SIZE_16M | _PAGE_HWEXEC |  
+> _PAGE_HWWRITE;
+> +		unsigned long val = p | _PMD_SIZE_16M | _PAGE_EXEC | _PAGE_HWWRITE;
+>
+> 		pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
+> 		pmd_val(*pmdp++) = val;
+> @@ -120,7 +120,7 @@ unsigned long __init mmu_mapin_ram(void)
+>
+> 	while (s >= LARGE_PAGE_SIZE_4M) {
+> 		pmd_t *pmdp;
+> -		unsigned long val = p | _PMD_SIZE_4M | _PAGE_HWEXEC |  
+> _PAGE_HWWRITE;
+> +		unsigned long val = p | _PMD_SIZE_4M | _PAGE_EXEC | _PAGE_HWWRITE;
+>
+> 		pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
+> 		pmd_val(*pmdp) = val;
+> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> index cafb2a2..d568d2c 100644
+> --- a/arch/powerpc/mm/pgtable.c
+> +++ b/arch/powerpc/mm/pgtable.c
+> @@ -128,73 +128,126 @@ void pte_free_finish(void)
+>
+> #endif /* CONFIG_SMP */
+>
+> +static inline int is_exec_fault(void)
+> +{
+> +	return current->thread.regs && TRAP(current->thread.regs) == 0x400;
+> +}
+> +
+> +/* We only try to do i/d cache coherency on stuff that looks like
+> + * reasonably "normal" PTEs. We currently require a PTE to be present
+> + * and we avoid _PAGE_SPECIAL and _PAGE_NO_CACHE. We also only do  
+> that
+> + * on userspace PTEs
+> + */
+> +static inline int pte_looks_normal(pte_t pte)
+> +{
+> +	return (pte_val(pte) &
+> +		(_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE | _PAGE_USER)) ==
+> +		(_PAGE_PRESENT | _PAGE_USER);
+> +}
+> +
+> +
+> /*
+>  * Handle i/d cache flushing, called from set_pte_at() or  
+> ptep_set_access_flags()
+>  */
+> -static pte_t do_dcache_icache_coherency(pte_t pte)
+> +struct page * maybe_pte_to_page(pte_t pte)
+> {
+> 	unsigned long pfn = pte_pfn(pte);
+> 	struct page *page;
+>
+> 	if (unlikely(!pfn_valid(pfn)))
+> -		return pte;
+> +		return NULL;
+> 	page = pfn_to_page(pfn);
+> -
+> -	if (!PageReserved(page) && !test_bit(PG_arch_1, &page->flags)) {
+> -		pr_devel("do_dcache_icache_coherency... flushing\n");
+> -		flush_dcache_icache_page(page);
+> -		set_bit(PG_arch_1, &page->flags);
+> -	}
+> -	else
+> -		pr_devel("do_dcache_icache_coherency... already clean\n");
+> -	return __pte(pte_val(pte) | _PAGE_HWEXEC);
+> +	if (PageReserved(page))
+> +		return NULL;
+> +	return page;
+> }
+>
+> -static inline int is_exec_fault(void)
+> -{
+> -	return current->thread.regs && TRAP(current->thread.regs) == 0x400;
+> -}
+> +#if defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC == 0
+>
+> -/* We only try to do i/d cache coherency on stuff that looks like
+> - * reasonably "normal" PTEs. We currently require a PTE to be present
+> - * and we avoid _PAGE_SPECIAL and _PAGE_NO_CACHE
+> +/* Server-style MMU handles coherency when hashing if HW exec  
+> permission
+> + * is supposed per page (currently 64-bit only). If not, then, we  
+> always
+> + * flush the cache for valid PTEs in set_pte. Embedded CPU without  
+> HW exec
+> + * support falls into the same category.
+>  */
+> -static inline int pte_looks_normal(pte_t pte)
+> +
+> +static pte_t set_pte_filter(pte_t pte)
+> {
+> -	return (pte_val(pte) &
+> -		(_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE)) ==
+> -		(_PAGE_PRESENT);
+> +	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
+> +	if (pte_looks_normal(pte) && ! 
+> (cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
+> +				       cpu_has_feature(CPU_FTR_NOEXECUTE))) {
+> +		struct page *pg = maybe_pte_to_page(pte);
+> +		if (!pg)
+> +			return pte;
+> +		if (!test_bit(PG_arch_1, &pg->flags)) {
+> +			flush_dcache_icache_page(pg);
+> +			set_bit(PG_arch_1, &pg->flags);
+> +		}
+> +	}
+> +	return pte;
+> }
+>
+> -#if defined(CONFIG_PPC_STD_MMU)
+> -/* Server-style MMU handles coherency when hashing if HW exec  
+> permission
+> - * is supposed per page (currently 64-bit only). Else, we always  
+> flush
+> - * valid PTEs in set_pte.
+> - */
+> -static inline int pte_need_exec_flush(pte_t pte, int set_pte)
+> +static pte_t set_access_flags_filter(pte_t pte, struct  
+> vm_area_struct *vma, int dirty)
+> {
+> -	return set_pte && pte_looks_normal(pte) &&
+> -		!(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
+> -		  cpu_has_feature(CPU_FTR_NOEXECUTE));
+> +	return pte;
+> }
+> -#elif _PAGE_HWEXEC == 0
+> -/* Embedded type MMU without HW exec support (8xx only so far), we  
+> flush
+> - * the cache for any present PTE
+> +
+> +#else /* defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC == 0 */
+> +
+> +/* Embedded type MMU with HW exec support. This is a bit more  
+> complicated
+> + * as we don't have two bits to spare for _PAGE_EXEC and  
+> _PAGE_HWEXEC so
+> + * instead we "filter out" the exec permission for non clean pages.
+>  */
+> -static inline int pte_need_exec_flush(pte_t pte, int set_pte)
+> +static pte_t set_pte_filter(pte_t pte)
+> {
+> -	return set_pte && pte_looks_normal(pte);
+> +	struct page *pg;
+> +
+> +	/* No exec permission in the first place, move on */
+> +	if (!(pte_val(pte) & _PAGE_EXEC) || !pte_looks_normal(pte))
+> +		return pte;
+> +
+> +	/* If you set _PAGE_EXEC on weird pages you're on your own */
+> +	pg = maybe_pte_to_page(pte);
+> +	if (!pg)
+> +		return pte;
+> +
+> +	/* If the page clean, we move on */
+> +	if (test_bit(PG_arch_1, &pg->flags))
+> +		return pte;
+> +
+> +	/* If it's an exec fault, we flush the cache and make it clean */
+> +	if (is_exec_fault()) {
+> +		flush_dcache_icache_page(pg);
+> +		set_bit(PG_arch_1, &pg->flags);
+> +		return pte;
+> +	}
+> +
+> +	/* Else, we filter out _PAGE_EXEC */
+> +	return __pte(pte_val(pte) & ~_PAGE_EXEC);
+> }
+> -#else
+> -/* Other embedded CPUs with HW exec support per-page, we flush on  
+> exec
+> - * fault if HWEXEC is not set
+> - */
+> -static inline int pte_need_exec_flush(pte_t pte, int set_pte)
+> +
+> +static pte_t set_access_flags_filter(pte_t pte, struct  
+> vm_area_struct *vma, int dirty)
+> {
+> -	return pte_looks_normal(pte) && is_exec_fault() &&
+> -		!(pte_val(pte) & _PAGE_HWEXEC);
+> +	/* So here, we only care about exec faults, as we use them
+> +	 * to recover lost _PAGE_EXEC and perform I$/D$ coherency
+> +	 * if necessary. Also if _PAGE_EXEC is already set, same deal,
+> +	 * we just bail out
+> +	 */
+> +	if (dirty || (pte_val(pte) & _PAGE_EXEC) || !is_exec_fault())
+> +		return pte;
+> +
+> +#ifdef CONFIG_DEBUG_VM
+> +	/* So this is an exec fault, _PAGE_EXEC is not set. If it was
+> +	 * an error we would have bailed out earlier in do_page_fault()
+> +	 * but let's make sure of it
+> +	 */
+> +	if (WARN_ON(!(vma->vm_flags & VM_EXEC)))
+> +		return pte;
+> +#endif /* CONFIG_DEBUG_VM */
+> +
+> +	return __pte(pte_val(pte) | _PAGE_EXEC);
+> }
+> -#endif
+> +
+> +#endif /* !(defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC == 0) */
+>
+> /*
+>  * set_pte stores a linux PTE into the linux page table.
+> @@ -208,9 +261,7 @@ void set_pte_at(struct mm_struct *mm, unsigned  
+> long addr, pte_t *ptep, pte_t pte
+> 	 * this context might not have been activated yet when this
+> 	 * is called.
+> 	 */
+> -	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
+> -	if (pte_need_exec_flush(pte, 1))
+> -		pte = do_dcache_icache_coherency(pte);
+> +	pte = set_pte_filter(pte);
+>
+> 	/* Perform the setting of the PTE */
+> 	__set_pte_at(mm, addr, ptep, pte, 0);
+> @@ -227,8 +278,7 @@ int ptep_set_access_flags(struct vm_area_struct  
+> *vma, unsigned long address,
+> 			  pte_t *ptep, pte_t entry, int dirty)
+> {
+> 	int changed;
+> -	if (!dirty && pte_need_exec_flush(entry, 0))
+> -		entry = do_dcache_icache_coherency(entry);
+> +	entry = set_access_flags_filter(entry, vma, dirty);
+> 	changed = !pte_same(*(ptep), entry);
+> 	if (changed) {
+> 		if (!(vma->vm_flags & VM_HUGETLB))
+> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/ 
+> pgtable_32.c
+> index 5422169..cb96cb2 100644
+> --- a/arch/powerpc/mm/pgtable_32.c
+> +++ b/arch/powerpc/mm/pgtable_32.c
+> @@ -142,7 +142,7 @@ ioremap_flags(phys_addr_t addr, unsigned long  
+> size, unsigned long flags)
+> 		flags |= _PAGE_DIRTY | _PAGE_HWWRITE;
+>
+> 	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+> -	flags &= ~(_PAGE_USER | _PAGE_EXEC | _PAGE_HWEXEC);
+> +	flags &= ~(_PAGE_USER | _PAGE_EXEC);
+>
+> 	return __ioremap_caller(addr, size, flags,  
+> __builtin_return_address(0));
+> }
+> diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/ 
+> tlb_low_64e.S
+> index 10d524d..cd92f62 100644
+> --- a/arch/powerpc/mm/tlb_low_64e.S
+> +++ b/arch/powerpc/mm/tlb_low_64e.S
+> @@ -133,7 +133,7 @@
+>
+> 	/* We do the user/kernel test for the PID here along with the RW test
+> 	 */
+> -	li	r11,_PAGE_PRESENT|_PAGE_HWEXEC	/* Base perm */
+> +	li	r11,_PAGE_PRESENT|_PAGE_EXEC	/* Base perm */
+> 	oris	r11,r11,_PAGE_ACCESSED@h
+>
+> 	cmpldi	cr0,r15,0			/* Check for user region */
+> @@ -256,7 +256,7 @@ normal_tlb_miss_done:
+>
+> normal_tlb_miss_access_fault:
+> 	/* We need to check if it was an instruction miss */
+> -	andi.	r10,r11,_PAGE_HWEXEC
+> +	andi.	r10,r11,_PAGE_EXEC
+> 	bne	1f
+> 	ld	r14,EX_TLB_DEAR(r12)
+> 	ld	r15,EX_TLB_ESR(r12)
+> -- 
+> 1.6.1.2.14.gf26b5
+>
+>
