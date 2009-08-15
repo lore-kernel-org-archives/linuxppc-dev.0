@@ -1,27 +1,38 @@
-Return-Path: <wangbj.ml@gmail.com>
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1B4AAB707B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 22750B6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 15 Aug 2009 14:32:37 +1000 (EST)
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id 6AF1DDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Aug 2009 14:32:34 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id b6so759606ana.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2009 21:32:31 -0700 (PDT)
+	Sat, 15 Aug 2009 22:44:33 +1000 (EST)
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[78.32.30.218])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B5E19DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Aug 2009 22:44:31 +1000 (EST)
+Date: Sat, 15 Aug 2009 13:43:47 +0100
+From: Russell King <rmk@arm.linux.org.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: ARM clock API to PowerPC
+Message-ID: <20090815124347.GB16112@flint.arm.linux.org.uk>
+References: <1250063825.15143.43.camel@pasglop>
+	<20090812111954.GB31596@zod.rchland.ibm.com>
+	<4A90486C-8BF5-428C-9FD8-830D822C0D40@kernel.crashing.org>
+	<1250112599.3587.21.camel@pasglop>
+	<3A45394FD742FA419B760BB8D398F9ED59DE33@zch01exm26.fsl.freescale.net>
+	<1250242149.24143.36.camel@pasglop>
+	<Pine.LNX.4.64.0908141255230.5980@axis700.grange>
+	<1250251664.24143.39.camel@pasglop>
 MIME-Version: 1.0
-In-Reply-To: <20090815003904.5378cb35@xilun.lan.proformatique.com>
-References: <17dc9c530908140727l6423bebawaed8808f195d4d20@mail.gmail.com>
-	<20090815003904.5378cb35@xilun.lan.proformatique.com>
-Date: Sat, 15 Aug 2009 12:32:31 +0800
-Message-ID: <17dc9c530908142132oab0339di36b5e7bf111badd0@mail.gmail.com>
-Subject: Re: Configure CPM2 PORTC pin (PC9) for external interrupt?
-From: Baojun Wang <wangbj.ml@gmail.com>
-To: Guillaume Knispel <gknispel@proformatique.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1250251664.24143.39.camel@pasglop>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: devicetree-discuss@lists.ozlabs.org, John Jacques <john.jacques@lsi.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Torez Smith <torez@us.ibm.com>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,65 +42,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hi, Guillaume
+On Fri, Aug 14, 2009 at 10:07:44PM +1000, Benjamin Herrenschmidt wrote:
+> My idea is that struct clock would contain function pointers for the
+> enable/disable/get_rate/ etc... methods
 
-    Thank you very much. the kernel I'm using is linux-2.6.21 (for the
-target system), actually I have also read 2.6.30 source code, but I
-didn't find the change, and I think the problem was caused by fault
-configuration of the PORTC io-port. The commit you mentioned haven't
-applied for 2.6.21.
+If you look at OMAP, doing that gets very expensive, both in terms of
+number of lines of code, size of structure and maintainence thereof.
+Neither does a 'clk_ops' structure containing all of the function
+pointers work either for OMAP (OMAP has such a structure just for
+enable and disable methods, of which there are about two or three to
+chose from, but the rounding, set_rate and propagation methods are
+per-clk.  This balance seems to work well for OMAP.)
 
-    Next time I will include the exact kernel version (and related)
-info, many thanks again.
+FYI, there are 140 struct clk definitions for OMAP24xx, and 215 for
+OMAP34xx, all statically initialized.  See arch/arm/mach-omap2/clock?4xx.h
 
-    Best Regards,
-Wang Baojun
-
-On Sat, Aug 15, 2009 at 6:39 AM, Guillaume Knispel
-<gknispel@proformatique.com> wrote:
->
-> On Fri, 14 Aug 2009 22:27:39 +0800
-> Baojun Wang <wangbj.ml@gmail.com> wrote:
->
-> > =A0 I need to configure CPM2 PORTC pin (PC9) for external interrupt, wh=
-en I
-> > read the MPC8555ERM.pdf and cpm2-pic.c, I find that PC9 interrupt numbe=
-r is
-> > 56, and I request the IRQ in this way:
-> >
-> > =A0 hw_irq =3D 56;
-> > =A0 virq =3D irq_create_mapping(cpm2_host, hw_irq);
-> >
-> > =A0 reqeust_irq(virq, ...);
-> >
-> > =A0 I can request the irq successfully, but the interrupt is never gene=
-rated
-> > (ISR is not called) to the PC9 pins, even though the hardware said an
-> > interrupt was raised. (the hardware have a register with a special bit)
-> >
-> > =A0 Should I configure the cpm2 io port first to allow PORTC interrupt?=
- I have
-> > read the cpm2 io port documentation, and I initialize the PC9 as:
-> >
-> > =A0 PPARC[pc9_bit] =3D 0; =A0 =A0/* for general purpose IO, not dedicat=
-ed */
-> > =A0 PSORC[pc9_bit] =3D 0; =A0 =A0/* no special option */
-> > =A0 PDIRC[pc9_bit] =3D 0; =A0 =A0 /* for both input/output */
-> >
-> > =A0 Am I missing some thing? Any suggestion will be greatly appreciated=
-.
->
-> Hi,
->
-> Have a look on commit 7f3ea17f316577e31db868f720ac575c74d20163, which
-> fixes a linux bug about Port C interrupts
->
-> Also note that the 8555 have the same issue that the 8272 about
-> PC2 / PC3 missing which shifts other vectors, but I don't know if 56
-> for PC9 take that into account.
->
-> PS: in the future make sure to include your Linux version number, so we
-> know if an issue apply or not.
->
-> --
-> Guillaume KNISPEL
+-- 
+Russell King
