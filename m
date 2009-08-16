@@ -1,26 +1,40 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B2D56B6EDE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E1115B6F1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 16 Aug 2009 08:20:22 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1DF9DDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Aug 2009 08:20:21 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n7FMKHmr029384
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Aug 2009 17:20:18 -0500
-Subject: Poll: Rebasing of powerpc-next
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Sun, 16 Aug 2009 08:20:17 +1000
-Message-Id: <1250374817.24143.71.camel@pasglop>
-Mime-Version: 1.0
+	Sun, 16 Aug 2009 15:09:51 +1000 (EST)
+Received: from mail-yw0-f171.google.com (mail-yw0-f171.google.com
+	[209.85.211.171]) by ozlabs.org (Postfix) with ESMTP id 5A187DDD01
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Aug 2009 15:09:49 +1000 (EST)
+Received: by ywh1 with SMTP id 1so3199183ywh.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Aug 2009 22:09:47 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1250374683.24143.69.camel@pasglop>
+References: <1250063825.15143.43.camel@pasglop>
+	<20090812111954.GB31596@zod.rchland.ibm.com>
+	<4A90486C-8BF5-428C-9FD8-830D822C0D40@kernel.crashing.org>
+	<1250112599.3587.21.camel@pasglop>
+	<3A45394FD742FA419B760BB8D398F9ED59DE33@zch01exm26.fsl.freescale.net>
+	<1250242149.24143.36.camel@pasglop>
+	<Pine.LNX.4.64.0908141255230.5980@axis700.grange>
+	<1250251664.24143.39.camel@pasglop>
+	<20090815124347.GB16112@flint.arm.linux.org.uk>
+	<1250374683.24143.69.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 15 Aug 2009 23:09:27 -0600
+Message-ID: <fa686aa40908152209h7e1c384yfaa72c4e825e1df0@mail.gmail.com>
+Subject: Re: ARM clock API to PowerPC
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@lists.ozlabs.org, John Jacques <john.jacques@lsi.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Torez Smith <torez@us.ibm.com>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,14 +44,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi !
+On Sat, Aug 15, 2009 at 4:18 PM, Benjamin
+Herrenschmidt<benh@kernel.crashing.org> wrote:
+> For ppc we really don't have much of a choice here anyway because we
+> support multiple platforms compiled in the same kernel as long as they
+> have a CPU core that's the same overall family, and that can be very
+> wide. For example, 440-type cores can exist in all sort of IBM/AMCC
+> cores, but also Xilinx FPGAs, and when you start saying FPGA the
+> possibilities go wild :-)
 
-I'd like to rebase powerpc-next ... a few bugs have been found that it
-would be nice to fix in the original patch rather than introducing a
-bisection breakage, and Kumar also just noticed a potentially misleading
-error in a commit message from his tree.
+Yes, exactly!  In fact, FPGAs are somewhat nicer in that only the
+hardware actually needed is present on the running system (fewer data
+instances), but the flip side is that the set of instances changes at
+the whim of the FPGA engineer.  Static definition isn't an option
+unless you want to change the platform source code for each new FPGA
+bistream revision.
 
-So who is not ok with me doing that tomorrow or tuesday ?
-
-Cheers,
-Ben.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
