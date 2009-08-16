@@ -1,40 +1,47 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <dipankar@in.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E1115B6F1F
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id AB170B6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 16 Aug 2009 15:09:51 +1000 (EST)
-Received: from mail-yw0-f171.google.com (mail-yw0-f171.google.com
-	[209.85.211.171]) by ozlabs.org (Postfix) with ESMTP id 5A187DDD01
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Aug 2009 15:09:49 +1000 (EST)
-Received: by ywh1 with SMTP id 1so3199183ywh.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Aug 2009 22:09:47 -0700 (PDT)
+	Mon, 17 Aug 2009 04:26:42 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n7GIQWiI013136
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2009 04:26:32 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7GIQdw91192020
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2009 04:26:40 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n7GIQcRk027349
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2009 04:26:39 +1000
+Date: Sun, 16 Aug 2009 23:56:29 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090816182629.GA31027@in.ibm.com>
+References: <20090806015855.GA20596@sli10-desk.sh.intel.com>
+	<20090809120818.GA1338@ucw.cz> <200908091522.02898.rjw@sisk.pl>
+	<20090810081941.GA18649@elf.ucw.cz>
+	<1249950137.11545.38184.camel@localhost.localdomain>
+	<20090812115806.GK24339@elf.ucw.cz>
+	<20090812195753.GA14649@in.ibm.com>
+	<alpine.LFD.2.00.0908122036580.22946@localhost.localdomain>
+	<20090813045931.GB14649@in.ibm.com>
+	<20090814113021.GL32418@elf.ucw.cz>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1250374683.24143.69.camel@pasglop>
-References: <1250063825.15143.43.camel@pasglop>
-	<20090812111954.GB31596@zod.rchland.ibm.com>
-	<4A90486C-8BF5-428C-9FD8-830D822C0D40@kernel.crashing.org>
-	<1250112599.3587.21.camel@pasglop>
-	<3A45394FD742FA419B760BB8D398F9ED59DE33@zch01exm26.fsl.freescale.net>
-	<1250242149.24143.36.camel@pasglop>
-	<Pine.LNX.4.64.0908141255230.5980@axis700.grange>
-	<1250251664.24143.39.camel@pasglop>
-	<20090815124347.GB16112@flint.arm.linux.org.uk>
-	<1250374683.24143.69.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 15 Aug 2009 23:09:27 -0600
-Message-ID: <fa686aa40908152209h7e1c384yfaa72c4e825e1df0@mail.gmail.com>
-Subject: Re: ARM clock API to PowerPC
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org, John Jacques <john.jacques@lsi.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Torez Smith <torez@us.ibm.com>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	Russell King <rmk@arm.linux.org.uk>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090814113021.GL32418@elf.ucw.cz>
+Cc: "Brown, Len" <len.brown@intel.com>, "Darrick J. Wong" <djwong@us.ibm.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, "Pallipadi,
+	Venkatesh" <venkatesh.pallipadi@intel.com>, "Li,
+	Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Len Brown <lenb@kernel.org>
+Reply-To: dipankar@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,22 +51,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Aug 15, 2009 at 4:18 PM, Benjamin
-Herrenschmidt<benh@kernel.crashing.org> wrote:
-> For ppc we really don't have much of a choice here anyway because we
-> support multiple platforms compiled in the same kernel as long as they
-> have a CPU core that's the same overall family, and that can be very
-> wide. For example, 440-type cores can exist in all sort of IBM/AMCC
-> cores, but also Xilinx FPGAs, and when you start saying FPGA the
-> possibilities go wild :-)
+On Fri, Aug 14, 2009 at 01:30:21PM +0200, Pavel Machek wrote:
+> > 
+> > It depends on the hypervisor implementation. On pseries (powerpc)
+> > hypervisor, for example, they are different. By offlining a vcpu
+> > (and in turn shutting a cpu), you will actually create a configuration
+> > change in the VM that is visible to other systems management tools
+> > which may not be what the system administrator wanted. Ideally,
+> > we would like to distinguish between these two states.
+> > 
+> > Hope that suffices as an example.
+> 
+> So... you have something like "physically pulling out hotplug cpu" on
+> powerpc.
 
-Yes, exactly!  In fact, FPGAs are somewhat nicer in that only the
-hardware actually needed is present on the running system (fewer data
-instances), but the flip side is that the set of instances changes at
-the whim of the FPGA engineer.  Static definition isn't an option
-unless you want to change the platform source code for each new FPGA
-bistream revision.
+If any system can do physical unplug, then it should do "offline"
+with configuration changes reflected in the hypervisor and
+other system configuration software.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> But maybe it is useful to take already offline cpus (from linux side),
+> and make that visible to hypervisor, too.
+> 
+> So maybe something like "echo 1 > /sys/devices/system/cpu/cpu1/unplug"
+> would be more useful for hypervisor case?
+
+On pseries, we do an RTAS call ("stop-cpu") which effectively permantently
+de-allocates it from the VM hands over the control to hypervisor. The
+hypervisors may do whatever it wants including allocating it to
+another VM. Once gone, the original VM may not get it back depending
+on the situation.
+
+The point I am making is that we may not always want to *release*
+the CPU to hypervisor and induce a configuration change. That needs
+to be reflected by extending the existing user interface - hence
+the proposal for - /sys/devices/system/cpu/cpu<#>/state and
+/sys/devices/system/cpu/cpu<#>/available_states. It allows
+ceding to hypervisor without de-allocating. It is a minor
+extension of the existing interface keeping backwards compatibility
+and platforms can allow what make sense.
+
+Thanks
+Dipankar
