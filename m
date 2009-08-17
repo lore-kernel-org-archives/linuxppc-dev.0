@@ -1,31 +1,30 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <fkan@amcc.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 91CA2B7067
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D85DBB6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 18 Aug 2009 02:07:21 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7HG76xo017046
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2009 12:07:06 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7HG7Gsq248762
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2009 12:07:16 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n7HG7F0T012745
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2009 12:07:16 -0400
-Date: Mon, 17 Aug 2009 12:07:13 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] powerpc: Fix __flush_icache_range on 44x
-Message-ID: <20090817160713.GE8710@zod.rchland.ibm.com>
-References: <20090817134136.GB8710@zod.rchland.ibm.com>
+	Tue, 18 Aug 2009 02:35:23 +1000 (EST)
+Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 5017DDDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 02:35:22 +1000 (EST)
+Message-ID: <4A8986C1.3080505@amcc.com>
+Date: Mon, 17 Aug 2009 09:35:13 -0700
+From: Feng Kan <fkan@amcc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090817134136.GB8710@zod.rchland.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/1 v1] powerpc44x: Add Eiger AMCC (AppliedMicro)	PPC460SX
+	evaluation board support.
+References: <1250123927-29167-1-git-send-email-fkan@amcc.com>
+	<20090817153456.GD8710@zod.rchland.ibm.com>
+In-Reply-To: <20090817153456.GD8710@zod.rchland.ibm.com>
+Content-Type: multipart/alternative;
+	boundary="------------040502080507050106010705"
+Cc: linuxppc-dev@ozlabs.org, Tai Tri Nguyen <ttnguyen@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +34,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 17, 2009 at 09:41:36AM -0400, Josh Boyer wrote:
->The ptrace POKETEXT interface allows a process to modify the text pages of
->a child process being ptraced, usually to insert breakpoints via trap
->instructions.  The kernel eventually calls copy_to_user_page, which in turn
->calls __flush_icache_range to invalidate the icache lines for the child
->process.
->
->However, this function does not work on 44x due to the icache being virtually
->indexed.  This was noticed by a breakpoint being triggered after it had been
->cleared by ltrace on a 440EPx board.  The convenient solution is to do a
->flash invalidate of the icache in the __flush_icache_range function.
->
->Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->
->---
->
->diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
->index 15f28e0..c9805a4 100644
->--- a/arch/powerpc/kernel/misc_32.S
->+++ b/arch/powerpc/kernel/misc_32.S
->@@ -346,6 +346,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-> 2:	icbi	0,r6
-> 	addi	r6,r6,L1_CACHE_BYTES
-> 	bdnz	2b
->+#ifdef CONFIG_44x
->+	iccci	r0, r0
->+#endif
+This is a multi-part message in MIME format.
+--------------040502080507050106010705
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Olof pointed out that we could probably do the iccci before the icbi loop and
-just skip that loop entirely on 44x.  This is most certainly valid, but at
-this particular moment I don't have time to try and reproduce the issue with
-an alternative fix and I wanted to get _something_ out there to fix the issue.  
+Please do, much appreciated.
 
-I suck for that, I know.
+Thanks
+Feng Kan
+AMCC Software
+
+On 08/17/2009 08:34 AM, Josh Boyer wrote:
+> On Wed, Aug 12, 2009 at 05:38:47PM -0700, Feng Kan wrote:
+>    
+>> This patch adds support for the AMCC (AppliedMicro) PPC460SX Eiger evaluation board.
+>>
+>> Signed-off-by: Tai Tri Nguyen<ttnguyen@amcc.com>
+>> Acked-by: Feng Kan<fkan@amcc.com>
+>> Acked-by: Tirumala Marri<tmarri@amcc.com>
+>> ---
+>> arch/powerpc/boot/dts/eiger.dts            |  421 ++++++++++
+>> arch/powerpc/configs/44x/eiger_defconfig   | 1200 ++++++++++++++++++++++++++++
+>> arch/powerpc/platforms/44x/Kconfig         |   12 +
+>> arch/powerpc/platforms/44x/ppc44x_simple.c |    1 +
+>> 4 files changed, 1634 insertions(+), 0 deletions(-)
+>> create mode 100644 arch/powerpc/boot/dts/eiger.dts
+>> create mode 100644 arch/powerpc/configs/44x/eiger_defconfig
+>>      
+>
+> Thanks, this looks great.
+>
+> If you have no objections, I will commit an updated defconfig against the
+> current kernel sources instead of the one attached.  Some of the options
+> will move around a bit, but there should be no overall changes.
+>
+> josh
+>    
+
+
+--------------040502080507050106010705
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="Content-Type">
+  <title></title>
+</head>
+<body text="#000000" bgcolor="#ffffff">
+Please do, much appreciated.<br>
+<br>
+Thanks<br>
+Feng Kan<br>
+AMCC Software<br>
+<br>
+On 08/17/2009 08:34 AM, Josh Boyer wrote:
+<blockquote cite="mid:20090817153456.GD8710@zod.rchland.ibm.com"
+ type="cite">
+  <pre wrap="">On Wed, Aug 12, 2009 at 05:38:47PM -0700, Feng Kan wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">This patch adds support for the AMCC (AppliedMicro) PPC460SX Eiger evaluation board.
+
+Signed-off-by: Tai Tri Nguyen <a class="moz-txt-link-rfc2396E" href="mailto:ttnguyen@amcc.com">&lt;ttnguyen@amcc.com&gt;</a>
+Acked-by: Feng Kan <a class="moz-txt-link-rfc2396E" href="mailto:fkan@amcc.com">&lt;fkan@amcc.com&gt;</a>
+Acked-by: Tirumala Marri <a class="moz-txt-link-rfc2396E" href="mailto:tmarri@amcc.com">&lt;tmarri@amcc.com&gt;</a>
+---
+arch/powerpc/boot/dts/eiger.dts            |  421 ++++++++++
+arch/powerpc/configs/44x/eiger_defconfig   | 1200 ++++++++++++++++++++++++++++
+arch/powerpc/platforms/44x/Kconfig         |   12 +
+arch/powerpc/platforms/44x/ppc44x_simple.c |    1 +
+4 files changed, 1634 insertions(+), 0 deletions(-)
+create mode 100644 arch/powerpc/boot/dts/eiger.dts
+create mode 100644 arch/powerpc/configs/44x/eiger_defconfig
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Thanks, this looks great.
+
+If you have no objections, I will commit an updated defconfig against the
+current kernel sources instead of the one attached.  Some of the options
+will move around a bit, but there should be no overall changes.
 
 josh
+  </pre>
+</blockquote>
+<br>
+</body>
+</html>
+
+--------------040502080507050106010705--
