@@ -1,25 +1,26 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C6C57B70CF
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0BCABB7099
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 18 Aug 2009 09:01:34 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B0F73DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 09:01:34 +1000 (EST)
+	Tue, 18 Aug 2009 09:38:37 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 91FE0DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 09:38:36 +1000 (EST)
+Date: Tue, 18 Aug 2009 03:38:33 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: simple gpio driver
+Message-ID: <20090817233833.GA3685@oksana.dev.rtsoft.ru>
+References: <4A83A976.60608@denx.de>
+	<fa686aa40908171418k57ce5ff6iac44a72171bcf14a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <19081.57584.173693.798535@cargo.ozlabs.ibm.com>
-Date: Tue, 18 Aug 2009 09:00:00 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3 v3] powerpc/32: Always order writes to halves of 64-bit
-	PTEs
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <fa686aa40908171418k57ce5ff6iac44a72171bcf14a@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, hs@denx.de
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 32-bit systems with 64-bit PTEs, the PTEs have to be written in two
-32-bit halves.  On SMP we write the higher-order half and then the
-lower-order half, with a write barrier between the two halves, but on
-UP there was no particular ordering of the writes to the two halves.
+Oops, I missed that patch, sorry.
 
-This extends the ordering that we already do on SMP to the UP case as
-well.  The reason is that with the perf_counter subsystem potentially
-accessing user memory at interrupt time to get stack traces, we have
-to be careful not to create an incorrect but apparently valid PTE even
-on UP.
+On Mon, Aug 17, 2009 at 03:18:37PM -0600, Grant Likely wrote:
+> On Wed, Aug 12, 2009 at 11:49 PM, Heiko Schocher<hs@denx.de> wrote:
+> > Hello Anton,
+> >
+> > i am trying to use the arch/powerpc/sysdev/simple_gpio.c driver,
+> > for accessing some gpios, and found, that u8_gpio_get()
+> > returns not only a 1 or a 0, instead it returns the real bit
+> > position from the gpio:
+> >
+> > gpio    return
+> > base    value
+> > 0       0/0x01
+> > 1       0/0x02
+> > 2       0/0x04
+> > 3       0/0x08
+> > 4       0/0x10
+> > 5       0/0x20
+> > 6       0/0x40
+> > 7       0/0x80
+> >
+> > I also use the arch/powerpc/platforms/52xx/mpc52xx_gpio.c and
+> > mpc52xx_gpt.c drivers, they all return for a gpio just a 1 or 0,
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/include/asm/pgtable.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+There is also arch/powerpc/sysdev/qe_lib/gpio.c and
+arch/powerpc/sysdev/mpc8xxx_gpio.c that don't do that.
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index eb17da7..2a5da06 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -104,8 +104,8 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
- 	else
- 		pte_update(ptep, ~_PAGE_HASHPTE, pte_val(pte));
- 
--#elif defined(CONFIG_PPC32) && defined(CONFIG_PTE_64BIT) && defined(CONFIG_SMP)
--	/* Second case is 32-bit with 64-bit PTE in SMP mode. In this case, we
-+#elif defined(CONFIG_PPC32) && defined(CONFIG_PTE_64BIT)
-+	/* Second case is 32-bit with 64-bit PTE.  In this case, we
- 	 * can just store as long as we do the two halves in the right order
- 	 * with a barrier in between. This is possible because we take care,
- 	 * in the hash code, to pre-invalidate if the PTE was already hashed,
-@@ -140,7 +140,7 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
- 
- #else
- 	/* Anything else just stores the PTE normally. That covers all 64-bit
--	 * cases, and 32-bit non-hash with 64-bit PTEs in UP mode
-+	 * cases, and 32-bit non-hash with 32-bit PTEs.
- 	 */
- 	*ptep = pte;
- #endif
+> > which seems correct to me, because a gpio can have only 1 or 0
+> > as state ... what do you think?
+> 
+> I think returning '1' is perhaps slightly 'better' (however you define
+> that), but I don't think the caller should make any assumptions beyond
+> zero/non-zero.
+
+Yep. So I don't think that the patch is needed.
+
+Thanks,
+
 -- 
-1.6.0.4
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
