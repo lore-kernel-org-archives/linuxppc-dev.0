@@ -1,29 +1,49 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <dipankar@in.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05F0CB7067
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9AD60B7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 17 Aug 2009 23:53:43 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 76766DDD0B
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Aug 2009 23:53:41 +1000 (EST)
-Date: Mon, 17 Aug 2009 17:53:37 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [PATCH 4/8] powerpc/qe&cpm: Implement static inline stubs for
-	non-QE/CPM builds
-Message-ID: <20090817135337.GA6251@oksana.dev.rtsoft.ru>
-References: <20090814222453.GA9568@oksana.dev.rtsoft.ru>
-	<20090814222549.GD14458@oksana.dev.rtsoft.ru>
+	Tue, 18 Aug 2009 00:41:18 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp02.au.ibm.com (8.14.3/8.13.1) with ESMTP id n7HEd7Ic031306
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2009 00:39:07 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7HEfCSQ495702
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2009 00:41:12 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n7HEfB23002523
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2009 00:41:12 +1000
+Date: Mon, 17 Aug 2009 20:10:58 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+Message-ID: <20090817144058.GA5126@in.ibm.com>
+References: <20090812195753.GA14649@in.ibm.com>
+	<alpine.LFD.2.00.0908122036580.22946@localhost.localdomain>
+	<20090813045931.GB14649@in.ibm.com>
+	<20090814113021.GL32418@elf.ucw.cz>
+	<20090816182629.GA31027@in.ibm.com>
+	<20090816194441.GA22626@balbir.in.ibm.com>
+	<1250459602.8648.35.camel@laptop>
+	<20090817062418.GB31027@in.ibm.com>
+	<1250493357.5241.1656.camel@twins>
+	<20090817075815.GB11049@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090814222549.GD14458@oksana.dev.rtsoft.ru>
-Cc: spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090817075815.GB11049@in.ibm.com>
+Cc: "Brown, Len" <len.brown@intel.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	"Darrick J. Wong" <djwong@us.ibm.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, "Li,
+	Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+	balbir@linux.vnet.ibm.com,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Len Brown <lenb@kernel.org>
+Reply-To: dipankar@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,32 +53,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Aug 15, 2009 at 02:25:49AM +0400, Anton Vorontsov wrote:
-[....]
-> +#ifdef CONFIG_CPM
->  int cpm_command(u32 command, u8 opcode);
-> +#else
-> +static inline int cpm_command(u32 command, u8 opcode)
-> +{
-> +	return -ENOSYS;
-> +}
-> +#endif /* CONFIG_CPM */
+On Mon, Aug 17, 2009 at 01:28:15PM +0530, Dipankar Sarma wrote:
+> On Mon, Aug 17, 2009 at 09:15:57AM +0200, Peter Zijlstra wrote:
+> > On Mon, 2009-08-17 at 11:54 +0530, Dipankar Sarma wrote:
+> > > For most parts, we do. The guest kernel doesn't manage the offline
+> > > CPU state. That is typically done by the hypervisor. However, offline
+> > > operation as defined now always result in a VM resize in some hypervisor
+> > > systems (like pseries) - it would be convenient to have a non-resize
+> > > offline operation which lets the guest cede the cpu to hypervisor
+> > > with the hint that the VM shouldn't be resized and the guest needs the guarantee
+> > > to get the cpu back any time. The hypervisor can do whatever it wants
+> > > with the ceded CPU including putting it in a low power state, but
+> > > not change the physical cpu shares of the VM. The pseries hypervisor,
+> > > for example, clearly distinguishes between the two - "rtas-stop-self" call
+> > > to resize VM vs. H_CEDE hypercall with a hint. What I am suggesting
+> > > is that we allow this with an extension to existing interfaces because it 
+> > > makes sense to allow sort of "hibernation" of the cpus without changing any
+> > > configuration of the VMs.
+> > 
+> > >From my POV the thing you call cede is the only sane thing to do for a
+> > guest. Let the hypervisor management interface deal with resizing guests
+> > if and when that's needed.
+> 
+> That is more or less how it currently works - atleast for pseries hypervisor. 
+> The current "offline" operation with "rtas-stop-self" call I mentioned
+> earlier is initiated by the hypervisor management interfaces/tool in
+> pseries system. This wakes up a guest system tool that echoes "1"
+> to the offline file resulting in the configuration change.
 
-It appers that fsl_qe_udc.h defines its own inlined version, and so
-fsl_qe_udc.c's build breaks:
+Should have said - echoes "0" to the online file. 
 
-In file included from drivers/usb/gadget/fsl_qe_udc.c:44:
-fsl_qe_udc.h:432: error: redefinition of ‘qe_issue_cmd’
-arch/powerpc/include/asm/qe.h:153: error: previous definition of ‘qe_issue_cmd’ was here
+You don't necessarily need this in the guest Linux as long as there is
+a way for hypervisor tools to internally move Linux tasks/interrupts
+from a vcpu - async event handled by the kernel, for example.
+But I think it is too late for that - the interface has long been
+exported.
 
-I didn't notice that earlier because USB_GADGET_FSL_QE isn't enabled
-in any defconfig.
 
-I'll send v2 soon.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> The OS involvement is necessary to evacuate tasks/interrupts
+> from the released CPU. We don't really want to initiate this from guests.
+> 
+> > Thing is, you don't want a guest to be able to influence the amount of
+> > cpu shares attributed to it. You want that in explicit control of
+> > whomever manages the hypervisor.
+> 
+> Agreed. But given a fixed cpu share by the hypervisor management tools,
+> we would like to be able to cede cpus to hypervisor leaving the hypervisor
+> configuration intact. This, we don't have at the moment and want to just
+> extend the current interface for this.
+> 
+> Thanks
+> Dipankar
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
