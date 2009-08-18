@@ -1,32 +1,29 @@
-Return-Path: <timur@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 32F49B7BB8
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3DA0CB7C7D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 08:33:10 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+	Wed, 19 Aug 2009 08:33:42 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BA5DBDDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 08:33:08 +1000 (EST)
-Message-ID: <4A8B2C1C.3060403@freescale.com>
-Date: Tue, 18 Aug 2009 17:33:00 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2] qe_lib: Set gpio data before changing the direction
-	to output
-References: <4A8B164E.6030704@ruggedcom.com>
-	<20090818210805.GA1725@oksana.dev.rtsoft.ru>
-	<4A8B1B2C.5090606@ruggedcom.com>
-	<20090818213355.GA20966@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090818213355.GA20966@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Michael Barkowski <michaelbarkowski@ruggedcom.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9776FDDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 08:33:41 +1000 (EST)
+Subject: Re: [PATCH/RFC] powerpc/mm: Cleanup handling of execute permission
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20090818205621.GB2530@zod.rchland.ibm.com>
+References: <1248766373.30993.50.camel@pasglop>
+	<FBB5798A-EE85-4B18-8883-F6182B203996@kernel.crashing.org>
+	<20090818205621.GB2530@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Wed, 19 Aug 2009 08:33:20 +1000
+Message-Id: <1250634800.4810.1.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,17 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> On Tue, Aug 18, 2009 at 05:20:44PM -0400, Michael Barkowski wrote:
->> This avoids having a short glitch if the desired initial value is not
->> the same as what was previously in the data register.
->>
->> Signed-off-by: Michael Barkowski <michaelbarkowski@ruggedcom.com>
+On Tue, 2009-08-18 at 16:56 -0400, Josh Boyer wrote:
+> On Fri, Aug 14, 2009 at 05:39:42PM -0500, Becky Bruce wrote:
+> > Ben,
+> >
+> > This breaks the boot on 8572.  I don't know why yet (and I'm probably  
+> > not going to figure it out before I go home, because, frankly, it's late 
+> > on a Friday afternoon and I need a glass of wine or, perhaps, a beer).
+> >
+> > Kumar and I will poke into this more and let you know what we find out - 
+> > in the meantime, if you have any brilliant flashes, pony up!
 > 
-> Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> I tested this on a 440EPx NFS rootfs boot too.  It doesn't cause init itself
+> to crap out with a SIGILL like Becky's board, but it does do weird things
+> and cause a SIGILL elsewhere during my boot.
+> 
+> Reverting this patch from your testing branch allows things to work just fine.
 
-I don't have the time to test this patch, so I abstain from acking. :-)  If Anton likes it, that's good enough for me.
+Becky found my thinko, I'll send a new patch later today.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Cheers,
+Ben.
