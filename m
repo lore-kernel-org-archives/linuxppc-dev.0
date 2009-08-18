@@ -1,25 +1,19 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 477F3B7D96
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 7EAC2B7B69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 18 Aug 2009 13:20:33 +1000 (EST)
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail7.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C2A13DDDA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 13:20:32 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] powerpc/405ex: provide necessary fixup function to
-	support cuImage
-Date: Tue, 18 Aug 2009 10:28:03 +0800
-Message-Id: <1250562484-16415-2-git-send-email-tiejun.chen@windriver.com>
+	Tue, 18 Aug 2009 13:30:14 +1000 (EST)
+Date: Tue, 18 Aug 2009 13:30:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tiejun Chen <tiejun.chen@windriver.com>
+Subject: Mailing lists (Was: Re: powerpc/405ex: Support cuImage for PPC405EX)
+Message-Id: <20090818133005.0b021424.sfr@canb.auug.org.au>
 In-Reply-To: <1250562484-16415-1-git-send-email-tiejun.chen@windriver.com>
 References: <1250562484-16415-1-git-send-email-tiejun.chen@windriver.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__18_Aug_2009_13_30_05_+1000_CS9pYb/j2OYVcI8G"
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,209 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For cuImage format it's necessary to provide clock fixups since u-boot will
-not pass necessary clock frequency into the dtb included into cuImage so we 
-implement the clock fixups as defined in the technical documentation for the 
-board and update header file with the basic register definitions. 
+--Signature=_Tue__18_Aug_2009_13_30_05_+1000_CS9pYb/j2OYVcI8G
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- arch/powerpc/boot/4xx.c |  142 +++++++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/4xx.h |    1 +
- arch/powerpc/boot/dcr.h |   12 ++++
- 3 files changed, 155 insertions(+), 0 deletions(-)
+Please do *not* send mail to both linuxppc-dev@ozlabs.org and
+linuxppc-dev@lists.ozlabs.org.   We all end up with two copies :-(
 
-diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-index 325b310..b5561b3 100644
---- a/arch/powerpc/boot/4xx.c
-+++ b/arch/powerpc/boot/4xx.c
-@@ -8,6 +8,10 @@
-  *   Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-  *   Copyright (c) 2003, 2004 Zultys Technologies
-  *
-+ * Copyright (C) 2009 Wind River Systems, Inc.
-+ *   Updated for supporting PPC405EX on Kilauea.
-+ *   Tiejun Chen <tiejun.chen@windriver.com>
-+ *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-  * as published by the Free Software Foundation; either version
-@@ -659,3 +663,141 @@ void ibm405ep_fixup_clocks(unsigned int sys_clk)
- 	dt_fixup_clock("/plb/opb/serial@ef600300", uart0);
- 	dt_fixup_clock("/plb/opb/serial@ef600400", uart1);
- }
-+
-+static u8 fwdv_multi_bits[] = {
-+	/* values for:  1 - 16 */
-+	0x01, 0x02, 0x0e, 0x09, 0x04, 0x0b, 0x10, 0x0d, 0x0c, 0x05,
-+	0x06, 0x0f, 0x0a, 0x07, 0x08, 0x03
-+};
-+
-+u32 get_fwdva(unsigned long cpr_fwdv)
-+{
-+	u32 index;
-+
-+	for (index = 0; index < ARRAY_SIZE(fwdv_multi_bits); index++)
-+		if (cpr_fwdv == (u32)fwdv_multi_bits[index])
-+			return index + 1;
-+
-+	return 0;
-+}
-+
-+static u8 fbdv_multi_bits[] = {
-+	/* values for:  1 - 100 */
-+	0x00, 0xff, 0x7e, 0xfd, 0x7a, 0xf5, 0x6a, 0xd5, 0x2a, 0xd4,
-+	0x29, 0xd3, 0x26, 0xcc, 0x19, 0xb3, 0x67, 0xce, 0x1d, 0xbb,
-+	0x77, 0xee, 0x5d, 0xba, 0x74, 0xe9, 0x52, 0xa5, 0x4b, 0x96,
-+	0x2c, 0xd8, 0x31, 0xe3, 0x46, 0x8d, 0x1b, 0xb7, 0x6f, 0xde,
-+	0x3d, 0xfb, 0x76, 0xed, 0x5a, 0xb5, 0x6b, 0xd6, 0x2d, 0xdb,
-+	0x36, 0xec, 0x59, 0xb2, 0x64, 0xc9, 0x12, 0xa4, 0x48, 0x91,
-+	0x23, 0xc7, 0x0e, 0x9c, 0x38, 0xf0, 0x61, 0xc2, 0x05, 0x8b,
-+	0x17, 0xaf, 0x5f, 0xbe, 0x7c, 0xf9, 0x72, 0xe5, 0x4a, 0x95,
-+	0x2b, 0xd7, 0x2e, 0xdc, 0x39, 0xf3, 0x66, 0xcd, 0x1a, 0xb4,
-+	0x68, 0xd1, 0x22, 0xc4, 0x09, 0x93, 0x27, 0xcf, 0x1e, 0xbc,
-+	/* values for:  101 - 200 */
-+	0x78, 0xf1, 0x62, 0xc5, 0x0a, 0x94, 0x28, 0xd0, 0x21, 0xc3,
-+	0x06, 0x8c, 0x18, 0xb0, 0x60, 0xc1, 0x02, 0x84, 0x08, 0x90,
-+	0x20, 0xc0, 0x01, 0x83, 0x07, 0x8f, 0x1f, 0xbf, 0x7f, 0xfe,
-+	0x7d, 0xfa, 0x75, 0xea, 0x55, 0xaa, 0x54, 0xa9, 0x53, 0xa6,
-+	0x4c, 0x99, 0x33, 0xe7, 0x4e, 0x9d, 0x3b, 0xf7, 0x6e, 0xdd,
-+	0x3a, 0xf4, 0x69, 0xd2, 0x25, 0xcb, 0x16, 0xac, 0x58, 0xb1,
-+	0x63, 0xc6, 0x0d, 0x9b, 0x37, 0xef, 0x5e, 0xbd, 0x7b, 0xf6,
-+	0x6d, 0xda, 0x35, 0xeb, 0x56, 0xad, 0x5b, 0xb6, 0x6c, 0xd9,
-+	0x32, 0xe4, 0x49, 0x92, 0x24, 0xc8, 0x11, 0xa3, 0x47, 0x8e,
-+	0x1c, 0xb8, 0x70, 0xe1, 0x42, 0x85, 0x0b, 0x97, 0x2f, 0xdf,
-+	/* values for:  201 - 255 */
-+	0x3e, 0xfc, 0x79, 0xf2, 0x65, 0xca, 0x15, 0xab, 0x57, 0xae,
-+	0x5c, 0xb9, 0x73, 0xe6, 0x4d, 0x9a, 0x34, 0xe8, 0x51, 0xa2,
-+	0x44, 0x89, 0x13, 0xa7, 0x4f, 0x9e, 0x3c, 0xf8, 0x71, 0xe2,
-+	0x45, 0x8a, 0x14, 0xa8, 0x50, 0xa1, 0x43, 0x86, 0x0c, 0x98,
-+	0x30, 0xe0, 0x41, 0x82, 0x04, 0x88, 0x10, 0xa0, 0x40, 0x81,
-+	0x03, 0x87, 0x0f, 0x9f, 0x3f  /* END */
-+};
-+
-+u32 get_fbdv(unsigned long cpr_fbdv)
-+{
-+	u32 index;
-+
-+	for (index = 0; index < ARRAY_SIZE(fbdv_multi_bits); index++)
-+		if (cpr_fbdv == (u32)fbdv_multi_bits[index])
-+			return index + 1;
-+
-+	return 0;
-+}
-+
-+void ibm405ex_fixup_clocks(unsigned int sys_clk, unsigned int uart_clk)
-+{
-+	/* PLL config */
-+	u32 pllc  = CPR0_READ(CPR0_PLLC);
-+	u32 plld  = CPR0_READ(CPR0_PLLD);
-+	u32 cpud  = CPR0_READ(CPR0_CPUD);
-+	u32 plbd  = CPR0_READ(CPR0_PLBD);
-+	u32 opbd  = CPR0_READ(CPR0_OPBD);
-+	u32 perd  = CPR0_READ(CPR0_PERD);
-+
-+	/* Dividers */
-+	u32 fbdv   = get_fbdv(__fix_zero((plld >> 24) & 0xff, 1));
-+
-+	u32 fwdva  = get_fwdva(__fix_zero((plld >> 16) & 0x0f, 1));
-+
-+	u32 cpudv0 = __fix_zero((cpud >> 24) & 7, 8);
-+	
-+	/* PLBDV0 is hardwared to 010. */
-+	u32 plbdv0 = 2;
-+	u32 plb2xdv0 = __fix_zero((plbd >> 16) & 7, 8);
-+
-+	u32 opbdv0 = __fix_zero((opbd >> 24) & 3, 4);
-+
-+	u32 perdv0 = __fix_zero((perd >> 24) & 3, 4);
-+
-+	/* Resulting clocks */
-+	u32 cpu, plb, opb, ebc, vco, tb, uart0, uart1; 
-+
-+	/* PLL's VCO is the source for primary forward ? */
-+	if (pllc & 0x40000000) {
-+		u32 m;
-+
-+		/* Feedback path */
-+		switch ((pllc >> 24) & 7) {
-+		case 0:
-+			/* PLLOUTx */
-+			m = fbdv;
-+			break;
-+		case 1:
-+			/* CPU */
-+			m = fbdv * fwdva * cpudv0;
-+			break;
-+		case 5:
-+			/* PERClk */
-+			m = fbdv * fwdva * plb2xdv0 * plbdv0 * opbdv0 * perdv0;
-+			break;
-+		default:
-+			printf("WARNING ! Invalid PLL feedback source !\n");
-+			goto bypass;
-+		}
-+
-+		vco = (unsigned int)(sys_clk * m);
-+	} else {
-+bypass:
-+		/* Bypass system PLL */
-+		vco = 0;
-+	}
-+
-+	/* CPU = VCO / ( FWDVA x CPUDV0) */	
-+	cpu = vco / (fwdva * cpudv0);
-+	/* PLB = VCO / ( FWDVA x PLB2XDV0 x PLBDV0) */	
-+	plb = vco / (fwdva * plb2xdv0 * plbdv0);
-+	/* OPB = PLB / OPBDV0 */	
-+	opb = plb / opbdv0;
-+	/* EBC = OPB / PERDV0 */	
-+	ebc = opb / perdv0;
-+	
-+	tb = cpu;
-+	uart0 = uart1 = uart_clk;
-+
-+	dt_fixup_cpu_clocks(cpu, tb, 0);
-+	dt_fixup_clock("/plb", plb);
-+	dt_fixup_clock("/plb/opb", opb);
-+	dt_fixup_clock("/plb/opb/ebc", ebc);
-+	dt_fixup_clock("/plb/opb/serial@ef600200", uart0);
-+	dt_fixup_clock("/plb/opb/serial@ef600300", uart1);
-+}
-diff --git a/arch/powerpc/boot/4xx.h b/arch/powerpc/boot/4xx.h
-index 2606e64..7dc5d45 100644
---- a/arch/powerpc/boot/4xx.h
-+++ b/arch/powerpc/boot/4xx.h
-@@ -21,6 +21,7 @@ void ibm4xx_fixup_ebc_ranges(const char *ebc);
- 
- void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk);
- void ibm405ep_fixup_clocks(unsigned int sys_clk);
-+void ibm405ex_fixup_clocks(unsigned int sys_clk, unsigned int uart_clk);
- void ibm440gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk);
- void ibm440ep_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk,
- 			   unsigned int tmr_clk);
-diff --git a/arch/powerpc/boot/dcr.h b/arch/powerpc/boot/dcr.h
-index 95b9f53..ba41624 100644
---- a/arch/powerpc/boot/dcr.h
-+++ b/arch/powerpc/boot/dcr.h
-@@ -153,6 +153,18 @@ static const unsigned long sdram_bxcr[] = { SDRAM0_B0CR, SDRAM0_B1CR,
- #define DCRN_CPC0_PLLMR1  0xf4
- #define DCRN_CPC0_UCR     0xf5
- 
-+/* 405EX Clocking Control regs */
-+#define CPR0_CLKUPD     0x0020
-+#define CPR0_PLLC       0x0040
-+#define CPR0_PLLD       0x0060
-+#define CPR0_CPUD       0x0080
-+#define CPR0_PLBD       0x00a0
-+#define CPR0_OPBD       0x00c0
-+#define CPR0_PERD       0x00e0
-+#define CPR0_AHBD       0x0100
-+#define CPR0_ICFG       0x0140
-+
-+
- /* 440GX Clock control etc */
- 
- 
--- 
-1.5.6
+They are the same list.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__18_Aug_2009_13_30_05_+1000_CS9pYb/j2OYVcI8G
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqKID0ACgkQjjKRsyhoI8yy9gCgmzQJGV+yycyJX8gGPjaQNGdm
+/awAniFb+6AnJO7hk+hHZgZdSD5E6d3p
+=MeJm
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__18_Aug_2009_13_30_05_+1000_CS9pYb/j2OYVcI8G--
