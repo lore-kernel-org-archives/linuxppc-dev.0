@@ -1,26 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0BCABB7099
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id F0C8FB6F1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 18 Aug 2009 09:38:37 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 91FE0DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 09:38:36 +1000 (EST)
-Date: Tue, 18 Aug 2009 03:38:33 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: simple gpio driver
-Message-ID: <20090817233833.GA3685@oksana.dev.rtsoft.ru>
-References: <4A83A976.60608@denx.de>
-	<fa686aa40908171418k57ce5ff6iac44a72171bcf14a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <fa686aa40908171418k57ce5ff6iac44a72171bcf14a@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, hs@denx.de
-Reply-To: avorontsov@ru.mvista.com
+	Tue, 18 Aug 2009 10:00:28 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5D078DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 10:00:27 +1000 (EST)
+Message-Id: <6FE668DD-C870-4FBB-A6AE-03CC0882E8EC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <19081.57584.173693.798535@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH 1/3 v3] powerpc/32: Always order writes to halves of
+	64-bit PTEs
+Date: Mon, 17 Aug 2009 19:00:22 -0500
+References: <19081.57584.173693.798535@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,46 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Oops, I missed that patch, sorry.
 
-On Mon, Aug 17, 2009 at 03:18:37PM -0600, Grant Likely wrote:
-> On Wed, Aug 12, 2009 at 11:49 PM, Heiko Schocher<hs@denx.de> wrote:
-> > Hello Anton,
-> >
-> > i am trying to use the arch/powerpc/sysdev/simple_gpio.c driver,
-> > for accessing some gpios, and found, that u8_gpio_get()
-> > returns not only a 1 or a 0, instead it returns the real bit
-> > position from the gpio:
-> >
-> > gpio    return
-> > base    value
-> > 0       0/0x01
-> > 1       0/0x02
-> > 2       0/0x04
-> > 3       0/0x08
-> > 4       0/0x10
-> > 5       0/0x20
-> > 6       0/0x40
-> > 7       0/0x80
-> >
-> > I also use the arch/powerpc/platforms/52xx/mpc52xx_gpio.c and
-> > mpc52xx_gpt.c drivers, they all return for a gpio just a 1 or 0,
+On Aug 17, 2009, at 6:00 PM, Paul Mackerras wrote:
 
-There is also arch/powerpc/sysdev/qe_lib/gpio.c and
-arch/powerpc/sysdev/mpc8xxx_gpio.c that don't do that.
+> On 32-bit systems with 64-bit PTEs, the PTEs have to be written in two
+> 32-bit halves.  On SMP we write the higher-order half and then the
+> lower-order half, with a write barrier between the two halves, but on
+> UP there was no particular ordering of the writes to the two halves.
+>
+> This extends the ordering that we already do on SMP to the UP case as
+> well.  The reason is that with the perf_counter subsystem potentially
+> accessing user memory at interrupt time to get stack traces, we have
+> to be careful not to create an incorrect but apparently valid PTE even
+> on UP.
+>
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+> arch/powerpc/include/asm/pgtable.h |    6 +++---
+> 1 files changed, 3 insertions(+), 3 deletions(-)
 
-> > which seems correct to me, because a gpio can have only 1 or 0
-> > as state ... what do you think?
-> 
-> I think returning '1' is perhaps slightly 'better' (however you define
-> that), but I don't think the caller should make any assumptions beyond
-> zero/non-zero.
+Just out of interest did you end up hitting this in testing?
 
-Yep. So I don't think that the patch is needed.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
