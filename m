@@ -1,23 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C5AF7B7087
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D3711B7D00
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 08:43:01 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10DF9DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 08:43:00 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH] spinlock: __raw_spin_is_locked() should return true for UP
-Date: Tue, 18 Aug 2009 17:42:23 -0500
-Message-Id: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-	linuxppc-dev@ozlabs.org, mingo@elte.hu, tglx@linutronix.de
+	Wed, 19 Aug 2009 08:56:09 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 69BD9DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 08:56:09 +1000 (EST)
+Date: Wed, 19 Aug 2009 02:56:07 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v2] qe_lib: Set gpio data before changing the direction
+	to output
+Message-ID: <20090818225607.GA29960@oksana.dev.rtsoft.ru>
+References: <4A8B164E.6030704@ruggedcom.com>
+	<20090818210805.GA1725@oksana.dev.rtsoft.ru>
+	<4A8B1B2C.5090606@ruggedcom.com>
+	<20090818213355.GA20966@oksana.dev.rtsoft.ru>
+	<4A8B2C1C.3060403@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4A8B2C1C.3060403@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Michael Barkowski <michaelbarkowski@ruggedcom.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For some reason __raw_spin_is_locked() has been returning false for the
-uni-processor, non-CONFIG_DEBUG_SPINLOCK.  The UP + CONFIG_DEBUG_SPINLOCK
-handles this correctly.
+On Tue, Aug 18, 2009 at 05:33:00PM -0500, Timur Tabi wrote:
+> Anton Vorontsov wrote:
+> > On Tue, Aug 18, 2009 at 05:20:44PM -0400, Michael Barkowski wrote:
+> >> This avoids having a short glitch if the desired initial value is not
+> >> the same as what was previously in the data register.
+> >>
+> >> Signed-off-by: Michael Barkowski <michaelbarkowski@ruggedcom.com>
+> > 
+> > Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> 
+> I don't have the time to test this patch, so I abstain from acking. :-)
+> If Anton likes it, that's good enough for me.
 
-Found this by enabling CONFIG_DEBUG_VM on PPC and hitting always hitting
-a BUG_ON that was testing to make sure the pte_lock was held.
+You made me doubt for a moment. :-) Thanks for the suspiciousness.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+What happens if a pin was previously configured as input? Does our
+write to the data register survive? For MPC8xxx GPIO controllers
+it does. And randomly taken QE spec says:
 
-Linus, a fix for 2.6.31
+  A write to CPDAT is latched, and if the corresponding CPDIR
+  bits have configured the port pin as an output, the latched
+  value is driven onto the respective pin. However, if the
+  corresponding CPDIR bits have configured the port pin as an
+  input, the latched value is prevented from reaching the pin.
 
- include/linux/spinlock_up.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I guess we're safe, but Michael, could you actually test it
+(if not already)?
 
-diff --git a/include/linux/spinlock_up.h b/include/linux/spinlock_up.h
-index d4841ed..2b372e0 100644
---- a/include/linux/spinlock_up.h
-+++ b/include/linux/spinlock_up.h
-@@ -57,7 +57,7 @@ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
- #define __raw_write_unlock(lock)	do { (void)(lock); } while (0)
- 
- #else /* DEBUG_SPINLOCK */
--#define __raw_spin_is_locked(lock)	((void)(lock), 0)
-+#define __raw_spin_is_locked(lock)	((void)(lock), 1)
- /* for sched.c and kernel_lock.c: */
- # define __raw_spin_lock(lock)		do { (void)(lock); } while (0)
- # define __raw_spin_lock_flags(lock, flags)	do { (void)(lock); } while (0)
+Thanks!
+
 -- 
-1.6.0.6
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
