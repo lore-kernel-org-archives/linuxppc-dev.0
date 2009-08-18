@@ -1,29 +1,29 @@
-Return-Path: <tglx@linutronix.de>
+Return-Path: <gregkh@suse.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9B51BB7B5F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id AD241B7BA0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 08:24:35 +1000 (EST)
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C3239DDD1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 08:24:33 +1000 (EST)
-Date: Wed, 19 Aug 2009 00:24:02 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: spin_is_locked() broken for uniprocessor?
-In-Reply-To: <DE9C9034-D2CE-4D21-93D9-A10FE2580920@kernel.crashing.org>
-Message-ID: <alpine.LFD.2.00.0908190022570.3361@localhost.localdomain>
-References: <DE9C9034-D2CE-4D21-93D9-A10FE2580920@kernel.crashing.org>
+	Wed, 19 Aug 2009 08:32:41 +1000 (EST)
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 34FD3DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 08:32:40 +1000 (EST)
+Date: Tue, 18 Aug 2009 15:27:47 -0700
+From: Greg KH <gregkh@suse.de>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 4/8] powerpc/qe&cpm: Implement static inline stubs for
+	non-QE/CPM builds
+Message-ID: <20090818222747.GB4354@suse.de>
+References: <20090818220304.GA23640@oksana.dev.rtsoft.ru>
+	<20090818220418.GD25090@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	Linux-Kernel List <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090818220418.GD25090@oksana.dev.rtsoft.ru>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	spi-devel-general@lists.sourceforge.net,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 18 Aug 2009, Kumar Gala wrote:
-> I just want to validate that what I'm seeing (for UP, non-debug features):
+On Wed, Aug 19, 2009 at 02:04:18AM +0400, Anton Vorontsov wrote:
+> This is needed to avoid ugly #ifdefs in drivers. Also update fsl_qe_udc
+> driver so that now it doesn't define its own versions that cause build
+> breakage when the generic stubs are used.
 > 
-> spin_is_locked() is defined as:
-> 
-> include/linux/spinlock.h:#define spin_is_locked(lock)
-> __raw_spin_is_locked(&(lock)->raw_lock)
-> 
-> for UP that should get us:
-> 
-> include/linux/spinlock_up.h:#define __raw_spin_is_locked(lock)  ((void)(lock),
-> 0)
-> 
-> which implies to me that spin_is_locked() will always return false.  Is this
-> expected behavior.
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-That's wrong. spin_is_locked should always return true on UP.
+As you're just deleting code, I'll ack that :)
 
-Thanks,
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-	tglx
+Hopefully you have tested building this thing...
+
+thanks,
+
+greg k-h
