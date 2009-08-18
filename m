@@ -1,25 +1,28 @@
-Return-Path: <michaelbarkowski@ruggedcom.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 203FAB707B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 03D48B707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 07:23:35 +1000 (EST)
-Received: from mail.ruggedcom.com (mail.ruggedcom.com [204.50.190.93])
-	by ozlabs.org (Postfix) with ESMTP id 92E71DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 07:23:34 +1000 (EST)
-Message-ID: <4A8B1BD4.3000908@ruggedcom.com>
-Date: Tue, 18 Aug 2009 17:23:32 -0400
-From: Michael Barkowski <michaelbarkowski@ruggedcom.com>
+	Wed, 19 Aug 2009 07:33:59 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 90B04DDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 07:33:57 +1000 (EST)
+Date: Wed, 19 Aug 2009 01:33:55 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Michael Barkowski <michaelbarkowski@ruggedcom.com>
+Subject: Re: [PATCH v2] qe_lib: Set gpio data before changing the direction
+	to output
+Message-ID: <20090818213355.GA20966@oksana.dev.rtsoft.ru>
+References: <4A8B164E.6030704@ruggedcom.com>
+	<20090818210805.GA1725@oksana.dev.rtsoft.ru>
+	<4A8B1B2C.5090606@ruggedcom.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] qe_lib: Set gpio data before changing the direction to
-	output
-References: <4A8B164E.6030704@ruggedcom.com> <4A8B183D.2030202@freescale.com>
-In-Reply-To: <4A8B183D.2030202@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4A8B1B2C.5090606@ruggedcom.com>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +32,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Michael Barkowski wrote:
+On Tue, Aug 18, 2009 at 05:20:44PM -0400, Michael Barkowski wrote:
+> This avoids having a short glitch if the desired initial value is not
+> the same as what was previously in the data register.
 > 
->> diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
->> index 3485288..e7bf136 100644
->> --- a/arch/powerpc/sysdev/qe_lib/gpio.c
->> +++ b/arch/powerpc/sysdev/qe_lib/gpio.c
->> @@ -107,12 +107,11 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
->>  
->>  	spin_lock_irqsave(&qe_gc->lock, flags);
->>  
->> +	qe_gpio_set(gc, gpio, val);
-> 
-> qe_gpio_set already calls spin_lock_irqsave(), so you'll have nested spinlocks, which will lock up on SMP.
-> 
-> Let me guess, you didn't test this on a dual-core system?
+> Signed-off-by: Michael Barkowski <michaelbarkowski@ruggedcom.com>
 
-That is correct.  See v2 and please test, YMMV, etc
+Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+
+Thanks!
+
+> ---
+> Anton Vorontsov wrote:
+> > There is a recursive locking bug: _set() takes the same spinlock.
+> > So you'd better move this call two lines upper. Otherwise the
+> > patch looks OK.
+> > 
+> > Thanks!
+> 
+> Thanks - here is v2.
+> 
+>  arch/powerpc/sysdev/qe_lib/gpio.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
+> index 3485288..8e7a776 100644
+> --- a/arch/powerpc/sysdev/qe_lib/gpio.c
+> +++ b/arch/powerpc/sysdev/qe_lib/gpio.c
+> @@ -105,14 +105,14 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+>  	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
+>  	unsigned long flags;
+>  
+> +	qe_gpio_set(gc, gpio, val);
+> +
+>  	spin_lock_irqsave(&qe_gc->lock, flags);
+>  
+>  	__par_io_config_pin(mm_gc->regs, gpio, QE_PIO_DIR_OUT, 0, 0, 0);
+>  
+>  	spin_unlock_irqrestore(&qe_gc->lock, flags);
+>  
+> -	qe_gpio_set(gc, gpio, val);
+> -
+>  	return 0;
+>  }
+>  
+> -- 
+> 1.6.3.3
+> 
 
 -- 
-Michael Barkowski
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
