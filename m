@@ -3,18 +3,17 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5D10DB7FDB
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8B027B7DE8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 09:28:19 +1000 (EST)
+	Wed, 19 Aug 2009 09:28:23 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 90EE5DDDA2
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 09:28:18 +1000 (EST)
-Date: Wed, 19 Aug 2009 03:28:17 +0400
+	by ozlabs.org (Postfix) with ESMTP id BCB4ADDD1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 09:28:22 +1000 (EST)
+Date: Wed, 19 Aug 2009 03:28:21 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 2/3] powerpc/82xx: Add CPM USB Gadget support for
-	MPC8272ADS boards
-Message-ID: <20090818232817.GB27907@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/3] powerpc/85xx: Add QE USB support for MPC8569E-MDS boards
+Message-ID: <20090818232821.GC27907@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Cc: linuxppc-dev@ozlabs.org
@@ -27,83 +26,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-- Add usb node;
-- Configure pins and clocks;
-- Enable USB function in BCSR.
+- Add gpio-controller node for BCSR17, it is used to control USB
+  speed and VBUS;
+- Add timer node for QE GTM, needed for USB host;
+- Add usb node itself;
+- Add some probing code for BCSR GPIOs.
 
-The support was successfully tested using serial and ethernet gadget
-drivers.
+NOTE: QE USB doesn't work on prototype boards, but should work on
+      pilot boards if specs and schematics are correct, though we
+      don't have the pilot boards to actually test it.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/boot/dts/mpc8272ads.dts      |    8 ++++++++
- arch/powerpc/platforms/82xx/mpc8272_ads.c |   14 ++++++++++++++
- 2 files changed, 22 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/mpc8569mds.dts      |   45 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    4 ++
+ 2 files changed, 49 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-index 60f3327..e802ebd 100644
---- a/arch/powerpc/boot/dts/mpc8272ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-@@ -173,6 +173,14 @@
- 				fsl,cpm-command = <0xce00000>;
+diff --git a/arch/powerpc/boot/dts/mpc8569mds.dts b/arch/powerpc/boot/dts/mpc8569mds.dts
+index a680165..880f896 100644
+--- a/arch/powerpc/boot/dts/mpc8569mds.dts
++++ b/arch/powerpc/boot/dts/mpc8569mds.dts
+@@ -99,8 +99,18 @@
+ 		};
+ 
+ 		bcsr@1,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,mpc8569mds-bcsr";
+ 			reg = <1 0 0x8000>;
++			ranges = <0 1 0 0x8000>;
++
++			bcsr17: gpio-controller@11 {
++				#gpio-cells = <2>;
++				compatible = "fsl,mpc8569mds-bcsr-gpio";
++				reg = <0x11 0x1>;
++				gpio-controller;
++			};
+ 		};
+ 
+ 		nand@3,0 {
+@@ -315,6 +325,14 @@
+ 				gpio-controller;
  			};
  
-+			usb@11b60 {
-+				compatible = "fsl,mpc8272-cpm-usb";
-+				reg = <0x11b60 0x40 0x8b00 0x100>;
-+				interrupts = <11 8>;
-+				interrupt-parent = <&PIC>;
-+				mode = "peripheral";
++			qe_pio_f: gpio-controller@a0 {
++				#gpio-cells = <2>;
++				compatible = "fsl,mpc8569-qe-pario-bank",
++					     "fsl,mpc8323-qe-pario-bank";
++				reg = <0xa0 0x18>;
++				gpio-controller;
 +			};
 +
- 			mdio@10d40 {
- 				device_type = "mdio";
- 				compatible = "fsl,mpc8272ads-mdio-bitbang",
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index 67e2184..30394b4 100644
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -99,6 +99,15 @@ static struct cpm_pin mpc8272_ads_pins[] = {
- 	/* I2C */
- 	{3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
- 	{3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
+ 			pio1: ucc_pin@01 {
+ 				pio-map = <
+ 			/* port  pin  dir  open_drain  assignment  has_irq */
+@@ -419,6 +437,16 @@
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 
++		timer@440 {
++			compatible = "fsl,mpc8569-qe-gtm",
++				     "fsl,qe-gtm", "fsl,gtm";
++			reg = <0x440 0x40>;
++			interrupts = <12 13 14 15>;
++			interrupt-parent = <&qeic>;
++			/* Filled in by U-Boot */
++			clock-frequency = <0>;
++		};
 +
-+	/* USB */
-+	{2, 10, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{2, 11, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{2, 20, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{2, 24, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{3, 23, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 24, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 25, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
- };
+ 		spi@4c0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+@@ -446,6 +474,23 @@
+ 			mode = "cpu";
+ 		};
  
- static void __init init_ioports(void)
-@@ -112,6 +121,8 @@ static void __init init_ioports(void)
- 
- 	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_RX);
- 	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_TX);
-+	cpm2_clk_setup(CPM_CLK_SCC3, CPM_CLK8, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_SCC3, CPM_CLK8, CPM_CLK_TX);
- 	cpm2_clk_setup(CPM_CLK_SCC4, CPM_BRG4, CPM_CLK_RX);
- 	cpm2_clk_setup(CPM_CLK_SCC4, CPM_BRG4, CPM_CLK_TX);
- 	cpm2_clk_setup(CPM_CLK_FCC1, CPM_CLK11, CPM_CLK_RX);
-@@ -147,6 +158,7 @@ static void __init mpc8272_ads_setup_arch(void)
- #define BCSR1_FETH_RST		0x04000000
- #define BCSR1_RS232_EN1		0x02000000
- #define BCSR1_RS232_EN2		0x01000000
-+#define BCSR3_USB_nEN		0x80000000
- #define BCSR3_FETHIEN2		0x10000000
- #define BCSR3_FETH2_RST		0x08000000
- 
-@@ -156,6 +168,8 @@ static void __init mpc8272_ads_setup_arch(void)
- 	clrbits32(&bcsr[3], BCSR3_FETHIEN2);
- 	setbits32(&bcsr[3], BCSR3_FETH2_RST);
- 
-+	clrbits32(&bcsr[3], BCSR3_USB_nEN);
++		usb@6c0 {
++			compatible = "fsl,mpc8569-qe-usb",
++				     "fsl,mpc8323-qe-usb";
++			reg = <0x6c0 0x40 0x8b00 0x100>;
++			interrupts = <11>;
++			interrupt-parent = <&qeic>;
++			fsl,fullspeed-clock = "clk5";
++			fsl,lowspeed-clock = "brg10";
++			gpios = <&qe_pio_f 3 0   /* USBOE */
++				 &qe_pio_f 4 0   /* USBTP */
++				 &qe_pio_f 5 0   /* USBTN */
++				 &qe_pio_f 6 0   /* USBRP */
++				 &qe_pio_f 8 0   /* USBRN */
++				 &bcsr17   6 0   /* SPEED */
++				 &bcsr17   5 1>; /* POWER */
++		};
 +
- 	iounmap(bcsr);
+ 		enet0: ucc@2000 {
+ 			device_type = "network";
+ 			compatible = "ucc_geth";
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 60ed9c0..173d459 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -47,6 +47,7 @@
+ #include <asm/udbg.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
++#include <sysdev/simple_gpio.h>
+ #include <asm/qe.h>
+ #include <asm/qe_ic.h>
+ #include <asm/mpic.h>
+@@ -291,6 +292,9 @@ static struct of_device_id mpc85xx_ids[] = {
  
- 	init_ioports();
+ static int __init mpc85xx_publish_devices(void)
+ {
++	if (machine_is(mpc8569_mds))
++		simple_gpiochip_init("fsl,mpc8569mds-bcsr-gpio");
++
+ 	/* Publish the QE devices */
+ 	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
+ 
 -- 
 1.6.3.3
