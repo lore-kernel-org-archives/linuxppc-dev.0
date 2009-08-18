@@ -3,25 +3,28 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 03D48B707B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D262BB707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 07:33:59 +1000 (EST)
+	Wed, 19 Aug 2009 07:44:42 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 90B04DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 07:33:57 +1000 (EST)
-Date: Wed, 19 Aug 2009 01:33:55 +0400
+	by ozlabs.org (Postfix) with ESMTP id 69A1FDDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 07:44:42 +1000 (EST)
+Date: Wed, 19 Aug 2009 01:44:40 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Michael Barkowski <michaelbarkowski@ruggedcom.com>
-Subject: Re: [PATCH v2] qe_lib: Set gpio data before changing the direction
-	to output
-Message-ID: <20090818213355.GA20966@oksana.dev.rtsoft.ru>
-References: <4A8B164E.6030704@ruggedcom.com>
-	<20090818210805.GA1725@oksana.dev.rtsoft.ru>
-	<4A8B1B2C.5090606@ruggedcom.com>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [PATCH v2 0/6] Device table matching for SPI subsystem
+Message-ID: <20090818214440.GA21391@oksana.dev.rtsoft.ru>
+References: <20090731003957.GA23982@oksana.dev.rtsoft.ru>
+	<1249889723.19638.13.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4A8B1B2C.5090606@ruggedcom.com>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+In-Reply-To: <1249889723.19638.13.camel@localhost>
+Cc: Ben Dooks <ben@fluff.org>, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Jean Delvare <khali@linux-fr.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,53 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 18, 2009 at 05:20:44PM -0400, Michael Barkowski wrote:
-> This avoids having a short glitch if the desired initial value is not
-> the same as what was previously in the data register.
-> 
-> Signed-off-by: Michael Barkowski <michaelbarkowski@ruggedcom.com>
-
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-
-Thanks!
-
-> ---
-> Anton Vorontsov wrote:
-> > There is a recursive locking bug: _set() takes the same spinlock.
-> > So you'd better move this call two lines upper. Otherwise the
-> > patch looks OK.
+On Mon, Aug 10, 2009 at 10:35:23AM +0300, Artem Bityutskiy wrote:
+> On Fri, 2009-07-31 at 04:39 +0400, Anton Vorontsov wrote:
+> > Andrew,
 > > 
-> > Thanks!
+> > This new patch set overwrites following patches:
+> > 
+> >   hwmon-lm70-convert-to-device-table-matching.patch
+> >   hwmon-adxx-convert-to-device-table-matching.patch
+> >   spi-merge-probe-and-probe_id-callbacks.patch
+> >   spi-prefix-modalias-with-spi.patch
+> >   of-remove-stmm25p40-alias.patch
+> >   mtd-m25p80-convert-to-device-table-matching.patch
+> >   spi-add-support-for-device-table-matching.patch
 > 
-> Thanks - here is v2.
-> 
->  arch/powerpc/sysdev/qe_lib/gpio.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
-> index 3485288..8e7a776 100644
-> --- a/arch/powerpc/sysdev/qe_lib/gpio.c
-> +++ b/arch/powerpc/sysdev/qe_lib/gpio.c
-> @@ -105,14 +105,14 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
->  	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
->  	unsigned long flags;
->  
-> +	qe_gpio_set(gc, gpio, val);
-> +
->  	spin_lock_irqsave(&qe_gc->lock, flags);
->  
->  	__par_io_config_pin(mm_gc->regs, gpio, QE_PIO_DIR_OUT, 0, 0, 0);
->  
->  	spin_unlock_irqrestore(&qe_gc->lock, flags);
->  
-> -	qe_gpio_set(gc, gpio, val);
-> -
->  	return 0;
->  }
->  
-> -- 
-> 1.6.3.3
-> 
+> Are you going to send v3 and address David's comments?
+
+No v3, but I'm going to address David's comments in a follow up
+patch set where I'll change the probing code anyway.
+
+> Do you want some of these patches to go via the MTD tree or
+> they better go as a series via some other tree?
+
+Um.. The MTD patches depend on SPI subsystem changes... If
+David and Andrew are OK with SPI patches going through MTD tree,
+then I'm fine with it as well.
+
+Thanks,
 
 -- 
 Anton Vorontsov
