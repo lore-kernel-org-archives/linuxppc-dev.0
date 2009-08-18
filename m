@@ -3,29 +3,25 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 45371B7C62
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 62E35B7093
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 07:44:51 +1000 (EST)
+	Wed, 19 Aug 2009 07:46:24 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 78014DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 07:44:50 +1000 (EST)
-Date: Wed, 19 Aug 2009 01:44:49 +0400
+	by ozlabs.org (Postfix) with ESMTP id 97E13DDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 07:46:23 +1000 (EST)
+Date: Wed, 19 Aug 2009 01:46:22 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 2/6] mtd: m25p80: Convert to device table matching
-Message-ID: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
-References: <20090731003957.GA23982@oksana.dev.rtsoft.ru>
-	<20090731004100.GB8371@oksana.dev.rtsoft.ru>
-	<200908031954.50955.david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/2] mtd: m25p80: Rework probing/JEDEC code
+Message-ID: <20090818214622.GA22651@oksana.dev.rtsoft.ru>
+References: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200908031954.50955.david-b@pacbell.net>
-Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
-	lm-sensors@lm-sensors.org, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, Jean Delvare <khali@linux-fr.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Woodhouse <dwmw2@infradead.org>
-Reply-To: avorontsov@ru.mvista.com
+In-Reply-To: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Artem Bityutskiy <dedekind1@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,70 +31,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
+Previosly the driver always tried JEDEC probing, assuming that non-JEDEC
+chips will return '0'. But truly non-JEDEC chips (like CAT25) won't do
+that, their behaviour on RDID command is undefined, so the driver should
+not call jedec_probe() for these chips.
 
-Thanks for the review, and sorry for the delayed response.
+Also, be less strict on error conditions, don't fail to probe if JEDEC
+found a chip that is different from what platform code told, instead
+just print some warnings and use an information obtained via JEDEC. In
+that case we should not trust partitions any longer, but they might be
+still useful (i.e. they could protect some parts of the chip).
 
-On Mon, Aug 03, 2009 at 07:54:50PM -0700, David Brownell wrote:
-> On Thursday 30 July 2009, Anton Vorontsov wrote:
-> > This patch converts the m25p80 driver so that now it uses .id_table
-> > for device matching, making it properly detect devices on OpenFirmware
-> > platforms (prior to this patch the driver misdetected non-JEDEC chips,
-> > seeing all chips as "m25p80").
-> 
-> I suspect "detect" is a misnomer there.  It only "detects" JEDEC chips.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/mtd/devices/m25p80.c |   69 ++++++++++++++++++++++++-----------------
+ 1 files changed, 40 insertions(+), 29 deletions(-)
 
-Currently the driver always tries JEDEC probing, and it wrongly "assumed"
-that all non-JEDEC chips are m25p80, because an entry for m25p80 chips
-had "0" in jedec id field, which isn't correct ID, but 0 is returned by
-most non-JEDEC chips. Having 0 in the m25p80 entry was a hack.
-
-> All others got explicit declarations ... so if there's misbehavior for
-> other chips, it's because those declarations were poorly handled.  Maybe
-> they were not properly flagged as non-JDEC
-
-> > Also, now jedec_probe() only does jedec probing, nothing else. If it
-> > is not able to detect a chip, NULL is returned and the driver fall
-> > backs to the information specified by the platform (platform_data, or
-> > exact ID).
-> 
-> I'd rather keep the warning, so there's a clue about what's really
-> going on:  JEDEC chip found, but its ID is not handled.
-
-We can't tell if the chip was actually found.
-
-M25Px0 chips can be JEDEC and non-JEDEC, e.g. Nymonyx manufacturing
-"M25P80" chips in two variants: "The RDID instruction is available only
-for parts made with Technology T9HX (0.11μm), ..."
-
-Most (but not all) non-JEDEC EEPROMs will return "0" for RDID opcode
-though (in that case warning is misleading). And for the chips that
-don't return 0, we shouldn't probe them with jedec at all.
-
-[...]
-> > @@ -608,32 +615,38 @@ static int __devinit m25p_probe(struct spi_device *spi)
-> >  	 */
-> >  	data = spi->dev.platform_data;
-> >  	if (data && data->type) {
-> 
-> At this point I wonder why you're not changing the probe sequence
-> more.
-
-Yep, I was going to do it anyway, but for another reason: to support
-CAT25 chips.
-
-> There's a new error case of course:  new-style but data->type
-> doesn't match id->name.
-[...]
-> > +		if (i == ARRAY_SIZE(m25p_ids) - 1) {
-> 
-> Better:  "if (info == NULL) ..."   You've got all the pointers
-> in hand; don't use indices.
-[...]
-> > +			if (id != &m25p_ids[i]) {
-> 
-> Again, don't use indices except during the lookup.
-
-Yep, good ideas. Though, the code will vanish anyway.
-
-Patches on the way...
+diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+index 0d74b38..b75e319 100644
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -581,6 +581,14 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
+ 	jedec = jedec << 8;
+ 	jedec |= id[2];
+ 
++	/*
++	 * Some chips (like Numonyx M25P80) have JEDEC and non-JEDEC variants,
++	 * which depend on technology process. Officially RDID command doesn't
++	 * exist for non-JEDEC chips, but for compatibility they return ID 0.
++	 */
++	if (jedec == 0)
++		return NULL;
++
+ 	ext_jedec = id[3] << 8 | id[4];
+ 
+ 	for (tmp = 0; tmp < ARRAY_SIZE(m25p_ids) - 1; tmp++) {
+@@ -602,7 +610,7 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
+  */
+ static int __devinit m25p_probe(struct spi_device *spi)
+ {
+-	const struct spi_device_id	*id;
++	const struct spi_device_id	*id = spi_get_device_id(spi);
+ 	struct flash_platform_data	*data;
+ 	struct m25p			*flash;
+ 	struct flash_info		*info;
+@@ -615,41 +623,44 @@ static int __devinit m25p_probe(struct spi_device *spi)
+ 	 */
+ 	data = spi->dev.platform_data;
+ 	if (data && data->type) {
++		const struct spi_device_id *plat_id;
++
+ 		for (i = 0; i < ARRAY_SIZE(m25p_ids) - 1; i++) {
+-			id = &m25p_ids[i];
+-			info = (void *)m25p_ids[i].driver_data;
+-			if (strcmp(data->type, id->name))
++			plat_id = &m25p_ids[i];
++			if (strcmp(data->type, plat_id->name))
+ 				continue;
+ 			break;
+ 		}
+ 
+-		/* unrecognized chip? */
+-		if (i == ARRAY_SIZE(m25p_ids) - 1) {
+-			DEBUG(MTD_DEBUG_LEVEL0, "%s: unrecognized id %s\n",
+-					dev_name(&spi->dev), data->type);
+-			info = NULL;
+-
+-		/* recognized; is that chip really what's there? */
+-		} else if (info->jedec_id) {
+-			id = jedec_probe(spi);
+-
+-			if (id != &m25p_ids[i]) {
+-				dev_warn(&spi->dev, "found %s, expected %s\n",
+-						id ? id->name : "UNKNOWN",
+-						m25p_ids[i].name);
+-				info = NULL;
+-			}
+-		}
+-	} else {
+-		id = jedec_probe(spi);
+-		if (!id)
+-			id = spi_get_device_id(spi);
+-
+-		info = (void *)id->driver_data;
++		if (plat_id)
++			id = plat_id;
++		else
++			dev_warn(&spi->dev, "unrecognized id %s\n", data->type);
+ 	}
+ 
+-	if (!info)
+-		return -ENODEV;
++	info = (void *)id->driver_data;
++
++	if (info->jedec_id) {
++		const struct spi_device_id *jid;
++
++		jid = jedec_probe(spi);
++		if (!jid) {
++			dev_info(&spi->dev, "non-JEDEC variant of %s\n",
++				 id->name);
++		} else if (jid != id) {
++			/*
++			 * JEDEC knows better, so overwrite platform ID. We
++			 * can't trust partitions any longer, but we'll let
++			 * mtd apply them anyway, since some partitions may be
++			 * marked read-only, and we don't want to lose that
++			 * information, even if it's not 100% accurate.
++			 */
++			dev_warn(&spi->dev, "found %s, expected %s\n",
++				 jid->name, id->name);
++			id = jid;
++			info = (void *)jid->driver_data;
++		}
++	}
+ 
+ 	flash = kzalloc(sizeof *flash, GFP_KERNEL);
+ 	if (!flash)
+-- 
+1.6.3.3
