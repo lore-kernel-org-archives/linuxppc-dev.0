@@ -1,32 +1,28 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Return-Path: <shemminger@vyatta.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C123FB7080
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A096EB7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 07:00:33 +1000 (EST)
-Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
-	by ozlabs.org (Postfix) with ESMTP id 5A3C7DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 07:00:32 +1000 (EST)
-Received: from list by lo.gmane.org with local (Exim 4.50) id 1MdVn5-000330-Bw
-	for linuxppc-dev@ozlabs.org; Tue, 18 Aug 2009 23:00:23 +0200
-Received: from 24.114.226.27 ([24.114.226.27])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 23:00:23 +0200
-Received: from michaelbarkowski by 24.114.226.27 with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 23:00:23 +0200
-To: linuxppc-dev@ozlabs.org
-From: Michael Barkowski <michaelbarkowski@ruggedcom.com>
-Subject: [PATCH] qe_lib: Set gpio data before changing the direction to output
-Date: Tue, 18 Aug 2009 16:59:58 -0400
-Message-ID: <4A8B164E.6030704@ruggedcom.com>
+	Wed, 19 Aug 2009 07:14:31 +1000 (EST)
+Received: from mail.vyatta.com (mail.vyatta.com [76.74.103.46])
+	by ozlabs.org (Postfix) with ESMTP id 66E2FDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 07:14:31 +1000 (EST)
+Date: Tue, 18 Aug 2009 14:04:18 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: John Linn <john.linn@xilinx.com>
+Subject: Re: [PATCH] net: add Xilinx emac lite device driver
+Message-ID: <20090818140418.347cb8ac@nehalam>
+In-Reply-To: <20090818153047.48E42ED8051@mail66-dub.bigfish.com>
+References: <20090818153047.48E42ED8051@mail66-dub.bigfish.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Sender: news <news@ger.gmane.org>
-Cc: Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Michal Simek <michal.simek@petalogix.com>, netdev@vger.kernel.org,
+	Sadanand M <sadanan@xilinx.com>, davem@davemloft.net,
+	linuxppc-dev@ozlabs.org, jgarzik@pobox.com,
+	John Linn <john.linn@xilinx.com>,
+	John Williams <john.williams@petalogix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,37 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This avoids having a short glitch if the desired initial value is not
-the same as what was previously in the data register.
+On Tue, 18 Aug 2009 09:30:41 -0600
+John Linn <john.linn@xilinx.com> wrote:
 
-Signed-off-by: Michael Barkowski <michaelbarkowski@ruggedcom.com>
----
-I can't think of a reason not to do this.  The data register has no
-effect except when the pin is configured as an output, right?
+> +/**
+> + * xemaclite_enable_interrupts - Enable the interrupts for the EmacLite device
+> + * @drvdata:	Pointer to the Emaclite device private data
+> + *
+> + * This function enables the Tx and Rx interrupts for the Emaclite device along
+> + * with the Global Interrupt Enable.
+> + */
+> +static void xemaclite_enable_interrupts(struct net_local *drvdata)
 
-Please enlighten me if this is not correct. The behaviour I see gels
-with my thinking, but there may be a case I haven't thought of.
+Docbook format is really a not necessary on local functions that
+are only used in the driver.  It is fine if you want to use it, as
+long as the file isn't processed by kernel make docs but
+the docbook is intended for automatic generation of kernel API manuals.
 
- arch/powerpc/sysdev/qe_lib/gpio.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
-index 3485288..e7bf136 100644
---- a/arch/powerpc/sysdev/qe_lib/gpio.c
-+++ b/arch/powerpc/sysdev/qe_lib/gpio.c
-@@ -107,12 +107,11 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 
- 	spin_lock_irqsave(&qe_gc->lock, flags);
- 
-+	qe_gpio_set(gc, gpio, val);
- 	__par_io_config_pin(mm_gc->regs, gpio, QE_PIO_DIR_OUT, 0, 0, 0);
- 
- 	spin_unlock_irqrestore(&qe_gc->lock, flags);
- 
--	qe_gpio_set(gc, gpio, val);
--
- 	return 0;
- }
- 
 -- 
-1.6.3.3
