@@ -3,20 +3,22 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DDA16B7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 57F43B7CDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 18 Aug 2009 13:20:26 +1000 (EST)
+	Tue, 18 Aug 2009 13:20:31 +1000 (EST)
 Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail7.windriver.com",
 	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 65B56DDDA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 13:20:26 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id D0E16DDDA0
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 13:20:30 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: powerpc/405ex: Support cuImage for PPC405EX
-Date: Tue, 18 Aug 2009 10:28:02 +0800
-Message-Id: <1250562484-16415-1-git-send-email-tiejun.chen@windriver.com>
+Subject: [PATCH 2/2] powerpc/405ex: support cuImage via included dtb
+Date: Tue, 18 Aug 2009 10:28:04 +0800
+Message-Id: <1250562484-16415-3-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1250562484-16415-1-git-send-email-tiejun.chen@windriver.com>
+References: <1250562484-16415-1-git-send-email-tiejun.chen@windriver.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,57 +29,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Summary: powerpc/405ex: Support cuImage for PPC405EX
-Reviewers: Benjmain and linux-ppc
-----------------------------------------------------
-These patch series are used to support cuImage on the kilauea board based on PPC405ex.
+To support cuImage, we need to initialize the required sections and 
+ensure that it is built.
 
-Tested on the amcc kilauea board:
-===
-...
-=> tftp 1000000 cuImage.kilauea
-Waiting for PHY auto negotiation to complete.. done
-ENET Speed is 100 Mbps - FULL duplex connection (EMAC0)
-Using ppc_4xx_eth0 device
-TFTP from server 192.168.1.2; our IP address is 192.168.1.103
-Filename 'cuImage.kilauea'.
-Load address: 0x1000000
-Loading: #################################################################
-         #################################################################
-         #################################################################
-         #################################################################
-         #########################################
-done
-Bytes transferred = 1540945 (178351 hex)
-=> bootm
-## Booting kernel from Legacy Image at 01000000 ...
-   Image Name:   Linux-2.6.31-rc5-57857-g8df7f47-
-   Created:      2009-08-17   6:31:13 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1540881 Bytes =  1.5 MB
-   Load Address: 00400000
-   Entry Point:  00400468
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-CPU clock-frequency <- 0x23c345fa (600MHz)
-CPU timebase-frequency <- 0x23c345fa (600MHz)
-/plb: clock-frequency <- bebc1fe (200MHz)
-/plb/opb: clock-frequency <- 5f5e0ff (100MHz)
-/plb/opb/ebc: clock-frequency <- 5f5e0ff (100MHz)
-/plb/opb/serial@ef600200: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600300: clock-frequency <- a8c000 (11MHz)
-Memory <- <0x0 0x10000000> (256MB)
-ethernet0: local-mac-address <- 00:06:4b:10:22:6c
-ethernet1: local-mac-address <- 00:06:4b:10:22:6d
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/boot/Makefile         |    3 +-
+ arch/powerpc/boot/cuboot-kilauea.c |   50 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 52 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/cuboot-kilauea.c
 
-zImage starting: loaded at 0x00400000 (sp: 0x0fe9ec08)
-Allocating 0x330c70 bytes for kernel ...
-gunzipping (0x00000000 <- 0x0040f000:0x0073a03c)...done 0x31425c bytes
-
-Linux/PowerPC load: root=/dev/nfs rw nfsroot=192.168.1.2:/home/vividfe/rootfsf
-Finalizing device tree... flat tree at 0x747300
-Using PowerPC 40x Platform machine description
-...
-
-Best Regards
-Tiejun
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 9ae7b7e..44ce95b 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -75,7 +75,7 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
+ 		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
+ 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
+ 		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
+-		cuboot-acadia.c cuboot-amigaone.c
++		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
+ 
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+@@ -192,6 +192,7 @@ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ image-$(CONFIG_EP405)			+= dtbImage.ep405
+ image-$(CONFIG_WALNUT)			+= treeImage.walnut
+ image-$(CONFIG_ACADIA)			+= cuImage.acadia
++image-$(CONFIG_KILAUEA)		+= cuImage.kilauea
+ 
+ # Board ports in arch/powerpc/platform/44x/Kconfig
+ image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
+diff --git a/arch/powerpc/boot/cuboot-kilauea.c b/arch/powerpc/boot/cuboot-kilauea.c
+new file mode 100644
+index 0000000..7db1b39
+--- /dev/null
++++ b/arch/powerpc/boot/cuboot-kilauea.c
+@@ -0,0 +1,50 @@
++/*
++ * Old U-boot compatibility for PPC405EX. This image is already included 
++ * a dtb.    
++ *
++ * Author: Tiejun Chen <tiejun.chen@windriver.com>
++ *
++ * Copyright (C) 2009 Wind River Systems, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include "ops.h"
++#include "io.h"
++#include "dcr.h"
++#include "stdio.h"
++#include "4xx.h"
++#include "44x.h"
++#include "cuboot.h"
++
++#define TARGET_4xx
++#define TARGET_44x
++#include "ppcboot.h"
++
++#define KILAUEA_SYS_EXT_SERIAL_CLOCK     11059200        /* ext. 11.059MHz clk */
++
++static bd_t bd;
++
++static void kilauea_fixups(void)
++{
++	/*TODO: Please change this as the real. Note that should be 33MHZ~100MHZ.*/
++	unsigned long sysclk = 33333333;
++
++	ibm405ex_fixup_clocks(sysclk, KILAUEA_SYS_EXT_SERIAL_CLOCK);
++	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
++	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
++	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
++	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
++}
++
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++		unsigned long r6, unsigned long r7)
++{
++	CUBOOT_INIT();
++	platform_ops.fixups = kilauea_fixups;
++	platform_ops.exit = ibm40x_dbcr_reset;
++	fdt_init(_dtb_start);
++	serial_console_init();
++}
+-- 
+1.5.6
