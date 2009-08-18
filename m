@@ -1,26 +1,30 @@
-Return-Path: <rostedt@goodmis.org>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 22859B7B70
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 12DF0B7BA1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 09:36:40 +1000 (EST)
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 8ED2ADDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 09:36:38 +1000 (EST)
-Date: Tue, 18 Aug 2009 19:36:35 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] spinlock: __raw_spin_is_locked() should return true for UP
-In-Reply-To: <alpine.LFD.2.01.0908181618420.3158@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0908181931180.28398@gandalf.stny.rr.com>
-References: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org>
-	<alpine.LFD.2.01.0908181618420.3158@localhost.localdomain>
+	Wed, 19 Aug 2009 09:38:21 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 3B6B0DDD01
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 09:38:20 +1000 (EST)
+Date: Wed, 19 Aug 2009 03:38:18 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
+Message-ID: <20090818233818.GA29042@oksana.dev.rtsoft.ru>
+References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
+	<20090807195822.GG2735@oksana.dev.rtsoft.ru>
+	<A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	mingo@elte.hu, tglx@linutronix.de
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org>
+Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
+	sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Pierre Ossman <pierre@ossman.eu>, David Vrabel <david.vrabel@csr.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,49 +34,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch simply adds sdhci node to the device tree.
 
-On Tue, 18 Aug 2009, Linus Torvalds wrote:
+We specify clock-frequency manually, so that eSDHC will work without
+upgrading U-Boot. Though, that'll only work for default setup (1500
+MHz) on new board revisions. For non-default setups, it's recommended
+to upgrade U-Boot, since it will fixup clock-frequency automatically.
 
-> 
-> 
-> On Tue, 18 Aug 2009, Kumar Gala wrote:
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+
+On Tue, Aug 11, 2009 at 08:48:32AM -0500, Kumar Gala wrote:
+> On Aug 7, 2009, at 2:58 PM, Anton Vorontsov wrote:
+> >This patch simply adds sdhci node to the device tree.
 > >
-> > For some reason __raw_spin_is_locked() has been returning false for the
-> > uni-processor, non-CONFIG_DEBUG_SPINLOCK.  The UP + CONFIG_DEBUG_SPINLOCK
-> > handles this correctly.
-> > 
-> > Found this by enabling CONFIG_DEBUG_VM on PPC and hitting always hitting
-> > a BUG_ON that was testing to make sure the pte_lock was held.
-> > 
-> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> > ---
-> > 
-> > Linus, a fix for 2.6.31
+> >We specify clock-frequency manually, so that eSDHC will work without
+> >upgrading U-Boot. Though, that'll only work for default setup (1500
+> >MHz) on new board revisions. For non-default setups, it's recommended
+> >to upgrade U-Boot, since it will fixup clock-frequency automatically.
+> >
+> >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> >---
+> >arch/powerpc/boot/dts/mpc8536ds.dts |    8 ++++++++
+> >1 files changed, 8 insertions(+), 0 deletions(-)
 > 
-> This really isn't all that clear.
-> 
-> The thing is, some people may assert that a lock is held, but others could 
-> easily be looping until it's not held using something like
-> 
-> 	while (spin_is_locked(lock))
-> 		cpu_relax();
+> Can you update the mpc8536ds_36b.dts as well (its in my next branch)
 
-Wouldn't something like that be really racey? And anyone doing such a 
-thing had better have that code within an #ifdef CONFIG_SMP.
+Sure thing.
 
-> 
-> so it's hard to tell whether it should return true or false in the case 
-> where spin-locking simply doesn't exist.
+ arch/powerpc/boot/dts/mpc8536ds.dts     |    8 ++++++++
+ arch/powerpc/boot/dts/mpc8536ds_36b.dts |    8 ++++++++
+ 2 files changed, 16 insertions(+), 0 deletions(-)
 
-Actually, I did have a case where I would use it and would expect a return 
-of 0. That was in the experimental printk code to see if it was safe to 
-wakeup the klogd. I once had a check of the current cpu runqueue lock is 
-locked, and if it was, not to wake up klogd. I'm sure there's other cases 
-like this as well.
-
-Thinking about it, UP probably should have spin_is_locked always return 
-false, but if you want to make sure you are not in a critical section 
-with the lock not held, then use assert_spin_locked, which on UP should be 
-a nop.
-
--- Steve
+diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
+index 22caf69..815cebb 100644
+--- a/arch/powerpc/boot/dts/mpc8536ds.dts
++++ b/arch/powerpc/boot/dts/mpc8536ds.dts
+@@ -250,6 +250,14 @@
+ 			phy_type = "ulpi";
+ 		};
+ 
++		sdhci@2e000 {
++			compatible = "fsl,mpc8536-esdhc", "fsl,esdhc";
++			reg = <0x2e000 0x1000>;
++			interrupts = <72 0x2>;
++			interrupt-parent = <&mpic>;
++			clock-frequency = <250000000>;
++		};
++
+ 		serial0: serial@4500 {
+ 			cell-index = <0>;
+ 			device_type = "serial";
+diff --git a/arch/powerpc/boot/dts/mpc8536ds_36b.dts b/arch/powerpc/boot/dts/mpc8536ds_36b.dts
+index 113ed8b..d95b260 100644
+--- a/arch/powerpc/boot/dts/mpc8536ds_36b.dts
++++ b/arch/powerpc/boot/dts/mpc8536ds_36b.dts
+@@ -250,6 +250,14 @@
+ 			phy_type = "ulpi";
+ 		};
+ 
++		sdhci@2e000 {
++			compatible = "fsl,mpc8536-esdhc", "fsl,esdhc";
++			reg = <0x2e000 0x1000>;
++			interrupts = <72 0x2>;
++			interrupt-parent = <&mpic>;
++			clock-frequency = <250000000>;
++		};
++
+ 		serial0: serial@4500 {
+ 			cell-index = <0>;
+ 			device_type = "serial";
+-- 
+1.6.3.3
