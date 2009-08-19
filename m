@@ -1,21 +1,32 @@
-Return-Path: <thirumalai.p@datapatterns.co.in>
-Received: from ns0.datapatterns.co.in (mx0.datapatterns.co.in [121.242.18.2])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CC823B708B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 19 Aug 2009 20:52:33 +1000 (EST)
+Received: from www.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7D32EB70B0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 20:23:29 +1000 (EST)
-Received: from itd210 (itd210.datapatterns [10.5.4.110]) (authenticated bits=0)
-	by ns0.datapatterns.co.in (8.14.2/8.14.2) with ESMTP id n7JALRH3026427
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2009 15:51:27 +0530
-Message-ID: <8248C24180F247B8A741CA5DEE646936@itd210>
-From: "Thirumalai" <thirumalai.p@datapatterns.co.in>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Regarding 64-bit implementation of mtd driver
-Date: Wed, 19 Aug 2009 15:48:17 +0530
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+	by ozlabs.org (Postfix) with ESMTPS id 16B47DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 20:52:32 +1000 (EST)
+Date: Wed, 19 Aug 2009 11:53:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: spin_is_locked() broken for uniprocessor?
+Message-ID: <20090819115301.563be6da@lxorguk.ukuu.org.uk>
+In-Reply-To: <7099.1250674686@redhat.com>
+References: <alpine.LFD.2.00.0908190022570.3361@localhost.localdomain>
+	<DE9C9034-D2CE-4D21-93D9-A10FE2580920@kernel.crashing.org>
+	<7099.1250674686@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>,
+	Linux-Kernel List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +36,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
-    In my custom board the flash memory was 64 bit data size means two 32 
-bit flash chips are combined together to form as 64 bit bus width. Is there 
-any patch to use the flash memory in mtd layer on the linux-2.6 kernel. 
-Because on kernel there is no support for 64 bit read/write on the low leve 
-cfi driver(command set 002).
-Regards,
-T. 
+On Wed, 19 Aug 2009 10:38:06 +0100
+David Howells <dhowells@redhat.com> wrote:
 
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > > which implies to me that spin_is_locked() will always return false.  Is this
+> > > expected behavior.
+> > 
+> > That's wrong. spin_is_locked should always return true on UP.
+> 
+> Surely it's not that simple?  Maybe spin_is_lock() should be undefined on UP.
 
-**************** CAUTION - Disclaimer *****************This email may contain confidential and privileged material for the
-sole use of the intended recipient(s). Any review, use, retention, distribution or disclosure by others is strictly prohibited. If you are not the intended recipient (or authorized to receive for the recipient), please contact the sender by reply email and delete all copies of this message. Also, email is susceptible to data corruption, interception, tampering, unauthorized amendment and viruses. We only send and receive emails on the basis that we are not liable for any such corruption, interception, tampering, amendment or viruses or any consequence thereof. 
-*********** End of Disclaimer ***********DataPatterns ITS Group**********
+That would lead to a lot of
+
+#ifdef CONFIG_SMP
+
+#endif
+
+in drivers because there is driver code that uses spin_is_locked() in
+fairly sensible fashion when dealing with locking.
