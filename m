@@ -1,41 +1,30 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <beckyb@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 25A72B6F1E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id ED2DEB707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 Aug 2009 04:50:16 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+	Thu, 20 Aug 2009 07:00:01 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AAE16DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 04:50:15 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n7JIoBDY009792
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 11:50:12 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n7JIp6M1024230
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 13:51:06 -0500 (CDT)
-Date: Wed, 19 Aug 2009 13:50:10 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] spinlock: __raw_spin_is_locked() should return true for UP
-Message-ID: <20090819185010.GA12304@b07421-ec1.am.freescale.net>
-References: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org>
-	<alpine.LFD.2.01.0908181618420.3158@localhost.localdomain>
-	<alpine.DEB.2.00.0908181931180.28398@gandalf.stny.rr.com>
-	<alpine.LFD.2.01.0908181640120.3158@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LFD.2.01.0908181640120.3158@localhost.localdomain>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	mingo@elte.hu, tglx@linutronix.de
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4B87BDDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 07:00:00 +1000 (EST)
+Message-Id: <16251558-DDF6-46C3-98C2-2FC7CD8A398B@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1250634800.4810.1.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH/RFC] powerpc/mm: Cleanup handling of execute permission
+Date: Wed, 19 Aug 2009 15:59:39 -0500
+References: <1248766373.30993.50.camel@pasglop>
+	<FBB5798A-EE85-4B18-8883-F6182B203996@kernel.crashing.org>
+	<20090818205621.GB2530@zod.rchland.ibm.com>
+	<1250634800.4810.1.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,33 +34,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 18, 2009 at 04:52:20PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 18 Aug 2009, Steven Rostedt wrote:
-> >
-> > > The thing is, some people may assert that a lock is held, but others could 
-> > > easily be looping until it's not held using something like
-> > > 
-> > > 	while (spin_is_locked(lock))
-> > > 		cpu_relax();
-> > 
-> > Wouldn't something like that be really racey? And anyone doing such a 
-> > thing had better have that code within an #ifdef CONFIG_SMP.
-> 
-> Sure, it's hopefully inside a #ifdef CONFIG_SMP.
-> 
-> And no, it's not necessarily racy. Sure, it's race in itself if that's all 
-> you are doing, but I could imagine writing that kind of code if I knew 
-> some lock was likely held, and I wanted to avoid doing a "try_lock()" 
-> until it got released.
 
-So you'd basically have the effect of a spin_lock(), except with the
-bonus of breaking RT hacks that do something other than spin, and
-preventing arch code from doing certain types of relaxation that are only
-appropriate when waiting on a lock (such as mdors on powerpc, which
-de-emphasizes until a reservation is broken).
+On Aug 18, 2009, at 5:33 PM, Benjamin Herrenschmidt wrote:
 
-Not exactly something we should encourage, IMHO.
+> On Tue, 2009-08-18 at 16:56 -0400, Josh Boyer wrote:
+>> On Fri, Aug 14, 2009 at 05:39:42PM -0500, Becky Bruce wrote:
+>>> Ben,
+>>>
+>>> This breaks the boot on 8572.  I don't know why yet (and I'm  
+>>> probably
+>>> not going to figure it out before I go home, because, frankly,  
+>>> it's late
+>>> on a Friday afternoon and I need a glass of wine or, perhaps, a  
+>>> beer).
+>>>
+>>> Kumar and I will poke into this more and let you know what we find  
+>>> out -
+>>> in the meantime, if you have any brilliant flashes, pony up!
+>>
+>> I tested this on a 440EPx NFS rootfs boot too.  It doesn't cause  
+>> init itself
+>> to crap out with a SIGILL like Becky's board, but it does do weird  
+>> things
+>> and cause a SIGILL elsewhere during my boot.
+>>
+>> Reverting this patch from your testing branch allows things to work  
+>> just fine.
+>
+> Becky found my thinko, I'll send a new patch later today.
 
--Scott
+Ben,
+
+FYI, I pulled your updated test branch this morning, booted, and did a  
+full LTP run on 8572.  The results are consistent with the baseline I  
+have, so it looks like the issue is properly fixed.
+
+-Becky
