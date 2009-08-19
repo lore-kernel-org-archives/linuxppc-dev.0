@@ -1,29 +1,28 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <galak@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6CCD9B7B5C
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E0FA0B70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 Aug 2009 00:28:53 +1000 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e2.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7JEMf5J007478
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2009 10:22:41 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7JEST8m1052788
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2009 10:28:30 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n7JESGa5025902
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2009 08:28:17 -0600
-Date: Wed, 19 Aug 2009 10:27:53 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH v2] powerpc: Fix __flush_icache_range on 44x
-Message-ID: <20090819142753.GD2530@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+	Thu, 20 Aug 2009 00:36:01 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4E476DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 00:36:01 +1000 (EST)
+Message-Id: <4177854C-965A-4A26-A517-B6F0B48703BD@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <5CBF10F7-8927-47AD-B4F8-1F07754207A8@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: powerpc-next rebased
+Date: Wed, 19 Aug 2009 09:35:51 -0500
+References: <1250667232.4810.20.camel@pasglop>
+	<2E8B90A3-A3FD-4EC8-9D41-1BA9E8B261AB@kernel.crashing.org>
+	<5CBF10F7-8927-47AD-B4F8-1F07754207A8@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +32,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ptrace POKETEXT interface allows a process to modify the text pages of
-a child process being ptraced, usually to insert breakpoints via trap
-instructions.  The kernel eventually calls copy_to_user_page, which in turn
-calls __flush_icache_range to invalidate the icache lines for the child
-process.
 
-However, this function does not work on 44x due to the icache being virtually
-indexed.  This was noticed by a breakpoint being triggered after it had been
-cleared by ltrace on a 440EPx board.  The convenient solution is to do a
-flash invalidate of the icache in the __flush_icache_range function.
+On Aug 19, 2009, at 8:54 AM, Kumar Gala wrote:
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>
+> On Aug 19, 2009, at 8:43 AM, Kumar Gala wrote:
+>
+>>
+>> On Aug 19, 2009, at 2:33 AM, Benjamin Herrenschmidt wrote:
+>>
+>>> Allright it's done, let's hope I didn't screw up :-)
+>>
+>> You screwed it up... :)
+>>
+>> The commits you pulled in from me you seem to have changed the  
+>> author of the commits which is NOT cool at all.  Adding signed-off- 
+>> by is good, changing the committer is ok, but changing the author  
+>> of the commit is not.  Please fix this ASAP.
+>>
+>> Here's an example (in your tree):
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/benh/powerpc.git;a=commitdiff;h=87f1e94c949c28fdaa079d5115a8010c9a40569d
+>>
+>> vs the commit in my tree:
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/galak/powerpc.git;a=commit;h=d920991f7e02788ba2b468b3023e5bbbc7a32f30
+>
+> I'll leave my tree alone to allow you to try and fix this.  It looks  
+> like the stuff you pulled in from Josh's tree also has similar foobar.
+>
+> - k
 
----
-I tested this on powerpc-next this morning using the same testcase as before.
+To be nice I published a 'fix-author' branch on my kernel.org tree  
+that should be identical to your tree up to:
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 15f28e0..da9c0c4 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -342,10 +342,17 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
- 	addi	r3,r3,L1_CACHE_BYTES
- 	bdnz	1b
- 	sync				/* wait for dcbst's to get to ram */
-+#ifndef CONFIG_44x
- 	mtctr	r4
- 2:	icbi	0,r6
- 	addi	r6,r6,L1_CACHE_BYTES
- 	bdnz	2b
-+#else
-+	/* Flash invalidate on 44x because we are passed kmapped addresses and
-+	   this doesn't work for userspace pages due to the virtually tagged
-+	   icache.  Sigh. */
-+	iccci	0, r0
-+#endif
- 	sync				/* additional sync needed on g4 */
- 	isync
- 	blr
+commit b045513a1d657178868a1b1c5c2c56b7ef67766d
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Tue Aug 18 15:21:40 2009 +0000
+
+     powerpc/mm: Fix assert_pte_locked to work properly on uniprocessor
+
+     Since the pte_lockptr is a spinlock it gets optimized away on
+     uniprocessor builds so using spin_is_locked is not correct.  We  
+can use
+     assert_spin_locked instead and get the proper behavior between UP  
+and
+     SMP builds.
+
+     Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+I doesn't have any Signed-off-by from you for the commits from Josh or  
+I.  Otherwise the Author's have been fixed.
+
+- k
