@@ -1,29 +1,27 @@
-Return-Path: <pku.leo@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5091EB70B3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8C21EB70AD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 13:19:48 +1000 (EST)
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
-	by ozlabs.org (Postfix) with ESMTP id A3232DDD1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 13:19:47 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id b6so1612371ana.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Aug 2009 20:19:45 -0700 (PDT)
-MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <20090818222335.GA28135@oksana.dev.rtsoft.ru>
-References: <20090818222335.GA28135@oksana.dev.rtsoft.ru>
-Date: Wed, 19 Aug 2009 11:19:45 +0800
-Message-ID: <2a27d3730908182019w6d5c83b3k2efc542f6552b8b5@mail.gmail.com>
-Subject: Re: [PATCH] USB: fsl_qe_udc: Add fsl,mpc8323-qe-usb compatible entry
-From: Li Yang <leoli@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org,
-	linux-usb@vger.kernel.org, Scott Wood <scottwood@freescale.com>
+	Wed, 19 Aug 2009 13:36:05 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F018CDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 13:36:04 +1000 (EST)
+Subject: Re: [PATCH] powerpc/mm: Fix assert_pte_locked to work properly on
+	uniprocessor
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1250644900-32133-1-git-send-email-galak@kernel.crashing.org>
+References: <1250644900-32133-1-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain
+Date: Wed, 19 Aug 2009 13:35:57 +1000
+Message-Id: <1250652957.4810.6.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,14 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 19, 2009 at 6:23 AM, Anton
-Vorontsov<avorontsov@ru.mvista.com> wrote:
-> Current bindings specify that "fsl,mpc8323-qe-usb" compatible entry
-> should be used as a base match for QE UDCs, so update the driver to
-> comply with the bindings.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+On Tue, 2009-08-18 at 20:21 -0500, Kumar Gala wrote:
+> Since the pte_lockptr is a spinlock it gets optimized away on
+> uniprocessor builds so using spin_is_locked is not correct.  We can use
+> assert_spin_locked instead and get the proper behavior between UP and
+> SMP builds.
 
-Acked-by: Li Yang <leoli@freescale.com>
+Thanks. Applied.
 
-- Leo
+Cheers,
+Ben.
+
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  arch/powerpc/mm/pgtable.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> index 627767d..4b9a27d 100644
+> --- a/arch/powerpc/mm/pgtable.c
+> +++ b/arch/powerpc/mm/pgtable.c
+> @@ -242,7 +242,7 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+>  	BUG_ON(pud_none(*pud));
+>  	pmd = pmd_offset(pud, addr);
+>  	BUG_ON(!pmd_present(*pmd));
+> -	BUG_ON(!spin_is_locked(pte_lockptr(mm, pmd)));
+> +	assert_spin_locked(pte_lockptr(mm, pmd));
+>  }
+>  #endif /* CONFIG_DEBUG_VM */
+>  
