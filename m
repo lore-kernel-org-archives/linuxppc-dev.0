@@ -1,28 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B6C89B6F2B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3028CB708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 Aug 2009 07:42:44 +1000 (EST)
+	Thu, 20 Aug 2009 07:57:02 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8C230DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 07:42:43 +1000 (EST)
-Message-Id: <AC207041-6DB9-476E-B171-C1F6E10D3FAB@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1250666756.4810.16.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH 1/5] powerpc/mm: Add MMU features for TLB reservation &
-	Paired MAS registers
-Date: Wed, 19 Aug 2009 16:37:49 -0500
-References: <1250658513-13009-1-git-send-email-galak@kernel.crashing.org>
-	<1250666756.4810.16.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 8A2E3DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 07:57:01 +1000 (EST)
+Subject: Re: powerpc-next rebased
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <2E8B90A3-A3FD-4EC8-9D41-1BA9E8B261AB@kernel.crashing.org>
+References: <1250667232.4810.20.camel@pasglop>
+	<2E8B90A3-A3FD-4EC8-9D41-1BA9E8B261AB@kernel.crashing.org>
+Content-Type: text/plain
+Date: Thu, 20 Aug 2009 07:56:55 +1000
+Message-Id: <1250719015.4810.34.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,62 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2009-08-19 at 08:43 -0500, Kumar Gala wrote:
+> 
+> You screwed it up... :)
+> 
+> The commits you pulled in from me you seem to have changed the
+> author  
+> of the commits which is NOT cool at all.  Adding signed-off-by is  
+> good, changing the committer is ok, but changing the author of the  
+> commit is not.  Please fix this ASAP.
 
-On Aug 19, 2009, at 2:25 AM, Benjamin Herrenschmidt wrote:
+Strange. I just rebased and ammended them, I didn't think that would
+change the author :-( I'll try to figure out what went wrong and will
+fix it up.
 
-> On Wed, 2009-08-19 at 00:08 -0500, Kumar Gala wrote:
->> Support for TLB reservation (or TLB Write Conditional) and Paired MAS
->> registers are optional for a processor implementation so we handle
->> them via MMU feature sections.
->>
->> We currently only used paired MAS registers to access the full RPN  
->> + perm
->> bits that are kept in MAS7||MAS3.  We assume that if an  
->> implementation has
->> hardware page table at this time it also implements in TLB  
->> reservations.
->
-> You also need to be careful with this code:
->
-> virt_page_table_tlb_miss_done:
->
-> 	/* We have overriden MAS2:EPN but currently our primary TLB miss
-> 	 * handler will always restore it so that should not be an issue,
-> 	 * if we ever optimize the primary handler to not write MAS2 on
-> 	 * some cases, we'll have to restore MAS2:EPN here based on the
-> 	 * original fault's DEAR. If we do that we have to modify the
-> 	 * ITLB miss handler to also store SRR0 in the exception frame
-> 	 * as DEAR.
-> 	 *
-> 	 * However, one nasty thing we did is we cleared the reservation
-> 	 * (well, potentially we did). We do a trick here thus if we
-> 	 * are not a level 0 exception (we interrupted the TLB miss) we
-> 	 * offset the return address by -4 in order to replay the tlbsrx
-> 	 * instruction there
-> 	 */
-> 	subf	r10,r13,r12
-> 	cmpldi	cr0,r10,PACA_EXTLB+EX_TLB_SIZE
-> 	bne-	1f
-> 	ld	r11,PACA_EXTLB+EX_TLB_SIZE+EX_TLB_SRR0(r13)
-> 	addi	r10,r11,-4
-> 	std	r10,PACA_EXTLB+EX_TLB_SIZE+EX_TLB_SRR0(r13)
->
-> You may want to make the 3 last lines conditional on having tlbsrx.
+Cheers,
+Ben.
 
-The whole thing only ever gets called if we had tlbsrx. so is there  
-any utility in making a part of conditional on tlbsrx?
-
-> Right now, in the no-tlbsrx. case, what happens is that it will go  
-> back
-> to the previous instruction, an or, which hopefully should be harmless
-> -but- this code is nasty enough you really don't want to take that
-> sort of chances.
->
-> Feel free to add a fat comment next to the ld in the tlbsrx case  
-> itself
-> explaining why those two instructions must be kept together and any
-> change here must be reflected in the second level handler.
->
-> Cheers,
-> Ben.
->
+> Here's an example (in your tree):
+> 
+> http://git.kernel.org/?p=linux/kernel/git/benh/powerpc.git;a=commitdiff;h=87f1e94c949c28fdaa079d5115a8010c9a40569d
+> 
+> vs the commit in my tree:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/galak/powerpc.git;a=commit;h=d920991f7e02788ba2b468b3023e5bbbc7a32f30
