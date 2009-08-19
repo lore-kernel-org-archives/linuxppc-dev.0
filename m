@@ -1,27 +1,27 @@
-Return-Path: <John.Linn@xilinx.com>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 30D62B7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 87498B7079
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 17:18:44 +1000 (EST)
-Received: from IE1EHSOBE001.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 7172DDDD1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 17:18:43 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH] net: add Xilinx emac lite device driver
-Date: Wed, 19 Aug 2009 01:13:16 -0600
-In-Reply-To: <20090818.232815.73515404.davem@davemloft.net>
-References: <20090818153047.48E42ED8051@mail66-dub.bigfish.com>
-	<20090818.232815.73515404.davem@davemloft.net>
-From: John Linn <John.Linn@xilinx.com>
-To: "David Miller" <davem@davemloft.net>
-Message-ID: <20090819071836.796AD185004B@mail145-dub.bigfish.com>
-Cc: michal.simek@petalogix.com, netdev@vger.kernel.org,
-	Sadanand Mutyala <sadanan@xilinx.com>, linuxppc-dev@ozlabs.org,
-	jgarzik@pobox.com, john.williams@petalogix.com
+	Wed, 19 Aug 2009 17:26:05 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DCC12DDD1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 17:26:04 +1000 (EST)
+Subject: Re: [PATCH 1/5] powerpc/mm: Add MMU features for TLB reservation &
+	Paired MAS registers
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1250658513-13009-1-git-send-email-galak@kernel.crashing.org>
+References: <1250658513-13009-1-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain
+Date: Wed, 19 Aug 2009 17:25:56 +1000
+Message-Id: <1250666756.4810.16.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,53 +31,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks David, I may have got over zealous in my clean up to get it ready
-for mainline.
+On Wed, 2009-08-19 at 00:08 -0500, Kumar Gala wrote:
+> Support for TLB reservation (or TLB Write Conditional) and Paired MAS
+> registers are optional for a processor implementation so we handle
+> them via MMU feature sections.
+> 
+> We currently only used paired MAS registers to access the full RPN + perm
+> bits that are kept in MAS7||MAS3.  We assume that if an implementation has
+> hardware page table at this time it also implements in TLB reservations.
 
-I'll take care of that.
+You also need to be careful with this code:
 
--- John
+virt_page_table_tlb_miss_done:
 
-> -----Original Message-----
-> From: David Miller [mailto:davem@davemloft.net]
-> Sent: Wednesday, August 19, 2009 7:28 AM
-> To: John Linn
-> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
-jgarzik@pobox.com; grant.likely@secretlab.ca;
-> jwboyer@linux.vnet.ibm.com; john.williams@petalogix.com;
-michal.simek@petalogix.com; Sadanand Mutyala
-> Subject: Re: [PATCH] net: add Xilinx emac lite device driver
-> =
+	/* We have overriden MAS2:EPN but currently our primary TLB miss
+	 * handler will always restore it so that should not be an issue,
+	 * if we ever optimize the primary handler to not write MAS2 on
+	 * some cases, we'll have to restore MAS2:EPN here based on the
+	 * original fault's DEAR. If we do that we have to modify the
+	 * ITLB miss handler to also store SRR0 in the exception frame
+	 * as DEAR.
+	 *
+	 * However, one nasty thing we did is we cleared the reservation
+	 * (well, potentially we did). We do a trick here thus if we
+	 * are not a level 0 exception (we interrupted the TLB miss) we
+	 * offset the return address by -4 in order to replay the tlbsrx
+	 * instruction there
+	 */
+	subf	r10,r13,r12
+	cmpldi	cr0,r10,PACA_EXTLB+EX_TLB_SIZE
+	bne-	1f
+	ld	r11,PACA_EXTLB+EX_TLB_SIZE+EX_TLB_SRR0(r13)
+	addi	r10,r11,-4
+	std	r10,PACA_EXTLB+EX_TLB_SIZE+EX_TLB_SRR0(r13)
 
-> From: John Linn <john.linn@xilinx.com>
-> Date: Tue, 18 Aug 2009 09:30:41 -0600
-> =
+You may want to make the 3 last lines conditional on having tlbsrx.
 
-> > @@ -1926,6 +1926,11 @@ config ATL2
-> >  	  To compile this driver as a module, choose M here.  The module
-> >  	  will be called atl2.
-> >
-> > +config XILINX_EMACLITE
-> > +	tristate "Xilinx 10/100 Ethernet Lite support"
-> > +	help
-> > +	  This driver supports the 10/100 Ethernet Lite from Xilinx.
-> > +
-> >  source "drivers/net/fs_enet/Kconfig"
-> >
-> >  endif # NET_ETHERNET
-> =
+Right now, in the no-tlbsrx. case, what happens is that it will go back
+to the previous instruction, an or, which hopefully should be harmless
+-but- this code is nasty enough you really don't want to take that
+sort of chances.
 
-> You can't unconditionally enable this driver everywhere.
-> It depends upon things like openfirmware support, etc.
-> so the driver will fail to link if the architecture doesn't
-> have those support routines.
-> =
+Feel free to add a fat comment next to the ld in the tlbsrx case itself
+explaining why those two instructions must be kept together and any
+change here must be reflected in the second level handler.
 
-> Please fix this up, thanks.
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+Cheers,
+Ben.
