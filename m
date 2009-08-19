@@ -1,32 +1,35 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <torvalds@linux-foundation.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E8FDAB7B68
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6F756B6F1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 11:51:03 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 7CB1ADDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 11:51:03 +1000 (EST)
-Date: Wed, 19 Aug 2009 05:51:01 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+	Wed, 19 Aug 2009 12:41:35 +1000 (EST)
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DE86FDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 12:41:34 +1000 (EST)
+Date: Tue, 18 Aug 2009 19:40:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
-Message-ID: <20090819015101.GA10782@oksana.dev.rtsoft.ru>
-References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
-	<20090807195822.GG2735@oksana.dev.rtsoft.ru>
-	<A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org>
-	<20090818233818.GA29042@oksana.dev.rtsoft.ru>
-	<F58A75CD-73CC-4F75-AF51-2BCC0B828E84@kernel.crashing.org>
+Subject: Re: [PATCH] spinlock: __raw_spin_is_locked() should return true for UP
+In-Reply-To: <BB2762BC-C760-4D4C-BDCF-76EFD3E1B18D@kernel.crashing.org>
+Message-ID: <alpine.LFD.2.01.0908181937400.3158@localhost.localdomain>
+References: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org>
+	<alpine.LFD.2.01.0908181618420.3158@localhost.localdomain>
+	<alpine.DEB.2.00.0908181931180.28398@gandalf.stny.rr.com>
+	<alpine.LFD.2.01.0908181640120.3158@localhost.localdomain>
+	<alpine.DEB.2.00.0908182003430.18648@gandalf.stny.rr.com>
+	<BB2762BC-C760-4D4C-BDCF-76EFD3E1B18D@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <F58A75CD-73CC-4F75-AF51-2BCC0B828E84@kernel.crashing.org>
-Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
-	sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Pierre Ossman <pierre@ossman.eu>, David Vrabel <david.vrabel@csr.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	mingo@elte.hu, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 18, 2009 at 08:24:17PM -0500, Kumar Gala wrote:
+
+
+On Tue, 18 Aug 2009, Kumar Gala wrote:
 > 
-> On Aug 18, 2009, at 6:38 PM, Anton Vorontsov wrote:
-> 
-> >This patch simply adds sdhci node to the device tree.
-> >
-> >We specify clock-frequency manually, so that eSDHC will work without
-> >upgrading U-Boot. Though, that'll only work for default setup (1500
-> >MHz) on new board revisions. For non-default setups, it's recommended
-> >to upgrade U-Boot, since it will fixup clock-frequency automatically.
-> >
-> >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> 
-> out of interest the 85xx eSDHC don't need the sdhci,wp-inverted
-> property?
+> I agree its a little too easy to abuse spin_is_locked.  However we should be
+> consistent between spin_is_locked on UP between with and without
+> CONFIG_DEBUG_SPINLOCK enabled.
 
-Yes, eSDHC controllers in MPC85xx report normal state in its
-registers.
+No we shouldn't.
 
-But the funny thing is that the switch itself is inverted,
-so to enable writing, on MPC8569E-MDS and MPC8536DS boards
-we have to place card's write protect tab into "lock" position.
+With CONFIG_DEBUG_SPINLOCK, you have an actual lock variable for debugging 
+purposes, so spin_is_locked() can clearly return a _valid_ answer, and 
+should do so.
 
-Unfortunately we can't fix that in software since controller
-doesn't permit write operations if it detects write-protected
-state. On the bright side, IIRC MPC8536DS revision history
-says that WP line level is fixed via BCSR upgrade. Not sure
-if it is possible to fix it for MPC8569E-MDS.
+Without DEBUG_SPINLOCK, there isn't any answer to return.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+So there's no way we can or should be consistent. In one case an answer 
+exists, in another one the answer is meaningless and doesn't exist.
+
+> How much of this do we want to try and address in .31?
+
+Absolutely nothing.
+
+> The PPC test really should be using assert_spin_locked and I'll send a patch
+> to Ben for that.
+
+Yes, that's the correct fix.
+
+		Linus
