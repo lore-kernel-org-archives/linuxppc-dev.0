@@ -1,32 +1,33 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CB898B6F20
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5F58BB6F34
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 21:24:40 +1000 (EST)
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.159])
-	by ozlabs.org (Postfix) with ESMTP id E840FDDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 21:24:39 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id e21so953880fga.16
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 04:24:36 -0700 (PDT)
+	Wed, 19 Aug 2009 21:45:37 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7JBnXRT024517
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2009 07:49:33 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7JBjV56216204
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2009 07:45:31 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n7JBjVAm029037
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2009 07:45:31 -0400
+Date: Wed, 19 Aug 2009 07:45:28 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Subject: Re: powerpc/405ex: Support cuImage for PPC405EX
+Message-ID: <20090819114528.GC2530@zod.rchland.ibm.com>
+References: <1250562484-16415-1-git-send-email-tiejun.chen@windriver.com>
+	<20090818132835.GA2530@zod.rchland.ibm.com>
+	<4A8B5929.2030000@windriver.com>
 MIME-Version: 1.0
-In-Reply-To: <20090819115301.563be6da@lxorguk.ukuu.org.uk>
-References: <alpine.LFD.2.00.0908190022570.3361@localhost.localdomain>
-	<DE9C9034-D2CE-4D21-93D9-A10FE2580920@kernel.crashing.org>
-	<7099.1250674686@redhat.com>
-	<20090819115301.563be6da@lxorguk.ukuu.org.uk>
-Date: Wed, 19 Aug 2009 13:16:48 +0200
-Message-ID: <c384c5ea0908190416r4e0b5508x4765381888516484@mail.gmail.com>
-Subject: Re: spin_is_locked() broken for uniprocessor?
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>,
-	Linux-Kernel List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4A8B5929.2030000@windriver.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-
-On Wed, Aug 19, 2009 at 12:53 PM, Alan Cox<alan@lxorguk.ukuu.org.uk> wrote:
-> On Wed, 19 Aug 2009 10:38:06 +0100
+On Wed, Aug 19, 2009 at 09:45:13AM +0800, tiejun.chen wrote:
+>Josh Boyer wrote:
+>> On Tue, Aug 18, 2009 at 10:28:02AM +0800, Tiejun Chen wrote:
+>>> Summary: powerpc/405ex: Support cuImage for PPC405EX
+>>> Reviewers: Benjmain and linux-ppc
+>>> ----------------------------------------------------
+>>> These patch series are used to support cuImage on the kilauea board based on PPC405ex.
+>>>
+>>> Tested on the amcc kilauea board:
+>> 
+>> Hm.  The U-Boot version that ships on the AMCC Kilauea board is FDT aware, so
+>> cuImage shouldn't be needed at all.  I'm slightly confused why we need this.
 >
-> in drivers because there is driver code that uses spin_is_locked() in
-> fairly sensible fashion when dealing with locking.
+>That the newer u-boot can aware extra on Kilauea is really as you said. But I
+>think I/we need to consider some other requirements for 405EX, such as only
+>using one image for convenient on embedded system, and u-boot don't pass dtb for
+>kernel since it will be isolated with one customer software layer.
 >
-One use is to measure lock contention hits on a particular spin lock.
+>And actually to support old U-boot compatibility is original *goal* of
+>implementing cuImage in kernel as we know. Right?
+
+Yes.  Supporting _old_ U-Boot compatibility.  Not FDT aware U-Boot :).
 
 
-However I wonder if there are tracing capabilities to measure lock
-contention on a particular lock?
+>As Documentation/powerpc/bootwrapper.txt I think the kernel should support more
+>image variant to satisfy different requirement. Sometimes that is also beyond we
+>can discuss here.
+>
+>> Are you using it for some other board derived from 405EX that doesn't have
+>> an FDT aware U-Boot?
+>> 
+>
+>Yes, this is really another factor. Anyway thinks your comments.
 
-Currently I have inserted code much like this to get a feeling on the
-contention:
+That's fine then.  I have no real problems with having a cuImage that works
+on Kilauea.  I just wouldn't want to promote it as the default because the
+cuImage wrapper is a bit of a hack.
 
-this_cpu = get_cpu();
-put_cpu();
-contention = spin_is_locked(&lock);
-spin_lock*(&lock);
-if (contention) {
-  /* spin lock was contended, prev_cpu, this_cpu */
-  /* no hard guarantee, as we had a possible race inbetween
-is_locked() and lock(), but works for driver/irq spin lock */
-}
+Anyway, I'll review the patches soon.  Thanks for the explanation.
 
-/* critical section */
-
-prev_cpu = this_cpu;
-spin_unlock*(&lock);
-
-Regards,
--- 
-Leon
+josh
