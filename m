@@ -1,32 +1,26 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A7FFCB70B0
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 03FF3B70B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 23:32:30 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 38E27DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 23:32:29 +1000 (EST)
-Date: Wed, 19 Aug 2009 17:32:27 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Michael Barkowski <michaelbarkowski@ruggedcom.com>
-Subject: Re: [PATCH v2] qe_lib: Set gpio data before changing the direction
-	to output
-Message-ID: <20090819133227.GA29934@oksana.dev.rtsoft.ru>
-References: <4A8B164E.6030704@ruggedcom.com>
-	<20090818210805.GA1725@oksana.dev.rtsoft.ru>
-	<4A8B1B2C.5090606@ruggedcom.com>
-	<20090818213355.GA20966@oksana.dev.rtsoft.ru>
-	<4A8B2C1C.3060403@freescale.com>
-	<20090818225607.GA29960@oksana.dev.rtsoft.ru>
-	<4A8BFE6C.9030604@ruggedcom.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4A8BFE6C.9030604@ruggedcom.com>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+	Wed, 19 Aug 2009 23:43:08 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6447EDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 23:43:06 +1000 (EST)
+Message-Id: <2E8B90A3-A3FD-4EC8-9D41-1BA9E8B261AB@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1250667232.4810.20.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: powerpc-next rebased
+Date: Wed, 19 Aug 2009 08:43:00 -0500
+References: <1250667232.4810.20.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,47 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 19, 2009 at 09:30:20AM -0400, Michael Barkowski wrote:
-> Anton Vorontsov wrote:
-> > On Tue, Aug 18, 2009 at 05:33:00PM -0500, Timur Tabi wrote:
-> >> Anton Vorontsov wrote:
-> >>> On Tue, Aug 18, 2009 at 05:20:44PM -0400, Michael Barkowski wrote:
-> >>>> This avoids having a short glitch if the desired initial value is not
-> >>>> the same as what was previously in the data register.
-> >>>>
-> >>>> Signed-off-by: Michael Barkowski <michaelbarkowski@ruggedcom.com>
-> >>> Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> >> I don't have the time to test this patch, so I abstain from acking. :-)
-> >> If Anton likes it, that's good enough for me.
-> > 
-> > You made me doubt for a moment. :-) Thanks for the suspiciousness.
-> > 
-> > What happens if a pin was previously configured as input? Does our
-> > write to the data register survive? For MPC8xxx GPIO controllers
-> > it does. And randomly taken QE spec says:
-> > 
-> >   A write to CPDAT is latched, and if the corresponding CPDIR
-> >   bits have configured the port pin as an output, the latched
-> >   value is driven onto the respective pin. However, if the
-> >   corresponding CPDIR bits have configured the port pin as an
-> >   input, the latched value is prevented from reaching the pin.
-> > 
-> > I guess we're safe, but Michael, could you actually test it
-> > (if not already)?
-> > 
-> 
-> I had tested it before with the pin initially configured as "disabled".
-> 
-> I have now also tested it with the pin initially configured as "input".
-> 
-> The value written to CPDAT seems to survive and is driven onto the pin
-> once CPDIR is changed to 1, just as noted in the spec.
-> 
-> Tested on 8360, by probing with a logic analyzer.
 
-Great, thanks a lot! I think the patch is perfect.
+On Aug 19, 2009, at 2:33 AM, Benjamin Herrenschmidt wrote:
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> Allright it's done, let's hope I didn't screw up :-)
+
+You screwed it up... :)
+
+The commits you pulled in from me you seem to have changed the author  
+of the commits which is NOT cool at all.  Adding signed-off-by is  
+good, changing the committer is ok, but changing the author of the  
+commit is not.  Please fix this ASAP.
+
+Here's an example (in your tree):
+
+http://git.kernel.org/?p=linux/kernel/git/benh/powerpc.git;a=commitdiff;h=87f1e94c949c28fdaa079d5115a8010c9a40569d
+
+vs the commit in my tree:
+
+http://git.kernel.org/?p=linux/kernel/git/galak/powerpc.git;a=commit;h=d920991f7e02788ba2b468b3023e5bbbc7a32f30
+
+- k
