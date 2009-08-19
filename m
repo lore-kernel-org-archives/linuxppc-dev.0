@@ -1,26 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C97D1B7087
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A416BB708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 15:00:44 +1000 (EST)
+	Wed, 19 Aug 2009 15:08:39 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 41F17DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 15:00:42 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n7J50ZlK002196
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 00:00:37 -0500
-Subject: [PATCH] powerpc/mm: Cleanup handling of execute permission v2
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 15:00:34 +1000
-Message-Id: <1250658034.4810.9.camel@pasglop>
-Mime-Version: 1.0
+	by ozlabs.org (Postfix) with ESMTPS id F3E7EDDD1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 15:08:38 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/5] powerpc/mm: Add MMU features for TLB reservation & Paired
+	MAS registers
+Date: Wed, 19 Aug 2009 00:08:29 -0500
+Message-Id: <1250658513-13009-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,532 +27,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an attempt at cleaning up a bit the way we handle execute
-permission on powerpc. _PAGE_HWEXEC is gone, _PAGE_EXEC is now only
-defined by CPUs that can do something with it, and the myriad of
-#ifdef's in the I$/D$ coherency code is reduced to 2 cases that
-hopefully should cover everything.
+Support for TLB reservation (or TLB Write Conditional) and Paired MAS
+registers are optional for a processor implementation so we handle
+them via MMU feature sections.
 
-The logic on BookE is a little bit different than what it was though
-not by much. Since now, _PAGE_EXEC will be set by the generic code
-for executable pages, we need to filter out if they are unclean and
-recover it. However, I don't expect the code to be more bloated than
-it already was in that area due to that change.
+We currently only used paired MAS registers to access the full RPN + perm
+bits that are kept in MAS7||MAS3.  We assume that if an implementation has
+hardware page table at this time it also implements in TLB reservations.
 
-I could boast that this brings proper enforcing of per-page execute
-permissions to all BookE and 40x but in fact, we've had that now for
-some time as a side effect of my previous rework in that area (and
-I didn't even know it :-) We would only enable execute permission if
-the page was cache clean and we would only cache clean it if we took
-and exec fault. Since we now enforce that the later only work if
-VM_EXEC is part of the VMA flags, we de-fact already enforce per-page
-execute permissions... Unless I missed something
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+ arch/powerpc/include/asm/mmu.h |    9 +++++++++
+ arch/powerpc/mm/tlb_low_64e.S  |   36 +++++++++++++++++++++++++++++++++++-
+ 2 files changed, 44 insertions(+), 1 deletions(-)
 
-This version restores the missing (oops) cache flush in
-ptep_set_access_flags() which broke BookE.
-
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index c9ff9d7..f2c52e2 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -186,7 +186,7 @@ static inline unsigned long pte_update(pte_t *p,
- #endif /* !PTE_ATOMIC_UPDATES */
- 
- #ifdef CONFIG_44x
--	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
-+	if ((old & _PAGE_USER) && (old & _PAGE_EXEC))
- 		icache_44x_need_flush = 1;
- #endif
- 	return old;
-@@ -217,7 +217,7 @@ static inline unsigned long long pte_update(pte_t *p,
- #endif /* !PTE_ATOMIC_UPDATES */
- 
- #ifdef CONFIG_44x
--	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
-+	if ((old & _PAGE_USER) && (old & _PAGE_EXEC))
- 		icache_44x_need_flush = 1;
- #endif
- 	return old;
-@@ -267,8 +267,7 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- {
- 	unsigned long bits = pte_val(entry) &
--		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW |
--		 _PAGE_HWEXEC | _PAGE_EXEC);
-+		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
- 	pte_update(ptep, 0, bits);
- }
- 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 200ec2d..806abe7 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -313,8 +313,7 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
- static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- {
- 	unsigned long bits = pte_val(entry) &
--		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW |
--		 _PAGE_EXEC | _PAGE_HWEXEC);
-+		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
- 
- #ifdef PTE_ATOMIC_UPDATES
- 	unsigned long old, tmp;
-diff --git a/arch/powerpc/include/asm/pte-40x.h b/arch/powerpc/include/asm/pte-40x.h
-index 07630fa..6c3e1f4 100644
---- a/arch/powerpc/include/asm/pte-40x.h
-+++ b/arch/powerpc/include/asm/pte-40x.h
-@@ -46,7 +46,7 @@
- #define	_PAGE_RW	0x040	/* software: Writes permitted */
- #define	_PAGE_DIRTY	0x080	/* software: dirty page */
- #define _PAGE_HWWRITE	0x100	/* hardware: Dirty & RW, set in exception */
--#define _PAGE_HWEXEC	0x200	/* hardware: EX permission */
-+#define _PAGE_EXEC	0x200	/* hardware: EX permission */
- #define _PAGE_ACCESSED	0x400	/* software: R: page referenced */
- 
- #define _PMD_PRESENT	0x400	/* PMD points to page of PTEs */
-diff --git a/arch/powerpc/include/asm/pte-44x.h b/arch/powerpc/include/asm/pte-44x.h
-index 37e98bc..4192b9b 100644
---- a/arch/powerpc/include/asm/pte-44x.h
-+++ b/arch/powerpc/include/asm/pte-44x.h
-@@ -78,7 +78,7 @@
- #define _PAGE_PRESENT	0x00000001		/* S: PTE valid */
- #define _PAGE_RW	0x00000002		/* S: Write permission */
- #define _PAGE_FILE	0x00000004		/* S: nonlinear file mapping */
--#define _PAGE_HWEXEC	0x00000004		/* H: Execute permission */
-+#define _PAGE_EXEC	0x00000004		/* H: Execute permission */
- #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
- #define _PAGE_DIRTY	0x00000010		/* S: Page dirty */
- #define _PAGE_SPECIAL	0x00000020		/* S: Special page */
-diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
-index 8c6e312..94e9797 100644
---- a/arch/powerpc/include/asm/pte-8xx.h
-+++ b/arch/powerpc/include/asm/pte-8xx.h
-@@ -36,7 +36,6 @@
- /* These five software bits must be masked out when the entry is loaded
-  * into the TLB.
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 2fcfefc..7ffbb65 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -58,6 +58,15 @@
   */
--#define _PAGE_EXEC	0x0008	/* software: i-cache coherency required */
- #define _PAGE_GUARDED	0x0010	/* software: guarded access */
- #define _PAGE_DIRTY	0x0020	/* software: page changed */
- #define _PAGE_RW	0x0040	/* software: user write access allowed */
-diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/pte-book3e.h
-index 1d27c77..9800565 100644
---- a/arch/powerpc/include/asm/pte-book3e.h
-+++ b/arch/powerpc/include/asm/pte-book3e.h
-@@ -37,12 +37,13 @@
- #define _PAGE_WRITETHRU	0x800000 /* W: cache write-through */
+ #define MMU_FTR_TLBIE_206		ASM_CONST(0x00400000)
  
- /* "Higher level" linux bit combinations */
--#define _PAGE_EXEC	_PAGE_BAP_SX /* Can be executed from potentially */
--#define _PAGE_HWEXEC	_PAGE_BAP_UX /* .. and was cache cleaned */
--#define _PAGE_RW	(_PAGE_BAP_SW | _PAGE_BAP_UW) /* User write permission */
--#define _PAGE_KERNEL_RW	(_PAGE_BAP_SW | _PAGE_BAP_SR | _PAGE_DIRTY)
--#define _PAGE_KERNEL_RO	(_PAGE_BAP_SR)
--#define _PAGE_USER	(_PAGE_BAP_UR | _PAGE_BAP_SR) /* Can be read */
-+#define _PAGE_EXEC		_PAGE_BAP_UX /* .. and was cache cleaned */
-+#define _PAGE_RW		(_PAGE_BAP_SW | _PAGE_BAP_UW) /* User write permission */
-+#define _PAGE_KERNEL_RW		(_PAGE_BAP_SW | _PAGE_BAP_SR | _PAGE_DIRTY)
-+#define _PAGE_KERNEL_RO		(_PAGE_BAP_SR)
-+#define _PAGE_KERNEL_RWX	(_PAGE_BAP_SW | _PAGE_BAP_SR | _PAGE_DIRTY | _PAGE_BAP_SX)
-+#define _PAGE_KERNEL_ROX	(_PAGE_BAP_SR | _PAGE_BAP_SX)
-+#define _PAGE_USER		(_PAGE_BAP_UR | _PAGE_BAP_SR) /* Can be read */
- 
- #define _PAGE_HASHPTE	0
- #define _PAGE_BUSY	0
-diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
-index 8bb6464..c3b6507 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -13,9 +13,6 @@
- #ifndef _PAGE_HWWRITE
- #define _PAGE_HWWRITE	0
- #endif
--#ifndef _PAGE_HWEXEC
--#define _PAGE_HWEXEC	0
--#endif
- #ifndef _PAGE_EXEC
- #define _PAGE_EXEC	0
- #endif
-@@ -48,10 +45,16 @@
- #define PMD_PAGE_SIZE(pmd)	bad_call_to_PMD_PAGE_SIZE()
- #endif
- #ifndef _PAGE_KERNEL_RO
--#define _PAGE_KERNEL_RO	0
-+#define _PAGE_KERNEL_RO		0
-+#endif
-+#ifndef _PAGE_KERNEL_ROX
-+#define _PAGE_KERNEL_ROX	(_PAGE_EXEC)
- #endif
- #ifndef _PAGE_KERNEL_RW
--#define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
-+#define _PAGE_KERNEL_RW		(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
-+#endif
-+#ifndef _PAGE_KERNEL_RWX
-+#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE | _PAGE_EXEC)
- #endif
- #ifndef _PAGE_HPTEFLAGS
- #define _PAGE_HPTEFLAGS _PAGE_HASHPTE
-@@ -96,8 +99,7 @@ extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
- #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
- 			 _PAGE_WRITETHRU | _PAGE_ENDIAN | _PAGE_4K_PFN | \
- 			 _PAGE_USER | _PAGE_ACCESSED | \
--			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | \
--			 _PAGE_EXEC | _PAGE_HWEXEC)
-+			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | _PAGE_EXEC)
- 
- /*
-  * We define 2 sets of base prot bits, one for basic pages (ie,
-@@ -154,11 +156,9 @@ extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
- 				 _PAGE_NO_CACHE)
- #define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
- 				 _PAGE_NO_CACHE | _PAGE_GUARDED)
--#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW | _PAGE_EXEC | \
--				 _PAGE_HWEXEC)
-+#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RWX)
- #define PAGE_KERNEL_RO	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
--#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO | _PAGE_EXEC | \
--				 _PAGE_HWEXEC)
-+#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_ROX)
- 
- /* Protection used for kernel text. We want the debuggers to be able to
-  * set breakpoints anywhere, so don't write protect the kernel text
-diff --git a/arch/powerpc/include/asm/pte-fsl-booke.h b/arch/powerpc/include/asm/pte-fsl-booke.h
-index 10820f5..ce8a9e9 100644
---- a/arch/powerpc/include/asm/pte-fsl-booke.h
-+++ b/arch/powerpc/include/asm/pte-fsl-booke.h
-@@ -23,7 +23,7 @@
- #define _PAGE_FILE	0x00002	/* S: when !present: nonlinear file mapping */
- #define _PAGE_RW	0x00004	/* S: Write permission (SW) */
- #define _PAGE_DIRTY	0x00008	/* S: Page dirty */
--#define _PAGE_HWEXEC	0x00010	/* H: SX permission */
-+#define _PAGE_EXEC	0x00010	/* H: SX permission */
- #define _PAGE_ACCESSED	0x00020	/* S: Page referenced */
- 
- #define _PAGE_ENDIAN	0x00040	/* H: E bit */
-diff --git a/arch/powerpc/include/asm/pte-hash32.h b/arch/powerpc/include/asm/pte-hash32.h
-index 16e571c..4aad413 100644
---- a/arch/powerpc/include/asm/pte-hash32.h
-+++ b/arch/powerpc/include/asm/pte-hash32.h
-@@ -26,7 +26,6 @@
- #define _PAGE_WRITETHRU	0x040	/* W: cache write-through */
- #define _PAGE_DIRTY	0x080	/* C: page changed */
- #define _PAGE_ACCESSED	0x100	/* R: page referenced */
--#define _PAGE_EXEC	0x200	/* software: i-cache coherency required */
- #define _PAGE_RW	0x400	/* software: user write access allowed */
- #define _PAGE_SPECIAL	0x800	/* software: Special page */
- 
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index 656cfb2..711368b 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -497,7 +497,7 @@ tlb_44x_patch_hwater_D:
- 	mtspr	SPRN_MMUCR,r12
- 
- 	/* Make up the required permissions */
--	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_HWEXEC
-+	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
- 
- 	/* Compute pgdir/pmd offset */
- 	rlwinm 	r12, r10, PPC44x_PGD_OFF_SHIFT, PPC44x_PGD_OFF_MASK_BIT, 29
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index eca8048..2c5af52 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -643,7 +643,7 @@ interrupt_base:
- 
- 4:
- 	/* Make up the required permissions */
--	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_HWEXEC
-+	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
- 
- 	FIND_PTE
- 	andc.	r13,r13,r11		/* Check permission */
-@@ -742,7 +742,7 @@ finish_tlb_load:
- #endif
- 	mtspr	SPRN_MAS2, r12
- 
--	li	r10, (_PAGE_HWEXEC | _PAGE_PRESENT)
-+	li	r10, (_PAGE_EXEC | _PAGE_PRESENT)
- 	rlwimi	r10, r11, 31, 29, 29	/* extract _PAGE_DIRTY into SW */
- 	and	r12, r11, r10
- 	andi.	r10, r11, _PAGE_USER	/* Test for _PAGE_USER */
-diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
-index 29954dc..f5e7b9c 100644
---- a/arch/powerpc/mm/40x_mmu.c
-+++ b/arch/powerpc/mm/40x_mmu.c
-@@ -105,7 +105,7 @@ unsigned long __init mmu_mapin_ram(void)
- 
- 	while (s >= LARGE_PAGE_SIZE_16M) {
- 		pmd_t *pmdp;
--		unsigned long val = p | _PMD_SIZE_16M | _PAGE_HWEXEC | _PAGE_HWWRITE;
-+		unsigned long val = p | _PMD_SIZE_16M | _PAGE_EXEC | _PAGE_HWWRITE;
- 
- 		pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
- 		pmd_val(*pmdp++) = val;
-@@ -120,7 +120,7 @@ unsigned long __init mmu_mapin_ram(void)
- 
- 	while (s >= LARGE_PAGE_SIZE_4M) {
- 		pmd_t *pmdp;
--		unsigned long val = p | _PMD_SIZE_4M | _PAGE_HWEXEC | _PAGE_HWWRITE;
-+		unsigned long val = p | _PMD_SIZE_4M | _PAGE_EXEC | _PAGE_HWWRITE;
- 
- 		pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
- 		pmd_val(*pmdp) = val;
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index cafb2a2..cfc2499 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -128,28 +128,6 @@ void pte_free_finish(void)
- 
- #endif /* CONFIG_SMP */
- 
--/*
-- * Handle i/d cache flushing, called from set_pte_at() or ptep_set_access_flags()
-- */
--static pte_t do_dcache_icache_coherency(pte_t pte)
--{
--	unsigned long pfn = pte_pfn(pte);
--	struct page *page;
--
--	if (unlikely(!pfn_valid(pfn)))
--		return pte;
--	page = pfn_to_page(pfn);
--
--	if (!PageReserved(page) && !test_bit(PG_arch_1, &page->flags)) {
--		pr_devel("do_dcache_icache_coherency... flushing\n");
--		flush_dcache_icache_page(page);
--		set_bit(PG_arch_1, &page->flags);
--	}
--	else
--		pr_devel("do_dcache_icache_coherency... already clean\n");
--	return __pte(pte_val(pte) | _PAGE_HWEXEC);
--}
--
- static inline int is_exec_fault(void)
- {
- 	return current->thread.regs && TRAP(current->thread.regs) == 0x400;
-@@ -157,49 +135,139 @@ static inline int is_exec_fault(void)
- 
- /* We only try to do i/d cache coherency on stuff that looks like
-  * reasonably "normal" PTEs. We currently require a PTE to be present
-- * and we avoid _PAGE_SPECIAL and _PAGE_NO_CACHE
-+ * and we avoid _PAGE_SPECIAL and _PAGE_NO_CACHE. We also only do that
-+ * on userspace PTEs
-  */
- static inline int pte_looks_normal(pte_t pte)
- {
- 	return (pte_val(pte) &
--		(_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE)) ==
--		(_PAGE_PRESENT);
-+	    (_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE | _PAGE_USER)) ==
-+	    (_PAGE_PRESENT | _PAGE_USER);
- }
- 
--#if defined(CONFIG_PPC_STD_MMU)
-+struct page * maybe_pte_to_page(pte_t pte)
-+{
-+	unsigned long pfn = pte_pfn(pte);
-+	struct page *page;
++/* Enable use of TLB reservation.  Processor should support tlbsrx.
++ * instruction and MAS0[WQ].
++ */
++#define MMU_FTR_USE_TLBRSRV		ASM_CONST(0x00800000)
 +
-+	if (unlikely(!pfn_valid(pfn)))
-+		return NULL;
-+	page = pfn_to_page(pfn);
-+	if (PageReserved(page))
-+		return NULL;
-+	return page;
-+}
++/* Use paired MAS registers (MAS7||MAS3, etc.)
++ */
++#define MMU_FTR_USE_PAIRED_MAS		ASM_CONST(0x01000000)
 +
-+#if defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC == 0
-+
- /* Server-style MMU handles coherency when hashing if HW exec permission
-- * is supposed per page (currently 64-bit only). Else, we always flush
-- * valid PTEs in set_pte.
-+ * is supposed per page (currently 64-bit only). If not, then, we always
-+ * flush the cache for valid PTEs in set_pte. Embedded CPU without HW exec
-+ * support falls into the same category.
-  */
--static inline int pte_need_exec_flush(pte_t pte, int set_pte)
-+
-+static pte_t set_pte_filter(pte_t pte)
- {
--	return set_pte && pte_looks_normal(pte) &&
--		!(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
--		  cpu_has_feature(CPU_FTR_NOEXECUTE));
-+	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
-+	if (pte_looks_normal(pte) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
-+				       cpu_has_feature(CPU_FTR_NOEXECUTE))) {
-+		struct page *pg = maybe_pte_to_page(pte);
-+		if (!pg)
-+			return pte;
-+		if (!test_bit(PG_arch_1, &pg->flags)) {
-+			flush_dcache_icache_page(pg);
-+			set_bit(PG_arch_1, &pg->flags);
-+		}
-+	}
-+	return pte;
- }
--#elif _PAGE_HWEXEC == 0
--/* Embedded type MMU without HW exec support (8xx only so far), we flush
-- * the cache for any present PTE
-- */
--static inline int pte_need_exec_flush(pte_t pte, int set_pte)
-+
-+static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
-+				     int dirty)
- {
--	return set_pte && pte_looks_normal(pte);
-+	return pte;
- }
--#else
--/* Other embedded CPUs with HW exec support per-page, we flush on exec
-- * fault if HWEXEC is not set
-+
-+#else /* defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC == 0 */
-+
-+/* Embedded type MMU with HW exec support. This is a bit more complicated
-+ * as we don't have two bits to spare for _PAGE_EXEC and _PAGE_HWEXEC so
-+ * instead we "filter out" the exec permission for non clean pages.
-  */
--static inline int pte_need_exec_flush(pte_t pte, int set_pte)
-+static pte_t set_pte_filter(pte_t pte)
- {
--	return pte_looks_normal(pte) && is_exec_fault() &&
--		!(pte_val(pte) & _PAGE_HWEXEC);
-+	struct page *pg;
-+
-+	/* No exec permission in the first place, move on */
-+	if (!(pte_val(pte) & _PAGE_EXEC) || !pte_looks_normal(pte))
-+		return pte;
-+
-+	/* If you set _PAGE_EXEC on weird pages you're on your own */
-+	pg = maybe_pte_to_page(pte);
-+	if (unlikely(!pg))
-+		return pte;
-+
-+	/* If the page clean, we move on */
-+	if (test_bit(PG_arch_1, &pg->flags))
-+		return pte;
-+
-+	/* If it's an exec fault, we flush the cache and make it clean */
-+	if (is_exec_fault()) {
-+		flush_dcache_icache_page(pg);
-+		set_bit(PG_arch_1, &pg->flags);
-+		return pte;
-+	}
-+
-+	/* Else, we filter out _PAGE_EXEC */
-+	return __pte(pte_val(pte) & ~_PAGE_EXEC);
- }
--#endif
-+
-+static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
-+				     int dirty)
-+{
-+	struct page *pg;
-+
-+	/* So here, we only care about exec faults, as we use them
-+	 * to recover lost _PAGE_EXEC and perform I$/D$ coherency
-+	 * if necessary. Also if _PAGE_EXEC is already set, same deal,
-+	 * we just bail out
-+	 */
-+	if (dirty || (pte_val(pte) & _PAGE_EXEC) || !is_exec_fault())
-+		return pte;
-+
-+#ifdef CONFIG_DEBUG_VM
-+	/* So this is an exec fault, _PAGE_EXEC is not set. If it was
-+	 * an error we would have bailed out earlier in do_page_fault()
-+	 * but let's make sure of it
-+	 */
-+	if (WARN_ON(!(vma->vm_flags & VM_EXEC)))
-+		return pte;
-+#endif /* CONFIG_DEBUG_VM */
-+
-+	/* If you set _PAGE_EXEC on weird pages you're on your own */
-+	pg = maybe_pte_to_page(pte);
-+	if (unlikely(!pg))
-+		goto bail;
-+
-+	/* If the page is already clean, we move on */
-+	if (test_bit(PG_arch_1, &pg->flags))
-+		goto bail;
-+
-+	/* Clean the page and set PG_arch_1 */
-+	flush_dcache_icache_page(pg);
-+	set_bit(PG_arch_1, &pg->flags);
-+
-+ bail:
-+	return __pte(pte_val(pte) | _PAGE_EXEC);
-+}
-+
-+#endif /* !(defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC == 0) */
+ #ifndef __ASSEMBLY__
+ #include <asm/cputable.h>
  
- /*
-  * set_pte stores a linux PTE into the linux page table.
-  */
--void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte)
-+void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
-+		pte_t pte)
- {
- #ifdef CONFIG_DEBUG_VM
- 	WARN_ON(pte_present(*ptep));
-@@ -208,9 +276,7 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte
- 	 * this context might not have been activated yet when this
- 	 * is called.
- 	 */
--	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
--	if (pte_need_exec_flush(pte, 1))
--		pte = do_dcache_icache_coherency(pte);
-+	pte = set_pte_filter(pte);
- 
- 	/* Perform the setting of the PTE */
- 	__set_pte_at(mm, addr, ptep, pte, 0);
-@@ -227,8 +293,7 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- 			  pte_t *ptep, pte_t entry, int dirty)
- {
- 	int changed;
--	if (!dirty && pte_need_exec_flush(entry, 0))
--		entry = do_dcache_icache_coherency(entry);
-+	entry = set_access_flags_filter(entry, vma, dirty);
- 	changed = !pte_same(*(ptep), entry);
- 	if (changed) {
- 		if (!(vma->vm_flags & VM_HUGETLB))
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 5422169..cb96cb2 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -142,7 +142,7 @@ ioremap_flags(phys_addr_t addr, unsigned long size, unsigned long flags)
- 		flags |= _PAGE_DIRTY | _PAGE_HWWRITE;
- 
- 	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
--	flags &= ~(_PAGE_USER | _PAGE_EXEC | _PAGE_HWEXEC);
-+	flags &= ~(_PAGE_USER | _PAGE_EXEC);
- 
- 	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
- }
 diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-index 10d524d..cd92f62 100644
+index 10d524d..5b8e274 100644
 --- a/arch/powerpc/mm/tlb_low_64e.S
 +++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -133,7 +133,7 @@
+@@ -189,12 +189,16 @@ normal_tlb_miss:
+ 	clrrdi	r14,r14,3
+ 	or	r10,r15,r14
  
- 	/* We do the user/kernel test for the PID here along with the RW test
++BEGIN_MMU_FTR_SECTION
+ 	/* Set the TLB reservation and seach for existing entry. Then load
+ 	 * the entry.
  	 */
--	li	r11,_PAGE_PRESENT|_PAGE_HWEXEC	/* Base perm */
-+	li	r11,_PAGE_PRESENT|_PAGE_EXEC	/* Base perm */
- 	oris	r11,r11,_PAGE_ACCESSED@h
+ 	PPC_TLBSRX_DOT(0,r16)
+ 	ld	r14,0(r10)
+ 	beq	normal_tlb_miss_done
++MMU_FTR_SECTION_ELSE
++	ld	r14,0(r10)
++ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
  
- 	cmpldi	cr0,r15,0			/* Check for user region */
-@@ -256,7 +256,7 @@ normal_tlb_miss_done:
- 
- normal_tlb_miss_access_fault:
- 	/* We need to check if it was an instruction miss */
--	andi.	r10,r11,_PAGE_HWEXEC
-+	andi.	r10,r11,_PAGE_EXEC
+ finish_normal_tlb_miss:
+ 	/* Check if required permissions are met */
+@@ -241,7 +245,14 @@ finish_normal_tlb_miss:
  	bne	1f
- 	ld	r14,EX_TLB_DEAR(r12)
- 	ld	r15,EX_TLB_ESR(r12)
+ 	li	r11,MAS3_SW|MAS3_UW
+ 	andc	r15,r15,r11
+-1:	mtspr	SPRN_MAS7_MAS3,r15
++1:
++BEGIN_MMU_FTR_SECTION
++	srdi	r16,r15,32
++	mtspr	SPRN_MAS3,r15
++	mtspr	SPRN_MAS7,r16
++MMU_FTR_SECTION_ELSE
++	mtspr	SPRN_MAS7_MAS3,r15
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_PAIRED_MAS)
+ 
+ 	tlbwe
+ 
+@@ -311,11 +322,13 @@ virt_page_table_tlb_miss:
+ 	rlwinm	r10,r10,0,16,1			/* Clear TID */
+ 	mtspr	SPRN_MAS1,r10
+ 1:
++BEGIN_MMU_FTR_SECTION
+ 	/* Search if we already have a TLB entry for that virtual address, and
+ 	 * if we do, bail out.
+ 	 */
+ 	PPC_TLBSRX_DOT(0,r16)
+ 	beq	virt_page_table_tlb_miss_done
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_TLBRSRV)
+ 
+ 	/* Now, we need to walk the page tables. First check if we are in
+ 	 * range.
+@@ -367,7 +380,14 @@ virt_page_table_tlb_miss:
+ 	 */
+ 	clrldi	r11,r15,4		/* remove region ID from RPN */
+ 	ori	r10,r11,1		/* Or-in SR */
++
++BEGIN_MMU_FTR_SECTION
++	srdi	r16,r10,32
++	mtspr	SPRN_MAS3,r10
++	mtspr	SPRN_MAS7,r16
++MMU_FTR_SECTION_ELSE
+ 	mtspr	SPRN_MAS7_MAS3,r10
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_PAIRED_MAS)
+ 
+ 	tlbwe
+ 
+@@ -618,7 +638,14 @@ htw_tlb_miss:
+ #else
+ 	ori	r10,r15,(BOOK3E_PAGESZ_4K << MAS3_SPSIZE_SHIFT)
+ #endif
++
++BEGIN_MMU_FTR_SECTION
++	srdi	r16,r10,32
++	mtspr	SPRN_MAS3,r10
++	mtspr	SPRN_MAS7,r16
++MMU_FTR_SECTION_ELSE
+ 	mtspr	SPRN_MAS7_MAS3,r10
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_PAIRED_MAS)
+ 
+ 	tlbwe
+ 
+@@ -700,7 +727,14 @@ tlb_load_linear:
+ 	clrrdi	r10,r16,30		/* 1G page index */
+ 	clrldi	r10,r10,4		/* clear region bits */
+ 	ori	r10,r10,MAS3_SR|MAS3_SW|MAS3_SX
++
++BEGIN_MMU_FTR_SECTION
++	srdi	r16,r10,32
++	mtspr	SPRN_MAS3,r10
++	mtspr	SPRN_MAS7,r16
++MMU_FTR_SECTION_ELSE
+ 	mtspr	SPRN_MAS7_MAS3,r10
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_PAIRED_MAS)
+ 
+ 	tlbwe
+ 
 -- 
-1.6.1.2.14.gf26b5
+1.6.0.6
