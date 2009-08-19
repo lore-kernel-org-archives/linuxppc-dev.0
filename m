@@ -1,22 +1,32 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail7.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BDA9EB7099
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E8FDAB7B68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 Aug 2009 11:44:35 +1000 (EST)
-Message-ID: <4A8B5929.2030000@windriver.com>
-Date: Wed, 19 Aug 2009 09:45:13 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+	Wed, 19 Aug 2009 11:51:03 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 7CB1ADDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2009 11:51:03 +1000 (EST)
+Date: Wed, 19 Aug 2009 05:51:01 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
+Message-ID: <20090819015101.GA10782@oksana.dev.rtsoft.ru>
+References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
+	<20090807195822.GG2735@oksana.dev.rtsoft.ru>
+	<A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org>
+	<20090818233818.GA29042@oksana.dev.rtsoft.ru>
+	<F58A75CD-73CC-4F75-AF51-2BCC0B828E84@kernel.crashing.org>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: powerpc/405ex: Support cuImage for PPC405EX
-References: <1250562484-16415-1-git-send-email-tiejun.chen@windriver.com>
-	<20090818132835.GA2530@zod.rchland.ibm.com>
-In-Reply-To: <20090818132835.GA2530@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <F58A75CD-73CC-4F75-AF51-2BCC0B828E84@kernel.crashing.org>
+Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
+	sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Pierre Ossman <pierre@ossman.eu>, David Vrabel <david.vrabel@csr.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +36,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Tue, Aug 18, 2009 at 10:28:02AM +0800, Tiejun Chen wrote:
->> Summary: powerpc/405ex: Support cuImage for PPC405EX
->> Reviewers: Benjmain and linux-ppc
->> ----------------------------------------------------
->> These patch series are used to support cuImage on the kilauea board based on PPC405ex.
->>
->> Tested on the amcc kilauea board:
+On Tue, Aug 18, 2009 at 08:24:17PM -0500, Kumar Gala wrote:
 > 
-> Hm.  The U-Boot version that ships on the AMCC Kilauea board is FDT aware, so
-> cuImage shouldn't be needed at all.  I'm slightly confused why we need this.
-
-That the newer u-boot can aware extra on Kilauea is really as you said. But I
-think I/we need to consider some other requirements for 405EX, such as only
-using one image for convenient on embedded system, and u-boot don't pass dtb for
-kernel since it will be isolated with one customer software layer.
-
-And actually to support old U-boot compatibility is original *goal* of
-implementing cuImage in kernel as we know. Right?
-
-As Documentation/powerpc/bootwrapper.txt I think the kernel should support more
-image variant to satisfy different requirement. Sometimes that is also beyond we
-can discuss here.
-
-> Are you using it for some other board derived from 405EX that doesn't have
-> an FDT aware U-Boot?
+> On Aug 18, 2009, at 6:38 PM, Anton Vorontsov wrote:
 > 
-
-Yes, this is really another factor. Anyway thinks your comments.
-
-Best Reards
-Tiejun
-
-> josh
+> >This patch simply adds sdhci node to the device tree.
+> >
+> >We specify clock-frequency manually, so that eSDHC will work without
+> >upgrading U-Boot. Though, that'll only work for default setup (1500
+> >MHz) on new board revisions. For non-default setups, it's recommended
+> >to upgrade U-Boot, since it will fixup clock-frequency automatically.
+> >
+> >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > 
+> out of interest the 85xx eSDHC don't need the sdhci,wp-inverted
+> property?
+
+Yes, eSDHC controllers in MPC85xx report normal state in its
+registers.
+
+But the funny thing is that the switch itself is inverted,
+so to enable writing, on MPC8569E-MDS and MPC8536DS boards
+we have to place card's write protect tab into "lock" position.
+
+Unfortunately we can't fix that in software since controller
+doesn't permit write operations if it detects write-protected
+state. On the bright side, IIRC MPC8536DS revision history
+says that WP line level is fixed via BCSR upgrade. Not sure
+if it is possible to fix it for MPC8569E-MDS.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
