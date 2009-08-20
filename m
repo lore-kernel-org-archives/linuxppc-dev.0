@@ -1,28 +1,24 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 93589B7B6D
+Return-Path: <solomon@linux-wlan.com>
+Received: from cdptpa-omtalb.mail.rr.com (cdptpa-omtalb.mail.rr.com
+	[75.180.132.122])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id E4EA2B7B66
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 05:36:51 +1000 (EST)
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 92B8BDDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 05:36:48 +1000 (EST)
-Date: Thu, 20 Aug 2009 15:36:44 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [U-Boot] NAND  ECC Error with wrong SMC ording bug
-Message-ID: <20090820153644.631dbd7b@lappy.seanm.ca>
-In-Reply-To: <200908200701.21076.sr@denx.de>
-References: <19081.57584.173693.798535@cargo.ozlabs.ibm.com>
-	<4A8C87E6.6070702@amcc.com>
-	<20090820003851.1a532444@lappy.seanm.ca>
-	<200908200701.21076.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: u-boot@lists.denx.de, Feng Kan <fkan@amcc.com>,
-	linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
+	Fri, 21 Aug 2009 06:24:11 +1000 (EST)
+Received: from chef.ghq.linux-wlan.com ([24.73.236.122])
+	by cdptpa-omta01.mail.rr.com with ESMTP
+	id <20090820201908909.JUGC29812@cdptpa-omta01.mail.rr.com>
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2009 20:19:08 +0000
+Received: from chef.ghq.linux-wlan.com (localhost.localdomain [127.0.0.1])
+	by chef.ghq.linux-wlan.com (8.14.3/8.14.2) with ESMTP id n7KKF7Ol010363
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2009 16:15:07 -0400
+Received: (from solomon@localhost)
+	by chef.ghq.linux-wlan.com (8.14.3/8.14.2/Submit) id n7KKF7kx010360
+	for linuxppc-dev@lists.ozlabs.org; Thu, 20 Aug 2009 16:15:07 -0400
+From: Solomon Peachy <solomon@linux-wlan.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Author: Solomon Peachy <solomon@linux-wlan.com>
+Date: Thu, 20 Aug 2009 16:15:07 -0400
+Message-Id: <1250799307-10271-1-git-send-email-solomon@linux-wlan.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,117 +28,678 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 20 Aug 2009 07:01:21 +0200
-Stefan Roese <sr@denx.de> wrote:
+    [PATCH v2] Add support for the ESTeem 195E (PPC405EP) SBC
+    
+    This patch adds support for the ESTeem 195E Hotfoot SBC.
+    I've been maintaining this out-of-tree for some time now for
+    older kernels, but recently I ported it to the new unified powerpc
+    tree with the intent of pushing it upstream.
+    
+    The 195E boards use ancient versions of u-boot and a slightly mangled
+    verison of the oft-abused ppcboot header.  (v2 of this patch moves the
+    modified ppcboot header into ppcboot-hotfoot.h)
+    
+    There are several variants of the SBC deployed, single/dual
+    ethernet+serial, and also 4MB/8MB flash variations.  In the interest of
+    having a single kernel image boot on all boards, the cuboot shim detects
+    the differences and mangles the DTS tree appropriately.
+    
+    With the exception of the CF interface that was never populated on
+    production boards, this code/DTS supports all boardpop options.
+    
+    Signed-off-by:  Solomon Peachy <solomon@linux-wlan.com>
 
-> On Thursday 20 August 2009 06:38:51 Sean MacLennan wrote:
-> > > I see other boards using SMC as well, can someone comment on the
-> > > change I am proposing.
-> > > Should I change the correction algorithm or the calculate
-> > > function? If the later is preferred
-> > > it would mean the change must be pushed in both U-Boot and Linux.
-> >
-> > Odds are the calculate function is wrong. The correction algo is
-> > used by many nand drivers, I *assume* it is correct. The calculate
-> > function was set to agree with u-boot (1.3.0).
-> 
-> Yes, it seems that you changed the order in the calculation function
-> while reworking the NDFC driver for arch/powerpc. So we should
-> probably change this order back to the original version. And change
-> it in U-Boot as well.
-> 
-> BTW: I didn't see any problems with ECC so far with the current code.
-> Feng, how did you spot this problem?
-
-Ok, I think I have reproduced the problem programmatically. Basically,
-I force a one bit error with the following patch:
-
-diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
-index 8c21b89..91dd5b4 100644
---- a/drivers/mtd/nand/nand_base.c
-+++ b/drivers/mtd/nand/nand_base.c
-@@ -1628,11 +1628,22 @@ static void nand_write_page_hwecc(struct mtd_info *mtd, struct nand_chip *chip,
- 	uint8_t *ecc_calc = chip->buffers->ecccalc;
- 	const uint8_t *p = buf;
- 	uint32_t *eccpos = chip->ecc.layout->eccpos;
-+	static int count;
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 9ae7b7e..5a109a9 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -39,6 +39,7 @@ DTS_FLAGS	?= -p 1024
  
- 	for (i = 0; eccsteps; eccsteps--, i += eccbytes, p += eccsize) {
- 		chip->ecc.hwctl(mtd, NAND_ECC_WRITE);
--		chip->write_buf(mtd, p, eccsize);
--		chip->ecc.calculate(mtd, p, &ecc_calc[i]);
-+		if (count == 0) {
-+			count = 1;
-+			printk("Corrupt one bit: %08x => %08x\n",
-+			       *p, *p ^ 8);
-+			*(uint8_t *)p ^= 8;
-+			chip->write_buf(mtd, p, eccsize);
-+			*(uint8_t *)p ^= 8;
-+			nand_calculate_ecc(mtd, p, &ecc_calc[i]);
-+		} else {
-+			chip->write_buf(mtd, p, eccsize);
-+			chip->ecc.calculate(mtd, p, &ecc_calc[i]);
-+		}
- 	}
+ $(obj)/4xx.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/ebony.o: BOOTCFLAGS += -mcpu=405
++$(obj)/cuboot-hotfoot.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/cuboot-taishan.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/cuboot-katmai.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/cuboot-acadia.o: BOOTCFLAGS += -mcpu=405
+@@ -67,7 +68,7 @@ src-wlib := string.S crt0.S crtsavres.S stdio.c main.c \
+ 		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
+ 		fsl-soc.c mpc8xx.c pq2.c
+ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c \
+-		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
++		cuboot-ebony.c cuboot-hotfoot.c treeboot-ebony.c prpmc2800.c \
+ 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+ 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c \
+ 		cuboot-bamboo.c cuboot-mpc7448hpc2.c cuboot-taishan.c \
+@@ -190,6 +191,7 @@ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
  
- 	for (i = 0; i < chip->ecc.total; i++)
-
-Basically I write a one bit error to the NAND, but calculate with the
-correct bit. This assumes nand_calculate_ecc is correct.
-
-I then added debugs to the correction to make sure it corrected
-properly:
-
-diff --git a/drivers/mtd/nand/nand_ecc.c b/drivers/mtd/nand/nand_ecc.c
-index c0cb87d..57dcaa1 100644
---- a/drivers/mtd/nand/nand_ecc.c
-+++ b/drivers/mtd/nand/nand_ecc.c
-@@ -483,14 +483,20 @@ int nand_correct_data(struct mtd_info *mtd, unsigned char *buf,
- 			byte_addr = (addressbits[b2 & 0x3] << 8) +
- 				    (addressbits[b1] << 4) + addressbits[b0];
- 		bit_addr = addressbits[b2 >> 2];
+ # Board ports in arch/powerpc/platform/40x/Kconfig
+ image-$(CONFIG_EP405)			+= dtbImage.ep405
++image-$(CONFIG_HOTFOOT)			+= cuImage.hotfoot
+ image-$(CONFIG_WALNUT)			+= treeImage.walnut
+ image-$(CONFIG_ACADIA)			+= cuImage.acadia
+ 
+diff --git a/arch/powerpc/boot/cuboot-hotfoot.c b/arch/powerpc/boot/cuboot-hotfoot.c
+new file mode 100644
+index 0000000..8f697b9
+--- /dev/null
++++ b/arch/powerpc/boot/cuboot-hotfoot.c
+@@ -0,0 +1,142 @@
++/*
++ * Old U-boot compatibility for Esteem 195E Hotfoot CPU Board
++ *
++ * Author: Solomon Peachy <solomon@linux-wlan.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
 +
-+		printk("Single bit error: correct %08x => %08x\n",
-+		       buf[byte_addr], buf[byte_addr] ^ (1 << bit_addr));
++#include "ops.h"
++#include "stdio.h"
++#include "reg.h"
++#include "dcr.h"
++#include "4xx.h"
++#include "cuboot.h"
 +
- 		/* flip the bit */
- 		buf[byte_addr] ^= (1 << bit_addr);
- 		return 1;
- 
- 	}
- 	/* count nr of bits; use table lookup, faster than calculating it */
--	if ((bitsperbyte[b0] + bitsperbyte[b1] + bitsperbyte[b2]) == 1)
-+	if ((bitsperbyte[b0] + bitsperbyte[b1] + bitsperbyte[b2]) == 1) {
-+		printk("ECC DATA BAD\n"); // SAM DBG
- 		return 1;	/* error in ecc data; no action needed */
++#define TARGET_4xx
++#define TARGET_HOTFOOT
++
++#include "ppcboot-hotfoot.h"
++
++static bd_t bd;
++
++#define NUM_REGS 3
++
++static void hotfoot_fixups(void)
++{
++	u32 uart = mfdcr(DCRN_CPC0_UCR) & 0x7f;
++
++	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize); 
++
++	dt_fixup_cpu_clocks(bd.bi_procfreq, bd.bi_procfreq, 0);
++	dt_fixup_clock("/plb", bd.bi_plb_busfreq);
++	dt_fixup_clock("/plb/opb", bd.bi_opbfreq);
++	dt_fixup_clock("/plb/ebc", bd.bi_pci_busfreq);
++	dt_fixup_clock("/plb/opb/serial@ef600300", bd.bi_procfreq / uart); 
++	dt_fixup_clock("/plb/opb/serial@ef600400", bd.bi_procfreq / uart); 
++	
++	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
++	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
++
++	/* Is this a single eth/serial board? */
++	if ((bd.bi_enet1addr[0] == 0) && 
++	    (bd.bi_enet1addr[1] == 0) &&
++	    (bd.bi_enet1addr[2] == 0) &&
++	    (bd.bi_enet1addr[3] == 0) &&
++	    (bd.bi_enet1addr[4] == 0) &&
++	    (bd.bi_enet1addr[5] == 0)) {
++		void *devp;
++
++		printf("Trimming devtree for single serial/eth board\n");
++
++		devp = finddevice("/plb/opb/serial@ef600300");
++		if (!devp)
++			fatal("Can't find node for /plb/opb/serial@ef600300");
++		del_node(devp);
++
++		devp = finddevice("/plb/opb/ethernet@ef600900");
++		if (!devp)
++			fatal("Can't find node for /plb/opb/ethernet@ef600900");
++		del_node(devp);
 +	}
++
++	ibm4xx_quiesce_eth((u32 *)0xef600800, (u32 *)0xef600900);
++
++	/* Fix up flash size in fdt for 4M boards. */
++	if (bd.bi_flashsize < 0x800000) {
++		u32 regs[NUM_REGS];
++		void *devp = finddevice("/plb/ebc/nor_flash@0");
++		if (!devp)
++			fatal("Can't find FDT node for nor_flash!??");
++
++		printf("Fixing devtree for 4M Flash\n");
++		
++		/* First fix up the base addresse */
++		getprop(devp, "reg", regs, sizeof(regs));
++		regs[0] = 0;
++		regs[1] = 0xffc00000;
++		regs[2] = 0x00400000;
++		setprop(devp, "reg", regs, sizeof(regs));
++		
++		/* Then the offsets */
++		devp = finddevice("/plb/ebc/nor_flash@0/partition@0");
++		if (!devp)
++			fatal("Can't find FDT node for partition@0");
++		getprop(devp, "reg", regs, 2*sizeof(u32));
++		regs[0] -= 0x400000;
++		setprop(devp, "reg", regs,  2*sizeof(u32));
++
++		devp = finddevice("/plb/ebc/nor_flash@0/partition@1");
++		if (!devp)
++			fatal("Can't find FDT node for partition@1");
++		getprop(devp, "reg", regs, 2*sizeof(u32));
++		regs[0] -= 0x400000;
++		setprop(devp, "reg", regs,  2*sizeof(u32));
++
++		devp = finddevice("/plb/ebc/nor_flash@0/partition@2");
++		if (!devp)
++			fatal("Can't find FDT node for partition@2");
++		getprop(devp, "reg", regs, 2*sizeof(u32));
++		regs[0] -= 0x400000;
++		setprop(devp, "reg", regs,  2*sizeof(u32));
++
++		devp = finddevice("/plb/ebc/nor_flash@0/partition@3");
++		if (!devp)
++			fatal("Can't find FDT node for partition@3");
++		getprop(devp, "reg", regs, 2*sizeof(u32));
++		regs[0] -= 0x400000;
++		setprop(devp, "reg", regs,  2*sizeof(u32));
++
++		devp = finddevice("/plb/ebc/nor_flash@0/partition@4");
++		if (!devp)
++			fatal("Can't find FDT node for partition@4");
++		getprop(devp, "reg", regs, 2*sizeof(u32));
++		regs[0] -= 0x400000;
++		setprop(devp, "reg", regs,  2*sizeof(u32));
++
++		devp = finddevice("/plb/ebc/nor_flash@0/partition@6");
++		if (!devp)
++			fatal("Can't find FDT node for partition@6");
++		getprop(devp, "reg", regs, 2*sizeof(u32));
++		regs[0] -= 0x400000;
++		setprop(devp, "reg", regs,  2*sizeof(u32));
++
++		/* Delete the FeatFS node */
++		devp = finddevice("/plb/ebc/nor_flash@0/partition@5");
++		if (!devp)
++			fatal("Can't find FDT node for partition@5");
++		del_node(devp);
++	}
++}
++
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++		   unsigned long r6, unsigned long r7)
++{
++	CUBOOT_INIT();
++	platform_ops.fixups = hotfoot_fixups;
++        platform_ops.exit = ibm40x_dbcr_reset;
++	fdt_init(_dtb_start);
++	serial_console_init();
++}
+diff --git a/arch/powerpc/boot/dts/hotfoot.dts b/arch/powerpc/boot/dts/hotfoot.dts
+new file mode 100644
+index 0000000..0ef9336
+--- /dev/null
++++ b/arch/powerpc/boot/dts/hotfoot.dts
+@@ -0,0 +1,297 @@
++/*
++ * Device Tree Source for ESTeem 195E Hotfoot
++ *
++ * Copyright 2009 AbsoluteValue Systems <solomon@linux-wlan.com>
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ */
++
++/dts-v1/;
++
++/ {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	model = "est,hotfoot";
++	compatible = "est,hotfoot";
++	dcr-parent = <&{/cpus/cpu@0}>;
++
++	aliases {
++		ethernet0 = &EMAC0;
++		ethernet1 = &EMAC1;
++		serial0 = &UART0;
++		serial1 = &UART1;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu@0 {
++			device_type = "cpu";
++			model = "PowerPC,405EP";
++			reg = <0x00000000>;
++			clock-frequency = <0>; /* Filled in by zImage */
++			timebase-frequency = <0>; /* Filled in by zImage */
++			i-cache-line-size = <0x20>;
++			d-cache-line-size = <0x20>;
++			i-cache-size = <0x4000>;
++			d-cache-size = <0x4000>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x00000000>; /* Filled in by zImage */
++	};
++
++	UIC0: interrupt-controller {
++		compatible = "ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0x0c0 0x009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++	};
++
++	plb {
++		compatible = "ibm,plb3";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; /* Filled in by zImage */
++
++		SDRAM0: memory-controller {
++			compatible = "ibm,sdram-405ep";
++			dcr-reg = <0x010 0x002>;
++		};
++
++		MAL: mcmal {
++			compatible = "ibm,mcmal-405ep", "ibm,mcmal";
++			dcr-reg = <0x180 0x062>;
++			num-tx-chans = <4>;
++			num-rx-chans = <2>;
++			interrupt-parent = <&UIC0>;
++			interrupts = <
++				0xb 0x4 /* TXEOB */
++				0xc 0x4 /* RXEOB */
++				0xa 0x4 /* SERR */
++				0xd 0x4 /* TXDE */
++				0xe 0x4 /* RXDE */>;
++		};
++
++		POB0: opb {
++			compatible = "ibm,opb-405ep", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges = <0xef600000 0xef600000 0x00a00000>;
++			dcr-reg = <0x0a0 0x005>;
++			clock-frequency = <0>; /* Filled in by zImage */
++
++			/* Hotfoot has UART0/UART1 swapped */
++
++			UART0: serial@ef600400 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <0xef600400 0x00000008>;
++				virtual-reg = <0xef600400>;
++				clock-frequency = <0>; /* Filled in by zImage */
++				current-speed = <0x9600>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0x1 0x4>;
++			};
++
++			UART1: serial@ef600300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <0xef600300 0x00000008>;
++				virtual-reg = <0xef600300>;
++				clock-frequency = <0>; /* Filled in by zImage */
++				current-speed = <0x9600>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0x0 0x4>;
++			};
++
++
++			IIC: i2c@ef600500 {
++				compatible = "ibm,iic-405ep", "ibm,iic";
++				reg = <0xef600500 0x00000011>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0x2 0x4>;
++
++				rtc@68 {
++				      /* Actually a DS1339 */
++				      compatible = "dallas,ds1307"; 
++				      reg = <0x68>;
++				};
++
++				temp@4a { 
++				      /* Not present on all boards */
++				      compatible = "national,lm75";
++				      reg = <0x4a>;
++				};				
++			};
++
++			GPIO: gpio@ef600700 {
++			        #gpio-cells = <2>;
++				compatible = "ibm,ppc4xx-gpio";
++				reg = <0xef600700 0x00000020>;
++				gpio-controller;
++			};
++
++			gpio-leds {
++			     compatible = "gpio-leds";
++			     status {
++			     	    label = "Status";
++			     	    gpios = <&GPIO 1 0>;
++			     };
++			     radiorx {
++			     	    label = "Rx";
++			     	    gpios = <&GPIO 0xe 0>;
++			     };
++			};
++
++
++			EMAC0: ethernet@ef600800 {
++				linux,network-index = <0x0>;
++				device_type = "network";
++				compatible = "ibm,emac-405ep", "ibm,emac";
++				interrupt-parent = <&UIC0>;
++				interrupts = <
++					0xf 0x4 /* Ethernet */
++					0x9 0x4 /* Ethernet Wake Up */>;
++				local-mac-address = [000000000000]; /* Filled in by zImage */
++				reg = <0xef600800 0x00000070>;
++				mal-device = <&MAL>;
++				mal-tx-channel = <0>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <0x5dc>;
++				rx-fifo-size = <0x1000>;
++				tx-fifo-size = <0x800>;
++				phy-mode = "mii";
++				phy-map = <0x00000000>;
++			};
++
++			EMAC1: ethernet@ef600900 {
++				linux,network-index = <0x1>;
++				device_type = "network";
++				compatible = "ibm,emac-405ep", "ibm,emac";
++				interrupt-parent = <&UIC0>;
++				interrupts = <
++					0x11 0x4 /* Ethernet */
++					0x9 0x4 /* Ethernet Wake Up */>;
++				local-mac-address = [000000000000]; /* Filled in by zImage */
++				reg = <0xef600900 0x00000070>;
++				mal-device = <&MAL>;
++				mal-tx-channel = <2>;
++				mal-rx-channel = <1>;
++				cell-index = <1>;
++				max-frame-size = <0x5dc>;
++				rx-fifo-size = <0x1000>;
++				tx-fifo-size = <0x800>;
++                                mdio-device = <&EMAC0>;
++				phy-mode = "mii";
++				phy-map = <0x0000001>;
++			};
++		};
++
++		EBC0: ebc {
++			compatible = "ibm,ebc-405ep", "ibm,ebc";
++			dcr-reg = <0x012 0x002>;
++			#address-cells = <2>;
++			#size-cells = <1>;
++
++			/* The ranges property is supplied by the bootwrapper
++			 * and is based on the firmware's configuration of the
++			 * EBC bridge
++			 */
++			clock-frequency = <0>; /* Filled in by zImage */
++
++                        nor_flash@0 {
++                                compatible = "cfi-flash";
++                                bank-width = <2>;
++                                reg = <0x0 0xff800000 0x00800000>;
++                                #address-cells = <1>;
++                                #size-cells = <1>;
++
++				/* This mapping is for the 8M flash
++				   4M flash has all ofssets -= 4M,
++				   and FeatFS partition is not present */
++				
++                                partition@0 {
++                                        label = "Bootloader";
++                                        reg = <0x7c0000 0x40000>;
++                                        /* read-only; */
++                                };
++                                partition@1 {
++                                        label = "Env_and_Config_Primary";
++                                        reg = <0x400000 0x10000>;
++                                };
++                                partition@2 {
++                                        label = "Kernel";
++                                        reg = <0x420000 0x100000>;
++                                };
++                                partition@3 {
++                                        label = "Filesystem";
++                                        reg = <0x520000 0x2a0000>;
++                                };
++                                partition@4 {
++                                        label = "Env_and_Config_Secondary";
++                                        reg = <0x410000 0x10000>;
++                                };
++                                partition@5 {
++                                        label = "FeatFS";
++                                        reg = <0x000000 0x400000>;
++                                };
++                                partition@6 {
++                                        label = "Bootloader_Env";
++                                        reg = <0x7d0000 0x10000>;
++                                };
++			};
++		};
++
++                PCI0: pci@ec000000 {
++                        device_type = "pci";
++                        #interrupt-cells = <1>;
++                        #size-cells = <2>;
++                        #address-cells = <3>;
++                        compatible = "ibm,plb405ep-pci", "ibm,plb-pci";
++                        primary;
++                        reg = <0xeec00000 0x00000008    /* Config space access */
++                               0xeed80000 0x00000004    /* IACK */
++                               0xeed80000 0x00000004    /* Special cycle */
++                               0xef480000 0x00000040>;  /* Internal registers */
++
++                        /* Outbound ranges, one memory and one IO,
++                         * later cannot be changed. Chip supports a second
++                         * IO range but we don't use it for now
++                         */
++                        ranges = <0x02000000 0x00000000 0x80000000 0x80000000 0x00000000 0x20000000
++                                  0x01000000 0x00000000 0x00000000 0xe8000000 0x00000000 0x00010000>;
++
++                        /* Inbound 2GB range starting at 0 */
++                        dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
++
++			interrupt-parent = <&UIC0>;
++                        interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++                        interrupt-map = <
++                                /* IDSEL 3 -- slot1 (optional) 27/29 A/B IRQ2/4 */
++                                0x1800 0x0 0x0 0x1 &UIC0 0x1b 0x8
++                                0x1800 0x0 0x0 0x2 &UIC0 0x1d 0x8
++
++                                /* IDSEL 4 -- slot0, 26/28 A/B IRQ1/3 */
++                                0x2000 0x0 0x0 0x1 &UIC0 0x1a 0x8
++                                0x2000 0x0 0x0 0x2 &UIC0 0x1c 0x8
++                        >;
++                };
++	};
++
++	chosen {
++		linux,stdout-path = &UART0;
++	};
++};
+diff --git a/arch/powerpc/boot/ppcboot-hotfoot.h b/arch/powerpc/boot/ppcboot-hotfoot.h
+new file mode 100644
+index 0000000..1a3e80b
+--- /dev/null
++++ b/arch/powerpc/boot/ppcboot-hotfoot.h
+@@ -0,0 +1,133 @@
++/*
++ * This interface is used for compatibility with old U-boots *ONLY*.
++ * Please do not imitate or extend this.
++ */
++
++/* 
++ * Unfortunately, the ESTeem Hotfoot board uses a mangled version of 
++ * ppcboot.h for historical reasons, and in the interest of having a 
++ * mainline kernel boot on the production board+bootloader, this was the 
++ * least-offensive solution.  Please direct all flames to:
++ *
++ *  Solomon Peachy <solomon@linux-wlan.com>
++ *
++ * (This header is identical to ppcboot.h except for the 
++ *  TARGET_HOTFOOT bits)
++ */
++
++/*
++ * (C) Copyright 2000, 2001
++ * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#ifndef __PPCBOOT_H__
++#define __PPCBOOT_H__
++
++/*
++ * Board information passed to kernel from PPCBoot
++ *
++ * include/asm-ppc/ppcboot.h
++ */
++
++#include "types.h"
++
++typedef struct bd_info {
++	unsigned long	bi_memstart;	/* start of DRAM memory */
++	unsigned long	bi_memsize;	/* size	 of DRAM memory in bytes */
++	unsigned long	bi_flashstart;	/* start of FLASH memory */
++	unsigned long	bi_flashsize;	/* size	 of FLASH memory */
++	unsigned long	bi_flashoffset; /* reserved area for startup monitor */
++	unsigned long	bi_sramstart;	/* start of SRAM memory */
++	unsigned long	bi_sramsize;	/* size	 of SRAM memory */
++#if defined(TARGET_8xx) || defined(TARGET_CPM2) || defined(TARGET_85xx) ||\
++	defined(TARGET_83xx)
++	unsigned long	bi_immr_base;	/* base of IMMR register */
++#endif
++#if defined(TARGET_PPC_MPC52xx)
++	unsigned long   bi_mbar_base;   /* base of internal registers */
++#endif
++	unsigned long	bi_bootflags;	/* boot / reboot flag (for LynxOS) */
++	unsigned long	bi_ip_addr;	/* IP Address */
++	unsigned char	bi_enetaddr[6];	/* Ethernet address */
++#if defined(TARGET_HOTFOOT)
++	/* second onboard ethernet port */
++	unsigned char	bi_enet1addr[6];
++#define HAVE_ENET1ADDR
++#endif /* TARGET_HOOTFOOT */
++	unsigned short	bi_ethspeed;	/* Ethernet speed in Mbps */
++	unsigned long	bi_intfreq;	/* Internal Freq, in MHz */
++	unsigned long	bi_busfreq;	/* Bus Freq, in MHz */
++#if defined(TARGET_CPM2)
++	unsigned long	bi_cpmfreq;	/* CPM_CLK Freq, in MHz */
++	unsigned long	bi_brgfreq;	/* BRG_CLK Freq, in MHz */
++	unsigned long	bi_sccfreq;	/* SCC_CLK Freq, in MHz */
++	unsigned long	bi_vco;		/* VCO Out from PLL, in MHz */
++#endif
++#if defined(TARGET_PPC_MPC52xx)
++	unsigned long   bi_ipbfreq;     /* IPB Bus Freq, in MHz */
++	unsigned long   bi_pcifreq;     /* PCI Bus Freq, in MHz */
++#endif
++	unsigned long	bi_baudrate;	/* Console Baudrate */
++#if defined(TARGET_4xx)
++	unsigned char	bi_s_version[4];	/* Version of this structure */
++	unsigned char	bi_r_version[32];	/* Version of the ROM (IBM) */
++	unsigned int	bi_procfreq;	/* CPU (Internal) Freq, in Hz */
++	unsigned int	bi_plb_busfreq;	/* PLB Bus speed, in Hz */
++	unsigned int	bi_pci_busfreq;	/* PCI Bus speed, in Hz */
++	unsigned char	bi_pci_enetaddr[6];	/* PCI Ethernet MAC address */
++#endif
++#if defined(TARGET_HOTFOOT)
++	unsigned int     bi_pllouta_freq;       /* PLL OUTA speed, in Hz */
++#endif
++#if defined(TARGET_HYMOD)
++	hymod_conf_t	bi_hymod_conf;	/* hymod configuration information */
++#endif
++#if defined(TARGET_EVB64260) || defined(TARGET_405EP) || defined(TARGET_44x) || \
++	defined(TARGET_85xx) ||	defined(TARGET_83xx) || defined(TARGET_HAS_ETH1)
++	/* second onboard ethernet port */
++	unsigned char	bi_enet1addr[6];
++#define HAVE_ENET1ADDR
++#endif
++#if defined(TARGET_EVB64260) || defined(TARGET_440GX) || \
++    defined(TARGET_85xx) || defined(TARGET_HAS_ETH2)
++	/* third onboard ethernet ports */
++	unsigned char	bi_enet2addr[6];
++#define HAVE_ENET2ADDR
++#endif
++#if defined(TARGET_440GX) || defined(TARGET_HAS_ETH3)
++	/* fourth onboard ethernet ports */
++	unsigned char	bi_enet3addr[6];
++#define HAVE_ENET3ADDR
++#endif
++#if defined(TARGET_HOTFOOT)
++        int             bi_phynum[2];           /* Determines phy mapping */
++        int             bi_phymode[2];          /* Determines phy mode */
++#endif
++#if defined(TARGET_4xx)
++	unsigned int	bi_opbfreq;		/* OB clock in Hz */
++	int		bi_iic_fast[2];		/* Use fast i2c mode */
++#endif
++#if defined(TARGET_440GX)
++	int		bi_phynum[4];		/* phy mapping */
++	int		bi_phymode[4];		/* phy mode */
++#endif
++} bd_t;
++
++#define bi_tbfreq	bi_intfreq
++
++#endif	/* __PPCBOOT_H__ */
+diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+index a6e43cb..ec64264 100644
+--- a/arch/powerpc/platforms/40x/Kconfig
++++ b/arch/powerpc/platforms/40x/Kconfig
+@@ -40,6 +40,16 @@ config HCU4
+ 	help
+ 	  This option enables support for the Nestal Maschinen HCU4 board.
  
- 	printk(KERN_ERR "uncorrectable error : ");
- 	return -1;
-
-With the current ndfc code, the error correction gets the bits wrong.
-Switching it back to the original way and the correction is correct.
-
-diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
-index 89bf85a..497e175 100644
---- a/drivers/mtd/nand/ndfc.c
-+++ b/drivers/mtd/nand/ndfc.c
-@@ -101,9 +101,8 @@ static int ndfc_calculate_ecc(struct mtd_info *mtd,
++config HOTFOOT
++        bool "Hotfoot"
++	depends on 40x
++	default n
++	select 405EP
++	select PPC40x_SIMPLE
++	select PCI
++        help
++	 This option enables support for the ESTEEM 195E Hotfoot board.
++
+ config KILAUEA
+ 	bool "Kilauea"
+ 	depends on 40x
+diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
+index 5fd5a59..546bbc2 100644
+--- a/arch/powerpc/platforms/40x/ppc40x_simple.c
++++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
+@@ -54,7 +54,8 @@ static char *board[] __initdata = {
+ 	"amcc,acadia",
+ 	"amcc,haleakala",
+ 	"amcc,kilauea",
+-	"amcc,makalu"
++	"amcc,makalu",
++	"est,hotfoot"
+ };
  
- 	wmb();
- 	ecc = in_be32(ndfc->ndfcbase + NDFC_ECC);
--	/* The NDFC uses Smart Media (SMC) bytes order */
--	ecc_code[0] = p[2];
--	ecc_code[1] = p[1];
-+	ecc_code[0] = p[1];
-+	ecc_code[1] = p[2];
- 	ecc_code[2] = p[3];
- 
- 	return 0;
-
-Does anybody see a problem with my method of reproducing the bug? This
-bug is deadly for our customers. I don't want to make the change unless
-it is absolutely necessary.
-
-Cheers,
-   Sean
+ static int __init ppc40x_probe(void)
