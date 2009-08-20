@@ -1,24 +1,19 @@
 Return-Path: <solomon@linux-wlan.com>
 Received: from cdptpa-omtalb.mail.rr.com (cdptpa-omtalb.mail.rr.com
-	[75.180.132.122])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id E4EA2B7B66
+	[75.180.132.120])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 333B0B7B85
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 06:24:11 +1000 (EST)
+	Fri, 21 Aug 2009 06:28:50 +1000 (EST)
 Received: from chef.ghq.linux-wlan.com ([24.73.236.122])
-	by cdptpa-omta01.mail.rr.com with ESMTP
-	id <20090820201908909.JUGC29812@cdptpa-omta01.mail.rr.com>
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2009 20:19:08 +0000
-Received: from chef.ghq.linux-wlan.com (localhost.localdomain [127.0.0.1])
-	by chef.ghq.linux-wlan.com (8.14.3/8.14.2) with ESMTP id n7KKF7Ol010363
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2009 16:15:07 -0400
-Received: (from solomon@localhost)
-	by chef.ghq.linux-wlan.com (8.14.3/8.14.2/Submit) id n7KKF7kx010360
-	for linuxppc-dev@lists.ozlabs.org; Thu, 20 Aug 2009 16:15:07 -0400
+	by cdptpa-omta03.mail.rr.com with ESMTP
+	id <20090820202349090.YGHI16591@cdptpa-omta03.mail.rr.com>
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2009 20:23:49 +0000
 From: Solomon Peachy <solomon@linux-wlan.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Author: Solomon Peachy <solomon@linux-wlan.com>
-Date: Thu, 20 Aug 2009 16:15:07 -0400
-Message-Id: <1250799307-10271-1-git-send-email-solomon@linux-wlan.com>
+Subject: [PATCH v2] Add support for the ESTeem 195E (PPC405EP) SBC
+Date: Thu, 20 Aug 2009 16:19:47 -0400
+Message-Id: <1250799587-10441-1-git-send-email-solomon@linux-wlan.com>
+Cc: Solomon Peachy <solomon@linux-wlan.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-    [PATCH v2] Add support for the ESTeem 195E (PPC405EP) SBC
-    
-    This patch adds support for the ESTeem 195E Hotfoot SBC.
-    I've been maintaining this out-of-tree for some time now for
-    older kernels, but recently I ported it to the new unified powerpc
-    tree with the intent of pushing it upstream.
-    
-    The 195E boards use ancient versions of u-boot and a slightly mangled
-    verison of the oft-abused ppcboot header.  (v2 of this patch moves the
-    modified ppcboot header into ppcboot-hotfoot.h)
-    
-    There are several variants of the SBC deployed, single/dual
-    ethernet+serial, and also 4MB/8MB flash variations.  In the interest of
-    having a single kernel image boot on all boards, the cuboot shim detects
-    the differences and mangles the DTS tree appropriately.
-    
-    With the exception of the CF interface that was never populated on
-    production boards, this code/DTS supports all boardpop options.
-    
-    Signed-off-by:  Solomon Peachy <solomon@linux-wlan.com>
+This patch adds support for the ESTeem 195E Hotfoot SBC.
+I've been maintaining this out-of-tree for some time now for
+older kernels, but recently I ported it to the new unified powerpc
+tree with the intent of pushing it upstream.
+
+The 195E boards use ancient versions of u-boot and a slightly mangled
+verison of the oft-abused ppcboot header.  (v2 of this patch moves the
+modified ppcboot header into ppcboot-hotfoot.h)
+
+There are several variants of the SBC deployed, single/dual
+ethernet+serial, and also 4MB/8MB flash variations.  In the interest of
+having a single kernel image boot on all boards, the cuboot shim detects
+the differences and mangles the DTS tree appropriately.
+
+With the exception of the CF interface that was never populated on
+production boards, this code/DTS supports all boardpop options.
+
+Signed-off-by:  Solomon Peachy <solomon@linux-wlan.com>
+---
+ arch/powerpc/boot/Makefile                 |    4 +-
+ arch/powerpc/boot/cuboot-hotfoot.c         |  142 +++++++++++++
+ arch/powerpc/boot/dts/hotfoot.dts          |  297 ++++++++++++++++++++++++++++
+ arch/powerpc/boot/ppcboot-hotfoot.h        |  133 +++++++++++++
+ arch/powerpc/platforms/40x/Kconfig         |   10 +
+ arch/powerpc/platforms/40x/ppc40x_simple.c |    3 +-
+ 6 files changed, 587 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/boot/cuboot-hotfoot.c
+ create mode 100644 arch/powerpc/boot/dts/hotfoot.dts
+ create mode 100644 arch/powerpc/boot/ppcboot-hotfoot.h
 
 diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
 index 9ae7b7e..5a109a9 100644
@@ -703,3 +707,5 @@ index 5fd5a59..546bbc2 100644
  };
  
  static int __init ppc40x_probe(void)
+-- 
+1.6.2.5
