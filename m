@@ -1,40 +1,31 @@
-Return-Path: <mjw@linux.vnet.ibm.com>
+Return-Path: <fkan@amcc.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 498FAB7BA9
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 28CE9B7B8A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 09:22:00 +1000 (EST)
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CBDC4DDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 09:21:59 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7KNJqYe022983
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 17:19:52 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7KNLoAL253584
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 17:21:51 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n7KNLo8Q030574
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 17:21:50 -0600
-Received: from [9.10.86.161] (9-10-86-161.rchland.ibm.com [9.10.86.161])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	n7KNLokK030426
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 17:21:50 -0600
-Subject: [PATCH] powerpc:  Adjust base and index registers in Altivec macros
-From: Mike Wolf <mjw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Thu, 20 Aug 2009 18:21:45 -0500
-Message-Id: <1250810505.14522.3.camel@mx3>
-Mime-Version: 1.0
-Reply-To: mjw@linux.vnet.ibm.com
+	Fri, 21 Aug 2009 09:42:46 +1000 (EST)
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.90])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 91C23DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 09:42:45 +1000 (EST)
+Message-ID: <4A8DDF72.2080808@amcc.com>
+Date: Thu, 20 Aug 2009 16:42:42 -0700
+From: Feng Kan <fkan@amcc.com>
+MIME-Version: 1.0
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [U-Boot] NAND  ECC Error with wrong SMC ording bug
+References: <19081.57584.173693.798535@cargo.ozlabs.ibm.com>
+	<4A8C87E6.6070702@amcc.com>
+	<20090820003851.1a532444@lappy.seanm.ca>
+	<200908200701.21076.sr@denx.de>
+In-Reply-To: <200908200701.21076.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, u-boot@lists.denx.de,
+	linux-mtd@lists.infradead.org, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,58 +35,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On POWER6 systems RA needs to be the base and RB the index.  
-If they are reversed you take a misdirect hit.  
+Hi Stefan:
 
-Signed-off-by: Mike Wolf <mjwolf@us.ibm.com>
+We had a board with high number of correctable ECC errors. Which crashed 
+the jffs when it
+was miss correcting the wrong byte location.
 
-----
---- altivec.orig/arch/powerpc/include/asm/ppc_asm.h	2009-08-17 15:39:52.000000000 -0500
-+++ altivec/arch/powerpc/include/asm/ppc_asm.h	2009-08-20 18:08:30.000000000 -0500
-@@ -98,13 +98,13 @@
- #define REST_16FPRS(n, base)	REST_8FPRS(n, base); REST_8FPRS(n+8, base)
- #define REST_32FPRS(n, base)	REST_16FPRS(n, base); REST_16FPRS(n+16, base)
- 
--#define SAVE_VR(n,b,base)	li b,THREAD_VR0+(16*(n));  stvx n,b,base
-+#define SAVE_VR(n,b,base)	li b,THREAD_VR0+(16*(n));  stvx n,base,b
- #define SAVE_2VRS(n,b,base)	SAVE_VR(n,b,base); SAVE_VR(n+1,b,base)
- #define SAVE_4VRS(n,b,base)	SAVE_2VRS(n,b,base); SAVE_2VRS(n+2,b,base)
- #define SAVE_8VRS(n,b,base)	SAVE_4VRS(n,b,base); SAVE_4VRS(n+4,b,base)
- #define SAVE_16VRS(n,b,base)	SAVE_8VRS(n,b,base); SAVE_8VRS(n+8,b,base)
- #define SAVE_32VRS(n,b,base)	SAVE_16VRS(n,b,base); SAVE_16VRS(n+16,b,base)
--#define REST_VR(n,b,base)	li b,THREAD_VR0+(16*(n)); lvx n,b,base
-+#define REST_VR(n,b,base)	li b,THREAD_VR0+(16*(n)); lvx n,base,b
- #define REST_2VRS(n,b,base)	REST_VR(n,b,base); REST_VR(n+1,b,base)
- #define REST_4VRS(n,b,base)	REST_2VRS(n,b,base); REST_2VRS(n+2,b,base)
- #define REST_8VRS(n,b,base)	REST_4VRS(n,b,base); REST_4VRS(n+4,b,base)
-@@ -112,26 +112,26 @@
- #define REST_32VRS(n,b,base)	REST_16VRS(n,b,base); REST_16VRS(n+16,b,base)
- 
- /* Save the lower 32 VSRs in the thread VSR region */
--#define SAVE_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n));  STXVD2X(n,b,base)
-+#define SAVE_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n));  STXVD2X(n,base,b)
- #define SAVE_2VSRS(n,b,base)	SAVE_VSR(n,b,base); SAVE_VSR(n+1,b,base)
- #define SAVE_4VSRS(n,b,base)	SAVE_2VSRS(n,b,base); SAVE_2VSRS(n+2,b,base)
- #define SAVE_8VSRS(n,b,base)	SAVE_4VSRS(n,b,base); SAVE_4VSRS(n+4,b,base)
- #define SAVE_16VSRS(n,b,base)	SAVE_8VSRS(n,b,base); SAVE_8VSRS(n+8,b,base)
- #define SAVE_32VSRS(n,b,base)	SAVE_16VSRS(n,b,base); SAVE_16VSRS(n+16,b,base)
--#define REST_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n)); LXVD2X(n,b,base)
-+#define REST_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n)); LXVD2X(n,base,b)
- #define REST_2VSRS(n,b,base)	REST_VSR(n,b,base); REST_VSR(n+1,b,base)
- #define REST_4VSRS(n,b,base)	REST_2VSRS(n,b,base); REST_2VSRS(n+2,b,base)
- #define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
- #define REST_16VSRS(n,b,base)	REST_8VSRS(n,b,base); REST_8VSRS(n+8,b,base)
- #define REST_32VSRS(n,b,base)	REST_16VSRS(n,b,base); REST_16VSRS(n+16,b,base)
- /* Save the upper 32 VSRs (32-63) in the thread VSX region (0-31) */
--#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n+32,b,base)
-+#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n+32,base,b)
- #define SAVE_2VSRSU(n,b,base)	SAVE_VSRU(n,b,base); SAVE_VSRU(n+1,b,base)
- #define SAVE_4VSRSU(n,b,base)	SAVE_2VSRSU(n,b,base); SAVE_2VSRSU(n+2,b,base)
- #define SAVE_8VSRSU(n,b,base)	SAVE_4VSRSU(n,b,base); SAVE_4VSRSU(n+4,b,base)
- #define SAVE_16VSRSU(n,b,base)	SAVE_8VSRSU(n,b,base); SAVE_8VSRSU(n+8,b,base)
- #define SAVE_32VSRSU(n,b,base)	SAVE_16VSRSU(n,b,base); SAVE_16VSRSU(n+16,b,base)
--#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n+32,b,base)
-+#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n+32,base,b)
- #define REST_2VSRSU(n,b,base)	REST_VSRU(n,b,base); REST_VSRU(n+1,b,base)
- #define REST_4VSRSU(n,b,base)	REST_2VSRSU(n,b,base); REST_2VSRSU(n+2,b,base)
- #define REST_8VSRSU(n,b,base)	REST_4VSRSU(n,b,base); REST_4VSRSU(n+4,b,base)
+Do you want me to submit a patch for this, or do you prefer to do it. I 
+am submitting a patch
+for linux right now.
+
+Feng Kan
+AMCC Software
+
+On 08/19/2009 10:01 PM, Stefan Roese wrote:
+> On Thursday 20 August 2009 06:38:51 Sean MacLennan wrote:
+>    
+>>> I see other boards using SMC as well, can someone comment on the
+>>> change I am proposing.
+>>> Should I change the correction algorithm or the calculate function?
+>>> If the later is preferred
+>>> it would mean the change must be pushed in both U-Boot and Linux.
+>>>        
+>> Odds are the calculate function is wrong. The correction algo is used
+>> by many nand drivers, I *assume* it is correct. The calculate function
+>> was set to agree with u-boot (1.3.0).
+>>      
+> Yes, it seems that you changed the order in the calculation function while
+> reworking the NDFC driver for arch/powerpc. So we should probably change this
+> order back to the original version. And change it in U-Boot as well.
+>
+> BTW: I didn't see any problems with ECC so far with the current code. Feng,
+> how did you spot this problem?
+>
+> Cheers,
+> Stefan
+>
+> --
+> DENX Software Engineering GmbH,      MD: Wolfgang Denk&  Detlev Zundel
+> HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+> Phone: (+49)-8142-66989-0 Fax: (+49)-8142-66989-80 Email: office@denx.de
+>    
