@@ -1,34 +1,29 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <thirumalai.p@datapatterns.co.in>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8E10FB708B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B7E9CB7063
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 Aug 2009 16:01:38 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	Thu, 20 Aug 2009 17:37:00 +1000 (EST)
+Received: from ns0.datapatterns.co.in (mx0.datapatterns.co.in [121.242.18.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 77BDFDDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 16:01:38 +1000 (EST)
-Subject: Re: [PATCH] Add kmemleak annotations to lmb.c
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Catalin Marinas <catalin.marinas@arm.com>
-In-Reply-To: <1250287071.5085.2.camel@pc1117.cambridge.arm.com>
-References: <e846103b117cc36798b1f352ed526d600fd88e16.1250132460.git.michael@ellerman.id.au>
-	<1250178041.14019.34.camel@pc1117.cambridge.arm.com>
-	<1250236600.24143.34.camel@pasglop>
-	<20090814.124933.146642945.davem@davemloft.net>
-	<1250287071.5085.2.camel@pc1117.cambridge.arm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-KExQ9XAFS/3qPOvi0hNj"
-Date: Thu, 20 Aug 2009 16:01:34 +1000
-Message-Id: <1250748094.7670.4.camel@concordia>
-Mime-Version: 1.0
-Cc: David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E0914DDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 17:36:59 +1000 (EST)
+Received: from itd210 (itd210.datapatterns [10.5.4.110]) (authenticated bits=0)
+	by ns0.datapatterns.co.in (8.14.2/8.14.2) with ESMTP id n7K7Yekt009261
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 13:04:41 +0530
+Message-ID: <FAB1DE2EE83A4ADE85C4BF9408D22053@itd210>
+From: "Thirumalai" <thirumalai.p@datapatterns.co.in>
+To: <linuxppc-dev@ozlabs.org>
+References: <e1ca2e7b0908192115o2cfa427fof21512757854901a@mail.gmail.com>
+In-Reply-To: <e1ca2e7b0908192115o2cfa427fof21512757854901a@mail.gmail.com>
+Subject: Re: Regarding TSI108 ethernet DMA issue
+Date: Thu, 20 Aug 2009 13:01:30 +0530
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_00B7_01CA2196.55E9B0F0"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,59 +33,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
---=-KExQ9XAFS/3qPOvi0hNj
-Content-Type: text/plain
+------=_NextPart_000_00B7_01CA2196.55E9B0F0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2009-08-14 at 22:57 +0100, Catalin Marinas wrote:
-> On Fri, 2009-08-14 at 12:49 -0700, David Miller wrote:
-> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Date: Fri, 14 Aug 2009 17:56:40 +1000
-> >=20
-> > > On Thu, 2009-08-13 at 16:40 +0100, Catalin Marinas wrote:
-> > >> On Thu, 2009-08-13 at 13:01 +1000, Michael Ellerman wrote:
-> > >> > We don't actually want kmemleak to track the lmb allocations, so w=
-e
-> > >> > pass min_count as 0. However telling kmemleak about lmb allocation=
-s
-> > >> > allows it to scan that memory for pointers to other memory that is
-> > >> > tracked by kmemleak, ie. slab allocations etc.
-> > >>=20
-> > >> Looks alright to me (though I haven't tested it). You can add a
-> > >> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-> > >=20
-> > > Actually, Milton pointed to me that we may not want to allow all
-> > > LMB chunks to be scanned by kmemleaks, things like the DART hole
-> > > that's taken out of the linear mapping for example may need to
-> > > be avoided, though I'm not sure what would be the right way to
-> > > do it.
-> >=20
-> > I think that annotating LMB for kmemleak may be more problems
-> > that it's worth.
->=20
-> BTW, are there many LMB allocations used for storing pointers to other
-> objects? If not, it may be worth just annotating those with
-> kmemleak_alloc() if you get false positives.
+Hi all,
+        I found that the header file(dma-mapping.h) has changed. I saw =
+this change has happened on Linux -2.6.28 kernel onwards. earlier kernel =
+is having COMFIT_PPC64 macro. Based on this macro the things were =
+happened. Is there any fixes available right now or any reasons behind =
+this changes.=20
+Regards,
+T.
+  ----- Original Message -----=20
+  From: Thirumalai Pachamuthu=20
+  To: linuxppc-dev@ozlabs.org=20
+  Sent: Thursday, August 20, 2009 9:45 AM
+  Subject: Regarding TSI108 ethernet DMA issue
 
-Yeah I think that's probably the safer approach. As Dave says even if
-there's nothing obvious, lmb is used for very early allocs which are
-more likely to be "special" and cause problems - and only when someone
-boots with kmemleak enabled. So we're better to explicitly mark things
-we want scanned.
 
-cheers
+  Hi all,
+        I am trying to port linux 2.6.30 for my TSI108 based custom =
+board where i am getting the following kernel panic message. I found =
+that it was due to dma allocation function call particularly =
+dma_alloc_coherent() of tsi108_open function. When we see the =
+implementation of dma_alloc_coherent. It was bit changed from the =
+previous linux versions it seems.=20
+        The implementation of dma_alloc_coherent was kept on the =
+arch/powerpc/include/asm/dma-mapping.h file. Earlier implementation is =
+not considering the first parameter what the tsi108 driver is passing as =
+NULL. But the current implementation is considering this parameter and =
+because of this the panic is coming what i believe.
 
---=-KExQ9XAFS/3qPOvi0hNj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+        So kindly let me know any patches for this problem or any fixes.
+  Regards,
+  T.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkqM5r4ACgkQdSjSd0sB4dIT9ACfVBYCBtpXoJxhnmbgbKhaOlXf
-NX0AnRuR7ZOqyOKGeOVUziT9Ky90vI5w
-=Vg2V
------END PGP SIGNATURE-----
+-------------------------------------------------------------------------=
+-----
 
---=-KExQ9XAFS/3qPOvi0hNj--
+
+  _______________________________________________
+  Linuxppc-dev mailing list
+  Linuxppc-dev@lists.ozlabs.org
+  https://lists.ozlabs.org/listinfo/linuxppc-dev
+------=_NextPart_000_00B7_01CA2196.55E9B0F0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.6001.18000" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Hi all,</FONT></DIV>
+<DIV><FONT face=3DArial =
+size=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I found=20
+that the header file(dma-mapping.h)&nbsp;has changed. I saw this change =
+has=20
+happened on Linux -2.6.28 kernel onwards. earlier kernel is having=20
+COMFIT_PPC64&nbsp;macro. Based&nbsp;on this macro the things were=20
+happened.&nbsp;Is there any fixes available right now or any reasons =
+behind this=20
+changes. </FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Regards,<BR>T.</FONT></DIV>
+<BLOCKQUOTE=20
+style=3D"PADDING-RIGHT: 0px; PADDING-LEFT: 5px; MARGIN-LEFT: 5px; =
+BORDER-LEFT: #000000 2px solid; MARGIN-RIGHT: 0px">
+  <DIV style=3D"FONT: 10pt arial">----- Original Message ----- </DIV>
+  <DIV=20
+  style=3D"BACKGROUND: #e4e4e4; FONT: 10pt arial; font-color: =
+black"><B>From:</B>=20
+  <A title=3Dthirumalai.p@datapatterns.co.in=20
+  href=3D"mailto:thirumalai.p@datapatterns.co.in">Thirumalai =
+Pachamuthu</A> </DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>To:</B> <A =
+title=3Dlinuxppc-dev@ozlabs.org=20
+  href=3D"mailto:linuxppc-dev@ozlabs.org">linuxppc-dev@ozlabs.org</A> =
+</DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>Sent:</B> Thursday, August 20, 2009 =
+9:45=20
+  AM</DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>Subject:</B> Regarding TSI108 =
+ethernet DMA=20
+  issue</DIV>
+  <DIV><BR></DIV>
+  <DIV>Hi all,</DIV>
+  <DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I am trying to port linux 2.6.30 =
+for my=20
+  TSI108 based custom board where i am getting the following kernel =
+panic=20
+  message. I found that it was due to dma allocation function call =
+particularly=20
+  dma_alloc_coherent() of tsi108_open function. When we see the =
+implementation=20
+  of dma_alloc_coherent. It was bit changed from the previous linux =
+versions it=20
+  seems. </DIV>
+  <DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The implementation of =
+dma_alloc_coherent=20
+  was kept on the arch/powerpc/include/asm/dma-mapping.h file. Earlier=20
+  implementation is not considering the first parameter what the tsi108 =
+driver=20
+  is passing as NULL. But the current implementation is considering this =
+
+  parameter and because of this the panic is coming what i =
+believe.</DIV>
+  <DIV>&nbsp;</DIV>
+  <DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; So kindly let me know any patches =
+for this=20
+  problem or any fixes.</DIV>
+  <DIV>Regards,</DIV>
+  <DIV>T.</DIV>
+  <P>
+  <HR>
+
+  <P></P>_______________________________________________<BR>Linuxppc-dev =
+mailing=20
+  =
+list<BR>Linuxppc-dev@lists.ozlabs.org<BR>https://lists.ozlabs.org/listinf=
+o/linuxppc-dev</BLOCKQUOTE></BODY></HTML>
+
+------=_NextPart_000_00B7_01CA2196.55E9B0F0--
