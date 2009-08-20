@@ -1,32 +1,40 @@
-Return-Path: <vgallard@amcc.com>
+Return-Path: <mjw@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D2AC5B7B8E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 498FAB7BA9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 09:06:57 +1000 (EST)
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.90])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 3C922DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 09:06:57 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: [U-Boot] NAND  ECC Error with wrong SMC ording bug
-Date: Thu, 20 Aug 2009 15:56:37 -0700
-Message-ID: <0CA0A16855646F4FA96D25A158E299D606E24FE8@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <20090820153644.631dbd7b@lappy.seanm.ca>
-References: <19081.57584.173693.798535@cargo.ozlabs.ibm.com><4A8C87E6.6070702@amcc.com><20090820003851.1a532444@lappy.seanm.ca><200908200701.21076.sr@denx.de>
-	<20090820153644.631dbd7b@lappy.seanm.ca>
-From: "Victor Gallardo" <vgallard@amcc.com>
-To: "Sean MacLennan" <smaclennan@pikatech.com>,
-	"Stefan Roese" <sr@denx.de>
-Cc: Prodyut Hazarika <phazarika@amcc.com>, u-boot@lists.denx.de,
-	Feng Kan <fkan@amcc.com>, linux-mtd@lists.infradead.org,
-	linuxppc-dev@ozlabs.org
+	Fri, 21 Aug 2009 09:22:00 +1000 (EST)
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CBDC4DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 09:21:59 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7KNJqYe022983
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 17:19:52 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7KNLoAL253584
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 17:21:51 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n7KNLo8Q030574
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 17:21:50 -0600
+Received: from [9.10.86.161] (9-10-86-161.rchland.ibm.com [9.10.86.161])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	n7KNLokK030426
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 17:21:50 -0600
+Subject: [PATCH] powerpc:  Adjust base and index registers in Altivec macros
+From: Mike Wolf <mjw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 20 Aug 2009 18:21:45 -0500
+Message-Id: <1250810505.14522.3.camel@mx3>
+Mime-Version: 1.0
+Reply-To: mjw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,151 +44,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sean,
+On POWER6 systems RA needs to be the base and RB the index.  
+If they are reversed you take a misdirect hit.  
 
-The change is necessary in both Linux and u-boot. Without this change =
-customer are seeing the problem.
+Signed-off-by: Mike Wolf <mjwolf@us.ibm.com>
 
-Best Regards,
-
-Victor Gallardo
-
-> -----Original Message-----
-> From: linuxppc-dev-bounces+vgallardo=3Damcc.com@lists.ozlabs.org =
-[mailto:linuxppc-dev-
-> bounces+vgallardo=3Damcc.com@lists.ozlabs.org] On Behalf Of Sean =
-MacLennan
-> Sent: Thursday, August 20, 2009 12:37 PM
-> To: Stefan Roese
-> Cc: u-boot@lists.denx.de; Feng Kan; linux-mtd@lists.infradead.org; =
-linuxppc-dev@ozlabs.org
-> Subject: Re: [U-Boot] NAND ECC Error with wrong SMC ording bug
->=20
-> On Thu, 20 Aug 2009 07:01:21 +0200
-> Stefan Roese <sr@denx.de> wrote:
->=20
-> > On Thursday 20 August 2009 06:38:51 Sean MacLennan wrote:
-> > > > I see other boards using SMC as well, can someone comment on the
-> > > > change I am proposing.
-> > > > Should I change the correction algorithm or the calculate
-> > > > function? If the later is preferred
-> > > > it would mean the change must be pushed in both U-Boot and =
-Linux.
-> > >
-> > > Odds are the calculate function is wrong. The correction algo is
-> > > used by many nand drivers, I *assume* it is correct. The calculate
-> > > function was set to agree with u-boot (1.3.0).
-> >
-> > Yes, it seems that you changed the order in the calculation function
-> > while reworking the NDFC driver for arch/powerpc. So we should
-> > probably change this order back to the original version. And change
-> > it in U-Boot as well.
-> >
-> > BTW: I didn't see any problems with ECC so far with the current =
-code.
-> > Feng, how did you spot this problem?
->=20
-> Ok, I think I have reproduced the problem programmatically. Basically,
-> I force a one bit error with the following patch:
->=20
-> diff --git a/drivers/mtd/nand/nand_base.c =
-b/drivers/mtd/nand/nand_base.c
-> index 8c21b89..91dd5b4 100644
-> --- a/drivers/mtd/nand/nand_base.c
-> +++ b/drivers/mtd/nand/nand_base.c
-> @@ -1628,11 +1628,22 @@ static void nand_write_page_hwecc(struct =
-mtd_info *mtd, struct nand_chip
-> *chip,
->  	uint8_t *ecc_calc =3D chip->buffers->ecccalc;
->  	const uint8_t *p =3D buf;
->  	uint32_t *eccpos =3D chip->ecc.layout->eccpos;
-> +	static int count;
->=20
->  	for (i =3D 0; eccsteps; eccsteps--, i +=3D eccbytes, p +=3D eccsize) =
-{
->  		chip->ecc.hwctl(mtd, NAND_ECC_WRITE);
-> -		chip->write_buf(mtd, p, eccsize);
-> -		chip->ecc.calculate(mtd, p, &ecc_calc[i]);
-> +		if (count =3D=3D 0) {
-> +			count =3D 1;
-> +			printk("Corrupt one bit: %08x =3D> %08x\n",
-> +			       *p, *p ^ 8);
-> +			*(uint8_t *)p ^=3D 8;
-> +			chip->write_buf(mtd, p, eccsize);
-> +			*(uint8_t *)p ^=3D 8;
-> +			nand_calculate_ecc(mtd, p, &ecc_calc[i]);
-> +		} else {
-> +			chip->write_buf(mtd, p, eccsize);
-> +			chip->ecc.calculate(mtd, p, &ecc_calc[i]);
-> +		}
->  	}
->=20
->  	for (i =3D 0; i < chip->ecc.total; i++)
->=20
-> Basically I write a one bit error to the NAND, but calculate with the
-> correct bit. This assumes nand_calculate_ecc is correct.
->=20
-> I then added debugs to the correction to make sure it corrected
-> properly:
->=20
-> diff --git a/drivers/mtd/nand/nand_ecc.c b/drivers/mtd/nand/nand_ecc.c
-> index c0cb87d..57dcaa1 100644
-> --- a/drivers/mtd/nand/nand_ecc.c
-> +++ b/drivers/mtd/nand/nand_ecc.c
-> @@ -483,14 +483,20 @@ int nand_correct_data(struct mtd_info *mtd, =
-unsigned char *buf,
->  			byte_addr =3D (addressbits[b2 & 0x3] << 8) +
->  				    (addressbits[b1] << 4) + addressbits[b0];
->  		bit_addr =3D addressbits[b2 >> 2];
-> +
-> +		printk("Single bit error: correct %08x =3D> %08x\n",
-> +		       buf[byte_addr], buf[byte_addr] ^ (1 << bit_addr));
-> +
->  		/* flip the bit */
->  		buf[byte_addr] ^=3D (1 << bit_addr);
->  		return 1;
->=20
->  	}
->  	/* count nr of bits; use table lookup, faster than calculating it */
-> -	if ((bitsperbyte[b0] + bitsperbyte[b1] + bitsperbyte[b2]) =3D=3D 1)
-> +	if ((bitsperbyte[b0] + bitsperbyte[b1] + bitsperbyte[b2]) =3D=3D 1) =
-{
-> +		printk("ECC DATA BAD\n"); // SAM DBG
->  		return 1;	/* error in ecc data; no action needed */
-> +	}
->=20
->  	printk(KERN_ERR "uncorrectable error : ");
->  	return -1;
->=20
-> With the current ndfc code, the error correction gets the bits wrong.
-> Switching it back to the original way and the correction is correct.
->=20
-> diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
-> index 89bf85a..497e175 100644
-> --- a/drivers/mtd/nand/ndfc.c
-> +++ b/drivers/mtd/nand/ndfc.c
-> @@ -101,9 +101,8 @@ static int ndfc_calculate_ecc(struct mtd_info =
-*mtd,
->=20
->  	wmb();
->  	ecc =3D in_be32(ndfc->ndfcbase + NDFC_ECC);
-> -	/* The NDFC uses Smart Media (SMC) bytes order */
-> -	ecc_code[0] =3D p[2];
-> -	ecc_code[1] =3D p[1];
-> +	ecc_code[0] =3D p[1];
-> +	ecc_code[1] =3D p[2];
->  	ecc_code[2] =3D p[3];
->=20
->  	return 0;
->=20
-> Does anybody see a problem with my method of reproducing the bug? This
-> bug is deadly for our customers. I don't want to make the change =
-unless
-> it is absolutely necessary.
->=20
-> Cheers,
->    Sean
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+----
+--- altivec.orig/arch/powerpc/include/asm/ppc_asm.h	2009-08-17 15:39:52.000000000 -0500
++++ altivec/arch/powerpc/include/asm/ppc_asm.h	2009-08-20 18:08:30.000000000 -0500
+@@ -98,13 +98,13 @@
+ #define REST_16FPRS(n, base)	REST_8FPRS(n, base); REST_8FPRS(n+8, base)
+ #define REST_32FPRS(n, base)	REST_16FPRS(n, base); REST_16FPRS(n+16, base)
+ 
+-#define SAVE_VR(n,b,base)	li b,THREAD_VR0+(16*(n));  stvx n,b,base
++#define SAVE_VR(n,b,base)	li b,THREAD_VR0+(16*(n));  stvx n,base,b
+ #define SAVE_2VRS(n,b,base)	SAVE_VR(n,b,base); SAVE_VR(n+1,b,base)
+ #define SAVE_4VRS(n,b,base)	SAVE_2VRS(n,b,base); SAVE_2VRS(n+2,b,base)
+ #define SAVE_8VRS(n,b,base)	SAVE_4VRS(n,b,base); SAVE_4VRS(n+4,b,base)
+ #define SAVE_16VRS(n,b,base)	SAVE_8VRS(n,b,base); SAVE_8VRS(n+8,b,base)
+ #define SAVE_32VRS(n,b,base)	SAVE_16VRS(n,b,base); SAVE_16VRS(n+16,b,base)
+-#define REST_VR(n,b,base)	li b,THREAD_VR0+(16*(n)); lvx n,b,base
++#define REST_VR(n,b,base)	li b,THREAD_VR0+(16*(n)); lvx n,base,b
+ #define REST_2VRS(n,b,base)	REST_VR(n,b,base); REST_VR(n+1,b,base)
+ #define REST_4VRS(n,b,base)	REST_2VRS(n,b,base); REST_2VRS(n+2,b,base)
+ #define REST_8VRS(n,b,base)	REST_4VRS(n,b,base); REST_4VRS(n+4,b,base)
+@@ -112,26 +112,26 @@
+ #define REST_32VRS(n,b,base)	REST_16VRS(n,b,base); REST_16VRS(n+16,b,base)
+ 
+ /* Save the lower 32 VSRs in the thread VSR region */
+-#define SAVE_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n));  STXVD2X(n,b,base)
++#define SAVE_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n));  STXVD2X(n,base,b)
+ #define SAVE_2VSRS(n,b,base)	SAVE_VSR(n,b,base); SAVE_VSR(n+1,b,base)
+ #define SAVE_4VSRS(n,b,base)	SAVE_2VSRS(n,b,base); SAVE_2VSRS(n+2,b,base)
+ #define SAVE_8VSRS(n,b,base)	SAVE_4VSRS(n,b,base); SAVE_4VSRS(n+4,b,base)
+ #define SAVE_16VSRS(n,b,base)	SAVE_8VSRS(n,b,base); SAVE_8VSRS(n+8,b,base)
+ #define SAVE_32VSRS(n,b,base)	SAVE_16VSRS(n,b,base); SAVE_16VSRS(n+16,b,base)
+-#define REST_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n)); LXVD2X(n,b,base)
++#define REST_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n)); LXVD2X(n,base,b)
+ #define REST_2VSRS(n,b,base)	REST_VSR(n,b,base); REST_VSR(n+1,b,base)
+ #define REST_4VSRS(n,b,base)	REST_2VSRS(n,b,base); REST_2VSRS(n+2,b,base)
+ #define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
+ #define REST_16VSRS(n,b,base)	REST_8VSRS(n,b,base); REST_8VSRS(n+8,b,base)
+ #define REST_32VSRS(n,b,base)	REST_16VSRS(n,b,base); REST_16VSRS(n+16,b,base)
+ /* Save the upper 32 VSRs (32-63) in the thread VSX region (0-31) */
+-#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n+32,b,base)
++#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n+32,base,b)
+ #define SAVE_2VSRSU(n,b,base)	SAVE_VSRU(n,b,base); SAVE_VSRU(n+1,b,base)
+ #define SAVE_4VSRSU(n,b,base)	SAVE_2VSRSU(n,b,base); SAVE_2VSRSU(n+2,b,base)
+ #define SAVE_8VSRSU(n,b,base)	SAVE_4VSRSU(n,b,base); SAVE_4VSRSU(n+4,b,base)
+ #define SAVE_16VSRSU(n,b,base)	SAVE_8VSRSU(n,b,base); SAVE_8VSRSU(n+8,b,base)
+ #define SAVE_32VSRSU(n,b,base)	SAVE_16VSRSU(n,b,base); SAVE_16VSRSU(n+16,b,base)
+-#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n+32,b,base)
++#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n+32,base,b)
+ #define REST_2VSRSU(n,b,base)	REST_VSRU(n,b,base); REST_VSRU(n+1,b,base)
+ #define REST_4VSRSU(n,b,base)	REST_2VSRSU(n,b,base); REST_2VSRSU(n+2,b,base)
+ #define REST_8VSRSU(n,b,base)	REST_4VSRSU(n,b,base); REST_4VSRSU(n+4,b,base)
