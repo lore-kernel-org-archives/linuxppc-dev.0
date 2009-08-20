@@ -1,32 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id F2D4AB708C
+Return-Path: <solomon@linux-wlan.com>
+Received: from cdptpa-omtalb.mail.rr.com (cdptpa-omtalb.mail.rr.com
+	[75.180.132.123])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 035B1B7B5F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 03:44:55 +1000 (EST)
-Received: from mail-yw0-f171.google.com (mail-yw0-f171.google.com
-	[209.85.211.171]) by ozlabs.org (Postfix) with ESMTP id 3B363DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 03:44:54 +1000 (EST)
-Received: by ywh1 with SMTP id 1so84931ywh.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 10:44:52 -0700 (PDT)
+	Fri, 21 Aug 2009 03:54:24 +1000 (EST)
+Date: Thu, 20 Aug 2009 13:45:19 -0400
+From: Solomon Peachy <solomon@linux-wlan.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Add support for the ESTeem 195E (PPC405EP) SBC
+Message-ID: <20090820174519.GA8860@linux-wlan.com>
+References: <1248448916-29473-1-git-send-email-solomon@linux-wlan.com>
+	<20090730140630.GD10244@zod.rchland.ibm.com>
+	<20090730194506.GA30066@linux-wlan.com>
+	<20090730200848.GF10244@zod.rchland.ibm.com>
+	<20090817151359.GC8710@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20090820160356.F1A03340054@mail79-sin.bigfish.com>
-References: <20090820094956.02DFC45004F@mail96-dub.bigfish.com>
-	<20090820160356.F1A03340054@mail79-sin.bigfish.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 20 Aug 2009 11:44:32 -0600
-Message-ID: <fa686aa40908201044y17acb4c1lacf09fafc2647fa4@mail.gmail.com>
-Subject: Re: [PATCH] [V3] net: add Xilinx emac lite device driver
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Sadanand Mutyala <sadanan@xilinx.com>, netdev@vger.kernel.org,
-	John Linn <john.linn@xilinx.com>, linuxppc-dev@ozlabs.org,
-	John Linn <linnj@xilinx.com>,
-	Michal Simek <michal.simek@petalogix.com>, jgarzik@pobox.com,
-	davem@davemloft.net, John Williams <john.williams@petalogix.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Nq2Wo0NMKNjxTN9z"
+In-Reply-To: <20090817151359.GC8710@zod.rchland.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,22 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 20, 2009 at 10:02 AM, Stephen
-Neuendorffer<stephen.neuendorffer@xilinx.com> wrote:
->
-> John,
->
-> I just got a chance to browse this... =A0Do you want to put in the
-> stripped device names?
->
-> .compatible =3D "xlnx,xps-ethernetlite-2", etc...
 
-We've covered this territory before.  Compatible values need to be
-exact for the IP cores.  No wildcards. No abbreviations or stripping.
-Newer cores can claim compatibility with older when appropriate.
+--Nq2Wo0NMKNjxTN9z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-g.
+On Mon, Aug 17, 2009 at 11:13:59AM -0400, Josh Boyer wrote:
+> >There is another way.  Perhaps you could just copy ppcboot.h to a new fi=
+le
+> >called "hotfoot.h" and just use that.  It's a duplication of ppcboot.h to
+> >some degree, but it seems to make sense for your board and it helps pres=
+erve
+> >the "stock" ppcboot.h for other boards.
+>=20
+> Solomon, any update on this?  As far as I'm concerned, the ppcboot.h issu=
+e is
+> the only thing that really needs to be reworked before we bring this patch
+> in.
 
+Should I call the new version 'hotfoot.h' or 'ppcboot-hotfoot.h'?=20
+
+ - Solomon
 --=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Solomon Peachy                        solomon@linux-wlan.com
+AbsoluteValue Systems                 http://www.linux-wlan.com
+721-D North Drive                     +1 (321) 259-0737  (office)
+Melbourne, FL 32934                   +1 (321) 259-0286  (fax)
+
+--Nq2Wo0NMKNjxTN9z
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQFKjYuvhinxHf95MjYRAmATAKCCpERvzee/E7EOCMszyvkIRZr4vACfS7Z1
+WFJDz33xh9atqLc8KF/uhRg=
+=pKoO
+-----END PGP SIGNATURE-----
+
+--Nq2Wo0NMKNjxTN9z--
