@@ -1,34 +1,26 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4616AB7B6F
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1A77EB7B84
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 23:39:06 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e9.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7LDbiH3013124
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 09:37:44 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7LDbgXt185730
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 09:37:42 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n7LDbgQB030078
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 09:37:42 -0400
-Received: from zod.rchland.ibm.com (sig-9-77-145-175.mts.ibm.com
-	[9.77.145.175])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	n7LDbeQl029812
-	(version=TLSv1/SSLv3 cipher=AES128-SHA bits=128 verify=NO)
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 09:37:42 -0400
-Date: Fri, 21 Aug 2009 09:37:40 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: 4xx next branch updated
-Message-ID: <20090821133740.GJ2530@zod.rchland.ibm.com>
+	Fri, 21 Aug 2009 23:45:51 +1000 (EST)
+Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id A3538DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 23:45:50 +1000 (EST)
+Date: Fri, 21 Aug 2009 15:45:47 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: 832x: MATH_EMUL
+In-Reply-To: <1059A1F2-B4AA-48DC-82D6-B26D39414FA4@kernel.crashing.org>
+Message-ID: <alpine.LRH.2.00.0908211545170.16485@vixen.sonytel.be>
+References: <4A8E4128.6040905@denx.de>
+	<1059A1F2-B4AA-48DC-82D6-B26D39414FA4@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: linuxppc-dev@ozlabs.org, hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,21 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On Fri, 21 Aug 2009, Kumar Gala wrote:
+> On Aug 21, 2009, at 1:39 AM, Heiko Schocher wrote:
+> >I actually porting a mpc8321 based port, and because there is no FPU
+> >on this CPU, I activated MATH_EMUL, as all other mpc832x ports did.
+> >
+> >Is there something like a counter, which counts how many times this
+> >Exception occurs?
+> 
+> Geert published some patches that did something like this but there isn't
+> upstream as far as I know at this point.
 
-I've rebased the next branch of the 4xx tree to Ben's next branch, and added
-the following commits:
+It's upstream: 80947e7c99c29ce3a78bdc1933b310468455a82f
 
-Solomon Peachy (1):
-      powerpc/40x: Add support for the ESTeem 195E (PPC405EP) SBC
+With kind regards,
 
-Stefan Roese (2):
-      powerpc/44x: Update Arches dts
-      powerpc/44x: Update Arches defconfig
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
 
-fkan@amcc.com (1):
-      powerpc/44x: Add Eiger AMCC (AppliedMicro) PPC460SX evaluation board
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-I'm waiting for a couple more patches, then I'll ask Ben to pull.
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-josh
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
