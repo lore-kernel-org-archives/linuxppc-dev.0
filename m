@@ -1,25 +1,30 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <vimal.newwork@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8D2D7B7B7F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BEE6CB7B98
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 13:56:46 +1000 (EST)
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7D2CEDDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 13:56:46 +1000 (EST)
-Date: Fri, 21 Aug 2009 13:56:44 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Airlie <airlied@linux.ie>
-Subject: linux-next: manual merge of the agp tree with the powerpc tree
-Message-Id: <20090821135644.3f817b82.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: David Woodhouse <David.Woodhouse@intel.com>, linux-kernel@vger.kernel.org,
-	Michel =?UTF-8?B?RMOkbnplcg==?= <daenzer@vmware.com>,
-	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>
+	Fri, 21 Aug 2009 15:17:31 +1000 (EST)
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
+	by ozlabs.org (Postfix) with ESMTP id 219A1DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 15:17:30 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 5so272322qwi.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2009 22:17:29 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090820153644.631dbd7b@lappy.seanm.ca>
+References: <19081.57584.173693.798535@cargo.ozlabs.ibm.com>
+	<4A8C87E6.6070702@amcc.com> <20090820003851.1a532444@lappy.seanm.ca>
+	<200908200701.21076.sr@denx.de>
+	<20090820153644.631dbd7b@lappy.seanm.ca>
+From: vimal singh <vimal.newwork@gmail.com>
+Date: Fri, 21 Aug 2009 10:47:09 +0530
+Message-ID: <ce9ab5790908202217t2430646co5059f308a23d7397@mail.gmail.com>
+Subject: Re: [U-Boot] NAND ECC Error with wrong SMC ording bug
+To: Sean MacLennan <smaclennan@pikatech.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: u-boot@lists.denx.de, Stefan Roese <sr@denx.de>, Feng Kan <fkan@amcc.com>,
+	linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,53 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Dave,
+<snip>
 
-Today's linux-next merge of the agp tree got a conflict in
-drivers/char/agp/uninorth-agp.c between commit uninorth_create_gatt_table
-("agp/uninorth: Simplify cache flushing") from the powerpc tree and
-commit 6a12235c7d2d75c7d94b9afcaaecd422ff845ce0 ("agp: kill phys_to_gart
-() and gart_to_phys()") from the agp tree.
+> With the current ndfc code, the error correction gets the bits wrong.
+> Switching it back to the original way and the correction is correct.
+>
+> diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
+> index 89bf85a..497e175 100644
+> --- a/drivers/mtd/nand/ndfc.c
+> +++ b/drivers/mtd/nand/ndfc.c
+> @@ -101,9 +101,8 @@ static int ndfc_calculate_ecc(struct mtd_info *mtd,
+>
+> =A0 =A0 =A0 =A0wmb();
+> =A0 =A0 =A0 =A0ecc =3D in_be32(ndfc->ndfcbase + NDFC_ECC);
+> - =A0 =A0 =A0 /* The NDFC uses Smart Media (SMC) bytes order */
+> - =A0 =A0 =A0 ecc_code[0] =3D p[2];
+> - =A0 =A0 =A0 ecc_code[1] =3D p[1];
+> + =A0 =A0 =A0 ecc_code[0] =3D p[1];
+> + =A0 =A0 =A0 ecc_code[1] =3D p[2];
+> =A0 =A0 =A0 =A0ecc_code[2] =3D p[3];
+>
+> =A0 =A0 =A0 =A0return 0;
+>
+> Does anybody see a problem with my method of reproducing the bug? This
+> bug is deadly for our customers. I don't want to make the change unless
+> it is absolutely necessary..
 
-Just context changes.  I fixed it up (see below) and can carry the fix as
-necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Just one question: did you enabled MTD_NAND_ECC_SMC in configs?
 
-diff --cc drivers/char/agp/uninorth-agp.c
-index bba29ab,4317a55..0000000
---- a/drivers/char/agp/uninorth-agp.c
-+++ b/drivers/char/agp/uninorth-agp.c
-@@@ -424,28 -424,14 +424,28 @@@ static int uninorth_create_gatt_table(s
-  	if (table == NULL)
-  		return -ENOMEM;
-  
- +	pages = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
- +	if (pages == NULL)
- +		goto enomem;
- +
-  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
-  
- -	for (page = virt_to_page(table); page <= virt_to_page(table_end); page++)
- +	for (page = virt_to_page(table), i = 0; page <= virt_to_page(table_end);
- +	     page++, i++) {
-  		SetPageReserved(page);
- +		pages[i] = page;
- +	}
-  
-  	bridge->gatt_table_real = (u32 *) table;
- -	bridge->gatt_table = (u32 *)table;
- +	/* Need to clear out any dirty data still sitting in caches */
- +	flush_dcache_range((unsigned long)table,
- +			   (unsigned long)(table_end + PAGE_SIZE));
- +	bridge->gatt_table = vmap(pages, (1 << page_order), 0, PAGE_KERNEL_NCG);
- +
- +	if (bridge->gatt_table == NULL)
- +		goto enomem;
- +
-- 	bridge->gatt_bus_addr = virt_to_gart(table);
-+ 	bridge->gatt_bus_addr = virt_to_phys(table);
-  
-  	for (i = 0; i < num_entries; i++)
-  		bridge->gatt_table[i] = 0;
+-vimal
+
+>
+> Cheers,
+> =A0 Sean
+>
+> ______________________________________________________
+> Linux MTD discussion mailing list
+> http://lists.infradead.org/mailman/listinfo/linux-mtd/
+>
