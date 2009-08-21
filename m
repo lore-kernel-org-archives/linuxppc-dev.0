@@ -1,33 +1,34 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 04744B7B61
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4616AB7B6F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 23:17:27 +1000 (EST)
-Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
-	by ozlabs.org (Postfix) with ESMTP id 7F30CDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 23:17:24 +1000 (EST)
-Received: from list by lo.gmane.org with local (Exim 4.50) id 1MeTzW-00024O-7V
-	for linuxppc-dev@ozlabs.org; Fri, 21 Aug 2009 15:17:14 +0200
-Received: from p4ff049b0.dip.t-dialin.net ([79.240.73.176])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 15:17:14 +0200
-Received: from dzu by p4ff049b0.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 15:17:14 +0200
-To: linuxppc-dev@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: 832x: MATH_EMUL
-Date: Fri, 21 Aug 2009 15:16:51 +0200
-Message-ID: <m2k50x8fy4.fsf@ohwell.denx.de>
-References: <4A8E4128.6040905@denx.de>
-	<1059A1F2-B4AA-48DC-82D6-B26D39414FA4@kernel.crashing.org>
-Mime-Version: 1.0
+	Fri, 21 Aug 2009 23:39:06 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e9.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7LDbiH3013124
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 09:37:44 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7LDbgXt185730
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 09:37:42 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n7LDbgQB030078
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 09:37:42 -0400
+Received: from zod.rchland.ibm.com (sig-9-77-145-175.mts.ibm.com
+	[9.77.145.175])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	n7LDbeQl029812
+	(version=TLSv1/SSLv3 cipher=AES128-SHA bits=128 verify=NO)
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 09:37:42 -0400
+Date: Fri, 21 Aug 2009 09:37:40 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: 4xx next branch updated
+Message-ID: <20090821133740.GJ2530@zod.rchland.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,29 +38,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+Hi all,
 
-> On Aug 21, 2009, at 1:39 AM, Heiko Schocher wrote:
->
->> Hello,
->>
->> I actually porting a mpc8321 based port, and because there is no FPU
->> on this CPU, I activated MATH_EMUL, as all other mpc832x ports did.
->>
->> Is there something like a counter, which counts how many times this
->> Exception occurs?
->
-> Geert published some patches that did something like this but there
-> isn't upstream as far as I know at this point.
+I've rebased the next branch of the 4xx tree to Ben's next branch, and added
+the following commits:
 
-Were there any technical reasons or did it just slip into the cracks?
-In my opinion such a counter would be *very* helpful to judge the
-performance impact one suffers instead of living in ignorant bliss.
+Solomon Peachy (1):
+      powerpc/40x: Add support for the ESTeem 195E (PPC405EP) SBC
 
-Cheers
-  Detlev
+Stefan Roese (2):
+      powerpc/44x: Update Arches dts
+      powerpc/44x: Update Arches defconfig
 
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+fkan@amcc.com (1):
+      powerpc/44x: Add Eiger AMCC (AppliedMicro) PPC460SX evaluation board
+
+I'm waiting for a couple more patches, then I'll ask Ben to pull.
+
+josh
