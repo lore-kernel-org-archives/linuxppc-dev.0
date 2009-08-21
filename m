@@ -1,23 +1,27 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail7.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 225A2B7BC5
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 32E2DB7BD4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 15:40:54 +1000 (EST)
-Message-ID: <4A8E3396.9030006@windriver.com>
-Date: Fri, 21 Aug 2009 13:41:42 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] powerpc/405ex: support cuImage via included dtb
-References: <1250562484-16415-1-git-send-email-tiejun.chen@windriver.com>
-	<1250562484-16415-3-git-send-email-tiejun.chen@windriver.com>
-	<20090820133118.GF2530@zod.rchland.ibm.com>
-In-Reply-To: <20090820133118.GF2530@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+	Fri, 21 Aug 2009 15:46:37 +1000 (EST)
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 228D3DDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 15:46:37 +1000 (EST)
+Date: Fri, 21 Aug 2009 15:46:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/3] powerpc/pci: Remove dead checks for CONFIG_PPC_OF
+Message-Id: <20090821154630.e796bc4f.sfr@canb.auug.org.au>
+In-Reply-To: <20090821053005.2289.59853.stgit@localhost.localdomain>
+References: <20090821052714.2289.41279.stgit@localhost.localdomain>
+	<20090821053005.2289.59853.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__21_Aug_2009_15_46_30_+1000_/5lB03vkco5ZHotH"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Tue, Aug 18, 2009 at 10:28:04AM +0800, Tiejun Chen wrote:
->> To support cuImage, we need to initialize the required sections and 
->> ensure that it is built.
->>
->> -		cuboot-acadia.c cuboot-amigaone.c
->> +		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c
->> src-boot := $(src-wlib) $(src-plat) empty.c
->>
->> src-boot := $(addprefix $(obj)/, $(src-boot))
->> @@ -192,6 +192,7 @@ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
->> image-$(CONFIG_EP405)			+= dtbImage.ep405
->> image-$(CONFIG_WALNUT)			+= treeImage.walnut
->> image-$(CONFIG_ACADIA)			+= cuImage.acadia
->> +image-$(CONFIG_KILAUEA)		+= cuImage.kilauea
-> 
-> I'm not thrilled with this part as cuImage is really the secondary
-> solution if the U-Boot that comes with a board if FDT aware.  If you
-> have a different board that needs this, perhaps you could add the
-> target when that board support gets upstream?
-> 
+--Signature=_Fri__21_Aug_2009_15_46_30_+1000_/5lB03vkco5ZHotH
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Agreed and I will remove this line as you expect. Right?
+Hi Grant,
 
->> +static void kilauea_fixups(void)
->> +{
->> +	/*TODO: Please change this as the real. Note that should be 33MHZ~100MHZ.*/
-> 
-> What does that mean?
-> 
+On Thu, 20 Aug 2009 23:30:09 -0600 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> From: Grant Likely <grant.likely@secretlab.ca>
+>=20
+> PPC_OF is always selected for arch/powerpc.  This patch removes the stale
+> #defines
+>=20
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-It's difficult to check the sysclk value on all revision Kilauea board for me,
-and we have to check this value only by the real target, not by reading one
-register. So I hope it's safe to remind other guys here.
+Good work.
 
-But I am sure that should be 33MHZ ~ 100MHZ as PPC405EX manual.
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Best Regards
-Tiejun
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> josh
-> 
+--Signature=_Fri__21_Aug_2009_15_46_30_+1000_/5lB03vkco5ZHotH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqONLYACgkQjjKRsyhoI8yilgCfT4CJkoKjpz53FAcYfg2oLqqr
+v+YAniwHG5EpAOLTIDk11jJZCLYLMxaO
+=Msvb
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__21_Aug_2009_15_46_30_+1000_/5lB03vkco5ZHotH--
