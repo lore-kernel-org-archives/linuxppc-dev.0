@@ -1,35 +1,33 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A91E6B7BD9
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 04744B7B61
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 21:50:04 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e38.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7LBkEEJ013279
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 05:46:14 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7LBntUe226446
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 05:49:55 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n7LBntAT018614
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2009 05:49:55 -0600
-Date: Fri, 21 Aug 2009 07:49:51 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-Subject: Re: [PATCH 2/2] powerpc/405ex: support cuImage via included dtb
-Message-ID: <20090821114951.GI2530@zod.rchland.ibm.com>
-References: <1250562484-16415-1-git-send-email-tiejun.chen@windriver.com>
-	<1250562484-16415-3-git-send-email-tiejun.chen@windriver.com>
-	<20090820133118.GF2530@zod.rchland.ibm.com>
-	<4A8E3396.9030006@windriver.com>
-MIME-Version: 1.0
+	Fri, 21 Aug 2009 23:17:27 +1000 (EST)
+Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
+	by ozlabs.org (Postfix) with ESMTP id 7F30CDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 23:17:24 +1000 (EST)
+Received: from list by lo.gmane.org with local (Exim 4.50) id 1MeTzW-00024O-7V
+	for linuxppc-dev@ozlabs.org; Fri, 21 Aug 2009 15:17:14 +0200
+Received: from p4ff049b0.dip.t-dialin.net ([79.240.73.176])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 15:17:14 +0200
+Received: from dzu by p4ff049b0.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 15:17:14 +0200
+To: linuxppc-dev@ozlabs.org
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: 832x: MATH_EMUL
+Date: Fri, 21 Aug 2009 15:16:51 +0200
+Message-ID: <m2k50x8fy4.fsf@ohwell.denx.de>
+References: <4A8E4128.6040905@denx.de>
+	<1059A1F2-B4AA-48DC-82D6-B26D39414FA4@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4A8E3396.9030006@windriver.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,31 +37,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 21, 2009 at 01:41:42PM +0800, tiejun.chen wrote:
->Josh Boyer wrote:
->> On Tue, Aug 18, 2009 at 10:28:04AM +0800, Tiejun Chen wrote:
->>> To support cuImage, we need to initialize the required sections and 
->>> ensure that it is built.
->>>
->>> -		cuboot-acadia.c cuboot-amigaone.c
->>> +		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c
->>> src-boot := $(src-wlib) $(src-plat) empty.c
->>>
->>> src-boot := $(addprefix $(obj)/, $(src-boot))
->>> @@ -192,6 +192,7 @@ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
->>> image-$(CONFIG_EP405)			+= dtbImage.ep405
->>> image-$(CONFIG_WALNUT)			+= treeImage.walnut
->>> image-$(CONFIG_ACADIA)			+= cuImage.acadia
->>> +image-$(CONFIG_KILAUEA)		+= cuImage.kilauea
->> 
->> I'm not thrilled with this part as cuImage is really the secondary
->> solution if the U-Boot that comes with a board if FDT aware.  If you
->> have a different board that needs this, perhaps you could add the
->> target when that board support gets upstream?
->> 
+Hi Kumar,
+
+> On Aug 21, 2009, at 1:39 AM, Heiko Schocher wrote:
 >
->Agreed and I will remove this line as you expect. Right?
+>> Hello,
+>>
+>> I actually porting a mpc8321 based port, and because there is no FPU
+>> on this CPU, I activated MATH_EMUL, as all other mpc832x ports did.
+>>
+>> Is there something like a counter, which counts how many times this
+>> Exception occurs?
+>
+> Geert published some patches that did something like this but there
+> isn't upstream as far as I know at this point.
 
-Yep, that sounds right.
+Were there any technical reasons or did it just slip into the cracks?
+In my opinion such a counter would be *very* helpful to judge the
+performance impact one suffers instead of living in ignorant bliss.
 
-josh
+Cheers
+  Detlev
+
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
