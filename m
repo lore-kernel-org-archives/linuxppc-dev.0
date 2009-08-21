@@ -1,27 +1,21 @@
-Return-Path: <victorgallardo@yahoo.com>
+Return-Path: <nathan.french@onrampwireless.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 599E6B7B60
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1CC8DB70B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 22 Aug 2009 06:35:51 +1000 (EST)
-Received: from web39807.mail.mud.yahoo.com (web39807.mail.mud.yahoo.com
-	[209.191.106.68]) by ozlabs.org (Postfix) with SMTP id 9D793DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Aug 2009 06:35:50 +1000 (EST)
-Message-ID: <605613.1808.qm@web39807.mail.mud.yahoo.com>
-References: <1250813957-1786-1-git-send-email-fkan@amcc.com>
-	<20090821145506.53275701@lappy.seanm.ca>
-Date: Fri, 21 Aug 2009 13:35:48 -0700 (PDT)
-From: Victor Gallardo <victorgallardo@yahoo.com>
-Subject: Re: [PATCH 1/1] Fix ECC Correction bug for SMC ordering for NDFC
-	driver.
-To: Sean MacLennan <smaclennan@pikatech.com>, Feng Kan <fkan@amcc.com>
-In-Reply-To: <20090821145506.53275701@lappy.seanm.ca>
+	Sat, 22 Aug 2009 06:48:20 +1000 (EST)
+Received: from relay.ihostexchange.net (relay.ihostexchange.net [66.46.182.55])
+	by ozlabs.org (Postfix) with ESMTP id B6A9BDDD04
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Aug 2009 06:48:18 +1000 (EST)
+Subject: Having trouble using mtdparts kernel command line to repartition flash
+From: Nathan French <nathan.french@onrampwireless.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Fri, 21 Aug 2009 13:48:03 -0700
+Message-ID: <1250887683.20417.7499.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, Feng Kan <fkan@amcc.com>,
-	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,7 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sean=0A=0A> =0A> It looks like another fix for this bug is to leave the =
-current code=0A> alone and turn off CONFIG_MTD_NAND_ECC_SMC.=0A=0AThis=A0wo=
-uld fix the problem by hiding the issue. Fengs patch is=A0the correct way t=
-o go.=0A=0ABest Regards,=0A=0AVictor Gallardo
+I've got a kilauea (PPC405EX) board that we've decided needs more room
+in one of the flash partitions.  So I took the existing command line
+(which came from the dev kit):
+
+Kernel command line: ramdisk_size=65536 root=/dev/ram rw
+mtdparts=fc000000.nor_flash:2M(linux),20M(ramdisk),4M(jffs2),38272k(user),256k(env),384k(uboot) ip=10.2.3.28:10.1.0.65:10.0.0.1::kilauea:eth0:off panic=1 console=ttyS0,115200
+
+And modified it like below (4M -> 8M, 38272k->34176k).  We're not
+currently using the user partition, so I just borrowed 4MB from it.
+
+Kernel command line: ramdisk_size=65536 root=/dev/ram rw
+mtdparts=fc000000.nor_flash:2M(linux),20M(ramdisk),8M(jffs2),34176k(user),256k(env),384k(uboot) ip=10.2.3.28:10.1.0.65:10.0.0.1::kilauea:eth0:off panic=1 console=ttyS0,115200
+        
+And I get the below error.  I noticed that the device tree (FDT/DTB)
+lists some partitions as well that don't exactly match up with the
+original parameters, so I ignored that part of the FDT.  Is this ok?
+Does Linux ignore the partition information from the FDT when U-Boot
+passes partition arguments?
+
+Oh and... well why is the ram0 device complaining when I modify the
+flash partitioning?  I'm not expecting the 20M ramdisk portion to be
+affected.  Also I noticed that the device tree (DTS/DTB) does not
+reflect the original partition scheme.  Does it need to or is the device
+tree ignored when using the mtdparts partitioning?  I tried modifying it
+to match but didn't seem to make a difference.
+
+Am I missing something here?
+
+RAMDISK: Compressed image found at block 0
+RAMDISK: incomplete write (24576 != 32768) 35815424
+VFS: Mounted root (ext2 filesystem) readonly.
+Freeing unused kernel memory: 136k init
+attempt to access beyond end of device
+ram0: rw=0, want=98312, limit=70000
+EXT2-fs error (device ram0): ext2_get_inode: unable to read inode block
+- inode=12289, block=49155
+Warning: unable to open an initial console.
+attempt to access beyond end of device
+ram0: rw=0, want=98312, limit=70000
+EXT2-fs error (device ram0): ext2_get_inode: unable to read inode block
+- inode=12289, block=49155
+attempt to access beyond end of device
+ram0: rw=0, want=98312, limit=70000
+EXT2-fs error (device ram0): ext2_get_inode: unable to read inode block
+- inode=12289, block=49155
+attempt to access beyond end of device
+ram0: rw=0, want=98312, limit=70000
+...
+
+Thanks,
+
+Nathan French
