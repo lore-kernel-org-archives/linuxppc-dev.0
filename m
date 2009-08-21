@@ -1,19 +1,25 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67])
-	by bilbo.ozlabs.org (Postfix) with SMTP id 6B8E6B7B80
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8D2D7B7B7F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 10:34:37 +1000 (EST)
-Date: Thu, 20 Aug 2009 20:27:53 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/1] Fix ECC Correction bug for SMC ordering for NDFC
-	driver.
-Message-ID: <20090820202753.46eaf974@lappy.seanm.ca>
-In-Reply-To: <1250813957-1786-1-git-send-email-fkan@amcc.com>
-References: <1250813957-1786-1-git-send-email-fkan@amcc.com>
+	Fri, 21 Aug 2009 13:56:46 +1000 (EST)
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7D2CEDDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 13:56:46 +1000 (EST)
+Date: Fri, 21 Aug 2009 13:56:44 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dave Airlie <airlied@linux.ie>
+Subject: linux-next: manual merge of the agp tree with the powerpc tree
+Message-Id: <20090821135644.3f817b82.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
+Cc: David Woodhouse <David.Woodhouse@intel.com>, linux-kernel@vger.kernel.org,
+	Michel =?UTF-8?B?RMOkbnplcg==?= <daenzer@vmware.com>,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,49 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 20 Aug 2009 17:19:17 -0700
-Feng Kan <fkan@amcc.com> wrote:
+Hi Dave,
 
-> Fix ECC Correction bug where the byte offset location were double
-> fliped causing correction routine to toggle the wrong byte location
-> in the ECC segment. The ndfc_calculate_ecc routine change the order
-> of getting the ECC code.
->         /* The NDFC uses Smart Media (SMC) bytes order */
->         ecc_code[0] = p[2];
->         ecc_code[1] = p[1];
->         ecc_code[2] = p[3];
-> But in the Correction algorithm when calculating the byte offset
-> location, the b1 is used as the upper part of the address. Which
-> again reverse the order making the final byte offset address 
-> location incorrect.
-> 	byte_addr = (addressbits[b1] << 4) + addressbits[b0];
-> The order is change to read it in straight and let the correction
-> function to revert it to SMC order.
-> 
-> Signed-off-by: Feng Kan <fkan@amcc.com>
-> Acked-by: Victor Gallardo <vgallardo@amcc.com>
-> Acked-by: Prodyut Hazarika <phazarika@amcc.com>
-> ---
->  drivers/mtd/nand/ndfc.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
-> index 5906c40..d9d3e6e 100644
-> --- a/drivers/mtd/nand/ndfc.c
-> +++ b/drivers/mtd/nand/ndfc.c
-> @@ -101,8 +101,8 @@ static int ndfc_calculate_ecc(struct mtd_info
-> *mtd, wmb();
->  	ecc = in_be32(ndfc->ndfcbase + NDFC_ECC);
->  	/* The NDFC uses Smart Media (SMC) bytes order */
-> -	ecc_code[0] = p[2];
-> -	ecc_code[1] = p[1];
-> +	ecc_code[0] = p[1];
-> +	ecc_code[1] = p[2];
->  	ecc_code[2] = p[3];
->  
->  	return 0;
+Today's linux-next merge of the agp tree got a conflict in
+drivers/char/agp/uninorth-agp.c between commit uninorth_create_gatt_table
+("agp/uninorth: Simplify cache flushing") from the powerpc tree and
+commit 6a12235c7d2d75c7d94b9afcaaecd422ff845ce0 ("agp: kill phys_to_gart
+() and gart_to_phys()") from the agp tree.
 
-Acked-by: Sean MacLennan <smaclennan@pikatech.com>
-
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
+-- 
 Cheers,
-   Sean
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc drivers/char/agp/uninorth-agp.c
+index bba29ab,4317a55..0000000
+--- a/drivers/char/agp/uninorth-agp.c
++++ b/drivers/char/agp/uninorth-agp.c
+@@@ -424,28 -424,14 +424,28 @@@ static int uninorth_create_gatt_table(s
+  	if (table == NULL)
+  		return -ENOMEM;
+  
+ +	pages = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
+ +	if (pages == NULL)
+ +		goto enomem;
+ +
+  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
+  
+ -	for (page = virt_to_page(table); page <= virt_to_page(table_end); page++)
+ +	for (page = virt_to_page(table), i = 0; page <= virt_to_page(table_end);
+ +	     page++, i++) {
+  		SetPageReserved(page);
+ +		pages[i] = page;
+ +	}
+  
+  	bridge->gatt_table_real = (u32 *) table;
+ -	bridge->gatt_table = (u32 *)table;
+ +	/* Need to clear out any dirty data still sitting in caches */
+ +	flush_dcache_range((unsigned long)table,
+ +			   (unsigned long)(table_end + PAGE_SIZE));
+ +	bridge->gatt_table = vmap(pages, (1 << page_order), 0, PAGE_KERNEL_NCG);
+ +
+ +	if (bridge->gatt_table == NULL)
+ +		goto enomem;
+ +
+- 	bridge->gatt_bus_addr = virt_to_gart(table);
++ 	bridge->gatt_bus_addr = virt_to_phys(table);
+  
+  	for (i = 0; i < num_entries; i++)
+  		bridge->gatt_table[i] = 0;
