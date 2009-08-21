@@ -1,35 +1,30 @@
-Return-Path: <hs@denx.de>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id EB302B7334
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DD035B7B7F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 Aug 2009 23:52:40 +1000 (EST)
-Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
-	by ozlabs.org (Postfix) with ESMTP id 7381CDDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 23:52:39 +1000 (EST)
-Received: from mail.invitel.hu (mail.invitel.hu [213.163.59.4])
-	by a.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
-	85F2811A585
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 15:52:37 +0200 (CEST)
-Received: from [192.168.1.6] ([87.97.84.156])
-	by mail.invitel.hu (Invitel Messaging Server)
-	with ESMTPA id <0KOQ00JJZBVORKE0@invitel.hu> for
-	linuxppc-dev@ozlabs.org; Fri, 21 Aug 2009 15:52:37 +0200 (CEST)
-Date: Fri, 21 Aug 2009 15:59:16 +0200
-From: Heiko Schocher <hs@denx.de>
-Subject: Re: 832x: MATH_EMUL
-In-reply-to: <alpine.LRH.2.00.0908211545170.16485@vixen.sonytel.be>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Message-id: <4A8EA834.70309@denx.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-References: <4A8E4128.6040905@denx.de>
-	<1059A1F2-B4AA-48DC-82D6-B26D39414FA4@kernel.crashing.org>
-	<alpine.LRH.2.00.0908211545170.16485@vixen.sonytel.be>
-Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>
-Reply-To: hs@denx.de
+	Sat, 22 Aug 2009 00:54:48 +1000 (EST)
+Received: from mail-yw0-f171.google.com (mail-yw0-f171.google.com
+	[209.85.211.171]) by ozlabs.org (Postfix) with ESMTP id 44349DDD04
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Aug 2009 00:54:47 +1000 (EST)
+Received: by ywh1 with SMTP id 1so1060706ywh.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2009 07:54:45 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20090821160116.b4a7b713.sfr@canb.auug.org.au>
+References: <20090821052714.2289.41279.stgit@localhost.localdomain>
+	<20090821053014.2289.59798.stgit@localhost.localdomain>
+	<20090821160116.b4a7b713.sfr@canb.auug.org.au>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 21 Aug 2009 08:54:25 -0600
+Message-ID: <fa686aa40908210754s5e54af99sdbd11eb6ec48b5f9@mail.gmail.com>
+Subject: Re: [PATCH 2/3] powerpc/pci: move pci_64.c device tree scanning code
+	into pci-common.c
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "David S. Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,25 +34,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Geert,
+On Fri, Aug 21, 2009 at 12:01 AM, Stephen Rothwell<sfr@canb.auug.org.au> wr=
+ote:
+>
+> And similarly with sparc's pci_parse_of_addrs() and pci_parse_of_flags
+> () ? =A0Maybe create drivers/of/pci.c (or drivers/pci/of.c)? =A0Or maybe =
+they
+> are still too different?
+>
+> There is probably scope for more consolidation there.
 
-Geert Uytterhoeven wrote:
-> On Fri, 21 Aug 2009, Kumar Gala wrote:
->> On Aug 21, 2009, at 1:39 AM, Heiko Schocher wrote:
->>> I actually porting a mpc8321 based port, and because there is no FPU
->>> on this CPU, I activated MATH_EMUL, as all other mpc832x ports did.
->>>
->>> Is there something like a counter, which counts how many times this
->>> Exception occurs?
->> Geert published some patches that did something like this but there isn't
->> upstream as far as I know at this point.
-> 
-> It's upstream: 80947e7c99c29ce3a78bdc1933b310468455a82f
+I agree, but I'll do those things in a separate patch.  I'm making as
+few code changes as possible in this patch to ease review.
 
-Thanks for this info!
+g.
 
-bye
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
