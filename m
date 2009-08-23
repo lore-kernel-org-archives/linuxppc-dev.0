@@ -3,14 +3,17 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail7.windriver.com",
 	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D97D5B70CF
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E5467B7B61
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sun, 23 Aug 2009 12:02:52 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: jwboyer@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: v1 powerpc/405ex: Support cuImage for PPC405EX
-Date: Sun, 23 Aug 2009 10:03:42 +0800
-Message-Id: <1250993024-29527-1-git-send-email-tiejun.chen@windriver.com>
+Subject: [v1 PATCH 1/2] powerpc/405ex: provide necessary fixup function to
+	support cuImage
+Date: Sun, 23 Aug 2009 10:03:43 +0800
+Message-Id: <1250993024-29527-2-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1250993024-29527-1-git-send-email-tiejun.chen@windriver.com>
+References: <1250993024-29527-1-git-send-email-tiejun.chen@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,63 +23,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Summary: powerpc/405ex: Support cuImage for PPC405EX
-Reviewers: Josh and linux-ppc
-----------------------------------------------------
-V1 patches are generated based on V0 as Josh's comments:
-===
-1. Remove duplicate #defines to merge 405EX with 440GX.
-2. To prefix with ibm405ex_ for the related function.
-3. Remove redundant comment for sysclk.
+For cuImage format it's necessary to provide clock fixups since u-boot will
+not pass necessary clock frequency into the dtb included into cuImage so we
+implement the clock fixups as defined in the technical documentation for the
+board and update header file with the basic register definitions.
 
-These patch series are used to support cuImage on the kilauea board based on PPC405ex.
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/boot/4xx.c |  142 +++++++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/4xx.h |    1 +
+ arch/powerpc/boot/dcr.h |    4 +-
+ 3 files changed, 144 insertions(+), 3 deletions(-)
 
-Tested on the amcc kilauea board:
-===
-...
-=> tftp 1000000 cuImage.kilauea
-Waiting for PHY auto negotiation to complete.. done
-ENET Speed is 100 Mbps - FULL duplex connection (EMAC0)
-Using ppc_4xx_eth0 device
-TFTP from server 192.168.1.2; our IP address is 192.168.1.103
-Filename 'cuImage.kilauea'.
-Load address: 0x1000000
-Loading: #################################################################
-         #################################################################
-         #################################################################
-         #################################################################
-         #########################################
-done
-Bytes transferred = 1541019 (17839b hex)
-=> bootm
-## Booting kernel from Legacy Image at 01000000 ...
-   Image Name:   Linux-2.6.31-rc5-57857-g2969260-
-   Created:      2009-08-23   1:46:31 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1540955 Bytes =  1.5 MB
-   Load Address: 00400000
-   Entry Point:  00400468
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-CPU clock-frequency <- 0x23c345fa (600MHz)
-CPU timebase-frequency <- 0x23c345fa (600MHz)
-/plb: clock-frequency <- bebc1fe (200MHz)
-/plb/opb: clock-frequency <- 5f5e0ff (100MHz)
-/plb/opb/ebc: clock-frequency <- 5f5e0ff (100MHz)
-/plb/opb/serial@ef600200: clock-frequency <- a8c000 (11MHz)
-/plb/opb/serial@ef600300: clock-frequency <- a8c000 (11MHz)
-Memory <- <0x0 0x10000000> (256MB)
-ethernet0: local-mac-address <- 00:06:4b:10:22:6c
-ethernet1: local-mac-address <- 00:06:4b:10:22:6d
-
-zImage starting: loaded at 0x00400000 (sp: 0x0fe9ec08)
-Allocating 0x330c70 bytes for kernel ...
-gunzipping (0x00000000 <- 0x0040f000:0x0073a03c)...done 0x31425c bytes
-
-Linux/PowerPC load: [...]
-Finalizing device tree... flat tree at 0x747300
-Using PowerPC 40x Platform machine description
-Linux version 2.6.31-rc5-57857-g2969260-dirty ...
-
-Best Regards
-Tiejun
+diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+index 325b310..07d33f1 100644
+--- a/arch/powerpc/boot/4xx.c
++++ b/arch/powerpc/boot/4xx.c
+@@ -8,6 +8,10 @@
+  *   Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *   Copyright (c) 2003, 2004 Zultys Technologies
+  *
++ * Copyright (C) 2009 Wind River Systems, Inc.
++ *   Updated for supporting PPC405EX on Kilauea.
++ *   Tiejun Chen <tiejun.chen@windriver.com>
++ *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+  * as published by the Free Software Foundation; either version
+@@ -659,3 +663,141 @@ void ibm405ep_fixup_clocks(unsigned int sys_clk)
+ 	dt_fixup_clock("/plb/opb/serial@ef600300", uart0);
+ 	dt_fixup_clock("/plb/opb/serial@ef600400", uart1);
+ }
++
++static u8 ibm405ex_fwdv_multi_bits[] = {
++	/* values for:  1 - 16 */
++	0x01, 0x02, 0x0e, 0x09, 0x04, 0x0b, 0x10, 0x0d, 0x0c, 0x05,
++	0x06, 0x0f, 0x0a, 0x07, 0x08, 0x03
++};
++
++u32 ibm405ex_get_fwdva(unsigned long cpr_fwdv)
++{
++	u32 index;
++
++	for (index = 0; index < ARRAY_SIZE(ibm405ex_fwdv_multi_bits); index++)
++		if (cpr_fwdv == (u32)ibm405ex_fwdv_multi_bits[index])
++			return index + 1;
++
++	return 0;
++}
++
++static u8 ibm405ex_fbdv_multi_bits[] = {
++	/* values for:  1 - 100 */
++	0x00, 0xff, 0x7e, 0xfd, 0x7a, 0xf5, 0x6a, 0xd5, 0x2a, 0xd4,
++	0x29, 0xd3, 0x26, 0xcc, 0x19, 0xb3, 0x67, 0xce, 0x1d, 0xbb,
++	0x77, 0xee, 0x5d, 0xba, 0x74, 0xe9, 0x52, 0xa5, 0x4b, 0x96,
++	0x2c, 0xd8, 0x31, 0xe3, 0x46, 0x8d, 0x1b, 0xb7, 0x6f, 0xde,
++	0x3d, 0xfb, 0x76, 0xed, 0x5a, 0xb5, 0x6b, 0xd6, 0x2d, 0xdb,
++	0x36, 0xec, 0x59, 0xb2, 0x64, 0xc9, 0x12, 0xa4, 0x48, 0x91,
++	0x23, 0xc7, 0x0e, 0x9c, 0x38, 0xf0, 0x61, 0xc2, 0x05, 0x8b,
++	0x17, 0xaf, 0x5f, 0xbe, 0x7c, 0xf9, 0x72, 0xe5, 0x4a, 0x95,
++	0x2b, 0xd7, 0x2e, 0xdc, 0x39, 0xf3, 0x66, 0xcd, 0x1a, 0xb4,
++	0x68, 0xd1, 0x22, 0xc4, 0x09, 0x93, 0x27, 0xcf, 0x1e, 0xbc,
++	/* values for:  101 - 200 */
++	0x78, 0xf1, 0x62, 0xc5, 0x0a, 0x94, 0x28, 0xd0, 0x21, 0xc3,
++	0x06, 0x8c, 0x18, 0xb0, 0x60, 0xc1, 0x02, 0x84, 0x08, 0x90,
++	0x20, 0xc0, 0x01, 0x83, 0x07, 0x8f, 0x1f, 0xbf, 0x7f, 0xfe,
++	0x7d, 0xfa, 0x75, 0xea, 0x55, 0xaa, 0x54, 0xa9, 0x53, 0xa6,
++	0x4c, 0x99, 0x33, 0xe7, 0x4e, 0x9d, 0x3b, 0xf7, 0x6e, 0xdd,
++	0x3a, 0xf4, 0x69, 0xd2, 0x25, 0xcb, 0x16, 0xac, 0x58, 0xb1,
++	0x63, 0xc6, 0x0d, 0x9b, 0x37, 0xef, 0x5e, 0xbd, 0x7b, 0xf6,
++	0x6d, 0xda, 0x35, 0xeb, 0x56, 0xad, 0x5b, 0xb6, 0x6c, 0xd9,
++	0x32, 0xe4, 0x49, 0x92, 0x24, 0xc8, 0x11, 0xa3, 0x47, 0x8e,
++	0x1c, 0xb8, 0x70, 0xe1, 0x42, 0x85, 0x0b, 0x97, 0x2f, 0xdf,
++	/* values for:  201 - 255 */
++	0x3e, 0xfc, 0x79, 0xf2, 0x65, 0xca, 0x15, 0xab, 0x57, 0xae,
++	0x5c, 0xb9, 0x73, 0xe6, 0x4d, 0x9a, 0x34, 0xe8, 0x51, 0xa2,
++	0x44, 0x89, 0x13, 0xa7, 0x4f, 0x9e, 0x3c, 0xf8, 0x71, 0xe2,
++	0x45, 0x8a, 0x14, 0xa8, 0x50, 0xa1, 0x43, 0x86, 0x0c, 0x98,
++	0x30, 0xe0, 0x41, 0x82, 0x04, 0x88, 0x10, 0xa0, 0x40, 0x81,
++	0x03, 0x87, 0x0f, 0x9f, 0x3f  /* END */
++};
++
++u32 ibm405ex_get_fbdv(unsigned long cpr_fbdv)
++{
++	u32 index;
++
++	for (index = 0; index < ARRAY_SIZE(ibm405ex_fbdv_multi_bits); index++)
++		if (cpr_fbdv == (u32)ibm405ex_fbdv_multi_bits[index])
++			return index + 1;
++
++	return 0;
++}
++
++void ibm405ex_fixup_clocks(unsigned int sys_clk, unsigned int uart_clk)
++{
++	/* PLL config */
++	u32 pllc  = CPR0_READ(DCRN_CPR0_PLLC);
++	u32 plld  = CPR0_READ(DCRN_CPR0_PLLD);
++	u32 cpud  = CPR0_READ(DCRN_CPR0_PRIMAD);
++	u32 plbd  = CPR0_READ(DCRN_CPR0_PRIMBD);
++	u32 opbd  = CPR0_READ(DCRN_CPR0_OPBD);
++	u32 perd  = CPR0_READ(DCRN_CPR0_PERD);
++
++	/* Dividers */
++	u32 fbdv   = ibm405ex_get_fbdv(__fix_zero((plld >> 24) & 0xff, 1));
++
++	u32 fwdva  = ibm405ex_get_fwdva(__fix_zero((plld >> 16) & 0x0f, 1));
++
++	u32 cpudv0 = __fix_zero((cpud >> 24) & 7, 8);
++	
++	/* PLBDV0 is hardwared to 010. */
++	u32 plbdv0 = 2;
++	u32 plb2xdv0 = __fix_zero((plbd >> 16) & 7, 8);
++
++	u32 opbdv0 = __fix_zero((opbd >> 24) & 3, 4);
++
++	u32 perdv0 = __fix_zero((perd >> 24) & 3, 4);
++
++	/* Resulting clocks */
++	u32 cpu, plb, opb, ebc, vco, tb, uart0, uart1; 
++
++	/* PLL's VCO is the source for primary forward ? */
++	if (pllc & 0x40000000) {
++		u32 m;
++
++		/* Feedback path */
++		switch ((pllc >> 24) & 7) {
++		case 0:
++			/* PLLOUTx */
++			m = fbdv;
++			break;
++		case 1:
++			/* CPU */
++			m = fbdv * fwdva * cpudv0;
++			break;
++		case 5:
++			/* PERClk */
++			m = fbdv * fwdva * plb2xdv0 * plbdv0 * opbdv0 * perdv0;
++			break;
++		default:
++			printf("WARNING ! Invalid PLL feedback source !\n");
++			goto bypass;
++		}
++
++		vco = (unsigned int)(sys_clk * m);
++	} else {
++bypass:
++		/* Bypass system PLL */
++		vco = 0;
++	}
++
++	/* CPU = VCO / ( FWDVA x CPUDV0) */	
++	cpu = vco / (fwdva * cpudv0);
++	/* PLB = VCO / ( FWDVA x PLB2XDV0 x PLBDV0) */	
++	plb = vco / (fwdva * plb2xdv0 * plbdv0);
++	/* OPB = PLB / OPBDV0 */	
++	opb = plb / opbdv0;
++	/* EBC = OPB / PERDV0 */	
++	ebc = opb / perdv0;
++	
++	tb = cpu;
++	uart0 = uart1 = uart_clk;
++
++	dt_fixup_cpu_clocks(cpu, tb, 0);
++	dt_fixup_clock("/plb", plb);
++	dt_fixup_clock("/plb/opb", opb);
++	dt_fixup_clock("/plb/opb/ebc", ebc);
++	dt_fixup_clock("/plb/opb/serial@ef600200", uart0);
++	dt_fixup_clock("/plb/opb/serial@ef600300", uart1);
++}
+diff --git a/arch/powerpc/boot/4xx.h b/arch/powerpc/boot/4xx.h
+index 2606e64..7dc5d45 100644
+--- a/arch/powerpc/boot/4xx.h
++++ b/arch/powerpc/boot/4xx.h
+@@ -21,6 +21,7 @@ void ibm4xx_fixup_ebc_ranges(const char *ebc);
+ 
+ void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk);
+ void ibm405ep_fixup_clocks(unsigned int sys_clk);
++void ibm405ex_fixup_clocks(unsigned int sys_clk, unsigned int uart_clk);
+ void ibm440gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk);
+ void ibm440ep_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk,
+ 			   unsigned int tmr_clk);
+diff --git a/arch/powerpc/boot/dcr.h b/arch/powerpc/boot/dcr.h
+index 95b9f53..645a7c9 100644
+--- a/arch/powerpc/boot/dcr.h
++++ b/arch/powerpc/boot/dcr.h
+@@ -153,9 +153,7 @@ static const unsigned long sdram_bxcr[] = { SDRAM0_B0CR, SDRAM0_B1CR,
+ #define DCRN_CPC0_PLLMR1  0xf4
+ #define DCRN_CPC0_UCR     0xf5
+ 
+-/* 440GX Clock control etc */
+-
+-
++/* 440GX/405EX Clock Control reg */
+ #define DCRN_CPR0_CLKUPD				0x020
+ #define DCRN_CPR0_PLLC					0x040
+ #define DCRN_CPR0_PLLD					0x060
+-- 
+1.5.6
