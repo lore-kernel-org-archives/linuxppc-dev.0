@@ -1,32 +1,18 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B8460B6F2B
+	(Client CN "mail7.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B0164B70CF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 22 Aug 2009 10:06:40 +1000 (EST)
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 21912DDD04
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Aug 2009 10:06:39 +1000 (EST)
-Date: Fri, 21 Aug 2009 17:06:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Amerigo Wang <amwang@redhat.com>
-Subject: Re: [Patch 0/8] V4 Implement crashkernel=auto
-Message-Id: <20090821170615.1ea4a4f4.akpm@linux-foundation.org>
-In-Reply-To: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>
-References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: fenghua.yu@intel.com, nhorman@redhat.com, tony.luck@intel.com,
-	linux-ia64@vger.kernel.org, amwang@redhat.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	andi@firstfloor.org, ebiederm@xmission.com, mingo@elte.hu,
-	bernhard.walle@gmx.de, kamezawa.hiroyu@jp.fujitsu.com
+	Sun, 23 Aug 2009 12:02:50 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: jwboyer@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: [v2 PATCH 2/2] powerpc/405ex: support cuImage via included dtb
+Date: Sun, 23 Aug 2009 10:03:44 +0800
+Message-Id: <1250993024-29527-3-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1250993024-29527-1-git-send-email-tiejun.chen@windriver.com>
+References: <1250993024-29527-1-git-send-email-tiejun.chen@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,29 +22,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(cc linuxppc-dev@ozlabs.org)
+To support cuImage, we need to initialize the required sections and
+ensure that it is built.
 
-On Fri, 21 Aug 2009 02:54:12 -0400
-Amerigo Wang <amwang@redhat.com> wrote:
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/boot/Makefile         |    2 +-
+ arch/powerpc/boot/cuboot-kilauea.c |   49 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/cuboot-kilauea.c
 
-> This series of patch implements automatically reserved memory for crashkernel,
-> by introducing a new boot option "crashkernel=auto". This idea is from Neil.
-> 
-> In case of breaking user-space applications, it modifies this boot option after
-> it decides how much memory should be reserved.
-> 
-> On different arch, the threshold and reserved memory size is different. Please
-> refer patch 8/8 which contains an update for the documentation.
-> 
-> Patch 1/8 implements shrinking reserved memory at run-time, which is useful
-> when more than enough memory is reserved automatically.
-> 
-> Note: This patchset was only tested on x86_64 with differernt memory sizes.
-
-
-I'd prefer that this change had been runtime tested on ia64 and powerpc
-and has had some quality review from relevant developers of those
-architectures.
-
-Looking at the cc's, I'm not sure that the powerpc guys even know about
-this work?
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 9ae7b7e..3e11611 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -75,7 +75,7 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
+ 		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
+ 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
+ 		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
+-		cuboot-acadia.c cuboot-amigaone.c
++		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
+ 
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+diff --git a/arch/powerpc/boot/cuboot-kilauea.c b/arch/powerpc/boot/cuboot-kilauea.c
+new file mode 100644
+index 0000000..b333346
+--- /dev/null
++++ b/arch/powerpc/boot/cuboot-kilauea.c
+@@ -0,0 +1,49 @@
++/*
++ * Old U-boot compatibility for PPC405EX. This image is already included 
++ * a dtb.    
++ *
++ * Author: Tiejun Chen <tiejun.chen@windriver.com>
++ *
++ * Copyright (C) 2009 Wind River Systems, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include "ops.h"
++#include "io.h"
++#include "dcr.h"
++#include "stdio.h"
++#include "4xx.h"
++#include "44x.h"
++#include "cuboot.h"
++
++#define TARGET_4xx
++#define TARGET_44x
++#include "ppcboot.h"
++
++#define KILAUEA_SYS_EXT_SERIAL_CLOCK     11059200        /* ext. 11.059MHz clk */
++
++static bd_t bd;
++
++static void kilauea_fixups(void)
++{
++	unsigned long sysclk = 33333333;
++
++	ibm405ex_fixup_clocks(sysclk, KILAUEA_SYS_EXT_SERIAL_CLOCK);
++	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
++	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
++	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
++	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
++}
++
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++		unsigned long r6, unsigned long r7)
++{
++	CUBOOT_INIT();
++	platform_ops.fixups = kilauea_fixups;
++	platform_ops.exit = ibm40x_dbcr_reset;
++	fdt_init(_dtb_start);
++	serial_console_init();
++}
+-- 
+1.5.6
