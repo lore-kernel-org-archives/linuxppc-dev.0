@@ -1,30 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <beckyb@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 773A0B70BA
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7854AB7B65
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 25 Aug 2009 02:12:50 +1000 (EST)
+	Tue, 25 Aug 2009 02:15:43 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D4AC3DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Aug 2009 02:12:49 +1000 (EST)
-Message-Id: <8951DD4A-6F85-4E24-A55C-2E8759E14DF7@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1250729028.4810.42.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH 1/5] powerpc/mm: Add MMU features for TLB reservation &
-	Paired MAS registers
-Date: Mon, 24 Aug 2009 11:12:40 -0500
-References: <1250658513-13009-1-git-send-email-galak@kernel.crashing.org>
-	<1250666756.4810.16.camel@pasglop>
-	<AC207041-6DB9-476E-B171-C1F6E10D3FAB@kernel.crashing.org>
-	<1250729028.4810.42.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id CF1B7DDD01
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Aug 2009 02:15:42 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n7OGFaa7031216
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Aug 2009 11:15:37 -0500
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Name xpn & x fields in HW pte format
+Date: Mon, 24 Aug 2009 11:15:36 -0500
+Message-Id: <1251130536-12953-1-git-send-email-beckyb@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,24 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Previously, the 36-bit code was using these bits, but they had
+never been named in the pte format definition.  This patch just
+gives those fields their proper names and adds a comment that
+they are only present on some processors.
 
-On Aug 19, 2009, at 7:43 PM, Benjamin Herrenschmidt wrote:
+There is no functional code change.
 
-> On Wed, 2009-08-19 at 16:37 -0500, Kumar Gala wrote:
->> On Aug 19, 2009, at 2:25 AM, Benjamin Herrenschmidt wrote:
->
->> The whole thing only ever gets called if we had tlbsrx. so is there
->> any utility in making a part of conditional on tlbsrx?
->
-> I don't think so ... this is the second level TLB miss handler when
-> the first level takes a hit on the virtually linear page tables, I
-> has nothing to do with tlbsrx... however, it does offset the return
-> address back into the first level handler by -4 to account for
-> replaying the tlbsrx instruction which you probably don't want to do.
+Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/mmu-hash32.h |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-Duh.  Wasn't looking at the fall through.
-
-But is there any reason to even have any of the 6 instructions in the  
-'virt_page_table_tlb_miss_done' path if we don't have TLBSRX?
-
-- k
+diff --git a/arch/powerpc/include/asm/mmu-hash32.h b/arch/powerpc/include/asm/mmu-hash32.h
+index 382fc68..16f513e 100644
+--- a/arch/powerpc/include/asm/mmu-hash32.h
++++ b/arch/powerpc/include/asm/mmu-hash32.h
+@@ -55,21 +55,25 @@ struct ppc_bat {
+ 
+ #ifndef __ASSEMBLY__
+ 
+-/* Hardware Page Table Entry */
++/*
++ * Hardware Page Table Entry
++ * Note that the xpn and x bitfields are used only by processors that
++ * support extended addressing; otherwise, those bits are reserved.
++ */
+ struct hash_pte {
+ 	unsigned long v:1;	/* Entry is valid */
+ 	unsigned long vsid:24;	/* Virtual segment identifier */
+ 	unsigned long h:1;	/* Hash algorithm indicator */
+ 	unsigned long api:6;	/* Abbreviated page index */
+ 	unsigned long rpn:20;	/* Real (physical) page number */
+-	unsigned long    :3;	/* Unused */
++	unsigned long xpn:3;	/* Real page number bits 0-2, optional */
+ 	unsigned long r:1;	/* Referenced */
+ 	unsigned long c:1;	/* Changed */
+ 	unsigned long w:1;	/* Write-thru cache mode */
+ 	unsigned long i:1;	/* Cache inhibited */
+ 	unsigned long m:1;	/* Memory coherence */
+ 	unsigned long g:1;	/* Guarded */
+-	unsigned long  :1;	/* Unused */
++	unsigned long x:1;	/* Real page number bit 3, optional */
+ 	unsigned long pp:2;	/* Page protection */
+ };
+ 
+-- 
+1.6.0.6
