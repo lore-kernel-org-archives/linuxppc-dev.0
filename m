@@ -1,29 +1,29 @@
-Return-Path: <hch@lst.de>
+Return-Path: <amwang@redhat.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 40826B6F31
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3E235B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 24 Aug 2009 11:02:29 +1000 (EST)
-Received: from verein.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7F2E4DDD04
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Aug 2009 11:02:27 +1000 (EST)
-Date: Mon, 24 Aug 2009 03:01:53 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: powerpc tree build warning
-Message-ID: <20090824010153.GB21533@lst.de>
-References: <20090824102256.3e8d69b6.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090824102256.3e8d69b6.sfr@canb.auug.org.au>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-	kyle@mcmartin.ca, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	ink@jurassic.park.msu.ru, rth@twiddle.net
+	Mon, 24 Aug 2009 12:37:03 +1000 (EST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 3842CDDD01
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Aug 2009 12:37:01 +1000 (EST)
+Message-ID: <4A91EE3D.7050805@redhat.com>
+Date: Mon, 24 Aug 2009 09:34:53 +0800
+From: Amerigo Wang <amwang@redhat.com>
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Patch 0/8] V4 Implement crashkernel=auto
+References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>
+	<20090821170615.1ea4a4f4.akpm@linux-foundation.org>
+In-Reply-To: <20090821170615.1ea4a4f4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: fenghua.yu@intel.com, nhorman@redhat.com, tony.luck@intel.com,
+	linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, andi@firstfloor.org,
+	ebiederm@xmission.com, mingo@elte.hu, bernhard.walle@gmx.de,
+	kamezawa.hiroyu@jp.fujitsu.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,26 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 24, 2009 at 10:22:56AM +1000, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
-> 
-> kernel/time/tick-sched.c: In function 'tick_nohz_stop_sched_tick':
-> kernel/time/tick-sched.c:261: warning: format '%02x' expects type 'unsigned int', but argument 2 has type 'long unsigned int'
-> 
-> Introduced by commit 6826a57d1abc8ac9f59b24f1a008554c6560a995 ("powerpc:
-> Switch to asm-generic/hardirq.h") which changed
-> irq_cpustat_t::__softirq_pending from "unsigned int" to "unsigned long"
-> on powerpc.
-
-Hah, that's an interesting one.  In currently mainline the following
-architectures have it as unsigned long:
-
-	alpha, parisc and blackfin/microblaze via asm-generic
-
-and all others have it as unsigned int.  For blackfin and microblaze
-it obviously doesn't matter, so the question is why alpha and parisc
-have it as usinged long.  We defintively should standardize on one,
-and unless alpha and parisc have good reasons for needing a long
-value that would be unsigned int.
+Andrew Morton wrote:
+> (cc linuxppc-dev@ozlabs.org)
+>
+> On Fri, 21 Aug 2009 02:54:12 -0400
+> Amerigo Wang <amwang@redhat.com> wrote:
+>
+>   
+>> This series of patch implements automatically reserved memory for crashkernel,
+>> by introducing a new boot option "crashkernel=auto". This idea is from Neil.
+>>
+>> In case of breaking user-space applications, it modifies this boot option after
+>> it decides how much memory should be reserved.
+>>
+>> On different arch, the threshold and reserved memory size is different. Please
+>> refer patch 8/8 which contains an update for the documentation.
+>>
+>> Patch 1/8 implements shrinking reserved memory at run-time, which is useful
+>> when more than enough memory is reserved automatically.
+>>
+>> Note: This patchset was only tested on x86_64 with differernt memory sizes.
+>>     
+>
+>
+> I'd prefer that this change had been runtime tested on ia64 and powerpc
+> and has had some quality review from relevant developers of those
+> architectures.
+>
+> Looking at the cc's, I'm not sure that the powerpc guys even know about
+> this work?
+>
+>   
+Ok, let me try to find some ppc and ia64 machines in the company.. ;)
