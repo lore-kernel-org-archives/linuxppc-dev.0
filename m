@@ -3,20 +3,22 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1E96AB70BA
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C64C5B70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 24 Aug 2009 18:53:22 +1000 (EST)
-Date: Mon, 24 Aug 2009 10:53:16 +0200 (CEST)
+	Mon, 24 Aug 2009 18:54:34 +1000 (EST)
+Date: Mon, 24 Aug 2009 10:54:32 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: 2.6.31-rc7 : kernel BUG at drivers/rtc/rtc-ps3.c:36!
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: [PATCH for 2.6.31] powerpc/ps3: Add missing check for PS3 to rtc-ps3
+	platform device registration
 In-Reply-To: <1251099552.19818.4.camel@concordia>
-Message-ID: <alpine.LRH.2.00.0908241052550.31587@vixen.sonytel.be>
+Message-ID: <alpine.LRH.2.00.0908241053190.31587@vixen.sonytel.be>
 References: <4A923AD3.1020507@in.ibm.com> <1251099552.19818.4.camel@concordia>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 24 Aug 2009, Michael Ellerman wrote:
-> On Mon, 2009-08-24 at 12:31 +0530, Sachin Sant wrote:
-> > While trying to boot 2.6.31-rc7 on a power6 machine came
-> > across the following Bug. 
-> > 
-> > Starting udev: ------------[ cut here ]------------
-> > kernel BUG at drivers/rtc/rtc-ps3.c:36!
-> > cpu 0x0: Vector: 700 (Program Check) at [c0000000f70f3570]
-> >     pc: c00000000059a020: .ps3_get_time+0x3c/0x84
-> >     lr: c00000000059a018: .ps3_get_time+0x34/0x84
-> >     sp: c0000000f70f37f0
-> >    msr: 8000000000029032
-> >   current = 0xc0000000f8d14ee0
-> >   paca    = 0xc0000000012cc300
-> >     pid   = 159, comm = hwclock
-> > kernel BUG at drivers/rtc/rtc-ps3.c:36!
-> 
-> > static u64 read_rtc(void)
-> > {
-> > ....
-> > result = lv1_get_rtc(&rtc_val, &tb_val);
-> > BUG_ON(result);
-> > 
-> > I had never tried enabling CONFIG_RTC_DRV_PS3 option before
-> > so not sure if this is a new problem or an old one. 
-> 
-> Looks like an old one, or at least as long as the driver has existed.
-> 
-> The code needs to cope with being called on something other than a PS3.
-> Either the platform driver is only registered if the machine is a PS3,
-> or ps3_rtc_probe() actually does something to check it's on a PS3 before
-> registering the rtc_device.
+On non-PS3, we get:
 
-Bummer, how could we have missed that one?
-Cooking a patch...
+| kernel BUG at drivers/rtc/rtc-ps3.c:36!
+
+because the rtc-ps3 platform device is registered unconditionally in a kernel
+with builtin support for PS3.
+
+Reported-by: Sachin Sant <sachinp@in.ibm.com>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ arch/powerpc/platforms/ps3/time.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/ps3/time.c b/arch/powerpc/platforms/ps3/time.c
+index b178a1e..40b5cb4 100644
+--- a/arch/powerpc/platforms/ps3/time.c
++++ b/arch/powerpc/platforms/ps3/time.c
+@@ -21,6 +21,7 @@
+ #include <linux/kernel.h>
+ #include <linux/platform_device.h>
+ 
++#include <asm/firmware.h>
+ #include <asm/rtc.h>
+ #include <asm/lv1call.h>
+ #include <asm/ps3.h>
+@@ -84,6 +85,9 @@ static int __init ps3_rtc_init(void)
+ {
+ 	struct platform_device *pdev;
+ 
++	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
++		return -ENODEV;
++
+ 	pdev = platform_device_register_simple("rtc-ps3", -1, NULL, 0);
+ 	if (IS_ERR(pdev))
+ 		return PTR_ERR(pdev);
+-- 
+1.6.2.4
 
 With kind regards,
 
