@@ -1,26 +1,16 @@
-Return-Path: <hch@lst.de>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 59A64B7067
+Return-Path: <to-fleischer@t-online.de>
+Received: from mailout01.t-online.de (mailout01.t-online.de [194.25.134.80])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id EA211B7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 25 Aug 2009 05:48:13 +1000 (EST)
-Received: from verein.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A3559DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Aug 2009 05:48:11 +1000 (EST)
-Date: Mon, 24 Aug 2009 21:48:00 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Becky Bruce <beckyb@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Change archdata dma_data type to dma_addr_t
-Message-ID: <20090824194800.GA13503@lst.de>
-References: <1251130634-15093-1-git-send-email-beckyb@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1251130634-15093-1-git-send-email-beckyb@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+	Tue, 25 Aug 2009 07:21:47 +1000 (EST)
+From: Torsten Fleischer <to-fleischer@t-online.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: gianfar.c: Unwanted VLAN tagging on TX frames
+Date: Mon, 24 Aug 2009 18:10:53 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200908241810.54239.to-fleischer@t-online.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,20 +20,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 24, 2009 at 11:17:14AM -0500, Becky Bruce wrote:
-> Previously, this was specified as a void *, but that's not
-> large enough on 32-bit systems with 36-bit physical
-> addressing support.  Change the type to dma_addr_t so it
-> will scale based on the size of a dma address.
+Hello everyone,
 
-This looks extreml ugly to me.  It seems like the typical use is to
-store a pointer to a structure.  So what about making the direct
-dma case follow that general scheme instead?
+I have the Freescale's MPC8313erdb eval board and run the latest stable linux
+kernel version (linux-2.6.30.5).
 
-E.g. declare a
+After creating a VLAN device (e.g. eth0.2) a VLAN tag is also inserted into 
+frames that don't relate to a VLAN device. This is the case for frames that 
+are directly sent through a standard ethernet interface (e.g. eth0).
 
-struct direct_dma_data {
-	dma_addr_t	direct_dma_offset;
-};
+When creating a VLAN device the gianfar driver enables the  hardware supported 
+VLAN tagging on TX frames. This is done by setting the VLINS bit of the TCTRL 
+register inside the function gianfar_vlan_rx_register().
+The problem is that every outgoing frame will be tagged.  For frames from an 
+interface like eth0 the VLN bit of the FCB isn't set. Therefore the eTSEC uses 
+the content of the Default VLAN control word register (DFVLAN) to tag the 
+frame. As long as this register will not be modified after a reset of the 
+controller the outgoing frames will be tagged with VID = 0 (priority tagged 
+frames). 
 
-and have one normal instace of it, and one per weird cell device.
+The following patch solves this problem.
+
+diff -uprN linux-2.6.30.5_orig//drivers/net/gianfar.c linux-2.6.30.5/drivers/net/gianfar.c
+--- linux-2.6.30.5_orig//drivers/net/gianfar.c	2009-08-16 23:19:38.000000000 +0200
++++ linux-2.6.30.5/drivers/net/gianfar.c	2009-08-22 10:38:28.000000000 +0200
+@@ -1309,6 +1309,7 @@ static int gfar_start_xmit(struct sk_buf
+ 	u32 bufaddr;
+ 	unsigned long flags;
+ 	unsigned int nr_frags, length;
++	u32 tempval;
+ 
+ 	base = priv->tx_bd_base;
+ 
+@@ -1385,13 +1386,30 @@ static int gfar_start_xmit(struct sk_buf
+ 		gfar_tx_checksum(skb, fcb);
+ 	}
+ 
+-	if (priv->vlgrp && vlan_tx_tag_present(skb)) {
+-		if (unlikely(NULL == fcb)) {
+-			fcb = gfar_add_fcb(skb);
+-			lstatus |= BD_LFLAG(TXBD_TOE);
+-		}
++	if (priv->vlgrp) {
++		if (vlan_tx_tag_present(skb)) {
++			if (unlikely(NULL == fcb)) {
++				fcb = gfar_add_fcb(skb);
++				lstatus |= BD_LFLAG(TXBD_TOE);
++			}
++
++			/* Enable VLAN tag insertion for frames from VLAN devices */
++			tempval = gfar_read(&priv->regs->tctrl);
++			if ( !(tempval & TCTRL_VLINS) ) {
++				tempval |= TCTRL_VLINS;
++				gfar_write(&priv->regs->tctrl, tempval);
++			}
+ 
+-		gfar_tx_vlan(skb, fcb);
++			gfar_tx_vlan(skb, fcb);
++		}
++		else {
++			/* Disable VLAN tag insertion for frames that are not from a VLAN device */
++			tempval = gfar_read(&priv->regs->tctrl);
++			if ( tempval & TCTRL_VLINS ) {
++				tempval &= ~TCTRL_VLINS;
++				gfar_write(&priv->regs->tctrl, tempval);
++			}
++		}
+ 	}
+ 
+ 	/* setup the TxBD length and buffer pointer for the first BD */
+@@ -1484,23 +1502,11 @@ static void gfar_vlan_rx_register(struct
+ 	priv->vlgrp = grp;
+ 
+ 	if (grp) {
+-		/* Enable VLAN tag insertion */
+-		tempval = gfar_read(&priv->regs->tctrl);
+-		tempval |= TCTRL_VLINS;
+-
+-		gfar_write(&priv->regs->tctrl, tempval);
+-
+ 		/* Enable VLAN tag extraction */
+ 		tempval = gfar_read(&priv->regs->rctrl);
+-		tempval |= RCTRL_VLEX;
+ 		tempval |= (RCTRL_VLEX | RCTRL_PRSDEP_INIT);
+ 		gfar_write(&priv->regs->rctrl, tempval);
+ 	} else {
+-		/* Disable VLAN tag insertion */
+-		tempval = gfar_read(&priv->regs->tctrl);
+-		tempval &= ~TCTRL_VLINS;
+-		gfar_write(&priv->regs->tctrl, tempval);
+-
+ 		/* Disable VLAN tag extraction */
+ 		tempval = gfar_read(&priv->regs->rctrl);
+ 		tempval &= ~RCTRL_VLEX;
