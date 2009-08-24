@@ -1,22 +1,26 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail7.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 113BAB7B95
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C0212B7B65
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 23 Aug 2009 12:06:55 +1000 (EST)
-Message-ID: <4A90A477.3010103@windriver.com>
-Date: Sun, 23 Aug 2009 10:07:51 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Tiejun Chen <tiejun.chen@windriver.com>
-Subject: Re: [v2 PATCH 2/2] powerpc/405ex: support cuImage via included dtb
-References: <1250993024-29527-1-git-send-email-tiejun.chen@windriver.com>
-	<1250993024-29527-3-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1250993024-29527-3-git-send-email-tiejun.chen@windriver.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+	Mon, 24 Aug 2009 10:23:05 +1000 (EST)
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id B08EEDDD01
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Aug 2009 10:23:05 +1000 (EST)
+Date: Mon, 24 Aug 2009 10:22:56 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+	<paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+Subject: linux-next: powerpc tree build warning
+Message-Id: <20090824102256.3e8d69b6.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__24_Aug_2009_10_22_56_+1000_TsIzUDLM0EdywED="
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,87 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This subject should be [v1 PATCH 2/2] ...
+--Signature=_Mon__24_Aug_2009_10_22_56_+1000_TsIzUDLM0EdywED=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Best Regards
-Tiejun
+Hi all,
 
-Tiejun Chen wrote:
-> To support cuImage, we need to initialize the required sections and
-> ensure that it is built.
-> 
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
->  arch/powerpc/boot/Makefile         |    2 +-
->  arch/powerpc/boot/cuboot-kilauea.c |   49 ++++++++++++++++++++++++++++++++++++
->  2 files changed, 50 insertions(+), 1 deletions(-)
->  create mode 100644 arch/powerpc/boot/cuboot-kilauea.c
-> 
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 9ae7b7e..3e11611 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -75,7 +75,7 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
->  		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
->  		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
->  		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
-> -		cuboot-acadia.c cuboot-amigaone.c
-> +		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c
->  src-boot := $(src-wlib) $(src-plat) empty.c
->  
->  src-boot := $(addprefix $(obj)/, $(src-boot))
-> diff --git a/arch/powerpc/boot/cuboot-kilauea.c b/arch/powerpc/boot/cuboot-kilauea.c
-> new file mode 100644
-> index 0000000..b333346
-> --- /dev/null
-> +++ b/arch/powerpc/boot/cuboot-kilauea.c
-> @@ -0,0 +1,49 @@
-> +/*
-> + * Old U-boot compatibility for PPC405EX. This image is already included 
-> + * a dtb.    
-> + *
-> + * Author: Tiejun Chen <tiejun.chen@windriver.com>
-> + *
-> + * Copyright (C) 2009 Wind River Systems, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License version 2 as published
-> + * by the Free Software Foundation.
-> + */
-> +
-> +#include "ops.h"
-> +#include "io.h"
-> +#include "dcr.h"
-> +#include "stdio.h"
-> +#include "4xx.h"
-> +#include "44x.h"
-> +#include "cuboot.h"
-> +
-> +#define TARGET_4xx
-> +#define TARGET_44x
-> +#include "ppcboot.h"
-> +
-> +#define KILAUEA_SYS_EXT_SERIAL_CLOCK     11059200        /* ext. 11.059MHz clk */
-> +
-> +static bd_t bd;
-> +
-> +static void kilauea_fixups(void)
-> +{
-> +	unsigned long sysclk = 33333333;
-> +
-> +	ibm405ex_fixup_clocks(sysclk, KILAUEA_SYS_EXT_SERIAL_CLOCK);
-> +	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
-> +	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
-> +	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
-> +	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
-> +}
-> +
-> +void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-> +		unsigned long r6, unsigned long r7)
-> +{
-> +	CUBOOT_INIT();
-> +	platform_ops.fixups = kilauea_fixups;
-> +	platform_ops.exit = ibm40x_dbcr_reset;
-> +	fdt_init(_dtb_start);
-> +	serial_console_init();
-> +}
+Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+
+kernel/time/tick-sched.c: In function 'tick_nohz_stop_sched_tick':
+kernel/time/tick-sched.c:261: warning: format '%02x' expects type 'unsigned=
+ int', but argument 2 has type 'long unsigned int'
+
+Introduced by commit 6826a57d1abc8ac9f59b24f1a008554c6560a995 ("powerpc:
+Switch to asm-generic/hardirq.h") which changed
+irq_cpustat_t::__softirq_pending from "unsigned int" to "unsigned long"
+on powerpc.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__24_Aug_2009_10_22_56_+1000_TsIzUDLM0EdywED=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqR3WAACgkQjjKRsyhoI8yuxACdENh3S1MUrabBRkUusT73XveS
+BxcAn3kXMNnBe0PxH3H8DiujgkMYbWKA
+=SnUD
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__24_Aug_2009_10_22_56_+1000_TsIzUDLM0EdywED=--
