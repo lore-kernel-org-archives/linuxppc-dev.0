@@ -1,26 +1,23 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Return-Path: <sumedhtirodkar@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B80F1B7B5F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 325D6B70BA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 24 Aug 2009 19:29:45 +1000 (EST)
-Date: Mon, 24 Aug 2009 11:29:43 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Sachin Sant <sachinp@in.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH for 2.6.31] powerpc/ps3: Add missing check for PS3 to
-	rtc-ps3 platform device registration
-In-Reply-To: <4A925838.2090201@in.ibm.com>
-Message-ID: <alpine.LRH.2.00.0908241128470.31587@vixen.sonytel.be>
-References: <4A923AD3.1020507@in.ibm.com> <1251099552.19818.4.camel@concordia>
-	<alpine.LRH.2.00.0908241053190.31587@vixen.sonytel.be>
-	<4A925838.2090201@in.ibm.com>
+	Mon, 24 Aug 2009 20:56:34 +1000 (EST)
+Received: from mail-iw0-f188.google.com (mail-iw0-f188.google.com
+	[209.85.223.188]) by ozlabs.org (Postfix) with ESMTP id 8EB60DDD0C
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Aug 2009 20:56:33 +1000 (EST)
+Received: by iwn26 with SMTP id 26so1970iwn.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Aug 2009 03:56:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
+Date: Mon, 24 Aug 2009 15:59:29 +0530
+Message-ID: <d2b9ccd90908240329n50709ba2ucbbf4f3820f1d931@mail.gmail.com>
+Subject: Doubt about powerpc7447a
+From: sumedh tirodkar <sumedhtirodkar@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +27,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 24 Aug 2009, Sachin Sant wrote:
-> Geert Uytterhoeven wrote:
-> > On non-PS3, we get:
-> >
-> > | kernel BUG at drivers/rtc/rtc-ps3.c:36!
-> >
-> > because the rtc-ps3 platform device is registered unconditionally in a
-> > kernel
-> > with builtin support for PS3.
-> >
-> > Reported-by: Sachin Sant <sachinp@in.ibm.com>
-> > Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> > ---
-> >  arch/powerpc/platforms/ps3/time.c |    4 ++++
-> >  1 files changed, 4 insertions(+), 0 deletions(-)
-> Thanks, boots fine now.
-> 
-> Tested-by : Sachin Sant <sachinp@in.ibm.com>
+Is it possible to change operating speed of powerpc7447a processor?can
+we configure it?
+I m not asking if this can be done in linux. I m asking if the
+hardware has some support for this.If yes,then how?
 
-Thanks for testing! We want this for 2.6.30-stable, too.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+-sumedh
