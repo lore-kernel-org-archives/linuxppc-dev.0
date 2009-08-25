@@ -3,27 +3,30 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CE13DB83AE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9918EB7BC0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Aug 2009 00:45:08 +1000 (EST)
+	Wed, 26 Aug 2009 00:45:44 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 201ABDDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 00:45:07 +1000 (EST)
-Message-Id: <E7699B6B-884A-4A11-8D3D-BA3BFDE05F60@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id E2060DDDB2
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 00:45:43 +1000 (EST)
+Message-Id: <80608A7F-63F2-40A5-A368-9CD80A05FCD1@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Michael Barkowski <michaelbarkowski@ruggedcom.com>
-In-Reply-To: <4A8B1B2C.5090606@ruggedcom.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20090818233818.GA29042@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH v2] qe_lib: Set gpio data before changing the direction to
-	output
-Date: Tue, 25 Aug 2009 09:44:59 -0500
-References: <4A8B164E.6030704@ruggedcom.com>
-	<20090818210805.GA1725@oksana.dev.rtsoft.ru>
-	<4A8B1B2C.5090606@ruggedcom.com>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
+Date: Tue, 25 Aug 2009 09:44:30 -0500
+References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
+	<20090807195822.GG2735@oksana.dev.rtsoft.ru>
+	<A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org>
+	<20090818233818.GA29042@oksana.dev.rtsoft.ru>
+Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
+	sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Pierre Ossman <pierre@ossman.eu>, David Vrabel <david.vrabel@csr.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,25 +37,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Aug 18, 2009, at 4:20 PM, Michael Barkowski wrote:
+On Aug 18, 2009, at 6:38 PM, Anton Vorontsov wrote:
 
-> This avoids having a short glitch if the desired initial value is not
-> the same as what was previously in the data register.
+> This patch simply adds sdhci node to the device tree.
 >
-> Signed-off-by: Michael Barkowski <michaelbarkowski@ruggedcom.com>
+> We specify clock-frequency manually, so that eSDHC will work without
+> upgrading U-Boot. Though, that'll only work for default setup (1500
+> MHz) on new board revisions. For non-default setups, it's recommended
+> to upgrade U-Boot, since it will fixup clock-frequency automatically.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> Anton Vorontsov wrote:
->> There is a recursive locking bug: _set() takes the same spinlock.
->> So you'd better move this call two lines upper. Otherwise the
->> patch looks OK.
+>
+> On Tue, Aug 11, 2009 at 08:48:32AM -0500, Kumar Gala wrote:
+>> On Aug 7, 2009, at 2:58 PM, Anton Vorontsov wrote:
+>>> This patch simply adds sdhci node to the device tree.
+>>>
+>>> We specify clock-frequency manually, so that eSDHC will work without
+>>> upgrading U-Boot. Though, that'll only work for default setup (1500
+>>> MHz) on new board revisions. For non-default setups, it's  
+>>> recommended
+>>> to upgrade U-Boot, since it will fixup clock-frequency  
+>>> automatically.
+>>>
+>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> ---
+>>> arch/powerpc/boot/dts/mpc8536ds.dts |    8 ++++++++
+>>> 1 files changed, 8 insertions(+), 0 deletions(-)
 >>
->> Thanks!
+>> Can you update the mpc8536ds_36b.dts as well (its in my next branch)
 >
-> Thanks - here is v2.
+> Sure thing.
 >
-> arch/powerpc/sysdev/qe_lib/gpio.c |    4 ++--
-> 1 files changed, 2 insertions(+), 2 deletions(-)
-
+> arch/powerpc/boot/dts/mpc8536ds.dts     |    8 ++++++++
+> arch/powerpc/boot/dts/mpc8536ds_36b.dts |    8 ++++++++
+> 2 files changed, 16 insertions(+), 0 deletions(-)
 
 applied to next.
 
