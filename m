@@ -3,30 +3,22 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9918EB7BC0
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 066EEB7C07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Aug 2009 00:45:44 +1000 (EST)
+	Wed, 26 Aug 2009 00:50:55 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E2060DDDB2
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 00:45:43 +1000 (EST)
-Message-Id: <80608A7F-63F2-40A5-A368-9CD80A05FCD1@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 5A767DDDA2
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 00:50:54 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n7PEom84013509
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Aug 2009 09:50:49 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090818233818.GA29042@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
-Date: Tue, 25 Aug 2009 09:44:30 -0500
-References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
-	<20090807195822.GG2735@oksana.dev.rtsoft.ru>
-	<A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org>
-	<20090818233818.GA29042@oksana.dev.rtsoft.ru>
-Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
-	sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Pierre Ossman <pierre@ossman.eu>, David Vrabel <david.vrabel@csr.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/booke: Move MMUCSR definition into mmu-book3e.h
+Date: Tue, 25 Aug 2009 09:50:48 -0500
+Message-Id: <1251211848-7675-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,43 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The MMUCSR is now defined as part of the Book-3E architecture so we
+can move it into mmu-book3e.h and add some of the additional bits
+defined by the architecture specs.
 
-On Aug 18, 2009, at 6:38 PM, Anton Vorontsov wrote:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/mmu-book3e.h |   12 ++++++++++++
+ arch/powerpc/include/asm/reg_booke.h  |    6 ------
+ arch/powerpc/mm/tlb_nohash_low.S      |    2 --
+ 3 files changed, 12 insertions(+), 8 deletions(-)
 
-> This patch simply adds sdhci node to the device tree.
->
-> We specify clock-frequency manually, so that eSDHC will work without
-> upgrading U-Boot. Though, that'll only work for default setup (1500
-> MHz) on new board revisions. For non-default setups, it's recommended
-> to upgrade U-Boot, since it will fixup clock-frequency automatically.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->
-> On Tue, Aug 11, 2009 at 08:48:32AM -0500, Kumar Gala wrote:
->> On Aug 7, 2009, at 2:58 PM, Anton Vorontsov wrote:
->>> This patch simply adds sdhci node to the device tree.
->>>
->>> We specify clock-frequency manually, so that eSDHC will work without
->>> upgrading U-Boot. Though, that'll only work for default setup (1500
->>> MHz) on new board revisions. For non-default setups, it's  
->>> recommended
->>> to upgrade U-Boot, since it will fixup clock-frequency  
->>> automatically.
->>>
->>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>> ---
->>> arch/powerpc/boot/dts/mpc8536ds.dts |    8 ++++++++
->>> 1 files changed, 8 insertions(+), 0 deletions(-)
->>
->> Can you update the mpc8536ds_36b.dts as well (its in my next branch)
->
-> Sure thing.
->
-> arch/powerpc/boot/dts/mpc8536ds.dts     |    8 ++++++++
-> arch/powerpc/boot/dts/mpc8536ds_36b.dts |    8 ++++++++
-> 2 files changed, 16 insertions(+), 0 deletions(-)
-
-applied to next.
-
-- k
+diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
+index d745804..7469581 100644
+--- a/arch/powerpc/include/asm/mmu-book3e.h
++++ b/arch/powerpc/include/asm/mmu-book3e.h
+@@ -114,6 +114,18 @@
+ 
+ #define MAS7_RPN		0xFFFFFFFF
+ 
++/* Bit definitions for MMUCSR0 */
++#define MMUCSR0_TLB1FI	0x00000002	/* TLB1 Flash invalidate */
++#define MMUCSR0_TLB0FI	0x00000004	/* TLB0 Flash invalidate */
++#define MMUCSR0_TLB2FI	0x00000040	/* TLB2 Flash invalidate */
++#define MMUCSR0_TLB3FI	0x00000020	/* TLB3 Flash invalidate */
++#define MMUCSR0_TLBFI	(MMUCSR0_TLB0FI | MMUCSR0_TLB1FI | \
++			 MMUCSR0_TLB2FI | MMUCSR0_TLB3FI)
++#define MMUCSR0_TLB0PS	0x00000780	/* TLB0 Page Size */
++#define MMUCSR0_TLB1PS	0x00007800	/* TLB1 Page Size */
++#define MMUCSR0_TLB2PS	0x00078000	/* TLB2 Page Size */
++#define MMUCSR0_TLB3PS	0x00780000	/* TLB3 Page Size */
++
+ /* TLBnCFG encoding */
+ #define TLBnCFG_N_ENTRY		0x00000fff	/* number of entries */
+ #define TLBnCFG_HES		0x00002000	/* HW select supported */
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index 2c9c706..9bb81d9 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -430,12 +430,6 @@
+ #define L2CSR0_L2LOA	0x00000080	/* L2 Cache Lock Overflow Allocate */
+ #define L2CSR0_L2LO	0x00000020	/* L2 Cache Lock Overflow */
+ 
+-/* Bit definitions for MMUCSR0 */
+-#define MMUCSR0_TLB1FI	0x00000002	/* TLB1 Flash invalidate */
+-#define MMUCSR0_TLB0FI	0x00000004	/* TLB0 Flash invalidate */
+-#define MMUCSR0_TLB2FI	0x00000040	/* TLB2 Flash invalidate */
+-#define MMUCSR0_TLB3FI	0x00000020	/* TLB3 Flash invalidate */
+-
+ /* Bit definitions for SGR. */
+ #define SGR_NORMAL	0		/* Speculative fetching allowed. */
+ #define SGR_GUARDED	1		/* Speculative fetching disallowed. */
+diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
+index 7bcd9fb..bbdc5b5 100644
+--- a/arch/powerpc/mm/tlb_nohash_low.S
++++ b/arch/powerpc/mm/tlb_nohash_low.S
+@@ -124,8 +124,6 @@ _GLOBAL(_tlbil_pid)
+  * to have the larger code path before the _SECTION_ELSE
+  */
+ 
+-#define MMUCSR0_TLBFI	(MMUCSR0_TLB0FI | MMUCSR0_TLB1FI | \
+-			 MMUCSR0_TLB2FI | MMUCSR0_TLB3FI)
+ /*
+  * Flush MMU TLB on the local processor
+  */
+-- 
+1.6.0.6
