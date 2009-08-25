@@ -1,23 +1,20 @@
-Return-Path: <wilbur512@gmail.com>
-Received: from mail-gx0-f211.google.com (mail-gx0-f211.google.com
-	[209.85.217.211])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 3A3D3B7B83
+Return-Path: <to-fleischer@t-online.de>
+Received: from mailout02.t-online.de (mailout02.t-online.de [194.25.134.17])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 3C720B7B8F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Aug 2009 02:09:38 +1000 (EST)
-Received: by gxk7 with SMTP id 7so4488069gxk.8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 25 Aug 2009 09:09:37 -0700 (PDT)
+	Wed, 26 Aug 2009 03:09:10 +1000 (EST)
+From: Torsten Fleischer <to-fleischer@t-online.de>
+To: Andy Fleming <afleming@gmail.com>
+Subject: Re: gianfar.c: Unwanted VLAN tagging on TX frames
+Date: Tue, 25 Aug 2009 19:08:55 +0200
+References: <200908241810.54239.to-fleischer@t-online.de>
+	<2acbd3e40908241632j7e9da3f7o7e11aa672838b9a5@mail.gmail.com>
+In-Reply-To: <2acbd3e40908241632j7e9da3f7o7e11aa672838b9a5@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090804194135.GA19171@www.tglx.de>
-References: <e997b7420908011825n4ba2df16u71d53953d6774c21@mail.gmail.com>
-	<20090804194135.GA19171@www.tglx.de>
-Date: Wed, 26 Aug 2009 00:09:36 +0800
-Message-ID: <e997b7420908250909k74208353v81240eebd3d0896a@mail.gmail.com>
-Subject: Re:[PATCH 1/2] powerpc: add kexec support on FSL-Book-E
-From: "wilbur.chan" <wilbur512@gmail.com>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <200908251908.56308.to-fleischer@t-online.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2009/8/5, Sebastian Andrzej Siewior <bigeasy@linutronix.de>:
+On Tuesday 25 August 2009 at 01:32:18, Andy Fleming wrote:
 
-> There is no SMP support. The other CPUs are not halted/resumed. At the
-> time of writing it I did not have a SMP machine so I did not implement
-> it.
-> Sebastian
 >
-Hi  Sebastian,
+> Hmmm....how have you tested this?  This looks like it has a bad race
+> condition.  The TCTRL register applies to all packets, which means if you
+> send a packet with VLAN tags, followed by one without, or visa versa,
+> there's a reasonable chance that the second packet's VLAN tags (or lack
+> thereof) will take precedence.
+>
+> Without speaking for the company, I suspect that this is just how the eTSEC
+> works with VLAN -- all, or nothing.
+>
+> Andy
 
-Recently I've implemented  non-SMP kexec on MPC8572 and P2020ds(2G ram).
+Hi Andy,
 
+I have tested it by sending a single ping to a station within the VLAN 
+followed by a ping to a station thats not in a VLAN.
+OK, thats not really a significant test, because I did not send a VLAN tagged 
+frame immediately followed by one without a tag.
+You are right, this code can enable/disable VLAN  tagging before the previous 
+packet is processed.
 
-
-I modified your
-
-misc_32.S that , I setuped  two '1G' entries  after the "rfi"
-instruction, so that I did
-
-not  need to setup  mapping for instruction address.
-
-As for SMP supporting,I tried to close one of the CPUs in
-default_machine_kexec,
-
-and found that , when cpu1  closed  ,and if the second kernel is NON-
-
-SMP,everything went well.so I added some code in
-
-kexec-tools, to make sure the 'kexec' process was running on CPU 0.
-
-
-So, there left one problem, I can not start the second SMP-kernel,
-even if I  closed
-
-CPU1.  Any suggestions?
-
-
-PTW:
-
-no-smp ---> no-smp.........OK
-no-smp --->smp...............OK
-
-smp(with cpu1 closed)---->no-smp..............OK
-smpw(with cpu1 closed)---->smp ................FAILED
-
-
-regards,
-
-wilbur
+Torsten
