@@ -1,22 +1,26 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f211.google.com (mail-gx0-f211.google.com
-	[209.85.217.211])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id CD93CB6F34
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4E43EB6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Aug 2009 16:08:06 +1000 (EST)
-Received: by gxk7 with SMTP id 7so5410505gxk.8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 25 Aug 2009 23:08:04 -0700 (PDT)
+	Wed, 26 Aug 2009 16:09:58 +1000 (EST)
+Received: from mail-gx0-f215.google.com (mail-gx0-f215.google.com
+	[209.85.217.215]) by ozlabs.org (Postfix) with ESMTP id 01693DDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 16:09:56 +1000 (EST)
+Received: by gxk11 with SMTP id 11so5053043gxk.16
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Aug 2009 23:09:54 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
 In-Reply-To: <20090825162314.10936.11028.stgit@localhost.localdomain>
 References: <20090825162314.10936.11028.stgit@localhost.localdomain>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 26 Aug 2009 00:07:44 -0600
-Message-ID: <fa686aa40908252307j5fe05db1g8defc09e6eed988b@mail.gmail.com>
+Date: Wed, 26 Aug 2009 00:09:34 -0600
+Message-ID: <fa686aa40908252309v5fa33a6am639817b3aae18a42@mail.gmail.com>
 Subject: [PATCH V2 0/3] Make 64-bit PCI device tree scanning code common
 To: benh@kernel.crashing.org, galak@kernel.crashing.org, sfr@canb.auug.org.au,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
