@@ -3,20 +3,24 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8835EB70CF
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 07D74B70CF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Aug 2009 12:20:51 +1000 (EST)
+	Wed, 26 Aug 2009 12:24:07 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D6494DDD1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 12:20:50 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 1E6A1DDD1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 12:24:05 +1000 (EST)
+Message-Id: <B3C29A62-ED34-4C07-8E5B-FF5C9ADE5F71@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/pci: Pull ppc32 PCI features into common
-Date: Tue, 25 Aug 2009 21:20:45 -0500
-Message-Id: <1251253245-16616-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1251253245-16616-1-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH] powerpc/pci: Pull ppc32 PCI features into common
+Date: Tue, 25 Aug 2009 21:23:53 -0500
+References: <1251253245-16616-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,279 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some of the PCI features we have in ppc32 we will need on ppc64
-platforms in the future.  These include support for:
 
-* ppc_md.pci_exclude_device
-* indirect config cycles
-* early config cycles
+On Aug 25, 2009, at 9:20 PM, Kumar Gala wrote:
 
-We also simplified the logic in fake_pci_bus() to assume it will always
-get a valid pci_controller.  Since all current callers seem to pass it
-one.
+> Some of the PCI features we have in ppc32 we will need on ppc64
+> platforms in the future.  These include support for:
+>
+> * ppc_md.pci_exclude_device
+> * indirect config cycles
+> * early config cycles
+>
+> We also simplified the logic in fake_pci_bus() to assume it will  
+> always
+> get a valid pci_controller.  Since all current callers seem to pass it
+> one.
+>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> arch/powerpc/include/asm/machdep.h    |    6 +-
+> arch/powerpc/include/asm/pci-bridge.h |   35 +++++++---------
+> arch/powerpc/kernel/pci-common.c      |   70 ++++++++++++++++++++++++ 
+> ++++++++
+> arch/powerpc/kernel/pci_32.c          |   71  
+> ---------------------------------
+> 4 files changed, 89 insertions(+), 93 deletions(-)
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/include/asm/machdep.h    |    6 +-
- arch/powerpc/include/asm/pci-bridge.h |   35 +++++++---------
- arch/powerpc/kernel/pci-common.c      |   70 ++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/pci_32.c          |   71 ---------------------------------
- 4 files changed, 89 insertions(+), 93 deletions(-)
+Ben, Grant
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 11d1fc3..9efa2be 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -209,14 +209,14 @@ struct machdep_calls {
- 	/*
- 	 * optional PCI "hooks"
- 	 */
--	/* Called in indirect_* to avoid touching devices */
--	int (*pci_exclude_device)(struct pci_controller *, unsigned char, unsigned char);
--
- 	/* Called at then very end of pcibios_init() */
- 	void (*pcibios_after_init)(void);
- 
- #endif /* CONFIG_PPC32 */
- 
-+	/* Called in indirect_* to avoid touching devices */
-+	int (*pci_exclude_device)(struct pci_controller *, unsigned char, unsigned char);
-+
- 	/* Called after PPC generic resource fixup to perform
- 	   machine specific fixups */
- 	void (*pcibios_fixup_resources)(struct pci_dev *);
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 4c61fa0..e074420 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -77,9 +77,7 @@ struct pci_controller {
- 
- 	int first_busno;
- 	int last_busno;
--#ifndef CONFIG_PPC64
- 	int self_busno;
--#endif
- 
- 	void __iomem *io_base_virt;
- #ifdef CONFIG_PPC64
-@@ -104,7 +102,6 @@ struct pci_controller {
- 	unsigned int __iomem *cfg_addr;
- 	void __iomem *cfg_data;
- 
--#ifndef CONFIG_PPC64
- 	/*
- 	 * Used for variants of PCI indirect handling and possible quirks:
- 	 *  SET_CFG_TYPE - used on 4xx or any PHB that does explicit type0/1
-@@ -128,7 +125,6 @@ struct pci_controller {
- #define PPC_INDIRECT_TYPE_BIG_ENDIAN		0x00000010
- #define PPC_INDIRECT_TYPE_BROKEN_MRM		0x00000020
- 	u32 indirect_type;
--#endif	/* !CONFIG_PPC64 */
- 	/* Currently, we limit ourselves to 1 IO range and 3 mem
- 	 * ranges since the common pci_bus structure can't handle more
- 	 */
-@@ -146,21 +142,6 @@ struct pci_controller {
- #endif	/* CONFIG_PPC64 */
- };
- 
--#ifndef CONFIG_PPC64
--
--static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
--{
--	return bus->sysdata;
--}
--
--static inline int isa_vaddr_is_ioport(void __iomem *address)
--{
--	/* No specific ISA handling on ppc32 at this stage, it
--	 * all goes through PCI
--	 */
--	return 0;
--}
--
- /* These are used for config access before all the PCI probing
-    has been done. */
- extern int early_read_config_byte(struct pci_controller *hose, int bus,
-@@ -182,6 +163,22 @@ extern int early_find_capability(struct pci_controller *hose, int bus,
- extern void setup_indirect_pci(struct pci_controller* hose,
- 			       resource_size_t cfg_addr,
- 			       resource_size_t cfg_data, u32 flags);
-+
-+#ifndef CONFIG_PPC64
-+
-+static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
-+{
-+	return bus->sysdata;
-+}
-+
-+static inline int isa_vaddr_is_ioport(void __iomem *address)
-+{
-+	/* No specific ISA handling on ppc32 at this stage, it
-+	 * all goes through PCI
-+	 */
-+	return 0;
-+}
-+
- #else	/* CONFIG_PPC64 */
- 
- /*
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 5a56e97..6357f2b 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1626,3 +1626,73 @@ void __devinit pcibios_setup_phb_resources(struct pci_controller *hose)
- 
- }
- 
-+/*
-+ * Null PCI config access functions, for the case when we can't
-+ * find a hose.
-+ */
-+#define NULL_PCI_OP(rw, size, type)					\
-+static int								\
-+null_##rw##_config_##size(struct pci_dev *dev, int offset, type val)	\
-+{									\
-+	return PCIBIOS_DEVICE_NOT_FOUND;    				\
-+}
-+
-+static int
-+null_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
-+		 int len, u32 *val)
-+{
-+	return PCIBIOS_DEVICE_NOT_FOUND;
-+}
-+
-+static int
-+null_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
-+		  int len, u32 val)
-+{
-+	return PCIBIOS_DEVICE_NOT_FOUND;
-+}
-+
-+static struct pci_ops null_pci_ops =
-+{
-+	.read = null_read_config,
-+	.write = null_write_config,
-+};
-+
-+/*
-+ * These functions are used early on before PCI scanning is done
-+ * and all of the pci_dev and pci_bus structures have been created.
-+ */
-+static struct pci_bus *
-+fake_pci_bus(struct pci_controller *hose, int busnr)
-+{
-+	static struct pci_bus bus;
-+
-+	if (hose == 0) {
-+		printk(KERN_ERR "Can't find hose for PCI bus %d!\n", busnr);
-+	}
-+	bus.number = busnr;
-+	bus.sysdata = hose;
-+	bus.ops = hose? hose->ops: &null_pci_ops;
-+	return &bus;
-+}
-+
-+#define EARLY_PCI_OP(rw, size, type)					\
-+int early_##rw##_config_##size(struct pci_controller *hose, int bus,	\
-+			       int devfn, int offset, type value)	\
-+{									\
-+	return pci_bus_##rw##_config_##size(fake_pci_bus(hose, bus),	\
-+					    devfn, offset, value);	\
-+}
-+
-+EARLY_PCI_OP(read, byte, u8 *)
-+EARLY_PCI_OP(read, word, u16 *)
-+EARLY_PCI_OP(read, dword, u32 *)
-+EARLY_PCI_OP(write, byte, u8)
-+EARLY_PCI_OP(write, word, u16)
-+EARLY_PCI_OP(write, dword, u32)
-+
-+extern int pci_bus_find_capability (struct pci_bus *bus, unsigned int devfn, int cap);
-+int early_find_capability(struct pci_controller *hose, int bus, int devfn,
-+			  int cap)
-+{
-+	return pci_bus_find_capability(fake_pci_bus(hose, bus), devfn, cap);
-+}
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index 3ae1c66..ebe9ef9 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -478,75 +478,4 @@ long sys_pciconfig_iobase(long which, unsigned long bus, unsigned long devfn)
- 	return result;
- }
- 
--/*
-- * Null PCI config access functions, for the case when we can't
-- * find a hose.
-- */
--#define NULL_PCI_OP(rw, size, type)					\
--static int								\
--null_##rw##_config_##size(struct pci_dev *dev, int offset, type val)	\
--{									\
--	return PCIBIOS_DEVICE_NOT_FOUND;    				\
--}
--
--static int
--null_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
--		 int len, u32 *val)
--{
--	return PCIBIOS_DEVICE_NOT_FOUND;
--}
--
--static int
--null_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
--		  int len, u32 val)
--{
--	return PCIBIOS_DEVICE_NOT_FOUND;
--}
--
--static struct pci_ops null_pci_ops =
--{
--	.read = null_read_config,
--	.write = null_write_config,
--};
- 
--/*
-- * These functions are used early on before PCI scanning is done
-- * and all of the pci_dev and pci_bus structures have been created.
-- */
--static struct pci_bus *
--fake_pci_bus(struct pci_controller *hose, int busnr)
--{
--	static struct pci_bus bus;
--
--	if (hose == 0) {
--		hose = pci_bus_to_hose(busnr);
--		if (hose == 0)
--			printk(KERN_ERR "Can't find hose for PCI bus %d!\n", busnr);
--	}
--	bus.number = busnr;
--	bus.sysdata = hose;
--	bus.ops = hose? hose->ops: &null_pci_ops;
--	return &bus;
--}
--
--#define EARLY_PCI_OP(rw, size, type)					\
--int early_##rw##_config_##size(struct pci_controller *hose, int bus,	\
--			       int devfn, int offset, type value)	\
--{									\
--	return pci_bus_##rw##_config_##size(fake_pci_bus(hose, bus),	\
--					    devfn, offset, value);	\
--}
--
--EARLY_PCI_OP(read, byte, u8 *)
--EARLY_PCI_OP(read, word, u16 *)
--EARLY_PCI_OP(read, dword, u32 *)
--EARLY_PCI_OP(write, byte, u8)
--EARLY_PCI_OP(write, word, u16)
--EARLY_PCI_OP(write, dword, u32)
--
--extern int pci_bus_find_capability (struct pci_bus *bus, unsigned int devfn, int cap);
--int early_find_capability(struct pci_controller *hose, int bus, int devfn,
--			  int cap)
--{
--	return pci_bus_find_capability(fake_pci_bus(hose, bus), devfn, cap);
--}
--- 
-1.6.0.6
+This should just be a refresh of the patch mentioned here:
+
+http://patchwork.ozlabs.org/patch/26648/
+
+with the commit message cleaned up and rebased on 'next'.
+
+- k
