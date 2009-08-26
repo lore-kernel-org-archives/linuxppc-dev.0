@@ -1,36 +1,28 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <beckyb@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 31F5FB708B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9AA29B7B60
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 05:20:52 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+	Thu, 27 Aug 2009 06:21:12 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AD833DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 05:20:51 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n7QJKWsf022343
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 12:20:42 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n7QJLYaG022013
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 14:21:35 -0500 (CDT)
-Date: Wed, 26 Aug 2009 14:20:31 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: "wilbur.chan" <wilbur512@gmail.com>
-Subject: Re: Can't write value into memory ?(E500 V2)
-Message-ID: <20090826192030.GA17027@b07421-ec1.am.freescale.net>
-References: <e997b7420908260739u49fb4b36j9eb148782829547b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e997b7420908260739u49fb4b36j9eb148782829547b@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 052B4DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 06:21:11 +1000 (EST)
+Message-Id: <E3F20841-FB04-44EF-8DAA-91F51873C0A6@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1251295725.7492.5.camel@concordia>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH] powerpc: Change archdata dma_data type to dma_addr_t
+Date: Wed, 26 Aug 2009 15:20:56 -0500
+References: <1251130634-15093-1-git-send-email-beckyb@kernel.crashing.org>
+	<20090824194800.GA13503@lst.de> <1251289790.1379.71.camel@pasglop>
+	<1251295725.7492.5.camel@concordia>
+Cc: Christoph Hellwig <hch@lst.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,61 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 26, 2009 at 10:39:24PM +0800, wilbur.chan wrote:
-> In  an assemblely code ,   I invalided all the TLB entries except for
-> the entry  we are executed in.
-> 
-> After that , I setuped a 1:1 TLB entry mapping of 1GB .
 
-What is it you're trying to do?
+On Aug 26, 2009, at 9:08 AM, Michael Ellerman wrote:
 
-> At last , I wrote value 30 into the physical address 0x0400,0000 (also
-> the virtual address because of my 1:1 mapping).
-> 
-> However, it seemed failed to store the value '30' at address
-> 0x400,0000. The following is my code:
-> 
-> //code start
-> 
-> // setup a 1:1 mapping of 1GB
-> ...
+> On Wed, 2009-08-26 at 22:29 +1000, Benjamin Herrenschmidt wrote:
+>> On Mon, 2009-08-24 at 21:48 +0200, Christoph Hellwig wrote:
+>>> On Mon, Aug 24, 2009 at 11:17:14AM -0500, Becky Bruce wrote:
+>>>> Previously, this was specified as a void *, but that's not
+>>>> large enough on 32-bit systems with 36-bit physical
+>>>> addressing support.  Change the type to dma_addr_t so it
+>>>> will scale based on the size of a dma address.
+>>>
+>>> This looks extreml ugly to me.  It seems like the typical use is to
+>>> store a pointer to a structure.  So what about making the direct
+>>> dma case follow that general scheme instead?
+>>>
+>>> E.g. declare a
+>>>
+>>> struct direct_dma_data {
+>>> 	dma_addr_t	direct_dma_offset;
+>>> };
+>>>
+>>> and have one normal instace of it, and one per weird cell device.
+>>
+>> Right, but we want to avoid a structure for the classic case of 32- 
+>> bit
+>> systems with no iommu...
+>>
+>> I wouldn't mind doing a union here.
+>
+> That might be best, the patch as it stands is a horrible mess of  
+> casts.
 
-"..." is not code. :-)
+Let's be fair - the code before was a horrible mess of casts, I've  
+just moved them :)
 
-> //store '30' into address 0x0400,0000
-> 
-> li  r23, 30
-> lis r22, 0x400
-> ori r22,r22,0x0
-> stb  r23,0(r22)
-> 
-> 
-> //check if we successfully store value at 0x400,0000
-> 
-> lis r22, 0x400
-> ori r22,r22,0x0
-> lwz r23,0(r22)
-> cmpw r23, 30
+>
+> Stashing a dma_addr_t into a void * is sort of gross, but storing a
+> pointer to some struct (a void *) in a dma_addr_t is _really_ gross :)
 
-The values should not be equal, since you wrote a byte and read back a
-word.
+Both are revolting (and storing a dma_addr_t into a void * is really  
+gross when the void * is smaller than the dma_addr_t!!).  A union  
+might not be a bad idea, though.  I'll look at doing that instead.
 
-Furthermore, you are storing the constant 30, but are comparing r23 with
-the register r30 (I never liked that aspect of ppc asm syntax -- too
-error prone).  If you want to compare with the constant 30, use "cmpwi".
-
-> beq  print_equal
-> 
-> 1: b 1b
-> 
-> print_equal:
->  ...
-> //code end
-> 
-> I found that, print_equal was not called ,the whole code seemed  to
-> enter an  infinite loop.
-
-That's because you have an infinite loop in your code, right after "beq
-print_equal".
-
--Scott
+-Becky
