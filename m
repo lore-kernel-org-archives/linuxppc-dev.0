@@ -1,27 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7C609B6F1F
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 5CF78B6F1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Aug 2009 15:47:08 +1000 (EST)
-Received: from mail-yw0-f194.google.com (mail-yw0-f194.google.com
-	[209.85.211.194]) by ozlabs.org (Postfix) with ESMTP id BC4FEDDDB6
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 15:47:06 +1000 (EST)
-Received: by ywh32 with SMTP id 32so4865968ywh.11
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Aug 2009 22:47:03 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1251253245-16616-1-git-send-email-galak@kernel.crashing.org>
-References: <1251253245-16616-1-git-send-email-galak@kernel.crashing.org>
+	Wed, 26 Aug 2009 16:07:06 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id j5so750225wah.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 25 Aug 2009 23:07:05 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 25 Aug 2009 23:46:43 -0600
-Message-ID: <fa686aa40908252246k5d76ee18rf3440d0225eba6d2@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/pci: Pull ppc32 PCI features into common
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH V2 1/3] powerpc/pci: Remove dead checks for CONFIG_PPC_OF
+To: benh@kernel.crashing.org, galak@kernel.crashing.org, sfr@canb.auug.org.au,
+	linuxppc-dev@lists.ozlabs.org
+Date: Wed, 26 Aug 2009 00:07:02 -0600
+Message-ID: <20090826060659.30936.75706.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 25, 2009 at 8:20 PM, Kumar Gala<galak@kernel.crashing.org> wrot=
-e:
-> Some of the PCI features we have in ppc32 we will need on ppc64
-> platforms in the future. =A0These include support for:
->
-> * ppc_md.pci_exclude_device
-> * indirect config cycles
-> * early config cycles
->
-> We also simplified the logic in fake_pci_bus() to assume it will always
-> get a valid pci_controller. =A0Since all current callers seem to pass it
-> one.
->
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Looks okay to me.
+PPC_OF is always selected for arch/powerpc.  This patch removes the stale
+#defines
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-g.
+ arch/powerpc/kernel/pci-common.c |    8 --------
+ arch/powerpc/kernel/pci_32.c     |    9 ---------
+ 2 files changed, 0 insertions(+), 17 deletions(-)
+
+
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 5a56e97..23eeb3e 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -176,8 +176,6 @@ int pci_domain_nr(struct pci_bus *bus)
+ }
+ EXPORT_SYMBOL(pci_domain_nr);
+ 
+-#ifdef CONFIG_PPC_OF
+-
+ /* This routine is meant to be used early during boot, when the
+  * PCI bus numbers have not yet been assigned, and you need to
+  * issue PCI config cycles to an OF device.
+@@ -210,17 +208,11 @@ static ssize_t pci_show_devspec(struct device *dev,
+ 	return sprintf(buf, "%s", np->full_name);
+ }
+ static DEVICE_ATTR(devspec, S_IRUGO, pci_show_devspec, NULL);
+-#endif /* CONFIG_PPC_OF */
+ 
+ /* Add sysfs properties */
+ int pcibios_add_platform_entries(struct pci_dev *pdev)
+ {
+-#ifdef CONFIG_PPC_OF
+ 	return device_create_file(&pdev->dev, &dev_attr_devspec);
+-#else
+-	return 0;
+-#endif /* CONFIG_PPC_OF */
+-
+ }
+ 
+ char __devinit *pcibios_setup(char *str)
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index 3ae1c66..1e807fe 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -34,9 +34,7 @@ int pcibios_assign_bus_offset = 1;
+ void pcibios_make_OF_bus_map(void);
+ 
+ static void fixup_cpc710_pci64(struct pci_dev* dev);
+-#ifdef CONFIG_PPC_OF
+ static u8* pci_to_OF_bus_map;
+-#endif
+ 
+ /* By default, we don't re-assign bus numbers. We do this only on
+  * some pmacs
+@@ -83,7 +81,6 @@ fixup_cpc710_pci64(struct pci_dev* dev)
+ }
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CPC710_PCI64,	fixup_cpc710_pci64);
+ 
+-#ifdef CONFIG_PPC_OF
+ /*
+  * Functions below are used on OpenFirmware machines.
+  */
+@@ -357,12 +354,6 @@ pci_create_OF_bus_map(void)
+ 	}
+ }
+ 
+-#else /* CONFIG_PPC_OF */
+-void pcibios_make_OF_bus_map(void)
+-{
+-}
+-#endif /* CONFIG_PPC_OF */
+-
+ static void __devinit pcibios_scan_phb(struct pci_controller *hose)
+ {
+ 	struct pci_bus *bus;
