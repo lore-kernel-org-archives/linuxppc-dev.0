@@ -3,28 +3,27 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B7E4AB70B3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 09E97B7B3E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 00:08:46 +1000 (EST)
+	Thu, 27 Aug 2009 00:22:47 +1000 (EST)
 Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A6C0BDDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 00:08:46 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Change archdata dma_data type to dma_addr_t
+	by ozlabs.org (Postfix) with ESMTPS id EBB51DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 00:22:46 +1000 (EST)
+Subject: Re: PPC driver - generic bus width
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1251289790.1379.71.camel@pasglop>
-References: <1251130634-15093-1-git-send-email-beckyb@kernel.crashing.org>
-	<20090824194800.GA13503@lst.de>  <1251289790.1379.71.camel@pasglop>
+To: Alemao <xcarandiru@gmail.com>
+In-Reply-To: <d970ff420908260625q2d34bc10p62241218f022b5c2@mail.gmail.com>
+References: <d970ff420908260625q2d34bc10p62241218f022b5c2@mail.gmail.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-9PIcFcg4wYGlVQG8ZTKp"
-Date: Thu, 27 Aug 2009 00:08:45 +1000
-Message-Id: <1251295725.7492.5.camel@concordia>
+	boundary="=-R7omrj8J5QJYbrTxDnX1"
+Date: Thu, 27 Aug 2009 00:22:45 +1000
+Message-Id: <1251296565.7492.7.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,52 +35,78 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-9PIcFcg4wYGlVQG8ZTKp
+--=-R7omrj8J5QJYbrTxDnX1
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2009-08-26 at 22:29 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-08-24 at 21:48 +0200, Christoph Hellwig wrote:
-> > On Mon, Aug 24, 2009 at 11:17:14AM -0500, Becky Bruce wrote:
-> > > Previously, this was specified as a void *, but that's not
-> > > large enough on 32-bit systems with 36-bit physical
-> > > addressing support.  Change the type to dma_addr_t so it
-> > > will scale based on the size of a dma address.
-> >=20
-> > This looks extreml ugly to me.  It seems like the typical use is to
-> > store a pointer to a structure.  So what about making the direct
-> > dma case follow that general scheme instead?
-> >=20
-> > E.g. declare a
-> >=20
-> > struct direct_dma_data {
-> > 	dma_addr_t	direct_dma_offset;
-> > };
-> >=20
-> > and have one normal instace of it, and one per weird cell device.
+On Wed, 2009-08-26 at 10:25 -0300, Alemao wrote:
+> Hi all,
 >=20
-> Right, but we want to avoid a structure for the classic case of 32-bit
-> systems with no iommu...=20
+> Im trying to develop a driver for my device, and its data bus can be 8, 1=
+6
+> or 32 bits. This information is passed through the device tree source.
+> My code is like this:
 >=20
-> I wouldn't mind doing a union here.=20
+> struct device_info_t {
+> 	void (*read)();
+> 	void (*write)();
+> };
+>=20
+> static int __devinit device_probe()
+> {
+> 	prop =3D of_get_property(ofdev->node, "bus-width", &size);
+>=20
+> 	device->bus_width =3D *prop;
+>=20
+> 	switch (device->bus_width) {
+> 	case 8:
+> 		device->read  =3D in_8;
+> 		device->write =3D out_8;
+> 		break;
+> 	case 16:
+> 		device->read  =3D in_be16;
+> 		device->write =3D out_be16;
+> 		break;
+> 	case 32:
+> 		device->read  =3D in_be32;
+> 		device->write =3D out_be32;
+> 		break;
+> 	default:
+> 		break;
+> 	}
+> }
+>=20
+> Can someone point me some driver that is doing something similar to the
+> ideia shown above?
+>=20
+> Or what Im doing wrong in my code? Cause Im getting erros (warnings) like=
+:
+>=20
+> cc1: warnings being treated as errors
+> drivers/dev_test.c:37: warning: function declaration isn't a prototype
+> drivers/dev_test.c:38: warning: function declaration isn't a prototype
+> drivers/dev_test.c: In function 'device_probe':
+> drivers/dev_test.c:113: warning: assignment from incompatible pointer
+> type
 
-That might be best, the patch as it stands is a horrible mess of casts.
+I'm not sure about the first two, you don't seem to have pasted all the
+source, and you haven't given the line numbers.
 
-Stashing a dma_addr_t into a void * is sort of gross, but storing a
-pointer to some struct (a void *) in a dma_addr_t is _really_ gross :)
+The 3rd is probably because the prototype for in_8 etc. doesn't match
+your structure.
 
 cheers
 
---=-9PIcFcg4wYGlVQG8ZTKp
+--=-R7omrj8J5QJYbrTxDnX1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkqVQekACgkQdSjSd0sB4dIT8gCfZmTn78gFbMgUWNf8DviHeVkb
-qSQAnAndDeAEjMOBH/zu9Nsy3c1MFJmi
-=LxYB
+iEYEABECAAYFAkqVRTUACgkQdSjSd0sB4dJ88QCeKagn2D+/4kU4qf8u/g0Wsm8T
+nnIAnjWR0rqgFiO+T23O91XEc07kFQbI
+=/i3Y
 -----END PGP SIGNATURE-----
 
---=-9PIcFcg4wYGlVQG8ZTKp--
+--=-R7omrj8J5QJYbrTxDnX1--
