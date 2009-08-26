@@ -1,26 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 07D74B70CF
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7C609B6F1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Aug 2009 12:24:07 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1E6A1DDD1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 12:24:05 +1000 (EST)
-Message-Id: <B3C29A62-ED34-4C07-8E5B-FF5C9ADE5F71@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
+	Wed, 26 Aug 2009 15:47:08 +1000 (EST)
+Received: from mail-yw0-f194.google.com (mail-yw0-f194.google.com
+	[209.85.211.194]) by ozlabs.org (Postfix) with ESMTP id BC4FEDDDB6
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 15:47:06 +1000 (EST)
+Received: by ywh32 with SMTP id 32so4865968ywh.11
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Aug 2009 22:47:03 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
 In-Reply-To: <1251253245-16616-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH] powerpc/pci: Pull ppc32 PCI features into common
-Date: Tue, 25 Aug 2009 21:23:53 -0500
 References: <1251253245-16616-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 25 Aug 2009 23:46:43 -0600
+Message-ID: <fa686aa40908252246k5d76ee18rf3440d0225eba6d2@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/pci: Pull ppc32 PCI features into common
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Aug 25, 2009, at 9:20 PM, Kumar Gala wrote:
-
+On Tue, Aug 25, 2009 at 8:20 PM, Kumar Gala<galak@kernel.crashing.org> wrot=
+e:
 > Some of the PCI features we have in ppc32 we will need on ppc64
-> platforms in the future.  These include support for:
+> platforms in the future. =A0These include support for:
 >
 > * ppc_md.pci_exclude_device
 > * indirect config cycles
 > * early config cycles
 >
-> We also simplified the logic in fake_pci_bus() to assume it will  
-> always
-> get a valid pci_controller.  Since all current callers seem to pass it
+> We also simplified the logic in fake_pci_bus() to assume it will always
+> get a valid pci_controller. =A0Since all current callers seem to pass it
 > one.
 >
 > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> arch/powerpc/include/asm/machdep.h    |    6 +-
-> arch/powerpc/include/asm/pci-bridge.h |   35 +++++++---------
-> arch/powerpc/kernel/pci-common.c      |   70 ++++++++++++++++++++++++ 
-> ++++++++
-> arch/powerpc/kernel/pci_32.c          |   71  
-> ---------------------------------
-> 4 files changed, 89 insertions(+), 93 deletions(-)
 
-Ben, Grant
+Looks okay to me.
 
-This should just be a refresh of the patch mentioned here:
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-http://patchwork.ozlabs.org/patch/26648/
-
-with the commit message cleaned up and rebased on 'next'.
-
-- k
+g.
