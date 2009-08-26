@@ -1,27 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4DE15B7093
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Aug 2009 22:30:04 +1000 (EST)
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8C60CDDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 22:30:02 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Change archdata dma_data type to dma_addr_t
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20090824194800.GA13503@lst.de>
-References: <1251130634-15093-1-git-send-email-beckyb@kernel.crashing.org>
-	<20090824194800.GA13503@lst.de>
-Content-Type: text/plain
-Date: Wed, 26 Aug 2009 22:29:50 +1000
-Message-Id: <1251289790.1379.71.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B148FB708B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 26 Aug 2009 23:24:43 +1000 (EST)
+Message-Id: <66B8BD01-F3D5-482E-8D9A-8026328FC37A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20090826060708.30936.54239.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH V2 2/3] powerpc/pci: move pci_64.c device tree scanning
+	code into pci-common.c
+Date: Wed, 26 Aug 2009 08:24:30 -0500
+References: <20090826060659.30936.75706.stgit@localhost.localdomain>
+	<20090826060708.30936.54239.stgit@localhost.localdomain>
+Cc: linuxppc-dev@lists.ozlabs.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-08-24 at 21:48 +0200, Christoph Hellwig wrote:
-> On Mon, Aug 24, 2009 at 11:17:14AM -0500, Becky Bruce wrote:
-> > Previously, this was specified as a void *, but that's not
-> > large enough on 32-bit systems with 36-bit physical
-> > addressing support.  Change the type to dma_addr_t so it
-> > will scale based on the size of a dma address.
-> 
-> This looks extreml ugly to me.  It seems like the typical use is to
-> store a pointer to a structure.  So what about making the direct
-> dma case follow that general scheme instead?
-> 
-> E.g. declare a
-> 
-> struct direct_dma_data {
-> 	dma_addr_t	direct_dma_offset;
-> };
-> 
-> and have one normal instace of it, and one per weird cell device.
 
-Right, but we want to avoid a structure for the classic case of 32-bit
-systems with no iommu... 
+On Aug 26, 2009, at 1:07 AM, Grant Likely wrote:
 
-I wouldn't mind doing a union here. 
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> The PCI device tree scanning code in pci_64.c is some useful  
+> functionality.
+> It allows PCI devices to be described in the device tree instead of  
+> being
+> probed for, which in turn allows pci devices to use all of the  
+> device tree
+> facilities to describe complex PCI bus architectures like GPIO and IRQ
+> routing (perhaps not a common situation for desktop or server systems,
+> but useful for embedded systems with on-board PCI devices).
+>
+> This patch moves the device tree scanning into pci-common.c so it is
+> available for 32-bit powerpc machines too.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+> arch/powerpc/include/asm/pci-bridge.h |    5
+> arch/powerpc/include/asm/pci.h        |    5
+> arch/powerpc/kernel/Makefile          |    2
+> arch/powerpc/kernel/pci-common.c      |    1
+> arch/powerpc/kernel/pci_64.c          |  289  
+> ---------------------------
+> arch/powerpc/kernel/pci_of_scan.c     |  358 ++++++++++++++++++++++++ 
+> +++++++++
+> 6 files changed, 364 insertions(+), 296 deletions(-)
+> create mode 100644 arch/powerpc/kernel/pci_of_scan.c
+>
 
-The other option is to have a global somewhere that we make that point
-to or something like that but it's probably even more ugly.
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
-Cheers,
-Ben.
+- k
