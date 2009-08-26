@@ -1,22 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <xcarandiru@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6D2F1B7257
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1B465B70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Aug 2009 23:29:23 +1000 (EST)
-Message-Id: <E575F71A-166A-4933-8612-1F0E88A426C5@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20090826060716.30936.40578.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH V2 3/3] powerpc/pci: Merge ppc32 and ppc64 versions of
-	phb_scan()
-Date: Wed, 26 Aug 2009 08:29:08 -0500
-References: <20090826060659.30936.75706.stgit@localhost.localdomain>
-	<20090826060716.30936.40578.stgit@localhost.localdomain>
-Cc: linuxppc-dev@lists.ozlabs.org, sfr@canb.auug.org.au
+	Wed, 26 Aug 2009 23:49:41 +1000 (EST)
+Received: from mail-gx0-f215.google.com (mail-gx0-f215.google.com
+	[209.85.217.215]) by ozlabs.org (Postfix) with ESMTP id 7445DDDD04
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 23:49:40 +1000 (EST)
+Received: by gxk11 with SMTP id 11so192469gxk.16
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 06:49:38 -0700 (PDT)
+MIME-Version: 1.0
+Date: Wed, 26 Aug 2009 10:25:47 -0300
+Message-ID: <d970ff420908260625q2d34bc10p62241218f022b5c2@mail.gmail.com>
+Subject: PPC driver - generic bus width
+From: Alemao <xcarandiru@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi all,
 
-On Aug 26, 2009, at 1:07 AM, Grant Likely wrote:
+Im trying to develop a driver for my device, and its data bus can be 8, 16
+or 32 bits. This information is passed through the device tree source.
+My code is like this:
 
-> +/**
-> + * pci_scan_phb - Given a pci_controller, setup and scan the PCI bus
-> + * @hose: Pointer to the PCI host controller instance structure
-> + * @data: value to use for sysdata pointer.  ppc32 and ppc64 differ  
-> here
-> + *
-> + * Note: the 'data' pointer is a temporary measure.  As 32 and 64 bit
-> + * pci code gets merged, this parameter should become unnecessary  
-> because
-> + * both will use the same value.
-> + */
-> +void __devinit pcibios_scan_phb(struct pci_controller *hose, void  
-> *data)
-> +{
-> +
+struct device_info_t {
+	void (*read)();
+	void (*write)();
+};
 
-Just a nit, but why not data -> sysdata since that's what we using it  
-as.
+static int __devinit device_probe()
+{
+	prop = of_get_property(ofdev->node, "bus-width", &size);
 
-- k
+	device->bus_width = *prop;
+
+	switch (device->bus_width) {
+	case 8:
+		device->read  = in_8;
+		device->write = out_8;
+		break;
+	case 16:
+		device->read  = in_be16;
+		device->write = out_be16;
+		break;
+	case 32:
+		device->read  = in_be32;
+		device->write = out_be32;
+		break;
+	default:
+		break;
+	}
+}
+
+Can someone point me some driver that is doing something similar to the
+ideia shown above?
+
+Or what Im doing wrong in my code? Cause Im getting erros (warnings) like:
+
+cc1: warnings being treated as errors
+drivers/dev_test.c:37: warning: function declaration isn't a prototype
+drivers/dev_test.c:38: warning: function declaration isn't a prototype
+drivers/dev_test.c: In function 'device_probe':
+drivers/dev_test.c:113: warning: assignment from incompatible pointer
+type
+
+PS: Im using a MPC8349, linux kernel 2.6.26
+
+Cheers,
+
+--
+Alemao
