@@ -1,22 +1,22 @@
 Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8F700B707B
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id E6E2CB6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 Aug 2009 21:07:32 +1000 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id n7QB4wiW014464
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2009 21:04:58 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7QB7T1M1122370
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2009 21:07:30 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n7QB7Sjd001509
+	Wed, 26 Aug 2009 21:09:01 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp03.au.ibm.com (8.14.3/8.13.1) with ESMTP id n7QB6cSU026925
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2009 21:06:38 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7QB7TqE1773626
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2009 21:07:29 +1000
-Date: Wed, 26 Aug 2009 16:37:21 +0530
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n7QB7IY6013265
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2009 21:07:19 +1000
+Date: Wed, 26 Aug 2009 16:38:50 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: Joel Schopp <jschopp@austin.ibm.com>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -25,12 +25,13 @@ To: Joel Schopp <jschopp@austin.ibm.com>,
 	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
 	Dipankar Sarma <dipankar@in.ibm.com>,
 	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Gautham R Shenoy <ego@in.ibm.com>,
-	Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v2 PATCH 0/2]: cpuidle: Introducing cpuidle infrastructure to POWER
-Message-ID: <20090826110721.GA29759@linux.vnet.ibm.com>
+	Gautham R Shenoy <ego@in.ibm.com>, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: [v2 PATCH 1/2]: pseries: Enable cpuidle for pSeries.
+Message-ID: <20090826110850.GB29759@linux.vnet.ibm.com>
+References: <20090826110721.GA29759@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20090826110721.GA29759@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,73 +43,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-08-26 16:37:21]:
 
+This patch enables the cpuidle option in Kconfig for pSeries.
 
+Currently cpuidle infrastructure is enabled only for x86.
+This code is almost completely borrowed from x86 to enable
+cpuidle for pSeries.
 
-"Cpuidle" is a CPU Power Management infrastrusture which helps manage
-idle CPUs in a clean and efficient manner. The architecture can register
-its driver (in this case, pseries_idle driver) so that it subscribes for
-cpuidle feature. Cpuidle has a set of governors (ladder and menu),
-which will decide the best idle state to be chosen for the current situation,
-based on heuristics, and calculates the expected residency time
-for the current idle state. So based on this, the cpu is put into
-the right idle state.
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ arch/powerpc/Kconfig                   |   17 +++++++++++++++++
+ arch/powerpc/include/asm/system.h      |    2 ++
+ arch/powerpc/platforms/pseries/setup.c |   21 +++++++++++++++++++++
+ 3 files changed, 40 insertions(+)
 
-Currently, cpuidle infrasture is exploited by ACPI to choose between
-the available ACPI C-states. This patch-set is aimed at enabling
-cpuidle for powerpc and provides a sample implementation for pseries.
-
-Currently, in the pseries_dedicated_idle_sleep(), the processor would
-poll for a time period, which is called the snooze, and only then it
-is ceded, which would put the processor in nap state. Cpuidle aims at
-separating this into 2 different idle states. Based on the expected
-residency time predicted by the cpuidle governor, the idle state is
-chosen directly. So, choosing to enter the nap state directly based on
-the decision made by cpuidle would avoid unnecessary snoozing before
-entering nap.
-
-This patch-set tries to achieve the above objective by introducing a
-pseries processor idle driver called pseries_idle_driver in
-arch/powerpc/platform/pseries/processor_idle.c, which implements the
-idle loop which would replace the pseries_dedicated_idle_sleep()
-when cpuidle is enabled.
-
-Experiment conducted:
-----------------------
-
-The following experiment was conducted on a completely idle JS22 blade,
-to prove that using cpuidle infrastructure, the amount of nap time increases.
-
-Nap and snooze times were sampled for all the cpus.
-For a window of 1000 samples, When cpuidle was enabled,
-the total nap time was of the order of a few seconds (5-10s), whereas
-the total snooze time was of the order of a few milliseconds(10-30 ms).
-
-When cpuidle infrastructure was disabled and the regular
-pseries_dedicated_idle_sleep() idle loop was used, the snooze time itself
-was of the order of hundreds of milliseconds. (100 - 500 ms).
-This is clearly due to unnecessary snoozing before napping even on a
-completely idle system.
-
-
-The previous post in this area can be found at
-http://lkml.org/lkml/2009/8/19/150
-
-Changes from the previous version:
-----------------------------------
-
-Earlier I used the the name TPMD (Thermal and Power Management Devices)
-to refer to this module which hooks on to the cpuidle infrastructure.
-I have renamed this to Pseries Processor Idle, in order to avoid confusion.
-
-
-Patches included in this set:
-------------------------------
-PATCH 1/2 - Enable cpuidle for pSeries.
-PATCH 2/2 - Implement Pseries Processor Idle idle module
-
-
-Any feedback on the overall design and idea is immensely valuable.
-
---arun
+Index: linux.trees.git/arch/powerpc/Kconfig
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/Kconfig
++++ linux.trees.git/arch/powerpc/Kconfig
+@@ -88,6 +88,9 @@ config ARCH_HAS_ILOG2_U64
+ 	bool
+ 	default y if 64BIT
+ 
++config ARCH_HAS_CPU_IDLE_WAIT
++	def_bool y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+@@ -243,6 +246,20 @@ source "kernel/Kconfig.freezer"
+ source "arch/powerpc/sysdev/Kconfig"
+ source "arch/powerpc/platforms/Kconfig"
+ 
++menu "Power management options"
++
++source "drivers/cpuidle/Kconfig"
++
++config PSERIES_PROCESSOR_IDLE
++	bool "Idle Power Management Support for pSeries"
++	depends on PPC_PSERIES && CPU_IDLE
++	default y
++	help
++	  Idle Power Management Support for pSeries. This hooks onto cpuidle
++	  infrastructure to help in idle cpu power management.
++
++endmenu
++
+ menu "Kernel options"
+ 
+ config HIGHMEM
+Index: linux.trees.git/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/platforms/pseries/setup.c
++++ linux.trees.git/arch/powerpc/platforms/pseries/setup.c
+@@ -278,6 +278,27 @@ static struct notifier_block pci_dn_reco
+ 	.notifier_call = pci_dn_reconfig_notifier,
+ };
+ 
++static void do_nothing(void *unused)
++{
++}
++
++/*
++ * cpu_idle_wait - Used to ensure that all the CPUs discard old value of
++ * pm_idle and update to new pm_idle value. Required while changing pm_idle
++ * handler on SMP systems.
++ *
++ * Caller must have changed pm_idle to the new value before the call. Old
++ * pm_idle value will not be used by any CPU after the return of this function.
++ */
++void cpu_idle_wait(void)
++{
++	/* Ensure that new value of pm_idle is set before proceeding */
++	smp_mb();
++	/* kick all the CPUs so that they exit out of pm_idle */
++	smp_call_function(do_nothing, NULL, 1);
++}
++EXPORT_SYMBOL_GPL(cpu_idle_wait);
++
+ static void __init pSeries_setup_arch(void)
+ {
+ 	/* Discover PIC type and setup ppc_md accordingly */
+Index: linux.trees.git/arch/powerpc/include/asm/system.h
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/include/asm/system.h
++++ linux.trees.git/arch/powerpc/include/asm/system.h
+@@ -546,5 +546,7 @@ extern void account_system_vtime(struct 
+ 
+ extern struct dentry *powerpc_debugfs_root;
+ 
++void cpu_idle_wait(void);
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_SYSTEM_H */
