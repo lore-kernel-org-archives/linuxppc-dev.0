@@ -1,26 +1,26 @@
 Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 08B04B7B61
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 27 Aug 2009 13:55:06 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9AF18B7B6C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 13:46:42 +1000 (EST)
-Subject: Re: [v2 PATCH 2/2]: pseries: Implement Pseries Processor Idle idle
-	module.
+	by ozlabs.org (Postfix) with ESMTPS id 6722EDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 13:55:05 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Invoke kdump for system reset exception
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1251286038.1329.1.camel@twins>
-References: <20090826110721.GA29759@linux.vnet.ibm.com>
-	<20090826111003.GC29759@linux.vnet.ibm.com>
-	<1251286038.1329.1.camel@twins>
+To: mohan@in.ibm.com
+In-Reply-To: <20090824031244.GA3590@in.ibm.com>
+References: <20090824031244.GA3590@in.ibm.com>
 Content-Type: text/plain
-Date: Thu, 27 Aug 2009 13:44:09 +1000
-Message-Id: <1251344649.20467.13.camel@pasglop>
+Date: Thu, 27 Aug 2009 13:54:47 +1000
+Message-Id: <1251345287.20467.17.camel@pasglop>
 Mime-Version: 1.0
-Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, arun@linux.vnet.ibm.com,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, kamalesh@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +30,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-08-26 at 13:27 +0200, Peter Zijlstra wrote:
-> On Wed, 2009-08-26 at 16:40 +0530, Arun R Bharadwaj wrote:
-> > +void (*pm_idle)(void);
-> > +EXPORT_SYMBOL_GPL(pm_idle);
+On Mon, 2009-08-24 at 08:42 +0530, M. Mohan Kumar wrote:
+> Invoke kdump for system reset exception
 > 
-> Seriously.. this caused plenty problems over on x86 and you're doing the
-> exact same dumb thing?
+> Dump restart operation from HMC raises system reset exception
+> (0x100) and xmon is invoked(even if kdump kernel is loaded). User has to
+> exit from xmon by saying 'Don't recover' to invoke kdump. Modify this
+> behaviour so that xmon will return immediately for system reset
+> exception and kdump kernel will be invoked (if its loaded). If kdump
+> kernel is not loaded, proceed with xmon
 
-I already said I didn't want this export.
+Hi Mohan !
 
-First thing first: We already have a ppc_md.power_save() callback,
-filled by the platform. which implements the "low level" part of idle on
-powerpc (ie, the actual putting of the CPU into some kind of wait state)
-and is called by our idle loop.
+This is not right. The way things -should- already work is that xmon
+will only kick in if it's been enabled (aka initialized). This happens
+normally if either:
 
-We -also- have a higher level ppc_md.idle_loop() which allows the
-platform to completely override the idle loop, though we rarely do it (I
-think only iSeries does it nowadays).
+	- CONFIG_XMON_DEFAULT is set, which forces enable it at boot. This
+should not be set on distro kernels
 
-So I see no need to -add- another callback here. I'm not entirely sure
-what the cpuidle framework does, it's no obvious from Arun commit
-messages I must say, but it doesn't look like the right approach for
-integration. In fact, pSeries already have a choice between different
-powersave models depending on what kind of hypervisor is there.
+	- The command line says xmon=early or xmon=on, in which case xmon will
+be enabled during early boot (and in the case of xmon=early, you'll drop
+into it early during boot, for example to get a chance to set some
+breakpoints).
 
-So Arun, please try to fit nicely within the existing interfaces, or if
-you want to add a new one, please justify very precisely what design
-decisions lead you to that.
-
-Finally, there's also a problem with your first patch 1/2: You are
-setting a Kconfig flag unconditionally indicating that the arch supports
-some idle wait function, but you only implement it somewhere in
-arch/powerpc/platform/pseries, so you'll break the build of any other
-platform. You also prevent another platform to implement a different one
-and be built in the same kernel.
-
-For such generic callbacks, if it's justified (and only if it is), you
-can add a ppc_md. hook for the platform to fill, and you need to cater
-for platforms that don't.
+So on a normal distro kernel, where CONFIG_XMON_DEFAULT should not be
+set (if it is, they need to fix it), xmon will not be initialized, and a
+System Reset exception should trigger a kdump. If it doesn't, then
+there's a bug elsewhere, but the fix isn't to modify xmon.
 
 Cheers,
 Ben.
+
+
+> Signed-off-by: M. Mohan Kumar <mohan@in.ibm.com>
+> ---
+>  arch/powerpc/xmon/xmon.c |    9 +++++++++
+>  1 files changed, 9 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index e1f33a8..6847334 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/irq.h>
+>  #include <linux/bug.h>
+> +#include <linux/kexec.h>
+>  
+>  #include <asm/ptrace.h>
+>  #include <asm/string.h>
+> @@ -348,6 +349,14 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
+>  	unsigned long timeout;
+>  #endif
+>  
+> +	/*
+> +	 * If the exception is 0x100 and if kexec crash image is loaded,
+> +	 * continue with kexec_crash
+> +	 */
+> +	if (kexec_should_crash(current) && kexec_crash_image &&
+> +					regs->trap == 0x100)
+> +		return 0;
+> +
+>  	local_irq_save(flags);
+>  
+>  	bp = in_breakpoint_table(regs->nip, &offset);
