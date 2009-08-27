@@ -3,24 +3,29 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 08B04B7B61
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8FAADB7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 13:55:06 +1000 (EST)
+	Thu, 27 Aug 2009 14:07:49 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6722EDDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 13:55:05 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Invoke kdump for system reset exception
+	by ozlabs.org (Postfix) with ESMTPS id EA6AADDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 14:07:48 +1000 (EST)
+Subject: Re: Extending virtio_console to support multiple ports
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: mohan@in.ibm.com
-In-Reply-To: <20090824031244.GA3590@in.ibm.com>
-References: <20090824031244.GA3590@in.ibm.com>
+To: Amit Shah <amit.shah@redhat.com>
+In-Reply-To: <20090826154552.GA31910@amit-x200.redhat.com>
+References: <1251181044-3696-1-git-send-email-amit.shah@redhat.com>
+	<20090826112718.GA11117@amit-x200.redhat.com>
+	<20090826154552.GA31910@amit-x200.redhat.com>
 Content-Type: text/plain
-Date: Thu, 27 Aug 2009 13:54:47 +1000
-Message-Id: <1251345287.20467.17.camel@pasglop>
+Date: Thu, 27 Aug 2009 14:07:03 +1000
+Message-Id: <1251346023.20467.21.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, kamalesh@linux.vnet.ibm.com
+Cc: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	miltonm@bga.com, qemu-devel@nongnu.org, borntraeger@de.ibm.com,
+	brueckner@linux.vnet.ibm.com,
+	virtualization@lists.linux-foundation.org, alan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,68 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-08-24 at 08:42 +0530, M. Mohan Kumar wrote:
-> Invoke kdump for system reset exception
+On Wed, 2009-08-26 at 21:15 +0530, Amit Shah wrote:
+
 > 
-> Dump restart operation from HMC raises system reset exception
-> (0x100) and xmon is invoked(even if kdump kernel is loaded). User has to
-> exit from xmon by saying 'Don't recover' to invoke kdump. Modify this
-> behaviour so that xmon will return immediately for system reset
-> exception and kdump kernel will be invoked (if its loaded). If kdump
-> kernel is not loaded, proceed with xmon
+> > - Convert hvc's usage of spinlocks to mutexes. I've no idea how this
+> >   will play out; I'm no expert here. But I did try doing this and so far
+> >   it all looks OK. No lockups, lockdep warnings, nothing. I have full
+> >   debugging enabled. But this doesn't mean it's right.
+> 
+> So just to test this further I added the capability to have more than
+> one hvc console spawn from virtio_console, created two consoles and did
+> a 'cat' of a file in each of the virtio-consoles. It's been running for
+> half an hour now without any badness. No spew in debug logs too.
+> 
+> I also checked the code in hvc_console.c that takes the spin_locks.
+> Nothing there that runs from (or needs to run from) interrupt context.
+> So the change to mutexes does seem reasonable. Also, the spinlock code
+> was added really long back -- git blame shows Linus' first git commit
+> introduced them in the git history, so it's pure legacy baggage.
 
-Hi Mohan !
+Two things here:
 
-This is not right. The way things -should- already work is that xmon
-will only kick in if it's been enabled (aka initialized). This happens
-normally if either:
+ - First you seem to have completely missed the fact that hvc_poll() can
+be called from interrupt time :-) Look at hvc_irq.c which is used by
+some backends. Maybe that can be "fixed" by deferring to a work queue,
+though it's nice to have the keyboard input have somewhat of a higher
+priority than anything else here.
 
-	- CONFIG_XMON_DEFAULT is set, which forces enable it at boot. This
-should not be set on distro kernels
+So unless that's fixed, or I missed something, that's a big NACK for
+now.
 
-	- The command line says xmon=early or xmon=on, in which case xmon will
-be enabled during early boot (and in the case of xmon=early, you'll drop
-into it early during boot, for example to get a chance to set some
-breakpoints).
-
-So on a normal distro kernel, where CONFIG_XMON_DEFAULT should not be
-set (if it is, they need to fix it), xmon will not be initialized, and a
-System Reset exception should trigger a kdump. If it doesn't, then
-there's a bug elsewhere, but the fix isn't to modify xmon.
+ - Then, are we certain that there's no case where the tty layer will
+call us with some lock held or in an atomic context ? To be honest, I've
+totally lost track of the locking rules in tty land lately so it might
+well be ok, but something to verify.
 
 Cheers,
 Ben.
-
-
-> Signed-off-by: M. Mohan Kumar <mohan@in.ibm.com>
-> ---
->  arch/powerpc/xmon/xmon.c |    9 +++++++++
->  1 files changed, 9 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index e1f33a8..6847334 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -23,6 +23,7 @@
->  #include <linux/interrupt.h>
->  #include <linux/irq.h>
->  #include <linux/bug.h>
-> +#include <linux/kexec.h>
->  
->  #include <asm/ptrace.h>
->  #include <asm/string.h>
-> @@ -348,6 +349,14 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
->  	unsigned long timeout;
->  #endif
->  
-> +	/*
-> +	 * If the exception is 0x100 and if kexec crash image is loaded,
-> +	 * continue with kexec_crash
-> +	 */
-> +	if (kexec_should_crash(current) && kexec_crash_image &&
-> +					regs->trap == 0x100)
-> +		return 0;
-> +
->  	local_irq_save(flags);
->  
->  	bp = in_breakpoint_table(regs->nip, &offset);
