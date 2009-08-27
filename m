@@ -1,29 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0B1DFB7B68
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 732A3B7079
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 15:20:59 +1000 (EST)
-Received: from mail-yw0-f185.google.com (mail-yw0-f185.google.com
-	[209.85.211.185]) by ozlabs.org (Postfix) with ESMTP id 6BD37DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 15:20:57 +1000 (EST)
-Received: by ywh15 with SMTP id 15so962201ywh.10
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2009 22:20:56 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1251346157.20467.22.camel@pasglop>
-References: <1250569288.19007.15.camel@pasglop>
-	<1251346157.20467.22.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 26 Aug 2009 23:20:36 -0600
-Message-ID: <fa686aa40908262220o46f6f5cdga4fdec63a4d6101c@mail.gmail.com>
-Subject: Re: [RFC] Clock binding
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss@lists.ozlabs.org
+	Thu, 27 Aug 2009 15:46:36 +1000 (EST)
+Subject: Re: [PATCH V2 3/3] powerpc/pci: Merge ppc32 and ppc64 versions of
+	phb_scan()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20090826060716.30936.40578.stgit@localhost.localdomain>
+References: <20090826060659.30936.75706.stgit@localhost.localdomain>
+	<20090826060716.30936.40578.stgit@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 27 Aug 2009 15:46:21 +1000
+Message-Id: <1251351981.20467.37.camel@pasglop>
+Mime-Version: 1.0
+Cc: sfr@canb.auug.org.au, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,15 +26,223 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 26, 2009 at 10:09 PM, Benjamin
-Herrenschmidt<benh@kernel.crashing.org> wrote:
-> On Tue, 2009-08-18 at 14:21 +1000, Benjamin Herrenschmidt wrote:
->> So here's a followup to my discussion about the clock API.
->
-> Really nobody has a comment here ? :-) Not even Mitch ?
+On Wed, 2009-08-26 at 00:07 -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> The two versions are doing almost exactly the same thing.  No need to
+> maintain them as separate files.  This patch also has the side effect
+> of making the PCI device tree scanning code available to 32 bit powerpc
+> machines, but no board ports actually make use of this feature at this
+> point.
 
-Been wanting too.. a little swamped with kids going back to school
-tomorrow.  Hopefully I'll be able to dig in before the end of the
-week.
+You missed various calls to scan_phb() in arch/powerpc :-)
 
-g.
+At least pSeries with dynamic LPAR is broken, I think iSeries might
+break too. Try a ppc64_defconfig.
+
+I tentatively applied the other patches to -test
+
+Cheers,
+Ben.
+
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> 
+>  arch/powerpc/include/asm/pci.h   |    2 ++
+>  arch/powerpc/kernel/pci-common.c |   48 ++++++++++++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/pci_32.c     |   25 ++------------------
+>  arch/powerpc/kernel/pci_64.c     |   46 +++++-------------------------------
+>  4 files changed, 58 insertions(+), 63 deletions(-)
+> 
+> 
+> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+> index 9ae2e3e..feebfed 100644
+> --- a/arch/powerpc/include/asm/pci.h
+> +++ b/arch/powerpc/include/asm/pci.h
+> @@ -233,6 +233,8 @@ extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
+>  
+>  extern void pcibios_setup_bus_devices(struct pci_bus *bus);
+>  extern void pcibios_setup_bus_self(struct pci_bus *bus);
+> +extern void pcibios_setup_phb_io_space(struct pci_controller *hose);
+> +extern void pcibios_scan_phb(struct pci_controller *hose, void *data);
+>  
+>  #endif	/* __KERNEL__ */
+>  #endif /* __ASM_POWERPC_PCI_H */
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index 44497a8..8a16dbe 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -1617,3 +1617,51 @@ void __devinit pcibios_setup_phb_resources(struct pci_controller *hose)
+>  		 (unsigned long)hose->io_base_virt - _IO_BASE);
+>  
+>  }
+> +
+> +/**
+> + * pci_scan_phb - Given a pci_controller, setup and scan the PCI bus
+> + * @hose: Pointer to the PCI host controller instance structure
+> + * @data: value to use for sysdata pointer.  ppc32 and ppc64 differ here
+> + *
+> + * Note: the 'data' pointer is a temporary measure.  As 32 and 64 bit
+> + * pci code gets merged, this parameter should become unnecessary because
+> + * both will use the same value.
+> + */
+> +void __devinit pcibios_scan_phb(struct pci_controller *hose, void *data)
+> +{
+> +	struct pci_bus *bus;
+> +	struct device_node *node = hose->dn;
+> +	int mode;
+> +
+> +	pr_debug("PCI: Scanning PHB %s\n",
+> +		 node ? node->full_name : "<NO NAME>");
+> +
+> +	/* Create an empty bus for the toplevel */
+> +	bus = pci_create_bus(hose->parent, hose->first_busno, hose->ops, data);
+> +	if (bus == NULL) {
+> +		pr_err("Failed to create bus for PCI domain %04x\n",
+> +			hose->global_number);
+> +		return;
+> +	}
+> +	bus->secondary = hose->first_busno;
+> +	hose->bus = bus;
+> +
+> +	/* Get some IO space for the new PHB */
+> +	pcibios_setup_phb_io_space(hose);
+> +
+> +	/* Wire up PHB bus resources */
+> +	pcibios_setup_phb_resources(hose);
+> +
+> +	/* Get probe mode and perform scan */
+> +	mode = PCI_PROBE_NORMAL;
+> +	if (node && ppc_md.pci_probe_mode)
+> +		mode = ppc_md.pci_probe_mode(bus);
+> +	pr_debug("    probe mode: %d\n", mode);
+> +	if (mode == PCI_PROBE_DEVTREE) {
+> +		bus->subordinate = hose->last_busno;
+> +		of_scan_bus(node, bus);
+> +	}
+> +
+> +	if (mode == PCI_PROBE_NORMAL)
+> +		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
+> +}
+> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+> index 1e807fe..4e415e1 100644
+> --- a/arch/powerpc/kernel/pci_32.c
+> +++ b/arch/powerpc/kernel/pci_32.c
+> @@ -354,36 +354,15 @@ pci_create_OF_bus_map(void)
+>  	}
+>  }
+>  
+> -static void __devinit pcibios_scan_phb(struct pci_controller *hose)
+> +void __devinit pcibios_setup_phb_io_space(struct pci_controller *hose)
+>  {
+> -	struct pci_bus *bus;
+> -	struct device_node *node = hose->dn;
+>  	unsigned long io_offset;
+>  	struct resource *res = &hose->io_resource;
+>  
+> -	pr_debug("PCI: Scanning PHB %s\n",
+> -		 node ? node->full_name : "<NO NAME>");
+> -
+> -	/* Create an empty bus for the toplevel */
+> -	bus = pci_create_bus(hose->parent, hose->first_busno, hose->ops, hose);
+> -	if (bus == NULL) {
+> -		printk(KERN_ERR "Failed to create bus for PCI domain %04x\n",
+> -		       hose->global_number);
+> -		return;
+> -	}
+> -	bus->secondary = hose->first_busno;
+> -	hose->bus = bus;
+> -
+>  	/* Fixup IO space offset */
+>  	io_offset = (unsigned long)hose->io_base_virt - isa_io_base;
+>  	res->start = (res->start + io_offset) & 0xffffffffu;
+>  	res->end = (res->end + io_offset) & 0xffffffffu;
+> -
+> -	/* Wire up PHB bus resources */
+> -	pcibios_setup_phb_resources(hose);
+> -
+> -	/* Scan children */
+> -	hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
+>  }
+>  
+>  static int __init pcibios_init(void)
+> @@ -401,7 +380,7 @@ static int __init pcibios_init(void)
+>  		if (pci_assign_all_buses)
+>  			hose->first_busno = next_busno;
+>  		hose->last_busno = 0xff;
+> -		pcibios_scan_phb(hose);
+> +		pcibios_scan_phb(hose, hose);
+>  		pci_bus_add_devices(hose->bus);
+>  		if (pci_assign_all_buses || next_busno <= hose->last_busno)
+>  			next_busno = hose->last_busno + pcibios_assign_bus_offset;
+> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+> index 4d5b4ce..ba949a2 100644
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -43,45 +43,6 @@ unsigned long pci_probe_only = 1;
+>  unsigned long pci_io_base = ISA_IO_BASE;
+>  EXPORT_SYMBOL(pci_io_base);
+>  
+> -void __devinit scan_phb(struct pci_controller *hose)
+> -{
+> -	struct pci_bus *bus;
+> -	struct device_node *node = hose->dn;
+> -	int mode;
+> -
+> -	pr_debug("PCI: Scanning PHB %s\n",
+> -		 node ? node->full_name : "<NO NAME>");
+> -
+> -	/* Create an empty bus for the toplevel */
+> -	bus = pci_create_bus(hose->parent, hose->first_busno, hose->ops, node);
+> -	if (bus == NULL) {
+> -		printk(KERN_ERR "Failed to create bus for PCI domain %04x\n",
+> -		       hose->global_number);
+> -		return;
+> -	}
+> -	bus->secondary = hose->first_busno;
+> -	hose->bus = bus;
+> -
+> -	/* Get some IO space for the new PHB */
+> -	pcibios_map_io_space(bus);
+> -
+> -	/* Wire up PHB bus resources */
+> -	pcibios_setup_phb_resources(hose);
+> -
+> -	/* Get probe mode and perform scan */
+> -	mode = PCI_PROBE_NORMAL;
+> -	if (node && ppc_md.pci_probe_mode)
+> -		mode = ppc_md.pci_probe_mode(bus);
+> -	pr_debug("    probe mode: %d\n", mode);
+> -	if (mode == PCI_PROBE_DEVTREE) {
+> -		bus->subordinate = hose->last_busno;
+> -		of_scan_bus(node, bus);
+> -	}
+> -
+> -	if (mode == PCI_PROBE_NORMAL)
+> -		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
+> -}
+> -
+>  static int __init pcibios_init(void)
+>  {
+>  	struct pci_controller *hose, *tmp;
+> @@ -103,7 +64,7 @@ static int __init pcibios_init(void)
+>  
+>  	/* Scan all of the recorded PCI controllers.  */
+>  	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+> -		scan_phb(hose);
+> +		pcibios_scan_phb(hose, hose->dn);
+>  		pci_bus_add_devices(hose->bus);
+>  	}
+>  
+> @@ -237,6 +198,11 @@ int __devinit pcibios_map_io_space(struct pci_bus *bus)
+>  }
+>  EXPORT_SYMBOL_GPL(pcibios_map_io_space);
+>  
+> +void __devinit pcibios_setup_phb_io_space(struct pci_controller *hose)
+> +{
+> +	pcibios_map_io_space(hose->bus);
+> +}
+> +
+>  #define IOBASE_BRIDGE_NUMBER	0
+>  #define IOBASE_MEMORY		1
+>  #define IOBASE_IO		2
