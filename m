@@ -3,18 +3,18 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D1B20B7C42
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 44D3AB7DE1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 03:30:21 +1000 (EST)
+	Fri, 28 Aug 2009 03:30:22 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 52235DDD01
+	by ozlabs.org (Postfix) with ESMTP id C7C4ADDD01
 	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 03:30:21 +1000 (EST)
-Date: Thu, 27 Aug 2009 21:30:19 +0400
+Date: Thu, 27 Aug 2009 21:30:17 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 3/5] powerpc/qe: Add qe_upload_firmware() stub for non-QE
-	builds
-Message-ID: <20090827173019.GC739@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/5] powerpc/qe: Make qe_reset() code path safe for
+	repeated invocation
+Message-ID: <20090827173017.GB739@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
@@ -28,32 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is needed to avoid #ifdefs in MPC85xx suspend/resume code.
+For MPC8569 CPUs we'll need to reset QE after each suspend, so make
+qe_reset() code path suitable for repeated invocation, that is:
+
+- Don't initialize rheap structures if already initialized;
+- Don't allocate muram for SDMA if already allocated, just reinitialize
+  registers with previously allocated muram offset;
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/include/asm/qe.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/cpm_common.c |    3 +++
+ arch/powerpc/sysdev/qe_lib/qe.c  |   10 ++++++----
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
-index 791c67a..e8232bb 100644
---- a/arch/powerpc/include/asm/qe.h
-+++ b/arch/powerpc/include/asm/qe.h
-@@ -218,8 +218,15 @@ struct qe_firmware_info {
- 	u64 extended_modes;	/* Extended modes */
- };
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index e4b6d66..ddfca52 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -81,6 +81,9 @@ int __init cpm_muram_init(void)
+ 	int i = 0;
+ 	int ret = 0;
  
-+#ifdef CONFIG_QUICC_ENGINE
- /* Upload a firmware to the QE */
- int qe_upload_firmware(const struct qe_firmware *firmware);
-+#else
-+static inline int qe_upload_firmware(const struct qe_firmware *firmware)
-+{
-+	return -ENOSYS;
-+}
-+#endif /* CONFIG_QUICC_ENGINE */
++	if (muram_pbase)
++		return 0;
++
+ 	spin_lock_init(&cpm_muram_lock);
+ 	/* initialize the info header */
+ 	rh_init(&cpm_muram_info, 1,
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index b06564f..f485d5a 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -317,16 +317,18 @@ EXPORT_SYMBOL(qe_put_snum);
+ static int qe_sdma_init(void)
+ {
+ 	struct sdma __iomem *sdma = &qe_immr->sdma;
+-	unsigned long sdma_buf_offset;
++	static unsigned long sdma_buf_offset;
  
- /* Obtain information on the uploaded firmware */
- struct qe_firmware_info *qe_get_firmware_info(void);
+ 	if (!sdma)
+ 		return -ENODEV;
+ 
+ 	/* allocate 2 internal temporary buffers (512 bytes size each) for
+ 	 * the SDMA */
+- 	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
+-	if (IS_ERR_VALUE(sdma_buf_offset))
+-		return -ENOMEM;
++	if (!sdma_buf_offset) {
++		sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
++		if (IS_ERR_VALUE(sdma_buf_offset))
++			return -ENOMEM;
++	}
+ 
+ 	out_be32(&sdma->sdebcr, (u32) sdma_buf_offset & QE_SDEBCR_BA_MASK);
+  	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
 -- 
 1.6.3.3
