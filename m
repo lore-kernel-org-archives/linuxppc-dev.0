@@ -1,28 +1,33 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 06972B7257
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CAAE2B7257
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 10:04:59 +1000 (EST)
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E745DDDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 10:04:58 +1000 (EST)
-Date: Thu, 27 Aug 2009 10:04:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: michael@ellerman.id.au
-Subject: Re: PPC driver - generic bus width
-Message-Id: <20090827100452.b872c7fd.sfr@canb.auug.org.au>
-In-Reply-To: <1251296565.7492.7.camel@concordia>
-References: <d970ff420908260625q2d34bc10p62241218f022b5c2@mail.gmail.com>
-	<1251296565.7492.7.camel@concordia>
+	Thu, 27 Aug 2009 10:24:59 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BBF1FDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 10:24:59 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Change archdata dma_data type to dma_addr_t
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+In-Reply-To: <E3F20841-FB04-44EF-8DAA-91F51873C0A6@kernel.crashing.org>
+References: <1251130634-15093-1-git-send-email-beckyb@kernel.crashing.org>
+	<20090824194800.GA13503@lst.de>  <1251289790.1379.71.camel@pasglop>
+	<1251295725.7492.5.camel@concordia>
+	<E3F20841-FB04-44EF-8DAA-91F51873C0A6@kernel.crashing.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-DOI+CM+oRK0oRDsMjON8"
+Date: Thu, 27 Aug 2009 10:24:56 +1000
+Message-Id: <1251332696.5914.6.camel@concordia>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__27_Aug_2009_10_04_52_+1000_Nxqm+2Yz+bwuMFrG"
-Cc: linuxppc-dev@ozlabs.org, Alemao <xcarandiru@gmail.com>,
-	linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@lst.de>, linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +37,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__27_Aug_2009_10_04_52_+1000_Nxqm+2Yz+bwuMFrG
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-DOI+CM+oRK0oRDsMjON8
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 27 Aug 2009 00:22:45 +1000 Michael Ellerman <michael@ellerman.id.au=
-> wrote:
->
-> > struct device_info_t {
-> > 	void (*read)();
-> > 	void (*write)();
+On Wed, 2009-08-26 at 15:20 -0500, Becky Bruce wrote:
+> On Aug 26, 2009, at 9:08 AM, Michael Ellerman wrote:
+>=20
+> > On Wed, 2009-08-26 at 22:29 +1000, Benjamin Herrenschmidt wrote:
+> >> On Mon, 2009-08-24 at 21:48 +0200, Christoph Hellwig wrote:
+> >>> On Mon, Aug 24, 2009 at 11:17:14AM -0500, Becky Bruce wrote:
+> >>>> Previously, this was specified as a void *, but that's not
+> >>>> large enough on 32-bit systems with 36-bit physical
+> >>>> addressing support.  Change the type to dma_addr_t so it
+> >>>> will scale based on the size of a dma address.
+> >>>
+> >>> This looks extreml ugly to me.  It seems like the typical use is to
+> >>> store a pointer to a structure.  So what about making the direct
+> >>> dma case follow that general scheme instead?
+> >>>
+> >>> E.g. declare a
+> >>>
+> >>> struct direct_dma_data {
+> >>> 	dma_addr_t	direct_dma_offset;
+> >>> };
+> >>>
+> >>> and have one normal instace of it, and one per weird cell device.
+> >>
+> >> Right, but we want to avoid a structure for the classic case of 32-=20
+> >> bit
+> >> systems with no iommu...
+> >>
+> >> I wouldn't mind doing a union here.
+> >
+> > That might be best, the patch as it stands is a horrible mess of =20
+> > casts.
+>=20
+> Let's be fair - the code before was a horrible mess of casts, I've =20
+> just moved them :)
 
-These are not prototypes because there is no parameter list (use "void" for=
- empty).
+Yeah true. Though I think we end up with more casts because there were
+more call sites using it as a pointer originally. But yeah it's not
+pretty either way.
 
-> > };
-> >=20
-> > static int __devinit device_probe()
+> > Stashing a dma_addr_t into a void * is sort of gross, but storing a
+> > pointer to some struct (a void *) in a dma_addr_t is _really_ gross :)
+>=20
+> Both are revolting (and storing a dma_addr_t into a void * is really =20
+> gross when the void * is smaller than the dma_addr_t!!).  A union =20
+> might not be a bad idea, though.  I'll look at doing that instead.
 
-This isn't a prototype either.
+Cool. That is how we're using it, sometimes it points to something
+sometimes it's a dma_addr_t, so I think a union will work.
 
-> > cc1: warnings being treated as errors
-> > drivers/dev_test.c:37: warning: function declaration isn't a prototype
-> > drivers/dev_test.c:38: warning: function declaration isn't a prototype
-> > drivers/dev_test.c: In function 'device_probe':
-> > drivers/dev_test.c:113: warning: assignment from incompatible pointer
-> > type
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+cheers
 
---Signature=_Thu__27_Aug_2009_10_04_52_+1000_Nxqm+2Yz+bwuMFrG
-Content-Type: application/pgp-signature
+--=-DOI+CM+oRK0oRDsMjON8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkqVzaQACgkQjjKRsyhoI8yRfQCgvq09fSY3N41YiJ9Vm0xACqnL
-5bkAni6e6kP69a50HmamFzaEF0+OCfWQ
-=saha
+iEYEABECAAYFAkqV0lUACgkQdSjSd0sB4dL+KwCgpNJi6r6FtwHYDWi0HRvWpCDQ
+1A0AoMpZnccRrTAn53InO4r2OYksVJmZ
+=Q1wz
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__27_Aug_2009_10_04_52_+1000_Nxqm+2Yz+bwuMFrG--
+--=-DOI+CM+oRK0oRDsMjON8--
