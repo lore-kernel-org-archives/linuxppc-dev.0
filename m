@@ -1,18 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 31B71B7099
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A69D1B7B81
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 17:10:29 +1000 (EST)
-Date: Thu, 27 Aug 2009 17:10:16 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: ppc64 allnoconfig build warning
-Message-Id: <20090827171016.dbdefaf9.sfr@canb.auug.org.au>
+	Thu, 27 Aug 2009 17:21:25 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 04C0DDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 17:21:24 +1000 (EST)
+Subject: [PATCH] lmb: Remove __init from lmb_end_of_DRAM()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 27 Aug 2009 17:20:30 +1000
+Message-Id: <1251357630.20467.42.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__27_Aug_2009_17_10_16_+1000_uVjxyMIz0YkE4aC."
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,35 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__27_Aug_2009_17_10_16_+1000_uVjxyMIz0YkE4aC.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+We call lmb_end_of_DRAM() to test whether a DMA mask
+is ok on a machine without IOMMU, but this function is
+marked as __init.
 
-Hi Ben,
+I don't think there's a clean way to get the top of RAM
+max_pfn doesn't appear to include highmem or I missed
+(or we have a bug :-) so for now, let's just avoid having
+a broken 2.6.31 by making this function non-__init and we
+can revisit later.
 
-WARNING: vmlinux.o(.text+0x1d864): Section mismatch in reference from the f=
-unction .dma_direct_dma_supported() to the function .init.text:.lmb_end_of_=
-DRAM()
-The function .dma_direct_dma_supported() references
-the function __init .lmb_end_of_DRAM().
-This is often because .dma_direct_dma_supported lacks a __init=20
-annotation or the annotation of .lmb_end_of_DRAM is wrong.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+David, you use lmb too, any objection there ?
 
---Signature=_Thu__27_Aug_2009_17_10_16_+1000_uVjxyMIz0YkE4aC.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqWMVgACgkQjjKRsyhoI8ypGwCgulcj4mamdgIqzNM2bUjdpAzF
-4aUAoKhZP5Kf1I3NyE/vEH3euUUvyY9g
-=ygRF
------END PGP SIGNATURE-----
-
---Signature=_Thu__27_Aug_2009_17_10_16_+1000_uVjxyMIz0YkE4aC.--
+diff --git a/lib/lmb.c b/lib/lmb.c
+index e4a6482..0343c05 100644
+--- a/lib/lmb.c
++++ b/lib/lmb.c
+@@ -429,7 +429,7 @@ u64 __init lmb_phys_mem_size(void)
+ 	return lmb.memory.size;
+ }
+ 
+-u64 __init lmb_end_of_DRAM(void)
++u64 lmb_end_of_DRAM(void)
+ {
+ 	int idx = lmb.memory.cnt - 1;
+ 
