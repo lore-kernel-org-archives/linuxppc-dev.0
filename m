@@ -1,41 +1,40 @@
-Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1CED3B7BC7
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 20A65B7B8A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 21:57:39 +1000 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id n7RBvR05014761
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 17:27:27 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7RBvQvB1552524
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 17:27:26 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n7RBvPR6013039
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 21:57:26 +1000
-Date: Thu, 27 Aug 2009 17:27:23 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Joel Schopp <jschopp@austin.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-	Dipankar Sarma <dipankar@in.ibm.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Gautham R Shenoy <ego@in.ibm.com>,
-	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-	Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [PATCH 4/4]: CPUIDLE/POWER: Implement Pseries Processor Idle module
-Message-ID: <20090827115723.GE24986@linux.vnet.ibm.com>
-References: <20090827114908.GA24986@linux.vnet.ibm.com>
+	Thu, 27 Aug 2009 22:09:01 +1000 (EST)
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9B69DDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 22:09:00 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7RC7wZW012132
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 06:07:58 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7RC8n4Y252694
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 06:08:49 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n7RC8mc4032457
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 06:08:49 -0600
+Date: Thu, 27 Aug 2009 08:08:41 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Wim Van Sebroeck <wim@iguana.be>
+Subject: Re: [PATCH] fix book E watchdog to take WDIOC_SETTIMEOUT arg in
+	seconds
+Message-ID: <20090827120841.GA25303@zod.rchland.ibm.com>
+References: <4A8303C6.7070705@nortel.com>
+	<20090827111458.GB29382@infomag.iguana.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20090827114908.GA24986@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: arun@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090827111458.GB29382@infomag.iguana.be>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,255 +44,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-08-27 17:19:08]:
+On Thu, Aug 27, 2009 at 01:14:58PM +0200, Wim Van Sebroeck wrote:
+>Hi Chris,
+>
+>> The WDIOC_SETTIMEOUT argument is supposed to be a "seconds" value.
+>> However, the book E wdt currently treats it as a "period" which is
+>> interpreted in a board-specific way.
+>> 
+>> This patch allows the user to pass in a "seconds" value and the driver
+>> will set the smallest timeout that is at least as large as specified
+>> by the user.  It's been tested on e500 hardware and works as
+>> expected.
+>> 
+>> The patch only modifies the CONFIG_FSL_BOOKE case, the CONFIG_4xx case
+>> is left unmodified as I don't have any hardware to test it on.
+>> 
+>> Signed-off-by: Chris Friesen <cfriesen@nortel.com>
+>
+>Added with some small changes to keep checkpatch happy. (removed trailing spaces + changed sizeof(struct watchdog_info) to sizeof(ident) and changed some spaces in tabs).
+>
+>Now we only need someone that can look at the CONFIG_4xx cases still :-)
 
-This patch creates arch/powerpc/platforms/pseries/processor_idle.c,
-which implements the cpuidle infrastructure for pseries.
-It implements a pseries_cpuidle_loop() which would be the main idle loop
-called from cpu_idle(). It makes decision of entering either snooze or nap
-state based on the decision taken by the cpuidle governor.
+It seems the FSL watchdog is much more flexible than the one found in 4xx
+cores.  On 4xx, you basically have 4 static choices that represent specific
+times determined by the clock frequency.  I'm concerned that the lack of
+granularity here will result in less than desirable behavior.
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/processor_idle.c |  178 ++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/pseries.h        |   14 +
- arch/powerpc/platforms/pseries/setup.c          |    3 
- 4 files changed, 193 insertions(+), 3 deletions(-)
+For example, with a 400MHz clock you would get choices of roughly:
 
-Index: linux.trees.git/arch/powerpc/platforms/pseries/Makefile
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/Makefile
-+++ linux.trees.git/arch/powerpc/platforms/pseries/Makefile
-@@ -26,3 +26,4 @@ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst
- obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
- obj-$(CONFIG_CMM)		+= cmm.o
- obj-$(CONFIG_DTL)		+= dtl.o
-+obj-$(CONFIG_PSERIES_PROCESSOR_IDLE)	+= processor_idle.o
-Index: linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/pseries.h
-+++ linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
-@@ -10,6 +10,8 @@
- #ifndef _PSERIES_PSERIES_H
- #define _PSERIES_PSERIES_H
- 
-+#include <linux/cpuidle.h>
-+
- extern void __init fw_feature_init(const char *hypertas, unsigned long len);
- 
- struct pt_regs;
-@@ -40,4 +42,16 @@ extern unsigned long rtas_poweron_auto;
- 
- extern void find_udbg_vterm(void);
- 
-+DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
-+
-+#ifdef CONFIG_PSERIES_PROCESSOR_IDLE
-+struct pseries_processor_power {
-+	struct cpuidle_device dev;
-+	int count;
-+	int id;
-+};
-+
-+extern struct cpuidle_driver pseries_idle_driver;
-+#endif
-+
- #endif /* _PSERIES_PSERIES_H */
-Index: linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
-===================================================================
---- /dev/null
-+++ linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -0,0 +1,178 @@
-+/*
-+ *  processor_idle - idle state cpuidle driver.
-+ *  Adapted from drivers/acpi/processor_idle.c
-+ *
-+ *  Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-+ *
-+ *  Copyright (C) 2009 IBM Corporation.
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or (at
-+ *  your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/moduleparam.h>
-+#include <linux/cpuidle.h>
-+
-+#include <asm/paca.h>
-+#include <asm/reg.h>
-+#include <asm/machdep.h>
-+
-+#include "plpar_wrappers.h"
-+#include "pseries.h"
-+
-+MODULE_AUTHOR("Arun R Bharadwaj");
-+MODULE_DESCRIPTION("pSeries Idle State Driver");
-+MODULE_LICENSE("GPL");
-+
-+struct cpuidle_driver pseries_idle_driver = {
-+	.name =		"pseries_idle",
-+	.owner =	THIS_MODULE,
-+};
-+
-+DEFINE_PER_CPU(struct pseries_processor_power, power);
-+
-+#define IDLE_STATE_COUNT	2
-+
-+static int pseries_idle_init(struct pseries_processor_power *power)
-+{
-+	return cpuidle_register_device(&power->dev);
-+}
-+
-+static void snooze(void)
-+{
-+	local_irq_enable();
-+	set_thread_flag(TIF_POLLING_NRFLAG);
-+	while (!need_resched()) {
-+		ppc64_runlatch_off();
-+		HMT_low();
-+		HMT_very_low();
-+	}
-+	HMT_medium();
-+	clear_thread_flag(TIF_POLLING_NRFLAG);
-+	smp_mb();
-+	local_irq_disable();
-+}
-+
-+static void nap(void)
-+{
-+	ppc64_runlatch_off();
-+	HMT_medium();
-+	cede_processor();
-+}
-+
-+static int pseries_cpuidle_loop(struct cpuidle_device *dev,
-+				struct cpuidle_state *st)
-+{
-+	ktime_t t1, t2;
-+	s64 diff;
-+	int ret;
-+	unsigned long in_purr, out_purr;
-+
-+	get_lppaca()->idle = 1;
-+	get_lppaca()->donate_dedicated_cpu = 1;
-+	in_purr = mfspr(SPRN_PURR);
-+
-+	t1 = ktime_get();
-+
-+	if (strcmp(st->desc, "snooze") == 0)
-+		snooze();
-+	else
-+		nap();
-+
-+	t2 = ktime_get();
-+	diff = ktime_to_us(ktime_sub(t2, t1));
-+	if (diff > INT_MAX)
-+		diff = INT_MAX;
-+
-+	ret = (int) diff;
-+
-+	out_purr = mfspr(SPRN_PURR);
-+	get_lppaca()->wait_state_cycles += out_purr - in_purr;
-+	get_lppaca()->donate_dedicated_cpu = 0;
-+	get_lppaca()->idle = 0;
-+
-+	return ret;
-+}
-+
-+static int pseries_setup_cpuidle(struct pseries_processor_power *power)
-+{
-+	int i;
-+	struct cpuidle_state *state;
-+	struct cpuidle_device *dev = &power->dev;
-+
-+	dev->cpu = power->id;
-+
-+	dev->enabled = 0;
-+	for (i = 0; i < IDLE_STATE_COUNT; i++) {
-+		state = &dev->states[i];
-+
-+		snprintf(state->name, CPUIDLE_NAME_LEN, "IDLE%d", i);
-+		state->enter = pseries_cpuidle_loop;
-+
-+		switch (i) {
-+		case 0:
-+			strncpy(state->desc, "snooze", CPUIDLE_DESC_LEN);
-+			state->exit_latency = 0;
-+			state->target_residency = 0;
-+			break;
-+
-+		case 1:
-+			strncpy(state->desc, "nap", CPUIDLE_DESC_LEN);
-+			state->exit_latency = 1;
-+			state->target_residency =
-+					__get_cpu_var(smt_snooze_delay);
-+			break;
-+		}
-+	}
-+
-+	power->dev.state_count = i;
-+	return 0;
-+}
-+
-+static int pseries_get_power_info(struct pseries_processor_power *power,
-+				int cpu)
-+{
-+	power->id = cpu;
-+	power->count = IDLE_STATE_COUNT;
-+	return 0;
-+}
-+
-+static int __init pseries_processor_idle_init(void)
-+{
-+	int cpu;
-+	int result = cpuidle_register_driver(&pseries_idle_driver);
-+
-+	if (result < 0)
-+		return result;
-+
-+	printk(KERN_DEBUG "pSeries idle driver registered\n");
-+
-+	for_each_online_cpu(cpu) {
-+		pseries_get_power_info(&per_cpu(power, cpu), cpu);
-+		pseries_setup_cpuidle(&per_cpu(power, cpu));
-+		pseries_idle_init(&per_cpu(power, cpu));
-+	}
-+
-+	printk(KERN_DEBUG "Using cpuidle idle loop\n");
-+	ppc_md.power_save = cpuidle_pm_idle;
-+	return 0;
-+}
-+
-+late_initcall(pseries_processor_idle_init);
-Index: linux.trees.git/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/setup.c
-+++ linux.trees.git/arch/powerpc/platforms/pseries/setup.c
-@@ -500,9 +500,6 @@ static int __init pSeries_probe(void)
- 	return 1;
- }
- 
--
--DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
--
- static void pseries_dedicated_idle_sleep(void)
- { 
- 	unsigned int cpu = smp_processor_id();
+5.2 ms
+83.9 ms
+1.34 s
+21.47 s
+
+Personally, I consider the first two options basically unusable.  Considering
+the second two, if a user were to say "Set the timeout for 2 seconds" they
+would then get a timeout of 21 seconds with the framework Chris' patch has
+set up.  That doesn't really seem to be ideal to me.
+
+josh
