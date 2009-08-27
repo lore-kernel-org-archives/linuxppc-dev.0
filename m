@@ -1,30 +1,24 @@
-Return-Path: <amit.shah@redhat.com>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 32751B6F31
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 23F10B7BA3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 16:53:21 +1000 (EST)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 397BEDDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 16:53:20 +1000 (EST)
-Date: Thu, 27 Aug 2009 12:22:51 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: Extending virtio_console to support multiple ports
-Message-ID: <20090827065251.GB3218@amit-x200.redhat.com>
-References: <1251181044-3696-1-git-send-email-amit.shah@redhat.com>
-	<20090826112718.GA11117@amit-x200.redhat.com>
-	<20090826154552.GA31910@amit-x200.redhat.com>
-	<1251349485.6267.6.camel@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1251349485.6267.6.camel@concordia>
-Cc: kvm@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	miltonm@bga.com, qemu-devel@nongnu.org, borntraeger@de.ibm.com,
-	brueckner@linux.vnet.ibm.com,
-	virtualization@lists.linux-foundation.org, alan@linux.intel.com
+	Thu, 27 Aug 2009 17:01:07 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 73BD4DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 17:01:05 +1000 (EST)
+Subject: [PATCH] powerpc: Properly start decrementer on BookE secondary CPUs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Thu, 27 Aug 2009 17:00:55 +1000
+Message-Id: <1251356455.20467.40.camel@pasglop>
+Mime-Version: 1.0
+Cc: Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,53 +28,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (Thu) Aug 27 2009 [15:04:45], Michael Ellerman wrote:
-> On Wed, 2009-08-26 at 21:15 +0530, Amit Shah wrote:
-> > [cc'ing some people who have made some commits in hvc_console.c]
-> > 
-> > On (Wed) Aug 26 2009 [16:57:18], Amit Shah wrote:
-> > > On (Tue) Aug 25 2009 [11:47:20], Amit Shah wrote:
-> > > > 
-> > > > Hello all,
-> > > > 
-> > > > Here is a new iteration of the patch series that implements a
-> > > > transport for guest and host communications.
-> > > > 
-> > > > The code has been updated to reuse the virtio-console device instead
-> > > > of creating a new virtio-serial device.
-> > > 
-> > > And the problem now is that hvc calls the put_chars function with
-> > > spinlocks held and we now allocate pages in send_buf(), called from
-> > > put_chars.
-> > > 
-> > > A few solutions:
-> > 
-> > [snip]
-> > 
-> > > - Convert hvc's usage of spinlocks to mutexes. I've no idea how this
-> > >   will play out; I'm no expert here. But I did try doing this and so far
-> > >   it all looks OK. No lockups, lockdep warnings, nothing. I have full
-> > >   debugging enabled. But this doesn't mean it's right.
-> > 
-> > So just to test this further I added the capability to have more than
-> > one hvc console spawn from virtio_console, created two consoles and did
-> > a 'cat' of a file in each of the virtio-consoles. It's been running for
-> > half an hour now without any badness. No spew in debug logs too.
-> > 
-> > I also checked the code in hvc_console.c that takes the spin_locks.
-> > Nothing there that runs from (or needs to run from) interrupt context.
-> > So the change to mutexes does seem reasonable. Also, the spinlock code
-> > was added really long back -- git blame shows Linus' first git commit
-> > introduced them in the git history, so it's pure legacy baggage.
-> 
-> I won't tell Ryan you called his code "pure legacy baggage" if you
-> don't ;)
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commitdiff;h=d450b4ae023fb4be175389c18f4f87677da03020
+This moves the code to start the decrementer on 40x and BookE into
+a separate function which is now called from time_init() and
+secondary_time_init(), before the respective clock sources are
+registered. We also remove the 85xx specific code for doing it
+from the platform code.
 
-Thanks for the link!
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/time.c        |   30 ++++++++++++++++++++++--------
+ arch/powerpc/platforms/85xx/smp.c |   12 ------------
+ 2 files changed, 22 insertions(+), 20 deletions(-)
 
-(and this general area might be the one that doesn't get major upheavals
-in 5-yr spans :-)
-
-		Amit
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index edb1edb..e9404b6 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -727,6 +727,18 @@ static int __init get_freq(char *name, int cells, unsigned long *val)
+ 	return found;
+ }
+ 
++/* should become __cpuinit when start_secondary also is */
++void __devinit start_cpu_decrementer(void)
++{
++#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
++	/* Clear any pending timer interrupts */
++	mtspr(SPRN_TSR, TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS);
++
++	/* Enable decrementer interrupt */
++	mtspr(SPRN_TCR, TCR_DIE);
++#endif /* defined(CONFIG_BOOKE) || defined(CONFIG_40x) */
++}
++
+ void __init generic_calibrate_decr(void)
+ {
+ 	ppc_tb_freq = DEFAULT_TB_FREQ;		/* hardcoded default */
+@@ -746,14 +758,6 @@ void __init generic_calibrate_decr(void)
+ 		printk(KERN_ERR "WARNING: Estimating processor frequency "
+ 				"(not found)\n");
+ 	}
+-
+-#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
+-	/* Clear any pending timer interrupts */
+-	mtspr(SPRN_TSR, TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS);
+-
+-	/* Enable decrementer interrupt */
+-	mtspr(SPRN_TCR, TCR_DIE);
+-#endif
+ }
+ 
+ int update_persistent_clock(struct timespec now)
+@@ -914,6 +918,11 @@ static void __init init_decrementer_clockevent(void)
+ 
+ void secondary_cpu_time_init(void)
+ {
++	/* Start the decrementer on CPUs that have manual control
++	 * such as BookE
++	 */
++	start_cpu_decrementer();
++
+ 	/* FIME: Should make unrelatred change to move snapshot_timebase
+ 	 * call here ! */
+ 	register_decrementer_clockevent(smp_processor_id());
+@@ -1017,6 +1026,11 @@ void __init time_init(void)
+ 
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ 
++	/* Start the decrementer on CPUs that have manual control
++	 * such as BookE
++	 */
++	start_cpu_decrementer();
++
+ 	/* Register the clocksource, if we're not running on iSeries */
+ 	if (!firmware_has_feature(FW_FEATURE_ISERIES))
+ 		clocksource_init();
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 9f526ba..94f901d 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -79,21 +79,9 @@ smp_85xx_kick_cpu(int nr)
+ }
+ 
+ static void __init
+-smp_85xx_basic_setup(int cpu_nr)
+-{
+-	/* Clear any pending timer interrupts */
+-	mtspr(SPRN_TSR, TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS);
+-
+-	/* Enable decrementer interrupt */
+-	mtspr(SPRN_TCR, TCR_DIE);
+-}
+-
+-static void __init
+ smp_85xx_setup_cpu(int cpu_nr)
+ {
+ 	mpic_setup_this_cpu();
+-
+-	smp_85xx_basic_setup(cpu_nr);
+ }
+ 
+ struct smp_ops_t smp_85xx_ops = {
+-- 
+1.6.1.2.14.gf26b5
