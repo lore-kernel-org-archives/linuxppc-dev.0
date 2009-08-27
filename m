@@ -1,23 +1,30 @@
-Return-Path: <wilbur512@gmail.com>
+Return-Path: <scottwood@freescale.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7286AB7B9F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 89E63B7BA3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 01:56:49 +1000 (EST)
-Received: from mail-yw0-f171.google.com (mail-yw0-f171.google.com
-	[209.85.211.171]) by ozlabs.org (Postfix) with ESMTP id C7270DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 01:56:48 +1000 (EST)
-Received: by ywh1 with SMTP id 1so1557576ywh.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 08:56:45 -0700 (PDT)
+	Fri, 28 Aug 2009 01:58:50 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C4116DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 01:58:48 +1000 (EST)
+Message-ID: <4A96AD4B.1010204@freescale.com>
+Date: Thu, 27 Aug 2009 10:59:07 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Date: Thu, 27 Aug 2009 23:56:44 +0800
-Message-ID: <e997b7420908270856p6e729d44w4535d8bf6b2ac02a@mail.gmail.com>
-Subject: Does kexec support SMP on powerpc? E500 V2
-From: "wilbur.chan" <wilbur512@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: "wilbur.chan" <wilbur512@gmail.com>
+Subject: Re: Can't write value into memory ?(E500 V2)
+References: <e997b7420908260739u49fb4b36j9eb148782829547b@mail.gmail.com>	
+	<20090826192030.GA17027@b07421-ec1.am.freescale.net>
+	<e997b7420908270853i7d4058e1p8ddcfcf8df18486e@mail.gmail.com>
+In-Reply-To: <e997b7420908270853i7d4058e1p8ddcfcf8df18486e@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There was a patch of kexec on SMP mips 64 , and I attempt to implement
-kexec on SMP powerpc .
+wilbur.chan wrote:
+> I am using a SMP E500 v2, and I want CPU0 to write some value to a 
+> physical address, and  wait for CPU1 to read from it.
 
-I found that ,  it was a little different with  mips when booting a
-kernel. We know  that, every CPU jumped directly into kernel on
+Is this under Linux (it is a Linux mailing list...)?  If so, there are 
+better ways of communicating that don't involve clobbering random memory 
+and overlapping userspace TLB mappings.
 
-mips, but on powerpc , E500 SMP,  the 'master' CPU was in charge of
-'slave'  CPUs , so 'slave' CPU  could do nothing
+> However, it seemed failed to communicate between CPUs by DRAM..  CPU1 
+> can not read
+>  
+> the correct value from the address where CPU1 wrote to.
 
-but to  wait for 'master'  to wake him up in Init function.
+Do both cores have a mapping with the M bit (memory coherence required) set?
 
-
-How to implement kexec on SMP powerpc?
-
-
-Any suggestions would be appreciate
-
-regards,
+-Scott
