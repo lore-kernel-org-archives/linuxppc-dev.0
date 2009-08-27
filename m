@@ -1,22 +1,22 @@
 Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [59.145.155.3])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B982FB7BB1
+	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0F8A9B7B85
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 21:54:06 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp01.au.ibm.com (8.14.3/8.13.1) with ESMTP id n7RBqqux011168
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 21:52:52 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7RBs4AY1335342
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 21:54:04 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n7RBs3L5032611
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 21:54:04 +1000
-Date: Thu, 27 Aug 2009 17:23:54 +0530
+	Thu, 27 Aug 2009 21:55:55 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp03.in.ibm.com (8.14.3/8.13.1) with ESMTP id n7RBtdmb000665
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 17:25:39 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7RBtdru2474154
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 17:25:39 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n7RBtc3D009410
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 21:55:39 +1000
+Date: Thu, 27 Aug 2009 17:25:36 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: Joel Schopp <jschopp@austin.ibm.com>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -28,9 +28,9 @@ To: Joel Schopp <jschopp@austin.ibm.com>,
 	Gautham R Shenoy <ego@in.ibm.com>,
 	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
 	Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
-	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
-Message-ID: <20090827115354.GC24986@linux.vnet.ibm.com>
+Subject: [PATCH 3/4]: ACPI/ARM: Register for cpuidle_pm_idle in
+	drivers/acpi/processor_idle.c and arch/arm/mach-kirkwood/cpuidle.c
+Message-ID: <20090827115536.GD24986@linux.vnet.ibm.com>
 References: <20090827114908.GA24986@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
@@ -48,78 +48,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-08-27 17:19:08]:
 
-Cpuidle infrastructure assumes pm_idle as the default idle routine.
-But, ppc_md.power_save is the default idle callback in case of pSeries.
+Set the idle routine to cpuidle_pm_idle after registering cpuidle
+devices. Earlier pm_idle was assumed as the defualt idle loop by
+cpuidle infrastructure. This is changed to an architecture independent
+cpuidle_pm_idle.
 
-So, create a more generic, architecture independent cpuidle_pm_idle
-function pointer in driver/cpuidle/cpuidle.c and allow the idle routines
-of architectures to be set to cpuidle_pm_idle.
+There are 2 instances which are using cpuidle infrastructure currently.
+This patch makes the change in both the places.
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- drivers/cpuidle/cpuidle.c |   12 +++++++-----
- include/linux/cpuidle.h   |    7 +++++++
- 2 files changed, 14 insertions(+), 5 deletions(-)
+ arch/arm/mach-kirkwood/cpuidle.c |    6 ++++++
+ drivers/acpi/processor_idle.c    |    5 +++++
+ 2 files changed, 11 insertions(+)
 
-Index: linux.trees.git/drivers/cpuidle/cpuidle.c
+Index: linux.trees.git/arch/arm/mach-kirkwood/cpuidle.c
 ===================================================================
---- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
-+++ linux.trees.git/drivers/cpuidle/cpuidle.c
-@@ -25,6 +25,7 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
- DEFINE_MUTEX(cpuidle_lock);
- LIST_HEAD(cpuidle_detected_devices);
- static void (*pm_idle_old)(void);
-+void (*cpuidle_pm_idle)(void);
- 
- static int enabled_devices;
- 
-@@ -98,10 +99,10 @@ static void cpuidle_idle_call(void)
-  */
- void cpuidle_install_idle_handler(void)
- {
--	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
-+	if (enabled_devices && (cpuidle_pm_idle != cpuidle_idle_call)) {
- 		/* Make sure all changes finished before we switch to new idle */
- 		smp_wmb();
--		pm_idle = cpuidle_idle_call;
-+		cpuidle_pm_idle = cpuidle_idle_call;
+--- linux.trees.git.orig/arch/arm/mach-kirkwood/cpuidle.c
++++ linux.trees.git/arch/arm/mach-kirkwood/cpuidle.c
+@@ -90,6 +90,12 @@ static int kirkwood_init_cpuidle(void)
+ 		printk(KERN_ERR "kirkwood_init_cpuidle: Failed registering\n");
+ 		return -EIO;
  	}
++
++	if (pm_idle != cpuidle_pm_idle) {
++		printk(KERN_INFO "using cpuidle idle loop\n");
++		pm_idle = cpuidle_pm_idle;
++	}
++
+ 	return 0;
  }
  
-@@ -110,8 +111,9 @@ void cpuidle_install_idle_handler(void)
-  */
- void cpuidle_uninstall_idle_handler(void)
- {
--	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
--		pm_idle = pm_idle_old;
-+	if (enabled_devices && pm_idle_old &&
-+			(cpuidle_pm_idle != pm_idle_old)) {
-+		cpuidle_pm_idle = pm_idle_old;
- 		cpuidle_kick_cpus();
- 	}
- }
-@@ -382,7 +384,7 @@ static int __init cpuidle_init(void)
- {
- 	int ret;
- 
--	pm_idle_old = pm_idle;
-+	pm_idle_old = cpuidle_pm_idle;
- 
- 	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
- 	if (ret)
-Index: linux.trees.git/include/linux/cpuidle.h
+Index: linux.trees.git/drivers/acpi/processor_idle.c
 ===================================================================
---- linux.trees.git.orig/include/linux/cpuidle.h
-+++ linux.trees.git/include/linux/cpuidle.h
-@@ -188,4 +188,11 @@ static inline void cpuidle_unregister_go
- #define CPUIDLE_DRIVER_STATE_START	0
- #endif
+--- linux.trees.git.orig/drivers/acpi/processor_idle.c
++++ linux.trees.git/drivers/acpi/processor_idle.c
+@@ -1216,6 +1216,11 @@ int __cpuinit acpi_processor_power_init(
+ 				printk(" C%d[C%d]", i,
+ 				       pr->power.states[i].type);
+ 		printk(")\n");
++
++		if (pm_idle != cpuidle_pm_idle) {
++			printk(KERN_INFO "using cpuidle idle loop\n");
++			pm_idle = cpuidle_pm_idle;
++		}
+ 	}
  
-+/*
-+ * Idle callback used by cpuidle to call the cpuidle_idle_call().
-+ * Platform drivers can use this to register to cpuidle's idle loop.
-+ */
-+
-+extern void (*cpuidle_pm_idle)(void);
-+
- #endif /* _LINUX_CPUIDLE_H */
+ 	/* 'power' [R] */
