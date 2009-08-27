@@ -1,52 +1,40 @@
-Return-Path: <brueckner@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <arun@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DEBF8B7B8E
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7EBCFB7B64
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 21:45:46 +1000 (EST)
-Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.17.163])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 126BDDDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 21:45:45 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate3.de.ibm.com (8.13.1/8.13.1) with ESMTP id n7RBjUba030573
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 11:45:30 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id n7RBjUIS2408478
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 13:45:30 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id n7RBjTsb014963
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 13:45:30 +0200
-Date: Thu, 27 Aug 2009 13:45:39 +0200
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] hvc_console: provide (un)locked version for hvc_resize()
-Message-ID: <20090827114538.GC5257@cetus.boeblingen.de.ibm.com>
-References: <1251181044-3696-1-git-send-email-amit.shah@redhat.com>
-	<20090826112718.GA11117@amit-x200.redhat.com>
-	<20090826154552.GA31910@amit-x200.redhat.com>
-	<1251346023.20467.21.camel@pasglop>
-	<20090827100809.5f0aa0a7@linux.intel.com>
-	<1251365243.20467.47.camel@pasglop>
+	Thu, 27 Aug 2009 21:49:38 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id n7RBnXZ0031691
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 21:49:33 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7RBnXvC1343542
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 21:49:33 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n7RBnWNR022791
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2009 21:49:33 +1000
+Date: Thu, 27 Aug 2009 17:19:08 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: oel Schopp <jschopp@austin.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+	Dipankar Sarma <dipankar@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Gautham R Shenoy <ego@in.ibm.com>,
+	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+	Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: [v3 PATCH 0/4]: CPUIDLE/POWER: Introducing cpuidle infrastructure
+	to POWER
+Message-ID: <20090827114908.GA24986@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1251365243.20467.47.camel@pasglop>
-Cc: Carsten Otte <cotte@de.ibm.com>, kvm@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	qemu-devel@nongnu.org, miltonm@bga.com,
-	virtualization@lists.linux-foundation.org,
-	borntraeger@de.ibm.com, brueckner@linux.vnet.ibm.com,
-	Amit Shah <amit.shah@redhat.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Alan Cox <alan@linux.intel.com>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,101 +44,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 27, 2009 at 07:27:23PM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2009-08-27 at 10:08 +0100, Alan Cox wrote:
-> So at this stage, I think the reasonably thing to do is to stick to the
-> spinlock, but we can try to make it a bit smarter, and we can definitely
-> attempt to fix the case Amit pointed out where we call resize without a
-> lock while it seems to expect it (though we also need to be careful
-> about re-entrancy I believe).
+Hi,
 
-I have worked on a patch for providing a locked hvc_resize() function.
-Since only two back-ends (virtio_console and hvc_iucv) use the function,
-I decided to update my hvc_iucv back-end through renaming the function
-call as follows:
 
-Rename the locking free hvc_resize() function to __hvc_resize() and
-provide an inline function that locks the hvc_struct and calls
-__hvc_resize().
+Changes from previous iteration:
+--------------------------------
 
-The rationale for this patch is that virtio_console calls the hvc_resize()
-function without locking the hvc_struct.
-According to naming rules, the unlocked version is renamed and
-prefixed with "__".
-References to unlocked function calls in hvc back-ends has been updated.
+* Remove the EXPORT_SYMBOL(pm_idle) from
+arch/powerpc/platform/pseries/processor_idle.c and introduce a
+generic cpuidle_pm_idle in cpuidle.c which was earlier assuming pm_idle
+to be the default idle routine. (As suggested by Peter and Ben).
 
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
----
- drivers/char/hvc_console.c |    6 +++---
- drivers/char/hvc_console.h |   12 +++++++++++-
- drivers/char/hvc_iucv.c    |    4 +++-
- 3 files changed, 17 insertions(+), 5 deletions(-)
+* Move the cpu_idle_wait function from arch/powerpc/platforms/pseries/setup.c
+to arch/powerpc/kernel/idle.c which would prevent breaking the build of
+other platforms. (As suggested by Ben).
+---------------------------------------
 
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -680,7 +680,7 @@ int hvc_poll(struct hvc_struct *hp)
- EXPORT_SYMBOL_GPL(hvc_poll);
- 
- /**
-- * hvc_resize() - Update terminal window size information.
-+ * __hvc_resize() - Update terminal window size information.
-  * @hp:		HVC console pointer
-  * @ws:		Terminal window size structure
-  *
-@@ -689,12 +689,12 @@ EXPORT_SYMBOL_GPL(hvc_poll);
-  *
-  * Locking:	Locking free; the function MUST be called holding hp->lock
-  */
--void hvc_resize(struct hvc_struct *hp, struct winsize ws)
-+void __hvc_resize(struct hvc_struct *hp, struct winsize ws)
- {
- 	hp->ws = ws;
- 	schedule_work(&hp->tty_resize);
- }
--EXPORT_SYMBOL_GPL(hvc_resize);
-+EXPORT_SYMBOL_GPL(__hvc_resize);
- 
- /*
-  * This kthread is either polling or interrupt driven.  This is determined by
---- a/drivers/char/hvc_console.h
-+++ b/drivers/char/hvc_console.h
-@@ -28,6 +28,7 @@
- #define HVC_CONSOLE_H
- #include <linux/kref.h>
- #include <linux/tty.h>
-+#include <linux/spinlock.h>
- 
- /*
-  * This is the max number of console adapters that can/will be found as
-@@ -88,7 +89,16 @@ int hvc_poll(struct hvc_struct *hp);
- void hvc_kick(void);
- 
- /* Resize hvc tty terminal window */
--extern void hvc_resize(struct hvc_struct *hp, struct winsize ws);
-+extern void __hvc_resize(struct hvc_struct *hp, struct winsize ws);
-+
-+static inline void hvc_resize(struct hvc_struct *hp, struct winsize ws)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&hp->lock, flags);
-+	__hvc_resize(hp, ws);
-+	spin_unlock_irqrestore(&hp->lock, flags);
-+}
- 
- /* default notifier for irq based notification */
- extern int notifier_add_irq(struct hvc_struct *hp, int data);
---- a/drivers/char/hvc_iucv.c
-+++ b/drivers/char/hvc_iucv.c
-@@ -273,7 +273,9 @@ static int hvc_iucv_write(struct hvc_iuc
- 	case MSG_TYPE_WINSIZE:
- 		if (rb->mbuf->datalen != sizeof(struct winsize))
- 			break;
--		hvc_resize(priv->hvc, *((struct winsize *) rb->mbuf->data));
-+		/* The caller must ensure that the hvc is locked, which
-+		 * is the case when called from hvc_iucv_get_chars() */
-+		__hvc_resize(priv->hvc, *((struct winsize *) rb->mbuf->data));
- 		break;
- 
- 	case MSG_TYPE_ERROR:	/* ignored ... */
+"Cpuidle" is a CPU Power Management infrastrusture which helps manage
+idle CPUs in a clean and efficient manner. The architecture can register
+its driver (in this case, pseries_idle driver) so that it subscribes for
+cpuidle feature. Cpuidle has a set of governors (ladder and menu),
+which will decide the best idle state to be chosen for the current situation,
+based on heuristics, and calculates the expected residency time
+for the current idle state. So based on this, the cpu is put into
+the right idle state.
+
+Currently, cpuidle infrasture is exploited by ACPI to choose between
+the available ACPI C-states. This patch-set is aimed at enabling
+cpuidle for powerpc and provides a sample implementation for pseries.
+
+Currently, in the pseries_dedicated_idle_sleep(), the processor would
+poll for a time period, which is called the snooze, and only then it
+is ceded, which would put the processor in nap state. Cpuidle aims at
+separating this into 2 different idle states. Based on the expected
+residency time predicted by the cpuidle governor, the idle state is
+chosen directly. So, choosing to enter the nap state directly based on
+the decision made by cpuidle would avoid unnecessary snoozing before
+entering nap.
+
+This patch-set tries to achieve the above objective by introducing a
+pseries processor idle driver called pseries_idle_driver in
+arch/powerpc/platform/pseries/processor_idle.c, which implements the
+idle loop which would replace the pseries_dedicated_idle_sleep()
+when cpuidle is enabled.
+
+Experiment conducted:
+----------------------
+
+The following experiment was conducted on a completely idle JS22 blade,
+to prove that using cpuidle infrastructure, the amount of nap time increases.
+
+Nap and snooze times were sampled for all the cpus.
+For a window of 1000 samples, When cpuidle was enabled,
+the total nap time was of the order of a few seconds (5-10s), whereas
+the total snooze time was of the order of a few milliseconds(10-30 ms).
+
+When cpuidle infrastructure was disabled and the regular
+pseries_dedicated_idle_sleep() idle loop was used, the snooze time itself
+was of the order of hundreds of milliseconds. (100 - 500 ms).
+This is clearly due to unnecessary snoozing before napping even on a
+completely idle system.
+
+
+The previous post in this area can be found at
+http://lkml.org/lkml/2009/8/26/233
+
+
+Patches included in this set:
+------------------------------
+
+PATCH 1/4 - Enable cpuidle for pSeries.
+PATCH 2/4 - Introduce architecture independent cpuidle_pm_idle in
+	    drivers/cpuidle/cpuidle.c
+PATCH 3/4 - Register for cpuidle_pm_idle in drivers/acpi/processor_idle.c
+	    and arch/arm/mach-kirkwood/cpuidle.c
+PATCH 4/4 - Implement Pseries Processor Idle idle module
+
+
+--arun
