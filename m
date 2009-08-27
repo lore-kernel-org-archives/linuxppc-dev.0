@@ -1,40 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 20A65B7B8A
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from viefep14-int.chello.at (viefep14-int.chello.at [62.179.121.34])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 717C8B7B69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 22:09:01 +1000 (EST)
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9B69DDDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 22:09:00 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7RC7wZW012132
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 06:07:58 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7RC8n4Y252694
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 06:08:49 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n7RC8mc4032457
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 06:08:49 -0600
-Date: Thu, 27 Aug 2009 08:08:41 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Wim Van Sebroeck <wim@iguana.be>
-Subject: Re: [PATCH] fix book E watchdog to take WDIOC_SETTIMEOUT arg in
-	seconds
-Message-ID: <20090827120841.GA25303@zod.rchland.ibm.com>
-References: <4A8303C6.7070705@nortel.com>
-	<20090827111458.GB29382@infomag.iguana.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090827111458.GB29382@infomag.iguana.be>
-Cc: Linux kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+	Thu, 27 Aug 2009 22:59:46 +1000 (EST)
+Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
+	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+In-Reply-To: <20090827115354.GC24986@linux.vnet.ibm.com>
+References: <20090827114908.GA24986@linux.vnet.ibm.com>
+	<20090827115354.GC24986@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 27 Aug 2009 14:53:27 +0200
+Message-Id: <1251377607.18584.96.camel@twins>
+Mime-Version: 1.0
+Cc: Gautham R Shenoy <ego@in.ibm.com>, "Pallipadi,
+	Venkatesh" <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,42 +28,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 27, 2009 at 01:14:58PM +0200, Wim Van Sebroeck wrote:
->Hi Chris,
->
->> The WDIOC_SETTIMEOUT argument is supposed to be a "seconds" value.
->> However, the book E wdt currently treats it as a "period" which is
->> interpreted in a board-specific way.
->> 
->> This patch allows the user to pass in a "seconds" value and the driver
->> will set the smallest timeout that is at least as large as specified
->> by the user.  It's been tested on e500 hardware and works as
->> expected.
->> 
->> The patch only modifies the CONFIG_FSL_BOOKE case, the CONFIG_4xx case
->> is left unmodified as I don't have any hardware to test it on.
->> 
->> Signed-off-by: Chris Friesen <cfriesen@nortel.com>
->
->Added with some small changes to keep checkpatch happy. (removed trailing spaces + changed sizeof(struct watchdog_info) to sizeof(ident) and changed some spaces in tabs).
->
->Now we only need someone that can look at the CONFIG_4xx cases still :-)
+On Thu, 2009-08-27 at 17:23 +0530, Arun R Bharadwaj wrote:
+> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-08-27 17:19:08]:
+> 
+> Cpuidle infrastructure assumes pm_idle as the default idle routine.
+> But, ppc_md.power_save is the default idle callback in case of pSeries.
+> 
+> So, create a more generic, architecture independent cpuidle_pm_idle
+> function pointer in driver/cpuidle/cpuidle.c and allow the idle routines
+> of architectures to be set to cpuidle_pm_idle.
+> 
+> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+> ---
+>  drivers/cpuidle/cpuidle.c |   12 +++++++-----
+>  include/linux/cpuidle.h   |    7 +++++++
+>  2 files changed, 14 insertions(+), 5 deletions(-)
+> 
+> Index: linux.trees.git/drivers/cpuidle/cpuidle.c
+> ===================================================================
+> --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
+> +++ linux.trees.git/drivers/cpuidle/cpuidle.c
+> @@ -25,6 +25,7 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
+>  DEFINE_MUTEX(cpuidle_lock);
+>  LIST_HEAD(cpuidle_detected_devices);
+>  static void (*pm_idle_old)(void);
+> +void (*cpuidle_pm_idle)(void);
+>  
+>  static int enabled_devices;
+>  
+> @@ -98,10 +99,10 @@ static void cpuidle_idle_call(void)
+>   */
+>  void cpuidle_install_idle_handler(void)
+>  {
+> -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
+> +	if (enabled_devices && (cpuidle_pm_idle != cpuidle_idle_call)) {
+>  		/* Make sure all changes finished before we switch to new idle */
+>  		smp_wmb();
+> -		pm_idle = cpuidle_idle_call;
+> +		cpuidle_pm_idle = cpuidle_idle_call;
+>  	}
+>  }
+>  
+> @@ -110,8 +111,9 @@ void cpuidle_install_idle_handler(void)
+>   */
+>  void cpuidle_uninstall_idle_handler(void)
+>  {
+> -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+> -		pm_idle = pm_idle_old;
+> +	if (enabled_devices && pm_idle_old &&
+> +			(cpuidle_pm_idle != pm_idle_old)) {
+> +		cpuidle_pm_idle = pm_idle_old;
+>  		cpuidle_kick_cpus();
+>  	}
+>  }
+> @@ -382,7 +384,7 @@ static int __init cpuidle_init(void)
+>  {
+>  	int ret;
+>  
+> -	pm_idle_old = pm_idle;
+> +	pm_idle_old = cpuidle_pm_idle;
+>  
+>  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+>  	if (ret)
+> Index: linux.trees.git/include/linux/cpuidle.h
+> ===================================================================
+> --- linux.trees.git.orig/include/linux/cpuidle.h
+> +++ linux.trees.git/include/linux/cpuidle.h
+> @@ -188,4 +188,11 @@ static inline void cpuidle_unregister_go
+>  #define CPUIDLE_DRIVER_STATE_START	0
+>  #endif
+>  
+> +/*
+> + * Idle callback used by cpuidle to call the cpuidle_idle_call().
+> + * Platform drivers can use this to register to cpuidle's idle loop.
+> + */
+> +
+> +extern void (*cpuidle_pm_idle)(void);
+> +
+>  #endif /* _LINUX_CPUIDLE_H */
 
-It seems the FSL watchdog is much more flexible than the one found in 4xx
-cores.  On 4xx, you basically have 4 static choices that represent specific
-times determined by the clock frequency.  I'm concerned that the lack of
-granularity here will result in less than desirable behavior.
 
-For example, with a 400MHz clock you would get choices of roughly:
+I'm not quite seeing how this makes anything any better. Not we have 3
+function pointers, where 1 should suffice.
 
-5.2 ms
-83.9 ms
-1.34 s
-21.47 s
+/me wonders what's wrong with something like:
 
-Personally, I consider the first two options basically unusable.  Considering
-the second two, if a user were to say "Set the timeout for 2 seconds" they
-would then get a timeout of 21 seconds with the framework Chris' patch has
-set up.  That doesn't really seem to be ideal to me.
+struct idle_func_desc {
+	int		 power;
+	int		 latency;
+	void		 (*idle)(void);
+	struct list_head list;
+};
 
-josh
+static void spin_idle(void)
+{
+	for (;;)
+		cpu_relax();
+}
+
+static idle_func_desc default_idle_func = {
+	power = 0, 	   /* doesn't safe any power */
+	latency = INT_MAX, /* has max latency */
+	idle = spin_idle,
+	list = INIT_LIST_HEAD(default_idle_func.list),
+};
+
+void (*idle_func)(void);
+static struct list_head idle_func_list;
+
+static void pick_idle_func(void)
+{
+	struct idle_func_desc *desc, *idle = &default_idle_desc;
+
+	list_for_each_entry(desc, &idle_func_list, list) {
+		if (desc->power < idle->power)
+			continue;
+		if (desc->latency > target_latency);
+			continue;
+		idle = desc;
+	}
+
+	pm_idle = idle->idle;
+}
+
+void register_idle_func(struct idle_func_desc *desc)
+{
+	WARN_ON_ONCE(!list_empty(&desc->list));
+
+	list_add_tail(&idle_func_list, &desc->list);
+	pick_idle_func();
+}
+
+void unregister_idle_func(struct idle_func_desc *desc)
+{
+	WARN_ON_ONCE(list_empty(&desc->list));
+
+	list_del_init(&desc->list);
+	if (idle_func == desc->idle) 
+		pick_idle_func();
+}
