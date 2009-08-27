@@ -1,24 +1,18 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from viefep14-int.chello.at (viefep14-int.chello.at [62.179.121.34])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 717C8B7B69
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 87AE6B7C29
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 22:59:46 +1000 (EST)
-Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
-	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: arun@linux.vnet.ibm.com
-In-Reply-To: <20090827115354.GC24986@linux.vnet.ibm.com>
-References: <20090827114908.GA24986@linux.vnet.ibm.com>
-	<20090827115354.GC24986@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 27 Aug 2009 14:53:27 +0200
-Message-Id: <1251377607.18584.96.camel@twins>
-Mime-Version: 1.0
-Cc: Gautham R Shenoy <ego@in.ibm.com>, "Pallipadi,
-	Venkatesh" <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+	Thu, 27 Aug 2009 23:11:56 +1000 (EST)
+To: "FIXED-TERM Seeh Thomas (BEG/EMS1)" <fixed-term.Thomas.Seeh@de.bosch.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: LITE5200 configuration
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <6E9D235B18CE694399D781F05D9C42E79F0C2C12@SI-MBX11.de.bosch.com>
+References: <6E9D235B18CE694399D781F05D9C42E79F0C2C12@SI-MBX11.de.bosch.com>
+Date: Thu, 27 Aug 2009 15:11:51 +0200
+Message-Id: <20090827131151.537EC833DBD2@gemini.denx.de>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,142 +22,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-08-27 at 17:23 +0530, Arun R Bharadwaj wrote:
-> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-08-27 17:19:08]:
+Dear "FIXED-TERM Seeh Thomas (BEG/EMS1)",
+
+In message <6E9D235B18CE694399D781F05D9C42E79F0C2C12@SI-MBX11.de.bosch.com> you wrote:
+>
+> I'll try to run a 2.6.31-rc7 kernel on my Lite5200 board.
+
+Is this really a Lite5200, or is it a Lite5200B?
+
+Hint: if U-Boot prints something like "CPU: MPC5200B v2.2, Core v1.4"
+then its a 5200B, and thus a Lite5200 board.
+
+> For the device tree I use lite5200.dts and compiled it simply with
 > 
-> Cpuidle infrastructure assumes pm_idle as the default idle routine.
-> But, ppc_md.power_save is the default idle callback in case of pSeries.
-> 
-> So, create a more generic, architecture independent cpuidle_pm_idle
-> function pointer in driver/cpuidle/cpuidle.c and allow the idle routines
-> of architectures to be set to cpuidle_pm_idle.
-> 
-> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-> ---
->  drivers/cpuidle/cpuidle.c |   12 +++++++-----
->  include/linux/cpuidle.h   |    7 +++++++
->  2 files changed, 14 insertions(+), 5 deletions(-)
-> 
-> Index: linux.trees.git/drivers/cpuidle/cpuidle.c
-> ===================================================================
-> --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
-> +++ linux.trees.git/drivers/cpuidle/cpuidle.c
-> @@ -25,6 +25,7 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
->  DEFINE_MUTEX(cpuidle_lock);
->  LIST_HEAD(cpuidle_detected_devices);
->  static void (*pm_idle_old)(void);
-> +void (*cpuidle_pm_idle)(void);
->  
->  static int enabled_devices;
->  
-> @@ -98,10 +99,10 @@ static void cpuidle_idle_call(void)
->   */
->  void cpuidle_install_idle_handler(void)
->  {
-> -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
-> +	if (enabled_devices && (cpuidle_pm_idle != cpuidle_idle_call)) {
->  		/* Make sure all changes finished before we switch to new idle */
->  		smp_wmb();
-> -		pm_idle = cpuidle_idle_call;
-> +		cpuidle_pm_idle = cpuidle_idle_call;
->  	}
->  }
->  
-> @@ -110,8 +111,9 @@ void cpuidle_install_idle_handler(void)
->   */
->  void cpuidle_uninstall_idle_handler(void)
->  {
-> -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
-> -		pm_idle = pm_idle_old;
-> +	if (enabled_devices && pm_idle_old &&
-> +			(cpuidle_pm_idle != pm_idle_old)) {
-> +		cpuidle_pm_idle = pm_idle_old;
->  		cpuidle_kick_cpus();
->  	}
->  }
-> @@ -382,7 +384,7 @@ static int __init cpuidle_init(void)
->  {
->  	int ret;
->  
-> -	pm_idle_old = pm_idle;
-> +	pm_idle_old = cpuidle_pm_idle;
->  
->  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
->  	if (ret)
-> Index: linux.trees.git/include/linux/cpuidle.h
-> ===================================================================
-> --- linux.trees.git.orig/include/linux/cpuidle.h
-> +++ linux.trees.git/include/linux/cpuidle.h
-> @@ -188,4 +188,11 @@ static inline void cpuidle_unregister_go
->  #define CPUIDLE_DRIVER_STATE_START	0
->  #endif
->  
-> +/*
-> + * Idle callback used by cpuidle to call the cpuidle_idle_call().
-> + * Platform drivers can use this to register to cpuidle's idle loop.
-> + */
-> +
-> +extern void (*cpuidle_pm_idle)(void);
-> +
->  #endif /* _LINUX_CPUIDLE_H */
+>         make ARCH=powerpc CROSS_COMPILE=ppc_6xx- lite5200.dtb
+
+For a Lite5200B you should use the lite5200b device tree.
+
+> But I'm not sure what configuration for the kernel I should choose. There is no
+> lite5200_defconfig only one for the lite5200b.
+
+Rigth. Because there are virtually no lite5200 boards out there.
+
+> I tried it with mpc5200_defconfig and lite5200b_defconfig, but I'm not sure which
+> is the right way.
+
+Both will work. On a Lite5200 board I would use lite5200b_defconfig,
+though.
+
+> For compiling the kernel I use:
+>
+>         make ARCH=powerpc CROSS_COMPILE=ppc_6xx- "CONFIG_FILE"
+
+That's:
+
+	make ARCH=powerpc CROSS_COMPILE=ppc_6xx- mrproper
+	make ARCH=powerpc CROSS_COMPILE=ppc_6xx- 52xx/lite5200b_defconfig
+
+>         make ARCH=powerpc CROSS_COMPILE=ppc_6xx- uImage
+>         make ARCH=powerpc CROSS_COMPILE=ppc_6xx- modules
+>         make ARCH=powerpc CROSS_COMPILE=ppc_6xx- modules_install
 
 
-I'm not quite seeing how this makes anything any better. Not we have 3
-function pointers, where 1 should suffice.
+> I use U-Boot 2009.06, with the following settings for bootup:
 
-/me wonders what's wrong with something like:
+Looks as if you have a Rev. B CPU with the wrong device tree.
 
-struct idle_func_desc {
-	int		 power;
-	int		 latency;
-	void		 (*idle)(void);
-	struct list_head list;
-};
+Unfortunaltey you omit the interesting part (i. e. the U-Boot boot
+message) which would contain this important piece of information.
 
-static void spin_idle(void)
-{
-	for (;;)
-		cpu_relax();
-}
+> --_000_6E9D235B18CE694399D781F05D9C42E79F0C2C12SIMBX11deboschc_
+> Content-Type: text/html; charset"iso-8859-1"
+> Content-Transfer-Encoding: quoted-printable
 
-static idle_func_desc default_idle_func = {
-	power = 0, 	   /* doesn't safe any power */
-	latency = INT_MAX, /* has max latency */
-	idle = spin_idle,
-	list = INIT_LIST_HEAD(default_idle_func.list),
-};
+And *please* do not post HTML to mailing lists. Never ever do that.
 
-void (*idle_func)(void);
-static struct list_head idle_func_list;
+Best regards,
 
-static void pick_idle_func(void)
-{
-	struct idle_func_desc *desc, *idle = &default_idle_desc;
+Wolfgang Denk
 
-	list_for_each_entry(desc, &idle_func_list, list) {
-		if (desc->power < idle->power)
-			continue;
-		if (desc->latency > target_latency);
-			continue;
-		idle = desc;
-	}
-
-	pm_idle = idle->idle;
-}
-
-void register_idle_func(struct idle_func_desc *desc)
-{
-	WARN_ON_ONCE(!list_empty(&desc->list));
-
-	list_add_tail(&idle_func_list, &desc->list);
-	pick_idle_func();
-}
-
-void unregister_idle_func(struct idle_func_desc *desc)
-{
-	WARN_ON_ONCE(list_empty(&desc->list));
-
-	list_del_init(&desc->list);
-	if (idle_func == desc->idle) 
-		pick_idle_func();
-}
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+If I ever needed a brain transplant, I'd choose a teenager's  because
+I'd want a brain that had never been used.
