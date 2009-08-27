@@ -1,30 +1,30 @@
-Return-Path: <wmb@firmworks.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4A1C7B7BCA
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C3965B7BE7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 08:45:52 +1000 (EST)
-Received: from rs35.luxsci.com (rs35.luxsci.com [66.216.127.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C9425DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 08:45:51 +1000 (EST)
-Message-ID: <4A970C85.8090703@firmworks.com>
-Date: Thu, 27 Aug 2009 12:45:25 -1000
-From: Mitch Bradley <wmb@firmworks.com>
+	Fri, 28 Aug 2009 09:19:28 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id EB46DDDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 09:19:27 +1000 (EST)
+Date: Fri, 28 Aug 2009 03:19:25 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] rtc: Set wakeup capability for I2C and SPI RTC drivers
+Message-ID: <20090827231925.GA1131@oksana.dev.rtsoft.ru>
+References: <20090827182207.GA7358@oksana.dev.rtsoft.ru>
+	<200908271452.37358.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC] Clock binding
-References: <1250569288.19007.15.camel@pasglop>	
-	<1251346157.20467.22.camel@pasglop>
-	<4A96F69A.5050003@firmworks.com>
-	<1251411532.20467.74.camel@pasglop>
-In-Reply-To: <1251411532.20467.74.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200908271452.37358.david-b@pacbell.net>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-pm@lists.linux-foundation.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,41 +34,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->
->> > One advantage of indices is that they avoid endless arguments about the 
->> > exact name (and spelling) of things.
->>     
->
-> Right, though in that case, nobody gets to have to decide on the name,
-> it comes from the chip manufacturer pin naming or data sheet.
->
->   
+On Thu, Aug 27, 2009 at 02:52:36PM -0700, David Brownell wrote:
+[...]
+> > I believe that it's not platform code responsibility to allow or
+> > disallow wakeups, instead, drivers themselves should set the capability
+> > if a device can trigger wakeups.
+> 
+> Drivers can't generally know if that's possible though.
+> They need to be told that it is, by platform code.
 
+Um? Of course they know, DS1374 device driver knows that DS1374
+chips can issue wakeups, what it doesn't know is if that wakeup
+event will trigger CPU resume/power-up.
 
-I agree in general.  It has long been a convention of mine to follow the 
-vendor's names as exactly as possible.  But that often presents 
-difficulties. Many of them have been touched on in our previous 
-discussion but I'll list some here just to emphasize the problem we face:
+And even platform code doesn't know that. For example, on PowerPC
+CPUs there could be several 'suspend' states, some allow wakeup
+on particular IRQs, some don't. In some cases wakeup event will be
+ignored, in other cases it will take effect. The suspend mode
+depends on user's decision ('echo <mode> > /sys/power/state').
 
-a) Inconsistent naming within a vendor's documentation set - datasheet 
-spells it one way, programmer's manual another, appnotes/porting guide 
-still another, reference schematic spells it two different ways (pin 
-name on part versus net name of signal wire).
+> Most devices can't issue wakeup events.
 
-b) Sometimes the name is abbreviated and sometimes spelled out.  SMBALRT 
-vs. SMbus Alert.
+The device drivers I modified know that devices can issue wakeup
+events.
 
-c) Different tools (CAD programs, word processors) have different 
-conventions leading to existence of ambiguously-representable name 
-components - particular cases in point are overbars for active low 
-signals and embedded spaces/underscores/hyphens in names.
+> > That's what drivers/base/power/sysfs.c says:
+> > 
+> >  * It is the responsibility of device drivers to enable (or disable)
+> >  * wakeup signaling as part of changing device power states, respecting
+> >  * the policy choices provided through the driver model.
+> > 
+> > I2C and SPI RTC devices send wakeup events via interrupt lines, so we
+> > should set the wakeup capability if IRQ is routed.
+> 
+> Re-read the quoted sentence.  You're saying that policy
+> choices should be hard-wired into the driver; contrary
+> to that quote.  (In this case the choice is one that
+> platform code must report, and which the hardware
+> designer made:  if the device can issue wakeup events.)
 
-d) Compatible part from different vendors leads to confusion about which 
-vendor's names are canonical.  Or leading vendor goes out of business or 
-gets bought.
+The patch doesn't hard-wire the policy, quite the contrary: it
+removes the "can't do wakeup" policy.
 
-These problems are getting worse rapidly as more devices are being 
-sourced from Asia, where the linguistic connection to the Roman alphabet 
-is tenuous.
+I'm just adding device_set_wakeup_capable() calls, telling everybody
+that the devices can issue wakeup events (and they truly can).
 
-You need a Pope to decide what is canonical.
+Yes, it could be that the IRQ line is wired not to a CPU, but
+to some power switch, and so nobody pass any IRQs to the drivers.
+In that case platform-specific I2C_CLIENT_WAKE may be useful.
+
+> > Ideally we should also check irq for wakeup capability before setting
+> > device's capability, i.e.
+> > 
+> > 	if (can_irq_wake(irq))
+> > 		device_set_wakeup_capable(&client->dev, 1);
+> > 
+> > But there is no can_irq_wake() call exist, and it is not that trivial
+> > to implement it for all interrupts controllers and complex/cascaded
+> > setups.
+> 
+> That is why platform code should device_init_wakeup() and
+> drivers should check device_can_wakeup(dev) ...
+
+They should (and do) check may_wakeup() (i.e. should_wakeup) before
+suspending, not can_wakeup().
+
+static int ds1374_suspend(struct i2c_client *client, pm_message_t state)
+{
+        if (client->irq >= 0 && device_may_wakeup(&client->dev))
+                enable_irq_wake(client->irq);
+        return 0;
+}
+
+(quite funny, they issue enable_irq_wake(), assuming that otherwise
+IRQ line won't trigger CPU wakeup. But in reality, there are interrupt
+controllers that you can't control in that regard: any IRQ activity
+will always resume CPU. And so 'echo disable > /sys/.../wakeup' won't
+guarantee anything. Unreliable, nasty? Could be.)
+
+> > drivers/base/power/sysfs.c also covers these cases:
+> > 
+> >  * Devices may not be able to generate wakeup events from all power
+> >  * states.  Also, the events may be ignored in some configurations;
+> >  * for example, they might need help from other devices that aren't
+> >  * active
+> > 
+> > So there is no guarantee that wakeup will actually work, 
+> 
+> Yes there is ... it's only **exceptional** cases where it can't
+> work.  Your patch would make it routine that those flags be
+> unreliable; pretty nasty.
+
+It's not exceptional at all, you really can't tell if device's wakeup
+event will take any effect. It depends on so many factors that it's
+virtually impossible to account them all. And hiding wakeup capability
+only because you aren't sure _is_ policy hard-wiring, no?
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
