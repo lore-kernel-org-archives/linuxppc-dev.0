@@ -1,27 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <david-b@pacbell.net>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 69A90B7B85
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 58310B7B7E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 07:30:45 +1000 (EST)
-Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
-	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1251377607.18584.96.camel@twins>
-References: <20090827114908.GA24986@linux.vnet.ibm.com>
-	<20090827115354.GC24986@linux.vnet.ibm.com>
-	<1251377607.18584.96.camel@twins>
-Content-Type: text/plain
-Date: Fri, 28 Aug 2009 07:28:12 +1000
-Message-Id: <1251408492.20467.56.camel@pasglop>
-Mime-Version: 1.0
-Cc: Gautham R Shenoy <ego@in.ibm.com>, "Pallipadi,
-	Venkatesh" <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	arun@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>
+	Fri, 28 Aug 2009 07:59:19 +1000 (EST)
+Received: from smtp128.sbc.mail.sp1.yahoo.com (smtp128.sbc.mail.sp1.yahoo.com
+	[69.147.65.187]) by ozlabs.org (Postfix) with SMTP id 970AADDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 07:59:18 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] rtc: Set wakeup capability for I2C and SPI RTC drivers
+Date: Thu, 27 Aug 2009 14:52:36 -0700
+References: <20090827182207.GA7358@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090827182207.GA7358@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200908271452.37358.david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-pm@lists.linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,75 +32,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-08-27 at 14:53 +0200, Peter Zijlstra wrote:
+NAK; see details below
 
-> I'm not quite seeing how this makes anything any better. Not we have 3
-> function pointers, where 1 should suffice.
+On Thursday 27 August 2009, Anton Vorontsov wrote:
+> RTC core won't allow wakeup alarms to be set if RTC devices' parent
+> (i.e. i2c_client or spi_device) isn't wakeup capable.
 
-There's also the question of us having different "idle" vs.
-"power_save", the former being the entire idle loop, the later being the
-part that does put the processor into power.
+Quite rightly so ... being wakeup-capable is config-specific.
 
-At what level are we trying to change the loop here ?
 
-There are some requirements of things to do in our idle loop that really
-don't have their place in generic drivers/* code.
+> For I2C devices there is I2C_CLIENT_WAKE flag exists that we can pass
+> via board info, and if set, I2C core will initialize wakeup capability.
+> For SPI devices there is no such flag at all.
 
-Ben.
+So why not add it for SPI?  If it's an issue, it's not
+unique to RTC devices.
 
-> /me wonders what's wrong with something like:
+ 
+> I believe that it's not platform code responsibility to allow or
+> disallow wakeups, instead, drivers themselves should set the capability
+> if a device can trigger wakeups.
+
+Drivers can't generally know if that's possible though.
+They need to be told that it is, by platform code.
+
+Most devices can't issue wakeup events.
+
+ 
+> That's what drivers/base/power/sysfs.c says:
 > 
-> struct idle_func_desc {
-> 	int		 power;
-> 	int		 latency;
-> 	void		 (*idle)(void);
-> 	struct list_head list;
-> };
+>  * It is the responsibility of device drivers to enable (or disable)
+>  * wakeup signaling as part of changing device power states, respecting
+>  * the policy choices provided through the driver model.
 > 
-> static void spin_idle(void)
-> {
-> 	for (;;)
-> 		cpu_relax();
-> }
+> I2C and SPI RTC devices send wakeup events via interrupt lines, so we
+> should set the wakeup capability if IRQ is routed.
+
+Re-read the quoted sentence.  You're saying that policy
+choices should be hard-wired into the driver; contrary
+to that quote.  (In this case the choice is one that
+platform code must report, and which the hardware
+designer made:  if the device can issue wakeup events.)  
+
+
+> Ideally we should also check irq for wakeup capability before setting
+> device's capability, i.e.
 > 
-> static idle_func_desc default_idle_func = {
-> 	power = 0, 	   /* doesn't safe any power */
-> 	latency = INT_MAX, /* has max latency */
-> 	idle = spin_idle,
-> 	list = INIT_LIST_HEAD(default_idle_func.list),
-> };
+> 	if (can_irq_wake(irq))
+> 		device_set_wakeup_capable(&client->dev, 1);
 > 
-> void (*idle_func)(void);
-> static struct list_head idle_func_list;
+> But there is no can_irq_wake() call exist, and it is not that trivial
+> to implement it for all interrupts controllers and complex/cascaded
+> setups.
+
+That is why platform code should device_init_wakeup() and
+drivers should check device_can_wakeup(dev) ...
+
+
+> drivers/base/power/sysfs.c also covers these cases:
 > 
-> static void pick_idle_func(void)
-> {
-> 	struct idle_func_desc *desc, *idle = &default_idle_desc;
+>  * Devices may not be able to generate wakeup events from all power
+>  * states.  Also, the events may be ignored in some configurations;
+>  * for example, they might need help from other devices that aren't
+>  * active
 > 
-> 	list_for_each_entry(desc, &idle_func_list, list) {
-> 		if (desc->power < idle->power)
-> 			continue;
-> 		if (desc->latency > target_latency);
-> 			continue;
-> 		idle = desc;
-> 	}
-> 
-> 	pm_idle = idle->idle;
-> }
-> 
-> void register_idle_func(struct idle_func_desc *desc)
-> {
-> 	WARN_ON_ONCE(!list_empty(&desc->list));
-> 
-> 	list_add_tail(&idle_func_list, &desc->list);
-> 	pick_idle_func();
-> }
-> 
-> void unregister_idle_func(struct idle_func_desc *desc)
-> {
-> 	WARN_ON_ONCE(list_empty(&desc->list));
-> 
-> 	list_del_init(&desc->list);
-> 	if (idle_func == desc->idle) 
-> 		pick_idle_func();
-> }
+> So there is no guarantee that wakeup will actually work, 
+
+Yes there is ... it's only **exceptional** cases where it can't
+work.  Your patch would make it routine that those flags be
+unreliable; pretty nasty.
