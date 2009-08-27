@@ -1,26 +1,26 @@
 Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 802FFB7B6C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 27 Aug 2009 13:34:29 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 46DDAB7067
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 13:23:06 +1000 (EST)
-Subject: Re: [PATCH -v2 0/7] powerpc: use asm-generic/dma-mapping-common.h
+	by ozlabs.org (Postfix) with ESMTPS id E12D3DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 13:34:28 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1251342735.20467.2.camel@pasglop>
-References: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1250142522.3587.110.camel@pasglop>
-	<20090813160625B.fujita.tomonori@lab.ntt.co.jp>
-	<20090813074131.GH12143@elte.hu> <1250150981.3587.157.camel@pasglop>
-	<20090813085505.GA10671@elte.hu>  <1251342735.20467.2.camel@pasglop>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain
-Date: Thu, 27 Aug 2009 13:17:50 +1000
-Message-Id: <1251343070.20467.3.camel@pasglop>
+Date: Thu, 27 Aug 2009 13:33:48 +1000
+Message-Id: <1251344028.20467.8.camel@pasglop>
 Mime-Version: 1.0
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	galak@kernel.crashing.orga
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,26 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-08-27 at 13:12 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2009-08-13 at 10:55 +0200, Ingo Molnar wrote:
-> 
-> > Ok! We could also stage it a bit (one or two weeks) in a separate 
-> > branch and allow a rebase, should you find any bugs during testing?
-> 
-> Allright so after various delays and sidetracking on my side, the
-> patches have been in my -test branch for long enough, I'm happy for them
-> to go in either way now.
-> 
-> I'm going to take them out of powerpc test for now and not put them in
-> my -next right away until I'm sure I have the right source to pull, at
-> which point I can just put from tip iommu.
+Hi Linus !
 
-IE. I think I was not clear :-)
+Here are a couple of last minute patches for 2.6.31. One is a regression fix
+(afaik) where a PS3 driver gets incorrectly loaded on other platforms and
+crashes, along with a PS3 defconfig update.
+The following changes since commit f415c413f458837bd0c27086b79aca889f9435e4:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
 
-I mean, I plan to pull tip/iommu into powerpc-next and then apply the
-patches, but I want just your final word that this is a
-"stable" (non-rebase) branch and from Fujita that the patches are still
-good and haven't changed from those currently on patchwork.
+are available in the git repository at:
 
-Cheers,
-Ben.
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Geert Uytterhoeven (1):
+      powerpc/ps3: Add missing check for PS3 to rtc-ps3 platform device registration
+
+Geoff Levand (1):
+      powerpc/ps3: Update ps3_defconfig
+
+ arch/powerpc/configs/ps3_defconfig |  211 +++++++++++++-----------------------
+ arch/powerpc/platforms/ps3/time.c  |    4 +
+ 2 files changed, 79 insertions(+), 136 deletions(-)
