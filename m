@@ -1,22 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <amit.shah@redhat.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 732A3B7079
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4D124B7B7F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 15:46:36 +1000 (EST)
-Subject: Re: [PATCH V2 3/3] powerpc/pci: Merge ppc32 and ppc64 versions of
-	phb_scan()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20090826060716.30936.40578.stgit@localhost.localdomain>
-References: <20090826060659.30936.75706.stgit@localhost.localdomain>
-	<20090826060716.30936.40578.stgit@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 27 Aug 2009 15:46:21 +1000
-Message-Id: <1251351981.20467.37.camel@pasglop>
-Mime-Version: 1.0
-Cc: sfr@canb.auug.org.au, linuxppc-dev@lists.ozlabs.org
+	Thu, 27 Aug 2009 16:51:51 +1000 (EST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id D14B2DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 16:51:50 +1000 (EST)
+Date: Thu, 27 Aug 2009 12:21:02 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Qemu-devel] Re: Extending virtio_console to support multiple
+	ports
+Message-ID: <20090827065102.GA3218@amit-x200.redhat.com>
+References: <1251181044-3696-1-git-send-email-amit.shah@redhat.com>
+	<20090826112718.GA11117@amit-x200.redhat.com>
+	<20090826154552.GA31910@amit-x200.redhat.com>
+	<1251346023.20467.21.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1251346023.20467.21.camel@pasglop>
+Cc: kvm@vger.kernel.org, borntraeger@de.ibm.com, qemu-devel@nongnu.org,
+	miltonm@bga.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, brueckner@linux.vnet.ibm.com,
+	virtualization@lists.linux-foundation.org, alan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,223 +35,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-08-26 at 00:07 -0600, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+On (Thu) Aug 27 2009 [14:07:03], Benjamin Herrenschmidt wrote:
+> On Wed, 2009-08-26 at 21:15 +0530, Amit Shah wrote:
 > 
-> The two versions are doing almost exactly the same thing.  No need to
-> maintain them as separate files.  This patch also has the side effect
-> of making the PCI device tree scanning code available to 32 bit powerpc
-> machines, but no board ports actually make use of this feature at this
-> point.
-
-You missed various calls to scan_phb() in arch/powerpc :-)
-
-At least pSeries with dynamic LPAR is broken, I think iSeries might
-break too. Try a ppc64_defconfig.
-
-I tentatively applied the other patches to -test
-
-Cheers,
-Ben.
-
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
+> > 
+> > > - Convert hvc's usage of spinlocks to mutexes. I've no idea how this
+> > >   will play out; I'm no expert here. But I did try doing this and so far
+> > >   it all looks OK. No lockups, lockdep warnings, nothing. I have full
+> > >   debugging enabled. But this doesn't mean it's right.
+> > 
+> > So just to test this further I added the capability to have more than
+> > one hvc console spawn from virtio_console, created two consoles and did
+> > a 'cat' of a file in each of the virtio-consoles. It's been running for
+> > half an hour now without any badness. No spew in debug logs too.
+> > 
+> > I also checked the code in hvc_console.c that takes the spin_locks.
+> > Nothing there that runs from (or needs to run from) interrupt context.
+> > So the change to mutexes does seem reasonable. Also, the spinlock code
+> > was added really long back -- git blame shows Linus' first git commit
+> > introduced them in the git history, so it's pure legacy baggage.
 > 
->  arch/powerpc/include/asm/pci.h   |    2 ++
->  arch/powerpc/kernel/pci-common.c |   48 ++++++++++++++++++++++++++++++++++++++
->  arch/powerpc/kernel/pci_32.c     |   25 ++------------------
->  arch/powerpc/kernel/pci_64.c     |   46 +++++-------------------------------
->  4 files changed, 58 insertions(+), 63 deletions(-)
+> Two things here:
 > 
+>  - First you seem to have completely missed the fact that hvc_poll() can
+> be called from interrupt time :-) Look at hvc_irq.c which is used by
+
+Right! That's the obvious one.
+
+> some backends. Maybe that can be "fixed" by deferring to a work queue,
+> though it's nice to have the keyboard input have somewhat of a higher
+> priority than anything else here.
+
+Hm, to maintain the current behaviour of poll() returning some
+poll_mask, the poll_mask could be made into an atomic variable with
+khvcd() updating it. But to have read at a higher priority than the
+other stuff, I don't quite see yet how that can be done.
+
+> So unless that's fixed, or I missed something, that's a big NACK for
+> now.
 > 
-> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-> index 9ae2e3e..feebfed 100644
-> --- a/arch/powerpc/include/asm/pci.h
-> +++ b/arch/powerpc/include/asm/pci.h
-> @@ -233,6 +233,8 @@ extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
->  
->  extern void pcibios_setup_bus_devices(struct pci_bus *bus);
->  extern void pcibios_setup_bus_self(struct pci_bus *bus);
-> +extern void pcibios_setup_phb_io_space(struct pci_controller *hose);
-> +extern void pcibios_scan_phb(struct pci_controller *hose, void *data);
->  
->  #endif	/* __KERNEL__ */
->  #endif /* __ASM_POWERPC_PCI_H */
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index 44497a8..8a16dbe 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -1617,3 +1617,51 @@ void __devinit pcibios_setup_phb_resources(struct pci_controller *hose)
->  		 (unsigned long)hose->io_base_virt - _IO_BASE);
->  
->  }
-> +
-> +/**
-> + * pci_scan_phb - Given a pci_controller, setup and scan the PCI bus
-> + * @hose: Pointer to the PCI host controller instance structure
-> + * @data: value to use for sysdata pointer.  ppc32 and ppc64 differ here
-> + *
-> + * Note: the 'data' pointer is a temporary measure.  As 32 and 64 bit
-> + * pci code gets merged, this parameter should become unnecessary because
-> + * both will use the same value.
-> + */
-> +void __devinit pcibios_scan_phb(struct pci_controller *hose, void *data)
-> +{
-> +	struct pci_bus *bus;
-> +	struct device_node *node = hose->dn;
-> +	int mode;
-> +
-> +	pr_debug("PCI: Scanning PHB %s\n",
-> +		 node ? node->full_name : "<NO NAME>");
-> +
-> +	/* Create an empty bus for the toplevel */
-> +	bus = pci_create_bus(hose->parent, hose->first_busno, hose->ops, data);
-> +	if (bus == NULL) {
-> +		pr_err("Failed to create bus for PCI domain %04x\n",
-> +			hose->global_number);
-> +		return;
-> +	}
-> +	bus->secondary = hose->first_busno;
-> +	hose->bus = bus;
-> +
-> +	/* Get some IO space for the new PHB */
-> +	pcibios_setup_phb_io_space(hose);
-> +
-> +	/* Wire up PHB bus resources */
-> +	pcibios_setup_phb_resources(hose);
-> +
-> +	/* Get probe mode and perform scan */
-> +	mode = PCI_PROBE_NORMAL;
-> +	if (node && ppc_md.pci_probe_mode)
-> +		mode = ppc_md.pci_probe_mode(bus);
-> +	pr_debug("    probe mode: %d\n", mode);
-> +	if (mode == PCI_PROBE_DEVTREE) {
-> +		bus->subordinate = hose->last_busno;
-> +		of_scan_bus(node, bus);
-> +	}
-> +
-> +	if (mode == PCI_PROBE_NORMAL)
-> +		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
-> +}
-> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-> index 1e807fe..4e415e1 100644
-> --- a/arch/powerpc/kernel/pci_32.c
-> +++ b/arch/powerpc/kernel/pci_32.c
-> @@ -354,36 +354,15 @@ pci_create_OF_bus_map(void)
->  	}
->  }
->  
-> -static void __devinit pcibios_scan_phb(struct pci_controller *hose)
-> +void __devinit pcibios_setup_phb_io_space(struct pci_controller *hose)
->  {
-> -	struct pci_bus *bus;
-> -	struct device_node *node = hose->dn;
->  	unsigned long io_offset;
->  	struct resource *res = &hose->io_resource;
->  
-> -	pr_debug("PCI: Scanning PHB %s\n",
-> -		 node ? node->full_name : "<NO NAME>");
-> -
-> -	/* Create an empty bus for the toplevel */
-> -	bus = pci_create_bus(hose->parent, hose->first_busno, hose->ops, hose);
-> -	if (bus == NULL) {
-> -		printk(KERN_ERR "Failed to create bus for PCI domain %04x\n",
-> -		       hose->global_number);
-> -		return;
-> -	}
-> -	bus->secondary = hose->first_busno;
-> -	hose->bus = bus;
-> -
->  	/* Fixup IO space offset */
->  	io_offset = (unsigned long)hose->io_base_virt - isa_io_base;
->  	res->start = (res->start + io_offset) & 0xffffffffu;
->  	res->end = (res->end + io_offset) & 0xffffffffu;
-> -
-> -	/* Wire up PHB bus resources */
-> -	pcibios_setup_phb_resources(hose);
-> -
-> -	/* Scan children */
-> -	hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
->  }
->  
->  static int __init pcibios_init(void)
-> @@ -401,7 +380,7 @@ static int __init pcibios_init(void)
->  		if (pci_assign_all_buses)
->  			hose->first_busno = next_busno;
->  		hose->last_busno = 0xff;
-> -		pcibios_scan_phb(hose);
-> +		pcibios_scan_phb(hose, hose);
->  		pci_bus_add_devices(hose->bus);
->  		if (pci_assign_all_buses || next_busno <= hose->last_busno)
->  			next_busno = hose->last_busno + pcibios_assign_bus_offset;
-> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-> index 4d5b4ce..ba949a2 100644
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -43,45 +43,6 @@ unsigned long pci_probe_only = 1;
->  unsigned long pci_io_base = ISA_IO_BASE;
->  EXPORT_SYMBOL(pci_io_base);
->  
-> -void __devinit scan_phb(struct pci_controller *hose)
-> -{
-> -	struct pci_bus *bus;
-> -	struct device_node *node = hose->dn;
-> -	int mode;
-> -
-> -	pr_debug("PCI: Scanning PHB %s\n",
-> -		 node ? node->full_name : "<NO NAME>");
-> -
-> -	/* Create an empty bus for the toplevel */
-> -	bus = pci_create_bus(hose->parent, hose->first_busno, hose->ops, node);
-> -	if (bus == NULL) {
-> -		printk(KERN_ERR "Failed to create bus for PCI domain %04x\n",
-> -		       hose->global_number);
-> -		return;
-> -	}
-> -	bus->secondary = hose->first_busno;
-> -	hose->bus = bus;
-> -
-> -	/* Get some IO space for the new PHB */
-> -	pcibios_map_io_space(bus);
-> -
-> -	/* Wire up PHB bus resources */
-> -	pcibios_setup_phb_resources(hose);
-> -
-> -	/* Get probe mode and perform scan */
-> -	mode = PCI_PROBE_NORMAL;
-> -	if (node && ppc_md.pci_probe_mode)
-> -		mode = ppc_md.pci_probe_mode(bus);
-> -	pr_debug("    probe mode: %d\n", mode);
-> -	if (mode == PCI_PROBE_DEVTREE) {
-> -		bus->subordinate = hose->last_busno;
-> -		of_scan_bus(node, bus);
-> -	}
-> -
-> -	if (mode == PCI_PROBE_NORMAL)
-> -		hose->last_busno = bus->subordinate = pci_scan_child_bus(bus);
-> -}
-> -
->  static int __init pcibios_init(void)
->  {
->  	struct pci_controller *hose, *tmp;
-> @@ -103,7 +64,7 @@ static int __init pcibios_init(void)
->  
->  	/* Scan all of the recorded PCI controllers.  */
->  	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-> -		scan_phb(hose);
-> +		pcibios_scan_phb(hose, hose->dn);
->  		pci_bus_add_devices(hose->bus);
->  	}
->  
-> @@ -237,6 +198,11 @@ int __devinit pcibios_map_io_space(struct pci_bus *bus)
->  }
->  EXPORT_SYMBOL_GPL(pcibios_map_io_space);
->  
-> +void __devinit pcibios_setup_phb_io_space(struct pci_controller *hose)
-> +{
-> +	pcibios_map_io_space(hose->bus);
-> +}
-> +
->  #define IOBASE_BRIDGE_NUMBER	0
->  #define IOBASE_MEMORY		1
->  #define IOBASE_IO		2
+>  - Then, are we certain that there's no case where the tty layer will
+> call us with some lock held or in an atomic context ? To be honest, I've
+
+The other routines are open(), close(), write(), etc., and other kernel
+context (hvc_instantiate() and the khvcd thread).
+
+> totally lost track of the locking rules in tty land lately so it might
+> well be ok, but something to verify.
+
+Yes.
+
+Thanks for the response!
+
+		Amit
