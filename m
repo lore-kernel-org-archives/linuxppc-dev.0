@@ -1,27 +1,25 @@
-Return-Path: <jwboyer@gmail.com>
+Return-Path: <wim@iguana.be>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0D6C6B7B77
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 20C8DB7093
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 Aug 2009 21:05:55 +1000 (EST)
-Received: from mail-yw0-f185.google.com (mail-yw0-f185.google.com
-	[209.85.211.185]) by ozlabs.org (Postfix) with ESMTP id 6A698DDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 21:05:52 +1000 (EST)
-Received: by ywh15 with SMTP id 15so1140957ywh.10
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 04:05:50 -0700 (PDT)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Thu, 27 Aug 2009 07:05:45 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Message-ID: <20090827110545.GJ5387@hansolo.jdub.homelinux.org>
-References: <1251344028.20467.8.camel@pasglop>
+	Thu, 27 Aug 2009 21:15:04 +1000 (EST)
+Received: from mailrelay004.isp.belgacom.be (mailrelay004.isp.belgacom.be
+	[195.238.6.170]) by ozlabs.org (Postfix) with ESMTP id 6A02CDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2009 21:15:01 +1000 (EST)
+Date: Thu, 27 Aug 2009 13:14:58 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Chris Friesen <cfriesen@nortel.com>
+Subject: Re: [PATCH] fix book E watchdog to take WDIOC_SETTIMEOUT arg in
+	seconds
+Message-ID: <20090827111458.GB29382@infomag.iguana.be>
+References: <4A8303C6.7070705@nortel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1251344028.20467.8.camel@pasglop>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <4A8303C6.7070705@nortel.com>
+Cc: linuxppc-dev@ozlabs.org, Linux kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 27, 2009 at 01:33:48PM +1000, Benjamin Herrenschmidt wrote:
->Hi Linus !
->
->Here are a couple of last minute patches for 2.6.31. One is a regression fix
->(afaik) where a PS3 driver gets incorrectly loaded on other platforms and
->crashes, along with a PS3 defconfig update.
->The following changes since commit f415c413f458837bd0c27086b79aca889f9435e4:
->  Linus Torvalds (1):
->        Merge git://git.kernel.org/.../davem/net-2.6
->
->are available in the git repository at:
->
->  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
->
->Geert Uytterhoeven (1):
->      powerpc/ps3: Add missing check for PS3 to rtc-ps3 platform device registration
->
->Geoff Levand (1):
->      powerpc/ps3: Update ps3_defconfig
+Hi Chris,
 
-Hm.  No 44x flush_icache_range patch?
+> The WDIOC_SETTIMEOUT argument is supposed to be a "seconds" value.
+> However, the book E wdt currently treats it as a "period" which is
+> interpreted in a board-specific way.
+> 
+> This patch allows the user to pass in a "seconds" value and the driver
+> will set the smallest timeout that is at least as large as specified
+> by the user.  It's been tested on e500 hardware and works as
+> expected.
+> 
+> The patch only modifies the CONFIG_FSL_BOOKE case, the CONFIG_4xx case
+> is left unmodified as I don't have any hardware to test it on.
+> 
+> Signed-off-by: Chris Friesen <cfriesen@nortel.com>
 
-josh
+Added with some small changes to keep checkpatch happy. (removed trailing spaces + changed sizeof(struct watchdog_info) to sizeof(ident) and changed some spaces in tabs).
+
+Now we only need someone that can look at the CONFIG_4xx cases still :-)
+
+Kind regards,
+Wim.
