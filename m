@@ -3,16 +3,16 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 27732B7BE8
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4A1C7B7BCA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 08:28:45 +1000 (EST)
+	Fri, 28 Aug 2009 08:45:52 +1000 (EST)
 Received: from rs35.luxsci.com (rs35.luxsci.com [66.216.127.90])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9B379DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 08:28:44 +1000 (EST)
-Message-ID: <4A970881.5090603@firmworks.com>
-Date: Thu, 27 Aug 2009 12:28:17 -1000
+	by ozlabs.org (Postfix) with ESMTPS id C9425DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 08:45:51 +1000 (EST)
+Message-ID: <4A970C85.8090703@firmworks.com>
+Date: Thu, 27 Aug 2009 12:45:25 -1000
 From: Mitch Bradley <wmb@firmworks.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -35,26 +35,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 >
->
->> > Open Firmware often avoids indexed structures.  Cases in point include 
->> > the use of named properties instead of fixed structures and named 
->> > methods instead of function pointer arrays.  Open Firmware's use of 
->> > arrays for reg properties seems like the right choice for that 
->> > particular case, but shouldn't be construed to suggest that arrays are 
->> > good for everything.
+>> > One advantage of indices is that they avoid endless arguments about the 
+>> > exact name (and spelling) of things.
 >>     
 >
-> Well, the "reg" property is fine for the common cases of devices with
-> one IO (or MMIO) range, no confusion possible, or PCI since it encodes
-> the BAR number. For other cases, especially random embedded stuff that
-> maps several regions of memory, it's a bit harder since we go back to
-> the need of having "somebody" define which region is which.
->
+> Right, though in that case, nobody gets to have to decide on the name,
+> it comes from the chip manufacturer pin naming or data sheet.
 >
 >   
 
-Indeed.  You choose based on the common case and eventually there will 
-be some case that stretches the boundaries.
 
-I suppose that, if the problem became severe enough, one could invent a 
-new "reg-names" property, a list of strings naming the reg entries.
+I agree in general.  It has long been a convention of mine to follow the 
+vendor's names as exactly as possible.  But that often presents 
+difficulties. Many of them have been touched on in our previous 
+discussion but I'll list some here just to emphasize the problem we face:
+
+a) Inconsistent naming within a vendor's documentation set - datasheet 
+spells it one way, programmer's manual another, appnotes/porting guide 
+still another, reference schematic spells it two different ways (pin 
+name on part versus net name of signal wire).
+
+b) Sometimes the name is abbreviated and sometimes spelled out.  SMBALRT 
+vs. SMbus Alert.
+
+c) Different tools (CAD programs, word processors) have different 
+conventions leading to existence of ambiguously-representable name 
+components - particular cases in point are overbars for active low 
+signals and embedded spaces/underscores/hyphens in names.
+
+d) Compatible part from different vendors leads to confusion about which 
+vendor's names are canonical.  Or leading vendor goes out of business or 
+gets bought.
+
+These problems are getting worse rapidly as more devices are being 
+sourced from Asia, where the linguistic connection to the Roman alphabet 
+is tenuous.
+
+You need a Pope to decide what is canonical.
