@@ -3,18 +3,18 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id ADDE9B7B96
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EB655B7CA3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 03:35:49 +1000 (EST)
+	Fri, 28 Aug 2009 03:35:52 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 38CDBDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 03:35:49 +1000 (EST)
-Date: Thu, 27 Aug 2009 21:35:47 +0400
+	by ozlabs.org (Postfix) with ESMTP id 675AADDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 03:35:52 +1000 (EST)
+Date: Thu, 27 Aug 2009 21:35:50 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Miller <davem@davemloft.net>
-Subject: [PATCH 1/5] ucc_geth: Fix NULL pointer dereference in
-	uec_get_ethtool_stats()
-Message-ID: <20090827173547.GA1580@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/5] powerpc/qe: Implement qe_alive_during_sleep() helper
+	function
+Message-ID: <20090827173550.GB1580@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
@@ -28,52 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit 3e73fc9a12679a546284d597c1f19165792d0b83 ("ucc_geth: Fix IO
-memory (un)mapping code") I fixed ug_regs IO memory leak by properly
-freeing the allocated memory. But ethtool_stats() callback doesn't
-check for ug_regs being NULL, and that causes following oops if
-'ethtool -S' is executed on a closed eth device:
+In some CPUs (i.e. MPC8569) QE shuts down completely during sleep,
+drivers may want to know that to reinitialize registers and buffer
+descriptors.
 
-  Unable to handle kernel paging request for data at address 0x00000180
-  Faulting instruction address: 0xc0208228
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  ...
-  NIP [c0208228] uec_get_ethtool_stats+0x38/0x140
-  LR [c02559a0] ethtool_get_stats+0xf8/0x23c
-  Call Trace:
-  [ef87bcd0] [c025597c] ethtool_get_stats+0xd4/0x23c (unreliable)
-  [ef87bd00] [c025706c] dev_ethtool+0xfe8/0x11bc
-  [ef87be00] [c0252b5c] dev_ioctl+0x454/0x6a8
-  ...
-  ---[ end trace 77fff1162a9586b0 ]---
-  Segmentation fault
-
-This patch fixes the issue.
+This patch implements qe_alive_during_sleep() helper function, so far
+it just checks if MPC8569-compatible power management controller is
+present, which is a sign that QE turns off during sleep.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/net/ucc_geth_ethtool.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/qe.h   |    1 +
+ arch/powerpc/sysdev/qe_lib/qe.c |   13 +++++++++++++
+ 2 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/ucc_geth_ethtool.c b/drivers/net/ucc_geth_ethtool.c
-index 61fe80d..304128f 100644
---- a/drivers/net/ucc_geth_ethtool.c
-+++ b/drivers/net/ucc_geth_ethtool.c
-@@ -319,9 +319,13 @@ static void uec_get_ethtool_stats(struct net_device *netdev,
- 	int i, j = 0;
+diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
+index e8232bb..20c0b07 100644
+--- a/arch/powerpc/include/asm/qe.h
++++ b/arch/powerpc/include/asm/qe.h
+@@ -163,6 +163,7 @@ int qe_get_snum(void);
+ void qe_put_snum(u8 snum);
+ unsigned int qe_get_num_of_risc(void);
+ unsigned int qe_get_num_of_snums(void);
++int qe_alive_during_sleep(void);
  
- 	if (stats_mode & UCC_GETH_STATISTICS_GATHERING_MODE_HARDWARE) {
--		base = (u32 __iomem *)&ugeth->ug_regs->tx64;
-+		if (ugeth->ug_regs)
-+			base = (u32 __iomem *)&ugeth->ug_regs->tx64;
-+		else
-+			base = NULL;
+ /* we actually use cpm_muram implementation, define this for convenience */
+ #define qe_muram_init cpm_muram_init
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index f485d5a..a765f9c 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -65,6 +65,19 @@ static unsigned int qe_num_of_snum;
+ 
+ static phys_addr_t qebase = -1;
+ 
++int qe_alive_during_sleep(void)
++{
++	static int ret = -1;
 +
- 		for (i = 0; i < UEC_HW_STATS_LEN; i++)
--			data[j++] = in_be32(&base[i]);
-+			data[j++] = base ? in_be32(&base[i]) : 0;
- 	}
- 	if (stats_mode & UCC_GETH_STATISTICS_GATHERING_MODE_FIRMWARE_TX) {
- 		base = (u32 __iomem *)ugeth->p_tx_fw_statistics_pram;
++	if (ret != -1)
++		return ret;
++
++	ret = !of_find_compatible_node(NULL, NULL, "fsl,mpc8569-pmc");
++
++	return ret;
++}
++EXPORT_SYMBOL(qe_alive_during_sleep);
++
+ phys_addr_t get_qe_base(void)
+ {
+ 	struct device_node *qe;
 -- 
 1.6.3.3
