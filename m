@@ -1,49 +1,26 @@
-Return-Path: <FENKES@de.ibm.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1855DB7BFB
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f211.google.com (mail-gx0-f211.google.com
+	[209.85.217.211])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id E261FB7B7F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 22:59:16 +1000 (EST)
-Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.17.166])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4BB4FDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 22:59:11 +1000 (EST)
-Received: from d12nrmr1507.megacenter.de.ibm.com
-	(d12nrmr1507.megacenter.de.ibm.com [9.149.167.1])
-	by mtagate6.de.ibm.com (8.13.1/8.13.1) with ESMTP id n7SCx1r3008753
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 12:59:01 GMT
-Received: from d12av06.megacenter.de.ibm.com (d12av06.megacenter.de.ibm.com
-	[9.149.165.230])
-	by d12nrmr1507.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id n7SCwq3g3596290
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 14:59:00 +0200
-Received: from d12av06.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av06.megacenter.de.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with
-	ESMTP id n7SCwqr7027817
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 14:58:52 +0200
-In-Reply-To: <f0e08f230908270631j3e159f3fgb0034eb41acdac7b@mail.gmail.com>
-References: <200908261337.56128.fenkes@de.ibm.com>	
-	<f0e08f230908260815g70de3002pfd0b34f1b17abd6@mail.gmail.com>
-	<OFF2257478.FF0FEABE-ONC125761F.00344884-C125761F.00358310@de.ibm.com>
-	<f0e08f230908270631j3e159f3fgb0034eb41acdac7b@mail.gmail.com>
-To: Hal Rosenstock <hal.rosenstock@gmail.com>
+	Sat, 29 Aug 2009 00:10:37 +1000 (EST)
+Received: by gxk7 with SMTP id 7so2840628gxk.8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 28 Aug 2009 07:10:35 -0700 (PDT)
 MIME-Version: 1.0
-Subject: Re: [ewg] [PATCH] IB/ehca: Construct MAD redirect replies from
-	request MAD
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFA25F14CC.CE7042E9-ONC1257620.00453C46-C1257620.00474D70@de.ibm.com>
-Date: Fri, 28 Aug 2009 14:58:49 +0200
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Hal Rosenstock <hnrose@comcast.net>, OF-EWG <ewg@lists.openfabrics.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <6E9D235B18CE694399D781F05D9C42E79F0C2F04@SI-MBX11.de.bosch.com>
+References: <6E9D235B18CE694399D781F05D9C42E79F0C2C12@SI-MBX11.de.bosch.com>
+	<20090827131151.537EC833DBD2@gemini.denx.de>
+	<6E9D235B18CE694399D781F05D9C42E79F0C2F04@SI-MBX11.de.bosch.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 28 Aug 2009 08:10:15 -0600
+Message-ID: <fa686aa40908280710h4237f6e4s47097399a9415cd7@mail.gmail.com>
+Subject: Re: LITE5200 configuration
+To: "FIXED-TERM Seeh Thomas (BEG/EMS1)" <fixed-term.Thomas.Seeh@de.bosch.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,27 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hal Rosenstock <hal.rosenstock@gmail.com> wrote on 27.08.2009 15:31:40:
+On Thu, Aug 27, 2009 at 8:14 AM, FIXED-TERM Seeh Thomas
+(BEG/EMS1)<fixed-term.Thomas.Seeh@de.bosch.com> wrote:
+> ------snip---------
+> [ 2346.499181] VFS: Mounted root (nfs filesystem) on device 0:11.
+> [ 2346.505748] Freeing unused kernel memory: 160k init
+> [ 2346.865420] net eth0: FEC_IEVENT_RFIFO_ERROR
+> [ 2346.871668] ------------[ cut here ]------------
+> [ 2346.876434] Kernel BUG at c01ae1d0 [verbose debug info unavailable]
+[...]
+> Anyone an idea, what I do wrong?
 
-> I don't think it should be hard coded. IMO it would be better to default 
-to 18
-> and somehow able to be adjusted (via a (dynamic) module parameter ?).
+Looks like an Ethernet driver problem which has been seen before.  Try
+the following patch.  Also, you should enable CONFIG_KALLSYMS so that
+your traceback actually shows function names.
 
-I don't see how making this a parameter would benefit any end user, while 
-on the other hand it clutters up our parameter list.
+Cheers,
+g.
 
-Changing RespTimeValue won't influence the IB performance or user-visible 
-behavior of our driver in any way, and in fact, all RespTimeValue says is 
-"Please use a timeout of one second for all future MADs you send me", only 
-there won't be any more MADs in the future because we just redirected the 
-client to someone else. So, the RespTimeValue field is a don't care in the 
-redirection scenario. Setting it to an arbitrary, but legal value isn't 
-much more than a concession towards any broken clients that may be out 
-there.
 
-Given that you seem to like the rest of the code and Jason hasn't spoken 
-up yet, I think we can have Roland merge this patch. Roland, what do you 
-think?
+diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+index cc78633..6d1afb6 100644
+--- a/drivers/net/fec_mpc52xx.c
++++ b/drivers/net/fec_mpc52xx.c
+@@ -758,12 +758,6 @@ static void mpc52xx_fec_reset(struct net_device *dev)
 
-Regards,
-  Joachim
+        mpc52xx_fec_hw_init(dev);
+
+-       if (priv->phydev) {
+-               phy_stop(priv->phydev);
+-               phy_write(priv->phydev, MII_BMCR, BMCR_RESET);
+-               phy_start(priv->phydev);
+-       }
+-
+        bcom_fec_rx_reset(priv->rx_dmatsk);
+        bcom_fec_tx_reset(priv->tx_dmatsk);
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
