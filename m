@@ -1,39 +1,24 @@
-Return-Path: <rdreier@cisco.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id EAE71B7C05
+Return-Path: <ganeshkumar@signal-networks.com>
+Received: from smtp.bizmail.net4india.com (smtp1.bizmail.net4india.com
+	[202.71.129.104])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 8D611B7C0E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 29 Aug 2009 02:40:00 +1000 (EST)
-Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 57387DDD01
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Aug 2009 02:40:00 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Joachim Fenkes <FENKES@de.ibm.com>
-Subject: Re: [ewg] [PATCH] IB/ehca: Construct MAD redirect replies from
-	request MAD
-References: <200908261337.56128.fenkes@de.ibm.com>
-	<f0e08f230908260815g70de3002pfd0b34f1b17abd6@mail.gmail.com>
-	<OFF2257478.FF0FEABE-ONC125761F.00344884-C125761F.00358310@de.ibm.com>
-	<f0e08f230908270631j3e159f3fgb0034eb41acdac7b@mail.gmail.com>
-	<OFA25F14CC.CE7042E9-ONC1257620.00453C46-C1257620.00474D70@de.ibm.com>
-Date: Fri, 28 Aug 2009 09:28:29 -0700
-In-Reply-To: <OFA25F14CC.CE7042E9-ONC1257620.00453C46-C1257620.00474D70@de.ibm.com>
-	(Joachim Fenkes's message of "Fri, 28 Aug 2009 14:58:49 +0200")
-Message-ID: <adabplzsy1e.fsf@cisco.com>
+	Sat, 29 Aug 2009 02:41:04 +1000 (EST)
+Received: from [122.166.21.73] (helo=signal-networks.com)
+	by smtp.bizmail.net4india.com with esmtp (Exim 4.69)
+	(envelope-from <ganeshkumar@signal-networks.com>) id 1MguiY-0000s6-Sa
+	for linuxppc-dev@lists.ozlabs.org; Fri, 28 Aug 2009 11:43:47 +0530
+Received: from [192.168.1.13] by signal-networks.com (MDaemon Standard v10.0.5)
+	with ESMTP id md50000411656.msg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 11:55:35 +0530
+From: Ganesh Kumar <ganeshkumar@signal-networks.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: MPC866 FEC's Receive processing thru pre allocated buffers
+Date: Fri, 28 Aug 2009 11:50:40 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Hal Rosenstock <hnrose@comcast.net>, OF-EWG <ewg@lists.openfabrics.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>,
-	Hal Rosenstock <hal.rosenstock@gmail.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200908281150.40521.ganeshkumar@signal-networks.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,10 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi all,
 
- > Given that you seem to like the rest of the code and Jason hasn't spoken 
- > up yet, I think we can have Roland merge this patch. Roland, what do you 
- > think?
+        I'm working on MPC860 with Linux Kernel 2.4.18.
+As I'm fine tuning the FEC(Fast Ethernet Controller) driver,
+I came across the receive side processing of the ethernet frames
+where in the Rx BD rings are preallocated with the buffers and each time
+a new frame is received, the whole frame will get copied from the Buffer
+Descriptors to the external memory by allocating the skb.
+Is this the right way to do that ?, as memcpy is not efficient inside the
+ISRs.
+So I did some changes in the RX BDs initialization, like allocate the skb
+and initialize the BD's address pointer with the skb->data(using __pa)
+and then on reception of the frame I take out the skb from theBD and allocate
+a new skb and reinit the BD address with the newly allocated skb->data.
 
-I don't see any problem with the idea and this does sound like a step
-forward, so I am planning on merging this (pending review).
+It works for normal conditions, but if I load the driver then
+I receive lots of corrupted frames, So I tried increasing the RX_RING_SIZE(16)
+and also enabling the receive dscriptor active only after I come out of the 
+while loop (inside fec_enet_rx) 
+Increasing the Rx ring eliminated the frame corruption and runs fine on load
+test.
+
+But if I configure my Linux box in bridge mode then it doesn't work,
+i.e., the bridging doesn't happen,
+
+   PC-1 ---->eth0  [Bridge machine] eth1 ----> PC-2
+What I mean here is if we initiate a ping from the 
+PC-1 to PC-2, I don't get any response,
+it continously try to resole the ARP.
+
+What may be the reason??
+Thanks in advance
+
+Please do CC to me as I'm not subscribed to this list.
+
+--GK
