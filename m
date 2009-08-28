@@ -1,26 +1,28 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f211.google.com (mail-gx0-f211.google.com
-	[209.85.217.211])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id E261FB7B7F
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 82183B7BEB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 29 Aug 2009 00:10:37 +1000 (EST)
-Received: by gxk7 with SMTP id 7so2840628gxk.8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 07:10:35 -0700 (PDT)
+	Sat, 29 Aug 2009 01:11:10 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 1C8DEDDD01
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Aug 2009 01:11:09 +1000 (EST)
+Date: Fri, 28 Aug 2009 19:11:04 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] powerpc/qe: Make qe_reset() code path safe for
+	repeated invocation
+Message-ID: <20090828151104.GA20329@oksana.dev.rtsoft.ru>
+References: <20090827173017.GB739@oksana.dev.rtsoft.ru>
+	<A4A4F2A7-4F4C-48A9-A598-6BFB0982656A@kernel.crashing.org>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <6E9D235B18CE694399D781F05D9C42E79F0C2F04@SI-MBX11.de.bosch.com>
-References: <6E9D235B18CE694399D781F05D9C42E79F0C2C12@SI-MBX11.de.bosch.com>
-	<20090827131151.537EC833DBD2@gemini.denx.de>
-	<6E9D235B18CE694399D781F05D9C42E79F0C2F04@SI-MBX11.de.bosch.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 28 Aug 2009 08:10:15 -0600
-Message-ID: <fa686aa40908280710h4237f6e4s47097399a9415cd7@mail.gmail.com>
-Subject: Re: LITE5200 configuration
-To: "FIXED-TERM Seeh Thomas (BEG/EMS1)" <fixed-term.Thomas.Seeh@de.bosch.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <A4A4F2A7-4F4C-48A9-A598-6BFB0982656A@kernel.crashing.org>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,42 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 27, 2009 at 8:14 AM, FIXED-TERM Seeh Thomas
-(BEG/EMS1)<fixed-term.Thomas.Seeh@de.bosch.com> wrote:
-> ------snip---------
-> [ 2346.499181] VFS: Mounted root (nfs filesystem) on device 0:11.
-> [ 2346.505748] Freeing unused kernel memory: 160k init
-> [ 2346.865420] net eth0: FEC_IEVENT_RFIFO_ERROR
-> [ 2346.871668] ------------[ cut here ]------------
-> [ 2346.876434] Kernel BUG at c01ae1d0 [verbose debug info unavailable]
+On Fri, Aug 28, 2009 at 12:34:50AM -0500, Kumar Gala wrote:
 [...]
-> Anyone an idea, what I do wrong?
+> >static int qe_sdma_init(void)
+> >{
+> >	struct sdma __iomem *sdma = &qe_immr->sdma;
+> >-	unsigned long sdma_buf_offset;
+> >+	static unsigned long sdma_buf_offset;
+> >
+> >	if (!sdma)
+> >		return -ENODEV;
+> >
+> >	/* allocate 2 internal temporary buffers (512 bytes size each) for
+> >	 * the SDMA */
+> >- 	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
+> >-	if (IS_ERR_VALUE(sdma_buf_offset))
+> >-		return -ENOMEM;
+> >+	if (!sdma_buf_offset) {
+> >+		sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
+> >+		if (IS_ERR_VALUE(sdma_buf_offset))
+> 
+> shouldn't we zero out sdma_buf_offset otherwise if we call this
+> again we'll think its set.
 
-Looks like an Ethernet driver problem which has been seen before.  Try
-the following patch.  Also, you should enable CONFIG_KALLSYMS so that
-your traceback actually shows function names.
+Technically, no. If qe_sdma_init() fails, kernel will panic:
 
-Cheers,
-g.
+void __init qe_reset(void)
+{
+        ...
+        if (qe_sdma_init())
+                panic("sdma init failed!");
+}
 
+But I see your point, it isn't obvious and may lead to a bug if
+we'll decide to not panic later on. Therefore I'd better make the
+change.
 
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index cc78633..6d1afb6 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -758,12 +758,6 @@ static void mpc52xx_fec_reset(struct net_device *dev)
-
-        mpc52xx_fec_hw_init(dev);
-
--       if (priv->phydev) {
--               phy_stop(priv->phydev);
--               phy_write(priv->phydev, MII_BMCR, BMCR_RESET);
--               phy_start(priv->phydev);
--       }
--
-        bcom_fec_rx_reset(priv->rx_dmatsk);
-        bcom_fec_tx_reset(priv->tx_dmatsk);
+Thanks,
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
