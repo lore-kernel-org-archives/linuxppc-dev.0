@@ -1,26 +1,41 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from viefep20-int.chello.at (viefep20-int.chello.at [62.179.121.40])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id D0E6AB7D7D
+Return-Path: <balbir@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [59.145.155.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EA45DB7D14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 16:54:32 +1000 (EST)
+	Fri, 28 Aug 2009 16:59:22 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp04.in.ibm.com (8.14.3/8.13.1) with ESMTP id n7S6xBGx019234
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 12:29:11 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7S6xBFG2318504
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 12:29:11 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n7S6xAGG004424
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 12:29:11 +0530
+Date: Fri, 28 Aug 2009 12:29:08 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
 	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: arun@linux.vnet.ibm.com
-In-Reply-To: <20090828061434.GA11863@linux.vnet.ibm.com>
+Message-ID: <20090828065908.GF4889@balbir.in.ibm.com>
 References: <20090827114908.GA24986@linux.vnet.ibm.com>
 	<20090827115354.GC24986@linux.vnet.ibm.com>
 	<1251377607.18584.96.camel@twins>
 	<20090828061434.GA11863@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Fri, 28 Aug 2009 08:48:05 +0200
-Message-Id: <1251442085.18584.120.camel@twins>
-Mime-Version: 1.0
+	<1251442085.18584.120.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1251442085.18584.120.camel@twins>
 Cc: Gautham R Shenoy <ego@in.ibm.com>, "Pallipadi,
 	Venkatesh" <venkatesh.pallipadi@intel.com>,
 	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+	arun@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org
+Reply-To: balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,79 +45,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-08-28 at 11:44 +0530, Arun R Bharadwaj wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-27 14:53:27]:
-> 
-> Hi Peter, Ben,
-> 
-> I've put the whole thing in a sort of a block diagram. Hope it
-> explains things more clearly.
-> 
-> 
-> 
-> 
-> 
-> 
-> 				----------------
-> 				|    CPUIDLE   |  (Select idle states like
-> 				|   GOVERNORS  |   C1, C1e, C6 etc in case
-> 				| (Menu/Ladder)|   x86 & nap, snooze in
-> 				|	       |   case of POWER - based on
-> 				----------------   latency & power req)
-> 					^
-> 					|
-> 					|
-> 					|
-> 					|
-> 					|
->   ----------			-----------------	         -------------
->   |	   |			|		|	         |  PSERIES  |
->   |  ACPI  |------------------>	|    CPUIDLE	| <--------------|   IDLE    |
->   |	   |			|		|	         |           |
->   ----------			-----------------	         -------------
-> 
-> Main idle routine- pm_idle()			         Main idle routine-
-> 							     ppc_md.power_save()
-> 
-> pm_idle = cpuidle_pm_idle;			         ppc_md.power_save =
-> (start using cpuidle's idle				      cpuidle_pm_idle();
->  loop, which internally calls
->  governor to select the right
->  state to go into).
-> 
-> 
-> Relavent code snippet from drivers/cpuidle/cpuidle.c
-> -------------------------------------
-> 
-> static void cpuidle_idle_call(void)
-> {
-> 	............
-> 	............
-> 
-> 	/* Call the menu_select() to select the idle state to enter. */
-> 	next_state = cpuidle_curr_governor->select(dev);
-> 
-> 	............
-> 	............
-> 
-> 	/*
-> 	 * Enter the idle state previously selected. target_state->enter
-> 	 * would call pseries_cpuidle_loop() which selects nap/snooze
-> 	 * /
-> 	dev->last_residency = target_state->enter(dev, target_state);
-> }
-> 
-> void cpuidle_install_idle_handler(void)
-> {
-> 	.........
-> 	.........
-> 	cpuidle_pm_idle = cpuidle_idle_call;
-> }
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-28 08:48:05]:
 
-All I'm seeing here is a frigging mess.
+> On Fri, 2009-08-28 at 11:44 +0530, Arun R Bharadwaj wrote:
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-27 14:53:27]:
+> > 
+> > Hi Peter, Ben,
+> > 
+> > I've put the whole thing in a sort of a block diagram. Hope it
+> > explains things more clearly.
+> > 
+> > 
+> > 
+> > 
+> > 
+> > 
+> > 				----------------
+> > 				|    CPUIDLE   |  (Select idle states like
+> > 				|   GOVERNORS  |   C1, C1e, C6 etc in case
+> > 				| (Menu/Ladder)|   x86 & nap, snooze in
+> > 				|	       |   case of POWER - based on
+> > 				----------------   latency & power req)
+> > 					^
+> > 					|
+> > 					|
+> > 					|
+> > 					|
+> > 					|
+> >   ----------			-----------------	         -------------
+> >   |	   |			|		|	         |  PSERIES  |
+> >   |  ACPI  |------------------>	|    CPUIDLE	| <--------------|   IDLE    |
+> >   |	   |			|		|	         |           |
+> >   ----------			-----------------	         -------------
+> > 
+> > Main idle routine- pm_idle()			         Main idle routine-
+> > 							     ppc_md.power_save()
+> > 
+> > pm_idle = cpuidle_pm_idle;			         ppc_md.power_save =
+> > (start using cpuidle's idle				      cpuidle_pm_idle();
+> >  loop, which internally calls
+> >  governor to select the right
+> >  state to go into).
+> > 
+> > 
+> > Relavent code snippet from drivers/cpuidle/cpuidle.c
+> > -------------------------------------
+> > 
+> > static void cpuidle_idle_call(void)
+> > {
+> > 	............
+> > 	............
+> > 
+> > 	/* Call the menu_select() to select the idle state to enter. */
+> > 	next_state = cpuidle_curr_governor->select(dev);
+> > 
+> > 	............
+> > 	............
+> > 
+> > 	/*
+> > 	 * Enter the idle state previously selected. target_state->enter
+> > 	 * would call pseries_cpuidle_loop() which selects nap/snooze
+> > 	 * /
+> > 	dev->last_residency = target_state->enter(dev, target_state);
+> > }
+> > 
+> > void cpuidle_install_idle_handler(void)
+> > {
+> > 	.........
+> > 	.........
+> > 	cpuidle_pm_idle = cpuidle_idle_call;
+> > }
+> 
+> All I'm seeing here is a frigging mess.
+> 
+> How on earths can something called: cpuidle_install_idle_handler() have
+> a void argument, _WHAT_ handler is it going to install?
+>
 
-How on earths can something called: cpuidle_install_idle_handler() have
-a void argument, _WHAT_ handler is it going to install?
+Peter, I think that is a typo, we need a function pointer like your
+snippet of code showed
+ 
+> So somehow you added to the ACPI mess by now having 3 wild function
+> pointers, that's _NOT_ progress.
+>
 
-So somehow you added to the ACPI mess by now having 3 wild function
-pointers, that's _NOT_ progress.
+The goal, IIUC is to integrate three modules
+
+1. CPUIdle - for idle CPU management
+2. Architecture specific code for idle detection
+3. CPUIdle governor
+
+Again, if IIUC
+
+The architecture specific idle code would call an idle loop that would
+call into the CPUIdle framework, which inturn would depend on the
+governor selected.
+
+Passing void* is a mess, we need function pointer registration
+and a framework so that we can query what is registered.
+
+
+ 
+
+-- 
+	Balbir
