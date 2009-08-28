@@ -3,25 +3,24 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 644B2B8080
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EDFB3B85E5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 15:46:12 +1000 (EST)
+	Fri, 28 Aug 2009 15:46:14 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B060ADDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 15:46:11 +1000 (EST)
-Message-Id: <4B4F10E3-C09C-4C26-9D42-4CC297021F0F@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 42D00DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 15:46:13 +1000 (EST)
+Message-Id: <5BA465E6-25AB-4402-85EF-40CDDD2E471B@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090818220415.GB25090@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090818220416.GC25090@oksana.dev.rtsoft.ru>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH 2/8] powerpc/qe&cpm2: Avoid redefinitions in CPM2 and QE
-	headers
-Date: Fri, 28 Aug 2009 00:45:45 -0500
+Subject: Re: [PATCH 3/8] powerpc/cpm: Move CPMFCR_* defines into cpm.h
+Date: Fri, 28 Aug 2009 00:45:51 -0500
 References: <20090818220304.GA23640@oksana.dev.rtsoft.ru>
-	<20090818220415.GB25090@oksana.dev.rtsoft.ru>
+	<20090818220416.GC25090@oksana.dev.rtsoft.ru>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
 	Greg Kroah-Hartman <gregkh@suse.de>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
@@ -39,29 +38,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Aug 18, 2009, at 5:04 PM, Anton Vorontsov wrote:
 
-> struct mcc defined in both immap_qe.h and immap_cpm2.h, so they will
-> conflic when included in a single file. The mcc struct is easy to deal
-> with, since it isn't used in any driver (yet), so let's just rename QE
-> version to qe_mcc.
->
-> The ucb_ctlr is a bit trickier, since it is used by fsl_qe_udc driver,
-> and the driver supports both CPM and QE UDCs, plus the QE version is
-> used to form a bigger immap struct.
->
-> I don't want to touch too much of USB code in this series, so for now
-> let's just copy most generic version into the common cpm.h header,
-> later we'll create cpm_usb.h where we'll place common USB structs that
-> are used by QE/CPM UDC and QE Host drivers (FHCI).
->
-> And as for the structs in qe.h and cpm2.h, just prefix them with qe_
-> and cpm_.
+> The bits are generic to CPM devices, so let's move them to the
+> common header file, so drivers won't need to privately reintroduce
+> another bunch of the same bits (as we can't include cpm2.h header
+> together with cpm1.h).
 >
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> arch/powerpc/include/asm/cpm.h        |   22 ++++++++++++++++++++++
-> arch/powerpc/include/asm/immap_cpm2.h |    2 +-
-> arch/powerpc/include/asm/immap_qe.h   |    8 ++++----
-> 3 files changed, 27 insertions(+), 5 deletions(-)
+> arch/powerpc/include/asm/cpm.h  |   16 ++++++++++++++++
+> arch/powerpc/include/asm/cpm2.h |    8 --------
+> 2 files changed, 16 insertions(+), 8 deletions(-)
 
 
 applied to next
