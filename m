@@ -1,42 +1,37 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [59.145.155.4])
+Return-Path: <ego@in.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CCF35B7CB0
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 484B6B7C0E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 18:20:42 +1000 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp04.in.ibm.com (8.14.3/8.13.1) with ESMTP id n7S8KSAa022674
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 13:50:28 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7S8KRgf2867422
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 13:50:28 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n7S8KPb9029426
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 13:50:26 +0530
-Date: Fri, 28 Aug 2009 13:49:21 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
-	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
-Message-ID: <20090828074721.GA6129@dirshya.in.ibm.com>
-References: <20090827114908.GA24986@linux.vnet.ibm.com>
-	<20090827115354.GC24986@linux.vnet.ibm.com>
-	<1251377607.18584.96.camel@twins>
-	<20090828061434.GA11863@linux.vnet.ibm.com>
-	<1251442085.18584.120.camel@twins>
-	<1251442872.18584.125.camel@twins>
+	Fri, 28 Aug 2009 20:00:36 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id n7S9vxWA029135
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 19:57:59 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7S9wxvs1638586
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 19:58:59 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n7SA0TAX023264
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 20:00:30 +1000
+Subject: [PATCH v2 1/2] cpu: Offline state Framework.
+To: Joel Schopp <jschopp@austin.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Dipankar Sarma <dipankar@in.ibm.com>
+From: Gautham R Shenoy <ego@in.ibm.com>
+Date: Fri, 28 Aug 2009 15:30:16 +0530
+Message-ID: <20090828100016.10641.62621.stgit@sofia.in.ibm.com>
+In-Reply-To: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
+References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1251442872.18584.125.camel@twins>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, "Pallipadi,
-	Venkatesh" <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	arun@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
+Content-Type: text/plain; charset="utf-8"
+Cc: "Darrick J. Wong" <djwong@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,78 +41,312 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Peter Zijlstra <peterz@infradead.org> [2009-08-28 09:01:12]:
+Provide an interface by which the system administrator can decide what state
+should the CPU go to when it is offlined.
 
-> On Fri, 2009-08-28 at 08:48 +0200, Peter Zijlstra wrote:
-> > 
-> > > void cpuidle_install_idle_handler(void)
-> > > {
-> > >       .........
-> > >       .........
-> > >       cpuidle_pm_idle = cpuidle_idle_call;
-> > > }
-> > 
-> > All I'm seeing here is a frigging mess.
-> > 
-> > How on earths can something called: cpuidle_install_idle_handler() have
-> > a void argument, _WHAT_ handler is it going to install?
-> 
-> Argh, now I see, it installs itself as the platform idle handler.
-> 
-> so cpuidle_install_idle_handler() pokes at the unmanaged pm_idle pointer
-> to make cpuidle take control.
-> 
-> On module load it does:
-> 
->  pm_idle_old = pm_idle;
-> 
-> then in the actual idle loop it does:
-> 
->         if (!dev || !dev->enabled) {
->                 if (pm_idle_old)
->                         pm_idle_old();
-> 
-> who is to say that the pointer stored at module init time is still
-> around at that time?
-> 
-> So cpuidle recognised the pm_idle stuff was a flaky, but instead of
-> fixing it, they build a whole new layer on top of it. Brilliant.
-> 
-> /me goes mark this whole thread read, I've got enough things to do.
+To query the hotplug states, on needs to perform a read on the sysfs tunable:
+	/sys/devices/system/cpu/cpu<number>/available_hotplug_states
 
-Hi Peter,
+To query or set the current state for a particular CPU, one needs to
+use the sysfs interface:
+	/sys/devices/system/cpu/cpu<number>/current_state
 
-I understand that you are frustrated with the mess.  We are willing
-to clean up the pm_idle pointer at the moment before the cpuidle
-framework is exploited my more archs.
+This patch implements the architecture independent bits of the
+cpu-offline-state framework.
 
-At this moment we need your suggestions on what interface should we
-call 'clean' and safe.
+Architectures which want to expose the multiple offline-states to the
+userspace are expected to write a driver which can register
+with this framework.
 
-cpuidle.c and the arch independent cpuidle subsystem is not a module
-and its cpuidle_idle_call() routine is valid and can be safely called
-from arch dependent process.c
+Such a driver should:
+- Implement the callbacks defined in the structure struct cpu_offline_driver
+  which can be called into by this framework when the corresponding
+  sysfs interfaces are read or written into.
 
-The fragile part is how cpuidle_idle_call() is hooked onto arch
-specific cpu_idle() function at runtime.  x86 has the pm_idle pointer
-exported while powerpc has ppc_md.power_save pointer being called.
+- Ensure that the following operation puts the CPU in the same state
+  as it did in the absence of the driver.
+	echo 0 > /sys/devices/system/cpu/cpu<number>/online
 
-At cpuidle init time we can override the platform idle function, but
-that will mean we are including arch specific code in cpuidle.c
+This framework also serializes the writes to the "current_state"
+with respect to with the writes to the "online" sysfs tunable.
 
-Do you think having an exported function in cpuidle.c to give us the
-correct pointer to arch code be better than the current situation:
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+---
+ drivers/base/cpu.c  |  176 ++++++++++++++++++++++++++++++++++++++++++++++++---
+ include/linux/cpu.h |   30 +++++++++
+ 2 files changed, 197 insertions(+), 9 deletions(-)
 
-in drivers/cpuidle/cpuidle.c
-
-void (*get_cpuidle_handler(void))(void)
-{
-        return cpuidle_pm_idle;
-}
-EXPORT_SYMBOL(get_cpuidle_handler);
-
-and from pseries/processor_idle.c,
-
-ppc_md.power_save = get_cpuidle_handler();
-
---Vaidy
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index e62a4cc..73efc55 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -20,7 +20,161 @@ EXPORT_SYMBOL(cpu_sysdev_class);
+ 
+ static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
+ 
++struct sys_device *get_cpu_sysdev(unsigned cpu)
++{
++	if (cpu < nr_cpu_ids && cpu_possible(cpu))
++		return per_cpu(cpu_sys_devices, cpu);
++	else
++		return NULL;
++}
++EXPORT_SYMBOL_GPL(get_cpu_sysdev);
++
++
+ #ifdef CONFIG_HOTPLUG_CPU
++
++struct cpu_offline_driver *cpu_offline_driver;
++static DEFINE_MUTEX(cpu_offline_driver_lock);
++
++ssize_t show_available_states(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
++	int cpu_num = cpu->sysdev.id;
++	ssize_t ret;
++
++	mutex_lock(&cpu_offline_driver_lock);
++	if (!cpu_offline_driver) {
++		ret = -EEXIST;
++		goto out_unlock;
++	}
++
++	ret = cpu_offline_driver->read_available_states(cpu_num, buf);
++
++out_unlock:
++	mutex_unlock(&cpu_offline_driver_lock);
++
++	return ret;
++
++}
++
++ssize_t show_current_state(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
++	int cpu_num = cpu->sysdev.id;
++	ssize_t ret = 0;
++
++	mutex_lock(&cpu_offline_driver_lock);
++	if (!cpu_offline_driver) {
++		ret = -EEXIST;
++		goto out_unlock;
++	}
++
++	ret = cpu_offline_driver->read_current_state(cpu_num, buf);
++
++out_unlock:
++	mutex_unlock(&cpu_offline_driver_lock);
++
++	return ret;
++}
++
++ssize_t store_current_state(struct sys_device *dev,
++			struct sysdev_attribute *attr,
++			const char *buf, size_t count)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
++	int cpu_num = cpu->sysdev.id;
++	ssize_t ret = count;
++
++	mutex_lock(&cpu_offline_driver_lock);
++	if (!cpu_offline_driver) {
++		ret = -EEXIST;
++		goto out_unlock;
++	}
++
++	ret = cpu_offline_driver->write_current_state(cpu_num, buf);
++
++out_unlock:
++	mutex_unlock(&cpu_offline_driver_lock);
++
++	if (ret >= 0)
++		ret = count;
++	return ret;
++}
++
++static SYSDEV_ATTR(available_hotplug_states, 0444, show_available_states,
++								NULL);
++static SYSDEV_ATTR(current_state, 0644, show_current_state,
++						store_current_state);
++
++/* Should be called with cpu_offline_driver_lock held */
++void cpu_offline_driver_add_cpu(struct sys_device *cpu_sys_dev)
++{
++	if (!cpu_offline_driver || !cpu_sys_dev)
++		return;
++
++	sysdev_create_file(cpu_sys_dev, &attr_available_hotplug_states);
++	sysdev_create_file(cpu_sys_dev, &attr_current_state);
++}
++
++/* Should be called with cpu_offline_driver_lock held */
++void cpu_offline_driver_remove_cpu(struct sys_device *cpu_sys_dev)
++{
++	if (!cpu_offline_driver || !cpu_sys_dev)
++		return;
++
++	sysdev_remove_file(cpu_sys_dev, &attr_available_hotplug_states);
++	sysdev_remove_file(cpu_sys_dev, &attr_current_state);
++
++}
++
++int register_cpu_offline_driver(struct cpu_offline_driver *arch_cpu_driver)
++{
++	int ret = 0;
++	int cpu;
++	mutex_lock(&cpu_offline_driver_lock);
++
++	if (cpu_offline_driver != NULL) {
++		ret = -EEXIST;
++		goto out_unlock;
++	}
++
++	if (!(arch_cpu_driver->read_available_states &&
++	      arch_cpu_driver->read_current_state &&
++	      arch_cpu_driver->write_current_state)) {
++		ret = -EINVAL;
++		goto out_unlock;
++	}
++
++	cpu_offline_driver = arch_cpu_driver;
++
++	for_each_possible_cpu(cpu)
++		cpu_offline_driver_add_cpu(get_cpu_sysdev(cpu));
++
++out_unlock:
++	mutex_unlock(&cpu_offline_driver_lock);
++	return ret;
++}
++
++void unregister_cpu_offline_driver(struct cpu_offline_driver *arch_cpu_driver)
++{
++	int cpu;
++	mutex_lock(&cpu_offline_driver_lock);
++
++	if (!cpu_offline_driver) {
++		WARN_ON(1);
++		mutex_unlock(&cpu_offline_driver_lock);
++		return;
++	}
++
++	for_each_possible_cpu(cpu)
++		cpu_offline_driver_remove_cpu(get_cpu_sysdev(cpu));
++
++	cpu_offline_driver = NULL;
++	mutex_unlock(&cpu_offline_driver_lock);
++}
++
++
+ static ssize_t show_online(struct sys_device *dev, struct sysdev_attribute *attr,
+ 			   char *buf)
+ {
+@@ -35,6 +189,7 @@ static ssize_t __ref store_online(struct sys_device *dev, struct sysdev_attribut
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
+ 	ssize_t ret;
+ 
++	mutex_lock(&cpu_offline_driver_lock);
+ 	switch (buf[0]) {
+ 	case '0':
+ 		ret = cpu_down(cpu->sysdev.id);
+@@ -50,6 +205,8 @@ static ssize_t __ref store_online(struct sys_device *dev, struct sysdev_attribut
+ 		ret = -EINVAL;
+ 	}
+ 
++	mutex_unlock(&cpu_offline_driver_lock);
++
+ 	if (ret >= 0)
+ 		ret = count;
+ 	return ret;
+@@ -59,23 +216,33 @@ static SYSDEV_ATTR(online, 0644, show_online, store_online);
+ static void __cpuinit register_cpu_control(struct cpu *cpu)
+ {
+ 	sysdev_create_file(&cpu->sysdev, &attr_online);
++	mutex_lock(&cpu_offline_driver_lock);
++	cpu_offline_driver_add_cpu(&cpu->sysdev);
++	mutex_unlock(&cpu_offline_driver_lock);
+ }
++
+ void unregister_cpu(struct cpu *cpu)
+ {
+ 	int logical_cpu = cpu->sysdev.id;
+ 
+ 	unregister_cpu_under_node(logical_cpu, cpu_to_node(logical_cpu));
+ 
++	mutex_lock(&cpu_offline_driver_lock);
++	cpu_offline_driver_remove_cpu(&cpu->sysdev);
++	mutex_unlock(&cpu_offline_driver_lock);
++
+ 	sysdev_remove_file(&cpu->sysdev, &attr_online);
+ 
+ 	sysdev_unregister(&cpu->sysdev);
+ 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
+ 	return;
+ }
++
+ #else /* ... !CONFIG_HOTPLUG_CPU */
+ static inline void register_cpu_control(struct cpu *cpu)
+ {
+ }
++
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+ #ifdef CONFIG_KEXEC
+@@ -224,15 +391,6 @@ int __cpuinit register_cpu(struct cpu *cpu, int num)
+ 	return error;
+ }
+ 
+-struct sys_device *get_cpu_sysdev(unsigned cpu)
+-{
+-	if (cpu < nr_cpu_ids && cpu_possible(cpu))
+-		return per_cpu(cpu_sys_devices, cpu);
+-	else
+-		return NULL;
+-}
+-EXPORT_SYMBOL_GPL(get_cpu_sysdev);
+-
+ int __init cpu_dev_init(void)
+ {
+ 	int err;
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 4d668e0..7636420 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -51,6 +51,36 @@ struct notifier_block;
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern int register_cpu_notifier(struct notifier_block *nb);
+ extern void unregister_cpu_notifier(struct notifier_block *nb);
++
++/*
++ * struct cpu_offline_driver: Callbacks for cpu-offline state framework.
++ *
++ * Defines the hooks for the architecture dependent callbacks
++ * which can be invoked when the user queries the
++ * available_hotplug_states and current_state and sets the current_state.
++ *
++ * read_available_state: Called when the user queries available_hotplug_states.
++ * @cpu: Cpu for which available_hotplug_states are being queried.
++ * @buf: Buffer in which the available hotplug states are to be populated.
++ *
++ * read_current_state: Called when the user queries current_state.
++ * @cpu: Cpu for which current_state is being queried.
++ * @buf: Buffer in which the current_state value is to be returned.
++ *
++ * write_current_state: Called when the user wants to set the current_state.
++ * @cpu: Cpu for which the current state is being set.
++ * @buf: Buffer containing the string corresponding to the current_state
++ * that needs to be set.
++ */
++struct cpu_offline_driver {
++	ssize_t (*read_available_states)(unsigned int cpu, char *buf);
++	ssize_t (*read_current_state)(unsigned int cpu, char *buf);
++	ssize_t (*write_current_state)(unsigned int cpu, const char *buf);
++};
++
++extern int register_cpu_offline_driver(struct cpu_offline_driver *driver);
++extern void unregister_cpu_offline_driver(struct cpu_offline_driver *driver);
++
+ #else
+ 
+ #ifndef MODULE
