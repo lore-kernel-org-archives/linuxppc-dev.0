@@ -1,35 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <bigeasy@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A1A45B6F20
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 89A7AB70CF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 29 Aug 2009 06:15:51 +1000 (EST)
-Received: from mail-qy0-f202.google.com (mail-qy0-f202.google.com
-	[209.85.221.202]) by ozlabs.org (Postfix) with ESMTP id F3A80DDD04
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Aug 2009 06:15:50 +1000 (EST)
-Received: by qyk40 with SMTP id 40so1505654qyk.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 13:15:48 -0700 (PDT)
+	Sat, 29 Aug 2009 06:21:04 +1000 (EST)
+Message-ID: <4A98317B.6050805@linutronix.de>
+Date: Fri, 28 Aug 2009 21:35:23 +0200
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <955e48b80908281105q60c057e8pfc16213f17da9138@mail.gmail.com>
-References: <1250569288.19007.15.camel@pasglop>
-	<4A96F69A.5050003@firmworks.com>
-	<1251411532.20467.74.camel@pasglop> <4A970C85.8090703@firmworks.com>
-	<1251420686.20467.96.camel@pasglop> <4A974295.9020504@firmworks.com>
-	<1251427388.20467.122.camel@pasglop>
-	<955e48b80908280516m457530cfn3b07b52f2fa2c471@mail.gmail.com>
-	<fa686aa40908280906w7953017ek44ee498d57e0a642@mail.gmail.com>
-	<955e48b80908281105q60c057e8pfc16213f17da9138@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 28 Aug 2009 14:09:47 -0600
-Message-ID: <fa686aa40908281309g6eedcdb4neb6a96104807a3f1@mail.gmail.com>
-Subject: Re: [RFC] Clock binding
-To: Stuart Yoder <stuyoder@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: "wilbur.chan" <wilbur512@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc: add kexec support on FSL-Book-E
+References: <e997b7420908011825n4ba2df16u71d53953d6774c21@mail.gmail.com>	
+	<20090804194135.GA19171@www.tglx.de>
+	<e997b7420908250909k74208353v81240eebd3d0896a@mail.gmail.com>
+In-Reply-To: <e997b7420908250909k74208353v81240eebd3d0896a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,38 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 28, 2009 at 12:05 PM, Stuart Yoder<stuyoder@gmail.com> wrote:
->> Lets *not* do it on power.org. =A0I'd like to see the bindings used by
->> more than just powerpc people, and power.org might become a bit of a
->> mental barrier for non-powerpc folks. =A0kernel.org would be a good
->> host. =A0So would ozlabs or infradead. =A0Or I'd be happy to maintain on=
-e
->> on secretlab.
->
-> I think broadening it beyond power.org is good. =A0Along those lines I'd =
-prefer
-> not having this on kernel.org, as device trees are not Linux-centric. =A0=
-There
-> are other OS vendors I've interacted with that I'd like to see use device=
- trees
-> and separating it from Linux may be better IMO.
->
-> We could also create a new domain like "devicetree.org" (?)..but it still
-> would nee a host.
+wilbur.chan wrote:
+> Hi  Sebastian,
+Hi Wilbur,
 
-How about right here:  http://fdt.secretlab.ca/
+> Recently I've implemented  non-SMP kexec on MPC8572 and P2020ds(2G ram).
+> 
+> 
+> 
+> I modified your
+> 
+> misc_32.S that , I setuped  two '1G' entries  after the "rfi"
+> instruction, so that I did
+> not  need to setup  mapping for instruction address.
+If you send some patches I could add them to my tree so we have
+everything together.
 
-I've only just created the site.  I'll fill in some documentation and
-structure in the next few days.  Feel free to create an account and
-start adding stuff.
+> As for SMP supporting,I tried to close one of the CPUs in
+> default_machine_kexec,
+> 
+> and found that , when cpu1  closed  ,and if the second kernel is NON-
+> 
+> SMP,everything went well.so I added some code in
+> 
+> kexec-tools, to make sure the 'kexec' process was running on CPU 0.
+I remember that ppc64 had some code to suspend and start the second CPU in
+the purgatory code. Not sure if there is a generic way for this on ppc32
+or it is a book-e thing. Haven't look at it (yet).
 
-We'll need to talk about how best to manage bindings and have some
-form of review/agreement before a binding is marked as "stable".  And
-the site URL could change as well.  But in the meantime we've got a
-sandbox to start playing in.
+> So, there left one problem, I can not start the second SMP-kernel,
+> even if I  closed
+> 
+> CPU1.  Any suggestions?
+The interesting thing is where do you hang/crash. It could be possible
+that the kernel is waiting for the non-boot cpus to show up and it
+doesn't. Have you look how u-boot prepares the cpus and how kernel
+disables them on shutdown?
 
-g.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> PTW:
+> 
+> no-smp ---> no-smp.........OK
+> no-smp --->smp...............OK
+Does this mean your smp kernel has more that one CPU or just one?
+
+> smp(with cpu1 closed)---->no-smp..............OK
+> smpw(with cpu1 closed)---->smp ................FAILED
+> 
+> 
+> regards,
+> 
+> wilbur
+
+Sebastian
