@@ -3,24 +3,31 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 89097B7B7D
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 85037B7B92
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 29 Aug 2009 01:15:39 +1000 (EST)
+	Sat, 29 Aug 2009 01:19:55 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id A9B6EDDD01
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Aug 2009 01:15:38 +1000 (EST)
-Date: Fri, 28 Aug 2009 19:15:37 +0400
+	by ozlabs.org (Postfix) with ESMTP id B6399DDD01
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Aug 2009 01:19:54 +1000 (EST)
+Date: Fri, 28 Aug 2009 19:19:53 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/5] powerpc/85xx: Add suspend/resume support
-Message-ID: <20090828151537.GA21551@oksana.dev.rtsoft.ru>
-References: <20090827173021.GD739@oksana.dev.rtsoft.ru>
-	<28CAE6C1-8A32-4482-B606-6A22EE5BA5A9@kernel.crashing.org>
+To: Hu Mingkai-B21284 <Mingkai.Hu@freescale.com>
+Subject: Re: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
+Message-ID: <20090828151953.GA14776@oksana.dev.rtsoft.ru>
+References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
+	<20090807195822.GG2735@oksana.dev.rtsoft.ru>
+	<A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org>
+	<20090818233818.GA29042@oksana.dev.rtsoft.ru>
+	<F58A75CD-73CC-4F75-AF51-2BCC0B828E84@kernel.crashing.org>
+	<20090819015101.GA10782@oksana.dev.rtsoft.ru>
+	<73839B4A0818E747864426270AC332C304438438@zmy16exm20.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <28CAE6C1-8A32-4482-B606-6A22EE5BA5A9@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+In-Reply-To: <73839B4A0818E747864426270AC332C304438438@zmy16exm20.fsl.freescale.net>
+Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
+	sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Pierre Ossman <pierre@ossman.eu>, David Vrabel <david.vrabel@csr.com>
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,93 +38,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 28, 2009 at 12:38:51AM -0500, Kumar Gala wrote:
+On Fri, Aug 28, 2009 at 07:02:51PM +0800, Hu Mingkai-B21284 wrote:
+> > On Tue, Aug 18, 2009 at 08:24:17PM -0500, Kumar Gala wrote:
+> > > 
+> > > On Aug 18, 2009, at 6:38 PM, Anton Vorontsov wrote:
+> > > 
+> > > >This patch simply adds sdhci node to the device tree.
+> > > >
+> > > >We specify clock-frequency manually, so that eSDHC will 
+> > work without 
+> > > >upgrading U-Boot. Though, that'll only work for default setup (1500
+> > > >MHz) on new board revisions. For non-default setups, it's 
+> > recommended 
+> > > >to upgrade U-Boot, since it will fixup clock-frequency 
+> > automatically.
+> > > >
+> > > >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > 
+> > > out of interest the 85xx eSDHC don't need the sdhci,wp-inverted 
+> > > property?
+> > 
+> > Yes, eSDHC controllers in MPC85xx report normal state in its 
+> > registers.
+> > 
 > 
-> On Aug 27, 2009, at 12:30 PM, Anton Vorontsov wrote:
+> Hi Anton,
 > 
-> >This patch adds suspend/resume support for MPC8540-compatible and
-> >MPC8569 CPUs.
-> >
-> >MPC8540-compatible PMCs are trivial: we just write SLP bit into PM
-> >control and status register.
-> >
-> >MPC8569 is a bit trickier, QE turns off during suspend and so on
-> >resume we must reload QE microcode firmware and reset QE.
-> >
-> >So far we don't support Deep Sleep mode as found in newer MPC85xx
-> >CPUs (i.e. MPC8536). It can be relatively easy implemented though,
-> >and for it we reserve 'mem' suspend type.
-> >
-> >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> >---
-> >arch/powerpc/Kconfig                  |    2 +-
-> >arch/powerpc/platforms/85xx/Makefile  |    1 +
-> >arch/powerpc/platforms/85xx/suspend.c |  115
-> >+++++++++++++++++++++++++++++++++
-> >3 files changed, 117 insertions(+), 1 deletions(-)
-> >create mode 100644 arch/powerpc/platforms/85xx/suspend.c
-> 
-> How did you test this?
+> The eSDHC controller in different silicon version on MPC8536  reports
+> different WP state in the register PRSSTAT:
 
---- Prerequisites:
+Thanks a million for the heads up!
 
-1. Following patches should be applied in addition:
+Yes, the manual I used ("MPC8536ERM Rev. 0 10/2008") doesn't mention
+that, but the newer manual that I just downloaded ("MPC8536ERM Rev. 1
+05/2009") does.
 
-   rtc: Set wakeup capability for I2C and SPI RTC drivers
-   [5/5] ucc_geth: Implement suspend/resume and Wake-On-LAN support
-   [4/5] ucc_geth: Remove UGETH_MAGIC_PACKET Kconfig symbol and code
-   [3/5] ucc_geth: Factor out MAC initialization steps into a call
-   [2/5] powerpc/qe: Implement qe_alive_during_sleep() helper function
-   [1/5] ucc_geth: Fix NULL pointer dereference in uec_get_ethtool_stats()
+[...]
+> For silicon 1.0,  the macro SDHCI_QUIRK_INVERTED_WRITE_PROTECT is also
+> defined,
+> so the dirver will report the error WP state in function sdhci_get_ro.
 
-2. QE microcode should be placed into /lib/firmware/, i.e.
-   wget http://opensource.freescale.com/firmware/fsl_qe_ucode_8569_10.zip
-   unzip fsl_qe_ucode_8569_10.zip
-   cp fsl_qe_ucode_8569_10.bin /<nfsroot>/lib/firmware/fsl_qe_ucode_8569.bin
+Not any longer. We don't actually define it for any 85xx CPUs.
 
---- Wakeup on RTC alarm:
+I need to think how should we handle all these WP inversions. :-)
 
-# cd /sys/class/rtc/rtc0/
-# echo $(( `cat since_epoch` + 10 )) > wakealarm
-# echo standby > /sys/power/state
-mpc85xx-pmc e00e0080.power: firmware: requesting fsl_qe_ucode_8569.bin
-PM: Syncing filesystems ... done.
-Freezing user space processes ... (elapsed 0.02 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+So, we have inversion in BCSR (depending on the BCSR revision),
+configurable inversion in CPU via GENCFGR for 1.1 silicon, and
+non-configurable non-inverted reporting for 1.0 silicon...
 
-
-The board is now suspended, CPU asserted ASLEEP signal that is
-reflected by the ASLEEP LED on the board (the LED is near UEC2
-port). 10 seconds later the board will wakeup:
-
-qe-firmware: firmware 'MPC8569 QE Microcode Rel_B6900155' for 8569 V1.0
-qe-firmware: uploading microcode 'MPC8569 QE Microcode Rel_B69001' version 1.0.0
-pci 0000:00:00.0: enabling device (0106 -> 0107)
-Restarting tasks ... done.
-PHY: mdio@e0082120:07 - Link is Up - 100/Full
-
---- Wakeup on PHY/link changes (no magic packet support in MPC8569, as
-    QE turns off during sleep):
-
-# ethtool -s eth0 wol p
-# echo standby > /sys/power/state
-PM: Syncing filesystems ... done.
-Freezing user space processes ... (elapsed 0.00 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-
-
-To wakeup, trigger the PHY interrupt (e.g. pull out the ethernet
-cable from eth0):
-
-qe-firmware: firmware 'MPC8569 QE Microcode Rel_B6900155' for 8569 V1.0
-qe-firmware: uploading microcode 'MPC8569 QE Microcode Rel_B69001' version 1.0.0
-pci 0000:00:00.0: enabling device (0106 -> 0107)
-Restarting tasks ... done.
-
-
-UCC magic packet detection was tested on MPC8360E-MDS boards
-(ethtool -s eth0 wol g), I'll send power management support
-patches for 83xx QE boards soon.
+Do you know if there are any plans to fix the WP inversion for
+MPC8569E-MDS boards, or make something like GENCFGR for MPC8569
+CPUs?
 
 Thanks,
 
