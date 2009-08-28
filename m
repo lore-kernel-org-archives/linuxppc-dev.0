@@ -1,27 +1,41 @@
-Return-Path: <david-b@pacbell.net>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <arun@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [59.145.155.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9FDEAB7CCD
+	(Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3B250B7EE3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 15:59:21 +1000 (EST)
-Received: from n20.bullet.mail.mud.yahoo.com (n20.bullet.mail.mud.yahoo.com
-	[68.142.206.147]) by ozlabs.org (Postfix) with SMTP id DEE60DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 15:59:20 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2 0/8] spi_mpc8xxx: Add support for DMA transfers
-Date: Thu, 27 Aug 2009 21:41:59 -0700
-References: <20090818220304.GA23640@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090818220304.GA23640@oksana.dev.rtsoft.ru>
+	Fri, 28 Aug 2009 16:14:48 +1000 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp09.in.ibm.com (8.14.3/8.13.1) with ESMTP id n7S6E0b2009211
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 11:44:00 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n7S6EaKj2142212
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 11:44:36 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n7S6EZXj008968
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 16:14:36 +1000
+Date: Fri, 28 Aug 2009 11:44:34 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
+	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
+Message-ID: <20090828061434.GA11863@linux.vnet.ibm.com>
+References: <20090827114908.GA24986@linux.vnet.ibm.com>
+	<20090827115354.GC24986@linux.vnet.ibm.com>
+	<1251377607.18584.96.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200908272141.59796.david-b@pacbell.net>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1251377607.18584.96.camel@twins>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, "Pallipadi,
+	Venkatesh" <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Arun Bharadwaj <arun@linux.vnet.ibm.com>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,19 +45,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 18 August 2009, Anton Vorontsov wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-27 14:53:27]:
 
-> - Fix build issues in fsl_qe_udc;
-> - Some minor cosmetic changes in "Add support for QE DMA mode and
->   CPM1/CPM2 chips" patch.
+Hi Peter, Ben,
 
-Hmm ... the first four of these are pure PPC stuff and thus
-not appropriate to send as SPI patches; but the second four
-depend on them.
+I've put the whole thing in a sort of a block diagram. Hope it
+explains things more clearly.
 
-So I'll just say
 
-  Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
-and ask you to merge via the PPC tree.  (And hope that you
-verified these are bisectable...)
+
+
+
+				----------------
+				|    CPUIDLE   |  (Select idle states like
+				|   GOVERNORS  |   C1, C1e, C6 etc in case
+				| (Menu/Ladder)|   x86 & nap, snooze in
+				|	       |   case of POWER - based on
+				----------------   latency & power req)
+					^
+					|
+					|
+					|
+					|
+					|
+  ----------			-----------------	         -------------
+  |	   |			|		|	         |  PSERIES  |
+  |  ACPI  |------------------>	|    CPUIDLE	| <--------------|   IDLE    |
+  |	   |			|		|	         |           |
+  ----------			-----------------	         -------------
+
+Main idle routine- pm_idle()			         Main idle routine-
+							     ppc_md.power_save()
+
+pm_idle = cpuidle_pm_idle;			         ppc_md.power_save =
+(start using cpuidle's idle				      cpuidle_pm_idle();
+ loop, which internally calls
+ governor to select the right
+ state to go into).
+
+
+Relavent code snippet from drivers/cpuidle/cpuidle.c
+-------------------------------------
+
+static void cpuidle_idle_call(void)
+{
+	............
+	............
+
+	/* Call the menu_select() to select the idle state to enter. */
+	next_state = cpuidle_curr_governor->select(dev);
+
+	............
+	............
+
+	/*
+	 * Enter the idle state previously selected. target_state->enter
+	 * would call pseries_cpuidle_loop() which selects nap/snooze
+	 * /
+	dev->last_residency = target_state->enter(dev, target_state);
+}
+
+void cpuidle_install_idle_handler(void)
+{
+	.........
+	.........
+	cpuidle_pm_idle = cpuidle_idle_call;
+}
+
+--arun
