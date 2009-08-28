@@ -1,22 +1,27 @@
-Return-Path: <fixed-term.Thomas.Seeh@de.bosch.com>
-Received: from smtp2-v.fe.bosch.de (smtp2-v.fe.bosch.de [139.15.237.6])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 2DF3BB7BF8
+Return-Path: <galak@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05396B7C0E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 15:32:30 +1000 (EST)
-From: "FIXED-TERM Seeh Thomas (BEG/EMS1)" <fixed-term.Thomas.Seeh@de.bosch.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Date: Fri, 28 Aug 2009 07:32:26 +0200
-Subject: AW: AW: LITE5200 configuration
-Message-ID: <6E9D235B18CE694399D781F05D9C42E79F0C2FAC@SI-MBX11.de.bosch.com>
-References: <6E9D235B18CE694399D781F05D9C42E79F0C2C12@SI-MBX11.de.bosch.com>
-	<20090827131151.537EC833DBD2@gemini.denx.de>
-	<6E9D235B18CE694399D781F05D9C42E79F0C2F04@SI-MBX11.de.bosch.com>
-	<4A96AE29.2010701@grandegger.com>
-In-Reply-To: <4A96AE29.2010701@grandegger.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Wolfgang Denk <wd@denx.de>
+	Fri, 28 Aug 2009 15:32:32 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5C657DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 15:32:30 +1000 (EST)
+Message-Id: <F1F0F3C8-2A90-4DC9-903A-E37458EA098E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090827173011.GA739@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH 1/5] powerpc/qe: Increase MAX_QE_RISC to 4
+Date: Fri, 28 Aug 2009 00:32:19 -0500
+References: <20090827173011.GA739@oksana.dev.rtsoft.ru>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,18 +32,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+On Aug 27, 2009, at 12:30 PM, Anton Vorontsov wrote:
 
->> FIXED-TERM Seeh Thomas (BEG/EMS1) wrote:
->> Dear Mr Denk,
->>
->> thanks for your reply. I checked out kernel 2.6.30.3 stable for testing =
-too.
->> I mean it's really a Lite5200. That is the U-boot boot message:
+>
+> MPC8569 CPUs have four QE RISCs, so we need to increase MAX_QE_RISC
+> constant, otherwise qe_upload_firmware() fails at sanity checking.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> arch/powerpc/sysdev/qe_lib/qe.c |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> Just to be sure. The old Lite5200 eval board has *one* PCI slot, while
-> the new Lite5200B has *two* slots. IIRC, there are also early Lite5200B
-> boards using MPC5200 v1.2 chips.
+applied to next
 
-> Wolfgang (Grandegger)
-
-There is only one PCI slot on the board.
+- k
