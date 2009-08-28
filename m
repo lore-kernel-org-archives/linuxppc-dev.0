@@ -1,29 +1,28 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id AD1CDB7BE5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 28 Aug 2009 17:21:44 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D8C63B7D14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 17:03:11 +1000 (EST)
-Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
-	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
-From: Peter Zijlstra <peterz@infradead.org>
-To: arun@linux.vnet.ibm.com
-In-Reply-To: <1251442085.18584.120.camel@twins>
-References: <20090827114908.GA24986@linux.vnet.ibm.com>
-	<20090827115354.GC24986@linux.vnet.ibm.com>
-	<1251377607.18584.96.camel@twins>
-	<20090828061434.GA11863@linux.vnet.ibm.com>
-	<1251442085.18584.120.camel@twins>
+	by ozlabs.org (Postfix) with ESMTPS id 3B627DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Aug 2009 17:21:42 +1000 (EST)
+Subject: Re: lmb: Remove __init from lmb_end_of_DRAM()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <200908271959.n7RJxNvV008624@hera.kernel.org>
+References: <200908271959.n7RJxNvV008624@hera.kernel.org>
 Content-Type: text/plain
-Date: Fri, 28 Aug 2009 09:01:12 +0200
-Message-Id: <1251442872.18584.125.camel@twins>
+Date: Fri, 28 Aug 2009 17:21:28 +1000
+Message-Id: <1251444088.20467.169.camel@pasglop>
 Mime-Version: 1.0
-Cc: Gautham R Shenoy <ego@in.ibm.com>, "Pallipadi,
-	Venkatesh" <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,39 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-08-28 at 08:48 +0200, Peter Zijlstra wrote:
+On Thu, 2009-08-27 at 19:59 +0000, Linux Kernel Mailing List wrote:
+> Gitweb:     http://git.kernel.org/linus/4f8ee2c9cc0e885d2bb50ef26db66150ab25213e
+> Commit:     4f8ee2c9cc0e885d2bb50ef26db66150ab25213e
+> Parent:     cf481442f2e086316ed8a1b3046f00ad23632ac4
+> Author:     Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> AuthorDate: Thu Aug 27 17:20:30 2009 +1000
+> Committer:  Linus Torvalds <torvalds@linux-foundation.org>
+> CommitDate: Thu Aug 27 12:25:26 2009 -0700
 > 
-> > void cpuidle_install_idle_handler(void)
-> > {
-> >       .........
-> >       .........
-> >       cpuidle_pm_idle = cpuidle_idle_call;
-> > }
-> 
-> All I'm seeing here is a frigging mess.
-> 
-> How on earths can something called: cpuidle_install_idle_handler() have
-> a void argument, _WHAT_ handler is it going to install?
+>     lmb: Remove __init from lmb_end_of_DRAM()
+>     
+>     We call lmb_end_of_DRAM() to test whether a DMA mask is ok on a machine
+>     without IOMMU, but this function is marked as __init.
+>     
+>     I don't think there's a clean way to get the top of RAM max_pfn doesn't
+>     appear to include highmem or I missed (or we have a bug :-) so for now,
+>     let's just avoid having a broken 2.6.31 by making this function
+>     non-__init and we can revisit later.
 
-Argh, now I see, it installs itself as the platform idle handler.
+And another brown paper bag for me ! Patch is fine, but doesn't do the
+job because some idiot (me) didn't actually test (it looked so obvious)
+and didn't notice somebody had the strange idea to also put __init on
+the declaration in the .h file ! Ugh.
 
-so cpuidle_install_idle_handler() pokes at the unmanaged pm_idle pointer
-to make cpuidle take control.
+I'll send another patch later, have to run home now.
 
-On module load it does:
-
- pm_idle_old = pm_idle;
-
-then in the actual idle loop it does:
-
-        if (!dev || !dev->enabled) {
-                if (pm_idle_old)
-                        pm_idle_old();
-
-who is to say that the pointer stored at module init time is still
-around at that time?
-
-So cpuidle recognised the pm_idle stuff was a flaky, but instead of
-fixing it, they build a whole new layer on top of it. Brilliant.
-
-/me goes mark this whole thread read, I've got enough things to do.
+Cheers,
+Ben.
