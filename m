@@ -1,20 +1,20 @@
 Return-Path: <a.p.zijlstra@chello.nl>
-Received: from viefep16-int.chello.at (viefep16-int.chello.at [62.179.121.36])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 6EED0B7C26
+Received: from viefep20-int.chello.at (viefep20-int.chello.at [62.179.121.40])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id D0E6AB7D7D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 Aug 2009 16:46:35 +1000 (EST)
+	Fri, 28 Aug 2009 16:54:32 +1000 (EST)
 Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
 	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: arun@linux.vnet.ibm.com
-In-Reply-To: <20090828044901.GA10283@linux.vnet.ibm.com>
+In-Reply-To: <20090828061434.GA11863@linux.vnet.ibm.com>
 References: <20090827114908.GA24986@linux.vnet.ibm.com>
 	<20090827115354.GC24986@linux.vnet.ibm.com>
 	<1251377607.18584.96.camel@twins>
-	<20090828044901.GA10283@linux.vnet.ibm.com>
+	<20090828061434.GA11863@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Fri, 28 Aug 2009 08:40:11 +0200
-Message-Id: <1251441611.18584.112.camel@twins>
+Date: Fri, 28 Aug 2009 08:48:05 +0200
+Message-Id: <1251442085.18584.120.camel@twins>
 Mime-Version: 1.0
 Cc: Gautham R Shenoy <ego@in.ibm.com>, "Pallipadi,
 	Venkatesh" <venkatesh.pallipadi@intel.com>,
@@ -30,28 +30,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-08-28 at 10:19 +0530, Arun R Bharadwaj wrote:
+On Fri, 2009-08-28 at 11:44 +0530, Arun R Bharadwaj wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-27 14:53:27]:
+> 
+> Hi Peter, Ben,
+> 
+> I've put the whole thing in a sort of a block diagram. Hope it
+> explains things more clearly.
 > 
 > 
-> This only does the job of picking the right idle loop for current
-> latency and power requirement. This is already done in ladder/menu
-> governors under the routines menu_select()/ladder_select().
-> I'm not sure whats the purpose of it here.
+> 
+> 
+> 
+> 
+> 				----------------
+> 				|    CPUIDLE   |  (Select idle states like
+> 				|   GOVERNORS  |   C1, C1e, C6 etc in case
+> 				| (Menu/Ladder)|   x86 & nap, snooze in
+> 				|	       |   case of POWER - based on
+> 				----------------   latency & power req)
+> 					^
+> 					|
+> 					|
+> 					|
+> 					|
+> 					|
+>   ----------			-----------------	         -------------
+>   |	   |			|		|	         |  PSERIES  |
+>   |  ACPI  |------------------>	|    CPUIDLE	| <--------------|   IDLE    |
+>   |	   |			|		|	         |           |
+>   ----------			-----------------	         -------------
+> 
+> Main idle routine- pm_idle()			         Main idle routine-
+> 							     ppc_md.power_save()
+> 
+> pm_idle = cpuidle_pm_idle;			         ppc_md.power_save =
+> (start using cpuidle's idle				      cpuidle_pm_idle();
+>  loop, which internally calls
+>  governor to select the right
+>  state to go into).
+> 
+> 
+> Relavent code snippet from drivers/cpuidle/cpuidle.c
+> -------------------------------------
+> 
+> static void cpuidle_idle_call(void)
+> {
+> 	............
+> 	............
+> 
+> 	/* Call the menu_select() to select the idle state to enter. */
+> 	next_state = cpuidle_curr_governor->select(dev);
+> 
+> 	............
+> 	............
+> 
+> 	/*
+> 	 * Enter the idle state previously selected. target_state->enter
+> 	 * would call pseries_cpuidle_loop() which selects nap/snooze
+> 	 * /
+> 	dev->last_residency = target_state->enter(dev, target_state);
+> }
+> 
+> void cpuidle_install_idle_handler(void)
+> {
+> 	.........
+> 	.........
+> 	cpuidle_pm_idle = cpuidle_idle_call;
+> }
 
-I can't seem to find ladder_select() but menu_select() doesn't manage
-pm_idle and its not clear what it does manage.
+All I'm seeing here is a frigging mess.
 
-> Here we are only concerned about the main idle loop, which is
-> pm_idle/ppc_md.power_save. After setting the main idle loop to
-> cpuidle_pm_idle, that would call cpuidle_idle_call() which would do
-> the job of picking the right low level idle loop based on latency and
-> other requirements.
+How on earths can something called: cpuidle_install_idle_handler() have
+a void argument, _WHAT_ handler is it going to install?
 
-It also gets pm_idle unexported and avoids anybody directly tinkering
-with the function pointer, _that_ is the whole goal.
-
-pm_idle is it exists today, and the whole cpuidle_{un,}install*() is
-utter crap. It relies on unmanaged access to this function pointer.
-
-/me stop looking at drivers/cpuidle/, convoluted mess that is, shame on
-you for wanting to have anything to do with it.
+So somehow you added to the ACPI mess by now having 3 wild function
+pointers, that's _NOT_ progress.
