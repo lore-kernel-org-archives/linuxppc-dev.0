@@ -1,24 +1,35 @@
-Return-Path: <ganeshkumar@signal-networks.com>
-Received: from smtp.bizmail.net4india.com (smtp1.bizmail.net4india.com
-	[202.71.129.104])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 8D611B7C0E
+Return-Path: <wmb@firmworks.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5B385B7B92
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 29 Aug 2009 02:41:04 +1000 (EST)
-Received: from [122.166.21.73] (helo=signal-networks.com)
-	by smtp.bizmail.net4india.com with esmtp (Exim 4.69)
-	(envelope-from <ganeshkumar@signal-networks.com>) id 1MguiY-0000s6-Sa
-	for linuxppc-dev@lists.ozlabs.org; Fri, 28 Aug 2009 11:43:47 +0530
-Received: from [192.168.1.13] by signal-networks.com (MDaemon Standard v10.0.5)
-	with ESMTP id md50000411656.msg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2009 11:55:35 +0530
-From: Ganesh Kumar <ganeshkumar@signal-networks.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: MPC866 FEC's Receive processing thru pre allocated buffers
-Date: Fri, 28 Aug 2009 11:50:40 +0530
+	Sat, 29 Aug 2009 04:13:17 +1000 (EST)
+Received: from rs35.luxsci.com (rs35.luxsci.com [66.216.127.90])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DB035DDD04
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Aug 2009 04:13:16 +1000 (EST)
+Message-ID: <4A981E1D.9060802@firmworks.com>
+Date: Fri, 28 Aug 2009 08:12:45 -1000
+From: Mitch Bradley <wmb@firmworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200908281150.40521.ganeshkumar@signal-networks.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] Clock binding
+References: <1250569288.19007.15.camel@pasglop>	<1251346157.20467.22.camel@pasglop>
+	<4A96F69A.5050003@firmworks.com>
+	<1251411532.20467.74.camel@pasglop>
+	<4A970C85.8090703@firmworks.com>
+	<1251420686.20467.96.camel@pasglop>
+	<4A974295.9020504@firmworks.com>
+	<1251427388.20467.122.camel@pasglop>
+	<955e48b80908280516m457530cfn3b07b52f2fa2c471@mail.gmail.com>
+	<fa686aa40908280906w7953017ek44ee498d57e0a642@mail.gmail.com>
+In-Reply-To: <fa686aa40908280906w7953017ek44ee498d57e0a642@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss@lists.ozlabs.org, Stuart Yoder <stuyoder@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +39,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+>
+> What about openfirmware.info?  I don't know anything about Core
+> Systems who maintains that site though.
+>   
 
-        I'm working on MPC860 with Linux Kernel 2.4.18.
-As I'm fine tuning the FEC(Fast Ethernet Controller) driver,
-I came across the receive side processing of the ethernet frames
-where in the Rx BD rings are preallocated with the buffers and each time
-a new frame is received, the whole frame will get copied from the Buffer
-Descriptors to the external memory by allocating the skb.
-Is this the right way to do that ?, as memcpy is not efficient inside the
-ISRs.
-So I did some changes in the RX BDs initialization, like allocate the skb
-and initialize the BD's address pointer with the skb->data(using __pa)
-and then on reception of the frame I take out the skb from theBD and allocate
-a new skb and reinit the BD address with the newly allocated skb->data.
-
-It works for normal conditions, but if I load the driver then
-I receive lots of corrupted frames, So I tried increasing the RX_RING_SIZE(16)
-and also enabling the receive dscriptor active only after I come out of the 
-while loop (inside fec_enet_rx) 
-Increasing the Rx ring eliminated the frame corruption and runs fine on load
-test.
-
-But if I configure my Linux box in bridge mode then it doesn't work,
-i.e., the bridging doesn't happen,
-
-   PC-1 ---->eth0  [Bridge machine] eth1 ----> PC-2
-What I mean here is if we initiate a ping from the 
-PC-1 to PC-2, I don't get any response,
-it continously try to resole the ARP.
-
-What may be the reason??
-Thanks in advance
-
-Please do CC to me as I'm not subscribed to this list.
-
---GK
+Stefan Reinauer is the main guy there.  He has been very helpful in 
+hosting the Open Firmware source tree.  I expect that he would be 
+willing to host the wiki, since he has been interested in Open Firmware 
+for many years.
