@@ -3,17 +3,18 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 01DA7B7BB0
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BF905B7DAA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 Aug 2009 05:37:21 +1000 (EST)
+	Mon, 31 Aug 2009 05:37:23 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 3D6E0DDD04
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 05:37:20 +1000 (EST)
-Date: Sun, 30 Aug 2009 23:37:18 +0400
+	by ozlabs.org (Postfix) with ESMTP id 98825DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 05:37:22 +1000 (EST)
+Date: Sun, 30 Aug 2009 23:37:21 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 2/5] powerpc/85xx/86xx: Add suspend/resume support
-Message-ID: <20090830193718.GB17519@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/5] powerpc/85xx: Add power management support for
+	MPC85xxMDS boards
+Message-ID: <20090830193721.GC17519@oksana.dev.rtsoft.ru>
 References: <20090830193625.GA14693@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -29,197 +30,424 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds suspend/resume support for MPC8540, MPC8569 and
-MPC8641D-compatible CPUs.
-
-MPC8540 and MPC8641D-compatible PMCs are trivial: we just write
-the SLP bit into the PM control and status register.
-
-MPC8569 is a bit trickier, QE turns off during suspend, thus on
-resume we must reload QE microcode and reset QE.
-
-So far we don't support Deep Sleep mode as found in newer MPC85xx
-CPUs (i.e. MPC8536). It can be relatively easy implemented though,
-and for it we reserve 'mem' suspend type.
+- Add power management controller nodes;
+- Add interrupts for RTC nodes, the RTC interrupt may be used as a
+  wakeup source;
+- Add sleep properties and sleep-nexus nodes.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/Kconfig          |   11 +++-
- arch/powerpc/sysdev/Makefile  |    1 +
- arch/powerpc/sysdev/fsl_pmc.c |  124 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 135 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/sysdev/fsl_pmc.c
+ arch/powerpc/boot/dts/mpc8568mds.dts      |  119 +++++++++++++++++++----------
+ arch/powerpc/boot/dts/mpc8569mds.dts      |  111 ++++++++++++++++++---------
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    1 +
+ 3 files changed, 153 insertions(+), 78 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index d00131c..a0743a7 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -212,7 +212,8 @@ config ARCH_HIBERNATION_POSSIBLE
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index 00c2bbd..6d892ba 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -40,6 +40,8 @@
+ 			i-cache-line-size = <32>;	// 32 bytes
+ 			d-cache-size = <0x8000>;		// L1, 32K
+ 			i-cache-size = <0x8000>;		// L1, 32K
++			sleep = <&pmc 0x00008000	// core
++				 &pmc 0x00004000>;	// timebase
+ 			timebase-frequency = <0>;
+ 			bus-frequency = <0>;
+ 			clock-frequency = <0>;
+@@ -94,31 +96,41 @@
+ 			interrupts = <16 2>;
+ 		};
  
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
--	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx
-+	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
-+		   PPC_85xx || PPC_86xx
+-		i2c@3000 {
++		i2c-sleep-nexus {
+ 			#address-cells = <1>;
+-			#size-cells = <0>;
+-			cell-index = <0>;
+-			compatible = "fsl-i2c";
+-			reg = <0x3000 0x100>;
+-			interrupts = <43 2>;
+-			interrupt-parent = <&mpic>;
+-			dfsrr;
++			#size-cells = <1>;
++			compatible = "simple-bus";
++			sleep = <&pmc 0x00000004>;
++			ranges;
  
- config PPC_DCR_NATIVE
- 	bool
-@@ -642,6 +643,14 @@ config FSL_PCI
- 	select PPC_INDIRECT_PCI
- 	select PCI_QUIRKS
+-			rtc@68 {
+-				compatible = "dallas,ds1374";
+-				reg = <0x68>;
++			i2c@3000 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				cell-index = <0>;
++				compatible = "fsl-i2c";
++				reg = <0x3000 0x100>;
++				interrupts = <43 2>;
++				interrupt-parent = <&mpic>;
++				dfsrr;
++
++				rtc@68 {
++					compatible = "dallas,ds1374";
++					reg = <0x68>;
++					interrupts = <3 1>;
++					interrupt-parent = <&mpic>;
++				};
+ 			};
+-		};
  
-+config FSL_PMC
-+	bool
-+	default y
-+	depends on SUSPEND && (PPC_85xx || PPC_86xx)
-+	help
-+	  Freescale MPC85xx/MPC86xx power management controller support
-+	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
-+
- config 4xx_SOC
- 	bool
+-		i2c@3100 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			cell-index = <1>;
+-			compatible = "fsl-i2c";
+-			reg = <0x3100 0x100>;
+-			interrupts = <43 2>;
+-			interrupt-parent = <&mpic>;
+-			dfsrr;
++			i2c@3100 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				cell-index = <1>;
++				compatible = "fsl-i2c";
++				reg = <0x3100 0x100>;
++				interrupts = <43 2>;
++				interrupt-parent = <&mpic>;
++				dfsrr;
++			};
+ 		};
  
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 9d4b174..5642924 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
- obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
- obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
-+obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
- obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
- obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
- obj-$(CONFIG_MPC8xxx_GPIO)	+= mpc8xxx_gpio.o
-diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
-new file mode 100644
-index 0000000..843c284
---- /dev/null
-+++ b/arch/powerpc/sysdev/fsl_pmc.c
-@@ -0,0 +1,124 @@
-+/*
-+ * Suspend/resume support
-+ *
-+ * Copyright © 2009  MontaVista Software, Inc.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
+ 		dma@21300 {
+@@ -128,6 +140,8 @@
+ 			reg = <0x21300 0x4>;
+ 			ranges = <0x0 0x21100 0x200>;
+ 			cell-index = <0>;
++			sleep = <&pmc 0x00000400>;
 +
-+#include <linux/init.h>
-+#include <linux/types.h>
-+#include <linux/suspend.h>
-+#include <linux/device.h>
-+#include <linux/of_platform.h>
-+#include <linux/firmware.h>
-+#include <asm/qe.h>
+ 			dma-channel@0 {
+ 				compatible = "fsl,mpc8568-dma-channel",
+ 						"fsl,eloplus-dma-channel";
+@@ -176,6 +190,7 @@
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy2>;
++			sleep = <&pmc 0x00000080>;
+ 
+ 			mdio@520 {
+ 				#address-cells = <1>;
+@@ -228,6 +243,7 @@
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy3>;
++			sleep = <&pmc 0x00000040>;
+ 
+ 			mdio@520 {
+ 				#address-cells = <1>;
+@@ -242,30 +258,47 @@
+ 			};
+ 		};
+ 
+-		serial0: serial@4500 {
+-			cell-index = <0>;
+-			device_type = "serial";
+-			compatible = "ns16550";
+-			reg = <0x4500 0x100>;
+-			clock-frequency = <0>;
+-			interrupts = <42 2>;
+-			interrupt-parent = <&mpic>;
++		duart-sleep-nexus {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "simple-bus";
++			sleep = <&pmc 0x00000002>;
++			ranges;
 +
-+struct pmc_regs {
-+	__be32 devdisr;
-+	__be32 devdisr2;
-+	__be32 :32;
-+	__be32 :32;
-+	__be32 pmcsr;
-+#define PMCSR_SLP	(1 << 17)
-+};
++			serial0: serial@4500 {
++				cell-index = <0>;
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <0x4500 0x100>;
++				clock-frequency = <0>;
++				interrupts = <42 2>;
++				interrupt-parent = <&mpic>;
++			};
 +
-+struct pmc_data {
-+	unsigned int flags;
-+#define PMC_NEED_QE_RELOAD (1 << 0)
++			serial1: serial@4600 {
++				cell-index = <1>;
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <0x4600 0x100>;
++				clock-frequency = <0>;
++				interrupts = <42 2>;
++				interrupt-parent = <&mpic>;
++			};
+ 		};
+ 
+-		global-utilities@e0000 {	//global utilities block
+-			compatible = "fsl,mpc8548-guts";
++		global-utilities@e0000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8568-guts", "fsl,mpc8548-guts";
+ 			reg = <0xe0000 0x1000>;
++			ranges = <0 0xe0000 0x1000>;
+ 			fsl,has-rstcr;
+-		};
+ 
+-		serial1: serial@4600 {
+-			cell-index = <1>;
+-			device_type = "serial";
+-			compatible = "ns16550";
+-			reg = <0x4600 0x100>;
+-			clock-frequency = <0>;
+-			interrupts = <42 2>;
+-			interrupt-parent = <&mpic>;
++			pmc: power@70 {
++				compatible = "fsl,mpc8568-pmc",
++					     "fsl,mpc8548-pmc";
++				reg = <0x70 0x20>;
++			};
+ 		};
+ 
+ 		crypto@30000 {
+@@ -277,6 +310,7 @@
+ 			fsl,channel-fifo-len = <24>;
+ 			fsl,exec-units-mask = <0xfe>;
+ 			fsl,descriptor-types-mask = <0x12b0ebf>;
++			sleep = <&pmc 0x01000000>;
+ 		};
+ 
+ 		mpic: pic@40000 {
+@@ -376,6 +410,7 @@
+ 		compatible = "fsl,qe";
+ 		ranges = <0x0 0xe0080000 0x40000>;
+ 		reg = <0xe0080000 0x480>;
++		sleep = <&pmc 0x00000800>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <396000000>;
+ 		fsl,qe-num-riscs = <2>;
+@@ -509,6 +544,7 @@
+ 		bus-range = <0 255>;
+ 		ranges = <0x2000000 0x0 0x80000000 0x80000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x0 0xe2000000 0x0 0x800000>;
++		sleep = <&pmc 0x80000000>;
+ 		clock-frequency = <66666666>;
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+@@ -534,6 +570,7 @@
+ 		bus-range = <0 255>;
+ 		ranges = <0x2000000 0x0 0xa0000000 0xa0000000 0x0 0x10000000
+ 			  0x1000000 0x0 0x0 0xe2800000 0x0 0x800000>;
++		sleep = <&pmc 0x20000000>;
+ 		clock-frequency = <33333333>;
+ 		#interrupt-cells = <1>;
+ 		#size-cells = <2>;
+@@ -570,5 +607,7 @@
+ 			      55 2 /* msg2_tx   */
+ 			      56 2 /* msg2_rx   */>;
+ 		interrupt-parent = <&mpic>;
++		sleep = <&pmc 0x00080000   /* controller */
++			 &pmc 0x00040000>; /* message unit */
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8569mds.dts b/arch/powerpc/boot/dts/mpc8569mds.dts
+index 880f896..b35e62c 100644
+--- a/arch/powerpc/boot/dts/mpc8569mds.dts
++++ b/arch/powerpc/boot/dts/mpc8569mds.dts
+@@ -41,6 +41,8 @@
+ 			i-cache-line-size = <32>;	// 32 bytes
+ 			d-cache-size = <0x8000>;		// L1, 32K
+ 			i-cache-size = <0x8000>;		// L1, 32K
++			sleep = <&pmc 0x00008000	// core
++				 &pmc 0x00004000>;	// timebase
+ 			timebase-frequency = <0>;
+ 			bus-frequency = <0>;
+ 			clock-frequency = <0>;
+@@ -59,6 +61,7 @@
+ 		reg = <0xe0005000 0x1000>;
+ 		interrupts = <19 2>;
+ 		interrupt-parent = <&mpic>;
++		sleep = <&pmc 0x08000000>;
+ 
+ 		ranges = <0x0 0x0 0xfe000000 0x02000000
+ 			  0x1 0x0 0xf8000000 0x00008000
+@@ -158,51 +161,69 @@
+ 			interrupts = <18 2>;
+ 		};
+ 
+-		i2c@3000 {
++		i2c-sleep-nexus {
+ 			#address-cells = <1>;
+-			#size-cells = <0>;
+-			cell-index = <0>;
+-			compatible = "fsl-i2c";
+-			reg = <0x3000 0x100>;
+-			interrupts = <43 2>;
+-			interrupt-parent = <&mpic>;
+-			dfsrr;
++			#size-cells = <1>;
++			compatible = "simple-bus";
++			sleep = <&pmc 0x00000004>;
++			ranges;
 +
-+	const char *fw_name;
-+};
++			i2c@3000 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				cell-index = <0>;
++				compatible = "fsl-i2c";
++				reg = <0x3000 0x100>;
++				interrupts = <43 2>;
++				interrupt-parent = <&mpic>;
++				dfsrr;
 +
-+static struct device *pmc_dev;
-+static struct pmc_regs __iomem *pmc_regs;
-+static const struct pmc_data *pmc_data;
-+static struct qe_firmware *pmc_qefw;
++				rtc@68 {
++					compatible = "dallas,ds1374";
++					reg = <0x68>;
++					interrupts = <3 1>;
++					interrupt-parent = <&mpic>;
++				};
++			};
+ 
+-			rtc@68 {
+-				compatible = "dallas,ds1374";
+-				reg = <0x68>;
++			i2c@3100 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				cell-index = <1>;
++				compatible = "fsl-i2c";
++				reg = <0x3100 0x100>;
++				interrupts = <43 2>;
++				interrupt-parent = <&mpic>;
++				dfsrr;
+ 			};
+ 		};
+ 
+-		i2c@3100 {
++		duart-sleep-nexus {
+ 			#address-cells = <1>;
+-			#size-cells = <0>;
+-			cell-index = <1>;
+-			compatible = "fsl-i2c";
+-			reg = <0x3100 0x100>;
+-			interrupts = <43 2>;
+-			interrupt-parent = <&mpic>;
+-			dfsrr;
+-		};
++			#size-cells = <1>;
++			compatible = "simple-bus";
++			sleep = <&pmc 0x00000002>;
++			ranges;
+ 
+-		serial0: serial@4500 {
+-			cell-index = <0>;
+-			device_type = "serial";
+-			compatible = "ns16550";
+-			reg = <0x4500 0x100>;
+-			clock-frequency = <0>;
+-			interrupts = <42 2>;
+-			interrupt-parent = <&mpic>;
+-		};
++			serial0: serial@4500 {
++				cell-index = <0>;
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <0x4500 0x100>;
++				clock-frequency = <0>;
++				interrupts = <42 2>;
++				interrupt-parent = <&mpic>;
++			};
+ 
+-		serial1: serial@4600 {
+-			cell-index = <1>;
+-			device_type = "serial";
+-			compatible = "ns16550";
+-			reg = <0x4600 0x100>;
+-			clock-frequency = <0>;
+-			interrupts = <42 2>;
+-			interrupt-parent = <&mpic>;
++			serial1: serial@4600 {
++				cell-index = <1>;
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <0x4600 0x100>;
++				clock-frequency = <0>;
++				interrupts = <42 2>;
++				interrupt-parent = <&mpic>;
++			};
+ 		};
+ 
+ 		L2: l2-cache-controller@20000 {
+@@ -260,6 +281,7 @@
+ 			reg = <0x2e000 0x1000>;
+ 			interrupts = <72 0x8>;
+ 			interrupt-parent = <&mpic>;
++			sleep = <&pmc 0x00200000>;
+ 			/* Filled in by U-Boot */
+ 			clock-frequency = <0>;
+ 			status = "disabled";
+@@ -276,6 +298,7 @@
+ 			fsl,channel-fifo-len = <24>;
+ 			fsl,exec-units-mask = <0xbfe>;
+ 			fsl,descriptor-types-mask = <0x3ab0ebf>;
++			sleep = <&pmc 0x01000000>;
+ 		};
+ 
+ 		mpic: pic@40000 {
+@@ -304,9 +327,18 @@
+ 		};
+ 
+ 		global-utilities@e0000 {
+-			compatible = "fsl,mpc8569-guts";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8569-guts", "fsl,mpc8548-guts";
+ 			reg = <0xe0000 0x1000>;
++			ranges = <0 0xe0000 0x1000>;
+ 			fsl,has-rstcr;
 +
-+static int pmc_suspend_enter(suspend_state_t state)
-+{
-+	setbits32(&pmc_regs->pmcsr, PMCSR_SLP);
-+	/* At this point, the CPU is asleep. */
-+
-+	/* For 86xx we need to clear the bit on resume, 85xx don't care. */
-+	clrbits32(&pmc_regs->pmcsr, PMCSR_SLP);
-+
-+	if (pmc_qefw) {
-+		int ret;
-+
-+		ret = qe_upload_firmware(pmc_qefw);
-+		if (ret)
-+			dev_err(pmc_dev, "could not upload firmware\n");
-+
-+		qe_reset();
-+	}
-+	return 0;
-+}
-+
-+static int pmc_suspend_valid(suspend_state_t state)
-+{
-+	if (state != PM_SUSPEND_STANDBY)
-+		return 0;
-+
-+	if (pmc_data && pmc_data->flags & PMC_NEED_QE_RELOAD && !pmc_qefw) {
-+		const struct firmware *fw;
-+		int ret;
-+
-+		ret = request_firmware(&fw, pmc_data->fw_name, pmc_dev);
-+		if (ret) {
-+			dev_err(pmc_dev, "could not request firmware %s\n",
-+				pmc_data->fw_name);
-+			return 0;
-+		}
-+
-+		pmc_qefw = (struct qe_firmware *)fw->data;
-+	}
-+
-+	return 1;
-+}
-+
-+static struct platform_suspend_ops pmc_suspend_ops = {
-+	.valid = pmc_suspend_valid,
-+	.enter = pmc_suspend_enter,
-+};
-+
-+static int pmc_probe(struct of_device *ofdev, const struct of_device_id *id)
-+{
-+	pmc_regs = of_iomap(ofdev->node, 0);
-+	if (!pmc_regs)
-+		return -ENOMEM;
-+
-+	pmc_dev = &ofdev->dev;
-+	pmc_data = id->data;
-+	suspend_set_ops(&pmc_suspend_ops);
-+	return 0;
-+}
-+
-+static struct pmc_data mpc8569_pmc_data = {
-+	.flags = PMC_NEED_QE_RELOAD,
-+	.fw_name = "fsl_qe_ucode_8569.bin",
-+};
-+
-+static const struct of_device_id pmc_ids[] = {
-+	{ .compatible = "fsl,mpc8569-pmc", .data = &mpc8569_pmc_data, },
-+	{ .compatible = "fsl,mpc8548-pmc", },
-+	{ .compatible = "fsl,mpc8641d-pmc", },
-+	{ },
-+};
-+
-+static struct of_platform_driver pmc_driver = {
-+	.driver.name = "fsl-pmc",
-+	.match_table = pmc_ids,
-+	.probe = pmc_probe,
-+};
-+
-+static int __init pmc_init(void)
-+{
-+	return of_register_platform_driver(&pmc_driver);
-+}
-+device_initcall(pmc_init);
++			pmc: power@70 {
++				compatible = "fsl,mpc8569-pmc",
++					     "fsl,mpc8548-pmc";
++				reg = <0x70 0x20>;
++			};
+ 		};
+ 
+ 		par_io@e0100 {
+@@ -422,6 +454,7 @@
+ 		compatible = "fsl,qe";
+ 		ranges = <0x0 0xe0080000 0x40000>;
+ 		reg = <0xe0080000 0x480>;
++		sleep = <&pmc 0x00000800>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <0>;
+ 		fsl,qe-num-riscs = <4>;
+@@ -680,6 +713,7 @@
+ 		bus-range = <0 255>;
+ 		ranges = <0x2000000 0x0 0xa0000000 0xa0000000 0x0 0x10000000
+ 			  0x1000000 0x0 0x00000000 0xe2800000 0x0 0x00800000>;
++		sleep = <&pmc 0x20000000>;
+ 		clock-frequency = <33333333>;
+ 		pcie@0 {
+ 			reg = <0x0 0x0 0x0 0x0 0x0>;
+@@ -710,5 +744,6 @@
+ 			      55 2 /* msg2_tx   */
+ 			      56 2 /* msg2_rx   */>;
+ 		interrupt-parent = <&mpic>;
++		sleep = <&pmc 0x00080000>;
+ 	};
+ };
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 20a61d0..995ddad 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -300,6 +300,7 @@ static struct of_device_id mpc85xx_ids[] = {
+ 	{ .compatible = "fsl,qe", },
+ 	{ .compatible = "gianfar", },
+ 	{ .compatible = "fsl,rapidio-delta", },
++	{ .compatible = "fsl,mpc8548-guts", },
+ 	{},
+ };
+ 
 -- 
 1.6.3.3
