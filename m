@@ -1,26 +1,28 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 75BF4B7FA5
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 33FE1B7B7F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 Aug 2009 05:37:28 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id AF0FADDD04
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 05:37:27 +1000 (EST)
-Date: Sun, 30 Aug 2009 23:37:26 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 5/5] powerpc/83xx: Add power management support for MPC83xx
-	QE boards
-Message-ID: <20090830193726.GE17519@oksana.dev.rtsoft.ru>
-References: <20090830193625.GA14693@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090830193625.GA14693@oksana.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+	Mon, 31 Aug 2009 07:22:55 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8F73EDDD0B
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 07:22:54 +1000 (EST)
+Subject: Re: [PATCH] powermac: thermal control turns system off in normal
+	temperature conditions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <200908302054.20498.bzolnier@gmail.com>
+References: <200908302054.20498.bzolnier@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 31 Aug 2009 07:22:31 +1000
+Message-Id: <1251667351.20467.201.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Lyonel Vincent <lyonel@ezix.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,167 +32,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Simply add power management controller nodes and sleep properties.
+On Sun, 2009-08-30 at 20:54 +0200, Bartlomiej Zolnierkiewicz wrote:
+> From: Lyonel Vincent <lyonel@ezix.org>
+> Subject: [PATCH] powermac: thermal control turns system off in normal temperature conditions
+> 
+> On certain PowerMacs, a module (therm_windtunnel) controls various
+> thermal settings (it can report CPU/case temperature, change speed
+> of internal fans, etc.)
+> 
+> By default, the hardware thermal control has a temperature limit to
+> protect the computer from damages (the default limit seems to be 80°C)
+> but therm_windtunnel.c reduces it to an anormaly low value (65°C),
+> which means that he computer will shut down randomly when hit by direct
+> sun light or during summer (summer in France can be quite hot), actually
+> possibly losing data instead of protecting it.
+> 
+> The overheat limit in therm_windtunnel.c:253-254 should be set to 75°C
+> and 70°C instead of 65°C and 60°C respectively.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/kmeter1.dts     |    7 +++++++
- arch/powerpc/boot/dts/mpc832x_mds.dts |    9 +++++++++
- arch/powerpc/boot/dts/mpc832x_rdb.dts |    9 +++++++++
- arch/powerpc/boot/dts/mpc836x_mds.dts |    9 +++++++++
- arch/powerpc/boot/dts/mpc836x_rdk.dts |    9 +++++++++
- 5 files changed, 43 insertions(+), 0 deletions(-)
+Looks reasonable, thanks.
 
-diff --git a/arch/powerpc/boot/dts/kmeter1.dts b/arch/powerpc/boot/dts/kmeter1.dts
-index 167044f..65b8b4f 100644
---- a/arch/powerpc/boot/dts/kmeter1.dts
-+++ b/arch/powerpc/boot/dts/kmeter1.dts
-@@ -59,6 +59,13 @@
- 		reg = <0xe0000000 0x00000200>;
- 		bus-frequency = <0>;	/* Filled in by U-Boot */
- 
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8360-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
-index 436c9c6..05ad8c9 100644
---- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-@@ -79,6 +79,13 @@
- 			reg = <0x200 0x100>;
- 		};
- 
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8323-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -163,6 +170,7 @@
- 			fsl,channel-fifo-len = <24>;
- 			fsl,exec-units-mask = <0x4c>;
- 			fsl,descriptor-types-mask = <0x0122003f>;
-+			sleep = <&pmc 0x03000000>;
- 		};
- 
- 		ipic: pic@700 {
-@@ -428,5 +436,6 @@
- 		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		sleep = <&pmc 0x00010000>;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-index 9a0952f..f4fadb2 100644
---- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-@@ -62,6 +62,13 @@
- 			reg = <0x200 0x100>;
- 		};
- 
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8323-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -141,6 +148,7 @@
- 			fsl,channel-fifo-len = <24>;
- 			fsl,exec-units-mask = <0x4c>;
- 			fsl,descriptor-types-mask = <0x0122003f>;
-+			sleep = <&pmc 0x03000000>;
- 		};
- 
- 		ipic:pic@700 {
-@@ -360,5 +368,6 @@
- 		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		sleep = <&pmc 0x00010000>;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
-index 39ff4c8..45cfa1c 100644
---- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-@@ -99,6 +99,13 @@
- 			reg = <0x200 0x100>;
- 		};
- 
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8360-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -194,6 +201,7 @@
- 			fsl,channel-fifo-len = <24>;
- 			fsl,exec-units-mask = <0x7e>;
- 			fsl,descriptor-types-mask = <0x01010ebf>;
-+			sleep = <&pmc 0x03000000>;
- 		};
- 
- 		ipic: pic@700 {
-@@ -470,5 +478,6 @@
- 		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		sleep = <&pmc 0x00010000>;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-index 6315d6f..bdf4459 100644
---- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-@@ -71,6 +71,13 @@
- 			reg = <0x200 0x100>;
- 		};
- 
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8360-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -161,6 +168,7 @@
- 			fsl,channel-fifo-len = <24>;
- 			fsl,exec-units-mask = <0x7e>;
- 			fsl,descriptor-types-mask = <0x01010ebf>;
-+			sleep = <&pmc 0x03000000>;
- 		};
- 
- 		ipic: interrupt-controller@700 {
-@@ -455,6 +463,7 @@
- 				 0xa800 0 0 2 &ipic 20 8
- 				 0xa800 0 0 3 &ipic 21 8
- 				 0xa800 0 0 4 &ipic 18 8>;
-+		sleep = <&pmc 0x00010000>;
- 		/* filled by u-boot */
- 		bus-range = <0 0>;
- 		clock-frequency = <0>;
--- 
-1.6.3.3
+Ben.
+
+> From: Lyonel Vincent <lyonel@ezix.org>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> Resurrected from Fedora's bugzilla (aka The Big Black Hole):
+> https://bugzilla.redhat.com/show_bug.cgi?id=171937
+> 
+> The patch itself seems perfectly valid to me
+> (especially given comments in therm_windtunnel.c).
+> 
+>  drivers/macintosh/therm_windtunnel.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: b/drivers/macintosh/therm_windtunnel.c
+> ===================================================================
+> --- a/drivers/macintosh/therm_windtunnel.c
+> +++ b/drivers/macintosh/therm_windtunnel.c
+> @@ -239,8 +239,8 @@ setup_hardware( void )
+>  	 * to be on the safe side (OSX doesn't)...
+>  	 */
+>  	if( x.overheat_temp == (80 << 8) ) {
+> -		x.overheat_temp = 65 << 8;
+> -		x.overheat_hyst = 60 << 8;
+> +		x.overheat_temp = 75 << 8;
+> +		x.overheat_hyst = 70 << 8;
+>  		write_reg( x.thermostat, 2, x.overheat_hyst, 2 );
+>  		write_reg( x.thermostat, 3, x.overheat_temp, 2 );
+>  
