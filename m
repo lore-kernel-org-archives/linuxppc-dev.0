@@ -3,18 +3,17 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 896BCB7B61
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 01DA7B7BB0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 Aug 2009 05:37:17 +1000 (EST)
+	Mon, 31 Aug 2009 05:37:21 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id BF923DDD04
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 05:37:16 +1000 (EST)
-Date: Sun, 30 Aug 2009 23:37:15 +0400
+	by ozlabs.org (Postfix) with ESMTP id 3D6E0DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 05:37:20 +1000 (EST)
+Date: Sun, 30 Aug 2009 23:37:18 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/5] powerpc/qe: Make qe_reset() code path safe for
-	repeated invocation
-Message-ID: <20090830193715.GA17519@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/5] powerpc/85xx/86xx: Add suspend/resume support
+Message-ID: <20090830193718.GB17519@oksana.dev.rtsoft.ru>
 References: <20090830193625.GA14693@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -30,92 +29,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For MPC8569 CPUs we'll need to reset QE after each suspend, so make
-qe_reset() code path suitable for repeated invocation, that is:
+This patch adds suspend/resume support for MPC8540, MPC8569 and
+MPC8641D-compatible CPUs.
 
-- Don't initialize rheap structures if already initialized;
-- Don't allocate muram for SDMA if already allocated, just reinitialize
-  registers with previously allocated muram offset;
-- Remove __init attributes from qe_reset() and cpm_muram_init();
+MPC8540 and MPC8641D-compatible PMCs are trivial: we just write
+the SLP bit into the PM control and status register.
+
+MPC8569 is a bit trickier, QE turns off during suspend, thus on
+resume we must reload QE microcode and reset QE.
+
+So far we don't support Deep Sleep mode as found in newer MPC85xx
+CPUs (i.e. MPC8536). It can be relatively easy implemented though,
+and for it we reserve 'mem' suspend type.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/include/asm/qe.h    |    2 +-
- arch/powerpc/sysdev/cpm_common.c |    5 ++++-
- arch/powerpc/sysdev/qe_lib/qe.c  |   12 +++++++-----
- 3 files changed, 12 insertions(+), 7 deletions(-)
+ arch/powerpc/Kconfig          |   11 +++-
+ arch/powerpc/sysdev/Makefile  |    1 +
+ arch/powerpc/sysdev/fsl_pmc.c |  124 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 135 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/fsl_pmc.c
 
-diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
-index e8232bb..2f44754 100644
---- a/arch/powerpc/include/asm/qe.h
-+++ b/arch/powerpc/include/asm/qe.h
-@@ -87,7 +87,7 @@ extern spinlock_t cmxgcr_lock;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d00131c..a0743a7 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -212,7 +212,8 @@ config ARCH_HIBERNATION_POSSIBLE
  
- /* Export QE common operations */
- #ifdef CONFIG_QUICC_ENGINE
--extern void __init qe_reset(void);
-+extern void qe_reset(void);
- #else
- static inline void qe_reset(void) {}
- #endif
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index e4b6d66..9de72c9 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -72,7 +72,7 @@ static phys_addr_t muram_pbase;
- /* Max address size we deal with */
- #define OF_MAX_ADDR_CELLS	4
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+-	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx
++	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
++		   PPC_85xx || PPC_86xx
  
--int __init cpm_muram_init(void)
-+int cpm_muram_init(void)
- {
- 	struct device_node *np;
- 	struct resource r;
-@@ -81,6 +81,9 @@ int __init cpm_muram_init(void)
- 	int i = 0;
- 	int ret = 0;
+ config PPC_DCR_NATIVE
+ 	bool
+@@ -642,6 +643,14 @@ config FSL_PCI
+ 	select PPC_INDIRECT_PCI
+ 	select PCI_QUIRKS
  
-+	if (muram_pbase)
++config FSL_PMC
++	bool
++	default y
++	depends on SUSPEND && (PPC_85xx || PPC_86xx)
++	help
++	  Freescale MPC85xx/MPC86xx power management controller support
++	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
++
+ config 4xx_SOC
+ 	bool
+ 
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 9d4b174..5642924 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -16,6 +16,7 @@ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
++obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
+ obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
+ obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
+ obj-$(CONFIG_MPC8xxx_GPIO)	+= mpc8xxx_gpio.o
+diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
+new file mode 100644
+index 0000000..843c284
+--- /dev/null
++++ b/arch/powerpc/sysdev/fsl_pmc.c
+@@ -0,0 +1,124 @@
++/*
++ * Suspend/resume support
++ *
++ * Copyright © 2009  MontaVista Software, Inc.
++ *
++ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <linux/init.h>
++#include <linux/types.h>
++#include <linux/suspend.h>
++#include <linux/device.h>
++#include <linux/of_platform.h>
++#include <linux/firmware.h>
++#include <asm/qe.h>
++
++struct pmc_regs {
++	__be32 devdisr;
++	__be32 devdisr2;
++	__be32 :32;
++	__be32 :32;
++	__be32 pmcsr;
++#define PMCSR_SLP	(1 << 17)
++};
++
++struct pmc_data {
++	unsigned int flags;
++#define PMC_NEED_QE_RELOAD (1 << 0)
++
++	const char *fw_name;
++};
++
++static struct device *pmc_dev;
++static struct pmc_regs __iomem *pmc_regs;
++static const struct pmc_data *pmc_data;
++static struct qe_firmware *pmc_qefw;
++
++static int pmc_suspend_enter(suspend_state_t state)
++{
++	setbits32(&pmc_regs->pmcsr, PMCSR_SLP);
++	/* At this point, the CPU is asleep. */
++
++	/* For 86xx we need to clear the bit on resume, 85xx don't care. */
++	clrbits32(&pmc_regs->pmcsr, PMCSR_SLP);
++
++	if (pmc_qefw) {
++		int ret;
++
++		ret = qe_upload_firmware(pmc_qefw);
++		if (ret)
++			dev_err(pmc_dev, "could not upload firmware\n");
++
++		qe_reset();
++	}
++	return 0;
++}
++
++static int pmc_suspend_valid(suspend_state_t state)
++{
++	if (state != PM_SUSPEND_STANDBY)
 +		return 0;
 +
- 	spin_lock_init(&cpm_muram_lock);
- 	/* initialize the info header */
- 	rh_init(&cpm_muram_info, 1,
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index b06564f..4eaf2a9 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -91,7 +91,7 @@ phys_addr_t get_qe_base(void)
- 
- EXPORT_SYMBOL(get_qe_base);
- 
--void __init qe_reset(void)
-+void qe_reset(void)
- {
- 	if (qe_immr == NULL)
- 		qe_immr = ioremap(get_qe_base(), QE_IMMAP_SIZE);
-@@ -317,16 +317,18 @@ EXPORT_SYMBOL(qe_put_snum);
- static int qe_sdma_init(void)
- {
- 	struct sdma __iomem *sdma = &qe_immr->sdma;
--	unsigned long sdma_buf_offset;
-+	static unsigned long sdma_buf_offset = (unsigned long)-ENOMEM;
- 
- 	if (!sdma)
- 		return -ENODEV;
- 
- 	/* allocate 2 internal temporary buffers (512 bytes size each) for
- 	 * the SDMA */
-- 	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
--	if (IS_ERR_VALUE(sdma_buf_offset))
--		return -ENOMEM;
-+	if (IS_ERR_VALUE(sdma_buf_offset)) {
-+		sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
-+		if (IS_ERR_VALUE(sdma_buf_offset))
-+			return -ENOMEM;
++	if (pmc_data && pmc_data->flags & PMC_NEED_QE_RELOAD && !pmc_qefw) {
++		const struct firmware *fw;
++		int ret;
++
++		ret = request_firmware(&fw, pmc_data->fw_name, pmc_dev);
++		if (ret) {
++			dev_err(pmc_dev, "could not request firmware %s\n",
++				pmc_data->fw_name);
++			return 0;
++		}
++
++		pmc_qefw = (struct qe_firmware *)fw->data;
 +	}
- 
- 	out_be32(&sdma->sdebcr, (u32) sdma_buf_offset & QE_SDEBCR_BA_MASK);
-  	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
++
++	return 1;
++}
++
++static struct platform_suspend_ops pmc_suspend_ops = {
++	.valid = pmc_suspend_valid,
++	.enter = pmc_suspend_enter,
++};
++
++static int pmc_probe(struct of_device *ofdev, const struct of_device_id *id)
++{
++	pmc_regs = of_iomap(ofdev->node, 0);
++	if (!pmc_regs)
++		return -ENOMEM;
++
++	pmc_dev = &ofdev->dev;
++	pmc_data = id->data;
++	suspend_set_ops(&pmc_suspend_ops);
++	return 0;
++}
++
++static struct pmc_data mpc8569_pmc_data = {
++	.flags = PMC_NEED_QE_RELOAD,
++	.fw_name = "fsl_qe_ucode_8569.bin",
++};
++
++static const struct of_device_id pmc_ids[] = {
++	{ .compatible = "fsl,mpc8569-pmc", .data = &mpc8569_pmc_data, },
++	{ .compatible = "fsl,mpc8548-pmc", },
++	{ .compatible = "fsl,mpc8641d-pmc", },
++	{ },
++};
++
++static struct of_platform_driver pmc_driver = {
++	.driver.name = "fsl-pmc",
++	.match_table = pmc_ids,
++	.probe = pmc_probe,
++};
++
++static int __init pmc_init(void)
++{
++	return of_register_platform_driver(&pmc_driver);
++}
++device_initcall(pmc_init);
 -- 
 1.6.3.3
