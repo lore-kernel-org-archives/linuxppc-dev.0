@@ -1,29 +1,34 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <stuyoder@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 16BEFB708C
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 43B8BB7B75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Sep 2009 02:24:27 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n7VGNr6Y018658
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2009 12:23:53 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n7VGOJmf239216
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2009 12:24:19 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n7VGOJSc024644
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2009 12:24:19 -0400
-Date: Mon, 31 Aug 2009 12:24:12 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Please pull 'next' branch of 4xx tree
-Message-ID: <20090831162412.GD32320@zod.rchland.ibm.com>
+	Tue,  1 Sep 2009 03:49:05 +1000 (EST)
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id A578BDDD04
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Sep 2009 03:49:04 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id b6so1686809ana.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 10:49:02 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <fa686aa40908281309g6eedcdb4neb6a96104807a3f1@mail.gmail.com>
+References: <1250569288.19007.15.camel@pasglop>
+	<1251411532.20467.74.camel@pasglop> <4A970C85.8090703@firmworks.com>
+	<1251420686.20467.96.camel@pasglop> <4A974295.9020504@firmworks.com>
+	<1251427388.20467.122.camel@pasglop>
+	<955e48b80908280516m457530cfn3b07b52f2fa2c471@mail.gmail.com>
+	<fa686aa40908280906w7953017ek44ee498d57e0a642@mail.gmail.com>
+	<955e48b80908281105q60c057e8pfc16213f17da9138@mail.gmail.com>
+	<fa686aa40908281309g6eedcdb4neb6a96104807a3f1@mail.gmail.com>
+Date: Mon, 31 Aug 2009 12:49:02 -0500
+Message-ID: <955e48b80908311049p4a08e683q3a23239b3307f502@mail.gmail.com>
+Subject: Re: [RFC] Clock binding
+From: Stuart Yoder <stuyoder@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,55 +38,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+> How about right here: =A0http://fdt.secretlab.ca/
+>
+> I've only just created the site. =A0I'll fill in some documentation and
+> structure in the next few days. =A0Feel free to create an account and
+> start adding stuff.
+>
+> We'll need to talk about how best to manage bindings and have some
+> form of review/agreement before a binding is marked as "stable". =A0And
+> the site URL could change as well. =A0But in the meantime we've got a
+> sandbox to start playing in.
 
-Please pull the 'next' branch of the 4xx tree to get the following changes.
+Unless there are better suggestions, your site is fine with me.
 
-Thanks,
-josh
+One other thing-- we need to clarify how the content of the wiki
+is licensed.
 
-The following changes since commit 77c0a700c1c292edafa11c1e52821ce4636f81b0:
-  Benjamin Herrenschmidt (1):
-        powerpc: Properly start decrementer on BookE secondary CPUs
+I assume (and hope) that the intent is for the content to be freely
+usable in the most flexible way.  But, this has to be explicit.
 
-are available in the git repository at:
+An issue we ran into with the ePAPR was that on the IEEE
+1275 working group site (http://playground.sun.com/1275/home.html)
+that there were bindings that we wanted to include in the ePAPR,
+but the stuff on 1275 site was not copyrighted and no license
+was specified.   This meant that we were in a legally murky
+situation if we cut and pasted anything from one of those
+document.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
+My suggestion is to specify that all content of this wiki are
+released to the public domain.  How to do this is a bit tricky
+but Creative Commons has a license called CC0 that does
+this by waving your copyright rights.
 
-Solomon Peachy (1):
-      powerpc/40x: Add support for the ESTeem 195E (PPC405EP) SBC
+Your wiki currently has the following statement above the commit
+message:
 
-Stefan Roese (2):
-      powerpc/44x: Update Arches dts
-      powerpc/44x: Update Arches defconfig
+    Please note that all contributions to FDTWiki may be edited, altered,
+    or removed by other contributors. If you do not want your writing to
+    be edited mercilessly, then do not submit it here.
+    You are also promising us that you wrote this yourself, or copied it
+    from a public domain or similar free resource (see
+    FDTWiki:Copyrights for details). Do not submit copyrighted work
+    without permission!
 
-Tiejun Chen (2):
-      powerpc/405ex: provide necessary fixup function to support cuImage
-      powerpc/405ex: support cuImage via included dtb
+I would suggest appending the following statement to the above
+text:
 
-fkan@amcc.com (1):
-      powerpc/44x: Add Eiger AMCC (AppliedMicro) PPC460SX evaluation board support.
+    You irrevocably agree to release your contribution to the public
+    domain.  To the extent possible under law, you waive all copyright or
+    neighboring rights to your contribution.  See [CC0|link-to-CC0].
 
- arch/powerpc/boot/4xx.c                    |  142 ++++
- arch/powerpc/boot/4xx.h                    |    1 +
- arch/powerpc/boot/Makefile                 |    6 +-
- arch/powerpc/boot/cuboot-hotfoot.c         |  142 ++++
- arch/powerpc/boot/cuboot-kilauea.c         |   49 ++
- arch/powerpc/boot/dcr.h                    |    4 +-
- arch/powerpc/boot/dts/arches.dts           |   50 ++
- arch/powerpc/boot/dts/eiger.dts            |  421 ++++++++++
- arch/powerpc/boot/dts/hotfoot.dts          |  294 +++++++
- arch/powerpc/boot/ppcboot-hotfoot.h        |  133 +++
- arch/powerpc/configs/44x/arches_defconfig  |  382 ++++++++--
- arch/powerpc/configs/44x/eiger_defconfig   | 1252 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/40x/Kconfig         |   10 +
- arch/powerpc/platforms/40x/ppc40x_simple.c |    3 +-
- arch/powerpc/platforms/44x/Kconfig         |   12 +
- arch/powerpc/platforms/44x/ppc44x_simple.c |    1 +
- 16 files changed, 2846 insertions(+), 56 deletions(-)
- create mode 100644 arch/powerpc/boot/cuboot-hotfoot.c
- create mode 100644 arch/powerpc/boot/cuboot-kilauea.c
- create mode 100644 arch/powerpc/boot/dts/eiger.dts
- create mode 100644 arch/powerpc/boot/dts/hotfoot.dts
- create mode 100644 arch/powerpc/boot/ppcboot-hotfoot.h
- create mode 100644 arch/powerpc/configs/44x/eiger_defconfig
+The above language comes from generated text of the CC0 tool from
+Creative Commons.
+
+Stuart
