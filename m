@@ -1,19 +1,22 @@
-Return-Path: <ben@somanetworks.com>
-Received: from zimbra.somanetworks.com (ns1.somanetworks.com [216.126.67.39])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id CF8FFB7063
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id F17DBB70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Sep 2009 10:01:12 +1000 (EST)
-Message-ID: <4A9C6446.2000202@somanetworks.com>
-Date: Mon, 31 Aug 2009 20:01:10 -0400
-From: Benjamin Gamsa <ben@somanetworks.com>
+	Tue,  1 Sep 2009 10:07:01 +1000 (EST)
+Date: Tue, 1 Sep 2009 03:47:13 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Louise.Yeung@Sun.COM
+Subject: Re: ECC & Magic bitmask errors with JFFS2 file system on 6.23
+	kernel for	powerpc
+Message-ID: <20090831234713.GA6767@oksana.dev.rtsoft.ru>
+References: <OF4DA6695F.B8912DE2-ON652575F5.004F0DE0-652575F5.00519736@lntemsys.com>
+	<4A9C34EE.4040606@Sun.COM>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: time jumps forward/backwards
-References: <4A9C465D.4010801@somanetworks.com>
-	<19100.24755.889091.412993@cargo.ozlabs.ibm.com>
-In-Reply-To: <19100.24755.889091.412993@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4A9C34EE.4040606@Sun.COM>
+Cc: louise <louise@Sun.COM>, Ravinder Kumar <Ravinder.Kumar@Sun.COM>,
+	linuxppc-dev@lists.ozlabs.org, Rupesh Kumar <Rupesh.Kumar@Lntemsys.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,28 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Ben Gamsa writes:
+On Mon, Aug 31, 2009 at 01:39:10PM -0700, Louise.Yeung@Sun.COM wrote:
+> *Hi Rupesh,
 > 
->> It appears to be the case that when the time on the system is around the 
->> epoch (1970), that time will occasionally jump forward and then backward 
->> by about 17592 seconds.  When it jumps forward, it always jumps back a 
->> few milliseconds later.  However, it's not always easy to catch these 
->> occurrences.  The delta is more specifically about 17592186059 usec, 
->> give or take a few 10s of microseconds (most of the time), despite the 
->> fact that the user-level program I have that is testing it only checks 
->> every 10 milliseconds.
-> 
-> I don't think the time code in the kernel is designed to handle
-> negative values, i.e., times before the epoch.  If you want it to do
-> that you'll have to check places like arch/powerpc/kernel/time.c,
-> kernel/time/timekeeping.c, arch/powerpc/include/asm/time.h, etc., and
-> make sure that it uses signed types where necessary and that the
-> arithmetic is correct.
-> 
+> We are using a Freescale processor similar to yours with NAND flash
+> supporting 2KB page size .
 
-The time never goes negative.  It starts off at the epoch and moves 
-forward, but sometimes it jumps forward by 17952 seconds, and then 
-immediately jumps back.  But it never goes negative (or prior to 1970).
+What kernel version and NAND driver you use? I don't think that old
+BSP kernels include fsl_elbc_nand driver, which is a much improved
+version of the fsl_fcm driver.
 
-	ben
+So you might want to swith to a newer kernel or back-port the
+fsl_elbc_nand driver[1] and a few fixes to your kernel.
+
+[1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=history;f=drivers/mtd/nand/fsl_elbc_nand.c
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
