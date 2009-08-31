@@ -1,29 +1,31 @@
-Return-Path: <ben@somanetworks.com>
-Received: from zimbra.somanetworks.com (gw-yyz.somanetworks.com
-	[216.126.67.39])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 8A0C8B7B65
+Return-Path: <jeff.hane@maxim-ic.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C4562B7B79
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Sep 2009 08:01:57 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by zimbra.somanetworks.com (Postfix) with ESMTP id 61650AF8341
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 Aug 2009 17:53:33 -0400 (EDT)
-Received: from zimbra.somanetworks.com ([127.0.0.1])
-	by localhost (zimbra.somanetworks.com [127.0.0.1]) (amavisd-new,
-	port 10024)
-	with ESMTP id Wg88nrqfKWeM for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 Aug 2009 17:53:33 -0400 (EDT)
-Received: from [10.11.11.50] (odo.yyz.somanetworks.com [10.11.11.50])
-	by zimbra.somanetworks.com (Postfix) with ESMTP id 4B6C1AF832A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 Aug 2009 17:53:33 -0400 (EDT)
-Message-ID: <4A9C465D.4010801@somanetworks.com>
-Date: Mon, 31 Aug 2009 17:53:33 -0400
-From: Ben Gamsa <ben@somanetworks.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: time jumps forward/backwards
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue,  1 Sep 2009 08:15:52 +1000 (EST)
+Received: from antispam02.maxim-ic.com (antispam02.maxim-ic.com
+	[205.153.101.183]) by ozlabs.org (Postfix) with ESMTP id 65F44DDD01
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Sep 2009 08:15:52 +1000 (EST)
+Received: from mailhost.mobilygen.com (localhost [127.0.0.1])
+	by antispam02.maxim-ic.com (Spam & Virus Firewall) with ESMTP id
+	C02D880BED3
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 16:50:05 -0500 (CDT)
+Received: from mailhost.mobilygen.com ([10.32.80.116]) by
+	antispam02.maxim-ic.com with ESMTP id rcUR5suuJmMAAknG for
+	<linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 16:50:05 -0500 (CDT)
+Received: from [10.32.80.202] (qu102 [10.32.80.202]) (authenticated bits=0)
+	by mailhost.mobilygen.com (8.13.8/8.13.8) with ESMTP id n7VM0Qd0014467
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 15:00:27 -0700
+Subject: GPIOs 49-63 on 460EX
+From: Jeff Hane <jeff.hane@maxim-ic.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Mon, 31 Aug 2009 15:01:20 -0700
+Message-Id: <1251756080.19346.44.camel@qu102.quarc.com>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Our project is currently using 2.6.27.4 with a patch from Paul Mackerras 
-("powerpc: Improve resolution of VDSO clock_gettime") running on a 
-MPC8555.  We picked up the patch on the hope that it would fix an 
-earlier problem we had with time jumping forwards and backwards shortly 
-after boot-up.  It seemed to fix that problem, but it seems we have 
-another, similar problem.
 
-It appears to be the case that when the time on the system is around the 
-epoch (1970), that time will occasionally jump forward and then backward 
-by about 17592 seconds.  When it jumps forward, it always jumps back a 
-few milliseconds later.  However, it's not always easy to catch these 
-occurrences.  The delta is more specifically about 17592186059 usec, 
-give or take a few 10s of microseconds (most of the time), despite the 
-fact that the user-level program I have that is testing it only checks 
-every 10 milliseconds.
+Hello,
 
-The number seems suspiciously close to 2^44 nanoseconds, which suggests 
-some sort of overflow error, perhaps caused by the time being set to 
-around time 0.
+ We are having a problem trying to use gpio 49-63 on our amcc
+canyonlands board.  I'm aware these pins are shared with the trace port,
+so wrote 0x7ff to SDR0_PFC0 register to make sure they were all in gpio
+mode. 
 
-I'm not really sure where to begin looking (I know that the time code is 
-one of the more sensitive bits in the system so I definitely don't want 
-to go blindly mucking around), so I was hoping to get some suggestions 
-from the list.
+ I set the gpio to output and then try to drive a 1 out but I can never
+see it.  I doubled checked the pin with the value reported by the SW and
+it never toggles.  If I set the value to 1, I can see a 1 in the gpio OR
+register, but the IR stays 0(IR is what is read by get_value)
+ 
+ I can change the direction and value the first 16 gpios in gpio
+controller 1 but not the upper 16 bits.  So this means that gpio 48
+doesn't work either; thus 16 of the gpio don't work(for out, I haven't
+tried in)
 
-Thanks for any help.
+ I am running 2.6.30.  Has anybody seen this?  Am I missing a register
+somewhere?
 
--- 
-Ben Gamsa       ben@somanetworks.com
-SOMA Networks   312 Adelaide St. W. Suite 600 Toronto, Ontario, M5V1R2
+thanks,
+jeff
