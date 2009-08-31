@@ -1,27 +1,33 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <rdreier@cisco.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C3314B7DCC
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 98991B7B6A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Sep 2009 04:47:34 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 5F97BDDD01
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Sep 2009 04:47:34 +1000 (EST)
-Date: Mon, 31 Aug 2009 22:47:33 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Tabi Timur-B04825 <timur@freescale.com>
-Subject: Re: [PATCH 2/5] powerpc/85xx/86xx: Add suspend/resume support
-Message-ID: <20090831184733.GA12997@oksana.dev.rtsoft.ru>
-References: <20090830193625.GA14693@oksana.dev.rtsoft.ru>
-	<20090830193718.GB17519@oksana.dev.rtsoft.ru>
-	<5610599F537DD74A8D1F5CC946A7507301DCCC8B@az33exm25.fsl.freescale.net>
+	Tue,  1 Sep 2009 07:26:08 +1000 (EST)
+Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 080DADDD04
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Sep 2009 07:26:07 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: Construct MAD redirect replies from request MAD
+References: <200908261337.56128.fenkes@de.ibm.com>
+Date: Mon, 31 Aug 2009 14:25:59 -0700
+In-Reply-To: <200908261337.56128.fenkes@de.ibm.com> (Joachim Fenkes's message
+	of "Wed, 26 Aug 2009 13:37:55 +0200")
+Message-ID: <adaeiqrpteg.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <5610599F537DD74A8D1F5CC946A7507301DCCC8B@az33exm25.fsl.freescale.net>
-Cc: Wood Scott-B07421 <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+Cc: Hal Rosenstock <hnrose@comcast.net>, LKML <linux-kernel@vger.kernel.org>,
+	OF-EWG <ewg@lists.openfabrics.org>,
+	Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,16 +37,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 30, 2009 at 05:38:05PM -0700, Tabi Timur-B04825 wrote:
-> 
-> What about the 8610?
-
-Yes, it is supported. The bindings decribe that 8641d should
-be used as a base match, so 8610-pmc is 8641d-compatible.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+this seems reasonable to me, applied, thanks.
