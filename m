@@ -1,20 +1,47 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Mingkai.Hu@freescale.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 14567B7087
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 71B4FB70C4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 Aug 2009 16:23:08 +1000 (EST)
-Subject: Re: [PATCH 1/1] powerpc: Fix to handle slb resize across migration
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Brian King <brking@linux.vnet.ibm.com>
-In-Reply-To: <200908282206.n7SM6UK1011114@d03av01.boulder.ibm.com>
-References: <200908282206.n7SM6UK1011114@d03av01.boulder.ibm.com>
-Content-Type: text/plain
-Date: Mon, 31 Aug 2009 16:22:55 +1000
-Message-Id: <1251699775.29313.155.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Mon, 31 Aug 2009 17:52:01 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C3C01DDD01
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 17:51:57 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n7V7pbDO010515
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 00:51:48 -0700 (MST)
+Received: from zmy16exm20.fsl.freescale.net (zmy16exm20.ap.freescale.net
+	[10.211.3.23])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n7V7qxAN009650
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 02:53:00 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
+Date: Mon, 31 Aug 2009 15:51:29 +0800
+Message-ID: <73839B4A0818E747864426270AC332C304438600@zmy16exm20.fsl.freescale.net>
+In-Reply-To: <20090828151953.GA14776@oksana.dev.rtsoft.ru>
+References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
+	<20090807195822.GG2735@oksana.dev.rtsoft.ru>
+	<A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org>
+	<20090818233818.GA29042@oksana.dev.rtsoft.ru>
+	<F58A75CD-73CC-4F75-AF51-2BCC0B828E84@kernel.crashing.org>
+	<20090819015101.GA10782@oksana.dev.rtsoft.ru>
+	<73839B4A0818E747864426270AC332C304438438@zmy16exm20.fsl.freescale.net>
+	<20090828151953.GA14776@oksana.dev.rtsoft.ru>
+From: "Hu Mingkai-B21284" <Mingkai.Hu@freescale.com>
+To: <avorontsov@ru.mvista.com>
+Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
+	sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Pierre Ossman <pierre@ossman.eu>, David Vrabel <david.vrabel@csr.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,166 +51,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-08-28 at 17:06 -0500, Brian King wrote:
-> The SLB can change sizes across a live migration, which was not
-> being handled, resulting in possible machine crashes during
-> migration if migrating to a machine which has a smaller max SLB
-> size than the source machine. Fix this by first reducing the
-> SLB size to the minimum possible value, which is 32, prior to
-> migration. Then during the device tree update which occurs after
-> migration, we make the call to ensure the SLB gets updated. Also
-> add the slb_size to the lparcfg output so that the migration
-> tools can check to make sure the kernel has this capability
-> before allowing migration in scenarios where the SLB size will change.
-> 
-> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-> ---
+=20
 
-Thanks. I'll apply to -next hopefully tomorrow, and then we can send it
-to the various -stable.
+> -----Original Message-----
+> From: Anton Vorontsov [mailto:avorontsov@ru.mvista.com]=20
+> Sent: Friday, August 28, 2009 11:20 PM
+> To: Hu Mingkai-B21284
+> Cc: Kumar Gala; Ben Dooks; linux-kernel@vger.kernel.org;=20
+> sdhci-devel@lists.ossman.eu; linuxppc-dev@ozlabs.org; Andrew=20
+> Morton; Pierre Ossman; David Vrabel
+> Subject: Re: [PATCH v2] powerpc/85xx: Add eSDHC support for=20
+> MPC8536DS boards
+>=20
+> On Fri, Aug 28, 2009 at 07:02:51PM +0800, Hu Mingkai-B21284 wrote:
+> > > On Tue, Aug 18, 2009 at 08:24:17PM -0500, Kumar Gala wrote:
+> > > >=20
+> > > > On Aug 18, 2009, at 6:38 PM, Anton Vorontsov wrote:
+> > > >=20
+> > > > >This patch simply adds sdhci node to the device tree.
+> > > > >
+> > > > >We specify clock-frequency manually, so that eSDHC will
+> > > work without
+> > > > >upgrading U-Boot. Though, that'll only work for default setup=20
+> > > > >(1500
+> > > > >MHz) on new board revisions. For non-default setups, it's
+> > > recommended
+> > > > >to upgrade U-Boot, since it will fixup clock-frequency
+> > > automatically.
+> > > > >
+> > > > >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > >=20
+> > > > out of interest the 85xx eSDHC don't need the sdhci,wp-inverted=20
+> > > > property?
+> > >=20
+> > > Yes, eSDHC controllers in MPC85xx report normal state in its=20
+> > > registers.
+> > >=20
+> >=20
+> > Hi Anton,
+> >=20
+> > The eSDHC controller in different silicon version on=20
+> MPC8536  reports=20
+> > different WP state in the register PRSSTAT:
+>=20
+> Thanks a million for the heads up!
+>=20
+> Yes, the manual I used ("MPC8536ERM Rev. 0 10/2008") doesn't=20
+> mention that, but the newer manual that I just downloaded=20
+> ("MPC8536ERM Rev. 1
+> 05/2009") does.
+>=20
+> [...]
+> > For silicon 1.0,  the macro=20
+> SDHCI_QUIRK_INVERTED_WRITE_PROTECT is also=20
+> > defined, so the dirver will report the error WP state in function=20
+> > sdhci_get_ro.
+>=20
+> Not any longer. We don't actually define it for any 85xx CPUs.
+>=20
+> I need to think how should we handle all these WP inversions. :-)
+>=20
+> So, we have inversion in BCSR (depending on the BCSR=20
+> revision), configurable inversion in CPU via GENCFGR for 1.1=20
+> silicon, and non-configurable non-inverted reporting for 1.0=20
+> silicon...
+>=20
+> Do you know if there are any plans to fix the WP inversion=20
+> for MPC8569E-MDS boards, or make something like GENCFGR for=20
+> MPC8569 CPUs?
+>=20
+> Thanks,
+>=20
 
-Cheers,
-Ben.
+Sorry, I also don't know the plan to MPC8569 CPU, but if I get any info,
+I'll inform you ASAP. :-)
 
->  arch/powerpc/include/asm/mmu-hash64.h     |    2 ++
->  arch/powerpc/kernel/lparcfg.c             |    3 +++
->  arch/powerpc/kernel/rtas.c                |    7 ++++++-
->  arch/powerpc/mm/slb.c                     |   16 ++++++++++++----
->  arch/powerpc/platforms/pseries/reconfig.c |    9 ++++++++-
->  5 files changed, 31 insertions(+), 6 deletions(-)
-> 
-> diff -puN arch/powerpc/kernel/rtas.c~powerpc_slb_resize arch/powerpc/kernel/rtas.c
-> --- linux-2.6/arch/powerpc/kernel/rtas.c~powerpc_slb_resize	2009-08-21 16:14:41.000000000 -0500
-> +++ linux-2.6-bjking1/arch/powerpc/kernel/rtas.c	2009-08-21 16:14:41.000000000 -0500
-> @@ -39,6 +39,7 @@
->  #include <asm/smp.h>
->  #include <asm/atomic.h>
->  #include <asm/time.h>
-> +#include <asm/mmu-hash64.h>
->  
->  struct rtas_t rtas = {
->  	.lock = __RAW_SPIN_LOCK_UNLOCKED
-> @@ -713,6 +714,7 @@ static void rtas_percpu_suspend_me(void
->  {
->  	long rc = H_SUCCESS;
->  	unsigned long msr_save;
-> +	u16 slb_size = mmu_slb_size;
->  	int cpu;
->  	struct rtas_suspend_me_data *data =
->  		(struct rtas_suspend_me_data *)info;
-> @@ -735,13 +737,16 @@ static void rtas_percpu_suspend_me(void
->  		/* All other cpus are in H_JOIN, this cpu does
->  		 * the suspend.
->  		 */
-> +		slb_set_size(SLB_MIN_SIZE);
->  		printk(KERN_DEBUG "calling ibm,suspend-me on cpu %i\n",
->  		       smp_processor_id());
->  		data->error = rtas_call(data->token, 0, 1, NULL);
->  
-> -		if (data->error)
-> +		if (data->error) {
->  			printk(KERN_DEBUG "ibm,suspend-me returned %d\n",
->  			       data->error);
-> +			slb_set_size(slb_size);
-> +		}
->  	} else {
->  		printk(KERN_ERR "H_JOIN on cpu %i failed with rc = %ld\n",
->  		       smp_processor_id(), rc);
-> diff -puN arch/powerpc/include/asm/mmu-hash64.h~powerpc_slb_resize arch/powerpc/include/asm/mmu-hash64.h
-> --- linux-2.6/arch/powerpc/include/asm/mmu-hash64.h~powerpc_slb_resize	2009-08-21 16:14:41.000000000 -0500
-> +++ linux-2.6-bjking1/arch/powerpc/include/asm/mmu-hash64.h	2009-08-21 16:14:41.000000000 -0500
-> @@ -41,6 +41,7 @@ extern char initial_stab[];
->  
->  #define SLB_NUM_BOLTED		3
->  #define SLB_CACHE_ENTRIES	8
-> +#define SLB_MIN_SIZE		32
->  
->  /* Bits in the SLB ESID word */
->  #define SLB_ESID_V		ASM_CONST(0x0000000008000000) /* valid */
-> @@ -296,6 +297,7 @@ extern void slb_flush_and_rebolt(void);
->  extern void stab_initialize(unsigned long stab);
->  
->  extern void slb_vmalloc_update(void);
-> +extern void slb_set_size(u16 size);
->  #endif /* __ASSEMBLY__ */
->  
->  /*
-> diff -puN arch/powerpc/mm/slb.c~powerpc_slb_resize arch/powerpc/mm/slb.c
-> --- linux-2.6/arch/powerpc/mm/slb.c~powerpc_slb_resize	2009-08-21 16:14:41.000000000 -0500
-> +++ linux-2.6-bjking1/arch/powerpc/mm/slb.c	2009-08-21 16:14:41.000000000 -0500
-> @@ -240,14 +240,22 @@ void switch_slb(struct task_struct *tsk,
->  static inline void patch_slb_encoding(unsigned int *insn_addr,
->  				      unsigned int immed)
->  {
-> -	/* Assume the instruction had a "0" immediate value, just
-> -	 * "or" in the new value
-> -	 */
-> -	*insn_addr |= immed;
-> +	*insn_addr = (*insn_addr & 0xffff0000) | immed;
->  	flush_icache_range((unsigned long)insn_addr, 4+
->  			   (unsigned long)insn_addr);
->  }
->  
-> +void slb_set_size(u16 size)
-> +{
-> +	extern unsigned int *slb_compare_rr_to_size;
-> +
-> +	if (mmu_slb_size == size)
-> +		return;
-> +
-> +	mmu_slb_size = size;
-> +	patch_slb_encoding(slb_compare_rr_to_size, mmu_slb_size);
-> +}
-> +
->  void slb_initialize(void)
->  {
->  	unsigned long linear_llp, vmalloc_llp, io_llp;
-> diff -puN arch/powerpc/platforms/pseries/reconfig.c~powerpc_slb_resize arch/powerpc/platforms/pseries/reconfig.c
-> --- linux-2.6/arch/powerpc/platforms/pseries/reconfig.c~powerpc_slb_resize	2009-08-21 16:14:41.000000000 -0500
-> +++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/reconfig.c	2009-08-28 13:36:55.000000000 -0500
-> @@ -20,6 +20,7 @@
->  #include <asm/machdep.h>
->  #include <asm/uaccess.h>
->  #include <asm/pSeries_reconfig.h>
-> +#include <asm/mmu-hash64.h>
->  
-> 
-> 
-> @@ -439,9 +440,15 @@ static int do_update_property(char *buf,
->  	if (!newprop)
->  		return -ENOMEM;
->  
-> +	if (!strcmp(name, "slb-size") || !strcmp(name, "ibm,slb-size"))
-> +		slb_set_size(*(int *)value);
-> +
->  	oldprop = of_find_property(np, name,NULL);
-> -	if (!oldprop)
-> +	if (!oldprop) {
-> +		if (strlen(name))
-> +			return prom_add_property(np, newprop);
->  		return -ENODEV;
-> +	}
->  
->  	rc = prom_update_property(np, newprop, oldprop);
->  	if (rc)
-> diff -puN arch/powerpc/kernel/lparcfg.c~powerpc_slb_resize arch/powerpc/kernel/lparcfg.c
-> --- linux-2.6/arch/powerpc/kernel/lparcfg.c~powerpc_slb_resize	2009-08-21 16:14:41.000000000 -0500
-> +++ linux-2.6-bjking1/arch/powerpc/kernel/lparcfg.c	2009-08-21 16:14:41.000000000 -0500
-> @@ -35,6 +35,7 @@
->  #include <asm/prom.h>
->  #include <asm/vdso_datapage.h>
->  #include <asm/vio.h>
-> +#include <asm/mmu-hash64.h>
->  
->  #define MODULE_VERS "1.8"
->  #define MODULE_NAME "lparcfg"
-> @@ -537,6 +538,8 @@ static int pseries_lparcfg_data(struct s
->  
->  	seq_printf(m, "shared_processor_mode=%d\n", lppaca[0].shared_proc);
->  
-> +	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
-> +
->  	return 0;
->  }
->  
-> _
+Best regards,
+Mingkai
+
+> --
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
+>=20
+>=20
