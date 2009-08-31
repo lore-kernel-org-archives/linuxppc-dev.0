@@ -1,47 +1,23 @@
-Return-Path: <Mingkai.Hu@freescale.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 71B4FB70C4
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D2B86B708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 Aug 2009 17:52:01 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C3C01DDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 17:51:57 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n7V7pbDO010515
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 00:51:48 -0700 (MST)
-Received: from zmy16exm20.fsl.freescale.net (zmy16exm20.ap.freescale.net
-	[10.211.3.23])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n7V7qxAN009650
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2009 02:53:00 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
-Date: Mon, 31 Aug 2009 15:51:29 +0800
-Message-ID: <73839B4A0818E747864426270AC332C304438600@zmy16exm20.fsl.freescale.net>
-In-Reply-To: <20090828151953.GA14776@oksana.dev.rtsoft.ru>
-References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
-	<20090807195822.GG2735@oksana.dev.rtsoft.ru>
-	<A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org>
-	<20090818233818.GA29042@oksana.dev.rtsoft.ru>
-	<F58A75CD-73CC-4F75-AF51-2BCC0B828E84@kernel.crashing.org>
-	<20090819015101.GA10782@oksana.dev.rtsoft.ru>
-	<73839B4A0818E747864426270AC332C304438438@zmy16exm20.fsl.freescale.net>
-	<20090828151953.GA14776@oksana.dev.rtsoft.ru>
-From: "Hu Mingkai-B21284" <Mingkai.Hu@freescale.com>
-To: <avorontsov@ru.mvista.com>
-Cc: Ben Dooks <ben@fluff.org>, linux-kernel@vger.kernel.org,
-	sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Pierre Ossman <pierre@ossman.eu>, David Vrabel <david.vrabel@csr.com>
+	Mon, 31 Aug 2009 19:32:46 +1000 (EST)
+Subject: Re: [PATCH] powermac: thermal control turns system off in normal
+	temperature conditions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linux User #330250 <linuxuser330250@gmx.net>
+In-Reply-To: <200908311125.56066.linuxuser330250@gmx.net>
+References: <200908302054.20498.bzolnier@gmail.com>
+	<200908311125.56066.linuxuser330250@gmx.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 31 Aug 2009 19:32:30 +1000
+Message-Id: <1251711150.15353.0.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,87 +27,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
+On Mon, 2009-08-31 at 11:25 +0200, Linux User #330250 wrote:
+> Hello!
+> 
+> First: I'm just a user. And I hope I don't cause disturbance.
+> 
+> I've read about this when I was setting up Linux on my Power Mac G4 MDD about 
+> two years ago and I remember reading that the temperature might be reported 
+> falsely. The original author reduced the limits to be on the safe side.
+> 
+> While Mac OS X seems to push the allowed temperature more to the limits, it 
+> could still be fatal to trust the reported temperatures.
+> 
+> 
+> My machine had the same shut-downs due to temperature at first. Since my MDD 
+> was quite a few years old when I got it I cleaned the CPUs and used new 
+> thermal compound with the original heatsink. This fixed the "overheat" issue 
+> for me.
 
-> -----Original Message-----
-> From: Anton Vorontsov [mailto:avorontsov@ru.mvista.com]=20
-> Sent: Friday, August 28, 2009 11:20 PM
-> To: Hu Mingkai-B21284
-> Cc: Kumar Gala; Ben Dooks; linux-kernel@vger.kernel.org;=20
-> sdhci-devel@lists.ossman.eu; linuxppc-dev@ozlabs.org; Andrew=20
-> Morton; Pierre Ossman; David Vrabel
-> Subject: Re: [PATCH v2] powerpc/85xx: Add eSDHC support for=20
-> MPC8536DS boards
->=20
-> On Fri, Aug 28, 2009 at 07:02:51PM +0800, Hu Mingkai-B21284 wrote:
-> > > On Tue, Aug 18, 2009 at 08:24:17PM -0500, Kumar Gala wrote:
-> > > >=20
-> > > > On Aug 18, 2009, at 6:38 PM, Anton Vorontsov wrote:
-> > > >=20
-> > > > >This patch simply adds sdhci node to the device tree.
-> > > > >
-> > > > >We specify clock-frequency manually, so that eSDHC will
-> > > work without
-> > > > >upgrading U-Boot. Though, that'll only work for default setup=20
-> > > > >(1500
-> > > > >MHz) on new board revisions. For non-default setups, it's
-> > > recommended
-> > > > >to upgrade U-Boot, since it will fixup clock-frequency
-> > > automatically.
-> > > > >
-> > > > >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > >=20
-> > > > out of interest the 85xx eSDHC don't need the sdhci,wp-inverted=20
-> > > > property?
-> > >=20
-> > > Yes, eSDHC controllers in MPC85xx report normal state in its=20
-> > > registers.
-> > >=20
-> >=20
-> > Hi Anton,
-> >=20
-> > The eSDHC controller in different silicon version on=20
-> MPC8536  reports=20
-> > different WP state in the register PRSSTAT:
->=20
-> Thanks a million for the heads up!
->=20
-> Yes, the manual I used ("MPC8536ERM Rev. 0 10/2008") doesn't=20
-> mention that, but the newer manual that I just downloaded=20
-> ("MPC8536ERM Rev. 1
-> 05/2009") does.
->=20
-> [...]
-> > For silicon 1.0,  the macro=20
-> SDHCI_QUIRK_INVERTED_WRITE_PROTECT is also=20
-> > defined, so the dirver will report the error WP state in function=20
-> > sdhci_get_ro.
->=20
-> Not any longer. We don't actually define it for any 85xx CPUs.
->=20
-> I need to think how should we handle all these WP inversions. :-)
->=20
-> So, we have inversion in BCSR (depending on the BCSR=20
-> revision), configurable inversion in CPU via GENCFGR for 1.1=20
-> silicon, and non-configurable non-inverted reporting for 1.0=20
-> silicon...
->=20
-> Do you know if there are any plans to fix the WP inversion=20
-> for MPC8569E-MDS boards, or make something like GENCFGR for=20
-> MPC8569 CPUs?
->=20
-> Thanks,
->=20
+Thanks. I think pushing them a bit like this patch does still remains
+within reasonably safe limits though. The CPU should cope with more
+hopefully :-)
 
-Sorry, I also don't know the plan to MPC8569 CPU, but if I get any info,
-I'll inform you ASAP. :-)
+But yeah, cleaning up the dust is definitely a good idea :-)
 
-Best regards,
-Mingkai
+Cheers,
+Ben.
 
-> --
-> Anton Vorontsov
-> email: cbouatmailru@gmail.com
-> irc://irc.freenode.net/bd2
->=20
->=20
+> 
+> Sorry to interrupt,
+> Andreas  aka  Linux User #330250
+> 
+> 
+> 
+> ----------  Original message  ----------
+> Subject: [PATCH] powermac: thermal control turns system off in normal 
+> temperature conditions
+> Date:    Sonntag, 30. August 2009N
+> From:    Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> To:      Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> > From: Lyonel Vincent <lyonel@ezix.org>
+> > Subject: [PATCH] powermac: thermal control turns system off in normal
+> > temperature conditions
+> >
+> > On certain PowerMacs, a module (therm_windtunnel) controls various
+> > thermal settings (it can report CPU/case temperature, change speed
+> > of internal fans, etc.)
+> >
+> > By default, the hardware thermal control has a temperature limit to
+> > protect the computer from damages (the default limit seems to be 80°C)
+> > but therm_windtunnel.c reduces it to an anormaly low value (65°C),
+> > which means that he computer will shut down randomly when hit by direct
+> > sun light or during summer (summer in France can be quite hot), actually
+> > possibly losing data instead of protecting it.
+> >
+> > The overheat limit in therm_windtunnel.c:253-254 should be set to 75°C
+> > and 70°C instead of 65°C and 60°C respectively.
+> >
+> > From: Lyonel Vincent <lyonel@ezix.org>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> > Resurrected from Fedora's bugzilla (aka The Big Black Hole):
+> > https://bugzilla.redhat.com/show_bug.cgi?id=171937
+> >
+> > The patch itself seems perfectly valid to me
+> > (especially given comments in therm_windtunnel.c).
+> >
+> >  drivers/macintosh/therm_windtunnel.c |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> >
+> > Index: b/drivers/macintosh/therm_windtunnel.c
+> > ===================================================================
+> > --- a/drivers/macintosh/therm_windtunnel.c
+> > +++ b/drivers/macintosh/therm_windtunnel.c
+> > @@ -239,8 +239,8 @@ setup_hardware( void )
+> >  	 * to be on the safe side (OSX doesn't)...
+> >  	 */
+> >  	if( x.overheat_temp == (80 << 8) ) {
+> > -		x.overheat_temp = 65 << 8;
+> > -		x.overheat_hyst = 60 << 8;
+> > +		x.overheat_temp = 75 << 8;
+> > +		x.overheat_hyst = 70 << 8;
+> >  		write_reg( x.thermostat, 2, x.overheat_hyst, 2 );
+> >  		write_reg( x.thermostat, 3, x.overheat_temp, 2 );
