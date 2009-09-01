@@ -1,18 +1,19 @@
-Return-Path: <jakemagee@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 09DD8B7B6D
+Return-Path: <Rupesh.Kumar@Lntemsys.com>
+Received: from mail87.messagelabs.com (mail87.messagelabs.com [216.82.250.19])
+	by bilbo.ozlabs.org (Postfix) with SMTP id 87FB9B7B8A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Sep 2009 14:09:24 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id b2so2210199ana.32
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 Aug 2009 21:09:23 -0700 (PDT)
+	Tue,  1 Sep 2009 15:14:10 +1000 (EST)
+In-Reply-To: <20090831234713.GA6767@oksana.dev.rtsoft.ru>
+To: avorontsov@ru.mvista.com
+Subject: Re: ECC & Magic bitmask errors with JFFS2 file system on 6.23 kernel
+	for powerpc
 MIME-Version: 1.0
-Date: Mon, 31 Aug 2009 23:09:23 -0500
-Message-ID: <a8142e730908312109x7f49806duc35bb580051af2e8@mail.gmail.com>
-Subject: PPC405 RTC not working
-From: Jake Magee <jakemagee@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=0016e6476268c016d604727c5075
+Message-ID: <OFF993BB3F.8ABEAA6D-ON65257624.0019895E-65257624.001C85AC@lntemsys.com>
+From: Rupesh Kumar <Rupesh.Kumar@Lntemsys.com>
+Date: Tue, 1 Sep 2009 10:53:23 +0530
+Content-Type: text/plain; charset="US-ASCII"
+Cc: louise <louise@Sun.COM>, Ravinder Kumar <Ravinder.Kumar@Sun.COM>,
+	linuxppc-dev@lists.ozlabs.org, Louise.Yeung@Sun.COM
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,57 +23,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e6476268c016d604727c5075
-Content-Type: text/plain; charset=ISO-8859-1
+Hi Louise,
 
-I am currently trying to get a M41T65 sensor to work on a PPC405 based
-board.  I am using the 2.6.26 kernel with a backported version of
-rtc-m41t80.c (from 2.6.30).  Everything compiles and loads fine.  However,
-there is no /dev/rtc node created.  "/proc/devices" returns "254 rtc" (which
-I feel isn't correct).  And "/sys/bus/i2c/devices/" list nothing for the
-RTC.  I do see the information from the device tree in
-"/proc/device-tree/plb/opb/i2c@ef600400/rtc@68/"
+Earlier we were using kernel 2.6.20(released with LTIB for REVA board of 
+MPC8313E) and we were not seeing this problem in that kernel. Since, We 
+had time constraint for our project, best thing we did was ported 2.6.20 
+kernel on rev 2.1 silicon of MPC8313E. This is working fine.
 
-Here is my dts information:
- IIC0: i2c@ef600400 {
-                                compatible = "ibm,iic-405exr", "ibm,iic";
-                                reg = <ef600400 14>;
-                                interrupt-parent = <&UIC0>;
-                                interrupts = <2 4>;
-                                index = <0>;
-                                rtc@68 {
-                                        compatible = "m41t65";
-                                        reg = <68>;
-                                        };
-                        };
+However, We did try to dig this problem further and found that the problem 
+occurs because of the ECC alignment mismatch in read & write on NAND 
+flash.
+You can look into following points :- 
+        1) NAND initialization :-  Page size mentioned correctly in BR/OR 
+register Settings.
+        2) rfs is made with correct erase size.
+        3) ECC placement used in u-boot & Kernel nand driver is same.
+        4) Try using different ECC alignments and see if it makes some 
+difference.
 
-Thanks!
-Jake Magee
 
---0016e6476268c016d604727c5075
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: base64
+Regards 
+Rupesh 
 
-SSBhbSBjdXJyZW50bHkgdHJ5aW5nIHRvIGdldCBhIE00MVQ2NSBzZW5zb3IgdG8gd29yayBvbiBh
-IFBQQzQwNSBiYXNlZCBib2FyZC6gIEkgYW0gdXNpbmcgdGhlIDIuNi4yNiBrZXJuZWwgd2l0aCBh
-IGJhY2twb3J0ZWQgdmVyc2lvbiBvZqAgcnRjLW00MXQ4MC5jIChmcm9tIDIuNi4zMCkuoCBFdmVy
-eXRoaW5nIGNvbXBpbGVzIGFuZCBsb2FkcyBmaW5lLqAgSG93ZXZlciwgdGhlcmUgaXMgbm8gL2Rl
-di9ydGMgbm9kZSBjcmVhdGVkLqAgJnF1b3Q7L3Byb2MvZGV2aWNlcyZxdW90OyByZXR1cm5zICZx
-dW90OzI1NCBydGMmcXVvdDsgKHdoaWNoIEkgZmVlbCBpc24mIzM5O3QgY29ycmVjdCkuoCBBbmQg
-JnF1b3Q7L3N5cy9idXMvaTJjL2RldmljZXMvJnF1b3Q7IGxpc3Qgbm90aGluZyBmb3IgdGhlIFJU
-Qy6gIEkgZG8gc2VlIHRoZSBpbmZvcm1hdGlvbiBmcm9tIHRoZSBkZXZpY2UgdHJlZSBpbiAmcXVv
-dDsvcHJvYy9kZXZpY2UtdHJlZS9wbGIvb3BiL2kyY0BlZjYwMDQwMC9ydGNANjgvJnF1b3Q7PGJy
-Pgo8YnI+SGVyZSBpcyBteSBkdHMgaW5mb3JtYXRpb246PGJyPqBJSUMwOiBpMmNAZWY2MDA0MDAg
-ezxicj6goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIGNvbXBhdGlibGUgPSAmcXVvdDtp
-Ym0saWljLTQwNWV4ciZxdW90OywgJnF1b3Q7aWJtLGlpYyZxdW90Ozs8YnI+oKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoCByZWcgPSAmbHQ7ZWY2MDA0MDAgMTQmZ3Q7Ozxicj6goKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIGludGVycnVwdC1wYXJlbnQgPSAmbHQ7JmFtcDtVSUMw
-Jmd0Ozs8YnI+CqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgaW50ZXJydXB0cyA9ICZs
-dDsyIDQmZ3Q7Ozxicj6goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIGluZGV4ID0gJmx0
-OzAmZ3Q7Ozxicj6goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIHJ0Y0A2OCB7PGJyPqCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBjb21wYXRpYmxlID0gJnF1b3Q7
-bTQxdDY1JnF1b3Q7Ozxicj4KoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-IHJlZyA9ICZsdDs2OCZndDs7PGJyPqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoCB9Ozxicj6goKCgoKCgoKCgoKCgoKCgoKCgoKCgoCB9Ozxicj48YnI+VGhhbmtzITxicj5K
-YWtlIE1hZ2VlPGJyPgo=
---0016e6476268c016d604727c5075--
+
+
+
+
+Anton Vorontsov <avorontsov@ru.mvista.com> 
+09/01/2009 05:17 AM
+Please respond to
+avorontsov@ru.mvista.com
+
+
+To
+Louise.Yeung@Sun.COM
+cc
+linuxppc-dev@lists.ozlabs.org, louise <louise@Sun.COM>, Ravinder Kumar 
+<Ravinder.Kumar@Sun.COM>, Rupesh Kumar <Rupesh.Kumar@Lntemsys.com>
+Subject
+Re: ECC & Magic bitmask errors with JFFS2 file system on 6.23 kernel for 
+powerpc
+
+
+
+
+
+
+On Mon, Aug 31, 2009 at 01:39:10PM -0700, Louise.Yeung@Sun.COM wrote:
+> *Hi Rupesh,
+> 
+> We are using a Freescale processor similar to yours with NAND flash
+> supporting 2KB page size .
+
+What kernel version and NAND driver you use? I don't think that old
+BSP kernels include fsl_elbc_nand driver, which is a much improved
+version of the fsl_fcm driver.
+
+So you might want to swith to a newer kernel or back-port the
+fsl_elbc_nand driver[1] and a few fixes to your kernel.
+
+[1] 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=history;f=drivers/mtd/nand/fsl_elbc_nand.c
+
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
