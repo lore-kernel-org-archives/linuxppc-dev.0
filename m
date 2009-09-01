@@ -1,26 +1,38 @@
-Return-Path: <ben@somanetworks.com>
-Received: from zimbra.somanetworks.com (gw-yyz.somanetworks.com
-	[216.126.67.39])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id EF04EB7B8E
+Return-Path: <arun@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A1847B7B85
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Sep 2009 21:20:50 +1000 (EST)
-Message-ID: <4A9D038F.90605@somanetworks.com>
-Date: Tue, 01 Sep 2009 07:20:47 -0400
-From: Benjamin Gamsa <ben@somanetworks.com>
+	Tue,  1 Sep 2009 21:37:23 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp04.au.ibm.com (8.14.3/8.13.1) with ESMTP id n81BYWs4032242
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2009 21:34:32 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n81BbIo71159298
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2009 21:37:18 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n81BbHWX003686
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2009 21:37:18 +1000
+Date: Tue, 1 Sep 2009 17:07:04 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Joel Schopp <jschopp@austin.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+	Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+	Gautham R Shenoy <ego@in.ibm.com>,
+	Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: [v4 PATCH 0/5]: cpuidle/POWER (REDISIGN): Introducing cpuidle to
+	POWER.
+Message-ID: <20090901113704.GG7599@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: time jumps forward/backwards
-References: <4A9C465D.4010801@somanetworks.com>	
-	<19100.24755.889091.412993@cargo.ozlabs.ibm.com>	
-	<4A9C6446.2000202@somanetworks.com>	<4A9C664D.6010504@somanetworks.com>	
-	<4A9C84D0.8040200@somanetworks.com>	
-	<20090831223111.7b2dc95d@lappy.seanm.ca>	
-	<4A9C9BA3.6020105@somanetworks.com>
-	<1251802154.14675.346.camel@pasglop>
-In-Reply-To: <1251802154.14675.346.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
-	Sean MacLennan <smaclennan@pikatech.com>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +42,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2009-08-31 at 23:57 -0400, Benjamin Gamsa wrote:
->> Sean MacLennan wrote:
->>> On Mon, 31 Aug 2009 22:20:00 -0400
->>> Benjamin Gamsa <ben@somanetworks.com> wrote:
->>>
->>>> For what it's worth, the problem occurs even when ntp is not even
->>>> started.
->>> This is grasping, but could it have anything to do with the jiffies
->>> wrapping near startup?
->>>
->> I don't know how to test it, but I don't think so, since there are 
->> multiple of these glitches over an extended period of time.
-> 
-> I'm not familiar with all the FSL processor variants, but is this
-> an UP or an SMP platform ? In the later case, are all the core timebases
-> properly synchronized ?
-> 
+Hi,
 
-This a UP with a single e500 core.
+******** This is an RFC, not for inclusion **********
 
-	ben
+This patchset introduces cpuidle infrastructure to POWER, prototyping
+for pseries and currently in the process of porting to x86 and hence
+will *not* build on x86/other POWER platforms.
+
+This is to get initial comments on the redesign of my earlier implementation
+which can be found at http://lkml.org/lkml/2009/8/27/124
+
+Major changes from last iteration:
+----------------------------------
+
+* Cleanup drivers/cpuidle/cpuidle.c
+	Currently, the cpuidle implementation has weakness in the
+	framework where an exported pm_idle function pointer is
+	manipulated by various subsystem. The proposed framework has
+	a registration architecture to cleanly add and remove new idle
+	routines from different subsystems.
+
+* Introduce [un]register_idle_function() routines
+        Implement a LIFO based approach for registering architecture
+        dependent idle routines.
+
+* Sample implementation of register_idle_function for pSeries
+
+
+TODO:
+-----
+
+* Extend this prototype to cover x86 and other archs that use cpuidle.
+        Currently, in x86, the cpu_idle() idle loop doesn't have a
+        default idle loop to fall back to if pm_idle is NULL, unlike
+        the corresponding implementation in pseries, where
+        ppc_md.power_save can be NULL and there is a fallback.
+        So we need to create a similar fork in cpu_idle() idle loop of
+        x86.
+
+
+
+Patches included in this series:
+--------------------------------
+
+1/5 - Cleanup drivers/cpuidle/cpuidle.c
+2/5 - Implement routines to register and unregister idle function.
+3/5 - Incorporate registering of idle loop for pSeries.
+4/5 - Add Kconfig entry to enable cpuidle for POWER.
+5/5 - Implement pSeries processor idle module.
+
+
+Any comments on the design is welcome.
+
+--arun
