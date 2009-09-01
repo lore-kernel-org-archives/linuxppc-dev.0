@@ -1,24 +1,35 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <balbir@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B1DADB7B9F
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 75717B7B7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Sep 2009 11:48:46 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 165F6DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 11:48:45 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n821mgNH031651
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 20:48:42 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/fsl-booke: Use HW PTE format if CONFIG_PTE_64BIT
-Date: Tue,  1 Sep 2009 20:48:42 -0500
-Message-Id: <1251856122-24560-1-git-send-email-galak@kernel.crashing.org>
+	Wed,  2 Sep 2009 14:14:47 +1000 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id n824EXw6007946
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2009 09:44:33 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n824EXgQ2551960
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2009 09:44:33 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n824EWq9006949
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2009 14:14:32 +1000
+Date: Tue, 1 Sep 2009 22:58:25 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
+Message-ID: <20090901172825.GA6780@balbir.in.ibm.com>
+References: <20090901113704.GG7599@linux.vnet.ibm.com>
+	<20090901113840.GH7599@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20090901113840.GH7599@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
+Reply-To: balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,145 +39,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Switch to using the Power ISA defined PTE format when we have a 64-bit
-PTE.  This makes the code handling between fsl-booke and book3e-64
-similiar for TLB faults.
+* Arun R B <arun@linux.vnet.ibm.com> [2009-09-01 17:08:40]:
 
-Additionally this lets use take advantage of the page size encodings and
-full permissions that the HW PTE defines.
+> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
+> 
+> Cleanup drivers/cpuidle/cpuidle.c
+> 
+> Cpuidle maintains a pm_idle_old void pointer because, currently in x86
+> there is no clean way of registering and unregistering a idle function.
+>
+> So remove pm_idle_old and leave the responsibility of maintaining the
+> list of registered idle loops to the architecture specific code. If the
+> architecture registers cpuidle_idle_call as its idle loop, only then
+> this loop is called.
+> 
 
-Also defined _PMD_PRESENT, _PMD_PRESENT_MASK, and _PMD_BAD since the
-32-bit ppc arch code expects them.
+It sounds as if there is a side-effect of this
+patch on x86 (am I reading it incorrectly), which can be fixed, but
+it will need a patch or so to get back the old behaviour on x86.
+ 
+> Also remove unwanted functions cpuidle_[un]install_idle_handler,
+> cpuidle_kick_cpus()
+>
+> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+> ---
+>  drivers/cpuidle/cpuidle.c  |   51 +++++++++++++++------------------------------
+>  drivers/cpuidle/governor.c |    3 --
+>  2 files changed, 17 insertions(+), 37 deletions(-)
+> 
+> Index: linux.trees.git/drivers/cpuidle/cpuidle.c
+> ===================================================================
+> --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
+> +++ linux.trees.git/drivers/cpuidle/cpuidle.c
+> @@ -24,9 +24,14 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
+> 
+>  DEFINE_MUTEX(cpuidle_lock);
+>  LIST_HEAD(cpuidle_detected_devices);
+> -static void (*pm_idle_old)(void);
+> 
+>  static int enabled_devices;
+> +static int idle_function_registered;
+> +
+> +struct idle_function_desc cpuidle_idle_desc = {
+> +	.name           =       "cpuidle_loop",
+> +	.idle_func      =       cpuidle_idle_call,
+> +};
+> 
+>  #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
+>  static void cpuidle_kick_cpus(void)
+> @@ -54,13 +59,10 @@ static void cpuidle_idle_call(void)
+> 
+>  	/* check if the device is ready */
+>  	if (!dev || !dev->enabled) {
+> -		if (pm_idle_old)
+> -			pm_idle_old();
+> -		else
+>  #if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
+> -			default_idle();
+> +		default_idle();
+>  #else
+> -			local_irq_enable();
+> +		local_irq_enable();
+>  #endif
+>  		return;
+>  	}
+> @@ -94,35 +96,11 @@ static void cpuidle_idle_call(void)
+>  }
+> 
+>  /**
+> - * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
+> - */
+> -void cpuidle_install_idle_handler(void)
+> -{
+> -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
+> -		/* Make sure all changes finished before we switch to new idle */
+> -		smp_wmb();
+> -		pm_idle = cpuidle_idle_call;
+> -	}
+> -}
+> -
+> -/**
+> - * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
+> - */
+> -void cpuidle_uninstall_idle_handler(void)
+> -{
+> -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+> -		pm_idle = pm_idle_old;
+> -		cpuidle_kick_cpus();
+> -	}
+> -}
+> -
+> -/**
+>   * cpuidle_pause_and_lock - temporarily disables CPUIDLE
+>   */
+>  void cpuidle_pause_and_lock(void)
+>  {
+>  	mutex_lock(&cpuidle_lock);
+> -	cpuidle_uninstall_idle_handler();
+>  }
+> 
+>  EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
+> @@ -132,7 +110,6 @@ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock
+>   */
+>  void cpuidle_resume_and_unlock(void)
+>  {
+> -	cpuidle_install_idle_handler();
+>  	mutex_unlock(&cpuidle_lock);
+>  }
+> 
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/include/asm/pgtable-ppc32.h |    2 +
- arch/powerpc/include/asm/pte-book3e.h    |    3 ++
- arch/powerpc/include/asm/pte-fsl-booke.h |    7 -----
- arch/powerpc/kernel/head_fsl_booke.S     |   36 ++++++++++++++++++++---------
- 4 files changed, 30 insertions(+), 18 deletions(-)
+What does this mean for users of cpuidle_pause_and_lock/unlock?
+Should we be calling register/unregister_idle_function here?
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index f2c52e2..55646ad 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -111,6 +111,8 @@ extern int icache_44x_need_flush;
- #include <asm/pte-40x.h>
- #elif defined(CONFIG_44x)
- #include <asm/pte-44x.h>
-+#elif defined(CONFIG_FSL_BOOKE) && defined(CONFIG_PTE_64BIT)
-+#include <asm/pte-book3e.h>
- #elif defined(CONFIG_FSL_BOOKE)
- #include <asm/pte-fsl-booke.h>
- #elif defined(CONFIG_8xx)
-diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/pte-book3e.h
-index b82b9dc..082d515 100644
---- a/arch/powerpc/include/asm/pte-book3e.h
-+++ b/arch/powerpc/include/asm/pte-book3e.h
-@@ -75,6 +75,9 @@
- /* On 32-bit, we never clear the top part of the PTE */
- #ifdef CONFIG_PPC32
- #define _PTE_NONE_MASK	0xffffffff00000000ULL
-+#define _PMD_PRESENT	0
-+#define _PMD_PRESENT_MASK (PAGE_MASK)
-+#define _PMD_BAD	(~PAGE_MASK)
- #endif
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/include/asm/pte-fsl-booke.h b/arch/powerpc/include/asm/pte-fsl-booke.h
-index ce8a9e9..2c12be5 100644
---- a/arch/powerpc/include/asm/pte-fsl-booke.h
-+++ b/arch/powerpc/include/asm/pte-fsl-booke.h
-@@ -33,13 +33,6 @@
- #define _PAGE_WRITETHRU	0x00400	/* H: W bit */
- #define _PAGE_SPECIAL	0x00800 /* S: Special page */
- 
--#ifdef CONFIG_PTE_64BIT
--/* ERPN in a PTE never gets cleared, ignore it */
--#define _PTE_NONE_MASK	0xffffffffffff0000ULL
--/* We extend the size of the PTE flags area when using 64-bit PTEs */
--#define PTE_RPN_SHIFT	(PAGE_SHIFT + 8)
--#endif
--
- #define _PMD_PRESENT	0
- #define _PMD_PRESENT_MASK (PAGE_MASK)
- #define _PMD_BAD	(~PAGE_MASK)
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 2c5af52..975788c 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -575,7 +575,12 @@ interrupt_base:
- 	 *       place or can we save a couple of instructions here ?
- 	 */
- 	mfspr	r12,SPRN_ESR
-+#ifdef CONFIG_PTE_64BIT
-+	li	r13,_PAGE_PRESENT
-+	oris	r13,r13,_PAGE_ACCESSED@h
-+#else
- 	li	r13,_PAGE_PRESENT|_PAGE_ACCESSED
-+#endif
- 	rlwimi	r13,r12,11,29,29
- 
- 	FIND_PTE
-@@ -643,7 +648,12 @@ interrupt_base:
- 
- 4:
- 	/* Make up the required permissions */
-+#ifdef CONFIG_PTE_64BIT
-+	li	r13,_PAGE_PRESENT | _PAGE_EXEC
-+	oris	r13,r13,_PAGE_ACCESSED@h
-+#else
- 	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
-+#endif
- 
- 	FIND_PTE
- 	andc.	r13,r13,r11		/* Check permission */
-@@ -733,7 +743,7 @@ finish_tlb_load:
- 
- 	mfspr	r12, SPRN_MAS2
- #ifdef CONFIG_PTE_64BIT
--	rlwimi	r12, r11, 26, 24, 31	/* extract ...WIMGE from pte */
-+	rlwimi	r12, r11, 32-19, 27, 31	/* extract WIMGE from pte */
- #else
- 	rlwimi	r12, r11, 26, 27, 31	/* extract WIMGE from pte */
- #endif
-@@ -742,6 +752,20 @@ finish_tlb_load:
- #endif
- 	mtspr	SPRN_MAS2, r12
- 
-+#ifdef CONFIG_PTE_64BIT
-+	rlwinm	r12, r11, 32-2, 26, 31	/* Move in perm bits */
-+	andi.	r10, r11, _PAGE_DIRTY
-+	bne	1f
-+	li	r10, MAS3_SW | MAS3_UW
-+	andc	r12, r12, r10
-+1:	rlwimi	r12, r13, 20, 0, 11	/* grab RPN[32:43] */
-+	rlwimi	r12, r11, 20, 12, 19	/* grab RPN[44:51] */
-+	mtspr	SPRN_MAS3, r12
-+BEGIN_MMU_FTR_SECTION
-+	srwi	r10, r13, 12		/* grab RPN[12:31] */
-+	mtspr	SPRN_MAS7, r10
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
-+#else
- 	li	r10, (_PAGE_EXEC | _PAGE_PRESENT)
- 	rlwimi	r10, r11, 31, 29, 29	/* extract _PAGE_DIRTY into SW */
- 	and	r12, r11, r10
-@@ -749,16 +773,6 @@ finish_tlb_load:
- 	slwi	r10, r12, 1
- 	or	r10, r10, r12
- 	iseleq	r12, r12, r10
--	
--#ifdef CONFIG_PTE_64BIT
--	rlwimi	r12, r13, 24, 0, 7	/* grab RPN[32:39] */
--	rlwimi	r12, r11, 24, 8, 19	/* grab RPN[40:51] */
--	mtspr	SPRN_MAS3, r12
--BEGIN_MMU_FTR_SECTION
--	srwi	r10, r13, 8		/* grab RPN[8:31] */
--	mtspr	SPRN_MAS7, r10
--END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
--#else
- 	rlwimi	r11, r12, 0, 20, 31	/* Extract RPN from PTE and merge with perms */
- 	mtspr	SPRN_MAS3, r11
- #endif
+
+> @@ -287,6 +264,12 @@ static int __cpuidle_register_device(str
+>  	return 0;
+>  }
+> 
+> +static void register_cpuidle_idle_function(void)
+> +{
+> +	register_idle_function(&cpuidle_idle_desc);
+> +
+> +	idle_function_registered = 1;
+
+Use booleans if possible, unless you intend to extend the meaning of
+registered someday.
+
+> +}
+>  /**
+>   * cpuidle_register_device - registers a CPU's idle PM feature
+>   * @dev: the cpu
+> @@ -303,7 +286,9 @@ int cpuidle_register_device(struct cpuid
+>  	}
+> 
+>  	cpuidle_enable_device(dev);
+> -	cpuidle_install_idle_handler();
+> +
+> +	if (!idle_function_registered)
+> +		register_cpuidle_idle_function();
+> 
+>  	mutex_unlock(&cpuidle_lock);
+> 
+> @@ -382,8 +367,6 @@ static int __init cpuidle_init(void)
+>  {
+>  	int ret;
+> 
+> -	pm_idle_old = pm_idle;
+> -
+>  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+>  	if (ret)
+>  		return ret;
+> Index: linux.trees.git/drivers/cpuidle/governor.c
+> ===================================================================
+> --- linux.trees.git.orig/drivers/cpuidle/governor.c
+> +++ linux.trees.git/drivers/cpuidle/governor.c
+> @@ -48,8 +48,6 @@ int cpuidle_switch_governor(struct cpuid
+>  	if (gov == cpuidle_curr_governor)
+>  		return 0;
+> 
+> -	cpuidle_uninstall_idle_handler();
+> -
+>  	if (cpuidle_curr_governor) {
+>  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+>  			cpuidle_disable_device(dev);
+> @@ -63,7 +61,6 @@ int cpuidle_switch_governor(struct cpuid
+>  			return -EINVAL;
+>  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+>  			cpuidle_enable_device(dev);
+> -		cpuidle_install_idle_handler();
+>  		printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
+>  	}
+> 
+
 -- 
-1.6.0.6
+	Balbir
