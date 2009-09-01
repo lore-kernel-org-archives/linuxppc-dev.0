@@ -1,38 +1,32 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CDC2BB7B92
+Return-Path: <Ravinder.Kumar@Sun.COM>
+Received: from sca-es-mail-1.sun.com (sca-es-mail-1.Sun.COM [192.18.43.132])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 9620CB7063
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Sep 2009 15:58:01 +1000 (EST)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 84673DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Sep 2009 15:58:00 +1000 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n815vs7m020819
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 15:57:54 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n815vuO21278064
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 15:57:56 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n815vu2F008074
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 15:57:56 +1000
-Date: Tue, 1 Sep 2009 11:27:53 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Ankita Garg <ankita@in.ibm.com>
-Subject: Re: [PATCH] Fix fake numa on ppc
-Message-ID: <20090901055753.GB5563@balbir.in.ibm.com>
-References: <20090901050316.GA4076@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20090901050316.GA4076@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: balbir@linux.vnet.ibm.com
+	Tue,  1 Sep 2009 17:05:49 +1000 (EST)
+Received: from fe-sfbay-09.sun.com ([192.18.43.129])
+	by sca-es-mail-1.sun.com (8.13.7+Sun/8.12.9) with ESMTP id
+	n816k8gA004203 for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 31 Aug 2009 23:46:20 -0700 (PDT)
+MIME-version: 1.0
+Content-type: text/plain; CHARSET=US-ASCII; delsp=yes; format=flowed
+Received: from conversion-daemon.fe-sfbay-09.sun.com by fe-sfbay-09.sun.com
+	(Sun Java(tm) System Messaging Server 7u2-7.04 64bit (built Jul 2
+	2009)) id <0KPA00J005DXPR00@fe-sfbay-09.sun.com> for
+	linuxppc-dev@lists.ozlabs.org; Mon, 31 Aug 2009 23:46:08 -0700 (PDT)
+Date: Mon, 31 Aug 2009 23:46:07 -0700
+From: Ravinder Kumar <Ravinder.Kumar@Sun.COM>
+Subject: Re: ECC & Magic bitmask errors with JFFS2 file system on 6.23 kernel
+	for	powerpc
+In-reply-to: <20090831234713.GA6767@oksana.dev.rtsoft.ru>
+Sender: Ravinder.Kumar@Sun.COM
+To: avorontsov@ru.mvista.com
+Message-id: <F805585C-5DEE-4F99-B448-C231C49BEDEB@Sun.COM>
+References: <OF4DA6695F.B8912DE2-ON652575F5.004F0DE0-652575F5.00519736@lntemsys.com>
+	<4A9C34EE.4040606@Sun.COM> <20090831234713.GA6767@oksana.dev.rtsoft.ru>
+Cc: louise <louise@Sun.COM>, Rupesh Kumar <Rupesh.Kumar@Lntemsys.com>,
+	linuxppc-dev@lists.ozlabs.org, Louise.Yeung@Sun.COM
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,146 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Ankita Garg <ankita@in.ibm.com> [2009-09-01 10:33:16]:
+On Aug 31, 2009, at 4:47 PM, Anton Vorontsov wrote:
 
-> Hello,
-> 
-> Below is a patch to fix a couple of issues with fake numa node creation
-> on ppc:
-> 
-> 1) Presently, fake nodes could be created such that real numa node
-> boundaries are not respected. So a node could have lmbs that belong to
-> different real nodes.
-> 
-> 2) The cpu association is broken. On a JS22 blade for example, which is
-> a 2-node numa machine, I get the following:
-> 
-> # cat /proc/cmdline
-> root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
-> # cat /sys/devices/system/node/node0/cpulist
-> 0-3
-> # cat /sys/devices/system/node/node1/cpulist
-> 4-7
-> # cat /sys/devices/system/node/node4/cpulist
-> 
-> #
-> 
-> So, though the cpus 4-7 should have been associated with node4, they
-> still belong to node1. The patch works by recording a real numa node
-> boundary and incrementing the fake node count. At the same time, a
-> mapping is stored from the real numa node to the first fake node that
-> gets created on it.
+> On Mon, Aug 31, 2009 at 01:39:10PM -0700, Louise.Yeung@Sun.COM wrote:
+>> *Hi Rupesh,
+>>
+>> We are using a Freescale processor similar to yours with NAND flash
+>> supporting 2KB page size .
 >
+> What kernel version and NAND driver you use? I don't think that old
+> BSP kernels include fsl_elbc_nand driver, which is a much improved
+> version of the fsl_fcm driver.
 
-Some details on how you tested it and results before and after would
-be nice. Please see git commit 1daa6d08d1257aa61f376c3cc4795660877fb9e3
-for example
+We are using 2.6.23 kernel with freescale patches. The sources have  
+fsl_elbc driver.
+I think the newer BSP kernels have fsl_elbc_nand driver. Will look at  
+it.
 
- 
-> Any suggestions on improving the patch are most welcome!
-> 
-> Signed-off-by: Ankita Garg <ankita@in.ibm.com>
-> 
-> Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
-> ===================================================================
-> --- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
-> +++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
-> @@ -26,6 +26,11 @@
->  #include <asm/smp.h>
-> 
->  static int numa_enabled = 1;
-> +static int fake_enabled = 1;
-> +
-> +/* The array maps a real numa node to the first fake node that gets
-> +created on it */
+Thanks
+Ravinder
 
-Coding style is broken
-
-> +int fake_numa_node_mapping[MAX_NUMNODES];
-> 
->  static char *cmdline __initdata;
-> 
-> @@ -49,14 +54,24 @@ static int __cpuinit fake_numa_create_ne
->  	unsigned long long mem;
->  	char *p = cmdline;
->  	static unsigned int fake_nid;
-> +	static unsigned int orig_nid = 0;
-
-Should we call this prev_nid?
-
->  	static unsigned long long curr_boundary;
-> 
->  	/*
->  	 * Modify node id, iff we started creating NUMA nodes
->  	 * We want to continue from where we left of the last time
->  	 */
-> -	if (fake_nid)
-> +	if (fake_nid) {
-> +		if (orig_nid != *nid) {
-
-OK, so this is called when the real NUMA node changes - comments would
-be nice
-
-> +			fake_nid++;
-> +			fake_numa_node_mapping[*nid] = fake_nid;
-> +			orig_nid = *nid;
-> +			*nid = fake_nid;
-> +			return 0;
-> +		}
->  		*nid = fake_nid;
-> +	}
-> +
->  	/*
->  	 * In case there are no more arguments to parse, the
->  	 * node_id should be the same as the last fake node id
-> @@ -440,7 +455,7 @@ static int of_drconf_to_nid_single(struc
->   */
->  static int __cpuinit numa_setup_cpu(unsigned long lcpu)
->  {
-> -	int nid = 0;
-> +	int nid = 0, new_nid;
->  	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
-> 
->  	if (!cpu) {
-> @@ -450,8 +465,15 @@ static int __cpuinit numa_setup_cpu(unsi
-> 
->  	nid = of_node_to_nid_single(cpu);
-> 
-> +	if (fake_enabled && nid) {
-> +		new_nid = fake_numa_node_mapping[nid];
-> +		if (new_nid > 0)
-> +			nid = new_nid;
-> +	}
-> +
->  	if (nid < 0 || !node_online(nid))
->  		nid = any_online_node(NODE_MASK_ALL);
-> +
->  out:
->  	map_cpu_to_node(lcpu, nid);
-> 
-> @@ -1005,8 +1027,11 @@ static int __init early_numa(char *p)
->  		numa_debug = 1;
-> 
->  	p = strstr(p, "fake=");
-> -	if (p)
-> +	if (p) {
->  		cmdline = p + strlen("fake=");
-> +		if (numa_enabled)
-> +			fake_enabled = 1;
-
-Have you tried passing just numa=fake= without any commandline?
-That should enable fake_enabled, but I wonder if that negatively
-impacts numa_setup_cpu(). I wonder if you should look at cmdline
-to decide on fake_enabled.
-
-> +	}
-> 
->  	return 0;
->  }
 >
-
-Overall, I think this is the right thing to do, we need to move in
-this direction. 
-
--- 
-	Balbir
+> So you might want to swith to a newer kernel or back-port the
+> fsl_elbc_nand driver[1] and a few fixes to your kernel.
+>
+> [1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=history;f=drivers/mtd/nand/fsl_elbc_nand.c
+>
+> -- 
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
