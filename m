@@ -1,22 +1,22 @@
 Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A1847B7B85
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CBC6FB7BA8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Sep 2009 21:37:23 +1000 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp04.au.ibm.com (8.14.3/8.13.1) with ESMTP id n81BYWs4032242
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2009 21:34:32 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n81BbIo71159298
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2009 21:37:18 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n81BbHWX003686
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2009 21:37:18 +1000
-Date: Tue, 1 Sep 2009 17:07:04 +0530
+	Tue,  1 Sep 2009 21:38:53 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id n81BagSE014606
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2009 21:36:42 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n81BbDe51310786
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2009 21:37:13 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n81Bcnil016255
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2009 21:38:50 +1000
+Date: Tue, 1 Sep 2009 17:08:40 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: Joel Schopp <jschopp@austin.ibm.com>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -24,14 +24,15 @@ To: Joel Schopp <jschopp@austin.ibm.com>,
 	Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
 	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
 	Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-	Gautham R Shenoy <ego@in.ibm.com>,
-	Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v4 PATCH 0/5]: cpuidle/POWER (REDISIGN): Introducing cpuidle to
-	POWER.
-Message-ID: <20090901113704.GG7599@linux.vnet.ibm.com>
+	Gautham R Shenoy <ego@in.ibm.com>, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
+Message-ID: <20090901113840.GH7599@linux.vnet.ibm.com>
+References: <20090901113704.GG7599@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090901113704.GG7599@linux.vnet.ibm.com>
+Cc: Arun Bharadwaj <arun@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -42,57 +43,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
 
-******** This is an RFC, not for inclusion **********
+Cleanup drivers/cpuidle/cpuidle.c
 
-This patchset introduces cpuidle infrastructure to POWER, prototyping
-for pseries and currently in the process of porting to x86 and hence
-will *not* build on x86/other POWER platforms.
+Cpuidle maintains a pm_idle_old void pointer because, currently in x86
+there is no clean way of registering and unregistering a idle function.
 
-This is to get initial comments on the redesign of my earlier implementation
-which can be found at http://lkml.org/lkml/2009/8/27/124
+So remove pm_idle_old and leave the responsibility of maintaining the
+list of registered idle loops to the architecture specific code. If the
+architecture registers cpuidle_idle_call as its idle loop, only then
+this loop is called.
 
-Major changes from last iteration:
-----------------------------------
+Also remove unwanted functions cpuidle_[un]install_idle_handler,
+cpuidle_kick_cpus()
 
-* Cleanup drivers/cpuidle/cpuidle.c
-	Currently, the cpuidle implementation has weakness in the
-	framework where an exported pm_idle function pointer is
-	manipulated by various subsystem. The proposed framework has
-	a registration architecture to cleanly add and remove new idle
-	routines from different subsystems.
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle.c  |   51 +++++++++++++++------------------------------
+ drivers/cpuidle/governor.c |    3 --
+ 2 files changed, 17 insertions(+), 37 deletions(-)
 
-* Introduce [un]register_idle_function() routines
-        Implement a LIFO based approach for registering architecture
-        dependent idle routines.
-
-* Sample implementation of register_idle_function for pSeries
-
-
-TODO:
------
-
-* Extend this prototype to cover x86 and other archs that use cpuidle.
-        Currently, in x86, the cpu_idle() idle loop doesn't have a
-        default idle loop to fall back to if pm_idle is NULL, unlike
-        the corresponding implementation in pseries, where
-        ppc_md.power_save can be NULL and there is a fallback.
-        So we need to create a similar fork in cpu_idle() idle loop of
-        x86.
-
-
-
-Patches included in this series:
---------------------------------
-
-1/5 - Cleanup drivers/cpuidle/cpuidle.c
-2/5 - Implement routines to register and unregister idle function.
-3/5 - Incorporate registering of idle loop for pSeries.
-4/5 - Add Kconfig entry to enable cpuidle for POWER.
-5/5 - Implement pSeries processor idle module.
-
-
-Any comments on the design is welcome.
-
---arun
+Index: linux.trees.git/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
++++ linux.trees.git/drivers/cpuidle/cpuidle.c
+@@ -24,9 +24,14 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
+ 
+ DEFINE_MUTEX(cpuidle_lock);
+ LIST_HEAD(cpuidle_detected_devices);
+-static void (*pm_idle_old)(void);
+ 
+ static int enabled_devices;
++static int idle_function_registered;
++
++struct idle_function_desc cpuidle_idle_desc = {
++	.name           =       "cpuidle_loop",
++	.idle_func      =       cpuidle_idle_call,
++};
+ 
+ #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
+ static void cpuidle_kick_cpus(void)
+@@ -54,13 +59,10 @@ static void cpuidle_idle_call(void)
+ 
+ 	/* check if the device is ready */
+ 	if (!dev || !dev->enabled) {
+-		if (pm_idle_old)
+-			pm_idle_old();
+-		else
+ #if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
+-			default_idle();
++		default_idle();
+ #else
+-			local_irq_enable();
++		local_irq_enable();
+ #endif
+ 		return;
+ 	}
+@@ -94,35 +96,11 @@ static void cpuidle_idle_call(void)
+ }
+ 
+ /**
+- * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
+- */
+-void cpuidle_install_idle_handler(void)
+-{
+-	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
+-		/* Make sure all changes finished before we switch to new idle */
+-		smp_wmb();
+-		pm_idle = cpuidle_idle_call;
+-	}
+-}
+-
+-/**
+- * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
+- */
+-void cpuidle_uninstall_idle_handler(void)
+-{
+-	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+-		pm_idle = pm_idle_old;
+-		cpuidle_kick_cpus();
+-	}
+-}
+-
+-/**
+  * cpuidle_pause_and_lock - temporarily disables CPUIDLE
+  */
+ void cpuidle_pause_and_lock(void)
+ {
+ 	mutex_lock(&cpuidle_lock);
+-	cpuidle_uninstall_idle_handler();
+ }
+ 
+ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
+@@ -132,7 +110,6 @@ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock
+  */
+ void cpuidle_resume_and_unlock(void)
+ {
+-	cpuidle_install_idle_handler();
+ 	mutex_unlock(&cpuidle_lock);
+ }
+ 
+@@ -287,6 +264,12 @@ static int __cpuidle_register_device(str
+ 	return 0;
+ }
+ 
++static void register_cpuidle_idle_function(void)
++{
++	register_idle_function(&cpuidle_idle_desc);
++
++	idle_function_registered = 1;
++}
+ /**
+  * cpuidle_register_device - registers a CPU's idle PM feature
+  * @dev: the cpu
+@@ -303,7 +286,9 @@ int cpuidle_register_device(struct cpuid
+ 	}
+ 
+ 	cpuidle_enable_device(dev);
+-	cpuidle_install_idle_handler();
++
++	if (!idle_function_registered)
++		register_cpuidle_idle_function();
+ 
+ 	mutex_unlock(&cpuidle_lock);
+ 
+@@ -382,8 +367,6 @@ static int __init cpuidle_init(void)
+ {
+ 	int ret;
+ 
+-	pm_idle_old = pm_idle;
+-
+ 	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+ 	if (ret)
+ 		return ret;
+Index: linux.trees.git/drivers/cpuidle/governor.c
+===================================================================
+--- linux.trees.git.orig/drivers/cpuidle/governor.c
++++ linux.trees.git/drivers/cpuidle/governor.c
+@@ -48,8 +48,6 @@ int cpuidle_switch_governor(struct cpuid
+ 	if (gov == cpuidle_curr_governor)
+ 		return 0;
+ 
+-	cpuidle_uninstall_idle_handler();
+-
+ 	if (cpuidle_curr_governor) {
+ 		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+ 			cpuidle_disable_device(dev);
+@@ -63,7 +61,6 @@ int cpuidle_switch_governor(struct cpuid
+ 			return -EINVAL;
+ 		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+ 			cpuidle_enable_device(dev);
+-		cpuidle_install_idle_handler();
+ 		printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
+ 	}
+ 
