@@ -1,26 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <ankita@in.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D7D4DB7B92
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B3E20B7B8A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Sep 2009 17:34:49 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Tue,  1 Sep 2009 19:24:17 +1000 (EST)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 182B8DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Sep 2009 17:34:48 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n817Yb9l029665
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 02:34:38 -0500
-Subject: [PATCH v2] powerpc: Fix some late PowerMac G5 with PCIe ATI graphics
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 01 Sep 2009 17:34:36 +1000
-Message-Id: <1251790476.14675.314.camel@pasglop>
-Mime-Version: 1.0
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1C192DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Sep 2009 19:24:15 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id n819OBWZ018010
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 19:24:11 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n819OBaM434464
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 19:24:11 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n819OAfG007482
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 19:24:10 +1000
+Date: Tue, 1 Sep 2009 14:54:07 +0530
+From: Ankita Garg <ankita@in.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fix fake numa on ppc
+Message-ID: <20090901092407.GC4076@in.ibm.com>
+References: <20090901050316.GA4076@in.ibm.com>
+	<20090901055753.GB5563@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090901055753.GB5563@balbir.in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: Ankita Garg <ankita@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,98 +43,361 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A misconfiguration by the firmware of the U4 PCIe bridge on PowerMac G5
-with the U4 bridge (latest generations, may also affect the iMac G5
-"iSight") is causing us to re-assign the PCI BARs of the video card,
-which can get it out of sync with the firmware, thus breaking offb.
+Hi Balbir,
 
-This works around it by fixing up the bridge configuration properly
-at boot time. It also fixes a bug where the firmware provides us with
-an incorrect set of accessible regions in the device-tree. 
+On Tue, Sep 01, 2009 at 11:27:53AM +0530, Balbir Singh wrote:
+> * Ankita Garg <ankita@in.ibm.com> [2009-09-01 10:33:16]:
+> 
+> > Hello,
+> > 
+> > Below is a patch to fix a couple of issues with fake numa node creation
+> > on ppc:
+> > 
+> > 1) Presently, fake nodes could be created such that real numa node
+> > boundaries are not respected. So a node could have lmbs that belong to
+> > different real nodes.
+> > 
+> > 2) The cpu association is broken. On a JS22 blade for example, which is
+> > a 2-node numa machine, I get the following:
+> > 
+> > # cat /proc/cmdline
+> > root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+> > # cat /sys/devices/system/node/node0/cpulist
+> > 0-3
+> > # cat /sys/devices/system/node/node1/cpulist
+> > 4-7
+> > # cat /sys/devices/system/node/node4/cpulist
+> > 
+> > #
+> > 
+> > So, though the cpus 4-7 should have been associated with node4, they
+> > still belong to node1. The patch works by recording a real numa node
+> > boundary and incrementing the fake node count. At the same time, a
+> > mapping is stored from the real numa node to the first fake node that
+> > gets created on it.
+> >
+> 
+> Some details on how you tested it and results before and after would
+> be nice. Please see git commit 1daa6d08d1257aa61f376c3cc4795660877fb9e3
+> for example
+> 
+>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Thanks for the quick review of the patch. Here is some information on
+the testing:
 
-diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
-index 04cdd32..e81403b 100644
---- a/arch/powerpc/platforms/powermac/pci.c
-+++ b/arch/powerpc/platforms/powermac/pci.c
-@@ -1286,3 +1286,64 @@ static void fixup_k2_sata(struct pci_dev* dev)
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_SERVERWORKS, 0x0240, fixup_k2_sata);
+Tested the patch with the following commandlines:
+numa=fake=2G,4G,6G,8G,10G,12G,14G,16G
+numa=fake=3G,6G,10G,16G
+numa=fake=4G
+numa=fake=
+
+For testing if the fake nodes respect the real node boundaries, I added
+some debug printks in the node creation path. Without the patch, for the
+commandline numa=fake=2G,4G,6G,8G,10G,12G,14G,16G, this is what I got:
+
+fake id: 1 nid: 0
+fake id: 1 nid: 0
+...
+fake id: 2 nid: 0
+fake id: 2 nid: 0
+...
+fake id: 2 nid: 0
+created new fake_node with id 3
+fake id: 3 nid: 0
+fake id: 3 nid: 0
+...
+fake id: 3 nid: 0
+fake id: 3 nid: 0
+fake id: 3 nid: 1
+fake id: 3 nid: 1
+...
+created new fake_node with id 4
+fake id: 4 nid: 1
+fake id: 4 nid: 1
+...
+
+and so on. So, fake node 3 encompasses real node 0 & 1. Also,
+
+# cat /sys/devices/system/node/node3/meminfo
+Node 0 MemTotal:        2097152 kB
+...
+# # cat /sys/devices/system/node/node4/meminfo
+Node 0 MemTotal:        2097152 kB
+...
+
+
+With the patch, I get:
+
+fake id: 1 nid: 0
+fake id: 1 nid: 0
+...
+fake id: 2 nid: 0
+fake id: 2 nid: 0
+...
+fake id: 2 nid: 0
+created new fake_node with id 3
+fake id: 3 nid: 0
+fake id: 3 nid: 0
+...
+fake id: 3 nid: 0
+fake id: 3 nid: 0
+created new fake_node with id 4
+fake id: 4 nid: 1
+fake id: 4 nid: 1
+...
+
+and so on. With the patch, the fake node sizes are slightly different
+from that specified by the user.
+
+# cat /sys/devices/system/node/node3/meminfo
+Node 3 MemTotal:        1638400 kB
+...
+# cat /sys/devices/system/node/node4/meminfo
+Node 4 MemTotal:         458752 kB
+...
+
+CPU association was tested as mentioned in the previous mail:
+
+Without the patch,
+
+# cat /proc/cmdline
+root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+# cat /sys/devices/system/node/node0/cpulist
+0-3
+# cat /sys/devices/system/node/node1/cpulist
+4-7
+# cat /sys/devices/system/node/node4/cpulist
+
+#
+
+With the patch,
+
+# cat /proc/cmdline
+root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+# cat /sys/devices/system/node/node0/cpulist
+0-3
+# cat /sys/devices/system/node/node1/cpulist
+
+# cat /sys/devices/system/node/node4/cpulist
+4-7
+
+> > 
+> > Signed-off-by: Ankita Garg <ankita@in.ibm.com>
+> > 
+> > Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+> > ===================================================================
+> > --- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
+> > +++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+> > @@ -26,6 +26,11 @@
+> >  #include <asm/smp.h>
+> > 
+> >  static int numa_enabled = 1;
+> > +static int fake_enabled = 1;
+> > +
+> > +/* The array maps a real numa node to the first fake node that gets
+> > +created on it */
+> 
+> Coding style is broken
+> 
+
+Fixed.
+
+> > +int fake_numa_node_mapping[MAX_NUMNODES];
+> > 
+> >  static char *cmdline __initdata;
+> > 
+> > @@ -49,14 +54,24 @@ static int __cpuinit fake_numa_create_ne
+> >  	unsigned long long mem;
+> >  	char *p = cmdline;
+> >  	static unsigned int fake_nid;
+> > +	static unsigned int orig_nid = 0;
+> 
+> Should we call this prev_nid?
+> 
+
+Yes, makes sense.
+> >  	static unsigned long long curr_boundary;
+> > 
+> >  	/*
+> >  	 * Modify node id, iff we started creating NUMA nodes
+> >  	 * We want to continue from where we left of the last time
+> >  	 */
+> > -	if (fake_nid)
+> > +	if (fake_nid) {
+> > +		if (orig_nid != *nid) {
+> 
+> OK, so this is called when the real NUMA node changes - comments would
+> be nice
+>
+
+Thanks, have added the comment.
  
+> > +			fake_nid++;
+> > +			fake_numa_node_mapping[*nid] = fake_nid;
+> > +			orig_nid = *nid;
+> > +			*nid = fake_nid;
+> > +			return 0;
+> > +		}
+> >  		*nid = fake_nid;
+> > +	}
+> > +
+> >  	/*
+> >  	 * In case there are no more arguments to parse, the
+> >  	 * node_id should be the same as the last fake node id
+> > @@ -440,7 +455,7 @@ static int of_drconf_to_nid_single(struc
+> >   */
+> >  static int __cpuinit numa_setup_cpu(unsigned long lcpu)
+> >  {
+> > -	int nid = 0;
+> > +	int nid = 0, new_nid;
+> >  	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
+> > 
+> >  	if (!cpu) {
+> > @@ -450,8 +465,15 @@ static int __cpuinit numa_setup_cpu(unsi
+> > 
+> >  	nid = of_node_to_nid_single(cpu);
+> > 
+> > +	if (fake_enabled && nid) {
+> > +		new_nid = fake_numa_node_mapping[nid];
+> > +		if (new_nid > 0)
+> > +			nid = new_nid;
+> > +	}
+> > +
+> >  	if (nid < 0 || !node_online(nid))
+> >  		nid = any_online_node(NODE_MASK_ALL);
+> > +
+> >  out:
+> >  	map_cpu_to_node(lcpu, nid);
+> > 
+> > @@ -1005,8 +1027,11 @@ static int __init early_numa(char *p)
+> >  		numa_debug = 1;
+> > 
+> >  	p = strstr(p, "fake=");
+> > -	if (p)
+> > +	if (p) {
+> >  		cmdline = p + strlen("fake=");
+> > +		if (numa_enabled)
+> > +			fake_enabled = 1;
+> 
+> Have you tried passing just numa=fake= without any commandline?
+> That should enable fake_enabled, but I wonder if that negatively
+> impacts numa_setup_cpu(). I wonder if you should look at cmdline
+> to decide on fake_enabled.
+>
+
+fake_enabled does get set even for numa=fake=. However, it does not
+impact numa_setup_cpu, since fake_numa_node_mapping array would have no
+mapping stored and there is a condition there already to check for the
+value of the mapping. I confirmed this by booting with the above
+parameter as well.
+
+> > +	}
+> > 
+> >  	return 0;
+> >  }
+> >
+> 
+> Overall, I think this is the right thing to do, we need to move in
+> this direction. 
+> 
+
+Heres the updated patch:
+
+Signed-off-by: Ankita Garg <ankita@in.ibm.com> 
+
+Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+===================================================================
+--- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
++++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+@@ -26,6 +26,13 @@
+ #include <asm/smp.h>
+ 
+ static int numa_enabled = 1;
++static int fake_enabled = 1;
++
 +/*
-+ * On U4 (aka CPC945) the PCIe root complex "P2P" bridge resource ranges aren't
-+ * configured by the firmware. The bridge itself seems to ignore them but it
-+ * causes problems with Linux which then re-assigns devices below the bridge,
-+ * thus changing addresses of those devices from what was in the device-tree,
-+ * which sucks when those are video cards using offb
-+ *
-+ * We could just mark it transparent but I prefer fixing up the resources to
-+ * properly show what's going on here, as I have some doubts about having them
-+ * badly configured potentially being an issue for DMA.
-+ *
-+ * We leave PIO alone, it seems to be fine
-+ *
-+ * Oh and there's another funny bug. The OF properties advertize the region
-+ * 0xf1000000..0xf1ffffff as being forwarded as memory space. But that's
-+ * actually not true, this region is the memory mapped config space. So we
-+ * also need to filter it out or we'll map things in the wrong place.
++ * The array maps a real numa node to the first fake node that gets
++ * created on it
 + */
-+static void fixup_u4_pcie(struct pci_dev* dev)
-+{
-+	struct pci_controller *host = pci_bus_to_host(dev->bus);
-+	struct resource *region = NULL;
-+	u32 reg;
-+	int i;
-+
-+	/* Only do that on PowerMac */
-+	if (!machine_is(powermac))
-+		return;
-+
-+	/* Find the largest MMIO region */
-+	for (i = 0; i < 3; i++) {
-+		struct resource *r = &host->mem_resources[i];
-+		if (!(r->flags & IORESOURCE_MEM))
-+			continue;
-+		/* Skip the 0xf0xxxxxx..f2xxxxxx regions, we know they
-+		 * are reserved by HW for other things
++int fake_numa_node_mapping[MAX_NUMNODES];
+ 
+ static char *cmdline __initdata;
+ 
+@@ -49,14 +56,29 @@ static int __cpuinit fake_numa_create_ne
+ 	unsigned long long mem;
+ 	char *p = cmdline;
+ 	static unsigned int fake_nid;
++	static unsigned int prev_nid = 0;
+ 	static unsigned long long curr_boundary;
+ 
+ 	/*
+ 	 * Modify node id, iff we started creating NUMA nodes
+ 	 * We want to continue from where we left of the last time
+ 	 */
+-	if (fake_nid)
++	if (fake_nid) {
++		/*
++		 * Moved over to the next real numa node, increment fake
++		 * node number and store the mapping of the real node to
++		 * the fake node
 +		 */
-+		if (r->start >= 0xf0000000 && r->start < 0xf3000000)
-+			continue;
-+		if (!region || (r->end - r->start) >
-+		    (region->end - region->start))
-+			region = r;
++		if (prev_nid != *nid) {
++			fake_nid++;
++			fake_numa_node_mapping[*nid] = fake_nid;
++			prev_nid = *nid;
++			*nid = fake_nid;
++			return 0;
++		}
+ 		*nid = fake_nid;
 +	}
-+	/* Nothing found, bail */
-+	if (region == 0)
-+		return;
 +
-+	/* Print things out */
-+	printk(KERN_INFO "PCI: Fixup U4 PCIe bridge range: %pR\n", region);
+ 	/*
+ 	 * In case there are no more arguments to parse, the
+ 	 * node_id should be the same as the last fake node id
+@@ -440,7 +462,7 @@ static int of_drconf_to_nid_single(struc
+  */
+ static int __cpuinit numa_setup_cpu(unsigned long lcpu)
+ {
+-	int nid = 0;
++	int nid = 0, new_nid;
+ 	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
+ 
+ 	if (!cpu) {
+@@ -450,8 +472,15 @@ static int __cpuinit numa_setup_cpu(unsi
+ 
+ 	nid = of_node_to_nid_single(cpu);
+ 
++	if (fake_enabled && nid) {
++		new_nid = fake_numa_node_mapping[nid];
++		if (new_nid > 0)
++			nid = new_nid;
++	}
 +
-+	/* Fixup bridge config space. We know it's a Mac, resource aren't
-+	 * offset so let's just blast them as-is. We also know that they
-+	 * fit in 32 bits
-+	 */
-+	reg = ((region->start >> 16) & 0xfff0) | (region->end & 0xfff00000);
-+	pci_write_config_dword(dev, PCI_MEMORY_BASE, reg);
-+	pci_write_config_dword(dev, PCI_PREF_BASE_UPPER32, 0);
-+	pci_write_config_dword(dev, PCI_PREF_LIMIT_UPPER32, 0);
-+	pci_write_config_dword(dev, PCI_PREF_MEMORY_BASE, 0);
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_U4_PCIE, fixup_u4_pcie);
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 0f71812..148d742 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -876,6 +876,7 @@
- #define PCI_DEVICE_ID_APPLE_SH_SUNGEM   0x0051
- #define PCI_DEVICE_ID_APPLE_U3L_AGP	0x0058
- #define PCI_DEVICE_ID_APPLE_U3H_AGP	0x0059
-+#define PCI_DEVICE_ID_APPLE_U4_PCIE	0x005b
- #define PCI_DEVICE_ID_APPLE_IPID2_AGP	0x0066
- #define PCI_DEVICE_ID_APPLE_IPID2_ATA	0x0069
- #define PCI_DEVICE_ID_APPLE_IPID2_FW	0x006a
+ 	if (nid < 0 || !node_online(nid))
+ 		nid = any_online_node(NODE_MASK_ALL);
++
+ out:
+ 	map_cpu_to_node(lcpu, nid);
+ 
+@@ -1005,8 +1034,12 @@ static int __init early_numa(char *p)
+ 		numa_debug = 1;
+ 
+ 	p = strstr(p, "fake=");
+-	if (p)
++	if (p) {
+ 		cmdline = p + strlen("fake=");
++		if (numa_enabled) {
++			fake_enabled = 1;
++		}
++	}
+ 
+ 	return 0;
+ }
+
 -- 
-1.6.1.2.14.gf26b5
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
