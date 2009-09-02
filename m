@@ -1,26 +1,37 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <arun@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CA378B7BBE
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 20716B7BC9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Sep 2009 14:50:03 +1000 (EST)
-Date: Tue, 1 Sep 2009 21:49:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH v2 1/2] cpu: Offline state Framework.
-Message-Id: <20090901214935.bc505f9f.akpm@linux-foundation.org>
-In-Reply-To: <20090828100016.10641.62621.stgit@sofia.in.ibm.com>
-References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
-	<20090828100016.10641.62621.stgit@sofia.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	"Darrick J. Wong" <djwong@us.ibm.com>
+	Wed,  2 Sep 2009 15:21:50 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id n825JTm3012968
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2009 15:19:29 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n825K3Rr1151042
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2009 15:20:03 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n825Li3q032304
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2009 15:21:45 +1000
+Date: Wed, 2 Sep 2009 10:51:38 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
+Message-ID: <20090902052138.GB5431@linux.vnet.ibm.com>
+References: <20090901113704.GG7599@linux.vnet.ibm.com>
+	<20090901113840.GH7599@linux.vnet.ibm.com>
+	<20090901172825.GA6780@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20090901172825.GA6780@balbir.in.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Arun Bharadwaj <arun@linux.vnet.ibm.com>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
+Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,163 +41,205 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 28 Aug 2009 15:30:16 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-09-01 22:58:25]:
 
-> Provide an interface by which the system administrator can decide what state
-> should the CPU go to when it is offlined.
+> * Arun R B <arun@linux.vnet.ibm.com> [2009-09-01 17:08:40]:
 > 
-> To query the hotplug states, on needs to perform a read on the sysfs tunable:
-> 	/sys/devices/system/cpu/cpu<number>/available_hotplug_states
+> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
+> > 
+> > Cleanup drivers/cpuidle/cpuidle.c
+> > 
+> > Cpuidle maintains a pm_idle_old void pointer because, currently in x86
+> > there is no clean way of registering and unregistering a idle function.
+> >
+> > So remove pm_idle_old and leave the responsibility of maintaining the
+> > list of registered idle loops to the architecture specific code. If the
+> > architecture registers cpuidle_idle_call as its idle loop, only then
+> > this loop is called.
+> > 
 > 
-> To query or set the current state for a particular CPU, one needs to
-> use the sysfs interface:
-> 	/sys/devices/system/cpu/cpu<number>/current_state
-> 
-> This patch implements the architecture independent bits of the
-> cpu-offline-state framework.
-> 
-> Architectures which want to expose the multiple offline-states to the
-> userspace are expected to write a driver which can register
-> with this framework.
-> 
-> Such a driver should:
-> - Implement the callbacks defined in the structure struct cpu_offline_driver
->   which can be called into by this framework when the corresponding
->   sysfs interfaces are read or written into.
-> 
-> - Ensure that the following operation puts the CPU in the same state
->   as it did in the absence of the driver.
-> 	echo 0 > /sys/devices/system/cpu/cpu<number>/online
-> 
-> This framework also serializes the writes to the "current_state"
-> with respect to with the writes to the "online" sysfs tunable.
+> It sounds as if there is a side-effect of this
+> patch on x86 (am I reading it incorrectly), which can be fixed, but
+> it will need a patch or so to get back the old behaviour on x86.
 > 
 
-It would be nice to document this new userspace interface somewhere.
+Hi Balbir,
 
+Yes, your understanding is correct. Currently, x86 exports pm_idle and
+this pm_idle is set to cpuidle_idle_call inside cpuidle.c
 
-> +struct cpu_offline_driver *cpu_offline_driver;
-> +static DEFINE_MUTEX(cpu_offline_driver_lock);
-> +
-> +ssize_t show_available_states(struct sys_device *dev,
-> +			struct sysdev_attribute *attr, char *buf)
-> +{
-> +	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-> +	int cpu_num = cpu->sysdev.id;
-> +	ssize_t ret;
-> +
-> +	mutex_lock(&cpu_offline_driver_lock);
-> +	if (!cpu_offline_driver) {
-> +		ret = -EEXIST;
-> +		goto out_unlock;
-> +	}
-> +
-> +	ret = cpu_offline_driver->read_available_states(cpu_num, buf);
-> +
-> +out_unlock:
-> +	mutex_unlock(&cpu_offline_driver_lock);
-> +
-> +	return ret;
-> +
-> +}
+So instead of that x86 should just export a function called
+set_arch_idle() which will be called from within
+register_idle_function() and set pm_idle to the idle handler which is
+currently being registered.
 
-The patch adds boatloads of global symbols which do not have names
-which are appropriate for global symbols.
+I have implemented this for pseries, and in the process of doing it
+for x86 too.
 
-> +ssize_t show_current_state(struct sys_device *dev,
-> +			struct sysdev_attribute *attr, char *buf)
+> > Also remove unwanted functions cpuidle_[un]install_idle_handler,
+> > cpuidle_kick_cpus()
+> >
+> > Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+> > ---
+> >  drivers/cpuidle/cpuidle.c  |   51 +++++++++++++++------------------------------
+> >  drivers/cpuidle/governor.c |    3 --
+> >  2 files changed, 17 insertions(+), 37 deletions(-)
+> > 
+> > Index: linux.trees.git/drivers/cpuidle/cpuidle.c
+> > ===================================================================
+> > --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
+> > +++ linux.trees.git/drivers/cpuidle/cpuidle.c
+> > @@ -24,9 +24,14 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
+> > 
+> >  DEFINE_MUTEX(cpuidle_lock);
+> >  LIST_HEAD(cpuidle_detected_devices);
+> > -static void (*pm_idle_old)(void);
+> > 
+> >  static int enabled_devices;
+> > +static int idle_function_registered;
+> > +
+> > +struct idle_function_desc cpuidle_idle_desc = {
+> > +	.name           =       "cpuidle_loop",
+> > +	.idle_func      =       cpuidle_idle_call,
+> > +};
+> > 
+> >  #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
+> >  static void cpuidle_kick_cpus(void)
+> > @@ -54,13 +59,10 @@ static void cpuidle_idle_call(void)
+> > 
+> >  	/* check if the device is ready */
+> >  	if (!dev || !dev->enabled) {
+> > -		if (pm_idle_old)
+> > -			pm_idle_old();
+> > -		else
+> >  #if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
+> > -			default_idle();
+> > +		default_idle();
+> >  #else
+> > -			local_irq_enable();
+> > +		local_irq_enable();
+> >  #endif
+> >  		return;
+> >  	}
+> > @@ -94,35 +96,11 @@ static void cpuidle_idle_call(void)
+> >  }
+> > 
+> >  /**
+> > - * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
+> > - */
+> > -void cpuidle_install_idle_handler(void)
+> > -{
+> > -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
+> > -		/* Make sure all changes finished before we switch to new idle */
+> > -		smp_wmb();
+> > -		pm_idle = cpuidle_idle_call;
+> > -	}
+> > -}
+> > -
+> > -/**
+> > - * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
+> > - */
+> > -void cpuidle_uninstall_idle_handler(void)
+> > -{
+> > -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+> > -		pm_idle = pm_idle_old;
+> > -		cpuidle_kick_cpus();
+> > -	}
+> > -}
+> > -
+> > -/**
+> >   * cpuidle_pause_and_lock - temporarily disables CPUIDLE
+> >   */
+> >  void cpuidle_pause_and_lock(void)
+> >  {
+> >  	mutex_lock(&cpuidle_lock);
+> > -	cpuidle_uninstall_idle_handler();
+> >  }
+> > 
+> >  EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
+> > @@ -132,7 +110,6 @@ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock
+> >   */
+> >  void cpuidle_resume_and_unlock(void)
+> >  {
+> > -	cpuidle_install_idle_handler();
+> >  	mutex_unlock(&cpuidle_lock);
+> >  }
+> > 
+> 
+> What does this mean for users of cpuidle_pause_and_lock/unlock?
+> Should we be calling register/unregister_idle_function here?
+>
 
-Like that.
+Yes, you are right. I have missed out on this part.
+register/unregister_idle_function should replace
+install/uninstall_idle_handler at those places. Thanks.
 
-> +ssize_t store_current_state(struct sys_device *dev,
-> +			struct sysdev_attribute *attr,
-> +			const char *buf, size_t count)
+> 
+> > @@ -287,6 +264,12 @@ static int __cpuidle_register_device(str
+> >  	return 0;
+> >  }
+> > 
+> > +static void register_cpuidle_idle_function(void)
+> > +{
+> > +	register_idle_function(&cpuidle_idle_desc);
+> > +
+> > +	idle_function_registered = 1;
+> 
+> Use booleans if possible, unless you intend to extend the meaning of
+> registered someday.
+>
 
-And that.
+I don't intend to extend the meaning of idle_function_registered.
+Will use boolean here.
 
-> +
-> +static SYSDEV_ATTR(available_hotplug_states, 0444, show_available_states,
-> +								NULL);
-> +static SYSDEV_ATTR(current_state, 0644, show_current_state,
-> +						store_current_state);
-> +
-> +/* Should be called with cpu_offline_driver_lock held */
-> +void cpu_offline_driver_add_cpu(struct sys_device *cpu_sys_dev)
-> +{
-> +	if (!cpu_offline_driver || !cpu_sys_dev)
-> +		return;
-> +
-> +	sysdev_create_file(cpu_sys_dev, &attr_available_hotplug_states);
-> +	sysdev_create_file(cpu_sys_dev, &attr_current_state);
-> +}
-> +
-> +/* Should be called with cpu_offline_driver_lock held */
-> +void cpu_offline_driver_remove_cpu(struct sys_device *cpu_sys_dev)
-> +{
-> +	if (!cpu_offline_driver || !cpu_sys_dev)
-> +		return;
-> +
-> +	sysdev_remove_file(cpu_sys_dev, &attr_available_hotplug_states);
-> +	sysdev_remove_file(cpu_sys_dev, &attr_current_state);
-> +
-> +}
+> > +}
+> >  /**
+> >   * cpuidle_register_device - registers a CPU's idle PM feature
+> >   * @dev: the cpu
+> > @@ -303,7 +286,9 @@ int cpuidle_register_device(struct cpuid
+> >  	}
+> > 
+> >  	cpuidle_enable_device(dev);
+> > -	cpuidle_install_idle_handler();
+> > +
+> > +	if (!idle_function_registered)
+> > +		register_cpuidle_idle_function();
+> > 
+> >  	mutex_unlock(&cpuidle_lock);
+> > 
+> > @@ -382,8 +367,6 @@ static int __init cpuidle_init(void)
+> >  {
+> >  	int ret;
+> > 
+> > -	pm_idle_old = pm_idle;
+> > -
+> >  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+> >  	if (ret)
+> >  		return ret;
+> > Index: linux.trees.git/drivers/cpuidle/governor.c
+> > ===================================================================
+> > --- linux.trees.git.orig/drivers/cpuidle/governor.c
+> > +++ linux.trees.git/drivers/cpuidle/governor.c
+> > @@ -48,8 +48,6 @@ int cpuidle_switch_governor(struct cpuid
+> >  	if (gov == cpuidle_curr_governor)
+> >  		return 0;
+> > 
+> > -	cpuidle_uninstall_idle_handler();
+> > -
+> >  	if (cpuidle_curr_governor) {
+> >  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+> >  			cpuidle_disable_device(dev);
+> > @@ -63,7 +61,6 @@ int cpuidle_switch_governor(struct cpuid
+> >  			return -EINVAL;
+> >  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+> >  			cpuidle_enable_device(dev);
+> > -		cpuidle_install_idle_handler();
+> >  		printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
+> >  	}
+> > 
+> 
+> -- 
+> 	Balbir
 
-Please don't just ignore possible error returns.
-
-> +int register_cpu_offline_driver(struct cpu_offline_driver *arch_cpu_driver)
-> +{
-> +	int ret = 0;
-> +	int cpu;
-> +	mutex_lock(&cpu_offline_driver_lock);
-> +
-
-The blank line goes after end-of-locals and before start-of-code.
-
-> +	if (cpu_offline_driver != NULL) {
-> +		ret = -EEXIST;
-> +		goto out_unlock;
-> +	}
-> +
-> +	if (!(arch_cpu_driver->read_available_states &&
-> +	      arch_cpu_driver->read_current_state &&
-> +	      arch_cpu_driver->write_current_state)) {
-> +		ret = -EINVAL;
-> +		goto out_unlock;
-
-This seems pretty pointless.  Just let the code oops - the developer
-will notice fairly quickly.
-
-> +	}
-> +
-> +	cpu_offline_driver = arch_cpu_driver;
-> +
-> +	for_each_possible_cpu(cpu)
-> +		cpu_offline_driver_add_cpu(get_cpu_sysdev(cpu));
-> +
-> +out_unlock:
-> +	mutex_unlock(&cpu_offline_driver_lock);
-> +	return ret;
-> +}
-> +
-> +void unregister_cpu_offline_driver(struct cpu_offline_driver *arch_cpu_driver)
-> +{
-> +	int cpu;
-> +	mutex_lock(&cpu_offline_driver_lock);
-> +
-> +	if (!cpu_offline_driver) {
-> +		WARN_ON(1);
-
-	if (WARN_ON(!cpu_offline_driver)) {
-
-> +		mutex_unlock(&cpu_offline_driver_lock);
-> +		return;
-> +	}
-> +
-> +	for_each_possible_cpu(cpu)
-> +		cpu_offline_driver_remove_cpu(get_cpu_sysdev(cpu));
-> +
-> +	cpu_offline_driver = NULL;
-> +	mutex_unlock(&cpu_offline_driver_lock);
-> +}
-> +
-> +
+Thanks for the review!
+--arun
