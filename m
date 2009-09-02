@@ -1,21 +1,24 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
-	[216.32.180.15])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 36CB6B7B9B
+Return-Path: <galak@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7D891B7BAE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Sep 2009 11:19:22 +1000 (EST)
-Message-ID: <4A9DC826.3010605@am.sony.com>
-Date: Tue, 1 Sep 2009 18:19:34 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Lee HongWoo <hongwoo7@gmail.com>
-Subject: Re: Question about linux boot procedure (head_64.S)
-References: <5e2889710909010358v907022cs708dfc0dd3ed7fd0@mail.gmail.com>	
-	<4A9D5A99.5030101@am.sony.com>
-	<5e2889710909011725t275dcdc8oa8be58b6e32e51f4@mail.gmail.com>
-In-Reply-To: <5e2889710909011725t275dcdc8oa8be58b6e32e51f4@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Wed,  2 Sep 2009 11:43:59 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AE7ABDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 11:43:58 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n821hsvw031407
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 20:43:54 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/book3e: Add missing page sizes
+Date: Tue,  1 Sep 2009 20:43:54 -0500
+Message-Id: <1251855834-24320-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/01/2009 05:25 PM, Lee HongWoo wrote:
-> On Wed, Sep 2, 2009 at 2:32 AM, Geoff Levand <geoffrey.levand@am.sony.com>wrote:
->> In the general case, __start is the entry point of the kernel.
->> It is where the bootloader or boot wrapper program jumps to
->> when it transfers control to the kernel.
-> 
-> I believe __start is the entry point of the kernel in this case.
-> And the entry point is __GLOBAL(__start) in the head_64.S.
-> 
-> What I asked is where or what __start is called in the prom_init.c
-> __start(hdr, KERNELBASE + offset, 0);
+Add defines for the other page sizes.  Even if HW doesn't support them
+we made them use them for hugetlbfs support.
 
-I think Michael answered this.  Just FYI, more info about the powerpc
-boot is in the kernel source file:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/pte-book3e.h |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-  Documentation/powerpc/booting-without-of.txt
-
--Geoff
+diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/pte-book3e.h
+index 9800565..b82b9dc 100644
+--- a/arch/powerpc/include/asm/pte-book3e.h
++++ b/arch/powerpc/include/asm/pte-book3e.h
+@@ -20,9 +20,19 @@
+ #define _PAGE_BAP_UX	0x000080
+ #define _PAGE_PSIZE_MSK	0x000f00
+ #define _PAGE_PSIZE_4K	0x000200
++#define _PAGE_PSIZE_8K	0x000300
++#define _PAGE_PSIZE_16K	0x000400
++#define _PAGE_PSIZE_32K	0x000500
+ #define _PAGE_PSIZE_64K	0x000600
++#define _PAGE_PSIZE_128K	0x000700
++#define _PAGE_PSIZE_256K	0x000800
++#define _PAGE_PSIZE_512K	0x000900
+ #define _PAGE_PSIZE_1M	0x000a00
++#define _PAGE_PSIZE_2M	0x000b00
++#define _PAGE_PSIZE_4M	0x000c00
++#define _PAGE_PSIZE_8M	0x000d00
+ #define _PAGE_PSIZE_16M	0x000e00
++#define _PAGE_PSIZE_32M	0x000f00
+ #define _PAGE_DIRTY	0x001000 /* C: page changed */
+ #define _PAGE_SW0	0x002000
+ #define _PAGE_U3	0x004000
+-- 
+1.6.0.6
