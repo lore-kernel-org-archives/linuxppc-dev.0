@@ -1,28 +1,36 @@
-Return-Path: <John.Linn@xilinx.com>
+Return-Path: <rientjes@google.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 46773B70B3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8A704B7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Sep 2009 23:33:26 +1000 (EST)
-Received: from SG2EHSOBE002.bigfish.com (sg2ehsobe002.messaging.microsoft.com
-	[207.46.51.76]) by ozlabs.org (Postfix) with ESMTP id F26EFDDD01
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 23:33:25 +1000 (EST)
+	Thu,  3 Sep 2009 05:46:31 +1000 (EST)
+Received: from smtp-out.google.com (smtp-out.google.com [216.239.33.17])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 44A2DDDD01
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Sep 2009 05:46:29 +1000 (EST)
+Received: from spaceape23.eur.corp.google.com (spaceape23.eur.corp.google.com
+	[172.28.16.75]) by smtp-out.google.com with ESMTP id n82JaB9D007332
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2009 20:36:11 +0100
+Received: from pzk8 (pzk8.prod.google.com [10.243.19.136])
+	by spaceape23.eur.corp.google.com with ESMTP id n82Ja7lb013887
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2009 12:36:08 -0700
+Received: by pzk8 with SMTP id 8so1008480pzk.22
+	for <linuxppc-dev@ozlabs.org>; Wed, 02 Sep 2009 12:36:07 -0700 (PDT)
+Date: Wed, 2 Sep 2009 12:36:04 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Ankita Garg <ankita@in.ibm.com>
+Subject: Re: [PATCH v2] Fix fake numa on ppc
+In-Reply-To: <20090902080346.GB3806@in.ibm.com>
+Message-ID: <alpine.DEB.1.00.0909021226160.10279@chino.kir.corp.google.com>
+References: <20090902060911.GA5728@in.ibm.com>
+	<alpine.DEB.1.00.0909012326290.31814@chino.kir.corp.google.com>
+	<20090902080346.GB3806@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH] [V3] net: add Xilinx emac lite device driver
-Date: Wed, 2 Sep 2009 07:33:18 -0600
-In-Reply-To: <20090820094914.46f1db9c@nehalam>
-References: <20090820094956.02DFC45004F@mail96-dub.bigfish.com>
-	<20090820094914.46f1db9c@nehalam>
-From: John Linn <John.Linn@xilinx.com>
-To: "Stephen Hemminger" <shemminger@vyatta.com>
-Message-ID: <20090902133245.5128E26804D@mail202-sin.bigfish.com>
-Cc: Michal Simek <michal.simek@petalogix.com>, netdev@vger.kernel.org,
-	Sadanand Mutyala <sadanan@xilinx.com>, linuxppc-dev@ozlabs.org,
-	jgarzik@pobox.com, davem@davemloft.net,
-	John Williams <john.williams@petalogix.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,101 +40,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Stephen Hemminger [mailto:shemminger@vyatta.com]
-> Sent: Thursday, August 20, 2009 5:49 PM
-> To: John Linn
-> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
-davem@davemloft.net; jgarzik@pobox.com; John
-> Linn; grant.likely@secretlab.ca; Josh Boyer; John Williams; Michal
-Simek; Sadanand Mutyala
-> Subject: Re: [PATCH] [V3] net: add Xilinx emac lite device driver
-> =
+On Wed, 2 Sep 2009, Ankita Garg wrote:
 
-> On Thu, 20 Aug 2009 03:49:51 -0600
-> John Linn <john.linn@xilinx.com> wrote:
-> =
+> Currently, the behavior of fake numa is not so on x86 as well? Below is
+> a sample output from a single node x86 system booted with numa=fake=8:
+> 
+> # cat node0/cpulist
+> 
+> # cat node1/cpulist
+> 
+> ...
+> # cat node6/cpulist
+> 
+> # cat node7/cpulist
+> 0-7
+> 
+> Presently, just fixing the cpu association issue with ppc, as explained
+> in my previous mail.
+> 
 
-> > +/**
-> > + * xemaclite_ioctl - Perform IO Control operations on the network
-device
-> > + * @dev:	Pointer to the network device
-> > + * @rq:		Pointer to the interface request structure
-> > + * @cmd:	IOCTL command
-> > + *
-> > + * The only IOCTL operation supported by this function is setting
-the MAC
-> > + * address. An error is reported if any other operations are
-requested.
-> > + *
-> > + * Return:	0 to indicate success, or a negative error for failure.
-> > + */
-> > +static int xemaclite_ioctl(struct net_device *dev, struct ifreq
-*rq, int cmd)
-> > +{
-> > +	struct net_local *lp =3D (struct net_local *) netdev_priv(dev);
-> > +	struct hw_addr_data *hw_addr =3D (struct hw_addr_data *)
-&rq->ifr_hwaddr;
-> > +
-> > +	switch (cmd) {
-> > +	case SIOCETHTOOL:
-> > +		return -EIO;
-> > +
-> > +	case SIOCSIFHWADDR:
-> > +		dev_err(&lp->ndev->dev, "SIOCSIFHWADDR\n");
-> > +
-> > +		/* Copy MAC address in from user space */
-> > +		copy_from_user((void __force *) dev->dev_addr,
-> > +			       (void __user __force *) hw_addr,
-> > +			       IFHWADDRLEN);
-> > +		xemaclite_set_mac_address(lp, dev->dev_addr);
-> > +		break;
-> > +	default:
-> > +		return -EOPNOTSUPP;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> =
-
-> Do you really need this? I doubt the SIOCSIFHWADDR even reaches
-driver!
-> =
-
-> The normal call path for setting hardware address is:
->   dev_ifsioc
->          dev_set_mac_address
->              ops->ndo_set_mac_address -->
-> =
-
-> The driver should be:
->    1. defining new code to do ndo_set_mac_address
->    2. remove existing xmaclite_ioctl - all ioctl's handled by upper
-layers
-> =
-
-> FYI - the only ioctl's that make it to network device ndo_ioctl
->  are listed in dev_ifsioc
->    SIOCDEVPRIVATE ... SIOCDEVPRIVATE + 15
->    SIOCBOND*
->    SIOCMII*
->    SIOCBR*
->    SIOCHWTSTAMP
->    SIOCWANDEV
-> =
-
-> =
-
-
-We agree and will be updating the driver for this change. Sorry about
-the delay as I was on vacation.
-
-Thanks,
-John
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+Right, I'm proposing an alternate mapping scheme (which we've used for 
+years) for both platforms such that a cpu is bound (and is set in 
+cpumask_of_node()) to each fake node with which it has physical affinity.  
+That is the only way for zonelist ordering in node order, task migration 
+from offlined cpus, correct sched domains, etc.  I can propose a patchset 
+for x86_64 to do exactly this if there aren't any objections and I hope 
+you'll help do ppc.
