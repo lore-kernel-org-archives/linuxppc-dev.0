@@ -1,27 +1,39 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <rientjes@google.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 59AAFB7C30
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7B3C1B7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Sep 2009 16:03:01 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Wed,  2 Sep 2009 16:09:06 +1000 (EST)
+Received: from smtp-out.google.com (smtp-out.google.com [216.239.45.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9579DDDD04
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 16:03:00 +1000 (EST)
-Message-Id: <E0C48D2F-2AFC-485D-B06F-D544B4C0E7FD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1251870487.14675.416.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH] powerpc/fsl-booke: Use HW PTE format if CONFIG_PTE_64BIT
-Date: Wed, 2 Sep 2009 01:02:53 -0500
-References: <1251856122-24560-1-git-send-email-galak@kernel.crashing.org>
-	<1251870487.14675.416.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 89569DDD01
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 16:09:05 +1000 (EST)
+Received: from wpaz33.hot.corp.google.com (wpaz33.hot.corp.google.com
+	[172.24.198.97]) by smtp-out.google.com with ESMTP id n825wlSg001091
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 22:58:47 -0700
+Received: from pxi34 (pxi34.prod.google.com [10.243.27.34])
+	by wpaz33.hot.corp.google.com with ESMTP id n825vcwU004576
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 22:58:45 -0700
+Received: by pxi34 with SMTP id 34so547879pxi.4
+	for <linuxppc-dev@ozlabs.org>; Tue, 01 Sep 2009 22:58:44 -0700 (PDT)
+Date: Tue, 1 Sep 2009 22:58:41 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Ankita Garg <ankita@in.ibm.com>
+Subject: Re: [PATCH] Fix fake numa on ppc
+In-Reply-To: <20090902053653.GA3806@in.ibm.com>
+Message-ID: <alpine.DEB.1.00.0909012246350.26930@chino.kir.corp.google.com>
+References: <20090901050316.GA4076@in.ibm.com>
+	<20090901055753.GB5563@balbir.in.ibm.com>
+	<20090901092407.GC4076@in.ibm.com>
+	<20090901142729.GA5022@balbir.in.ibm.com>
+	<20090902053653.GA3806@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +43,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2 Sep 2009, Ankita Garg wrote:
 
-On Sep 2, 2009, at 12:48 AM, Benjamin Herrenschmidt wrote:
+> > > With the patch,
+> > > 
+> > > # cat /proc/cmdline
+> > > root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+> > > # cat /sys/devices/system/node/node0/cpulist
+> > > 0-3
+> > > # cat /sys/devices/system/node/node1/cpulist
+> > > 
+> > 
+> > Oh! interesting.. cpuless nodes :) I think we need to fix this in the
+> > longer run and distribute cpus between fake numa nodes of a real node
+> > using some acceptable heuristic.
+> >
+> 
+> True. Presently this is broken on both x86 and ppc systems. It would be
+> interesting to find a way to map, for example, 4 cpus to >4 number of
+> fake nodes created from a single real numa node!
+>  
 
-> On Tue, 2009-09-01 at 20:48 -0500, Kumar Gala wrote:
->> Switch to using the Power ISA defined PTE format when we have a 64- 
->> bit
->> PTE.  This makes the code handling between fsl-booke and book3e-64
->> similiar for TLB faults.
->>
->> Additionally this lets use take advantage of the page size  
->> encodings and
->> full permissions that the HW PTE defines.
->>
->> Also defined _PMD_PRESENT, _PMD_PRESENT_MASK, and _PMD_BAD since the
->> 32-bit ppc arch code expects them.
->
-> No immediate problem with the patch, though I can't test it so I
-> assume you did :-)
+We've done it for years on x86_64.  It's quite trivial to map all fake 
+nodes within a physical node to the cpus to which they have affinity both 
+via node_to_cpumask_map() and cpu_to_node_map().  There should be no 
+kernel space dependencies on a cpu appearing in only a single node's 
+cpumask and if you map each fake node to its physical node's pxm, you can 
+index into the slit and generate local NUMA distances amongst fake nodes.
 
-Yes, I tested it.
-
-> Is this 2.6.32 material ? I'm going to stick it into my test branch
-> for now regardless.
-
-Yes this is .32 material
-
-- k
+So if you map the apicids and pxms appropriately depending on the 
+physical topology of the machine, that is the only emulation necessary on 
+x86_64 for the page allocator zonelist ordering, task migration, etc.  (If 
+you use CONFIG_SLAB, you'll need to avoid the exponential growth of alien 
+caches, but that's an implementation detail and isn't really within the 
+scope of numa=fake's purpose to modify.)
