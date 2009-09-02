@@ -3,24 +3,28 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 60A70B7BDE
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 455F1B7BD5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Sep 2009 15:48:19 +1000 (EST)
+	Wed,  2 Sep 2009 15:53:08 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B4966DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 15:48:18 +1000 (EST)
-Subject: Re: [PATCH] powerpc/fsl-booke: Use HW PTE format if CONFIG_PTE_64BIT
+	by ozlabs.org (Postfix) with ESMTPS id 99C79DDD01
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 15:53:07 +1000 (EST)
+Subject: Re: [PATCH] Fix fake numa on ppc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1251856122-24560-1-git-send-email-galak@kernel.crashing.org>
-References: <1251856122-24560-1-git-send-email-galak@kernel.crashing.org>
+To: balbir@linux.vnet.ibm.com
+In-Reply-To: <20090901142729.GA5022@balbir.in.ibm.com>
+References: <20090901050316.GA4076@in.ibm.com>
+	<20090901055753.GB5563@balbir.in.ibm.com>
+	<20090901092407.GC4076@in.ibm.com>
+	<20090901142729.GA5022@balbir.in.ibm.com>
 Content-Type: text/plain
-Date: Wed, 02 Sep 2009 15:48:07 +1000
-Message-Id: <1251870487.14675.416.camel@pasglop>
+Date: Wed, 02 Sep 2009 15:52:52 +1000
+Message-Id: <1251870772.14675.418.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Ankita Garg <ankita@in.ibm.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,153 +34,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-09-01 at 20:48 -0500, Kumar Gala wrote:
-> Switch to using the Power ISA defined PTE format when we have a 64-bit
-> PTE.  This makes the code handling between fsl-booke and book3e-64
-> similiar for TLB faults.
-> 
-> Additionally this lets use take advantage of the page size encodings and
-> full permissions that the HW PTE defines.
-> 
-> Also defined _PMD_PRESENT, _PMD_PRESENT_MASK, and _PMD_BAD since the
-> 32-bit ppc arch code expects them.
+On Tue, 2009-09-01 at 19:57 +0530, Balbir Singh wrote:
 
-No immediate problem with the patch, though I can't test it so I
-assume you did :-)
+> > 
+> > Heres the updated patch:
+> > 
+> > Signed-off-by: Ankita Garg <ankita@in.ibm.com> 
 
-Is this 2.6.32 material ? I'm going to stick it into my test branch
-for now regardless.
+The thread is too messy. Please Ankita can you re-submit in proper
+form (ie. subject, cset, signed-off & patch) please ?
+
+In general, don't mix reply to comments and new patch submission,
+or patchwork gets really confuse. Post a new name, with something
+like [PATCH v2] <name of the patch> in the subject.
+
+Thanks.
 
 Cheers,
 Ben.
 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
->  arch/powerpc/include/asm/pgtable-ppc32.h |    2 +
->  arch/powerpc/include/asm/pte-book3e.h    |    3 ++
->  arch/powerpc/include/asm/pte-fsl-booke.h |    7 -----
->  arch/powerpc/kernel/head_fsl_booke.S     |   36 ++++++++++++++++++++---------
->  4 files changed, 30 insertions(+), 18 deletions(-)
+> > Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+> > ===================================================================
+> > --- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
+> > +++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+> > @@ -26,6 +26,13 @@
+> >  #include <asm/smp.h>
+> > 
+> >  static int numa_enabled = 1;
+> > +static int fake_enabled = 1;
+> > +
+> > +/*
+> > + * The array maps a real numa node to the first fake node that gets
+> > + * created on it
+> > + */
+> > +int fake_numa_node_mapping[MAX_NUMNODES];
+> > 
+> >  static char *cmdline __initdata;
+> > 
+> > @@ -49,14 +56,29 @@ static int __cpuinit fake_numa_create_ne
+> >  	unsigned long long mem;
+> >  	char *p = cmdline;
+> >  	static unsigned int fake_nid;
+> > +	static unsigned int prev_nid = 0;
+> >  	static unsigned long long curr_boundary;
+> > 
+> >  	/*
+> >  	 * Modify node id, iff we started creating NUMA nodes
+> >  	 * We want to continue from where we left of the last time
+> >  	 */
+> > -	if (fake_nid)
+> > +	if (fake_nid) {
+> > +		/*
+> > +		 * Moved over to the next real numa node, increment fake
+> > +		 * node number and store the mapping of the real node to
+> > +		 * the fake node
+> > +		 */
+> > +		if (prev_nid != *nid) {
+> > +			fake_nid++;
+> > +			fake_numa_node_mapping[*nid] = fake_nid;
+> > +			prev_nid = *nid;
+> > +			*nid = fake_nid;
+> > +			return 0;
+> > +		}
+> >  		*nid = fake_nid;
+> > +	}
+> > +
+> >  	/*
+> >  	 * In case there are no more arguments to parse, the
+> >  	 * node_id should be the same as the last fake node id
+> > @@ -440,7 +462,7 @@ static int of_drconf_to_nid_single(struc
+> >   */
+> >  static int __cpuinit numa_setup_cpu(unsigned long lcpu)
+> >  {
+> > -	int nid = 0;
+> > +	int nid = 0, new_nid;
+> >  	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
+> > 
+> >  	if (!cpu) {
+> > @@ -450,8 +472,15 @@ static int __cpuinit numa_setup_cpu(unsi
+> > 
+> >  	nid = of_node_to_nid_single(cpu);
+> > 
+> > +	if (fake_enabled && nid) {
+> > +		new_nid = fake_numa_node_mapping[nid];
+> > +		if (new_nid > 0)
+> > +			nid = new_nid;
+> > +	}
+> > +
+> >  	if (nid < 0 || !node_online(nid))
+> >  		nid = any_online_node(NODE_MASK_ALL);
+> > +
+> >  out:
+> >  	map_cpu_to_node(lcpu, nid);
+> > 
+> > @@ -1005,8 +1034,12 @@ static int __init early_numa(char *p)
+> >  		numa_debug = 1;
+> > 
+> >  	p = strstr(p, "fake=");
+> > -	if (p)
+> > +	if (p) {
+> >  		cmdline = p + strlen("fake=");
+> > +		if (numa_enabled) {
+> > +			fake_enabled = 1;
+> > +		}
+> > +	}
+> > 
+> >  	return 0;
+> >  }
+> >
 > 
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-> index f2c52e2..55646ad 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-> @@ -111,6 +111,8 @@ extern int icache_44x_need_flush;
->  #include <asm/pte-40x.h>
->  #elif defined(CONFIG_44x)
->  #include <asm/pte-44x.h>
-> +#elif defined(CONFIG_FSL_BOOKE) && defined(CONFIG_PTE_64BIT)
-> +#include <asm/pte-book3e.h>
->  #elif defined(CONFIG_FSL_BOOKE)
->  #include <asm/pte-fsl-booke.h>
->  #elif defined(CONFIG_8xx)
-> diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/pte-book3e.h
-> index b82b9dc..082d515 100644
-> --- a/arch/powerpc/include/asm/pte-book3e.h
-> +++ b/arch/powerpc/include/asm/pte-book3e.h
-> @@ -75,6 +75,9 @@
->  /* On 32-bit, we never clear the top part of the PTE */
->  #ifdef CONFIG_PPC32
->  #define _PTE_NONE_MASK	0xffffffff00000000ULL
-> +#define _PMD_PRESENT	0
-> +#define _PMD_PRESENT_MASK (PAGE_MASK)
-> +#define _PMD_BAD	(~PAGE_MASK)
->  #endif
+> 
+> Looks good to me
+> 
+> 
+> Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 >  
->  #endif /* __KERNEL__ */
-> diff --git a/arch/powerpc/include/asm/pte-fsl-booke.h b/arch/powerpc/include/asm/pte-fsl-booke.h
-> index ce8a9e9..2c12be5 100644
-> --- a/arch/powerpc/include/asm/pte-fsl-booke.h
-> +++ b/arch/powerpc/include/asm/pte-fsl-booke.h
-> @@ -33,13 +33,6 @@
->  #define _PAGE_WRITETHRU	0x00400	/* H: W bit */
->  #define _PAGE_SPECIAL	0x00800 /* S: Special page */
->  
-> -#ifdef CONFIG_PTE_64BIT
-> -/* ERPN in a PTE never gets cleared, ignore it */
-> -#define _PTE_NONE_MASK	0xffffffffffff0000ULL
-> -/* We extend the size of the PTE flags area when using 64-bit PTEs */
-> -#define PTE_RPN_SHIFT	(PAGE_SHIFT + 8)
-> -#endif
-> -
->  #define _PMD_PRESENT	0
->  #define _PMD_PRESENT_MASK (PAGE_MASK)
->  #define _PMD_BAD	(~PAGE_MASK)
-> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-> index 2c5af52..975788c 100644
-> --- a/arch/powerpc/kernel/head_fsl_booke.S
-> +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> @@ -575,7 +575,12 @@ interrupt_base:
->  	 *       place or can we save a couple of instructions here ?
->  	 */
->  	mfspr	r12,SPRN_ESR
-> +#ifdef CONFIG_PTE_64BIT
-> +	li	r13,_PAGE_PRESENT
-> +	oris	r13,r13,_PAGE_ACCESSED@h
-> +#else
->  	li	r13,_PAGE_PRESENT|_PAGE_ACCESSED
-> +#endif
->  	rlwimi	r13,r12,11,29,29
->  
->  	FIND_PTE
-> @@ -643,7 +648,12 @@ interrupt_base:
->  
->  4:
->  	/* Make up the required permissions */
-> +#ifdef CONFIG_PTE_64BIT
-> +	li	r13,_PAGE_PRESENT | _PAGE_EXEC
-> +	oris	r13,r13,_PAGE_ACCESSED@h
-> +#else
->  	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
-> +#endif
->  
->  	FIND_PTE
->  	andc.	r13,r13,r11		/* Check permission */
-> @@ -733,7 +743,7 @@ finish_tlb_load:
->  
->  	mfspr	r12, SPRN_MAS2
->  #ifdef CONFIG_PTE_64BIT
-> -	rlwimi	r12, r11, 26, 24, 31	/* extract ...WIMGE from pte */
-> +	rlwimi	r12, r11, 32-19, 27, 31	/* extract WIMGE from pte */
->  #else
->  	rlwimi	r12, r11, 26, 27, 31	/* extract WIMGE from pte */
->  #endif
-> @@ -742,6 +752,20 @@ finish_tlb_load:
->  #endif
->  	mtspr	SPRN_MAS2, r12
->  
-> +#ifdef CONFIG_PTE_64BIT
-> +	rlwinm	r12, r11, 32-2, 26, 31	/* Move in perm bits */
-> +	andi.	r10, r11, _PAGE_DIRTY
-> +	bne	1f
-> +	li	r10, MAS3_SW | MAS3_UW
-> +	andc	r12, r12, r10
-> +1:	rlwimi	r12, r13, 20, 0, 11	/* grab RPN[32:43] */
-> +	rlwimi	r12, r11, 20, 12, 19	/* grab RPN[44:51] */
-> +	mtspr	SPRN_MAS3, r12
-> +BEGIN_MMU_FTR_SECTION
-> +	srwi	r10, r13, 12		/* grab RPN[12:31] */
-> +	mtspr	SPRN_MAS7, r10
-> +END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
-> +#else
->  	li	r10, (_PAGE_EXEC | _PAGE_PRESENT)
->  	rlwimi	r10, r11, 31, 29, 29	/* extract _PAGE_DIRTY into SW */
->  	and	r12, r11, r10
-> @@ -749,16 +773,6 @@ finish_tlb_load:
->  	slwi	r10, r12, 1
->  	or	r10, r10, r12
->  	iseleq	r12, r12, r10
-> -	
-> -#ifdef CONFIG_PTE_64BIT
-> -	rlwimi	r12, r13, 24, 0, 7	/* grab RPN[32:39] */
-> -	rlwimi	r12, r11, 24, 8, 19	/* grab RPN[40:51] */
-> -	mtspr	SPRN_MAS3, r12
-> -BEGIN_MMU_FTR_SECTION
-> -	srwi	r10, r13, 8		/* grab RPN[8:31] */
-> -	mtspr	SPRN_MAS7, r10
-> -END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
-> -#else
->  	rlwimi	r11, r12, 0, 20, 31	/* Extract RPN from PTE and merge with perms */
->  	mtspr	SPRN_MAS3, r11
->  #endif
+> 
+> 
