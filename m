@@ -3,22 +3,23 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0D2C7B7B7D
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 05C35B708C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Sep 2009 19:44:51 +1000 (EST)
+	Wed,  2 Sep 2009 21:04:19 +1000 (EST)
 Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 449E2DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 19:44:49 +1000 (EST)
-Date: Wed, 2 Sep 2009 11:44:38 +0200
+	by ozlabs.org (Postfix) with ESMTPS id 3DF88DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 21:04:17 +1000 (EST)
+Date: Wed, 2 Sep 2009 13:04:10 +0200
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: John Rigby <jrigby@freescale.com>
-Subject: mpc512x USB non-working after kexec
-Message-ID: <20090902094438.GB15401@www.tglx.de>
+To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+	Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [RFC] net/fs_enet: send a reset request to the PHY on init
+Message-ID: <20090902110410.GC15401@www.tglx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi John,
+Usually u-boot sends a phy request in its network init routine. An uboot
+without network support doesn't do it and I endup without working
+network. I still can switch between 10/100Mbit (according to the LED on
+the hub and phy registers) but I can't send or receive any data.
 
-on my mpc512x custom board I have non-working USB after the kexec
-syscall. I've traced it down to the ehci_turn_off_all_ports() which is
-called from within ehci_shutdown(). If I omit ehci_turn_off_all_ports()
-it works fine. The content of the portstatus register is the same after
-the setup prior the usb-stack takes over so I don't see any difference
-here.
-Do you see such a behaviour on your board? Unfortunately I don't have
-any other "official"/FSL board where I could cross-check and say it is
-the HW.
+At this point I'm not sure if the PowerON Reset takes the PHY a few
+nsecs too early out of reset or if this reset is required and everyone
+relies on U-boot performing this reset.
 
-Sebastian
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+This is done on a custom mpc512x board. Unfortunately I don't have other
+boards to check. The PHY is a AMD Am79C874, phylib uses the generic one.
+
+ drivers/net/fs_enet/fs_enet-main.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index ee15402..a3c962b 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -823,7 +823,8 @@ static int fs_init_phy(struct net_device *dev)
+ 	}
+ 
+ 	fep->phydev = phydev;
+-
++	phy_write(phydev, MII_BMCR, BMCR_RESET);
++	udelay(1);
+ 	return 0;
+ }
+ 
+-- 
+1.6.4.GIT
