@@ -1,21 +1,26 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from viefep15-int.chello.at (viefep15-int.chello.at [62.179.121.35])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id B3A03B7088
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 60A70B7BDE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Sep 2009 15:47:40 +1000 (EST)
-Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: arun@linux.vnet.ibm.com
-In-Reply-To: <20090901113840.GH7599@linux.vnet.ibm.com>
-References: <20090901113704.GG7599@linux.vnet.ibm.com>
-	<20090901113840.GH7599@linux.vnet.ibm.com>
+	Wed,  2 Sep 2009 15:48:19 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B4966DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 15:48:18 +1000 (EST)
+Subject: Re: [PATCH] powerpc/fsl-booke: Use HW PTE format if CONFIG_PTE_64BIT
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1251856122-24560-1-git-send-email-galak@kernel.crashing.org>
+References: <1251856122-24560-1-git-send-email-galak@kernel.crashing.org>
 Content-Type: text/plain
-Date: Wed, 02 Sep 2009 07:42:24 +0200
-Message-Id: <1251870144.7547.48.camel@twins>
+Date: Wed, 02 Sep 2009 15:48:07 +1000
+Message-Id: <1251870487.14675.416.camel@pasglop>
 Mime-Version: 1.0
-Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +30,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-09-01 at 17:08 +0530, Arun R Bharadwaj wrote:
-> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
+On Tue, 2009-09-01 at 20:48 -0500, Kumar Gala wrote:
+> Switch to using the Power ISA defined PTE format when we have a 64-bit
+> PTE.  This makes the code handling between fsl-booke and book3e-64
+> similiar for TLB faults.
 > 
-> Cleanup drivers/cpuidle/cpuidle.c
+> Additionally this lets use take advantage of the page size encodings and
+> full permissions that the HW PTE defines.
 > 
-> Cpuidle maintains a pm_idle_old void pointer because, currently in x86
-> there is no clean way of registering and unregistering a idle function.
+> Also defined _PMD_PRESENT, _PMD_PRESENT_MASK, and _PMD_BAD since the
+> 32-bit ppc arch code expects them.
 
-Right, and instead of fixing that, they build this cpuidle crap on top,
-instead of replacing the current crap with it.
+No immediate problem with the patch, though I can't test it so I
+assume you did :-)
 
-> So remove pm_idle_old and leave the responsibility of maintaining the
-> list of registered idle loops to the architecture specific code. If the
-> architecture registers cpuidle_idle_call as its idle loop, only then
-> this loop is called.
+Is this 2.6.32 material ? I'm going to stick it into my test branch
+for now regardless.
 
-OK, that's a start I guess. Best would be to replace all of pm_idle with
-cpuidle, which is what should have been done from the very start.
+Cheers,
+Ben.
 
-If cpuidle cannot fully replace the pm_idle functionality, then it needs
-to fix that. But having two layers of idle functions is just silly.
-
-Looking at patch 2 and 3, you're making the same mistake on power, after
-those patches there are multiple ways of registering idle functions, one
-through some native interface and one through cpuidle, this strikes me
-as undesirable.
-
-If cpuidle is a good idle function manager, then it should be good
-enough to be the sole one, if its not, then why bother with it at all.
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  arch/powerpc/include/asm/pgtable-ppc32.h |    2 +
+>  arch/powerpc/include/asm/pte-book3e.h    |    3 ++
+>  arch/powerpc/include/asm/pte-fsl-booke.h |    7 -----
+>  arch/powerpc/kernel/head_fsl_booke.S     |   36 ++++++++++++++++++++---------
+>  4 files changed, 30 insertions(+), 18 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+> index f2c52e2..55646ad 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+> @@ -111,6 +111,8 @@ extern int icache_44x_need_flush;
+>  #include <asm/pte-40x.h>
+>  #elif defined(CONFIG_44x)
+>  #include <asm/pte-44x.h>
+> +#elif defined(CONFIG_FSL_BOOKE) && defined(CONFIG_PTE_64BIT)
+> +#include <asm/pte-book3e.h>
+>  #elif defined(CONFIG_FSL_BOOKE)
+>  #include <asm/pte-fsl-booke.h>
+>  #elif defined(CONFIG_8xx)
+> diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/pte-book3e.h
+> index b82b9dc..082d515 100644
+> --- a/arch/powerpc/include/asm/pte-book3e.h
+> +++ b/arch/powerpc/include/asm/pte-book3e.h
+> @@ -75,6 +75,9 @@
+>  /* On 32-bit, we never clear the top part of the PTE */
+>  #ifdef CONFIG_PPC32
+>  #define _PTE_NONE_MASK	0xffffffff00000000ULL
+> +#define _PMD_PRESENT	0
+> +#define _PMD_PRESENT_MASK (PAGE_MASK)
+> +#define _PMD_BAD	(~PAGE_MASK)
+>  #endif
+>  
+>  #endif /* __KERNEL__ */
+> diff --git a/arch/powerpc/include/asm/pte-fsl-booke.h b/arch/powerpc/include/asm/pte-fsl-booke.h
+> index ce8a9e9..2c12be5 100644
+> --- a/arch/powerpc/include/asm/pte-fsl-booke.h
+> +++ b/arch/powerpc/include/asm/pte-fsl-booke.h
+> @@ -33,13 +33,6 @@
+>  #define _PAGE_WRITETHRU	0x00400	/* H: W bit */
+>  #define _PAGE_SPECIAL	0x00800 /* S: Special page */
+>  
+> -#ifdef CONFIG_PTE_64BIT
+> -/* ERPN in a PTE never gets cleared, ignore it */
+> -#define _PTE_NONE_MASK	0xffffffffffff0000ULL
+> -/* We extend the size of the PTE flags area when using 64-bit PTEs */
+> -#define PTE_RPN_SHIFT	(PAGE_SHIFT + 8)
+> -#endif
+> -
+>  #define _PMD_PRESENT	0
+>  #define _PMD_PRESENT_MASK (PAGE_MASK)
+>  #define _PMD_BAD	(~PAGE_MASK)
+> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+> index 2c5af52..975788c 100644
+> --- a/arch/powerpc/kernel/head_fsl_booke.S
+> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+> @@ -575,7 +575,12 @@ interrupt_base:
+>  	 *       place or can we save a couple of instructions here ?
+>  	 */
+>  	mfspr	r12,SPRN_ESR
+> +#ifdef CONFIG_PTE_64BIT
+> +	li	r13,_PAGE_PRESENT
+> +	oris	r13,r13,_PAGE_ACCESSED@h
+> +#else
+>  	li	r13,_PAGE_PRESENT|_PAGE_ACCESSED
+> +#endif
+>  	rlwimi	r13,r12,11,29,29
+>  
+>  	FIND_PTE
+> @@ -643,7 +648,12 @@ interrupt_base:
+>  
+>  4:
+>  	/* Make up the required permissions */
+> +#ifdef CONFIG_PTE_64BIT
+> +	li	r13,_PAGE_PRESENT | _PAGE_EXEC
+> +	oris	r13,r13,_PAGE_ACCESSED@h
+> +#else
+>  	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
+> +#endif
+>  
+>  	FIND_PTE
+>  	andc.	r13,r13,r11		/* Check permission */
+> @@ -733,7 +743,7 @@ finish_tlb_load:
+>  
+>  	mfspr	r12, SPRN_MAS2
+>  #ifdef CONFIG_PTE_64BIT
+> -	rlwimi	r12, r11, 26, 24, 31	/* extract ...WIMGE from pte */
+> +	rlwimi	r12, r11, 32-19, 27, 31	/* extract WIMGE from pte */
+>  #else
+>  	rlwimi	r12, r11, 26, 27, 31	/* extract WIMGE from pte */
+>  #endif
+> @@ -742,6 +752,20 @@ finish_tlb_load:
+>  #endif
+>  	mtspr	SPRN_MAS2, r12
+>  
+> +#ifdef CONFIG_PTE_64BIT
+> +	rlwinm	r12, r11, 32-2, 26, 31	/* Move in perm bits */
+> +	andi.	r10, r11, _PAGE_DIRTY
+> +	bne	1f
+> +	li	r10, MAS3_SW | MAS3_UW
+> +	andc	r12, r12, r10
+> +1:	rlwimi	r12, r13, 20, 0, 11	/* grab RPN[32:43] */
+> +	rlwimi	r12, r11, 20, 12, 19	/* grab RPN[44:51] */
+> +	mtspr	SPRN_MAS3, r12
+> +BEGIN_MMU_FTR_SECTION
+> +	srwi	r10, r13, 12		/* grab RPN[12:31] */
+> +	mtspr	SPRN_MAS7, r10
+> +END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
+> +#else
+>  	li	r10, (_PAGE_EXEC | _PAGE_PRESENT)
+>  	rlwimi	r10, r11, 31, 29, 29	/* extract _PAGE_DIRTY into SW */
+>  	and	r12, r11, r10
+> @@ -749,16 +773,6 @@ finish_tlb_load:
+>  	slwi	r10, r12, 1
+>  	or	r10, r10, r12
+>  	iseleq	r12, r12, r10
+> -	
+> -#ifdef CONFIG_PTE_64BIT
+> -	rlwimi	r12, r13, 24, 0, 7	/* grab RPN[32:39] */
+> -	rlwimi	r12, r11, 24, 8, 19	/* grab RPN[40:51] */
+> -	mtspr	SPRN_MAS3, r12
+> -BEGIN_MMU_FTR_SECTION
+> -	srwi	r10, r13, 8		/* grab RPN[8:31] */
+> -	mtspr	SPRN_MAS7, r10
+> -END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
+> -#else
+>  	rlwimi	r11, r12, 0, 20, 31	/* Extract RPN from PTE and merge with perms */
+>  	mtspr	SPRN_MAS3, r11
+>  #endif
