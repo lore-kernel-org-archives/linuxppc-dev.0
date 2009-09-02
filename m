@@ -1,37 +1,41 @@
-Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <ankita@in.ibm.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 20716B7BC9
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7AB3DB7334
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Sep 2009 15:21:50 +1000 (EST)
+	Wed,  2 Sep 2009 15:37:02 +1000 (EST)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B883ADDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 15:37:00 +1000 (EST)
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id n825JTm3012968
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2009 15:19:29 +1000
+	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id n825atbI020521
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2009 15:36:55 +1000
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
 	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n825K3Rr1151042
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2009 15:20:03 +1000
+	n825ZCFd1372270
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2009 15:35:12 +1000
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
 	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n825Li3q032304
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2009 15:21:45 +1000
-Date: Wed, 2 Sep 2009 10:51:38 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+	n825asi3015685
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2009 15:36:54 +1000
+Date: Wed, 2 Sep 2009 11:06:53 +0530
+From: Ankita Garg <ankita@in.ibm.com>
 To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
-Message-ID: <20090902052138.GB5431@linux.vnet.ibm.com>
-References: <20090901113704.GG7599@linux.vnet.ibm.com>
-	<20090901113840.GH7599@linux.vnet.ibm.com>
-	<20090901172825.GA6780@balbir.in.ibm.com>
+Subject: Re: [PATCH] Fix fake numa on ppc
+Message-ID: <20090902053653.GA3806@in.ibm.com>
+References: <20090901050316.GA4076@in.ibm.com>
+	<20090901055753.GB5563@balbir.in.ibm.com>
+	<20090901092407.GC4076@in.ibm.com>
+	<20090901142729.GA5022@balbir.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20090901172825.GA6780@balbir.in.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Arun Bharadwaj <arun@linux.vnet.ibm.com>,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
-Reply-To: arun@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090901142729.GA5022@balbir.in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: Ankita Garg <ankita@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,205 +45,388 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-09-01 22:58:25]:
-
-> * Arun R B <arun@linux.vnet.ibm.com> [2009-09-01 17:08:40]:
-> 
-> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
-> > 
-> > Cleanup drivers/cpuidle/cpuidle.c
-> > 
-> > Cpuidle maintains a pm_idle_old void pointer because, currently in x86
-> > there is no clean way of registering and unregistering a idle function.
-> >
-> > So remove pm_idle_old and leave the responsibility of maintaining the
-> > list of registered idle loops to the architecture specific code. If the
-> > architecture registers cpuidle_idle_call as its idle loop, only then
-> > this loop is called.
-> > 
-> 
-> It sounds as if there is a side-effect of this
-> patch on x86 (am I reading it incorrectly), which can be fixed, but
-> it will need a patch or so to get back the old behaviour on x86.
-> 
-
 Hi Balbir,
 
-Yes, your understanding is correct. Currently, x86 exports pm_idle and
-this pm_idle is set to cpuidle_idle_call inside cpuidle.c
-
-So instead of that x86 should just export a function called
-set_arch_idle() which will be called from within
-register_idle_function() and set pm_idle to the idle handler which is
-currently being registered.
-
-I have implemented this for pseries, and in the process of doing it
-for x86 too.
-
-> > Also remove unwanted functions cpuidle_[un]install_idle_handler,
-> > cpuidle_kick_cpus()
-> >
-> > Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-> > ---
-> >  drivers/cpuidle/cpuidle.c  |   51 +++++++++++++++------------------------------
-> >  drivers/cpuidle/governor.c |    3 --
-> >  2 files changed, 17 insertions(+), 37 deletions(-)
+On Tue, Sep 01, 2009 at 07:57:29PM +0530, Balbir Singh wrote:
+> * Ankita Garg <ankita@in.ibm.com> [2009-09-01 14:54:07]:
+> 
+> > Hi Balbir,
 > > 
-> > Index: linux.trees.git/drivers/cpuidle/cpuidle.c
-> > ===================================================================
-> > --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
-> > +++ linux.trees.git/drivers/cpuidle/cpuidle.c
-> > @@ -24,9 +24,14 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
+> > On Tue, Sep 01, 2009 at 11:27:53AM +0530, Balbir Singh wrote:
+> > > * Ankita Garg <ankita@in.ibm.com> [2009-09-01 10:33:16]:
+> > > 
+> > > > Hello,
+> > > > 
+> > > > Below is a patch to fix a couple of issues with fake numa node creation
+> > > > on ppc:
+> > > > 
+> > > > 1) Presently, fake nodes could be created such that real numa node
+> > > > boundaries are not respected. So a node could have lmbs that belong to
+> > > > different real nodes.
+> > > > 
+> > > > 2) The cpu association is broken. On a JS22 blade for example, which is
+> > > > a 2-node numa machine, I get the following:
+> > > > 
+> > > > # cat /proc/cmdline
+> > > > root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+> > > > # cat /sys/devices/system/node/node0/cpulist
+> > > > 0-3
+> > > > # cat /sys/devices/system/node/node1/cpulist
+> > > > 4-7
+> > > > # cat /sys/devices/system/node/node4/cpulist
+> > > > 
+> > > > #
+> > > > 
+> > > > So, though the cpus 4-7 should have been associated with node4, they
+> > > > still belong to node1. The patch works by recording a real numa node
+> > > > boundary and incrementing the fake node count. At the same time, a
+> > > > mapping is stored from the real numa node to the first fake node that
+> > > > gets created on it.
+> > > >
+> > > 
+> > > Some details on how you tested it and results before and after would
+> > > be nice. Please see git commit 1daa6d08d1257aa61f376c3cc4795660877fb9e3
+> > > for example
+> > > 
+> > >
 > > 
-> >  DEFINE_MUTEX(cpuidle_lock);
-> >  LIST_HEAD(cpuidle_detected_devices);
-> > -static void (*pm_idle_old)(void);
+> > Thanks for the quick review of the patch. Here is some information on
+> > the testing:
 > > 
-> >  static int enabled_devices;
-> > +static int idle_function_registered;
-> > +
-> > +struct idle_function_desc cpuidle_idle_desc = {
-> > +	.name           =       "cpuidle_loop",
-> > +	.idle_func      =       cpuidle_idle_call,
-> > +};
+> > Tested the patch with the following commandlines:
+> > numa=fake=2G,4G,6G,8G,10G,12G,14G,16G
+> > numa=fake=3G,6G,10G,16G
+> > numa=fake=4G
+> > numa=fake=
 > > 
-> >  #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
-> >  static void cpuidle_kick_cpus(void)
-> > @@ -54,13 +59,10 @@ static void cpuidle_idle_call(void)
+> > For testing if the fake nodes respect the real node boundaries, I added
+> > some debug printks in the node creation path. Without the patch, for the
+> > commandline numa=fake=2G,4G,6G,8G,10G,12G,14G,16G, this is what I got:
 > > 
-> >  	/* check if the device is ready */
-> >  	if (!dev || !dev->enabled) {
-> > -		if (pm_idle_old)
-> > -			pm_idle_old();
-> > -		else
-> >  #if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
-> > -			default_idle();
-> > +		default_idle();
-> >  #else
-> > -			local_irq_enable();
-> > +		local_irq_enable();
-> >  #endif
-> >  		return;
-> >  	}
-> > @@ -94,35 +96,11 @@ static void cpuidle_idle_call(void)
-> >  }
+> > fake id: 1 nid: 0
+> > fake id: 1 nid: 0
+> > ...
+> > fake id: 2 nid: 0
+> > fake id: 2 nid: 0
+> > ...
+> > fake id: 2 nid: 0
+> > created new fake_node with id 3
+> > fake id: 3 nid: 0
+> > fake id: 3 nid: 0
+> > ...
+> > fake id: 3 nid: 0
+> > fake id: 3 nid: 0
+> > fake id: 3 nid: 1
+> > fake id: 3 nid: 1
+> > ...
+> > created new fake_node with id 4
+> > fake id: 4 nid: 1
+> > fake id: 4 nid: 1
+> > ...
 > > 
-> >  /**
-> > - * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
-> > - */
-> > -void cpuidle_install_idle_handler(void)
-> > -{
-> > -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
-> > -		/* Make sure all changes finished before we switch to new idle */
-> > -		smp_wmb();
-> > -		pm_idle = cpuidle_idle_call;
-> > -	}
-> > -}
-> > -
-> > -/**
-> > - * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
-> > - */
-> > -void cpuidle_uninstall_idle_handler(void)
-> > -{
-> > -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
-> > -		pm_idle = pm_idle_old;
-> > -		cpuidle_kick_cpus();
-> > -	}
-> > -}
-> > -
-> > -/**
-> >   * cpuidle_pause_and_lock - temporarily disables CPUIDLE
-> >   */
-> >  void cpuidle_pause_and_lock(void)
-> >  {
-> >  	mutex_lock(&cpuidle_lock);
-> > -	cpuidle_uninstall_idle_handler();
-> >  }
+> > and so on. So, fake node 3 encompasses real node 0 & 1. Also,
 > > 
-> >  EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
-> > @@ -132,7 +110,6 @@ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock
-> >   */
-> >  void cpuidle_resume_and_unlock(void)
-> >  {
-> > -	cpuidle_install_idle_handler();
-> >  	mutex_unlock(&cpuidle_lock);
-> >  }
+> > # cat /sys/devices/system/node/node3/meminfo
+> > Node 0 MemTotal:        2097152 kB
+> > ...
+> > # # cat /sys/devices/system/node/node4/meminfo
+> > Node 0 MemTotal:        2097152 kB
+> > ...
+> > 
+> > 
+> > With the patch, I get:
+> > 
+> > fake id: 1 nid: 0
+> > fake id: 1 nid: 0
+> > ...
+> > fake id: 2 nid: 0
+> > fake id: 2 nid: 0
+> > ...
+> > fake id: 2 nid: 0
+> > created new fake_node with id 3
+> > fake id: 3 nid: 0
+> > fake id: 3 nid: 0
+> > ...
+> > fake id: 3 nid: 0
+> > fake id: 3 nid: 0
+> > created new fake_node with id 4
+> > fake id: 4 nid: 1
+> > fake id: 4 nid: 1
+> > ...
+> > 
+> > and so on. With the patch, the fake node sizes are slightly different
+> > from that specified by the user.
+> > 
+> > # cat /sys/devices/system/node/node3/meminfo
+> > Node 3 MemTotal:        1638400 kB
+> > ...
+> > # cat /sys/devices/system/node/node4/meminfo
+> > Node 4 MemTotal:         458752 kB
+> > ...
+> > 
+> > CPU association was tested as mentioned in the previous mail:
+> > 
+> > Without the patch,
+> > 
+> > # cat /proc/cmdline
+> > root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+> > # cat /sys/devices/system/node/node0/cpulist
+> > 0-3
+> > # cat /sys/devices/system/node/node1/cpulist
+> > 4-7
+> > # cat /sys/devices/system/node/node4/cpulist
+> > 
+> > #
+> > 
+> > With the patch,
+> > 
+> > # cat /proc/cmdline
+> > root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+> > # cat /sys/devices/system/node/node0/cpulist
+> > 0-3
+> > # cat /sys/devices/system/node/node1/cpulist
 > > 
 > 
-> What does this mean for users of cpuidle_pause_and_lock/unlock?
-> Should we be calling register/unregister_idle_function here?
+> Oh! interesting.. cpuless nodes :) I think we need to fix this in the
+> longer run and distribute cpus between fake numa nodes of a real node
+> using some acceptable heuristic.
 >
 
-Yes, you are right. I have missed out on this part.
-register/unregister_idle_function should replace
-install/uninstall_idle_handler at those places. Thanks.
-
-> 
-> > @@ -287,6 +264,12 @@ static int __cpuidle_register_device(str
+True. Presently this is broken on both x86 and ppc systems. It would be
+interesting to find a way to map, for example, 4 cpus to >4 number of
+fake nodes created from a single real numa node!
+ 
+> > # cat /sys/devices/system/node/node4/cpulist
+> > 4-7
+> > 
+> > > > 
+> > > > Signed-off-by: Ankita Garg <ankita@in.ibm.com>
+> > > > 
+> > > > Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+> > > > ===================================================================
+> > > > --- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
+> > > > +++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+> > > > @@ -26,6 +26,11 @@
+> > > >  #include <asm/smp.h>
+> > > > 
+> > > >  static int numa_enabled = 1;
+> > > > +static int fake_enabled = 1;
+> > > > +
+> > > > +/* The array maps a real numa node to the first fake node that gets
+> > > > +created on it */
+> > > 
+> > > Coding style is broken
+> > > 
+> > 
+> > Fixed.
+> > 
+> > > > +int fake_numa_node_mapping[MAX_NUMNODES];
+> > > > 
+> > > >  static char *cmdline __initdata;
+> > > > 
+> > > > @@ -49,14 +54,24 @@ static int __cpuinit fake_numa_create_ne
+> > > >  	unsigned long long mem;
+> > > >  	char *p = cmdline;
+> > > >  	static unsigned int fake_nid;
+> > > > +	static unsigned int orig_nid = 0;
+> > > 
+> > > Should we call this prev_nid?
+> > > 
+> > 
+> > Yes, makes sense.
+> > > >  	static unsigned long long curr_boundary;
+> > > > 
+> > > >  	/*
+> > > >  	 * Modify node id, iff we started creating NUMA nodes
+> > > >  	 * We want to continue from where we left of the last time
+> > > >  	 */
+> > > > -	if (fake_nid)
+> > > > +	if (fake_nid) {
+> > > > +		if (orig_nid != *nid) {
+> > > 
+> > > OK, so this is called when the real NUMA node changes - comments would
+> > > be nice
+> > >
+> > 
+> > Thanks, have added the comment.
+> > 
+> > > > +			fake_nid++;
+> > > > +			fake_numa_node_mapping[*nid] = fake_nid;
+> > > > +			orig_nid = *nid;
+> > > > +			*nid = fake_nid;
+> > > > +			return 0;
+> > > > +		}
+> > > >  		*nid = fake_nid;
+> > > > +	}
+> > > > +
+> > > >  	/*
+> > > >  	 * In case there are no more arguments to parse, the
+> > > >  	 * node_id should be the same as the last fake node id
+> > > > @@ -440,7 +455,7 @@ static int of_drconf_to_nid_single(struc
+> > > >   */
+> > > >  static int __cpuinit numa_setup_cpu(unsigned long lcpu)
+> > > >  {
+> > > > -	int nid = 0;
+> > > > +	int nid = 0, new_nid;
+> > > >  	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
+> > > > 
+> > > >  	if (!cpu) {
+> > > > @@ -450,8 +465,15 @@ static int __cpuinit numa_setup_cpu(unsi
+> > > > 
+> > > >  	nid = of_node_to_nid_single(cpu);
+> > > > 
+> > > > +	if (fake_enabled && nid) {
+> > > > +		new_nid = fake_numa_node_mapping[nid];
+> > > > +		if (new_nid > 0)
+> > > > +			nid = new_nid;
+> > > > +	}
+> > > > +
+> > > >  	if (nid < 0 || !node_online(nid))
+> > > >  		nid = any_online_node(NODE_MASK_ALL);
+> > > > +
+> > > >  out:
+> > > >  	map_cpu_to_node(lcpu, nid);
+> > > > 
+> > > > @@ -1005,8 +1027,11 @@ static int __init early_numa(char *p)
+> > > >  		numa_debug = 1;
+> > > > 
+> > > >  	p = strstr(p, "fake=");
+> > > > -	if (p)
+> > > > +	if (p) {
+> > > >  		cmdline = p + strlen("fake=");
+> > > > +		if (numa_enabled)
+> > > > +			fake_enabled = 1;
+> > > 
+> > > Have you tried passing just numa=fake= without any commandline?
+> > > That should enable fake_enabled, but I wonder if that negatively
+> > > impacts numa_setup_cpu(). I wonder if you should look at cmdline
+> > > to decide on fake_enabled.
+> > >
+> > 
+> > fake_enabled does get set even for numa=fake=. However, it does not
+> > impact numa_setup_cpu, since fake_numa_node_mapping array would have no
+> > mapping stored and there is a condition there already to check for the
+> > value of the mapping. I confirmed this by booting with the above
+> > parameter as well.
+> > 
+> > > > +	}
+> > > > 
+> > > >  	return 0;
+> > > >  }
+> > > >
+> > > 
+> > > Overall, I think this is the right thing to do, we need to move in
+> > > this direction. 
+> > > 
+> > 
+> > Heres the updated patch:
+> > 
+> > Signed-off-by: Ankita Garg <ankita@in.ibm.com> 
+> > 
+> > Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+> > ===================================================================
+> > --- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
+> > +++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+> > @@ -26,6 +26,13 @@
+> >  #include <asm/smp.h>
+> > 
+> >  static int numa_enabled = 1;
+> > +static int fake_enabled = 1;
+> > +
+> > +/*
+> > + * The array maps a real numa node to the first fake node that gets
+> > + * created on it
+> > + */
+> > +int fake_numa_node_mapping[MAX_NUMNODES];
+> > 
+> >  static char *cmdline __initdata;
+> > 
+> > @@ -49,14 +56,29 @@ static int __cpuinit fake_numa_create_ne
+> >  	unsigned long long mem;
+> >  	char *p = cmdline;
+> >  	static unsigned int fake_nid;
+> > +	static unsigned int prev_nid = 0;
+> >  	static unsigned long long curr_boundary;
+> > 
+> >  	/*
+> >  	 * Modify node id, iff we started creating NUMA nodes
+> >  	 * We want to continue from where we left of the last time
+> >  	 */
+> > -	if (fake_nid)
+> > +	if (fake_nid) {
+> > +		/*
+> > +		 * Moved over to the next real numa node, increment fake
+> > +		 * node number and store the mapping of the real node to
+> > +		 * the fake node
+> > +		 */
+> > +		if (prev_nid != *nid) {
+> > +			fake_nid++;
+> > +			fake_numa_node_mapping[*nid] = fake_nid;
+> > +			prev_nid = *nid;
+> > +			*nid = fake_nid;
+> > +			return 0;
+> > +		}
+> >  		*nid = fake_nid;
+> > +	}
+> > +
+> >  	/*
+> >  	 * In case there are no more arguments to parse, the
+> >  	 * node_id should be the same as the last fake node id
+> > @@ -440,7 +462,7 @@ static int of_drconf_to_nid_single(struc
+> >   */
+> >  static int __cpuinit numa_setup_cpu(unsigned long lcpu)
+> >  {
+> > -	int nid = 0;
+> > +	int nid = 0, new_nid;
+> >  	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
+> > 
+> >  	if (!cpu) {
+> > @@ -450,8 +472,15 @@ static int __cpuinit numa_setup_cpu(unsi
+> > 
+> >  	nid = of_node_to_nid_single(cpu);
+> > 
+> > +	if (fake_enabled && nid) {
+> > +		new_nid = fake_numa_node_mapping[nid];
+> > +		if (new_nid > 0)
+> > +			nid = new_nid;
+> > +	}
+> > +
+> >  	if (nid < 0 || !node_online(nid))
+> >  		nid = any_online_node(NODE_MASK_ALL);
+> > +
+> >  out:
+> >  	map_cpu_to_node(lcpu, nid);
+> > 
+> > @@ -1005,8 +1034,12 @@ static int __init early_numa(char *p)
+> >  		numa_debug = 1;
+> > 
+> >  	p = strstr(p, "fake=");
+> > -	if (p)
+> > +	if (p) {
+> >  		cmdline = p + strlen("fake=");
+> > +		if (numa_enabled) {
+> > +			fake_enabled = 1;
+> > +		}
+> > +	}
+> > 
 > >  	return 0;
 > >  }
-> > 
-> > +static void register_cpuidle_idle_function(void)
-> > +{
-> > +	register_idle_function(&cpuidle_idle_desc);
-> > +
-> > +	idle_function_registered = 1;
+> >
 > 
-> Use booleans if possible, unless you intend to extend the meaning of
-> registered someday.
->
-
-I don't intend to extend the meaning of idle_function_registered.
-Will use boolean here.
-
-> > +}
-> >  /**
-> >   * cpuidle_register_device - registers a CPU's idle PM feature
-> >   * @dev: the cpu
-> > @@ -303,7 +286,9 @@ int cpuidle_register_device(struct cpuid
-> >  	}
-> > 
-> >  	cpuidle_enable_device(dev);
-> > -	cpuidle_install_idle_handler();
-> > +
-> > +	if (!idle_function_registered)
-> > +		register_cpuidle_idle_function();
-> > 
-> >  	mutex_unlock(&cpuidle_lock);
-> > 
-> > @@ -382,8 +367,6 @@ static int __init cpuidle_init(void)
-> >  {
-> >  	int ret;
-> > 
-> > -	pm_idle_old = pm_idle;
-> > -
-> >  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
-> >  	if (ret)
-> >  		return ret;
-> > Index: linux.trees.git/drivers/cpuidle/governor.c
-> > ===================================================================
-> > --- linux.trees.git.orig/drivers/cpuidle/governor.c
-> > +++ linux.trees.git/drivers/cpuidle/governor.c
-> > @@ -48,8 +48,6 @@ int cpuidle_switch_governor(struct cpuid
-> >  	if (gov == cpuidle_curr_governor)
-> >  		return 0;
-> > 
-> > -	cpuidle_uninstall_idle_handler();
-> > -
-> >  	if (cpuidle_curr_governor) {
-> >  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
-> >  			cpuidle_disable_device(dev);
-> > @@ -63,7 +61,6 @@ int cpuidle_switch_governor(struct cpuid
-> >  			return -EINVAL;
-> >  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
-> >  			cpuidle_enable_device(dev);
-> > -		cpuidle_install_idle_handler();
-> >  		printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
-> >  	}
-> > 
+> 
+> Looks good to me
+> 
+> 
+> Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> 
+> 
 > 
 > -- 
 > 	Balbir
 
-Thanks for the review!
---arun
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
