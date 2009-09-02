@@ -1,36 +1,23 @@
-Return-Path: <rientjes@google.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8A704B7088
+Return-Path: <pavel@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+	[195.113.26.193])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 33834B7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Sep 2009 05:46:31 +1000 (EST)
-Received: from smtp-out.google.com (smtp-out.google.com [216.239.33.17])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44A2DDDD01
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Sep 2009 05:46:29 +1000 (EST)
-Received: from spaceape23.eur.corp.google.com (spaceape23.eur.corp.google.com
-	[172.28.16.75]) by smtp-out.google.com with ESMTP id n82JaB9D007332
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2009 20:36:11 +0100
-Received: from pzk8 (pzk8.prod.google.com [10.243.19.136])
-	by spaceape23.eur.corp.google.com with ESMTP id n82Ja7lb013887
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2009 12:36:08 -0700
-Received: by pzk8 with SMTP id 8so1008480pzk.22
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Sep 2009 12:36:07 -0700 (PDT)
-Date: Wed, 2 Sep 2009 12:36:04 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Ankita Garg <ankita@in.ibm.com>
-Subject: Re: [PATCH v2] Fix fake numa on ppc
-In-Reply-To: <20090902080346.GB3806@in.ibm.com>
-Message-ID: <alpine.DEB.1.00.0909021226160.10279@chino.kir.corp.google.com>
-References: <20090902060911.GA5728@in.ibm.com>
-	<alpine.DEB.1.00.0909012326290.31814@chino.kir.corp.google.com>
-	<20090902080346.GB3806@in.ibm.com>
+	Thu,  3 Sep 2009 06:02:26 +1000 (EST)
+Date: Wed, 2 Sep 2009 22:02:14 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
+Message-ID: <20090902200214.GA1918@ucw.cz>
+References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
+	<1251869611.7547.38.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1251869611.7547.38.camel@twins>
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	"Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,29 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2 Sep 2009, Ankita Garg wrote:
+On Wed 2009-09-02 07:33:31, Peter Zijlstra wrote:
+> On Fri, 2009-08-28 at 15:30 +0530, Gautham R Shenoy wrote:
+> > Hi,
+> > 
+> > This is the version 2 of the patch series to provide a cpu-offline framework
+> > that enables the administrators choose the state the offline CPU must be put
+> > into when multiple such states are exposed by the underlying architecture.
+> > 
+> > Version 1 of the Patch can be found here:
+> > http://lkml.org/lkml/2009/8/6/236
+> > 
+> > The patch-series exposes the following sysfs tunables to
+> > allow the system-adminstrator to choose the state of a CPU:
+> > 
+> > To query the available hotplug states, one needs to read the sysfs tunable:
+> > 	/sys/devices/system/cpu/cpu<number>/available_hotplug_states
+> > To query or set the current state, on needs to read/write the sysfs tunable:
+> > 	/sys/devices/system/cpu/cpu<number>/current_states
+> > 
+> > The patchset ensures that the writes to the "current_state" sysfs file are
+> > serialized against the writes to the "online" file.
+> > 
+> > This patchset also contains the offline state driver implemented for
+> > pSeries. For pSeries, we define three available_hotplug_states. They are:
+> > 
+> > 	online: The processor is online.
+> > 
+> > 	deallocate: This is the the default behaviour when the cpu is offlined
+> > 	even in the absense of this driver. The CPU would call make an
+> > 	rtas_stop_self() call and hand over the CPU back to the resource pool,
+> > 	thereby effectively deallocating that vCPU from the LPAR.
+> > 	NOTE: This would result in a configuration change to the LPAR
+> > 	which is visible to the outside world.
+> > 
+> > 	deactivate: This cedes the vCPU to the hypervisor which
+> > 	in turn can put the vCPU time to the best use.
+> > 	NOTE: This option DOES NOT result in a configuration change
+> > 	and the vCPU would be still entitled to the LPAR to which it earlier
+> > 	belong to.
+> > 
+> > Awaiting your feedback.
+> 
+> I'm still thinking this is a bad idea.
+> 
+> The OS should only know about online/offline.
+> 
+> Use the hypervisor interface to deal with the cpu once its offline.
+> 
+> That is, I think this interface you propose is a layering violation.
 
-> Currently, the behavior of fake numa is not so on x86 as well? Below is
-> a sample output from a single node x86 system booted with numa=fake=8:
-> 
-> # cat node0/cpulist
-> 
-> # cat node1/cpulist
-> 
-> ...
-> # cat node6/cpulist
-> 
-> # cat node7/cpulist
-> 0-7
-> 
-> Presently, just fixing the cpu association issue with ppc, as explained
-> in my previous mail.
-> 
+Agreed. Plus having interface like 'go to this state during offliine'
+then 'go offline' is strange/stupid. For hypervisor case, you might
+want to change 'state' of cpu that is already offline.
+								Pavel
 
-Right, I'm proposing an alternate mapping scheme (which we've used for 
-years) for both platforms such that a cpu is bound (and is set in 
-cpumask_of_node()) to each fake node with which it has physical affinity.  
-That is the only way for zonelist ordering in node order, task migration 
-from offlined cpus, correct sched domains, etc.  I can propose a patchset 
-for x86_64 to do exactly this if there aren't any objections and I hope 
-you'll help do ppc.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
