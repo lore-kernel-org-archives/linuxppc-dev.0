@@ -1,38 +1,40 @@
-Return-Path: <ankita@in.ibm.com>
+Return-Path: <rientjes@google.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 08297B7C21
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 91F13B7FFC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Sep 2009 16:09:19 +1000 (EST)
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	Wed,  2 Sep 2009 16:14:46 +1000 (EST)
+Received: from smtp-out.google.com (smtp-out.google.com [216.239.45.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 87B0CDDD01
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 16:09:18 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id n8266emS013671
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2009 16:06:40 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n8269DYF856166
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2009 16:09:13 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n8269D1T003253
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2009 16:09:13 +1000
-Date: Wed, 2 Sep 2009 11:39:11 +0530
-From: Ankita Garg <ankita@in.ibm.com>
-To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Balbir Singh <balbir@in.ibm.com>
-Subject: [PATCH v2] Fix fake numa on ppc
-Message-ID: <20090902060911.GA5728@in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E2203DDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2009 16:14:45 +1000 (EST)
+Received: from wpaz1.hot.corp.google.com (wpaz1.hot.corp.google.com
+	[172.24.198.65]) by smtp-out.google.com with ESMTP id n8263aUf012234
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 23:03:37 -0700
+Received: from pzk4 (pzk4.prod.google.com [10.243.19.132])
+	by wpaz1.hot.corp.google.com with ESMTP id n8263Xeo014674
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2009 23:03:34 -0700
+Received: by pzk4 with SMTP id 4so579703pzk.29
+	for <linuxppc-dev@ozlabs.org>; Tue, 01 Sep 2009 23:03:33 -0700 (PDT)
+Date: Tue, 1 Sep 2009 23:03:32 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Fix fake numa on ppc
+In-Reply-To: <1251870823.14675.420.camel@pasglop>
+Message-ID: <alpine.DEB.1.00.0909012259050.26930@chino.kir.corp.google.com>
+References: <20090901050316.GA4076@in.ibm.com>
+	<20090901055753.GB5563@balbir.in.ibm.com>
+	<20090901092407.GC4076@in.ibm.com>
+	<20090901142729.GA5022@balbir.in.ibm.com>
+	<20090902053653.GA3806@in.ibm.com>
+	<1251870823.14675.420.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: ankita@in.ibm.com
-Reply-To: Ankita Garg <ankita@in.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Ankita Garg <ankita@in.ibm.com>,
+	linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,226 +44,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, 2 Sep 2009, Benjamin Herrenschmidt wrote:
 
-Below is a patch to fix a couple of issues with fake numa node creation
-on ppc:
+> Since I'm pretty sure there could be CPU less nodes just like there
+> could be memory-less nodes, it would be good if fake numa could
+> simulate them too :-)
+> 
 
-1) Presently, fake nodes could be created such that real numa node
-boundaries are not respected. So a node could have lmbs that belong to
-different real nodes.
-
-2) The cpu association is broken. On a JS22 blade for example, which is
-a 2-node numa machine, I get the following:
-
-# cat /proc/cmdline
-root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
-# cat /sys/devices/system/node/node0/cpulist
-0-3
-# cat /sys/devices/system/node/node1/cpulist
-4-7
-# cat /sys/devices/system/node/node4/cpulist
-
-#
-
-So, though the cpus 4-7 should have been associated with node4, they
-still belong to node1. The patch works by recording a real numa node
-boundary and incrementing the fake node count. At the same time, a
-mapping is stored from the real numa node to the first fake node that
-gets created on it.
-
-Tested the patch with the following commandlines:
-numa=fake=2G,4G,6G,8G,10G,12G,14G,16G
-numa=fake=3G,6G,10G,16G
-numa=fake=4G
-numa=fake=
-
-For testing if the fake nodes respect the real node boundaries, I added
-some debug printks in the node creation path. Without the patch, for the
-commandline numa=fake=2G,4G,6G,8G,10G,12G,14G,16G, this is what I got:
-
-fake id: 1 nid: 0
-fake id: 1 nid: 0
-...
-fake id: 2 nid: 0
-fake id: 2 nid: 0
-...
-fake id: 2 nid: 0
-created new fake_node with id 3
-fake id: 3 nid: 0
-fake id: 3 nid: 0
-...
-fake id: 3 nid: 0
-fake id: 3 nid: 0
-fake id: 3 nid: 1
-fake id: 3 nid: 1
-...
-created new fake_node with id 4
-fake id: 4 nid: 1
-fake id: 4 nid: 1
-...
-
-and so on. So, fake node 3 encompasses real node 0 & 1. Also,
-
-# cat /sys/devices/system/node/node3/meminfo
-Node 0 MemTotal:        2097152 kB
-...
-# # cat /sys/devices/system/node/node4/meminfo
-Node 0 MemTotal:        2097152 kB
-...
-
-
-With the patch, I get:
-
-fake id: 1 nid: 0
-fake id: 1 nid: 0
-...
-fake id: 2 nid: 0
-fake id: 2 nid: 0
-...
-fake id: 2 nid: 0
-created new fake_node with id 3
-fake id: 3 nid: 0
-fake id: 3 nid: 0
-...
-fake id: 3 nid: 0
-fake id: 3 nid: 0
-created new fake_node with id 4
-fake id: 4 nid: 1
-fake id: 4 nid: 1
-...
-
-and so on. With the patch, the fake node sizes are slightly different
-from that specified by the user.
-
-# cat /sys/devices/system/node/node3/meminfo
-Node 3 MemTotal:        1638400 kB
-...
-# cat /sys/devices/system/node/node4/meminfo
-Node 4 MemTotal:         458752 kB
-...
-
-CPU association was tested as mentioned in the previous mail:
-
-Without the patch,
-
-# cat /proc/cmdline
-root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
-# cat /sys/devices/system/node/node0/cpulist
-0-3
-# cat /sys/devices/system/node/node1/cpulist
-4-7
-# cat /sys/devices/system/node/node4/cpulist
-
-#
-
-With the patch,
-
-# cat /proc/cmdline
-root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
-# cat /sys/devices/system/node/node0/cpulist
-0-3
-# cat /sys/devices/system/node/node1/cpulist
-
-# cat /sys/devices/system/node/node4/cpulist
-4-7
-
-Signed-off-by: Ankita Garg <ankita@in.ibm.com> 
-Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
-Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
-===================================================================
---- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
-+++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
-@@ -26,6 +26,13 @@
- #include <asm/smp.h>
- 
- static int numa_enabled = 1;
-+static int fake_enabled = 1;
-+
-+/*
-+ * The array maps a real numa node to the first fake node that gets
-+ * created on it
-+ */
-+int fake_numa_node_mapping[MAX_NUMNODES];
- 
- static char *cmdline __initdata;
- 
-@@ -49,14 +56,29 @@ static int __cpuinit fake_numa_create_ne
- 	unsigned long long mem;
- 	char *p = cmdline;
- 	static unsigned int fake_nid;
-+	static unsigned int prev_nid = 0;
- 	static unsigned long long curr_boundary;
- 
- 	/*
- 	 * Modify node id, iff we started creating NUMA nodes
- 	 * We want to continue from where we left of the last time
- 	 */
--	if (fake_nid)
-+	if (fake_nid) {
-+		/*
-+		 * Moved over to the next real numa node, increment fake
-+		 * node number and store the mapping of the real node to
-+		 * the fake node
-+		 */
-+		if (prev_nid != *nid) {
-+			fake_nid++;
-+			fake_numa_node_mapping[*nid] = fake_nid;
-+			prev_nid = *nid;
-+			*nid = fake_nid;
-+			return 0;
-+		}
- 		*nid = fake_nid;
-+	}
-+
- 	/*
- 	 * In case there are no more arguments to parse, the
- 	 * node_id should be the same as the last fake node id
-@@ -440,7 +462,7 @@ static int of_drconf_to_nid_single(struc
-  */
- static int __cpuinit numa_setup_cpu(unsigned long lcpu)
- {
--	int nid = 0;
-+	int nid = 0, new_nid;
- 	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
- 
- 	if (!cpu) {
-@@ -450,8 +472,15 @@ static int __cpuinit numa_setup_cpu(unsi
- 
- 	nid = of_node_to_nid_single(cpu);
- 
-+	if (fake_enabled && nid) {
-+		new_nid = fake_numa_node_mapping[nid];
-+		if (new_nid > 0)
-+			nid = new_nid;
-+	}
-+
- 	if (nid < 0 || !node_online(nid))
- 		nid = any_online_node(NODE_MASK_ALL);
-+
- out:
- 	map_cpu_to_node(lcpu, nid);
- 
-@@ -1005,8 +1034,12 @@ static int __init early_numa(char *p)
- 		numa_debug = 1;
- 
- 	p = strstr(p, "fake=");
--	if (p)
-+	if (p) {
- 		cmdline = p + strlen("fake=");
-+		if (numa_enabled) {
-+			fake_enabled = 1;
-+		}
-+	}
- 
- 	return 0;
- }
-
-
--- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs, 
-Bangalore, India   
+You don't want to simulate cpu less nodes since they do have affinity to 
+ranges of memory, you want to map each fake node to a cpumask including 
+all cpus with affinity to its memory, map each cpu to one fake node (with 
+memory) that it has physical affinity to, and then give all fake nodes 
+local NUMA distance to those on the same physical node.  Memoryless nodes 
+take care of themselves since they rely purely on node_distance(), so the 
+index into the slit for all fake nodes to those without memory will be the 
+same.
