@@ -1,28 +1,33 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <Heinz.Wrobel@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 27238B70BA
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 59345B708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Sep 2009 22:10:44 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1302EDDD01
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Sep 2009 22:10:44 +1000 (EST)
-Subject: powerpc test branch build failure with 6xx defconfig + PERF_CTRS
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-YewrTFVXsU6eG132z4Vb"
-Date: Thu, 03 Sep 2009 22:10:43 +1000
-Message-Id: <1251979843.5283.6.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+	Thu,  3 Sep 2009 22:20:22 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n83CKJZl009122 for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 3 Sep 2009 05:20:19 -0700 (MST)
+Received: from zuk35exm20.fsl.freescale.net (zuk35exm20.ea.freescale.net
+	[10.210.1.54])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n83CLkZa003879
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 3 Sep 2009 07:21:46 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: AW: PowerPC PCI DMA issues (prefetch/coherency?)
+Date: Thu, 3 Sep 2009 13:20:12 +0100
+Message-ID: <AAE514D00E55E6438B7F5186462A545202750F9B@zuk35exm20.fsl.freescale.net>
+In-Reply-To: <4A9F78AF.4010206@oxtel.com>
+References: <1251926572.10090.17.camel@Adam> <4A9F78AF.4010206@oxtel.com>
+From: "Wrobel Heinz-R39252" <Heinz.Wrobel@freescale.com>
+To: "Chris Pringle" <chris.pringle@oxtel.com>, <linuxppc-dev@lists.ozlabs.org>
+Cc: Tom Burns <tburns@datacast.com>, Andrea Zypchen <azypchen@intldata.ca>,
+	azilkie@datacast.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,30 +37,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
---=-YewrTFVXsU6eG132z4Vb
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This doesn't seem right. If we are talking about a single CPU core chip,
+i.e., just one data cache, then setting M is typically a) useless and
+could even b) cause a performance penalty depending on a chip's
+implementation.
+The M bit is required if *other* cores with caches need to see changes
+for coherency of their caches. You wouldn't set it for one core only
+because your own core knows about its own cache.
+The possible performance penalty could happen because you need some way
+to tell the others that they better intercept a transaction. And that
+could, depending on the chip, by a clock extra or so per transaction.
+Now, in theory, a DMA engine could have caches, read from cache content
+first, and could snoop the bus on global transactions like another core,
+but I have never heard of such a beast.=20
 
-With benh's test branch, I'm seeing this trying to build a 6xx defconfig
-with CONFIG_PPC_PERF_CTRS=3Dy:
+Hope this helps,
 
-arch/powerpc/kernel/perf_counter.c: In function 'power_check_constraints':
-arch/powerpc/kernel/perf_counter.c:352: error: the frame size of 1152 bytes=
- is larger than 1024 bytes
+Heinz
 
-cheers
+-----Original Message-----
+From: linuxppc-dev-bounces+heinz.wrobel=3Dfreescale.com@lists.ozlabs.org
+[mailto:linuxppc-dev-bounces+heinz.wrobel=3Dfreescale.com@lists.ozlabs.or=
+g
+] On Behalf Of Chris Pringle
+Sent: Donnerstag, 3. September 2009 10:05
+To: azilkie@datacast.com
+Cc: Tom Burns; Andrea Zypchen; linuxppc-dev@lists.ozlabs.org
+Subject: Re: AW: PowerPC PCI DMA issues (prefetch/coherency?)
 
---=-YewrTFVXsU6eG132z4Vb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Hi Adam,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+If you have a look in include/asm-ppc/pgtable.h for the following
+section:
+#ifdef CONFIG_44x
+#define _PAGE_BASE    (_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_GUARDED)
+#else
+#define _PAGE_BASE    (_PAGE_PRESENT | _PAGE_ACCESSED)
+#endif
 
-iEYEABECAAYFAkqfskAACgkQdSjSd0sB4dLL4QCeIGyoShjWpDw7i/k3NHv5ykcd
-4rUAoJpwxPTRogwtCdh+jsy6/rzxl0bq
-=GZfs
------END PGP SIGNATURE-----
+Try adding _PAGE_COHERENT to the appropriate line above and see if that
+fixes your issue - this causes the 'M' bit to be set on the page which
+sure enforce cache coherency. If it doesn't, you'll need to check the
+'M' bit isn't being masked out in head_44x.S (it was originally masked
+out on arch/powerpc, but was fixed in later kernels when the cache
+coherency issues with non-SMP systems were resolved).
 
---=-YewrTFVXsU6eG132z4Vb--
+The patch I had fixed two problems on 2.6.26 for 'powerpc':
+1) It stopped the 'M' bit being masked out (head_32.S)
+2) It set the cache coherency ('M' bit) flag on each page table entry
+(pgtable-ppc32.h)
+
+Hope this helps!
+
+Cheers,
+Chris
+
+Adam Zilkie wrote:
+> Hi Chris,
+>
+> I am having a problem similar to what you described in this
+discussion.
+> We are using the ppc arch with 2.6.24 with CONFIG_SEQUOIA with=20
+> compiles arch/ppc/kernel/head_44x.c (quite different from=20
+> /arch/powerpc/kernel/head_32.S). I would like to apply your=20
+> backporting patch to this architecture. Any help would be appreciated.
+>
+> Regards,
+> Adam
+>
+>  =20
+
+
+--=20
+
+______________________________
+Chris Pringle
+Software Design Engineer
+
+Miranda Technologies Ltd.
+Hithercroft Road
+Wallingford
+Oxfordshire OX10 9DG
+UK
+
+Tel. +44 1491 820206
+Fax. +44 1491 820001
+www.miranda.com
+
+____________________________
+
+Miranda Technologies Limited
+Registered in England and Wales CN 02017053 Registered Office: James
+House, Mere Park, Dedmere Road, Marlow, Bucks, SL7 1FJ
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@lists.ozlabs.org
+https://lists.ozlabs.org/listinfo/linuxppc-dev
