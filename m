@@ -1,21 +1,23 @@
-Return-Path: <ben@somanetworks.com>
-Received: from zimbra.somanetworks.com (gw-yyz1.somanetworks.com
-	[216.126.67.39])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 7E3DFB7099
+Return-Path: <thunderbird2k@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 294F0B7099
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Sep 2009 22:49:39 +1000 (EST)
-Message-ID: <4A9FBB5F.7000107@somanetworks.com>
-Date: Thu, 03 Sep 2009 08:49:35 -0400
-From: Ben Gamsa <ben@somanetworks.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: time jumps forward/backwards
-References: <4A9C465D.4010801@somanetworks.com>		<19100.24755.889091.412993@cargo.ozlabs.ibm.com>		<4A9C6446.2000202@somanetworks.com>	<4A9C664D.6010504@somanetworks.com>		<4A9C84D0.8040200@somanetworks.com>		<20090831223111.7b2dc95d@lappy.seanm.ca>		<4A9C9BA3.6020105@somanetworks.com>	<1251802154.14675.346.camel@pasglop>
-	<4A9D038F.90605@somanetworks.com>
-In-Reply-To: <4A9D038F.90605@somanetworks.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Sean MacLennan <smaclennan@pikatech.com>
+	Thu,  3 Sep 2009 23:24:39 +1000 (EST)
+Received: from smtp.utwente.nl (smtp2.utsp.utwente.nl [130.89.2.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6617BDDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Sep 2009 23:24:38 +1000 (EST)
+Subject: Fix i8259 kernel crash on ML510 [with signed-off]
+From: Roderick Colenbrander <thunderbird2k@gmail.com>
+To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 03 Sep 2009 15:18:08 +0200
+Message-Id: <1251983888.30181.2.camel@CE202>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Gamsa wrote:
-> Benjamin Herrenschmidt wrote:
->> On Mon, 2009-08-31 at 23:57 -0400, Benjamin Gamsa wrote:
->>> Sean MacLennan wrote:
->>>> On Mon, 31 Aug 2009 22:20:00 -0400
->>>> Benjamin Gamsa <ben@somanetworks.com> wrote:
->>>>
->>>>> For what it's worth, the problem occurs even when ntp is not even
->>>>> started.
->>>> This is grasping, but could it have anything to do with the jiffies
->>>> wrapping near startup?
->>>>
->>> I don't know how to test it, but I don't think so, since there are 
->>> multiple of these glitches over an extended period of time.
->>
->> I'm not familiar with all the FSL processor variants, but is this
->> an UP or an SMP platform ? In the later case, are all the core timebases
->> properly synchronized ?
->>
-> 
-> This a UP with a single e500 core.
-> 
+Hi,
 
-I take it from the lack of follow-ups that no one has any good ideas as 
-to what might be going wrong?
+This is the same patch but with a signed-off message which I forgot.
 
-Since the problem seems to be confined to situations where the date is 
-around the epoch, I guess I'll just work-around the problem by setting 
-the date to a more recent date on startup.
+Regards,
+Roderick Colenbrander
 
+Signed-off-by: Roderick Colenbrander <thunderbird2k@gmail.com>
+
+>From 11a2072b285c2eb0f19980ad729229d4ebf22291 Mon Sep 17 00:00:00 2001
+From: Roderick Colenbrander <colenbrander@CE202.(none)>
+Date: Thu, 3 Sep 2009 15:11:08 +0200
+Subject: [PATCH] This patch fixes a null pointer exception caused by
+removal of 'ack()' for level interrupts in the Xilinx interrupt driver.
+
+---
+ arch/powerpc/sysdev/xilinx_intc.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/xilinx_intc.c
+b/arch/powerpc/sysdev/xilinx_intc.c
+index 3ee1fd3..40edad5 100644
+--- a/arch/powerpc/sysdev/xilinx_intc.c
++++ b/arch/powerpc/sysdev/xilinx_intc.c
+@@ -234,7 +234,6 @@ static void xilinx_i8259_cascade(unsigned int irq,
+struct irq_desc *desc)
+ 		generic_handle_irq(cascade_irq);
+ 
+ 	/* Let xilinx_intc end the interrupt */
+-	desc->chip->ack(irq);
+ 	desc->chip->unmask(irq);
+ }
+ 
 -- 
-Ben Gamsa       ben@somanetworks.com
-SOMA Networks   312 Adelaide St. W. Suite 600 Toronto, Ontario, M5V1R2
+1.6.0.4
