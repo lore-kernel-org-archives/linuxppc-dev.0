@@ -1,27 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B2E71B7093
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Sep 2009 09:56:38 +1000 (EST)
-Received: from mail-yx0-f187.google.com (mail-yx0-f187.google.com
-	[209.85.210.187]) by ozlabs.org (Postfix) with ESMTP id 13523DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Sep 2009 09:56:36 +1000 (EST)
-Received: by yxe17 with SMTP id 17so476101yxe.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Sep 2009 16:56:34 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4A9F0377.1070606@embeddedarm.com>
-References: <4A9F0377.1070606@embeddedarm.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 2 Sep 2009 17:56:09 -0600
-Message-ID: <fa686aa40909021656m1f14b428ued248f871ce4cbba@mail.gmail.com>
-Subject: Re: PPC PCI bus registers
-To: Eddie Dawydiuk <eddie@embeddedarm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: why do we need reloc_offset ??
+From: Michael Ellerman <michael@ellerman.id.au>
+To: HongWoo Lee <hongwoo7@gmail.com>
+In-Reply-To: <5e2889710909012333q69874b24qf6e3c0abfceb8dfd@mail.gmail.com>
+References: <5e2889710909012333q69874b24qf6e3c0abfceb8dfd@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-QVxIQKbTg0KVOAV8Aleg"
+Date: Thu, 03 Sep 2009 12:19:49 +1000
+Message-Id: <1251944389.6261.11.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,14 +21,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 2, 2009 at 5:44 PM, Eddie Dawydiuk<eddie@embeddedarm.com> wrote:
-> Hello,
->
-> I have a question regarding reading PCI bus registers from a user space
-> application running on a PPC SBC. Seeing as though the PCI bus is little
-> endian and PPC is big endian is it typical that one must perform a byte swap
-> on all 16 and 32 bit register reads?
 
-Yes, this is correct.
+--=-QVxIQKbTg0KVOAV8Aleg
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-g.
+On Wed, 2009-09-02 at 15:33 +0900, HongWoo Lee wrote:
+> Hi everyone~=20
+>=20
+> In ther linux kernel code, I found the reloc_offset.=20
+>=20
+> {{{
+> // file : misc.S=20
+> /* Returns (address we are running at) - (address we were linked at)
+>  * for use before the text and data are mapped to KERNELBASE.
+>  */
+> _GLOBAL(reloc_offset)
+> }}}
+>=20
+> I couldn't understand the comment saying "Returns (address we are
+> running at) - (address we were linked at)".=20
+> For now, I'm studying each instruction.=20
+>=20
+> And below is best comment I can explain for each instruction.=20
+>=20
+> _GLOBAL(reloc_offset)
+>         mflr    r0                // move from link register, save the re=
+turn address
+>         bl      1f                 // bl 1f
+> 1:     mflr    r3                // move from link register, r3 is just r=
+eturn address pointing itself=20
+
+At this point r3 contains the value of LR based on the branch we just
+did. So it's the address of the current instruction, based on where the
+code is _running_.
+
+>         LOAD_REG_IMMEDIATE(r4,1b)    // get the 1b address, r4 is the add=
+ress=20
+
+Here we load into r4 the address of the previous instruction, but based
+on the label "1b". The address of the label is calculated by the linker,
+so r4 contains the address the instruction was linked at.
+
+>         subf    r3,r4,r3        // r3 =3D r3 =E2=80=93 r4=20
+
+So here we calculate any difference between the address the code was
+linked at and the address it's running at.
+
+>         mtlr    r0                // restore return address=20
+>         blr
+>=20
+> After this, I still don't know why "r3-r4" is the offset.=20
+> And what does it mean ??=20
+
+The offset is just the difference between the address the code was
+linked at and the address it's running it. It's used in places where the
+code might be (or is always) running at an address other than the
+address it was linked at.
+
+cheers
+
+--=-QVxIQKbTg0KVOAV8Aleg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkqfJ8EACgkQdSjSd0sB4dI+EwCeLhAOUtVmqKBhcFcUU2KuaAc3
+9y0AoJ09RonOANNwwDzwOO/kedBC+k2K
+=DJA/
+-----END PGP SIGNATURE-----
+
+--=-QVxIQKbTg0KVOAV8Aleg--
