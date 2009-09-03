@@ -1,28 +1,37 @@
-Return-Path: <ganeshkumar@signal-networks.com>
-Received: from smtp.bizmail.net4india.com (smtp1.bizmail.net4india.com
-	[202.71.129.104])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id E52F5B7093
+Return-Path: <arun@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6E3F5B7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Sep 2009 14:42:00 +1000 (EST)
-Received: from [122.166.21.73] (helo=signal-networks.com)
-	by smtp.bizmail.net4india.com with esmtp (Exim 4.69)
-	(envelope-from <ganeshkumar@signal-networks.com>) id 1Mj48A-0002MH-6P
-	for linuxppc-dev@lists.ozlabs.org; Thu, 03 Sep 2009 10:11:40 +0530
-Received: from [192.168.1.13] by signal-networks.com (MDaemon Standard v10.0.5)
-	with ESMTP id md50000414031.msg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2009 10:20:46 +0530
-From: Ganesh Kumar <ganeshkumar@signal-networks.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: MPC866 FEC's Receive processing thru pre allocated buffers
-Date: Thu, 3 Sep 2009 10:15:14 +0530
-References: <200908281734.56489.ganeshkumar@signal-networks.com>
-	<OF0B184DAC.3E68F19C-ONC1257620.0044C588-C1257620.00466F8B@transmode.se>
-In-Reply-To: <OF0B184DAC.3E68F19C-ONC1257620.0044C588-C1257620.00466F8B@transmode.se>
+	Thu,  3 Sep 2009 14:43:06 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id n834eUoh026093
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2009 14:40:30 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n834h4xx1196266
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2009 14:43:04 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n834h2YT023868
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2009 14:43:03 +1000
+Date: Thu, 3 Sep 2009 10:12:53 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
+Message-ID: <20090903044253.GA31928@linux.vnet.ibm.com>
+References: <20090901113704.GG7599@linux.vnet.ibm.com>
+	<20090901113840.GH7599@linux.vnet.ibm.com>
+	<1251870144.7547.48.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200909031015.15080.ganeshkumar@signal-networks.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1251870144.7547.48.camel@twins>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>,
+	Arun Bharadwaj <arun@linux.vnet.ibm.com>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
+Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,107 +41,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tjernlund,
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-02 07:42:24]:
 
-    Thanks a lot for the reply.
+> On Tue, 2009-09-01 at 17:08 +0530, Arun R Bharadwaj wrote:
+> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
+> > 
+> > Cleanup drivers/cpuidle/cpuidle.c
+> > 
+> > Cpuidle maintains a pm_idle_old void pointer because, currently in x86
+> > there is no clean way of registering and unregistering a idle function.
+> 
+> Right, and instead of fixing that, they build this cpuidle crap on top,
+> instead of replacing the current crap with it.
+> 
+> > So remove pm_idle_old and leave the responsibility of maintaining the
+> > list of registered idle loops to the architecture specific code. If the
+> > architecture registers cpuidle_idle_call as its idle loop, only then
+> > this loop is called.
+> 
+> OK, that's a start I guess. Best would be to replace all of pm_idle with
+> cpuidle, which is what should have been done from the very start.
+> 
+> If cpuidle cannot fully replace the pm_idle functionality, then it needs
+> to fix that. But having two layers of idle functions is just silly.
+> 
+> Looking at patch 2 and 3, you're making the same mistake on power, after
+> those patches there are multiple ways of registering idle functions, one
+> through some native interface and one through cpuidle, this strikes me
+> as undesirable.
+> 
+> If cpuidle is a good idle function manager, then it should be good
+> enough to be the sole one, if its not, then why bother with it at all.
+> 
 
-I checked in my code regarding to the invalidate/flushing of the=20
-data cache. In the fec_init its been done by calling the sequence
+Okay, I'm giving this approach a shot now. i.e. trying to make cpuidle
+as _the_ sole idle function manager. This would mean doing away with
+pm_idle and ppc_md.power_save. And, cpuidle_idle_call() which is the
+main idle loop of cpuidle, present in drivers/cpuidle/cpuidle.c will
+have to be called from arch specific code of cpu_idle()
 
-       /* Make it uncached.
-        */
-        pte =3D va_to_pte(mem_addr);
-        pte_val(*pte) |=3D _PAGE_NO_CACHE;
-        flush_tlb_page(init_mm.mmap, mem_addr);
-So I did the same thing whenever I allocated new skb, but the=20
-problems still showed up, then I saw one comment in FEC code where=20
-it says
+Also this would mean enabling cpuidle for all platforms, even if the
+platform doesn't have multiple idle states. So suppose a platform doesnt
+have multiple states, it wouldn't want the bloated code of cpuidle
+governors, and would want just a simple cpuidle loop.
 
-        /* This does 16 byte alignment, exactly what we need.
-         * The packet length includes FCS, but we don't want to
-         * include that when passing upstream as it messes up
-         * bridging applications.
-         */
-while receiving the frames, I checked my modified code w.r.t the length,
-since I was not knowing the receive lengthn while allocating for the
-RX ring, I did with a maximum of 2048 bytes length and called the skb_put
-to reserve 2048 bytes for data, calling of the skb_put also updated the
-skb->len field with 2048, this was causing the problem, the bridge module=20
-was trying to send the frame with 2048 bytes even though the actual length
-was less number of bytes, so even after sending it to the FEC, the frame was
-getting transmitted successfully. So I updated the actual length to the
-skb->len field in the rx ISR, the problem is solved now.
-
-But I'm facing problems during load time in bridge mode
- PC-1 ---->eth0  [Bridge machine] eth1 ----> PC-2
-With the above setup I initiate 1500 pings each  of 1400  bytes
-from PC1 to PC2, then the ping sequence starts, but after some time
-say some 25-35(all 1500 instances) sequences all of a sudden no=20
-ping reply is received for any request.
-At that time if I observe in the Bridge machine cat /proc/interrupts
-the fec interrupts will not get updated there(initially it used to)
-again it resumes after some 45-60 seconds and the sequence repeats.
-Dunno what's happening with in the FEC if configured in bridge mode
-any clue on this, Thanks a lakh in advance.
-
-=2D-Ganesh
-
-On Friday 28 August 2009 18:19, you wrote:
-> > Hi All,
-> >
-> > I've already sent this almost before 6-7 hours, but the
-> > mail did not appear on the Aug 2009 archives, So I'm sending
-> > it again. Sorry for this!!. Thanks in advance.
-> >
-> > =A0 =A0 =A0 =A0 I'm working on MPC860 with Linux Kernel 2.4.18.
-> > As I'm fine tuning the FEC(Fast Ethernet Controller) driver,
-> > I came across the receive side processing of the ethernet frames
-> > where in the Rx BD rings are preallocated with the buffers and each time
-> > a new frame is received, the whole frame will get copied from the Buffer
-> > Descriptors to the external memory by allocating the skb.
-> > Is this the right way to do that ?, as memcpy is not efficient inside t=
-he
-> > ISRs.
-> > So I did some changes in the RX BDs initialization, like allocate the s=
-kb
-> > and initialize the BD's address pointer with the skb->data(using __pa)
-> > and then on reception of the frame I take out the skb from theBD and
-> > allocate a new skb and reinit the BD address with the newly allocated
-> > skb->data.
-> >
-> > It works for normal conditions, but if I load the driver then
-> > I receive lots of corrupted frames, So I tried increasing the
-> > RX_RING_SIZE(16) and also enabling the receive dscriptor active only
-> > after I come out of the while loop (inside fec_enet_rx)
-> > Increasing the Rx ring eliminated the frame corruption and runs fine on
-> > load test.
-> >
-> > But if I configure my Linux box in bridge mode then it doesn't work,
-> > i.e., the bridging doesn't happen,
-> >
-> > =A0 =A0PC-1 ---->eth0 =A0[Bridge machine] eth1 ----> PC-2
-> > What I mean here is if we initiate a ping from the
-> > PC-1 to PC-2, I don't get any response,
-> > it continously try to resole the ARP.
-> >
-> > What may be the reason??
-> > Thanks in advance
->
-> A guess, you are missing invalidating the dcache when handing a skb to
-> the CPM:
->
-> #define CPM_ENET_RX_FRSIZE	L1_CACHE_ALIGN(PKT_MAXBUF_SIZE) /* This is
-> needed so that invalidate_xxx wont invalidate too much */
->
-> static inline void invalidate_dcache_region(void *adr, unsigned long len)
-> {
-> 	/* if(len =3D=3D 0) return; len will never be zero */
-> 	len =3D ((len-1) >> LG_L1_CACHE_LINE_SIZE) +1;
-> 	do {
-> 		asm  ("dcbi     0,%0" : : "r" (adr) : "memory");
-> 		adr +=3D L1_CACHE_LINE_SIZE;
-> 	} while(--len);
-> }
-> then:
->   invalidate_dcache_region(skb->data, CPM_ENET_RX_FRSIZE);
->   bdp->cbd_bufaddr =3D __pa(skb->data);
+--arun
+> 
