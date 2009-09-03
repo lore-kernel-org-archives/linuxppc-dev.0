@@ -1,22 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-bw0-f207.google.com (mail-bw0-f207.google.com
-	[209.85.218.207])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id ECEE4B7093
+Return-Path: <azilkie@datacast.com>
+Received: from datacast.com (mail.datacast.com [209.87.232.171])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 53844B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Sep 2009 01:57:34 +1000 (EST)
-Received: by bwz3 with SMTP id 3so41145bwz.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 03 Sep 2009 08:57:31 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc: Fix i8259 interrupt driver kernel crash on ML510
-To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
-	linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Date: Thu, 03 Sep 2009 09:57:23 -0600
-Message-ID: <20090903155208.18009.73841.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Roderick Colenbrander <thunderbird2k@gmail.com>
+	Fri,  4 Sep 2009 02:07:55 +1000 (EST)
+Received: from [192.168.2.131] by datacast.com (MDaemon PRO v9.6.1)
+	with ESMTP id md50001429222.msg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2009 12:03:01 -0400
+Subject: Re: AW: PowerPC PCI DMA issues (prefetch/coherency?)
+From: Adam Zilkie <azilkie@datacast.com>
+To: chris.pringle@oxtel.com
+In-Reply-To: <4A9F78AF.4010206@oxtel.com>
+References: <1251926572.10090.17.camel@Adam>  <4A9F78AF.4010206@oxtel.com>
+Content-Type: text/plain
+Date: Thu, 03 Sep 2009 11:54:44 -0400
+Message-Id: <1251993284.2548.4.camel@Adam>
+Mime-Version: 1.0
+Cc: Tom Burns <tburns@datacast.com>, Andrea Zypchen <azypchen@intldata.ca>,
+	linuxppc-dev@lists.ozlabs.org
+Reply-To: azilkie@datacast.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,49 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Roderick Colenbrander <thunderbird2k@gmail.com>
+Chris,
 
-This patch fixes a null pointer exception caused by removal of
-'ack()' for level interrupts in the Xilinx interrupt driver.  A recent
-change to the xilinx interrupt controller removed the ack hook for
-level irqs.
+I noticed the following comment in pgtable.h: 
 
-Signed-off-by: Roderick Colenbrander <thunderbird2k@gmail.com>
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+* - CACHE COHERENT bit (M) has no effect on PPC440 core, because it
+ *     doesn't support SMP. So we can use this as software bit, like
+ *     DIRTY.
 
-Hi Ben & Linus,
+And _PAGE_COHERENT is not defined for the 44x (giving a compile error
+when I add it the _PAGE_BASE line as you suggested). This would confirm
+that the M bit is meaningless for the PPC440
 
-This is a last minute bug fix must go into 2.6.31.  This patch
-is needed to prevent a kernel panic on Xilinx ml510 boards.
-
-I've also pushed the patch out to my git tree if you'd prefer to pull:
-
-The following changes since commit 326ba5010a5429a5a528b268b36a5900d4ab0eba:
-  Linus Torvalds (1):
-        Linux 2.6.31-rc8
-
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6 merge
-
-Roderick Colenbrander (1):
-      powerpc: Fix i8259 interrupt driver kernel crash on ML510
-
- arch/powerpc/sysdev/xilinx_intc.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Regards,
+Adam
 
 
+On Thu, 2009-09-03 at 09:05 +0100, Chris Pringle wrote:
+> Hi Adam,
+> 
+> If you have a look in include/asm-ppc/pgtable.h for the following section:
+> #ifdef CONFIG_44x
+> #define _PAGE_BASE    (_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_GUARDED)
+> #else
+> #define _PAGE_BASE    (_PAGE_PRESENT | _PAGE_ACCESSED)
+> #endif
+> 
+> Try adding _PAGE_COHERENT to the appropriate line above and see if that 
+> fixes your issue - this causes the 'M' bit to be set on the page which 
+> sure enforce cache coherency. If it doesn't, you'll need to check the 
+> 'M' bit isn't being masked out in head_44x.S (it was originally masked 
+> out on arch/powerpc, but was fixed in later kernels when the cache 
+> coherency issues with non-SMP systems were resolved).
+> 
+> The patch I had fixed two problems on 2.6.26 for 'powerpc':
+> 1) It stopped the 'M' bit being masked out (head_32.S)
+> 2) It set the cache coherency ('M' bit) flag on each page table entry 
+> (pgtable-ppc32.h)
+> 
+> Hope this helps!
+> 
+> Cheers,
+> Chris
+> 
+> Adam Zilkie wrote:
+> > Hi Chris,
+> >
+> > I am having a problem similar to what you described in this discussion.
+> > We are using the ppc arch with 2.6.24 with CONFIG_SEQUOIA with compiles
+> > arch/ppc/kernel/head_44x.c (quite different
+> > from /arch/powerpc/kernel/head_32.S). I would like to apply your
+> > backporting patch to this architecture. Any help would be appreciated.
+> >
+> > Regards,
+> > Adam 
+> >
+> >   
+> 
+> 
+-- 
+Adam Zilkie
+Software Designer,
+International Datacasting Corp.
 
-diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-index 3ee1fd3..40edad5 100644
---- a/arch/powerpc/sysdev/xilinx_intc.c
-+++ b/arch/powerpc/sysdev/xilinx_intc.c
-@@ -234,7 +234,6 @@ static void xilinx_i8259_cascade(unsigned int irq, struct irq_desc *desc)
- 		generic_handle_irq(cascade_irq);
- 
- 	/* Let xilinx_intc end the interrupt */
--	desc->chip->ack(irq);
- 	desc->chip->unmask(irq);
- }
- 
+This message and the documents attached hereto are intended only for the addressee and may contain privileged or confidential information. Any unauthorized disclosure is strictly prohibited. If you have received this message in error, please notify us immediately so that we may correct our internal records. Please then delete the original message. Thank you.
