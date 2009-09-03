@@ -1,26 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <michael@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id D501BB70B3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 27238B70BA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Sep 2009 20:00:46 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	Thu,  3 Sep 2009 22:10:44 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 43245DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Sep 2009 20:00:45 +1000 (EST)
-Subject: Re: PPC PCI bus registers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eddie Dawydiuk <eddie@embeddedarm.com>
-In-Reply-To: <4A9F0377.1070606@embeddedarm.com>
-References: <4A9F0377.1070606@embeddedarm.com>
-Content-Type: text/plain
-Date: Thu, 03 Sep 2009 20:00:32 +1000
-Message-Id: <1251972032.15089.30.camel@pasglop>
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1302EDDD01
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Sep 2009 22:10:44 +1000 (EST)
+Subject: powerpc test branch build failure with 6xx defconfig + PERF_CTRS
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-YewrTFVXsU6eG132z4Vb"
+Date: Thu, 03 Sep 2009 22:10:43 +1000
+Message-Id: <1251979843.5283.6.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-09-02 at 16:44 -0700, Eddie Dawydiuk wrote:
-> Hello,
-> 
-> I have a question regarding reading PCI bus registers from a user space 
-> application running on a PPC SBC. Seeing as though the PCI bus is little endian 
-> and PPC is big endian is it typical that one must perform a byte swap on all 16 
-> and 32 bit register reads?
-> 
-> I've found this is true on a custom board I am working on(with an FPGA connected 
-> via the PCI bus) and as a result I've added a byte swap command in busybox to 
-> accommodate this feature...
 
-Note that powerpc has efficient load/store reverse instructions that
-perform the byteswap for you. We use them for IOs in the kernel for
-example.
+--=-YewrTFVXsU6eG132z4Vb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Also, if you're going to access a PCI device directly, beware of other
-issues such as ordering. PPC is an out of order architecture, you need
-to ensure you add the appropriate memory barriers if you want to ensure
-you accesses are done in the order you write them in your program.
+With benh's test branch, I'm seeing this trying to build a 6xx defconfig
+with CONFIG_PPC_PERF_CTRS=3Dy:
 
-For "standard" stuff that doesn't involve DMA or locks, an eieio after
-both MMIO loads and stores should do the trick.
+arch/powerpc/kernel/perf_counter.c: In function 'power_check_constraints':
+arch/powerpc/kernel/perf_counter.c:352: error: the frame size of 1152 bytes=
+ is larger than 1024 bytes
 
-If you need to order vs. DMA and/or locks, you may want to look at what
-the kernel does in io.h
+cheers
 
-Cheers,
-Ben.
+--=-YewrTFVXsU6eG132z4Vb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkqfskAACgkQdSjSd0sB4dLL4QCeIGyoShjWpDw7i/k3NHv5ykcd
+4rUAoJpwxPTRogwtCdh+jsy6/rzxl0bq
+=GZfs
+-----END PGP SIGNATURE-----
+
+--=-YewrTFVXsU6eG132z4Vb--
