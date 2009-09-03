@@ -1,20 +1,21 @@
-Return-Path: <chris.pringle@oxtel.com>
-Received: from oxtel.com (mail.oxtel.com [193.200.114.15])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id AA0FFB7088
+Return-Path: <ben@somanetworks.com>
+Received: from zimbra.somanetworks.com (gw-yyz1.somanetworks.com
+	[216.126.67.39])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 7E3DFB7099
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Sep 2009 22:45:57 +1000 (EST)
-Message-ID: <4A9FBA07.4050804@oxtel.com>
-Date: Thu, 03 Sep 2009 13:43:51 +0100
-From: Chris Pringle <chris.pringle@oxtel.com>
+	Thu,  3 Sep 2009 22:49:39 +1000 (EST)
+Message-ID: <4A9FBB5F.7000107@somanetworks.com>
+Date: Thu, 03 Sep 2009 08:49:35 -0400
+From: Ben Gamsa <ben@somanetworks.com>
 MIME-Version: 1.0
-To: Wrobel Heinz-R39252 <Heinz.Wrobel@freescale.com>
-Subject: Re: AW: PowerPC PCI DMA issues (prefetch/coherency?)
-References: <1251926572.10090.17.camel@Adam> <4A9F78AF.4010206@oxtel.com>
-	<AAE514D00E55E6438B7F5186462A545202750F9B@zuk35exm20.fsl.freescale.net>
-In-Reply-To: <AAE514D00E55E6438B7F5186462A545202750F9B@zuk35exm20.fsl.freescale.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: time jumps forward/backwards
+References: <4A9C465D.4010801@somanetworks.com>		<19100.24755.889091.412993@cargo.ozlabs.ibm.com>		<4A9C6446.2000202@somanetworks.com>	<4A9C664D.6010504@somanetworks.com>		<4A9C84D0.8040200@somanetworks.com>		<20090831223111.7b2dc95d@lappy.seanm.ca>		<4A9C9BA3.6020105@somanetworks.com>	<1251802154.14675.346.camel@pasglop>
+	<4A9D038F.90605@somanetworks.com>
+In-Reply-To: <4A9D038F.90605@somanetworks.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Tom Burns <tburns@datacast.com>, Andrea Zypchen <azypchen@intldata.ca>,
-	linuxppc-dev@lists.ozlabs.org, azilkie@datacast.com
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,101 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In our case, we were suffering coherency issues on an 8260 when using 
-DMA with PCI. Setting the 'M' bit cured all of our DMA coherency issues.
-
-There is a comment in "pgtable-ppc32.h" on 2.6.29.6 that says:
-"We always set _PAGE_COHERENT when SMP is enabled *or* the processor 
-might need it for DMA coherency". Freescale had also suggested setting 
-the 'M' bit when we submitted a support request.
-
-I've no idea how this bit affects other PowerPC chips. Looking briefly 
-through some of the header files, it looks as if the 'M' bit should not 
-be set for 44x, so the issue is probably not the same as the one I had.
-
-Cheers,
-Chris
-
-Wrobel Heinz-R39252 wrote:
-> Hi,
->
-> This doesn't seem right. If we are talking about a single CPU core chip,
-> i.e., just one data cache, then setting M is typically a) useless and
-> could even b) cause a performance penalty depending on a chip's
-> implementation.
-> The M bit is required if *other* cores with caches need to see changes
-> for coherency of their caches. You wouldn't set it for one core only
-> because your own core knows about its own cache.
-> The possible performance penalty could happen because you need some way
-> to tell the others that they better intercept a transaction. And that
-> could, depending on the chip, by a clock extra or so per transaction.
-> Now, in theory, a DMA engine could have caches, read from cache content
-> first, and could snoop the bus on global transactions like another core,
-> but I have never heard of such a beast. 
->
-> Hope this helps,
->
-> Heinz
->
-> -----Original Message-----
-> From: linuxppc-dev-bounces+heinz.wrobel=freescale.com@lists.ozlabs.org
-> [mailto:linuxppc-dev-bounces+heinz.wrobel=freescale.com@lists.ozlabs.org
-> ] On Behalf Of Chris Pringle
-> Sent: Donnerstag, 3. September 2009 10:05
-> To: azilkie@datacast.com
-> Cc: Tom Burns; Andrea Zypchen; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: AW: PowerPC PCI DMA issues (prefetch/coherency?)
->
-> Hi Adam,
->
-> If you have a look in include/asm-ppc/pgtable.h for the following
-> section:
-> #ifdef CONFIG_44x
-> #define _PAGE_BASE    (_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_GUARDED)
-> #else
-> #define _PAGE_BASE    (_PAGE_PRESENT | _PAGE_ACCESSED)
-> #endif
->
-> Try adding _PAGE_COHERENT to the appropriate line above and see if that
-> fixes your issue - this causes the 'M' bit to be set on the page which
-> sure enforce cache coherency. If it doesn't, you'll need to check the
-> 'M' bit isn't being masked out in head_44x.S (it was originally masked
-> out on arch/powerpc, but was fixed in later kernels when the cache
-> coherency issues with non-SMP systems were resolved).
->
-> The patch I had fixed two problems on 2.6.26 for 'powerpc':
-> 1) It stopped the 'M' bit being masked out (head_32.S)
-> 2) It set the cache coherency ('M' bit) flag on each page table entry
-> (pgtable-ppc32.h)
->
-> Hope this helps!
->
-> Cheers,
-> Chris
->
-> Adam Zilkie wrote:
->   
->> Hi Chris,
+Benjamin Gamsa wrote:
+> Benjamin Herrenschmidt wrote:
+>> On Mon, 2009-08-31 at 23:57 -0400, Benjamin Gamsa wrote:
+>>> Sean MacLennan wrote:
+>>>> On Mon, 31 Aug 2009 22:20:00 -0400
+>>>> Benjamin Gamsa <ben@somanetworks.com> wrote:
+>>>>
+>>>>> For what it's worth, the problem occurs even when ntp is not even
+>>>>> started.
+>>>> This is grasping, but could it have anything to do with the jiffies
+>>>> wrapping near startup?
+>>>>
+>>> I don't know how to test it, but I don't think so, since there are 
+>>> multiple of these glitches over an extended period of time.
 >>
->> I am having a problem similar to what you described in this
->>     
-> discussion.
->   
->> We are using the ppc arch with 2.6.24 with CONFIG_SEQUOIA with 
->> compiles arch/ppc/kernel/head_44x.c (quite different from 
->> /arch/powerpc/kernel/head_32.S). I would like to apply your 
->> backporting patch to this architecture. Any help would be appreciated.
+>> I'm not familiar with all the FSL processor variants, but is this
+>> an UP or an SMP platform ? In the later case, are all the core timebases
+>> properly synchronized ?
 >>
->> Regards,
->> Adam
->>
->>   
->>     
->
->
->   
-____________________________
+> 
+> This a UP with a single e500 core.
+> 
 
-Miranda Technologies Limited
-Registered in England and Wales CN 02017053
-Registered Office: James House, Mere Park, Dedmere Road, Marlow, Bucks, SL7 1FJ
+I take it from the lack of follow-ups that no one has any good ideas as 
+to what might be going wrong?
+
+Since the problem seems to be confined to situations where the date is 
+around the epoch, I guess I'll just work-around the problem by setting 
+the date to a more recent date on startup.
+
+-- 
+Ben Gamsa       ben@somanetworks.com
+SOMA Networks   312 Adelaide St. W. Suite 600 Toronto, Ontario, M5V1R2
