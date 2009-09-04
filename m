@@ -1,28 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <xcarandiru@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DE505B7099
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D8E0EB7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  5 Sep 2009 02:53:50 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 70557DDD04
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Sep 2009 02:53:50 +1000 (EST)
-Date: Fri, 4 Sep 2009 20:53:48 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH RFC 1/2] Makefile: Never use -fno-omit-frame-pointer
-Message-ID: <20090904165348.GA1287@oksana.dev.rtsoft.ru>
-References: <20090616201630.GA4971@oksana.dev.rtsoft.ru>
-	<20090714133716.GC28970@oksana.dev.rtsoft.ru>
-	<20090718120145.GB31007@elte.hu>
+	Sat,  5 Sep 2009 05:01:09 +1000 (EST)
+Received: from mail-yw0-f190.google.com (mail-yw0-f190.google.com
+	[209.85.211.190]) by ozlabs.org (Postfix) with ESMTP id 324B0DDD01
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Sep 2009 05:01:07 +1000 (EST)
+Received: by ywh28 with SMTP id 28so1659552ywh.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 04 Sep 2009 12:01:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090718120145.GB31007@elte.hu>
-Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+In-Reply-To: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
+References: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
+Date: Fri, 4 Sep 2009 16:01:05 -0300
+Message-ID: <d970ff420909041201m343dafdfta0e55df8b5c01f60@mail.gmail.com>
+Subject: MPC85xx External/Internal Interrupts
+From: Alemao <xcarandiru@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,45 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jul 18, 2009 at 02:01:45PM +0200, Ingo Molnar wrote:
-> 
-> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > On Wed, Jun 17, 2009 at 12:16:30AM +0400, Anton Vorontsov wrote:
-> > > According to Segher Boessenkool and GCC manual, -fomit-frame-pointer
-> > > is only the default when optimising on archs/ABIs where it doesn't
-> > > hinder debugging and -pg. So, we do not get it by default on x86,
-> > > not at any optimisation level.
-> > > 
-> > > On the other hand, *using* -fno-omit-frame-pointer causes gcc to
-> > > produce buggy code on PowerPC targets.
-> > > 
-> > > If Segher and GCC manual are right, this patch should be a no-op
-> > > for all arches except PowerPC, where the patch fixes gcc issues.
-> > > 
-> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > ---
-> > > 
-> > > See this thread for more discussion:
-> > > http://osdir.com/ml/linux-kernel/2009-05/msg01754.html
-> > > 
-> > > p.s.
-> > > Obviously, I didn't test this patch on anything else but PPC32. ;-)
-> > > 
-> > > Segher, do you know if all GCC versions that we support for
-> > > building Linux are behaving the way that GCC manual describe?
-> > 
-> > No news is good news... Ingo, can we merge this into -tip for 
-> > testing?
-> 
-> Changes to the top level Makefile should really go via Sam's kbuild 
-> tree.
+Hi all,
 
-Sam, any thoughts about these patches?
+In all MPC85xx DTS files I have seen this interrupt configuration for
+TSEC1:
 
-Thanks!
+interrupts = <29 2 30 2 34 2>;
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+29 - TSEC1 interrupt transmit
+30 - TSEC1 interrupt receive
+34 - TSEC1 interrupt error
+
+
+But in MPC8555RM, chapter 10.1.5.2 the numbers are these:
+
+13 - TSEC1 interrupt transmit
+14 - TSEC1 interrupt receive
+18 - TSEC1 interrupt error
+
+
+Im a little bit confused about this internal interrupts, how can I get
+this numbers? TSEC1 is working normally.
+
+
+My real problem is that my driver is trying to request the external
+interrupt IRQ0, and I dont know what number use in INTR_NUM:
+
+request_irq(INTR_NUM, , , , )
+
+
+Im using linux-2.6.26
+
+Cheers,
+
+--
+Alemao
