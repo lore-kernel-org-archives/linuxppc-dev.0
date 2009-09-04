@@ -1,22 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2349CB7334
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id C4535B708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Sep 2009 08:45:05 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Fix i8259 interrupt driver kernel crash on ML510
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20090903155208.18009.73841.stgit@localhost.localdomain>
-References: <20090903155208.18009.73841.stgit@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 04 Sep 2009 08:44:19 +1000
-Message-Id: <1252017859.15089.44.camel@pasglop>
-Mime-Version: 1.0
-Cc: torvalds@linux-foundation.org,
-	Roderick Colenbrander <thunderbird2k@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+	Fri,  4 Sep 2009 17:14:56 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n847El8x021515
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2009 17:14:47 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n847EnZB1061080
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2009 17:14:51 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n847Emvf017654
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2009 17:14:48 +1000
+Date: Fri, 4 Sep 2009 17:14:45 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: [0/3] Sanitize pagetable handling for hugepages
+Message-ID: <20090904071445.GD20631@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-09-03 at 09:57 -0600, Grant Likely wrote:
-> From: Roderick Colenbrander <thunderbird2k@gmail.com>
-> 
-> This patch fixes a null pointer exception caused by removal of
-> 'ack()' for level interrupts in the Xilinx interrupt driver.  A recent
-> change to the xilinx interrupt controller removed the ack hook for
-> level irqs.
-> 
-> Signed-off-by: Roderick Colenbrander <thunderbird2k@gmail.com>
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
+Currently, ordinary pages use one pagetable layout, and each different
+hugepage size uses a slightly different variant layout.  A number of
+places which need to walk the pagetable must first check the slice map
+to see what the pagetable layout then handle the various different
+forms.  New hardware, like Book3E is liable to introduce more possible
+variants.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+This patch series, therefore, is designed to simplify the matter by
+limiting knowledge of the pagetable layout to only the allocation
+path.  With this patch, ordinary pages are handled as ever, with a
+fixed 4 (or 3) level tree.  All other variants branch off from some
+layer of that with a specially marked PGD/PUD/PMD pointer which also
+contains enough information to interpret the directories below that
+point.  This means that things walking the pagetables (without
+allocating) don't need to look up the slice map, they can just step
+down the tree in the usual way, branching off to the "non-standard
+layout" path for hugepages, which uses the embdded information to
+interpret the tree from that point on.
 
-My git trees aren't at hand, so Linus feel free to merge that directly.
+This reduces the source size in a number of places, and means that
+newer variants on the pagetable layout to handle new hardware and new
+features will need to alter the existing code in less places.
 
-Cheers,
-Ben.
 
-> 
-> Hi Ben & Linus,
-> 
-> This is a last minute bug fix must go into 2.6.31.  This patch
-> is needed to prevent a kernel panic on Xilinx ml510 boards.
-> 
-> I've also pushed the patch out to my git tree if you'd prefer to pull:
-> 
-> The following changes since commit 326ba5010a5429a5a528b268b36a5900d4ab0eba:
->   Linus Torvalds (1):
->         Linux 2.6.31-rc8
-> 
-> are available in the git repository at:
-> 
->   git://git.secretlab.ca/git/linux-2.6 merge
-> 
-> Roderick Colenbrander (1):
->       powerpc: Fix i8259 interrupt driver kernel crash on ML510
-> 
->  arch/powerpc/sysdev/xilinx_intc.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
-> 
-> 
-> 
-> diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-> index 3ee1fd3..40edad5 100644
-> --- a/arch/powerpc/sysdev/xilinx_intc.c
-> +++ b/arch/powerpc/sysdev/xilinx_intc.c
-> @@ -234,7 +234,6 @@ static void xilinx_i8259_cascade(unsigned int irq, struct irq_desc *desc)
->  		generic_handle_irq(cascade_irq);
->  
->  	/* Let xilinx_intc end the interrupt */
-> -	desc->chip->ack(irq);
->  	desc->chip->unmask(irq);
->  }
->  
+I've used the libhugetlbfs testsuite to test these patches on a
+Power5+ machine, but they could do with some banging.  In particular I
+don't have any suitable hardware to test 16G pages.  So, think of this
+as the first draft of the series.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
