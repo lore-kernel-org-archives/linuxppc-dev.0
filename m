@@ -1,28 +1,24 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <dgibson@bilbo.ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C4535B708B
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 5C726B7B6C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Sep 2009 17:14:56 +1000 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n847El8x021515
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2009 17:14:47 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n847EnZB1061080
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2009 17:14:51 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n847Emvf017654
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2009 17:14:48 +1000
-Date: Fri, 4 Sep 2009 17:14:45 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: [0/3] Sanitize pagetable handling for hugepages
-Message-ID: <20090904071445.GD20631@yookeroo.seuss>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri,  4 Sep 2009 17:16:06 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 38980DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Sep 2009 17:16:06 +1000 (EST)
+To: <linuxppc-dev@ozlabs.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: David Gibson <david@gibson.dropbear.id.au>
+Subject: [1/3] Make hpte_need_flush() correctly mask for multiple page sizes
+In-Reply-To: <20090904071445.GD20631@yookeroo.seuss>
+Message-Id: <20090904071543.1A940B7B66@bilbo.ozlabs.org>
+Date: Fri,  4 Sep 2009 17:15:43 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +28,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, ordinary pages use one pagetable layout, and each different
-hugepage size uses a slightly different variant layout.  A number of
-places which need to walk the pagetable must first check the slice map
-to see what the pagetable layout then handle the various different
-forms.  New hardware, like Book3E is liable to introduce more possible
-variants.
+Currently, hpte_need_flush() only correctly flushes the given address
+for normal pages.  Callers for hugepages are required to mask the
+address themselves.
 
-This patch series, therefore, is designed to simplify the matter by
-limiting knowledge of the pagetable layout to only the allocation
-path.  With this patch, ordinary pages are handled as ever, with a
-fixed 4 (or 3) level tree.  All other variants branch off from some
-layer of that with a specially marked PGD/PUD/PMD pointer which also
-contains enough information to interpret the directories below that
-point.  This means that things walking the pagetables (without
-allocating) don't need to look up the slice map, they can just step
-down the tree in the usual way, branching off to the "non-standard
-layout" path for hugepages, which uses the embdded information to
-interpret the tree from that point on.
+But hpte_nned_flush() already looks up the page sizes for its own
+reasons, so this is a rather silly imposition on the callers.  This
+patch alters it to mask based on the pagesize it has looked up itself,
+and removes the awkward masking code in the hugepage caller.
 
-This reduces the source size in a number of places, and means that
-newer variants on the pagetable layout to handle new hardware and new
-features will need to alter the existing code in less places.
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
 
+---
 
-I've used the libhugetlbfs testsuite to test these patches on a
-Power5+ machine, but they could do with some banging.  In particular I
-don't have any suitable hardware to test 16G pages.  So, think of this
-as the first draft of the series.
+---
+ arch/powerpc/mm/hugetlbpage.c |    6 +-----
+ arch/powerpc/mm/tlb_hash64.c  |    8 +++-----
+ 2 files changed, 4 insertions(+), 10 deletions(-)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Index: working-2.6/arch/powerpc/mm/tlb_hash64.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/tlb_hash64.c	2009-09-04 14:35:30.000000000 +1000
++++ working-2.6/arch/powerpc/mm/tlb_hash64.c	2009-09-04 14:36:12.000000000 +1000
+@@ -53,11 +53,6 @@ void hpte_need_flush(struct mm_struct *m
+ 
+ 	i = batch->index;
+ 
+-	/* We mask the address for the base page size. Huge pages will
+-	 * have applied their own masking already
+-	 */
+-	addr &= PAGE_MASK;
+-
+ 	/* Get page size (maybe move back to caller).
+ 	 *
+ 	 * NOTE: when using special 64K mappings in 4K environment like
+@@ -75,6 +70,9 @@ void hpte_need_flush(struct mm_struct *m
+ 	} else
+ 		psize = pte_pagesize_index(mm, addr, pte);
+ 
++	/* Mask the address for the correct page size */
++	addr &= ~((1UL << mmu_psize_defs[psize].shift) - 1);
++
+ 	/* Build full vaddr */
+ 	if (!is_kernel_addr(addr)) {
+ 		ssize = user_segment_size(addr);
+Index: working-2.6/arch/powerpc/mm/hugetlbpage.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/hugetlbpage.c	2009-09-04 14:35:30.000000000 +1000
++++ working-2.6/arch/powerpc/mm/hugetlbpage.c	2009-09-04 14:36:12.000000000 +1000
+@@ -445,11 +445,7 @@ void set_huge_pte_at(struct mm_struct *m
+ 		 * necessary anymore if we make hpte_need_flush() get the
+ 		 * page size from the slices
+ 		 */
+-		unsigned int psize = get_slice_psize(mm, addr);
+-		unsigned int shift = mmu_psize_to_shift(psize);
+-		unsigned long sz = ((1UL) << shift);
+-		struct hstate *hstate = size_to_hstate(sz);
+-		pte_update(mm, addr & hstate->mask, ptep, ~0UL, 1);
++		pte_update(mm, addr, ptep, ~0UL, 1);
+ 	}
+ 	*ptep = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
+ }
