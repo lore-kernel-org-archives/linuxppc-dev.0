@@ -3,27 +3,25 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A164CB70B3
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DE505B7099
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  5 Sep 2009 02:37:31 +1000 (EST)
+	Sat,  5 Sep 2009 02:53:50 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 326F0DDD01
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Sep 2009 02:37:30 +1000 (EST)
-Date: Fri, 4 Sep 2009 20:37:27 +0400
+	by ozlabs.org (Postfix) with ESMTP id 70557DDD04
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Sep 2009 02:53:50 +1000 (EST)
+Date: Fri, 4 Sep 2009 20:53:48 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 0/8] spi_mpc8xxx: Add support for DMA transfers
-Message-ID: <20090904163727.GA27358@oksana.dev.rtsoft.ru>
-References: <20090818220304.GA23640@oksana.dev.rtsoft.ru>
-	<200908272141.59796.david-b@pacbell.net>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH RFC 1/2] Makefile: Never use -fno-omit-frame-pointer
+Message-ID: <20090904165348.GA1287@oksana.dev.rtsoft.ru>
+References: <20090616201630.GA4971@oksana.dev.rtsoft.ru>
+	<20090714133716.GC28970@oksana.dev.rtsoft.ru>
+	<20090718120145.GB31007@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200908272141.59796.david-b@pacbell.net>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-	David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090718120145.GB31007@elte.hu>
+Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,29 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 27, 2009 at 09:41:59PM -0700, David Brownell wrote:
-> On Tuesday 18 August 2009, Anton Vorontsov wrote:
+On Sat, Jul 18, 2009 at 02:01:45PM +0200, Ingo Molnar wrote:
 > 
-> > - Fix build issues in fsl_qe_udc;
-> > - Some minor cosmetic changes in "Add support for QE DMA mode and
-> >   CPM1/CPM2 chips" patch.
+> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
-> Hmm ... the first four of these are pure PPC stuff and thus
-> not appropriate to send as SPI patches; but the second four
-> depend on them.
+> > On Wed, Jun 17, 2009 at 12:16:30AM +0400, Anton Vorontsov wrote:
+> > > According to Segher Boessenkool and GCC manual, -fomit-frame-pointer
+> > > is only the default when optimising on archs/ABIs where it doesn't
+> > > hinder debugging and -pg. So, we do not get it by default on x86,
+> > > not at any optimisation level.
+> > > 
+> > > On the other hand, *using* -fno-omit-frame-pointer causes gcc to
+> > > produce buggy code on PowerPC targets.
+> > > 
+> > > If Segher and GCC manual are right, this patch should be a no-op
+> > > for all arches except PowerPC, where the patch fixes gcc issues.
+> > > 
+> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > ---
+> > > 
+> > > See this thread for more discussion:
+> > > http://osdir.com/ml/linux-kernel/2009-05/msg01754.html
+> > > 
+> > > p.s.
+> > > Obviously, I didn't test this patch on anything else but PPC32. ;-)
+> > > 
+> > > Segher, do you know if all GCC versions that we support for
+> > > building Linux are behaving the way that GCC manual describe?
+> > 
+> > No news is good news... Ingo, can we merge this into -tip for 
+> > testing?
 > 
-> So I'll just say
-> 
->   Acked-by: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> and ask you to merge via the PPC tree.  (And hope that you
-> verified these are bisectable...)
+> Changes to the top level Makefile should really go via Sam's kbuild 
+> tree.
 
-Thanks David.
+Sam, any thoughts about these patches?
 
-Kumar, can you please merge the SPI part of this patch set?
-
-Thanks,
+Thanks!
 
 -- 
 Anton Vorontsov
