@@ -1,19 +1,25 @@
-Return-Path: <roland.lezuo@chello.at>
-Received: from viefep19-int.chello.at (viefep19-int.chello.at [62.179.121.39])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id D42F8B6EDE
+Return-Path: <xcarandiru@gmail.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 802DBB708B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Sep 2009 20:41:46 +1000 (EST)
-Received: from edge01.upc.biz ([192.168.13.236]) by viefep16-int.chello.at
-	(InterMail vM.7.09.01.00 201-2219-108-20080618) with ESMTP
-	id <20090904103126.IIDT9540.viefep16-int.chello.at@edge01.upc.biz>
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2009 12:31:26 +0200
-Message-ID: <25940478.1252060285938.JavaMail.root@viefep11.chello.at>
-Date: Fri, 4 Sep 2009 12:31:25 +0200
-From: Roland Lezuo <roland.lezuo@chello.at>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
+	Fri,  4 Sep 2009 23:39:08 +1000 (EST)
+Received: from mail-yx0-f187.google.com (mail-yx0-f187.google.com
+	[209.85.210.187]) by ozlabs.org (Postfix) with ESMTP id D9F0CDDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Sep 2009 23:39:06 +1000 (EST)
+Received: by yxe17 with SMTP id 17so2426444yxe.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 04 Sep 2009 06:39:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
+References: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
+Date: Fri, 4 Sep 2009 10:13:32 -0300
+Message-ID: <d970ff420909040613l43e91ff3occ6025168ac20287@mail.gmail.com>
+Subject: Fwd: MPC85xx External/Internal Interrupts
+From: Alemao <xcarandiru@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,39 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following patch is needed to correctly assign the IRQs for the gianfar driver on the MPC8313ERDB-revc boards. ERR and TX are swapped as well as the interrupt lines for the two devices.
+Hi all,
 
-Signed-off-by: Roland Lezuo <roland.lezuo@chello.at>
+In all MPC85xx DTS files I have seen this interrupt configuration for
+TSEC1:
 
----
- arch/powerpc/boot/dts/mpc8313erdb.dts |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+interrupts = <29 2 30 2 34 2>;
 
-diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-index 761faa7..907a445 100644
---- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-@@ -188,7 +188,7 @@
- 			compatible = "gianfar";
- 			reg = <0x24000 0x1000>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
--			interrupts = <37 0x8 36 0x8 35 0x8>;
-+			interrupts = <32 0x8 33 0x8 34 0x8>;
- 			interrupt-parent = <&ipic>;
- 			tbi-handle = < &tbi0 >;
- 			/* Vitesse 7385 isn't on the MDIO bus */
-@@ -223,7 +223,7 @@
- 			reg = <0x25000 0x1000>;
- 			ranges = <0x0 0x25000 0x1000>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
--			interrupts = <34 0x8 33 0x8 32 0x8>;
-+			interrupts = <35 0x8 36 0x8 37 0x8>;
- 			interrupt-parent = <&ipic>;
- 			tbi-handle = < &tbi1 >;
- 			phy-handle = < &phy4 >;
--- 
-1.6.0.4
+29 - TSEC1 interrupt transmit
+30 - TSEC1 interrupt receive
+34 - TSEC1 interrupt error
 
-Regards
-Roland Lezuo
-please CC personally as I'm not subscribed.
+
+But in MPC8555RM, chapter 10.1.5.2 the numbers are these:
+
+13 - TSEC1 interrupt transmit
+14 - TSEC1 interrupt receive
+18 - TSEC1 interrupt error
+
+
+Im a little bit confused about this internal interrupts, how can I get
+this numbers? TSEC1 is working normally.
+
+
+My real problem is that my driver is trying to request the external
+interrupt IRQ0, and I dont know what number use in INTR_NUM:
+
+request_irq(INTR_NUM, , , , )
+
+
+Im using linux-2.6.26
+
+Cheers,
+
+--
+Alemao
