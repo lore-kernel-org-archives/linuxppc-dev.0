@@ -1,23 +1,24 @@
-Return-Path: <d.dusha@gmail.com>
+Return-Path: <tabbott@MIT.EDU>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CF732B7B63
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 13564B7B88
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  7 Sep 2009 10:37:57 +1000 (EST)
-Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
-	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 3075BDDD0B
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Sep 2009 10:37:55 +1000 (EST)
-Received: by yxe8 with SMTP id 8so3001563yxe.17
-	for <linuxppc-dev@ozlabs.org>; Sun, 06 Sep 2009 17:37:54 -0700 (PDT)
-MIME-Version: 1.0
-Date: Mon, 7 Sep 2009 10:06:01 +1000
-Message-ID: <c788c1220909061706i3c1c2c52rc1284e0ad416cb7@mail.gmail.com>
-Subject: [PATCH] mpc512x: Reset module
-From: Damien Dusha <d.dusha@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/mixed; boundary=0016e646a3267fa8630472f19dd6
+	Mon,  7 Sep 2009 13:15:00 +1000 (EST)
+Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
+	[18.7.7.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 80377DDD01
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Sep 2009 13:14:59 +1000 (EST)
+From: Tim Abbott <tabbott@ksplice.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] powerpc: Cleanup linker script using new linker script macros.
+Date: Sun,  6 Sep 2009 23:09:01 -0400
+Message-Id: <1252292941-12903-1-git-send-email-tabbott@ksplice.com>
+Cc: linuxppc-dev@ozlabs.org, Tim Abbott <tabbott@ksplice.com>,
+	Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,64 +28,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e646a3267fa8630472f19dd6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/powerpc/kernel/vmlinux.lds.S |   69 ++++++++-----------------------------
+ 1 files changed, 15 insertions(+), 54 deletions(-)
 
-Dear all,
-
-I have written a small patch to get the software reset working on the
-mpc5121.=A0 It is similar to the reset driver found in
-arch/powerpc/platforms/83xx/misc.c except it has been modified to look
-for the reset node in the device tree before writing to the reset
-module.
-
-Comments are welcome.  It's my first patch to the mailing list, so
-I'll apologise in advance for any problems with the submission
-procedure.
-
-Damien.
-
---0016e646a3267fa8630472f19dd6
-Content-Type: text/x-patch; charset=US-ASCII; name="mpc512x_restart.patch"
-Content-Disposition: attachment; filename="mpc512x_restart.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fzag90wq0
-
-ZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvNTEyeC9tcGM1MTIxX2Fkcy5jIGIv
-YXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy81MTJ4L21wYzUxMjFfYWRzLmMKaW5kZXggYTg5NzZiNC4u
-MTZjYTI1MCAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy81MTJ4L21wYzUxMjFf
-YWRzLmMKKysrIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy81MTJ4L21wYzUxMjFfYWRzLmMKQEAg
-LTcwLDQgKzcwLDUgQEAgZGVmaW5lX21hY2hpbmUobXBjNTEyMV9hZHMpIHsKIAkuaW5pdF9JUlEJ
-CT0gbXBjNTEyMV9hZHNfaW5pdF9JUlEsCiAJLmdldF9pcnEJCT0gaXBpY19nZXRfaXJxLAogCS5j
-YWxpYnJhdGVfZGVjcgkJPSBnZW5lcmljX2NhbGlicmF0ZV9kZWNyLAorICAgIC5yZXN0YXJ0ICAg
-ICAgICA9IG1wYzUxMnhfcmVzdGFydCwKIH07CmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxh
-dGZvcm1zLzUxMngvbXBjNTEyeC5oIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy81MTJ4L21wYzUx
-MnguaAppbmRleCBmNGRiOGE3Li5kNzdmMGFiIDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxh
-dGZvcm1zLzUxMngvbXBjNTEyeC5oCisrKyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvNTEyeC9t
-cGM1MTJ4LmgKQEAgLTE0LDUgKzE0LDYgQEAKIGV4dGVybiB1bnNpZ25lZCBsb25nIG1wYzUxMnhf
-ZmluZF9pcHNfZnJlcShzdHJ1Y3QgZGV2aWNlX25vZGUgKm5vZGUpOwogZXh0ZXJuIHZvaWQgX19p
-bml0IG1wYzUxMnhfaW5pdF9JUlEodm9pZCk7CiBleHRlcm4gdm9pZCBfX2luaXQgbXBjNTEyeF9p
-bml0X2kyYyh2b2lkKTsKK2V4dGVybiB2b2lkIG1wYzUxMnhfcmVzdGFydChjaGFyICpjbWQpOwog
-dm9pZCBfX2luaXQgbXBjNTEyeF9kZWNsYXJlX29mX3BsYXRmb3JtX2RldmljZXModm9pZCk7CiAj
-ZW5kaWYJCQkJLyogX19NUEM1MTJYX0hfXyAqLwpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL3Bs
-YXRmb3Jtcy81MTJ4L21wYzUxMnhfc2hhcmVkLmMgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzUx
-MngvbXBjNTEyeF9zaGFyZWQuYwppbmRleCAxMzVmZDZiLi5kZWRkYWZjIDEwMDY0NAotLS0gYS9h
-cmNoL3Bvd2VycGMvcGxhdGZvcm1zLzUxMngvbXBjNTEyeF9zaGFyZWQuYworKysgYi9hcmNoL3Bv
-d2VycGMvcGxhdGZvcm1zLzUxMngvbXBjNTEyeF9zaGFyZWQuYwpAQCAtMjIsNiArMjIsNyBAQAog
-I2luY2x1ZGUgPGFzbS9wcm9tLmg+CiAjaW5jbHVkZSA8YXNtL3RpbWUuaD4KIAorI2luY2x1ZGUg
-PGFzbS9tcGM1MTJ4Lmg+CiAjaW5jbHVkZSAibXBjNTEyeC5oIgogCiB1bnNpZ25lZCBsb25nCkBA
-IC04OSw2ICs5MCwzMyBAQCB2b2lkIF9faW5pdCBtcGM1MTJ4X2luaXRfaTJjKHZvaWQpCiAJfQog
-fQogCit2b2lkIG1wYzUxMnhfcmVzdGFydChjaGFyICpjbWQpCit7CisgICAgc3RydWN0IGRldmlj
-ZV9ub2RlICpucDsKKyAgICBzdHJ1Y3QgbXBjNTEyeF9yZXNldF9tb2R1bGUgKnJtOworCisgICAg
-bG9jYWxfaXJxX2Rpc2FibGUoKTsKKworCW5wID0gb2ZfZmluZF9jb21wYXRpYmxlX25vZGUoTlVM
-TCwgTlVMTCwgImZzbCxtcGM1MTIxLXJlc2V0Iik7CisKKwlpZiAobnApIHsKKworICAgICAgICBy
-bSA9IG9mX2lvbWFwKG5wLCAwKTsKKwkJaWYgKHJtKSB7CisKKyAgICAgICAgICAgIC8qIEVuYWJs
-ZSBzb2Z0d2FyZSByZXNldCAiUlNURSIgKGluIGhleCkgKi8KKyAgICAgICAgICAgIG91dF9iZTMy
-KCAmKHJtLT5ycHIpICwgMHg1MjUzNTQ0NSk7CisKKyAgICAgICAgICAgIC8qIFNldCB0aGUgc29m
-dHdhcmUgaGFyZCByZXNldCAqLworICAgICAgICAgICAgb3V0X2JlMzIoICYocm0tPnJjciksIDB4
-Mik7CisgICAgICAgIH0KKwl9CisKKyAgICBwcmludGsgKEtFUk5fRU1FUkcgIkVycm9yOiBVbmFi
-bGUgdG8gbWFwIHJlc2V0IG1vZHVsZSwgc3Bpbm5pbmcgZm9yZXZlciFcbiIpOworICAgIGZvcig7
-Oyk7Cit9CisKKwogLyoKICAqIE5vZGVzIHRvIGRvIGJ1cyBwcm9iZSBvbiwgc29jIGFuZCBsb2Nh
-bGJ1cwogICovCg==
---0016e646a3267fa8630472f19dd6--
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 8ef8a14..c5e176c 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -6,6 +6,7 @@
+ #include <asm/page.h>
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/cache.h>
++#include <asm/thread_info.h>
+ 
+ ENTRY(_stext)
+ 
+@@ -77,12 +78,7 @@ SECTIONS
+ 	/* Read-only data */
+ 	RODATA
+ 
+-	/* Exception & bug tables */
+-	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+-		__start___ex_table = .;
+-		*(__ex_table)
+-		__stop___ex_table = .;
+-	}
++	EXCEPTION_TABLE(0)
+ 
+ 	NOTES :kernel :notes
+ 
+@@ -99,12 +95,7 @@ SECTIONS
+  */
+ 	. = ALIGN(PAGE_SIZE);
+ 	__init_begin = .;
+-
+-	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+-		_sinittext = .;
+-		INIT_TEXT
+-		_einittext = .;
+-	} :kernel
++	INIT_TEXT_SECTION(PAGE_SIZE) :kernel
+ 
+ 	/* .exit.text is discarded at runtime, not link time,
+ 	 * to deal with references from __bug_table
+@@ -128,23 +119,16 @@ SECTIONS
+ #endif
+ 	}
+ 
+-	. = ALIGN(16);
+ 	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+-		__setup_start = .;
+-		*(.init.setup)
+-		__setup_end = .;
++		INIT_SETUP(16)
+ 	}
+ 
+ 	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+-		__initcall_start = .;
+-		INITCALLS
+-		__initcall_end = .;
+-		}
++		INIT_CALLS
++	}
+ 
+ 	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+-		__con_initcall_start = .;
+-		*(.con_initcall.init)
+-		__con_initcall_end = .;
++		CON_INITCALL
+ 	}
+ 
+ 	SECURITY_INIT
+@@ -175,14 +159,10 @@ SECTIONS
+ 		__stop___fw_ftr_fixup = .;
+ 	}
+ #endif
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	. = ALIGN(PAGE_SIZE);
+ 	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+-		__initramfs_start = .;
+-		*(.init.ramfs)
+-		__initramfs_end = .;
++		INIT_RAM_FS
+ 	}
+-#endif
++
+ 	PERCPU(PAGE_SIZE)
+ 
+ 	. = ALIGN(8);
+@@ -250,50 +230,31 @@ SECTIONS
+ 	PROVIDE32 (edata = .);
+ 
+ 	/* The initial task and kernel stack */
+-#ifdef CONFIG_PPC32
+-	. = ALIGN(8192);
+-#else
+-	. = ALIGN(16384);
+-#endif
+ 	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+-		*(.data.init_task)
++		INIT_TASK_DATA(THREAD_SIZE)
+ 	}
+ 
+-	. = ALIGN(PAGE_SIZE);
+ 	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+-		*(.data.page_aligned)
++		PAGE_ALIGNED_DATA(PAGE_SIZE)
+ 	}
+ 
+-	. = ALIGN(L1_CACHE_BYTES);
+ 	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
+-		*(.data.cacheline_aligned)
++		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
+ 	}
+ 
+-	. = ALIGN(L1_CACHE_BYTES);
+ 	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
+-		*(.data.read_mostly)
++		READ_MOSTLY_DATA(L1_CACHE_BYTES)
+ 	}
+ 
+-	. = ALIGN(PAGE_SIZE);
+ 	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
+-		__nosave_begin = .;
+-		*(.data.nosave)
+-		. = ALIGN(PAGE_SIZE);
+-		__nosave_end = .;
++		NOSAVE_DATA
+ 	}
+ 
+ /*
+  * And finally the bss
+  */
+ 
+-	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+-		__bss_start = .;
+-		*(.sbss) *(.scommon)
+-		*(.dynbss)
+-		*(.bss)
+-		*(COMMON)
+-		__bss_stop = .;
+-	}
++	BSS_SECTION(0, 0, 0)
+ 
+ 	. = ALIGN(PAGE_SIZE);
+ 	_end = . ;
+-- 
+1.6.3.3
