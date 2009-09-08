@@ -1,34 +1,18 @@
-Return-Path: <B22598@freescale.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 898A3B7087
+Return-Path: <upatro@implantaire.com>
+Received: from smtp102.biz.mail.in2.yahoo.com (smtp102.biz.mail.in2.yahoo.com
+	[203.104.17.250])
+	by bilbo.ozlabs.org (Postfix) with SMTP id 61C4BB7099
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Sep 2009 15:48:07 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1E58FDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Sep 2009 15:48:06 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n885m2KJ008273
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Sep 2009 22:48:03 -0700 (MST)
-Received: from zmy16exm21.fsl.freescale.net (zmy16exm21.ap.freescale.net
-	[10.211.3.25])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n885nQCJ004146
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Sep 2009 00:49:27 -0500 (CDT)
+	Tue,  8 Sep 2009 20:52:49 +1000 (EST)
+From: "Uma Kanta Patro" <upatro@implantaire.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: Queries regarding I2C and GPIO driver for Freescale MPC5121e in Linux
+	2.6.24 of BSP: MPC512xADS_20090603-ltib.iso
+Date: Tue, 8 Sep 2009 16:25:30 +0530
+Message-ID: <!&!AAAAAAAAAAAYAAAAAAAAACk7Zq0ADiBFlLw+tPrMt1bCgAAAEAAAAMhVxXG9wghAjqGQWiEYvY8BAAAAAA==@implantaire.com>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CA3047.ECE8C01B"
-Subject: Question about e300 core decrementer interrupt
-Date: Tue, 8 Sep 2009 13:48:00 +0800
-Message-ID: <FF7429C6AD6EFB489C0A5A2021CDFEFA7C30E6@zmy16exm21.fsl.freescale.net>
-From: "Li Tao-B22598" <B22598@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
+	boundary="----=_NextPart_000_0001_01CA30A0.FBDF81B0"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,81 +22,237 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+This is a multipart message in MIME format.
 
-------_=_NextPart_001_01CA3047.ECE8C01B
+------=_NextPart_000_0001_01CA30A0.FBDF81B0
 Content-Type: text/plain;
-	charset="GB2312"
-Content-Transfer-Encoding: quoted-printable
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Dear all,
+Hi all,
 
-I have a problem in MPC5121 sleep mode. As you know MPC5121 use e300c4
-core. When I make the e300c4 core into sleep mode, it will return to
-full power mode when the=A1=B0decrementer interrupt=A1=B1 occurred.
+                I am a newbie to the powerpc linux kernel, but I have worked
+on some drivers in arm architecture. I am finding powerpc architecture to be
+fully different than that.
 
-But in the e300 core reference manual said that the =A1=B0decrementer
-interrupt=A1=B1have no effect when e300 core in sleep mode, because the =
-time
-base and decrementer are disabled while the core is in sleep mode.
-Can anybody explain about this procedure ?=20
+I am working on Freescale MPC5121e with the BSP MPC512xADS_20090603-ltib.iso
+running in it on the ADS512101 Rev4.1 development kit.
 
-Another question is how can I disable the=A1=B0decrementer =
-interrupt=A1=B1without
-disable int,smi, or mcpinternal signals.
+Can anyone help me in finding some documentation for understanding and
+working on the powerpc kernel. Any links to the powerpc forums will also be
+appreciable.
 
-Any help or suggestion would be very helpful.
-Thank you for your time.
+ 
 
---=20
-Best Regards,
- =20
-Li Tao  =20
+ 
 
-------_=_NextPart_001_01CA3047.ECE8C01B
+-> Currently I am going to develop an I2C client driver for one slave
+microcontroller of our project.
+
+I have some knowledge in the I2C client driver making(legacy style and new
+style).
+
+ 
+
+I made a basic I2C client driver to probe for the chip address and for
+testing I gave it the chip address 0x68(I2C chip address of the M4T162 RTC,
+present on the board).
+
+But while inserting my driver I am getting failure message for the detection
+of my chip.
+
+ 
+
+So I would like to know what other formalities am I lagging in my I2C chip
+driver.
+
+ 
+
+-> Also I am in a need for the GPIO driver for my controller ot get
+interrupt on ht estate change. When I searched in the kernel code I could
+not find any procedure to do that, also I could not find out the procedure
+to access either any GPIO pin macros or any register to remap with
+ioremap(). So please guide me in finding the proper way to do the GPIO
+accessing and interrupt registration.
+
+Will the ioremap() work on powerpc arch? If yes where can I find the memory
+mapping(register definitions) to use for my GPIO driver making.
+
+ 
+
+Thanks for patience in reading my queries.
+
+Any help is appreciable.
+
+ 
+
+Thanks & Regards,
+
+Uma
+
+ 
+
+
+------=_NextPart_000_0001_01CA30A0.FBDF81B0
 Content-Type: text/html;
-	charset="GB2312"
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dgb2312">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7654.12">
-<TITLE>Question about e300 core decrementer interrupt</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-<P><FONT SIZE=3D2>Dear all,<BR>
-<BR>
-I have a problem in MPC5121 sleep mode. As you know MPC5121 use =
-e300c4<BR>
-core. When I make the e300c4 core into sleep mode, it will return to<BR>
-full power mode when the=A1=B0decrementer interrupt=A1=B1 occurred.<BR>
-<BR>
-But in the e300 core reference manual said that the =
-=A1=B0decrementer<BR>
-interrupt=A1=B1have no effect when e300 core in sleep mode, because the =
-time<BR>
-base and decrementer are disabled while the core is in sleep mode.<BR>
-Can anybody explain about this procedure ?<BR>
-<BR>
-Another question is how can I disable the=A1=B0decrementer =
-interrupt=A1=B1without<BR>
-disable int,smi, or mcpinternal signals.<BR>
-<BR>
-Any help or suggestion would be very helpful.<BR>
-Thank you for your time.<BR>
-<BR>
---<BR>
-Best Regards,<BR>
-&nbsp;<BR>
-Li Tao&nbsp;&nbsp; </FONT>
-</P>
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Batang;
+	panose-1:2 3 6 0 0 1 1 1 1 1;}
+@font-face
+	{font-family:Batang;
+	panose-1:2 3 6 0 0 1 1 1 1 1;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:"\@Batang";
+	panose-1:2 3 6 0 0 1 1 1 1 1;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
 
-</BODY>
-</HTML>
-------_=_NextPart_001_01CA3047.ECE8C01B--
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal>Hi all,<o:p></o:p></p>
+
+<p =
+class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I
+am a newbie to the powerpc linux kernel, but I have worked on some =
+drivers in
+arm architecture. I am finding powerpc architecture to be fully =
+different than
+that.<o:p></o:p></p>
+
+<p class=3DMsoNormal>I am working on Freescale MPC5121e with the BSP =
+MPC512xADS_20090603-ltib.iso
+running in it on the ADS512101 Rev4.1 development kit.<o:p></o:p></p>
+
+<p class=3DMsoNormal>Can anyone help me in finding some documentation =
+for
+understanding and working on the powerpc kernel. Any links to the =
+powerpc
+forums will also be appreciable.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>-&gt; Currently I am going to develop an I2C client =
+driver
+for one slave microcontroller of our project.<o:p></o:p></p>
+
+<p class=3DMsoNormal>I have some knowledge in the I2C client driver =
+making(legacy
+style and new style).<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>I made a basic I2C client driver to probe for the =
+chip
+address and for testing I gave it the chip address 0x68(I2C chip address =
+of the
+M4T162 RTC, present on the board).<o:p></o:p></p>
+
+<p class=3DMsoNormal>But while inserting my driver I am getting failure =
+message
+for the detection of my chip.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>So I would like to know what other formalities am I =
+lagging
+in my I2C chip driver.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>-&gt; Also I am in a need for the GPIO driver for =
+my
+controller ot get interrupt on ht estate change. When I searched in the =
+kernel
+code I could not find any procedure to do that, also I could not find =
+out the procedure
+to access either any GPIO pin macros or any register to remap with =
+ioremap().
+So please guide me in finding the proper way to do the GPIO accessing =
+and interrupt
+registration.<o:p></o:p></p>
+
+<p class=3DMsoNormal>Will the ioremap() work on powerpc arch? If yes =
+where can I find
+the memory mapping(register definitions) to use for my GPIO driver =
+making.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>Thanks for patience in reading my =
+queries.<o:p></o:p></p>
+
+<p class=3DMsoNormal>Any help is appreciable.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal><span style=3D'font-size:12.0pt'>Thanks &amp; =
+Regards,<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span style=3D'font-size:12.0pt'>Uma</span><span
+style=3D'font-size:12.0pt'><o:p></o:p></span></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0001_01CA30A0.FBDF81B0--
