@@ -1,18 +1,25 @@
-Return-Path: <upatro@implantaire.com>
-Received: from smtp102.biz.mail.in2.yahoo.com (smtp102.biz.mail.in2.yahoo.com
-	[203.104.17.250])
-	by bilbo.ozlabs.org (Postfix) with SMTP id 61C4BB7099
+Return-Path: <azilkie@datacast.com>
+Received: from datacast.com (mail.datacast.com [209.87.232.171])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id C336FB7063
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Sep 2009 20:52:49 +1000 (EST)
-From: "Uma Kanta Patro" <upatro@implantaire.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Queries regarding I2C and GPIO driver for Freescale MPC5121e in Linux
-	2.6.24 of BSP: MPC512xADS_20090603-ltib.iso
-Date: Tue, 8 Sep 2009 16:25:30 +0530
-Message-ID: <!&!AAAAAAAAAAAYAAAAAAAAACk7Zq0ADiBFlLw+tPrMt1bCgAAAEAAAAMhVxXG9wghAjqGQWiEYvY8BAAAAAA==@implantaire.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0001_01CA30A0.FBDF81B0"
+	Wed,  9 Sep 2009 04:11:56 +1000 (EST)
+Received: from [192.168.2.131] by datacast.com (MDaemon PRO v9.6.1)
+	with ESMTP id md50001435280.msg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2009 14:09:49 -0400
+Subject: RE: AW: PowerPC PCI DMA issues (prefetch/coherency?)
+From: Adam Zilkie <azilkie@datacast.com>
+To: phazarika@amcc.com
+In-Reply-To: <0CA0A16855646F4FA96D25A158E299D606F60795@SDCEXCHANGE01.ad.amcc.com>
+References: <1251926572.10090.17.camel@Adam>  <4A9F78AF.4010206@oxtel.com>
+	<1251971849.15089.28.camel@pasglop> <1251993890.2548.14.camel@Adam>
+	<0CA0A16855646F4FA96D25A158E299D606F60795@SDCEXCHANGE01.ad.amcc.com>
+Content-Type: text/plain
+Date: Tue, 08 Sep 2009 14:01:13 -0400
+Message-Id: <1252432873.2548.41.camel@Adam>
+Mime-Version: 1.0
+Cc: Andrea Zypchen <azypchen@intldata.ca>, linuxppc-dev@lists.ozlabs.org,
+	Tom Burns <tburns@datacast.com>
+Reply-To: azilkie@datacast.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,237 +29,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
+Hi Prodyut,
 
-------=_NextPart_000_0001_01CA30A0.FBDF81B0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Yes, I am using the 440EPx (same as the sequoia board). 
+Our ideDriver is DMA'ing blocks of 192-byte data over the PCI bus (using
+the Sil0680A PCI-IDE bridge). Most of the DMA's (depending on timing)
+end up being partially corrupted when we try to parse the data in the
+virtual page. We have confirmed the data is good before the PCI-IDE
+bridge. We are creating two 8K pages and map them to physical DMA memory
+using single-entry scatter/gather structs. When a DMA block is
+corrupted, we see a random portion of it (always a multiple of 16byte
+cache lines) is overwritten with old data from the last time the buffer
+was used. 
 
-Hi all,
+Regards,
+Adam
 
-                I am a newbie to the powerpc linux kernel, but I have worked
-on some drivers in arm architecture. I am finding powerpc architecture to be
-fully different than that.
+On Thu, 2009-09-03 at 13:27 -0700, Prodyut Hazarika wrote:
+> Hi Adam,
+> 
+> > Are you sure there is L2 cache on the 440?
+> 
+> It depends on the SoC you are using. SoC like 460EX (Canyonlands board)
+> have L2Cache.
+> It seems you are using a Sequoia board, which has a 440EPx SoC. 440EPx
+> has a 440 cpu core, but no L2Cache.
+> Could you please tell me which SoC you are using?
+> You can also refer to the appropriate dts file to see if there is L2C.
+> For example, in canyonlands.dts (460EX based board), we have the L2C
+> entry.
+>         L2C0: l2c {
+>               ...
+>         }
+> 
+> >I am seeing this problem with our custom IDE driver which is based on 
+> >pretty old code. Our driver uses pci_alloc_consistent() to allocate the
+> 
+> >physical DMA memory and alloc_pages() to allocate a virtual page. It 
+> >then uses pci_map_sg() to map to a scatter/gather buffer. Perhaps I 
+> >should convert these to the DMA API calls as you suggest.
+> 
+> Could you give more details on the consistency problem? It is a good
+> idea to change to the new DMA APIs, but pci_alloc_consistent() should
+> work too
+> 
+> Thanks
+> Prodyut	
+> 
+> On Thu, 2009-09-03 at 19:57 +1000, Benjamin Herrenschmidt wrote:
+> > On Thu, 2009-09-03 at 09:05 +0100, Chris Pringle wrote:
+> > > Hi Adam,
+> > > 
+> > > If you have a look in include/asm-ppc/pgtable.h for the following
+> section:
+> > > #ifdef CONFIG_44x
+> > > #define _PAGE_BASE    (_PAGE_PRESENT | _PAGE_ACCESSED |
+> _PAGE_GUARDED)
+> > > #else
+> > > #define _PAGE_BASE    (_PAGE_PRESENT | _PAGE_ACCESSED)
+> > > #endif
+> > > 
+> > > Try adding _PAGE_COHERENT to the appropriate line above and see if
+> that 
+> > > fixes your issue - this causes the 'M' bit to be set on the page
+> which 
+> > > sure enforce cache coherency. If it doesn't, you'll need to check
+> the 
+> > > 'M' bit isn't being masked out in head_44x.S (it was originally
+> masked 
+> > > out on arch/powerpc, but was fixed in later kernels when the cache 
+> > > coherency issues with non-SMP systems were resolved).
+> > 
+> > I have some doubts about the usefulness of doing that for 4xx. AFAIK,
+> > the 440 core just ignores M.
+> > 
+> > The problem lies probably elsewhere. Maybe the L2 cache coherency
+> isn't
+> > enabled or not working ?
+> > 
+> > The L1 cache on 440 is simply not coherent, so drivers have to make
+> sure
+> > they use the appropriate DMA APIs which will do cache flushing when
+> > needed.
+> > 
+> > Adam, what driver is causing you that sort of problems ?
+> > 
+> > Cheers,
+> > Ben.
+> > 
+> > 
+-- 
+Adam Zilkie
+Software Designer,
+International Datacasting Corp.
 
-I am working on Freescale MPC5121e with the BSP MPC512xADS_20090603-ltib.iso
-running in it on the ADS512101 Rev4.1 development kit.
-
-Can anyone help me in finding some documentation for understanding and
-working on the powerpc kernel. Any links to the powerpc forums will also be
-appreciable.
-
- 
-
- 
-
--> Currently I am going to develop an I2C client driver for one slave
-microcontroller of our project.
-
-I have some knowledge in the I2C client driver making(legacy style and new
-style).
-
- 
-
-I made a basic I2C client driver to probe for the chip address and for
-testing I gave it the chip address 0x68(I2C chip address of the M4T162 RTC,
-present on the board).
-
-But while inserting my driver I am getting failure message for the detection
-of my chip.
-
- 
-
-So I would like to know what other formalities am I lagging in my I2C chip
-driver.
-
- 
-
--> Also I am in a need for the GPIO driver for my controller ot get
-interrupt on ht estate change. When I searched in the kernel code I could
-not find any procedure to do that, also I could not find out the procedure
-to access either any GPIO pin macros or any register to remap with
-ioremap(). So please guide me in finding the proper way to do the GPIO
-accessing and interrupt registration.
-
-Will the ioremap() work on powerpc arch? If yes where can I find the memory
-mapping(register definitions) to use for my GPIO driver making.
-
- 
-
-Thanks for patience in reading my queries.
-
-Any help is appreciable.
-
- 
-
-Thanks & Regards,
-
-Uma
-
- 
-
-
-------=_NextPart_000_0001_01CA30A0.FBDF81B0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Batang;
-	panose-1:2 3 6 0 0 1 1 1 1 1;}
-@font-face
-	{font-family:Batang;
-	panose-1:2 3 6 0 0 1 1 1 1 1;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
-@font-face
-	{font-family:"\@Batang";
-	panose-1:2 3 6 0 0 1 1 1 1 1;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal>Hi all,<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I
-am a newbie to the powerpc linux kernel, but I have worked on some =
-drivers in
-arm architecture. I am finding powerpc architecture to be fully =
-different than
-that.<o:p></o:p></p>
-
-<p class=3DMsoNormal>I am working on Freescale MPC5121e with the BSP =
-MPC512xADS_20090603-ltib.iso
-running in it on the ADS512101 Rev4.1 development kit.<o:p></o:p></p>
-
-<p class=3DMsoNormal>Can anyone help me in finding some documentation =
-for
-understanding and working on the powerpc kernel. Any links to the =
-powerpc
-forums will also be appreciable.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>-&gt; Currently I am going to develop an I2C client =
-driver
-for one slave microcontroller of our project.<o:p></o:p></p>
-
-<p class=3DMsoNormal>I have some knowledge in the I2C client driver =
-making(legacy
-style and new style).<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>I made a basic I2C client driver to probe for the =
-chip
-address and for testing I gave it the chip address 0x68(I2C chip address =
-of the
-M4T162 RTC, present on the board).<o:p></o:p></p>
-
-<p class=3DMsoNormal>But while inserting my driver I am getting failure =
-message
-for the detection of my chip.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>So I would like to know what other formalities am I =
-lagging
-in my I2C chip driver.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>-&gt; Also I am in a need for the GPIO driver for =
-my
-controller ot get interrupt on ht estate change. When I searched in the =
-kernel
-code I could not find any procedure to do that, also I could not find =
-out the procedure
-to access either any GPIO pin macros or any register to remap with =
-ioremap().
-So please guide me in finding the proper way to do the GPIO accessing =
-and interrupt
-registration.<o:p></o:p></p>
-
-<p class=3DMsoNormal>Will the ioremap() work on powerpc arch? If yes =
-where can I find
-the memory mapping(register definitions) to use for my GPIO driver =
-making.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>Thanks for patience in reading my =
-queries.<o:p></o:p></p>
-
-<p class=3DMsoNormal>Any help is appreciable.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal><span style=3D'font-size:12.0pt'>Thanks &amp; =
-Regards,<o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span style=3D'font-size:12.0pt'>Uma</span><span
-style=3D'font-size:12.0pt'><o:p></o:p></span></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0001_01CA30A0.FBDF81B0--
+This message and the documents attached hereto are intended only for the addressee and may contain privileged or confidential information. Any unauthorized disclosure is strictly prohibited. If you have received this message in error, please notify us immediately so that we may correct our internal records. Please then delete the original message. Thank you.
