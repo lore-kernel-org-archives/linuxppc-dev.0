@@ -1,23 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1A86CB7067
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B1FD0B6F34
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Sep 2009 13:39:02 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5073DDDD01
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Sep 2009 13:39:00 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2] powerpc/85xx: Fix SMP compile error and allow NULL for
-	smp_ops
-Date: Tue,  8 Sep 2009 22:38:52 -0500
-Message-Id: <1252467532-22255-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+	Wed,  9 Sep 2009 15:55:40 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n895tW9C001043
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Sep 2009 15:55:32 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n895tbRc1306834
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Sep 2009 15:55:37 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n895taxt017763
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Sep 2009 15:55:36 +1000
+Date: Wed, 9 Sep 2009 15:55:34 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: [0/5] Assorted hugepage cleanups
+Message-ID: <20090909055534.GF7909@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,89 +32,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following commit introduced a compile error since it removed
-the implementation of smp_85xx_basic_setup:
+Currently, ordinary pages use one pagetable layout, and each different
+hugepage size uses a slightly different variant layout.  A number of
+places which need to walk the pagetable must first check the slice map
+to see what the pagetable layout then handle the various different
+forms.  New hardware, like Book3E is liable to introduce more possible
+variants.
 
-commit 77c0a700c1c292edafa11c1e52821ce4636f81b0
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Fri Aug 28 14:25:04 2009 +1000
+This patch series, therefore, is designed to simplify the matter by
+limiting knowledge of the pagetable layout to only the allocation
+path.  With this patch, ordinary pages are handled as ever, with a
+fixed 4 (or 3) level tree.  All other variants branch off from some
+layer of that with a specially marked PGD/PUD/PMD pointer which also
+contains enough information to interpret the directories below that
+point.  This means that things walking the pagetables (without
+allocating) don't need to look up the slice map, they can just step
+down the tree in the usual way, branching off to the "non-standard
+layout" path for hugepages, which uses the embdded information to
+interpret the tree from that point on.
 
-    powerpc: Properly start decrementer on BookE secondary CPUs
+This reduces the source size in a number of places, and means that
+newer variants on the pagetable layout to handle new hardware and new
+features will need to alter the existing code in less places.
 
-Make it so that smp_ops probe() and setup_cpu() can be set to NULL.
+In addition we split out the hash / classic MMU specific code into a
+separate hugetlbpage-hash64.c file.  This will make adding support for
+other MMUs (like 440 and/or Book3E) easier.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-* Removed explicit setting of NULL in structure
+I've used the libhugetlbfs testsuite to test these patches on a
+Power5+ machine, but they could certainly do with more testing. In
+particular, I don't have any suitable hardware to test 16G pages.
 
- arch/powerpc/kernel/smp.c         |   10 +++++++---
- arch/powerpc/platforms/85xx/smp.c |   10 ----------
- 2 files changed, 7 insertions(+), 13 deletions(-)
-
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 96f107c..d387b39 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -269,7 +269,10 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
- 	cpu_callin_map[boot_cpuid] = 1;
- 
- 	if (smp_ops)
--		max_cpus = smp_ops->probe();
-+		if (smp_ops->probe)
-+			max_cpus = smp_ops->probe();
-+		else
-+			max_cpus = NR_CPUS;
- 	else
- 		max_cpus = 1;
-  
-@@ -493,7 +496,8 @@ int __devinit start_secondary(void *unused)
- 	preempt_disable();
- 	cpu_callin_map[cpu] = 1;
- 
--	smp_ops->setup_cpu(cpu);
-+	if (smp_ops->setup_cpu)
-+		smp_ops->setup_cpu(cpu);
- 	if (smp_ops->take_timebase)
- 		smp_ops->take_timebase();
- 
-@@ -556,7 +560,7 @@ void __init smp_cpus_done(unsigned int max_cpus)
- 	old_mask = current->cpus_allowed;
- 	set_cpus_allowed(current, cpumask_of_cpu(boot_cpuid));
- 	
--	if (smp_ops)
-+	if (smp_ops && smp_ops->setup_cpu)
- 		smp_ops->setup_cpu(boot_cpuid);
- 
- 	set_cpus_allowed(current, old_mask);
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 94f901d..04160a4 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -88,25 +88,15 @@ struct smp_ops_t smp_85xx_ops = {
- 	.kick_cpu = smp_85xx_kick_cpu,
- };
- 
--static int __init smp_dummy_probe(void)
--{
--	return NR_CPUS;
--}
--
- void __init mpc85xx_smp_init(void)
- {
- 	struct device_node *np;
- 
--	smp_85xx_ops.message_pass = NULL;
--
- 	np = of_find_node_by_type(NULL, "open-pic");
- 	if (np) {
- 		smp_85xx_ops.probe = smp_mpic_probe;
- 		smp_85xx_ops.setup_cpu = smp_85xx_setup_cpu;
- 		smp_85xx_ops.message_pass = smp_mpic_message_pass;
--	} else {
--		smp_85xx_ops.probe = smp_dummy_probe;
--		smp_85xx_ops.setup_cpu = smp_85xx_basic_setup;
- 	}
- 
- 	if (cpu_has_feature(CPU_FTR_DBELL))
 -- 
-1.6.0.6
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
