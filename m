@@ -1,25 +1,22 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id C1B34B6F1E
+Return-Path: <upatro@implantaire.com>
+Received: from smtp105.biz.mail.in2.yahoo.com (smtp105.biz.mail.in2.yahoo.com
+	[203.104.19.14])
+	by bilbo.ozlabs.org (Postfix) with SMTP id BAA1BB6F31
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Sep 2009 21:38:04 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A6304DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Sep 2009 21:38:04 +1000 (EST)
+	Wed,  9 Sep 2009 23:10:21 +1000 (EST)
+From: "Uma Kanta Patro" <upatro@implantaire.com>
+To: "'Chen Hongjun-R66092'" <hong-jun.chen@freescale.com>,
+	<linuxppc-dev@lists.ozlabs.org>
+References: <!&!AAAAAAAAAAAYAAAAAAAAACk7Zq0ADiBFlLw+tPrMt1bCgAAAEAAAAMhVxXG9wghAjqGQWiEYvY8BAAAAAA==@implantaire.com>
+	<3A45394FD742FA419B760BB8D398F9ED64C5B2@zch01exm26.fsl.freescale.net>
+In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED64C5B2@zch01exm26.fsl.freescale.net>
+Subject: RE: Queries regarding I2C and GPIO driver for Freescale MPC5121e in
+	Linux2.6.24 of BSP: MPC512xADS_20090603-ltib.iso
+Date: Wed, 9 Sep 2009 18:43:03 +0530
+Message-ID: <!&!AAAAAAAAAAAYAAAAAAAAACk7Zq0ADiBFlLw+tPrMt1bCgAAAEAAAAFtTs5+/RRJLtaFyAuWiLDoBAAAAAA==@implantaire.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <19111.37067.783017.427206@cargo.ozlabs.ibm.com>
-Date: Wed, 9 Sep 2009 21:26:03 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: Fix bug where perf_counters breaks oprofile
-Cc: linuxppc-dev@ozlabs.org, Maynard Johnson <mpjohn@us.ibm.com>
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0000_01CA317D.5D6D7D10"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,159 +26,599 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently there is a bug where if you use oprofile on a pSeries
-machine, then use perf_counters, then use oprofile again, oprofile
-will not work correctly; it will lose the PMU configuration the next
-time the hypervisor does a partition context switch, and thereafter
-won't count anything.
+This is a multipart message in MIME format.
 
-Maynard Johnson identified the sequence causing the problem:
-- oprofile setup calls ppc_enable_pmcs(), which calls
-  pseries_lpar_enable_pmcs, which tells the hypervisor that we want
-  to use the PMU, and sets the "PMU in use" flag in the lppaca.
-  This flag tells the hypervisor whether it needs to save and restore
-  the PMU config.
-- The perf_counter code sets and clears the "PMU in use" flag directly
-  as it context-switches the PMU between tasks, and leaves it clear
-  when it finishes.
-- oprofile setup, called for a new oprofile run, calls ppc_enable_pmcs,
-  which does nothing because it has already been called.  In particular
-  it doesn't set the "PMU in use" flag.
+------=_NextPart_000_0000_01CA317D.5D6D7D10
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-This fixes the problem by arranging for ppc_enable_pmcs to always set
-the "PMU in use" flag.  It makes the perf_counter code call
-ppc_enable_pmcs also rather than calling the lower-level function
-directly, and removes the setting of the "PMU in use" flag from
-pseries_lpar_enable_pmcs, since that is now done in its caller.
+Hi Chen Hongjun-R66092,
 
-This also removes the declaration of pasemi_enable_pmcs because it
-isn't defined anywhere.
+ 
 
-Reported-by: Maynard Johnson <mpjohn@us.ibm.com>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/include/asm/pmc.h         |   16 ++++++++++++++--
- arch/powerpc/kernel/perf_counter.c     |   13 +++----------
- arch/powerpc/kernel/sysfs.c            |    3 +++
- arch/powerpc/platforms/pseries/setup.c |    4 ----
- 4 files changed, 20 insertions(+), 16 deletions(-)
+Thanks for your response.
 
-diff --git a/arch/powerpc/include/asm/pmc.h b/arch/powerpc/include/asm/pmc.h
-index d6a616a..ccc68b5 100644
---- a/arch/powerpc/include/asm/pmc.h
-+++ b/arch/powerpc/include/asm/pmc.h
-@@ -27,10 +27,22 @@ extern perf_irq_t perf_irq;
+Actually for the GPIO driver I am having some success and it is in progress.
+
+But regarding the I2C chip(client) driver I am running witout any progress.
+
+Actually I followed the existing driver $(LINUX)\drivers\rtc\rtc-m41t80.c
+(for the RTC M41T62 existing on the ADS5121Rev4.1 board).
+
+ I made a legacy style driver with attach_adapter and detach_client
+functions defined.
+
+For testing purpose I geve the chip address as 0x68(address of M41T62
+existing on the board). But when I tried ot insert my driver I get the error
+message as:
+
  
- int reserve_pmc_hardware(perf_irq_t new_perf_irq);
- void release_pmc_hardware(void);
-+void ppc_enable_pmcs(void);
+
+[root@freescale chips]# insmod dis_fpc.ko
+
+[  177.808848] i2c 0-0068: uevent
+
+[  498.528032] In dis_fpc_init
+
+[  498.531851] i2c-core: driver [dis_fpc] registered
+
+[  498.532446] In dis_fpc_attach_adapter
+
+[  498.536827] i2c-adapter i2c-0: found normal entry for adapter 0, addr
+0x55
+
+[  498.537730] i2c-adapter i2c-0: master_xfer[0] W, addr=0x55, len=0
+
+[  498.538533] Doing write 0 bytes to 0x55 - 1 of 1 messages
+
+[  498.539770] I2C: No RXAK
+
+[  498.540970] In dis_fpc_attach_adapter
+
+[  498.554500] i2c-adapter i2c-1: found normal entry for adapter 1, addr
+0x55
+
+[  498.555166] i2c-adapter i2c-1: master_xfer[0] W, addr=0x55, len=0
+
+[  498.555872] Doing write 0 bytes to 0x55 - 1 of 1 messages
+
+[  498.556785] I2C: MAL
+
+[  498.557476] In dis_fpc_attach_adapter
+
+[  498.565733] i2c-adapter i2c-2: found normal entry for adapter 2, addr
+0x55
+
+[  498.566377] i2c-adapter i2c-2: master_xfer[0] W, addr=0x55, len=0
+
+[  498.567082] Doing write 0 bytes to 0x55 - 1 of 1 messages
+
+[  498.568240] I2C: No RXAK
+
  
- #ifdef CONFIG_PPC64
--void power4_enable_pmcs(void);
--void pasemi_enable_pmcs(void);
-+#include <asm/lppaca.h>
-+
-+static inline void ppc_set_pmu_inuse(int inuse)
-+{
-+	get_lppaca()->pmcregs_in_use = inuse;
-+}
-+
-+extern void power4_enable_pmcs(void);
-+
-+#else /* CONFIG_PPC64 */
-+
-+static inline void ppc_set_pmu_inuse(int inuse) { }
-+
- #endif
+
+So can you tell me what other places do I need to change the configurations(
+like i2c_platform_data definition, linking the chip to the specific I2C
+module(0/1/2) with the adapter, configuring the speed of I2C communication
+etc).
+
  
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 70e1f57..ccd6b21 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -62,7 +62,6 @@ static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
- {
- 	return 0;
- }
--static inline void perf_set_pmu_inuse(int inuse) { }
- static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp) { }
- static inline u32 perf_get_misc_flags(struct pt_regs *regs)
- {
-@@ -93,11 +92,6 @@ static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
- 	return 0;
- }
+
+I would like to get any suggestion on making the I2C chip driver inpowerpc
+platform.
+
  
--static inline void perf_set_pmu_inuse(int inuse)
--{
--	get_lppaca()->pmcregs_in_use = inuse;
--}
--
- /*
-  * The user wants a data address recorded.
-  * If we're not doing instruction sampling, give them the SDAR
-@@ -531,8 +525,7 @@ void hw_perf_disable(void)
- 		 * Check if we ever enabled the PMU on this cpu.
- 		 */
- 		if (!cpuhw->pmcs_enabled) {
--			if (ppc_md.enable_pmcs)
--				ppc_md.enable_pmcs();
-+			ppc_enable_pmcs();
- 			cpuhw->pmcs_enabled = 1;
- 		}
+
+Thanks & Regards,
+
+Uma
+
  
-@@ -594,7 +587,7 @@ void hw_perf_enable(void)
- 		mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
- 		mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
- 		if (cpuhw->n_counters == 0)
--			perf_set_pmu_inuse(0);
-+			ppc_set_pmu_inuse(0);
- 		goto out_enable;
- 	}
+
+From: Chen Hongjun-R66092 [mailto:hong-jun.chen@freescale.com] 
+Sent: Wednesday, September 09, 2009 5:39 AM
+To: Uma Kanta Patro; linuxppc-dev@lists.ozlabs.org
+Subject: RE: Queries regarding I2C and GPIO driver for Freescale MPC5121e in
+Linux2.6.24 of BSP: MPC512xADS_20090603-ltib.iso
+
  
-@@ -627,7 +620,7 @@ void hw_perf_enable(void)
- 	 * bit set and set the hardware counters to their initial values.
- 	 * Then unfreeze the counters.
- 	 */
--	perf_set_pmu_inuse(1);
-+	ppc_set_pmu_inuse(1);
- 	mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
- 	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
- 	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index f41aec8..956ab33 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -17,6 +17,7 @@
- #include <asm/prom.h>
- #include <asm/machdep.h>
- #include <asm/smp.h>
-+#include <asm/pmc.h>
+
+One I2C driver has been included in 0603 bsp, you can refer to it.
+
  
- #include "cacheinfo.h"
+
+It has no specific driver for GPIO, but you can find some initializing code
+for GPIO in arch/powerpc/platforms/512x/mpc5125_ads.c. and
+mpc512x_pm_test.c.
+
  
-@@ -123,6 +124,8 @@ static DEFINE_PER_CPU(char, pmcs_enabled);
+
+
+  _____  
+
+
+From: linuxppc-dev-bounces+hong-jun.chen=freescale.com@lists.ozlabs.org
+[mailto:linuxppc-dev-bounces+hong-jun.chen=freescale.com@lists.ozlabs.org]
+On Behalf Of Uma Kanta Patro
+Sent: Tuesday, September 08, 2009 6:56 PM
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Queries regarding I2C and GPIO driver for Freescale MPC5121e in
+Linux2.6.24 of BSP: MPC512xADS_20090603-ltib.iso
+
+Hi all,
+
+                I am a newbie to the powerpc linux kernel, but I have worked
+on some drivers in arm architecture. I am finding powerpc architecture to be
+fully different than that.
+
+I am working on Freescale MPC5121e with the BSP MPC512xADS_20090603-ltib.iso
+running in it on the ADS512101 Rev4.1 development kit.
+
+Can anyone help me in finding some documentation for understanding and
+working on the powerpc kernel. Any links to the powerpc forums will also be
+appreciable.
+
  
- void ppc_enable_pmcs(void)
- {
-+	ppc_set_pmu_inuse(1);
-+
- 	/* Only need to enable them once */
- 	if (__get_cpu_var(pmcs_enabled))
- 		return;
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 8d75ea2..ca5f2e1 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -223,10 +223,6 @@ static void pseries_lpar_enable_pmcs(void)
- 	set = 1UL << 63;
- 	reset = 0;
- 	plpar_hcall_norets(H_PERFMON, set, reset);
--
--	/* instruct hypervisor to maintain PMCs */
--	if (firmware_has_feature(FW_FEATURE_SPLPAR))
--		get_lppaca()->pmcregs_in_use = 1;
- }
+
  
- static void __init pseries_discover_pic(void)
--- 
-1.6.0.4
+
+-> Currently I am going to develop an I2C client driver for one slave
+microcontroller of our project.
+
+I have some knowledge in the I2C client driver making(legacy style and new
+style).
+
+ 
+
+I made a basic I2C client driver to probe for the chip address and for
+testing I gave it the chip address 0x68(I2C chip address of the M4T162 RTC,
+present on the board).
+
+But while inserting my driver I am getting failure message for the detection
+of my chip.
+
+ 
+
+So I would like to know what other formalities am I lagging in my I2C chip
+driver.
+
+ 
+
+-> Also I am in a need for the GPIO driver for my controller ot get
+interrupt on ht estate change. When I searched in the kernel code I could
+not find any procedure to do that, also I could not find out the procedure
+to access either any GPIO pin macros or any register to remap with
+ioremap(). So please guide me in finding the proper way to do the GPIO
+accessing and interrupt registration.
+
+Will the ioremap() work on powerpc arch? If yes where can I find the memory
+mapping(register definitions) to use for my GPIO driver making.
+
+ 
+
+Thanks for patience in reading my queries.
+
+Any help is appreciable.
+
+ 
+
+Thanks & Regards,
+
+Uma
+
+ 
+
+
+------=_NextPart_000_0000_01CA317D.5D6D7D10
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Batang;
+	panose-1:2 3 6 0 0 1 1 1 1 1;}
+@font-face
+	{font-family:Batang;
+	panose-1:2 3 6 0 0 1 1 1 1 1;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+@font-face
+	{font-family:"\@Batang";
+	panose-1:2 3 6 0 0 1 1 1 1 1;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:"Calibri","sans-serif";
+	color:#1F497D;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-size:10.0pt;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><span style=3D'color:#1F497D'>Hi Chen =
+Hongjun-R66092,<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'color:#1F497D'><o:p>&nbsp;</o:p></span></p>
+
+<p class=3DMsoNormal><span style=3D'color:#1F497D'>Thanks for your =
+response.<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span style=3D'color:#1F497D'>Actually for the GPIO =
+driver I am
+having some success and it is in progress.<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span style=3D'color:#1F497D'>But regarding the I2C =
+chip(client)
+driver I am running witout any progress.<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span style=3D'color:#1F497D'>Actually I followed =
+the existing
+driver $(LINUX)\drivers\rtc\rtc-m41t80.c (for the RTC M41T62 existing on =
+the
+ADS5121Rev4.1 board).<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span style=3D'color:#1F497D'>&nbsp;I made a legacy =
+style driver
+with attach_adapter and detach_client functions =
+defined.<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span style=3D'color:#1F497D'>For testing purpose I =
+geve the chip
+address as 0x68(address of M41T62 existing on the board). But when I =
+tried ot
+insert my driver I get the error message as:<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'color:#1F497D'><o:p>&nbsp;</o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[root@freescale
+chips]# insmod dis_fpc.ko<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 177.808848]
+i2c 0-0068: uevent<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.528032]
+In dis_fpc_init<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.531851]
+i2c-core: driver [dis_fpc] registered<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.532446]
+In dis_fpc_attach_adapter<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.536827]
+i2c-adapter i2c-0: found normal entry for adapter 0, addr =
+0x55<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.537730]
+i2c-adapter i2c-0: master_xfer[0] W, addr=3D0x55, =
+len=3D0<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.538533]
+Doing write 0 bytes to 0x55 - 1 of 1 messages<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.539770]
+I2C: No RXAK<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.540970]
+In dis_fpc_attach_adapter<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.554500]
+i2c-adapter i2c-1: found normal entry for adapter 1, addr =
+0x55<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.555166]
+i2c-adapter i2c-1: master_xfer[0] W, addr=3D0x55, =
+len=3D0<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.555872]
+Doing write 0 bytes to 0x55 - 1 of 1 messages<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.556785]
+I2C: MAL<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.557476]
+In dis_fpc_attach_adapter<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.565733]
+i2c-adapter i2c-2: found normal entry for adapter 2, addr =
+0x55<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.566377]
+i2c-adapter i2c-2: master_xfer[0] W, addr=3D0x55, =
+len=3D0<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.567082]
+Doing write 0 bytes to 0x55 - 1 of 1 messages<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;color:#1F497D'>[&nbsp; 498.568240]
+I2C: No RXAK<o:p></o:p></span></p>
+
+<div>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:12.0pt;color:#1F497D'><o:p>&nbsp;</o:p></span></p>
+
+<p class=3DMsoNormal><span style=3D'font-size:12.0pt;color:#1F497D'>So =
+can you tell
+me what other places do I need to change the configurations( like
+i2c_platform_data definition, linking the chip to the specific I2C =
+module(0/1/2)
+with the adapter, configuring the speed of I2C communication =
+etc).<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:12.0pt;color:#1F497D'><o:p>&nbsp;</o:p></span></p>
+
+<p class=3DMsoNormal><span style=3D'font-size:12.0pt;color:#1F497D'>I =
+would like to
+get any suggestion on making the I2C chip driver inpowerpc =
+platform.<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:12.0pt;color:#1F497D'><o:p>&nbsp;</o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:12.0pt;color:#1F497D'>Thanks &amp;
+Regards,<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:12.0pt;color:#1F497D'>Uma</span><span
+style=3D'font-size:12.0pt;color:#1F497D'><o:p></o:p></span></p>
+
+</div>
+
+<p class=3DMsoNormal><span =
+style=3D'color:#1F497D'><o:p>&nbsp;</o:p></span></p>
+
+<div>
+
+<div style=3D'border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt =
+0in 0in 0in'>
+
+<p class=3DMsoNormal><b><span =
+style=3D'font-size:10.0pt;font-family:"Tahoma","sans-serif"'>From:</span>=
+</b><span
+style=3D'font-size:10.0pt;font-family:"Tahoma","sans-serif"'> Chen =
+Hongjun-R66092
+[mailto:hong-jun.chen@freescale.com] <br>
+<b>Sent:</b> Wednesday, September 09, 2009 5:39 AM<br>
+<b>To:</b> Uma Kanta Patro; linuxppc-dev@lists.ozlabs.org<br>
+<b>Subject:</b> RE: Queries regarding I2C and GPIO driver for Freescale
+MPC5121e in Linux2.6.24 of BSP: =
+MPC512xADS_20090603-ltib.iso<o:p></o:p></span></p>
+
+</div>
+
+</div>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Arial","sans-serif";
+color:blue'>One I2C driver has been included in 0603 bsp, you can refer =
+to it.</span><span
+style=3D'font-size:12.0pt;font-family:"Times New =
+Roman","serif"'><o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span style=3D'font-size:12.0pt;font-family:"Times =
+New Roman","serif"'>&nbsp;<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:10.0pt;font-family:"Arial","sans-serif";
+color:blue'>It has no&nbsp;specific driver for GPIO, but you can find =
+some
+initializing&nbsp;code for GPIO in =
+arch/powerpc/platforms/512x/mpc5125_ads.c.
+and mpc512x_pm_test.c.</span><span =
+style=3D'font-size:12.0pt;font-family:"Times New =
+Roman","serif"'><o:p></o:p></span></p>
+
+<blockquote style=3D'border:none;border-left:solid blue =
+1.5pt;padding:0in 0in 0in 4.0pt;
+margin-left:3.75pt;margin-top:5.0pt;margin-right:0in;margin-bottom:5.0pt'=
+>
+
+<p class=3DMsoNormal><span style=3D'font-size:12.0pt;font-family:"Times =
+New Roman","serif"'><o:p>&nbsp;</o:p></span></p>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><span
+style=3D'font-size:12.0pt;font-family:"Times New Roman","serif"'>
+
+<hr size=3D2 width=3D"100%" align=3Dcenter>
+
+</span></div>
+
+<p class=3DMsoNormal style=3D'margin-bottom:12.0pt'><b><span =
+style=3D'font-size:10.0pt;
+font-family:"Tahoma","sans-serif"'>From:</span></b><span =
+style=3D'font-size:10.0pt;
+font-family:"Tahoma","sans-serif"'>
+linuxppc-dev-bounces+hong-jun.chen=3Dfreescale.com@lists.ozlabs.org
+[mailto:linuxppc-dev-bounces+hong-jun.chen=3Dfreescale.com@lists.ozlabs.o=
+rg] <b>On
+Behalf Of </b>Uma Kanta Patro<br>
+<b>Sent:</b> Tuesday, September 08, 2009 6:56 PM<br>
+<b>To:</b> linuxppc-dev@lists.ozlabs.org<br>
+<b>Subject:</b> Queries regarding I2C and GPIO driver for Freescale =
+MPC5121e in
+Linux2.6.24 of BSP: MPC512xADS_20090603-ltib.iso</span><span =
+style=3D'font-size:
+12.0pt;font-family:"Times New Roman","serif"'><o:p></o:p></span></p>
+
+<p class=3DMsoNormal>Hi all,<o:p></o:p></p>
+
+<p =
+class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+I am a newbie to the powerpc linux kernel, but I have worked on some =
+drivers in
+arm architecture. I am finding powerpc architecture to be fully =
+different than
+that.<o:p></o:p></p>
+
+<p class=3DMsoNormal>I am working on Freescale MPC5121e with the BSP
+MPC512xADS_20090603-ltib.iso running in it on the ADS512101 Rev4.1 =
+development
+kit.<o:p></o:p></p>
+
+<p class=3DMsoNormal>Can anyone help me in finding some documentation =
+for
+understanding and working on the powerpc kernel. Any links to the =
+powerpc
+forums will also be appreciable.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>-&gt; Currently I am going to develop an I2C client =
+driver
+for one slave microcontroller of our project.<o:p></o:p></p>
+
+<p class=3DMsoNormal>I have some knowledge in the I2C client driver =
+making(legacy
+style and new style).<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>I made a basic I2C client driver to probe for the =
+chip
+address and for testing I gave it the chip address 0x68(I2C chip address =
+of the
+M4T162 RTC, present on the board).<o:p></o:p></p>
+
+<p class=3DMsoNormal>But while inserting my driver I am getting failure =
+message
+for the detection of my chip.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>So I would like to know what other formalities am I =
+lagging
+in my I2C chip driver.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>-&gt; Also I am in a need for the GPIO driver for =
+my
+controller ot get interrupt on ht estate change. When I searched in the =
+kernel
+code I could not find any procedure to do that, also I could not find =
+out the
+procedure to access either any GPIO pin macros or any register to remap =
+with
+ioremap(). So please guide me in finding the proper way to do the GPIO
+accessing and interrupt registration.<o:p></o:p></p>
+
+<p class=3DMsoNormal>Will the ioremap() work on powerpc arch? If yes =
+where can I
+find the memory mapping(register definitions) to use for my GPIO driver =
+making.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>Thanks for patience in reading my =
+queries.<o:p></o:p></p>
+
+<p class=3DMsoNormal>Any help is appreciable.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal><span style=3D'font-size:12.0pt'>Thanks &amp; =
+Regards,<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><span =
+style=3D'font-size:12.0pt'>Uma<o:p></o:p></span></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+</blockquote>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0000_01CA317D.5D6D7D10--
