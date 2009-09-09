@@ -1,24 +1,21 @@
-Return-Path: <mark@bish.net>
-Received: from vincent.bish.net (bish.net [209.241.232.100])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 69B23B7093
+Return-Path: <w.sang@pengutronix.de>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id D95A7B6F34
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Sep 2009 07:00:35 +1000 (EST)
-Received: from www-data by vincent.bish.net with local (Exim 4.63)
-	(envelope-from <mark@bish.net>) id 1MlU6K-0000WD-Is
-	for linuxppc-dev@lists.ozlabs.org; Wed, 09 Sep 2009 16:49:17 -0400
-Message-ID: <20090909164912.9qa5o0v55w4o8o0o@www.bish.net>
-Date: Wed, 09 Sep 2009 16:49:12 -0400
-From: Mark Bishop <mark@bish.net>
-To: linuxppc-dev@lists.ozlabs.org
-References: <25940478.1252060285938.JavaMail.root@viefep11.chello.at>
-	<20090909182227.GA8215@b07421-ec1.am.freescale.net>
-In-Reply-To: <20090909182227.GA8215@b07421-ec1.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Subject: Re: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
+	Thu, 10 Sep 2009 07:23:47 +1000 (EST)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 708A8DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 07:23:47 +1000 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linux-i2c@vger.kernel.org
+Date: Wed,  9 Sep 2009 23:22:47 +0200
+Message-Id: <1252531371-14866-1-git-send-email-w.sang@pengutronix.de>
+Subject: Removing deprecated drivers from drivers/i2c/chips
+Cc: linuxppc-dev@ozlabs.org, uclinux-dist-devel@blackfin.uclinux.org,
+	linux-arm-kernel@lists.infradead.org, linux-mips@linux-mips.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Scott Wood <scottwood@freescale.com>:
+Hi,
 
-> On Fri, Sep 04, 2009 at 12:31:25PM +0200, Roland Lezuo wrote:
->> The following patch is needed to correctly assign the IRQs for the
->> gianfar driver on the MPC8313ERDB-revc boards. ERR and TX are swapped
->> as well as the interrupt lines for the two devices.
->
-> And it will incorrectly assign them on older revisions of the chip.
->
-> We really should have a u-boot fixup based on SVR.
->
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->
+continuing the quest to clean up and ultimately remove the drivers/i2c/chips
+directory, this patch series removes three drivers for GPIO-expanders which are
+obsoleted and marked as deprecated for more than a year. The newer (and better)
+drivers can be found in drivers/gpio.
 
-I have both versions of the boards and I use two versions of the .dts  
-file.  Actually, four, two to support the old style uboot .dts that  
-comes with Freescale's BSP and 2 that support the newer uboot.
+As it is ensured that the newer drivers cover the same i2c_device_ids, all
+platform_devices will still match. Some defconfig updates may be necessary
+though, but according to [1] this is left to the arch|platform-maintainers
+(also as most defconfigs are quite outdated). For that reason, I put the
+relevant arch-mailing-lists to Cc. Comments are welcome.
+
+Regards,
+
+   Wolfram
+
+[1] http://lkml.org/lkml/2009/5/7/34
