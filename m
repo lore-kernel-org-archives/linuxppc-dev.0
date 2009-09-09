@@ -3,21 +3,21 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 6AE87B70AD
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1AD5FB7BCD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Sep 2009 00:43:39 +1000 (EST)
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
-	by ozlabs.org (Postfix) with ESMTP id C58CEDDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 00:43:37 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 5so1049748qwi.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Sep 2009 07:43:35 -0700 (PDT)
-Message-ID: <4AA7C095.7090009@gmail.com>
-Date: Wed, 09 Sep 2009 16:49:57 +0200
+	Thu, 10 Sep 2009 01:03:59 +1000 (EST)
+Received: from mail-qy0-f173.google.com (mail-qy0-f173.google.com
+	[209.85.221.173]) by ozlabs.org (Postfix) with ESMTP id 63C24DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 01:03:58 +1000 (EST)
+Received: by qyk3 with SMTP id 3so3426194qyk.4
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Sep 2009 08:03:56 -0700 (PDT)
+Message-ID: <4AA7C380.6030805@gmail.com>
+Date: Wed, 09 Sep 2009 17:02:24 +0200
 From: Roel Kluin <roel.kluin@gmail.com>
 MIME-Version: 1.0
 To: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] 82xx: kmalloc failure ignored in ep8248e_mdio_probe()
+Subject: [PATCH] powerpc: kmalloc failure ignored in vio_build_iommu_table()
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,43 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Prevent NULL dereference if kmalloc() fails. Also clean up if
-of_mdiobus_register() returns an error.
+Prevent NULL dereference if kmalloc() fails.
 
 Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
 Found with sed: http://kernelnewbies.org/roelkluin
 
-Please review.
-
-diff --git a/arch/powerpc/platforms/82xx/ep8248e.c b/arch/powerpc/platforms/82xx/ep8248e.c
-index 51fcae4..f9aee18 100644
---- a/arch/powerpc/platforms/82xx/ep8248e.c
-+++ b/arch/powerpc/platforms/82xx/ep8248e.c
-@@ -132,12 +132,25 @@ static int __devinit ep8248e_mdio_probe(struct of_device *ofdev,
- 		return -ENOMEM;
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index 819e59f..1f5266f 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -1054,6 +1054,8 @@ static struct iommu_table *vio_build_iommu_table(struct vio_dev *dev)
+ 		return NULL;
  
- 	bus->irq = kmalloc(sizeof(int) * PHY_MAX_ADDR, GFP_KERNEL);
-+	if (bus->irq == NULL) {
-+		ret = -ENOMEM;
-+		goto err_free_bus;
-+	}
+ 	tbl = kmalloc(sizeof(*tbl), GFP_KERNEL);
++	if (tbl == NULL)
++		return NULL;
  
- 	bus->name = "ep8248e-mdio-bitbang";
- 	bus->parent = &ofdev->dev;
- 	snprintf(bus->id, MII_BUS_ID_SIZE, "%x", res.start);
- 
--	return of_mdiobus_register(bus, ofdev->node);
-+	ret = of_mdiobus_register(bus, ofdev->node);
-+	if (ret)
-+		goto err_free_irq;
-+
-+	return 0;
-+err_free_irq:
-+	kfree(bus->irq);
-+err_free_bus:
-+	free_mdio_bitbang(bus);
-+	return ret;
- }
- 
- static int ep8248e_mdio_remove(struct of_device *ofdev)
+ 	of_parse_dma_window(dev->dev.archdata.of_node, dma_window,
+ 			    &tbl->it_index, &offset, &size);
