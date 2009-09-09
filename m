@@ -1,38 +1,22 @@
-Return-Path: <maynardj@us.ibm.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2F5BCB7063
+Return-Path: <lebon@lebon.org.ua>
+Received: from b-mail.com.ua (b-mail.com.ua [195.68.202.242])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id D93ECB708C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Sep 2009 23:32:03 +1000 (EST)
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id ACE0BDDD01
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Sep 2009 23:32:01 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e38.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n89DS4kA006008
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Sep 2009 07:28:04 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n89DVfHQ064284
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Sep 2009 07:31:44 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n89DVedC009589
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Sep 2009 07:31:40 -0600
-Message-ID: <4AA7AE3B.30809@us.ibm.com>
-Date: Wed, 09 Sep 2009 08:31:39 -0500
-From: Maynard Johnson <maynardj@us.ibm.com>
+	Wed,  9 Sep 2009 23:37:30 +1000 (EST)
+Message-ID: <4AA7AD65.7070403@lebon.org.ua>
+Date: Wed, 09 Sep 2009 16:28:05 +0300
+From: Mikhail Zolotaryov <lebon@lebon.org.ua>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Fix bug where perf_counters breaks oprofile
-References: <19111.37067.783017.427206@cargo.ozlabs.ibm.com>
-In-Reply-To: <19111.37067.783017.427206@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Maynard Johnson <mpjohn@us.ibm.com>, linuxppc-dev@ozlabs.org
+To: Prodyut Hazarika <phazarika@amcc.com>
+Subject: Re: AW: PowerPC PCI DMA issues (prefetch/coherency?)
+References: <1251926572.10090.17.camel@Adam>
+	<4A9F78AF.4010206@oxtel.com>	<1251971849.15089.28.camel@pasglop>
+	<1251993890.2548.14.camel@Adam>	<0CA0A16855646F4FA96D25A158E299D606F60795@SDCEXCHANGE01.ad.amcc.com>	<1252432873.2548.41.camel@Adam>
+	<0CA0A16855646F4FA96D25A158E299D606F60B70@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <0CA0A16855646F4FA96D25A158E299D606F60B70@SDCEXCHANGE01.ad.amcc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Tom Burns <tburns@datacast.com>, Andrea Zypchen <azypchen@intldata.ca>,
+	linuxppc-dev@lists.ozlabs.org, azilkie@datacast.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,161 +26,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Currently there is a bug where if you use oprofile on a pSeries
-> machine, then use perf_counters, then use oprofile again, oprofile
-> will not work correctly; it will lose the PMU configuration the next
-> time the hypervisor does a partition context switch, and thereafter
-> won't count anything.
-> 
-> Maynard Johnson identified the sequence causing the problem:
-> - oprofile setup calls ppc_enable_pmcs(), which calls
->   pseries_lpar_enable_pmcs, which tells the hypervisor that we want
->   to use the PMU, and sets the "PMU in use" flag in the lppaca.
->   This flag tells the hypervisor whether it needs to save and restore
->   the PMU config.
-> - The perf_counter code sets and clears the "PMU in use" flag directly
->   as it context-switches the PMU between tasks, and leaves it clear
->   when it finishes.
-> - oprofile setup, called for a new oprofile run, calls ppc_enable_pmcs,
->   which does nothing because it has already been called.  In particular
->   it doesn't set the "PMU in use" flag.
-> 
-> This fixes the problem by arranging for ppc_enable_pmcs to always set
-> the "PMU in use" flag.  It makes the perf_counter code call
-> ppc_enable_pmcs also rather than calling the lower-level function
-> directly, and removes the setting of the "PMU in use" flag from
-> pseries_lpar_enable_pmcs, since that is now done in its caller.
-> 
-> This also removes the declaration of pasemi_enable_pmcs because it
-> isn't defined anywhere.
-Thanks, Paul.  I tested the patch, and oprofile and perf now play nicely together.
+Hi,
 
--Maynard
-> 
-> Reported-by: Maynard Johnson <mpjohn@us.ibm.com>
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
->  arch/powerpc/include/asm/pmc.h         |   16 ++++++++++++++--
->  arch/powerpc/kernel/perf_counter.c     |   13 +++----------
->  arch/powerpc/kernel/sysfs.c            |    3 +++
->  arch/powerpc/platforms/pseries/setup.c |    4 ----
->  4 files changed, 20 insertions(+), 16 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/pmc.h b/arch/powerpc/include/asm/pmc.h
-> index d6a616a..ccc68b5 100644
-> --- a/arch/powerpc/include/asm/pmc.h
-> +++ b/arch/powerpc/include/asm/pmc.h
-> @@ -27,10 +27,22 @@ extern perf_irq_t perf_irq;
-> 
->  int reserve_pmc_hardware(perf_irq_t new_perf_irq);
->  void release_pmc_hardware(void);
-> +void ppc_enable_pmcs(void);
-> 
->  #ifdef CONFIG_PPC64
-> -void power4_enable_pmcs(void);
-> -void pasemi_enable_pmcs(void);
-> +#include <asm/lppaca.h>
-> +
-> +static inline void ppc_set_pmu_inuse(int inuse)
-> +{
-> +	get_lppaca()->pmcregs_in_use = inuse;
-> +}
-> +
-> +extern void power4_enable_pmcs(void);
-> +
-> +#else /* CONFIG_PPC64 */
-> +
-> +static inline void ppc_set_pmu_inuse(int inuse) { }
-> +
->  #endif
-> 
->  #endif /* __KERNEL__ */
-> diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-> index 70e1f57..ccd6b21 100644
-> --- a/arch/powerpc/kernel/perf_counter.c
-> +++ b/arch/powerpc/kernel/perf_counter.c
-> @@ -62,7 +62,6 @@ static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
->  {
->  	return 0;
->  }
-> -static inline void perf_set_pmu_inuse(int inuse) { }
->  static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp) { }
->  static inline u32 perf_get_misc_flags(struct pt_regs *regs)
->  {
-> @@ -93,11 +92,6 @@ static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
->  	return 0;
->  }
-> 
-> -static inline void perf_set_pmu_inuse(int inuse)
-> -{
-> -	get_lppaca()->pmcregs_in_use = inuse;
-> -}
-> -
->  /*
->   * The user wants a data address recorded.
->   * If we're not doing instruction sampling, give them the SDAR
-> @@ -531,8 +525,7 @@ void hw_perf_disable(void)
->  		 * Check if we ever enabled the PMU on this cpu.
->  		 */
->  		if (!cpuhw->pmcs_enabled) {
-> -			if (ppc_md.enable_pmcs)
-> -				ppc_md.enable_pmcs();
-> +			ppc_enable_pmcs();
->  			cpuhw->pmcs_enabled = 1;
->  		}
-> 
-> @@ -594,7 +587,7 @@ void hw_perf_enable(void)
->  		mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
->  		mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
->  		if (cpuhw->n_counters == 0)
-> -			perf_set_pmu_inuse(0);
-> +			ppc_set_pmu_inuse(0);
->  		goto out_enable;
->  	}
-> 
-> @@ -627,7 +620,7 @@ void hw_perf_enable(void)
->  	 * bit set and set the hardware counters to their initial values.
->  	 * Then unfreeze the counters.
->  	 */
-> -	perf_set_pmu_inuse(1);
-> +	ppc_set_pmu_inuse(1);
->  	mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
->  	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
->  	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
-> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-> index f41aec8..956ab33 100644
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -17,6 +17,7 @@
->  #include <asm/prom.h>
->  #include <asm/machdep.h>
->  #include <asm/smp.h>
-> +#include <asm/pmc.h>
-> 
->  #include "cacheinfo.h"
-> 
-> @@ -123,6 +124,8 @@ static DEFINE_PER_CPU(char, pmcs_enabled);
-> 
->  void ppc_enable_pmcs(void)
->  {
-> +	ppc_set_pmu_inuse(1);
-> +
->  	/* Only need to enable them once */
->  	if (__get_cpu_var(pmcs_enabled))
->  		return;
-> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-> index 8d75ea2..ca5f2e1 100644
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -223,10 +223,6 @@ static void pseries_lpar_enable_pmcs(void)
->  	set = 1UL << 63;
->  	reset = 0;
->  	plpar_hcall_norets(H_PERFMON, set, reset);
-> -
-> -	/* instruct hypervisor to maintain PMCs */
-> -	if (firmware_has_feature(FW_FEATURE_SPLPAR))
-> -		get_lppaca()->pmcregs_in_use = 1;
->  }
-> 
->  static void __init pseries_discover_pic(void)
+Why manage cache lines  manually, if appropriate code is a part of 
+__dma_sync / dma_sync_single_for_device of DMA API ? (implies 
+CONFIG_NOT_COHERENT_CACHE enabled, as default for Sequoia Board)
+
+Prodyut Hazarika wrote:
+> Hi Adam,
+>
+>   
+>> Yes, I am using the 440EPx (same as the sequoia board). 
+>> Our ideDriver is DMA'ing blocks of 192-byte data over the PCI bus
+>>     
+> (using
+>   
+>> the Sil0680A PCI-IDE bridge). Most of the DMA's (depending on timing)
+>> end up being partially corrupted when we try to parse the data in the
+>> virtual page. We have confirmed the data is good before the PCI-IDE
+>> bridge. We are creating two 8K pages and map them to physical DMA
+>>     
+> memory
+>   
+>> using single-entry scatter/gather structs. When a DMA block is
+>> corrupted, we see a random portion of it (always a multiple of 16byte
+>> cache lines) is overwritten with old data from the last time the
+>>     
+> buffer
+>   
+>> was used. 
+>>     
+>
+> This looks like a cache coherency problem.
+> Can you ensure that the TLB entries corresponding to the DMA region has
+> the CacheInhibit bit set.
+> You will need a BDI connected to your system.
+>
+> Also, you will need to invalidate and flush the lines appropriately,
+> since in 440 cores,
+> L1Cache coherency is managed entirely by software.
+> Please look at drivers/net/ibm_newemac/mal.c and core.c for example on
+> how to do it.
+>
+> Thanks
+> Prodyut
+>
+> On Thu, 2009-09-03 at 13:27 -0700, Prodyut Hazarika wrote:
+>   
+>> Hi Adam,
+>>
+>>     
+>>> Are you sure there is L2 cache on the 440?
+>>>       
+>> It depends on the SoC you are using. SoC like 460EX (Canyonlands
+>>     
+> board)
+>   
+>> have L2Cache.
+>> It seems you are using a Sequoia board, which has a 440EPx SoC. 440EPx
+>> has a 440 cpu core, but no L2Cache.
+>> Could you please tell me which SoC you are using?
+>> You can also refer to the appropriate dts file to see if there is L2C.
+>> For example, in canyonlands.dts (460EX based board), we have the L2C
+>> entry.
+>>         L2C0: l2c {
+>>               ...
+>>         }
+>>
+>>     
+>>> I am seeing this problem with our custom IDE driver which is based on
+>>>       
+>
+>   
+>>> pretty old code. Our driver uses pci_alloc_consistent() to allocate
+>>>       
+> the
+>   
+>>> physical DMA memory and alloc_pages() to allocate a virtual page. It 
+>>> then uses pci_map_sg() to map to a scatter/gather buffer. Perhaps I 
+>>> should convert these to the DMA API calls as you suggest.
+>>>       
+>> Could you give more details on the consistency problem? It is a good
+>> idea to change to the new DMA APIs, but pci_alloc_consistent() should
+>> work too
+>>
+>> Thanks
+>> Prodyut	
+>>
+>> On Thu, 2009-09-03 at 19:57 +1000, Benjamin Herrenschmidt wrote:
+>>     
+>>> On Thu, 2009-09-03 at 09:05 +0100, Chris Pringle wrote:
+>>>       
+>>>> Hi Adam,
+>>>>
+>>>> If you have a look in include/asm-ppc/pgtable.h for the following
+>>>>         
+>> section:
+>>     
+>>>> #ifdef CONFIG_44x
+>>>> #define _PAGE_BASE    (_PAGE_PRESENT | _PAGE_ACCESSED |
+>>>>         
+>> _PAGE_GUARDED)
+>>     
+>>>> #else
+>>>> #define _PAGE_BASE    (_PAGE_PRESENT | _PAGE_ACCESSED)
+>>>> #endif
+>>>>
+>>>> Try adding _PAGE_COHERENT to the appropriate line above and see if
+>>>>         
+>> that 
+>>     
+>>>> fixes your issue - this causes the 'M' bit to be set on the page
+>>>>         
+>> which 
+>>     
+>>>> sure enforce cache coherency. If it doesn't, you'll need to check
+>>>>         
+>> the 
+>>     
+>>>> 'M' bit isn't being masked out in head_44x.S (it was originally
+>>>>         
+>> masked 
+>>     
+>>>> out on arch/powerpc, but was fixed in later kernels when the cache
+>>>>         
+>
+>   
+>>>> coherency issues with non-SMP systems were resolved).
+>>>>         
+>>> I have some doubts about the usefulness of doing that for 4xx.
+>>>       
+> AFAIK,
+>   
+>>> the 440 core just ignores M.
+>>>
+>>> The problem lies probably elsewhere. Maybe the L2 cache coherency
+>>>       
+>> isn't
+>>     
+>>> enabled or not working ?
+>>>
+>>> The L1 cache on 440 is simply not coherent, so drivers have to make
+>>>       
+>> sure
+>>     
+>>> they use the appropriate DMA APIs which will do cache flushing when
+>>> needed.
+>>>
+>>> Adam, what driver is causing you that sort of problems ?
+>>>
+>>> Cheers,
+>>> Ben.
+>>>
+>>>
+>>>       
