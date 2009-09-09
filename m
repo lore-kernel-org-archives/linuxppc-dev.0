@@ -3,20 +3,20 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 65A92B7F00
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3DE8EB80AE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Sep 2009 07:23:58 +1000 (EST)
+	Thu, 10 Sep 2009 07:24:04 +1000 (EST)
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id A0377DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 07:23:57 +1000 (EST)
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 8445ADDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 07:24:03 +1000 (EST)
 From: Wolfram Sang <w.sang@pengutronix.de>
 To: linux-i2c@vger.kernel.org
-Date: Wed,  9 Sep 2009 23:22:49 +0200
-Message-Id: <1252531371-14866-3-git-send-email-w.sang@pengutronix.de>
+Date: Wed,  9 Sep 2009 23:22:50 +0200
+Message-Id: <1252531371-14866-4-git-send-email-w.sang@pengutronix.de>
 In-Reply-To: <1252531371-14866-1-git-send-email-w.sang@pengutronix.de>
 References: <1252531371-14866-1-git-send-email-w.sang@pengutronix.de>
-Subject: [PATCH 2/4] i2c/chips: Remove deprecated pcf8575-driver
-Cc: linux-mips@linux-mips.org, Bart Van Assche <bart.vanassche@gmail.com>,
+Subject: [PATCH 3/4] i2c/chips: Remove deprecated pca9539-driver
+Cc: linux-mips@linux-mips.org, Ben Gardner <gardner.ben@gmail.com>,
 	linuxppc-dev@ozlabs.org, Jean Delvare <khali@linux-fr.org>,
 	uclinux-dist-devel@blackfin.uclinux.org,
 	linux-arm-kernel@lists.infradead.org
@@ -29,341 +29,279 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The pcf8575-driver in drivers/i2c/chips which just exports its register to
-sysfs is superseeded by drivers/gpio/pcf857x.c which properly uses the gpiolib.
+The pca9539-driver in drivers/i2c/chips which just exports its registers to
+sysfs is superseeded by drivers/gpio/pca953x.c which properly uses the gpiolib.
 As this driver has been deprecated for more than a year, finally remove it.
 
 Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: Ben Gardner <gardner.ben@gmail.com>
 Cc: Jean Delvare <khali@linux-fr.org>
 ---
- Documentation/i2c/chips/pcf8575 |   69 --------------
- drivers/i2c/chips/Kconfig       |   18 ----
+ Documentation/i2c/chips/pca9539 |   58 ---------------
+ drivers/i2c/chips/Kconfig       |   13 ----
  drivers/i2c/chips/Makefile      |    1 -
- drivers/i2c/chips/pcf8575.c     |  198 ---------------------------------------
- 4 files changed, 0 insertions(+), 286 deletions(-)
- delete mode 100644 Documentation/i2c/chips/pcf8575
- delete mode 100644 drivers/i2c/chips/pcf8575.c
+ drivers/i2c/chips/pca9539.c     |  152 ---------------------------------------
+ 4 files changed, 0 insertions(+), 224 deletions(-)
+ delete mode 100644 Documentation/i2c/chips/pca9539
+ delete mode 100644 drivers/i2c/chips/pca9539.c
 
-diff --git a/Documentation/i2c/chips/pcf8575 b/Documentation/i2c/chips/pcf8575
+diff --git a/Documentation/i2c/chips/pca9539 b/Documentation/i2c/chips/pca9539
 deleted file mode 100644
-index 40b268e..0000000
---- a/Documentation/i2c/chips/pcf8575
+index 6aff890..0000000
+--- a/Documentation/i2c/chips/pca9539
 +++ /dev/null
-@@ -1,69 +0,0 @@
--About the PCF8575 chip and the pcf8575 kernel driver
--====================================================
+@@ -1,58 +0,0 @@
+-Kernel driver pca9539
+-=====================
 -
--The PCF8575 chip is produced by the following manufacturers:
+-NOTE: this driver is deprecated and will be dropped soon, use
+-drivers/gpio/pca9539.c instead.
 -
--  * Philips NXP
--    http://www.nxp.com/#/pip/cb=[type=product,path=50807/41735/41850,final=PCF8575_3]|pip=[pip=PCF8575_3][0]
+-Supported chips:
+-  * Philips PCA9539
+-    Prefix: 'pca9539'
+-    Addresses scanned: none
+-    Datasheet:
+-        http://www.semiconductors.philips.com/acrobat/datasheets/PCA9539_2.pdf
 -
--  * Texas Instruments
--    http://focus.ti.com/docs/prod/folders/print/pcf8575.html
--
--
--Some vendors sell small PCB's with the PCF8575 mounted on it. You can connect
--such a board to a Linux host via e.g. an USB to I2C interface. Examples of
--PCB boards with a PCF8575:
--
--  * SFE Breakout Board for PCF8575 I2C Expander by RobotShop
--    http://www.robotshop.ca/home/products/robot-parts/electronics/adapters-converters/sfe-pcf8575-i2c-expander-board.html
--
--  * Breakout Board for PCF8575 I2C Expander by Spark Fun Electronics
--    http://www.sparkfun.com/commerce/product_info.php?products_id=8130
+-Author: Ben Gardner <bgardner@wabtec.com>
 -
 -
 -Description
 ------------
--The PCF8575 chip is a 16-bit I/O expander for the I2C bus. Up to eight of
--these chips can be connected to the same I2C bus. You can find this
--chip on some custom designed hardware, but you won't find it on PC
--motherboards.
 -
--The PCF8575 chip consists of a 16-bit quasi-bidirectional port and an I2C-bus
--interface. Each of the sixteen I/O's can be independently used as an input or
--an output. To set up an I/O pin as an input, you have to write a 1 to the
--corresponding output.
--
--For more information please see the datasheet.
+-The Philips PCA9539 is a 16 bit low power I/O device.
+-All 16 lines can be individually configured as an input or output.
+-The input sense can also be inverted.
+-The 16 lines are split between two bytes.
 -
 -
 -Detection
 ----------
 -
--There is no method known to detect whether a chip on a given I2C address is
--a PCF8575 or whether it is any other I2C device, so you have to pass the I2C
--bus and address of the installed PCF8575 devices explicitly to the driver at
--load time via the force=... parameter.
+-The PCA9539 is difficult to detect and not commonly found in PC machines,
+-so you have to pass the I2C bus and address of the installed PCA9539
+-devices explicitly to the driver at load time via the force=... parameter.
 -
--/sys interface
----------------
 -
--For each address on which a PCF8575 chip was found or forced the following
--files will be created under /sys:
--* /sys/bus/i2c/devices/<bus>-<address>/read
--* /sys/bus/i2c/devices/<bus>-<address>/write
--where bus is the I2C bus number (0, 1, ...) and address is the four-digit
--hexadecimal representation of the 7-bit I2C address of the PCF8575
--(0020 .. 0027).
+-Sysfs entries
+--------------
 -
--The read file is read-only. Reading it will trigger an I2C read and will hence
--report the current input state for the pins configured as inputs, and the
--current output value for the pins configured as outputs.
+-Each is a byte that maps to the 8 I/O bits.
+-A '0' suffix is for bits 0-7, while '1' is for bits 8-15.
 -
--The write file is read-write. Writing a value to it will configure all pins
--as output for which the corresponding bit is zero. Reading the write file will
--return the value last written, or -EAGAIN if no value has yet been written to
--the write file.
+-input[01]     - read the current value
+-output[01]    - sets the output value
+-direction[01] - direction of each bit: 1=input, 0=output
+-invert[01]    - toggle the input bit sense
 -
--On module initialization the configuration of the chip is not changed -- the
--chip is left in the state it was already configured in through either power-up
--or through previous I2C write actions.
+-input reads the actual state of the line and is always available.
+-The direction defaults to input for all channels.
+-
+-
+-General Remarks
+----------------
+-
+-Note that each output, direction, and invert entry controls 8 lines.
+-You should use the read, modify, write sequence.
+-For example. to set output bit 0 of 1.
+-  val=$(cat output0)
+-  val=$(( $val | 1 ))
+-  echo $val > output0
+-
 diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
-index 02d746c..1b5455e 100644
+index 1b5455e..8cd1a7f 100644
 --- a/drivers/i2c/chips/Kconfig
 +++ b/drivers/i2c/chips/Kconfig
-@@ -33,24 +33,6 @@ config SENSORS_PCF8574
+@@ -33,19 +33,6 @@ config SENSORS_PCF8574
  	  These devices are hard to detect and rarely found on mainstream
  	  hardware.  If unsure, say N.
  
--config PCF8575
--	tristate "Philips PCF8575 (DEPRECATED)"
--	default n
--	depends on GPIO_PCF857X = "n"
+-config SENSORS_PCA9539
+-	tristate "Philips PCA9539 16-bit I/O port (DEPRECATED)"
+-	depends on EXPERIMENTAL && GPIO_PCA953X = "n"
 -	help
--	  If you say yes here you get support for Philips PCF8575 chip.
--	  This chip is a 16-bit I/O expander for the I2C bus.  Several other
--	  chip manufacturers sell equivalent chips, e.g. Texas Instruments.
+-	  If you say yes here you get support for the Philips PCA9539
+-	  16-bit I/O port.
 -
 -	  This driver can also be built as a module.  If so, the module
--	  will be called pcf8575.
+-	  will be called pca9539.
 -
 -	  This driver is deprecated and will be dropped soon. Use
--	  drivers/gpio/pcf857x.c instead.
+-	  drivers/gpio/pca953x.c instead.
 -
--	  This device is hard to detect and is rarely found on mainstream
--	  hardware.  If unsure, say N.
--
- config SENSORS_PCA9539
- 	tristate "Philips PCA9539 16-bit I/O port (DEPRECATED)"
- 	depends on EXPERIMENTAL && GPIO_PCA953X = "n"
+ config SENSORS_TSL2550
+ 	tristate "Taos TSL2550 ambient light sensor"
+ 	depends on EXPERIMENTAL
 diff --git a/drivers/i2c/chips/Makefile b/drivers/i2c/chips/Makefile
-index f4680d1..fceb377 100644
+index fceb377..8cd778d 100644
 --- a/drivers/i2c/chips/Makefile
 +++ b/drivers/i2c/chips/Makefile
-@@ -13,7 +13,6 @@
+@@ -11,7 +11,6 @@
+ #
+ 
  obj-$(CONFIG_DS1682)		+= ds1682.o
- obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
+-obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
--obj-$(CONFIG_PCF8575)		+= pcf8575.o
  obj-$(CONFIG_SENSORS_TSL2550)	+= tsl2550.o
  
- ifeq ($(CONFIG_I2C_DEBUG_CHIP),y)
-diff --git a/drivers/i2c/chips/pcf8575.c b/drivers/i2c/chips/pcf8575.c
+diff --git a/drivers/i2c/chips/pca9539.c b/drivers/i2c/chips/pca9539.c
 deleted file mode 100644
-index 07fd7cb..0000000
---- a/drivers/i2c/chips/pcf8575.c
+index 270de4e..0000000
+--- a/drivers/i2c/chips/pca9539.c
 +++ /dev/null
-@@ -1,198 +0,0 @@
+@@ -1,152 +0,0 @@
 -/*
--  pcf8575.c
+-    pca9539.c - 16-bit I/O port with interrupt and reset
 -
--  About the PCF8575 chip: the PCF8575 is a 16-bit I/O expander for the I2C bus
--  produced by a.o. Philips Semiconductors.
+-    Copyright (C) 2005 Ben Gardner <bgardner@wabtec.com>
 -
--  Copyright (C) 2006 Michael Hennerich, Analog Devices Inc.
--  <hennerich@blackfin.uclinux.org>
--  Based on pcf8574.c.
--
--  Copyright (c) 2007 Bart Van Assche <bart.vanassche@gmail.com>.
--  Ported this driver from ucLinux to the mainstream Linux kernel.
--
--  This program is free software; you can redistribute it and/or modify
--  it under the terms of the GNU General Public License as published by
--  the Free Software Foundation; either version 2 of the License, or
--  (at your option) any later version.
--
--  This program is distributed in the hope that it will be useful,
--  but WITHOUT ANY WARRANTY; without even the implied warranty of
--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--  GNU General Public License for more details.
--
--  You should have received a copy of the GNU General Public License
--  along with this program; if not, write to the Free Software
--  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+-    This program is free software; you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation; version 2 of the License.
 -*/
 -
 -#include <linux/module.h>
 -#include <linux/init.h>
+-#include <linux/slab.h>
 -#include <linux/i2c.h>
--#include <linux/slab.h>  /* kzalloc() */
--#include <linux/sysfs.h> /* sysfs_create_group() */
+-#include <linux/hwmon-sysfs.h>
 -
--/* Addresses to scan: none, device can't be detected */
+-/* Addresses to scan: none, device is not autodetected */
 -static const unsigned short normal_i2c[] = { I2C_CLIENT_END };
 -
 -/* Insmod parameters */
--I2C_CLIENT_INSMOD;
+-I2C_CLIENT_INSMOD_1(pca9539);
 -
--
--/* Each client has this additional data */
--struct pcf8575_data {
--	int write;		/* last written value, or error code */
+-enum pca9539_cmd
+-{
+-	PCA9539_INPUT_0		= 0,
+-	PCA9539_INPUT_1		= 1,
+-	PCA9539_OUTPUT_0	= 2,
+-	PCA9539_OUTPUT_1	= 3,
+-	PCA9539_INVERT_0	= 4,
+-	PCA9539_INVERT_1	= 5,
+-	PCA9539_DIRECTION_0	= 6,
+-	PCA9539_DIRECTION_1	= 7,
 -};
 -
 -/* following are the sysfs callback functions */
--static ssize_t show_read(struct device *dev, struct device_attribute *attr,
--			 char *buf)
+-static ssize_t pca9539_show(struct device *dev, struct device_attribute *attr,
+-			    char *buf)
 -{
+-	struct sensor_device_attribute *psa = to_sensor_dev_attr(attr);
 -	struct i2c_client *client = to_i2c_client(dev);
--	u16 val;
--	u8 iopin_state[2];
--
--	i2c_master_recv(client, iopin_state, 2);
--
--	val = iopin_state[0];
--	val |= iopin_state[1] << 8;
--
--	return sprintf(buf, "%u\n", val);
+-	return sprintf(buf, "%d\n", i2c_smbus_read_byte_data(client,
+-							     psa->index));
 -}
 -
--static DEVICE_ATTR(read, S_IRUGO, show_read, NULL);
--
--static ssize_t show_write(struct device *dev, struct device_attribute *attr,
--			  char *buf)
+-static ssize_t pca9539_store(struct device *dev, struct device_attribute *attr,
+-			     const char *buf, size_t count)
 -{
--	struct pcf8575_data *data = dev_get_drvdata(dev);
--	if (data->write < 0)
--		return data->write;
--	return sprintf(buf, "%d\n", data->write);
--}
--
--static ssize_t set_write(struct device *dev, struct device_attribute *attr,
--			 const char *buf, size_t count)
--{
+-	struct sensor_device_attribute *psa = to_sensor_dev_attr(attr);
 -	struct i2c_client *client = to_i2c_client(dev);
--	struct pcf8575_data *data = i2c_get_clientdata(client);
--	unsigned long val = simple_strtoul(buf, NULL, 10);
--	u8 iopin_state[2];
--
--	if (val > 0xffff)
+-	unsigned long val = simple_strtoul(buf, NULL, 0);
+-	if (val > 0xff)
 -		return -EINVAL;
--
--	data->write = val;
--
--	iopin_state[0] = val & 0xFF;
--	iopin_state[1] = val >> 8;
--
--	i2c_master_send(client, iopin_state, 2);
--
+-	i2c_smbus_write_byte_data(client, psa->index, val);
 -	return count;
 -}
 -
--static DEVICE_ATTR(write, S_IWUSR | S_IRUGO, show_write, set_write);
+-/* Define the device attributes */
 -
--static struct attribute *pcf8575_attributes[] = {
--	&dev_attr_read.attr,
--	&dev_attr_write.attr,
+-#define PCA9539_ENTRY_RO(name, cmd_idx) \
+-	static SENSOR_DEVICE_ATTR(name, S_IRUGO, pca9539_show, NULL, cmd_idx)
+-
+-#define PCA9539_ENTRY_RW(name, cmd_idx) \
+-	static SENSOR_DEVICE_ATTR(name, S_IRUGO | S_IWUSR, pca9539_show, \
+-				  pca9539_store, cmd_idx)
+-
+-PCA9539_ENTRY_RO(input0, PCA9539_INPUT_0);
+-PCA9539_ENTRY_RO(input1, PCA9539_INPUT_1);
+-PCA9539_ENTRY_RW(output0, PCA9539_OUTPUT_0);
+-PCA9539_ENTRY_RW(output1, PCA9539_OUTPUT_1);
+-PCA9539_ENTRY_RW(invert0, PCA9539_INVERT_0);
+-PCA9539_ENTRY_RW(invert1, PCA9539_INVERT_1);
+-PCA9539_ENTRY_RW(direction0, PCA9539_DIRECTION_0);
+-PCA9539_ENTRY_RW(direction1, PCA9539_DIRECTION_1);
+-
+-static struct attribute *pca9539_attributes[] = {
+-	&sensor_dev_attr_input0.dev_attr.attr,
+-	&sensor_dev_attr_input1.dev_attr.attr,
+-	&sensor_dev_attr_output0.dev_attr.attr,
+-	&sensor_dev_attr_output1.dev_attr.attr,
+-	&sensor_dev_attr_invert0.dev_attr.attr,
+-	&sensor_dev_attr_invert1.dev_attr.attr,
+-	&sensor_dev_attr_direction0.dev_attr.attr,
+-	&sensor_dev_attr_direction1.dev_attr.attr,
 -	NULL
 -};
 -
--static const struct attribute_group pcf8575_attr_group = {
--	.attrs = pcf8575_attributes,
+-static struct attribute_group pca9539_defattr_group = {
+-	.attrs = pca9539_attributes,
 -};
 -
--/*
-- * Real code
-- */
--
 -/* Return 0 if detection is successful, -ENODEV otherwise */
--static int pcf8575_detect(struct i2c_client *client, int kind,
+-static int pca9539_detect(struct i2c_client *client, int kind,
 -			  struct i2c_board_info *info)
 -{
 -	struct i2c_adapter *adapter = client->adapter;
 -
--	if (!i2c_check_functionality(adapter, I2C_FUNC_I2C))
+-	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA))
 -		return -ENODEV;
 -
--	/* This is the place to detect whether the chip at the specified
--	   address really is a PCF8575 chip. However, there is no method known
--	   to detect whether an I2C chip is a PCF8575 or any other I2C chip. */
--
--	strlcpy(info->type, "pcf8575", I2C_NAME_SIZE);
+-	strlcpy(info->type, "pca9539", I2C_NAME_SIZE);
 -
 -	return 0;
 -}
 -
--static int pcf8575_probe(struct i2c_client *client,
+-static int pca9539_probe(struct i2c_client *client,
 -			 const struct i2c_device_id *id)
 -{
--	struct pcf8575_data *data;
--	int err;
--
--	data = kzalloc(sizeof(struct pcf8575_data), GFP_KERNEL);
--	if (!data) {
--		err = -ENOMEM;
--		goto exit;
--	}
--
--	i2c_set_clientdata(client, data);
--	data->write = -EAGAIN;
--
 -	/* Register sysfs hooks */
--	err = sysfs_create_group(&client->dev.kobj, &pcf8575_attr_group);
--	if (err)
--		goto exit_free;
--
--	return 0;
--
--exit_free:
--	kfree(data);
--exit:
--	return err;
+-	return sysfs_create_group(&client->dev.kobj,
+-				  &pca9539_defattr_group);
 -}
 -
--static int pcf8575_remove(struct i2c_client *client)
+-static int pca9539_remove(struct i2c_client *client)
 -{
--	sysfs_remove_group(&client->dev.kobj, &pcf8575_attr_group);
--	kfree(i2c_get_clientdata(client));
+-	sysfs_remove_group(&client->dev.kobj, &pca9539_defattr_group);
 -	return 0;
 -}
 -
--static const struct i2c_device_id pcf8575_id[] = {
--	{ "pcf8575", 0 },
+-static const struct i2c_device_id pca9539_id[] = {
+-	{ "pca9539", 0 },
 -	{ }
 -};
 -
--static struct i2c_driver pcf8575_driver = {
+-static struct i2c_driver pca9539_driver = {
 -	.driver = {
--		.owner	= THIS_MODULE,
--		.name	= "pcf8575",
+-		.name	= "pca9539",
 -	},
--	.probe		= pcf8575_probe,
--	.remove		= pcf8575_remove,
--	.id_table	= pcf8575_id,
+-	.probe		= pca9539_probe,
+-	.remove		= pca9539_remove,
+-	.id_table	= pca9539_id,
 -
--	.detect		= pcf8575_detect,
+-	.detect		= pca9539_detect,
 -	.address_data	= &addr_data,
 -};
 -
--static int __init pcf8575_init(void)
+-static int __init pca9539_init(void)
 -{
--	return i2c_add_driver(&pcf8575_driver);
+-	return i2c_add_driver(&pca9539_driver);
 -}
 -
--static void __exit pcf8575_exit(void)
+-static void __exit pca9539_exit(void)
 -{
--	i2c_del_driver(&pcf8575_driver);
+-	i2c_del_driver(&pca9539_driver);
 -}
 -
--MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>, "
--	      "Bart Van Assche <bart.vanassche@gmail.com>");
--MODULE_DESCRIPTION("pcf8575 driver");
+-MODULE_AUTHOR("Ben Gardner <bgardner@wabtec.com>");
+-MODULE_DESCRIPTION("PCA9539 driver");
 -MODULE_LICENSE("GPL");
 -
--module_init(pcf8575_init);
--module_exit(pcf8575_exit);
+-module_init(pca9539_init);
+-module_exit(pca9539_exit);
+-
 -- 
 1.6.3.3
