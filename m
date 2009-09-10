@@ -1,32 +1,33 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <sebastian@breakpoint.cc>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 53817B7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1C14DB707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Sep 2009 07:48:14 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 86153DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 07:48:13 +1000 (EST)
-Date: Fri, 11 Sep 2009 01:48:12 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+	Fri, 11 Sep 2009 08:24:06 +1000 (EST)
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+	[85.10.199.196])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 86FBDDDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 08:24:05 +1000 (EST)
+Date: Fri, 11 Sep 2009 00:24:00 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
 To: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v3 3/3] ucc_geth: Fix hangs after switching from full to
-	half duplex
-Message-ID: <20090910214812.GA30564@oksana.dev.rtsoft.ru>
-References: <20090910020145.GC31083@oksana.dev.rtsoft.ru>
-	<20090910175852.GA18948@oksana.dev.rtsoft.ru>
-	<4AA93FB0.5060802@freescale.com>
-	<20090910194053.GA24363@oksana.dev.rtsoft.ru>
-	<20090910210935.GA26037@oksana.dev.rtsoft.ru>
+Subject: Re: MPC85xx External/Internal Interrupts
+Message-ID: <20090910222400.GB26587@Chamillionaire.breakpoint.cc>
+References: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
+	<d970ff420909041228h3638e840r34c0c0e79f178e55@mail.gmail.com>
+	<d970ff420909041229hb3aa96dya329e06ea56dd1ac@mail.gmail.com>
+	<20090906110641.GA11350@Chamillionaire.breakpoint.cc>
+	<20090909182857.GB8215@b07421-ec1.am.freescale.net>
+	<20090910131544.GB23433@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090910210935.GA26037@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Andy Fleming <afleming@freescale.com>, David Miller <davem@davemloft.net>,
-	Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20090910131544.GB23433@Chamillionaire.breakpoint.cc>
+Cc: linuxppc-dev@ozlabs.org, Alemao <xcarandiru@gmail.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,147 +37,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MPC8360 QE UCC ethernet controllers hang when changing link duplex
-under a load (a bit of NFS activity is enough).
+* Sebastian Andrzej Siewior | 2009-09-10 15:15:44 [+0200]:
 
-  PHY: mdio@e0102120:00 - Link is Up - 1000/Full
-  sh-3.00# ethtool -s eth0 speed 100 duplex half autoneg off
-  PHY: mdio@e0102120:00 - Link is Down
-  PHY: mdio@e0102120:00 - Link is Up - 100/Half
-  NETDEV WATCHDOG: eth0 (ucc_geth): transmit queue 0 timed out
-  ------------[ cut here ]------------
-  Badness at c01fcbd0 [verbose debug info unavailable]
-  NIP: c01fcbd0 LR: c01fcbd0 CTR: c0194e44
-  ...
+>* Scott Wood | 2009-09-09 13:28:57 [-0500]:
+>
+>>> That's why you always have an offset of 16 between every internal
+>>> interupt source number in the MPC855ERM document and those weired
+>>> numbers in the device tree :)
+>>
+>>something in the dts bindings that explains it.  Am I correct in assuming
+>>that this particular internal/external split is Freescale-specific and
+>>not a general OpenPIC thing?
+>Yes it looks like this. 
+>manual for both of them to check. I also don't have an OpenPIC spec to
+>check there.
+I had to say this. Now I got one. According to the OpenPIC there is no
+such thing as an internal and external interrupt sources. Base + 0x10000
+is the first interrupt source register and the number of interrupt
+sources is specified in the feature register. 
 
-The cure is to disable the controller before changing speed/duplex
-and enable it afterwards.
+So the split is a FSL thing.
+What do you thing about making this clear? Adding into every .dts a
+comment right on top or maybe in
+Documentation/powerpc/dts-bindings/fsl/?
 
-Though, disabling the controller might take quite a while, so we
-better not grab any spinlocks in adjust_link(). Instead, we quiesce
-the driver's activity, and only then disable the controller.
+>>
+>>-Scott
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-On Fri, Sep 11, 2009 at 01:09:36AM +0400, Anton Vorontsov wrote:
-> On Thu, Sep 10, 2009 at 11:40:53PM +0400, Anton Vorontsov wrote:
-> > On Thu, Sep 10, 2009 at 01:04:32PM -0500, Scott Wood wrote:
-> > > Anton Vorontsov wrote:
-> > > >MPC8360 QE UCC ethernet controllers hang when changing link duplex
-> > > >under a load (a bit of NFS activity is enough).
-> > > >
-> > > >  PHY: mdio@e0102120:00 - Link is Up - 1000/Full
-> > > >  sh-3.00# ethtool -s eth0 speed 100 duplex half autoneg off
-> > > >  PHY: mdio@e0102120:00 - Link is Down
-> > > >  PHY: mdio@e0102120:00 - Link is Up - 100/Half
-> > > >  NETDEV WATCHDOG: eth0 (ucc_geth): transmit queue 0 timed out
-> > > >  ------------[ cut here ]------------
-> > > >  Badness at c01fcbd0 [verbose debug info unavailable]
-> > > >  NIP: c01fcbd0 LR: c01fcbd0 CTR: c0194e44
-> > > >  ...
-> > > >
-> > > >The cure is to disable the controller before changing speed/duplex
-> > > >and enable it afterwards.
-> > > >
-> > > >Since ugeth_graceful_stop_{tx,rx} now may be called from an atomic
-> > > >context, switch the two functions from msleep() to mdelay().
-> > > 
-> > > Ouch.
-> > 
-> > Yeah, right... delaying for 10ms with irqs off isn't good.
-> > 
-> > > Can we put this in a workqueue or something?
-> > 
-> > adjust_link() itself isn't called from an atomic context.
-> 
-> Oops. I though that phylib calls us from a workqueue, not a timer. Hm...
-> 
-> Will be a little bit more work..
-
-Ignore me. I'm working on two kernel versions in parallel (2.6.21 and
-mainline), and it's 2.6.21 where phylib uses a timer. Mainline is OK.
-
-How about this patch?
-
- drivers/net/ucc_geth.c |   36 +++++++++++++++++++++++++++++++-----
- 1 files changed, 31 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 2a2c973..232fef9 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -1560,6 +1560,25 @@ static int ugeth_disable(struct ucc_geth_private *ugeth, enum comm_dir mode)
- 	return 0;
- }
- 
-+static void ugeth_quiesce(struct ucc_geth_private *ugeth)
-+{
-+	/* Wait for and prevent any further xmits. */
-+	netif_tx_disable(ugeth->ndev);
-+
-+	/* Disable the interrupt to avoid NAPI rescheduling. */
-+	disable_irq(ugeth->ug_info->uf_info.irq);
-+
-+	/* Stop NAPI, and possibly wait for its completion. */
-+	napi_disable(&ugeth->napi);
-+}
-+
-+static void ugeth_activate(struct ucc_geth_private *ugeth)
-+{
-+	napi_enable(&ugeth->napi);
-+	enable_irq(ugeth->ug_info->uf_info.irq);
-+	netif_tx_wake_all_queues(ugeth->ndev);
-+}
-+
- /* Called every time the controller might need to be made
-  * aware of new link state.  The PHY code conveys this
-  * information through variables in the ugeth structure, and this
-@@ -1573,14 +1592,11 @@ static void adjust_link(struct net_device *dev)
- 	struct ucc_geth __iomem *ug_regs;
- 	struct ucc_fast __iomem *uf_regs;
- 	struct phy_device *phydev = ugeth->phydev;
--	unsigned long flags;
- 	int new_state = 0;
- 
- 	ug_regs = ugeth->ug_regs;
- 	uf_regs = ugeth->uccf->uf_regs;
- 
--	spin_lock_irqsave(&ugeth->lock, flags);
--
- 	if (phydev->link) {
- 		u32 tempval = in_be32(&ug_regs->maccfg2);
- 		u32 upsmr = in_be32(&uf_regs->upsmr);
-@@ -1631,9 +1647,21 @@ static void adjust_link(struct net_device *dev)
- 			ugeth->oldspeed = phydev->speed;
- 		}
- 
-+		/*
-+		 * To change the MAC configuration we need to disable the
-+		 * controller. To do so, we have to either grab ugeth->lock,
-+		 * which is a bad idea since 'graceful stop' commands might
-+		 * take quite a while, or we can quiesce driver's activity.
-+		 */
-+		ugeth_quiesce(ugeth);
-+		ugeth_disable(ugeth, COMM_DIR_RX_AND_TX);
-+
- 		out_be32(&ug_regs->maccfg2, tempval);
- 		out_be32(&uf_regs->upsmr, upsmr);
- 
-+		ugeth_enable(ugeth, COMM_DIR_RX_AND_TX);
-+		ugeth_activate(ugeth);
-+
- 		if (!ugeth->oldlink) {
- 			new_state = 1;
- 			ugeth->oldlink = 1;
-@@ -1647,8 +1675,6 @@ static void adjust_link(struct net_device *dev)
- 
- 	if (new_state && netif_msg_link(ugeth))
- 		phy_print_status(phydev);
--
--	spin_unlock_irqrestore(&ugeth->lock, flags);
- }
- 
- /* Initialize TBI PHY interface for communicating with the
--- 
-1.6.3.3
+Sebastian
