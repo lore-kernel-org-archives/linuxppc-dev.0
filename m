@@ -1,24 +1,42 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <sachinp@in.ibm.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 48959B7C02
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 83A4AB6F31
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Sep 2009 12:01:47 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id C30C2DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 12:01:46 +1000 (EST)
-Date: Thu, 10 Sep 2009 06:01:45 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH 3/3] ucc_geth: Fix hangs after switching from full to half
-	duplex
-Message-ID: <20090910020145.GC31083@oksana.dev.rtsoft.ru>
+	Thu, 10 Sep 2009 15:32:53 +1000 (EST)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 33F9BDDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 15:32:52 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp09.au.ibm.com (8.14.3/8.13.1) with ESMTP id n8A5SPKr029602
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 15:28:25 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n8A5Uu0d1470468
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 15:30:56 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n8A5WmpR028288
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 15:32:48 +1000
+Message-ID: <4AA88F7D.5030302@in.ibm.com>
+Date: Thu, 10 Sep 2009 11:02:45 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andy Fleming <afleming@freescale.com>, Timur Tabi <timur@freescale.com>
+To: rostedt@goodmis.org
+Subject: Re: [FTRACE] Enabling function_graph causes OOPS
+References: <4A5C5D65.3030906@in.ibm.com>
+	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
+	<4A76BE81.4080707@in.ibm.com>
+	<1252458303.20985.10.camel@gandalf.stny.rr.com>
+	<4AA74AE2.5090001@in.ibm.com>
+	<1252525364.27001.32.camel@gandalf.stny.rr.com>
+In-Reply-To: <1252525364.27001.32.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +46,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MPC8360 QE UCC ethernet controllers hang when changing link duplex
-under a load (a bit of NFS activity is enough).
+Steven Rostedt wrote:
+> Ah, seems the bug happens to be in the module handling. Does the call
+> back always have .mod_return_to_handler?
+>   
+Yes. Every time it ends up in .mod_return_to_handler
 
-  PHY: mdio@e0102120:00 - Link is Up - 1000/Full
-  sh-3.00# ethtool -s eth0 speed 100 duplex half autoneg off
-  PHY: mdio@e0102120:00 - Link is Down
-  PHY: mdio@e0102120:00 - Link is Up - 100/Half
-  NETDEV WATCHDOG: eth0 (ucc_geth): transmit queue 0 timed out
-  ------------[ cut here ]------------
-  Badness at c01fcbd0 [verbose debug info unavailable]
-  NIP: c01fcbd0 LR: c01fcbd0 CTR: c0194e44
-  ...
+Thanks
+-Sachin
 
-The cure is to disable the controller before changing speed/duplex
-and enable it afterwards.
+> This doesn't surprise me any. The module code is a bit harry, and
+> function graph does some crazy crap with it.
+>
+> -- Steve
+>   
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/net/ucc_geth.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 2a2c973..9ad9015 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -1631,9 +1631,13 @@ static void adjust_link(struct net_device *dev)
- 			ugeth->oldspeed = phydev->speed;
- 		}
- 
-+		ugeth_disable(ugeth, COMM_DIR_RX_AND_TX);
-+
- 		out_be32(&ug_regs->maccfg2, tempval);
- 		out_be32(&uf_regs->upsmr, upsmr);
- 
-+		ugeth_enable(ugeth, COMM_DIR_RX_AND_TX);
-+
- 		if (!ugeth->oldlink) {
- 			new_state = 1;
- 			ugeth->oldlink = 1;
 -- 
-1.6.3.3
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
