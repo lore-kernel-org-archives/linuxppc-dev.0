@@ -1,29 +1,26 @@
-Return-Path: <b10812@lc1106.zin33.ap.freescale.net>
+Return-Path: <kenneth@southpole.se>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 75563B707B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7972FB6F20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Sep 2009 18:57:36 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 05EC8DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 18:57:35 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n8A8vFNB012759
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 01:57:26 -0700 (MST)
-From: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH][v1] powerpc/85xx: Create dts for each core in CAMP mode for
-	P2020RDB
-Date: Thu, 10 Sep 2009 14:27:11 +0530
-Message-Id: <1252573031-4157-1-git-send-email-poonam.aggrwal@freescale.com>
-Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+	Thu, 10 Sep 2009 19:09:58 +1000 (EST)
+Received: from mail.southpole.se (mail.southpole.se [193.12.106.18])
+	by ozlabs.org (Postfix) with ESMTP id 12CD5DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 19:09:58 +1000 (EST)
+Subject: Re: Question about e300 core decrementer interrupt
+From: Kenneth Johansson <kenneth@southpole.se>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20090909184343.GC8215@b07421-ec1.am.freescale.net>
+References: <FF7429C6AD6EFB489C0A5A2021CDFEFA7C30E6@zmy16exm21.fsl.freescale.net>
+	<1252494967.10293.6.camel@localhost>
+	<20090909184343.GC8215@b07421-ec1.am.freescale.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 10 Sep 2009 11:09:54 +0200
+Message-Id: <1252573794.10293.13.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Li Tao-B22598 <B22598@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,620 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch creates the dts files for each core and splits the devices between
-the two cores for P2020RDB.
+On Wed, 2009-09-09 at 13:43 -0500, Scott Wood wrote:
+> On Wed, Sep 09, 2009 at 01:16:07PM +0200, Kenneth Johansson wrote:
+> > On Tue, 2009-09-08 at 13:48 +0800, Li Tao-B22598 wrote:
+> > > Dear all,
+> > > 
+> > > I have a problem in MPC5121 sleep mode. As you know MPC5121 use e300c4
+> > > core. When I make the e300c4 core into sleep mode, it will return to
+> > > full power mode when the“decrementer interrupt” occurred.
+> > > 
+> > > But in the e300 core reference manual said that the “decrementer
+> > > interrupt”have no effect when e300 core in sleep mode, because the
+> > > time
+> > > base and decrementer are disabled while the core is in sleep mode.
+> > > Can anybody explain about this procedure ?
+> 
+> I'm not specifically familiar with MPC5121, but I'll answer from the
+> perspective of MPC83xx which has a similar core:
+> 
+> The decrementer stops ticking when the core goes to sleep.  However, if a
+> decrementer was already pending (but masked with MSR[EE]) before you
+> enter sleep mode, it will cause a wakeup.
+> 
+> To avoid this, the decrementer is set to a very large value prior to and
+> after disabling interrupts.  See generic_suspend_disable_irqs() in
+> arch/powerpc/kernel/time.c.  Is this not happening for you?  Which kernel
+> version are you using, and what mechanism are you using to go to sleep? 
+> 
+> > I'm a bit irritated that it's not as the "solution" can mean hardware
+> > changes an thus it's potentially expensive.
+> 
+> What sort of hardware changes?
 
-core0 has memory, L2, i2c, spi, dma1, usb, eth0, eth1, crypto, global-util, pci0
-core1 has L2, dma2, eth0, pci1, msi.
+ I don't want to spread missinformation but this procedure has helped on
+the ads5121 rev3 and two custom boards. 
 
-MPIC is shared between two cores but each core will protect its
-interrupts from other core by using "protected-sources" of mpic.
+the gpio 28,29,30 needs to be low and gpio31 needs to be hi. regardless
+of what is used as wakeup source when the device enters deep sleep
+otherwise you end up in some sort of meta state where you might not wake
+up on anything and you have this 42 second auto wakeup from the
+decrementer. 
 
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
----
-- based on http://www.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-- branch->next
- arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |  365 +++++++++++++++++++++++++
- arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |  186 +++++++++++++
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |   10 +-
- 3 files changed, 560 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
- create mode 100644 arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
-
-diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-new file mode 100644
-index 0000000..ca072da
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-@@ -0,0 +1,365 @@
-+/*
-+ * P2020 RDB  Core0 Device Tree Source in CAMP mode.
-+ *
-+ * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
-+ * can be shared, all the other devices must be assigned to one core only.
-+ * This dts file allows core0 to have memory, l2, i2c, spi, gpio, dma1, usb,
-+ * eth1, eth2, sdhc, crypto, global-util, pci0.
-+ *
-+ * Copyright 2009 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+/ {
-+	model = "fsl,P2020";
-+	compatible = "fsl,P2020RDB", "fsl,MPC85XXRDB-CAMP";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+
-+	aliases {
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		serial0 = &serial0;
-+		pci0 = &pci0;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,P2020@0 {
-+			device_type = "cpu";
-+			reg = <0x0>;
-+			next-level-cache = <&L2>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	soc@ffe00000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		device_type = "soc";
-+		compatible = "fsl,p2020-immr", "simple-bus";
-+		ranges = <0x0  0x0 0xffe00000 0x100000>;
-+		bus-frequency = <0>;		// Filled out by uboot.
-+
-+		ecm-law@0 {
-+			compatible = "fsl,ecm-law";
-+			reg = <0x0 0x1000>;
-+			fsl,num-laws = <12>;
-+		};
-+
-+		ecm@1000 {
-+			compatible = "fsl,p2020-ecm", "fsl,ecm";
-+			reg = <0x1000 0x1000>;
-+			interrupts = <17 2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		memory-controller@2000 {
-+			compatible = "fsl,p2020-memory-controller";
-+			reg = <0x2000 0x1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <18 2>;
-+		};
-+
-+		i2c@3000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			cell-index = <0>;
-+			compatible = "fsl-i2c";
-+			reg = <0x3000 0x100>;
-+			interrupts = <43 2>;
-+			interrupt-parent = <&mpic>;
-+			dfsrr;
-+			rtc@68 {
-+				compatible = "dallas,ds1339";
-+				reg = <0x68>;
-+			};
-+		};
-+
-+		i2c@3100 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			cell-index = <1>;
-+			compatible = "fsl-i2c";
-+			reg = <0x3100 0x100>;
-+			interrupts = <43 2>;
-+			interrupt-parent = <&mpic>;
-+			dfsrr;
-+		};
-+
-+		serial0: serial@4500 {
-+			cell-index = <0>;
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <0x4500 0x100>;
-+			clock-frequency = <0>;
-+			interrupts = <42 2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		spi@7000 {
-+			cell-index = <0>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,espi";
-+			reg = <0x7000 0x1000>;
-+			interrupts = <59 0x2>;
-+			interrupt-parent = <&mpic>;
-+			mode = "cpu";
-+
-+			fsl_m25p80@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "fsl,espi-flash";
-+				reg = <0>;
-+				linux,modalias = "fsl_m25p80";
-+				modal = "s25sl128b";
-+				spi-max-frequency = <50000000>;
-+				mode = <0>;
-+
-+				partition@0 {
-+					/* 512KB for u-boot Bootloader Image */
-+					reg = <0x0 0x00080000>;
-+					label = "SPI (RO) U-Boot Image";
-+					read-only;
-+				};
-+
-+				partition@80000 {
-+					/* 512KB for DTB Image */
-+					reg = <0x00080000 0x00080000>;
-+					label = "SPI (RO) DTB Image";
-+					read-only;
-+				};
-+
-+				partition@100000 {
-+					/* 4MB for Linux Kernel Image */
-+					reg = <0x00100000 0x00400000>;
-+					label = "SPI (RO) Linux Kernel Image";
-+					read-only;
-+				};
-+
-+				partition@500000 {
-+					/* 4MB for Compressed RFS Image */
-+					reg = <0x00500000 0x00400000>;
-+					label = "SPI (RO) Compressed RFS Image";
-+					read-only;
-+				};
-+
-+				partition@900000 {
-+					/* 7MB for JFFS2 based RFS */
-+					reg = <0x00900000 0x00700000>;
-+					label = "SPI (RW) JFFS2 RFS";
-+				};
-+			};
-+		};
-+
-+		gpio: gpio-controller@f000 {
-+			#gpio-cells = <2>;
-+			compatible = "fsl,mpc8572-gpio";
-+			reg = <0xf000 0x100>;
-+			interrupts = <47 0x2>;
-+			interrupt-parent = <&mpic>;
-+			gpio-controller;
-+		};
-+
-+		L2: l2-cache-controller@20000 {
-+			compatible = "fsl,p2020-l2-cache-controller";
-+			reg = <0x20000 0x1000>;
-+			cache-line-size = <32>;	// 32 bytes
-+			cache-size = <0x80000>; // L2,512K
-+			interrupt-parent = <&mpic>;
-+			interrupts = <16 2>;
-+		};
-+
-+		dma@21300 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,eloplus-dma";
-+			reg = <0x21300 0x4>;
-+			ranges = <0x0 0x21100 0x200>;
-+			cell-index = <0>;
-+			dma-channel@0 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x0 0x80>;
-+				cell-index = <0>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <20 2>;
-+			};
-+			dma-channel@80 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x80 0x80>;
-+				cell-index = <1>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <21 2>;
-+			};
-+			dma-channel@100 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x100 0x80>;
-+				cell-index = <2>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <22 2>;
-+			};
-+			dma-channel@180 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x180 0x80>;
-+				cell-index = <3>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <23 2>;
-+			};
-+		};
-+
-+		usb@22000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl-usb2-dr";
-+			reg = <0x22000 0x1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <28 0x2>;
-+			phy_type = "ulpi";
-+		};
-+
-+		mdio@24520 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,gianfar-mdio";
-+			reg = <0x24520 0x20>;
-+
-+			phy0: ethernet-phy@0 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <3 1>;
-+				reg = <0x0>;
-+			};
-+			phy1: ethernet-phy@1 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <3 1>;
-+				reg = <0x1>;
-+			};
-+		};
-+
-+		mdio@25520 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,gianfar-tbi";
-+			reg = <0x26520 0x20>;
-+
-+			tbi0: tbi-phy@11 {
-+				reg = <0x11>;
-+				device_type = "tbi-phy";
-+			};
-+		};
-+
-+		enet1: ethernet@25000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			cell-index = <1>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <0x25000 0x1000>;
-+			ranges = <0x0 0x25000 0x1000>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <35 2 36 2 40 2>;
-+			interrupt-parent = <&mpic>;
-+			tbi-handle = <&tbi0>;
-+			phy-handle = <&phy0>;
-+			phy-connection-type = "sgmii";
-+
-+		};
-+
-+		enet2: ethernet@26000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			cell-index = <2>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <0x26000 0x1000>;
-+			ranges = <0x0 0x26000 0x1000>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <31 2 32 2 33 2>;
-+			interrupt-parent = <&mpic>;
-+			phy-handle = <&phy1>;
-+			phy-connection-type = "rgmii-id";
-+		};
-+
-+		sdhci@2e000 {
-+			compatible = "fsl,p2020-esdhc", "fsl,esdhc";
-+			reg = <0x2e000 0x1000>;
-+			interrupts = <72 0x2>;
-+			interrupt-parent = <&mpic>;
-+			/* Filled in by U-Boot */
-+			clock-frequency = <0>;
-+		};
-+
-+		crypto@30000 {
-+			compatible = "fsl,sec3.1", "fsl,sec3.0", "fsl,sec2.4",
-+				     "fsl,sec2.2", "fsl,sec2.1", "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2 58 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0xbfe>;
-+			fsl,descriptor-types-mask = <0x3ab0ebf>;
-+		};
-+
-+		mpic: pic@40000 {
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0x40000 0x40000>;
-+			compatible = "chrp,open-pic";
-+			device_type = "open-pic";
-+			protected-sources = <
-+			42 76 77 78 79 /* serial1 , dma2 */
-+			29 30 34 26 /* enet0, pci1 */
-+			0xe0 0xe1 0xe2 0xe3 /* msi */
-+			0xe4 0xe5 0xe6 0xe7
-+			>;
-+		};
-+
-+		global-utilities@e0000 {
-+			compatible = "fsl,p2020-guts";
-+			reg = <0xe0000 0x1000>;
-+			fsl,has-rstcr;
-+		};
-+	};
-+
-+	pci0: pcie@ffe09000 {
-+		compatible = "fsl,mpc8548-pcie";
-+		device_type = "pci";
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0 0xffe09000 0 0x1000>;
-+		bus-range = <0 255>;
-+		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc30000 0x0 0x10000>;
-+		clock-frequency = <33333333>;
-+		interrupt-parent = <&mpic>;
-+		interrupts = <25 2>;
-+		pcie@0 {
-+			reg = <0x0 0x0 0x0 0x0 0x0>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			device_type = "pci";
-+			ranges = <0x2000000 0x0 0xa0000000
-+				  0x2000000 0x0 0xa0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
-new file mode 100644
-index 0000000..c3c9da6
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
-@@ -0,0 +1,186 @@
-+/*
-+ * P2020 RDB Core1 Device Tree Source in CAMP mode.
-+ *
-+ * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
-+ * can be shared, all the other devices must be assigned to one core only.
-+ * This dts allows core1 to have l2, dma2, eth0, pci1, msi.
-+ *
-+ * Please note to add "-b 1" for core1's dts compiling.
-+ *
-+ * Copyright 2009 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+/ {
-+	model = "fsl,P2020";
-+	compatible = "fsl,P2020RDB", "fsl,MPC85XXRDB-CAMP";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+
-+	aliases {
-+		ethernet0 = &enet0;
-+		serial0 = &serial0;
-+		pci1 = &pci1;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,P2020@1 {
-+			device_type = "cpu";
-+			reg = <0x1>;
-+			next-level-cache = <&L2>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	soc@ffe00000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		device_type = "soc";
-+		compatible = "fsl,p2020-immr", "simple-bus";
-+		ranges = <0x0  0x0 0xffe00000 0x100000>;
-+		bus-frequency = <0>;		// Filled out by uboot.
-+
-+		serial0: serial@4600 {
-+			cell-index = <1>;
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <0x4600 0x100>;
-+			clock-frequency = <0>;
-+			interrupts = <42 2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		dma@c300 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,eloplus-dma";
-+			reg = <0xc300 0x4>;
-+			ranges = <0x0 0xc100 0x200>;
-+			cell-index = <1>;
-+			dma-channel@0 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x0 0x80>;
-+				cell-index = <0>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <76 2>;
-+			};
-+			dma-channel@80 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x80 0x80>;
-+				cell-index = <1>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <77 2>;
-+			};
-+			dma-channel@100 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x100 0x80>;
-+				cell-index = <2>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <78 2>;
-+			};
-+			dma-channel@180 {
-+				compatible = "fsl,eloplus-dma-channel";
-+				reg = <0x180 0x80>;
-+				cell-index = <3>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <79 2>;
-+			};
-+		};
-+
-+		L2: l2-cache-controller@20000 {
-+			compatible = "fsl,p2020-l2-cache-controller";
-+			reg = <0x20000 0x1000>;
-+			cache-line-size = <32>;	// 32 bytes
-+			cache-size = <0x80000>; // L2,512K
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+
-+		enet0: ethernet@24000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			cell-index = <0>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <0x24000 0x1000>;
-+			ranges = <0x0 0x24000 0x1000>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <29 2 30 2 34 2>;
-+			interrupt-parent = <&mpic>;
-+			fixed-link = <1 1 1000 0 0>;
-+			phy-connection-type = "rgmii-id";
-+
-+		};
-+
-+		mpic: pic@40000 {
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0x40000 0x40000>;
-+			compatible = "chrp,open-pic";
-+			device_type = "open-pic";
-+			protected-sources = <
-+			17 18 43 42 59 47 /*ecm, mem, i2c, serial0, spi,gpio */
-+			16 20 21 22 23 28 	/* L2, dma1, USB */
-+			03 35 36 40 31 32 33 	/* mdio, enet1, enet2 */
-+			72 45 58 25 		/* sdhci, crypto , pci */
-+			>;
-+		};
-+
-+		msi@41600 {
-+			compatible = "fsl,p2020-msi", "fsl,mpic-msi";
-+			reg = <0x41600 0x80>;
-+			msi-available-ranges = <0 0x100>;
-+			interrupts = <
-+				0xe0 0
-+				0xe1 0
-+				0xe2 0
-+				0xe3 0
-+				0xe4 0
-+				0xe5 0
-+				0xe6 0
-+				0xe7 0>;
-+			interrupt-parent = <&mpic>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe0a000 {
-+		compatible = "fsl,mpc8548-pcie";
-+		device_type = "pci";
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0 0xffe0a000 0 0x1000>;
-+		bus-range = <0 255>;
-+		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
-+		clock-frequency = <33333333>;
-+		interrupt-parent = <&mpic>;
-+		interrupts = <26 2>;
-+		pcie@0 {
-+			reg = <0x0 0x0 0x0 0x0 0x0>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			device_type = "pci";
-+			ranges = <0x2000000 0x0 0xc0000000
-+				  0x2000000 0x0 0xc0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index 495bd8b..088f30b 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -44,6 +44,7 @@ void __init mpc85xx_rdb_pic_init(void)
- 	struct mpic *mpic;
- 	struct resource r;
- 	struct device_node *np;
-+	unsigned long root = of_get_flat_dt_root();
- 
- 	np = of_find_node_by_type(NULL, "open-pic");
- 	if (np == NULL) {
-@@ -57,11 +58,18 @@ void __init mpc85xx_rdb_pic_init(void)
- 		return;
- 	}
- 
--	mpic = mpic_alloc(np, r.start,
-+	if (of_flat_dt_is_compatible(root, "fsl,85XXRDB-CAMP")) {
-+		mpic = mpic_alloc(np, r.start,
-+			MPIC_PRIMARY |
-+			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
-+			0, 256, " OpenPIC  ");
-+	} else {
-+		mpic = mpic_alloc(np, r.start,
- 		  MPIC_PRIMARY | MPIC_WANTS_RESET |
- 		  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
- 		  MPIC_SINGLE_DEST_CPU,
- 		  0, 256, " OpenPIC  ");
-+	}
- 
- 	BUG_ON(mpic == NULL);
- 	of_node_put(np);
--- 
-1.5.6.5
+Other weired states has also been observed. the PMC module is a bit
+tempremental in this chip.
