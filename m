@@ -1,27 +1,23 @@
-Return-Path: <paubert@iram.es>
+Return-Path: <isaac.gomez.morales@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2FF6DB7099
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id CD1B6B7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Sep 2009 02:02:47 +1000 (EST)
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 2A950DDD1B
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 02:02:46 +1000 (EST)
-Date: Thu, 10 Sep 2009 18:02:33 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>
-Subject: Re: [PATCH][v1] powerpc/85xx: Create dts for each core in CAMPmode
-	for P2020RDB
-Message-ID: <20090910160233.GA24085@iram.es>
-References: <1252573031-4157-1-git-send-email-poonam.aggrwal@freescale.com>
-	<20090910093307.GA17117@iram.es>
-	<1BD5CFC378ED0946B688E0C9BA2EF0951FD268@zin33exm24.fsl.freescale.net>
+	Fri, 11 Sep 2009 01:01:58 +1000 (EST)
+Received: from mail-ew0-f227.google.com (mail-ew0-f227.google.com
+	[209.85.219.227]) by ozlabs.org (Postfix) with ESMTP id A9AEFDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 01:01:56 +1000 (EST)
+Received: by ewy27 with SMTP id 27so211797ewy.40
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 08:01:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1BD5CFC378ED0946B688E0C9BA2EF0951FD268@zin33exm24.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Date: Thu, 10 Sep 2009 17:01:53 +0200
+Message-ID: <38a5a2d10909100801x11049cddi1799c0ed6ee44410@mail.gmail.com>
+Subject: Debian on MPC8572DS
+From: Isaac Gomez Morales <isaac.gomez.morales@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=000e0cdfc602e4562a04733a7aab
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,107 +27,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 10, 2009 at 08:48:38PM +0530, Aggrwal Poonam-B10812 wrote:
->  
-> 
-> > -----Original Message-----
-> > From: Gabriel Paubert [mailto:paubert@iram.es] 
-> > Sent: Thursday, September 10, 2009 3:03 PM
-> > To: Aggrwal Poonam-B10812
-> > Cc: linuxppc-dev@ozlabs.org
-> > Subject: Re: [PATCH][v1] powerpc/85xx: Create dts for each 
-> > core in CAMPmode for P2020RDB
-> > 
-> > On Thu, Sep 10, 2009 at 02:27:11PM +0530, Poonam Aggrwal wrote:
-> > > This patch creates the dts files for each core and splits 
-> > the devices 
-> > > between the two cores for P2020RDB.
-> > > 
-> > > core0 has memory, L2, i2c, spi, dma1, usb, eth0, eth1, crypto, 
-> > > global-util, pci0
-> > > core1 has L2, dma2, eth0, pci1, msi.
-> > 
-> > Surely you mean eth1 and eth2 for core0, no?
-> Yes you are right , I'll fix this.
-> > 
-> > At least it's what I gather from the code.
-> > 
-> > Also both cores have a node called serial0, at different 
-> > addresses but with the same interrupt!
-> Yes both the UARTS use the same int line in shared mode. 
-> > 
-> > But in the mpic comment line there is "serial1", and 
-> > interrupt 42 is the only number which appears in both lists 
-> > of mpic protected interrupts.
-> I am not sure how to handle the shared interrupts in AMP scenario,
-> although this has been tested and both serials are working one on each
-> core.
+--000e0cdfc602e4562a04733a7aab
+Content-Type: text/plain; charset=ISO-8859-1
 
-Ok, I wrongly understood protected interrupts as reserved 
-for one core. However, I still dislike two devices having the same
-name.
+Hello,
 
-Otherwise it may work if every interrupt is delivered to both
-cores although statistically only one core will actually have 
-some work to do. Doesn't the kernel complain about unhandled irqs
-however? 
+I'm trying to get a Linux distro such as Debian in the following system
 
-	Regards,
-	Gabriel
+System:
+mpc8572ds HW
+u-boot programmed on flash memory
+vanillia linux installed on sata disk
 
-> > > +
-> > > +		serial0: serial@4500 {
-> > > +			cell-index = <0>;
-> > > +			device_type = "serial";
-> > > +			compatible = "ns16550";
-> > > +			reg = <0x4500 0x100>;
-> > > +			clock-frequency = <0>;
-> > > +			interrupts = <42 2>;
-> > > +			interrupt-parent = <&mpic>;
-> > > +		};
+Restrictions:
+i have not apt-get resident on system
 
-> > > +
-> > > +		mpic: pic@40000 {
-> > > +			interrupt-controller;
-> > > +			#address-cells = <0>;
-> > > +			#interrupt-cells = <2>;
-> > > +			reg = <0x40000 0x40000>;
-> > > +			compatible = "chrp,open-pic";
-> > > +			device_type = "open-pic";
-> > > +			protected-sources = <
-> > > +			42 76 77 78 79 /* serial1 , dma2 */
-> > > +			29 30 34 26 /* enet0, pci1 */
-> > > +			0xe0 0xe1 0xe2 0xe3 /* msi */
-> > > +			0xe4 0xe5 0xe6 0xe7
-> > > +			>;
-> > > +		};
-> > > +
-> > > +
 
-> > > +		serial0: serial@4600 {
-> > > +			cell-index = <1>;
-> > > +			device_type = "serial";
-> > > +			compatible = "ns16550";
-> > > +			reg = <0x4600 0x100>;
-> > > +			clock-frequency = <0>;
-> > > +			interrupts = <42 2>;
-> > > +			interrupt-parent = <&mpic>;
-> > > +		};
-> > > +
-> > > +
+I have tried the following ways with no succeful results:
 
-> > > +		mpic: pic@40000 {
-> > > +			interrupt-controller;
-> > > +			#address-cells = <0>;
-> > > +			#interrupt-cells = <2>;
-> > > +			reg = <0x40000 0x40000>;
-> > > +			compatible = "chrp,open-pic";
-> > > +			device_type = "open-pic";
-> > > +			protected-sources = <
-> > > +			17 18 43 42 59 47 /*ecm, mem, i2c, serial0, spi,gpio */
-> > > +			16 20 21 22 23 28 	/* L2, dma1, USB */
-> > > +			03 35 36 40 31 32 33 	/* mdio, enet1, enet2 */
-> > > +			72 45 58 25 		/* sdhci, crypto , pci */
-> > > +			>;
-> > > +		};
-> > > +
+I tried to run deboostrap with chroot on mpc8572ds
+
+I tried to run deboostrap on another machine, downloading the correct
+packages for ppc enviroment and copiny those packages in a new ext2
+partition of my 8572 hw. After that i executed "chroot /mnt/newpartition
+/bin/bash" and it returned "Illegal instruction". At this point i can't
+follow the installation and if i force to startup the machine with that rf
+system, it returns a "kernel panic" with error to handling the signal 4 of
+init process.
+
+I tried to get start the machine with a debain livecd installation. I
+created an uImage and initrd from cdrom's vmlinux and initrd.gz with the
+uboot-mkimage tool, then i booted it from u-boot but the kernel didn't
+start.
+
+I tried to start a preinstalled Debian for a simillar architecture, in
+cocnret from a mpc8561 ppc's Debian. I put its hhdd with the Debian rfs on
+my machine and start it with my uImage and dtb files. The results was the
+same "kernel panic" and signal 4 error.
+
+
+
+I accept all ideas.
+
+Thanks you all and sorry for my english
+
+--000e0cdfc602e4562a04733a7aab
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hello,<br><br>I&#39;m trying to get a Linux distro such as Debian in the fo=
+llowing system<br><br>System:<br><div style=3D"margin-left: 40px;">mpc8572d=
+s HW<br>u-boot programmed on flash memory<br>vanillia linux installed on sa=
+ta disk<br>
+<br></div>Restrictions:<br><div style=3D"margin-left: 40px;">i have not apt=
+-get resident on system<br></div><br><br>I have tried the following ways wi=
+th no succeful results:<br><br><div style=3D"margin-left: 40px;">I tried to=
+ run deboostrap with chroot on mpc8572ds<br>
+<br>I tried to run deboostrap on another machine, downloading the correct p=
+ackages for ppc enviroment and copiny those packages in a new ext2 partitio=
+n of my 8572 hw. After that i executed &quot;chroot /mnt/newpartition /bin/=
+bash&quot; and it returned &quot;Illegal instruction&quot;. At this point i=
+ can&#39;t follow the installation and if i force to startup the machine wi=
+th that rf system, it returns a &quot;kernel panic&quot; with error to hand=
+ling the signal 4 of init process.<br>
+<br>I tried to get start the machine with a debain livecd installation. I c=
+reated an uImage and initrd from cdrom&#39;s vmlinux and initrd.gz with the=
+ uboot-mkimage tool, then i booted it from u-boot but the kernel didn&#39;t=
+ start.<br>
+<br>I tried to start a preinstalled Debian for a simillar architecture, in =
+cocnret from a mpc8561 ppc&#39;s Debian. I put its hhdd with the Debian rfs=
+ on my machine and start it with my uImage and dtb files. The results was t=
+he same &quot;kernel panic&quot; and signal 4 error.<br>
+</div><br><br><br>I accept all ideas.<br><br>Thanks you all and sorry for m=
+y english<br><br><br>
+
+--000e0cdfc602e4562a04733a7aab--
