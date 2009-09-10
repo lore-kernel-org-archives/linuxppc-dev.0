@@ -1,39 +1,27 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <paubert@iram.es>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 50079B6F56
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2FF6DB7099
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Sep 2009 01:29:59 +1000 (EST)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 923E8DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 01:29:51 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n8AFTmRO018099
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 08:29:48 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n8AFVZVt022245
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 10:31:35 -0500 (CDT)
-Message-ID: <4AA91B86.7090805@freescale.com>
-Date: Thu, 10 Sep 2009 10:30:14 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Fri, 11 Sep 2009 02:02:47 +1000 (EST)
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 2A950DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 02:02:46 +1000 (EST)
+Date: Thu, 10 Sep 2009 18:02:33 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>
+Subject: Re: [PATCH][v1] powerpc/85xx: Create dts for each core in CAMPmode
+	for P2020RDB
+Message-ID: <20090910160233.GA24085@iram.es>
+References: <1252573031-4157-1-git-send-email-poonam.aggrwal@freescale.com>
+	<20090910093307.GA17117@iram.es>
+	<1BD5CFC378ED0946B688E0C9BA2EF0951FD268@zin33exm24.fsl.freescale.net>
 MIME-Version: 1.0
-To: Li Tao <b22598@freescale.com>
-Subject: Re: Question about e300 core decrementer interrupt
-References: <FF7429C6AD6EFB489C0A5A2021CDFEFA7C30E6@zmy16exm21.fsl.freescale.net>	
-	<1252494967.10293.6.camel@localhost>	
-	<20090909184343.GC8215@b07421-ec1.am.freescale.net>
-	<1252583922.26108.23.camel@ubuntu.ubuntu-domain>
-In-Reply-To: <1252583922.26108.23.camel@ubuntu.ubuntu-domain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Kenneth Johansson <kenneth@southpole.se>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1BD5CFC378ED0946B688E0C9BA2EF0951FD268@zin33exm24.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,35 +31,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Li Tao wrote:
-> Hi Scott Wood,
-> Thanks for your response
+On Thu, Sep 10, 2009 at 08:48:38PM +0530, Aggrwal Poonam-B10812 wrote:
+>  
 > 
-> 在 2009-09-09三的 13:43 -0500，Scott Wood写道：
->> The decrementer stops ticking when the core goes to sleep.  However, if a
->> decrementer was already pending (but masked with MSR[EE]) before you
->> enter sleep mode, it will cause a wakeup.
->>
->> To avoid this, the decrementer is set to a very large value prior to and
->> after disabling interrupts.  See generic_suspend_disable_irqs() in
->> arch/powerpc/kernel/time.c.  Is this not happening for you?  Which kernel
->> version are you using, and what mechanism are you using to go to sleep?
-> I use 2.6.24 kernel. The PM driver code have set decrementer to
-> 0x7fffffff before go to sleep mode.
+> > -----Original Message-----
+> > From: Gabriel Paubert [mailto:paubert@iram.es] 
+> > Sent: Thursday, September 10, 2009 3:03 PM
+> > To: Aggrwal Poonam-B10812
+> > Cc: linuxppc-dev@ozlabs.org
+> > Subject: Re: [PATCH][v1] powerpc/85xx: Create dts for each 
+> > core in CAMPmode for P2020RDB
+> > 
+> > On Thu, Sep 10, 2009 at 02:27:11PM +0530, Poonam Aggrwal wrote:
+> > > This patch creates the dts files for each core and splits 
+> > the devices 
+> > > between the two cores for P2020RDB.
+> > > 
+> > > core0 has memory, L2, i2c, spi, dma1, usb, eth0, eth1, crypto, 
+> > > global-util, pci0
+> > > core1 has L2, dma2, eth0, pci1, msi.
+> > 
+> > Surely you mean eth1 and eth2 for core0, no?
+> Yes you are right , I'll fix this.
+> > 
+> > At least it's what I gather from the code.
+> > 
+> > Also both cores have a node called serial0, at different 
+> > addresses but with the same interrupt!
+> Yes both the UARTS use the same int line in shared mode. 
+> > 
+> > But in the mpic comment line there is "serial1", and 
+> > interrupt 42 is the only number which appears in both lists 
+> > of mpic protected interrupts.
+> I am not sure how to handle the shared interrupts in AMP scenario,
+> although this has been tested and both serials are working one on each
+> core.
 
-It looks like 2.6.24 doesn't have commit 
-7ac5dde99eb9fefdb526973c600075b7c5703a86 (Implement arch disable/enable 
-irq hooks) -- are you disabling the decrementer in a similar manner, or 
-is it possible that the decrementer has already fired by the time you 
-set it to 0x7fffffff?  Could you read the value just prior to entering 
-sleep?
+Ok, I wrongly understood protected interrupts as reserved 
+for one core. However, I still dislike two devices having the same
+name.
 
-Why use such an old kernel, BTW?
+Otherwise it may work if every interrupt is delivered to both
+cores although statistically only one core will actually have 
+some work to do. Doesn't the kernel complain about unhandled irqs
+however? 
 
-> The driver set HID0[10]=1, then set MSR POW bit. PMCCR = 00111.
+	Regards,
+	Gabriel
 
-I was more interested in whether you were using the suspend_ops (maybe 
-pm_ops back then?) infrastructure (which would invoke the irq hooks) or 
-something custom.
+> > > +
+> > > +		serial0: serial@4500 {
+> > > +			cell-index = <0>;
+> > > +			device_type = "serial";
+> > > +			compatible = "ns16550";
+> > > +			reg = <0x4500 0x100>;
+> > > +			clock-frequency = <0>;
+> > > +			interrupts = <42 2>;
+> > > +			interrupt-parent = <&mpic>;
+> > > +		};
 
--Scott
+> > > +
+> > > +		mpic: pic@40000 {
+> > > +			interrupt-controller;
+> > > +			#address-cells = <0>;
+> > > +			#interrupt-cells = <2>;
+> > > +			reg = <0x40000 0x40000>;
+> > > +			compatible = "chrp,open-pic";
+> > > +			device_type = "open-pic";
+> > > +			protected-sources = <
+> > > +			42 76 77 78 79 /* serial1 , dma2 */
+> > > +			29 30 34 26 /* enet0, pci1 */
+> > > +			0xe0 0xe1 0xe2 0xe3 /* msi */
+> > > +			0xe4 0xe5 0xe6 0xe7
+> > > +			>;
+> > > +		};
+> > > +
+> > > +
+
+> > > +		serial0: serial@4600 {
+> > > +			cell-index = <1>;
+> > > +			device_type = "serial";
+> > > +			compatible = "ns16550";
+> > > +			reg = <0x4600 0x100>;
+> > > +			clock-frequency = <0>;
+> > > +			interrupts = <42 2>;
+> > > +			interrupt-parent = <&mpic>;
+> > > +		};
+> > > +
+> > > +
+
+> > > +		mpic: pic@40000 {
+> > > +			interrupt-controller;
+> > > +			#address-cells = <0>;
+> > > +			#interrupt-cells = <2>;
+> > > +			reg = <0x40000 0x40000>;
+> > > +			compatible = "chrp,open-pic";
+> > > +			device_type = "open-pic";
+> > > +			protected-sources = <
+> > > +			17 18 43 42 59 47 /*ecm, mem, i2c, serial0, spi,gpio */
+> > > +			16 20 21 22 23 28 	/* L2, dma1, USB */
+> > > +			03 35 36 40 31 32 33 	/* mdio, enet1, enet2 */
+> > > +			72 45 58 25 		/* sdhci, crypto , pci */
+> > > +			>;
+> > > +		};
+> > > +
