@@ -1,22 +1,38 @@
-Return-Path: <frank.svendsboe@gmail.com>
-Received: from mail-ew0-f221.google.com (mail-ew0-f221.google.com
-	[209.85.219.221])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 2C5A9B7043
+Return-Path: <ashish.kalra@freescale.com>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 61BF0B7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Sep 2009 23:06:48 +1000 (EST)
-Received: by ewy21 with SMTP id 21so989545ewy.8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Sep 2009 06:06:45 -0700 (PDT)
+	Fri, 11 Sep 2009 23:24:04 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DD8FFDDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 23:24:03 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n8BDNxs1024359
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 06:23:59 -0700 (MST)
+Received: from zin33exm20.fsl.freescale.net (zin33exm20.ap.freescale.net
+	[10.232.192.5])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n8BDPSr0021778
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 08:25:29 -0500 (CDT)
 MIME-Version: 1.0
-In-Reply-To: <d15e5cf90909110459p221d4bc3nc9e1d45b95bce6bd@mail.gmail.com>
-References: <d15e5cf90909110459p221d4bc3nc9e1d45b95bce6bd@mail.gmail.com>
-Date: Fri, 11 Sep 2009 15:06:44 +0200
-Message-ID: <1ba63b520909110606x4599dd5bt428e03775805dff2@mail.gmail.com>
-Subject: Re: linux booting fine but running slow
-From: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>
-To: "Gao Ya'nan" <abutter.gao@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, stevan@iritel.com
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [RESEND][PATCH] sata_fsl: hard and soft reset split
+Date: Fri, 11 Sep 2009 18:51:46 +0530
+Message-ID: <16444A0F3094A24C83EAB7836A12C63B37495F@zin33exm20.fsl.freescale.net>
+In-Reply-To: <4AA9F038.6030207@garzik.org>
+References: <Pine.WNT.4.64.0906291854180.2640@B00888-02.fsl.freescale.net>
+	<4AA9F038.6030207@garzik.org>
+From: "Kalra Ashish-B00888" <ashish.kalra@freescale.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +42,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Gao and Stevan
+Hello Jeff,
 
-I've observed the same slow-down issue on an MPC875 a while now, but
-haven't had the time to do a git-bisect
-and find the patch that causes the problem. So far, I'm running
-torvalds 2.6.29-rc6, and the slow-down problem
-was introduced somewhere between 2.6.26-rc6 and 2.6.30-rc2.
+I will do the rediff and resubmit the patch.
 
-What options did you specify to improve the performance?
+Thanks,
+Ashish=20
 
-Regards,
-Frank
+-----Original Message-----
+From: Jeff Garzik [mailto:jeff@garzik.org]=20
+Sent: Friday, September 11, 2009 12:08 PM
+To: Kalra Ashish-B00888
+Cc: linux-ide@vger.kernel.org; linuxppc-dev@ozlabs.org
+Subject: Re: [RESEND][PATCH] sata_fsl: hard and soft reset split
 
-On Fri, Sep 11, 2009 at 1:59 PM, Gao Ya'nan <abutter.gao@gmail.com> wrote:
-> Hi, stevan, I had met a similarly problem with U-Boot-v2009.08 and
-> DENX-v2.6.30.3 Linux.
+On 06/29/2009 09:26 AM, ashish kalra wrote:
+> Split sata_fsl_softreset() into hard and soft resets to make=20
+> error-handling more efficient & device and PMP detection more
+reliable.
 >
-> Today, I add some options to Linux, everythings worked well, but I got
-> a fat kernel. Do you solve it now ?
+> Also includes fix for PMP support, driver tested with Sil3726, Sil4726
+
+> & Exar PMP controllers.
 >
-> Gao Ya'nan
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+> Signed-off-by: Ashish Kalra <Ashish.Kalra@freescale.com>
+
+can you rediff this and 'AN' support against latest upstream?
