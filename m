@@ -1,23 +1,26 @@
-Return-Path: <hongwoo7@gmail.com>
+Return-Path: <jeff@garzik.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4DD96B70AD
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 74729B7B64
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Sep 2009 16:34:01 +1000 (EST)
-Received: from mail-px0-f195.google.com (mail-px0-f195.google.com
-	[209.85.216.195]) by ozlabs.org (Postfix) with ESMTP id BEE49DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 16:33:59 +1000 (EST)
-Received: by pxi33 with SMTP id 33so701000pxi.11
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Sep 2009 23:33:57 -0700 (PDT)
-Message-ID: <4AA9EF51.1050506@gmail.com>
-Date: Fri, 11 Sep 2009 15:33:53 +0900
-From: HongWoo Lee <hongwoo7@gmail.com>
+	Fri, 11 Sep 2009 16:37:59 +1000 (EST)
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2E24FDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 16:37:58 +1000 (EST)
+Message-ID: <4AA9F038.6030207@garzik.org>
+Date: Fri, 11 Sep 2009 02:37:44 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: RMO ? (in the prom_init.c) 
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: ashish kalra <ashish.kalra@freescale.com>
+Subject: Re: [RESEND][PATCH] sata_fsl: hard and soft reset split
+References: <Pine.WNT.4.64.0906291854180.2640@B00888-02.fsl.freescale.net>
+In-Reply-To: <Pine.WNT.4.64.0906291854180.2640@B00888-02.fsl.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,14 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi ~
+On 06/29/2009 09:26 AM, ashish kalra wrote:
+> Split sata_fsl_softreset() into hard and soft resets to make
+> error-handling more efficient & device and PMP detection more reliable.
+>
+> Also includes fix for PMP support, driver tested with Sil3726, Sil4726 &
+> Exar PMP controllers.
+>
+> Signed-off-by: Ashish Kalra <Ashish.Kalra@freescale.com>
 
-Can anybody tell me what the RMO is ?? in the linux kernel. 
-(arch/powerpc/kernel/prom_init.c)
-Through googling and guessing, I found "Read Memory Only" and "Relaxed 
-Memory Order".
-But none of these are not properly understood in the context.
-
-Thanks in advance.
-
-HongWoo.
+can you rediff this and 'AN' support against latest upstream?
