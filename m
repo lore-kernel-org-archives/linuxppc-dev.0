@@ -1,31 +1,27 @@
-Return-Path: <rostedt@goodmis.org>
+Return-Path: <isaac.gomez.morales@gmail.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id CC63FB707B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 2090AB7B66
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Sep 2009 04:05:10 +1000 (EST)
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 400DDDDD04
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Sep 2009 04:05:09 +1000 (EST)
-Subject: Re: [FTRACE] Enabling function_graph causes OOPS
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Sachin Sant <sachinp@in.ibm.com>
-In-Reply-To: <4AA88F7D.5030302@in.ibm.com>
-References: <4A5C5D65.3030906@in.ibm.com>
-	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
-	<4A76BE81.4080707@in.ibm.com>
-	<1252458303.20985.10.camel@gandalf.stny.rr.com>
-	<4AA74AE2.5090001@in.ibm.com>
-	<1252525364.27001.32.camel@gandalf.stny.rr.com>
-	<4AA88F7D.5030302@in.ibm.com>
-Content-Type: text/plain
-Date: Fri, 11 Sep 2009 14:05:06 -0400
-Message-Id: <1252692306.18996.703.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
+	Fri, 11 Sep 2009 17:30:46 +1000 (EST)
+Received: from mail-ew0-f227.google.com (mail-ew0-f227.google.com
+	[209.85.219.227]) by ozlabs.org (Postfix) with ESMTP id 14D75DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 17:30:43 +1000 (EST)
+Received: by ewy27 with SMTP id 27so906209ewy.40
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 00:30:42 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090910163244.GA24878@b07421-ec1.am.freescale.net>
+References: <38a5a2d10909100801x11049cddi1799c0ed6ee44410@mail.gmail.com>
+	<20090910163244.GA24878@b07421-ec1.am.freescale.net>
+Date: Fri, 11 Sep 2009 09:30:41 +0200
+Message-ID: <38a5a2d10909110030k31f3574aocd7cb237bd6d088c@mail.gmail.com>
+Subject: Re: Debian on MPC8572DS
+From: Isaac Gomez Morales <isaac.gomez.morales@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: multipart/alternative; boundary=00504502d49516bf9f0473484ba3
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,49 +31,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-09-10 at 11:02 +0530, Sachin Sant wrote:
-> Steven Rostedt wrote:
-> > Ah, seems the bug happens to be in the module handling. Does the call
-> > back always have .mod_return_to_handler?
-> >   
-> Yes. Every time it ends up in .mod_return_to_handler
+--00504502d49516bf9f0473484ba3
+Content-Type: text/plain; charset=ISO-8859-1
 
-Hmm, I still can not reproduce it, and I've confirmed that I
-hit .mod_return_to_handler too.
+Hello,
 
-Could you apply the below patch. This wont fix anything, but it will at
-least make the trace back show the real functions that were called.
+I'll try the "linutronix-lenny-gnuspe/" distro option, because i prefer a
+option without a fp emulation.
 
-Thanks,
+Thanks u all.
 
--- Steve
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 892a9f2..a2e1b15 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1014,9 +1014,13 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- 	int curr_frame = current->curr_ret_stack;
- 	extern void return_to_handler(void);
--	unsigned long addr = (unsigned long)return_to_handler;
-+	unsigned long rth = (unsigned long)return_to_handler;
-+	unsigned long mrth = -1;
- #ifdef CONFIG_PPC64
--	addr = *(unsigned long*)addr;
-+	extern void mod_return_to_handler(void);
-+	rth = *(unsigned long *)rth;
-+	mrth = (unsigned long)mod_return_to_handler;
-+	mrth = *(unsigned long *)mrth;
- #endif
- #endif
- 
-@@ -1042,7 +1046,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 		if (!firstframe || ip != lr) {
- 			printk("["REG"] ["REG"] %pS", sp, ip, (void *)ip);
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
--			if (ip == addr && curr_frame >= 0) {
-+			if ((ip == rth || ip == mrth) && curr_frame >= 0) {
- 				printk(" (%pS)",
- 				       (void *)current->ret_stack[curr_frame].ret);
- 				curr_frame--;
+
+2009/9/10 Scott Wood <scottwood@freescale.com>
+
+> On Thu, Sep 10, 2009 at 05:01:53PM +0200, Isaac Gomez Morales wrote:
+> > Hello,
+> >
+> > I'm trying to get a Linux distro such as Debian in the following system
+> >
+> > System:
+> > mpc8572ds HW
+>
+> The 8572 does not have classic PowerPC floating point.  The Debian
+> binaries use this, so they cannot run without emulation.
+>
+> Emulation is slow, so you probably want something like this instead:
+>
+> http://groups.google.com/group/linux.debian.ports.powerpc/browse_thread/thread/235607517fd7ae1e/f4638a2cdef09bf7?lnk=raot
+> http://download.breakpoint.cc/debian/linutronix-lenny-gnuspe/
+>
+> -Scott
+>
+
+--00504502d49516bf9f0473484ba3
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hello,<br><br>
+I&#39;ll try the &quot;linutronix-lenny-gnuspe/&quot; distro option, becaus=
+e i prefer a option without a fp emulation.<br><br>Thanks u all.<br><br><br=
+><br><div class=3D"gmail_quote">2009/9/10 Scott Wood <span dir=3D"ltr">&lt;=
+<a href=3D"mailto:scottwood@freescale.com">scottwood@freescale.com</a>&gt;<=
+/span><br>
+<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
+204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class=3D"im"=
+>On Thu, Sep 10, 2009 at 05:01:53PM +0200, Isaac Gomez Morales wrote:<br>
+&gt; Hello,<br>
+&gt;<br>
+&gt; I&#39;m trying to get a Linux distro such as Debian in the following s=
+ystem<br>
+&gt;<br>
+&gt; System:<br>
+&gt; mpc8572ds HW<br>
+<br>
+</div>The 8572 does not have classic PowerPC floating point. =A0The Debian<=
+br>
+binaries use this, so they cannot run without emulation.<br>
+<br>
+Emulation is slow, so you probably want something like this instead:<br>
+<a href=3D"http://groups.google.com/group/linux.debian.ports.powerpc/browse=
+_thread/thread/235607517fd7ae1e/f4638a2cdef09bf7?lnk=3Draot" target=3D"_bla=
+nk">http://groups.google.com/group/linux.debian.ports.powerpc/browse_thread=
+/thread/235607517fd7ae1e/f4638a2cdef09bf7?lnk=3Draot</a><br>
+
+<a href=3D"http://download.breakpoint.cc/debian/linutronix-lenny-gnuspe/" t=
+arget=3D"_blank">http://download.breakpoint.cc/debian/linutronix-lenny-gnus=
+pe/</a><br>
+<font color=3D"#888888"><br>
+-Scott<br>
+</font></blockquote></div><br>
+
+--00504502d49516bf9f0473484ba3--
