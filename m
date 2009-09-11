@@ -1,44 +1,27 @@
-Return-Path: <sachinp@in.ibm.com>
+Return-Path: <dgibson@bilbo.ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 12238B7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B6250B707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Sep 2009 14:27:08 +1000 (EST)
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [59.145.155.3])
+	Fri, 11 Sep 2009 14:47:31 +1000 (EST)
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 165A2DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 14:27:06 +1000 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp03.in.ibm.com (8.14.3/8.13.1) with ESMTP id n8B4R00v011763
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 09:57:00 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n8B4R0in2531412
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 09:57:00 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n8B4R0jY002690
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 09:57:00 +0530
-Message-ID: <4AA9D193.9030304@in.ibm.com>
-Date: Fri, 11 Sep 2009 09:56:59 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A5A4FDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Sep 2009 14:47:31 +1000 (EST)
+Date: Fri, 11 Sep 2009 14:47:24 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mm: Cleanup handling of execute permission v2
+Message-ID: <20090911044724.GA11840@yookeroo.seuss>
+References: <1250658034.4810.9.camel@pasglop>
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-Subject: Re: [FTRACE] Enabling function_graph causes OOPS
-References: <4A5C5D65.3030906@in.ibm.com>
-	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
-	<4A76BE81.4080707@in.ibm.com>
-	<1252458303.20985.10.camel@gandalf.stny.rr.com>
-	<4AA74AE2.5090001@in.ibm.com>
-	<1252525364.27001.32.camel@gandalf.stny.rr.com>
-	<4AA88F7D.5030302@in.ibm.com>
-	<1252638353.18996.62.camel@gandalf.stny.rr.com>
-In-Reply-To: <1252638353.18996.62.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1250658034.4810.9.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,34 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Steven Rostedt wrote:
-> On Thu, 2009-09-10 at 11:02 +0530, Sachin Sant wrote:
->   
->> Steven Rostedt wrote:
->>     
->>> Ah, seems the bug happens to be in the module handling. Does the call
->>> back always have .mod_return_to_handler?
->>>   
->>>       
->> Yes. Every time it ends up in .mod_return_to_handler
->>     
->
-> BTW, do you have CONFIG_IRQSTACK set?
->   
-Yes. That option is enabled.
-
-CONFIG_DEBUGGER=y
-CONFIG_IRQSTACKS=y
-# CONFIG_VIRQ_DEBUG is not set
-
-thanks
--Sachin
+On Wed, Aug 19, 2009 at 03:00:34PM +1000, Benjamin Herrenschmidt wrote:
+> This is an attempt at cleaning up a bit the way we handle execute
+> permission on powerpc. _PAGE_HWEXEC is gone, _PAGE_EXEC is now only
+> defined by CPUs that can do something with it, and the myriad of
+> #ifdef's in the I$/D$ coherency code is reduced to 2 cases that
+> hopefully should cover everything.
+> 
+> The logic on BookE is a little bit different than what it was though
+> not by much. Since now, _PAGE_EXEC will be set by the generic code
+> for executable pages, we need to filter out if they are unclean and
+> recover it. However, I don't expect the code to be more bloated than
+> it already was in that area due to that change.
+> 
+> I could boast that this brings proper enforcing of per-page execute
+> permissions to all BookE and 40x but in fact, we've had that now for
+> some time as a side effect of my previous rework in that area (and
+> I didn't even know it :-) We would only enable execute permission if
+> the page was cache clean and we would only cache clean it if we took
+> and exec fault. Since we now enforce that the later only work if
+> VM_EXEC is part of the VMA flags, we de-fact already enforce per-page
+> execute permissions... Unless I missed something
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
 -- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
