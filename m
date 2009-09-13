@@ -1,31 +1,26 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 8157BB6F1E
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 7BBEBB6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 13 Sep 2009 23:21:04 +1000 (EST)
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id D734EDDD04
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Sep 2009 23:21:03 +1000 (EST)
-Subject: Re: [FTRACE] Enabling function_graph causes OOPS
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1252816650.8375.70.camel@pasglop>
-References: <4A5C5D65.3030906@in.ibm.com>
-	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
-	<4A76BE81.4080707@in.ibm.com>
-	<1252458303.20985.10.camel@gandalf.stny.rr.com>
-	<4AA74AE2.5090001@in.ibm.com>
-	<1252814877.26049.93.camel@gandalf.stny.rr.com>
-	<1252816650.8375.70.camel@pasglop>
-Content-Type: text/plain
-Date: Sun, 13 Sep 2009 09:21:00 -0400
-Message-Id: <1252848060.26049.647.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: rostedt@goodmis.org
+	Mon, 14 Sep 2009 02:22:59 +1000 (EST)
+Received: from antares (xdsl-78-34-247-251.netcologne.de [78.34.247.251])
+	by smtp6.netcologne.de (Postfix) with ESMTP id DDDE52A0558
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 13 Sep 2009 18:13:56 +0200 (CEST)
+Received: from antares (localhost [127.0.0.1])
+	by antares (Postfix) with ESMTPS id 987DABA167
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 13 Sep 2009 18:13:54 +0200 (CEST)
+Date: Sun, 13 Sep 2009 18:13:53 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: MPC5200/BestComm functions question
+To: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <fa686aa40909120701k4c4faa8ev78ac556f0b1f88ed@mail.gmail.com>
+	(from grant.likely@secretlab.ca on Sat Sep 12 16:01:35 2009)
+Message-Id: <1252858433.3337.2@antares>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-eJvUJp7Jd7nJm7n39cPZ"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2009-09-13 at 14:37 +1000, Benjamin Herrenschmidt wrote:
-> On Sun, 2009-09-13 at 00:07 -0400, Steven Rostedt wrote:
-> >                        982: R_PPC64_ADDR16_HIGHEST
-> > ftrace_return_to_handler
-> >  984:   60 84 00 00     ori     r4,r4,0
-> >                         986: R_PPC64_ADDR16_HIGHER
-> > ftrace_return_to_handler
-> >  988:   78 84 07 c6     rldicr  r4,r4,32,31
-> >  98c:   64 84 00 00     oris    r4,r4,0
-> >                         98e: R_PPC64_ADDR16_HI
-> > ftrace_return_to_handler
-> >  990:   60 84 00 00     ori     r4,r4,0
-> >                         992: R_PPC64_ADDR16_LO
-> > ftrace_return_to_handler
-> >  994:   e8 44 00 08     ld      r2,8(r4)
-> >  998:   48 00 00 01     bl      998 <.mod_return_to_handler+0x30>
-> >                         998:
-> > R_PPC64_REL24      .ftrace_return_to_handler
-> >  99c:   60 00 00 00     nop
-> >  9a0:   7c 68 03 a6     mtlr    r3
-> 
-> .../...
-> 
-> > Something is totally messed up here.
-> 
-> Could it be that we don't handle R_PPC64_ADDR16_* relocs in
-> arch/powerpc/kernel/modules/module_64.c ?
-> 
-> Sachin, do you see a bunch of "Unknown ADD relocation" in your dmesg ?
+--=-eJvUJp7Jd7nJm7n39cPZ
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ben,
+Am 12.09.09 16:01 schrieb(en) Grant Likely:
 
-The thing is, this is kernel proper. This code is in entry_64.S not in
-the module code.
+> I've actually got a better driver which exports an API for doing =20
+> local plus bus FIFO transfers.  It's been posted to the mailing list =20
+> a couple of times.  I'll cc: you the next time I post it (real soon =20
+> now).
 
--- Steve
+Thanks a lot, that will be really helpful! :-)
+
+> Bestcomm can do that, but Freescale has not publically released the =20
+> bestcomm documentation, and they do not support writing custom =20
+> bestcomm tasks.  From what I understand there are a number of hidden =20
+> bugs in the bestcomm engine which you could run into if you deviate =20
+> from the provided tasks.  You're very much on your own if you go down =20
+> that route.  :-(
+
+I see - that's a pity, shifting those tasks to a "coprocessor" sounds =20
+like an attractive idea!
+
+BTW, I didn't forget about the 5200 GPT/WDT issue, I just didn't have =20
+the time yet to implement it.  The old work vs. what I would like to do =20
+conflict, but I will try to find a reasonable solution.
+
+Thanks, Albrecht.
+
+--=-eJvUJp7Jd7nJm7n39cPZ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQBKrRpBn/9unNAn/9ERAohEAJ0aytmFy4ol2HnzSWMguvKRVXTLMACglNOA
+UEpUL1DvgrEmd6zJheCB4zc=
+=DGb/
+-----END PGP SIGNATURE-----
+
+--=-eJvUJp7Jd7nJm7n39cPZ--
