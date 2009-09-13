@@ -3,29 +3,22 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3BD15B6F2B
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 75762B7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Sep 2009 06:26:01 +1000 (EST)
+	Mon, 14 Sep 2009 08:28:26 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A139DDDD0B
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 06:26:00 +1000 (EST)
-Subject: Re: [FTRACE] Enabling function_graph causes OOPS
+	by ozlabs.org (Postfix) with ESMTPS id A8C2EDDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 08:28:25 +1000 (EST)
+Subject: Re: [2/5] Cleanup management of kmem_caches for pagetables
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: rostedt@goodmis.org
-In-Reply-To: <1252848060.26049.647.camel@gandalf.stny.rr.com>
-References: <4A5C5D65.3030906@in.ibm.com>
-	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
-	<4A76BE81.4080707@in.ibm.com>
-	<1252458303.20985.10.camel@gandalf.stny.rr.com>
-	<4AA74AE2.5090001@in.ibm.com>
-	<1252814877.26049.93.camel@gandalf.stny.rr.com>
-	<1252816650.8375.70.camel@pasglop>
-	<1252848060.26049.647.camel@gandalf.stny.rr.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20090909055916.58003B7B60@bilbo.ozlabs.org>
+References: <20090909055916.58003B7B60@bilbo.ozlabs.org>
 Content-Type: text/plain
-Date: Mon, 14 Sep 2009 06:25:47 +1000
-Message-Id: <1252873548.8375.73.camel@pasglop>
+Date: Mon, 14 Sep 2009 08:28:11 +1000
+Message-Id: <1252880891.8375.94.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,27 +30,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2009-09-09 at 15:59 +1000, David Gibson wrote:
 
-> > .../...
-> > 
-> > > Something is totally messed up here.
-> > 
-> > Could it be that we don't handle R_PPC64_ADDR16_* relocs in
-> > arch/powerpc/kernel/modules/module_64.c ?
-> > 
-> > Sachin, do you see a bunch of "Unknown ADD relocation" in your dmesg ?
-> 
-> Ben,
-> 
-> The thing is, this is kernel proper. This code is in entry_64.S not in
-> the module code.
+> 6 files changed, 73 insertions(+), 108 deletions(-)
 
-Argh... indeed.
+That's a pretty good start :-)
 
-Sachin, can you give me more details on how you built that kernel ? (or
-give them again in case I missed them the first time around :-), ie,
-what toolchain, options, etc... or even better, give me remote access to
-the build host ?
+> +struct kmem_cache *pgtable_cache[PGF_SHIFT_MASK];
+> +
+> +void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+> +{
+> +	char *name;
+> +	unsigned long table_size = sizeof(void *) << shift;
+> +	struct kmem_cache *new;
+> +
+> +	BUG_ON((shift < 1) || (shift > PGF_SHIFT_MASK));
+> +	if (PGT_CACHE(shift))
+> +		return; /* Already have a cache of this size */
+> +	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
+> +	new = kmem_cache_create(name, table_size, table_size, 0, ctor);
+> +	PGT_CACHE(shift) = new;
+> +}
+
+I'm getting partial to verbose boot nowadays :-) At least a pr_debug if
+not a pr_info up there "Allocated pgtable for order %d" or something
+like that might end up being of some use when debugging things.
+
+>  void pgtable_cache_init(void)
+>  {
+> -	pgtable_cache[0] = kmem_cache_create(pgtable_cache_name[0], PGD_TABLE_SIZE, PGD_TABLE_SIZE, SLAB_PANIC, pgd_ctor);
+> -	pgtable_cache[1] = kmem_cache_create(pgtable_cache_name[1], PMD_TABLE_SIZE, PMD_TABLE_SIZE, SLAB_PANIC, pmd_ctor);
+> +	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
+> +	pgtable_cache_add(PMD_INDEX_SIZE, pmd_ctor);
+> +	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_INDEX_SIZE))
+> +		panic("Couldn't allocate pgtable caches");
+> +	BUG_ON(!PGT_CACHE(PUD_INDEX_SIZE));
+
+What if PUD_INDEX_SIZE is 0 ? (64k pages)
+
+Couldn't we just do a
+
+	if (PUD_INDEX_SIZE)
+		pgtable_cache_add(PUD_INDEX_SIZE...)
+
+If it's the same size as another cache it would just not do anything... 
+
+> -static inline void pgtable_free(pgtable_free_t pgf)
+> +static inline void pgtable_free(void *table, unsigned index_size)
+>  {
+> -	void *p = (void *)(pgf.val & ~PGF_CACHENUM_MASK);
+> -	int cachenum = pgf.val & PGF_CACHENUM_MASK;
+> -
+> -	if (cachenum == PTE_NONCACHE_NUM)
+> -		free_page((unsigned long)p);
+> -	else
+> -		kmem_cache_free(pgtable_cache[cachenum], p);
+> +	if (!index_size)
+> +		free_page((unsigned long)table);
+> +	else {
+> +		BUG_ON(index_size > PGF_SHIFT_MASK);
+> +		kmem_cache_free(PGT_CACHE(index_size), table);
+> +	}
+>  }
+
+Out of curiosity, what is the index_size == 0 case for ? Do we still use
+it ? Agh... found it ... we don't put PTE pages in a cache, just use
+gfp. I suppose that's lower overhead.
+
+>  /* This needs to be big enough to allow for MMU_PAGE_COUNT + 2 to be stored
+>   * and small enough to fit in the low bits of any naturally aligned page
+>   * table cache entry. Arbitrarily set to 0x1f, that should give us some
+>   * room to grow
+>   */
+
+The comment above will need updating (don't just remove it, please -do-
+explain what it's all about :-)
+
+> -#define PGF_CACHENUM_MASK	0x1f
+> -
+> -static inline pgtable_free_t pgtable_free_cache(void *p, int cachenum,
+> -						unsigned long mask)
+> -{
+> -	BUG_ON(cachenum > PGF_CACHENUM_MASK);
+> -
+> -	return (pgtable_free_t){.val = ((unsigned long) p & ~mask) | cachenum};
+> -}
+> +#define PGF_SHIFT_MASK		0xf
+
+That does bring one question tho... You still fill the batch by sticking
+the shift into the low bits of the table right ? Which means that your
+table must have at least 4 bits 0 at the bottom, ie, it must at least
+have 2 pointers on 64-bit and 4 on 32-bit. Maybe you should add some
+runtime test for the later (your comparisons to 1 do the job for 64-bit
+but not for 32-bit or did I miss something ?)
+
+Overall, a really nice cleanup... the previous stuff was hairy and prone
+to breakage (see how it broke it twice due to misaligned cache names
+array during the build-up of the book3e support). I'm actually tempted,
+with a bit more testing, to sneak that into .32 despite arriving a bit
+late, because the current code is really fragile.
 
 Cheers,
 Ben.
