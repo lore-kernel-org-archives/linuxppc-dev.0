@@ -1,26 +1,33 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 7BBEBB6F1E
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 3BD15B6F2B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Sep 2009 02:22:59 +1000 (EST)
-Received: from antares (xdsl-78-34-247-251.netcologne.de [78.34.247.251])
-	by smtp6.netcologne.de (Postfix) with ESMTP id DDDE52A0558
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 13 Sep 2009 18:13:56 +0200 (CEST)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id 987DABA167
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 13 Sep 2009 18:13:54 +0200 (CEST)
-Date: Sun, 13 Sep 2009 18:13:53 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: MPC5200/BestComm functions question
-To: linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <fa686aa40909120701k4c4faa8ev78ac556f0b1f88ed@mail.gmail.com>
-	(from grant.likely@secretlab.ca on Sat Sep 12 16:01:35 2009)
-Message-Id: <1252858433.3337.2@antares>
-MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=PGP-SHA1; boundary="=-eJvUJp7Jd7nJm7n39cPZ"
+	Mon, 14 Sep 2009 06:26:01 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A139DDDD0B
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 06:26:00 +1000 (EST)
+Subject: Re: [FTRACE] Enabling function_graph causes OOPS
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: rostedt@goodmis.org
+In-Reply-To: <1252848060.26049.647.camel@gandalf.stny.rr.com>
+References: <4A5C5D65.3030906@in.ibm.com>
+	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
+	<4A76BE81.4080707@in.ibm.com>
+	<1252458303.20985.10.camel@gandalf.stny.rr.com>
+	<4AA74AE2.5090001@in.ibm.com>
+	<1252814877.26049.93.camel@gandalf.stny.rr.com>
+	<1252816650.8375.70.camel@pasglop>
+	<1252848060.26049.647.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Mon, 14 Sep 2009 06:25:47 +1000
+Message-Id: <1252873548.8375.73.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-eJvUJp7Jd7nJm7n39cPZ
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Am 12.09.09 16:01 schrieb(en) Grant Likely:
+> > .../...
+> > 
+> > > Something is totally messed up here.
+> > 
+> > Could it be that we don't handle R_PPC64_ADDR16_* relocs in
+> > arch/powerpc/kernel/modules/module_64.c ?
+> > 
+> > Sachin, do you see a bunch of "Unknown ADD relocation" in your dmesg ?
+> 
+> Ben,
+> 
+> The thing is, this is kernel proper. This code is in entry_64.S not in
+> the module code.
 
-> I've actually got a better driver which exports an API for doing =20
-> local plus bus FIFO transfers.  It's been posted to the mailing list =20
-> a couple of times.  I'll cc: you the next time I post it (real soon =20
-> now).
+Argh... indeed.
 
-Thanks a lot, that will be really helpful! :-)
+Sachin, can you give me more details on how you built that kernel ? (or
+give them again in case I missed them the first time around :-), ie,
+what toolchain, options, etc... or even better, give me remote access to
+the build host ?
 
-> Bestcomm can do that, but Freescale has not publically released the =20
-> bestcomm documentation, and they do not support writing custom =20
-> bestcomm tasks.  From what I understand there are a number of hidden =20
-> bugs in the bestcomm engine which you could run into if you deviate =20
-> from the provided tasks.  You're very much on your own if you go down =20
-> that route.  :-(
-
-I see - that's a pity, shifting those tasks to a "coprocessor" sounds =20
-like an attractive idea!
-
-BTW, I didn't forget about the 5200 GPT/WDT issue, I just didn't have =20
-the time yet to implement it.  The old work vs. what I would like to do =20
-conflict, but I will try to find a reasonable solution.
-
-Thanks, Albrecht.
-
---=-eJvUJp7Jd7nJm7n39cPZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBKrRpBn/9unNAn/9ERAohEAJ0aytmFy4ol2HnzSWMguvKRVXTLMACglNOA
-UEpUL1DvgrEmd6zJheCB4zc=
-=DGb/
------END PGP SIGNATURE-----
-
---=-eJvUJp7Jd7nJm7n39cPZ--
+Cheers,
+Ben.
