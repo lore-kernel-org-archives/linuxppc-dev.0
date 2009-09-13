@@ -1,24 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-px0-f192.google.com (mail-px0-f192.google.com
-	[209.85.216.192])
-	by bilbo.ozlabs.org (Postfix) with ESMTP id 75629B7B60
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.ozlabs.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 1B913B70D7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 13 Sep 2009 00:06:14 +1000 (EST)
-Received: by pxi30 with SMTP id 30so1491136pxi.7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Sep 2009 07:06:12 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1252736925.8375.65.camel@pasglop>
-References: <20090912054410.21847.63718.stgit@localhost.localdomain>
-	<1252736925.8375.65.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 12 Sep 2009 08:05:52 -0600
-Message-ID: <fa686aa40909120705wdc8928ei75e9b8c952d1e45@mail.gmail.com>
-Subject: Re: [RFC] powerpc/irq: Add generic API for setting up cascaded IRQs
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+	Sun, 13 Sep 2009 12:08:16 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3419EDDD04
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Sep 2009 12:08:14 +1000 (EST)
+Subject: [PATCH] powerpc/pmc: Don't access lppaca on Book3E
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Sun, 13 Sep 2009 12:08:08 +1000
+Message-Id: <1252807688.8375.68.camel@pasglop>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 12, 2009 at 12:28 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Fri, 2009-09-11 at 23:46 -0600, Grant Likely wrote:
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->> prototype implementation. =A0This probably doesn't work at all right now=
-.
->>
->> Ben, I'm posting this now to get your thoughts before I go too far down
->> this path.
->
-> Looks ok. I was initially thinking about putting get_irq() in irq_host,
-> but as we discussed on IRC, a host is not necessarily a PIC, and it's
-> nice for the parent to have a way to setup/init the cascade in case
-> it needs to do some HW tweaking there as well.
+It doesn't exist !
 
-Cool.  Thanks for the review.  I'll continue on with this approach and
-hopefully get something working this weekend.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/pmc.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> However, why cascade_setup() and not setup_cascade() which sounds
-> somewhat more natural ? :-)
-
-I'm a reverse polish kind of guy.  I preferring 'subject'_'action'
-over 'action'_'subject' just because it groups like subjects together.
- But it doesn't matter much, especially in this case where 'subject'
-is in a group of exactly 1.  :-)
-
-I'll do whichever you prefer.
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/arch/powerpc/include/asm/pmc.h b/arch/powerpc/include/asm/pmc.h
+index ccc68b5..5a9ede4 100644
+--- a/arch/powerpc/include/asm/pmc.h
++++ b/arch/powerpc/include/asm/pmc.h
+@@ -29,7 +29,7 @@ int reserve_pmc_hardware(perf_irq_t new_perf_irq);
+ void release_pmc_hardware(void);
+ void ppc_enable_pmcs(void);
+ 
+-#ifdef CONFIG_PPC64
++#ifdef CONFIG_PPC_BOOK3S_64
+ #include <asm/lppaca.h>
+ 
+ static inline void ppc_set_pmu_inuse(int inuse)
+-- 
+1.6.0.4
