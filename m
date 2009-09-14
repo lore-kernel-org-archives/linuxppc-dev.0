@@ -1,27 +1,44 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <David.Daney@caviumnetworks.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id DAF17B7BB9
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7B946B7C0B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Sep 2009 01:34:02 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 4D418DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 01:34:01 +1000 (EST)
-Date: Mon, 14 Sep 2009 19:33:49 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 0/5] Suspend/resume support for some 83xx/85xx/86xx
-	boards
-Message-ID: <20090914153349.GA31420@oksana.dev.rtsoft.ru>
-References: <20090830193625.GA14693@oksana.dev.rtsoft.ru>
+	Tue, 15 Sep 2009 01:40:38 +1000 (EST)
+Received: from mail3.caviumnetworks.com (mail3.caviumnetworks.com
+	[12.108.191.235]) by ozlabs.org (Postfix) with ESMTP id 0C4F7DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 01:40:37 +1000 (EST)
+Message-ID: <4AAE63E7.90909@caviumnetworks.com>
+Date: Mon, 14 Sep 2009 08:40:23 -0700
+From: David Daney <ddaney@caviumnetworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090830193625.GA14693@oksana.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 01/10] Add support for GCC-4.5's __builtin_unreachable()
+	to compiler.h
+References: <4AA991C1.1050800@caviumnetworks.com>	
+	<1252627011-2933-1-git-send-email-ddaney@caviumnetworks.com>	
+	<200909111633.00665.mb@bu3sch.de>	
+	<4AAA73A4.9010601@caviumnetworks.com>
+	<10f740e80909120022m72ad5ea7t692fba93cd3114e9@mail.gmail.com>
+In-Reply-To: <10f740e80909120022m72ad5ea7t692fba93cd3114e9@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-mips@linux-mips.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, linux-s390@vger.kernel.org,
+	linux-am33-list@redhat.com, Helge Deller <deller@gmx.de>,
+	x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+	Mike Frysinger <vapier@gentoo.org>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux390@de.ibm.com,
+	Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	linux-parisc@vger.kernel.org, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+	Kyle McMartin <kyle@mcmartin.ca>, linux-alpha@vger.kernel.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	uclinux-dist-devel@blackfin.uclinux.org, akpm@linux-foundation.org,
+	Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,34 +48,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 30, 2009 at 11:36:25PM +0400, Anton Vorontsov wrote:
-> On Fri, Aug 28, 2009 at 12:38:51AM -0500, Kumar Gala wrote:
-> > >This patch adds suspend/resume support for MPC8540-compatible and
-> > >MPC8569 CPUs.
-> [...] 
-> > I'd also like to get Scott's Ack on this and the device tree patches
-> > before accepting them.
+Geert Uytterhoeven wrote:
+> On Fri, Sep 11, 2009 at 17:58, David Daney<ddaney@caviumnetworks.com> wrote:
+>> Michael Buesch wrote:
+>>> On Friday 11 September 2009 01:56:42 David Daney wrote:
+>>>> +/* Unreachable code */
+>>>> +#ifndef unreachable
+>>>> +# define unreachable() do { for (;;) ; } while (0)
+>>>> +#endif
+>>> # define unreachable() do { } while (1)
+>>>
+>>> ? :)
+>> Clearly I was not thinking clearly when I wrote that part.  RTH noted the
+>> same thing.  I will fix it.
 > 
-> Heh, I didn't notice that the PMC bindings for 85xx describe devdisr
-> registers (and thus sleep = <> properties).
+> However, people are so used to seeing the `do { } while (0)' idiom,
+> that they might miss
+> there's a `1' here, not a `0'.
 > 
-> So here are updated patches that should comply with the bindings.
-> Plus,
+> So perhaps it's better to use plain `for (;;)' for infinite loops?
 > 
-> - It appears that 86xx PMCs registers-compatible with 85xx, so we
->   can support both. Thus move 85xx/suspend.c to sysdev/fsl_pmc.c;
-> - New patch that adds suspend/resume for MPC8610HPCD;
-> - New patch that adds suspend/resume for 83xx QE boards;
-> - Some fixes in "Make qe_reset() code path safe for repeated
->   invocation" patch.
 
-Kumar,
+I don't think so.  The only valid token that can follow 'do { } while 
+(1)' is ';', any statement may follow 'for (;;)', so there is a greater 
+possibility to silently screw things up with the for(;;) form.
 
-Is there any issues with the patches? Can you merge them for 2.6.32?
-
-Thanks!
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+David Daney
