@@ -3,25 +3,25 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 76CB7B7067
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id EACE7B7C04
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Sep 2009 17:50:59 +1000 (EST)
-Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
-	by ozlabs.org (Postfix) with ESMTP id 9A8A2DDD04
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 17:50:56 +1000 (EST)
+	Mon, 14 Sep 2009 17:51:03 +1000 (EST)
+Received: from b.relay.invitel.net (b.relay.invitel.net [62.77.203.4])
+	by ozlabs.org (Postfix) with ESMTP id A3D23DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 17:51:01 +1000 (EST)
 Received: from mail.invitel.hu (mail.invitel.hu [213.163.59.4])
-	by a.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
-	3460911A25E
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 09:50:52 +0200 (CEST)
+	by b.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
+	9B53231A310
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 09:50:58 +0200 (CEST)
 Received: from [192.168.1.6] ([82.131.207.169])
 	by mail.invitel.hu (Invitel Messaging Server)
-	with ESMTPA id <0KPY00J08B4OX740@invitel.hu> for
-	linuxppc-dev@ozlabs.org; Mon, 14 Sep 2009 09:50:52 +0200 (CEST)
-Date: Mon, 14 Sep 2009 10:05:16 +0200
+	with ESMTPA id <0KPY00JI1B4XG4E0@invitel.hu> for
+	linuxppc-dev@ozlabs.org; Mon, 14 Sep 2009 09:50:58 +0200 (CEST)
+Date: Mon, 14 Sep 2009 10:05:32 +0200
 From: Heiko Schocher <hs@denx.de>
-Subject: [PATCH] mpc5200: support for the MAN mpc5200 based board mucmc52
+Subject: [PATCH] mpc5200: support for the MAN mpc5200 based board uc101
 To: Grant Likely <grant.likely@secretlab.ca>
-Message-id: <4AADF93C.3030604@denx.de>
+Message-id: <4AADF94C.9040502@denx.de>
 MIME-version: 1.0
 Content-type: text/plain; charset=ISO-8859-15
 Cc: linuxppc-dev@ozlabs.org
@@ -49,27 +49,27 @@ Signed-off-by: Heiko Schocher <hs@denx.de>
 
 - checked with:
 
-$ ./scripts/checkpatch.pl 0001-mpc5200-support-for-the-MAN-mpc5200-based-board-muc.patch
-total: 0 errors, 0 warnings, 1714 lines checked
+$ ./scripts/checkpatch.pl 0001-mpc5200-support-for-the-MAN-mpc5200-based-board-uc1.patch
+total: 0 errors, 0 warnings, 1622 lines checked
 
-0001-mpc5200-support-for-the-MAN-mpc5200-based-board-muc.patch has no obvious style problems and is ready for submission.
+0001-mpc5200-support-for-the-MAN-mpc5200-based-board-uc1.patch has no obvious style problems and is ready for submission.
 $
 
- arch/powerpc/boot/dts/mucmc52.dts            |  231 ++++
- arch/powerpc/configs/52xx/mucmc52_defconfig  | 1476 ++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/uc101.dts              |  312 ++++++
+ arch/powerpc/configs/52xx/uc101_defconfig    | 1303 ++++++++++++++++++++++++++
  arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
- 3 files changed, 1708 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/mucmc52.dts
- create mode 100644 arch/powerpc/configs/52xx/mucmc52_defconfig
+ 3 files changed, 1616 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/uc101.dts
+ create mode 100644 arch/powerpc/configs/52xx/uc101_defconfig
 
-diff --git a/arch/powerpc/boot/dts/mucmc52.dts b/arch/powerpc/boot/dts/mucmc52.dts
+diff --git a/arch/powerpc/boot/dts/uc101.dts b/arch/powerpc/boot/dts/uc101.dts
 new file mode 100644
-index 0000000..a4a7a20
+index 0000000..28e1c90
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/mucmc52.dts
-@@ -0,0 +1,231 @@
++++ b/arch/powerpc/boot/dts/uc101.dts
+@@ -0,0 +1,312 @@
 +/*
-+ * mucmc52 board Device Tree Source
++ * uc101 board Device Tree Source
 + *
 + * Copyright (C) 2009 DENX Software Engineering GmbH
 + * Heiko Schocher <hs@denx.de>
@@ -83,8 +83,8 @@ index 0000000..a4a7a20
 +/dts-v1/;
 +
 +/ {
-+	model = "man,mucmc52";
-+	compatible = "man,mucmc52";
++	model = "man,uc101";
++	compatible = "man,uc101";
 +	#address-cells = <1>;
 +	#size-cells = <1>;
 +	interrupt-parent = <&mpc5200_pic>;
@@ -131,19 +131,43 @@ index 0000000..a4a7a20
 +			#interrupt-cells = <3>;
 +			compatible = "fsl,mpc5200-pic";
 +			reg = <0x500 0x80>;
++			interrupts = <0 0 3>;
 +		};
 +
-+		timer@600 {	// General Purpose Timer
-+			compatible = "fsl,mpc5200-gpt";
-+			reg = <0x600 0x10>;
-+			interrupts = <1 9 0>;
++		gpt1: timer@610 {	// General Purpose Timer 1 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
++			reg = <0x610 0x10>;
++			interrupts = <1 10 0>;
 +			gpio-controller;
++		};
++
++		gpt2: timer@620 {	// General Purpose Timer 2 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
++			reg = <0x620 0x10>;
++			interrupts = <1 11 0>;
++			gpio-controller;
++		};
++
++		gpt3: timer@630 {	// General Purpose Timer 3 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
++			reg = <0x630 0x10>;
++			interrupts = <1 12 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
 +		};
 +
 +		gpio_simple: gpio@b00 {
 +			compatible = "fsl,mpc5200-gpio";
 +			reg = <0xb00 0x40>;
 +			interrupts = <1 7 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpio_wkup: gpio@c00 {
++			compatible = "fsl,mpc5200-gpio-wkup";
++			reg = <0xc00 0x40>;
++			interrupts = <1 8 0 0 3 0>;
 +			gpio-controller;
 +			#gpio-cells = <2>;
 +		};
@@ -229,18 +253,21 @@ index 0000000..a4a7a20
 +			compatible = "fsl,mpc5200-sram";
 +			reg = <0x8000 0x4000>;
 +		};
++
 +	};
 +
 +	localbus {
 +		compatible = "fsl,mpc5200-lpb","simple-bus";
 +		#address-cells = <2>;
 +		#size-cells = <1>;
-+		ranges = <0 0 0xff800000 0x00800000>;
++		ranges = <0 0 0xff800000 0x00800000
++			  1 0 0x80000000 0x00800000
++			  3 0 0x80000000 0x00800000>;
 +
 +		flash@0,0 {
 +			compatible = "cfi-flash";
 +			reg = <0 0 0x00800000>;
-+			bank-width = <4>;
++			bank-width = <2>;
 +			device-width = <2>;
 +			#size-cells = <1>;
 +			#address-cells = <1>;
@@ -256,6 +283,7 @@ index 0000000..a4a7a20
 +				label = "RootFS";
 +				reg = <0x00300000 0x00200000>;
 +			};
++
 +			partition@500000 {
 +				label = "user";
 +				reg = <0x00500000 0x00200000>;
@@ -266,49 +294,102 @@ index 0000000..a4a7a20
 +			};
 +			partition@740000 {
 +				label = "Env";
-+				reg = <0x00740000 0x00020000>;
++				reg = <0x00740000 0x00010000>;
++			};
++			partition@750000 {
++				label = "red. Env";
++				reg = <0x00750000 0x00010000>;
 +			};
 +			partition@760000 {
-+				label = "red. Env";
-+				reg = <0x00760000 0x00020000>;
-+			};
-+			partition@780000 {
 +				label = "reserve";
-+				reg = <0x00780000 0x00080000>;
++				reg = <0x00760000 0x000a0000>;
 +			};
++		};
++
++		sram@1,0 {
++			compatible = "sram";
++			reg = <1 0x100000 0x100000>;
++		};
++
++		gpio-controller-100@3,0 {
++				#gpio-cells = <2>;
++				compatible = "manroland,mucmc52-aux-gpio";
++				reg = <3 0x00600100 0x1>;
++				gpio-controller;
++		};
++		gpio-controller-104@3,0 {
++				#gpio-cells = <2>;
++				compatible = "manroland,mucmc52-aux-gpio";
++				reg = <3 0x00600104 0x1>;
++				gpio-controller;
++		};
++		gpio-controller-200@3,0 {
++				#gpio-cells = <2>;
++				compatible = "manroland,mucmc52-aux-gpio";
++				reg = <3 0x00600200 0x1>;
++				gpio-controller;
++		};
++		gpio-controller-201@3,0 {
++				#gpio-cells = <2>;
++				compatible = "manroland,mucmc52-aux-gpio";
++				reg = <3 0x00600201 0x1>;
++				gpio-controller;
++		};
++		gpio-controller-202@3,0 {
++				#gpio-cells = <2>;
++				compatible = "manroland,mucmc52-aux-gpio";
++				reg = <3 0x00600202 0x1>;
++				gpio-controller;
++		};
++		gpio-controller-203@3,0 {
++				#gpio-cells = <2>;
++				compatible = "manroland,mucmc52-aux-gpio";
++				reg = <3 0x00600203 0x1>;
++				gpio-controller;
++		};
++		gpio-controller-204@3,0 {
++				#gpio-cells = <2>;
++				compatible = "manroland,mucmc52-aux-gpio";
++				reg = <3 0x00600204 0x1>;
++				gpio-controller;
++		};
++		gpio-controller-206@3,0 {
++				#gpio-cells = <2>;
++				compatible = "manroland,mucmc52-aux-gpio";
++				reg = <3 0x00600206 0x1>;
++				gpio-controller;
++		};
++		gpio-controller-207@3,0 {
++				#gpio-cells = <2>;
++				compatible = "manroland,mucmc52-aux-gpio";
++				reg = <3 0x00600207 0x1>;
++				gpio-controller;
++		};
++		gpio-controller-20f@3,0 {
++				#gpio-cells = <2>;
++				compatible = "manroland,mucmc52-aux-gpio";
++				reg = <3 0x0060020f 0x1>;
++				gpio-controller;
++		};
++
++		display@3,0 {
++				device_type = "pdsp-display";
++				compatible = "pdsp-display";
++				reg = <3 0x00600000 0x1000>;
 +		};
 +	};
 +
-+	pci@f0000d00 {
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc5200-pci";
-+		reg = <0xf0000d00 0x100>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3
-+				 0xc000 0 0 2 &mpc5200_pic 0 0 3
-+				 0xc000 0 0 3 &mpc5200_pic 0 0 3
-+				 0xc000 0 0 4 &mpc5200_pic 0 0 3>;
-+		clock-frequency = <0>; // From boot loader
-+		interrupts = <2 8 0 2 9 0 2 10 0>;
-+		bus-range = <0 0>;
-+		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x10000000
-+			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
-+	};
 +};
-diff --git a/arch/powerpc/configs/52xx/mucmc52_defconfig b/arch/powerpc/configs/52xx/mucmc52_defconfig
+diff --git a/arch/powerpc/configs/52xx/uc101_defconfig b/arch/powerpc/configs/52xx/uc101_defconfig
 new file mode 100644
-index 0000000..fa0a01e
+index 0000000..c2ae577
 --- /dev/null
-+++ b/arch/powerpc/configs/52xx/mucmc52_defconfig
-@@ -0,0 +1,1476 @@
++++ b/arch/powerpc/configs/52xx/uc101_defconfig
+@@ -0,0 +1,1303 @@
 +#
 +# Automatically generated make config: don't edit
 +# Linux kernel version: 2.6.31-rc7
-+# Mon Sep 14 08:31:50 2009
++# Mon Sep 14 08:53:03 2009
 +#
 +# CONFIG_PPC64 is not set
 +
@@ -437,7 +518,6 @@ index 0000000..fa0a01e
 +#
 +# CONFIG_PERF_COUNTERS is not set
 +CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_PCI_QUIRKS=y
 +CONFIG_SLUB_DEBUG=y
 +# CONFIG_STRIP_ASM_SYMS is not set
 +CONFIG_COMPAT_BRK=y
@@ -501,7 +581,7 @@ index 0000000..fa0a01e
 +# CONFIG_PPC_LITE5200 is not set
 +# CONFIG_PPC_MEDIA5200 is not set
 +CONFIG_PPC_MPC5200_BUGFIX=y
-+# CONFIG_PPC_MPC5200_GPIO is not set
++CONFIG_PPC_MPC5200_GPIO=y
 +# CONFIG_PPC_PMAC is not set
 +# CONFIG_PPC_CELL is not set
 +# CONFIG_PPC_CELL_NATIVE is not set
@@ -593,20 +673,12 @@ index 0000000..fa0a01e
 +#
 +CONFIG_ZONE_DMA=y
 +CONFIG_GENERIC_ISA_DMA=y
-+# CONFIG_PPC_INDIRECT_PCI is not set
 +CONFIG_PPC_PCI_CHOICE=y
-+CONFIG_PCI=y
-+CONFIG_PCI_DOMAINS=y
-+CONFIG_PCI_SYSCALL=y
-+# CONFIG_PCIEPORTBUS is not set
-+CONFIG_ARCH_SUPPORTS_MSI=y
-+# CONFIG_PCI_MSI is not set
-+CONFIG_PCI_LEGACY=y
-+# CONFIG_PCI_DEBUG is not set
-+# CONFIG_PCI_STUB is not set
-+# CONFIG_PCI_IOV is not set
++# CONFIG_PCI is not set
++# CONFIG_PCI_DOMAINS is not set
++# CONFIG_PCI_SYSCALL is not set
++# CONFIG_ARCH_SUPPORTS_MSI is not set
 +# CONFIG_PCCARD is not set
-+# CONFIG_HOTPLUG_PCI is not set
 +# CONFIG_HAS_RAPIDIO is not set
 +
 +#
@@ -770,13 +842,11 @@ index 0000000..fa0a01e
 +# CONFIG_MTD_COMPLEX_MAPPINGS is not set
 +# CONFIG_MTD_PHYSMAP is not set
 +CONFIG_MTD_PHYSMAP_OF=y
-+# CONFIG_MTD_INTEL_VR_NOR is not set
 +# CONFIG_MTD_PLATRAM is not set
 +
 +#
 +# Self-contained MTD device drivers
 +#
-+# CONFIG_MTD_PMC551 is not set
 +# CONFIG_MTD_SLRAM is not set
 +# CONFIG_MTD_PHRAM is not set
 +# CONFIG_MTD_MTDRAM is not set
@@ -807,15 +877,10 @@ index 0000000..fa0a01e
 +# CONFIG_PARPORT is not set
 +CONFIG_BLK_DEV=y
 +# CONFIG_BLK_DEV_FD is not set
-+# CONFIG_BLK_CPQ_DA is not set
-+# CONFIG_BLK_CPQ_CISS_DA is not set
-+# CONFIG_BLK_DEV_DAC960 is not set
-+# CONFIG_BLK_DEV_UMEM is not set
 +# CONFIG_BLK_DEV_COW_COMMON is not set
 +CONFIG_BLK_DEV_LOOP=y
 +# CONFIG_BLK_DEV_CRYPTOLOOP is not set
 +# CONFIG_BLK_DEV_NBD is not set
-+# CONFIG_BLK_DEV_SX8 is not set
 +CONFIG_BLK_DEV_RAM=y
 +CONFIG_BLK_DEV_RAM_COUNT=16
 +CONFIG_BLK_DEV_RAM_SIZE=32768
@@ -862,128 +927,20 @@ index 0000000..fa0a01e
 +# CONFIG_SCSI_SRP_ATTRS is not set
 +CONFIG_SCSI_LOWLEVEL=y
 +# CONFIG_ISCSI_TCP is not set
-+# CONFIG_SCSI_BNX2_ISCSI is not set
-+# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
-+# CONFIG_SCSI_3W_9XXX is not set
-+# CONFIG_SCSI_ACARD is not set
-+# CONFIG_SCSI_AACRAID is not set
-+# CONFIG_SCSI_AIC7XXX is not set
-+# CONFIG_SCSI_AIC7XXX_OLD is not set
-+# CONFIG_SCSI_AIC79XX is not set
-+# CONFIG_SCSI_AIC94XX is not set
-+# CONFIG_SCSI_MVSAS is not set
-+# CONFIG_SCSI_DPT_I2O is not set
-+# CONFIG_SCSI_ADVANSYS is not set
-+# CONFIG_SCSI_ARCMSR is not set
-+# CONFIG_MEGARAID_NEWGEN is not set
-+# CONFIG_MEGARAID_LEGACY is not set
-+# CONFIG_MEGARAID_SAS is not set
-+# CONFIG_SCSI_MPT2SAS is not set
-+# CONFIG_SCSI_HPTIOP is not set
-+# CONFIG_SCSI_BUSLOGIC is not set
 +# CONFIG_LIBFC is not set
 +# CONFIG_LIBFCOE is not set
-+# CONFIG_FCOE is not set
-+# CONFIG_SCSI_DMX3191D is not set
-+# CONFIG_SCSI_EATA is not set
-+# CONFIG_SCSI_FUTURE_DOMAIN is not set
-+# CONFIG_SCSI_GDTH is not set
-+# CONFIG_SCSI_IPS is not set
-+# CONFIG_SCSI_INITIO is not set
-+# CONFIG_SCSI_INIA100 is not set
-+# CONFIG_SCSI_STEX is not set
-+# CONFIG_SCSI_SYM53C8XX_2 is not set
-+# CONFIG_SCSI_IPR is not set
-+# CONFIG_SCSI_QLOGIC_1280 is not set
-+# CONFIG_SCSI_QLA_FC is not set
-+# CONFIG_SCSI_QLA_ISCSI is not set
-+# CONFIG_SCSI_LPFC is not set
-+# CONFIG_SCSI_DC395x is not set
-+# CONFIG_SCSI_DC390T is not set
-+# CONFIG_SCSI_NSP32 is not set
 +# CONFIG_SCSI_DEBUG is not set
-+# CONFIG_SCSI_SRP is not set
 +# CONFIG_SCSI_DH is not set
 +# CONFIG_SCSI_OSD_INITIATOR is not set
 +CONFIG_ATA=y
 +# CONFIG_ATA_NONSTANDARD is not set
 +CONFIG_SATA_PMP=y
-+# CONFIG_SATA_AHCI is not set
-+# CONFIG_SATA_SIL24 is not set
 +CONFIG_ATA_SFF=y
-+# CONFIG_SATA_SVW is not set
-+# CONFIG_ATA_PIIX is not set
 +# CONFIG_SATA_MV is not set
-+# CONFIG_SATA_NV is not set
-+# CONFIG_PDC_ADMA is not set
-+# CONFIG_SATA_QSTOR is not set
-+# CONFIG_SATA_PROMISE is not set
-+# CONFIG_SATA_SX4 is not set
-+# CONFIG_SATA_SIL is not set
-+# CONFIG_SATA_SIS is not set
-+# CONFIG_SATA_ULI is not set
-+# CONFIG_SATA_VIA is not set
-+# CONFIG_SATA_VITESSE is not set
-+# CONFIG_SATA_INIC162X is not set
-+# CONFIG_PATA_ALI is not set
-+# CONFIG_PATA_AMD is not set
-+# CONFIG_PATA_ARTOP is not set
-+# CONFIG_PATA_ATIIXP is not set
-+# CONFIG_PATA_CMD640_PCI is not set
-+# CONFIG_PATA_CMD64X is not set
-+# CONFIG_PATA_CS5520 is not set
-+# CONFIG_PATA_CS5530 is not set
-+# CONFIG_PATA_CYPRESS is not set
-+# CONFIG_PATA_EFAR is not set
-+# CONFIG_ATA_GENERIC is not set
-+# CONFIG_PATA_HPT366 is not set
-+# CONFIG_PATA_HPT37X is not set
-+# CONFIG_PATA_HPT3X2N is not set
-+# CONFIG_PATA_HPT3X3 is not set
-+# CONFIG_PATA_IT821X is not set
-+# CONFIG_PATA_IT8213 is not set
-+# CONFIG_PATA_JMICRON is not set
-+# CONFIG_PATA_TRIFLEX is not set
-+# CONFIG_PATA_MARVELL is not set
 +CONFIG_PATA_MPC52xx=y
-+# CONFIG_PATA_MPIIX is not set
-+# CONFIG_PATA_OLDPIIX is not set
-+# CONFIG_PATA_NETCELL is not set
-+# CONFIG_PATA_NINJA32 is not set
-+# CONFIG_PATA_NS87410 is not set
-+# CONFIG_PATA_NS87415 is not set
-+# CONFIG_PATA_OPTI is not set
-+# CONFIG_PATA_OPTIDMA is not set
-+# CONFIG_PATA_PDC_OLD is not set
-+# CONFIG_PATA_RADISYS is not set
-+# CONFIG_PATA_RZ1000 is not set
-+# CONFIG_PATA_SC1200 is not set
-+# CONFIG_PATA_SERVERWORKS is not set
-+# CONFIG_PATA_PDC2027X is not set
-+# CONFIG_PATA_SIL680 is not set
-+# CONFIG_PATA_SIS is not set
-+# CONFIG_PATA_VIA is not set
-+# CONFIG_PATA_WINBOND is not set
 +CONFIG_PATA_PLATFORM=y
 +# CONFIG_PATA_OF_PLATFORM is not set
-+# CONFIG_PATA_SCH is not set
 +# CONFIG_MD is not set
-+# CONFIG_FUSION is not set
-+
-+#
-+# IEEE 1394 (FireWire) support
-+#
-+
-+#
-+# You can enable one or both FireWire driver stacks.
-+#
-+
-+#
-+# See the help texts for more information.
-+#
-+# CONFIG_FIREWIRE is not set
-+# CONFIG_IEEE1394 is not set
-+# CONFIG_I2O is not set
 +# CONFIG_MACINTOSH_DRIVERS is not set
 +CONFIG_NETDEVICES=y
 +# CONFIG_DUMMY is not set
@@ -992,7 +949,6 @@ index 0000000..fa0a01e
 +# CONFIG_EQUALIZER is not set
 +# CONFIG_TUN is not set
 +# CONFIG_VETH is not set
-+# CONFIG_ARCNET is not set
 +CONFIG_PHYLIB=y
 +
 +#
@@ -1015,14 +971,8 @@ index 0000000..fa0a01e
 +# CONFIG_MDIO_BITBANG is not set
 +CONFIG_NET_ETHERNET=y
 +# CONFIG_MII is not set
-+# CONFIG_HAPPYMEAL is not set
-+# CONFIG_SUNGEM is not set
-+# CONFIG_CASSINI is not set
-+# CONFIG_NET_VENDOR_3COM is not set
 +# CONFIG_ETHOC is not set
 +# CONFIG_DNET is not set
-+# CONFIG_NET_TULIP is not set
-+# CONFIG_HP100 is not set
 +# CONFIG_IBM_NEW_EMAC_ZMII is not set
 +# CONFIG_IBM_NEW_EMAC_RGMII is not set
 +# CONFIG_IBM_NEW_EMAC_TAH is not set
@@ -1030,15 +980,12 @@ index 0000000..fa0a01e
 +# CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL is not set
 +# CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT is not set
 +# CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR is not set
-+# CONFIG_NET_PCI is not set
 +# CONFIG_B44 is not set
 +# CONFIG_KS8842 is not set
 +CONFIG_FEC_MPC52xx=y
 +CONFIG_FEC_MPC52xx_MDIO=y
-+# CONFIG_ATL2 is not set
 +# CONFIG_NETDEV_1000 is not set
 +# CONFIG_NETDEV_10000 is not set
-+# CONFIG_TR is not set
 +
 +#
 +# Wireless LAN
@@ -1050,11 +997,8 @@ index 0000000..fa0a01e
 +# Enable WiMAX (Networking options) to see the WiMAX drivers
 +#
 +# CONFIG_WAN is not set
-+# CONFIG_FDDI is not set
-+# CONFIG_HIPPI is not set
 +# CONFIG_PPP is not set
 +# CONFIG_SLIP is not set
-+# CONFIG_NET_FC is not set
 +# CONFIG_NETCONSOLE is not set
 +# CONFIG_NETPOLL is not set
 +# CONFIG_NET_POLL_CONTROLLER is not set
@@ -1078,7 +1022,6 @@ index 0000000..fa0a01e
 +# CONFIG_VT is not set
 +CONFIG_DEVKMEM=y
 +# CONFIG_SERIAL_NONSTANDARD is not set
-+# CONFIG_NOZOMI is not set
 +
 +#
 +# Serial drivers
@@ -1094,7 +1037,6 @@ index 0000000..fa0a01e
 +CONFIG_SERIAL_MPC52xx=y
 +CONFIG_SERIAL_MPC52xx_CONSOLE=y
 +CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD=115200
-+# CONFIG_SERIAL_JSM is not set
 +CONFIG_UNIX98_PTYS=y
 +# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
 +CONFIG_LEGACY_PTYS=y
@@ -1104,10 +1046,8 @@ index 0000000..fa0a01e
 +# CONFIG_HW_RANDOM is not set
 +# CONFIG_NVRAM is not set
 +# CONFIG_R3964 is not set
-+# CONFIG_APPLICOM is not set
 +# CONFIG_RAW_DRIVER is not set
 +# CONFIG_TCG_TPM is not set
-+CONFIG_DEVPORT=y
 +CONFIG_I2C=y
 +CONFIG_I2C_BOARDINFO=y
 +CONFIG_I2C_CHARDEV=y
@@ -1116,24 +1056,6 @@ index 0000000..fa0a01e
 +#
 +# I2C Hardware Bus support
 +#
-+
-+#
-+# PC SMBus host controller drivers
-+#
-+# CONFIG_I2C_ALI1535 is not set
-+# CONFIG_I2C_ALI1563 is not set
-+# CONFIG_I2C_ALI15X3 is not set
-+# CONFIG_I2C_AMD756 is not set
-+# CONFIG_I2C_AMD8111 is not set
-+# CONFIG_I2C_I801 is not set
-+# CONFIG_I2C_ISCH is not set
-+# CONFIG_I2C_PIIX4 is not set
-+# CONFIG_I2C_NFORCE2 is not set
-+# CONFIG_I2C_SIS5595 is not set
-+# CONFIG_I2C_SIS630 is not set
-+# CONFIG_I2C_SIS96X is not set
-+# CONFIG_I2C_VIA is not set
-+# CONFIG_I2C_VIAPRO is not set
 +
 +#
 +# I2C system bus drivers (mostly embedded / system-on-chip)
@@ -1149,11 +1071,6 @@ index 0000000..fa0a01e
 +#
 +# CONFIG_I2C_PARPORT_LIGHT is not set
 +# CONFIG_I2C_TAOS_EVM is not set
-+
-+#
-+# Graphics adapter I2C/DDC channel drivers
-+#
-+# CONFIG_I2C_VOODOO3 is not set
 +
 +#
 +# Other I2C/SMBus bus drivers
@@ -1180,6 +1097,7 @@ index 0000000..fa0a01e
 +#
 +# CONFIG_PPS is not set
 +CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
++CONFIG_ARCH_REQUIRE_GPIOLIB=y
 +CONFIG_GPIOLIB=y
 +# CONFIG_DEBUG_GPIO is not set
 +# CONFIG_GPIO_SYSFS is not set
@@ -1199,7 +1117,6 @@ index 0000000..fa0a01e
 +#
 +# PCI GPIO expanders:
 +#
-+# CONFIG_GPIO_BT8XX is not set
 +
 +#
 +# SPI GPIO expanders:
@@ -1222,7 +1139,6 @@ index 0000000..fa0a01e
 +# CONFIG_SENSORS_ADT7475 is not set
 +# CONFIG_SENSORS_ATXP1 is not set
 +# CONFIG_SENSORS_DS1621 is not set
-+# CONFIG_SENSORS_I5K_AMB is not set
 +# CONFIG_SENSORS_F71805F is not set
 +# CONFIG_SENSORS_F71882FG is not set
 +# CONFIG_SENSORS_F75375S is not set
@@ -1250,7 +1166,6 @@ index 0000000..fa0a01e
 +# CONFIG_SENSORS_PC87427 is not set
 +# CONFIG_SENSORS_PCF8591 is not set
 +# CONFIG_SENSORS_SHT15 is not set
-+# CONFIG_SENSORS_SIS5595 is not set
 +# CONFIG_SENSORS_DME1737 is not set
 +# CONFIG_SENSORS_SMSC47M1 is not set
 +# CONFIG_SENSORS_SMSC47M192 is not set
@@ -1258,9 +1173,7 @@ index 0000000..fa0a01e
 +# CONFIG_SENSORS_ADS7828 is not set
 +# CONFIG_SENSORS_THMC50 is not set
 +# CONFIG_SENSORS_TMP401 is not set
-+# CONFIG_SENSORS_VIA686A is not set
 +# CONFIG_SENSORS_VT1211 is not set
-+# CONFIG_SENSORS_VT8231 is not set
 +# CONFIG_SENSORS_W83781D is not set
 +# CONFIG_SENSORS_W83791D is not set
 +# CONFIG_SENSORS_W83792D is not set
@@ -1300,8 +1213,6 @@ index 0000000..fa0a01e
 +#
 +# Graphics support
 +#
-+# CONFIG_AGP is not set
-+# CONFIG_DRM is not set
 +# CONFIG_VGASTATE is not set
 +# CONFIG_VIDEO_OUTPUT_CONTROL is not set
 +# CONFIG_FB is not set
@@ -1313,12 +1224,10 @@ index 0000000..fa0a01e
 +# CONFIG_DISPLAY_SUPPORT is not set
 +# CONFIG_SOUND is not set
 +# CONFIG_USB_SUPPORT is not set
-+# CONFIG_UWB is not set
 +# CONFIG_MMC is not set
 +# CONFIG_MEMSTICK is not set
 +# CONFIG_NEW_LEDS is not set
 +# CONFIG_ACCESSIBILITY is not set
-+# CONFIG_INFINIBAND is not set
 +# CONFIG_EDAC is not set
 +CONFIG_RTC_LIB=y
 +CONFIG_RTC_CLASS=y
@@ -1777,19 +1686,18 @@ index 0000000..fa0a01e
 +#
 +# CONFIG_CRYPTO_ANSI_CPRNG is not set
 +CONFIG_CRYPTO_HW=y
-+# CONFIG_CRYPTO_DEV_HIFN_795X is not set
 +CONFIG_PPC_CLOCK=y
 +CONFIG_PPC_LIB_RHEAP=y
 +# CONFIG_VIRTUALIZATION is not set
 diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-index c31e5b5..7794bd8 100644
+index 7794bd8..fd9f894 100644
 --- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
 +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-@@ -51,6 +51,7 @@ static void __init mpc5200_simple_setup_arch(void)
- /* list of the supported boards */
+@@ -52,6 +52,7 @@ static void __init mpc5200_simple_setup_arch(void)
  static char *board[] __initdata = {
  	"intercontrol,digsy-mtc",
-+	"man,mucmc52",
+ 	"man,mucmc52",
++	"man,uc101",
  	"phytec,pcm030",
  	"phytec,pcm032",
  	"promess,motionpro",
