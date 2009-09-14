@@ -1,29 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 47B2BB7C1C
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DAF17B7BB9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Sep 2009 00:48:05 +1000 (EST)
-Received: from mail-yw0-f180.google.com (mail-yw0-f180.google.com
-	[209.85.211.180]) by ozlabs.org (Postfix) with ESMTP id A2AAEDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 00:48:04 +1000 (EST)
-Received: by ywh10 with SMTP id 10so728521ywh.1
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 07:48:03 -0700 (PDT)
+	Tue, 15 Sep 2009 01:34:02 +1000 (EST)
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 4D418DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 01:34:01 +1000 (EST)
+Date: Mon, 14 Sep 2009 19:33:49 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2 0/5] Suspend/resume support for some 83xx/85xx/86xx
+	boards
+Message-ID: <20090914153349.GA31420@oksana.dev.rtsoft.ru>
+References: <20090830193625.GA14693@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4AAE5416.3040908@denx.de>
-References: <4AADF93C.3030604@denx.de>
-	<fa686aa40909140643j3183e181x49be002941ae5c36@mail.gmail.com>
-	<4AAE5416.3040908@denx.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 14 Sep 2009 08:47:43 -0600
-Message-ID: <fa686aa40909140747y1d6648c2x86406feb3edbfc72@mail.gmail.com>
-Subject: Re: [PATCH] mpc5200: support for the MAN mpc5200 based board mucmc52
-To: hs@denx.de
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20090830193625.GA14693@oksana.dev.rtsoft.ru>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,25 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 14, 2009 at 8:32 AM, Heiko Schocher <hs@denx.de> wrote:
-> Grant Likely wrote:
->> On Mon, Sep 14, 2009 at 2:05 AM, Heiko Schocher <hs@denx.de> wrote:
->>> + =A0 =A0 =A0 soc5200@f0000000 {
->>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
->>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <1>;
->>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc5200-immr";
->>
->> Does this board use the older and rarer non-'B' mpc5200 part? =A0If not,
->> then fsl,mpc5200b-immr also needs to be in this list.
->
-> OK, I add this too
+On Sun, Aug 30, 2009 at 11:36:25PM +0400, Anton Vorontsov wrote:
+> On Fri, Aug 28, 2009 at 12:38:51AM -0500, Kumar Gala wrote:
+> > >This patch adds suspend/resume support for MPC8540-compatible and
+> > >MPC8569 CPUs.
+> [...] 
+> > I'd also like to get Scott's Ack on this and the device tree patches
+> > before accepting them.
+> 
+> Heh, I didn't notice that the PMC bindings for 85xx describe devdisr
+> registers (and thus sleep = <> properties).
+> 
+> So here are updated patches that should comply with the bindings.
+> Plus,
+> 
+> - It appears that 86xx PMCs registers-compatible with 85xx, so we
+>   can support both. Thus move 85xx/suspend.c to sysdev/fsl_pmc.c;
+> - New patch that adds suspend/resume for MPC8610HPCD;
+> - New patch that adds suspend/resume for 83xx QE boards;
+> - Some fixes in "Make qe_reset() code path safe for repeated
+>   invocation" patch.
 
-Okay, then before you resubmit, do a side-by-side comparison between
-this file and one of the existing mpc5200b dts files.  There are
-numerous fsl,mpc5200b-* compatible values that need to be present.
+Kumar,
 
-g.
+Is there any issues with the patches? Can you merge them for 2.6.32?
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
