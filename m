@@ -1,28 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <wg@grandegger.com>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0D2B1B7B6C
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id DF7DCB6F1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Sep 2009 04:37:51 +1000 (EST)
-Received: from mail-yx0-f187.google.com (mail-yx0-f187.google.com
-	[209.85.210.187]) by ozlabs.org (Postfix) with ESMTP id 4B3A7DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 04:37:49 +1000 (EST)
-Received: by yxe17 with SMTP id 17so4142879yxe.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 11:37:48 -0700 (PDT)
+	Tue, 15 Sep 2009 05:16:34 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 8137ADDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 05:16:34 +1000 (EST)
+Message-ID: <4AAE9686.4060709@grandegger.com>
+Date: Mon, 14 Sep 2009 21:16:22 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20090914181617.ACF4B17B804F@mail59-sin.bigfish.com>
-References: <20090914181617.ACF4B17B804F@mail59-sin.bigfish.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 14 Sep 2009 12:37:28 -0600
-Message-ID: <fa686aa40909141137h214036b2m1ad0b570001e0f05@mail.gmail.com>
-Subject: Re: [PATCH] Xilinx: SPI: Fix bits_per_word for transfers
-To: John Linn <john.linn@xilinx.com>
+To: hs@denx.de
+Subject: Re: [PATCH] mpc5200: support for the MAN mpc5200 based board uc101
+References: <4AADF94C.9040502@denx.de>	<fa686aa40909140638r422db79aj7568f492163c5d96@mail.gmail.com>
+	<4AAE4F44.7080300@denx.de>
+In-Reply-To: <4AAE4F44.7080300@denx.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, akonovalov@ru.mvista.com,
-	dbrownell@users.sourceforge.net
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,58 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 14, 2009 at 12:17 PM, John Linn <john.linn@xilinx.com> wrote:
-> The bits_per_word value can be set for each transfer, or can
-> be set to zero in each transfer in which case it should default
-> to the value in the driver.
->
-> The driver was fixed to properly check the bits_per_word in
-> the transfer that is passed in.
->
-> Signed-off-by: John Linn <john.linn@xilinx.com>
+Hello Heiko,
 
-Looks good to me.
+Heiko Schocher wrote:
+> Hello Grant,
+> 
+> Grant Likely wrote:
+>> Thanks for the patch.  Comments below.
+>>
+>> g.
+>>
+>> On Mon, Sep 14, 2009 at 2:05 AM, Heiko Schocher <hs@denx.de> wrote:
+>>> - serial Console on PSC1
+>>> - 64MB SDRAM
+>>> - MTD CFI Flash
+>>> - Ethernet FEC
+>>> - I2C with PCF8563 and Temp. Sensor ADM9240
+>>> - IDE support
+>>>
+>>> Signed-off-by: Heiko Schocher <hs@denx.de>
+...snip....
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>>> +               i2c@3d40 {
+>>> +                       #address-cells = <1>;
+>>> +                       #size-cells = <0>;
+>>> +                       compatible = "fsl,mpc5200-i2c","fsl-i2c";
+>>> +                       reg = <0x3d40 0x40>;
+>>> +                       interrupts = <2 16 0>;
+>>> +                       fsl5200-clocking;
+>> I believe fsl5200-clocking is no longer required.  There is a patch
+>> pending which removes this property from the other .dts files.
 
-> ---
-> =A0drivers/spi/xilinx_spi.c | =A0 =A03 ++-
-> =A01 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
-> index 46b8c5c..5a143b9 100644
-> --- a/drivers/spi/xilinx_spi.c
-> +++ b/drivers/spi/xilinx_spi.c
-> @@ -148,7 +148,8 @@ static int xilinx_spi_setup_transfer(struct spi_devic=
-e *spi,
-> =A0{
-> =A0 =A0 =A0 =A0u8 bits_per_word;
->
-> - =A0 =A0 =A0 bits_per_word =3D (t) ? t->bits_per_word : spi->bits_per_wo=
-rd;
-> + =A0 =A0 =A0 bits_per_word =3D (t && t->bits_per_word)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0? t->bits_per_word : spi=
-->bits_per_word;
-> =A0 =A0 =A0 =A0if (bits_per_word !=3D 8) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_err(&spi->dev, "%s, unsupported bits_p=
-er_word=3D%d\n",
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0__func__, bits_per_word);
-> --
-> 1.6.2.1
->
->
->
-> This email and any attachments are intended for the sole use of the named=
- recipient(s) and contain(s) confidential information that may be proprieta=
-ry, privileged or copyrighted under applicable law. If you are not the inte=
-nded recipient, do not read, copy, or forward this email message or any att=
-achments. Delete this email message and any attachments immediately.
->
->
->
+Right, it obsolete.
 
+> Ok, fix this.
 
+Like it is, the I2C controller will use a fixed low speed fdt/dfsr
+setting. You have two other options:
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+  fsl,preserve-clocking;
+  clock-frequency = <400000>;
+
+See also
+http://lxr.linux.no/#linux+v2.6.31/Documentation/powerpc/dts-bindings/fsl/i2c.txt.
+
+>>> +
+>>> +                       hwmon@2c {
+>>> +                               compatible = "ad,adm9240";
+>>> +                               reg = <0x2c>;
+>>> +                       };
+>>> +                       rtc@51 {
+>>> +                               compatible = "rtc,pcf8563";
+
+rtc is not a proper vendor name. Should be nxp, IIRC.
+
+Wolfgang.
