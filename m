@@ -1,37 +1,28 @@
-Return-Path: <brking@linux.vnet.ibm.com>
+Return-Path: <glikely@secretlab.ca>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id E7EB2B70C4
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 0D2B1B7B6C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Sep 2009 04:30:59 +1000 (EST)
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5683BDDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 04:30:58 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e8.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n8EIUD6T010317
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 14:30:13 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n8EIUtnb253370
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 14:30:55 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n8EIUtid027318
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 14:30:55 -0400
-Message-ID: <4AAE8BDE.3090002@linux.vnet.ibm.com>
-Date: Mon, 14 Sep 2009 13:30:54 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+	Tue, 15 Sep 2009 04:37:51 +1000 (EST)
+Received: from mail-yx0-f187.google.com (mail-yx0-f187.google.com
+	[209.85.210.187]) by ozlabs.org (Postfix) with ESMTP id 4B3A7DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 04:37:49 +1000 (EST)
+Received: by yxe17 with SMTP id 17so4142879yxe.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 11:37:48 -0700 (PDT)
 MIME-Version: 1.0
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 1/5] dynamic logical partitioning infrastructure
-References: <4AAABC55.4070207@austin.ibm.com> <4AAABCE3.5090702@austin.ibm.com>
-In-Reply-To: <4AAABCE3.5090702@austin.ibm.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <20090914181617.ACF4B17B804F@mail59-sin.bigfish.com>
+References: <20090914181617.ACF4B17B804F@mail59-sin.bigfish.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 14 Sep 2009 12:37:28 -0600
+Message-ID: <fa686aa40909141137h214036b2m1ad0b570001e0f05@mail.gmail.com>
+Subject: Re: [PATCH] Xilinx: SPI: Fix bits_per_word for transfers
+To: John Linn <john.linn@xilinx.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, akonovalov@ru.mvista.com,
+	dbrownell@users.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,90 +32,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nathan Fontenot wrote:
-> +#include <linux/kernel.h>
-> +#include <linux/kref.h>
-> +#include <linux/notifier.h>
-> +#include <linux/proc_fs.h>
-> +#include <linux/spinlock.h>
-> +
-> +#include <asm/prom.h>
-> +#include <asm/machdep.h>
-> +#include <asm/uaccess.h>
-> +#include <asm/rtas.h>
-> +#include <asm/pSeries_reconfig.h>
-> +
-> +#define CFG_CONN_WORK_SIZE    4096
-> +static char workarea[CFG_CONN_WORK_SIZE];
-> +spinlock_t workarea_lock;
+On Mon, Sep 14, 2009 at 12:17 PM, John Linn <john.linn@xilinx.com> wrote:
+> The bits_per_word value can be set for each transfer, or can
+> be set to zero in each transfer in which case it should default
+> to the value in the driver.
+>
+> The driver was fixed to properly check the bits_per_word in
+> the transfer that is passed in.
+>
+> Signed-off-by: John Linn <john.linn@xilinx.com>
 
-This can be:
+Looks good to me.
 
-static DEFINE_SPINLOCK(workarea_lock);
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-Then you can get rid of the runtime initializer.
-
-> +
-> +int release_drc(u32 drc_index)
-> +{
-> +    int dr_status, rc;
-> +
-> +    rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
-> +               DR_ENTITY_SENSE, drc_index);
-> +    if (rc || dr_status != DR_ENTITY_PRESENT)
-> +        return -1;
-> +
-> +    rc = rtas_set_indicator(ISOLATION_STATE, drc_index, ISOLATE);
-> +    if (rc)
-> +        return -1;
-> +
-> +    rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
-> +    if (rc) {
-> +        rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
-> +        return -1;
-> +    }
-
-Is there a better return value here that might be more descriptive than -1?
-
-
-> +
-> +    return 0;
-> +}
-> +
-> +static int pseries_dlpar_init(void)
-> +{
-> +    spin_lock_init(&workarea_lock);
-> +
-> +    if (!machine_is(pseries))
-> +        return 0;
-
-What's the point of this if check if you return 0 either way?
-
-> +
-> +    return 0;
-> +}
-> +__initcall(pseries_dlpar_init);
+> ---
+> =A0drivers/spi/xilinx_spi.c | =A0 =A03 ++-
+> =A01 files changed, 2 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
+> index 46b8c5c..5a143b9 100644
+> --- a/drivers/spi/xilinx_spi.c
+> +++ b/drivers/spi/xilinx_spi.c
+> @@ -148,7 +148,8 @@ static int xilinx_spi_setup_transfer(struct spi_devic=
+e *spi,
+> =A0{
+> =A0 =A0 =A0 =A0u8 bits_per_word;
+>
+> - =A0 =A0 =A0 bits_per_word =3D (t) ? t->bits_per_word : spi->bits_per_wo=
+rd;
+> + =A0 =A0 =A0 bits_per_word =3D (t && t->bits_per_word)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0? t->bits_per_word : spi=
+->bits_per_word;
+> =A0 =A0 =A0 =A0if (bits_per_word !=3D 8) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_err(&spi->dev, "%s, unsupported bits_p=
+er_word=3D%d\n",
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0__func__, bits_per_word);
+> --
+> 1.6.2.1
+>
+>
+>
+> This email and any attachments are intended for the sole use of the named=
+ recipient(s) and contain(s) confidential information that may be proprieta=
+ry, privileged or copyrighted under applicable law. If you are not the inte=
+nded recipient, do not read, copy, or forward this email message or any att=
+achments. Delete this email message and any attachments immediately.
+>
+>
+>
 
 
-> Index: powerpc/arch/powerpc/platforms/pseries/reconfig.c
-> ===================================================================
-> --- powerpc.orig/arch/powerpc/platforms/pseries/reconfig.c    2009-09-11
-> 12:43:39.000000000 -0500
-> +++ powerpc/arch/powerpc/platforms/pseries/reconfig.c    2009-09-11
-> 12:51:52.000000000 -0500
-> @@ -95,7 +95,7 @@
->     return parent;
-> }
-> 
-> -static BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
-> +struct blocking_notifier_head pSeries_reconfig_chain =
-> BLOCKING_NOTIFIER_INIT(pSeries_reconfig_chain);
 
-Can't this just be?
-
-BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
-
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
