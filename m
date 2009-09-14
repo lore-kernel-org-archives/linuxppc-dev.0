@@ -1,33 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <w.sang@pengutronix.de>
 Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id A78B1B7080
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7F35CB7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Sep 2009 18:00:36 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 158F8DDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 18:00:35 +1000 (EST)
-Subject: Re: [FTRACE] Enabling function_graph causes OOPS
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: rostedt@goodmis.org
-In-Reply-To: <1252873548.8375.73.camel@pasglop>
-References: <4A5C5D65.3030906@in.ibm.com>
-	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
-	<4A76BE81.4080707@in.ibm.com>
-	<1252458303.20985.10.camel@gandalf.stny.rr.com>
-	<4AA74AE2.5090001@in.ibm.com>
-	<1252814877.26049.93.camel@gandalf.stny.rr.com>
-	<1252816650.8375.70.camel@pasglop>
-	<1252848060.26049.647.camel@gandalf.stny.rr.com>
-	<1252873548.8375.73.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 14 Sep 2009 18:00:27 +1000
-Message-Id: <1252915227.8375.118.camel@pasglop>
-Mime-Version: 1.0
+	Mon, 14 Sep 2009 18:03:33 +1000 (EST)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 1C8FBDDD01
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 18:03:32 +1000 (EST)
+Date: Mon, 14 Sep 2009 10:03:23 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH] mpc5200: support for the MAN mpc5200 based board mucmc52
+Message-ID: <20090914080322.GA3164@pengutronix.de>
+References: <4AADF93C.3030604@denx.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
+In-Reply-To: <4AADF93C.3030604@denx.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,30 +29,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-09-14 at 06:25 +1000, Benjamin Herrenschmidt wrote:
-> > > .../...
-> > > 
-> > > > Something is totally messed up here.
-> > > 
-> > > Could it be that we don't handle R_PPC64_ADDR16_* relocs in
-> > > arch/powerpc/kernel/modules/module_64.c ?
-> > > 
-> > > Sachin, do you see a bunch of "Unknown ADD relocation" in your dmesg ?
-> > 
-> > Ben,
-> > 
-> > The thing is, this is kernel proper. This code is in entry_64.S not in
-> > the module code.
-> 
-> Argh... indeed.
-> 
-> Sachin, can you give me more details on how you built that kernel ? (or
-> give them again in case I missed them the first time around :-), ie,
-> what toolchain, options, etc... or even better, give me remote access to
-> the build host ?
 
-Ok, got access and had a quick look... seems to be a toolchain problem
-to me. I'll investigate more tomorrow.
+--cWoXeonUoKmBZSoM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+Hi,
+
+> +		mpc5200_pic: interrupt-controller@500 {
+> +			// 5200 interrupts are encoded into two levels;
+
+Grant, maybe this comment could be dropped also for the in-kernel dts-files=
+? I
+think it is sufficently described in mpc5200.txt. I could prepare a patch if
+you agree.
+
+> +		i2c@3d40 {
+> +			#address-cells =3D <1>;
+> +			#size-cells =3D <0>;
+> +			compatible =3D "fsl,mpc5200-i2c","fsl-i2c";
+> +			reg =3D <0x3d40 0x40>;
+> +			interrupts =3D <2 16 0>;
+> +			fsl5200-clocking;
+
+Please drop the clocking-line. It became obsolete.
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--cWoXeonUoKmBZSoM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqt+MoACgkQD27XaX1/VRuY6QCfb0xykZ/jD5gg+Kf4aAfdhWCF
+HzsAoME9oLYAhxAgwhVrhJ6iCMUebtV9
+=skHo
+-----END PGP SIGNATURE-----
+
+--cWoXeonUoKmBZSoM--
