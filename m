@@ -3,25 +3,27 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 58854B7C1A
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 47B2BB7C1C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Sep 2009 00:46:20 +1000 (EST)
+	Tue, 15 Sep 2009 00:48:05 +1000 (EST)
 Received: from mail-yw0-f180.google.com (mail-yw0-f180.google.com
-	[209.85.211.180]) by ozlabs.org (Postfix) with ESMTP id 98A98DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 00:46:18 +1000 (EST)
-Received: by ywh10 with SMTP id 10so726163ywh.1
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 07:46:17 -0700 (PDT)
+	[209.85.211.180]) by ozlabs.org (Postfix) with ESMTP id A2AAEDDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 00:48:04 +1000 (EST)
+Received: by ywh10 with SMTP id 10so728521ywh.1
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 07:48:03 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <20090914080322.GA3164@pengutronix.de>
-References: <4AADF93C.3030604@denx.de> <20090914080322.GA3164@pengutronix.de>
+In-Reply-To: <4AAE5416.3040908@denx.de>
+References: <4AADF93C.3030604@denx.de>
+	<fa686aa40909140643j3183e181x49be002941ae5c36@mail.gmail.com>
+	<4AAE5416.3040908@denx.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 14 Sep 2009 08:45:57 -0600
-Message-ID: <fa686aa40909140745u2cf1dba7q8ae2af53c87bd216@mail.gmail.com>
+Date: Mon, 14 Sep 2009 08:47:43 -0600
+Message-ID: <fa686aa40909140747y1d6648c2x86406feb3edbfc72@mail.gmail.com>
 Subject: Re: [PATCH] mpc5200: support for the MAN mpc5200 based board mucmc52
-To: Wolfram Sang <w.sang@pengutronix.de>
+To: hs@denx.de
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Heiko Schocher <hs@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 14, 2009 at 2:03 AM, Wolfram Sang <w.sang@pengutronix.de> wrote=
-:
-> Hi,
+On Mon, Sep 14, 2009 at 8:32 AM, Heiko Schocher <hs@denx.de> wrote:
+> Grant Likely wrote:
+>> On Mon, Sep 14, 2009 at 2:05 AM, Heiko Schocher <hs@denx.de> wrote:
+>>> + =A0 =A0 =A0 soc5200@f0000000 {
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <1>;
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc5200-immr";
+>>
+>> Does this board use the older and rarer non-'B' mpc5200 part? =A0If not,
+>> then fsl,mpc5200b-immr also needs to be in this list.
 >
->> + =A0 =A0 =A0 =A0 =A0 =A0 mpc5200_pic: interrupt-controller@500 {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 // 5200 interrupts are encoded=
- into two levels;
->
-> Grant, maybe this comment could be dropped also for the in-kernel dts-fil=
-es? I
-> think it is sufficently described in mpc5200.txt. I could prepare a patch=
- if
-> you agree.
+> OK, I add this too
 
-Meh.  I don't mind it being there.  Interrupt encoding is confusing
-enough as is for people unfamiliar with the device tree, that any
-additional hints are a plus.  In fact, if you want to prepare a patch,
-instead of removing this comment, replace it with one that tells
-readers where to look for the encoding documentation.
+Okay, then before you resubmit, do a side-by-side comparison between
+this file and one of the existing mpc5200b dts files.  There are
+numerous fsl,mpc5200b-* compatible values that need to be present.
 
-Cheers,
 g.
 
 --=20
