@@ -1,25 +1,19 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7F35CB7067
+Return-Path: <ludo.vanput@gmail.com>
+Received: from mail-fx0-f219.google.com (mail-fx0-f219.google.com
+	[209.85.220.219])
+	by bilbo.ozlabs.org (Postfix) with ESMTP id 2D227B707B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Sep 2009 18:03:33 +1000 (EST)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 1C8FBDDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2009 18:03:32 +1000 (EST)
-Date: Mon, 14 Sep 2009 10:03:23 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH] mpc5200: support for the MAN mpc5200 based board mucmc52
-Message-ID: <20090914080322.GA3164@pengutronix.de>
-References: <4AADF93C.3030604@denx.de>
+	Mon, 14 Sep 2009 22:36:18 +1000 (EST)
+Received: by fxm19 with SMTP id 19so2253950fxm.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 14 Sep 2009 05:36:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
-In-Reply-To: <4AADF93C.3030604@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Date: Mon, 14 Sep 2009 14:36:15 +0200
+Message-ID: <5edaeed70909140536s53fb36ael4f0cb90abfe327e0@mail.gmail.com>
+Subject: Oops in IDE probing on ppc_440 when PCI is enabled in strapping
+From: Ludo Van Put <ludo.vanput@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=001485f78b3669a7c0047388e9cb
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---cWoXeonUoKmBZSoM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--001485f78b3669a7c0047388e9cb
+Content-Type: text/plain; charset=ISO-8859-1
 
 Hi,
 
-> +		mpc5200_pic: interrupt-controller@500 {
-> +			// 5200 interrupts are encoded into two levels;
+we're working with a PPC440GX on a board that has a.o. a compact flash slot.
+We had the PCI subsystem of the ppc disabled in strapping for quite a while,
+until we wanted to start using it.
+However, when we enabled PCI in the strapping and in the (patched 2.6.10)
+kernel configuration, we triggered an oops when probing for IDE devices (to
+read out the first 512 bytes of the CF). I can see that the ioremap64 call
+in the driver code for our CF returns a different address (compared to PCI
+disabled in strapping), but using this address later on for accessing the CF
+goes wrong.
 
-Grant, maybe this comment could be dropped also for the in-kernel dts-files=
-? I
-think it is sufficently described in mpc5200.txt. I could prepare a patch if
-you agree.
+Does someone has an idea why this might go wrong? Can I end up with
+overlapping address ranges due to the PCI subsystem being enabled? Is this
+easy to check? As far as I know, the HW address of the PCI controller is in
+a non-overlapping range with the addresses we have setup in the EBC
+registers to probe for the CF (u-boot can see the IDE device just fine and
+it also has PCI turned on).
 
-> +		i2c@3d40 {
-> +			#address-cells =3D <1>;
-> +			#size-cells =3D <0>;
-> +			compatible =3D "fsl,mpc5200-i2c","fsl-i2c";
-> +			reg =3D <0x3d40 0x40>;
-> +			interrupts =3D <2 16 0>;
-> +			fsl5200-clocking;
+TIA, Ludo
 
-Please drop the clocking-line. It became obsolete.
+--001485f78b3669a7c0047388e9cb
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
+Hi,<br><br>we&#39;re working with a PPC440GX on a board that has a.o. a com=
+pact flash slot. We had the PCI subsystem of the ppc disabled in strapping =
+for quite a while, until we wanted to start using it.<br>However, when we e=
+nabled PCI in the strapping and in the (patched 2.6.10) kernel configuratio=
+n, we triggered an oops when probing for IDE devices (to read out the first=
+ 512 bytes of the CF). I can see that the ioremap64 call in the driver code=
+ for our CF returns a different address (compared to PCI disabled in strapp=
+ing), but using this address later on for accessing the CF goes wrong.<br>
+<br>Does someone has an idea why this might go wrong? Can I end up with ove=
+rlapping address ranges due to the PCI subsystem being enabled? Is this eas=
+y to check? As far as I know, the HW address of the PCI controller is in a =
+non-overlapping range with the addresses we have setup in the EBC registers=
+ to probe for the CF (u-boot can see the IDE device just fine and it also h=
+as PCI turned on).<br>
+<br>TIA, Ludo<br><br><br>
 
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---cWoXeonUoKmBZSoM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqt+MoACgkQD27XaX1/VRuY6QCfb0xykZ/jD5gg+Kf4aAfdhWCF
-HzsAoME9oLYAhxAgwhVrhJ6iCMUebtV9
-=skHo
------END PGP SIGNATURE-----
-
---cWoXeonUoKmBZSoM--
+--001485f78b3669a7c0047388e9cb--
