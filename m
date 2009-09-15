@@ -3,18 +3,17 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id BAE89B7B3E
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7F181B7B84
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Sep 2009 07:43:54 +1000 (EST)
+	Wed, 16 Sep 2009 07:43:56 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id EA85CDDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Sep 2009 07:43:53 +1000 (EST)
-Date: Wed, 16 Sep 2009 01:43:52 +0400
+	by ozlabs.org (Postfix) with ESMTP id 7D56CDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Sep 2009 07:43:55 +1000 (EST)
+Date: Wed, 16 Sep 2009 01:43:54 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/7] powerpc/qe: Make qe_reset() code path safe for
-	repeated invocation
-Message-ID: <20090915214352.GA24821@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/7] powerpc/qe: QE also shuts down on MPC8568
+Message-ID: <20090915214354.GB24821@oksana.dev.rtsoft.ru>
 References: <20090915214321.GA19377@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -30,92 +29,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For MPC8569 CPUs we'll need to reset QE after each suspend, so make
-qe_reset() code path suitable for repeated invocation, that is:
+It appears that QE shuts down on all MPC85xx CPUs (i.e. MPC8568 and
+MPC8569) and thus needs reset upon resume.
 
-- Don't initialize rheap structures if already initialized;
-- Don't allocate muram for SDMA if already allocated, just reinitialize
-  registers with previously allocated muram offset;
-- Remove __init attributes from qe_reset() and cpm_muram_init();
+So modify qe_alive_during_sleep() to account that.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/include/asm/qe.h    |    2 +-
- arch/powerpc/sysdev/cpm_common.c |    5 ++++-
- arch/powerpc/sysdev/qe_lib/qe.c  |   12 +++++++-----
- 3 files changed, 12 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/qe.h   |   23 ++++++++++++++++++++++-
+ arch/powerpc/sysdev/qe_lib/qe.c |   13 -------------
+ 2 files changed, 22 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
-index 20c0b07..fe507ff 100644
+index fe507ff..0947b36 100644
 --- a/arch/powerpc/include/asm/qe.h
 +++ b/arch/powerpc/include/asm/qe.h
-@@ -87,7 +87,7 @@ extern spinlock_t cmxgcr_lock;
- 
- /* Export QE common operations */
- #ifdef CONFIG_QUICC_ENGINE
--extern void __init qe_reset(void);
-+extern void qe_reset(void);
- #else
- static inline void qe_reset(void) {}
- #endif
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index e4b6d66..9de72c9 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -72,7 +72,7 @@ static phys_addr_t muram_pbase;
- /* Max address size we deal with */
- #define OF_MAX_ADDR_CELLS	4
- 
--int __init cpm_muram_init(void)
-+int cpm_muram_init(void)
- {
- 	struct device_node *np;
- 	struct resource r;
-@@ -81,6 +81,9 @@ int __init cpm_muram_init(void)
- 	int i = 0;
- 	int ret = 0;
- 
-+	if (muram_pbase)
-+		return 0;
+@@ -163,7 +163,28 @@ int qe_get_snum(void);
+ void qe_put_snum(u8 snum);
+ unsigned int qe_get_num_of_risc(void);
+ unsigned int qe_get_num_of_snums(void);
+-int qe_alive_during_sleep(void);
 +
- 	spin_lock_init(&cpm_muram_lock);
- 	/* initialize the info header */
- 	rh_init(&cpm_muram_info, 1,
++static inline int qe_alive_during_sleep(void)
++{
++	/*
++	 * MPC8568E reference manual says:
++	 *
++	 * "...power down sequence waits for all I/O interfaces to become idle.
++	 *  In some applications this may happen eventually without actively
++	 *  shutting down interfaces, but most likely, software will have to
++	 *  take steps to shut down the eTSEC, QUICC Engine Block, and PCI
++	 *  interfaces before issuing the command (either the write to the core
++	 *  MSR[WE] as described above or writing to POWMGTCSR) to put the
++	 *  device into sleep state."
++	 *
++	 * MPC8569E reference manual has a similar paragraph.
++	 */
++#ifdef CONFIG_PPC_85xx
++	return 0;
++#else
++	return 1;
++#endif
++}
+ 
+ /* we actually use cpm_muram implementation, define this for convenience */
+ #define qe_muram_init cpm_muram_init
 diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index fff2701..1ed1a9f 100644
+index 1ed1a9f..4eaf2a9 100644
 --- a/arch/powerpc/sysdev/qe_lib/qe.c
 +++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -104,7 +104,7 @@ phys_addr_t get_qe_base(void)
+@@ -65,19 +65,6 @@ static unsigned int qe_num_of_snum;
  
- EXPORT_SYMBOL(get_qe_base);
+ static phys_addr_t qebase = -1;
  
--void __init qe_reset(void)
-+void qe_reset(void)
+-int qe_alive_during_sleep(void)
+-{
+-	static int ret = -1;
+-
+-	if (ret != -1)
+-		return ret;
+-
+-	ret = !of_find_compatible_node(NULL, NULL, "fsl,mpc8569-pmc");
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL(qe_alive_during_sleep);
+-
+ phys_addr_t get_qe_base(void)
  {
- 	if (qe_immr == NULL)
- 		qe_immr = ioremap(get_qe_base(), QE_IMMAP_SIZE);
-@@ -330,16 +330,18 @@ EXPORT_SYMBOL(qe_put_snum);
- static int qe_sdma_init(void)
- {
- 	struct sdma __iomem *sdma = &qe_immr->sdma;
--	unsigned long sdma_buf_offset;
-+	static unsigned long sdma_buf_offset = (unsigned long)-ENOMEM;
- 
- 	if (!sdma)
- 		return -ENODEV;
- 
- 	/* allocate 2 internal temporary buffers (512 bytes size each) for
- 	 * the SDMA */
-- 	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
--	if (IS_ERR_VALUE(sdma_buf_offset))
--		return -ENOMEM;
-+	if (IS_ERR_VALUE(sdma_buf_offset)) {
-+		sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
-+		if (IS_ERR_VALUE(sdma_buf_offset))
-+			return -ENOMEM;
-+	}
- 
- 	out_be32(&sdma->sdebcr, (u32) sdma_buf_offset & QE_SDEBCR_BA_MASK);
-  	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
+ 	struct device_node *qe;
 -- 
 1.6.3.3
