@@ -1,29 +1,28 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id AA2B0B6F20
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id A3414B7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Sep 2009 16:24:57 +1000 (EST)
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9A331DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2009 16:24:57 +1000 (EST)
-Date: Tue, 15 Sep 2009 16:24:57 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Check for unsupported relocs when using
-	CONFIG_RELOCATABLE
-Message-ID: <20090915062457.GG10656@bilbo.ozlabs.org>
-References: <1252994222.8375.201.camel@pasglop>
+	Tue, 15 Sep 2009 16:41:46 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n8F6fbmG009777
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 16:41:37 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n8F6diln1441984
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 16:39:44 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n8F6fhL7025301
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 16:41:43 +1000
+Date: Tue, 15 Sep 2009 16:41:33 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: [0/5] Assorted hugepage cleanups (v2)
+Message-ID: <20090915064133.GA11621@yookeroo.seuss>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1252994222.8375.201.camel@pasglop>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,32 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 15, 2009 at 03:57:02PM +1000, Benjamin Herrenschmidt wrote:
- 
-> diff --git a/arch/powerpc/relocs_check.pl b/arch/powerpc/relocs_check.pl
-> new file mode 100755
-> index 0000000..215e966
-> --- /dev/null
-> +++ b/arch/powerpc/relocs_check.pl
-> @@ -0,0 +1,57 @@
-> +#!/usr/bin/perl
-> +
-> +# Copyright © 2009 IBM Corporation
-> +
-> +# This program is free software; you can redistribute it and/or
-> +# modify it under the terms of the GNU General Public License
-> +# as published by the Free Software Foundation; either version
-> +# 2 of the License, or (at your option) any later version.
-> +
-> +# This script checks the relcoations of a vmlinux for "suspicious"
-> +# relocations.
-> +
-> +use strict;
-> +use warnings;
-> +
-> +if ($#ARGV != 1) {
-> +	print "$#ARGV\n";
+Currently, ordinary pages use one pagetable layout, and each different
+hugepage size uses a slightly different variant layout.  A number of
+places which need to walk the pagetable must first check the slice map
+to see what the pagetable layout then handle the various different
+forms.  New hardware, like Book3E is liable to introduce more possible
+variants.
 
-Ooops that line should have been taken out.  Sorry.
+This patch series, therefore, is designed to simplify the matter by
+limiting knowledge of the pagetable layout to only the allocation
+path.  With this patch, ordinary pages are handled as ever, with a
+fixed 4 (or 3) level tree.  All other variants branch off from some
+layer of that with a specially marked PGD/PUD/PMD pointer which also
+contains enough information to interpret the directories below that
+point.  This means that things walking the pagetables (without
+allocating) don't need to look up the slice map, they can just step
+down the tree in the usual way, branching off to the "non-standard
+layout" path for hugepages, which uses the embdded information to
+interpret the tree from that point on.
 
-Yours Tony
+This reduces the source size in a number of places, and means that
+newer variants on the pagetable layout to handle new hardware and new
+features will need to alter the existing code in less places.
+
+In addition we split out the hash / classic MMU specific code into a
+separate hugetlbpage-hash64.c file.  This will make adding support for
+other MMUs (like 440 and/or Book3E) easier.
+
+I've used the libhugetlbfs testsuite to test these patches on a
+Power5+ machine, but they could certainly do with more testing. In
+particular, I don't have any suitable hardware to test 16G pages.
+
+V2: Made the tweaks that BenH suggested to patch 2 of the original
+series.  Some corresponding tweaks in patch 3 to match.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
