@@ -3,20 +3,24 @@ Received: from ozlabs.org (ozlabs.org [203.10.76.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.ozlabs.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 322ACB6F1F
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id BAE89B7B3E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Sep 2009 07:43:26 +1000 (EST)
+	Wed, 16 Sep 2009 07:43:54 +1000 (EST)
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id B3D1FDDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Sep 2009 07:43:24 +1000 (EST)
-Date: Wed, 16 Sep 2009 01:43:21 +0400
+	by ozlabs.org (Postfix) with ESMTP id EA85CDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Sep 2009 07:43:53 +1000 (EST)
+Date: Wed, 16 Sep 2009 01:43:52 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v4 0/7] Suspend/resume support for some 83xx/85xx/86xx boards
-Message-ID: <20090915214321.GA19377@oksana.dev.rtsoft.ru>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 1/7] powerpc/qe: Make qe_reset() code path safe for
+	repeated invocation
+Message-ID: <20090915214352.GA24821@oksana.dev.rtsoft.ru>
+References: <20090915214321.GA19377@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+In-Reply-To: <20090915214321.GA19377@oksana.dev.rtsoft.ru>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +30,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 15, 2009 at 01:47:36AM +0400, Anton Vorontsov wrote:
-> On Mon, Sep 14, 2009 at 03:45:10PM -0500, Scott Wood wrote:
-> [...]
-> > >You can't request the firmware in the qe driver's ->suspend()
-> > >routine necause the firmware may be on e.g. NFS filesystem or USB
-> > >stick (implies having QE Ethernet or QE USB fully functional).
-> > 
-> > Is there any way for software to read out the current firmware from
-> > the device, or is it write-only?
-> 
-> Hm, I didn't look into iram stuff that much, but seemingly I can
-> read it back and save. In the end, it's just a ram that we access
-> in a weird way... Let me try it.
+For MPC8569 CPUs we'll need to reset QE after each suspend, so make
+qe_reset() code path suitable for repeated invocation, that is:
 
-Okay... that might sound silly, but the microcode stuff isn't needed
-at all. While the QE really shuts down, its iram is preserved. I'm
-not sure why it didn't work for me before, but now it does work. Heh.
+- Don't initialize rheap structures if already initialized;
+- Don't allocate muram for SDMA if already allocated, just reinitialize
+  registers with previously allocated muram offset;
+- Remove __init attributes from qe_reset() and cpm_muram_init();
 
-Note that QE reset is still needed, it's QE microcode reload that
-we don't need. I was also curious if MPC8568 QE needs reset after
-sleep, so I unpacked the board and tested it. It needs the reset just
-as MPC8569. I also found a paragraph in reference manual that somewhat
-proves "QE turns off during sleep" behaviour.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/include/asm/qe.h    |    2 +-
+ arch/powerpc/sysdev/cpm_common.c |    5 ++++-
+ arch/powerpc/sysdev/qe_lib/qe.c  |   12 +++++++-----
+ 3 files changed, 12 insertions(+), 7 deletions(-)
 
-So here is a new patch set. Changes:
-
-- Removed QE stuff from fsl_pmc;
-- New patches added:
-  powerpc/qe: QE also shuts down on MPC8568
-  powerpc/qe: Implement QE driver for handling resume on MPC85xx
-
-Thanks,
-
+diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
+index 20c0b07..fe507ff 100644
+--- a/arch/powerpc/include/asm/qe.h
++++ b/arch/powerpc/include/asm/qe.h
+@@ -87,7 +87,7 @@ extern spinlock_t cmxgcr_lock;
+ 
+ /* Export QE common operations */
+ #ifdef CONFIG_QUICC_ENGINE
+-extern void __init qe_reset(void);
++extern void qe_reset(void);
+ #else
+ static inline void qe_reset(void) {}
+ #endif
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index e4b6d66..9de72c9 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -72,7 +72,7 @@ static phys_addr_t muram_pbase;
+ /* Max address size we deal with */
+ #define OF_MAX_ADDR_CELLS	4
+ 
+-int __init cpm_muram_init(void)
++int cpm_muram_init(void)
+ {
+ 	struct device_node *np;
+ 	struct resource r;
+@@ -81,6 +81,9 @@ int __init cpm_muram_init(void)
+ 	int i = 0;
+ 	int ret = 0;
+ 
++	if (muram_pbase)
++		return 0;
++
+ 	spin_lock_init(&cpm_muram_lock);
+ 	/* initialize the info header */
+ 	rh_init(&cpm_muram_info, 1,
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index fff2701..1ed1a9f 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -104,7 +104,7 @@ phys_addr_t get_qe_base(void)
+ 
+ EXPORT_SYMBOL(get_qe_base);
+ 
+-void __init qe_reset(void)
++void qe_reset(void)
+ {
+ 	if (qe_immr == NULL)
+ 		qe_immr = ioremap(get_qe_base(), QE_IMMAP_SIZE);
+@@ -330,16 +330,18 @@ EXPORT_SYMBOL(qe_put_snum);
+ static int qe_sdma_init(void)
+ {
+ 	struct sdma __iomem *sdma = &qe_immr->sdma;
+-	unsigned long sdma_buf_offset;
++	static unsigned long sdma_buf_offset = (unsigned long)-ENOMEM;
+ 
+ 	if (!sdma)
+ 		return -ENODEV;
+ 
+ 	/* allocate 2 internal temporary buffers (512 bytes size each) for
+ 	 * the SDMA */
+- 	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
+-	if (IS_ERR_VALUE(sdma_buf_offset))
+-		return -ENOMEM;
++	if (IS_ERR_VALUE(sdma_buf_offset)) {
++		sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
++		if (IS_ERR_VALUE(sdma_buf_offset))
++			return -ENOMEM;
++	}
+ 
+ 	out_be32(&sdma->sdebcr, (u32) sdma_buf_offset & QE_SDEBCR_BA_MASK);
+  	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.6.3.3
