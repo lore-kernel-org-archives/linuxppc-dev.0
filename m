@@ -2,21 +2,21 @@ Return-Path: <ego@in.ibm.com>
 Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [59.145.155.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 71066B6F56
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 019BCB7BAE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Sep 2009 22:07:03 +1000 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp06.in.ibm.com (8.14.3/8.13.1) with ESMTP id n8FC6wWP003392
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 17:36:58 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n8FC6v3n2461760
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 17:36:58 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n8FC6unY014491
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 22:06:57 +1000
-Subject: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
+	Tue, 15 Sep 2009 22:07:05 +1000 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp06.in.ibm.com (8.14.3/8.13.1) with ESMTP id n8FC71bK003414
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 17:37:01 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n8FC71AO2404398
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 17:37:01 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n8FC70gq006932
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 22:07:01 +1000
+Subject: [PATCH v3 1/3] pSeries: cede latency specifier helper function.
 To: Joel Schopp <jschopp@austin.ibm.com>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	Peter Zijlstra <a.p.zijlstra@chello.nl>, Balbir Singh <balbir@in.ibm.com>,
@@ -24,8 +24,10 @@ To: Joel Schopp <jschopp@austin.ibm.com>,
 	Dipankar Sarma <dipankar@in.ibm.com>,
 	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 From: Gautham R Shenoy <ego@in.ibm.com>
-Date: Tue, 15 Sep 2009 17:36:56 +0530
-Message-ID: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+Date: Tue, 15 Sep 2009 17:37:01 +0530
+Message-ID: <20090915120701.20523.94109.stgit@sofia.in.ibm.com>
+In-Reply-To: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
@@ -39,82 +41,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 
-**** RFC not for inclusion ****
+This patch provides helper functions to set the cede latency specifier
+value in the VPA indicating the latency expectation of the guest OS to
+inform the hypervisor's choice of the platform dependent energy saving
+mode chosen for the processor when unused during the subsequent
+H_CEDE hypercall.
 
-This is the version 3 of the patch series to provide a cpu-offline framework
-that enables the administrators choose the state of a CPU when it is
-offlined, when multiple such states are exposed by the underlying
-architecture.
-
-Changes from Version 2:(can be found here: http://lkml.org/lkml/2009/8/28/102)
-- Addressed Andrew Morton's review comments regarding names of global
-  variables, handling of error conditions and documentation of the interfaces.
-
-- Implemented a patch to provide helper functions to set the cede latency
-  specifier value in the VPA indicating latency expectation of the guest OS
-  when the vcpu is ceded from a subsequent H_CEDE hypercall. Hypervisor may
-  use this for better energy savings.
-
-- Renamed of the cpu-hotplug states. "deallocate" is renamed
-  as "offline" and "deactivate" is renamed as "inactive".
-
-The patch-series exposes the following sysfs tunables to
-allow the system-adminstrator to choose the state of a CPU:
-
-To query the available hotplug states, one needs to read the sysfs tunable:
-	/sys/devices/system/cpu/cpu<number>/available_hotplug_states
-To query or set the current state, on needs to read/write the sysfs tunable:
-	/sys/devices/system/cpu/cpu<number>/current_hotplug_state
-
-The patchset ensures that the writes to the "current_hotplug_state" sysfs file are
-serialized against the writes to the "online" file.
-
-This patchset contains the offline state driver implemented for
-pSeries. For pSeries, we define three available_hotplug_states. They are:
-
-	online: The processor is online.
-
-	offline: This is the the default behaviour when the cpu is offlined
-	even in the absense of this driver. The CPU would call make an
-	rtas_stop_self() call and hand over the CPU back to the resource pool,
-	thereby effectively deallocating that vCPU from the LPAR.
-	NOTE: This would result in a configuration change to the LPAR
-	which is visible to the outside world.
-
-	inactive: This cedes the vCPU to the hypervisor with a cede latency
-	specifier value 2.
-	NOTE: This option does not result in a configuration change
-	and the vCPU would be still entitled to the LPAR to which it earlier
-	belong to.
-
-Any feedback on the patchset will be immensely valuable.
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
+ arch/powerpc/include/asm/lppaca.h               |    9 ++++++++-
+ arch/powerpc/platforms/pseries/plpar_wrappers.h |   17 +++++++++++++++++
+ arch/powerpc/xmon/xmon.c                        |    3 ++-
+ 3 files changed, 27 insertions(+), 2 deletions(-)
 
-Arun R Bharadwaj (1):
-      pSeries: cede latency specifier helper function.
-
-Gautham R Shenoy (2):
-      cpu: Implement cpu-offline-state callbacks for pSeries.
-      cpu: Offline state Framework.
-
-
- Documentation/cpu-hotplug.txt                   |   22 +++
- arch/powerpc/include/asm/lppaca.h               |    9 +
- arch/powerpc/platforms/pseries/Makefile         |    2 
- arch/powerpc/platforms/pseries/hotplug-cpu.c    |   88 ++++++++++-
- arch/powerpc/platforms/pseries/offline_driver.c |  148 +++++++++++++++++++
- arch/powerpc/platforms/pseries/offline_driver.h |   20 +++
- arch/powerpc/platforms/pseries/plpar_wrappers.h |   17 ++
- arch/powerpc/platforms/pseries/smp.c            |   17 ++
- arch/powerpc/xmon/xmon.c                        |    3 
- drivers/base/cpu.c                              |  181 ++++++++++++++++++++++-
- include/linux/cpu.h                             |   10 +
- 11 files changed, 498 insertions(+), 19 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/offline_driver.c
- create mode 100644 arch/powerpc/platforms/pseries/offline_driver.h
-
--- 
-Thanks and Regards
-gautham.
+diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
+index f78f65c..aaa0066 100644
+--- a/arch/powerpc/include/asm/lppaca.h
++++ b/arch/powerpc/include/asm/lppaca.h
+@@ -100,7 +100,14 @@ struct lppaca {
+ 	// Used to pass parms from the OS to PLIC for SetAsrAndRfid
+ 	u64	saved_gpr3;		// Saved GPR3                   x20-x27
+ 	u64	saved_gpr4;		// Saved GPR4                   x28-x2F
+-	u64	saved_gpr5;		// Saved GPR5                   x30-x37
++	union {
++		u64	saved_gpr5;	// Saved GPR5                   x30-x37
++		struct {
++			u8	cede_latency_hint;  //			x30
++			u8	reserved[7];        //			x31-x36
++		} fields;
++	} gpr5_dword;
++
+ 
+ 	u8	dtl_enable_mask;	// Dispatch Trace Log mask	x38-x38
+ 	u8	donate_dedicated_cpu;	// Donate dedicated CPU cycles  x39-x39
+diff --git a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+index a24a6b2..1174d4b 100644
+--- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
++++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+@@ -9,11 +9,28 @@ static inline long poll_pending(void)
+ 	return plpar_hcall_norets(H_POLL_PENDING);
+ }
+ 
++static inline u8 get_cede_latency_hint(void)
++{
++	return get_lppaca()->gpr5_dword.fields.cede_latency_hint;
++}
++
++static inline void set_cede_latency_hint(u8 latency_hint)
++{
++	get_lppaca()->gpr5_dword.fields.cede_latency_hint = latency_hint;
++}
++
+ static inline long cede_processor(void)
+ {
+ 	return plpar_hcall_norets(H_CEDE);
+ }
+ 
++static inline long extended_cede_processor(u8 latency_hint)
++{
++	set_cede_latency_hint(latency_hint);
++	cede_processor();
++
++}
++
+ static inline long vpa_call(unsigned long flags, unsigned long cpu,
+ 		unsigned long vpa)
+ {
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index e1f33a8..a2089cd 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1613,7 +1613,8 @@ static void super_regs(void)
+ 			       ptrLpPaca->saved_srr0, ptrLpPaca->saved_srr1);
+ 			printf("    Saved Gpr3=%.16lx  Saved Gpr4=%.16lx \n",
+ 			       ptrLpPaca->saved_gpr3, ptrLpPaca->saved_gpr4);
+-			printf("    Saved Gpr5=%.16lx \n", ptrLpPaca->saved_gpr5);
++			printf("    Saved Gpr5=%.16lx \n",
++				ptrLpPaca->gpr5_dword.saved_gpr5);
+ 		}
+ #endif
+ 
