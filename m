@@ -1,26 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.ozlabs.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id B946BB7B9E
+	(Client did not present a certificate)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 10235B8377
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Sep 2009 07:44:04 +1000 (EST)
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id E9F2DDDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Sep 2009 07:44:03 +1000 (EST)
-Date: Wed, 16 Sep 2009 01:44:02 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 7/7] powerpc/83xx: Add power management support for MPC83xx
-	QE boards
-Message-ID: <20090915214402.GG24821@oksana.dev.rtsoft.ru>
-References: <20090915214321.GA19377@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090915214321.GA19377@oksana.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+	Wed, 16 Sep 2009 07:44:18 +1000 (EST)
+Subject: Re: RFC: delete UART current-speed from 4xx DTS?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20090915153220.GG12372@zod.rchland.ibm.com>
+References: <20090915143135.GA7015@windriver.com>
+	<20090915153220.GG12372@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Wed, 16 Sep 2009 07:44:07 +1000
+Message-Id: <1253051047.8375.232.camel@pasglop>
+Mime-Version: 1.0
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,168 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Simply add power management controller nodes and sleep properties.
+On Tue, 2009-09-15 at 11:32 -0400, Josh Boyer wrote:
+> On Tue, Sep 15, 2009 at 10:31:36AM -0400, Paul Gortmaker wrote:
+> >One of the guys here was getting a messed up console on a bamboo board
+> >(on linux boot), which he traced to the fact that the default dts has a
+> >9600 baudrate coded into it (board was running 115k2, not 9600).  Either
+> >deleting the line, or replacing the 9600 with zero fixed the problem.
+> 
+> Once booted, was there a valid current-speed property in /proc/device-tree
+> for the serial node?  I'm curious if U-Boot created it, or if the kernel
+> just used whatever baud was present already.
+> 
+> When I did the bamboo port a while ago, I recall having issues with either
+> a missing clock-frequency or current-speed (or both perhaps) and the bootloader
+> on the board was the original PIBS.  It might have been an issue with PIBS
+> but I'm guessing the rest of the 4xx boards copied from either Ebony or
+> Bamboo in their ports and hence contain that property.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Acked-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/boot/dts/kmeter1.dts     |    7 +++++++
- arch/powerpc/boot/dts/mpc832x_mds.dts |    9 +++++++++
- arch/powerpc/boot/dts/mpc832x_rdb.dts |    9 +++++++++
- arch/powerpc/boot/dts/mpc836x_mds.dts |    9 +++++++++
- arch/powerpc/boot/dts/mpc836x_rdk.dts |    9 +++++++++
- 5 files changed, 43 insertions(+), 0 deletions(-)
+I think I recently added code to legacy_serial probe the speed from the
+HW if the property is absent, which should help.
 
-diff --git a/arch/powerpc/boot/dts/kmeter1.dts b/arch/powerpc/boot/dts/kmeter1.dts
-index 167044f..65b8b4f 100644
---- a/arch/powerpc/boot/dts/kmeter1.dts
-+++ b/arch/powerpc/boot/dts/kmeter1.dts
-@@ -59,6 +59,13 @@
- 		reg = <0xe0000000 0x00000200>;
- 		bus-frequency = <0>;	/* Filled in by U-Boot */
- 
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8360-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
-index 436c9c6..05ad8c9 100644
---- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-@@ -79,6 +79,13 @@
- 			reg = <0x200 0x100>;
- 		};
- 
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8323-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -163,6 +170,7 @@
- 			fsl,channel-fifo-len = <24>;
- 			fsl,exec-units-mask = <0x4c>;
- 			fsl,descriptor-types-mask = <0x0122003f>;
-+			sleep = <&pmc 0x03000000>;
- 		};
- 
- 		ipic: pic@700 {
-@@ -428,5 +436,6 @@
- 		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		sleep = <&pmc 0x00010000>;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-index 9a0952f..f4fadb2 100644
---- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-@@ -62,6 +62,13 @@
- 			reg = <0x200 0x100>;
- 		};
- 
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8323-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -141,6 +148,7 @@
- 			fsl,channel-fifo-len = <24>;
- 			fsl,exec-units-mask = <0x4c>;
- 			fsl,descriptor-types-mask = <0x0122003f>;
-+			sleep = <&pmc 0x03000000>;
- 		};
- 
- 		ipic:pic@700 {
-@@ -360,5 +368,6 @@
- 		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		sleep = <&pmc 0x00010000>;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
-index 39ff4c8..45cfa1c 100644
---- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-@@ -99,6 +99,13 @@
- 			reg = <0x200 0x100>;
- 		};
- 
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8360-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -194,6 +201,7 @@
- 			fsl,channel-fifo-len = <24>;
- 			fsl,exec-units-mask = <0x7e>;
- 			fsl,descriptor-types-mask = <0x01010ebf>;
-+			sleep = <&pmc 0x03000000>;
- 		};
- 
- 		ipic: pic@700 {
-@@ -470,5 +478,6 @@
- 		       0xe0008300 0x8>;		/* config space access registers */
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
-+		sleep = <&pmc 0x00010000>;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-index 6315d6f..bdf4459 100644
---- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-@@ -71,6 +71,13 @@
- 			reg = <0x200 0x100>;
- 		};
- 
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8360-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -161,6 +168,7 @@
- 			fsl,channel-fifo-len = <24>;
- 			fsl,exec-units-mask = <0x7e>;
- 			fsl,descriptor-types-mask = <0x01010ebf>;
-+			sleep = <&pmc 0x03000000>;
- 		};
- 
- 		ipic: interrupt-controller@700 {
-@@ -455,6 +463,7 @@
- 				 0xa800 0 0 2 &ipic 20 8
- 				 0xa800 0 0 3 &ipic 21 8
- 				 0xa800 0 0 4 &ipic 18 8>;
-+		sleep = <&pmc 0x00010000>;
- 		/* filled by u-boot */
- 		bus-range = <0 0>;
- 		clock-frequency = <0>;
--- 
-1.6.3.3
+Cheers,
+Ben.
