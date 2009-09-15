@@ -1,36 +1,31 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [59.145.155.6])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
-	by bilbo.ozlabs.org (Postfix) with ESMTPS id 7843AB7067
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id B613BB6EDE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Sep 2009 00:58:43 +1000 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp06.in.ibm.com (8.14.3/8.13.1) with ESMTP id n8FEwcax019801
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 20:28:38 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n8FEwb3h2375820
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 20:28:37 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n8FEwaJu027192
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2009 00:58:37 +1000
-Date: Tue, 15 Sep 2009 20:28:34 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
-Message-ID: <20090915145834.GG4846@balbir.in.ibm.com>
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
-	<1253016701.5506.73.camel@laptop>
+	Wed, 16 Sep 2009 01:32:36 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n8FFPZLB017060
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 11:25:35 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n8FFWW4T251710
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 11:32:32 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n8FFWVUj028319
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2009 11:32:31 -0400
+Date: Tue, 15 Sep 2009 11:32:20 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: RFC: delete UART current-speed from 4xx DTS?
+Message-ID: <20090915153220.GG12372@zod.rchland.ibm.com>
+References: <20090915143135.GA7015@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1253016701.5506.73.camel@laptop>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	"Darrick J. Wong" <djwong@us.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090915143135.GA7015@windriver.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,42 +35,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-15 14:11:41]:
+On Tue, Sep 15, 2009 at 10:31:36AM -0400, Paul Gortmaker wrote:
+>One of the guys here was getting a messed up console on a bamboo board
+>(on linux boot), which he traced to the fact that the default dts has a
+>9600 baudrate coded into it (board was running 115k2, not 9600).  Either
+>deleting the line, or replacing the 9600 with zero fixed the problem.
 
-> On Tue, 2009-09-15 at 17:36 +0530, Gautham R Shenoy wrote:
-> > This patchset contains the offline state driver implemented for
-> > pSeries. For pSeries, we define three available_hotplug_states. They are:
-> > 
-> >         online: The processor is online.
-> > 
-> >         offline: This is the the default behaviour when the cpu is offlined
-> >         even in the absense of this driver. The CPU would call make an
-> >         rtas_stop_self() call and hand over the CPU back to the resource pool,
-> >         thereby effectively deallocating that vCPU from the LPAR.
-> >         NOTE: This would result in a configuration change to the LPAR
-> >         which is visible to the outside world.
-> > 
-> >         inactive: This cedes the vCPU to the hypervisor with a cede latency
-> >         specifier value 2.
-> >         NOTE: This option does not result in a configuration change
-> >         and the vCPU would be still entitled to the LPAR to which it earlier
-> >         belong to.
-> > 
-> > Any feedback on the patchset will be immensely valuable.
-> 
-> I still think its a layering violation... its the hypervisor manager
-> that should be bothered in what state an off-lined cpu is in. 
+Once booted, was there a valid current-speed property in /proc/device-tree
+for the serial node?  I'm curious if U-Boot created it, or if the kernel
+just used whatever baud was present already.
+
+When I did the bamboo port a while ago, I recall having issues with either
+a missing clock-frequency or current-speed (or both perhaps) and the bootloader
+on the board was the original PIBS.  It might have been an issue with PIBS
+but I'm guessing the rest of the 4xx boards copied from either Ebony or
+Bamboo in their ports and hence contain that property.
+
+>Looking at the Fsl boards, it seems that 99% of them don't list any
+>current-speed at all.  I'm willing to whip up a patch to delete them
+
+I think 99% of them use U-Boot, which should fix things up either way.
+
+>from the various boards, but I thought I'd check 1st to see if there was
+>some other reasoning/input.  I suppose one could argue that u-boot
+>should be replacing the 9600 with 115k2 on the fly, but if the explicit
+>specification isn't helping anyone, then it probably just makes sense to
+>delete them anyway, I figured.
+
+Yeah, that's probably valid.  I'd be happy to test on the set of boards I
+have.
+
+>Here is the subset of boards I was considering deleting the lines from:
 >
+>   bamboo.dts ebony.dts hcu4.dts holly.dts katmai.dts sam440ep.dts
+>   sequoia.dts taishan.dts walnut.dts yosemite.dts
 
->From a design standpoint where we stand today is
+I can test bamboo with PIBS, ebony, holly (which isn't 4xx even though it's
+a tree name) with PIBS, sequoia, taishan, yosemite, and walnut.  Perhaps a few
+of the 405 boards I have as well.
 
-1. A cede indicates that the CPU is no longer needed and can be
-reassigned (remember we do dedicated CPU partitions in power)
-2. What this patch is trying to do is to say "We don't need the
-CPU, but please don't reassign, put it to sleep"
+It's easy enough for me to whip up a patch, and since I'll be testing either
+way I'd be happy to do that if you'd like.
 
-We work the same way with the hypervisor, that applications work with
-the OS today, by providing madvise and other hints.
-
--- 
-	Balbir
+josh
