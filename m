@@ -1,18 +1,39 @@
-Return-Path: <kumar2002g@gmail.com>
-Received: from mail-pz0-f182.google.com (mail-pz0-f182.google.com
-	[209.85.222.182]) by ozlabs.org (Postfix) with ESMTP id B5A12B7088
+Return-Path: <heiko.carstens@de.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id ED2C8B6F34
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Sep 2009 14:49:33 +1000 (EST)
-Received: by pzk12 with SMTP id 12so3788391pzk.10
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Sep 2009 21:49:32 -0700 (PDT)
+	Wed, 16 Sep 2009 17:49:54 +1000 (EST)
+Received: from d06nrmr1806.portsmouth.uk.ibm.com
+	(d06nrmr1806.portsmouth.uk.ibm.com [9.149.39.193])
+	by mtagate3.uk.ibm.com (8.14.3/8.13.8) with ESMTP id n8G7n6Pr217284
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2009 07:49:11 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1806.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id n8G7mo8Y577732
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2009 08:48:56 +0100
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id n8G7mnoL029790
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2009 08:48:50 +0100
+Date: Wed, 16 Sep 2009 09:48:49 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
+Message-ID: <20090916074848.GB4870@osiris.boeblingen.de.ibm.com>
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+	<1253016701.5506.73.camel@laptop>
+	<20090915145834.GG4846@balbir.in.ibm.com>
 MIME-Version: 1.0
-Date: Wed, 16 Sep 2009 10:19:31 +0530
-Message-ID: <45e126a40909152149y264e691ct5d009cf9e146eb64@mail.gmail.com>
-Subject: Hang in inflate_dynamic for mpc8321
-From: Kumar G <kumar2002g@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=0016e649b702e85bc00473aa9ffa
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090915145834.GG4846@balbir.in.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
+	linux-kernel@vger.kernel.org,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+	"Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,192 +43,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e649b702e85bc00473aa9ffa
-Content-Type: text/plain; charset=ISO-8859-1
+On Tue, Sep 15, 2009 at 08:28:34PM +0530, Balbir Singh wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-15 14:11:41]:
+> 
+> > On Tue, 2009-09-15 at 17:36 +0530, Gautham R Shenoy wrote:
+> > > This patchset contains the offline state driver implemented for
+> > > pSeries. For pSeries, we define three available_hotplug_states. They are:
+> > > 
+> > >         online: The processor is online.
+> > > 
+> > >         offline: This is the the default behaviour when the cpu is offlined
+> > >         even in the absense of this driver. The CPU would call make an
+> > >         rtas_stop_self() call and hand over the CPU back to the resource pool,
+> > >         thereby effectively deallocating that vCPU from the LPAR.
+> > >         NOTE: This would result in a configuration change to the LPAR
+> > >         which is visible to the outside world.
+> > > 
+> > >         inactive: This cedes the vCPU to the hypervisor with a cede latency
+> > >         specifier value 2.
+> > >         NOTE: This option does not result in a configuration change
+> > >         and the vCPU would be still entitled to the LPAR to which it earlier
+> > >         belong to.
+> > > 
+> > > Any feedback on the patchset will be immensely valuable.
+> > 
+> > I still think its a layering violation... its the hypervisor manager
+> > that should be bothered in what state an off-lined cpu is in. 
+> >
+> 
+> From a design standpoint where we stand today is
+> 
+> 1. A cede indicates that the CPU is no longer needed and can be
+> reassigned (remember we do dedicated CPU partitions in power)
+> 2. What this patch is trying to do is to say "We don't need the
+> CPU, but please don't reassign, put it to sleep"
 
-Hi All,
+FWIW, this sounds exactly like the same we have already on s390.
+But back then I didn't consider adding a common code infrastructure
+would make sense :)
 
-Iam working on the new board bringup of linux ppc image on 2.6.24 using the
-powerpc mpc832x. I used the file system image (based on the initrd ram disk
-image), dtb file(generated by the dtc compiler for our mpc832x_rdb.dts) and
-the kernel powepc compiled.
-
-Iam facing a hang up in the booting in the call inflate_dynamic() from the
-gunzip() function. Initially I suspected it could be RAM issues, and I
-performed the simple RAM test (mtest) from the bootloader and it went
-through succesfully.
-
-Below is the log message observed in the system booting stuck at
-
-"checking if image is initramfs..."
-
-Log messages :
-
----------------------
-
-Booting image at 00200000 ...
-
-Image Name: Linux-2.6.24
-
-Image Type: PowerPC Linux Kernel Image (gzip compressed)
-
-Data Size: 808788 Bytes = 789.8 kB
-
-Load Address: 00000000
-
-Entry Point: 00000000
-
-Verifying Checksum ... OK
-
-Uncompressing Kernel Image ... OK
-
-## Loading RAMDisk Image at 01000000 ...
-
-Image Name: TESTIMAGE
-
-Image Type: PowerPC Linux RAMDisk Image (gzip compressed)
-
-Data Size: 1066209 Bytes = 1 MB
-
-Load Address: 00000000
-
-Entry Point: 00000000
-
-Verifying Checksum ... OK
-
-Booting using the fdt at 0x400000
-
-Loading Ramdisk to 03ea0000, end 03fa44e1 ... OK
-
-Using MPC832x RDB machine description
-
-Linux version 2.6.24 (test@test-desktop) (gcc version 4.2.1 (Sourcery G++
-Lite 4.2-82)) #39 Fri Sep 4 13:04:50 IST 2009
-
-Found initrd at 0xc3ea0000:0xc3fa44e1
-
-console [udbg0] enabled
-
-setup_arch: bootmem
-
-mpc832x_rdb_setup_arch()
-
-arch: exit
-
-Zone PFN ranges:
-
-DMA 0 -> 16384
-
-Normal 16384 -> 16384
-
-Movable zone start PFN for each node
-
-early_node_map[1] active PFN ranges
-
-0: 0 -> 16384
-
-Built 1 zonelists in Zone order, mobility grouping on. Total pages: 16256
-
-Kernel command line: root=/dev/ram ramdisk_size=200000 rw ip=10.0.0.2:10
-.0.0.1:10.0.0.1:255.0.0.0:Test:eth1:off console=t
-
-tyS0,115200
-
-IPIC (128 IRQ sources) at fdefd700
-
-PID hash table entries: 256 (order: 8, 1024 bytes)
-
-clocksource: timebase mult[7800001] shift[22] registered
-
-Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-
-Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-
-Memory: 62068k/65536k available (1592k kernel code, 3400k reserved, 88k
-data, 60k bss, 112k init)
-
-Mount-cache hash table entries: 512
-
-SCSI subsystem initialized
-
-checking if image is initramfs...
-
-Please let me know what could be the problem.
-
-Thanks in advance.
-
-Regards,
-
-kumar
-
---0016e649b702e85bc00473aa9ffa
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<p>Hi All,</p>
-<p>Iam working on the new board bringup of linux ppc image on 2.6.24 using =
-the powerpc mpc832x. I used the file system image (based on the initrd ram =
-disk image), dtb file(generated by the dtc compiler for our mpc832x_rdb.dts=
-) and the kernel powepc compiled. </p>
-
-<p>Iam facing a hang up in the booting in the call inflate_dynamic() from t=
-he gunzip() function. Initially I suspected it could be RAM issues, and I p=
-erformed the simple RAM test (mtest) from the bootloader and it went throug=
-h succesfully.</p>
-
-<p>Below is the log message observed in the system booting stuck at</p>
-<p>&quot;checking if image is initramfs...&quot; </p>
-<p>Log messages : </p>
-<p>--------------------- </p>
-<p>Booting image at 00200000 ...</p>
-<p>Image Name: Linux-2.6.24</p>
-<p>Image Type: PowerPC Linux Kernel Image (gzip compressed)</p>
-<p>Data Size: 808788 Bytes =3D 789.8 kB</p>
-<p>Load Address: 00000000</p>
-<p>Entry Point: 00000000</p>
-<p>Verifying Checksum ... OK</p>
-<p>Uncompressing Kernel Image ... OK</p>
-<p>## Loading RAMDisk Image at 01000000 ...</p>
-<p>Image Name: TESTIMAGE</p>
-<p>Image Type: PowerPC Linux RAMDisk Image (gzip compressed)</p>
-<p>Data Size: 1066209 Bytes =3D 1 MB</p>
-<p>Load Address: 00000000</p>
-<p>Entry Point: 00000000</p>
-<p>Verifying Checksum ... OK</p>
-<p>Booting using the fdt at 0x400000</p>
-<p>Loading Ramdisk to 03ea0000, end 03fa44e1 ... OK</p>
-<p>Using MPC832x RDB machine description</p>
-<p>Linux version 2.6.24 (test@test-desktop) (gcc version 4.2.1 (Sourcery G+=
-+ Lite 4.2-82)) #39 Fri Sep 4 13:04:50 IST 2009</p>
-<p>Found initrd at 0xc3ea0000:0xc3fa44e1</p>
-<p>console [udbg0] enabled</p>
-<p>setup_arch: bootmem</p>
-<p>mpc832x_rdb_setup_arch()</p>
-<p>arch: exit</p>
-<p>Zone PFN ranges:</p>
-<p>DMA 0 -&gt; 16384</p>
-<p>Normal 16384 -&gt; 16384</p>
-<p>Movable zone start PFN for each node</p>
-<p>early_node_map[1] active PFN ranges</p>
-<p>0: 0 -&gt; 16384</p>
-<p>Built 1 zonelists in Zone order, mobility grouping on. Total pages: 1625=
-6</p>
-<p>Kernel command line: root=3D/dev/ram ramdisk_size=3D200000 rw ip=3D10.0.=
-0.2:10.0.0.1:10.0.0.1:255.0.0.0:Test:eth1:off console=3Dt</p>
-<p>tyS0,115200</p>
-<p>IPIC (128 IRQ sources) at fdefd700</p>
-<p>PID hash table entries: 256 (order: 8, 1024 bytes)</p>
-<p>clocksource: timebase mult[7800001] shift[22] registered</p>
-<p>Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)</p>
-<p>Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)</p>
-<p>Memory: 62068k/65536k available (1592k kernel code, 3400k reserved, 88k =
-data, 60k bss, 112k init)</p>
-<p>Mount-cache hash table entries: 512</p>
-<p>SCSI subsystem initialized</p>
-<p>checking if image is initramfs... </p>
-<p>Please let me know what could be the problem. </p>
-<p>Thanks in advance. </p>
-<p>Regards, </p>
-<p>kumar</p>
-
---0016e649b702e85bc00473aa9ffa--
+Besides the "online" attribute we have an additional "configure"
+attribute to which can only be written if the cpu is offline.
+Writing a "0" to it would mean that you currently won't need the cpu
+anymore and the hypervisor is free to reassign the cpu to a different
+LPAR.
+Writing a "1" to it means you want to use it. If there are enough
+resources you will get it. If not.. bad luck.
