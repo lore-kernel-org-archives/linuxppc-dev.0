@@ -1,19 +1,24 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id CEA73B7B70
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2009 07:06:49 +1000 (EST)
-Date: Wed, 16 Sep 2009 22:48:53 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Dragos Carp <dragos.carp@toptica.com>
-Subject: Re: [spi-devel-general] [PATCH] mpc52xx_psc_spi: enlarge clock range
-Message-ID: <20090916204853.GA21627@pengutronix.de>
-References: <4AB0C706.5020601@toptica.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cNdxnHkX5QqsyA0e"
-In-Reply-To: <4AB0C706.5020601@toptica.com>
-Cc: spi-devel-general@lists.sourceforge.net,
-	David Brownell <dbrownell@users.sourceforge.net>, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 79655B7B68
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 17 Sep 2009 07:31:35 +1000 (EST)
+Subject: Re: RFC: delete UART current-speed from 4xx DTS?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20090916131943.GA14261@zod.rchland.ibm.com>
+References: <20090915143135.GA7015@windriver.com>
+	<20090915153220.GG12372@zod.rchland.ibm.com>
+	<1253051047.8375.232.camel@pasglop>
+	<20090916131943.GA14261@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Thu, 17 Sep 2009 07:31:06 +1000
+Message-Id: <1253136666.8375.288.camel@pasglop>
+Mime-Version: 1.0
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,103 +29,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---cNdxnHkX5QqsyA0e
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Ok, so I think that is related to what I originally hit.
+> 
+> I played around with removing the current-speed property on canyonlands today,
+> and noticed that I would get no console output at all unless I specified a
+> baudrate with console=ttyS0,115200.  That was sort of contrary to what I found
+> with bamboo, so I diffed the configs to see why.  Bamboo has udbg enabled and
+> hence has legacy_serial builtin, whereas canyonlands just has of_serial.
+> 
+> So on boards where of_serial is the only serial driver, we need either an
+> accurate current-speed property, or a specific baudrate on the command line.
+> That makes a bit more tenuous to remove the properties entirely, because if
+> people disable udbg and are relying on that behavior they get no more console
+> output.  Need to think on that a bit I guess.
+> 
+> Alternatively, we could try patching of_serial.c to do the baudrate probe
+> as well.
 
-Hi,
+Well, I've always wondered why we just don't put the probe in the 8250
+driver... I proposed it on the list a while back and there was no
+serious objection, but then forgot about it :-)
 
-adding powerpc-list and Grant to cc.
+We should do it, and check if the result is sane (looks like a standard
+speed). If it is, we should then just used it.
 
-On Wed, Sep 16, 2009 at 01:07:50PM +0200, Dragos Carp wrote:
-> allow spi clock values bellow 78kbps down to ca. 300bps
-
-Looks like your patch converts the driver from mpc5200 to mpc5200b? If this=
- is
-really all which is needed, it should support both versions, I think.
-
-Regards,
-
-   Wolfram
-
->=20
-> Signed-off-by: Dragos Carp <dragos.carp@toptica.com>
-> ---
->  mpc52xx_psc_spi.c |   26 +++++++++++++-------------
->  1 file changed, 13 insertions(+), 13 deletions(-)
->=20
-
-> diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
-> index 1b74d5c..b15882a 100644
-> --- a/drivers/spi/mpc52xx_psc_spi.c
-> +++ b/drivers/spi/mpc52xx_psc_spi.c
-> @@ -78,7 +78,8 @@ static void mpc52xx_psc_spi_activate_cs(struct spi_devi=
-ce *spi)
->  	struct mpc52xx_psc_spi *mps =3D spi_master_get_devdata(spi->master);
->  	struct mpc52xx_psc __iomem *psc =3D mps->psc;
->  	u32 sicr;
-> -	u16 ccr;
-> +	u32 ccr;
-> +	u32 bitclkdiv;
-> =20
->  	sicr =3D in_be32(&psc->sicr);
-> =20
-> @@ -98,17 +99,16 @@ static void mpc52xx_psc_spi_activate_cs(struct spi_de=
-vice *spi)
->  		sicr &=3D ~0x10000000;
->  	out_be32(&psc->sicr, sicr);
-> =20
-> -	/* Set clock frequency and bits per word
-> -	 * Because psc->ccr is defined as 16bit register instead of 32bit
-> -	 * just set the lower byte of BitClkDiv
-> -	 */
-> -	ccr =3D in_be16((u16 __iomem *)&psc->ccr);
-> -	ccr &=3D 0xFF00;
-> -	if (cs->speed_hz)
-> -		ccr |=3D (MCLK / cs->speed_hz - 1) & 0xFF;
-> -	else /* by default SPI Clk 1MHz */
-> -		ccr |=3D (MCLK / 1000000 - 1) & 0xFF;
-> -	out_be16((u16 __iomem *)&psc->ccr, ccr);
-> +	/* Set clock frequency */
-> +	bitclkdiv =3D MCLK / (cs->speed_hz ? cs->speed_hz : 1000000) - 1;
-> +	bitclkdiv &=3D 0xFFFF;
-> +	bitclkdiv |=3D (bitclkdiv & 0xFF) << 16;	/* byte swapped */
-> +	bitclkdiv &=3D 0x00FFFF00;
-> +	ccr =3D in_be32(&psc->ccr);
-> +	ccr &=3D 0xFF0000FF;
-> +	ccr |=3D bitclkdiv;
-> +	out_be32(&psc->ccr, ccr);
-> +=09
->  	mps->bits_per_word =3D cs->bits_per_word;
-> =20
->  	if (mps->cs_control)
-> @@ -333,7 +333,7 @@ static int mpc52xx_psc_spi_port_config(int psc_id, st=
-ruct mpc52xx_psc_spi *mps)
->  	/* Configure 8bit codec mode as a SPI master and use EOF flags */
->  	/* SICR_SIM_CODEC8|SICR_GENCLK|SICR_SPI|SICR_MSTR|SICR_USEEOF */
->  	out_be32(&psc->sicr, 0x0180C800);
-> -	out_be16((u16 __iomem *)&psc->ccr, 0x070F); /* default SPI Clk 1MHz */
-> +	out_be32(&psc->ccr, 0x07130000); /* default SPI Clk 1MHz */
-> =20
->  	/* Set 2ms DTL delay */
->  	out_8(&psc->ctur, 0x00);
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---cNdxnHkX5QqsyA0e
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqxTzUACgkQD27XaX1/VRt7IQCgrX/gKFuw7O0k/FPZ5Y/hoLZf
-hhkAoMtR8i8gRVKrQ2fuXVc7eB8tXnUN
-=O5YP
------END PGP SIGNATURE-----
-
---cNdxnHkX5QqsyA0e--
+Ben.
