@@ -1,14 +1,24 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 40B38B7B77
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2009 00:21:54 +1000 (EST)
-Message-ID: <4AB0F07D.2080109@harris.com>
-Date: Wed, 16 Sep 2009 10:04:45 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 87327B7B7E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 17 Sep 2009 00:57:15 +1000 (EST)
+Date: Wed, 16 Sep 2009 10:57:08 -0400
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: RFC: delete UART current-speed from 4xx DTS?
+Message-ID: <20090916145708.GA5135@windriver.com>
+References: <20090915143135.GA7015@windriver.com>
+	<20090915153220.GG12372@zod.rchland.ibm.com>
+	<1253051047.8375.232.camel@pasglop>
+	<20090916131943.GA14261@zod.rchland.ibm.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: [Question] Does this oops point to a hardware bug?
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090916131943.GA14261@zod.rchland.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,59 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have built some custom hardware based on a PPC440EPx.  I saw
-an oops that doesn't make much sense to me, so I'd like to ask
-folks if this smells more like a hardware problem than a software
-problem.
+[Re: RFC: delete UART current-speed from 4xx DTS?] On 16/09/2009 (Wed 09:19) Josh Boyer wrote:
 
-The oops is a signal 4 in kernel mode (trap 700).  If I'm
-interpreting this correctly, it is a "program error", which
-could be a privileged instruction trap, illegal instruction
-trap, or unimplemented instruction trap.
+> On Wed, Sep 16, 2009 at 07:44:07AM +1000, Benjamin Herrenschmidt wrote:
+> >On Tue, 2009-09-15 at 11:32 -0400, Josh Boyer wrote:
+> >> 
+> >> When I did the bamboo port a while ago, I recall having issues with either
+> >> a missing clock-frequency or current-speed (or both perhaps) and the bootloader
+> >> on the board was the original PIBS.  It might have been an issue with PIBS
+> >> but I'm guessing the rest of the 4xx boards copied from either Ebony or
+> >> Bamboo in their ports and hence contain that property.
+> >
+> >I think I recently added code to legacy_serial probe the speed from the
+> >HW if the property is absent, which should help.
+> 
+> Ok, so I think that is related to what I originally hit.
+> 
+> I played around with removing the current-speed property on canyonlands today,
+> and noticed that I would get no console output at all unless I specified a
+> baudrate with console=ttyS0,115200.  That was sort of contrary to what I found
+> with bamboo, so I diffed the configs to see why.  Bamboo has udbg enabled and
+> hence has legacy_serial builtin, whereas canyonlands just has of_serial.
 
-Since this is in kernel mode, I wouldn't expect any of these
-traps.
+Makes sense - udbg kind of bridges the information gap in getting the
+baudrate that the bootloader was using carried forward.  I'd have never
+noticed that because I've always been in the habit of recommending that
+people always use an explicit console=ttySn,rate for all non PC like
+hardware.
 
-The other strange thing is the addresses.  NIP is 4c09e100, which
-doesn't look like a kernel address.
+I just saw Documentation/serial-console.txt (also somewhat PC-centric)
+claims that "If no console device is specified, the first device found
+capable of acting as a system console will be used." But I've never
+relied on that, or even tested if it is really a valid claim once you
+stray outside the realm of common PC hardware, and end user chosen
+baudrates.  I'm pretty sure that on sbc8349, if I omit the console=
+and I don't have udbg enabled, I won't see anything either (and I've
+always implicitly filed that under "user configuration error").
 
-So, I'm guessing that this exception happened in a user-space
-program (SDEC-status) executing in kernel mode.  To me, that
-feels like a hardware bug.
+> 
+> So on boards where of_serial is the only serial driver, we need either an
+> accurate current-speed property, or a specific baudrate on the command line.
 
-I've run some stand-alone memory tests, but they don't show any
-problems.  This is an embedded system, so there is no swapping
-to disk.  The kernel is stored in NOR flash, and copied to RAM
-by uboot; modules are stored on a CF card in an ext3 file system.
+I just took a rummage around in u-boot, and at the moment there isn't
+really many boards poking around with current-speed.  Just for
+board/muas3001, and any older mpc85xx CPUs with CPM UARTs.  There
+doesn't appear to be any real global trend there at all.  (That is not
+to say that it couldn't be added though...)  But in any case, I still
+don't think having something as end-user configurable as a baud rate
+should be hard coded in a dtb (esp. if the firmware isn't updating it
+on the fly...)
 
-Suggestions / theories gladly accepted. :-)
+> That makes a bit more tenuous to remove the properties entirely, because if
+> people disable udbg and are relying on that behavior they get no more console
+> output.  Need to think on that a bit I guess.
 
-	Steve
+Would be interesting to get other input from people on how big they
+think that user group who would be relying on this are.  I'm thinking
+a lot of other boards have already tossed out any such guarantee.  I'll
+have to do some experiments to confirm that though.
 
+> Alternatively, we could try patching of_serial.c to do the baudrate probe
+> as well.
 
-Oops: Exception in kernel mode, sig: 4 [#1]
-Hydra
-Modules linked in: aemb audfpga hdird400_fe vpid saradec
-aud_fpga_version vid_fpga_tse vid_fpga
-NIP: 4c09e100 LR: 4c09e100 CTR: c001d710
-REGS: ce84fea0 TRAP: 0700   Not tainted  (2.6.28.7)
-MSR: 00029000 <EE,ME>  CR: 2409a024  XER: 20000001
-TASK = ce804000[1162] 'SDEC-status' THREAD: ce84e000
-GPR00: 4c09e100 ce84ff50 ce804000 c00c2908 c05bf860 cf043000 d7c8029c 00000000
-GPR08: d7c8029c c00c2908 c03df000 001e0860 c009ab98 1005c1fc 00000004 cef4b580
-GPR16: 4e900f78 fffffff7 cef4b900 00000000 ce84ff40 c009ac10 4e901098 4c09e0d8
-GPR24: 00000000 00000000 0fb27883 4e901098 4c09e100 c000d870 00000000 00000000
-NIP [4c09e100] 0x4c09e100
-LR [4c09e100] 0x4c09e100
-Call Trace:
-[ce84ff50] [4c09e100] 0x4c09e100 (unreliable)
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
----[ end trace 434a2d22c66cb1ce ]---
+Improving it to "do the right thing" independent of the current
+behaviour of other boards is probably worthwhile in terms of user
+friendly improvements.  It always sucks to launch into a kernel
+and see nothing but another case of "silent boot death".
 
--- 
-A: Because it makes the logic of the discussion difficult to follow.
-Q: Why shouldn't I top post?
-A: No.
-Q: Should I top post?
+Paul.
+
+> 
+> josh
