@@ -1,27 +1,18 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BB9E0B7B68
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Sep 2009 03:22:53 +1000 (EST)
-Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: svaidy@linux.vnet.ibm.com
-In-Reply-To: <20090916170314.GH15538@dirshya.in.ibm.com>
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
-	<1253016701.5506.73.camel@laptop> <20090916152820.GA12571@in.ibm.com>
-	<1253115171.7180.1.camel@laptop> <20090916162459.GB12571@in.ibm.com>
-	<1253118916.7180.6.camel@laptop>
-	<20090916170314.GH15538@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 16 Sep 2009 19:22:35 +0200
-Message-Id: <1253121755.7180.8.camel@laptop>
-Mime-Version: 1.0
-Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	"Darrick J. Wong" <djwong@us.ibm.com>
+Return-Path: <eddie@embeddedarm.com>
+Received: from oz.embeddedARM.com (oz.embeddedarm.com [67.40.67.44])
+	by ozlabs.org (Postfix) with ESMTP id 0A36BB7B6F
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2009 05:03:27 +1000 (EST)
+Message-ID: <4AB13550.1070506@embeddedarm.com>
+Date: Wed, 16 Sep 2009 11:58:24 -0700
+From: Eddie Dawydiuk <eddie@embeddedarm.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PPC PCI bus registers
+References: <4A9F0377.1070606@embeddedarm.com>
+	<1251972032.15089.30.camel@pasglop>
+In-Reply-To: <1251972032.15089.30.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,48 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-09-16 at 22:33 +0530, Vaidyanathan Srinivasan wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-16 18:35:16]:
-> 
-> > On Wed, 2009-09-16 at 21:54 +0530, Dipankar Sarma wrote:
-> > 
-> > > No, for this specific case, latency isn't an issue. The issue is -
-> > > how do we cede unused vcpus to hypervisor for better energy management ?
-> > > Yes, it can be done by a hypervisor manager telling the kernel to
-> > > offline and make a bunch of vcpus "inactive". It does have to choose
-> > > offline (release vcpu) vs. inactive (cede but guranteed if needed).
-> > > The problem is that long ago we exported a lot of hotplug stuff to
-> > > userspace through the sysfs interface and we cannot do something
-> > > inside the kernel without keeping the sysfs stuff consistent.
-> > > This seems like a sane way to do that without undoing all the
-> > > virtual cpu hotplug infrastructure in different supporting archs.
-> > 
-> > I'm still not getting it..
-> > 
-> > Suppose we have some guest, it booted with 4 cpus.
-> > 
-> > We then offline 2 of them.
-> > 
-> > Apparently this LPAR binds guest cpus to physical cpus?
-> > So we use a hypervisor interface to reclaim these 2 offlined cpus and
-> > re-assign them to some other guest.
-> > 
-> > So far so good, right?
-> > 
-> > Now if you were to try and online the cpus in the guest, it'd fail
-> > because the cpus aren't backed anymore, and the hot-plug simply
-> > times-out and fails.
-> > 
-> > And we're still good, right?
-> 
-> The requirement differ here.  If we had offlined 2 vCPUs for the
-> purpose of system reconfiguration, the expected behavior with offline
-> interface will work right.  However the proposed cede interface is
-> needed when we want them to temporarily go away but still come back
-> when we do an online.  We want the online to always succeed since the
-> backing physical resources are not relinquished.  The proposed
-> interface facilitates offline without relinquishing the physical
-> resources assigned to LPARs.
+Benjamin,
 
-Then make that the platform default and leave the lpar management to
-whatever pokes at the lpar?
+> Also, if you're going to access a PCI device directly, beware of other
+> issues such as ordering. PPC is an out of order architecture, you need
+> to ensure you add the appropriate memory barriers if you want to ensure
+> you accesses are done in the order you write them in your program.
+> 
+> For "standard" stuff that doesn't involve DMA or locks, an eieio after
+> both MMIO loads and stores should do the trick.
+
+I'm not sure I understand. To clarify I have an FPGA connected via the PCI bus 
+which implements several peripherals, I've implemented device drivers for. 
+Currently I am calling ioremap() to get a virtual address corresponding to the 
+PCI devices. Then I use ___raw_writeN / ___raw_readN for reading/writing data 
+via the PCI bus to the FPGA registers. From looking at io.h I believe this 
+method is safe with regard to out of order execution.
+
+"* ioremap is the standard one and provides non-cacheable guarded mappings
+*   and can be hooked by the platform via ppc_md "
+
+Can you verify if my understanding is correct, or let me know if I need to add 
+memory barriers?
+
+-- 
+Best Regards,
+________________________________________________________________
+  Eddie Dawydiuk, Technologic Systems | voice:  (480) 837-5200
+  16525 East Laser Drive              | fax:    (480) 837-5300
+  Fountain Hills, AZ 85268            | web: www.embeddedARM.com
