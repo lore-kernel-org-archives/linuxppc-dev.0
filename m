@@ -1,42 +1,19 @@
-Return-Path: <dipankar@in.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [59.145.155.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D7FC2B7B69
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Sep 2009 06:18:03 +1000 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp01.in.ibm.com (8.14.3/8.13.1) with ESMTP id n8GKHvgw007841
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2009 01:47:57 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n8GKHvHX2752718
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2009 01:47:57 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
-	by d28av02.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n8GKHunI008911
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2009 06:17:57 +1000
-Date: Thu, 17 Sep 2009 01:47:49 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
-Message-ID: <20090916201749.GA19107@in.ibm.com>
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
-	<1253016701.5506.73.camel@laptop>
-	<20090916152820.GA12571@in.ibm.com>
-	<1253115171.7180.1.camel@laptop>
-	<20090916162459.GB12571@in.ibm.com>
-	<1253118916.7180.6.camel@laptop>
-	<20090916170314.GH15538@dirshya.in.ibm.com>
-	<1253121755.7180.8.camel@laptop>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id CEA73B7B70
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2009 07:06:49 +1000 (EST)
+Date: Wed, 16 Sep 2009 22:48:53 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Dragos Carp <dragos.carp@toptica.com>
+Subject: Re: [spi-devel-general] [PATCH] mpc52xx_psc_spi: enlarge clock range
+Message-ID: <20090916204853.GA21627@pengutronix.de>
+References: <4AB0C706.5020601@toptica.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1253121755.7180.8.camel@laptop>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	"Darrick J. Wong" <djwong@us.ibm.com>
-Reply-To: dipankar@in.ibm.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cNdxnHkX5QqsyA0e"
+In-Reply-To: <4AB0C706.5020601@toptica.com>
+Cc: spi-devel-general@lists.sourceforge.net,
+	David Brownell <dbrownell@users.sourceforge.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,34 +23,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 16, 2009 at 07:22:35PM +0200, Peter Zijlstra wrote:
-> On Wed, 2009-09-16 at 22:33 +0530, Vaidyanathan Srinivasan wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-16 18:35:16]:
-> > 
-> > > Now if you were to try and online the cpus in the guest, it'd fail
-> > > because the cpus aren't backed anymore, and the hot-plug simply
-> > > times-out and fails.
-> > > 
-> > > And we're still good, right?
-> > 
-> > The requirement differ here.  If we had offlined 2 vCPUs for the
-> > purpose of system reconfiguration, the expected behavior with offline
-> > interface will work right.  However the proposed cede interface is
-> > needed when we want them to temporarily go away but still come back
-> > when we do an online.  We want the online to always succeed since the
-> > backing physical resources are not relinquished.  The proposed
-> > interface facilitates offline without relinquishing the physical
-> > resources assigned to LPARs.
-> 
-> Then make that the platform default and leave the lpar management to
-> whatever pokes at the lpar?
 
-That could have worked - however lpar management already uses
-the same sysfs interface to poke. The current semantics make the lpar 
-vcpu deconfig state the platform default assuming that it will be used for
-lpar management. The only clean way to do this without breaking lpar
-management stuff is to add another state - "inactive" and retain backward
-compatibility.
+--cNdxnHkX5QqsyA0e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks
-Dipankar
+Hi,
+
+adding powerpc-list and Grant to cc.
+
+On Wed, Sep 16, 2009 at 01:07:50PM +0200, Dragos Carp wrote:
+> allow spi clock values bellow 78kbps down to ca. 300bps
+
+Looks like your patch converts the driver from mpc5200 to mpc5200b? If this=
+ is
+really all which is needed, it should support both versions, I think.
+
+Regards,
+
+   Wolfram
+
+>=20
+> Signed-off-by: Dragos Carp <dragos.carp@toptica.com>
+> ---
+>  mpc52xx_psc_spi.c |   26 +++++++++++++-------------
+>  1 file changed, 13 insertions(+), 13 deletions(-)
+>=20
+
+> diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
+> index 1b74d5c..b15882a 100644
+> --- a/drivers/spi/mpc52xx_psc_spi.c
+> +++ b/drivers/spi/mpc52xx_psc_spi.c
+> @@ -78,7 +78,8 @@ static void mpc52xx_psc_spi_activate_cs(struct spi_devi=
+ce *spi)
+>  	struct mpc52xx_psc_spi *mps =3D spi_master_get_devdata(spi->master);
+>  	struct mpc52xx_psc __iomem *psc =3D mps->psc;
+>  	u32 sicr;
+> -	u16 ccr;
+> +	u32 ccr;
+> +	u32 bitclkdiv;
+> =20
+>  	sicr =3D in_be32(&psc->sicr);
+> =20
+> @@ -98,17 +99,16 @@ static void mpc52xx_psc_spi_activate_cs(struct spi_de=
+vice *spi)
+>  		sicr &=3D ~0x10000000;
+>  	out_be32(&psc->sicr, sicr);
+> =20
+> -	/* Set clock frequency and bits per word
+> -	 * Because psc->ccr is defined as 16bit register instead of 32bit
+> -	 * just set the lower byte of BitClkDiv
+> -	 */
+> -	ccr =3D in_be16((u16 __iomem *)&psc->ccr);
+> -	ccr &=3D 0xFF00;
+> -	if (cs->speed_hz)
+> -		ccr |=3D (MCLK / cs->speed_hz - 1) & 0xFF;
+> -	else /* by default SPI Clk 1MHz */
+> -		ccr |=3D (MCLK / 1000000 - 1) & 0xFF;
+> -	out_be16((u16 __iomem *)&psc->ccr, ccr);
+> +	/* Set clock frequency */
+> +	bitclkdiv =3D MCLK / (cs->speed_hz ? cs->speed_hz : 1000000) - 1;
+> +	bitclkdiv &=3D 0xFFFF;
+> +	bitclkdiv |=3D (bitclkdiv & 0xFF) << 16;	/* byte swapped */
+> +	bitclkdiv &=3D 0x00FFFF00;
+> +	ccr =3D in_be32(&psc->ccr);
+> +	ccr &=3D 0xFF0000FF;
+> +	ccr |=3D bitclkdiv;
+> +	out_be32(&psc->ccr, ccr);
+> +=09
+>  	mps->bits_per_word =3D cs->bits_per_word;
+> =20
+>  	if (mps->cs_control)
+> @@ -333,7 +333,7 @@ static int mpc52xx_psc_spi_port_config(int psc_id, st=
+ruct mpc52xx_psc_spi *mps)
+>  	/* Configure 8bit codec mode as a SPI master and use EOF flags */
+>  	/* SICR_SIM_CODEC8|SICR_GENCLK|SICR_SPI|SICR_MSTR|SICR_USEEOF */
+>  	out_be32(&psc->sicr, 0x0180C800);
+> -	out_be16((u16 __iomem *)&psc->ccr, 0x070F); /* default SPI Clk 1MHz */
+> +	out_be32(&psc->ccr, 0x07130000); /* default SPI Clk 1MHz */
+> =20
+>  	/* Set 2ms DTL delay */
+>  	out_8(&psc->ctur, 0x00);
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--cNdxnHkX5QqsyA0e
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqxTzUACgkQD27XaX1/VRt7IQCgrX/gKFuw7O0k/FPZ5Y/hoLZf
+hhkAoMtR8i8gRVKrQ2fuXVc7eB8tXnUN
+=O5YP
+-----END PGP SIGNATURE-----
+
+--cNdxnHkX5QqsyA0e--
