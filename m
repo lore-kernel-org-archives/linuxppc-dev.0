@@ -1,15 +1,36 @@
-Return-Path: <nanda74pg@rediffmail.com>
-Received: from rediffmail.com (f5mail-237-241.rediffmail.com [202.137.237.241])
-	by ozlabs.org (Postfix) with SMTP id 5EC43B7B83
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2009 01:11:55 +1000 (EST)
-Date: 16 Sep 2009 15:02:33 -0000
-Message-ID: <20090916150233.33919.qmail@f5mail-237-241.rediffmail.com>
+Return-Path: <dipankar@in.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9E415B7B8D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 17 Sep 2009 01:28:32 +1000 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id n8GFSSM2004168
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2009 20:58:28 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n8GFSStA2416892
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2009 20:58:28 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n8GFSRHA005093
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2009 20:58:28 +0530
+Date: Wed, 16 Sep 2009 20:58:20 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
+Message-ID: <20090916152820.GA12571@in.ibm.com>
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+	<1253016701.5506.73.camel@laptop>
 MIME-Version: 1.0
-To: <linuxppc-dev@ozlabs.org>
-Subject: Crash in the kernel panic linux mpc 832x
-From: "nanda" <nanda74pg@rediffmail.com>
-Content-Type: multipart/alternative;
-	boundary="=_a8755decb4db200659e5dad3a68be448"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1253016701.5506.73.camel@laptop>
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, "Darrick J. Wong" <djwong@us.ibm.com>
+Reply-To: dipankar@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,99 +40,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=_a8755decb4db200659e5dad3a68be448
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+On Tue, Sep 15, 2009 at 02:11:41PM +0200, Peter Zijlstra wrote:
+> On Tue, 2009-09-15 at 17:36 +0530, Gautham R Shenoy wrote:
+> > This patchset contains the offline state driver implemented for
+> > pSeries. For pSeries, we define three available_hotplug_states. They are:
+> > 
+> >         online: The processor is online.
+> > 
+> >         offline: This is the the default behaviour when the cpu is offlined
+> > 
+> >         inactive: This cedes the vCPU to the hypervisor with a cede latency
+> > 
+> > Any feedback on the patchset will be immensely valuable.
+> 
+> I still think its a layering violation... its the hypervisor manager
+> that should be bothered in what state an off-lined cpu is in. 
 
-Hi,
-  Iam getting the below crash on new board tested on MPC832x using linux-2.6.24, please let me what could be the problem on the same. Does it infer any information on the exception?
+The problem is that all hypervisor managers cannot figure out what sort
+of latency guest OS can tolerate under the situation. They wouldn't know
+from what context guest OS has ceded the vcpu. It has to have
+some sort of hint, which is what the guest OS provides.
 
-# Oops: Exception in kernel mode, sig: 4 [#1]
-PREEMPT MPC832x RDB
-Modules linked in:
-NIP: c0048178 LR: c00463e8 CTR: c000ce44
-REGS: c018dc60 TRAP: 0700   Not tainted  (2.6.24)
-MSR: 00001032   CR: 82022028  XER: 00000000
-TASK = c017b570[0] 'swapper' THREAD: c018c000
-GPR00: 3b9ac9ff c018dd10 c017b570 c017c9f0 00000016 c0192180 00000000 000015cc
-GPR08: fd82b91c 00000000 328b73f6 00000000 328b89c2 76ef53cb 00000000 328b73f6
-GPR16: c019c990 ffffffff fffce4b8 ffffffff ffff392e 00000000 000000ba ffffffff
-GPR24: fffdf72b ffffffff ffffff46 00000000 000208d5 fd41cc00 ffffffff fffffff6
-NIP [c0048178] clocksource_get_next+0x0/0xa8
-LR [c00463e8] update_wall_time+0x50c/0xccc
-Call Trace:
-[c018dd10] [c0046624] update_wall_time+0x748/0xccc (unreliable)
-[c018ddd0] [c0031b68] do_timer+0x40/0xf0
-[c018ddf0] [c004a7a4] tick_sched_timer+0x284/0x2e8
-[c018de40] [c0043cc4] hrtimer_interrupt+0x1c8/0x2d4
-[c018dea0] [c000d038] timer_interrupt+0x128/0x188
-[c018dec0] [c0010208] ret_from_except+0x0/0x14
---- Exception: 901 at cpu_idle+0x98/0xf8
-    LR = cpu_idle+0x98/0xf8
-[c018df80] [c00091c0] cpu_idle+0xdc/0xf8 (unreliable)
-[c018dfa0] [c0003e98] rest_init+0x8c/0xb4
-[c018dfc0] [c015fa28] start_kernel+0x258/0x2e4
-[c018dff0] [00003438] 0x3438
-Instruction dump:
-40820028 38000a00 387e0001 b01e0000 7c7f1850 80010014 bbc10008 38210010
-7c0803a6 4e800020 480d643d 4bffffd8  7c0802a6 93e1000c 90010014
-Kernel panic - not syncing: Fatal exception in interrupt--
-
-
-Regards,
-Nanda
---=_a8755decb4db200659e5dad3a68be448
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html; charset="ISO-8859-1"
-
-Hi,<br />
-  Iam getting the below crash on new board tested on MPC832x using linux-2.=
-6.24, please let me what could be the problem on the same. Does it infer an=
-y information on the exception?<br />
-<br />
-# Oops: Exception in kernel mode, sig: 4 [#1]<br />
-PREEMPT MPC832x RDB<br />
-Modules linked in:<br />
-NIP: c0048178 LR: c00463e8 CTR: c000ce44<br />
-REGS: c018dc60 TRAP: 0700   Not tainted  (2.6.24)<br />
-MSR: 00001032 <ME,IR,DR>  CR: 82022028  XER: 00000000<br />
-TASK =3D c017b570[0] 'swapper' THREAD: c018c000<br />
-GPR00: 3b9ac9ff c018dd10 c017b570 c017c9f0 00000016 c0192180 00000000 00001=
-5cc<br />
-GPR08: fd82b91c 00000000 328b73f6 00000000 328b89c2 76ef53cb 00000000 328b7=
-3f6<br />
-GPR16: c019c990 ffffffff fffce4b8 ffffffff ffff392e 00000000 000000ba fffff=
-fff<br />
-GPR24: fffdf72b ffffffff ffffff46 00000000 000208d5 fd41cc00 ffffffff fffff=
-ff6<br />
-NIP [c0048178] clocksource_get_next+0x0/0xa8<br />
-LR [c00463e8] update_wall_time+0x50c/0xccc<br />
-Call Trace:<br />
-[c018dd10] [c0046624] update_wall_time+0x748/0xccc (unreliable)<br />
-[c018ddd0] [c0031b68] do_timer+0x40/0xf0<br />
-[c018ddf0] [c004a7a4] tick_sched_timer+0x284/0x2e8<br />
-[c018de40] [c0043cc4] hrtimer_interrupt+0x1c8/0x2d4<br />
-[c018dea0] [c000d038] timer_interrupt+0x128/0x188<br />
-[c018dec0] [c0010208] ret_from_except+0x0/0x14<br />
---- Exception: 901 at cpu_idle+0x98/0xf8<br />
-    LR =3D cpu_idle+0x98/0xf8<br />
-[c018df80] [c00091c0] cpu_idle+0xdc/0xf8 (unreliable)<br />
-[c018dfa0] [c0003e98] rest_init+0x8c/0xb4<br />
-[c018dfc0] [c015fa28] start_kernel+0x258/0x2e4<br />
-[c018dff0] [00003438] 0x3438<br />
-Instruction dump:<br />
-40820028 38000a00 387e0001 b01e0000 7c7f1850 80010014 bbc10008 38210010<br =
-/>
-7c0803a6 4e800020 480d643d 4bffffd8 <9421fff0> 7c0802a6 93e1000c 90010014<b=
-r />
-Kernel panic - not syncing: Fatal exception in interrupt--<br />
-<br />
-<br />
-Regards,<br />
-Nanda<br><Table border=3D0 Width=3D644 Height=3D57 cellspacing=3D0 cellpadd=
-ing=3D0 style=3D"font-family:Verdana;font-size:11px;line-height:15px;"><TR>=
-<td><A HREF=3D"http://sigads.rediff.com/RealMedia/ads/click_nx.ads/www.redi=
-ffmail.com/signatureline.htm@Middle?" target=3D"_blank"><IMG SRC=3D"http://=
-sigads.rediff.com/RealMedia/ads/adstream_nx.ads/www.rediffmail.com/signatur=
-eline.htm@Middle"></A></td></TR></Table>
---=_a8755decb4db200659e5dad3a68be448--
+Thanks
+Dipankar
