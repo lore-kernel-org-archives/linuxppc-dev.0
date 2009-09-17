@@ -1,21 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9E773B7B6F
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2009 11:24:29 +1000 (EST)
-Subject: Re: PPC PCI bus registers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eddie Dawydiuk <eddie@embeddedarm.com>
-In-Reply-To: <4AB16292.9020704@embeddedarm.com>
-References: <4A9F0377.1070606@embeddedarm.com>
-	<1251972032.15089.30.camel@pasglop> <4AB13550.1070506@embeddedarm.com>
-	<1253138086.8375.290.camel@pasglop> <4AB16292.9020704@embeddedarm.com>
-Content-Type: text/plain
-Date: Thu, 17 Sep 2009 11:24:11 +1000
-Message-Id: <1253150651.8375.328.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-yx0-f197.google.com (mail-yx0-f197.google.com
+	[209.85.210.197]) by ozlabs.org (Postfix) with ESMTP id A9880B7B6B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 17 Sep 2009 11:44:35 +1000 (EST)
+Received: by yxe35 with SMTP id 35so18216438yxe.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Sep 2009 18:44:33 -0700 (PDT)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Wed, 16 Sep 2009 21:44:18 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: RFC: delete UART current-speed from 4xx DTS?
+Message-ID: <20090917014418.GA4536@hansolo.jdub.homelinux.org>
+References: <20090915143135.GA7015@windriver.com>
+	<20090915153220.GG12372@zod.rchland.ibm.com>
+	<1253051047.8375.232.camel@pasglop>
+	<20090916131943.GA14261@zod.rchland.ibm.com>
+	<1253136666.8375.288.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1253136666.8375.288.camel@pasglop>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-09-16 at 15:11 -0700, Eddie Dawydiuk wrote:
-> Benjamin,
-> 
-> > Out of order execution != out of order storage. ioremap() will give you
-> > guarded space which means it cannot be speculatively accessed for
-> > example, and you do get -some- guarantees but not that your stores are
-> > going to hit the device in order, nor that your loads are going to be
-> > performed until the CPU actually use the result of the load, which can
-> > be delayed beyond a store.
-> 
-> Interesting. So IIUC if I were to use ioremap and then bit bang bus cycles using 
-> readN() / writeN() I would need to add memory barrier to ensure the order of the 
-> load and store operations does not change. Is my understanding correct? 
+On Thu, Sep 17, 2009 at 07:31:06AM +1000, Benjamin Herrenschmidt wrote:
+>
+>> Ok, so I think that is related to what I originally hit.
+>> 
+>> I played around with removing the current-speed property on canyonlands today,
+>> and noticed that I would get no console output at all unless I specified a
+>> baudrate with console=ttyS0,115200.  That was sort of contrary to what I found
+>> with bamboo, so I diffed the configs to see why.  Bamboo has udbg enabled and
+>> hence has legacy_serial builtin, whereas canyonlands just has of_serial.
+>> 
+>> So on boards where of_serial is the only serial driver, we need either an
+>> accurate current-speed property, or a specific baudrate on the command line.
+>> That makes a bit more tenuous to remove the properties entirely, because if
+>> people disable udbg and are relying on that behavior they get no more console
+>> output.  Need to think on that a bit I guess.
+>> 
+>> Alternatively, we could try patching of_serial.c to do the baudrate probe
+>> as well.
+>
+>Well, I've always wondered why we just don't put the probe in the 8250
+>driver... I proposed it on the list a while back and there was no
 
-Only if you use the __raw variants. readN/writeN already provide full
-barriers, including barriers against leakage outside of locks and
-barriers vs. cacheable accesses (MMIO vs. DMA) and thus are slow.
+Probably because anything to do with the serial drivers or tty layer scares
+the living hell out of people other than Alan and Andrew.  And I sometimes
+think even Andrew is faking...
 
-If you use the raw variants, it then depends whether your code is going
-to be ppc specific, in which case you can manually use things like
-eieio() etc... or not in which case ... it's harder :-) You can always
-use rmb/wmb/mb but those are more heavyweight than just an eieio
+;)
 
-There's iobarrier_r/w/rw, dunno if those are generic tho.
+>serious objection, but then forgot about it :-)
+>
+>We should do it, and check if the result is sane (looks like a standard
+>speed). If it is, we should then just used it.
 
-> If so 
-> what are the recommended macros/functions for adding memory barriers, or are 
-> there preferred functions to use in place of ioremap() and readN()/writeN?
+Sounds sane enough.  I'm hoping to get some time in the next few days to
+poke at this.
 
-ioremap + readN / writeN will give you fully ordered behaviour. It's
-only when you try to be sneaky or speedy and use the __raw  variants
-that you have to be more careful.
-
-> PS I've looked in Documentation/ in the 2.6.30 Linux kernel tree for more 
-> information, but I was unable to find any. If there are any example drivers or 
-> documentation that you know of on this topic I'd be quite interested if you 
-> could point me to it.
-> 
-> Thanks for your patience and time you've been quite helpful.
-
-Cheers,
-Ben.
+josh
