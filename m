@@ -1,32 +1,18 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0FC6DB7B71
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Sep 2009 00:45:34 +1000 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e7.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n8HEhU0p003636
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2009 10:43:30 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n8HEjS0S684182
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2009 10:45:28 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n8HEjSqs032599
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2009 08:45:28 -0600
-Message-ID: <4AB24B84.8030503@austin.ibm.com>
-Date: Thu, 17 Sep 2009 09:45:24 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 9846AB7B68
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Sep 2009 02:08:59 +1000 (EST)
+Message-ID: <4AB2592D.2020209@ovro.caltech.edu>
+Date: Thu, 17 Sep 2009 08:43:41 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 1/5] dynamic logical partitioning infrastructure
-References: <4AAABC55.4070207@austin.ibm.com>	
-	<4AAABCE3.5090702@austin.ibm.com>
-	<1253064816.5600.103.camel@concordia>
-In-Reply-To: <1253064816.5600.103.camel@concordia>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: FPGA access over PCI-E on MPC8536
+References: <4AB1B84F.8080606@embedded-sol.com>
+	<C13B4529-4766-48C9-8004-A45B4A6EAE69@kernel.crashing.org>
+In-Reply-To: <C13B4529-4766-48C9-8004-A45B4A6EAE69@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Felix Radensky <felix@embedded-sol.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,111 +22,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Fri, 2009-09-11 at 16:10 -0500, Nathan Fontenot wrote:
->> This patch provides the kernel DLPAR infrastructure in a new filed named
->> dlpar.c.  The functionality provided is for acquiring and releasing a 
->> resource from firmware and the parsing of information returned from the
->> ibm,configure-connector rtas call.  Additionally this exports the 
->> pSeries reconfiguration notifier chain so that it can be invoked when
->> device tree updates are made.
+Hi Felix,
+
+>> On my custom MPC8536 based board running 2.6.31 kernel
+>> FPGA is connected via x2 PCI-E lane. FPGA is identified
+>> during PCI scan and is visible via lspci.
 >>
->> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
->> ---
+>> 0000:01:00.0 Class ff00: Altera Corporation Unknown device 0004 (rev 01)
+>>        Subsystem: Altera Corporation Unknown device 0004
+>>        Flags: fast devsel, IRQ 16
+>>        Memory at 98000000 (32-bit, non-prefetchable) [disabled] [size=1M]
+>>        Capabilities: [50] Message Signalled Interrupts: Mask+ 64bit+ 
+>> Queue=0/5 Enable-
+>>        Capabilities: [78] Power Management version 3
+>>        Capabilities: [80] Express Endpoint IRQ 0
+>>        Capabilities: [100] Virtual Channel
 >>
->> Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
->> ===================================================================
->> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
->> +++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-09-11 12:51:52.000000000 -0500
->> @@ -0,0 +1,416 @@
->> +/*
->> + * dlpar.c - support for dynamic reconfiguration (including PCI
->> + * Hotplug and Dynamic Logical Partitioning on RPA platforms).
->> + *
->> + * Copyright (C) 2009 Nathan Fontenot
->> + * Copyright (C) 2009 IBM Corporation
->> + *
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License version
->> + * 2 as published by the Free Software Foundation.
->> + */
->> +
->> +#include <linux/kernel.h>
->> +#include <linux/kref.h>
->> +#include <linux/notifier.h>
->> +#include <linux/proc_fs.h>
->> +#include <linux/spinlock.h>
->> +
->> +#include <asm/prom.h>
->> +#include <asm/machdep.h>
->> +#include <asm/uaccess.h>
->> +#include <asm/rtas.h>
->> +#include <asm/pSeries_reconfig.h>
->> +
->> +#define CFG_CONN_WORK_SIZE	4096
->> +static char workarea[CFG_CONN_WORK_SIZE];
->> +spinlock_t workarea_lock;
->> +
->> +static struct property *parse_cc_property(char *workarea)
->> +{
->> +	struct property *prop;
->> +	u32 *work_ints;
->> +	char *name;
->> +	char *value;
->> +
->> +	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
->> +	if (!prop)
->> +		return NULL;
->> +
->> +	work_ints = (u32 *)workarea;
->> +	name = workarea + work_ints[2];
->> +	prop->name = kzalloc(strlen(name) + 1, GFP_KERNEL);
->> +	if (!prop->name) {
->> +		kfree(prop);
->> +		return NULL;
->> +	}
->> +
->> +	strcpy(prop->name, name);
->> +
->> +	prop->length = work_ints[3];
->> +	value = workarea + work_ints[4];
->> +	prop->value = kzalloc(prop->length, GFP_KERNEL);
+>>
+>> However when I attempt to access FPGA memory my mmapping it in 
+>> userspace the read hangs. The same happens in kernel space. Does it 
+>> happen because FPGA memory is marked as disabled, or because FPGA code 
+>> is doing something wrong ?
 > 
+> Can you access the device in u-boot?  That would possible tell you if 
+> the HW is functioning or not.
 > 
-> The use of work_ints is a bit opaque, it might be clearer if you define
-> a struct, something like:
+>> Another question is what can cause PCI device memory be marked as
+>> disabled.
 > 
-> struct cc_prop {
-> 	u32 ?;
-> 	u32 ?;
-> 	u32 name_offset;
-> 	u32 length;
-> 	u32 value_offset;
-> };
-> 
-> cc = (struct cc_prop *)workarea;
-> 
-> name = workarea + cc->name_offset;
-> ..
-> prop->length = cc->length;
-> value = workarea + cc->value_offset;
-> 
+> Good question, no idea how lspci decided to print [disabled].  Take a 
+> look at lspci source and see :)
 
-Good idea, and I agree that the use of the workarea/work_ints is a bit vague.
-The current way works because sometimes its easier to think of the workarea
-as a char buffer and sometimes as a int buffer.
 
-I'll try to come up with something to make the parsing of the workarea buffer
-easier to understand.
+lspci has a -x and -xxx options to print the bytes in the
+PCI configuration space header. You should use that to
+see what the settings are, and then you'll be able
+to interpret what disabled means.
 
--Nathan Fontenot
- 
-> etc.
-> 
-> 
-> Also I don't see any checking of the offsets into workarea (for name &
-> value), vs the size of workarea.
-> 
-> cheers
-> 
+For example, here's lspci run from an x86 host CPU looking
+at an MPC8349EA processor peripheral board:
+
+# lspci -s 04:0d.0 -v
+04:0d.0 Power PC: Freescale Semiconductor Inc MPC8349E (rev 30)
+         Flags: 66Mhz, fast devsel, IRQ 10
+         Memory at fc300000 (32-bit, non-prefetchable) [size=1M]
+         Memory at fe400000 (32-bit, prefetchable) [size=4K]
+         Memory at fe300000 (64-bit, prefetchable) [size=1M]
+         Memory at fe200000 (64-bit, prefetchable) [size=1M]
+         Capabilities: [48] #06 [0080]
+
+# lspci -s 04:0d.0 -x
+04:0d.0 Power PC: Freescale Semiconductor Inc MPC8349E (rev 30)
+00: 57 19 80 00 42 01 b0 00 30 00 20 0b 08 40 00 00
+10: 00 00 30 fc 08 00 40 fe 0c 00 30 fe 00 00 00 00
+20: 0c 00 20 fe 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 48 00 00 00 00 00 00 00 0a 01 00 00
+
+The memory, non-prefetchable, and size are decoded from bits in
+the base address registers. I'm pretty sure there is an
+enabled/disabled bit in there too. Thats probably where your
+lspci output is getting it from.
+
+I suspect that you could perform a configuration space
+write to enable that bit, or that the FPGA initialization
+code should be setting that bit. It really depends on
+what the PCIe component inside the FPGA was designed to
+do.
+
+For example, on the MPC8349EA processor configured as a
+peripheral board, the PCI bridge can come up enabled, or
+disabled. If the bridge is disabled, then it is up to the
+PowerPC processor core (U-boot code) to enable the PCI
+interface prior to the host CPU BIOS configuring the base
+addresses in the interface. Its possible you've missed
+something like this when you configured the core,
+eg. an 'enable on boot option' (I haven't used the PCIe
+core, so have no idea if this is an option - but you
+could submit an Altera service request).
+
+Since you're playing with an FPGA, you should be able to
+connect Altera's logic analyzer core to the PCI interface
+and capture traffic as well, so that could be used to
+debug your problem.
+
+Cheers,
+Dave
