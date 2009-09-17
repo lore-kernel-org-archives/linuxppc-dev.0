@@ -1,21 +1,19 @@
-Return-Path: <tj@kernel.org>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <kyle@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1129DB7B75
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Sep 2009 02:43:18 +1000 (EST)
-Message-ID: <4AB25B61.9020609@kernel.org>
-Date: Fri, 18 Sep 2009 00:53:05 +0900
-From: Tejun Heo <tj@kernel.org>
+	by ozlabs.org (Postfix) with ESMTPS id F0EC1B7B71
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 18 Sep 2009 03:41:47 +1000 (EST)
+Date: Thu, 17 Sep 2009 13:41:45 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] fix ppc64 build failure on fedora
+Message-ID: <20090917174144.GA11961@bombadil.infradead.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 2.6.31-git5 kernel boot hangs on powerpc
-References: <4AB0D947.8010301@in.ibm.com> <4AB214C3.4040109@in.ibm.com>
-	<1253185994.8375.352.camel@pasglop>
-In-Reply-To: <1253185994.8375.352.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+Sender: Kyle McMartin <kyle@infradead.org>
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+From: Kyle McMartin <kyle@redhat.com>
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2009-09-17 at 16:21 +0530, Sachin Sant wrote:
->> The problem seems to have been introduced with
->> commit ada3fa15057205b7d3f727bba5cd26b5912e350f.
->>
->> Specifically this patch : 
->> powerpc64: convert to dynamic percpu allocator
->>
->> If i revert this patch i am able to boot latest git
->> on a powerpc box.
->>
->> The kernel is configured with 64K pages.
->> Have again attached the config file used.
-> 
-> Thanks for tracking the commit down. I've tried it today but your config
-> has everything as modules and that didn't work out very well with my
-> netboot setup. I'll dig a bit more tomorrow.
-> 
-> It's probably my fault for not properly getting the time to test Tejun
-> patches... oh well, that's what being too busy does to you.
+For some reason or another (newer gcc?) on Fedora 12 koji builders we're
+seeing _restgpr0_$n symbols instead of _restgpr_$n as handled in the
+prom_init_check.sh file:
+Checking prom_init.o symbol '_restgpr0_14'
+Error: External symbol '_restgpr0_14' referenced from prom_init.c
+Checking prom_init.o symbol '_restgpr0_17'
 
-Ah... sorry about that.  Sachin, is it possible for you to build the
-kernel with debug info and ask gdb where the stalling NIP is in the c
-file?
+Add cases to handle this to the filter portion of the script.
 
-Thanks.
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
+---
 
--- 
-tejun
+diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+index 1ac136b..9f82f49 100644
+--- a/arch/powerpc/kernel/prom_init_check.sh
++++ b/arch/powerpc/kernel/prom_init_check.sh
+@@ -52,12 +52,18 @@ do
+ 	if [ "${UNDEF:0:9}" = "_restgpr_" ]; then
+ 		OK=1
+ 	fi
++	if [ "${UNDEF:0:10}" = "_restgpr0_" ]; then
++		OK=1
++	fi
+ 	if [ "${UNDEF:0:11}" = "_rest32gpr_" ]; then
+ 		OK=1
+ 	fi
+ 	if [ "${UNDEF:0:9}" = "_savegpr_" ]; then
+ 		OK=1
+ 	fi
++	if [ "${UNDEF:0:10}" = "_savegpr0_" ]; then
++		OK=1
++	fi
+ 	if [ "${UNDEF:0:11}" = "_save32gpr_" ]; then
+ 		OK=1
+ 	fi
