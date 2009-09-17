@@ -1,18 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [RFC] [PATCH] Write to HVC terminal from purgatory code
-From: Michael Ellerman <michael@ellerman.id.au>
-To: mohan@in.ibm.com
-In-Reply-To: <20090907051407.GA2990@in.ibm.com>
-References: <20090907051407.GA2990@in.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-UpJcPJzNS2Bm79QXCm4g"
-Date: Thu, 17 Sep 2009 21:54:40 +1000
-Message-Id: <1253188480.6156.90.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, horms@verge.net.au, kexec@lists.infradead.org,
-	miltonm@bga.com
-Reply-To: michael@ellerman.id.au
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
+	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id 380A2B7B68
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Sep 2009 00:13:51 +1000 (EST)
+Received: by ywh11 with SMTP id 11so77211ywh.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2009 07:13:50 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <4AB241FA.9090604@toptica.com>
+References: <4AB0C706.5020601@toptica.com>
+	<20090916204853.GA21627@pengutronix.de>
+	<4AB241FA.9090604@toptica.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 17 Sep 2009 08:13:29 -0600
+Message-ID: <fa686aa40909170713v4c447ce2s3b4d18e15a1a2c17@mail.gmail.com>
+Subject: Re: [spi-devel-general] [PATCH] mpc52xx_psc_spi: enlarge clock range
+To: Dragos Carp <dragos.carp@toptica.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: spi-devel-general@lists.sourceforge.net,
+	David Brownell <dbrownell@users.sourceforge.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,192 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Sep 17, 2009 at 8:04 AM, Dragos Carp <dragos.carp@toptica.com> wrote:
+> Hi,
+>
+> I wasn't aware that MPC5200 differ from MPC5200B in this regard. I also
+> couldn't find any MPC5200 user manual on Freescale's webpage.
+> Is there a #define that I can use to distinguish between the two
+> processor variants? Querying the PVR register is not a nice solution
+> because the chip-select activate function is called in some scenarios
+> quite often.
 
---=-UpJcPJzNS2Bm79QXCm4g
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Use the compatible value.  That's what it is there for.  Only use the
+extended register format if "fsl,mpc5200b-psc-spi" is present in the
+compatible list.
 
-On Mon, 2009-09-07 at 10:44 +0530, M. Mohan Kumar wrote:
-> Write to HVC terminal from purgatory code
->=20
-> Current x86/x86-64 kexec-tools print the message "I'm in purgatory" to
-> serial console/VGA while executing the purgatory code.  Implement this
-> feature for POWERPC pseries platform by using the H_PUT_TERM_CHAR
-> hypervisor call by printng to hvc console.
+g.
 
-
-Hi Mohan, just a few comments ...
-
-> diff --git a/kexec/arch/ppc64/fs2dt.c b/kexec/arch/ppc64/fs2dt.c
-> index b01ff86..bd9d36c 100644
-> --- a/kexec/arch/ppc64/fs2dt.c
-> +++ b/kexec/arch/ppc64/fs2dt.c
-> @@ -434,6 +434,9 @@ static void putnode(void)
->  	if (!strcmp(basename,"/chosen/")) {
->  		size_t cmd_len =3D 0;
->  		char *param =3D NULL;
-> +		char filename[MAXPATH];
-> +		char buff[64];
-> +		int fd;
-> =20
->  		cmd_len =3D strlen(local_cmdline);
->  		if (cmd_len !=3D 0) {
-> @@ -446,7 +449,6 @@ static void putnode(void)
-> =20
->  		/* ... if not, grab root=3D from the old command line */
->  		if (!param) {
-> -			char filename[MAXPATH];
->  			FILE *fp;
->  			char *last_cmdline =3D NULL;
->  			char *old_param;
-> @@ -483,8 +485,51 @@ static void putnode(void)
->  		dt +=3D (cmd_len + 3)/4;
-> =20
->  		fprintf(stderr, "Modified cmdline:%s\n", local_cmdline);
-> +
-> +		/*
-> +		 * Determine the platform type/stdout type, so that purgatory
-> +		 * code can print 'I'm in purgatory' message. Currently only
-> +		 * pseries/hvcterminal is supported.
-> +		 */
-> +		strcpy(filename, pathname);
-> +		strcat(filename, "linux,stdout-path");
-
-strncat() ?
-
-> +		fd =3D open(filename, O_RDONLY);
-> +		if (fd =3D=3D -1) {
-> +			printf("Unable to find linux,stdout-path, printing"
-> +					" from purgatory is diabled\n");
-> +			goto no_debug;
-> +		}
-> +		if (fstat(fd, &statbuf)) {
-> +			printf("Unable to stat linux,stdout-path, printing"
-> +					" from purgatory is diabled\n");
-> +			close(fd);
-> +			goto no_debug;
-> +		}
-> +		read(fd, buff, statbuf.st_size);
-
-Be nice to check it's going to fit in buff here.
-
-> +		close(fd);
-> +		strcpy(filename, "/proc/device-tree/");
-> +		strcat(filename, buff);
-> +		strcat(filename, "/compatible");
-
-strncpy / strncat.
-
-> +		fd =3D open(filename, O_RDONLY);
-> +		if (fd =3D=3D -1) {
-> +			printf("Unable to find linux,stdout-path/compatible, "
-> +				" printing from purgatory is diabled\n");
-
-You may as well print the actual path here, seeing as you have it.
-
-> +			goto no_debug;
-> +		}
-> +		if (fstat(fd, &statbuf)) {
-> +			printf("Unable to stat linux,stdout-path/compatible, "
-> +				" printing from purgatory is diabled\n");
-> +			close(fd);
-> +			goto no_debug;
-> +		}
-> +		read(fd, buff, statbuf.st_size);
-> +		if (!strcmp(buff, "hvterm1") ||
-> +					!strcmp(buff, "hvterm-protocol"))
-> +			my_debug =3D 1;
-
-I have a personal hatred for variables called my_foo, but that's just
-personal taste I guess :)
-
-> +		close(fd);
->  	}
-> =20
-> +no_debug:
->  	for (i=3D0; i < numlist; i++) {
->  		dp =3D namelist[i];
->  		strcpy(dn, dp->d_name);
-
-> diff --git a/purgatory/arch/ppc64/console-ppc64.c b/purgatory/arch/ppc64/=
-console-ppc64.c
-> index d6da7b3..78a233b 100644
-> --- a/purgatory/arch/ppc64/console-ppc64.c
-> +++ b/purgatory/arch/ppc64/console-ppc64.c
-> @@ -20,8 +20,22 @@
->   */
-> =20
->  #include <purgatory.h>
-> +#include "hvCall.h"
-> +
-> +extern int debug;
-> =20
->  void putchar(int c)
->  {
-> +	char buff[16];
-> +	unsigned long *lbuf =3D (unsigned long *)buff;
-> +
-> +	if (!debug) /* running on non pseries */
-> +		return;
-> +
-> +	if (c =3D=3D '\n')
-> +		putchar('\r');
-> +
-> +	buff[0] =3D c;
-> +	plpar_hcall_norets(H_PUT_TERM_CHAR, 0, 1, lbuf[0], lbuf[1]);
->  	return;
->  }
-> diff --git a/purgatory/arch/ppc64/hvCall.S b/purgatory/arch/ppc64/hvCall.=
-S
-> new file mode 100644
-> index 0000000..e401f81
-> --- /dev/null
-> +++ b/purgatory/arch/ppc64/hvCall.S
-> @@ -0,0 +1,28 @@
-> +/*
-> + * This file contains the generic function to perform a call to the
-> + * pSeries LPAR hypervisor.
-> + *
-> + * Created by M. Mohan Kumar (mohan@in.ibm.com)
-> + * Copyright (C) IBM Corporation
-> + * Taken from linux/arch/powerpc/platforms/pseries/hvCall.S
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#define HVSC	.long 0x44000022
-> +.text
-> +	.machine ppc64
-> +.globl .plpar_hcall_norets
-> +.plpar_hcall_norets:
-> +	or	6,6,6			# medium low priority
-> +        mfcr	0
-> +        stw	0,8(1)
-> +
-> +        HVSC 				/* invoke the hypervisor */
-> +
-> +        lwz	0,8(1)
-> +        mtcrf	0xff,0
-> +        blr                             /* return r3 =3D status */
-
-It's much easier to read if you use r0, r1 etc.
-
-
-cheers
-
---=-UpJcPJzNS2Bm79QXCm4g
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkqyI3wACgkQdSjSd0sB4dIg2gCgsLoKhHCH4MG3JAMXpLctpiET
-ysQAn3u1c+U299U78zR5a12sMut7IpKw
-=XgGK
------END PGP SIGNATURE-----
-
---=-UpJcPJzNS2Bm79QXCm4g--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
