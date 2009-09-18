@@ -1,16 +1,20 @@
-Return-Path: <Sylvain.Cote@verint.com>
-Received: from exprod7og124.obsmtp.com (exprod7og124.obsmtp.com [64.18.2.26])
-	by ozlabs.org (Postfix) with SMTP id 01B93B7B7A
+Return-Path: <gr1xmail@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
+	by ozlabs.org (Postfix) with ESMTP id C3B57B7B7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 19 Sep 2009 01:59:25 +1000 (EST)
-From: "Cote, Sylvain" <Sylvain.Cote@verint.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 18 Sep 2009 11:50:24 -0400
-Subject: PPC_4xx synopsy USB driver
-Message-ID: <579B119545DAEF4689C8FBEEFEC5793F01FA07D04F37@ATLMBX.verint.corp.verintsystems.com>
-Content-Type: multipart/alternative;
-	boundary="_000_579B119545DAEF4689C8FBEEFEC5793F01FA07D04F37ATLMBXverin_"
+	Sat, 19 Sep 2009 02:29:43 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id 16so495851fgg.14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 18 Sep 2009 09:29:40 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <8abf57fa0909180837sc3864bcwb0cc2cb7b211c17d@mail.gmail.com>
+References: <8abf57fa0909180837sc3864bcwb0cc2cb7b211c17d@mail.gmail.com>
+Date: Sat, 19 Sep 2009 00:29:40 +0800
+Message-ID: <8abf57fa0909180929j418f9fb7t80a4f707b2fce4e1@mail.gmail.com>
+Subject: Re: Powerpc Kernel 2.6.26.5 boot panic when call cfi_probe_chip()
+From: g r1x <gr1xmail@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=001485eb9dae83d49d0473dca313
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,492 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_579B119545DAEF4689C8FBEEFEC5793F01FA07D04F37ATLMBXverin_
-Content-Type: text/plain; charset="us-ascii"
+--001485eb9dae83d49d0473dca313
+Content-Type: text/plain; charset=ISO-8859-1
+
+2009/9/18 g r1x <gr1xmail@gmail.com>
+
+> I'm working on a 440GX demo board with a flash chip s29gl256p(128k sector
+> size, 32M total, CFI). I have tried 2 ways to add mtd partiton to the
+> kernel, but failed with kernel panic. (kernel version: 2.6.26.5)
+>
+ S29GL256p is pin strapped as a 16bit width
+so in dts, I wrote:
+bank-width = <2>;
+device-width = <1>;
+
+In OF driver:
+#define CFG_FLASH_BUS_WIDTH     2
+struct map_info s29gl_map = {
+        .name = "Nor Flash on Cerberus",
+        .size = CFG_FLASH_SIZE,
+        .bankwidth = CFG_FLASH_BUS_WIDTH,
+};
+
+--001485eb9dae83d49d0473dca313
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-I am trying the new USB dwc-otg Synopsys driver on my powerpc 405ex board. =
- I am using the kernel 2.6.30.3 from denx git (head 2.6.30 stable 2009-09-0=
-4 snapshot).  Previously I was using the USB driver from 2.6.25 kernel.  Th=
-e driver was unstable and was only working when I enabled some debug prints=
-.
-
-I am moving to the new kernel to get improvement on that USB driver. Howeve=
-r, I have some problems with it.  My problem is that probe function is neve=
-r called (dwc_otg_driver_probe).  The driver init call is done and I can se=
-e the debug print "dwc_otg: version 2.60a 22-NOV-2006" but no more call (n.=
-b. I enabled all debug print).  Initialisation is done in probe function, s=
-o, my usb dwc_otg controller is not initialized.  In theory, when module is=
- inserted, init is called (dwc_otg_driver_init).  This init call, register =
-the driver (platform_driver_register) and, in this registration, configured=
- the probe function to call (dwc_otg_driver_probe).  But as I said, probe i=
-s never called.
-
-First, in my setup, I want to use USB in host mode.
-
-My usb-otg portion of my dts file is:
-
-USBOTG0: usbotg@ef6c0000 {
-                                    compatible =3D "amcc,usb-otg-405ex", "a=
-mcc,usb-otg";
-                                    reg =3D <0xef6c0000 0x10000>;
-                                    interrupt-parent =3D <&USBOTG0>;
-                                    interrupts =3D <0 1 2>;
-                                    #interrupt-cells =3D <1>;
-                                    #address-cells =3D <0>;
-                                    #size-cells =3D <0>;
-                                    interrupt-map =3D </* USB-OTG */ 0 &UIC=
-2 0x1e 4
-                                                             /* HIGH-POWER =
-*/ 1 &UIC1 0x1a 8
-                                                             /* DMA */ 2 &U=
-IC0 0xc 4>;
-                                    interrupt-map-mask =3D <0xffffffff>;
-                        };
-
-My USB potion of my kernel config (menuconfig)
-
-Support for host-side USB -> y
-USB announce new devices --> y
-USB device filesystem --> y
-USB device class-devices --> y
-USB dynamic USB minor allocation --> y
-
-USB mass storage support --> y
-
-USB gadget support --> y
-            Maximum VBUS power usage =3D 500
-            Synopsys DWC OTG controller
-            Synopsys DWC OTG internal DMA mode --> y
-            USB gadget --> M
-            gadget zero --> M
-            Ethernet Gadget --> M
-            RNDIS support --> y
-
-Any help will be appreciated
-
-Thank you,
-
-Sylvain
-
-This electronic message may contain proprietary and confidential informat=
-ion of Verint Systems Inc., its affiliates and/or subsidiaries.
-The information is intended to be for the use of the individual(s) or
-entity(ies) named above.  If you are not the intended recipient (or autho=
-rized to receive this e-mail for the intended recipient), you may not use=
-, copy, disclose or distribute to anyone this message or any information =
-contained in this message.  If you have received this electronic message =
-in error, please notify us by replying to this e-mail.
-=0D
---_000_579B119545DAEF4689C8FBEEFEC5793F01FA07D04F37ATLMBXverin_
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
-hemas-microsoft-com:office:word" xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Wingdings;
-	panose-1:5 0 0 0 0 0 0 0 0 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-CA link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>Hi,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>I am trying the new USB dwc-otg Synopsys driver on my po=
-werpc
-405ex board. &nbsp;I am using the kernel 2.6.30.3 from denx git (head 2.6.3=
-0
-stable 2009-09-04 snapshot).&nbsp; Previously I was using the USB driver fr=
-om
-2.6.25 kernel.&nbsp; The driver was unstable and was only working when I
-enabled some debug prints. &nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>I am moving to the new kernel to get improvement on that=
- USB
-driver. However, I have some problems with it.&nbsp; My problem is that pro=
-be
-function is never called (dwc_otg_driver_probe). &nbsp;The driver init call=
- is
-done and I can see the debug print &#8220;dwc_otg: version 2.60a 22-NOV-200=
-6&#8221;
-but no more call (n.b. I enabled all debug print).&nbsp; Initialisation is =
-done
-in probe function, so, my usb dwc_otg controller is not initialized.&nbsp; =
-In
-theory, when module is inserted, init is called (dwc_otg_driver_init). &nbs=
-p;This
-init call, register the driver (platform_driver_register) and, in this
-registration, configured the probe function to call (dwc_otg_driver_probe).=
- &nbsp;But
-as I said, probe is never called.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>First, in my setup, I want to use USB in host mode. <o:p=
-></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>My usb-otg portion of my dts file is:<o:p></o:p></span><=
-/font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>USBOTG0: usbotg@ef6c0000 {<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; compatible
-=3D &quot;amcc,usb-otg-405ex&quot;, &quot;amcc,usb-otg&quot;;<o:p></o:p></s=
-pan></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; reg
-=3D &lt;0xef6c0000 0x10000&gt;;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; interrupt-parent
-=3D &lt;&amp;USBOTG0&gt;;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; interrupts
-=3D &lt;0 1 2&gt;;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; #interrupt-cells
-=3D &lt;1&gt;;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; #address-cells
-=3D &lt;0&gt;;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; #size-cells
-=3D &lt;0&gt;;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; interrupt-map
-=3D &lt;/* USB-OTG */ 0 &amp;UIC2 0x1e 4<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;=
-/*
-HIGH-POWER */ 1 &amp;UIC1 0x1a 8<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &=
-nbsp;/*
-DMA */ 2 &amp;UIC0 0xc 4&gt;;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; interrupt-map-mask
-=3D &lt;0xffffffff&gt;;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp; };<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>My USB potion of my kernel config (menuconfig)<o:p></o:p=
-></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>Support for host-side USB &#8211;</span></font><font siz=
-e=3D2
-face=3DArial><span lang=3DEN-US style=3D'font-size:10.0pt;font-family:Arial=
-'>&gt; y<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>USB announce new devices </span></font><font size=
-=3D2
-face=3DWingdings><span lang=3DEN-US style=3D'font-size:10.0pt;font-family:W=
-ingdings'>&agrave;</span></font><font
-size=3D2 face=3DArial><span lang=3DEN-US style=3D'font-size:10.0pt;font-fam=
-ily:Arial'>
-y<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>USB device filesystem </span></font><font size=3D=
-2
-face=3DWingdings><span lang=3DEN-US style=3D'font-size:10.0pt;font-family:W=
-ingdings'>&agrave;</span></font><font
-size=3D2 face=3DArial><span lang=3DEN-US style=3D'font-size:10.0pt;font-fam=
-ily:Arial'>
-y<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>USB device class-devices </span></font><font size=
-=3D2
-face=3DWingdings><span lang=3DEN-US style=3D'font-size:10.0pt;font-family:W=
-ingdings'>&agrave;</span></font><font
-size=3D2 face=3DArial><span lang=3DEN-US style=3D'font-size:10.0pt;font-fam=
-ily:Arial'>
-y<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>USB dynamic USB minor allocation </span></font><f=
-ont
-size=3D2 face=3DWingdings><span lang=3DEN-US style=3D'font-size:10.0pt;font=
--family:
-Wingdings'>&agrave;</span></font><font size=3D2 face=3DArial><span lang=3DE=
-N-US
-style=3D'font-size:10.0pt;font-family:Arial'> y<o:p></o:p></span></font></p=
->
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>USB mass storage support </span></font><font size=
-=3D2
-face=3DWingdings><span lang=3DEN-US style=3D'font-size:10.0pt;font-family:W=
-ingdings'>&agrave;</span></font><font
-size=3D2 face=3DArial><span lang=3DEN-US style=3D'font-size:10.0pt;font-fam=
-ily:Arial'>
-y<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>USB gadget support </span></font><font size=3D2
-face=3DWingdings><span lang=3DEN-US style=3D'font-size:10.0pt;font-family:W=
-ingdings'>&agrave;</span></font><font
-size=3D2 face=3DArial><span lang=3DEN-US style=3D'font-size:10.0pt;font-fam=
-ily:Arial'>
-y<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; Maximum
-VBUS power usage =3D 500<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; Synopsys
-DWC OTG controller<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-US style=
-=3D'font-size:
-10.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; </span></font><font
-size=3D2 face=3DArial><span lang=3DFR style=3D'font-size:10.0pt;font-family=
-:Arial'>Synopsys
-DWC OTG internal DMA mode </span></font><font size=3D2 face=3DWingdings><sp=
-an
-lang=3DEN-US style=3D'font-size:10.0pt;font-family:Wingdings'>&agrave;</spa=
-n></font><font
-size=3D2 face=3DArial><span lang=3DFR style=3D'font-size:10.0pt;font-family=
-:Arial'> y<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; USB
-gadget </span></font><font size=3D2 face=3DWingdings><span lang=3DFR
-style=3D'font-size:10.0pt;font-family:Wingdings'>&agrave;</span></font><fon=
-t
-size=3D2 face=3DArial><span lang=3DFR style=3D'font-size:10.0pt;font-family=
-:Arial'> M<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; gadget
-zero </span></font><font size=3D2 face=3DWingdings><span lang=3DFR style=3D=
-'font-size:
-10.0pt;font-family:Wingdings'>&agrave;</span></font><font size=3D2 face=3DA=
-rial><span
-lang=3DFR style=3D'font-size:10.0pt;font-family:Arial'> M<o:p></o:p></span>=
-</font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; Ethernet
-Gadget </span></font><font size=3D2 face=3DWingdings><span lang=3DFR
-style=3D'font-size:10.0pt;font-family:Wingdings'>&agrave;</span></font><fon=
-t
-size=3D2 face=3DArial><span lang=3DFR style=3D'font-size:10.0pt;font-family=
-:Arial'> M<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; RNDIS
-support </span></font><font size=3D2 face=3DWingdings><span lang=3DFR
-style=3D'font-size:10.0pt;font-family:Wingdings'>&agrave;</span></font><fon=
-t
-size=3D2 face=3DArial><span lang=3DFR style=3D'font-size:10.0pt;font-family=
-:Arial'> y<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>Any help will be appreciated<o:p></o:p></span></font></p=
->
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>Thank you,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DFR style=3D'f=
-ont-size:10.0pt;
-font-family:Arial'>Sylvain<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-<pre>This electronic message may contain proprietary and confidential inf=
-ormation of Verint Systems Inc., its affiliates and/or subsidiaries.
-The information is intended to be for the use of the individual(s) or
-entity(ies) named above.  If you are not the intended recipient (or autho=
-rized to receive this e-mail for the intended recipient), you may not use=
-, copy, disclose or distribute to anyone this message or any information =
-contained in this message.  If you have received this electronic message =
-in error, please notify us by replying to this e-mail.
-=0D
---_000_579B119545DAEF4689C8FBEEFEC5793F01FA07D04F37ATLMBXverin_--
+<div class=3D"gmail_quote">2009/9/18 g r1x <span dir=3D"ltr">&lt;<a href=3D=
+"mailto:gr1xmail@gmail.com">gr1xmail@gmail.com</a>&gt;</span><br><blockquot=
+e class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc sol=
+id;padding-left:1ex;">
+I&#39;m working on a 440GX demo board with a flash chip s29gl256p(128k sect=
+or size, 32M total, CFI). I have tried 2 ways to add mtd partiton to the ke=
+rnel, but failed with kernel panic. (kernel version: 2.6.26.5)<div><span cl=
+ass=3D"Apple-style-span" style=3D"white-space: pre; ">	</span></div>
+</blockquote><div>=A0S29GL256p is pin strapped as a 16bit width</div><div>s=
+o in dts, I wrote:</div><div><span class=3D"Apple-style-span" style=3D"font=
+-family: arial, sans-serif; font-size: 13px; border-collapse: collapse; "><=
+div>
+<span style=3D"white-space: pre; ">					</span>bank-width =3D &lt;2&gt;;</d=
+iv><div><span style=3D"white-space: pre; ">					</span>device-width =3D &lt=
+;1&gt;;</div><div><br></div><div>In OF driver:</div><div>#define CFG_FLASH_=
+BUS_WIDTH =A0 =A0 2</div>
+<div><div>struct map_info s29gl_map =3D {</div><div>=A0=A0 =A0 =A0 =A0.name=
+ =3D &quot;Nor Flash on Cerberus&quot;,</div><div>=A0=A0 =A0 =A0 =A0.size =
+=3D CFG_FLASH_SIZE,</div><div>=A0=A0 =A0 =A0 =A0.bankwidth =3D CFG_FLASH_BU=
+S_WIDTH,</div><div>};</div><div><br>
+</div></div></span></div></div>
+
+--001485eb9dae83d49d0473dca313--
