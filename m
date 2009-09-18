@@ -1,20 +1,20 @@
-Return-Path: <gr1xmail@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
-	by ozlabs.org (Postfix) with ESMTP id C3B57B7B7C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 19 Sep 2009 02:29:43 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so495851fgg.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Sep 2009 09:29:40 -0700 (PDT)
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2A67BB7B71
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Sep 2009 05:46:51 +1000 (EST)
+Message-Id: <200909181946.n8IJkEvZ012666@imap1.linux-foundation.org>
+Subject: [patch 1/1] powerpc: Sky CPU: redundant or incorrect tests on unsigned
+To: benh@kernel.crashing.org
+From: akpm@linux-foundation.org
+Date: Fri, 18 Sep 2009 12:46:14 -0700
 MIME-Version: 1.0
-In-Reply-To: <8abf57fa0909180837sc3864bcwb0cc2cb7b211c17d@mail.gmail.com>
-References: <8abf57fa0909180837sc3864bcwb0cc2cb7b211c17d@mail.gmail.com>
-Date: Sat, 19 Sep 2009 00:29:40 +0800
-Message-ID: <8abf57fa0909180929j418f9fb7t80a4f707b2fce4e1@mail.gmail.com>
-Subject: Re: Powerpc Kernel 2.6.26.5 boot panic when call cfi_probe_chip()
-From: g r1x <gr1xmail@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=001485eb9dae83d49d0473dca313
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Cc: waite@skycomputers.com, roel.kluin@gmail.com, gorcunov@gmail.com,
+	linuxppc-dev@ozlabs.org, galak@gate.crashing.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001485eb9dae83d49d0473dca313
-Content-Type: text/plain; charset=ISO-8859-1
+From: Roel Kluin <roel.kluin@gmail.com>
 
-2009/9/18 g r1x <gr1xmail@gmail.com>
+count is unsigned and cannot be less than 0.
 
-> I'm working on a 440GX demo board with a flash chip s29gl256p(128k sector
-> size, 32M total, CFI). I have tried 2 ways to add mtd partiton to the
-> kernel, but failed with kernel panic. (kernel version: 2.6.26.5)
->
- S29GL256p is pin strapped as a 16bit width
-so in dts, I wrote:
-bank-width = <2>;
-device-width = <1>;
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Acked-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Kumar Gala <galak@gate.crashing.org>
+Cc: Brian Waite <waite@skycomputers.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-In OF driver:
-#define CFG_FLASH_BUS_WIDTH     2
-struct map_info s29gl_map = {
-        .name = "Nor Flash on Cerberus",
-        .size = CFG_FLASH_SIZE,
-        .bankwidth = CFG_FLASH_BUS_WIDTH,
-};
+ drivers/misc/hdpuftrs/hdpu_cpustate.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
---001485eb9dae83d49d0473dca313
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div class=3D"gmail_quote">2009/9/18 g r1x <span dir=3D"ltr">&lt;<a href=3D=
-"mailto:gr1xmail@gmail.com">gr1xmail@gmail.com</a>&gt;</span><br><blockquot=
-e class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc sol=
-id;padding-left:1ex;">
-I&#39;m working on a 440GX demo board with a flash chip s29gl256p(128k sect=
-or size, 32M total, CFI). I have tried 2 ways to add mtd partiton to the ke=
-rnel, but failed with kernel panic. (kernel version: 2.6.26.5)<div><span cl=
-ass=3D"Apple-style-span" style=3D"white-space: pre; ">	</span></div>
-</blockquote><div>=A0S29GL256p is pin strapped as a 16bit width</div><div>s=
-o in dts, I wrote:</div><div><span class=3D"Apple-style-span" style=3D"font=
--family: arial, sans-serif; font-size: 13px; border-collapse: collapse; "><=
-div>
-<span style=3D"white-space: pre; ">					</span>bank-width =3D &lt;2&gt;;</d=
-iv><div><span style=3D"white-space: pre; ">					</span>device-width =3D &lt=
-;1&gt;;</div><div><br></div><div>In OF driver:</div><div>#define CFG_FLASH_=
-BUS_WIDTH =A0 =A0 2</div>
-<div><div>struct map_info s29gl_map =3D {</div><div>=A0=A0 =A0 =A0 =A0.name=
- =3D &quot;Nor Flash on Cerberus&quot;,</div><div>=A0=A0 =A0 =A0 =A0.size =
-=3D CFG_FLASH_SIZE,</div><div>=A0=A0 =A0 =A0 =A0.bankwidth =3D CFG_FLASH_BU=
-S_WIDTH,</div><div>};</div><div><br>
-</div></div></span></div></div>
-
---001485eb9dae83d49d0473dca313--
+diff -puN drivers/misc/hdpuftrs/hdpu_cpustate.c~powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned drivers/misc/hdpuftrs/hdpu_cpustate.c
+--- a/drivers/misc/hdpuftrs/hdpu_cpustate.c~powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned
++++ a/drivers/misc/hdpuftrs/hdpu_cpustate.c
+@@ -121,8 +121,6 @@ static ssize_t cpustate_read(struct file
+ {
+ 	unsigned char data;
+ 
+-	if (count < 0)
+-		return -EFAULT;
+ 	if (count == 0)
+ 		return 0;
+ 
+@@ -137,9 +135,6 @@ static ssize_t cpustate_write(struct fil
+ {
+ 	unsigned char data;
+ 
+-	if (count < 0)
+-		return -EFAULT;
+-
+ 	if (count == 0)
+ 		return 0;
+ 
+_
