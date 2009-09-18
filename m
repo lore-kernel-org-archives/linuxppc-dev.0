@@ -1,23 +1,23 @@
-Return-Path: <kyle@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <jkosina@suse.cz>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ACB92B7B69
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Sep 2009 12:21:49 +1000 (EST)
-Date: Thu, 17 Sep 2009 22:21:45 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] fix ppc64 build failure on fedora
-Message-ID: <20090918022145.GF11961@bombadil.infradead.org>
-References: <20090917174144.GA11961@bombadil.infradead.org>
-	<1253238606.4932.23.camel@pasglop>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C432CB7B6F
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Sep 2009 20:25:17 +1000 (EST)
+Date: Fri, 18 Sep 2009 12:25:12 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Peter Huewe <PeterHuewe@gmx.de>
+Subject: Re: [PATCH] char/hvc: adding __init macro to char/hvc_vio.c
+In-Reply-To: <200909170238.40051.PeterHuewe@gmx.de>
+Message-ID: <alpine.LNX.2.00.0909181224570.17028@wotan.suse.de>
+References: <200908202314.07443.PeterHuewe@gmx.de>
+	<200909170238.40051.PeterHuewe@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1253238606.4932.23.camel@pasglop>
-Sender: Kyle McMartin <kyle@infradead.org>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Mike Frysinger <vapier@gentoo.org>,
+	Nicolas Palix <npalix@diku.dk>, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 18, 2009 at 11:50:06AM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2009-09-17 at 13:41 -0400, Kyle McMartin wrote:
-> > From: Kyle McMartin <kyle@redhat.com>
-> > 
-> > For some reason or another (newer gcc?) on Fedora 12 koji builders we're
-> > seeing _restgpr0_$n symbols instead of _restgpr_$n as handled in the
-> > prom_init_check.sh file:
-> > Checking prom_init.o symbol '_restgpr0_14'
-> > Error: External symbol '_restgpr0_14' referenced from prom_init.c
-> > Checking prom_init.o symbol '_restgpr0_17'
-> > 
-> > Add cases to handle this to the filter portion of the script.
+On Thu, 17 Sep 2009, Peter Huewe wrote:
+
+> > Please have a look at the small patch and either pull it through
+> > your tree, or please ack' it so Jiri can pull it through the trivial tree.
+> >
+> > linux version 2.6.31-rc6 - linus git tree, Do 20. Aug 22:26:06 CEST 2009
+> >
+> > Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 > 
-> My concern tho is if one of thse is actually called ... we implement
-> them in arch/powerpc/lib/crtsaveres.S but with the "other" names..
-> 
+> Hi Jiri,
+> this one got merged by Benjamin, so you can drop it from your queue :)
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=948c28fe3001f2c9d852dff2a0b2c69fe7cec91b
 
-Sorry, this appears to be a GCC "feature" introduced in gcc4.5 which is
-generating out of line save/restore on ppc64 at -Os. Thanks to Jakub's
-suggestion I ended up working around this by building ppc with -O2 for
-now (CC_OPTIMIZE_FOR_SIZE)
+Dropped, thanks for letting me know.
 
-In any case, according to the gcc "docs" for this, these functions are
-supposed to be provided by the linker in the ppc64 case, so it wasn't
-correct to try and add them.
-
-I believe Alan Modra said he'd look at the ld issue with regards to
-this.
-
-cheers, Kyle
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
