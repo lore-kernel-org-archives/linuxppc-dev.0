@@ -1,17 +1,21 @@
-Return-Path: <julie.zhu@xilinx.com>
-Received: from SG2EHSOBE004.bigfish.com (sg2ehsobe004.messaging.microsoft.com
-	[207.46.51.78]) by ozlabs.org (Postfix) with ESMTP id 55EEEB7082
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 05:39:31 +1000 (EST)
-From: Julie Zhu <julie.zhu@xilinx.com>
-To: john.linn@xilinx.com, jwboyer@linux.vnet.ibm.com, greg@kroah.com,
-	linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
-	grant.likely@secretlab.ca, benh@kernel.crashing.org
-Subject: [PATCH] [V1] USB: Add support for Xilinx USB host controller
-Date: Mon, 21 Sep 2009 13:38:33 -0600
-Message-ID: <20090921193821.CB9DF1620046@mail78-sin.bigfish.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
+	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 78DB1B7B69
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 06:47:46 +1000 (EST)
+Received: by yxe8 with SMTP id 8so4207188yxe.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 13:47:45 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Julie Zhu <julie.zhu@xilinx.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <20090921193821.CB9DF1620046@mail78-sin.bigfish.com>
+References: <20090921193821.CB9DF1620046@mail78-sin.bigfish.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 21 Sep 2009 13:47:25 -0700
+Message-ID: <fa686aa40909211347q3ce9bd74s58734ae3a55f5f80@mail.gmail.com>
+Subject: Re: [PATCH] [V1] USB: Add support for Xilinx USB host controller
+To: Julie Zhu <julie.zhu@xilinx.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: greg@kroah.com, linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	john.linn@xilinx.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,406 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add bus glue driver for Xilinx USB host controller. The controller can be
-configured as HS only or HS/FS hybrid. The driver uses the device tree file
-to configure the driver according to the setting in the hardware system.
+On Mon, Sep 21, 2009 at 12:38 PM, Julie Zhu <julie.zhu@xilinx.com> wrote:
+> Add bus glue driver for Xilinx USB host controller. The controller can be
+> configured as HS only or HS/FS hybrid. The driver uses the device tree fi=
+le
+> to configure the driver according to the setting in the hardware system.
 
-This driver has been tested with usbtest using the NET2280 PCI card.
+Looks good, one minor nit....
 
-Signed-off-by: Julie Zhu <julie.zhu@xilinx.com>
-Signed-off-by: John Linn <john.linn@xilinx.com>
+> +static struct of_device_id ehci_hcd_xilinx_of_match[] =3D {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 {.compatible =3D "xlnx,xps-usb-host-1.00.a"=
+,},
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 {.compatible =3D "xlnx,xps-usb-host-1.01.a"=
+,},
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 {.compatible =3D "xlnx,xps-usb-host-1.02.a"=
+,},
+> + =A0 =A0 =A0 {},
+> +};
 
----
+Ideally, 1.01 and 1.02 device tree nodes would also claim
+compatibility with the original 1.00.a version (assuming of course
+that it really is register level compatible) making the 2nd and 3rd
+lines redundant, but that's just a minor nit and this doesn't hurt
+anything.  Do what you prefer.
 
-V1 - Updated per comments from Benjamin Herrenschmidt
-     <benh@kernel.crashing.org> and Grant Likely <grant.likely@secretlab.ca>.
----
- Documentation/powerpc/dts-bindings/xilinx.txt |   11 +
- drivers/usb/host/Kconfig                      |   15 +-
- drivers/usb/host/ehci-hcd.c                   |    5 +
- drivers/usb/host/ehci-xilinx-of.c             |  302 +++++++++++++++++++++++++
- 4 files changed, 331 insertions(+), 2 deletions(-)
- create mode 100644 drivers/usb/host/ehci-xilinx-of.c
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-diff --git a/Documentation/powerpc/dts-bindings/xilinx.txt b/Documentation/powerpc/dts-bindings/xilinx.txt
-index 80339fe..ea68046 100644
---- a/Documentation/powerpc/dts-bindings/xilinx.txt
-+++ b/Documentation/powerpc/dts-bindings/xilinx.txt
-@@ -292,4 +292,15 @@
-        - reg-offset : A value of 3 is required
-        - reg-shift : A value of 2 is required
- 
-+      vii) Xilinx USB Host controller
-+
-+      The Xilinx USB host controller is EHCI compatible but with a different
-+      base address for the EHCI registers, and it is always a big-endian
-+      USB Host controller. The hardware can be configured as high speed only,
-+      or high speed/full speed hybrid.
-+
-+      Required properties:
-+      - xlnx,support-usb-fs: A value 0 means the core is built as high speed
-+                             only. A value 1 means the core also supports
-+                             full speed devices.
- 
-diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-index 1a920c7..95e4689 100644
---- a/drivers/usb/host/Kconfig
-+++ b/drivers/usb/host/Kconfig
-@@ -90,14 +90,25 @@ config USB_EHCI_TT_NEWSCHED
- 
- config USB_EHCI_BIG_ENDIAN_MMIO
- 	bool
--	depends on USB_EHCI_HCD && (PPC_CELLEB || PPC_PS3 || 440EPX || ARCH_IXP4XX)
-+	depends on USB_EHCI_HCD && (PPC_CELLEB || PPC_PS3 || 440EPX || ARCH_IXP4XX || XPS_USB_HCD_XILINX)
- 	default y
- 
- config USB_EHCI_BIG_ENDIAN_DESC
- 	bool
--	depends on USB_EHCI_HCD && (440EPX || ARCH_IXP4XX)
-+	depends on USB_EHCI_HCD && (440EPX || ARCH_IXP4XX || XPS_USB_HCD_XILINX)
- 	default y
- 
-+config XPS_USB_HCD_XILINX
-+	bool "Use Xilinx usb host EHCI controller core"
-+	depends on USB_EHCI_HCD && (PPC32 || MICROBLAZE)
-+	select USB_EHCI_BIG_ENDIAN_DESC
-+	select USB_EHCI_BIG_ENDIAN_MMIO
-+	---help---
-+		Xilinx xps USB host controller core is EHCI compilant and has
-+		transaction translator built-in. It can be configured to either
-+		support both high speed and full speed devices, or high speed
-+		devices only.
-+
- config USB_EHCI_FSL
- 	bool "Support for Freescale on-chip EHCI USB controller"
- 	depends on USB_EHCI_HCD && FSL_SOC
-diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
-index 11c627c..7672624 100644
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -1107,6 +1107,11 @@ MODULE_LICENSE ("GPL");
- #define OF_PLATFORM_DRIVER	ehci_hcd_ppc_of_driver
- #endif
- 
-+#ifdef CONFIG_XPS_USB_HCD_XILINX
-+#include "ehci-xilinx-of.c"
-+#define OF_PLATFORM_DRIVER	ehci_hcd_xilinx_of_driver
-+#endif
-+
- #ifdef CONFIG_PLAT_ORION
- #include "ehci-orion.c"
- #define	PLATFORM_DRIVER		ehci_orion_driver
-diff --git a/drivers/usb/host/ehci-xilinx-of.c b/drivers/usb/host/ehci-xilinx-of.c
-new file mode 100644
-index 0000000..f1ae855
---- /dev/null
-+++ b/drivers/usb/host/ehci-xilinx-of.c
-@@ -0,0 +1,302 @@
-+/*
-+ * EHCI HCD (Host Controller Driver) for USB.
-+ *
-+ * Bus Glue for Xilinx EHCI core on the of_platform bus
-+ *
-+ * Copyright (c) 2009 Xilinx, Inc.
-+ *
-+ * Based on "ehci-ppc-of.c" by Valentine Barshak <vbarshak@ru.mvista.com>
-+ * and "ehci-ppc-soc.c" by Stefan Roese <sr@denx.de>
-+ * and "ohci-ppc-of.c" by Sylvain Munaut <tnt@246tNt.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-+ * for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ */
-+
-+#include <linux/signal.h>
-+
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+
-+/**
-+ * ehci_xilinx_of_setup - Initialize the device for ehci_reset()
-+ * @hcd:	Pointer to the usb_hcd device to which the host controller bound
-+ *
-+ * called during probe() after chip reset completes.
-+ */
-+static int ehci_xilinx_of_setup(struct usb_hcd *hcd)
-+{
-+	struct ehci_hcd	*ehci = hcd_to_ehci(hcd);
-+	int		retval;
-+
-+	retval = ehci_halt(ehci);
-+	if (retval)
-+		return retval;
-+
-+	retval = ehci_init(hcd);
-+	if (retval)
-+		return retval;
-+
-+	ehci->sbrn = 0x20;
-+
-+	return ehci_reset(ehci);
-+}
-+
-+/**
-+ * ehci_xilinx_port_handed_over - hand the port out if failed to enable it
-+ * @hcd:	Pointer to the usb_hcd device to which the host controller bound
-+ * @portnum:Port number to which the device is attached.
-+ *
-+ * This function is used as a place to tell the user that the Xilinx USB host
-+ * controller does support LS devices. And in an HS only configuration, it
-+ * does not support FS devices either. It is hoped that this can help a
-+ * confused user.
-+ *
-+ * There are cases when the host controller fails to enable the port due to,
-+ * for example, insufficient power that can be supplied to the device from
-+ * the USB bus. In those cases, the messages printed here are not helpful.
-+ */
-+static int ehci_xilinx_port_handed_over(struct usb_hcd *hcd, int portnum)
-+{
-+	dev_warn(hcd->self.controller, "port %d cannot be enabled\n", portnum);
-+	if (hcd->has_tt) {
-+		dev_warn(hcd->self.controller,
-+			"Maybe you have connected a low speed device?\n");
-+
-+		dev_warn(hcd->self.controller,
-+			"We do not support low speed devices\n");
-+	} else {
-+		dev_warn(hcd->self.controller,
-+			"Maybe your device is not a high speed device?\n");
-+		dev_warn(hcd->self.controller,
-+			"The USB host controller does not support full speed "
-+			"nor low speed devices\n");
-+		dev_warn(hcd->self.controller,
-+			"You can reconfigure the host controller to have "
-+			"full speed support\n");
-+	}
-+
-+	return 0;
-+}
-+
-+
-+static const struct hc_driver ehci_xilinx_of_hc_driver = {
-+	.description		= hcd_name,
-+	.product_desc		= "OF EHCI",
-+	.hcd_priv_size		= sizeof(struct ehci_hcd),
-+
-+	/*
-+	 * generic hardware linkage
-+	 */
-+	.irq			= ehci_irq,
-+	.flags			= HCD_MEMORY | HCD_USB2,
-+
-+	/*
-+	 * basic lifecycle operations
-+	 */
-+	.reset			= ehci_xilinx_of_setup,
-+	.start			= ehci_run,
-+	.stop			= ehci_stop,
-+	.shutdown		= ehci_shutdown,
-+
-+	/*
-+	 * managing i/o requests and associated device resources
-+	 */
-+	.urb_enqueue		= ehci_urb_enqueue,
-+	.urb_dequeue		= ehci_urb_dequeue,
-+	.endpoint_disable	= ehci_endpoint_disable,
-+
-+	/*
-+	 * scheduling support
-+	 */
-+	.get_frame_number	= ehci_get_frame,
-+
-+	/*
-+	 * root hub support
-+	 */
-+	.hub_status_data	= ehci_hub_status_data,
-+	.hub_control		= ehci_hub_control,
-+#ifdef	CONFIG_PM
-+	.bus_suspend		= ehci_bus_suspend,
-+	.bus_resume		= ehci_bus_resume,
-+#endif
-+	.relinquish_port	= NULL,
-+	.port_handed_over	= ehci_xilinx_port_handed_over,
-+
-+	.clear_tt_buffer_complete = ehci_clear_tt_buffer_complete,
-+};
-+
-+/**
-+ * ehci_hcd_xilinx_of_probe - Probe method for the USB host controller
-+ * @op:		pointer to the of_device to which the host controller bound
-+ * @match:	pointer to of_device_id structure, not used
-+ *
-+ * This function requests resources and sets up appropriate properties for the
-+ * host controller. Because the Xilinx USB host controller can be configured
-+ * as HS only or HS/FS only, it checks the configuration in the device tree
-+ * entry, and sets an appropriate value for hcd->has_tt.
-+ */
-+static int __devinit
-+ehci_hcd_xilinx_of_probe(struct of_device *op, const struct of_device_id *match)
-+{
-+	struct device_node *dn = op->node;
-+	struct usb_hcd *hcd;
-+	struct ehci_hcd	*ehci;
-+	struct resource res;
-+	int irq;
-+	int rv;
-+	int *value;
-+
-+	if (usb_disabled())
-+		return -ENODEV;
-+
-+	dev_dbg(&op->dev, "initializing XILINX-OF USB Controller\n");
-+
-+	rv = of_address_to_resource(dn, 0, &res);
-+	if (rv)
-+		return rv;
-+
-+	hcd = usb_create_hcd(&ehci_xilinx_of_hc_driver, &op->dev,
-+				"XILINX-OF USB");
-+	if (!hcd)
-+		return -ENOMEM;
-+
-+	hcd->rsrc_start = res.start;
-+	hcd->rsrc_len = res.end - res.start + 1;
-+
-+	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len, hcd_name)) {
-+		printk(KERN_ERR __FILE__ ": request_mem_region failed\n");
-+		rv = -EBUSY;
-+		goto err_rmr;
-+	}
-+
-+	irq = irq_of_parse_and_map(dn, 0);
-+	if (irq == NO_IRQ) {
-+		printk(KERN_ERR __FILE__ ": irq_of_parse_and_map failed\n");
-+		rv = -EBUSY;
-+		goto err_irq;
-+	}
-+
-+	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
-+	if (!hcd->regs) {
-+		printk(KERN_ERR __FILE__ ": ioremap failed\n");
-+		rv = -ENOMEM;
-+		goto err_ioremap;
-+	}
-+
-+	ehci = hcd_to_ehci(hcd);
-+
-+	/* This core always has big-endian register interface and uses
-+	 * big-endian memory descriptors.
-+	 */
-+	ehci->big_endian_mmio = 1;
-+	ehci->big_endian_desc = 1;
-+
-+	/* Check whether the FS support option is selected in the hardware.
-+	 */
-+	value = (int *)of_get_property(dn, "xlnx,support-usb-fs", NULL);
-+	if (value && (*value == 1)) {
-+		ehci_dbg(ehci, "USB host controller supports FS devices\n");
-+		hcd->has_tt = 1;
-+	} else {
-+		ehci_dbg(ehci,
-+			"USB host controller is HS only\n");
-+		hcd->has_tt = 0;
-+	}
-+
-+	/* Debug registers are at the first 0x100 region
-+	 */
-+	ehci->caps = hcd->regs + 0x100;
-+	ehci->regs = hcd->regs + 0x100 +
-+			HC_LENGTH(ehci_readl(ehci, &ehci->caps->hc_capbase));
-+
-+	/* cache this readonly data; minimize chip reads */
-+	ehci->hcs_params = ehci_readl(ehci, &ehci->caps->hcs_params);
-+
-+	rv = usb_add_hcd(hcd, irq, 0);
-+	if (rv == 0)
-+		return 0;
-+
-+	iounmap(hcd->regs);
-+err_ioremap:
-+	irq_dispose_mapping(irq);
-+err_irq:
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+err_rmr:
-+	usb_put_hcd(hcd);
-+
-+	return rv;
-+}
-+
-+/**
-+ * ehci_hcd_xilinx_of_remove - shutdown hcd and release resources
-+ * @op:		pointer to of_device structure that is to be removed
-+ *
-+ * Remove the hcd structure, and release resources that has been requested
-+ * during probe.
-+ */
-+static int ehci_hcd_xilinx_of_remove(struct of_device *op)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
-+	dev_set_drvdata(&op->dev, NULL);
-+
-+	dev_dbg(&op->dev, "stopping XILINX-OF USB Controller\n");
-+
-+	usb_remove_hcd(hcd);
-+
-+	iounmap(hcd->regs);
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+
-+	usb_put_hcd(hcd);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ehci_hcd_xilinx_of_shutdown - shutdown the hcd
-+ * @op:		pointer to of_device structure that is to be removed
-+ *
-+ * Properly shutdown the hcd, call driver's shutdown routine.
-+ */
-+static int ehci_hcd_xilinx_of_shutdown(struct of_device *op)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
-+
-+	if (hcd->driver->shutdown)
-+		hcd->driver->shutdown(hcd);
-+
-+	return 0;
-+}
-+
-+
-+static struct of_device_id ehci_hcd_xilinx_of_match[] = {
-+		{.compatible = "xlnx,xps-usb-host-1.00.a",},
-+		{.compatible = "xlnx,xps-usb-host-1.01.a",},
-+		{.compatible = "xlnx,xps-usb-host-1.02.a",},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, ehci_hcd_xilinx_of_match);
-+
-+static struct of_platform_driver ehci_hcd_xilinx_of_driver = {
-+	.name		= "xilinx-of-ehci",
-+	.match_table	= ehci_hcd_xilinx_of_match,
-+	.probe		= ehci_hcd_xilinx_of_probe,
-+	.remove		= ehci_hcd_xilinx_of_remove,
-+	.shutdown	= ehci_hcd_xilinx_of_shutdown,
-+	.driver		= {
-+		.name	= "xilinx-of-ehci",
-+		.owner	= THIS_MODULE,
-+	},
-+};
--- 
-1.5.6.6
+Cheers,
+g.
 
-
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
