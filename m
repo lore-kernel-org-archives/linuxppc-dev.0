@@ -1,29 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B72CFB70B3
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 08:36:02 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n8LMZxJx011651
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 15:35:59 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n8LMcBHP020509
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 17:38:11 -0500 (CDT)
-Message-ID: <4AB7FFE9.8050206@freescale.com>
-Date: Mon, 21 Sep 2009 17:36:25 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id ED46FB70B3
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 08:56:14 +1000 (EST)
+Date: Tue, 22 Sep 2009 02:56:12 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] [V1] USB: Add support for Xilinx USB host controller
+Message-ID: <20090921225612.GA32278@oksana.dev.rtsoft.ru>
+References: <20090921193821.CB9DF1620046@mail78-sin.bigfish.com>
+	<1253566180.7103.147.camel@pasglop>
 MIME-Version: 1.0
-To: "Matthew L. Creech" <mlcreech@gmail.com>
-Subject: Re: NAND partition names in DTS must be named "partition"?
-References: <5ee96a840909211527g45b47b3fgff907df69fe48666@mail.gmail.com>
-In-Reply-To: <5ee96a840909211527g45b47b3fgff907df69fe48666@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1253566180.7103.147.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Julie Zhu <julie.zhu@xilinx.com>,
+	linux-usb@vger.kernel.org, john.linn@xilinx.com, greg@kroah.com
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Matthew L. Creech wrote:
-> I upgraded from 2.6.29 to 2.6.31, and the kernel no longer recognized
-> the partitions embedded within my DTS file.  I had to revert this
-> change:
+On Tue, Sep 22, 2009 at 06:49:40AM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-09-21 at 13:38 -0600, Julie Zhu wrote:
 > 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4b08e149c0e02e97ec49c2a31d14a0d3a02f8074
+> > +	iounmap(hcd->regs);
+> > +err_ioremap:
+> > +	irq_dispose_mapping(irq);
 > 
-> in order to boot.  This code looks like it expects all partitions to
-> be named "partition", otherwise they're just skipped.  Is there some
-> peculiarity in my setup that makes this not work, or is it a general
-> problem?  I see no major differences between my DTS file and the
-> stardard "mpc8313erdb.dts".
+> You missed that one too :-)
+> 
+> I'm actually considering making irq_dispose_mapping() a private
+> API and rename it to something like __irq_dispose_mapping() :-)
 
-It looks like mpc8313erdb.dts needs to be updated.
+I.e. turning irq_dispose_mapping() into nop, and __-prefixed
+(private) variant would actually dispose irq mapping?
 
-That, and Documentation/powerpc/dts-bindings/mtd-physmap.txt, which 
-still says, "Each node's name represents the name of the corresponding
-partition of the flash device," and has examples whose names are not 
-"partition". :-P
+The nop part is important, because otherwise having no cleanup
+variant of an allocation/mapping routine feels odd and might raise
+questions by non-ppc people (e.g. subsystem maintainers when they
+see no cleanup path for such a call).
 
--Scott
+And if we'll want to refcount irq mappings in the future, some
+drivers will be ready without modifications, i.e. the ones that
+got irq_dispose_mapping() wrong:
+
+$ git grep irq_dispose drivers/ | wc -l
+42
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
