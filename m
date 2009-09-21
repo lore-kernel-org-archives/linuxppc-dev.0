@@ -1,21 +1,19 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.180])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BA33CB7B69
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Sep 2009 15:13:39 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: PPC_4xx synopsy USB driver
-Date: Mon, 21 Sep 2009 07:13:29 +0200
-References: <579B119545DAEF4689C8FBEEFEC5793F01FA07D04F37@ATLMBX.verint.corp.verintsystems.com>
-In-Reply-To: <579B119545DAEF4689C8FBEEFEC5793F01FA07D04F37@ATLMBX.verint.corp.verintsystems.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <200909210713.29238.sr@denx.de>
-Cc: "Cote, Sylvain" <Sylvain.Cote@verint.com>
+	by ozlabs.org (Postfix) with ESMTPS id D7C3FB7B69
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 15:19:56 +1000 (EST)
+Subject: Re: [PATCH 1/2] powerpc: rename get_dma_direct_offset get_dma_offset
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+In-Reply-To: <1251930200-4796-1-git-send-email-beckyb@kernel.crashing.org>
+References: <1251930200-4796-1-git-send-email-beckyb@kernel.crashing.org>
+Content-Type: text/plain
+Date: Mon, 21 Sep 2009 15:19:50 +1000
+Message-Id: <1253510390.7103.127.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sylvain,
+On Wed, 2009-09-02 at 17:23 -0500, Becky Bruce wrote:
 
-On Friday 18 September 2009 17:50:24 Cote, Sylvain wrote:
-> USB gadget support --> y
->             Maximum VBUS power usage = 500
->             Synopsys DWC OTG controller
->             Synopsys DWC OTG internal DMA mode --> y
->             USB gadget --> M
->             gadget zero --> M
->             Ethernet Gadget --> M
->             RNDIS support --> y
-> 
-> Any help will be appreciated
+>  #ifdef CONFIG_NOT_COHERENT_CACHE
+>  /*
+> @@ -90,6 +89,14 @@ static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
+>  	dev->archdata.dma_ops = ops;
+>  }
+>  
+> +static inline unsigned long get_dma_offset(struct device *dev)
+> +{
+> +	if (dev)
+> +		return (unsigned long)dev->archdata.dma_data;
+> +
+> +	return PCI_DRAM_OFFSET;
+> +}
 
-Looks good so far. I suspect that the only thing missing for your 405EX custom 
-board is the following line in the arch/powerpc/sysdev/Makefile:
-
-obj-$(CONFIG_KILAUEA)           += amcc-usbotg.o
-
-to enable the device-tree to platform-device driver wrapper for the USB-OTG 
-resources.
+My main objection here is that this makes it look "too" generic ... it
+only works for direct and swiotlb, not iommu. Maybe not a big deal but
+I think at least there should be a comment explaining what it is and
+when it can be used in the header.
 
 Cheers,
-Stefan
-
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-0 Fax: (+49)-8142-66989-80 Email: office@denx.de
+Ben.
