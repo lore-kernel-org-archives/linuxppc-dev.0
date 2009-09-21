@@ -1,21 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f203.google.com (mail-yw0-f203.google.com
-	[209.85.211.203]) by ozlabs.org (Postfix) with ESMTP id 4F346B7BB3
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 00:14:41 +1000 (EST)
-Received: by ywh41 with SMTP id 41so3908533ywh.1
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 07:14:39 -0700 (PDT)
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B66C5B7B7F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 22 Sep 2009 00:24:58 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: "Cote, Sylvain" <Sylvain.Cote@verint.com>
+Subject: Re: PPC_4xx synopsy USB driver
+Date: Mon, 21 Sep 2009 16:24:52 +0200
+References: <579B119545DAEF4689C8FBEEFEC5793F01FA07D04F37@ATLMBX.verint.corp.verintsystems.com>
+	<200909210713.29238.sr@denx.de>
+	<579B119545DAEF4689C8FBEEFEC5793F01FA07D05186@ATLMBX.verint.corp.verintsystems.com>
+In-Reply-To: <579B119545DAEF4689C8FBEEFEC5793F01FA07D05186@ATLMBX.verint.corp.verintsystems.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20090915221050.0DA0F2C005E@mail34-va3.bigfish.com>
-References: <20090915221050.0DA0F2C005E@mail34-va3.bigfish.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 21 Sep 2009 07:14:18 -0700
-Message-ID: <fa686aa40909210714j428aa524qacc7a83f40db411b@mail.gmail.com>
-Subject: Re: [PATCH] USB: Add support for Xilinx USB host controller
-To: Julie Zhu <julie.zhu@xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-usb@vger.kernel.org, gregkh@suse.de, juliez@xilinx.com,
-	linuxppc-dev@ozlabs.org, john.linn@xilinx.com
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <200909211624.52060.sr@denx.de>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 15, 2009 at 3:10 PM, Julie Zhu <julie.zhu@xilinx.com> wrote:
-> Add bus glue driver for Xilinx USB host controller. The controller can be
-> configured as HS only or HS/FS hybrid. The driver uses the device tree fi=
-le
-> to configure the driver according to the setting in the hardware system.
->
-> This driver has been tested with usbtest using the NET2280 PCI card.
->
-> Signed-off-by: Julie Zhu <julie.zhu@xilinx.com>
+On Monday 21 September 2009 15:44:30 Cote, Sylvain wrote:
+> > Looks good so far. I suspect that the only thing missing for your 405EX
+> > custom
+> > board is the following line in the arch/powerpc/sysdev/Makefile:
+> >
+> > obj-$(CONFIG_KILAUEA)           += amcc-usbotg.o
+> 
+> I have created a new platform (platform using 405ex).  I have missed this
+>  one for my new platform.  Do you know if there is a compilation switch
+>  that could be more generic (like CONFIG_40x) for the usbotg?
 
-As Ben said, this is nice tight code.  Two comments below.
+Yes, it would probably make sense to just use 
 
-> +/**
-> + * ehci_xilinx_port_handed_over - hand the port out if failed to enable =
-it
-> + * @hcd: =A0 =A0 =A0 Pointer to the usb_hcd device to which the host con=
-troller bound
-> + * @portnum:Port number to which the device is attached.
-> + *
-> + * This function is used as a place to tell the user that the Xilinx USB=
- host
-> + * controller does support LS devices. And in an HS only configuration, =
-it
-> + * does not support FS devices neither. It is hoped that this can help a
+obj-$(CONFIG_USB_DWC_OTG) += amcc-usbotg.o
 
-s/neither/either
-
-[...]
-> +static struct of_device_id ehci_hcd_xilinx_of_match[] =3D {
-> + =A0 =A0 =A0 {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .compatible =3D "usb-ehci",
-> + =A0 =A0 =A0 },
-
-This looks wrong.  Since this driver only works with Xilinx USB controllers=
-,
-it should be binding against "xlnx,xps-usb-host-1.00.a", and the meaning of
-that binding needs to be documented in Documentation/powerpc/dts-bindings.
-
-Having this driver bind against the generic "usb-ehci" will cause conflicts
-with the ehci-ppc-of driver.
+here. I'll change this soon.
 
 Cheers,
-g.
+Stefan
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-0 Fax: (+49)-8142-66989-80 Email: office@denx.de
