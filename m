@@ -1,19 +1,17 @@
-Return-Path: <beckyb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1DAE1B70B3
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 04:26:41 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n8LIQbM8012263
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 13:26:38 -0500
-From: Becky Bruce <beckyb@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 2/2] powerpc: Change archdata dma_data to a union
-Date: Mon, 21 Sep 2009 13:26:35 -0500
-Message-Id: <1253557595-641-2-git-send-email-beckyb@kernel.crashing.org>
-In-Reply-To: <1253557595-641-1-git-send-email-beckyb@kernel.crashing.org>
-References: <1253557595-641-1-git-send-email-beckyb@kernel.crashing.org>
+Return-Path: <julie.zhu@xilinx.com>
+Received: from SG2EHSOBE004.bigfish.com (sg2ehsobe004.messaging.microsoft.com
+	[207.46.51.78]) by ozlabs.org (Postfix) with ESMTP id 55EEEB7082
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 05:39:31 +1000 (EST)
+From: Julie Zhu <julie.zhu@xilinx.com>
+To: john.linn@xilinx.com, jwboyer@linux.vnet.ibm.com, greg@kroah.com,
+	linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
+	grant.likely@secretlab.ca, benh@kernel.crashing.org
+Subject: [PATCH] [V1] USB: Add support for Xilinx USB host controller
+Date: Mon, 21 Sep 2009 13:38:33 -0600
+Message-ID: <20090921193821.CB9DF1620046@mail78-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Julie Zhu <julie.zhu@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,317 +21,406 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sometimes this is used to hold a simple offset, and sometimes
-it is used to hold a pointer.  This patch changes it to a union containing
-void * and dma_addr_t.  get/set accessors are also provided, because it was
-getting a bit ugly to get to the actual data.
+Add bus glue driver for Xilinx USB host controller. The controller can be
+configured as HS only or HS/FS hybrid. The driver uses the device tree file
+to configure the driver according to the setting in the hardware system.
 
-Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+This driver has been tested with usbtest using the NET2280 PCI card.
+
+Signed-off-by: Julie Zhu <julie.zhu@xilinx.com>
+Signed-off-by: John Linn <john.linn@xilinx.com>
+
 ---
- arch/powerpc/include/asm/device.h        |   11 ++++++++++-
- arch/powerpc/include/asm/dma-mapping.h   |   10 ++++++++--
- arch/powerpc/include/asm/iommu.h         |   10 ++++++++++
- arch/powerpc/kernel/dma-iommu.c          |   16 ++++++++--------
- arch/powerpc/kernel/pci-common.c         |    2 +-
- arch/powerpc/kernel/vio.c                |    2 +-
- arch/powerpc/platforms/cell/beat_iommu.c |    2 +-
- arch/powerpc/platforms/cell/iommu.c      |    9 +++------
- arch/powerpc/platforms/iseries/iommu.c   |    2 +-
- arch/powerpc/platforms/pasemi/iommu.c    |    2 +-
- arch/powerpc/platforms/pseries/iommu.c   |    8 ++++----
- arch/powerpc/sysdev/dart_iommu.c         |    2 +-
- 12 files changed, 49 insertions(+), 27 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
-index 67fcd7f..07ca8b5 100644
---- a/arch/powerpc/include/asm/device.h
-+++ b/arch/powerpc/include/asm/device.h
-@@ -15,7 +15,16 @@ struct dev_archdata {
+V1 - Updated per comments from Benjamin Herrenschmidt
+     <benh@kernel.crashing.org> and Grant Likely <grant.likely@secretlab.ca>.
+---
+ Documentation/powerpc/dts-bindings/xilinx.txt |   11 +
+ drivers/usb/host/Kconfig                      |   15 +-
+ drivers/usb/host/ehci-hcd.c                   |    5 +
+ drivers/usb/host/ehci-xilinx-of.c             |  302 +++++++++++++++++++++++++
+ 4 files changed, 331 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/usb/host/ehci-xilinx-of.c
+
+diff --git a/Documentation/powerpc/dts-bindings/xilinx.txt b/Documentation/powerpc/dts-bindings/xilinx.txt
+index 80339fe..ea68046 100644
+--- a/Documentation/powerpc/dts-bindings/xilinx.txt
++++ b/Documentation/powerpc/dts-bindings/xilinx.txt
+@@ -292,4 +292,15 @@
+        - reg-offset : A value of 3 is required
+        - reg-shift : A value of 2 is required
  
- 	/* DMA operations on that device */
- 	struct dma_map_ops	*dma_ops;
--	void			*dma_data;
++      vii) Xilinx USB Host controller
++
++      The Xilinx USB host controller is EHCI compatible but with a different
++      base address for the EHCI registers, and it is always a big-endian
++      USB Host controller. The hardware can be configured as high speed only,
++      or high speed/full speed hybrid.
++
++      Required properties:
++      - xlnx,support-usb-fs: A value 0 means the core is built as high speed
++                             only. A value 1 means the core also supports
++                             full speed devices.
+ 
+diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+index 1a920c7..95e4689 100644
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -90,14 +90,25 @@ config USB_EHCI_TT_NEWSCHED
+ 
+ config USB_EHCI_BIG_ENDIAN_MMIO
+ 	bool
+-	depends on USB_EHCI_HCD && (PPC_CELLEB || PPC_PS3 || 440EPX || ARCH_IXP4XX)
++	depends on USB_EHCI_HCD && (PPC_CELLEB || PPC_PS3 || 440EPX || ARCH_IXP4XX || XPS_USB_HCD_XILINX)
+ 	default y
+ 
+ config USB_EHCI_BIG_ENDIAN_DESC
+ 	bool
+-	depends on USB_EHCI_HCD && (440EPX || ARCH_IXP4XX)
++	depends on USB_EHCI_HCD && (440EPX || ARCH_IXP4XX || XPS_USB_HCD_XILINX)
+ 	default y
+ 
++config XPS_USB_HCD_XILINX
++	bool "Use Xilinx usb host EHCI controller core"
++	depends on USB_EHCI_HCD && (PPC32 || MICROBLAZE)
++	select USB_EHCI_BIG_ENDIAN_DESC
++	select USB_EHCI_BIG_ENDIAN_MMIO
++	---help---
++		Xilinx xps USB host controller core is EHCI compilant and has
++		transaction translator built-in. It can be configured to either
++		support both high speed and full speed devices, or high speed
++		devices only.
++
+ config USB_EHCI_FSL
+ 	bool "Support for Freescale on-chip EHCI USB controller"
+ 	depends on USB_EHCI_HCD && FSL_SOC
+diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+index 11c627c..7672624 100644
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -1107,6 +1107,11 @@ MODULE_LICENSE ("GPL");
+ #define OF_PLATFORM_DRIVER	ehci_hcd_ppc_of_driver
+ #endif
+ 
++#ifdef CONFIG_XPS_USB_HCD_XILINX
++#include "ehci-xilinx-of.c"
++#define OF_PLATFORM_DRIVER	ehci_hcd_xilinx_of_driver
++#endif
++
+ #ifdef CONFIG_PLAT_ORION
+ #include "ehci-orion.c"
+ #define	PLATFORM_DRIVER		ehci_orion_driver
+diff --git a/drivers/usb/host/ehci-xilinx-of.c b/drivers/usb/host/ehci-xilinx-of.c
+new file mode 100644
+index 0000000..f1ae855
+--- /dev/null
++++ b/drivers/usb/host/ehci-xilinx-of.c
+@@ -0,0 +1,302 @@
++/*
++ * EHCI HCD (Host Controller Driver) for USB.
++ *
++ * Bus Glue for Xilinx EHCI core on the of_platform bus
++ *
++ * Copyright (c) 2009 Xilinx, Inc.
++ *
++ * Based on "ehci-ppc-of.c" by Valentine Barshak <vbarshak@ru.mvista.com>
++ * and "ehci-ppc-soc.c" by Stefan Roese <sr@denx.de>
++ * and "ohci-ppc-of.c" by Sylvain Munaut <tnt@246tNt.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ */
++
++#include <linux/signal.h>
++
++#include <linux/of.h>
++#include <linux/of_platform.h>
++
++/**
++ * ehci_xilinx_of_setup - Initialize the device for ehci_reset()
++ * @hcd:	Pointer to the usb_hcd device to which the host controller bound
++ *
++ * called during probe() after chip reset completes.
++ */
++static int ehci_xilinx_of_setup(struct usb_hcd *hcd)
++{
++	struct ehci_hcd	*ehci = hcd_to_ehci(hcd);
++	int		retval;
++
++	retval = ehci_halt(ehci);
++	if (retval)
++		return retval;
++
++	retval = ehci_init(hcd);
++	if (retval)
++		return retval;
++
++	ehci->sbrn = 0x20;
++
++	return ehci_reset(ehci);
++}
++
++/**
++ * ehci_xilinx_port_handed_over - hand the port out if failed to enable it
++ * @hcd:	Pointer to the usb_hcd device to which the host controller bound
++ * @portnum:Port number to which the device is attached.
++ *
++ * This function is used as a place to tell the user that the Xilinx USB host
++ * controller does support LS devices. And in an HS only configuration, it
++ * does not support FS devices either. It is hoped that this can help a
++ * confused user.
++ *
++ * There are cases when the host controller fails to enable the port due to,
++ * for example, insufficient power that can be supplied to the device from
++ * the USB bus. In those cases, the messages printed here are not helpful.
++ */
++static int ehci_xilinx_port_handed_over(struct usb_hcd *hcd, int portnum)
++{
++	dev_warn(hcd->self.controller, "port %d cannot be enabled\n", portnum);
++	if (hcd->has_tt) {
++		dev_warn(hcd->self.controller,
++			"Maybe you have connected a low speed device?\n");
++
++		dev_warn(hcd->self.controller,
++			"We do not support low speed devices\n");
++	} else {
++		dev_warn(hcd->self.controller,
++			"Maybe your device is not a high speed device?\n");
++		dev_warn(hcd->self.controller,
++			"The USB host controller does not support full speed "
++			"nor low speed devices\n");
++		dev_warn(hcd->self.controller,
++			"You can reconfigure the host controller to have "
++			"full speed support\n");
++	}
++
++	return 0;
++}
++
++
++static const struct hc_driver ehci_xilinx_of_hc_driver = {
++	.description		= hcd_name,
++	.product_desc		= "OF EHCI",
++	.hcd_priv_size		= sizeof(struct ehci_hcd),
 +
 +	/*
-+	 * When an iommu is in use, dma_data is used as a ptr to the base of the
-+	 * iommu_table.  Otherwise, it is a simple numerical offset.
++	 * generic hardware linkage
 +	 */
-+	union {
-+		dma_addr_t	dma_offset;
-+		void		*iommu_table_base;
-+	} dma_data;
++	.irq			= ehci_irq,
++	.flags			= HCD_MEMORY | HCD_USB2,
 +
- #ifdef CONFIG_SWIOTLB
- 	dma_addr_t		max_direct_dma_addr;
- #endif
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 34b919f..e281dae 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -97,14 +97,20 @@ static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
-  * swiotlb use this function, but it is typically not used by implementations
-  * with an iommu.
-  */
--static inline unsigned long get_dma_offset(struct device *dev)
-+static inline dma_addr_t get_dma_offset(struct device *dev)
- {
- 	if (dev)
--		return (unsigned long)dev->archdata.dma_data;
-+		return dev->archdata.dma_data.dma_offset;
- 
- 	return PCI_DRAM_OFFSET;
- }
- 
-+static inline void set_dma_offset(struct device *dev, dma_addr_t off)
++	/*
++	 * basic lifecycle operations
++	 */
++	.reset			= ehci_xilinx_of_setup,
++	.start			= ehci_run,
++	.stop			= ehci_stop,
++	.shutdown		= ehci_shutdown,
++
++	/*
++	 * managing i/o requests and associated device resources
++	 */
++	.urb_enqueue		= ehci_urb_enqueue,
++	.urb_dequeue		= ehci_urb_dequeue,
++	.endpoint_disable	= ehci_endpoint_disable,
++
++	/*
++	 * scheduling support
++	 */
++	.get_frame_number	= ehci_get_frame,
++
++	/*
++	 * root hub support
++	 */
++	.hub_status_data	= ehci_hub_status_data,
++	.hub_control		= ehci_hub_control,
++#ifdef	CONFIG_PM
++	.bus_suspend		= ehci_bus_suspend,
++	.bus_resume		= ehci_bus_resume,
++#endif
++	.relinquish_port	= NULL,
++	.port_handed_over	= ehci_xilinx_port_handed_over,
++
++	.clear_tt_buffer_complete = ehci_clear_tt_buffer_complete,
++};
++
++/**
++ * ehci_hcd_xilinx_of_probe - Probe method for the USB host controller
++ * @op:		pointer to the of_device to which the host controller bound
++ * @match:	pointer to of_device_id structure, not used
++ *
++ * This function requests resources and sets up appropriate properties for the
++ * host controller. Because the Xilinx USB host controller can be configured
++ * as HS only or HS/FS only, it checks the configuration in the device tree
++ * entry, and sets an appropriate value for hcd->has_tt.
++ */
++static int __devinit
++ehci_hcd_xilinx_of_probe(struct of_device *op, const struct of_device_id *match)
 +{
-+	if (dev)
-+		dev->archdata.dma_data.dma_offset = off;
++	struct device_node *dn = op->node;
++	struct usb_hcd *hcd;
++	struct ehci_hcd	*ehci;
++	struct resource res;
++	int irq;
++	int rv;
++	int *value;
++
++	if (usb_disabled())
++		return -ENODEV;
++
++	dev_dbg(&op->dev, "initializing XILINX-OF USB Controller\n");
++
++	rv = of_address_to_resource(dn, 0, &res);
++	if (rv)
++		return rv;
++
++	hcd = usb_create_hcd(&ehci_xilinx_of_hc_driver, &op->dev,
++				"XILINX-OF USB");
++	if (!hcd)
++		return -ENOMEM;
++
++	hcd->rsrc_start = res.start;
++	hcd->rsrc_len = res.end - res.start + 1;
++
++	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len, hcd_name)) {
++		printk(KERN_ERR __FILE__ ": request_mem_region failed\n");
++		rv = -EBUSY;
++		goto err_rmr;
++	}
++
++	irq = irq_of_parse_and_map(dn, 0);
++	if (irq == NO_IRQ) {
++		printk(KERN_ERR __FILE__ ": irq_of_parse_and_map failed\n");
++		rv = -EBUSY;
++		goto err_irq;
++	}
++
++	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
++	if (!hcd->regs) {
++		printk(KERN_ERR __FILE__ ": ioremap failed\n");
++		rv = -ENOMEM;
++		goto err_ioremap;
++	}
++
++	ehci = hcd_to_ehci(hcd);
++
++	/* This core always has big-endian register interface and uses
++	 * big-endian memory descriptors.
++	 */
++	ehci->big_endian_mmio = 1;
++	ehci->big_endian_desc = 1;
++
++	/* Check whether the FS support option is selected in the hardware.
++	 */
++	value = (int *)of_get_property(dn, "xlnx,support-usb-fs", NULL);
++	if (value && (*value == 1)) {
++		ehci_dbg(ehci, "USB host controller supports FS devices\n");
++		hcd->has_tt = 1;
++	} else {
++		ehci_dbg(ehci,
++			"USB host controller is HS only\n");
++		hcd->has_tt = 0;
++	}
++
++	/* Debug registers are at the first 0x100 region
++	 */
++	ehci->caps = hcd->regs + 0x100;
++	ehci->regs = hcd->regs + 0x100 +
++			HC_LENGTH(ehci_readl(ehci, &ehci->caps->hc_capbase));
++
++	/* cache this readonly data; minimize chip reads */
++	ehci->hcs_params = ehci_readl(ehci, &ehci->caps->hcs_params);
++
++	rv = usb_add_hcd(hcd, irq, 0);
++	if (rv == 0)
++		return 0;
++
++	iounmap(hcd->regs);
++err_ioremap:
++	irq_dispose_mapping(irq);
++err_irq:
++	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
++err_rmr:
++	usb_put_hcd(hcd);
++
++	return rv;
 +}
 +
- /* this will be removed soon */
- #define flush_write_buffers()
- 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 7464c0d..edfc980 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -70,6 +70,16 @@ struct iommu_table {
- 
- struct scatterlist;
- 
-+static inline void set_iommu_table_base(struct device *dev, void *base)
++/**
++ * ehci_hcd_xilinx_of_remove - shutdown hcd and release resources
++ * @op:		pointer to of_device structure that is to be removed
++ *
++ * Remove the hcd structure, and release resources that has been requested
++ * during probe.
++ */
++static int ehci_hcd_xilinx_of_remove(struct of_device *op)
 +{
-+	dev->archdata.dma_data.iommu_table_base = base;
++	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
++	dev_set_drvdata(&op->dev, NULL);
++
++	dev_dbg(&op->dev, "stopping XILINX-OF USB Controller\n");
++
++	usb_remove_hcd(hcd);
++
++	iounmap(hcd->regs);
++	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
++
++	usb_put_hcd(hcd);
++
++	return 0;
 +}
 +
-+static inline void *get_iommu_table_base(struct device *dev)
++/**
++ * ehci_hcd_xilinx_of_shutdown - shutdown the hcd
++ * @op:		pointer to of_device structure that is to be removed
++ *
++ * Properly shutdown the hcd, call driver's shutdown routine.
++ */
++static int ehci_hcd_xilinx_of_shutdown(struct of_device *op)
 +{
-+	return dev->archdata.dma_data.iommu_table_base;
++	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
++
++	if (hcd->driver->shutdown)
++		hcd->driver->shutdown(hcd);
++
++	return 0;
 +}
 +
- /* Frees table for an individual device node */
- extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
- 
-diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-index 87ddb3f..37771a5 100644
---- a/arch/powerpc/kernel/dma-iommu.c
-+++ b/arch/powerpc/kernel/dma-iommu.c
-@@ -18,7 +18,7 @@
- static void *dma_iommu_alloc_coherent(struct device *dev, size_t size,
- 				      dma_addr_t *dma_handle, gfp_t flag)
- {
--	return iommu_alloc_coherent(dev, dev->archdata.dma_data, size,
-+	return iommu_alloc_coherent(dev, get_iommu_table_base(dev), size,
- 				    dma_handle, device_to_mask(dev), flag,
- 				    dev_to_node(dev));
- }
-@@ -26,7 +26,7 @@ static void *dma_iommu_alloc_coherent(struct device *dev, size_t size,
- static void dma_iommu_free_coherent(struct device *dev, size_t size,
- 				    void *vaddr, dma_addr_t dma_handle)
- {
--	iommu_free_coherent(dev->archdata.dma_data, size, vaddr, dma_handle);
-+	iommu_free_coherent(get_iommu_table_base(dev), size, vaddr, dma_handle);
- }
- 
- /* Creates TCEs for a user provided buffer.  The user buffer must be
-@@ -39,8 +39,8 @@ static dma_addr_t dma_iommu_map_page(struct device *dev, struct page *page,
- 				     enum dma_data_direction direction,
- 				     struct dma_attrs *attrs)
- {
--	return iommu_map_page(dev, dev->archdata.dma_data, page, offset, size,
--			      device_to_mask(dev), direction, attrs);
-+	return iommu_map_page(dev, get_iommu_table_base(dev), page, offset,
-+			      size, device_to_mask(dev), direction, attrs);
- }
- 
- 
-@@ -48,7 +48,7 @@ static void dma_iommu_unmap_page(struct device *dev, dma_addr_t dma_handle,
- 				 size_t size, enum dma_data_direction direction,
- 				 struct dma_attrs *attrs)
- {
--	iommu_unmap_page(dev->archdata.dma_data, dma_handle, size, direction,
-+	iommu_unmap_page(get_iommu_table_base(dev), dma_handle, size, direction,
- 			 attrs);
- }
- 
-@@ -57,7 +57,7 @@ static int dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
- 			    int nelems, enum dma_data_direction direction,
- 			    struct dma_attrs *attrs)
- {
--	return iommu_map_sg(dev, dev->archdata.dma_data, sglist, nelems,
-+	return iommu_map_sg(dev, get_iommu_table_base(dev), sglist, nelems,
- 			    device_to_mask(dev), direction, attrs);
- }
- 
-@@ -65,14 +65,14 @@ static void dma_iommu_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 		int nelems, enum dma_data_direction direction,
- 		struct dma_attrs *attrs)
- {
--	iommu_unmap_sg(dev->archdata.dma_data, sglist, nelems, direction,
-+	iommu_unmap_sg(get_iommu_table_base(dev), sglist, nelems, direction,
- 		       attrs);
- }
- 
- /* We support DMA to/from any memory page via the iommu */
- static int dma_iommu_dma_supported(struct device *dev, u64 mask)
- {
--	struct iommu_table *tbl = dev->archdata.dma_data;
-+	struct iommu_table *tbl = get_iommu_table_base(dev);
- 
- 	if (!tbl || tbl->it_offset > mask) {
- 		printk(KERN_INFO
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index e9f4840..bb8209e 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1117,7 +1117,7 @@ void __devinit pcibios_setup_bus_devices(struct pci_bus *bus)
- 
- 		/* Hook up default DMA ops */
- 		sd->dma_ops = pci_dma_ops;
--		sd->dma_data = (void *)PCI_DRAM_OFFSET;
-+		set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
- 
- 		/* Additional platform DMA/iommu setup */
- 		if (ppc_md.pci_dma_dev_setup)
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index bc7b41e..8d9275f 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -1233,7 +1233,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
- 		vio_cmo_set_dma_ops(viodev);
- 	else
- 		viodev->dev.archdata.dma_ops = &dma_iommu_ops;
--	viodev->dev.archdata.dma_data = vio_build_iommu_table(viodev);
-+	set_iommu_table_base(&viodev->dev, vio_build_iommu_table(viodev));
- 	set_dev_node(&viodev->dev, of_node_to_nid(of_node));
- 
- 	/* init generic 'struct device' fields: */
-diff --git a/arch/powerpc/platforms/cell/beat_iommu.c b/arch/powerpc/platforms/cell/beat_iommu.c
-index 93b0efd..39d361c 100644
---- a/arch/powerpc/platforms/cell/beat_iommu.c
-+++ b/arch/powerpc/platforms/cell/beat_iommu.c
-@@ -77,7 +77,7 @@ static void __init celleb_init_direct_mapping(void)
- static void celleb_dma_dev_setup(struct device *dev)
- {
- 	dev->archdata.dma_ops = get_pci_dma_ops();
--	dev->archdata.dma_data = (void *)celleb_dma_direct_offset;
-+	set_dma_offset(dev, celleb_dma_direct_offset);
- }
- 
- static void celleb_pci_dma_dev_setup(struct pci_dev *pdev)
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 416db17..ca5bfdf 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -657,15 +657,13 @@ static void cell_dma_dev_setup_fixed(struct device *dev);
- 
- static void cell_dma_dev_setup(struct device *dev)
- {
--	struct dev_archdata *archdata = &dev->archdata;
--
- 	/* Order is important here, these are not mutually exclusive */
- 	if (get_dma_ops(dev) == &dma_iommu_fixed_ops)
- 		cell_dma_dev_setup_fixed(dev);
- 	else if (get_pci_dma_ops() == &dma_iommu_ops)
--		archdata->dma_data = cell_get_iommu_table(dev);
-+		set_iommu_table_base(dev, cell_get_iommu_table(dev));
- 	else if (get_pci_dma_ops() == &dma_direct_ops)
--		archdata->dma_data = (void *)cell_dma_direct_offset;
-+		set_dma_offset(dev, cell_dma_direct_offset);
- 	else
- 		BUG();
- }
-@@ -973,11 +971,10 @@ static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask)
- 
- static void cell_dma_dev_setup_fixed(struct device *dev)
- {
--	struct dev_archdata *archdata = &dev->archdata;
- 	u64 addr;
- 
- 	addr = cell_iommu_get_fixed_address(dev) + dma_iommu_fixed_base;
--	archdata->dma_data = (void *)addr;
-+	set_dma_offset(dev, addr);
- 
- 	dev_dbg(dev, "iommu: fixed addr = %llx\n", addr);
- }
-diff --git a/arch/powerpc/platforms/iseries/iommu.c b/arch/powerpc/platforms/iseries/iommu.c
-index 6c1e101..9d53cb4 100644
---- a/arch/powerpc/platforms/iseries/iommu.c
-+++ b/arch/powerpc/platforms/iseries/iommu.c
-@@ -193,7 +193,7 @@ static void pci_dma_dev_setup_iseries(struct pci_dev *pdev)
- 		pdn->iommu_table = iommu_init_table(tbl, -1);
- 	else
- 		kfree(tbl);
--	pdev->dev.archdata.dma_data = pdn->iommu_table;
-+	set_iommu_table_base(&pdev->dev, pdn->iommu_table);
- }
- #else
- #define pci_dma_dev_setup_iseries	NULL
-diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platforms/pasemi/iommu.c
-index a0ff03a..7b1d608 100644
---- a/arch/powerpc/platforms/pasemi/iommu.c
-+++ b/arch/powerpc/platforms/pasemi/iommu.c
-@@ -189,7 +189,7 @@ static void pci_dma_dev_setup_pasemi(struct pci_dev *dev)
- 	}
- #endif
- 
--	dev->dev.archdata.dma_data = &iommu_table_iobmap;
-+	set_iommu_table_base(&dev->dev, &iommu_table_iobmap);
- }
- 
- static void pci_dma_bus_setup_null(struct pci_bus *b) { }
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 661c8e0..1a0000a 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -482,7 +482,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 				   phb->node);
- 		iommu_table_setparms(phb, dn, tbl);
- 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
--		dev->dev.archdata.dma_data = PCI_DN(dn)->iommu_table;
-+		set_iommu_table_base(&dev->dev, PCI_DN(dn)->iommu_table);
- 		return;
- 	}
- 
-@@ -494,7 +494,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 		dn = dn->parent;
- 
- 	if (dn && PCI_DN(dn))
--		dev->dev.archdata.dma_data = PCI_DN(dn)->iommu_table;
-+		set_iommu_table_base(&dev->dev, PCI_DN(dn)->iommu_table);
- 	else
- 		printk(KERN_WARNING "iommu: Device %s has no iommu table\n",
- 		       pci_name(dev));
-@@ -538,7 +538,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 	 */
- 	if (dma_window == NULL || pdn->parent == NULL) {
- 		pr_debug("  no dma window for device, linking to parent\n");
--		dev->dev.archdata.dma_data = PCI_DN(pdn)->iommu_table;
-+		set_iommu_table_base(&dev->dev, PCI_DN(pdn)->iommu_table);
- 		return;
- 	}
- 
-@@ -554,7 +554,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 		pr_debug("  found DMA window, table: %p\n", pci->iommu_table);
- 	}
- 
--	dev->dev.archdata.dma_data = pci->iommu_table;
-+	set_iommu_table_base(&dev->dev, pci->iommu_table);
- }
- #else  /* CONFIG_PCI */
- #define pci_dma_bus_setup_pSeries	NULL
-diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
-index 89639ec..ae3c4db 100644
---- a/arch/powerpc/sysdev/dart_iommu.c
-+++ b/arch/powerpc/sysdev/dart_iommu.c
-@@ -297,7 +297,7 @@ static void pci_dma_dev_setup_dart(struct pci_dev *dev)
- 	/* We only have one iommu table on the mac for now, which makes
- 	 * things simple. Setup all PCI devices to point to this table
- 	 */
--	dev->dev.archdata.dma_data = &iommu_table_dart;
-+	set_iommu_table_base(&dev->dev, &iommu_table_dart);
- }
- 
- static void pci_dma_bus_setup_dart(struct pci_bus *bus)
++
++static struct of_device_id ehci_hcd_xilinx_of_match[] = {
++		{.compatible = "xlnx,xps-usb-host-1.00.a",},
++		{.compatible = "xlnx,xps-usb-host-1.01.a",},
++		{.compatible = "xlnx,xps-usb-host-1.02.a",},
++	{},
++};
++MODULE_DEVICE_TABLE(of, ehci_hcd_xilinx_of_match);
++
++static struct of_platform_driver ehci_hcd_xilinx_of_driver = {
++	.name		= "xilinx-of-ehci",
++	.match_table	= ehci_hcd_xilinx_of_match,
++	.probe		= ehci_hcd_xilinx_of_probe,
++	.remove		= ehci_hcd_xilinx_of_remove,
++	.shutdown	= ehci_hcd_xilinx_of_shutdown,
++	.driver		= {
++		.name	= "xilinx-of-ehci",
++		.owner	= THIS_MODULE,
++	},
++};
 -- 
-1.6.0.6
+1.5.6.6
+
+
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
