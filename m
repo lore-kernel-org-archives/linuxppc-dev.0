@@ -1,27 +1,25 @@
 Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3A3C9B7B7D
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 17:45:57 +1000 (EST)
-Date: Mon, 21 Sep 2009 09:45:38 +0200
+	by ozlabs.org (Postfix) with ESMTPS id 9D3A7B7B7D
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 18:04:52 +1000 (EST)
+Received: from mx2.mail.elte.hu ([157.181.151.9])
+	by fallback.mail.elte.hu with esmtp (Exim) id 1Mpd3p-0005XO-92
+	from <mingo@elte.hu>
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 09:11:45 +0200
+Date: Mon, 21 Sep 2009 09:11:27 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: [PATCH] perf_counter/powerpc: Fix compilation after
 	perf_counter_overflow change
-Message-ID: <20090921074538.GA24535@elte.hu>
+Message-ID: <20090921071127.GA24467@elte.hu>
 References: <19127.8400.376239.586120@drongo.ozlabs.ibm.com>
-	<928CFBE8E7CB0040959E56B4EA41A77EC69BA5E0@irsmsx504.ger.corp.intel.com>
-	<20090921073043.GB24467@elte.hu>
-	<20090921073848.GA4649@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090921073848.GA4649@osiris.boeblingen.de.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"Metzger, Markus T" <markus.t.metzger@intel.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <19127.8400.376239.586120@drongo.ozlabs.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+	Markus Metzger <markus.t.metzger@intel.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,155 +30,77 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-* Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+* Paul Mackerras <paulus@samba.org> wrote:
 
-> On Mon, Sep 21, 2009 at 09:30:43AM +0200, Ingo Molnar wrote:
-> > 
-> > * Metzger, Markus T <markus.t.metzger@intel.com> wrote:
-> > 
-> > > >-----Original Message-----
-> > > >From: Paul Mackerras [mailto:paulus@samba.org]
-> > > >Sent: Monday, September 21, 2009 8:45 AM
-> > > 
-> > > 
-> > > >Markus, please take care in future to mention it in the changelog if
-> > > >your patches touch definitions used by other architectures.  If you
-> > > >could go so far as to use grep a bit more and fix up other
-> > > >architectures' callsites for the things you're changing, that would be
-> > > >very much appreciated.  Thanks.
-> > > 
-> > > I'm sorry I missed that.
-> > > 
-> > > There's one more place in arch/sparc/.
-> > > The below patch should fix it, but I have no means to test it.
-> > 
-> > You also missed a third thing:
-> > 
-> > +static inline int
-> > +perf_output_begin(struct perf_output_handle *handle, struct perf_counter *c,
-> > +                 unsigned int size, int nmi, int sample)               { }
-> > 
-> > an 'int' function returning void ...
-> > 
-> > Plus all the !PERF_COUNTERS branch of empty inlines is pointless - these 
-> > facilities are used by perfcounters code only. I fixed that too.
+> Commit 5622f295 ("x86, perf_counter, bts: Optimize BTS overflow
+> handling") removed the regs field from struct perf_sample_data and
+> added a regs parameter to perf_counter_overflow().  This breaks the
+> build on powerpc as reported by Sachin Sant:
 > 
-> Hi Ingo,
+> arch/powerpc/kernel/perf_counter.c: In function 'record_and_restart':
+> arch/powerpc/kernel/perf_counter.c:1165: error: unknown field 'regs' specified in initializer
+> cc1: warnings being treated as errors
+> arch/powerpc/kernel/perf_counter.c:1165: error: initialization makes integer from pointer without a cast
+> arch/powerpc/kernel/perf_counter.c:1173: error: too few arguments to function 'perf_counter_overflow'
+> make[1]: *** [arch/powerpc/kernel/perf_counter.o] Error 1
+> make: *** [arch/powerpc/kernel] Error 2
 > 
-> did you fix all of these warnings for !PERF_COUNTERS?
+> This adjusts arch/powerpc/kernel/perf_counter.c to correspond with the
+> new struct perf_sample_data and perf_counter_overflow().
 > 
-> include/linux/perf_counter.h: In function 'perf_output_begin':
-> include/linux/perf_counter.h:854: warning: no return statement in function returning non-void
-> include/linux/perf_counter.h: At top level:
-> include/linux/perf_counter.h:863: warning: 'struct perf_sample_data' declared inside parameter list
-> include/linux/perf_counter.h:863: warning: its scope is only this definition or declaration, which is probably not what you want
-> include/linux/perf_counter.h:868: warning: 'struct perf_sample_data' declared inside parameter list
+> Reported-by: Sachin Sant <sachinp@in.ibm.com>
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-Yes. The full commit is below.
+Applied, thanks Paul.
+
+> ---
+>
+> I missed this problem when the "x86, perf_counter, bts: Optimize BTS 
+> overflow handling" patch was posted because the headline made it seem 
+> entirely x86-specific, and the changes to struct perf_sample_data and 
+> perf_counter_overflow() were not mentioned in the changelog.
+> 
+> Markus, please take care in future to mention it in the changelog if 
+> your patches touch definitions used by other architectures.  If you 
+> could go so far as to use grep a bit more and fix up other 
+> architectures' callsites for the things you're changing, that would be 
+> very much appreciated.  Thanks.
+
+Yes, that should be done in general - still, nothing beats actual 
+testing.
+
+Paul, you might also want to test the perfcounter bits of -tip on 
+PowerPC a bit more frequently - this patch was there for 5 days before i 
+sent it to Linus.
+
+Cross-builds didnt catch it as perfcounters isnt enabled by default in 
+any of the powerpc defconfigs:
+
+phoenix:~/linux/linux> grep -w CONFIG_PERF_COUNTERS arch/powerpc/configs/*
+arch/powerpc/configs/adder875_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/c2k_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/ep8248e_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/ep88xc_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/linkstation_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mgcoge_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mgsuvd_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc7448_hpc2_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc8272_ads_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc83xx_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc85xx_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc85xx_smp_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc866_ads_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc86xx_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/mpc885_ads_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/pq2fads_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/prpmc2800_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/ps3_defconfig:# CONFIG_PERF_COUNTERS is not set
+arch/powerpc/configs/storcenter_defconfig:# CONFIG_PERF_COUNTERS is not set
+
+There's not that many PowerPC users so all extra testing help would be 
+much welcome. Also, enabling them in the powerpc defconfigs would be 
+helpful as well.
+
+Thanks,
 
 	Ingo
-
----------------->
->From cd74c86bdf705f824d494a2bbda393d1d562b40a Mon Sep 17 00:00:00 2001
-From: Paul Mackerras <paulus@samba.org>
-Date: Mon, 21 Sep 2009 16:44:32 +1000
-Subject: [PATCH] perf_counter, powerpc, sparc: Fix compilation after perf_counter_overflow() change
-
-Commit 5622f295 ("x86, perf_counter, bts: Optimize BTS overflow
-handling") removed the regs field from struct perf_sample_data and
-added a regs parameter to perf_counter_overflow().  This breaks the
-build on powerpc (and Sparc) as reported by Sachin Sant:
-
-  arch/powerpc/kernel/perf_counter.c: In function 'record_and_restart':
-  arch/powerpc/kernel/perf_counter.c:1165: error: unknown field 'regs' specified in initializer
-
-This adjusts arch/powerpc/kernel/perf_counter.c to correspond with the
-new struct perf_sample_data and perf_counter_overflow().
-
-[ v2: also fix Sparc, Markus Metzger <markus.t.metzger@intel.com> ]
-
-Reported-by: Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: Markus Metzger <markus.t.metzger@intel.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <19127.8400.376239.586120@drongo.ozlabs.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/powerpc/kernel/perf_counter.c |    3 +--
- arch/sparc/kernel/perf_counter.c   |    3 +--
- include/linux/perf_counter.h       |   17 -----------------
- 3 files changed, 2 insertions(+), 21 deletions(-)
-
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 7ceefaf..5ccf9bc 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -1162,7 +1162,6 @@ static void record_and_restart(struct perf_counter *counter, unsigned long val,
- 	 */
- 	if (record) {
- 		struct perf_sample_data data = {
--			.regs	= regs,
- 			.addr	= 0,
- 			.period	= counter->hw.last_period,
- 		};
-@@ -1170,7 +1169,7 @@ static void record_and_restart(struct perf_counter *counter, unsigned long val,
- 		if (counter->attr.sample_type & PERF_SAMPLE_ADDR)
- 			perf_get_data_addr(regs, &data.addr);
- 
--		if (perf_counter_overflow(counter, nmi, &data)) {
-+		if (perf_counter_overflow(counter, nmi, &data, regs)) {
- 			/*
- 			 * Interrupts are coming too fast - throttle them
- 			 * by setting the counter to 0, so it will be
-diff --git a/arch/sparc/kernel/perf_counter.c b/arch/sparc/kernel/perf_counter.c
-index 09de403..b1265ce 100644
---- a/arch/sparc/kernel/perf_counter.c
-+++ b/arch/sparc/kernel/perf_counter.c
-@@ -493,7 +493,6 @@ static int __kprobes perf_counter_nmi_handler(struct notifier_block *self,
- 
- 	regs = args->regs;
- 
--	data.regs = regs;
- 	data.addr = 0;
- 
- 	cpuc = &__get_cpu_var(cpu_hw_counters);
-@@ -513,7 +512,7 @@ static int __kprobes perf_counter_nmi_handler(struct notifier_block *self,
- 		if (!sparc_perf_counter_set_period(counter, hwc, idx))
- 			continue;
- 
--		if (perf_counter_overflow(counter, 1, &data))
-+		if (perf_counter_overflow(counter, 1, &data, regs))
- 			sparc_pmu_disable_counter(hwc, idx);
- 	}
- 
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index bd34100..740caad 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -849,23 +849,6 @@ static inline void perf_counter_comm(struct task_struct *tsk)		{ }
- static inline void perf_counter_fork(struct task_struct *tsk)		{ }
- static inline void perf_counter_init(void)				{ }
- 
--static inline int
--perf_output_begin(struct perf_output_handle *handle, struct perf_counter *c,
--		  unsigned int size, int nmi, int sample)		{ }
--static inline void perf_output_end(struct perf_output_handle *handle)	{ }
--static inline void
--perf_output_copy(struct perf_output_handle *handle,
--		 const void *buf, unsigned int len)			{ }
--static inline void
--perf_output_sample(struct perf_output_handle *handle,
--		   struct perf_event_header *header,
--		   struct perf_sample_data *data,
--		   struct perf_counter *counter)			{ }
--static inline void
--perf_prepare_sample(struct perf_event_header *header,
--		    struct perf_sample_data *data,
--		    struct perf_counter *counter,
--		    struct pt_regs *regs)				{ }
- #endif
- 
- #define perf_output_put(handle, x) \
