@@ -1,19 +1,21 @@
-Return-Path: <Sylvain.Cote@verint.com>
-Received: from exprod7og105.obsmtp.com (exprod7og105.obsmtp.com [64.18.2.163])
-	by ozlabs.org (Postfix) with SMTP id 4F452B7B6F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Sep 2009 23:45:09 +1000 (EST)
-From: "Cote, Sylvain" <Sylvain.Cote@verint.com>
-To: Stefan Roese <sr@denx.de>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 21 Sep 2009 09:44:30 -0400
-Subject: RE: PPC_4xx synopsy USB driver
-Message-ID: <579B119545DAEF4689C8FBEEFEC5793F01FA07D05186@ATLMBX.verint.corp.verintsystems.com>
-References: <579B119545DAEF4689C8FBEEFEC5793F01FA07D04F37@ATLMBX.verint.corp.verintsystems.com>
-	<200909210713.29238.sr@denx.de>
-In-Reply-To: <200909210713.29238.sr@denx.de>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f203.google.com (mail-yw0-f203.google.com
+	[209.85.211.203]) by ozlabs.org (Postfix) with ESMTP id 4F346B7BB3
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 00:14:41 +1000 (EST)
+Received: by ywh41 with SMTP id 41so3908533ywh.1
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 07:14:39 -0700 (PDT)
 MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20090915221050.0DA0F2C005E@mail34-va3.bigfish.com>
+References: <20090915221050.0DA0F2C005E@mail34-va3.bigfish.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 21 Sep 2009 07:14:18 -0700
+Message-ID: <fa686aa40909210714j428aa524qacc7a83f40db411b@mail.gmail.com>
+Subject: Re: [PATCH] USB: Add support for Xilinx USB host controller
+To: Julie Zhu <julie.zhu@xilinx.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-usb@vger.kernel.org, gregkh@suse.de, juliez@xilinx.com,
+	linuxppc-dev@ozlabs.org, john.linn@xilinx.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Stefan,
+On Tue, Sep 15, 2009 at 3:10 PM, Julie Zhu <julie.zhu@xilinx.com> wrote:
+> Add bus glue driver for Xilinx USB host controller. The controller can be
+> configured as HS only or HS/FS hybrid. The driver uses the device tree fi=
+le
+> to configure the driver according to the setting in the hardware system.
+>
+> This driver has been tested with usbtest using the NET2280 PCI card.
+>
+> Signed-off-by: Julie Zhu <julie.zhu@xilinx.com>
 
+As Ben said, this is nice tight code.  Two comments below.
 
-On Friday 18 September 2009 17:50:24 Cote, Sylvain wrote:
-> USB gadget support --> y
->             Maximum VBUS power usage =3D 500
->             Synopsys DWC OTG controller
->             Synopsys DWC OTG internal DMA mode --> y
->             USB gadget --> M
->             gadget zero --> M
->             Ethernet Gadget --> M
->             RNDIS support --> y
->=20
-> Any help will be appreciated
+> +/**
+> + * ehci_xilinx_port_handed_over - hand the port out if failed to enable =
+it
+> + * @hcd: =A0 =A0 =A0 Pointer to the usb_hcd device to which the host con=
+troller bound
+> + * @portnum:Port number to which the device is attached.
+> + *
+> + * This function is used as a place to tell the user that the Xilinx USB=
+ host
+> + * controller does support LS devices. And in an HS only configuration, =
+it
+> + * does not support FS devices neither. It is hoped that this can help a
 
-> Looks good so far. I suspect that the only thing missing for your 405EX=20
-> custom=20
-> board is the following line in the arch/powerpc/sysdev/Makefile:
+s/neither/either
 
-> obj-$(CONFIG_KILAUEA)           +=3D amcc-usbotg.o
+[...]
+> +static struct of_device_id ehci_hcd_xilinx_of_match[] =3D {
+> + =A0 =A0 =A0 {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .compatible =3D "usb-ehci",
+> + =A0 =A0 =A0 },
 
-I have created a new platform (platform using 405ex).  I have missed this o=
-ne for my new platform.  Do you know if there is a compilation switch that =
-could be more generic (like CONFIG_40x) for the usbotg?
+This looks wrong.  Since this driver only works with Xilinx USB controllers=
+,
+it should be binding against "xlnx,xps-usb-host-1.00.a", and the meaning of
+that binding needs to be documented in Documentation/powerpc/dts-bindings.
 
-> to enable the device-tree to platform-device driver wrapper for the USB-
-> OTG=20
-> resources.
+Having this driver bind against the generic "usb-ehci" will cause conflicts
+with the ehci-ppc-of driver.
 
-Thanks you,
+Cheers,
+g.
 
-Your help has been appreciated.
-
-Sylvain
-
-This electronic message may contain proprietary and confidential informat=
-ion of Verint Systems Inc., its affiliates and/or subsidiaries.
-The information is intended to be for the use of the individual(s) or
-entity(ies) named above.  If you are not the intended recipient (or autho=
-rized to receive this e-mail for the intended recipient), you may not use=
-, copy, disclose or distribute to anyone this message or any information =
-contained in this message.  If you have received this electronic message =
-in error, please notify us by replying to this e-mail.
-=0D
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
