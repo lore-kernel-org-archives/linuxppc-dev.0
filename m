@@ -1,20 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id ED46FB70B3
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 08:56:14 +1000 (EST)
-Date: Tue, 22 Sep 2009 02:56:12 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] [V1] USB: Add support for Xilinx USB host controller
-Message-ID: <20090921225612.GA32278@oksana.dev.rtsoft.ru>
-References: <20090921193821.CB9DF1620046@mail78-sin.bigfish.com>
-	<1253566180.7103.147.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1253566180.7103.147.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Julie Zhu <julie.zhu@xilinx.com>,
-	linux-usb@vger.kernel.org, john.linn@xilinx.com, greg@kroah.com
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <phazarik@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.90])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C1994B70B3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 22 Sep 2009 08:57:09 +1000 (EST)
+From: "Prodyut Hazarika" <phazarika@amcc.com>
+To: <netdev@vger.kernel.org>
+Subject: [PATCH 2/2] ibm_newemac: MAL Coalescing in
+	Canyonlands/Kilauea/Glacier dts
+Date: Mon, 21 Sep 2009 15:47:38 -0700
+Message-ID: <1253573258-1900-1-git-send-email-phazarika@amcc.com>
+Cc: Victor Gallardo <vgallardo@amcc.com>, Feng Kan <fkan@amcc.com>,
+	lada.podivin@gmail.com, Loc Ho <lho@amcc.com>,
+	Prodyut Hazarika <phazarika@amcc.com>, bhutchings@solarflare.com,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +25,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 22, 2009 at 06:49:40AM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-09-21 at 13:38 -0600, Julie Zhu wrote:
-> 
-> > +	iounmap(hcd->regs);
-> > +err_ioremap:
-> > +	irq_dispose_mapping(irq);
-> 
-> You missed that one too :-)
-> 
-> I'm actually considering making irq_dispose_mapping() a private
-> API and rename it to something like __irq_dispose_mapping() :-)
+Support for MAL interrupt coalescing in Canyonlands, Kilauea & Glacier 
+dts.
+MAL driver falls back to EOB IRQ if Coalescing IRQ mapping missing in dts
 
-I.e. turning irq_dispose_mapping() into nop, and __-prefixed
-(private) variant would actually dispose irq mapping?
+Signed-off-by: Prodyut Hazarika <phazarika@amcc.com>
+Acked-by: Victor Gallardo <vgallardo@amcc.com>
+Acked-by: Feng Kan <fkan@amcc.com>
 
-The nop part is important, because otherwise having no cleanup
-variant of an allocation/mapping routine feels odd and might raise
-questions by non-ppc people (e.g. subsystem maintainers when they
-see no cleanup path for such a call).
+---
+ arch/powerpc/boot/dts/canyonlands.dts |    6 +++++-
+ arch/powerpc/boot/dts/glacier.dts     |   10 +++++++++-
+ arch/powerpc/boot/dts/kilauea.dts     |    8 ++++++--
+ 3 files changed, 20 insertions(+), 4 deletions(-)
 
-And if we'll want to refcount irq mappings in the future, some
-drivers will be ready without modifications, i.e. the ones that
-got irq_dispose_mapping() wrong:
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts 
+b/arch/powerpc/boot/dts/canyonlands.dts
+index c920170..5803a5b 100644
+--- a/arch/powerpc/boot/dts/canyonlands.dts
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -146,7 +146,11 @@
+ 					/*RXEOB*/ 0x7 0x4
+ 					/*SERR*/  0x3 0x4
+ 					/*TXDE*/  0x4 0x4
+-					/*RXDE*/  0x5 0x4>;
++					/*RXDE*/  0x5 0x4
++					/*TX0 COAL*/  0x8 0x2
++					/*TX1 COAL*/  0x9 0x2
++					/*RX0 COAL*/  0xc 0x2
++					/*RX1 COAL*/  0xd 0x2 >;
+ 		};
 
-$ git grep irq_dispose drivers/ | wc -l
-42
+ 		USB0: ehci@bffd0400 {
+diff --git a/arch/powerpc/boot/dts/glacier.dts 
+b/arch/powerpc/boot/dts/glacier.dts
+index f3787a2..9af473f 100644
+--- a/arch/powerpc/boot/dts/glacier.dts
++++ b/arch/powerpc/boot/dts/glacier.dts
+@@ -130,7 +130,15 @@
+ 					/*RXEOB*/ 0x7 0x4
+ 					/*SERR*/  0x3 0x4
+ 					/*TXDE*/  0x4 0x4
+-					/*RXDE*/  0x5 0x4>;
++					/*RXDE*/  0x5 0x4
++					/*TX0 COAL*/  0x8 0x2
++					/*TX1 COAL*/  0x9 0x2
++					/*TX2 COAL*/  0xa 0x2
++					/*TX3 COAL*/  0xb 0x2
++					/*RX0 COAL*/  0xc 0x2
++					/*RX1 COAL*/  0xd 0x2
++					/*RX2 COAL*/  0xe 0x2
++					/*RX3 COAL*/  0xf 0x2 >;
+ 			desc-base-addr-high = <0x8>;
+ 		};
 
-Thanks,
+diff --git a/arch/powerpc/boot/dts/kilauea.dts 
+b/arch/powerpc/boot/dts/kilauea.dts
+index c465614..14057a2 100644
+--- a/arch/powerpc/boot/dts/kilauea.dts
++++ b/arch/powerpc/boot/dts/kilauea.dts
+@@ -110,7 +110,7 @@
+ 			num-tx-chans = <2>;
+ 			num-rx-chans = <2>;
+ 			interrupt-parent = <&MAL0>;
+-			interrupts = <0x0 0x1 0x2 0x3 0x4>;
++			interrupts = <0x0 0x1 0x2 0x3 0x4 0x5 0x6 0x7 0x8>;
+ 			#interrupt-cells = <1>;
+ 			#address-cells = <0>;
+ 			#size-cells = <0>;
+@@ -118,7 +118,11 @@
+ 					/*RXEOB*/ 0x1 &UIC0 0xb 0x4
+ 					/*SERR*/  0x2 &UIC1 0x0 0x4
+ 					/*TXDE*/  0x3 &UIC1 0x1 0x4
+-					/*RXDE*/  0x4 &UIC1 0x2 0x4>;
++					/*RXDE*/  0x4 &UIC1 0x2 0x4
++					/*TX0 COAL*/  0x5 &UIC2 0x7 0x2
++					/*TX1 COAL*/  0x6 &UIC2 0x8 0x2
++					/*RX0 COAL*/  0x7 &UIC2 0x9 0x2
++					/*RX1 COAL*/  0x8 &UIC2 0xa 0x2 >;
+ 			interrupt-map-mask = <0xffffffff>;
+ 		};
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.6
+--------------------------------------------------------
+
+CONFIDENTIALITY NOTICE: This e-mail message, including any attachments, is 
+for the sole use of the intended recipient(s) and contains information 
+that is confidential and proprietary to AppliedMicro Corporation or its 
+subsidiaries. It is to be used solely for the purpose of furthering the 
+parties' business relationship. All unauthorized review, use, disclosure 
+or distribution is prohibited. If you are not the intended recipient, 
+please contact the sender by reply e-mail and destroy all copies of the 
+original message.
