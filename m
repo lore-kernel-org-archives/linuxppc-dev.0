@@ -1,17 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <Sylvain.Cote@verint.com>
+Received: from exprod7og105.obsmtp.com (exprod7og105.obsmtp.com [64.18.2.163])
+	by ozlabs.org (Postfix) with SMTP id 4F452B7B6F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 21 Sep 2009 23:45:09 +1000 (EST)
+From: "Cote, Sylvain" <Sylvain.Cote@verint.com>
+To: Stefan Roese <sr@denx.de>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 21 Sep 2009 09:44:30 -0400
+Subject: RE: PPC_4xx synopsy USB driver
+Message-ID: <579B119545DAEF4689C8FBEEFEC5793F01FA07D05186@ATLMBX.verint.corp.verintsystems.com>
+References: <579B119545DAEF4689C8FBEEFEC5793F01FA07D04F37@ATLMBX.verint.corp.verintsystems.com>
+	<200909210713.29238.sr@denx.de>
+In-Reply-To: <200909210713.29238.sr@denx.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <19127.24899.576444.303678@cargo.ozlabs.ibm.com>
-Date: Mon, 21 Sep 2009 21:19:31 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] perf_counter/powerpc: Fix compilation after
-	perf_counter_overflow change
-In-Reply-To: <20090921071127.GA24467@elte.hu>
-References: <19127.8400.376239.586120@drongo.ozlabs.ibm.com>
-	<20090921071127.GA24467@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-	Markus Metzger <markus.t.metzger@intel.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,20 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ingo Molnar writes:
+Hi Stefan,
 
-> Paul, you might also want to test the perfcounter bits of -tip on 
-> PowerPC a bit more frequently - this patch was there for 5 days before i 
-> sent it to Linus.
 
-Yes, I'll try to do that in future.
+On Friday 18 September 2009 17:50:24 Cote, Sylvain wrote:
+> USB gadget support --> y
+>             Maximum VBUS power usage =3D 500
+>             Synopsys DWC OTG controller
+>             Synopsys DWC OTG internal DMA mode --> y
+>             USB gadget --> M
+>             gadget zero --> M
+>             Ethernet Gadget --> M
+>             RNDIS support --> y
+>=20
+> Any help will be appreciated
 
-I hope I didn't come across as blaming anyone for anything - that
-wasn't my intention at all.
+> Looks good so far. I suspect that the only thing missing for your 405EX=20
+> custom=20
+> board is the following line in the arch/powerpc/sysdev/Makefile:
 
-> Cross-builds didnt catch it as perfcounters isnt enabled by default in 
-> any of the powerpc defconfigs:
+> obj-$(CONFIG_KILAUEA)           +=3D amcc-usbotg.o
 
-I'll get that fixed too.
+I have created a new platform (platform using 405ex).  I have missed this o=
+ne for my new platform.  Do you know if there is a compilation switch that =
+could be more generic (like CONFIG_40x) for the usbotg?
 
-Paul.
+> to enable the device-tree to platform-device driver wrapper for the USB-
+> OTG=20
+> resources.
+
+Thanks you,
+
+Your help has been appreciated.
+
+Sylvain
+
+This electronic message may contain proprietary and confidential informat=
+ion of Verint Systems Inc., its affiliates and/or subsidiaries.
+The information is intended to be for the use of the individual(s) or
+entity(ies) named above.  If you are not the intended recipient (or autho=
+rized to receive this e-mail for the intended recipient), you may not use=
+, copy, disclose or distribute to anyone this message or any information =
+contained in this message.  If you have received this electronic message =
+in error, please notify us by replying to this e-mail.
+=0D
