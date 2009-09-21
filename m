@@ -1,18 +1,18 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id D8D39B70B3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Sep 2009 03:03:11 +1000 (EST)
-Date: Mon, 21 Sep 2009 18:42:07 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: "dibacco@libero.it" <dibacco@libero.it>
-Subject: Re: High load average  but low cpu (xenomai can be the explanation?)
-Message-ID: <20090921164207.GA26996@iram.es>
-References: <17851044.2911671253545985517.JavaMail.root@wmail27>
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 66E5FB7B65
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 03:05:39 +1000 (EST)
+Message-ID: <4AB7A411.3030406@ovro.caltech.edu>
+Date: Mon, 21 Sep 2009 09:04:33 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17851044.2911671253545985517.JavaMail.root@wmail27>
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Felix Radensky <felix@embedded-sol.com>
+Subject: Re: MPC8536 PCI rescan to discover FPGA
+References: <4AB79D41.60902@embedded-sol.com>
+In-Reply-To: <4AB79D41.60902@embedded-sol.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Ira Snyder <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,17 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 21, 2009 at 05:13:05PM +0200, dibacco@libero.it wrote:
-> Hi,
+Hi Felix,
+
+> On a custom MPC8536 board running linux-2.6.31,
+> I'd like to load FPGA code from linux and then rescan
+> PCI-E bus to discover FPGA device. Is that possible ?
+> When linux boots FPGA is not loaded, so initial PCI
+> scan does not detect it.
 > 
-> I have an MPC880 @133MHz. If I look into the load (with uptime) I get 
-> values around 3.0 but my CPU is always under 5 percent (top). How could I 
-> explain this? I'm using linux 2.6.19 with xenomai but no xenomai application is 
-> running at all. I have a cramfs on a nor flash. What could be the problem? If I 
-> kill the process I developed the average load goes down.
+> I've tried playing with /sys/bus/pci/rescan and 
+> /sys/bus/pci/devices/.../rescan
+> but didn't have much success.
 
-What's the process doing when it's not running?
+This can be made to work using the kernel hot-swap
+interface. PCI devices have an ENUM# interrupt that
+they assert when inserted or extracted, and the host
+hot-swap driver can be hooked up to it. PCI-E may
+have a similar mechanism, if it does, then when your
+FPGA configures as a PCI-E device, it can assert that
+interrupt line (or send the appropriate PCI-E
+message to simulate that interrupt).
 
-Under top, what is the percentage of wait (x.x%wa)?
+However, even if PCI-E does not have the concept of
+an ENUM# interrupt there is a way to generate a fake
+hot-swap event and generate a re-scan of the PCI bus.
 
-	Gabriel
+I haven't tested the kernel hot-swap interface, but I
+know that Ira did, so I'll cc him on this mail, and he
+can let you know what he tested.
+
+Cheers,
+Dave
