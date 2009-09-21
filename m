@@ -2,22 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 69894B7B79
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Sep 2009 09:42:12 +1000 (EST)
-Subject: Re: [PATCH 1/2] ibm_newemac: Add Support for MAL Interrupt Coalescing
+	by ozlabs.org (Postfix) with ESMTPS id 2ED39B7B84
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 09:43:23 +1000 (EST)
+Subject: Re: [PATCH] [V1] USB: Add support for Xilinx USB host controller
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Prodyut Hazarika <phazarika@amcc.com>
-In-Reply-To: <1253573245-1867-1-git-send-email-phazarika@amcc.com>
-References: <1253573245-1867-1-git-send-email-phazarika@amcc.com>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20090921225612.GA32278@oksana.dev.rtsoft.ru>
+References: <20090921193821.CB9DF1620046@mail78-sin.bigfish.com>
+	<1253566180.7103.147.camel@pasglop>
+	<20090921225612.GA32278@oksana.dev.rtsoft.ru>
 Content-Type: text/plain
-Date: Tue, 22 Sep 2009 09:41:54 +1000
-Message-Id: <1253576514.7103.165.camel@pasglop>
+Date: Tue, 22 Sep 2009 09:43:16 +1000
+Message-Id: <1253576596.7103.166.camel@pasglop>
 Mime-Version: 1.0
-Cc: Victor Gallardo <vgallardo@amcc.com>, Feng Kan <fkan@amcc.com>,
-	netdev@vger.kernel.org, lada.podivin@gmail.com,
-	Loc Ho <lho@amcc.com>, bhutchings@solarflare.com,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: linuxppc-dev@ozlabs.org, Julie Zhu <julie.zhu@xilinx.com>,
+	linux-usb@vger.kernel.org, john.linn@xilinx.com, greg@kroah.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,120 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-09-21 at 15:47 -0700, Prodyut Hazarika wrote:
-> Support for Hardware Interrupt coalescing in MAL.
-> Coalescing is supported on the newer revs of 460EX/GT and 405EX.
-> The MAL driver falls back to EOB IRQ if coalescing not supported
+On Tue, 2009-09-22 at 02:56 +0400, Anton Vorontsov wrote:
+> On Tue, Sep 22, 2009 at 06:49:40AM +1000, Benjamin Herrenschmidt wrote:
+> > On Mon, 2009-09-21 at 13:38 -0600, Julie Zhu wrote:
+> > 
+> > > +	iounmap(hcd->regs);
+> > > +err_ioremap:
+> > > +	irq_dispose_mapping(irq);
+> > 
+> > You missed that one too :-)
+> > 
+> > I'm actually considering making irq_dispose_mapping() a private
+> > API and rename it to something like __irq_dispose_mapping() :-)
 > 
-> Signed-off-by: Prodyut Hazarika <phazarika@amcc.com>
-> Acked-by: Victor Gallardo <vgallardo@amcc.com>
-> Acked-by: Feng Kan <fkan@amcc.com>
+> I.e. turning irq_dispose_mapping() into nop, and __-prefixed
+> (private) variant would actually dispose irq mapping?
+> 
+> The nop part is important, because otherwise having no cleanup
+> variant of an allocation/mapping routine feels odd and might raise
+> questions by non-ppc people (e.g. subsystem maintainers when they
+> see no cleanup path for such a call).
+> 
+> And if we'll want to refcount irq mappings in the future, some
+> drivers will be ready without modifications, i.e. the ones that
+> got irq_dispose_mapping() wrong:
 
-There's an awful lot of ifdef based on the CPU type in there. This is
-not right.
+Yup. I agree. I'll look into it
 
-What happens if we build a kernel that is supposed to boot with two
-different variants of 405 or 440 ?
-
-All of this should be runtime features.
-
-ie:
-
-> #ifdef CONFIG_IBM_NEW_EMAC_INTR_COALESCE
-> +static inline void mal_enable_coal(struct mal_instance *mal)
-> +{
-> +	unsigned int val;
-> +#if defined(CONFIG_405EX)
-> +	/* Clear the counters */
-> +	val = SDR0_ICC_FLUSH0 | SDR0_ICC_FLUSH1;
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRTX, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRRX, val);
-> +
-> +	/* Set Tx/Rx Timer values */
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRTX0, CONFIG_IBM_NEW_EMAC_TX_COAL_TIMER);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRTX1, CONFIG_IBM_NEW_EMAC_TX_COAL_TIMER);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRRX0, CONFIG_IBM_NEW_EMAC_RX_COAL_TIMER);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRRX1, CONFIG_IBM_NEW_EMAC_RX_COAL_TIMER);
-> +
-> +	/* Enable the Tx/Rx Coalescing interrupt */
-> +	val = ((CONFIG_IBM_NEW_EMAC_TX_COAL_COUNT & COAL_FRAME_MASK)
-> +			<< SDR0_ICC_FTHR0_SHIFT) |
-> +		((CONFIG_IBM_NEW_EMAC_TX_COAL_COUNT & COAL_FRAME_MASK)
-> +			<< SDR0_ICC_FTHR1_SHIFT);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRTX, val);
-> +
-> +	val = ((CONFIG_IBM_NEW_EMAC_RX_COAL_COUNT & COAL_FRAME_MASK)
-> +			<< SDR0_ICC_FTHR0_SHIFT) |
-> +		((CONFIG_IBM_NEW_EMAC_RX_COAL_COUNT & COAL_FRAME_MASK)
-> +			<< SDR0_ICC_FTHR1_SHIFT);
-> +
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRRX, val);
-> +#elif defined(CONFIG_460EX) || defined(CONFIG_460GT)
-> +	/* Clear the counters */
-> +	val = SDR0_ICC_FLUSH;
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRTX0, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRTX1, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRRX0, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRRX1, val);
-> +#if defined(CONFIG_460GT)
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRTX2, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRTX3, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRRX2, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRRX3, val);
-> +#endif
-> +
-> +	/* Set Tx/Rx Timer values */
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRTX0, CONFIG_IBM_NEW_EMAC_TX_COAL_TIMER);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRTX1, CONFIG_IBM_NEW_EMAC_TX_COAL_TIMER);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRRX0, CONFIG_IBM_NEW_EMAC_RX_COAL_TIMER);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRRX1, CONFIG_IBM_NEW_EMAC_RX_COAL_TIMER);
-> +#if defined(CONFIG_460GT)
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRTX2, CONFIG_IBM_NEW_EMAC_TX_COAL_TIMER);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRTX3, CONFIG_IBM_NEW_EMAC_TX_COAL_TIMER);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRRX2, CONFIG_IBM_NEW_EMAC_RX_COAL_TIMER);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCTRRX3, CONFIG_IBM_NEW_EMAC_RX_COAL_TIMER);
-> +#endif
-> +
-> +	/* Enable the Tx/Rx Coalescing interrupt */
-> +	val = (CONFIG_IBM_NEW_EMAC_TX_COAL_COUNT & COAL_FRAME_MASK)
-> +			<< SDR0_ICC_FTHR_SHIFT;
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRTX0, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRTX1, val);
-> +#if defined(CONFIG_460GT)
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRTX2, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRTX3, val);
-> +#endif
-> +
-> +	val = (CONFIG_IBM_NEW_EMAC_RX_COAL_COUNT & COAL_FRAME_MASK)
-> +			<< SDR0_ICC_FTHR_SHIFT;
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRRX0, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRRX1, val);
-> +#if defined(CONFIG_460GT)
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRRX2, val);
-> +	mtdcri(SDR0, DCRN_SDR0_ICCRRX3, val);
-> +#endif
-> +#endif
-> +	printk(KERN_INFO "MAL: Enabled Intr Coal TxCnt: %d RxCnt: %d\n",
-> +		CONFIG_IBM_NEW_EMAC_TX_COAL_COUNT,
-> +		CONFIG_IBM_NEW_EMAC_RX_COAL_COUNT);
-> +}
-> +#endif
-
-This is all quite wrong. Either use MAL features or some other runtime
-check, possibly via the "compatible" property.
-
-Same goes with the SDR register definitions. Prefix them with the SOC
-name but don't make them conditionally compiled. This is all back to the
-same mess we had in arch/ppc and I'm not going to accept it.
-
-Also, this coalescing option, while it makes sense to have a CONFIG
-option to compile in the support for it or not, the choice to use
-coalescing or not should be done at runtime. Same goes with the various
-thresholds which should be runtime configurable.
-
-There are existing mechanisms via ethtool to configure coalescing. You
-should hookup onto these.
-
-
-Cheers,
 Ben.
