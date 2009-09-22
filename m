@@ -2,19 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 86550B7B7B
+	by ozlabs.org (Postfix) with ESMTPS id AB73FB7B79
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Sep 2009 10:07:23 +1000 (EST)
+	Tue, 22 Sep 2009 10:12:57 +1000 (EST)
 Subject: RE: [PATCH 1/2] ibm_newemac: Add Support for MAL Interrupt Coalescing
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Prodyut Hazarika <phazarika@amcc.com>
-In-Reply-To: <0CA0A16855646F4FA96D25A158E299D606FFE7FF@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <0CA0A16855646F4FA96D25A158E299D606FFE802@SDCEXCHANGE01.ad.amcc.com>
 References: <1253573245-1867-1-git-send-email-phazarika@amcc.com>
 	<1253576514.7103.165.camel@pasglop>
-	<0CA0A16855646F4FA96D25A158E299D606FFE7FF@SDCEXCHANGE01.ad.amcc.com>
+	<0CA0A16855646F4FA96D25A158E299D606FFE802@SDCEXCHANGE01.ad.amcc.com>
 Content-Type: text/plain
-Date: Tue, 22 Sep 2009 10:07:07 +1000
-Message-Id: <1253578027.7103.177.camel@pasglop>
+Date: Tue, 22 Sep 2009 10:12:41 +1000
+Message-Id: <1253578361.7103.180.camel@pasglop>
 Mime-Version: 1.0
 Cc: Victor Gallardo <vgallardo@amcc.com>, Feng Kan <fkan@amcc.com>,
 	netdev@vger.kernel.org, lada.podivin@gmail.com,
@@ -29,41 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-09-21 at 16:49 -0700, Prodyut Hazarika wrote:
+On Mon, 2009-09-21 at 17:05 -0700, Prodyut Hazarika wrote:
 > Hi Ben,
-> Thanks for your comments.
+> Thanks again for your comments.
 > 
+> > Same goes with the SDR register definitions. Prefix them with the SOC
+> > name but don't make them conditionally compiled.
 > 
-> > What happens if we build a kernel that is supposed to boot with two
-> > different variants of 405 or 440 ?
-> 
-> We cannot build a kernel with H/W Interrupt coalescing other than in
-> 405EX/460EX/GT.
-> This is controlled via KConfig (config IBM_NEW_EMAC_INTR_COALESCE
-> depends on IBM_NEW_EMAC && (460EX || 460GT || 405EX))
-> Is this approach acceptable (via Kconfig)?
+> I will add the base address in the Device tree, and make all register
+> definitions based on offset from the base in the next version of this
+> patch.
 
-No. That's my point. All of this must be runtime options. The kernel
-must be buildablt for 460EX -and- 460GT - and an old 440EP if I want to
-in a single image, and this -with- the coalescing option enabled. It
-would obviously only be available when running on the cores that support
-it, but it should -not- be a compile time decision.
+That's a good idea. In fact, you can also use the dcr_read/write
+variants of the accessors rather than the low level mfdcri/mtdcri. This
+wouldn't make much of a difference unless you ever release a SoC with
+those same registers behind an MMIO mapping but it's cleaner.
 
-IE. All your ifdef's should be turned into runtime checks. If you have
-conflicting #define for register names and bits, then prefix them with
-the SoC name.
+> Thanks for this comment. I will hookup ethtool with the EMAC driver, but
+> the MAL driver will come up with default coalesce options (as defined in
+> the appropriate defconfig file). The user will be able to change these
+> parameters as needed using ethtool.
 
-The only acceptable compile-time option is to have the ability to not
-compile the coalescing support at all, thus avoiding bloat when building
-configs that are only targeted toward processors that don't have it or
-setups that don't want it. 
+That's ok. I don't have an objection in using Kconfig to set the
+defaults.
 
-> > There are existing mechanisms via ethtool to configure coalescing. You
-> > should hookup onto these.
-> 
-> I will start looking at the ethtool options
+> I will get all the changes in place in the next version of this patch.
 
-Thanks.
+Thanks !
+
+BTW. If you guys are ever going to do another change to MAL, please
+please plase, add the -one- major missing feature that's causing all the
+pain and complication in the current design: Add a per-channel interrupt
+masking option.
+
+The lack of ability to mask the interrupt per MAL channel is what forces
+us to create that fake netdev structure in order to share the napi
+device instance between all the EMACs in the system. This is very
+inefficient too. We would be able to make things run a lot smoother if
+we could just have a napi instance per EMAC, but for that, we need
+per-channel interrupt masking.
 
 Cheers,
 Ben.
