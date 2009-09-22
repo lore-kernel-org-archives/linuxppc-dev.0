@@ -1,21 +1,20 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 09018B70B3
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 19:53:18 +1000 (EST)
-Date: Tue, 22 Sep 2009 11:53:27 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [LTP] mmapstress03 weirdness? (fwd)
-In-Reply-To: <1253578781.7103.186.camel@pasglop>
-Message-ID: <alpine.LRH.2.00.0909221151550.328@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0909211539520.16077@vixen.sonytel.be>
-	<1253578781.7103.186.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Linux Test Project <Ltp-list@lists.sourceforge.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C07C2B7B6B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 22 Sep 2009 20:07:21 +1000 (EST)
+Subject: Re: [PATCH] Re: [405EX] Bad page map in process ...
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Weirich, Bernhard" <Bernhard.Weirich@riedel.net>
+In-Reply-To: <CE92B8B581B4584FB8CA86B51EDE8AC5243C568B04@wupexchange.riedel.net>
+References: <CE92B8B581B4584FB8CA86B51EDE8AC5243C568B04@wupexchange.riedel.net>
+Content-Type: text/plain
+Date: Tue, 22 Sep 2009 20:07:15 +1000
+Message-Id: <1253614035.7103.223.camel@pasglop>
+Mime-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,91 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 22 Sep 2009, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-09-21 at 15:40 +0200, Geert Uytterhoeven wrote:
-> > With 32-bit userland, this boils down to:
-> > | mmap addr 0x7fff0000 size 0x7fff0000
-> > | mmap returned 0x7fff0000
-> > 
-> > i.e. mmap() succeeds, but (1) the test expects it to fail, so the test returns
-> > TFAIL, but (2) ltp-pan still reports that the tests passed?
+On Tue, 2009-09-22 at 11:29 +0200, Weirich, Bernhard wrote:
+> Hello,
 > 
-> What is the output of /proc/<pid>/maps after that mmap ?
+> I found the cause of the problem.
+> My architecture does not define the _PAGE_SPECIAL macro, thus in pte-common.h line 32, it is defined as 0
+> And then in line 180, since _PAGE_SPECIAL is defined, the macro __HAVE_ARCH_PTE_SPECIAL is erroneously defined.
+> This makes any ppc architecture to act as if it has a pte special bit!
+> I suggest the following simple patch to fix this.
 
-| 00100000-00120000 r-xp 00100000 00:00 0                                  [vdso]
-| 0f470000-0f5d0000 r-xp 00000000 03:03 56852565                           /lib/libc-2.5.so
-| 0f5d0000-0f5e0000 r--p 00160000 03:03 56852565                           /lib/libc-2.5.so
-| 0f5e0000-0f5f0000 rw-p 00170000 03:03 56852565                           /lib/libc-2.5.so
-| 0ffc0000-0ffe0000 r-xp 00000000 03:03 56852482                           /lib/ld-2.5.so
-| 0ffe0000-0fff0000 r--p 00010000 03:03 56852482                           /lib/ld-2.5.so
-| 0fff0000-10000000 rw-p 00020000 03:03 56852482                           /lib/ld-2.5.so
-| 10000000-10010000 r-xp 00000000 03:03 65571126                           /tmp/a.out
-| 10010000-10020000 rw-p 00000000 03:03 65571126                           /tmp/a.out
-| 7fff0000-fffe0000 rw-s 00000000 00:09 5580806                            /dev/zero (deleted)
+Thank ! That looks indeed like a bug.
 
-I.e. the big mmap() took out the stack mapping, which was previously at:
+Note that with 2.6.32, we should be able to use 0x20 as _PAGE_SPECIAL on
+40x which would improve performances in some areas.
 
-| ffa00000-ffb50000 rw-p ffa00000 00:00 0                                  [stack]
+Cheers,
+Ben.
 
-> With a 64-bit kernel, 32-bit userspace has access to the entire 4G
-> address space, so mapping 2G-64k at the 2G-64k point can work, provided
-> you aren't overlapping an existing mapping such as the stack.
+> Bernhard WEIRICH
+> Software Development
 > 
-> > In addition, sometimes mmapstress03 fails due to SEGV. I created a small test
-> > program that just does the above mmap(), and depending on the distro and what
-> > else I print later it crashes with a SEGV, too. Probably this happens because
-> > the mmap() did succeed, and corrupted some existing mappings, cfr. the notes
-> > for MAP_FIXED:
 > 
-> That's possible.
-> 
-> >        MAP_FIXED
-> >               Don’t  interpret  addr  as  a hint: place the mapping at exactly
-> >               that address.  addr must be a multiple of the page size.  If the
-> >               memory  region  specified  by addr and len overlaps pages of any
-> >               existing mapping(s), then the overlapped part  of  the  existing
-> >               mapping(s)  will  be discarded.  If the specified address cannot
-> >               be used, mmap() will fail.  Because requiring  a  fixed  address
-> >               for  a  mapping is less portable, the use of this option is dis‐
-> >               couraged.
-> 
-> Yeah, I suppose the test might be wiping out its own stack for example
-
-Indeed.
-
-> IE. I think that test is just bogus :-)
-> 
-> > JFYI, with 64-bit userland, this boils down to:
-> > 
-> > | mmap addr 0x7fffffffffff0000 size 0x7fffffffffff0000
-> > | mmap returned 0xffffffffffffffff
-> > 
-> > i.e. mmap() fails as expected, and the test succeeds.
-> 
-> Right because on 64-bit userspace, you only are allowed something like
-> 16T of address space.
-> 
-> > Does all of this sound OK?
-> > Thanks for your comments!
-> 
-> Yes, I think so far, it's just bogus tests :-)
-
-Thanks for the confirmation, Segher and Ben!
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+> Signed-off-by: Bernhard Weirich <bernhard.weirich@riedel.net>
+> --- linux/arch/powerpc/include/asm/pte-common.h	2009-09-16 11:23:44.000000000 +0200
+> +++ linux/arch/powerpc/include/asm/pte-common.h	2009-09-22 11:13:08.000000000 +0200
+> @@ -176,7 +176,7 @@
+>  #define HAVE_PAGE_AGP
+>  
+>  /* Advertise support for _PAGE_SPECIAL */
+> -#ifdef _PAGE_SPECIAL
+> +#if _PAGE_SPECIAL != 0
+>  #define __HAVE_ARCH_PTE_SPECIAL
+>  #endif
+>  
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
