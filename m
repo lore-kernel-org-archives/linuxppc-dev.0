@@ -3,15 +3,15 @@ Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.90])
 	(using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "Messaging Gateway Appliance Demo Cert",
 	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id DE451B7B71
+	by ozlabs.org (Postfix) with ESMTPS id ADB6BB7B69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Sep 2009 09:49:28 +1000 (EST)
+	Tue, 22 Sep 2009 10:05:33 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: [PATCH 1/2] ibm_newemac: Add Support for MAL Interrupt Coalescing
-Date: Mon, 21 Sep 2009 16:49:26 -0700
-Message-ID: <0CA0A16855646F4FA96D25A158E299D606FFE7FF@SDCEXCHANGE01.ad.amcc.com>
+Date: Mon, 21 Sep 2009 17:05:31 -0700
+Message-ID: <0CA0A16855646F4FA96D25A158E299D606FFE802@SDCEXCHANGE01.ad.amcc.com>
 In-Reply-To: <1253576514.7103.165.camel@pasglop>
 References: <1253573245-1867-1-git-send-email-phazarika@amcc.com>
 	<1253576514.7103.165.camel@pasglop>
@@ -31,23 +31,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Hi Ben,
-Thanks for your comments.
+Thanks again for your comments.
 
+> Same goes with the SDR register definitions. Prefix them with the SOC
+> name but don't make them conditionally compiled.
 
-> What happens if we build a kernel that is supposed to boot with two
-> different variants of 405 or 440 ?
+I will add the base address in the Device tree, and make all register
+definitions based on offset from the base in the next version of this
+patch.
 
-We cannot build a kernel with H/W Interrupt coalescing other than in
-405EX/460EX/GT.
-This is controlled via KConfig (config IBM_NEW_EMAC_INTR_COALESCE
-depends on IBM_NEW_EMAC && (460EX || 460GT || 405EX))
-Is this approach acceptable (via Kconfig)?
+> Also, this coalescing option, while it makes sense to have a CONFIG
+> option to compile in the support for it or not, the choice to use
+> coalescing or not should be done at runtime. Same goes with the
+various
+> thresholds which should be runtime configurable.
 
+Thanks for this comment. I will hookup ethtool with the EMAC driver, but
+the MAL driver will come up with default coalesce options (as defined in
+the appropriate defconfig file). The user will be able to change these
+parameters as needed using ethtool.
 
-> There are existing mechanisms via ethtool to configure coalescing. You
-> should hookup onto these.
-
-I will start looking at the ethtool options
+I will get all the changes in place in the next version of this patch.
 
 Thanks
 Prodyut
