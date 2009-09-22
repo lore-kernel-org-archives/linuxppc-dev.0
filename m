@@ -1,17 +1,17 @@
-Return-Path: <tabbott@MIT.EDU>
-Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
-	[18.7.7.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E33D4B7043
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 01:23:55 +1000 (EST)
-From: Tim Abbott <tabbott@ksplice.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] Linker script cleanup for powerpc
-Date: Tue, 22 Sep 2009 11:18:08 -0400
-Message-Id: <1253632689-24173-1-git-send-email-tabbott@ksplice.com>
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE002.bigfish.com (sg2ehsobe002.messaging.microsoft.com
+	[207.46.51.76]) by ozlabs.org (Postfix) with ESMTP id 4BDA4B7043
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 01:39:27 +1000 (EST)
+From: John Linn <john.linn@xilinx.com>
+To: netdev@vger.kernel.org, davem@davemloft.net, linuxppc-dev@ozlabs.org,
+	grant.likely@secretlab.ca, jwboyer@linux.vnet.ibm.com,
+	sadanand.mutyala@xilinx.com
+Subject: [PATCH] net: xilinx_emaclite: Fix problem with first incoming packet
+Date: Tue, 22 Sep 2009 09:24:14 -0600
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-ID: <fac40d47-5b19-4225-9fee-f7a058851fc0@SG2EHSMHS017.ehs.local>
+Cc: Michal Simek <monstr@monstr.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,19 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an updated version of the patch I sent on September 6 cleaning
-up the powerpc architecture's linker scripts.  The only change is that
-it is rebased on top of Linus's current master.
+From: Michal Simek <monstr@monstr.eu>
 
-This cross-architecture linker script cleanup project is in
-preparation for adding support for building the kernel with
--ffunction-sections -fdata-sections, which is a prerequisite for
-Ksplice.
+You can't ping the board or connect to it unless you send
+any packet out from board.
 
-	-Tim Abbott
+Tested-by: John Williams <john.williams@petalogix.com>
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+Acked-by: John Linn <john.linn@xilinx.com>
+---
+ drivers/net/xilinx_emaclite.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
-Tim Abbott (1):
-  powerpc: Cleanup linker script using new linker script macros.
+diff --git a/drivers/net/xilinx_emaclite.c b/drivers/net/xilinx_emaclite.c
+index dc22782..83a044d 100644
+--- a/drivers/net/xilinx_emaclite.c
++++ b/drivers/net/xilinx_emaclite.c
+@@ -134,18 +134,15 @@ static void xemaclite_enable_interrupts(struct net_local *drvdata)
+ 	}
+ 
+ 	/* Enable the Rx interrupts for the first buffer */
+-	reg_data = in_be32(drvdata->base_addr + XEL_RSR_OFFSET);
+ 	out_be32(drvdata->base_addr + XEL_RSR_OFFSET,
+-		 reg_data | XEL_RSR_RECV_IE_MASK);
++		 XEL_RSR_RECV_IE_MASK);
+ 
+ 	/* Enable the Rx interrupts for the second Buffer if
+ 	 * configured in HW */
+ 	if (drvdata->rx_ping_pong != 0) {
+-		reg_data = in_be32(drvdata->base_addr + XEL_BUFFER_OFFSET +
+-				   XEL_RSR_OFFSET);
+ 		out_be32(drvdata->base_addr + XEL_BUFFER_OFFSET +
+ 			 XEL_RSR_OFFSET,
+-			 reg_data | XEL_RSR_RECV_IE_MASK);
++			 XEL_RSR_RECV_IE_MASK);
+ 	}
+ 
+ 	/* Enable the Global Interrupt Enable */
+-- 
+1.6.2.1
 
- arch/powerpc/kernel/vmlinux.lds.S |   69 ++++++++-----------------------------
- 1 files changed, 15 insertions(+), 54 deletions(-)
+
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
