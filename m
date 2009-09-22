@@ -1,27 +1,26 @@
-Return-Path: <Daniele.Bosi@mta.it>
-Received: from cluster-a.mailcontrol.com (cluster-a.mailcontrol.com
-	[85.115.52.190])
+Return-Path: <Bernhard.Weirich@riedel.net>
+Received: from dfallbackip1.mail.eu.uu.net (dhuumrelay1.dtm.ops.eu.uu.net
+	[194.139.33.71])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.mailcontrol.com",
-	Issuer "DigiCert Global CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7DE60B70B3
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3E4D9B7B7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Sep 2009 19:34:20 +1000 (EST)
-Received: from rly11a.srv.mailcontrol.com (localhost.localdomain [127.0.0.1])
-	by rly11a.srv.mailcontrol.com (MailControl) with ESMTP id
-	n8M9Xgm0023496
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 10:34:03 +0100
-Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
-	by rly11a.srv.mailcontrol.com (MailControl) id n8M9XP5f022461
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 10:33:25 +0100
-From: Bosi Daniele <Daniele.Bosi@mta.it>
-To: "'dibacco@libero.it'" <dibacco@libero.it>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 22 Sep 2009 11:32:43 +0200
-Subject: R: High load average  but low cpu (xenomai can be the explanation?)
-Message-ID: <531B6536C9F737458807DF75064873C8303DD7D7DC@mta-digimail.MTA.INT>
-In-Reply-To: <30044818.1469311253607282485.JavaMail.root@wmail36>
-Content-Type: text/plain; charset="iso-8859-1"
+	Tue, 22 Sep 2009 19:40:03 +1000 (EST)
+Received: from dhuumrelay1.dtm.ops.eu.uu.net (dfallbackip1.mail.eu.uu.net
+	[195.129.12.192])
+	by dfallbackip1.mail.eu.uu.net (8.14.1/8.14.1) with ESMTP id
+	n8M864XN018530
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 08:06:04 GMT
+Received: from mail.riedel.net (mail.riedel.net [213.70.193.150])
+	by dhuumrelay1.dtm.ops.eu.uu.net (8.14.1/8.14.1) with ESMTP id
+	n8M85wxO018473
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 08:05:58 GMT
+From: "Weirich, Bernhard" <Bernhard.Weirich@riedel.net>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 22 Sep 2009 10:05:55 +0200
+Subject: [405EX] Bad page map in process ...
+Message-ID: <CE92B8B581B4584FB8CA86B51EDE8AC5243C568B03@wupexchange.riedel.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,90 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I suggest you to take a look at the meaning of the data showed by "/proc/lo=
-adavg".
+Hello,
 
-See:
-http://www.luci.org/luci-discuss/200210/msg00055.html
+I use mmap to map an IO address space to user space on a PPC405EX processor=
+.
 
-for more details.
+till kernel 2.6.29 this worked without problems, since 2.6.30. I get intimi=
+dating error messages when I do the unmap, mmap works fine, though.
 
-In my opinion your loadavg of 3.0 means only that in your application there=
- is an average of 3 task waiting for running on the CPU. This in general do=
-esn't mean that the CPU load must be 100 %.
+BUG: Bad page map in process deviceDaemon  pte:ffe3b45e pmd:0f11a400
+addr:48271000 vm_flags:400844ff anon_vma:(null) mapping:cede3a18 index:ffff=
+fe3b
+vma->vm_ops->fault: ebm_alloc+0x700/0x708 [fpga_bus_m]
+vma->vm_file->f_op->mmap: fpga_regs_ioctl+0x100/0x3e0 [fpga_bus_m]
+Call Trace:
+[cf1bbda0] [c0006e94] show_stack+0x40/0x15c (unreliable)
+[cf1bbdd0] [c00776cc] print_bad_pte+0x12c/0x1e4
+[cf1bbe00] [c0077820] vm_normal_page+0x9c/0xb4
+[cf1bbe20] [c0078374] unmap_vmas+0x228/0x5f8
+[cf1bbeb0] [c007c8b4] unmap_region+0x98/0x138
+[cf1bbef0] [c007d9cc] do_munmap+0x280/0x304
+[cf1bbf20] [c007da88] sys_munmap+0x38/0x5c
+[cf1bbf40] [c000efa4] ret_from_syscall+0x0/0x3c
 
-Maybe there should be some scheduler issues.
+So far I found out that in mm/memory.c, function vm_normal_page, pfn is gre=
+ater than highest_memmap_pfn, thus the error is triggered.
+It is correct that pfn is higher than the end of physical ram, but it is in=
+ a valid IO mapped region.
+I guess the problem is that pte_special(pte) returns 0.
+I realized that in the 2.6.29 kernel HAVE_PTE_SPECIAL was 0 and the !HAVE_P=
+TE_SPECIAL case silently returned NULL before checking whether pfn < highes=
+t_memmap_pfn.
 
-If you take a look into your app sources maybe you can know more about what=
- happens.
+In 2.6.30 HAVE_PTE_SPECIAL is 1 and pte_special(pte) returns 0 so the code =
+jumps to the pfn < highest_memmap_pfn check. Thus I believe that the there =
+is a problem with the pte_special flag.
 
+I will investigate further but maybe someone with more knowledge about page=
+ handling on ppc can help me here.
 
------Messaggio originale-----
-Da: dibacco@libero.it [mailto:dibacco@libero.it]
-Inviato: marted=EC 22 settembre 2009 10.15
-A: Bosi Daniele; linuxppc-dev@lists.ozlabs.org
-Oggetto: R: High load average but low cpu (xenomai can be the explanation?)
-
-It is an AgentX subagent, it does a lot of things like accessing the hardwa=
-re,
-handling messages from the main snmp agent received from an unix socket,
-writing files on jffs2 partition, polling hardware for alarms.
-If I kill it,
-the load goes down. Anyway the subagent only takes 2-3% of the CPU..
-
-Thank
-you,
-Antonio.
-
-
-
->Da: Daniele.Bosi@mta.it
->
->Can you give us some more details
-about your app?
->Is it multithread or single process?
->What do the process do?
-
->
->Bye Daniele
->
->
->
->-----Messaggio originale-----
->Da: linuxppc-dev-
-bounces+daniele.bosi=3Dmta.it@lists.ozlabs.org [mailto:linuxppc-dev-
-bounces+daniele.bosi=3Dmta.it@lists.ozlabs.org] Per conto di dibacco@libero=
-.it
-
->Oggetto: High load average but low cpu (xenomai can be the explanation?)
->
-
->Hi,
->
->I have an MPC880 @133MHz. If I look into the load (with uptime) I get
-
->values around 3.0 but my CPU is always under 5 percent (top). How could I
-
->explain this? I'm using linux 2.6.19 with xenomai but no xenomai applicati=
-on
-is
->running at all. I have a cramfs on a nor flash. What could be the problem?
-If I
->kill the process I developed the average load goes down.
->
->Thank you,
-
->Adi
->_______________________________________________
->Linuxppc-dev mailing
-list
->Linuxppc-dev@lists.ozlabs.org
->https://lists.ozlabs.org/listinfo/linuxppc-
-dev
->_______________________________________________
->Linuxppc-dev mailing list
-
->Linuxppc-dev@lists.ozlabs.org
->https://lists.ozlabs.org/listinfo/linuxppc-dev
-
->
+Bernhard WEIRICH
+Software Development
