@@ -1,38 +1,22 @@
-Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <Bernhard.Weirich@riedel.net>
+Received: from dhuumrelay0.dtm.ops.eu.uu.net (dhuumrelay0.dtm.ops.eu.uu.net
+	[194.139.33.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 19DD3B7B65
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 172CAB7B68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Sep 2009 18:56:53 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n8M8up9J010116
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 18:56:51 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n8M8upZC921728
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 18:56:51 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n8M8uoee017265
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 18:56:51 +1000
-Date: Tue, 22 Sep 2009 14:26:44 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [v5 RFC PATCH 0/7]: cpuidle/x86/POWER (REDESIGN): Cleanup idle
-	power management code in x86, cleanup drivers/cpuidle/cpuidle.c and
-	introduce cpuidle to POWER.
-Message-ID: <20090922085644.GA5511@linux.vnet.ibm.com>
-References: <20090922053314.GA6417@linux.vnet.ibm.com>
-	<1253604359.8439.278.camel@twins>
+	Tue, 22 Sep 2009 19:29:32 +1000 (EST)
+Received: from mail.riedel.net (mail.riedel.net [213.70.193.150])
+	by dhuumrelay0.dtm.ops.eu.uu.net (8.14.1/8.14.1) with ESMTP id
+	n8M9TQd7008359
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 09:29:27 GMT
+From: "Weirich, Bernhard" <Bernhard.Weirich@riedel.net>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 22 Sep 2009 11:29:24 +0200
+Subject: [PATCH] Re: [405EX] Bad page map in process ...
+Message-ID: <CE92B8B581B4584FB8CA86B51EDE8AC5243C568B04@wupexchange.riedel.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1253604359.8439.278.camel@twins>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>,
-	Arun Bharadwaj <arun@linux.vnet.ibm.com>,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
-Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,43 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-22 09:25:59]:
+Hello,
 
-> 
-> 
-> Much better :-)
-> 
-> 
-> But I'm puzzled by all the per-cpu-ish-ness of the stuff. Why would you
-> need to register things on a per-cpu basis?
-> 
-> Also:
-> 
-> 
-> +       list_for_each(pos, &per_cpu(cpuidle_devices_list, cpu)) {
-> +               temp_dev = container_of(pos, struct cpuidle_device,
-> +                                       percpu_list[cpu]);
-> +               if (dev == temp_dev) {
-> +                       list_del(&temp_dev->percpu_list[cpu]);
-> +                       cpuidle_remove_state_sysfs(temp_dev);
-> +               }
-> +       }
-> 
-> Looks buggy, either you want to break out of the loop on dev ==
-> temp_dev, or you want to use list_for_each_safe().
-> 
-> 
-> 
+I found the cause of the problem.
+My architecture does not define the _PAGE_SPECIAL macro, thus in pte-common=
+.h line 32, it is defined as 0
+And then in line 180, since _PAGE_SPECIAL is defined, the macro __HAVE_ARCH=
+_PTE_SPECIAL is erroneously defined.
+This makes any ppc architecture to act as if it has a pte special bit!
+I suggest the following simple patch to fix this.
 
-Hi Peter,
+Bernhard WEIRICH
+Software Development
 
-There were a couple of buggy issues, which i have cleaned up for the
-next iteration.
 
-        * As you pointed out above, the loop is buggy.
-        * Also, the percpu_list[NR_CPUS] which i am defining inside
-          struct cpuidle_device is wrong. It does not need to be an
-          array.
-
-Thanks for the quick turnaround
-arun
+Signed-off-by: Bernhard Weirich <bernhard.weirich@riedel.net>
+--- linux/arch/powerpc/include/asm/pte-common.h	2009-09-16 11:23:44.0000000=
+00 +0200
++++ linux/arch/powerpc/include/asm/pte-common.h	2009-09-22 11:13:08.0000000=
+00 +0200
+@@ -176,7 +176,7 @@
+ #define HAVE_PAGE_AGP
+=20
+ /* Advertise support for _PAGE_SPECIAL */
+-#ifdef _PAGE_SPECIAL
++#if _PAGE_SPECIAL !=3D 0
+ #define __HAVE_ARCH_PTE_SPECIAL
+ #endif
+=20
