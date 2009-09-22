@@ -1,21 +1,27 @@
-Return-Path: <Bernhard.Weirich@riedel.net>
-Received: from dhuumrelay0.dtm.ops.eu.uu.net (dhuumrelay0.dtm.ops.eu.uu.net
-	[194.139.33.69])
+Return-Path: <Daniele.Bosi@mta.it>
+Received: from cluster-a.mailcontrol.com (cluster-a.mailcontrol.com
+	[85.115.52.190])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 172CAB7B68
+	(Client CN "*.mailcontrol.com",
+	Issuer "DigiCert Global CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7DE60B70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Sep 2009 19:29:32 +1000 (EST)
-Received: from mail.riedel.net (mail.riedel.net [213.70.193.150])
-	by dhuumrelay0.dtm.ops.eu.uu.net (8.14.1/8.14.1) with ESMTP id
-	n8M9TQd7008359
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 09:29:27 GMT
-From: "Weirich, Bernhard" <Bernhard.Weirich@riedel.net>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 22 Sep 2009 11:29:24 +0200
-Subject: [PATCH] Re: [405EX] Bad page map in process ...
-Message-ID: <CE92B8B581B4584FB8CA86B51EDE8AC5243C568B04@wupexchange.riedel.net>
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 22 Sep 2009 19:34:20 +1000 (EST)
+Received: from rly11a.srv.mailcontrol.com (localhost.localdomain [127.0.0.1])
+	by rly11a.srv.mailcontrol.com (MailControl) with ESMTP id
+	n8M9Xgm0023496
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 10:34:03 +0100
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+	by rly11a.srv.mailcontrol.com (MailControl) id n8M9XP5f022461
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 10:33:25 +0100
+From: Bosi Daniele <Daniele.Bosi@mta.it>
+To: "'dibacco@libero.it'" <dibacco@libero.it>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 22 Sep 2009 11:32:43 +0200
+Subject: R: High load average  but low cpu (xenomai can be the explanation?)
+Message-ID: <531B6536C9F737458807DF75064873C8303DD7D7DC@mta-digimail.MTA.INT>
+In-Reply-To: <30044818.1469311253607282485.JavaMail.root@wmail36>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,31 +32,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+I suggest you to take a look at the meaning of the data showed by "/proc/lo=
+adavg".
 
-I found the cause of the problem.
-My architecture does not define the _PAGE_SPECIAL macro, thus in pte-common=
-.h line 32, it is defined as 0
-And then in line 180, since _PAGE_SPECIAL is defined, the macro __HAVE_ARCH=
-_PTE_SPECIAL is erroneously defined.
-This makes any ppc architecture to act as if it has a pte special bit!
-I suggest the following simple patch to fix this.
+See:
+http://www.luci.org/luci-discuss/200210/msg00055.html
 
-Bernhard WEIRICH
-Software Development
+for more details.
+
+In my opinion your loadavg of 3.0 means only that in your application there=
+ is an average of 3 task waiting for running on the CPU. This in general do=
+esn't mean that the CPU load must be 100 %.
+
+Maybe there should be some scheduler issues.
+
+If you take a look into your app sources maybe you can know more about what=
+ happens.
 
 
-Signed-off-by: Bernhard Weirich <bernhard.weirich@riedel.net>
---- linux/arch/powerpc/include/asm/pte-common.h	2009-09-16 11:23:44.0000000=
-00 +0200
-+++ linux/arch/powerpc/include/asm/pte-common.h	2009-09-22 11:13:08.0000000=
-00 +0200
-@@ -176,7 +176,7 @@
- #define HAVE_PAGE_AGP
-=20
- /* Advertise support for _PAGE_SPECIAL */
--#ifdef _PAGE_SPECIAL
-+#if _PAGE_SPECIAL !=3D 0
- #define __HAVE_ARCH_PTE_SPECIAL
- #endif
-=20
+-----Messaggio originale-----
+Da: dibacco@libero.it [mailto:dibacco@libero.it]
+Inviato: marted=EC 22 settembre 2009 10.15
+A: Bosi Daniele; linuxppc-dev@lists.ozlabs.org
+Oggetto: R: High load average but low cpu (xenomai can be the explanation?)
+
+It is an AgentX subagent, it does a lot of things like accessing the hardwa=
+re,
+handling messages from the main snmp agent received from an unix socket,
+writing files on jffs2 partition, polling hardware for alarms.
+If I kill it,
+the load goes down. Anyway the subagent only takes 2-3% of the CPU..
+
+Thank
+you,
+Antonio.
+
+
+
+>Da: Daniele.Bosi@mta.it
+>
+>Can you give us some more details
+about your app?
+>Is it multithread or single process?
+>What do the process do?
+
+>
+>Bye Daniele
+>
+>
+>
+>-----Messaggio originale-----
+>Da: linuxppc-dev-
+bounces+daniele.bosi=3Dmta.it@lists.ozlabs.org [mailto:linuxppc-dev-
+bounces+daniele.bosi=3Dmta.it@lists.ozlabs.org] Per conto di dibacco@libero=
+.it
+
+>Oggetto: High load average but low cpu (xenomai can be the explanation?)
+>
+
+>Hi,
+>
+>I have an MPC880 @133MHz. If I look into the load (with uptime) I get
+
+>values around 3.0 but my CPU is always under 5 percent (top). How could I
+
+>explain this? I'm using linux 2.6.19 with xenomai but no xenomai applicati=
+on
+is
+>running at all. I have a cramfs on a nor flash. What could be the problem?
+If I
+>kill the process I developed the average load goes down.
+>
+>Thank you,
+
+>Adi
+>_______________________________________________
+>Linuxppc-dev mailing
+list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-
+dev
+>_______________________________________________
+>Linuxppc-dev mailing list
+
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+>
