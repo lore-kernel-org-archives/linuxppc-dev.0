@@ -1,23 +1,24 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 090F1B7B75
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 09:01:53 +1000 (EST)
-Date: Wed, 23 Sep 2009 03:01:50 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/6] mtd: m25p80: Convert to device table matching
-Message-ID: <20090922230150.GA27593@oksana.dev.rtsoft.ru>
-References: <20090731003957.GA23982@oksana.dev.rtsoft.ru>
-	<20090731004100.GB8371@oksana.dev.rtsoft.ru>
-	<200908031954.50955.david-b@pacbell.net>
-	<20090922141705.b5d31e24.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090922141705.b5d31e24.akpm@linux-foundation.org>
-Cc: ben@fluff.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-	David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, khali@linux-fr.org, dwmw2@infradead.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B2110B7B73
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 09:26:48 +1000 (EST)
+Date: Tue, 22 Sep 2009 16:25:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 2/2] mtd: m25p80: Add support for CAT25xxx serial EEPROMs
+Message-Id: <20090922162548.3e20e67c.akpm@linux-foundation.org>
+In-Reply-To: <20090818214628.GB22651@oksana.dev.rtsoft.ru>
+References: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
+	<20090818214628.GB22651@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: dbrownell@users.sourceforge.net, dedekind1@gmail.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-mtd@lists.infradead.org, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 22, 2009 at 02:17:05PM -0700, Andrew Morton wrote:
-> On Mon, 3 Aug 2009 19:54:50 -0700
-> David Brownell <david-b@pacbell.net> wrote:
+On Wed, 19 Aug 2009 01:46:28 +0400
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+
+> CAT25 chips (as manufactured by On Semiconductor, previously Catalyst
+> Semiconductor) are similar to the original M25Px0 chips, except:
 > 
-> > On Thursday 30 July 2009, Anton Vorontsov wrote:
-> > > This patch converts the m25p80 driver so that now it uses .id_table
-> > > for device matching, making it properly detect devices on OpenFirmware
-> > > platforms (prior to this patch the driver misdetected non-JEDEC chips,
-> > > seeing all chips as "m25p80").
-> > 
-> > I suspect "detect" is a misnomer there.  It only "detects" JEDEC chips.
-> > All others got explicit declarations ... so if there's misbehavior for
-> > other chips, it's because those declarations were poorly handled.  Maybe
-> > they were not properly flagged as non-JDEC
-> > 
-> >  
-> > > Also, now jedec_probe() only does jedec probing, nothing else. If it
-> > > is not able to detect a chip, NULL is returned and the driver fall
-> > > backs to the information specified by the platform (platform_data, or
-> > > exact ID).
-> > 
-> > I'd rather keep the warning, so there's a clue about what's really
-> > going on:  JEDEC chip found, but its ID is not handled.
-> > 
+> - Address width can vary (1-2 bytes, in contrast to 3 bytes in M25P
+>   chips). So, implement convenient m25p_addr2cmd() and m25p_cmdsz()
+>   calls, and place address width information into flash_info struct;
 > 
-> afaik there was no response to David's review comments, so this patch
-> is in the "stuck" state.
+> - Page size can vary, therefore we shouldn't hardcode it, so get rid
+>   of FLASH_PAGESIZE definition, and place the page size information
+>   into flash_info struct;
+> 
+> - CAT25 EEPROMs don't need to be erased, so add NO_ERASE flag, and
+>   propagate it to the mtd subsystem.
 
-Hm? Response:
+This patch (still) doesn't know about the mx25l3205d, mx25l12805d and
+mx25l12855e devices.
 
-http://lkml.org/lkml/2009/8/18/363
+I randomly did this:
 
-And the two patches I sent on top:
-
-http://lkml.org/lkml/2009/8/18/364
-http://lkml.org/lkml/2009/8/18/366
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+->	{ "mx25l3205d", INFO(0xc22016, 0, 64 * 1024, 64, 256, 3, 0) },
+->	{ "mx25l6405d", INFO(0xc22017, 0, 64 * 1024, 128, 256, 3, 0) },
+	{ "mx25l12805d", INFO(0xc22018, 0, 64 * 1024, 256, 256, 3, 0) },
+->	{ "mx25l12855e", INFO(0xc22618, 0, 64 * 1024, 256, 256, 3, 0) },
