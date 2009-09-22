@@ -1,26 +1,17 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D370DB7B6B
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 18:13:28 +1000 (EST)
-Date: Tue, 22 Sep 2009 10:13:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] perf_event, powerpc: Fix compilation after big
-	perf_counter rename
-Message-ID: <20090922081318.GC1475@elte.hu>
-References: <19128.4280.813369.589704@cargo.ozlabs.ibm.com>
-	<1253584591.7103.197.camel@pasglop>
-	<20090922072834.GA25470@elte.hu>
-	<1253606415.7103.216.camel@pasglop>
+Return-Path: <dibacco@libero.it>
+Received: from cp-out1.libero.it (cp-out1.libero.it [212.52.84.101])
+	by ozlabs.org (Postfix) with ESMTP id AEC1AB7082
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 22 Sep 2009 18:15:05 +1000 (EST)
+Message-ID: <30044818.1469311253607282485.JavaMail.root@wmail36>
+Date: Tue, 22 Sep 2009 10:14:42 +0200 (CEST)
+From: "dibacco@libero.it" <dibacco@libero.it>
+To: <Daniele.Bosi@mta.it>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: R: High load average  but low cpu (xenomai can be the explanation?)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1253606415.7103.216.camel@pasglop>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain;charset="UTF-8"
+Reply-To: "dibacco@libero.it" <dibacco@libero.it>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,22 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+It is an AgentX subagent, it does a lot of things like accessing the hardware, 
+handling messages from the main snmp agent received from an unix socket, 
+writing files on jffs2 partition, polling hardware for alarms.
+If I kill it, 
+the load goes down. Anyway the subagent only takes 2-3% of the CPU..
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Thank 
+you,
+Antonio.
 
-> On Tue, 2009-09-22 at 09:28 +0200, Ingo Molnar wrote:
-> > 
-> > Nevertheless you are right that i should have caught this particular 
-> > PowerPC build bug - i missed it - sorry about that!
-> 
-> Allright. Well, to help in general, we are setting up a build-bot here 
-> too that will build -tip HEAD for at least powerpc daily with a few 
-> configs too.
 
-Cool, that's really useful! Especially during the weekends that will be 
-helpful, in that timeframe linux-next driven testing has a latency of 
-72-95 hours and -tip usually has an uptick in patches.
 
-Thanks,
+>Da: Daniele.Bosi@mta.it
+>
+>Can you give us some more details 
+about your app?
+>Is it multithread or single process?
+>What do the process do?
 
-	Ingo
+>
+>Bye Daniele
+>
+>
+>
+>-----Messaggio originale-----
+>Da: linuxppc-dev-
+bounces+daniele.bosi=mta.it@lists.ozlabs.org [mailto:linuxppc-dev-
+bounces+daniele.bosi=mta.it@lists.ozlabs.org] Per conto di dibacco@libero.it
+
+>Oggetto: High load average but low cpu (xenomai can be the explanation?)
+>
+
+>Hi,
+>
+>I have an MPC880 @133MHz. If I look into the load (with uptime) I get
+
+>values around 3.0 but my CPU is always under 5 percent (top). How could I
+
+>explain this? I'm using linux 2.6.19 with xenomai but no xenomai application 
+is
+>running at all. I have a cramfs on a nor flash. What could be the problem? 
+If I
+>kill the process I developed the average load goes down.
+>
+>Thank you,
+
+>Adi
+>_______________________________________________
+>Linuxppc-dev mailing 
+list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-
+dev
+>_______________________________________________
+>Linuxppc-dev mailing list
+
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+>
