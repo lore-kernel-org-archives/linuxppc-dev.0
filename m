@@ -1,27 +1,21 @@
-Return-Path: <Bernhard.Weirich@riedel.net>
-Received: from dfallbackip1.mail.eu.uu.net (dhuumrelay1.dtm.ops.eu.uu.net
-	[194.139.33.71])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3E4D9B7B7C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Sep 2009 19:40:03 +1000 (EST)
-Received: from dhuumrelay1.dtm.ops.eu.uu.net (dfallbackip1.mail.eu.uu.net
-	[195.129.12.192])
-	by dfallbackip1.mail.eu.uu.net (8.14.1/8.14.1) with ESMTP id
-	n8M864XN018530
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 08:06:04 GMT
-Received: from mail.riedel.net (mail.riedel.net [213.70.193.150])
-	by dhuumrelay1.dtm.ops.eu.uu.net (8.14.1/8.14.1) with ESMTP id
-	n8M85wxO018473
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 08:05:58 GMT
-From: "Weirich, Bernhard" <Bernhard.Weirich@riedel.net>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 22 Sep 2009 10:05:55 +0200
-Subject: [405EX] Bad page map in process ...
-Message-ID: <CE92B8B581B4584FB8CA86B51EDE8AC5243C568B03@wupexchange.riedel.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 09018B70B3
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 19:53:18 +1000 (EST)
+Date: Tue, 22 Sep 2009 11:53:27 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [LTP] mmapstress03 weirdness? (fwd)
+In-Reply-To: <1253578781.7103.186.camel@pasglop>
+Message-ID: <alpine.LRH.2.00.0909221151550.328@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0909211539520.16077@vixen.sonytel.be>
+	<1253578781.7103.186.camel@pasglop>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux Test Project <Ltp-list@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,44 +25,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Tue, 22 Sep 2009, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-09-21 at 15:40 +0200, Geert Uytterhoeven wrote:
+> > With 32-bit userland, this boils down to:
+> > | mmap addr 0x7fff0000 size 0x7fff0000
+> > | mmap returned 0x7fff0000
+> > 
+> > i.e. mmap() succeeds, but (1) the test expects it to fail, so the test returns
+> > TFAIL, but (2) ltp-pan still reports that the tests passed?
+> 
+> What is the output of /proc/<pid>/maps after that mmap ?
 
-I use mmap to map an IO address space to user space on a PPC405EX processor=
-.
+| 00100000-00120000 r-xp 00100000 00:00 0                                  [vdso]
+| 0f470000-0f5d0000 r-xp 00000000 03:03 56852565                           /lib/libc-2.5.so
+| 0f5d0000-0f5e0000 r--p 00160000 03:03 56852565                           /lib/libc-2.5.so
+| 0f5e0000-0f5f0000 rw-p 00170000 03:03 56852565                           /lib/libc-2.5.so
+| 0ffc0000-0ffe0000 r-xp 00000000 03:03 56852482                           /lib/ld-2.5.so
+| 0ffe0000-0fff0000 r--p 00010000 03:03 56852482                           /lib/ld-2.5.so
+| 0fff0000-10000000 rw-p 00020000 03:03 56852482                           /lib/ld-2.5.so
+| 10000000-10010000 r-xp 00000000 03:03 65571126                           /tmp/a.out
+| 10010000-10020000 rw-p 00000000 03:03 65571126                           /tmp/a.out
+| 7fff0000-fffe0000 rw-s 00000000 00:09 5580806                            /dev/zero (deleted)
 
-till kernel 2.6.29 this worked without problems, since 2.6.30. I get intimi=
-dating error messages when I do the unmap, mmap works fine, though.
+I.e. the big mmap() took out the stack mapping, which was previously at:
 
-BUG: Bad page map in process deviceDaemon  pte:ffe3b45e pmd:0f11a400
-addr:48271000 vm_flags:400844ff anon_vma:(null) mapping:cede3a18 index:ffff=
-fe3b
-vma->vm_ops->fault: ebm_alloc+0x700/0x708 [fpga_bus_m]
-vma->vm_file->f_op->mmap: fpga_regs_ioctl+0x100/0x3e0 [fpga_bus_m]
-Call Trace:
-[cf1bbda0] [c0006e94] show_stack+0x40/0x15c (unreliable)
-[cf1bbdd0] [c00776cc] print_bad_pte+0x12c/0x1e4
-[cf1bbe00] [c0077820] vm_normal_page+0x9c/0xb4
-[cf1bbe20] [c0078374] unmap_vmas+0x228/0x5f8
-[cf1bbeb0] [c007c8b4] unmap_region+0x98/0x138
-[cf1bbef0] [c007d9cc] do_munmap+0x280/0x304
-[cf1bbf20] [c007da88] sys_munmap+0x38/0x5c
-[cf1bbf40] [c000efa4] ret_from_syscall+0x0/0x3c
+| ffa00000-ffb50000 rw-p ffa00000 00:00 0                                  [stack]
 
-So far I found out that in mm/memory.c, function vm_normal_page, pfn is gre=
-ater than highest_memmap_pfn, thus the error is triggered.
-It is correct that pfn is higher than the end of physical ram, but it is in=
- a valid IO mapped region.
-I guess the problem is that pte_special(pte) returns 0.
-I realized that in the 2.6.29 kernel HAVE_PTE_SPECIAL was 0 and the !HAVE_P=
-TE_SPECIAL case silently returned NULL before checking whether pfn < highes=
-t_memmap_pfn.
+> With a 64-bit kernel, 32-bit userspace has access to the entire 4G
+> address space, so mapping 2G-64k at the 2G-64k point can work, provided
+> you aren't overlapping an existing mapping such as the stack.
+> 
+> > In addition, sometimes mmapstress03 fails due to SEGV. I created a small test
+> > program that just does the above mmap(), and depending on the distro and what
+> > else I print later it crashes with a SEGV, too. Probably this happens because
+> > the mmap() did succeed, and corrupted some existing mappings, cfr. the notes
+> > for MAP_FIXED:
+> 
+> That's possible.
+> 
+> >        MAP_FIXED
+> >               Don’t  interpret  addr  as  a hint: place the mapping at exactly
+> >               that address.  addr must be a multiple of the page size.  If the
+> >               memory  region  specified  by addr and len overlaps pages of any
+> >               existing mapping(s), then the overlapped part  of  the  existing
+> >               mapping(s)  will  be discarded.  If the specified address cannot
+> >               be used, mmap() will fail.  Because requiring  a  fixed  address
+> >               for  a  mapping is less portable, the use of this option is dis‐
+> >               couraged.
+> 
+> Yeah, I suppose the test might be wiping out its own stack for example
 
-In 2.6.30 HAVE_PTE_SPECIAL is 1 and pte_special(pte) returns 0 so the code =
-jumps to the pfn < highest_memmap_pfn check. Thus I believe that the there =
-is a problem with the pte_special flag.
+Indeed.
 
-I will investigate further but maybe someone with more knowledge about page=
- handling on ppc can help me here.
+> IE. I think that test is just bogus :-)
+> 
+> > JFYI, with 64-bit userland, this boils down to:
+> > 
+> > | mmap addr 0x7fffffffffff0000 size 0x7fffffffffff0000
+> > | mmap returned 0xffffffffffffffff
+> > 
+> > i.e. mmap() fails as expected, and the test succeeds.
+> 
+> Right because on 64-bit userspace, you only are allowed something like
+> 16T of address space.
+> 
+> > Does all of this sound OK?
+> > Thanks for your comments!
+> 
+> Yes, I think so far, it's just bogus tests :-)
 
-Bernhard WEIRICH
-Software Development
+Thanks for the confirmation, Segher and Ben!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
+
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
