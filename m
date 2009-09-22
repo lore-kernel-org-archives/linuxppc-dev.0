@@ -1,21 +1,38 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pz0-f188.google.com (mail-pz0-f188.google.com
-	[209.85.222.188]) by ozlabs.org (Postfix) with ESMTP id 8C4EFB7B68
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2009 15:12:04 +1000 (EST)
-Received: by pzk26 with SMTP id 26so532559pzk.4
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Sep 2009 22:12:03 -0700 (PDT)
+Return-Path: <arun@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 66309B7B6B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 22 Sep 2009 15:33:41 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp09.au.ibm.com (8.14.3/8.13.1) with ESMTP id n8M5QXuf024083
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 15:26:33 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n8M5Xco6455072
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 15:33:38 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n8M5XbUa022284
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2009 15:33:38 +1000
+Date: Tue, 22 Sep 2009 11:03:14 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Joel Schopp <jschopp@austin.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+	Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+	Gautham R Shenoy <ego@in.ibm.com>, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: [v5 RFC PATCH 0/7]: cpuidle/x86/POWER (REDESIGN): Cleanup idle
+	power management code in x86, cleanup drivers/cpuidle/cpuidle.c and
+	introduce cpuidle to POWER.
+Message-ID: <20090922053314.GA6417@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20090921220815.D63D854004B@mail96-sin.bigfish.com>
-References: <20090921220815.D63D854004B@mail96-sin.bigfish.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 21 Sep 2009 22:11:43 -0700
-Message-ID: <fa686aa40909212211g4702926dj3bf80482d31f6b7a@mail.gmail.com>
-Subject: Re: [PATCH] [V2] USB: Add support for Xilinx USB host controller
-To: Julie Zhu <julie.zhu@xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: greg@kroah.com, linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	john.linn@xilinx.com
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,18 +42,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 21, 2009 at 3:08 PM, Julie Zhu <julie.zhu@xilinx.com> wrote:
-> Add bus glue driver for Xilinx USB host controller. The controller can be
-> configured as HS only or HS/FS hybrid. The driver uses the device tree file
-> to configure the driver according to the setting in the hardware system.
->
-> This driver has been tested with usbtest using the NET2280 PCI card.
->
-> Signed-off-by: Julie Zhu <julie.zhu@xilinx.com>
-> Signed-off-by: John Linn <john.linn@xilinx.com>
+Hi,
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+******** This is an RFC, not for inclusion **********
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+This patchset introduces cpuidle infrastructure to POWER, prototyping
+for pSeries, and also does a major refactoring of current x86 idle
+power management and a cleanup of cpuidle infrastructure.
+
+My earlier iterations can be found at:
+
+v4 --> http://lkml.org/lkml/2009/9/1/133
+v3 --> http://lkml.org/lkml/2009/8/27/124
+v2 --> http://lkml.org/lkml/2009/8/26/233
+v1 --> http://lkml.org/lkml/2009/8/19/150
+
+Major Changes in this iteration:
+------------------------------------------
+
+* Refactoring x86 idle power management code
+        Remove all instances of pm_idle and make cpuidle_idle_call as
+        _the_ idle routine in x86. So, cpuidle_idle_call will be
+        called from the main idle loop, cpu_idle instead of the
+        function pointer pm_idle. Also, pm_idle was used by apm module
+        and xen. Change those instances such that they register to
+        cpuidle instead.
+
+* Cleanup drivers/cpuidle/cpuidle.c
+        Currently, the cpuidle implementation has weakness in the
+        framework where an exported pm_idle function pointer is
+        manipulated by various subsystem. The proposed framework has
+        a registration mechanism to cleanly add and remove new idle
+        routines from different subsystems.
+
+* Implement cpuidle for pSeries
+        Implement the processor_idle module for pseries, which
+        registers idle loops to cpuidle and also cleanup
+        arch/powerpc/platforms/pseries/setup.c and remove the
+        redundant pseries_dedicated/shared_idle_sleep which is
+        implemented in processor_idle.c
+        Also, remove all instances of ppc_md.power_save, for the same
+        reason as that given for pm_idle.
+
+TODO:
+---------------------------------------------
+
+* Currently, the list based approach that I'm using here is not
+  working in a clean way on a few x86 platforms which have multiple
+  sleep states, leading to kernel panics. So working on resolving
+  that.
+
+* ppc_md.power_save has been replaced by cpuidle_idle_call only for
+  pseries. So this needs to be done for all POWER platforms so that
+  ppc_md.power_save is completely removed.
+
+Patches included in this series:
+---------------------------------------------
+
+1/7 - cleanup drivers/cpuidle/cpuidle.c
+2/7 - implement a list based approach to register a set of idle
+      routines.
+3/7 - refactor x86 idle power management code and remove all instances
+      of pm_idle.
+4/7 - enable cpuidle for POWER.
+5/7 - remove dedicate/shared idle loops, which will be moved to
+      arch/powerpc/platforms/pseries/processor_idle.c
+6/7 - add a default_idle idle loop for POWER.
+7/7 - implement pSeries processor idle module.
+
+Any comments on the design is welcome.
+
+--arun
