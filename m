@@ -1,10 +1,10 @@
 Return-Path: <anton@ozlabs.org>
-Date: Tue, 22 Sep 2009 12:57:40 +1000
+Date: Tue, 22 Sep 2009 13:01:09 +1000
 From: Anton Blanchard <anton@samba.org>
 To: paulus@samba.org, benh@kernel.crashing.org, a.p.zijlstra@chello.nl,
 	mingo@elte.hu
-Subject: [PATCH] powerpc/perf_counter: Fix vdso detection
-Message-ID: <20090922025740.GF31801@kryten>
+Subject: [PATCH] powerpc/perf_counter: Enable SDAR in continous sample mode
+Message-ID: <20090922030109.GG31801@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -18,43 +18,89 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-perf_counter uses arch_vma_name() to detect a vdso region which in turn uses
-current->mm->context.vdso_base. We need to initialise this before doing
-the mmap or else we fail to detect the vdso.
+In continuous sampling mode we want the SDAR to update. While we can
+select between dcache misses and erat misses, a decent default is to
+enable both.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux.trees.git/arch/powerpc/kernel/vdso.c
+Index: linux.trees.git/arch/powerpc/kernel/power7-pmu.c
 ===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/vdso.c	2009-07-15 10:00:41.000000000 +1000
-+++ linux.trees.git/arch/powerpc/kernel/vdso.c	2009-07-15 10:01:40.000000000 +1000
-@@ -240,6 +240,13 @@
- 	}
+--- linux.trees.git.orig/arch/powerpc/kernel/power7-pmu.c	2009-07-22 08:41:50.000000000 +1000
++++ linux.trees.git/arch/powerpc/kernel/power7-pmu.c	2009-07-22 09:22:54.000000000 +1000
+@@ -54,6 +54,10 @@
+  * Bits in MMCRA
+  */
  
- 	/*
-+	 * Put vDSO base into mm struct. We need to do this before calling
-+	 * install_special_mapping or the perf counter mmap tracking code
-+	 * will fail to recognise it as a vDSO (since arch_vma_name fails).
-+	 */
-+	current->mm->context.vdso_base = vdso_base;
++/* These bits control when the SDAR updates when in continous sampling mode */
++#define MMCRA_SDAR_DCACHE_MISS	30
++#define MMCRA_SDAR_ERAT_MISS	29
 +
-+	/*
- 	 * our vma flags don't have VM_WRITE so by default, the process isn't
- 	 * allowed to write those pages.
- 	 * gdb can break that with ptrace interface, and thus trigger COW on
-@@ -259,11 +266,10 @@
- 				     VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC|
- 				     VM_ALWAYSDUMP,
- 				     vdso_pagelist);
--	if (rc)
-+	if (rc) {
-+		current->mm->context.vdso_base = 0;
- 		goto fail_mmapsem;
--
--	/* Put vDSO base into mm struct */
--	current->mm->context.vdso_base = vdso_base;
-+	}
+ /*
+  * Layout of constraint bits:
+  * 6666555555555544444444443333333333222222222211111111110000000000
+@@ -230,7 +234,8 @@ static int power7_compute_mmcr(u64 event
+ 			       unsigned int hwc[], unsigned long mmcr[])
+ {
+ 	unsigned long mmcr1 = 0;
+-	unsigned long mmcra = 0;
++	unsigned long mmcra = (1 << MMCRA_SDAR_DCACHE_MISS) |
++				(1 << MMCRA_SDAR_ERAT_MISS);
+ 	unsigned int pmc, unit, combine, l2sel, psel;
+ 	unsigned int pmc_inuse = 0;
+ 	int i;
+Index: linux.trees.git/arch/powerpc/kernel/power5-pmu.c
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/kernel/power5-pmu.c	2009-07-22 09:07:17.000000000 +1000
++++ linux.trees.git/arch/powerpc/kernel/power5-pmu.c	2009-07-22 09:22:52.000000000 +1000
+@@ -76,6 +76,10 @@
+  * Bits in MMCRA
+  */
  
- 	up_write(&mm->mmap_sem);
- 	return 0;
++/* These bits control when the SDAR updates when in continous sampling mode */
++#define MMCRA_SDAR_DCACHE_MISS	30
++#define MMCRA_SDAR_ERAT_MISS	29
++
+ /*
+  * Layout of constraint bits:
+  * 6666555555555544444444443333333333222222222211111111110000000000
+@@ -390,7 +394,8 @@ static int power5_compute_mmcr(u64 event
+ 			       unsigned int hwc[], unsigned long mmcr[])
+ {
+ 	unsigned long mmcr1 = 0;
+-	unsigned long mmcra = 0;
++	unsigned long mmcra = (1 << MMCRA_SDAR_DCACHE_MISS) |
++				(1 << MMCRA_SDAR_ERAT_MISS);
+ 	unsigned int pmc, unit, byte, psel;
+ 	unsigned int ttm, grp;
+ 	int i, isbus, bit, grsel;
+Index: linux.trees.git/arch/powerpc/kernel/power6-pmu.c
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/kernel/power6-pmu.c	2009-07-22 09:07:14.000000000 +1000
++++ linux.trees.git/arch/powerpc/kernel/power6-pmu.c	2009-07-22 09:22:45.000000000 +1000
+@@ -51,6 +51,14 @@
+ #define MMCR1_PMCSEL_MSK	0xff
+ 
+ /*
++ * Bits in MMCRA
++ */
++
++/* These bits control when the SDAR updates when in continous sampling mode */
++#define MMCRA_SDAR_DCACHE_MISS	30
++#define MMCRA_SDAR_ERAT_MISS	29
++
++/*
+  * Map of which direct events on which PMCs are marked instruction events.
+  * Indexed by PMCSEL value >> 1.
+  * Bottom 4 bits are a map of which PMCs are interesting,
+@@ -178,7 +186,8 @@ static int p6_compute_mmcr(u64 event[], 
+ 			   unsigned int hwc[], unsigned long mmcr[])
+ {
+ 	unsigned long mmcr1 = 0;
+-	unsigned long mmcra = 0;
++	unsigned long mmcra = (1 << MMCRA_SDAR_DCACHE_MISS) |
++				(1 << MMCRA_SDAR_ERAT_MISS);
+ 	int i;
+ 	unsigned int pmc, ev, b, u, s, psel;
+ 	unsigned int ttmset = 0;
