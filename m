@@ -1,24 +1,23 @@
-Return-Path: <johnny.hacking@gmail.com>
-Received: from mail-px0-f177.google.com (mail-px0-f177.google.com
-	[209.85.216.177]) by ozlabs.org (Postfix) with ESMTP id AA777B7B70
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Sep 2009 01:20:19 +1000 (EST)
-Received: by pxi7 with SMTP id 7so649771pxi.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 23 Sep 2009 08:20:17 -0700 (PDT)
+Return-Path: <sam@ravnborg.org>
+Received: from pqueuea.post.tele.dk (pqueuea.post.tele.dk [193.162.153.9])
+	by ozlabs.org (Postfix) with ESMTP id 598E4B7B72
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 03:58:49 +1000 (EST)
+Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
+	by pqueuea.post.tele.dk (Postfix) with ESMTP id 524ACDBDC8
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 19:40:21 +0200 (CEST)
+Date: Wed, 23 Sep 2009 19:40:15 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Abbott <tabbott@ksplice.com>
+Subject: Re: [PATCH] powerpc: Cleanup linker script using new linker script
+	macros.
+Message-ID: <20090923174015.GB32419@merkur.ravnborg.org>
+References: <1253632689-24173-1-git-send-email-tabbott@ksplice.com>
+	<1253632689-24173-2-git-send-email-tabbott@ksplice.com>
 MIME-Version: 1.0
-In-Reply-To: <87r5txrkfz.fsf@macbook.be.48ers.dk>
-References: <cb9ecdfa0909222055x1d691698sb516b5b8f5f81d@mail.gmail.com>
-	<87y6o6rvvc.fsf@macbook.be.48ers.dk>
-	<cb9ecdfa0909230352w77a37f59h3c7f1e146121f9f6@mail.gmail.com>
-	<87r5txrkfz.fsf@macbook.be.48ers.dk>
-Date: Wed, 23 Sep 2009 23:20:17 +0800
-Message-ID: <cb9ecdfa0909230820k6ebbd589o409e58e2d9b6740c@mail.gmail.com>
-Subject: Re: GPIO driver for MPC8313.
-From: Johnny Hung <johnny.hacking@gmail.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-embedded@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1253632689-24173-2-git-send-email-tabbott@ksplice.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Many thanks for your help. I will try it.
+On Tue, Sep 22, 2009 at 11:18:09AM -0400, Tim Abbott wrote:
+> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@ozlabs.org
+> Cc: Sam Ravnborg <sam@ravnborg.org>
 
-2009/9/23 Peter Korsgaard <jacmet@sunsite.dk>:
->>>>>> "Johnny" =3D=3D Johnny Hung <johnny.hacking@gmail.com> writes:
->
-> =A0Johnny> Thanks, got it. BTW, how to trigger GPIO level in user space
-> =A0Johnny> application? I also found
-> =A0Johnny> arch/powerpc/platforms/52xx/mpc52xx_gpio.c is a good
-> =A0Johnny> example. Any reply is appreciate.
->
-> Through sysfs. See 'Sysfs Interface for Userspace' section of
-> Documentation/gpio.txt
->
-> --
-> Bye, Peter Korsgaard
->
+Look good.
+
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+
+	Sam
