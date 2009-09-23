@@ -1,24 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 069CFB7B7B
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 21:59:56 +1000 (EST)
-Date: Wed, 23 Sep 2009 15:59:54 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Gao Guanhua <B22826@freescale.com>
-Subject: Re: [PATCH 6/6] P2020DS: Remove sdhci-dma-broken and
-	sdhci-ahb2mag-irq-bypass properties
-Message-ID: <20090923115954.GC6425@oksana.dev.rtsoft.ru>
-References: <1253696892-15262-1-git-send-email-B22826@freescale.com>
-	<1253696892-15262-2-git-send-email-B22826@freescale.com>
-	<1253696892-15262-3-git-send-email-B22826@freescale.com>
-	<1253696892-15262-4-git-send-email-B22826@freescale.com>
-	<1253696892-15262-5-git-send-email-B22826@freescale.com>
-	<1253696892-15262-6-git-send-email-B22826@freescale.com>
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5C330B7B68
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 22:44:38 +1000 (EST)
+Date: Wed, 23 Sep 2009 14:44:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] perf_event, powerpc: Fix compilation after big
+	perf_counter rename
+Message-ID: <20090923124420.GA5525@elte.hu>
+References: <19128.4280.813369.589704@cargo.ozlabs.ibm.com>
+	<1253584591.7103.197.camel@pasglop>
+	<20090922072834.GA25470@elte.hu>
+	<1253606415.7103.216.camel@pasglop>
+	<1253620332.10476.4.camel@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1253696892-15262-6-git-send-email-B22826@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, sdhci-devel@lists.ossman.eu
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1253620332.10476.4.camel@concordia>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +31,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 23, 2009 at 05:08:12PM +0800, Gao Guanhua wrote:
-> The SDHC on P2020DS board use DMA mode by default.
-> This patch remove the properties used in PIO mode.
 
-You just added the properties in 3/6 and 4/6, and now you instantly
-remove them?
+* Michael Ellerman <michael@ellerman.id.au> wrote:
 
-> ---
->  arch/powerpc/boot/dts/p2020ds.dts |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
+> On Tue, 2009-09-22 at 18:00 +1000, Benjamin Herrenschmidt wrote:
+> > On Tue, 2009-09-22 at 09:28 +0200, Ingo Molnar wrote:
+> > > 
+> > > Nevertheless you are right that i should have caught this particular 
+> > > PowerPC build bug - i missed it - sorry about that!
+> > > 
+> > Allright. Well, to help in general, we are setting up a build-bot
+> > here too that will build -tip HEAD for at least powerpc daily with
+> > a few configs too.
 > 
-> diff --git a/arch/powerpc/boot/dts/p2020ds.dts b/arch/powerpc/boot/dts/p2020ds.dts
-> index 29989fb..3263397 100644
-> --- a/arch/powerpc/boot/dts/p2020ds.dts
-> +++ b/arch/powerpc/boot/dts/p2020ds.dts
-> @@ -459,8 +459,6 @@
->  			reg = <0x2e000 0x1000>;
->  			interrupts = <72 0x2>;
->  			interrupt-parent = <&mpic>;
-> -			fsl,sdhci-dma-broken;
-> -			fsl,sdhci-ahb2mag-irq-bypass;
->  			fsl,sdhci-adjust-timeout;
->  			clock-frequency = <0>;
->  		};
-> -- 
-> 1.6.4
+> Results here:
+> 
+> http://kisskb.ellerman.id.au/kisskb/branch/12/
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+ok, seems green for today - the two failures are: one a powerpc 
+toolchain problem it appears, plus a mainline warning.
+
+Btw., for me to be able to notice failures there it would have to email 
+me automatically if there's any -tip build failures that do not occur 
+with the upstream branch. Does it have such a feature?
+
+	Ingo
