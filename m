@@ -1,16 +1,18 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id F377BB7B99
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 21:52:54 +1000 (EST)
-Date: Wed, 23 Sep 2009 15:52:52 +0400
+	by ozlabs.org (Postfix) with ESMTP id 0CB51B7B8C
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 21:55:20 +1000 (EST)
+Date: Wed, 23 Sep 2009 15:55:18 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Gao Guanhua <B22826@freescale.com>
-Subject: Re: [PATCH 1/6] sdhci: Enable cache snooping
-Message-ID: <20090923115252.GA6425@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 3/6] P2020DS: Fixup sdhc to use PIO mode
+Message-ID: <20090923115518.GB6425@oksana.dev.rtsoft.ru>
 References: <1253696892-15262-1-git-send-email-B22826@freescale.com>
+	<1253696892-15262-2-git-send-email-B22826@freescale.com>
+	<1253696892-15262-3-git-send-email-B22826@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1253696892-15262-1-git-send-email-B22826@freescale.com>
+In-Reply-To: <1253696892-15262-3-git-send-email-B22826@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, sdhci-devel@lists.ossman.eu
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,48 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 23, 2009 at 05:08:07PM +0800, Gao Guanhua wrote:
-> This patch enable cache snooping when the sdhc is initialized.
+On Wed, Sep 23, 2009 at 05:08:09PM +0800, Gao Guanhua wrote:
+> The SDHC can not work on DMA mode because of the hardware bug,
+> so we set a broken dma flag and use PIO mode. This patch applies
+> to Rev1.0.
+
+Signed-off-by line is missing (in all patches).
+
 > ---
->  drivers/mmc/host/sdhci.c |    3 +++
->  drivers/mmc/host/sdhci.h |    4 ++++
->  2 files changed, 7 insertions(+), 0 deletions(-)
+>  arch/powerpc/boot/dts/p2020ds.dts |    1 +
+>  drivers/mmc/host/sdhci-of.c       |    3 +++
+>  2 files changed, 4 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-> index 288e40b..cc6d45c 100644
-> --- a/drivers/mmc/host/sdhci.c
-> +++ b/drivers/mmc/host/sdhci.c
-> @@ -178,6 +178,9 @@ static void sdhci_init(struct sdhci_host *host)
->  {
->  	sdhci_reset(host, SDHCI_RESET_ALL);
+> diff --git a/arch/powerpc/boot/dts/p2020ds.dts b/arch/powerpc/boot/dts/p2020ds.dts
+> index be449ba..574ad4f 100644
+> --- a/arch/powerpc/boot/dts/p2020ds.dts
+> +++ b/arch/powerpc/boot/dts/p2020ds.dts
+> @@ -459,6 +459,7 @@
+>  			reg = <0x2e000 0x1000>;
+>  			interrupts = <72 0x2>;
+>  			interrupt-parent = <&mpic>;
+> +			fsl,sdhci-dma-broken;
+
+You might want to update
+Documentation/powerpc/dts-bindings/fsl/esdhc.txt
+
+>  			clock-frequency = <0>;
+>  		};
 >  
-> +	/* Enable cache snooping */
-> +	sdhci_writel(host, SDHCI_CACHE_SNOOP, SDHCI_HOST_DMA_CONTROL);
+> diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
+> index 01ab916..5879483 100644
+> --- a/drivers/mmc/host/sdhci-of.c
+> +++ b/drivers/mmc/host/sdhci-of.c
+> @@ -270,6 +270,9 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
+>  	if (sdhci_of_wp_inverted(np))
+>  		host->quirks |= SDHCI_QUIRK_INVERTED_WRITE_PROTECT;
+>  
+> +	if (of_get_property(np, "fsl,sdhci-dma-broken", NULL))
+> +		host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
 > +
->  	sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK,
->  		SDHCI_INT_BUS_POWER | SDHCI_INT_DATA_END_BIT |
->  		SDHCI_INT_DATA_CRC | SDHCI_INT_DATA_TIMEOUT | SDHCI_INT_INDEX |
-> diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-> index afda7f1..9ee9622 100644
-> --- a/drivers/mmc/host/sdhci.h
-> +++ b/drivers/mmc/host/sdhci.h
-> @@ -176,6 +176,10 @@
->  #define   SDHCI_SPEC_100	0
->  #define   SDHCI_SPEC_200	1
->  
-> +/* 40C DMA control register*/
-> +#define SDHCI_HOST_DMA_CONTROL	0x40C
-
-SDHCI Specification doesn't mention this register, it isn't standard.
-Plus, we have this register and bit set already in sdhci-of.c:
-
-static int esdhc_enable_dma(struct sdhci_host *host)
-{
-        setbits32(host->ioaddr + ESDHC_DMA_SYSCTL, ESDHC_DMA_SNOOP);
-        return 0;
-}
-
-Do p2020 need this bit set for PIO mode too?
+>  	clk = of_get_property(np, "clock-frequency", &size);
+>  	if (clk && size == sizeof(*clk) && *clk)
+>  		of_host->clock = *clk;
+> -- 
+> 1.6.4
 
 Thanks,
 
