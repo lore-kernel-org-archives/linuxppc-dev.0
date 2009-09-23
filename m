@@ -1,29 +1,17 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 54DBCB7B78
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 10:03:38 +1000 (EST)
-Date: Tue, 22 Sep 2009 17:02:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 2/6] mtd: m25p80: Convert to device table matching
-Message-Id: <20090922170215.b5c2d02c.akpm@linux-foundation.org>
-In-Reply-To: <20090922235534.GA3796@oksana.dev.rtsoft.ru>
-References: <20090731003957.GA23982@oksana.dev.rtsoft.ru>
-	<20090731004100.GB8371@oksana.dev.rtsoft.ru>
-	<200908031954.50955.david-b@pacbell.net>
-	<20090922141705.b5d31e24.akpm@linux-foundation.org>
-	<20090922230150.GA27593@oksana.dev.rtsoft.ru>
-	<1253663027.27055.528.camel@macbook.infradead.org>
-	<20090922235534.GA3796@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ben@fluff.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-	david-b@pacbell.net, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, khali@linux-fr.org, dwmw2@infradead.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 23 Sep 2009 10:03:14 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc: Move 64bit heap above 1TB on machines with 1TB segments
+Message-ID: <20090923000314.GB26739@yookeroo.seuss>
+References: <20090922025235.GD31801@kryten>
+	<OFE590BAE9.6FD7FAB3-ON80257639.0050F8A6-80257639.00514A5E@ie.ibm.com>
+	<1253653702.7103.244.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1253653702.7103.244.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org, Mel Gorman <MELGOR@ie.ibm.com>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,26 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 23 Sep 2009 03:55:34 +0400
-Anton Vorontsov <cbouatmailru@gmail.com> wrote:
-
-> On Tue, Sep 22, 2009 at 04:43:47PM -0700, David Woodhouse wrote:
-> > On Wed, 2009-09-23 at 03:01 +0400, Anton Vorontsov wrote:
-> > > 
-> > > And the two patches I sent on top:
-> > > 
-> > > http://lkml.org/lkml/2009/8/18/364
-> > > http://lkml.org/lkml/2009/8/18/366
-> > 
-> > Got versions of those which apply to the mtd-2.6.git tree (which I'm
-> > about to ask Linus to pull)? 
+On Wed, Sep 23, 2009 at 07:08:22AM +1000, Benjamin Herrenschmidt wrote:
 > 
-> I'd love to, but they depend on a bunch of SPI patches that are still
-> in -mm tree.
+> > Unfortunately, I am not sensitive to issues surrounding 1TB segments or how
+> > they are currently being used. However, as this clearly helps performance
+> > for large amounts of memory, is it worth providing an option to
+> > libhugetlbfs to locate 16MB pages above 1TB when they are otherwise being
+> > unused?
+> 
+> AFAIK, that is already the case, at least the kernel will hand out pages
+> above 1T preferentially iirc.
+> 
+> There were talks about making huge pages below 1T not even come up
+> untily you ask for them with MAP_FIXED, dunno where that went.
 
-oh, is that why I queued them up where I did.  Sigh.
+That was already the case as far as I remember.  But it's just
+possible that changed when the general slice handling code came in,
 
-> As soon as SPI core changes hit Linus' tree, I think
-> Andrew will send all m25p80 patches to you anyway.
-
-Or David can ack them and I'll send 'em up.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
