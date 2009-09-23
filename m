@@ -1,13 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 17AFCB7B7D
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 04:52:40 +1000 (EST)
-Date: Wed, 23 Sep 2009 22:52:38 +0400
+	by ozlabs.org (Postfix) with ESMTP id 82930B7B7F
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 04:52:43 +1000 (EST)
+Date: Wed, 23 Sep 2009 22:52:42 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/3] powerpc/fsl: Make fsl_deep_sleep() usable w/ modules
-	and non-83xx builds
-Message-ID: <20090923185238.GA18755@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/3] USB: ehci-fsl: Fix sparse warnings
+Message-ID: <20090923185242.GB18755@oksana.dev.rtsoft.ru>
 References: <20090923185158.GA29065@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -23,41 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Export is needed for modular builds, and a static inline stub is needed
-for non-MPC83xx builds.
+This patch fixes following warnings:
+
+ehci-fsl.c:43:5: warning: symbol 'usb_hcd_fsl_probe' was not declared. Should it be static?
+ehci-fsl.c:150:6: warning: symbol 'usb_hcd_fsl_remove' was not declared. Should it be static?
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/platforms/83xx/suspend.c |    1 +
- include/linux/fsl_devices.h           |    4 ++++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+ drivers/usb/host/ehci-fsl.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
-index 08e65fc..d306f07 100644
---- a/arch/powerpc/platforms/83xx/suspend.c
-+++ b/arch/powerpc/platforms/83xx/suspend.c
-@@ -96,6 +96,7 @@ int fsl_deep_sleep(void)
- {
- 	return deep_sleeping;
- }
-+EXPORT_SYMBOL(fsl_deep_sleep);
- 
- static int mpc83xx_change_state(void)
- {
-diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
-index 39fd946..47188d5 100644
---- a/include/linux/fsl_devices.h
-+++ b/include/linux/fsl_devices.h
-@@ -90,6 +90,10 @@ struct mpc8xx_pcmcia_ops {
-  * lead to a deep sleep (i.e. power removed from the core,
-  * instead of just the clock).
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index 9911749..593a7e7 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -40,8 +40,8 @@
+  * Allocates basic resources for this USB host controller.
+  *
   */
-+#if defined(CONFIG_PPC_83xx) && defined(CONFIG_SUSPEND)
- int fsl_deep_sleep(void);
-+#else
-+static inline int fsl_deep_sleep(void) { return 0; }
-+#endif
- 
- #endif /* _FSL_DEVICE_H_ */
+-int usb_hcd_fsl_probe(const struct hc_driver *driver,
+-		      struct platform_device *pdev)
++static int usb_hcd_fsl_probe(const struct hc_driver *driver,
++			     struct platform_device *pdev)
+ {
+ 	struct fsl_usb2_platform_data *pdata;
+ 	struct usb_hcd *hcd;
+@@ -147,7 +147,8 @@ int usb_hcd_fsl_probe(const struct hc_driver *driver,
+  * Reverses the effect of usb_hcd_fsl_probe().
+  *
+  */
+-void usb_hcd_fsl_remove(struct usb_hcd *hcd, struct platform_device *pdev)
++static void usb_hcd_fsl_remove(struct usb_hcd *hcd,
++			       struct platform_device *pdev)
+ {
+ 	usb_remove_hcd(hcd);
+ 	iounmap(hcd->regs);
 -- 
 1.6.3.3
