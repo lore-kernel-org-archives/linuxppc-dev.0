@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id AFFD1B7BB3
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 05:01:14 +1000 (EST)
-Date: Wed, 23 Sep 2009 23:01:13 +0400
+	by ozlabs.org (Postfix) with ESMTP id CCCBCB8088
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 05:01:21 +1000 (EST)
+Date: Wed, 23 Sep 2009 23:01:20 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/3] powerpc/83xx/suspend: Clear deep_sleeping after
-	devices resume
-Message-ID: <20090923190113.GA19932@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/3] powerpc/83xx/suspend: Save and restore SICRL, SICRH
+	and SCCR
+Message-ID: <20090923190120.GB19932@oksana.dev.rtsoft.ru>
 References: <20090923190041.GA18944@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -22,41 +22,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently 83xx PMC driver clears deep_sleeping variable very early,
-before devices are resumed. This makes fsl_deep_sleep() unusable in
-drivers' resume() callback.
-
-Sure, drivers can store fsl_deep_sleep() value on suspend and use
-the stored value on resume. But a better solution is to postpone
-clearing the deep_sleeping variable, i.e. move it into finish()
-callback.
+We need to save SICRL, SICRH and SCCR registers on suspend, and restore
+them on resume. Otherwise, we lose IO and clocks setup on MPC8315E-RDB
+boards when ULPI USB PHY is used (non-POR setup).
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/platforms/83xx/suspend.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/83xx/suspend.c |   48 +++++++++++++++++++++++++++++++++
+ 1 files changed, 48 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
-index d306f07..b0c2619 100644
+index b0c2619..4380534 100644
 --- a/arch/powerpc/platforms/83xx/suspend.c
 +++ b/arch/powerpc/platforms/83xx/suspend.c
-@@ -194,7 +194,7 @@ out:
+@@ -32,6 +32,7 @@
+ #define PMCCR1_NEXT_STATE       0x0C /* Next state for power management */
+ #define PMCCR1_NEXT_STATE_SHIFT 2
+ #define PMCCR1_CURR_STATE       0x03 /* Current state for power management*/
++#define IMMR_SYSCR_OFFSET       0x100
+ #define IMMR_RCW_OFFSET         0x900
+ #define RCW_PCI_HOST            0x80000000
+ 
+@@ -78,6 +79,22 @@ struct mpc83xx_clock {
+ 	u32 sccr;
+ };
+ 
++struct mpc83xx_syscr {
++	__be32 sgprl;
++	__be32 sgprh;
++	__be32 spridr;
++	__be32 :32;
++	__be32 spcr;
++	__be32 sicrl;
++	__be32 sicrh;
++};
++
++struct mpc83xx_saved {
++	u32 sicrl;
++	u32 sicrh;
++	u32 sccr;
++};
++
+ struct pmc_type {
+ 	int has_deep_sleep;
+ };
+@@ -87,6 +104,8 @@ static int has_deep_sleep, deep_sleeping;
+ static int pmc_irq;
+ static struct mpc83xx_pmc __iomem *pmc_regs;
+ static struct mpc83xx_clock __iomem *clock_regs;
++static struct mpc83xx_syscr __iomem *syscr_regs;
++static struct mpc83xx_saved saved_regs;
+ static int is_pci_agent, wake_from_pci;
+ static phys_addr_t immrbase;
+ static int pci_pm_state;
+@@ -137,6 +156,20 @@ static irqreturn_t pmc_irq_handler(int irq, void *dev_id)
  	return ret;
  }
  
--static void mpc83xx_suspend_finish(void)
-+static void mpc83xx_suspend_end(void)
++static void mpc83xx_suspend_restore_regs(void)
++{
++	out_be32(&syscr_regs->sicrl, saved_regs.sicrl);
++	out_be32(&syscr_regs->sicrh, saved_regs.sicrh);
++	out_be32(&clock_regs->sccr, saved_regs.sccr);
++}
++
++static void mpc83xx_suspend_save_regs(void)
++{
++	saved_regs.sicrl = in_be32(&syscr_regs->sicrl);
++	saved_regs.sicrh = in_be32(&syscr_regs->sicrh);
++	saved_regs.sccr = in_be32(&clock_regs->sccr);
++}
++
+ static int mpc83xx_suspend_enter(suspend_state_t state)
  {
- 	deep_sleeping = 0;
- }
-@@ -278,7 +278,7 @@ static struct platform_suspend_ops mpc83xx_suspend_ops = {
- 	.valid = mpc83xx_suspend_valid,
- 	.begin = mpc83xx_suspend_begin,
- 	.enter = mpc83xx_suspend_enter,
--	.finish = mpc83xx_suspend_finish,
-+	.end = mpc83xx_suspend_end,
- };
+ 	int ret = -EAGAIN;
+@@ -166,6 +199,8 @@ static int mpc83xx_suspend_enter(suspend_state_t state)
+ 	 */
  
- static int pmc_probe(struct of_device *ofdev,
+ 	if (deep_sleeping) {
++		mpc83xx_suspend_save_regs();
++
+ 		out_be32(&pmc_regs->mask, PMCER_ALL);
+ 
+ 		out_be32(&pmc_regs->config1,
+@@ -179,6 +214,8 @@ static int mpc83xx_suspend_enter(suspend_state_t state)
+ 		         in_be32(&pmc_regs->config1) & ~PMCCR1_POWER_OFF);
+ 
+ 		out_be32(&pmc_regs->mask, PMCER_PMCI);
++
++		mpc83xx_suspend_restore_regs();
+ 	} else {
+ 		out_be32(&pmc_regs->mask, PMCER_PMCI);
+ 
+@@ -333,12 +370,23 @@ static int pmc_probe(struct of_device *ofdev,
+ 		goto out_pmc;
+ 	}
+ 
++	if (has_deep_sleep) {
++		syscr_regs = ioremap(immrbase + IMMR_SYSCR_OFFSET,
++				     sizeof(*syscr_regs));
++		if (!syscr_regs) {
++			ret = -ENOMEM;
++			goto out_syscr;
++		}
++	}
++
+ 	if (is_pci_agent)
+ 		mpc83xx_set_agent();
+ 
+ 	suspend_set_ops(&mpc83xx_suspend_ops);
+ 	return 0;
+ 
++out_syscr:
++	iounmap(clock_regs);
+ out_pmc:
+ 	iounmap(pmc_regs);
+ out:
 -- 
 1.6.3.3
