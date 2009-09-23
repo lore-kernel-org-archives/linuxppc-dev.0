@@ -1,29 +1,20 @@
-Return-Path: <Bernhard.Weirich@riedel.net>
-Received: from dfallbackip1.mail.eu.uu.net (dhuumrelay1.dtm.ops.eu.uu.net
-	[194.139.33.71])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 30F1FB7B7A
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 19:09:00 +1000 (EST)
-Received: from dhuumrelay1.dtm.ops.eu.uu.net (dfallbackip1.mail.eu.uu.net
-	[195.129.12.192])
-	by dfallbackip1.mail.eu.uu.net (8.14.1/8.14.1) with ESMTP id
-	n8N6iwf8027584
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 06:44:58 GMT
-Received: from mail.riedel.net (mail.riedel.net [213.70.193.150])
-	by dhuumrelay1.dtm.ops.eu.uu.net (8.14.1/8.14.1) with ESMTP id
-	n8N6iqfe027571
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 06:44:53 GMT
-From: "Weirich, Bernhard" <Bernhard.Weirich@riedel.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 23 Sep 2009 08:44:49 +0200
-Subject: Re: [PATCH] powerpc/mm: Fix 40x and 8xx vs. _PAGE_SPECIAL
-Message-ID: <CE92B8B581B4584FB8CA86B51EDE8AC5243C568B05@wupexchange.riedel.net>
-References: <1253679146.7103.270.camel@pasglop>
-In-Reply-To: <1253679146.7103.270.camel@pasglop>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id EDDD6B70B3
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2009 19:42:15 +1000 (EST)
+Subject: Re: PCI HotPlug and Adding Resources after Linux Boots
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Morrison, Tom" <tmorrison@empirix.com>
+In-Reply-To: <80955630EE34634AB5030FB8CE9BDCEFD7459DF2@EXBEDCLST.empirix.com>
+References: <80955630EE34634AB5030FB8CE9BDCEFD7459DF2@EXBEDCLST.empirix.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 23 Sep 2009 19:42:07 +1000
+Message-Id: <1253698927.7103.312.camel@pasglop>
+Mime-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,80 +24,252 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Works perfectly here. Thank you for the patch, I was not feeling confident =
-enough to play around with the page bits :)
+On Tue, 2009-09-22 at 15:36 -0400, Morrison, Tom wrote:
+> I am not exactly sure who to direct this question to (general Linux
+> kernel or LinuxPPC),
 
-Bernhard WEIRICH
-Software Development
-________________________________________
-Von: Benjamin Herrenschmidt [benh@kernel.crashing.org]
-Gesendet: Mittwoch, 23. September 2009 06:12
-An: Weirich, Bernhard; Rex Feany
-Cc: linuxppc-dev list
-Betreff: [PATCH] powerpc/mm: Fix 40x and 8xx vs. _PAGE_SPECIAL
+PCI Hotplug is reasonably arch specific at the moment so I suppose
+here's is as good as anywhere else to ask :-)
 
-The test to check whether we have _PAGE_SPECIAL defined is broken,
-since we always define it, just not always to a meaninful value :-)
+> so I am directing to both – in hopes that someone will recognize this
+> problem – and perhaps
+> 
+> give me some suggestions on how to proceed…
 
-That broke 8xx and 40x under some circumstances.
+There's a few things you can do, though I don't have time just right now
+to give you a detailed answer. I'll try again later.
 
-This fixes it by adding _PAGE_SPECIAL for both of these since they
-had a free PTE bit, and removing the condition around advertising
-it.
+In the meantime, some of the answers could be around not using full
+automatic resource assignment, but instead, pre-initializing the top
+bridge with some resources that are going to be enough for the device.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+You can also try to get the bridge to re-allocate. There's various funky
+locking issues with doing that though as long as it's during boot time,
+it's not too much of a problem.
 
-Bernhard, Rex, please let me know if that works for you.
+There are other more or less hackish ways to do it, but I'll have to
+give it more thought.
 
+I'm quite stretched at the moment so if you don't hear back from me in
+the upcoming few days, don't hesitate to ping me again.
 
-diff --git a/arch/powerpc/include/asm/pte-40x.h b/arch/powerpc/include/asm/=
-pte-40x.h
-index 6c3e1f4..ec0b0b0 100644
---- a/arch/powerpc/include/asm/pte-40x.h
-+++ b/arch/powerpc/include/asm/pte-40x.h
-@@ -43,6 +43,7 @@
- #define        _PAGE_NO_CACHE  0x004   /* I: caching is inhibited */
- #define        _PAGE_WRITETHRU 0x008   /* W: caching is write-through */
- #define        _PAGE_USER      0x010   /* matches one of the zone permissi=
-on bits */
-+#define        _PAGE_SPECIAL   0x020   /* software: Special page */
- #define        _PAGE_RW        0x040   /* software: Writes permitted */
- #define        _PAGE_DIRTY     0x080   /* software: dirty page */
- #define _PAGE_HWWRITE  0x100   /* hardware: Dirty & RW, set in exception *=
-/
-diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/=
-pte-8xx.h
-index 94e9797..dd5ea95 100644
---- a/arch/powerpc/include/asm/pte-8xx.h
-+++ b/arch/powerpc/include/asm/pte-8xx.h
-@@ -32,6 +32,7 @@
- #define _PAGE_FILE     0x0002  /* when !present: nonlinear file mapping */
- #define _PAGE_NO_CACHE 0x0002  /* I: cache inhibit */
- #define _PAGE_SHARED   0x0004  /* No ASID (context) compare */
-+#define _PAGE_SPECIAL  0x0008  /* SW entry, forced to 0 by the TLB miss */
+Cheers,
+Ben. 
 
- /* These five software bits must be masked out when the entry is loaded
-  * into the TLB.
-diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/a=
-sm/pte-common.h
-index c3b6507..f2b3701 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -25,9 +25,6 @@
- #ifndef _PAGE_WRITETHRU
- #define _PAGE_WRITETHRU        0
- #endif
--#ifndef _PAGE_SPECIAL
--#define _PAGE_SPECIAL  0
--#endif
- #ifndef _PAGE_4K_PFN
- #define _PAGE_4K_PFN           0
- #endif
-@@ -179,7 +176,5 @@ extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
- #define HAVE_PAGE_AGP
-
- /* Advertise support for _PAGE_SPECIAL */
--#ifdef _PAGE_SPECIAL
- #define __HAVE_ARCH_PTE_SPECIAL
--#endif
+> 
+> I am running Linux (2.6.23x (and 2.6.27.x)) on a MPC8572 based system.
+> 
+>  
+> 
+> I have an 8616 switch that has a Port (6) connected to a FPGA that is 
+> 
+> NOT loaded at before Linux boots (note: this port is configured for
+> HOTPLUG
+> 
+> events - which we do get after FPGA  is loaded). We are NOT using a 
+> 
+> static device tree map (because the devices in the system are very
+> dynamic).
+> 
+> 
+> We use instead the pci auto scan mechanism(s) to scan/assign
+> resources 
+> 
+> (including into the BAR registers) at bootup to all of the devices
+> that are 
+> 
+> attached to this MPC8572…
+> 
+>  
+> 
+> Here is the port that is attached to the device (note: there are NO 
+> 
+> resources assigned at this point this port):
+> 
+>  
+> 
+> -------------------------------------------------------------------------------------------------
+> 
+> 02:06.0 PCI bridge: PLX Technology, Inc.: Unknown device 8616 (rev bb)
+> (prog-if 00 [Normal decode])
+> 
+>         Flags: bus master, fast devsel, latency 0
+> 
+>         Bus: primary=02, secondary=05, subordinate=05, sec-latency=0
+> 
+>         Capabilities: [40] Power Management version 3
+> 
+>         Capabilities: [48] Message Signalled Interrupts: 64bit+
+> Queue=0/2 Enable+
+> 
+>         Capabilities: [68] #10 [0162]
+> 
+>         Capabilities: [a4] #0d [0000]
+> 
+>  
+> 
+> root@slave7 ~ # lspci -t
+> 
+> -+-[01]---00.0-[02-05]--+-01.0
+> 
+>  |                      +-04.0-[03]--
+> 
+>  |                      +-05.0-[04]--
+> 
+>  |                      \-06.0-[05]—
+> 
+>  
+> 
+> -------------------------------------------------------------------------------------------------
+> 
+>  
+> 
+> Later, after I detect there is an FPGA to load - I load it. At
+> completion of the
+> 
+> loading of the FPGA - the 8616  detects the FPGA – and creates a
+> HotPlug 
+> 
+> event that the PCI Express HotPlug Driver handles:
+> 
+> -------------------------------------------------------------------------------------------------
+> 
+>  
+> 
+> root@slave7 ~ # pciehp: pcie_isr: intr_loc 8
+> 
+> pciehp: pciehp:  Presence/Notify input change.
+> 
+> pciehp: Card present on Slot(0005_0070)
+> 
+> pciehp: Surprise Removal
+> 
+> pciehp: hpc_get_power_status: SLOTCTRL 80 value read 8
+> 
+> pciehp: hpc_get_attention_status: SLOTCTRL 80, value read 8
+> 
+> pciehp: board_added: slot device, slot offset, hp slot = 0, 0 ,0
+> 
+> pciehp: hpc_check_lnk_status: lnk_status = 2021
+> 
+> PCI: Found 0000:05:00.0 [1172/0004] 00ff00 00
+> 
+> PCI: Calling quirk c0012d3c for 0000:05:00.0
+> 
+> program_fw_provided_values: Could not get hotplug parameters
+> 
+> entering assign resources (size: 2000000)
+> 
+> PCI: Failed to allocate mem resource #0:2000000@0 for 0000:05:00.0
+> 
+> bus pci: add device 0000:05:00.0
+> 
+> entering uevent
+> 
+> pci: Trying to Match Device 0000:05:00.0 with Driver pcieport-driver
+> 
+> pci: Trying to Match Device 0000:05:00.0 with Driver serial
+> 
+> pci: Trying to Match Device 0000:05:00.0 with Driver pexntb
+> 
+> pciehp: hpc_get_power_status: SLOTCTRL 80 value read 8
+> 
+> pciehp: hpc_get_attention_status: SLOTCTRL 80, value read 8
+> 
+>  
+> 
+> 02:06.0 PCI bridge: PLX Technology, Inc.: Unknown device 8616 (rev bb)
+> (prog-if 00 [Normal decode])
+> 
+>         Flags: bus master, fast devsel, latency 0
+> 
+>         Bus: primary=02, secondary=05, subordinate=05, sec-latency=0
+> 
+>         Capabilities: [40] Power Management version 3
+> 
+>         Capabilities: [48] Message Signalled Interrupts: 64bit+
+> Queue=0/2 Enable+
+> 
+>         Capabilities: [68] #10 [0162]
+> 
+>         Capabilities: [a4] #0d [0000]
+> 
+>  
+> 
+> 05:00.0 Class ff00: Altera Corporation: Unknown device 0004 (rev 01)
+> 
+>         Subsystem: Altera Corporation: Unknown device 0004
+> 
+>         Flags: fast devsel
+> 
+>         Capabilities: [50] Message Signalled Interrupts: 64bit+
+> Queue=0/5 Enable-
+> 
+>         Capabilities: [78] Power Management version 3
+> 
+>         Capabilities: [80] #10 [0001]
+> 
+>  
+> 
+> root@slave7 ~ # lspci -t
+> 
+> -+-[01]---00.0-[02-05]--+-01.0
+> 
+>  |                      +-04.0-[03]--
+> 
+>  |                      +-05.0-[04]--
+> 
+>  |                      \-06.0-[05]----00.0
+> 
+>  \-[00]---00.0
+> 
+>  
+> 
+> -------------------------------------------------------------------------------------------------
+> 
+>  
+> 
+> So, as you can see – the device has been read – and it requires 32M of
+> resources, but
+> 
+> because its parent doesn’t have any resources allocated – it seemingly
+> can’t allocate and
+> 
+> use any additional resources.
+> 
+>  
+> 
+> How do I ‘customize’ and/or add resources at this point for this
+> device (using semi-standard mechanisms)?
+> 
+>  
+> 
+> Thanks in advance for any/all ideas…
+> 
+>  
+> 
+>  
+> 
+> I 
+> 
+>  
+> 
+> Tom Morrison
+> Principal Software Engineer
+> 
+> EMPIRIX 
+> 20 Crosby Drive - Bedford, MA  01730
+> p: 781.266.3567 f: 781.266.3670 
+> email: tmorrison@empirix.com 
+> www.empirix.com
+> 
+> 
+> 
+> 
+>  
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
