@@ -4,18 +4,19 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CEBE9B7B65
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 19:10:33 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id BC047B7C0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 19:10:35 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n8O9AU5V016414
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 02:10:31 -0700 (MST)
+	n8O9AXS3016430
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 02:10:33 -0700 (MST)
 From: Vivek Mahajan <vivek.mahajan@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4] powerpc/fsl: 85xx: document cache-sram size as a kernel
-	parametric option
-Date: Thu, 24 Sep 2009 14:40:23 +0530
-Message-Id: <1253783426-11978-1-git-send-email-vivek.mahajan@freescale.com>
+Subject: [PATCH 2/4] powerpc/fsl: 85xx: document cache-sram
+Date: Thu, 24 Sep 2009 14:40:24 +0530
+Message-Id: <1253783426-11978-2-git-send-email-vivek.mahajan@freescale.com>
+In-Reply-To: <1253783426-11978-1-git-send-email-vivek.mahajan@freescale.com>
+References: <1253783426-11978-1-git-send-email-vivek.mahajan@freescale.com>
 Cc: kumar.gala@freescale.com, Vivek Mahajan <vivek.mahajan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,29 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds documentation for the size parameter of Freescale's QorIQ
-based cache-sram
+Adds documentation for Freescale's QorIQ based cache-sram as under:-
+
+* How to enable it from a low level driver
+* How to set its size
 
 Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
 ---
 Resending it to linuxppc-dev@ozlabs.org
 
- Documentation/kernel-parameters.txt |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ Documentation/powerpc/fsl_85xx_cache_sram.txt |   31 +++++++++++++++++++++++++
+ 1 files changed, 31 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/powerpc/fsl_85xx_cache_sram.txt
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 0f17d16..3213844 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -412,6 +412,9 @@ and is between 256 and 4096 characters. It is defined in the file
- 
- 	c101=		[NET] Moxa C101 synchronous serial card
- 
-+	cache-sram-size=	[PPC] Size of Freescale's QorIQ Cache SRAM
-+			See Documentation/powerpc/fsl_85xx_cache_sram.txt.
+diff --git a/Documentation/powerpc/fsl_85xx_cache_sram.txt b/Documentation/powerpc/fsl_85xx_cache_sram.txt
+new file mode 100644
+index 0000000..628607d
+--- /dev/null
++++ b/Documentation/powerpc/fsl_85xx_cache_sram.txt
+@@ -0,0 +1,31 @@
++* Freescale QorIQ based Cache SRAM
 +
- 	cachesize=	[BUGS=X86-32] Override level 2 CPU cache size detection.
- 			Sometimes CPU hardware bugs make them report the cache
- 			size incorrectly. The kernel will attempt work arounds
++Freescale's QorIQ platforms provide an option of configuring
++a part of (or full) cache memory as SRAM. Any low level
++driver can use its APIs via selecting FSL_85XX_CACHE_SRAM as
++under for the case of gianfar ethernet driver:-
++
++In drivers/net/Kconfig:-
++
++config GIANFAR
++      ....
++      select FSL_85XX_CACHE_SRAM if MPC85xx
++      ....
++
++FSL_85XX_CACHE_SRAM and its base address are defined in
++arch/powerpc/platforms/85xx/Kconfig as under:-
++
++config FSL_85XX_CACHE_SRAM
++	bool
++	select PPC_LIB_RHEAP
++
++config FSL_85XX_CACHE_SRAM_BASE
++	hex
++	depends on FSL_85XX_CACHE_SRAM
++	default "0xfff00000"
++
++The size of the above cache SRAM memory window is passed via the
++kernel command line as <cache-sram-size=....>
++
++Absence of the above parameter in the kernel command line is
++treated as no cache SRAM.
 -- 
 1.5.6.5
