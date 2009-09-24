@@ -1,22 +1,18 @@
-Return-Path: <tabbott@MIT.EDU>
-Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
-	[18.7.7.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7EC29B7B75
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 00:37:10 +1000 (EST)
-From: Tim Abbott <tabbott@ksplice.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH v2 09/11] powerpc: Cleanup linker script using new linker
-	script macros.
-Date: Thu, 24 Sep 2009 10:36:24 -0400
-Message-Id: <1253802986-8132-10-git-send-email-tabbott@ksplice.com>
-In-Reply-To: <1253802986-8132-1-git-send-email-tabbott@ksplice.com>
-References: <1253802986-8132-1-git-send-email-tabbott@ksplice.com>
-Cc: Tim Abbott <tabbott@ksplice.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <wilbur512@gmail.com>
+Received: from mail-yw0-f184.google.com (mail-yw0-f184.google.com
+	[209.85.211.184]) by ozlabs.org (Postfix) with ESMTP id C38B8B7B69
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 25 Sep 2009 02:33:38 +1000 (EST)
+Received: by ywh14 with SMTP id 14so2291595ywh.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 24 Sep 2009 09:33:36 -0700 (PDT)
+MIME-Version: 1.0
+Date: Fri, 25 Sep 2009 00:33:36 +0800
+Message-ID: <e997b7420909240933y38717f46p5ff128f3b05b6eb8@mail.gmail.com>
+Subject: Problem when loading initrd
+From: "wilbur.chan" <wilbur512@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,157 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
----
- arch/powerpc/kernel/vmlinux.lds.S |   69 ++++++++-----------------------------
- 1 files changed, 15 insertions(+), 54 deletions(-)
+I got some problems when starting a kernel withCONFIG_BLK_DEV_RAM  and
+using initrd-image (not cpio)    (mpc85xx)
 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 58da407..f564293 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -6,6 +6,7 @@
- #include <asm/page.h>
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/cache.h>
-+#include <asm/thread_info.h>
- 
- ENTRY(_stext)
- 
-@@ -71,12 +72,7 @@ SECTIONS
- 	/* Read-only data */
- 	RODATA
- 
--	/* Exception & bug tables */
--	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
--		__start___ex_table = .;
--		*(__ex_table)
--		__stop___ex_table = .;
--	}
-+	EXCEPTION_TABLE(0)
- 
- 	NOTES :kernel :notes
- 
-@@ -93,12 +89,7 @@ SECTIONS
-  */
- 	. = ALIGN(PAGE_SIZE);
- 	__init_begin = .;
--
--	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
--		_sinittext = .;
--		INIT_TEXT
--		_einittext = .;
--	} :kernel
-+	INIT_TEXT_SECTION(PAGE_SIZE) :kernel
- 
- 	/* .exit.text is discarded at runtime, not link time,
- 	 * to deal with references from __bug_table
-@@ -122,23 +113,16 @@ SECTIONS
- #endif
- 	}
- 
--	. = ALIGN(16);
- 	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
--		__setup_start = .;
--		*(.init.setup)
--		__setup_end = .;
-+		INIT_SETUP(16)
- 	}
- 
- 	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
--		__initcall_start = .;
--		INITCALLS
--		__initcall_end = .;
--		}
-+		INIT_CALLS
-+	}
- 
- 	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
--		__con_initcall_start = .;
--		*(.con_initcall.init)
--		__con_initcall_end = .;
-+		CON_INITCALL
- 	}
- 
- 	SECURITY_INIT
-@@ -169,14 +153,10 @@ SECTIONS
- 		__stop___fw_ftr_fixup = .;
- 	}
- #endif
--#ifdef CONFIG_BLK_DEV_INITRD
--	. = ALIGN(PAGE_SIZE);
- 	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
--		__initramfs_start = .;
--		*(.init.ramfs)
--		__initramfs_end = .;
-+		INIT_RAM_FS
- 	}
--#endif
-+
- 	PERCPU(PAGE_SIZE)
- 
- 	. = ALIGN(8);
-@@ -240,36 +220,24 @@ SECTIONS
- #endif
- 
- 	/* The initial task and kernel stack */
--#ifdef CONFIG_PPC32
--	. = ALIGN(8192);
--#else
--	. = ALIGN(16384);
--#endif
- 	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
--		*(.data.init_task)
-+		INIT_TASK_DATA(THREAD_SIZE)
- 	}
- 
--	. = ALIGN(PAGE_SIZE);
- 	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--		*(.data.page_aligned)
-+		PAGE_ALIGNED_DATA(PAGE_SIZE)
- 	}
- 
--	. = ALIGN(L1_CACHE_BYTES);
- 	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
--		*(.data.cacheline_aligned)
-+		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
- 	}
- 
--	. = ALIGN(L1_CACHE_BYTES);
- 	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
--		*(.data.read_mostly)
-+		READ_MOSTLY_DATA(L1_CACHE_BYTES)
- 	}
- 
--	. = ALIGN(PAGE_SIZE);
- 	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
-+		NOSAVE_DATA
- 	}
- 
- 	. = ALIGN(PAGE_SIZE);
-@@ -280,14 +248,7 @@ SECTIONS
-  * And finally the bss
-  */
- 
--	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
--		__bss_start = .;
--		*(.sbss) *(.scommon)
--		*(.dynbss)
--		*(.bss)
--		*(COMMON)
--		__bss_stop = .;
--	}
-+	BSS_SECTION(0, 0, 0)
- 
- 	. = ALIGN(PAGE_SIZE);
- 	_end = . ;
--- 
-1.6.3.3
+RAMDISK: ext2 filesystem found at block 0
+RAMDISK: Loading 4096KiB [1 disk] into ram disk... RAMDISK: Loading
+4096KiB [1 d
+isk] into ram disk... done.
+
+No filesystem could mount root, tried: No filesystem could mount root, tried:
+
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(1,0)
+
+
+
+
+kernel boot param:  bootargs root=/dev/ram console=ttyS0,115200
+
+I guess the problem lie in :
+
+mount_root-->mount_block_root--->do_mount_root--->
+sys_mount(name, "/root")
+
+but I don't know  where the problem is . Any suggestions?  Thank you very much.
