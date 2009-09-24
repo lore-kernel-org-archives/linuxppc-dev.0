@@ -1,33 +1,25 @@
-Return-Path: <B22826@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 11A14B7B8C
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 18:28:23 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n8O8SKwx005277
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 01:28:21 -0700 (MST)
-Received: from zmy16exm21.fsl.freescale.net (zmy16exm21.ap.freescale.net
-	[10.211.3.25])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n8O8UCIP008275
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 03:30:13 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 3/6] P2020DS: Fixup sdhc to use PIO mode
-Date: Thu, 24 Sep 2009 16:28:18 +0800
-Message-ID: <CF6163088BDE8747873ADAA4AF922BF287EDB0@zmy16exm21.fsl.freescale.net>
-In-Reply-To: <20090923115518.GB6425@oksana.dev.rtsoft.ru>
-References: <1253696892-15262-1-git-send-email-B22826@freescale.com>
-	<1253696892-15262-2-git-send-email-B22826@freescale.com>
-	<1253696892-15262-3-git-send-email-B22826@freescale.com>
-	<20090923115518.GB6425@oksana.dev.rtsoft.ru>
-From: "Gao Guanhua-B22826" <B22826@freescale.com>
-To: <avorontsov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, sdhci-devel@lists.ossman.eu
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B128FB7B85
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 24 Sep 2009 18:40:48 +1000 (EST)
+Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1253778667.7695.130.camel@twins>
+References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
+	<1251869611.7547.38.camel@twins>  <1253753307.7103.356.camel@pasglop>
+	<1253778667.7695.130.camel@twins>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 18:38:27 +1000
+Message-Id: <1253781508.7103.437.camel@pasglop>
+Mime-Version: 1.0
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	"Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,69 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks, I will add them.=20
+On Thu, 2009-09-24 at 09:51 +0200, Peter Zijlstra wrote:
+> > I don't quite follow your logic here. This is useful for more than just
+> > hypervisors. For example, take the HV out of the picture for a moment
+> > and imagine that the HW has the ability to offline CPU in various power
+> > levels, with varying latencies to bring them back.
+> 
+> cpu-hotplug is an utter slow path, anybody saying latency and hotplug in
+> the same sentence doesn't seem to grasp either or both concepts.
 
-> -----Original Message-----
-> From: Anton Vorontsov [mailto:avorontsov@ru.mvista.com]=20
-> Sent: Wednesday, September 23, 2009 7:55 PM
-> To: Gao Guanhua-B22826
-> Cc: sdhci-devel@lists.ossman.eu; linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH 3/6] P2020DS: Fixup sdhc to use PIO mode
->=20
-> On Wed, Sep 23, 2009 at 05:08:09PM +0800, Gao Guanhua wrote:
-> > The SDHC can not work on DMA mode because of the hardware=20
-> bug, so we=20
-> > set a broken dma flag and use PIO mode. This patch applies=20
-> to Rev1.0.
->=20
-> Signed-off-by line is missing (in all patches).
->=20
-> > ---
-> >  arch/powerpc/boot/dts/p2020ds.dts |    1 +
-> >  drivers/mmc/host/sdhci-of.c       |    3 +++
-> >  2 files changed, 4 insertions(+), 0 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/boot/dts/p2020ds.dts=20
-> > b/arch/powerpc/boot/dts/p2020ds.dts
-> > index be449ba..574ad4f 100644
-> > --- a/arch/powerpc/boot/dts/p2020ds.dts
-> > +++ b/arch/powerpc/boot/dts/p2020ds.dts
-> > @@ -459,6 +459,7 @@
-> >  			reg =3D <0x2e000 0x1000>;
-> >  			interrupts =3D <72 0x2>;
-> >  			interrupt-parent =3D <&mpic>;
-> > +			fsl,sdhci-dma-broken;
->=20
-> You might want to update
-> Documentation/powerpc/dts-bindings/fsl/esdhc.txt
->=20
-> >  			clock-frequency =3D <0>;
-> >  		};
-> > =20
-> > diff --git a/drivers/mmc/host/sdhci-of.c=20
-> b/drivers/mmc/host/sdhci-of.c=20
-> > index 01ab916..5879483 100644
-> > --- a/drivers/mmc/host/sdhci-of.c
-> > +++ b/drivers/mmc/host/sdhci-of.c
-> > @@ -270,6 +270,9 @@ static int __devinit=20
-> sdhci_of_probe(struct of_device *ofdev,
-> >  	if (sdhci_of_wp_inverted(np))
-> >  		host->quirks |=3D SDHCI_QUIRK_INVERTED_WRITE_PROTECT;
-> > =20
-> > +	if (of_get_property(np, "fsl,sdhci-dma-broken", NULL))
-> > +		host->quirks |=3D SDHCI_QUIRK_BROKEN_DMA;
-> > +
-> >  	clk =3D of_get_property(np, "clock-frequency", &size);
-> >  	if (clk && size =3D=3D sizeof(*clk) && *clk)
-> >  		of_host->clock =3D *clk;
-> > --
-> > 1.6.4
->=20
-> Thanks,
->=20
-> --
-> Anton Vorontsov
-> email: cbouatmailru@gmail.com
-> irc://irc.freenode.net/bd2
->=20
->=20
+Let's forget about latency then. Let's imagine I want to set a CPU
+offline to save power, vs. setting it offline -and- opening the back
+door of the machine to actually physically replace it :-)
+
+In any case, I don't see the added feature as being problematic, and
+not such a "layering violation" as you seem to imply it is. It's a
+convenient way to atomically take the CPU out -and- convey some
+information about the "intent" to the hypervisor, and I really fail
+to see why you have so strong objections about it.
+
+Ben.
