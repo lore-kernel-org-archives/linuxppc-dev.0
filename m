@@ -1,17 +1,23 @@
-Return-Path: <yfrolov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id B52CDB7334
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from viefep14-int.chello.at (viefep14-int.chello.at [62.179.121.34])
+	by ozlabs.org (Postfix) with ESMTP id CBFBAB7B76
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Sep 2009 21:28:14 +1000 (EST)
-Message-ID: <4ABB57CB.3000409@ru.mvista.com>
-Date: Thu, 24 Sep 2009 15:28:11 +0400
-From: Yuri Frolov <yfrolov@ru.mvista.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [patch] powerpc: build modules outside the kernel tree fails, if
-	it was built using O=
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: rep.dot.nop@gmail.com, linux-kbuild@vger.kernel.org
+	Thu, 24 Sep 2009 21:37:45 +1000 (EST)
+Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1253781508.7103.437.camel@pasglop>
+References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
+	<1251869611.7547.38.camel@twins>  <1253753307.7103.356.camel@pasglop>
+	<1253778667.7695.130.camel@twins> <1253781508.7103.437.camel@pasglop>
+Content-Type: text/plain
+Date: Thu, 24 Sep 2009 13:33:07 +0200
+Message-Id: <1253791987.7695.153.camel@twins>
+Mime-Version: 1.0
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	"Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,91 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Thu, 2009-09-24 at 18:38 +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2009-09-24 at 09:51 +0200, Peter Zijlstra wrote:
+> > > I don't quite follow your logic here. This is useful for more than just
+> > > hypervisors. For example, take the HV out of the picture for a moment
+> > > and imagine that the HW has the ability to offline CPU in various power
+> > > levels, with varying latencies to bring them back.
+> > 
+> > cpu-hotplug is an utter slow path, anybody saying latency and hotplug in
+> > the same sentence doesn't seem to grasp either or both concepts.
+> 
+> Let's forget about latency then. Let's imagine I want to set a CPU
+> offline to save power, vs. setting it offline -and- opening the back
+> door of the machine to actually physically replace it :-)
 
-here is a corresponding bug: http://bugzilla.kernel.org/show_bug.cgi?id=11143
-This patch should correctly export crtsavres.o in order to make O= option working.
-Please, consider to apply.
+If the hardware is capable of physical hotplug, then surely powering the
+socket down saves most power and is the preferred mode?
 
+> In any case, I don't see the added feature as being problematic, and
+> not such a "layering violation" as you seem to imply it is. It's a
+> convenient way to atomically take the CPU out -and- convey some
+> information about the "intent" to the hypervisor, and I really fail
+> to see why you have so strong objections about it.
 
-Fix linking modules against crtsavres.o
+Ignorance on my part probably :-)
 
-Previously we got
-  CC      drivers/char/hw_random/rng-core.mod.o
-  LD [M]  drivers/char/hw_random/rng-core.ko
-/there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld: arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
-
-	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
-          files for modules.
-	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
-	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
-	  (cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
-	  Provide rule to build objects from assembler.
-
-Signed-off-by:  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
-Signed-off by:  Yuri Frolov <yfrolov@ru.mvista.com>
-
-Makefile                 |    2 ++
-arch/powerpc/Makefile    |    2 +-
-scripts/Makefile.modpost |   12 ++++++++++--
-3 files changed, 13 insertions(+), 3 deletions(-)
-
-diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/arch/powerpc/Makefile linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile
---- linux-2.6/arch/powerpc/Makefile	2009-09-17 20:04:31.000000000 +0400
-+++ linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile	2009-09-23 22:08:03.000000000 +0400
-@@ -93,7 +93,7 @@ else
- 	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
- endif
- else
--LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
-+LDFLAGS_MODULE_PREREQ += arch/powerpc/lib/crtsavres.o
- endif
- 
- ifeq ($(CONFIG_TUNE_CELL),y)
-diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/Makefile linux-2.6-powerpc-crtsavres/Makefile
---- linux-2.6/Makefile	2009-09-17 20:04:30.000000000 +0400
-+++ linux-2.6-powerpc-crtsavres/Makefile	2009-09-23 21:41:16.000000000 +0400
-@@ -326,6 +326,7 @@ MODFLAGS	= -DMODULE
- CFLAGS_MODULE   = $(MODFLAGS)
- AFLAGS_MODULE   = $(MODFLAGS)
- LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
-+LDFLAGS_MODULE_PREREQ  =
- CFLAGS_KERNEL	=
- AFLAGS_KERNEL	=
- CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
-@@ -355,6 +356,7 @@ export VERSION PATCHLEVEL SUBLEVEL KERNE
- export ARCH SRCARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
- export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
- export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
-+export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE LDFLAGS_MODULE_PREREQ CHECK CHECKFLAGS
- 
- export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS LDFLAGS
- export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE CFLAGS_GCOV
-diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/scripts/Makefile.modpost linux-2.6-powerpc-crtsavres/scripts/Makefile.modpost
---- linux-2.6/scripts/Makefile.modpost	2009-09-17 20:04:42.000000000 +0400
-+++ linux-2.6-powerpc-crtsavres/scripts/Makefile.modpost	2009-09-23 22:15:00.000000000 +0400
-@@ -122,14 +122,22 @@ quiet_cmd_cc_o_c = CC      $@
-       cmd_cc_o_c = $(CC) $(c_flags) $(CFLAGS_MODULE)	\
- 		   -c -o $@ $<
- 
--$(modules:.ko=.mod.o): %.mod.o: %.mod.c FORCE
-+quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
-+cmd_as_o_S       = $(CC) $(a_flags) $(AFLAGS_MODULE) -c -o $@ $<
-+
-+$(LDFLAGS_MODULE_PREREQ): %.o: %.S FORCE
-+	$(Q)mkdir -p $(dir $@)
-+	$(call if_changed_dep,as_o_S)
-+
-+$(modules:.ko=.mod.o): %.mod.o: %.mod.c $(LDFLAGS_MODULE_PREREQ) FORCE
- 	$(call if_changed_dep,cc_o_c)
- 
- targets += $(modules:.ko=.mod.o)
- 
- # Step 6), final link of the modules
- quiet_cmd_ld_ko_o = LD [M]  $@
--      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE) -o $@		\
-+      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE_PREREQ)	\
-+			  $(LDFLAGS_MODULE) -o $@			\
- 			  $(filter-out FORCE,$^)
- 
- $(modules): %.ko :%.o %.mod.o FORCE
+I'm simply not seeing a use case for it, except for the virt case, which
+I think we should bug the virt interface with and not the cpu-hotplug
+interface.
