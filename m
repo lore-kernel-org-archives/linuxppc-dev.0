@@ -1,28 +1,28 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+Return-Path: <BATV+e3e6a292ed3714320c00+2223+infradead.org+arjan@casper.srs.infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 77F40B70B3
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 22:14:44 +1000 (EST)
-Date: Thu, 24 Sep 2009 14:14:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] perf_event, powerpc: Fix compilation after big
-	perf_counter rename
-Message-ID: <20090924121423.GB12262@elte.hu>
-References: <19128.4280.813369.589704@cargo.ozlabs.ibm.com>
-	<1253584591.7103.197.camel@pasglop>
-	<20090922072834.GA25470@elte.hu>
-	<1253606415.7103.216.camel@pasglop>
-	<1253620332.10476.4.camel@concordia>
-	<20090923124420.GA5525@elte.hu> <1253747995.6110.5.camel@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1253747995.6110.5.camel@concordia>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTPS id 34542B7334
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 24 Sep 2009 22:25:57 +1000 (EST)
+Date: Thu, 24 Sep 2009 14:22:28 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: arun@linux.vnet.ibm.com
+Subject: Re: [v6 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
+	management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
+	cpuidle to POWER.
+Message-ID: <20090924142228.5a2ddf59@infradead.org>
+In-Reply-To: <20090924051238.GA5963@linux.vnet.ibm.com>
+References: <20090922112526.GA7788@linux.vnet.ibm.com>
+	<20090924051238.GA5963@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>,
+	Shaohua Li <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org, Len Brown <lenb@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 24 Sep 2009 10:42:41 +0530
+Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
 
-* Michael Ellerman <michael@ellerman.id.au> wrote:
-
-> On Wed, 2009-09-23 at 14:44 +0200, Ingo Molnar wrote:
-> > * Michael Ellerman <michael@ellerman.id.au> wrote:
-> > 
-> > > On Tue, 2009-09-22 at 18:00 +1000, Benjamin Herrenschmidt wrote:
-> > > > On Tue, 2009-09-22 at 09:28 +0200, Ingo Molnar wrote:
-> > > > > 
-> > > > > Nevertheless you are right that i should have caught this particular 
-> > > > > PowerPC build bug - i missed it - sorry about that!
-> > > > > 
-> > > > Allright. Well, to help in general, we are setting up a build-bot
-> > > > here too that will build -tip HEAD for at least powerpc daily with
-> > > > a few configs too.
-> > > 
-> > > Results here:
-> > > 
-> > > http://kisskb.ellerman.id.au/kisskb/branch/12/
-> > 
-> > ok, seems green for today - the two failures are: one a powerpc 
-> > toolchain problem it appears, plus a mainline warning.
+> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 16:55:27]:
 > 
-> Yep that looks more or less normal.
+> Hi Len, (or other acpi folks),
 > 
-> > Btw., for me to be able to notice failures there it would have to 
-> > email me automatically if there's any -tip build failures that do 
-> > not occur with the upstream branch. Does it have such a feature?
+> I had a question regarding ACPI-cpuidle interaction in the current
+> implementation.
 > 
-> Not really, it sends mails to me, but it doesn't have a way to filter 
-> them by branch. I think the plan is we'll keep an eye on it and either 
-> send you patches or at least let you know that it's broken.
+> Currently, every cpu (i.e. acpi_processor) registers to cpuidle as
+> a cpuidle_device. So every cpu has to go through the process of
+> setting up the idle states and then registering as a cpuidle device.
+> 
+> What exactly is the reason behind this?
+> 
 
-how many mails are those per day, typically? If there's not too many and 
-if there's a way to send all of them to me i could post-filter them for 
--tip relevance. If that is feasible. You bouncing it to me later is 
-certainly also a solution. (but lengthens the latency of fixes, 
-obviously.)
+technically a BIOS can opt to give you C states via ACPI on some cpus,
+but not on others.
 
-	Ingo
+in practice when this happens it tends to be a bug.. but it's
+technically a valid configuration
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
