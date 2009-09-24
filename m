@@ -1,24 +1,22 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE004.bigfish.com (sg2ehsobe004.messaging.microsoft.com
-	[207.46.51.78]) by ozlabs.org (Postfix) with ESMTP id E252BB7B79
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 23:42:25 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Subject: RE: [PATCH v3] xilinx_spi: Splitted into generic,
-	of and platform driver, added support for DS570
-Date: Thu, 24 Sep 2009 07:42:17 -0600
-In-Reply-To: <4ABB217D.9070708@mocean-labs.com>
-References: <4AB8C936.5090409@mocean-labs.com>
-	<20090922155952.8171518B8046@mail30-sin.bigfish.com>
-	<4AB948AB.8080002@mocean-labs.com>
-	<20090923224452.EAAFEB48046@mail109-sin.bigfish.com>
-	<4ABB217D.9070708@mocean-labs.com>
-From: John Linn <John.Linn@xilinx.com>
-To: =?iso-8859-1?Q?Richard_R=F6jfors?= <richard.rojfors@mocean-labs.com>
-Message-ID: <11885145-df15-4597-a020-67a848b87f5a@SG2EHSMHS008.ehs.local>
-Cc: spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>,
-	dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
+Return-Path: <tabbott@MIT.EDU>
+Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
+	[18.7.7.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7EC29B7B75
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 00:37:10 +1000 (EST)
+From: Tim Abbott <tabbott@ksplice.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH v2 09/11] powerpc: Cleanup linker script using new linker
+	script macros.
+Date: Thu, 24 Sep 2009 10:36:24 -0400
+Message-Id: <1253802986-8132-10-git-send-email-tabbott@ksplice.com>
+In-Reply-To: <1253802986-8132-1-git-send-email-tabbott@ksplice.com>
+References: <1253802986-8132-1-git-send-email-tabbott@ksplice.com>
+Cc: Tim Abbott <tabbott@ksplice.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,134 +26,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Richard R=F6jfors [mailto:richard.rojfors@mocean-labs.com]
-> Sent: Thursday, September 24, 2009 1:36 AM
-> To: John Linn
-> Cc: spi-devel-general@lists.sourceforge.net; linuxppc-dev@ozlabs.org; And=
-rew Morton;
-> dbrownell@users.sourceforge.net
-> Subject: Re: [PATCH v3] xilinx_spi: Splitted into generic, of and platfor=
-m driver, added support for
-> DS570
-> =
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/powerpc/kernel/vmlinux.lds.S |   69 ++++++++-----------------------------
+ 1 files changed, 15 insertions(+), 54 deletions(-)
 
-> Hi again,
-> =
-
-> John Linn wrote:
-> >> -----Original Message-----
-> >> From: Richard R=F6jfors [mailto:richard.rojfors@mocean-labs.com]
-> >> Sent: Tuesday, September 22, 2009 3:59 PM
-> >> To: John Linn
-> >> Cc: spi-devel-general@lists.sourceforge.net; linuxppc-dev@ozlabs.org; =
-Andrew Morton;
-> >> dbrownell@users.sourceforge.net
-> >> Subject: Re: [PATCH v3] xilinx_spi: Splitted into generic, of and plat=
-form driver, added support
-> for
-> >> DS570
-> >>
-> >> John Linn wrote:
-> >>>> -----Original Message-----
-> >>>> From: linuxppc-dev-bounces+john.linn=3Dxilinx.com@lists.ozlabs.org [=
-mailto:linuxppc-dev-
-> >>>> bounces+john.linn=3Dxilinx.com@lists.ozlabs.org] On Behalf Of Richar=
-d R=F6jfors
-> >>>> Sent: Tuesday, September 22, 2009 6:55 AM
-> >>>> To: spi-devel-general@lists.sourceforge.net
-> >>>> Cc: linuxppc-dev@ozlabs.org; Andrew Morton; dbrownell@users.sourcefo=
-rge.net
-> >>>> Subject: [PATCH v3] xilinx_spi: Splitted into generic, of and platfo=
-rm driver, added support for
-> >>>> DS570
-> >>>>
-> >>>> This patch splits xilinx_spi into three parts, an OF and a platform
-> >>>> driver and generic part.
-> >>>>
-> >>>> The generic part now also works on X86 and also supports the Xilinx
-> >>>> SPI IP DS570
-> >>> Hi Richard,
-> >> Hi John,
-> >>
-> >>> The current driver (without this change) works for the newer XPS SPI =
-device already as I run
-> tests
-> >> on it each day using an SPI EEPROM.
-> >>
-> >> I'm not an expert of the Xilinx SPI blocks, I have only used one, the =
-DS570.
-> >>
-> >> I don't think you use the DS570. I don't have the datasheet of the old=
-er one, but the register
-> >> offsets of the DS570 don't match the driver you are using. All the reg=
-isters of the DS570 are at 4
-> >> bytes boundries.
-> >>
-> >
-> > I just verified that I am using the same IP block as you are, the DS570=
-. But I'm not testing on the
-> other IP you mention, the DS464.
-> =
-
-> Hi,
-> =
-
-> I have now verified the differences. Actually the blocks are register off=
-set compatible. Since the
-> DS464 is 8 bit only, the driver is made to do only 8 bit accesses to some=
- registers, for instance
-> TXD. On the 570 we have to do 32 bit (or at least 16) as the driver now s=
-upport more than 8bit SPI.
-> We test against some SPI devices that are 16 bit.
-> The offsets in the code differs from the datasheet because since the devi=
-ce is big endian -> an 8
-> bit access to must happen 3 bytes up from the register base.
-> =
-
-> For instance the TXD register is defined at 0x6b, while the spec says 0x6=
-8. 0x68 + 0x3 =3D 0x6b. To
-> support more than 8 bit, we must do 16 bit access at 0x6a or 32 bit at 0x=
-68.
-> =
-
-> To summarize;
-> You are completely right you can use the "old" driver on the DS570 as wel=
-l, but _only_ for 8bit SPI.
-> My patch allows to run on X86 and with 16 or 32bit SPI.
-
-Hi Richard,
-
-When I look at the IP block I see that the transfers can be 16 or 32 bits a=
-nd allowing that would probably be more efficient for transfers. That seems=
- like the primary benefit to me.
-
-I don't personally see a benefit of running on X86 but that's not my domain=
- for sure.  I don't know of many users using Xilinx IP with an X86, but may=
-be they're out there.
-
-A simpler driver is definitely better IMHO.
-
-Thanks for investigating further,
-John
-
-> =
-
-> Thanks to the observation from you, I got aware of the differences. I can=
- simplify the code by
-> automatically increase registers offsets when doing 8 or 16 bits accesses=
-.
-> I will come back with an updated patch.
-> =
-
-> Hope I made the situation clearer.
-> =
-
-> --Richard
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 58da407..f564293 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -6,6 +6,7 @@
+ #include <asm/page.h>
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/cache.h>
++#include <asm/thread_info.h>
+ 
+ ENTRY(_stext)
+ 
+@@ -71,12 +72,7 @@ SECTIONS
+ 	/* Read-only data */
+ 	RODATA
+ 
+-	/* Exception & bug tables */
+-	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+-		__start___ex_table = .;
+-		*(__ex_table)
+-		__stop___ex_table = .;
+-	}
++	EXCEPTION_TABLE(0)
+ 
+ 	NOTES :kernel :notes
+ 
+@@ -93,12 +89,7 @@ SECTIONS
+  */
+ 	. = ALIGN(PAGE_SIZE);
+ 	__init_begin = .;
+-
+-	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+-		_sinittext = .;
+-		INIT_TEXT
+-		_einittext = .;
+-	} :kernel
++	INIT_TEXT_SECTION(PAGE_SIZE) :kernel
+ 
+ 	/* .exit.text is discarded at runtime, not link time,
+ 	 * to deal with references from __bug_table
+@@ -122,23 +113,16 @@ SECTIONS
+ #endif
+ 	}
+ 
+-	. = ALIGN(16);
+ 	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+-		__setup_start = .;
+-		*(.init.setup)
+-		__setup_end = .;
++		INIT_SETUP(16)
+ 	}
+ 
+ 	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+-		__initcall_start = .;
+-		INITCALLS
+-		__initcall_end = .;
+-		}
++		INIT_CALLS
++	}
+ 
+ 	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+-		__con_initcall_start = .;
+-		*(.con_initcall.init)
+-		__con_initcall_end = .;
++		CON_INITCALL
+ 	}
+ 
+ 	SECURITY_INIT
+@@ -169,14 +153,10 @@ SECTIONS
+ 		__stop___fw_ftr_fixup = .;
+ 	}
+ #endif
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	. = ALIGN(PAGE_SIZE);
+ 	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+-		__initramfs_start = .;
+-		*(.init.ramfs)
+-		__initramfs_end = .;
++		INIT_RAM_FS
+ 	}
+-#endif
++
+ 	PERCPU(PAGE_SIZE)
+ 
+ 	. = ALIGN(8);
+@@ -240,36 +220,24 @@ SECTIONS
+ #endif
+ 
+ 	/* The initial task and kernel stack */
+-#ifdef CONFIG_PPC32
+-	. = ALIGN(8192);
+-#else
+-	. = ALIGN(16384);
+-#endif
+ 	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+-		*(.data.init_task)
++		INIT_TASK_DATA(THREAD_SIZE)
+ 	}
+ 
+-	. = ALIGN(PAGE_SIZE);
+ 	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+-		*(.data.page_aligned)
++		PAGE_ALIGNED_DATA(PAGE_SIZE)
+ 	}
+ 
+-	. = ALIGN(L1_CACHE_BYTES);
+ 	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
+-		*(.data.cacheline_aligned)
++		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
+ 	}
+ 
+-	. = ALIGN(L1_CACHE_BYTES);
+ 	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
+-		*(.data.read_mostly)
++		READ_MOSTLY_DATA(L1_CACHE_BYTES)
+ 	}
+ 
+-	. = ALIGN(PAGE_SIZE);
+ 	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
+-		__nosave_begin = .;
+-		*(.data.nosave)
+-		. = ALIGN(PAGE_SIZE);
+-		__nosave_end = .;
++		NOSAVE_DATA
+ 	}
+ 
+ 	. = ALIGN(PAGE_SIZE);
+@@ -280,14 +248,7 @@ SECTIONS
+  * And finally the bss
+  */
+ 
+-	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+-		__bss_start = .;
+-		*(.sbss) *(.scommon)
+-		*(.dynbss)
+-		*(.bss)
+-		*(COMMON)
+-		__bss_stop = .;
+-	}
++	BSS_SECTION(0, 0, 0)
+ 
+ 	. = ALIGN(PAGE_SIZE);
+ 	_end = . ;
+-- 
+1.6.3.3
