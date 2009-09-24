@@ -1,28 +1,28 @@
-Return-Path: <BATV+e3e6a292ed3714320c00+2223+infradead.org+arjan@casper.srs.infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 69396B7B65
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Sep 2009 21:41:32 +1000 (EST)
-Date: Thu, 24 Sep 2009 13:41:23 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
-Message-ID: <20090924134123.4acd1adf@infradead.org>
-In-Reply-To: <1253791987.7695.153.camel@twins>
-References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
-	<1251869611.7547.38.camel@twins>
-	<1253753307.7103.356.camel@pasglop>
-	<1253778667.7695.130.camel@twins>
-	<1253781508.7103.437.camel@pasglop>
-	<1253791987.7695.153.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	"Darrick J. Wong" <djwong@us.ibm.com>
+	by ozlabs.org (Postfix) with ESMTPS id 77F40B70B3
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 22:14:44 +1000 (EST)
+Date: Thu, 24 Sep 2009 14:14:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] perf_event, powerpc: Fix compilation after big
+	perf_counter rename
+Message-ID: <20090924121423.GB12262@elte.hu>
+References: <19128.4280.813369.589704@cargo.ozlabs.ibm.com>
+	<1253584591.7103.197.camel@pasglop>
+	<20090922072834.GA25470@elte.hu>
+	<1253606415.7103.216.camel@pasglop>
+	<1253620332.10476.4.camel@concordia>
+	<20090923124420.GA5525@elte.hu> <1253747995.6110.5.camel@concordia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1253747995.6110.5.camel@concordia>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,38 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 24 Sep 2009 13:33:07 +0200
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> On Thu, 2009-09-24 at 18:38 +1000, Benjamin Herrenschmidt wrote:
-> > On Thu, 2009-09-24 at 09:51 +0200, Peter Zijlstra wrote:
-> > > > I don't quite follow your logic here. This is useful for more
-> > > > than just hypervisors. For example, take the HV out of the
-> > > > picture for a moment and imagine that the HW has the ability to
-> > > > offline CPU in various power levels, with varying latencies to
-> > > > bring them back.
-> > > 
-> > > cpu-hotplug is an utter slow path, anybody saying latency and
-> > > hotplug in the same sentence doesn't seem to grasp either or both
-> > > concepts.
+* Michael Ellerman <michael@ellerman.id.au> wrote:
+
+> On Wed, 2009-09-23 at 14:44 +0200, Ingo Molnar wrote:
+> > * Michael Ellerman <michael@ellerman.id.au> wrote:
 > > 
-> > Let's forget about latency then. Let's imagine I want to set a CPU
-> > offline to save power, vs. setting it offline -and- opening the back
-> > door of the machine to actually physically replace it :-)
+> > > On Tue, 2009-09-22 at 18:00 +1000, Benjamin Herrenschmidt wrote:
+> > > > On Tue, 2009-09-22 at 09:28 +0200, Ingo Molnar wrote:
+> > > > > 
+> > > > > Nevertheless you are right that i should have caught this particular 
+> > > > > PowerPC build bug - i missed it - sorry about that!
+> > > > > 
+> > > > Allright. Well, to help in general, we are setting up a build-bot
+> > > > here too that will build -tip HEAD for at least powerpc daily with
+> > > > a few configs too.
+> > > 
+> > > Results here:
+> > > 
+> > > http://kisskb.ellerman.id.au/kisskb/branch/12/
+> > 
+> > ok, seems green for today - the two failures are: one a powerpc 
+> > toolchain problem it appears, plus a mainline warning.
 > 
-> If the hardware is capable of physical hotplug, then surely powering
-> the socket down saves most power and is the preferred mode?
+> Yep that looks more or less normal.
+> 
+> > Btw., for me to be able to notice failures there it would have to 
+> > email me automatically if there's any -tip build failures that do 
+> > not occur with the upstream branch. Does it have such a feature?
+> 
+> Not really, it sends mails to me, but it doesn't have a way to filter 
+> them by branch. I think the plan is we'll keep an eye on it and either 
+> send you patches or at least let you know that it's broken.
 
-btw just to take away a perception that generally powering down sockets
-help; it does not help for all cpus. Some cpus are so efficient in idle
-that the incremental gain one would get by "offlining" a core is just
-not worth it
-(in fact, in x86, it's the same thing)
+how many mails are those per day, typically? If there's not too many and 
+if there's a way to send all of them to me i could post-filter them for 
+-tip relevance. If that is feasible. You bouncing it to me later is 
+certainly also a solution. (but lengthens the latency of fixes, 
+obviously.)
 
-I obviously can't speak for p-series cpus, just wanted to point out
-that there is no universal truth about "offlining saves power".
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Ingo
