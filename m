@@ -1,25 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <vivek.mahajan@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B128FB7B85
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Sep 2009 18:40:48 +1000 (EST)
-Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1253778667.7695.130.camel@twins>
-References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
-	<1251869611.7547.38.camel@twins>  <1253753307.7103.356.camel@pasglop>
-	<1253778667.7695.130.camel@twins>
-Content-Type: text/plain
-Date: Thu, 24 Sep 2009 18:38:27 +1000
-Message-Id: <1253781508.7103.437.camel@pasglop>
-Mime-Version: 1.0
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	"Darrick J. Wong" <djwong@us.ibm.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CEBE9B7B65
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 19:10:33 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n8O9AU5V016414
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 02:10:31 -0700 (MST)
+From: Vivek Mahajan <vivek.mahajan@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/4] powerpc/fsl: 85xx: document cache-sram size as a kernel
+	parametric option
+Date: Thu, 24 Sep 2009 14:40:23 +0530
+Message-Id: <1253783426-11978-1-git-send-email-vivek.mahajan@freescale.com>
+Cc: kumar.gala@freescale.com, Vivek Mahajan <vivek.mahajan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-09-24 at 09:51 +0200, Peter Zijlstra wrote:
-> > I don't quite follow your logic here. This is useful for more than just
-> > hypervisors. For example, take the HV out of the picture for a moment
-> > and imagine that the HW has the ability to offline CPU in various power
-> > levels, with varying latencies to bring them back.
-> 
-> cpu-hotplug is an utter slow path, anybody saying latency and hotplug in
-> the same sentence doesn't seem to grasp either or both concepts.
+Adds documentation for the size parameter of Freescale's QorIQ
+based cache-sram
 
-Let's forget about latency then. Let's imagine I want to set a CPU
-offline to save power, vs. setting it offline -and- opening the back
-door of the machine to actually physically replace it :-)
+Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
+---
+Resending it to linuxppc-dev@ozlabs.org
 
-In any case, I don't see the added feature as being problematic, and
-not such a "layering violation" as you seem to imply it is. It's a
-convenient way to atomically take the CPU out -and- convey some
-information about the "intent" to the hypervisor, and I really fail
-to see why you have so strong objections about it.
+ Documentation/kernel-parameters.txt |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-Ben.
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 0f17d16..3213844 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -412,6 +412,9 @@ and is between 256 and 4096 characters. It is defined in the file
+ 
+ 	c101=		[NET] Moxa C101 synchronous serial card
+ 
++	cache-sram-size=	[PPC] Size of Freescale's QorIQ Cache SRAM
++			See Documentation/powerpc/fsl_85xx_cache_sram.txt.
++
+ 	cachesize=	[BUGS=X86-32] Override level 2 CPU cache size detection.
+ 			Sometimes CPU hardware bugs make them report the cache
+ 			size incorrectly. The kernel will attempt work arounds
+-- 
+1.5.6.5
