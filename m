@@ -2,23 +2,34 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 16B72B7B72
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 12:53:45 +1000 (EST)
-Subject: Re: [PATCH] powerpc/mm: Fix 40x and 8xx vs. _PAGE_SPECIAL
+	by ozlabs.org (Postfix) with ESMTPS id E9139B7043
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 13:44:44 +1000 (EST)
+Subject: Re: [PATCH 00/10] Add support for GCC's __builtin_unreachable()
+	and use it in BUG.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rex Feany <RFeany@mrv.com>
-In-Reply-To: <20090924023840.GA16381@compile2.chatsunix.int.mrv.com>
-References: <1253679146.7103.270.camel@pasglop>
-	<20090924005300.GB11737@compile2.chatsunix.int.mrv.com>
-	<1253756434.7103.377.camel@pasglop>
-	<20090924023840.GA16381@compile2.chatsunix.int.mrv.com>
+To: David Daney <ddaney@caviumnetworks.com>
+In-Reply-To: <4AA991C1.1050800@caviumnetworks.com>
+References: <4AA991C1.1050800@caviumnetworks.com>
 Content-Type: text/plain
-Date: Thu, 24 Sep 2009 12:53:35 +1000
-Message-Id: <1253760815.7103.379.camel@pasglop>
+Date: Thu, 24 Sep 2009 13:37:13 +1000
+Message-Id: <1253763433.7103.391.camel@pasglop>
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Weirich,
-	Bernhard" <Bernhard.Weirich@riedel.net>
+Cc: linux-mips@linux-mips.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, linux-s390@vger.kernel.org,
+	linux-am33-list@redhat.com, Helge Deller <deller@gmx.de>,
+	x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+	Mike Frysinger <vapier@gentoo.org>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	uclinux-dist-devel@blackfin.uclinux.org,
+	Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	linux-parisc@vger.kernel.org, ralf@linux-mips.org,
+	Kyle McMartin <kyle@mcmartin.ca>, linux-alpha@vger.kernel.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +39,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-09-23 at 19:38 -0700, Rex Feany wrote:
-> Thus spake Benjamin Herrenschmidt (benh@kernel.crashing.org):
-> 
-> > Hrm. This is really strange...
-> 
-> Is this a problem? in pte-8xx.h you added:
-> 
-> +#define _PAGE_SPECIAL  0x0008  /* SW entry, forced to 0 by the TLB miss */
-> 
-> but there is already this:
-> 
-> #define _PAGE_EXEC      0x0008  /* software: i-cache coherency required */
+On Thu, 2009-09-10 at 16:54 -0700, David Daney wrote:
+> Starting with version 4.5, GCC has a new built-in function called
+> __builtin_unreachable().  The function tells the compiler that control
+> flow will never reach that point.  Currently we trick the compiler by
+> putting in for(;;); but this has the disadvantage that extra code is
+> emitted for an endless loop.  For an i386 kernel using
+> __builtin_unreachable() results in an allyesconfig that is nearly 4000
+> bytes smaller.
 
-Ohhh... you aren't using upstream ! That explains :-)
+For the powerpc part:
 
-I removed _PAGE_EXEC from 8xx (since it doesn't use it for anything)
-recently.
-
-I think the best option is to go for Bernhard's patch for "stable" and
-my patch for upstream, so that "stable" gets the bug fix without the
-feature of _PAGE_SPECIAL and upstream gets it both.
-
-Cheers,
-Ben.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
