@@ -1,22 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 59F05B7B7B
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 09:53:03 +1000 (EST)
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache
-	coherency rewrite
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rex Feany <RFeany@mrv.com>
-In-Reply-To: <20090924233346.GA445@compile2.chatsunix.int.mrv.com>
-References: <20090924004552.GA11737@compile2.chatsunix.int.mrv.com>
-	<1253774659.7103.405.camel@pasglop>
-	<20090924233346.GA445@compile2.chatsunix.int.mrv.com>
-Content-Type: text/plain
-Date: Fri, 25 Sep 2009 09:52:56 +1000
-Message-Id: <1253836376.7103.469.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1F79AB7B80
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 09:58:48 +1000 (EST)
+Date: Fri, 25 Sep 2009 09:58:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] perf_event, powerpc: Fix compilation after big
+	perf_counter rename
+Message-Id: <20090925095841.8578073a.sfr@canb.auug.org.au>
+In-Reply-To: <1253798755.16237.4.camel@concordia>
+References: <19128.4280.813369.589704@cargo.ozlabs.ibm.com>
+	<1253584591.7103.197.camel@pasglop>
+	<20090922072834.GA25470@elte.hu>
+	<1253606415.7103.216.camel@pasglop>
+	<1253620332.10476.4.camel@concordia>
+	<20090923124420.GA5525@elte.hu> <1253747995.6110.5.camel@concordia>
+	<20090924121423.GB12262@elte.hu>
+	<1253798755.16237.4.camel@concordia>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__25_Sep_2009_09_58_41_+1000_ErTXIdWapXzp+cCt"
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-09-24 at 16:33 -0700, Rex Feany wrote:
-> Thus spake Benjamin Herrenschmidt (benh@kernel.crashing.org):
-> 
-> > You can get my tree at:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
-> > 
-> > (To get the "merge" branch, just add "merge" after the clone if you
-> > are cloning it, or just create a local branch and manually pull
-> > into it)
-> 
-> Your tree hangs on boot, similar to what I saw without the 8xx
-> work-around patch -- it is hard to tell if it is the same though. :(
+--Signature=_Fri__25_Sep_2009_09_58_41_+1000_ErTXIdWapXzp+cCt
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There's no backtrace ? Where does it hang ? Also which workaround
-patch ? The missing tlbil_va() or the _PAGE_SPECIAL problem ?
+Hi Ingo,
 
-> > Note that i just pushed out so it may take a little while for
-> > the kernel.org mirrors to get it, the commit ID is: 
-> > 
-> > ae48e383e3299c2f87723d21df2db97927774b1e
-> 
-> Maybe I fail git 101 -- I can't seem to find that commit ID in the repo
-> above, but I do see the patches you commited to fix PAGE_SPECIAL and the
-> 8xx work-around.
+On Thu, 24 Sep 2009 23:25:55 +1000 Michael Ellerman <michael@ellerman.id.au=
+> wrote:
+>
+> Give me a day or two, I should be able to add a per-branch setting for
+> who to send mails to without too much trouble.
 
-Right. I must have screwed something with the ID.
+In the mean time I don't now if someone has pointed you at these today:
 
-Ben.
+http://kisskb.ellerman.id.au/kisskb/branch/12/
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__25_Sep_2009_09_58_41_+1000_ErTXIdWapXzp+cCt
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkq8B7EACgkQjjKRsyhoI8xzEQCfeNo85zq0AujzMPSceQjsIj8b
+jPkAoLHR5ldo3FeTnJycBOTVmbKKzSlh
+=xDI+
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__25_Sep_2009_09_58_41_+1000_ErTXIdWapXzp+cCt--
