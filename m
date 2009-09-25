@@ -2,26 +2,28 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2E0B9B7BA8
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 19:47:42 +1000 (EST)
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache
-	coherency rewrite
+	by ozlabs.org (Postfix) with ESMTPS id DE661B7043
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 19:49:38 +1000 (EST)
+Subject: Re: 2.6.31-git5 kernel boot hangs on powerpc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OF028339A2.3A7A8D6F-ONC125763C.002DE73B-C125763C.002ECF90@transmode.se>
-References: <20090924004552.GA11737@compile2.chatsunix.int.mrv.com>
-	<1253774659.7103.405.camel@pasglop>
-	<20090924233346.GA445@compile2.chatsunix.int.mrv.com>
-	<1253836376.7103.469.camel@pasglop>
-	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>
-	<1253843480.7103.492.camel@pasglop> <1253847827.7103.504.camel@pasglop>
-	<OF028339A2.3A7A8D6F-ONC125763C.002DE73B-C125763C.002ECF90@transmode.se>
+To: Tejun Heo <tj@kernel.org>
+In-Reply-To: <4ABC86E0.9090807@kernel.org>
+References: <4AB0D947.8010301@in.ibm.com> <4AB214C3.4040109@in.ibm.com>
+	<1253185994.8375.352.camel@pasglop>	<4AB25B61.9020609@kernel.org>
+	<4AB266AF.9080705@in.ibm.com> <4AB49C37.6020003@in.ibm.com>
+	<4AB9DAEC.3060309@in.ibm.com> <4AB9DD8F.1040305@kernel.org>
+	<4ABA2DE2.6000601@kernel.org> <4ABB269F.6020309@in.ibm.com>
+	<4ABB6D33.6060706@kernel.org>  <4ABB72BD.9050905@in.ibm.com>
+	<1253826309.7103.461.camel@pasglop> <4ABC376D.1020704@kernel.org>
+	<4ABC6E25.7090904@in.ibm.com> <4ABC73C7.20403@kernel.org>
+	<4ABC7486.8040500@kernel.org> <4ABC7955.2070404@in.ibm.com>
+	<4ABC86E0.9090807@kernel.org>
 Content-Type: text/plain
-Date: Fri, 25 Sep 2009 19:47:34 +1000
-Message-Id: <1253872054.7103.519.camel@pasglop>
+Date: Fri, 25 Sep 2009 19:48:31 +1000
+Message-Id: <1253872111.7103.520.camel@pasglop>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +33,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-09-25 at 10:31 +0200, Joakim Tjernlund wrote:
+On Fri, 2009-09-25 at 18:01 +0900, Tejun Heo wrote:
+> > With this patch applied the machine boots OK :-)
 > 
-> The main problem with 8xx it does not update the DAR register in
-> the TLB Miss/Fault handlers for cache instructions :( It on old bug
-> that was found only some years ago.
+> Ah... so, the problem really is too high address.  If you've got some
+> time, it might be interesting to find out how far high is safe.
 > 
-> I think the old comment is correct though, as I recall it was Marcelo
-> that found the problem and added the workaround.
-
-But the TLB needs flushing on more than just the cache instructions,
-no ?
-
-IE. We take a TLB miss, there's no valid PTE, we put one of those
-"unpopulated" entries in and get into the page fault, at which point we
-do a set_pte, we -still- need to do an invalidation to get rid of the
-unpopulated entry so it gets a new TLB miss no ? Without that, it's just
-going to fault over and over again...
-
-In any case, I think flushing unconditionally the target address isn't
-going to hurt since we are just changing its PTE anyways.
-
-As for the DAR problem, I'm not sure whether we really need a workaround
-since I haven't seem much people complaining about it so far :-)
-
-Can you educate me more on the problem ? Can it be fixed without
-bloating those handlers to oblivion ?
+Might give me a clue about what the problem is but I think I'll just
+cook up a test case that forcibly vmap something high up and see how it
+goes from there. It could be a very old bug that nobody ever noticed
+because our vmalloc space on 64-bit is so huge :-)
 
 Cheers,
 Ben.
