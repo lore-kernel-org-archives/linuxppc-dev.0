@@ -1,24 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 87EC4B7B8A
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 11:51:29 +1000 (EST)
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache
-	coherency rewrite
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rex Feany <RFeany@mrv.com>
-In-Reply-To: <20090925013528.GA2584@compile2.chatsunix.int.mrv.com>
-References: <20090924004552.GA11737@compile2.chatsunix.int.mrv.com>
-	<1253774659.7103.405.camel@pasglop>
-	<20090924233346.GA445@compile2.chatsunix.int.mrv.com>
-	<1253836376.7103.469.camel@pasglop>
-	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>
-Content-Type: text/plain
-Date: Fri, 25 Sep 2009 11:51:20 +1000
-Message-Id: <1253843480.7103.492.camel@pasglop>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id ACE79B7B88
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 12:30:05 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n8P2U1A5013770
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 19:30:02 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n8P2VuRK020239
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 21:31:56 -0500 (CDT)
+Date: Thu, 24 Sep 2009 21:30:01 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 3/3] USB: ehci-fsl: Add power management support (resume
+	after deep sleep)
+Message-ID: <20090925023000.GA22457@b07421-ec1.am.freescale.net>
+References: <20090923185158.GA29065@oksana.dev.rtsoft.ru>
+	<20090923185244.GC18755@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090923185244.GC18755@oksana.dev.rtsoft.ru>
+Cc: linux-usb@vger.kernel.org, Jerry Huang <Chang-Ming.Huang@freescale.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +36,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-09-24 at 18:35 -0700, Rex Feany wrote:
-> 
-> Then I can boot and get to a shell, but userspace is slow. 8 seconds
-> to mount
-> /proc (vs. less then a second using my old kernel)! Maybe this is an
-> unrelated issue?  I'm pretty clueless about the details, I'm sorry.
-> PG_arch_1 is used to prevent a cache flush unless it is actually
-> needed?
-> Then why would changing the location of the tlbil_va() make a
-> difference?
+On Wed, Sep 23, 2009 at 10:52:44PM +0400, Anton Vorontsov wrote:
++#ifdef CONFIG_SUSPEND
++struct ehci_fsl {
++       struct ehci_hcd ehci;
++
++       /* Saved USB PHY settings, need to restore after deep sleep. */
++       u32 usb_ctrl;
++};
 
-I think there's more finishyness to 8xx than we thought. IE. That
-tlbil_va might have more reasons to be there than what the comment
-seems to advertize. Can you try to move it even higher up ? IE.
-Unconditionally at the beginning of set_pte_filter ?
+This doesn't seem like the right place to define this... what if we later
+need something else that isn't for suspend?  And you could get rid of
+EHCI_FSL_PRIV_SIZE.
 
-Also, if that doesn't help, can you try putting one in
-set_access_flags_filter() just below ?
+> +static int ehci_fsl_drv_suspend(struct device *dev)
+> +{
+> +	struct usb_hcd *hcd = dev_get_drvdata(dev);
+> +	struct ehci_fsl *ehci_fsl = hcd_to_ehci_fsl(hcd);
+> +	void __iomem *non_ehci = hcd->regs;
+> +
+> +	if (!fsl_deep_sleep())
+> +		return 0;
 
-(Beware that there's two different versions of both functions, only the
-first one is compiled/used on 8xx).
+We'll also need to do this if we support suspend to disk...  is there any
+good way for the driver to determine that that's what's being done?  Or
+more generally, for the platform to communicate to the drivers which ones
+are going to lose state without one-off hacks like fsl_deep_sleep().
 
-It's going to be hard for me to get that "right" since I don't really
-know what's going on with the core here, but I suppose if we get it
-moving along with extra tlb invalidations, that should be "good enough"
-until somebody who really knows what's going on comes up with possibly
-a better fix.
+> +	/* Power up ports (avoids devices disconnect). */
+> +	port_nm = HCS_N_PORTS(ehci->hcs_params);
+> +	while (port_nm--) {
+> +		u32 port_sc;
+> +
+> +		port_sc = ehci_readl(ehci, &ehci->regs->port_status[port_nm]);
+> +		port_sc |= PORT_POWER;
+> +		ehci_writel(ehci, port_sc, &ehci->regs->port_status[port_nm]);
+> +	}
+> +	mdelay(30);
 
-Cheers,
-Ben.
+Instead of mdelay, can we somehow hold off any USB operations for a
+while?
+
+-Scott
