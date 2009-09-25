@@ -1,17 +1,22 @@
-Return-Path: <asierllano@gmail.com>
-Received: from mail-ew0-f227.google.com (mail-ew0-f227.google.com
-	[209.85.219.227]) by ozlabs.org (Postfix) with ESMTP id 15598B7B7C
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 00:41:03 +1000 (EST)
-Received: by ewy27 with SMTP id 27so1832081ewy.40
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 07:41:01 -0700 (PDT)
-Subject: lite5200b kernel not booting
-From: Asier Llano Palacios <asierllano@gmail.com>
-To: grant.likely@secretlab.ca
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F00B8B7B75
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 25 Sep 2009 11:12:31 +1000 (EST)
+Subject: Re: [patch] powerpc: build modules outside the kernel tree fails,
+	if it was built using O=
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Yuri Frolov <yfrolov@ru.mvista.com>
+In-Reply-To: <4ABB57CB.3000409@ru.mvista.com>
+References: <4ABB57CB.3000409@ru.mvista.com>
 Content-Type: text/plain
-Date: Thu, 24 Sep 2009 16:41:19 +0200
-Message-Id: <1253803279.4632.91.camel@allano>
+Date: Fri, 25 Sep 2009 11:12:21 +1000
+Message-Id: <1253841141.7103.489.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Aitor Arzuaga <a.arzuaga@usyscom.com>
+Cc: rep.dot.nop@gmail.com, linuxppc-dev@lists.ozlabs.org,
+	Sam Ravnborg <sam@ravnborg.org>, linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,30 +26,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant,
+On Thu, 2009-09-24 at 15:28 +0400, Yuri Frolov wrote:
+> Hello,
+> 
+> here is a corresponding bug: http://bugzilla.kernel.org/show_bug.cgi?id=11143
+> This patch should correctly export crtsavres.o in order to make O= option working.
+> Please, consider to apply.
+> 
+> 
+> Fix linking modules against crtsavres.o
 
-We've been working with a lite5200b for a while, we have been working
-with the ppc platform in linux 2.6.x for 5 years and it worked properly
-until 2.6.25 included. We want to switch to the powerpc platform but it
-doesn't seem to work.
+Hi !
 
-After the bootloader (tested with the uboot 1.2.0 and 2009.08) starts
-the cuImage.lite5200 it doesn't show anything in the console.
+This is the same patch you already posted as "
 
-I'd like to know if the lite5200b is still supported and which version
-is known to work with it and what is the default configuration. I want
-to test it like the developers do, until I configure it myself.
 
-I've managed to do some debugging in assembler, to know that it works
-properly until DCACHE is enabled in setup_common_caches of
-arch/powerpc/kernel/cpu_setup_6xx.S. If I skip enabling the DCACHE it
-continues properly until the MMU is enabled.
+[PATCH] Fix linking modules against
+crtsavres.o
+"
 
-I'm only debugging it writing to the serial port registers in assembler,
-so I'm not very sure if it continues properly or if I am not able to
-debug it after the DCACHE is enabled or the MMU is enabled. I want to
-debug it with a JTAG debugger, but I still don't have one (do you
-recommend me anyone?).
+Or it's an update ?
 
-Kind regards and thank you for the help,
-Asier
+I've asked Sam to review it already since it affects the main kernel
+makefiles, waiting for his answer.
+
+Cheers,
+Ben.
+
+> Previously we got
+>   CC      drivers/char/hw_random/rng-core.mod.o
+>   LD [M]  drivers/char/hw_random/rng-core.ko
+> /there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld: arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
+> 
+> 	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
+>           files for modules.
+> 	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
+> 	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
+> 	  (cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
+> 	  Provide rule to build objects from assembler.
+> 
+> Signed-off-by:  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+> Signed-off by:  Yuri Frolov <yfrolov@ru.mvista.com>
+> 
+> Makefile                 |    2 ++
+> arch/powerpc/Makefile    |    2 +-
+> scripts/Makefile.modpost |   12 ++++++++++--
+> 3 files changed, 13 insertions(+), 3 deletions(-)
+> 
+> diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/arch/powerpc/Makefile linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile
+> --- linux-2.6/arch/powerpc/Makefile	2009-09-17 20:04:31.000000000 +0400
+> +++ linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile	2009-09-23 22:08:03.000000000 +0400
+> @@ -93,7 +93,7 @@ else
+>  	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
+>  endif
+>  else
+> -LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
+> +LDFLAGS_MODULE_PREREQ += arch/powerpc/lib/crtsavres.o
+>  endif
+>  
+>  ifeq ($(CONFIG_TUNE_CELL),y)
+> diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/Makefile linux-2.6-powerpc-crtsavres/Makefile
+> --- linux-2.6/Makefile	2009-09-17 20:04:30.000000000 +0400
+> +++ linux-2.6-powerpc-crtsavres/Makefile	2009-09-23 21:41:16.000000000 +0400
+> @@ -326,6 +326,7 @@ MODFLAGS	= -DMODULE
+>  CFLAGS_MODULE   = $(MODFLAGS)
+>  AFLAGS_MODULE   = $(MODFLAGS)
+>  LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
+> +LDFLAGS_MODULE_PREREQ  =
+>  CFLAGS_KERNEL	=
+>  AFLAGS_KERNEL	=
+>  CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
+> @@ -355,6 +356,7 @@ export VERSION PATCHLEVEL SUBLEVEL KERNE
+>  export ARCH SRCARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
+>  export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
+>  export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
+> +export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE LDFLAGS_MODULE_PREREQ CHECK CHECKFLAGS
+>  
+>  export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS LDFLAGS
+>  export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE CFLAGS_GCOV
+> diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/scripts/Makefile.modpost linux-2.6-powerpc-crtsavres/scripts/Makefile.modpost
+> --- linux-2.6/scripts/Makefile.modpost	2009-09-17 20:04:42.000000000 +0400
+> +++ linux-2.6-powerpc-crtsavres/scripts/Makefile.modpost	2009-09-23 22:15:00.000000000 +0400
+> @@ -122,14 +122,22 @@ quiet_cmd_cc_o_c = CC      $@
+>        cmd_cc_o_c = $(CC) $(c_flags) $(CFLAGS_MODULE)	\
+>  		   -c -o $@ $<
+>  
+> -$(modules:.ko=.mod.o): %.mod.o: %.mod.c FORCE
+> +quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
+> +cmd_as_o_S       = $(CC) $(a_flags) $(AFLAGS_MODULE) -c -o $@ $<
+> +
+> +$(LDFLAGS_MODULE_PREREQ): %.o: %.S FORCE
+> +	$(Q)mkdir -p $(dir $@)
+> +	$(call if_changed_dep,as_o_S)
+> +
+> +$(modules:.ko=.mod.o): %.mod.o: %.mod.c $(LDFLAGS_MODULE_PREREQ) FORCE
+>  	$(call if_changed_dep,cc_o_c)
+>  
+>  targets += $(modules:.ko=.mod.o)
+>  
+>  # Step 6), final link of the modules
+>  quiet_cmd_ld_ko_o = LD [M]  $@
+> -      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE) -o $@		\
+> +      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE_PREREQ)	\
+> +			  $(LDFLAGS_MODULE) -o $@			\
+>  			  $(filter-out FORCE,$^)
+>  
+>  $(modules): %.ko :%.o %.mod.o FORCE
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
