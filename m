@@ -1,20 +1,18 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepb.post.tele.dk (unknown [195.41.46.236])
-	by ozlabs.org (Postfix) with ESMTP id 62E3BB7BC0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Sep 2009 05:46:04 +1000 (EST)
-Date: Fri, 25 Sep 2009 21:45:57 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Yuri Frolov <yfrolov@ru.mvista.com>
-Subject: Re: [patch] powerpc: build modules outside the kernel tree fails,
-	if it was built using O=
-Message-ID: <20090925194557.GA3323@merkur.ravnborg.org>
-References: <4ABB57CB.3000409@ru.mvista.com>
+Return-Path: <tmorrison@empirix.com>
+Received: from manexowa.empirix.com (unknown [66.151.190.243])
+	by ozlabs.org (Postfix) with ESMTP id 4230AB7B93
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Sep 2009 06:26:31 +1000 (EST)
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 25 Sep 2009 16:26:33 -0400
+Subject: RE: PCI HotPlug and Adding Resources after Linux Boots
+Message-ID: <80955630EE34634AB5030FB8CE9BDCEFD74DAD1F@EXBEDCLST.empirix.com>
+References: <80955630EE34634AB5030FB8CE9BDCEFD7459DF2@EXBEDCLST.empirix.com>
+	<1253698927.7103.312.camel@pasglop>
+In-Reply-To: <1253698927.7103.312.camel@pasglop>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4ABB57CB.3000409@ru.mvista.com>
-Cc: rep.dot.nop@gmail.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kbuild@vger.kernel.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,98 +22,288 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 24, 2009 at 03:28:11PM +0400, Yuri Frolov wrote:
-> Hello,
-> 
-> here is a corresponding bug: http://bugzilla.kernel.org/show_bug.cgi?id=11143
-> This patch should correctly export crtsavres.o in order to make O= option working.
-> Please, consider to apply.
+Ben/all,
 
-Hi Yuri.
+I have had some luck reserving some memory (via in this autoscan
+(which reserves the resources)) which in this hack code - I reserve
+an appropriate amount of resources for the bridge (by detecting=20
+this special type of port).
 
-I like the way you do the extra link in Makefile.modpost.
-But you need to redo some parts as per comments below.
+The problem comes later on - when the Hotplug event comes - and it
+still can't allocate the resources...
 
-> 
-> 
-> Fix linking modules against crtsavres.o
+A member of this group (who is away from the office right now) had=20
+the following comments:
 
-Please elaborate more on what this commit does.
+>> In your case, if the only problem that you are running into is=20
+>> that the resources cannot be assigned to the FPGA, it may be=20
+>> sufficient to hardcode the forwarding addresses and subordinate=20
+>> bridge number for port 6 of your 8616.  The reason you are seeing=20
+>> that error message is because the parent bridge device for the=20
+>> detected FPGA (port 6 of the 8616) does not have forwarded=20
+>> resource regions that match what the FPGA is trying to claim.
 
-> 
-> Previously we got
->   CC      drivers/char/hw_random/rng-core.mod.o
->   LD [M]  drivers/char/hw_random/rng-core.ko
-> /there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld: arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
+I guess the question I am asking is my friend's statement possibly
+true. And, if he is correct - I am a little confused as to exactly=20
+where/how do I determine and configure this forwarding=20
+addresses/subordinate bridge number (I'm really a newbie at this
+level of PCI configuration).
 
-Always good to include error messages.
+Thank you in advance to any/all who can help me figure this out!
 
-> 	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
->           files for modules.
-> 	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
-> 	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
-> 	  (cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
-> 	  Provide rule to build objects from assembler.
-But this GNUism can go - we do not use it in the kernel.
- 
-> 
-> Signed-off-by:  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
-> Signed-off by:  Yuri Frolov <yfrolov@ru.mvista.com>
-> 
-> Makefile                 |    2 ++
-> arch/powerpc/Makefile    |    2 +-
-> scripts/Makefile.modpost |   12 ++++++++++--
-> 3 files changed, 13 insertions(+), 3 deletions(-)
-> 
-> diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/arch/powerpc/Makefile linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile
-> --- linux-2.6/arch/powerpc/Makefile	2009-09-17 20:04:31.000000000 +0400
-> +++ linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile	2009-09-23 22:08:03.000000000 +0400
-> @@ -93,7 +93,7 @@ else
->  	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
->  endif
->  else
-> -LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
-> +LDFLAGS_MODULE_PREREQ += arch/powerpc/lib/crtsavres.o
->  endif
-
-The naming sucks.
-How about:
-
-KBUILD_MODULE_LINK_SOURCE
-
-This would tell the reader that this is source to be linked on a module.
-
-And this is an arch specific thing so no need to preset it in top-level
-Makefile.
-But it is mandatory to include a description in Documentation/kbuild/kbuild.txt
+Tom
 
 
-> --- linux-2.6/scripts/Makefile.modpost	2009-09-17 20:04:42.000000000 +0400
-> +++ linux-2.6-powerpc-crtsavres/scripts/Makefile.modpost	2009-09-23 22:15:00.000000000 +0400
-> @@ -122,14 +122,22 @@ quiet_cmd_cc_o_c = CC      $@
->        cmd_cc_o_c = $(CC) $(c_flags) $(CFLAGS_MODULE)	\
->  		   -c -o $@ $<
->  
-> -$(modules:.ko=.mod.o): %.mod.o: %.mod.c FORCE
-> +quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
-> +cmd_as_o_S       = $(CC) $(a_flags) $(AFLAGS_MODULE) -c -o $@ $<
 
-Align this so cmd_as_o_S is under each other - as we do for cmd_cc_o_c
+>> -----Original Message-----
 
-
-> +
-> +$(LDFLAGS_MODULE_PREREQ): %.o: %.S FORCE
-> +	$(Q)mkdir -p $(dir $@)
-> +	$(call if_changed_dep,as_o_S)
-Good catch with the mkdir - needed for O= builds.
-I think we shall wrap this in
-ifdef KBUILD_MODULE_LINK_SOURCE
-...
-endif
-
-So we do not have an empty rule when it is not defined.
-
-Please fix up these things and resubmit.
-
-Thanks,
-	Sam
+[Morrison, Tom]=20
+>>=20
+>> There's a few things you can do, though I don't have time just right now
+>> to give you a detailed answer. I'll try again later.
+>>=20
+>> In the meantime, some of the answers could be around not using full
+>> automatic resource assignment, but instead, pre-initializing the top
+>> bridge with some resources that are going to be enough for the device.
+>>=20
+>> You can also try to get the bridge to re-allocate. There's various funky
+>> locking issues with doing that though as long as it's during boot time,
+>> it's not too much of a problem.
+>>=20
+>> There are other more or less hackish ways to do it, but I'll have to
+>> give it more thought.
+>>=20
+>> I'm quite stretched at the moment so if you don't hear back from me in
+>> the upcoming few days, don't hesitate to ping me again.
+>>=20
+>> Cheers,
+>> Ben.
+>>=20
+>> >
+>> > I am running Linux (2.6.23x (and 2.6.27.x)) on a MPC8572 based system.
+>> >
+>> >
+>> >
+>> > I have an 8616 switch that has a Port (6) connected to a FPGA that is
+>> >
+>> > NOT loaded at before Linux boots (note: this port is configured for
+>> > HOTPLUG
+>> >
+>> > events - which we do get after FPGA  is loaded). We are NOT using a
+>> >
+>> > static device tree map (because the devices in the system are very
+>> > dynamic).
+>> >
+>> >
+>> > We use instead the pci auto scan mechanism(s) to scan/assign
+>> > resources
+>> >
+>> > (including into the BAR registers) at bootup to all of the devices
+>> > that are
+>> >
+>> > attached to this MPC8572...
+>> >
+>> >
+>> >
+>> > Here is the port that is attached to the device (note: there are NO
+>> >
+>> > resources assigned at this point this port):
+>> >
+>> >
+>> >
+>> > ----------------------------------------------------------------------=
+-
+>> --------------------------
+>> >
+>> > 02:06.0 PCI bridge: PLX Technology, Inc.: Unknown device 8616 (rev bb)
+>> > (prog-if 00 [Normal decode])
+>> >
+>> >         Flags: bus master, fast devsel, latency 0
+>> >
+>> >         Bus: primary=3D02, secondary=3D05, subordinate=3D05, sec-laten=
+cy=3D0
+>> >
+>> >         Capabilities: [40] Power Management version 3
+>> >
+>> >         Capabilities: [48] Message Signalled Interrupts: 64bit+
+>> > Queue=3D0/2 Enable+
+>> >
+>> >         Capabilities: [68] #10 [0162]
+>> >
+>> >         Capabilities: [a4] #0d [0000]
+>> >
+>> >
+>> >
+>> > root@slave7 ~ # lspci -t
+>> >
+>> > -+-[01]---00.0-[02-05]--+-01.0
+>> >
+>> >  |                      +-04.0-[03]--
+>> >
+>> >  |                      +-05.0-[04]--
+>> >
+>> >  |                      \-06.0-[05]-
+>> >
+>> >
+>> >
+>> > ----------------------------------------------------------------------=
+-
+>> --------------------------
+>> >
+>> >
+>> >
+>> > Later, after I detect there is an FPGA to load - I load it. At
+>> > completion of the
+>> >
+>> > loading of the FPGA - the 8616  detects the FPGA - and creates a
+>> > HotPlug
+>> >
+>> > event that the PCI Express HotPlug Driver handles:
+>> >
+>> > ----------------------------------------------------------------------=
+-
+>> --------------------------
+>> >
+>> >
+>> >
+>> > root@slave7 ~ # pciehp: pcie_isr: intr_loc 8
+>> >
+>> > pciehp: pciehp:  Presence/Notify input change.
+>> >
+>> > pciehp: Card present on Slot(0005_0070)
+>> >
+>> > pciehp: Surprise Removal
+>> >
+>> > pciehp: hpc_get_power_status: SLOTCTRL 80 value read 8
+>> >
+>> > pciehp: hpc_get_attention_status: SLOTCTRL 80, value read 8
+>> >
+>> > pciehp: board_added: slot device, slot offset, hp slot =3D 0, 0 ,0
+>> >
+>> > pciehp: hpc_check_lnk_status: lnk_status =3D 2021
+>> >
+>> > PCI: Found 0000:05:00.0 [1172/0004] 00ff00 00
+>> >
+>> > PCI: Calling quirk c0012d3c for 0000:05:00.0
+>> >
+>> > program_fw_provided_values: Could not get hotplug parameters
+>> >
+>> > entering assign resources (size: 2000000)
+>> >
+>> > PCI: Failed to allocate mem resource #0:2000000@0 for 0000:05:00.0
+>> >
+>> > bus pci: add device 0000:05:00.0
+>> >
+>> > entering uevent
+>> >
+>> > pci: Trying to Match Device 0000:05:00.0 with Driver pcieport-driver
+>> >
+>> > pci: Trying to Match Device 0000:05:00.0 with Driver serial
+>> >
+>> > pci: Trying to Match Device 0000:05:00.0 with Driver pexntb
+>> >
+>> > pciehp: hpc_get_power_status: SLOTCTRL 80 value read 8
+>> >
+>> > pciehp: hpc_get_attention_status: SLOTCTRL 80, value read 8
+>> >
+>> >
+>> >
+>> > 02:06.0 PCI bridge: PLX Technology, Inc.: Unknown device 8616 (rev bb)
+>> > (prog-if 00 [Normal decode])
+>> >
+>> >         Flags: bus master, fast devsel, latency 0
+>> >
+>> >         Bus: primary=3D02, secondary=3D05, subordinate=3D05, sec-laten=
+cy=3D0
+>> >
+>> >         Capabilities: [40] Power Management version 3
+>> >
+>> >         Capabilities: [48] Message Signalled Interrupts: 64bit+
+>> > Queue=3D0/2 Enable+
+>> >
+>> >         Capabilities: [68] #10 [0162]
+>> >
+>> >         Capabilities: [a4] #0d [0000]
+>> >
+>> >
+>> >
+>> > 05:00.0 Class ff00: Altera Corporation: Unknown device 0004 (rev 01)
+>> >
+>> >         Subsystem: Altera Corporation: Unknown device 0004
+>> >
+>> >         Flags: fast devsel
+>> >
+>> >         Capabilities: [50] Message Signalled Interrupts: 64bit+
+>> > Queue=3D0/5 Enable-
+>> >
+>> >         Capabilities: [78] Power Management version 3
+>> >
+>> >         Capabilities: [80] #10 [0001]
+>> >
+>> >
+>> >
+>> > root@slave7 ~ # lspci -t
+>> >
+>> > -+-[01]---00.0-[02-05]--+-01.0
+>> >
+>> >  |                      +-04.0-[03]--
+>> >
+>> >  |                      +-05.0-[04]--
+>> >
+>> >  |                      \-06.0-[05]----00.0
+>> >
+>> >  \-[00]---00.0
+>> >
+>> >
+>> >
+>> > ----------------------------------------------------------------------=
+-
+>> --------------------------
+>> >
+>> >
+>> >
+>> > So, as you can see - the device has been read - and it requires 32M of
+>> > resources, but
+>> >
+>> > because its parent doesn't have any resources allocated - it seemingly
+>> > can't allocate and
+>> >
+>> > use any additional resources.
+>> >
+>> >
+>> >
+>> > How do I 'customize' and/or add resources at this point for this
+>> > device (using semi-standard mechanisms)?
+>> >
+>> >
+>> >
+>> > Thanks in advance for any/all ideas...
+>> >
+>> >
+>> >
+>> >
+>> >
+>> > I
+>> >
+>> >
+>> >
+>> > Tom Morrison
+>> > Principal Software Engineer
+>> >
+>> > EMPIRIX
+>> > 20 Crosby Drive - Bedford, MA  01730
+>> > p: 781.266.3567 f: 781.266.3670
+>> > email: tmorrison@empirix.com
+>> > www.empirix.com
+>> >
+>> >
+>> >
+>> >
+>> >
+>> >
+>> >
+>> > _______________________________________________
+>> > Linuxppc-dev mailing list
+>> > Linuxppc-dev@lists.ozlabs.org
+>> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>=20
