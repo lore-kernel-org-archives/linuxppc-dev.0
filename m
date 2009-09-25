@@ -1,32 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id ACE79B7B88
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 12:30:05 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n8P2U1A5013770
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 19:30:02 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n8P2VuRK020239
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2009 21:31:56 -0500 (CDT)
-Date: Thu, 24 Sep 2009 21:30:01 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 3/3] USB: ehci-fsl: Add power management support (resume
-	after deep sleep)
-Message-ID: <20090925023000.GA22457@b07421-ec1.am.freescale.net>
-References: <20090923185158.GA29065@oksana.dev.rtsoft.ru>
-	<20090923185244.GC18755@oksana.dev.rtsoft.ru>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 548F9B7B8C
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 13:03:55 +1000 (EST)
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache
+	coherency rewrite
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rex Feany <RFeany@mrv.com>
+In-Reply-To: <1253843480.7103.492.camel@pasglop>
+References: <20090924004552.GA11737@compile2.chatsunix.int.mrv.com>
+	<1253774659.7103.405.camel@pasglop>
+	<20090924233346.GA445@compile2.chatsunix.int.mrv.com>
+	<1253836376.7103.469.camel@pasglop>
+	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>
+	<1253843480.7103.492.camel@pasglop>
+Content-Type: text/plain
+Date: Fri, 25 Sep 2009 13:03:47 +1000
+Message-Id: <1253847827.7103.504.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090923185244.GC18755@oksana.dev.rtsoft.ru>
-Cc: linux-usb@vger.kernel.org, Jerry Huang <Chang-Ming.Huang@freescale.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,45 +29,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 23, 2009 at 10:52:44PM +0400, Anton Vorontsov wrote:
-+#ifdef CONFIG_SUSPEND
-+struct ehci_fsl {
-+       struct ehci_hcd ehci;
+
+> I think there's more finishyness to 8xx than we thought. IE. That
+> tlbil_va might have more reasons to be there than what the comment
+> seems to advertize. Can you try to move it even higher up ? IE.
+> Unconditionally at the beginning of set_pte_filter ?
+> 
+> Also, if that doesn't help, can you try putting one in
+> set_access_flags_filter() just below ?
+
+Ok, I got a refresher on the whole concept of "unpopulated TLB entries"
+on 8xx, and that's damn scary. I think what mislead me initially is that
+the comment around the workaround is simply not properly describing the
+extent of the problem :-)
+
+So I'm not going to make the 8xx TLB miss code sane, that's beyond what
+I'm prepare to do with it, but I suspect that this should fix it (on top
+of upstream). Let me know if that's enough or if we also need to put
+one of these in ptep_set_access_flags().
+
+Please let me know if that works for you.
+
+Cheers,
+Ben.
+
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 5304093..7a8e676 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -170,6 +170,16 @@ struct page * maybe_pte_to_page(pte_t pte)
+ 
+ static pte_t set_pte_filter(pte_t pte, unsigned long addr)
+ {
++#ifdef CONFIG_8xx
++	/* 8xx has a weird concept of "unpopulated" entries. When we take
++	 * a TLB miss for a non-valid PTE, we insert such an entry which
++	 * causes a page fault the next time around. This entry must now
++	 * be kicked out or we'll just fault again
++	 */
++	/* 8xx doesn't care about PID, size or ind args */
++	_tlbil_va(addr, 0, 0, 0);
++#endif /* CONFIG_8xx */
 +
-+       /* Saved USB PHY settings, need to restore after deep sleep. */
-+       u32 usb_ctrl;
-+};
-
-This doesn't seem like the right place to define this... what if we later
-need something else that isn't for suspend?  And you could get rid of
-EHCI_FSL_PRIV_SIZE.
-
-> +static int ehci_fsl_drv_suspend(struct device *dev)
-> +{
-> +	struct usb_hcd *hcd = dev_get_drvdata(dev);
-> +	struct ehci_fsl *ehci_fsl = hcd_to_ehci_fsl(hcd);
-> +	void __iomem *non_ehci = hcd->regs;
-> +
-> +	if (!fsl_deep_sleep())
-> +		return 0;
-
-We'll also need to do this if we support suspend to disk...  is there any
-good way for the driver to determine that that's what's being done?  Or
-more generally, for the platform to communicate to the drivers which ones
-are going to lose state without one-off hacks like fsl_deep_sleep().
-
-> +	/* Power up ports (avoids devices disconnect). */
-> +	port_nm = HCS_N_PORTS(ehci->hcs_params);
-> +	while (port_nm--) {
-> +		u32 port_sc;
-> +
-> +		port_sc = ehci_readl(ehci, &ehci->regs->port_status[port_nm]);
-> +		port_sc |= PORT_POWER;
-> +		ehci_writel(ehci, port_sc, &ehci->regs->port_status[port_nm]);
-> +	}
-> +	mdelay(30);
-
-Instead of mdelay, can we somehow hold off any USB operations for a
-while?
-
--Scott
+ 	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
+ 	if (pte_looks_normal(pte) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
+ 				       cpu_has_feature(CPU_FTR_NOEXECUTE))) {
+@@ -177,17 +187,6 @@ static pte_t set_pte_filter(pte_t pte, unsigned long addr)
+ 		if (!pg)
+ 			return pte;
+ 		if (!test_bit(PG_arch_1, &pg->flags)) {
+-#ifdef CONFIG_8xx
+-			/* On 8xx, cache control instructions (particularly
+-			 * "dcbst" from flush_dcache_icache) fault as write
+-			 * operation if there is an unpopulated TLB entry
+-			 * for the address in question. To workaround that,
+-			 * we invalidate the TLB here, thus avoiding dcbst
+-			 * misbehaviour.
+-			 */
+-			/* 8xx doesn't care about PID, size or ind args */
+-			_tlbil_va(addr, 0, 0, 0);
+-#endif /* CONFIG_8xx */
+ 			flush_dcache_icache_page(pg);
+ 			set_bit(PG_arch_1, &pg->flags);
+ 		}
