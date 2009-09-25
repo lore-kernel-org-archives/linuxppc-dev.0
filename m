@@ -1,30 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 1F79AB7B80
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 09:58:48 +1000 (EST)
-Date: Fri, 25 Sep 2009 09:58:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] perf_event, powerpc: Fix compilation after big
-	perf_counter rename
-Message-Id: <20090925095841.8578073a.sfr@canb.auug.org.au>
-In-Reply-To: <1253798755.16237.4.camel@concordia>
-References: <19128.4280.813369.589704@cargo.ozlabs.ibm.com>
-	<1253584591.7103.197.camel@pasglop>
-	<20090922072834.GA25470@elte.hu>
-	<1253606415.7103.216.camel@pasglop>
-	<1253620332.10476.4.camel@concordia>
-	<20090923124420.GA5525@elte.hu> <1253747995.6110.5.camel@concordia>
-	<20090924121423.GB12262@elte.hu>
-	<1253798755.16237.4.camel@concordia>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DE54BB7B7B
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 10:05:47 +1000 (EST)
+Date: Thu, 24 Sep 2009 17:05:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Fw: [PATCH] ppc: add ppc750 CL as supported by oprofile
+Message-Id: <20090924170541.5cdffc06.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__25_Sep_2009_09_58_41_+1000_ErTXIdWapXzp+cCt"
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Dragos Tatulea <dtatulea@ixiacom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,37 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__25_Sep_2009_09_58_41_+1000_ErTXIdWapXzp+cCt
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ingo,
 
-On Thu, 24 Sep 2009 23:25:55 +1000 Michael Ellerman <michael@ellerman.id.au=
-> wrote:
->
-> Give me a day or two, I should be able to add a per-branch setting for
-> who to send mails to without too much trouble.
+Begin forwarded message:
 
-In the mean time I don't now if someone has pointed you at these today:
+Date: Wed, 16 Sep 2009 11:58:15 +0300
+From: Dragos Tatulea <dtatulea@ixiacom.com>
+To: paulus@samba.org, linux-kernel@vger.kernel.org
+Cc: Octavian Purdila <opurdila@ixiacom.com>
+Subject: [PATCH] ppc: add ppc750 CL as supported by oprofile
 
-http://kisskb.ellerman.id.au/kisskb/branch/12/
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Hi,
 
---Signature=_Fri__25_Sep_2009_09_58_41_+1000_ErTXIdWapXzp+cCt
-Content-Type: application/pgp-signature
+	Here's a patch that adds the ppc750 CL cpu as supported by oprofile.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+-- Dragos
 
-iEYEARECAAYFAkq8B7EACgkQjjKRsyhoI8xzEQCfeNo85zq0AujzMPSceQjsIj8b
-jPkAoLHR5ldo3FeTnJycBOTVmbKKzSlh
-=xDI+
------END PGP SIGNATURE-----
+Signed-off-by: Dragos Tatulea <dtatulea@ixiacom.com>
+---
+ arch/powerpc/kernel/cputable.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
---Signature=_Fri__25_Sep_2009_09_58_41_+1000_ErTXIdWapXzp+cCt--
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 0b9c913..03c862b 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -711,6 +711,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_setup		= __setup_cpu_750,
+ 		.machine_check		= machine_check_generic,
+ 		.platform		= "ppc750",
++		.oprofile_cpu_type      = "ppc/750",
++		.oprofile_type		= PPC_OPROFILE_G4,
+ 	},
+ 	{	/* 745/755 */
+ 		.pvr_mask		= 0xfffff000,
