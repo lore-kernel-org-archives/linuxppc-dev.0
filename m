@@ -1,24 +1,19 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8BAB9B7B9D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Sep 2009 00:48:58 +1000 (EST)
-Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1253753501.7103.358.camel@pasglop>
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
-	<1253016701.5506.73.camel@laptop> <1253753501.7103.358.camel@pasglop>
-Content-Type: text/plain
-Date: Fri, 25 Sep 2009 16:48:40 +0200
-Message-Id: <1253890120.18939.189.camel@laptop>
-Mime-Version: 1.0
-Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	"Darrick J. Wong" <djwong@us.ibm.com>
+	by ozlabs.org (Postfix) with ESMTPS id 18490B7B93
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Sep 2009 02:34:36 +1000 (EST)
+Subject: Re: e300 (MPC5121) dlmzb
+Mime-Version: 1.0 (Apple Message framework v1076)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4ABCA454.5030807@mta.it>
+Date: Fri, 25 Sep 2009 09:34:17 -0700
+Message-Id: <6740A6EE-AAD7-42FA-BC1F-17ECC59E0C1C@kernel.crashing.org>
+References: <4ABCA454.5030807@mta.it>
+To: Fortini Matteo <matteo.fortini@mta.it>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-09-24 at 10:51 +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2009-09-15 at 14:11 +0200, Peter Zijlstra wrote:
-> > I still think its a layering violation... its the hypervisor manager
-> > that should be bothered in what state an off-lined cpu is in. 
-> > 
-> That's not how our hypervisor works.
 
-Then fix it?
+On Sep 25, 2009, at 4:07 AM, Fortini Matteo wrote:
 
-> If you ask through the management interface, to remove a CPU from a
-> partition, the HV will communicate with a daemon inside the partition
-> that will then unplug the CPU via the right call.
-> 
-> I don't really understand your objections to be honest. And I fail to
-> see why it would be a layering violation to have the ability for the OS
-> to indicate in what state it wishes to relinguish a CPU to the
-> hypervisor, which more or less defines what is the expected latency for
-> getting it back later on.
+> I was trying to insert an optimized strlen() function using the  
+> following code taken from the ibm site on an MPC5121, but it crashes  
+> the kernel.
+> Is it because it's an unsupported op, or because I'm missing some  
+> needed steps?
+>
+> Thank you,
+> Matteo
+>
+> _GLOBAL(strlen)
+>   addi   r4,0,8    // Load byte count of 8
+>   mtxer  r4        // Set byte count for load string
+>   xor    r4,r4,r4  // r4 = 0, r4 == accumulator
+> 1:
+>   lswx   r5,r3,r4  // load string into r5 & r6
+>   dlmzb. r12,r5,r6 // find NULL byte and record in r7.
+>   add    r4,r4,r12 // Update accumulator.
+>   beq    1b        // Loop if NULL not found.
+>   addi   r3,r4,-1  // Subtract 1 for NULL byte.
+>   blr              // Return length
 
-OK, so the main objection is the abuse of CPU hotplug as resource
-management feature.
+dlmzb. isn't supported on e300.  I believe only 4xx supports it.
 
-CPU hotplug is terribly invasive and expensive to the kernel, doing
-hotplug on a minute basis is just plain crazy.
-
-If you want a CPU in a keep it near and don't hand it back to the HV
-state, why not use cpusets to isolate it and simply not run tasks on it?
-
-cpusets don't use stopmachine and are much nicer to the rest of the
-kernel over-all.
+- k
