@@ -1,14 +1,25 @@
-Return-Path: <seanm@seanm.ca>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id D1CB9B7B8D
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Sep 2009 07:00:53 +1000 (EST)
-Date: Fri, 25 Sep 2009 16:54:11 -0400
-From: Sean MacLennan <seanm@seanm.ca>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: warning: allocated section `.data_nosave'  not in segment
-Message-ID: <20090925165411.6c584401@lappy.seanm.ca>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0B178B7BC6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 26 Sep 2009 07:15:10 +1000 (EST)
+Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1253890120.18939.189.camel@laptop>
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+	<1253016701.5506.73.camel@laptop> <1253753501.7103.358.camel@pasglop>
+	<1253890120.18939.189.camel@laptop>
+Content-Type: text/plain
+Date: Sat, 26 Sep 2009 07:12:48 +1000
+Message-Id: <1253913169.7103.529.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+	"Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,18 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anybody else getting these? They just started popping up with the
-recent changes for 2.6.32. 
+On Fri, 2009-09-25 at 16:48 +0200, Peter Zijlstra wrote:
+> On Thu, 2009-09-24 at 10:51 +1000, Benjamin Herrenschmidt wrote:
+> > On Tue, 2009-09-15 at 14:11 +0200, Peter Zijlstra wrote:
+> > > I still think its a layering violation... its the hypervisor manager
+> > > that should be bothered in what state an off-lined cpu is in. 
+> > > 
+> > That's not how our hypervisor works.
+> 
+> Then fix it?
 
-ppc_4xxFP-ld: .tmp_vmlinux1: warning: allocated section `.data_nosave'
- not in segment KSYM    .tmp_kallsyms1.S
-  AS      .tmp_kallsyms1.o
-  LD      .tmp_vmlinux2
-ppc_4xxFP-ld: .tmp_vmlinux2: warning: allocated section `.data_nosave' not in segment
-  KSYM    .tmp_kallsyms2.S
-  AS      .tmp_kallsyms2.o
-  LD      vmlinux
-ppc_4xxFP-ld: vmlinux: warning: allocated section `.data_nosave' not in segment
+Are you serious ? :-)
 
-Cheers,
-   Sean
+> CPU hotplug is terribly invasive and expensive to the kernel, doing
+> hotplug on a minute basis is just plain crazy.
+> 
+> If you want a CPU in a keep it near and don't hand it back to the HV
+> state, why not use cpusets to isolate it and simply not run tasks on it?
+> 
+> cpusets don't use stopmachine and are much nicer to the rest of the
+> kernel over-all.
+
+Gautham, what is the different in term of power saving between having
+it idle for long periods of time (which could do H_CEDE and with NO_HZ,
+probably wouln't need to wake up that often) and having it unplugged in
+a H_CEDE loop ?
+
+Ben.
