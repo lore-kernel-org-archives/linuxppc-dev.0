@@ -1,19 +1,42 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <arun@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 18490B7B93
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Sep 2009 02:34:36 +1000 (EST)
-Subject: Re: e300 (MPC5121) dlmzb
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4ABCA454.5030807@mta.it>
-Date: Fri, 25 Sep 2009 09:34:17 -0700
-Message-Id: <6740A6EE-AAD7-42FA-BC1F-17ECC59E0C1C@kernel.crashing.org>
-References: <4ABCA454.5030807@mta.it>
-To: Fortini Matteo <matteo.fortini@mta.it>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 61313B7BC1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 26 Sep 2009 03:09:09 +1000 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id n8PH93aO022613
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2009 22:39:03 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n8PH93wR2617428
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2009 22:39:03 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n8PH92RI014788
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2009 22:39:03 +0530
+Date: Fri, 25 Sep 2009 22:38:51 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Joel Schopp <jschopp@austin.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+	Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+	Gautham R Shenoy <ego@in.ibm.com>, Shaohua Li <shaohua.li@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v6 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
+	management code in x86, cleanup drivers/cpuidle/cpuidle.c and
+	introduce cpuidle to POWER.
+Message-ID: <20090925170851.GA28191@linux.vnet.ibm.com>
+References: <20090922112526.GA7788@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20090922112526.GA7788@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +46,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 16:55:27]:
+Hi,
 
-On Sep 25, 2009, at 4:07 AM, Fortini Matteo wrote:
+I have done the following experiments and have posted the results
+below.
 
-> I was trying to insert an optimized strlen() function using the  
-> following code taken from the ibm site on an MPC5121, but it crashes  
-> the kernel.
-> Is it because it's an unsupported op, or because I'm missing some  
-> needed steps?
->
-> Thank you,
-> Matteo
->
-> _GLOBAL(strlen)
->   addi   r4,0,8    // Load byte count of 8
->   mtxer  r4        // Set byte count for load string
->   xor    r4,r4,r4  // r4 = 0, r4 == accumulator
-> 1:
->   lswx   r5,r3,r4  // load string into r5 & r6
->   dlmzb. r12,r5,r6 // find NULL byte and record in r7.
->   add    r4,r4,r12 // Update accumulator.
->   beq    1b        // Loop if NULL not found.
->   addi   r3,r4,-1  // Subtract 1 for NULL byte.
->   blr              // Return length
 
-dlmzb. isn't supported on e300.  I believe only 4xx supports it.
+Average of 5 iterations:
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
-- k
+Kernbench make -j16 results on a
+16 core x86 machine _with_deep_sleep_ support (C1,C2,C3)
+
+
+Without the patches applied			With the patches applied
+
+
+	31.8s						30.4s
+
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+
+Kernbench make -j8 results on a
+8 core x86 machine _without_deep_sleep_ support (only mwait)
+
+
+Without the patches applied			With the patches applied
+
+
+	20.2s						20.4s
+
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+Kernbench make -j8 results on a 8 core _dedicated_lpar_pSeries_ machine
+
+
+Without the patches applied                     With the patches applied
+
+
+	4m, 37s						4m, 36s
+
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+Please let me know if any other kind of testing is necessary.
+
+
+Based on the feedback, I will post out the next iteration with a few
+minor bug fixes.
+
+
+thanks,
+arun
