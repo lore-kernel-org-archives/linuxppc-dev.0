@@ -1,28 +1,29 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from viefep17-int.chello.at (viefep17-int.chello.at [62.179.121.37])
-	by ozlabs.org (Postfix) with ESMTP id CBF14B7B91
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Sep 2009 18:59:02 +1000 (EST)
-Subject: Re: [v6 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
-	management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
-	cpuidle to POWER.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: svaidy@linux.vnet.ibm.com
-In-Reply-To: <20090925070623.GH8595@dirshya.in.ibm.com>
-References: <20090922112526.GA7788@linux.vnet.ibm.com>
-	<20090924051238.GA5963@linux.vnet.ibm.com>
-	<20090924142228.5a2ddf59@infradead.org>
-	<20090925070623.GH8595@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Fri, 25 Sep 2009 10:54:24 +0200
-Message-Id: <1253868864.10287.3.camel@twins>
-Mime-Version: 1.0
-Cc: Shaohua Li <shaohua.li@intel.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, arun@linux.vnet.ibm.com,
-	Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-	linuxppc-dev@lists.ozlabs.org, Len Brown <lenb@kernel.org>
+Return-Path: <tj@kernel.org>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 12514B7BB0
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 19:01:30 +1000 (EST)
+Message-ID: <4ABC86E0.9090807@kernel.org>
+Date: Fri, 25 Sep 2009 18:01:20 +0900
+From: Tejun Heo <tj@kernel.org>
+MIME-Version: 1.0
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: 2.6.31-git5 kernel boot hangs on powerpc
+References: <4AB0D947.8010301@in.ibm.com> <4AB214C3.4040109@in.ibm.com>
+	<1253185994.8375.352.camel@pasglop>	<4AB25B61.9020609@kernel.org>
+	<4AB266AF.9080705@in.ibm.com> <4AB49C37.6020003@in.ibm.com>
+	<4AB9DAEC.3060309@in.ibm.com> <4AB9DD8F.1040305@kernel.org>
+	<4ABA2DE2.6000601@kernel.org> <4ABB269F.6020309@in.ibm.com>
+	<4ABB6D33.6060706@kernel.org> <4ABB72BD.9050905@in.ibm.com>
+	<1253826309.7103.461.camel@pasglop>
+	<4ABC376D.1020704@kernel.org> <4ABC6E25.7090904@in.ibm.com>
+	<4ABC73C7.20403@kernel.org> <4ABC7486.8040500@kernel.org>
+	<4ABC7955.2070404@in.ibm.com>
+In-Reply-To: <4ABC7955.2070404@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: David Miller <davem@davemloft.net>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,39 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-09-25 at 12:36 +0530, Vaidyanathan Srinivasan wrote:
-> * Arjan van de Ven <arjan@infradead.org> [2009-09-24 14:22:28]:
-> 
-> > On Thu, 24 Sep 2009 10:42:41 +0530
-> > Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
-> > 
-> > > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 16:55:27]:
-> > > 
-> > > Hi Len, (or other acpi folks),
-> > > 
-> > > I had a question regarding ACPI-cpuidle interaction in the current
-> > > implementation.
-> > > 
-> > > Currently, every cpu (i.e. acpi_processor) registers to cpuidle as
-> > > a cpuidle_device. So every cpu has to go through the process of
-> > > setting up the idle states and then registering as a cpuidle device.
-> > > 
-> > > What exactly is the reason behind this?
-> > > 
-> > 
-> > technically a BIOS can opt to give you C states via ACPI on some cpus,
-> > but not on others.
-> > 
-> > in practice when this happens it tends to be a bug.. but it's
-> > technically a valid configuration
-> 
-> So we will need to keep the per-cpu registration as of now because we
-> may have such buggy BIOS in the field and we don't want the cpuidle
-> framework to malfunction there.
+Sachin Sant wrote:
+> With this patch applied the machine boots OK :-)
 
-If the BIOS doesn't mention a certain C state on a cpu, and you try to
-set it anyway, does that go boom?
+Ah... so, the problem really is too high address.  If you've got some
+time, it might be interesting to find out how far high is safe.
 
-This whole per-cpu registration thing is horridly ugly, can't you have a
-per-cpu C state exception mask and leave it at that -- if its really
-needed?
+Thanks.
+
+-- 
+tejun
