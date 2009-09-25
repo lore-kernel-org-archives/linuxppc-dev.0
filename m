@@ -1,27 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85931B7B68
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 18:32:53 +1000 (EST)
-Subject: Re: 2.6.31-git5 kernel boot hangs on powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tejun Heo <tj@kernel.org>
-In-Reply-To: <4ABC73C7.20403@kernel.org>
-References: <4AB0D947.8010301@in.ibm.com> <4AB214C3.4040109@in.ibm.com>
-	<1253185994.8375.352.camel@pasglop>	<4AB25B61.9020609@kernel.org>
-	<4AB266AF.9080705@in.ibm.com> <4AB49C37.6020003@in.ibm.com>
-	<4AB9DAEC.3060309@in.ibm.com> <4AB9DD8F.1040305@kernel.org>
-	<4ABA2DE2.6000601@kernel.org> <4ABB269F.6020309@in.ibm.com>
-	<4ABB6D33.6060706@kernel.org>  <4ABB72BD.9050905@in.ibm.com>
-	<1253826309.7103.461.camel@pasglop> <4ABC376D.1020704@kernel.org>
-	<4ABC6E25.7090904@in.ibm.com>  <4ABC73C7.20403@kernel.org>
-Content-Type: text/plain
-Date: Fri, 25 Sep 2009 18:31:45 +1000
-Message-Id: <1253867505.7103.515.camel@pasglop>
-Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	David Miller <davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTPS id 19230B7BB3
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2009 18:43:22 +1000 (EST)
+In-Reply-To: <1253847827.7103.504.camel@pasglop>
+References: <20090924004552.GA11737@compile2.chatsunix.int.mrv.com>	<1253774659.7103.405.camel@pasglop>
+	<20090924233346.GA445@compile2.chatsunix.int.mrv.com>	<1253836376.7103.469.camel@pasglop>
+	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>	<1253843480.7103.492.camel@pasglop>
+	<1253847827.7103.504.camel@pasglop>
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache	coherency
+	rewrite
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF028339A2.3A7A8D6F-ONC125763C.002DE73B-C125763C.002ECF90@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Fri, 25 Sep 2009 10:31:17 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,53 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-09-25 at 16:39 +0900, Tejun Heo wrote:
-> Hello,
-> 
-> Sachin Sant wrote:
-> > <4>PERCPU: chunk 1 relocating -1 -> 18 c0000000db70fb00
-> > <c0000000db70fb00:c0000000db70fb00>
-> > <4>PERCPU: relocated <c000000001120320:c000000001120320>
-> > <4>PERCPU: chunk 1 relocating 18 -> 16 c0000000db70fb00
-> > <c000000001120320:c000000001120320>
-> > <4>PERCPU: relocated <c000000001120300:c000000001120300>
-> > <4>PERCPU: chunk 1, alloc pages [0,1)
-> > <4>PERCPU: chunk 1, map pages [0,1)
-> > <4>PERCPU: map 0xd00007fffff00000, 1 pages 53544
-> > <4>PERCPU: map 0xd00007fffff80000, 1 pages 53545
-> > <4>PERCPU: chunk 1, will clear 4096b/unit d00007fffff00000 d00007fffff80000
-> > <3>INFO: RCU detected CPU 0 stall (t=1000 jiffies)
-> 
-> This supports my hypothesis.  This is the first area being allocated
-> from a dynamic chunk and cleared.  PFN 53544 and 53545 have been
-> allocated and successfully mapped to 0xd00007fffff00000 and
-> 0xd00007fffff80000 using map_kernel_range_noflush() but when those
-> addresses are actually accessed, we end up with infinite faults.  The
-> fault handler probably thinks that the fault has been handled
-> correctly but, when the control is returned, the processor faults
-> again.  Benjamin, I'm way out of my depth here, can you please help?
-
-Definitely looks like a powerpc mm problem. I'll have a look on monday.
-
-Cheers,
-Ben.
-
-> Oh, one more simple experiment.  Sachin, does the following patch make
-> any difference?
-> 
-> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> index 69511e6..93d29eb 100644
-> --- a/mm/vmalloc.c
-> +++ b/mm/vmalloc.c
-> @@ -2102,7 +2102,8 @@ struct vm_struct **pcpu_get_vm_areas(const unsigned long *offsets,
->  				     size_t align, gfp_t gfp_mask)
+>
+>
+> > I think there's more finishyness to 8xx than we thought. IE. That
+> > tlbil_va might have more reasons to be there than what the comment
+> > seems to advertize. Can you try to move it even higher up ? IE.
+> > Unconditionally at the beginning of set_pte_filter ?
+> >
+> > Also, if that doesn't help, can you try putting one in
+> > set_access_flags_filter() just below ?
+>
+> Ok, I got a refresher on the whole concept of "unpopulated TLB entries"
+> on 8xx, and that's damn scary. I think what mislead me initially is that
+> the comment around the workaround is simply not properly describing the
+> extent of the problem :-)
+>
+> So I'm not going to make the 8xx TLB miss code sane, that's beyond what
+> I'm prepare to do with it, but I suspect that this should fix it (on top
+> of upstream). Let me know if that's enough or if we also need to put
+> one of these in ptep_set_access_flags().
+>
+> Please let me know if that works for you.
+>
+> Cheers,
+> Ben.
+>
+> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> index 5304093..7a8e676 100644
+> --- a/arch/powerpc/mm/pgtable.c
+> +++ b/arch/powerpc/mm/pgtable.c
+> @@ -170,6 +170,16 @@ struct page * maybe_pte_to_page(pte_t pte)
+>
+>  static pte_t set_pte_filter(pte_t pte, unsigned long addr)
 >  {
->  	const unsigned long vmalloc_start = ALIGN(VMALLOC_START, align);
-> -	const unsigned long vmalloc_end = VMALLOC_END & ~(align - 1);
-> +	//const unsigned long vmalloc_end = VMALLOC_END & ~(align - 1);
-> +	const unsigned long vmalloc_end = vmalloc_start + (512 << 20);
->  	struct vmap_area **vas, *prev, *next;
->  	struct vm_struct **vms;
->  	int area, area2, last_area, term_area;
-> 
-> 
+> +#ifdef CONFIG_8xx
+> +   /* 8xx has a weird concept of "unpopulated" entries. When we take
+> +    * a TLB miss for a non-valid PTE, we insert such an entry which
+> +    * causes a page fault the next time around. This entry must now
+> +    * be kicked out or we'll just fault again
+> +    */
+> +   /* 8xx doesn't care about PID, size or ind args */
+> +   _tlbil_va(addr, 0, 0, 0);
+> +#endif /* CONFIG_8xx */
+> +
+
+The main problem with 8xx it does not update the DAR register in
+the TLB Miss/Fault handlers for cache instructions :( It on old bug
+that was found only some years ago.
+
+I think the old comment is correct though, as I recall it was Marcelo
+that found the problem and added the workaround.
+
+   Jocke
