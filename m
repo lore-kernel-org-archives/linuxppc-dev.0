@@ -1,42 +1,20 @@
-Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 61313B7BC1
+Return-Path: <sam@ravnborg.org>
+Received: from pfepb.post.tele.dk (unknown [195.41.46.236])
+	by ozlabs.org (Postfix) with ESMTP id 62E3BB7BC0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Sep 2009 03:09:09 +1000 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id n8PH93aO022613
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2009 22:39:03 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n8PH93wR2617428
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2009 22:39:03 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n8PH92RI014788
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2009 22:39:03 +0530
-Date: Fri, 25 Sep 2009 22:38:51 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Joel Schopp <jschopp@austin.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-	Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-	Gautham R Shenoy <ego@in.ibm.com>, Shaohua Li <shaohua.li@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v6 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
-	management code in x86, cleanup drivers/cpuidle/cpuidle.c and
-	introduce cpuidle to POWER.
-Message-ID: <20090925170851.GA28191@linux.vnet.ibm.com>
-References: <20090922112526.GA7788@linux.vnet.ibm.com>
+	Sat, 26 Sep 2009 05:46:04 +1000 (EST)
+Date: Fri, 25 Sep 2009 21:45:57 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Yuri Frolov <yfrolov@ru.mvista.com>
+Subject: Re: [patch] powerpc: build modules outside the kernel tree fails,
+	if it was built using O=
+Message-ID: <20090925194557.GA3323@merkur.ravnborg.org>
+References: <4ABB57CB.3000409@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20090922112526.GA7788@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: arun@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4ABB57CB.3000409@ru.mvista.com>
+Cc: rep.dot.nop@gmail.com, linuxppc-dev@lists.ozlabs.org,
+	linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,59 +24,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-22 16:55:27]:
-Hi,
+On Thu, Sep 24, 2009 at 03:28:11PM +0400, Yuri Frolov wrote:
+> Hello,
+> 
+> here is a corresponding bug: http://bugzilla.kernel.org/show_bug.cgi?id=11143
+> This patch should correctly export crtsavres.o in order to make O= option working.
+> Please, consider to apply.
 
-I have done the following experiments and have posted the results
-below.
+Hi Yuri.
+
+I like the way you do the extra link in Makefile.modpost.
+But you need to redo some parts as per comments below.
+
+> 
+> 
+> Fix linking modules against crtsavres.o
+
+Please elaborate more on what this commit does.
+
+> 
+> Previously we got
+>   CC      drivers/char/hw_random/rng-core.mod.o
+>   LD [M]  drivers/char/hw_random/rng-core.ko
+> /there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld: arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
+
+Always good to include error messages.
+
+> 	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
+>           files for modules.
+> 	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
+> 	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
+> 	  (cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
+> 	  Provide rule to build objects from assembler.
+But this GNUism can go - we do not use it in the kernel.
+ 
+> 
+> Signed-off-by:  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+> Signed-off by:  Yuri Frolov <yfrolov@ru.mvista.com>
+> 
+> Makefile                 |    2 ++
+> arch/powerpc/Makefile    |    2 +-
+> scripts/Makefile.modpost |   12 ++++++++++--
+> 3 files changed, 13 insertions(+), 3 deletions(-)
+> 
+> diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/arch/powerpc/Makefile linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile
+> --- linux-2.6/arch/powerpc/Makefile	2009-09-17 20:04:31.000000000 +0400
+> +++ linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile	2009-09-23 22:08:03.000000000 +0400
+> @@ -93,7 +93,7 @@ else
+>  	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
+>  endif
+>  else
+> -LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
+> +LDFLAGS_MODULE_PREREQ += arch/powerpc/lib/crtsavres.o
+>  endif
+
+The naming sucks.
+How about:
+
+KBUILD_MODULE_LINK_SOURCE
+
+This would tell the reader that this is source to be linked on a module.
+
+And this is an arch specific thing so no need to preset it in top-level
+Makefile.
+But it is mandatory to include a description in Documentation/kbuild/kbuild.txt
 
 
-Average of 5 iterations:
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
+> --- linux-2.6/scripts/Makefile.modpost	2009-09-17 20:04:42.000000000 +0400
+> +++ linux-2.6-powerpc-crtsavres/scripts/Makefile.modpost	2009-09-23 22:15:00.000000000 +0400
+> @@ -122,14 +122,22 @@ quiet_cmd_cc_o_c = CC      $@
+>        cmd_cc_o_c = $(CC) $(c_flags) $(CFLAGS_MODULE)	\
+>  		   -c -o $@ $<
+>  
+> -$(modules:.ko=.mod.o): %.mod.o: %.mod.c FORCE
+> +quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
+> +cmd_as_o_S       = $(CC) $(a_flags) $(AFLAGS_MODULE) -c -o $@ $<
 
-Kernbench make -j16 results on a
-16 core x86 machine _with_deep_sleep_ support (C1,C2,C3)
-
-
-Without the patches applied			With the patches applied
-
-
-	31.8s						30.4s
-
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
+Align this so cmd_as_o_S is under each other - as we do for cmd_cc_o_c
 
 
-Kernbench make -j8 results on a
-8 core x86 machine _without_deep_sleep_ support (only mwait)
+> +
+> +$(LDFLAGS_MODULE_PREREQ): %.o: %.S FORCE
+> +	$(Q)mkdir -p $(dir $@)
+> +	$(call if_changed_dep,as_o_S)
+Good catch with the mkdir - needed for O= builds.
+I think we shall wrap this in
+ifdef KBUILD_MODULE_LINK_SOURCE
+...
+endif
 
+So we do not have an empty rule when it is not defined.
 
-Without the patches applied			With the patches applied
+Please fix up these things and resubmit.
 
-
-	20.2s						20.4s
-
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
-
-Kernbench make -j8 results on a 8 core _dedicated_lpar_pSeries_ machine
-
-
-Without the patches applied                     With the patches applied
-
-
-	4m, 37s						4m, 36s
-
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
-
-Please let me know if any other kind of testing is necessary.
-
-
-Based on the feedback, I will post out the next iteration with a few
-minor bug fixes.
-
-
-thanks,
-arun
+Thanks,
+	Sam
