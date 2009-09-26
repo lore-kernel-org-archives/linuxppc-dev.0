@@ -3,19 +3,19 @@ Received: from lvps87-230-20-158.dedicated.hosteurope.de
 	(lvps87-230-20-158.dedicated.hosteurope.de [87.230.20.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5CE6BB7BA9
+	by ozlabs.org (Postfix) with ESMTPS id 3ACDBB7B9F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Sep 2009 05:08:52 +1000 (EST)
-Message-Id: <E4C74CE2-D719-432C-809F-0EEF6554B841@codex.gr>
+	Sun, 27 Sep 2009 05:15:26 +1000 (EST)
+Message-Id: <95FC0E0B-F6FE-45FD-A84E-AC4AF477F786@codex.gr>
 From: Konstantinos Margaritis <markos@codex.gr>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-In-Reply-To: <c384c5ea0909261115t361e019auadf3b76a312ff2d1@mail.gmail.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+In-Reply-To: <Pine.LNX.4.64.0909261949240.4273@axis700.grange>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v936)
 Subject: Re: Market research for new PowerPC system
-Date: Sat, 26 Sep 2009 22:08:46 +0300
+Date: Sat, 26 Sep 2009 22:15:20 +0300
 References: <0046254A-432D-4AE3-9B9F-C0D30311B7D7@codex.gr>
-	<c384c5ea0909261115t361e019auadf3b76a312ff2d1@mail.gmail.com>
+	<Pine.LNX.4.64.0909261949240.4273@axis700.grange>
 Cc: debian-powerpc@lists.debian.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,39 +27,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> What makes the system stand out, from say a Atom based PC?
-
-As you said, PCI Express, *actual* low power and probably higher speed  
--all cpus mention are faster than the Atom at least in relative terms.  
-The SoC design means less components on the board, so smaller sizes  
-might be achieved.
-
-> Go for QorIQ P1022, it's the ideal SoC for many applications.
+On Sep 26, 2009, at 8:58 PM, Guennadi Liakhovetski wrote:
 >
-I know, I like the chip very much, the thing is that it won't be  
-available till Q4/2010, so it will take quite a bit more thinking.
+> Ok, just a short comment. In principle I like diversity,  
+> competition, etc.
+> And it was somewhat sad when Apple abandoned ppc. But honestly - why
+> should I be buying a ppc desktop system? If we restrict our  
+> comparison to
+> Linux, because that's what I'm using, what advantages would a ppc  
+> system
+> give me over a comparable in price ix86 system? This is not meant
+> negatively, I just have not followed recent ppc CPUs from the  
+> "desktop"
+> range, so, this is a real honest question. Would such a system provide
+> more MIPS per Watt at the same price? Or more periferals? Or some  
+> specific
+> hardware blocks unavailable or unsupported om ix86?
 
-> Alternatively, it's predecessor MPC8536E available now, ~same specs,
-> but higher power.  But not the two you mention please.
+Ok, I remember a few years back when we had Alpha, MIPS, x86, SPARC,
+PowerPC, etc all viable platforms to use and work on. Now it's only  
+x86. I'm sorry,
+I just don't like it. I cannot answer your question, no more than I  
+can answer why
+a car lover buys an old Jaguar antique for the price he could buy a  
+new Audi S8
+for example. Well, ok the analogy is not exactly the same, but you get  
+the point.
+If not, well, the ppc board would just lessen the current gap between  
+x86/ppc in
+favour of the -admittedly very small- ppc desktop/hobbyist market.  
+Nevertheless,
+I'm pretty sure the system would find itself in many ppc developers'  
+desks, just
+because they can't really buy something *new* with those specs, at  
+this price range.
+Ok, perhaps I will fail and just add my name to the list of failed  
+hardware projects.
+Perhaps not. I really don't know if I can convince you if you don't  
+want to be convinced.
+Deliver a super ppc system that beats all x86 systems at the same or  
+better price? No,
+I'm sorry I cannot do that, and I never implied I could. Only IBM/ 
+Freescale could do that
+and even then the game would not be in their favour.
 
-Why not? I mean seriously, why would you dislike them?
-
->> End price is estimated to be ~around~ 350EUR for the P1022 board or  
->> ~500EUR
->>
-> Pico P1022 or Pico MPC8536E pls.
-
-> and throw PCI Express (x4) in the party!
-
-definetely PCI Express for all CPUs anyway.
-
-> (hint: I haven't seen an Intel board with Atom and PCI Express yet).
->
-> Will the board be open hardware? I.e. an open sourced design?
-
-I don't know yet, to be frank, I haven't thought about it, though I've  
-worked with open source software for years, I have no experience  
-whatsoever with open source hardware, I don't know the dangers,  
-pitfalls, advantages, etc.
+Regards
 
 Konstantinos
