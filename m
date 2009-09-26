@@ -1,22 +1,22 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepb.post.tele.dk (unknown [195.41.46.236])
-	by ozlabs.org (Postfix) with ESMTP id 7D557B7B73
+Return-Path: <pavel@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+	[195.113.26.193]) by ozlabs.org (Postfix) with ESMTP id 8872BB7BBD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Sep 2009 08:01:57 +1000 (EST)
-Date: Sat, 26 Sep 2009 00:01:51 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch] powerpc: build modules outside the kernel tree fails,
-	if it was built using O=
-Message-ID: <20090925220151.GA3549@merkur.ravnborg.org>
-References: <4ABB57CB.3000409@ru.mvista.com>
-	<20090925194557.GA3323@merkur.ravnborg.org>
-	<1253915852.7103.531.camel@pasglop>
+	Sat, 26 Sep 2009 19:55:30 +1000 (EST)
+Date: Sat, 26 Sep 2009 11:55:19 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
+Message-ID: <20090926095518.GE1331@ucw.cz>
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+	<1253016701.5506.73.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1253915852.7103.531.camel@pasglop>
-Cc: rep.dot.nop@gmail.com, Yuri Frolov <yfrolov@ru.mvista.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org
+In-Reply-To: <1253016701.5506.73.camel@laptop>
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, "Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 26, 2009 at 07:57:32AM +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2009-09-25 at 21:45 +0200, Sam Ravnborg wrote:
-> > On Thu, Sep 24, 2009 at 03:28:11PM +0400, Yuri Frolov wrote:
-> > > Hello,
-> > > 
-> > > here is a corresponding bug: http://bugzilla.kernel.org/show_bug.cgi?id=11143
-> > > This patch should correctly export crtsavres.o in order to make O= option working.
-> > > Please, consider to apply.
+On Tue 2009-09-15 14:11:41, Peter Zijlstra wrote:
+> On Tue, 2009-09-15 at 17:36 +0530, Gautham R Shenoy wrote:
+> > This patchset contains the offline state driver implemented for
+> > pSeries. For pSeries, we define three available_hotplug_states. They are:
 > > 
-> > Hi Yuri.
+> >         online: The processor is online.
 > > 
-> > I like the way you do the extra link in Makefile.modpost.
-> > But you need to redo some parts as per comments below.
+> >         offline: This is the the default behaviour when the cpu is offlined
+> >         even in the absense of this driver. The CPU would call make an
+> >         rtas_stop_self() call and hand over the CPU back to the resource pool,
+> >         thereby effectively deallocating that vCPU from the LPAR.
+> >         NOTE: This would result in a configuration change to the LPAR
+> >         which is visible to the outside world.
+> > 
+> >         inactive: This cedes the vCPU to the hypervisor with a cede latency
+> >         specifier value 2.
+> >         NOTE: This option does not result in a configuration change
+> >         and the vCPU would be still entitled to the LPAR to which it earlier
+> >         belong to.
+> > 
+> > Any feedback on the patchset will be immensely valuable.
 > 
-> > > 
-> > > Fix linking modules against crtsavres.o
-> > 
-> > Please elaborate more on what this commit does.
-> 
-> It's a support file that needs to be linked against every module
-> (aka libgcc like) and thus needs to be built before any module.
+> I still think its a layering violation... its the hypervisor manager
+> that should be bothered in what state an off-lined cpu is in. 
 
-Yes.
+Agreed. Proposed interface is ugly.
 
-My point was that the next version of the changelog should
-include this information - as well as kbuild.txt.
-
-	Sam
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
