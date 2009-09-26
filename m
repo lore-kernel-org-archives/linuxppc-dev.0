@@ -1,25 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A7FB8B7BDE
+Return-Path: <yfrolov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id 473ACB7BE7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Sep 2009 22:19:00 +1000 (EST)
-Received: from canb.auug.org.au (ta-1-1.tip.net.au [203.11.71.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by smtps.tip.net.au (Postfix) with ESMTPSA id E8083144002
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Sep 2009 22:18:59 +1000 (EST)
-Date: Sat, 26 Sep 2009 22:18:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Market research for new PowerPC system
-Message-Id: <20090926221854.6f1a1193.sfr@canb.auug.org.au>
-In-Reply-To: <0046254A-432D-4AE3-9B9F-C0D30311B7D7@codex.gr>
-References: <0046254A-432D-4AE3-9B9F-C0D30311B7D7@codex.gr>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__26_Sep_2009_22_18_54_+1000_aBewRVq1Bda5IXh8"
+	Sat, 26 Sep 2009 22:45:54 +1000 (EST)
+Message-ID: <4ABE0CFF.5040001@ru.mvista.com>
+Date: Sat, 26 Sep 2009 16:45:51 +0400
+From: Yuri Frolov <yfrolov@ru.mvista.com>
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch] powerpc: build modules outside the kernel tree fails,
+	if it was built using O=
+References: <4ABB57CB.3000409@ru.mvista.com>
+	<20090925194557.GA3323@merkur.ravnborg.org>
+In-Reply-To: <20090925194557.GA3323@merkur.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: rep.dot.nop@gmail.com, linuxppc-dev@lists.ozlabs.org,
+	linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,35 +25,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Sat__26_Sep_2009_22_18_54_+1000_aBewRVq1Bda5IXh8
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello, here is a fixed version.
 
-Just in case anyone feels like flaming about this post, I allowed it
-because I thought some of you may feel inclined to provide some technical
-advise, enthusiasm for someone else building PowerPC systems.  If you
-object, then just ignore the post ...
+Compile and export arch/powerpc/lib/crtsavres.o in order to fix the
+"arch/powerpc/lib/crtsavres.o not found" error when "O=" option
+is employed for external module compilation.
+crtsavres.o is a support file, containing save/restore code from gcc,
+simplified down for powerpc architecture needs.
+This file needs to be linked against every module and thus to be built
+before any module.
 
-On Sat, 26 Sep 2009 14:38:38 +0300 Konstantinos Margaritis <markos@codex.gr=
-> wrote:
->
-> (Sorry for the cross-posting, please ignore if you are not interested =20
-> in this, CC me as I'm not subscribed)
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Documentation/kbuild/kbuild.txt |    8 ++++++++
+Makefile                        |    2 +-
+arch/powerpc/Makefile           |    2 +-
+scripts/Makefile.modpost        |   14 ++++++++++++--
+4 files changed, 22 insertions(+), 4 deletions(-)
 
---Signature=_Sat__26_Sep_2009_22_18_54_+1000_aBewRVq1Bda5IXh8
-Content-Type: application/pgp-signature
+diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/arch/powerpc/Makefile linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile
+--- linux-2.6/arch/powerpc/Makefile	2009-09-17 20:04:31.000000000 +0400
++++ linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile	2009-09-26 13:35:32.000000000 +0400
+@@ -93,7 +93,7 @@ else
+ 	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
+ endif
+ else
+-LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
++KBUILD_MODULE_LINK_SOURCE += arch/powerpc/lib/crtsavres.o
+ endif
+ 
+ ifeq ($(CONFIG_TUNE_CELL),y)
+diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/Documentation/kbuild/kbuild.txt linux-2.6-powerpc-crtsavres/Documentation/kbuild/kbuild.txt
+--- linux-2.6/Documentation/kbuild/kbuild.txt	2009-09-17 20:04:30.000000000 +0400
++++ linux-2.6-powerpc-crtsavres/Documentation/kbuild/kbuild.txt	2009-09-26 16:03:50.000000000 +0400
+@@ -132,3 +132,11 @@ For tags/TAGS/cscope targets, you can sp
+ to be included in the databases, separated by blank space. E.g.:
+ 
+     $ make ALLSOURCE_ARCHS="x86 mips arm" tags
++
++KBUILD_MODULE_LINK_SOURCE
++--------------------------------------------------
++Compile and export arch/powerpc/lib/crtsavres.o
++when "O=" option is employed for powerpc external module compilation.
++This file needs to be linked against every module and thus to be built
++before any module.
++
+diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/Makefile linux-2.6-powerpc-crtsavres/Makefile
+--- linux-2.6/Makefile	2009-09-17 20:04:30.000000000 +0400
++++ linux-2.6-powerpc-crtsavres/Makefile	2009-09-26 14:23:27.000000000 +0400
+@@ -354,7 +354,7 @@ KERNELVERSION = $(VERSION).$(PATCHLEVEL)
+ export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
+ export ARCH SRCARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
+ export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
+-export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
++export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS KBUILD_MODULE_LINK_SOURCE
+ 
+ export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS LDFLAGS
+ export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE CFLAGS_GCOV
+diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/scripts/Makefile.modpost linux-2.6-powerpc-crtsavres/scripts/Makefile.modpost
+--- linux-2.6/scripts/Makefile.modpost	2009-09-17 20:04:42.000000000 +0400
++++ linux-2.6-powerpc-crtsavres/scripts/Makefile.modpost	2009-09-26 14:34:28.000000000 +0400
+@@ -122,14 +122,24 @@ quiet_cmd_cc_o_c = CC      $@
+       cmd_cc_o_c = $(CC) $(c_flags) $(CFLAGS_MODULE)	\
+ 		   -c -o $@ $<
+ 
+-$(modules:.ko=.mod.o): %.mod.o: %.mod.c FORCE
++quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
++      cmd_as_o_S = $(CC) $(a_flags) $(AFLAGS_MODULE) -c -o $@ $<
++
++ifdef KBUILD_MODULE_LINK_SOURCE
++$(KBUILD_MODULE_LINK_SOURCE): %.o: %.S FORCE
++	$(Q)mkdir -p $(dir $@)
++	$(call if_changed_dep,as_o_S)
++endif
++
++$(modules:.ko=.mod.o): %.mod.o: %.mod.c $(KBUILD_MODULE_LINK_SOURCE) FORCE
+ 	$(call if_changed_dep,cc_o_c)
+ 
+ targets += $(modules:.ko=.mod.o)
+ 
+ # Step 6), final link of the modules
+ quiet_cmd_ld_ko_o = LD [M]  $@
+-      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(LDFLAGS_MODULE) -o $@		\
++      cmd_ld_ko_o = $(LD) -r $(LDFLAGS) $(KBUILD_MODULE_LINK_SOURCE)	\
++			  $(LDFLAGS_MODULE) -o $@			\
+ 			  $(filter-out FORCE,$^)
+ 
+ $(modules): %.ko :%.o %.mod.o FORCE
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkq+Bq4ACgkQjjKRsyhoI8whsgCfaonBvT4KFRplX2eCG8HLdeyI
-Jf8An2I08Dd2SEZIaEy/p67k7pth5WQ0
-=tuKQ
------END PGP SIGNATURE-----
-
---Signature=_Sat__26_Sep_2009_22_18_54_+1000_aBewRVq1Bda5IXh8--
+On 09/25/2009 11:45 PM, Sam Ravnborg wrote:
+> On Thu, Sep 24, 2009 at 03:28:11PM +0400, Yuri Frolov wrote:
+>> Hello,
+>>
+>> here is a corresponding bug: http://bugzilla.kernel.org/show_bug.cgi?id=11143
+>> This patch should correctly export crtsavres.o in order to make O= option working.
+>> Please, consider to apply.
+> 
+> Hi Yuri.
+> 
+> I like the way you do the extra link in Makefile.modpost.
+> But you need to redo some parts as per comments below.
+> 
+>>
+>> Fix linking modules against crtsavres.o
+> 
+> Please elaborate more on what this commit does.
+> 
+>> Previously we got
+>>   CC      drivers/char/hw_random/rng-core.mod.o
+>>   LD [M]  drivers/char/hw_random/rng-core.ko
+>> /there/src/buildroot.git.ppc/build_powerpc_nofpu/staging_dir/usr/bin/powerpc-linux-uclibc-ld: arch/powerpc/lib/crtsavres.o: No such file: No such file or directory
+> 
+> Always good to include error messages.
+> 
+>> 	* Makefile (LDFLAGS_MODULE_PREREQ): New variable to hold prerequisite
+>>           files for modules.
+>> 	* arch/powerpc/Makefile: add crtsavres.o to LDFLAGS_MODULE_PREREQ.
+>> 	* scripts/Makefile.modpost (cmd_as_o_S): Copy from Makefile.build.
+>> 	  (cmd_ld_ko_o): Also link LDFLAGS_MODULE_PREREQ.
+>> 	  Provide rule to build objects from assembler.
+> But this GNUism can go - we do not use it in the kernel.
+>  
+>> Signed-off-by:  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+>> Signed-off by:  Yuri Frolov <yfrolov@ru.mvista.com>
+>>
+>> Makefile                 |    2 ++
+>> arch/powerpc/Makefile    |    2 +-
+>> scripts/Makefile.modpost |   12 ++++++++++--
+>> 3 files changed, 13 insertions(+), 3 deletions(-)
+>>
+>> diff -urpN -X linux-2.6/Documentation/dontdiff linux-2.6/arch/powerpc/Makefile linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile
+>> --- linux-2.6/arch/powerpc/Makefile	2009-09-17 20:04:31.000000000 +0400
+>> +++ linux-2.6-powerpc-crtsavres/arch/powerpc/Makefile	2009-09-23 22:08:03.000000000 +0400
+>> @@ -93,7 +93,7 @@ else
+>>  	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
+>>  endif
+>>  else
+>> -LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
+>> +LDFLAGS_MODULE_PREREQ += arch/powerpc/lib/crtsavres.o
+>>  endif
+> 
+> The naming sucks.
+> How about:
+> 
+> KBUILD_MODULE_LINK_SOURCE
+> 
+> This would tell the reader that this is source to be linked on a module.
+> 
+> And this is an arch specific thing so no need to preset it in top-level
+> Makefile.
+> But it is mandatory to include a description in Documentation/kbuild/kbuild.txt
+> 
+> 
+>> --- linux-2.6/scripts/Makefile.modpost	2009-09-17 20:04:42.000000000 +0400
+>> +++ linux-2.6-powerpc-crtsavres/scripts/Makefile.modpost	2009-09-23 22:15:00.000000000 +0400
+>> @@ -122,14 +122,22 @@ quiet_cmd_cc_o_c = CC      $@
+>>        cmd_cc_o_c = $(CC) $(c_flags) $(CFLAGS_MODULE)	\
+>>  		   -c -o $@ $<
+>>  
+>> -$(modules:.ko=.mod.o): %.mod.o: %.mod.c FORCE
+>> +quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
+>> +cmd_as_o_S       = $(CC) $(a_flags) $(AFLAGS_MODULE) -c -o $@ $<
+> 
+> Align this so cmd_as_o_S is under each other - as we do for cmd_cc_o_c
+> 
+> 
+>> +
+>> +$(LDFLAGS_MODULE_PREREQ): %.o: %.S FORCE
+>> +	$(Q)mkdir -p $(dir $@)
+>> +	$(call if_changed_dep,as_o_S)
+> Good catch with the mkdir - needed for O= builds.
+> I think we shall wrap this in
+> ifdef KBUILD_MODULE_LINK_SOURCE
+> ...
+> endif
+> 
+> So we do not have an empty rule when it is not defined.
+> 
+> Please fix up these things and resubmit.
+> 
+> Thanks,
+> 	Sam
