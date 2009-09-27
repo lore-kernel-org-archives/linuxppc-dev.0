@@ -1,26 +1,24 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp5.netcologne.de (smtp5.netcologne.de [194.8.194.25])
-	by ozlabs.org (Postfix) with ESMTP id DD571B7BD2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Sep 2009 22:22:59 +1000 (EST)
-Received: from antares (xdsl-78-34-98-203.netcologne.de [78.34.98.203])
-	by smtp5.netcologne.de (Postfix) with ESMTP id 1F00040DB87
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Sep 2009 14:22:57 +0200 (CEST)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id DEC1ABA03C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Sep 2009 14:22:56 +0200 (CEST)
-Date: Sun, 27 Sep 2009 14:22:40 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: lite5200b kernel not booting
-To: linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <9e4733910909250515p60e0b0e0v8c10063326fe882c@mail.gmail.com>
-	(from jonsmirl@gmail.com on Fri Sep 25 14:15:57 2009)
-Message-Id: <1254054175.3445.0@antares>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CF9D0B7BD9
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Sep 2009 23:24:46 +1000 (EST)
+In-Reply-To: <20090925211848.GA3371@compile2.chatsunix.int.mrv.com>
+References: <20090924004552.GA11737@compile2.chatsunix.int.mrv.com>	<1253774659.7103.405.camel@pasglop>
+	<20090924233346.GA445@compile2.chatsunix.int.mrv.com>	<1253836376.7103.469.camel@pasglop>
+	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>	<1253843480.7103.492.camel@pasglop>
+	<1253847827.7103.504.camel@pasglop>
+	<20090925211848.GA3371@compile2.chatsunix.int.mrv.com>
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache	coherency
+	rewrite
+To: Rex Feany <RFeany@mrv.com>
+Message-ID: <OFEC38184A.A376E71D-ONC125763E.0048F581-C125763E.00497FD3@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Sun, 27 Sep 2009 15:22:48 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=PGP-SHA1; boundary="=-eJWB6zpYRWf7zM1vDSS2"
+Content-type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-eJWB6zpYRWf7zM1vDSS2
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>
+> Thus spake Benjamin Herrenschmidt (benh@kernel.crashing.org):
+>
+> >
+> > > I think there's more finishyness to 8xx than we thought. IE. That
+> > > tlbil_va might have more reasons to be there than what the comment
+> > > seems to advertize. Can you try to move it even higher up ? IE.
+> > > Unconditionally at the beginning of set_pte_filter ?
+> > >
+> > > Also, if that doesn't help, can you try putting one in
+> > > set_access_flags_filter() just below ?
+> >
+> > Ok, I got a refresher on the whole concept of "unpopulated TLB entries"
+> > on 8xx, and that's damn scary. I think what mislead me initially is that
+> > the comment around the workaround is simply not properly describing the
+> > extent of the problem :-)
+>
+> Oh boy, that sounds bad. Where is a good place to read about this?
+>
+> > So I'm not going to make the 8xx TLB miss code sane, that's beyond what
+> > I'm prepare to do with it, but I suspect that this should fix it (on top
+> > of upstream). Let me know if that's enough or if we also need to put
+> > one of these in ptep_set_access_flags().
+> >
+> > Please let me know if that works for you.
+>
+> Putting the tlbil_va() in the top of set_pte_filter() doesn't work - it
+> hangs on boot before it even prints any messages to the console.
+>
+> However, adding tlbil_va() to ptep_set_access_flags() as you suggested
+> makes everything happy. I need to test it some more, but it looks good
+> so far. Below is what I am testing now.
 
-Am 25.09.09 14:15 schrieb(en) Jon Smirl:
-> No one has tried the Macraigor USB wiggler on the mpc5200 and =20
-> reported back if it works.
+8xx, is getting very hacky and I suspect that the only long term fix is
+add code to trap the cache instructions in TLB error/miss and fixup the
+exception in page fault handler. This will also have the added benefit on being able
+to use the cache instructions in both kernel and user space like any other
+ppc arch.
 
-I'm working on a self-designed, roughly Lite5200B based board, and =20
-first thought about buying this device.  However, I tried to contact =20
-their support several times (as to get a confirmation that it will work =20
-with our flash and board-specific design), but never got a reply.  So =20
-we ended up with the Abatron BDI3000, which is rather expensive, but =20
-works really flawlessly, and Abatron's (and their German distributor's) =20
-support is just *excellent* (fast and professional).
-
-> uboot 1.2 is very old. That may be the cause of your problems. For =20
-> example old u-boots don't initialize the PCI hardware correctly on =20
-> systems that don't have PCI implemented.
-
-U-Boot 2009.03 together with ELDK 4.2 work flawlessly on both the =20
-Lite5200B and on our design.
-
-> In general the current powerpc kernel works fine on the mpc5200b. We =20
-> are running it on four different CPU boards but I don't have a =20
-> lite5200b.
-
-I can only confirm that the stock (from kernel.org) kernels run =20
-flawlessly on our boards (the latest I tried was 2.6.30.3, though, but =20
-I don't expect any issues with 2.6.31.1).
-
-Hope this helps,
-Albrecht.
-
---=-eJWB6zpYRWf7zM1vDSS2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBKv1kfn/9unNAn/9ERAgw7AJsE2tGQSxy0+Y09zZCOKcC0NQ3dMACdHbJD
-jebp/A3ZgKvNq2wvMqQU2bw=
-=TjHv
------END PGP SIGNATURE-----
-
---=-eJWB6zpYRWf7zM1vDSS2--
+   Jocke
