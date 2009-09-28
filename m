@@ -1,30 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DA191B7BFD
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Sep 2009 17:34:52 +1000 (EST)
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache
-	coherency rewrite
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <khali@linux-fr.org>
+Received: from bamako.nerim.net (bamako.nerim.net [62.4.17.28])
+	by ozlabs.org (Postfix) with ESMTP id 2BF3FB7C18
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Sep 2009 17:36:25 +1000 (EST)
+Date: Mon, 28 Sep 2009 09:28:09 +0200
+From: Jean Delvare <khali@linux-fr.org>
 To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OF0EEAC985.DECE2C31-ONC125763F.002527BE-C125763F.002882FD@transmode.se>
-References: <20090924004552.GA11737@compile2.chatsunix.int.mrv.com>
-	<1253774659.7103.405.camel@pasglop>
-	<20090924233346.GA445@compile2.chatsunix.int.mrv.com>
-	<1253836376.7103.469.camel@pasglop>
-	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>
-	<1253843480.7103.492.camel@pasglop> <1253847827.7103.504.camel@pasglop>
-	<20090925211848.GA3371@compile2.chatsunix.int.mrv.com>
-	<OFEC38184A.A376E71D-ONC125763E.0048F581-C125763E.00497FD3@transmode.se>
-	<1254108060.8421.1.camel@pasglop>
-	<OF0EEAC985.DECE2C31-ONC125763F.002527BE-C125763F.002882FD@transmode.se>
-Content-Type: text/plain
-Date: Mon, 28 Sep 2009 17:34:46 +1000
-Message-Id: <1254123286.8421.14.camel@pasglop>
+Subject: Re: [PATCH] i2c-mpc: Do not generate STOP after read.
+Message-ID: <20090928092809.7272b6e6@hyperion.delvare>
+In-Reply-To: <OFDA26E787.32612566-ONC125763E.007AD2FD-C125763E.007B4FFC@transmode.se>
+References: <1253620242-18461-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<4ABC94ED.6070508@grandegger.com>
+	<OFDA26E787.32612566-ONC125763E.007AD2FD-C125763E.007B4FFC@transmode.se>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
+	Esben Haabendal <eha@doredevelopment.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,15 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-09-28 at 09:22 +0200, Joakim Tjernlund wrote:
-> 
-> > happy to stick with it until somebody comes up with a real good
-> reason
-> > to do more :-) 8xx is on life support and has been around for long
-> 
-> yeah, I figured that too but Freescale seems to be cranking out new
-> variants still.
+On Mon, 28 Sep 2009 00:26:54 +0200, Joakim Tjernlund wrote:
+> Jean, I just noticed you pull request for i2c on LKML but I didn't see this
+> patch nor have I got any feedback from you. What is your view?
 
-Ugh ? And still not fixing the major core bugs ? Grmbl...
+My view is that i2c-mpc is nor under my jurisdiction, so I did not, and
+will not, pay any attention to it.
 
-Ben.
+-- 
+Jean Delvare
