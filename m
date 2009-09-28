@@ -1,18 +1,24 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id BFE4CB7C02
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Sep 2009 01:53:19 +1000 (EST)
-Date: Mon, 28 Sep 2009 11:53:16 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: warning: allocated section `.data_nosave'  not in segment
-Message-ID: <20090928115316.7e0b7db9@lappy.seanm.ca>
-In-Reply-To: <20090928013654.466c9b72@opus.seanm.ca>
-References: <20090925165411.6c584401@lappy.seanm.ca>
-	<20090928013654.466c9b72@opus.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 7754BB7B8D
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Sep 2009 03:34:17 +1000 (EST)
+Date: Mon, 28 Sep 2009 21:34:13 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/8] powerpc/cpm: Remove SPI defines and spi structs
+Message-ID: <20090928173413.GA8795@oksana.dev.rtsoft.ru>
+References: <20090818220304.GA23640@oksana.dev.rtsoft.ru>
+	<20090818220410.GA25090@oksana.dev.rtsoft.ru>
+	<C37BD1BB-7F53-4CC7-ABB0-BBBDDAC5C052@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <C37BD1BB-7F53-4CC7-ABB0-BBBDDAC5C052@kernel.crashing.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	spi-devel-general@lists.sourceforge.net,
+	Andrew Morton <akpm@linux-foundation.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I looked into it some more.... the patch converts this section:
+On Fri, Aug 28, 2009 at 12:45:34AM -0500, Kumar Gala wrote:
+> 
+> On Aug 18, 2009, at 5:04 PM, Anton Vorontsov wrote:
+> 
+> >When cpm2.h included into spi_mpc8xxx driver, the SPI defines
+> >in the header conflict with defines in the driver.
+> >
+> >We don't need them in the header file, so remove them. Plus
+> >remove "struct spi", we'll use a better version in the driver.
+> >
+> >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> >---
+> >arch/powerpc/include/asm/cpm1.h |   45
+> >---------------------------------------
+> >arch/powerpc/include/asm/cpm2.h |   39
+> >---------------------------------
+> >2 files changed, 0 insertions(+), 84 deletions(-)
+> 
+> applied to next
 
-        . = ALIGN(PAGE_SIZE);
-        .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
-               __nosave_begin = .;
-               *(.data.nosave)
-               . = ALIGN(PAGE_SIZE);
-               __nosave_end = .;
-        }
+I can't find it in 2.6.32-rc1. Somehow it got lost from your next tree?
+The same for all powerpc patches from this series.
 
-to:
-
-	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
-		NOSAVE_DATA
-	}
-
-If you expand the NOSAVE_DATA macro, you get:
-
-	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
-		. = ALIGN(PAGE_SIZE);
-		VMLINUX_SYMBOL(__nosave_begin) = .;
-		*(.data.nosave)
-		. = ALIGN(PAGE_SIZE);
-		VMLINUX_SYMBOL(__nosave_end) = .;
-	}
-
-If you ignore the VMLINUX_SYMBOL, the only difference is moving the
-ALIGN inside the brackets. If I move the ALIGN back where it was, then
-the warning goes away.
-
-But other sections moved the ALIGN without an issue. Could it be a
-compiler problem? We are using  version 4.0.0 (DENX ELDK 4.1 4.0.0).
-
-Cheers,
-   Sean
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
