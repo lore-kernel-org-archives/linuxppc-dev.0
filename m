@@ -1,28 +1,17 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ey-out-1920.google.com (ey-out-1920.google.com [74.125.78.147])
-	by ozlabs.org (Postfix) with ESMTP id E9BC8B7BEA
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id DB0ADB7BED
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 28 Sep 2009 15:17:00 +1000 (EST)
-Received: by ey-out-1920.google.com with SMTP id 3so727251eyh.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Sep 2009 22:16:57 -0700 (PDT)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-To: Johnny Hung <johnny.hacking@gmail.com>
-Subject: Re: GPIO driver for MPC8313.
-References: <cb9ecdfa0909222055x1d691698sb516b5b8f5f81d@mail.gmail.com>
-	<87y6o6rvvc.fsf@macbook.be.48ers.dk>
-	<cb9ecdfa0909230352w77a37f59h3c7f1e146121f9f6@mail.gmail.com>
-	<87r5txrkfz.fsf@macbook.be.48ers.dk>
-	<cb9ecdfa0909230820k6ebbd589o409e58e2d9b6740c@mail.gmail.com>
-	<cb9ecdfa0909271943o6133f5c8r9b25a25140e7842f@mail.gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 28 Sep 2009 07:16:55 +0200
-In-Reply-To: <cb9ecdfa0909271943o6133f5c8r9b25a25140e7842f@mail.gmail.com>
-	(Johnny Hung's message of "Mon\, 28 Sep 2009 10\:43\:00 +0800")
-Message-ID: <87vdj3sl6g.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-embedded@vger.kernel.org
+	Mon, 28 Sep 2009 15:36:57 +1000 (EST)
+Date: Mon, 28 Sep 2009 01:36:54 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: warning: allocated section `.data_nosave'  not in segment
+Message-ID: <20090928013654.466c9b72@opus.seanm.ca>
+In-Reply-To: <20090925165411.6c584401@lappy.seanm.ca>
+References: <20090925165411.6c584401@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,15 +21,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>> "Johnny" == Johnny Hung <johnny.hacking@gmail.com> writes:
+If I revert the commit show at the bottom of this email, the warnings
+go away.
 
- Johnny> The kerne source I used now is 2.6.23 with MPC8313-erdb
- Johnny> pached. I think I should port 2.6.28 gpio function back to
- Johnny> 2.6.23. Is it a common way to implement it in the kernel I used
- Johnny> or I should port MPC8313-erdb pached to 2.6.28 opposite?
+It took a while to find this, git bisect kept pointing me to a file
+from arch/alpha :(
 
-It shouldn't be that hard to back port, but I would certainly go for
-2.6.28 (or rather 2.6.31) unless something keeps you at 2.6.23.
+Cheers,
+   Sean
 
--- 
-Bye, Peter Korsgaard
+
+powerpc: Cleanup linker script using new linker script macros.
+
+
+
+author	Tim Abbott <tabbott@ksplice.com>
+
+	 Thu, 24 Sep 2009 14:36:24 +0000 (10:36 -0400)
+
+committer	Linus Torvalds <torvalds@linux-foundation.org>
+
+	 Fri, 25 Sep 2009 00:16:22 +0000 (17:16 -0700)
+
+commit	62bef288588bee976b753f7168716621d7a984e2
+
+tree	8f55ea7fc2c5d651b72d1addad5687d61b857910	tree |
+snapshot
+
+parent	4a5e35135d1ffcf14ebb2bb3c730b92c18ae9657	commit |
+diff
+
+
+
+powerpc: Cleanup linker script using new linker script macros.
+
+
+
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Cc: Paul Mackerras <paulus@samba.org>
+
+Cc: linuxppc-dev@ozlabs.org
+
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
