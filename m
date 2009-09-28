@@ -1,17 +1,30 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id DB0ADB7BED
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 28 Sep 2009 15:36:57 +1000 (EST)
-Date: Mon, 28 Sep 2009 01:36:54 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: warning: allocated section `.data_nosave'  not in segment
-Message-ID: <20090928013654.466c9b72@opus.seanm.ca>
-In-Reply-To: <20090925165411.6c584401@lappy.seanm.ca>
-References: <20090925165411.6c584401@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 36C19B7BE7
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Sep 2009 17:26:28 +1000 (EST)
+In-Reply-To: <1254108060.8421.1.camel@pasglop>
+References: <20090924004552.GA11737@compile2.chatsunix.int.mrv.com>	
+	<1253774659.7103.405.camel@pasglop>
+	<20090924233346.GA445@compile2.chatsunix.int.mrv.com>	
+	<1253836376.7103.469.camel@pasglop>
+	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>	
+	<1253843480.7103.492.camel@pasglop>
+	<1253847827.7103.504.camel@pasglop>
+	<20090925211848.GA3371@compile2.chatsunix.int.mrv.com>	
+	<OFEC38184A.A376E71D-ONC125763E.0048F581-C125763E.00497FD3@transmode.se>
+	<1254108060.8421.1.camel@pasglop>
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
+	rewrite
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF0EEAC985.DECE2C31-ONC125763F.002527BE-C125763F.002882FD@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Mon, 28 Sep 2009 09:22:29 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,50 +34,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If I revert the commit show at the bottom of this email, the warnings
-go away.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 28/09/2009 05:21:00:
+>
+> On Sun, 2009-09-27 at 15:22 +0200, Joakim Tjernlund wrote:
+> > > However, adding tlbil_va() to ptep_set_access_flags() as you suggested
+> > > makes everything happy. I need to test it some more, but it looks good
+> > > so far. Below is what I am testing now.
+> >
+> > 8xx, is getting very hacky and I suspect that the only long term fix is
+> > add code to trap the cache instructions in TLB error/miss and fixup the
+> > exception in page fault handler. This will also have the added benefit on being able
+> > to use the cache instructions in both kernel and user space like any other
+> > ppc arch.
+>
+> First I'd like to understand exactly what's happening today, since
+> it makes little sense :-) I suppose I'll have to get myself some
+> 8xx doco and understand how the bloody MMU works.
 
-It took a while to find this, git bisect kept pointing me to a file
-from arch/alpha :(
+hmm, I recall that the reason for the currect "force a TLB error"
+procedure was to fix a problem Montavista had, possibly Tom Rini.
+He fixed the problem differently at first but later it
+was changed to what is in use today.
 
-Cheers,
-   Sean
+If you have access to the old linuxppc-embedded you will find a lot
+of info in a thread with subject "[PATCH 2.6.14] mm: 8xx MM fix for"
+Also I made a ref that I cannot access anymore:
+http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016382.html
 
+>
+> Then, I saw your old patch and it's -very- invasive. If we can get away
+> with a one liner just adding tlbil_va in the right place, I think I'm
 
-powerpc: Cleanup linker script using new linker script macros.
+Yes, my patch is invasive but that is because I did it in asm. If you do
+it in the page fault handler, it will be much easier.
+In principle you would only have to tag DAR and test for
+the tag value in asm then branch to the page fault handler. Once there
+it is easy to decode the insns.
 
+> happy to stick with it until somebody comes up with a real good reason
+> to do more :-) 8xx is on life support and has been around for long
 
-
-author	Tim Abbott <tabbott@ksplice.com>
-
-	 Thu, 24 Sep 2009 14:36:24 +0000 (10:36 -0400)
-
-committer	Linus Torvalds <torvalds@linux-foundation.org>
-
-	 Fri, 25 Sep 2009 00:16:22 +0000 (17:16 -0700)
-
-commit	62bef288588bee976b753f7168716621d7a984e2
-
-tree	8f55ea7fc2c5d651b72d1addad5687d61b857910	tree |
-snapshot
-
-parent	4a5e35135d1ffcf14ebb2bb3c730b92c18ae9657	commit |
-diff
-
-
-
-powerpc: Cleanup linker script using new linker script macros.
-
-
-
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Cc: Paul Mackerras <paulus@samba.org>
-
-Cc: linuxppc-dev@ozlabs.org
-
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+yeah, I figured that too but Freescale seems to be cranking out new variants
+still.
