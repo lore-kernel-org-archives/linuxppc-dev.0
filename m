@@ -1,21 +1,25 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C0CBDB7BBB
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Sep 2009 08:30:39 +1000 (EST)
-In-Reply-To: <4ABC94ED.6070508@grandegger.com>
-References: <1253620242-18461-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<4ABC94ED.6070508@grandegger.com>
-Subject: Re: [PATCH] i2c-mpc: Do not generate STOP after read.
-To: Jean Delvare <khali@linux-fr.org>
-Message-ID: <OFDA26E787.32612566-ONC125763E.007AD2FD-C125763E.007B4FFC@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 28 Sep 2009 00:26:54 +0200
+Return-Path: <johnny.hacking@gmail.com>
+Received: from mail-pz0-f176.google.com (mail-pz0-f176.google.com
+	[209.85.222.176]) by ozlabs.org (Postfix) with ESMTP id 7CB58B7B68
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 28 Sep 2009 12:43:02 +1000 (EST)
+Received: by pzk6 with SMTP id 6so1952968pzk.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 27 Sep 2009 19:43:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
-	Esben Haabendal <eha@doredevelopment.dk>
+In-Reply-To: <cb9ecdfa0909230820k6ebbd589o409e58e2d9b6740c@mail.gmail.com>
+References: <cb9ecdfa0909222055x1d691698sb516b5b8f5f81d@mail.gmail.com>
+	<87y6o6rvvc.fsf@macbook.be.48ers.dk>
+	<cb9ecdfa0909230352w77a37f59h3c7f1e146121f9f6@mail.gmail.com>
+	<87r5txrkfz.fsf@macbook.be.48ers.dk>
+	<cb9ecdfa0909230820k6ebbd589o409e58e2d9b6740c@mail.gmail.com>
+Date: Mon, 28 Sep 2009 10:43:00 +0800
+Message-ID: <cb9ecdfa0909271943o6133f5c8r9b25a25140e7842f@mail.gmail.com>
+Subject: Re: GPIO driver for MPC8313.
+From: Johnny Hung <johnny.hacking@gmail.com>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-embedded@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jean, I just noticed you pull request for i2c on LKML but I didn't see this
-patch nor have I got any feedback from you. What is your view?
+The kerne source I used now is 2.6.23 with MPC8313-erdb pached. I
+think I should port 2.6.28 gpio function back to 2.6.23. Is it a
+common way to implement it in the kernel I used or I should port
+MPC8313-erdb pached to 2.6.28 opposite?
 
-   Jocke
+BRs, H. Johnny
 
-Wolfgang Grandegger <wg@grandegger.com> wrote on 25/09/2009 12:01:17:
+2009/9/23 Johnny Hung <johnny.hacking@gmail.com>:
+> Many thanks for your help. I will try it.
 >
-> Joakim Tjernlund wrote:
-> > The driver always ends a read with a STOP condition which
-> > breaks subsequent I2C reads/writes in the same transaction as
-> > these expect to do a repeated START(ReSTART).
-> >
-> > This will also help I2C multimaster as the bus will not be released
-> > after the first read, but when the whole transaction ends.
-> >
-> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> Tested-by: Wolfgang Grandegger <wg@grandegger.com>
->
-> on a MPC8548 board with an up-to-date kernel. I did not realize any
-> problems.
->
-> Wolfgang.
+> 2009/9/23 Peter Korsgaard <jacmet@sunsite.dk>:
+>>>>>>> "Johnny" =3D=3D Johnny Hung <johnny.hacking@gmail.com> writes:
+>>
+>> =A0Johnny> Thanks, got it. BTW, how to trigger GPIO level in user space
+>> =A0Johnny> application? I also found
+>> =A0Johnny> arch/powerpc/platforms/52xx/mpc52xx_gpio.c is a good
+>> =A0Johnny> example. Any reply is appreciate.
+>>
+>> Through sysfs. See 'Sysfs Interface for Userspace' section of
+>> Documentation/gpio.txt
+>>
+>> --
+>> Bye, Peter Korsgaard
+>>
 >
