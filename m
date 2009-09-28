@@ -1,28 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1912EB7BD9
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Sep 2009 13:21:08 +1000 (EST)
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache
-	coherency rewrite
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OFEC38184A.A376E71D-ONC125763E.0048F581-C125763E.00497FD3@transmode.se>
-References: <20090924004552.GA11737@compile2.chatsunix.int.mrv.com>
-	<1253774659.7103.405.camel@pasglop>
-	<20090924233346.GA445@compile2.chatsunix.int.mrv.com>
-	<1253836376.7103.469.camel@pasglop>
-	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>
-	<1253843480.7103.492.camel@pasglop> <1253847827.7103.504.camel@pasglop>
-	<20090925211848.GA3371@compile2.chatsunix.int.mrv.com>
-	<OFEC38184A.A376E71D-ONC125763E.0048F581-C125763E.00497FD3@transmode.se>
-Content-Type: text/plain
-Date: Mon, 28 Sep 2009 13:21:00 +1000
-Message-Id: <1254108060.8421.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CD4F5B7B77
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 28 Sep 2009 14:39:07 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n8S4d3Ia025401
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2009 14:39:03 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n8S4anTf1487014
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2009 14:36:49 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n8S4d5hG029378
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2009 14:39:05 +1000
+Date: Mon, 28 Sep 2009 14:39:02 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: [0/5] Assorted hugepage cleanups (v3)
+Message-ID: <20090928043902.GA6302@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,27 +32,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2009-09-27 at 15:22 +0200, Joakim Tjernlund wrote:
-> > However, adding tlbil_va() to ptep_set_access_flags() as you suggested
-> > makes everything happy. I need to test it some more, but it looks good
-> > so far. Below is what I am testing now.
-> 
-> 8xx, is getting very hacky and I suspect that the only long term fix is
-> add code to trap the cache instructions in TLB error/miss and fixup the
-> exception in page fault handler. This will also have the added benefit on being able
-> to use the cache instructions in both kernel and user space like any other
-> ppc arch.
+Currently, ordinary pages use one pagetable layout, and each different
+hugepage size uses a slightly different variant layout.  A number of
+places which need to walk the pagetable must first check the slice map
+to see what the pagetable layout then handle the various different
+forms.  New hardware, like Book3E is liable to introduce more possible
+variants.
 
-First I'd like to understand exactly what's happening today, since
-it makes little sense :-) I suppose I'll have to get myself some
-8xx doco and understand how the bloody MMU works.
+This patch series, therefore, is designed to simplify the matter by
+limiting knowledge of the pagetable layout to only the allocation
+path.  With this patch, ordinary pages are handled as ever, with a
+fixed 4 (or 3) level tree.  All other variants branch off from some
+layer of that with a specially marked PGD/PUD/PMD pointer which also
+contains enough information to interpret the directories below that
+point.  This means that things walking the pagetables (without
+allocating) don't need to look up the slice map, they can just step
+down the tree in the usual way, branching off to the "non-standard
+layout" path for hugepages, which uses the embdded information to
+interpret the tree from that point on.
 
-Then, I saw your old patch and it's -very- invasive. If we can get away
-with a one liner just adding tlbil_va in the right place, I think I'm
-happy to stick with it until somebody comes up with a real good reason
-to do more :-) 8xx is on life support and has been around for long
-enough without people feeling the need overall to work around that
-problem so I'm tempted to keep the status-quo here.
+This reduces the source size in a number of places, and means that
+newer variants on the pagetable layout to handle new hardware and new
+features will need to alter the existing code in less places.
 
-Cheers,
-Ben
+In addition we split out the hash / classic MMU specific code into a
+separate hugetlbpage-hash64.c file.  This will make adding support for
+other MMUs (like 440 and/or Book3E) easier.
+
+I've used the libhugetlbfs testsuite to test these patches on a
+Power5+ machine, but they could certainly do with more testing. In
+particular, I don't have any suitable hardware to test 16G pages.
+
+V2: Made the tweaks that BenH suggested to patch 2 of the original
+series.  Some corresponding tweaks in patch 3 to match.
+
+V3: Fix several small bugs.
+	* We had a BUILD_BUG_ON() which is broken by the recent
+problems with BUILD_BUG_ON().  Since it's not a hot path, use a
+runtime BUG_ON() instead.
+
+	* The ifdef logic was inverted for the test against
+CONFIG_SPU_FS_64K_LS.
+
+	* That in turn masked a compile bug (using a non-existent
+constant) in the CONFIG_SPU_FS_64K_LS path.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
