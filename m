@@ -1,24 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 7754BB7B8D
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Sep 2009 03:34:17 +1000 (EST)
-Date: Mon, 28 Sep 2009 21:34:13 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/8] powerpc/cpm: Remove SPI defines and spi structs
-Message-ID: <20090928173413.GA8795@oksana.dev.rtsoft.ru>
-References: <20090818220304.GA23640@oksana.dev.rtsoft.ru>
-	<20090818220410.GA25090@oksana.dev.rtsoft.ru>
-	<C37BD1BB-7F53-4CC7-ABB0-BBBDDAC5C052@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <C37BD1BB-7F53-4CC7-ABB0-BBBDDAC5C052@kernel.crashing.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BF9B0B7BD7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 29 Sep 2009 06:55:42 +1000 (EST)
+In-Reply-To: <20090928115316.7e0b7db9@lappy.seanm.ca>
+References: <20090925165411.6c584401@lappy.seanm.ca>
+	<20090928013654.466c9b72@opus.seanm.ca>
+	<20090928115316.7e0b7db9@lappy.seanm.ca>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <903BCD86-DE53-48AB-89CF-78248D7F6115@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: warning: allocated section `.data_nosave'  not in segment
+Date: Mon, 28 Sep 2009 22:56:42 +0200
+To: Sean MacLennan <smaclennan@pikatech.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 28, 2009 at 12:45:34AM -0500, Kumar Gala wrote:
-> 
-> On Aug 18, 2009, at 5:04 PM, Anton Vorontsov wrote:
-> 
-> >When cpm2.h included into spi_mpc8xxx driver, the SPI defines
-> >in the header conflict with defines in the driver.
-> >
-> >We don't need them in the header file, so remove them. Plus
-> >remove "struct spi", we'll use a better version in the driver.
-> >
-> >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> >---
-> >arch/powerpc/include/asm/cpm1.h |   45
-> >---------------------------------------
-> >arch/powerpc/include/asm/cpm2.h |   39
-> >---------------------------------
-> >2 files changed, 0 insertions(+), 84 deletions(-)
-> 
-> applied to next
+> If you ignore the VMLINUX_SYMBOL, the only difference is moving the
+> ALIGN inside the brackets. If I move the ALIGN back where it was, then
+> the warning goes away.
+>
+> But other sections moved the ALIGN without an issue. Could it be a
+> compiler problem? We are using  version 4.0.0 (DENX ELDK 4.1 4.0.0).
 
-I can't find it in 2.6.32-rc1. Somehow it got lost from your next tree?
-The same for all powerpc patches from this series.
+The compiler version is probably not relevant; the binutils versions
+might be though.  But, it seems to me the patch was simply botched,
+the ALIGN() should not have moved.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Look at the output of "ld -M" (the ld command with all the args that
+are used during the compile, with -M added) to see what's up; or maybe
+readelf can tell you already.
+
+
+Segher
