@@ -1,23 +1,27 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ABA60B7BE7
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Sep 2009 17:31:28 +1000 (EST)
-In-Reply-To: <20090928092809.7272b6e6@hyperion.delvare>
-References: <1253620242-18461-1-git-send-email-Joakim.Tjernlund@transmode.se>	<4ABC94ED.6070508@grandegger.com>
+Return-Path: <jacmet@gmail.com>
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.27])
+	by ozlabs.org (Postfix) with ESMTP id ED9D7B7BE7
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Sep 2009 17:33:56 +1000 (EST)
+Received: by ey-out-2122.google.com with SMTP id 4so21903eyf.33
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Sep 2009 00:33:54 -0700 (PDT)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH] i2c-mpc: Do not generate STOP after read.
+References: <1253620242-18461-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<4ABC94ED.6070508@grandegger.com>
 	<OFDA26E787.32612566-ONC125763E.007AD2FD-C125763E.007B4FFC@transmode.se>
 	<20090928092809.7272b6e6@hyperion.delvare>
-Subject: Re: [PATCH] i2c-mpc: Do not generate STOP after read.
-To: Jean Delvare <khali@linux-fr.org>,
-	galak@kernel.crashing.org
-Message-ID: <OFC822309E.F9FB4F3C-ONC125763F.0029159C-C125763F.00293F85@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 28 Sep 2009 09:30:32 +0200
+	<OFC822309E.F9FB4F3C-ONC125763F.0029159C-C125763F.00293F85@transmode.se>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 28 Sep 2009 09:33:50 +0200
+In-Reply-To: <OFC822309E.F9FB4F3C-ONC125763F.0029159C-C125763F.00293F85@transmode.se>
+	(Joakim Tjernlund's message of "Mon\,
+	28 Sep 2009 09\:30\:32 +0200")
+Message-ID: <87my4fseu9.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
-	Esben Haabendal <eha@doredevelopment.dk>
+Content-Type: text/plain; charset=us-ascii
+Cc: Esben Haabendal <eha@doredevelopment.dk>, linuxppc-dev@ozlabs.org,
+	linux-i2c@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,13 +31,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jean Delvare <khali@linux-fr.org> wrote on 28/09/2009 09:28:09:
->
-> On Mon, 28 Sep 2009 00:26:54 +0200, Joakim Tjernlund wrote:
-> > Jean, I just noticed you pull request for i2c on LKML but I didn't see this
-> > patch nor have I got any feedback from you. What is your view?
->
-> My view is that i2c-mpc is nor under my jurisdiction, so I did not, and
-> will not, pay any attention to it.
+>>>>> "Joakim" == Joakim Tjernlund <joakim.tjernlund@transmode.se> writes:
 
-Ah, that explains it. Who then will look after i2c-mpc? Kumar?
+Hi,
+
+ Joakim> Ah, that explains it. Who then will look after i2c-mpc? Kumar?
+
+Ben Dooks (embedded i2c maintainer). He's afaik coming home today, so
+give him a few days to catch up on mails.
+
+-- 
+Bye, Peter Korsgaard
