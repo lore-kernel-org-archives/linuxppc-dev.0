@@ -1,25 +1,16 @@
-Return-Path: <RFeany@mrv.com>
-Received: from bos-spam.mrv.com (mx5.mrv.com [140.179.254.12])
-	by ozlabs.org (Postfix) with ESMTP id F06E5B7C0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2009 07:09:20 +1000 (EST)
-Date: Tue, 29 Sep 2009 14:09:17 -0700
-From: Rex Feany <RFeany@mrv.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache
-	coherency rewrite
-Message-ID: <20090929210917.GB25779@laura.chatsunix.int.mrv.com>
-References: <20090924004552.GA11737@compile2.chatsunix.int.mrv.com>
-	<1253774659.7103.405.camel@pasglop>
-	<20090924233346.GA445@compile2.chatsunix.int.mrv.com>
-	<1253836376.7103.469.camel@pasglop>
-	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>
-	<1253843480.7103.492.camel@pasglop>
-	<20090929012106.GA22798@compile2.chatsunix.int.mrv.com>
-	<1254208031.5771.6.camel@pasglop>
+Return-Path: <bones@secretlab.ca>
+Received: from mail-fx0-f208.google.com (mail-fx0-f208.google.com
+	[209.85.220.208]) by ozlabs.org (Postfix) with ESMTP id F176CB7C07
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2009 06:43:52 +1000 (EST)
+Received: by fxm4 with SMTP id 4so1351023fxm.40
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Sep 2009 13:43:50 -0700 (PDT)
+From: John Bonesio <bones@secretlab.ca>
+Subject: [PATCH] powerpc/5200: add LocalPlus bus FIFO device driver
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 29 Sep 2009 13:43:42 -0700
+Message-ID: <20090929204248.16225.22818.stgit@riker>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1254208031.5771.6.camel@pasglop>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +20,664 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thus spake Benjamin Herrenschmidt (benh@kernel.crashing.org):
+This is a driver for the FIFO device on the LocalPlus bus on an mpc5200 system.
+The driver supports programmed I/O through the FIFO as well as setting up DMA
+via the BestComm engine through the FIFO.
 
-> On Mon, 2009-09-28 at 18:21 -0700, Rex Feany wrote:
-> > > It's going to be hard for me to get that "right" since I don't really
-> > > know what's going on with the core here, but I suppose if we get it
-> > > moving along with extra tlb invalidations, that should be "good enough"
-> > > until somebody who really knows what's going on comes up with possibly
-> > > a better fix.
-> > 
-> > I've tried sticking tlbil_va() in those places, nothing seems to help.
-> > In some cases userspace is slow, in other cases userspace is faster and
-> > unstable: sometimes commands hang, sometimes I am able to ctrl-c and
-> > and kill it, sometimes I get other strange crashes or falures (so far no
-> > kernel oopses though).
-> 
-> And you are positive that with 2.6.31 and your other patch, it works
-> both fast and stable ? This is strange... the code should be mostly
-> identical. I'll have a second look and see if I can get you a patch that
-> reproduce -exactly- the behaviour of 2.6.31 plus your patch.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: John Bonesio <bones@secretlab.ca>
+---
+This driver was originally written by Grant Likely. I have updated it so that
+transmitting data (as opposed to receiving data) works better. The driver has
+been tested for all 6 transfer modes:
+        PIO mode (rx and tx)
+        DMA polled mode (rx and tx)
+        DMA interrupt mode (rx and tx)
 
-The difference is night and day - with 2.6.31 I can boot into single
-user mode, I can run our custom software (I left it running over night
-with very simple test script - no crashes).
+- John
 
-With the top of the tree I can sometimes boot into a shell, and if it
-isn't crashing or hanging on boot it runs very slow (10+ seconds to do
-anything, if I am lucky).
+ arch/powerpc/include/asm/mpc52xx.h            |   39 ++
+ arch/powerpc/platforms/52xx/Kconfig           |    5 
+ arch/powerpc/platforms/52xx/Makefile          |    1 
+ arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |  560 +++++++++++++++++++++++++
+ 4 files changed, 605 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
 
-thanks!
-/rex
+diff --git a/arch/powerpc/include/asm/mpc52xx.h b/arch/powerpc/include/asm/mpc52xx.h
+index 8273357..819a0be 100644
+--- a/arch/powerpc/include/asm/mpc52xx.h
++++ b/arch/powerpc/include/asm/mpc52xx.h
+@@ -282,6 +282,45 @@ extern int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, int period,
+                             int continuous);
+ extern void mpc52xx_gpt_stop_timer(struct mpc52xx_gpt_priv *gpt);
+ 
++/* mpc52xx_lpbfifo.c */
++#define MPC52XX_LPBFIFO_FLAG_READ		(0)
++#define MPC52XX_LPBFIFO_FLAG_WRITE		(1<<0)
++#define MPC52XX_LPBFIFO_FLAG_NO_INCREMENT	(1<<1)
++#define MPC52XX_LPBFIFO_FLAG_NO_DMA		(1<<2)
++#define MPC52XX_LPBFIFO_FLAG_POLL_DMA		(1<<3)
++
++struct mpc52xx_lpbfifo_request {
++	struct list_head list;
++
++	/* localplus bus address */
++	unsigned int cs;
++	size_t offset;
++
++	/* Memory address */
++	void *data;
++	phys_addr_t data_phys;
++
++	/* Details of transfer */
++	size_t size;
++	size_t pos;	/* current position of transfer */
++	int flags;
++
++	/* What to do when finished */
++	void (*callback)(struct mpc52xx_lpbfifo_request *);
++
++	void *priv;		/* Driver private data */
++
++	/* statistics */
++	int irq_count;
++	int irq_ticks;
++	u8 last_byte;
++	int buffer_not_done_cnt;
++};
++
++extern int mpc52xx_lpbfifo_submit(struct mpc52xx_lpbfifo_request *req);
++extern void mpc52xx_lpbfifo_abort(struct mpc52xx_lpbfifo_request *req);
++extern void mpc52xx_lpbfifo_poll(void);
++
+ /* mpc52xx_pic.c */
+ extern void mpc52xx_init_irq(void);
+ extern unsigned int mpc52xx_get_irq(void);
+diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
+index 696a5ee..ea00b3d 100644
+--- a/arch/powerpc/platforms/52xx/Kconfig
++++ b/arch/powerpc/platforms/52xx/Kconfig
+@@ -51,3 +51,8 @@ config PPC_MPC5200_GPIO
+ 	select GENERIC_GPIO
+ 	help
+ 	  Enable gpiolib support for mpc5200 based boards
++
++config PPC_MPC5200_LPBFIFO
++	tristate "MPC5200 LocalPlus bus FIFO driver"
++	depends on PPC_MPC52xx
++	select PPC_BESTCOMM_GEN_BD
+diff --git a/arch/powerpc/platforms/52xx/Makefile b/arch/powerpc/platforms/52xx/Makefile
+index d6ade3d..8df23af 100644
+--- a/arch/powerpc/platforms/52xx/Makefile
++++ b/arch/powerpc/platforms/52xx/Makefile
+@@ -14,3 +14,4 @@ ifeq ($(CONFIG_PPC_LITE5200),y)
+ endif
+ 
+ obj-$(CONFIG_PPC_MPC5200_GPIO)	+= mpc52xx_gpio.o
++obj-$(CONFIG_PPC_MPC5200_LPBFIFO)	+= mpc52xx_lpbfifo.o
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
+new file mode 100644
+index 0000000..929d017
+--- /dev/null
++++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
+@@ -0,0 +1,560 @@
++/*
++ * LocalPlus Bus FIFO driver for the Freescale MPC52xx.
++ *
++ * Copyright (C) 2009 Secret Lab Technologies Ltd.
++ *
++ * This file is released under the GPLv2
++ *
++ * Todo:
++ * - Add support for multiple requests to be queued.
++ */
++
++#include <linux/interrupt.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/spinlock.h>
++#include <asm/io.h>
++#include <asm/prom.h>
++#include <asm/mpc52xx.h>
++#include <asm/time.h>
++
++#include <sysdev/bestcomm/bestcomm.h>
++#include <sysdev/bestcomm/bestcomm_priv.h>
++#include <sysdev/bestcomm/gen_bd.h>
++
++MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
++MODULE_DESCRIPTION("MPC5200 LocalPlus FIFO device driver");
++MODULE_LICENSE("GPL");
++
++#define LPBFIFO_REG_PACKET_SIZE		(0x00)
++#define LPBFIFO_REG_START_ADDRESS	(0x04)
++#define LPBFIFO_REG_CONTROL		(0x08)
++#define LPBFIFO_REG_ENABLE		(0x0C)
++#define LPBFIFO_REG_BYTES_DONE_STATUS	(0x14)
++#define LPBFIFO_REG_FIFO_DATA		(0x40)
++#define LPBFIFO_REG_FIFO_STATUS		(0x44)
++#define LPBFIFO_REG_FIFO_CONTROL	(0x48)
++#define LPBFIFO_REG_FIFO_ALARM		(0x4C)
++
++struct mpc52xx_lpbfifo {
++	struct device *dev;
++	phys_addr_t regs_phys;
++	void __iomem *regs;
++	int irq;
++	spinlock_t lock;
++
++	struct bcom_task *bcom_tx_task;
++	struct bcom_task *bcom_rx_task;
++	struct bcom_task *bcom_cur_task;
++
++	/* Current state data */
++	struct mpc52xx_lpbfifo_request *req;
++	int dma_irqs_enabled;
++};
++
++/* The MPC5200 has only one fifo, so only need one instance structure */
++static struct mpc52xx_lpbfifo lpbfifo;
++
++/**
++ * mpc52xx_lpbfifo_kick - Trigger the next block of data to be transfered
++ */
++static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfifo_request *req)
++{
++	size_t transfer_size = req->size - req->pos;
++	struct bcom_bd *bd;
++	void __iomem *reg;
++	u32 *data;
++	int i;
++	int bit_fields;
++	int dma = !(req->flags & MPC52XX_LPBFIFO_FLAG_NO_DMA);
++	int write = req->flags & MPC52XX_LPBFIFO_FLAG_WRITE;
++	int poll_dma = req->flags & MPC52XX_LPBFIFO_FLAG_POLL_DMA;
++
++	/* Set and clear the reset bits; is good practice in User Manual */
++	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
++
++	/* set master enable bit */
++	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x00000001);
++	if (!dma) {
++		/* While the FIFO can be setup for transfer sizes as large as
++		 * 16M-1, the FIFO itself is only 512 bytes deep and it does
++		 * not generate interrupts for FIFO full events (only transfer
++		 * complete will raise an IRQ).  Therefore when not using
++		 * Bestcomm to drive the FIFO it needs to either be polled, or
++		 * transfers need to constrained to the size of the fifo.
++		 *
++		 * This driver restricts the size of the transfer
++		 */
++		if (transfer_size > 512)
++			transfer_size = 512;
++
++		/* Load the FIFO with data */
++		if (write) {
++			reg = lpbfifo.regs + LPBFIFO_REG_FIFO_DATA;
++			data = req->data + req->pos;
++			for (i = 0; i < transfer_size; i += 4)
++				out_be32(reg, *data++);
++		}
++
++		/* Unmask both error and completion irqs */
++		out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x00000301);
++	} else {
++		/* Choose the correct direction
++		 *
++		 * Configure the watermarks so DMA will always complete correctly.
++		 * It may be worth experimenting with the ALARM value to see if
++		 * there is a performance impacit.  However, if it is wrong there
++		 * is a risk of DMA not transferring the last chunk of data
++		 */
++		if (write) {
++			out_be32(lpbfifo.regs + LPBFIFO_REG_FIFO_ALARM, 0x1e4);
++			out_8(lpbfifo.regs + LPBFIFO_REG_FIFO_CONTROL, 7);
++			lpbfifo.bcom_cur_task = lpbfifo.bcom_tx_task;
++		} else {
++			out_be32(lpbfifo.regs + LPBFIFO_REG_FIFO_ALARM, 0x1ff);
++			out_8(lpbfifo.regs + LPBFIFO_REG_FIFO_CONTROL, 0);
++			lpbfifo.bcom_cur_task = lpbfifo.bcom_rx_task;
++
++			if (poll_dma) {
++				if (lpbfifo.dma_irqs_enabled) {
++					disable_irq(bcom_get_task_irq(lpbfifo.bcom_rx_task));
++					lpbfifo.dma_irqs_enabled = 0;
++				}
++			} else {
++				if (!lpbfifo.dma_irqs_enabled) {
++					enable_irq(bcom_get_task_irq(lpbfifo.bcom_rx_task));
++					lpbfifo.dma_irqs_enabled = 1;
++				}
++			}
++		}
++
++		bd = bcom_prepare_next_buffer(lpbfifo.bcom_cur_task);
++		bd->status = transfer_size;
++		if (!write) {
++			/*
++			 * In the DMA read case, the DMA doesn't complete,
++			 * possibly due to incorrect watermarks in the ALARM
++			 * and CONTROL regs. For now instead of trying to
++			 * determine the right watermarks that will make this
++			 * work, just increase the number of bytes the FIFO is
++			 * expecting.
++			 *
++			 * When submitting another operation, the FIFO will get
++			 * reset, so the condition of the FIFO waiting for a
++			 * non-existent 4 bytes will get cleared.
++			 */
++			transfer_size += 4; /* BLECH! */
++		}
++		bd->data[0] = req->data_phys + req->pos;
++		bcom_submit_next_buffer(lpbfifo.bcom_cur_task, NULL);
++
++		/* error irq & master enabled bit */
++		bit_fields = 0x00000201;
++
++		/* Unmask irqs */
++		if (write && (!poll_dma))
++			bit_fields |= 0x00000100; /* completion irq too */
++		out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, bit_fields);
++	}
++
++	/* Set transfer size, width, chip select and READ mode */
++	out_be32(lpbfifo.regs + LPBFIFO_REG_START_ADDRESS,
++		 req->offset + req->pos);
++	out_be32(lpbfifo.regs + LPBFIFO_REG_PACKET_SIZE, transfer_size);
++
++	bit_fields = req->cs << 24 | 0x000008;
++	if (!write)
++		bit_fields |= 0x010000; /* read mode */
++	out_be32(lpbfifo.regs + LPBFIFO_REG_CONTROL, bit_fields);
++
++	/* Kick it off */
++	out_8(lpbfifo.regs + LPBFIFO_REG_PACKET_SIZE, 0x01);
++	if (dma)
++		bcom_enable(lpbfifo.bcom_cur_task);
++}
++
++/**
++ * mpc52xx_lpbfifo_irq - IRQ handler for LPB FIFO
++ *
++ * On transmit, the dma completion irq triggers before the fifo completion
++ * triggers.  Handle the dma completion here instead of the LPB FIFO Bestcomm
++ * task completion irq becuase everyting is not really done until the LPB FIFO
++ * completion irq triggers.
++ *
++ * In other words:
++ * For DMA, on receive, the "Fat Lady" is the bestcom completion irq. on
++ * transmit, the fifo completion irq is the "Fat Lady". The opera (or in this
++ * case the DMA/FIFO operation) is not finished until the "Fat Lady" sings.
++ *
++ * Reasons for entering this routine:
++ * 1) PIO mode rx and tx completion irq
++ * 2) DMA interrupt mode tx completion irq
++ * 3) DMA polled mode tx
++ *
++ * Exit conditions:
++ * 1) Transfer aborted
++ * 2) FIFO complete without DMA; more data to do
++ * 3) FIFO complete without DMA; all data transfered
++ * 4) FIFO complete using DMA
++ *
++ * Condition 1 can occur regardless of whether or not DMA is used.
++ * It requires executing the callback to report the error and exiting
++ * immediately.
++ *
++ * Condition 2 requires programming the FIFO with the next block of data
++ *
++ * Condition 3 requires executing the callback to report completion
++ *
++ * Condition 4 means the same as 3, except that we also retrieve the bcom
++ * buffer so DMA doesn't get clogged up.
++ *
++ * To make things trickier, the spinlock must be dropped before
++ * executing the callback, otherwise we could end up with a deadlock
++ * or nested spinlock condition.  The out path is non-trivial, so
++ * extra fiddling is done to make sure all paths lead to the same
++ * outbound code.
++ */
++static irqreturn_t mpc52xx_lpbfifo_irq(int irq, void *dev_id)
++{
++	struct mpc52xx_lpbfifo_request *req;
++	u32 status = in_8(lpbfifo.regs + LPBFIFO_REG_BYTES_DONE_STATUS);
++	void __iomem *reg;
++	u32 *data;
++	int count, i;
++	int do_callback = 0;
++	u32 ts;
++	unsigned long flags;
++	int dma, write, poll_dma;
++
++	spin_lock_irqsave(&lpbfifo.lock, flags);
++	ts = get_tbl();
++
++	req = lpbfifo.req;
++	if (!req) {
++		spin_unlock_irqrestore(&lpbfifo.lock, flags);
++		pr_err("bogus LPBFIFO IRQ\n");
++		return IRQ_HANDLED;
++	}
++
++	dma = !(req->flags & MPC52XX_LPBFIFO_FLAG_NO_DMA);
++	write = req->flags & MPC52XX_LPBFIFO_FLAG_WRITE;
++	poll_dma = req->flags & MPC52XX_LPBFIFO_FLAG_POLL_DMA;
++
++	if (dma && !write) {
++		spin_unlock_irqrestore(&lpbfifo.lock, flags);
++		pr_err("bogus LPBFIFO IRQ (dma and not writting)\n");
++		return IRQ_HANDLED;
++	}
++
++	if ((status & 0x01) == 0) {
++		goto out;
++	}
++
++	/* check abort bit */
++	if (status & 0x10) {
++		out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
++		do_callback = 1;
++		goto out;
++	}
++
++	/* Read result from hardware */
++	count = in_be32(lpbfifo.regs + LPBFIFO_REG_BYTES_DONE_STATUS);
++	count &= 0x00ffffff;
++
++	if (!dma && !write) {
++		/* copy the data out of the FIFO */
++		reg = lpbfifo.regs + LPBFIFO_REG_FIFO_DATA;
++		data = req->data + req->pos;
++		for (i = 0; i < count; i += 4)
++			*data++ = in_be32(reg);
++	}
++
++	/* Update transfer position and count */
++	req->pos += count;
++
++	/* Decide what to do next */
++	if (req->size - req->pos)
++		mpc52xx_lpbfifo_kick(req); /* more work to do */
++	else
++		do_callback = 1;
++
++ out:
++	/* Clear the IRQ */
++	out_8(lpbfifo.regs + LPBFIFO_REG_BYTES_DONE_STATUS, 0x01);
++
++	if (dma && (status & 0x11)) {
++		/*
++		 * Count the DMA as complete only when the FIFO completion
++		 * status or abort bits are set.
++		 *
++		 * (status & 0x01) should always be the case except sometimes
++		 * when using polled DMA.
++		 *
++		 * (status & 0x10) {transfer aborted}: This case needs more
++		 * testing.
++		 */
++		bcom_retrieve_buffer(lpbfifo.bcom_cur_task, &status, NULL);
++	}
++	req->last_byte = ((u8 *)req->data)[req->size - 1];
++
++	/* When the do_callback flag is set; it means the transfer is finished
++	 * so set the FIFO as idle */
++	if (do_callback)
++		lpbfifo.req = NULL;
++
++	if (irq != 0) /* don't increment on polled case */
++		req->irq_count++;
++
++	req->irq_ticks += get_tbl() - ts;
++	spin_unlock_irqrestore(&lpbfifo.lock, flags);
++
++	/* Spinlock is released; it is now safe to call the callback */
++	if (do_callback && req->callback)
++		req->callback(req);
++
++	return IRQ_HANDLED;
++}
++
++/**
++ * mpc52xx_lpbfifo_bcom_irq - IRQ handler for LPB FIFO Bestcomm task
++ *
++ * Only used when receiving data.
++ */
++static irqreturn_t mpc52xx_lpbfifo_bcom_irq(int irq, void *dev_id)
++{
++	struct mpc52xx_lpbfifo_request *req;
++	unsigned long flags;
++	u32 status;
++	u32 ts;
++
++	spin_lock_irqsave(&lpbfifo.lock, flags);
++	ts = get_tbl();
++
++	req = lpbfifo.req;
++	if (!req || (req->flags & MPC52XX_LPBFIFO_FLAG_NO_DMA)) {
++		spin_unlock_irqrestore(&lpbfifo.lock, flags);
++		return IRQ_HANDLED;
++	}
++
++	if (irq != 0) /* don't increment on polled case */
++		req->irq_count++;
++
++	if (!bcom_buffer_done(lpbfifo.bcom_cur_task)) {
++		spin_unlock_irqrestore(&lpbfifo.lock, flags);
++
++		req->buffer_not_done_cnt++;
++		if ((req->buffer_not_done_cnt % 1000) == 0)
++			pr_err("transfer stalled\n");
++
++		return IRQ_HANDLED;
++	}
++
++	bcom_retrieve_buffer(lpbfifo.bcom_cur_task, &status, NULL);
++
++	req->last_byte = ((u8 *)req->data)[req->size - 1];
++
++	req->pos = status & 0x00ffffff;
++
++	/* Mark the FIFO as idle */
++	lpbfifo.req = NULL;
++
++	/* Release the lock before calling out to the callback. */
++	req->irq_ticks += get_tbl() - ts;
++	spin_unlock_irqrestore(&lpbfifo.lock, flags);
++
++	if (req->callback)
++		req->callback(req);
++
++	return IRQ_HANDLED;
++}
++
++/**
++ * mpc52xx_lpbfifo_bcom_poll - Poll for DMA completion
++ */
++void mpc52xx_lpbfifo_poll(void)
++{
++	struct mpc52xx_lpbfifo_request *req = lpbfifo.req;
++	int dma = !(req->flags & MPC52XX_LPBFIFO_FLAG_NO_DMA);
++	int write = req->flags & MPC52XX_LPBFIFO_FLAG_WRITE;
++
++	/*
++	 * For more information, see comments on the "Fat Lady" 
++	 */
++	if (dma && write)
++		mpc52xx_lpbfifo_irq(0, NULL);
++	else 
++		mpc52xx_lpbfifo_bcom_irq(0, NULL);
++}
++EXPORT_SYMBOL(mpc52xx_lpbfifo_poll);
++
++/**
++ * mpc52xx_lpbfifo_submit - Submit an LPB FIFO transfer request.
++ * @req: Pointer to request structure
++ */
++int mpc52xx_lpbfifo_submit(struct mpc52xx_lpbfifo_request *req)
++{
++	unsigned long flags;
++
++	if (!lpbfifo.regs)
++		return -ENODEV;
++
++	spin_lock_irqsave(&lpbfifo.lock, flags);
++
++	/* If the req pointer is already set, then a transfer is in progress */
++	if (lpbfifo.req) {
++		spin_unlock_irqrestore(&lpbfifo.lock, flags);
++		return -EBUSY;
++	}
++
++	/* Setup the transfer */
++	lpbfifo.req = req;
++	req->irq_count = 0;
++	req->irq_ticks = 0;
++	req->buffer_not_done_cnt = 0;
++	req->pos = 0;
++
++	mpc52xx_lpbfifo_kick(req);
++	spin_unlock_irqrestore(&lpbfifo.lock, flags);
++	return 0;
++}
++EXPORT_SYMBOL(mpc52xx_lpbfifo_submit);
++
++void mpc52xx_lpbfifo_abort(struct mpc52xx_lpbfifo_request *req)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&lpbfifo.lock, flags);
++	if (lpbfifo.req == req) {
++		/* Put it into reset and clear the state */
++		bcom_gen_bd_rx_reset(lpbfifo.bcom_rx_task);
++		bcom_gen_bd_tx_reset(lpbfifo.bcom_tx_task);
++		out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
++		lpbfifo.req = NULL;
++	}
++	spin_unlock_irqrestore(&lpbfifo.lock, flags);
++}
++EXPORT_SYMBOL(mpc52xx_lpbfifo_abort);
++
++static int __devinit
++mpc52xx_lpbfifo_probe(struct of_device *op, const struct of_device_id *match)
++{
++	struct resource res;
++	int rc = -ENOMEM;
++
++	if (lpbfifo.dev != NULL)
++		return -ENOSPC;
++
++	lpbfifo.irq = irq_of_parse_and_map(op->node, 0);
++	if (!lpbfifo.irq)
++		return -ENODEV;
++
++	if (of_address_to_resource(op->node, 0, &res))
++		return -ENODEV;
++	lpbfifo.regs_phys = res.start;
++	lpbfifo.regs = of_iomap(op->node, 0);
++	if (!lpbfifo.regs)
++		return -ENOMEM;
++
++	spin_lock_init(&lpbfifo.lock);
++
++	/* Put FIFO into reset */
++	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
++
++	/* Register the interrupt handler */
++	rc = request_irq(lpbfifo.irq, mpc52xx_lpbfifo_irq, 0,
++			 "mpc52xx-lpbfifo", &lpbfifo);
++	if (rc)
++		goto err_irq;
++
++	/* Request the Bestcomm receive (fifo --> memory) task and IRQ */
++	lpbfifo.bcom_rx_task =
++		bcom_gen_bd_rx_init(2, res.start + LPBFIFO_REG_FIFO_DATA,
++				    BCOM_INITIATOR_SCLPC, BCOM_IPR_SCLPC,
++				    16*1024*1024);
++	if (!lpbfifo.bcom_rx_task)
++		goto err_bcom_rx;
++
++	rc = request_irq(bcom_get_task_irq(lpbfifo.bcom_rx_task),
++			 mpc52xx_lpbfifo_bcom_irq, 0,
++			 "mpc52xx-lpbfifo-rx", &lpbfifo);
++	if (rc)
++		goto err_bcom_rx_irq;
++
++	/* Request the Bestcomm transmit (memory --> fifo) task and IRQ */
++	lpbfifo.bcom_tx_task =
++		bcom_gen_bd_tx_init(2, res.start + LPBFIFO_REG_FIFO_DATA,
++				    BCOM_INITIATOR_SCLPC, BCOM_IPR_SCLPC);
++	if (!lpbfifo.bcom_tx_task)
++		goto err_bcom_tx;
++
++	lpbfifo.dev = &op->dev;
++	return 0;
++
++ err_bcom_tx:
++	free_irq(bcom_get_task_irq(lpbfifo.bcom_rx_task), &lpbfifo);
++ err_bcom_rx_irq:
++	bcom_gen_bd_rx_release(lpbfifo.bcom_rx_task);
++ err_bcom_rx:
++ err_irq:
++	iounmap(lpbfifo.regs);
++	lpbfifo.regs = NULL;
++
++	dev_err(&op->dev, "mpc52xx_lpbfifo_probe() failed\n");
++	return -ENODEV;
++}
++
++
++static int __devexit mpc52xx_lpbfifo_remove(struct of_device *op)
++{
++	if (lpbfifo.dev != &op->dev)
++		return 0;
++
++	/* Put FIFO in reset */
++	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
++
++	/* Release the bestcomm transmit task */
++	free_irq(bcom_get_task_irq(lpbfifo.bcom_tx_task), &lpbfifo);
++	bcom_gen_bd_tx_release(lpbfifo.bcom_tx_task);
++	
++	/* Release the bestcomm receive task */
++	free_irq(bcom_get_task_irq(lpbfifo.bcom_rx_task), &lpbfifo);
++	bcom_gen_bd_rx_release(lpbfifo.bcom_rx_task);
++
++	free_irq(lpbfifo.irq, &lpbfifo);
++	iounmap(lpbfifo.regs);
++	lpbfifo.regs = NULL;
++	lpbfifo.dev = NULL;
++
++	return 0;
++}
++
++static struct of_device_id mpc52xx_lpbfifo_match[] __devinitconst = {
++	{ .compatible = "fsl,mpc5200-lpbfifo", },
++	{},
++};
++
++static struct of_platform_driver mpc52xx_lpbfifo_driver = {
++	.owner = THIS_MODULE,
++	.name = "mpc52xx-lpbfifo",
++	.match_table = mpc52xx_lpbfifo_match,
++	.probe = mpc52xx_lpbfifo_probe,
++	.remove = __devexit_p(mpc52xx_lpbfifo_remove),
++};
++
++/***********************************************************************
++ * Module init/exit
++ */
++static int __init mpc52xx_lpbfifo_init(void)
++{
++	pr_debug("Registering LocalPlus bus FIFO driver\n");
++	return of_register_platform_driver(&mpc52xx_lpbfifo_driver);
++}
++module_init(mpc52xx_lpbfifo_init);
++
++static void __exit mpc52xx_lpbfifo_exit(void)
++{
++	pr_debug("Unregistering LocalPlus bus FIFO driver\n");
++	of_unregister_platform_driver(&mpc52xx_lpbfifo_driver);
++}
++module_exit(mpc52xx_lpbfifo_exit);
