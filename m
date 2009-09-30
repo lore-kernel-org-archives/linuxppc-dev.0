@@ -2,29 +2,25 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ADAB5B7BB7
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2009 18:01:28 +1000 (EST)
-In-Reply-To: <20090929210331.GA25779@laura.chatsunix.int.mrv.com>
-References: <20090924233346.GA445@compile2.chatsunix.int.mrv.com>
-	<1253836376.7103.469.camel@pasglop>
-	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>
-	<1253843480.7103.492.camel@pasglop>
-	<20090929012106.GA22798@compile2.chatsunix.int.mrv.com>
-	<OF1870F4D5.BB673882-ONC1257640.00233638-C1257640.00236DC9@transmode.se>
-	<1254208057.5771.7.camel@pasglop>
-	<OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>
-	<1254212198.5256.0.camel@pasglop>
-	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
+	by ozlabs.org (Postfix) with ESMTPS id 2BA5EB7BE9
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2009 18:21:30 +1000 (EST)
+In-Reply-To: <OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
+References: <20090924233346.GA445@compile2.chatsunix.int.mrv.com>	<1253836376.7103.469.camel@pasglop>
+	<20090925013528.GA2584@compile2.chatsunix.int.mrv.com>	<1253843480.7103.492.camel@pasglop>
+	<20090929012106.GA22798@compile2.chatsunix.int.mrv.com>	<OF1870F4D5.BB673882-ONC1257640.00233638-C1257640.00236DC9@transmode.se>
+	<1254208057.5771.7.camel@pasglop>	<OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>
+	<1254212198.5256.0.camel@pasglop>	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
 	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>
+	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
 Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache	coherency
 	rewrite
-To: Rex Feany <RFeany@mrv.com>
-Message-ID: <OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
+Message-ID: <OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 30 Sep 2009 09:59:33 +0200
+Date: Wed, 30 Sep 2009 10:19:48 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,42 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rex Feany <RFeany@mrv.com> wrote on 29/09/2009 23:03:31:
 >
-> Thus spake Joakim Tjernlund (joakim.tjernlund@transmode.se):
->
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 29/09/2009 10:16:38:
-> > >
-> > >
-> > > > hmm, yes. You do get this and mysterious SEGV if you hit the but so does
-> > > > other bugs too so this is probably due to missing invalidation.
-> > > >
-> > > > I suspect that something like below will fix the problem and
-> > > > is the "correct" fix(untested, not even compiled):
-> > >
-> > > Ok but do we also still have to worry about the "unpopulated" TLB
-> > > entries and invalidate them somehow when populating ?
+> Rex Feany <RFeany@mrv.com> wrote on 29/09/2009 23:03:31:
 > >
-> > Since I am probably the only one that knows about DAR problem I figured
-> > I should take a stab at it. This is not tested, but I hope Rex and the list
-> > can do that. Once this works as it should, we can remove all special handling
-> > for 8xx in copy_tofrom_user() and friends.
-> > No sign-off yet, want some confirmation first.
+> > Thus spake Joakim Tjernlund (joakim.tjernlund@transmode.se):
+> >
+> > > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 29/09/2009 10:16:38:
+> > > >
+> > > >
+> > > > > hmm, yes. You do get this and mysterious SEGV if you hit the but so does
+> > > > > other bugs too so this is probably due to missing invalidation.
+> > > > >
+> > > > > I suspect that something like below will fix the problem and
+> > > > > is the "correct" fix(untested, not even compiled):
+> > > >
+> > > > Ok but do we also still have to worry about the "unpopulated" TLB
+> > > > entries and invalidate them somehow when populating ?
+> > >
+> > > Since I am probably the only one that knows about DAR problem I figured
+> > > I should take a stab at it. This is not tested, but I hope Rex and the list
+> > > can do that. Once this works as it should, we can remove all special handling
+> > > for 8xx in copy_tofrom_user() and friends.
+> > > No sign-off yet, want some confirmation first.
+> >
+> > It doesn't make a difference. I applied it to the top of the tree,
+> > it got to userspace but it is stuck. Using break I am able to dump the
+> > registers, I'm not sure if this is useful. Oh, well, I finally got to a shell
+> > but it is unusably slow. Is there some test code that would be better to run?
+> > I tried looking through the mailing list archives but I couldn't find anything.
+> >
+> > thanks!
+> > /rex.
 >
-> It doesn't make a difference. I applied it to the top of the tree,
-> it got to userspace but it is stuck. Using break I am able to dump the
-> registers, I'm not sure if this is useful. Oh, well, I finally got to a shell
-> but it is unusably slow. Is there some test code that would be better to run?
-> I tried looking through the mailing list archives but I couldn't find anything.
+> Ok, I have made some minor tweaks and added debug code in
+> do_page_fault(). Would be great if you could try on both
+> .31 and top of tree.
 >
-> thanks!
-> /rex.
+>  Jocke
 
-Ok, I have made some minor tweaks and added debug code in
-do_page_fault(). Would be great if you could try on both
-.31 and top of tree.
-
- Jocke
+OOPS, found a bug. Use this one instead:
 
 diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
 index 4dd38f1..b3f6687 100644
@@ -187,7 +186,7 @@ index 52ff8c5..f9e2363 100644
  	mfspr	r10, SPRN_M_TW	/* Restore registers */
  	lwz	r11, 0(r0)
 diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 7699394..4fefd01 100644
+index 7699394..789b16b 100644
 --- a/arch/powerpc/mm/fault.c
 +++ b/arch/powerpc/mm/fault.c
 @@ -125,6 +125,61 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
@@ -207,14 +206,14 @@ index 7699394..4fefd01 100644
 +		char *istr = NULL;
 +
 +		insn = *((unsigned long *)regs->nip);
-+		if ((insn >> (31-5)) == 31) {
-+			if ((insn >> 1) == 1014) /* dcbz ? */
++		if (((insn >> (31-5)) & 0x3f) == 31) {
++			if (((insn >> 1) & 0x3ff) == 1014) /* dcbz ? 0x3f6 */
 +				istr = "dcbz";
-+			if ((insn >> 1) == 86) /* dcbf ? */
++			if (((insn >> 1) & 0x3ff) == 86) /* dcbf ? 0x56 */
 +				istr = "dcbf";
-+			if ((insn >> 1) == 470) /* dcbi ? */
++			if (((insn >> 1) & 0x3ff) == 470) /* dcbi ? 0x1d6 */
 +				istr = "dcbi";
-+			if ((insn >> 1) == 54) /* dcbst ? */
++			if (((insn >> 1) & 0x3ff) == 54) /* dcbst ? 0x36 */
 +				istr = "dcbst";
 +		}
 +		if (istr) {
@@ -225,13 +224,13 @@ index 7699394..4fefd01 100644
 +			printk(KERN_CRIT "DAR is:%lx (should be 0xf0)\n", regs->dar);
 +
 +		}
-+		if (regs->dar == 0xf0 && !istr)
-+			printk(KERN_CRIT "DAR is 0xf0 but insn at NIP is: %lx is"
++		if (regs->dar == 0x00f0 && !istr)
++			printk(KERN_CRIT "DAR is 0x00f0 but insn at NIP is: %lx is"
 +			       "not a cache insn:%lx!\n", regs->nip, insn);
 +		if (trap == 0x300 && address != regs->dar)
 +			printk(KERN_CRIT "DAR:%lx != address:%lx!\n", address, regs->dar);
 +
-+		if (istr || (trap == 0x300 && address == 0xf0)) {
++		if (istr || (trap == 0x300 && address == 0x00f0)) {
 +			insn = *((unsigned long *)regs->nip);
 +			/* Check if it is a
 +			 * dcbf, dcbi, dcbst, dcbz insn ?
