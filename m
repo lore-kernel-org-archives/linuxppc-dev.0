@@ -2,8 +2,8 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E40F2B7BD0
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2009 20:01:41 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 8E10AB7BD2
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2009 21:21:51 +1000 (EST)
 In-Reply-To: <20090930090002.GA2928@compile2.chatsunix.int.mrv.com>
 References: <1253843480.7103.492.camel@pasglop>
 	<20090929012106.GA22798@compile2.chatsunix.int.mrv.com>
@@ -19,9 +19,9 @@ References: <1253843480.7103.492.camel@pasglop>
 Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
 	rewrite
 To: Rex Feany <RFeany@mrv.com>
-Message-ID: <OF80D333CA.17FBEBD5-ONC1257641.00350DED-C1257641.0036C085@transmode.se>
+Message-ID: <OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 30 Sep 2009 11:58:02 +0200
+Date: Wed, 30 Sep 2009 13:18:04 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
@@ -50,15 +50,23 @@ Rex Feany <RFeany@mrv.com> wrote on 30/09/2009 11:00:02:
 > None of your debugging printks show up. I tried removing the tlbil_va()
 > from do_dcache_icache_coherency() and userspace goes back to be being
 > slow/non functional.
->
-> top of tree - userspace is slow and unstable, random segfaults,
-> and none of your debugging printks show up :(
 
-OK, something strange is going on. I am starting to suspect that there
-is some other problem here.
+Had a look at linus tree and there is something I don't understand.
+Your fix, e0908085fc2391c85b85fb814ae1df377c8e0dcb, fixes a problem
+that was introduced by 8d30c14cab30d405a05f2aaceda1e9ad57800f36 but
+8d30c14cab30d405a05f2aaceda1e9ad57800f36 was included in .31 and .31
+works and top of tree does not, how can that be?
 
-If my patch is any good you should be able to use dcbx insn in copy_tofrom_user().
-You could try changing all CONFIG_8xx to CONFIG_8xx_deleted arch/powerpc/lib/copy_32.S
-and see if that works and if you see any debug prints.
+To me it seems more likely that some mm change introduced between .31 and
+top of tree is the culprit.
+My patch addresses the problem described in the comment:
+/* On 8xx, cache control instructions (particularly
+ * "dcbst" from flush_dcache_icache) fault as write
+ * operation if there is an unpopulated TLB entry
+ * for the address in question. To workaround that,
+ * we invalidate the TLB here, thus avoiding dcbst
+ * misbehaviour.
+ */
+Now you are using this old fix to paper over some other bug or so I think.
 
  Jocke
