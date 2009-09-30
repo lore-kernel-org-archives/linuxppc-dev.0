@@ -1,18 +1,30 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
-	by ozlabs.org (Postfix) with ESMTP id 68503B7BCC
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Oct 2009 04:40:18 +1000 (EST)
-Date: Wed, 30 Sep 2009 20:34:15 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH] powerpc/5200: add LocalPlus bus FIFO device driver
-To: John Bonesio <bones@secretlab.ca>
-In-Reply-To: <20090929204248.16225.22818.stgit@riker> (from
-	bones@secretlab.ca on Tue Sep 29 22:43:42 2009)
-Message-Id: <1254335663.3681.0@antares>
-MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=PGP-SHA1; boundary="=-fnWOf/JbixxowXAZgfA8"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <randy.dunlap@oracle.com>
+Received: from rgminet14.oracle.com (rcsinet14.oracle.com [148.87.113.126])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "rcsinet14.oracle.com",
+	Issuer "VeriSign Class 3 Secure Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A39F3B7BBB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  1 Oct 2009 04:59:32 +1000 (EST)
+Received: from rgminet11.oracle.com (rcsinet11.oracle.com [148.87.113.123])
+	by rgminet14.oracle.com (Switch-3.3.1/Switch-3.3.1) with ESMTP id
+	n8UHWMv5013806
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2009 17:32:23 GMT
+Date: Wed, 30 Sep 2009 10:31:13 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [PATCH v3 2/3] cpu: Offline state Framework.
+Message-Id: <20090930103113.4361619d.randy.dunlap@oracle.com>
+In-Reply-To: <20090915120706.20523.95464.stgit@sofia.in.ibm.com>
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+	<20090915120706.20523.95464.stgit@sofia.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+	"Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,103 +34,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-fnWOf/JbixxowXAZgfA8
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 15 Sep 2009 17:37:06 +0530 Gautham R Shenoy wrote:
 
-Hi John:
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> ---
+>  Documentation/cpu-hotplug.txt |   22 +++++
+>  drivers/base/cpu.c            |  181 +++++++++++++++++++++++++++++++++++++++--
+>  include/linux/cpu.h           |   10 ++
+>  3 files changed, 204 insertions(+), 9 deletions(-)
+> 
+> diff --git a/Documentation/cpu-hotplug.txt b/Documentation/cpu-hotplug.txt
+> index 9d620c1..dcec06d 100644
+> --- a/Documentation/cpu-hotplug.txt
+> +++ b/Documentation/cpu-hotplug.txt
+> @@ -115,6 +115,28 @@ Just remember the critical section cannot call any
+>  function that can sleep or schedule this process away. The preempt_disable()
+>  will work as long as stop_machine_run() is used to take a cpu down.
+>  
+> +CPU-offline states
+> +--------------------------------------
+> +On architectures which allow the more than one valid state when
 
-Cool stuff - Grant's original one also helped me a lot to get Bestcomm =20
-running for me (I use it only for read dma)!
+                                ^drop "the"
 
-Am 29.09.09 22:43 schrieb(en) John Bonesio:
-[snip]
-> +		 * It may be worth experimenting with the ALARM value =20
-> to see if
-> +		 * there is a performance impacit.  However, if it is =20
-> wrong there
-> +		 * is a risk of DMA not transferring the last chunk of =20
-> data
-> +		 */
-> +		if (write) {
-> +			out_be32(lpbfifo.regs + LPBFIFO_REG_FIFO_ALARM, =20
-> 0x1e4);
-> +			out_8(lpbfifo.regs + LPBFIFO_REG_FIFO_CONTROL, =20
-> 7);
-> +			lpbfifo.bcom_cur_task =3D lpbfifo.bcom_tx_task;
-> +		} else {
-> +			out_be32(lpbfifo.regs + LPBFIFO_REG_FIFO_ALARM, =20
-> 0x1ff);
-> +			out_8(lpbfifo.regs + LPBFIFO_REG_FIFO_CONTROL, =20
-> 0);
-> +			lpbfifo.bcom_cur_task =3D lpbfifo.bcom_rx_task;
+> +the CPU goes offline, the system administrator can decide
+> +the state the CPU needs to go to when it is offlined.
 
-Hmmm, the MPC5200B User's manual, sect. 9.7.3.3 LPC Rx/Tx FIFO Control =20
-Register (pg. 323) seems to imply that only 0 or 1 are valid settings =20
-here.  Where does the 7 come from?
+s/needs to/should/
 
-[snip]
-> +			 * In the DMA read case, the DMA doesn't =20
-> complete,
-> +			 * possibly due to incorrect watermarks in the =20
-> ALARM
-> +			 * and CONTROL regs. For now instead of trying =20
-> to
-> +			 * determine the right watermarks that will =20
-> make this
-> +			 * work, just increase the number of bytes the =20
-> FIFO is
-> +			 * expecting.
-
-My experience is that for reads I have to set a granularity of 0 (as =20
-you already do) *and* set the 'flush' bit in the SCLPC Control =20
-Register.  See the remarks for that bit in the MPC5200B User's manual, =20
-pg. 318.  With these settings and my driver, I made several tests =20
-reading blocks (in one Bestcomm operation) between 16 bytes and 2 =20
-MBytes, and *never* had any problem, so your remark here makes me =20
-somewhat nervous!
-
-In my dma read tests, the watermark (LPC Rx/Tx FIFO Alarm Register) =20
-seems to have only a (small) performance impact.  If I set the =20
-watermark to 0 (i.e. fill the fifo completely), I *never* saw any =20
-under- or overruns.  My assumption is that the fifo would stop reading =20
-the peripheral when it is full, and only resume when Bestcomm emptied =20
-it at least partly.  You you know if that is really the case?
-
-[snip]
 > +
-> +	bit_fields =3D req->cs << 24 | 0x000008;
-> +	if (!write)
-> +		bit_fields |=3D 0x010000; /* read mode */
+> +If the architecture has implemented a cpu-offline driver exposing these
+> +multiple offline states, the system administrator can use the following sysfs
+> +interfaces to query the available hotplug states and also query and set the
+> +current hotplug state for a given cpu:
+> +
+> +To query the hotplug states, on needs to perform a read on:
 
-See above - should be "bit_fields |=3D 0x030000" IMHO...
+                                one
 
-[snip]
-> +	/* Request the Bestcomm receive (fifo --> memory) task and IRQ =20
-> */
-> +	lpbfifo.bcom_rx_task =3D
-> +		bcom_gen_bd_rx_init(2, res.start + =20
-> LPBFIFO_REG_FIFO_DATA,
-> +				    BCOM_INITIATOR_SCLPC, =20
-> BCOM_IPR_SCLPC,
-> +				    16*1024*1024);
+> +/sys/devices/system/cpu/cpu<number>/available_hotplug_states
+> +
+> +To query or set the current state for a particular CPU,
+> +one needs to use the sysfs interface
+> +
+> +/sys/devices/system/cpu/cpu<number>/current_hotplug_state
+> +
+> +Writes to the "online" sysfs files are serialized against the writes to the
+> +"current_hotplug_state" file.
+> +
+>  CPU Hotplug - Frequently Asked Questions.
+>  
+>  Q: How to enable my kernel to support CPU hotplug?
 
-Is the limit really correct?  The manual (sect. 9.7.2.1 SCLPC Packet =20
-Size Register, pg. 316) says the maximum packet size is 16 M - 1 byte.
 
-Cheers,
-Albrecht.
-
---=-fnWOf/JbixxowXAZgfA8
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBKw6Svn/9unNAn/9ERAhndAJ9flh+b36w1tzmioazgvjXtlnGIwgCeM4j/
-qiGH3MGRvkAA6ytqQnF+90s=
-=v8H7
------END PGP SIGNATURE-----
-
---=-fnWOf/JbixxowXAZgfA8--
+---
+~Randy
