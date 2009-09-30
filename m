@@ -1,23 +1,20 @@
-Return-Path: <JBeulich@novell.com>
-Received: from vpn.id2.novell.com (vpn.id2.novell.com [195.33.99.129])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "emea1-mh.id2.novell.com", Issuer "APPS" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 693B9B7BF3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Sep 2009 16:35:23 +1000 (EST)
-Message-Id: <4AC318450200007800017355@vpn.id2.novell.com>
-Date: Wed, 30 Sep 2009 07:35:17 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Hollis Blanchard" <hollisb@us.ibm.com>
-Subject: Re: linux-next: tree build failure
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	<1254267572.15622.1621.camel@slab.beaverton.ibm.com>
-In-Reply-To: <1254267572.15622.1621.camel@slab.beaverton.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
-	linux-next@vger.kernel.org, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A7226B7BD7
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2009 17:06:32 +1000 (EST)
+Message-ID: <4AC30371.80509@embedded-sol.com>
+Date: Wed, 30 Sep 2009 09:06:25 +0200
+From: Felix Radensky <felix@embedded-sol.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: MPC8536 PCI rescan to discover FPGA
+References: <4AB79D41.60902@embedded-sol.com>	
+	<4AB7A411.3030406@ovro.caltech.edu>
+	<1253604183.7103.213.camel@pasglop>
+In-Reply-To: <1253604183.7103.213.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> Hollis Blanchard <hollisb@us.ibm.com> 30.09.09 01:39 >>>
->On Tue, 2009-09-29 at 10:28 +0100, Jan Beulich wrote:
->> >>> Hollis Blanchard  09/29/09 2:00 AM >>>
->> >First, I think there is a real bug here, and the code should read like
->> >this (to match the comment):
->> >    /* type has to be known at build time for optimization */
->> >-    BUILD_BUG_ON(__builtin_constant_p(type));
->> >+    BUILD_BUG_ON(!__builtin_constant_p(type));
->> >
->> >However, I get the same build error *both* ways, i.e.
->> >__builtin_constant_p(type) evaluates to both 0 and 1? Either that, or
->> >the new BUILD_BUG_ON() macro isn't working...
->>=20
->> No, at this point of the compilation process it's neither zero nor one,
->> it's simply considered non-constant by the compiler at that stage
->> (this builtin is used for optimization, not during parsing, and the
->> error gets generated when the body of the function gets parsed,
->> not when code gets generated from it).
+Hi, Benjamin
+
+Benjamin Herrenschmidt wrote:
+> Right. However, in case it's a bit too much work to get
+> hotswap implemented on the machine, you may still be able
+> to do something simpler from your platform code, after you've
+> finished loading the FPGA. I assume the FPGA doesn't contain a
+> P2P bridge that would require probing further below the FPGA
+> itself.
 >
->I think I see what you're saying. Do you have a fix to suggest?
+> The basic idea is to call pci_scan_slot() on the devfn where
+> the FPGA is supposed to respond.
+>
+> Then you need to also do some fixup. First you need to call
+> pcibios_setup_bus_devices(). This will wire up the device
+> to an OF node if you have one, setup some default DMA ops,
+> etc...
+>
+> Note that this function will walk over all devices on that bus
+> which is interesting since some of those may have already been
+> fully setup initially. Hopefully that isn't a problem. If it
+> was to become one, we would have to figure out a way to skip
+> devices that have already been "setup".
+>
+> And finally you call pcibios_finish_adding_to_bus() which will
+> do the resource allocation pass on all new devices on the bus
+> and register them with the core device layer.
+>
+> Cheers,
+> Ben.
+>
+>   
+Thanks for the advice. This approach worked well for me, with some minor
+modifications. First I had to clear PPC_INDIRECT_TYPE_NO_PCIE_LINK
+in hose->indirect_type, otherwise reads from configuration space fail. And
+second, I had to call pci_assign_resource() to complete the assignment 
+of FPGA
+memory. The memory range is 0x0 - 0x7fffff, and PCI code doesn't like 
+resources
+starting at 0.
 
-The one Rusty suggested the other day may help here. I don't like it
-as a drop-in replacement for BUILD_BUG_ON() though (due to it
-deferring the error generated to the linking stage), I'd rather view
-this as an improvement to MAYBE_BUILD_BUG_ON() (which should
-then be used here).
+Again, thanks a lot for your help, much appreciated.
 
-Jan
+Felix.
