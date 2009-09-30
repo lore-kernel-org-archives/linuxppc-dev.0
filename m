@@ -1,15 +1,20 @@
-Return-Path: <khali@linux-fr.org>
-Received: from poutre.nerim.net (poutre.nerim.net [62.4.16.124])
-	by ozlabs.org (Postfix) with ESMTP id 24530B7BBB
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Oct 2009 06:14:39 +1000 (EST)
-Date: Wed, 30 Sep 2009 22:14:35 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linux I2C <linux-i2c@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] i2c-powermac: Reject unsupported I2C transactions
-Message-ID: <20090930221435.58636363@hyperion.delvare>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6423FB7BCB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  1 Oct 2009 06:31:03 +1000 (EST)
+Subject: Re: 64bit kernel is huge
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <5642.1254290487@neuling.org>
+References: <20090928074503.GB16073@kryten>  <5642.1254290487@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 01 Oct 2009 06:30:55 +1000
+Message-Id: <1254342655.5699.9.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,36 +24,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The i2c-powermac driver doesn't support arbitrary multi-message I2C
-transactions, only SMBus ones. Make it clear by returning an error if
-a multi-message I2C transaction is attempted. This is better than only
-processing the first message, because most callers won't recover from
-the short transaction. Anyone wishing to issue multi-message
-transactions should use the SMBus API instead of the raw I2C API.
+On Wed, 2009-09-30 at 16:01 +1000, Michael Neuling wrote:
+> 2.6.30     9221595      1620728 1052812 11895135        b5815f
+> 2.6.29     9104807      1569840  785292 11459939        aedd63 
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
----
- drivers/i2c/busses/i2c-powermac.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+The jump in BSS size is huge...  lockdep ?
 
---- linux-2.6.32-rc1.orig/drivers/i2c/busses/i2c-powermac.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-2.6.32-rc1/drivers/i2c/busses/i2c-powermac.c	2009-09-30 20:29:42.000000000 +0200
-@@ -146,6 +146,12 @@ static int i2c_powermac_master_xfer(	str
- 	int			read;
- 	int			addrdir;
- 
-+	if (num != 1) {
-+		dev_err(&adap->dev,
-+			"Multi-message I2C transactions not supported\n");
-+		return -EOPNOTSUPP;
-+	}
-+
- 	if (msgs->flags & I2C_M_TEN)
- 		return -EINVAL;
- 	read = (msgs->flags & I2C_M_RD) != 0;
-
-
--- 
-Jean Delvare
+Ben.
