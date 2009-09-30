@@ -1,26 +1,18 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 433EAB7BD9
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Oct 2009 03:27:31 +1000 (EST)
-In-Reply-To: <OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
-References: <1253843480.7103.492.camel@pasglop>	<20090929012106.GA22798@compile2.chatsunix.int.mrv.com>
-	<OF1870F4D5.BB673882-ONC1257640.00233638-C1257640.00236DC9@transmode.se>	<1254208057.5771.7.camel@pasglop>
-	<OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>	<1254212198.5256.0.camel@pasglop>
-	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>
-	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
-	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>
-	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
-	rewrite
-Message-ID: <OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 30 Sep 2009 19:23:44 +0200
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by ozlabs.org (Postfix) with ESMTP id 68503B7BCC
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Oct 2009 04:40:18 +1000 (EST)
+Date: Wed, 30 Sep 2009 20:34:15 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: [PATCH] powerpc/5200: add LocalPlus bus FIFO device driver
+To: John Bonesio <bones@secretlab.ca>
+In-Reply-To: <20090929204248.16225.22818.stgit@riker> (from
+	bones@secretlab.ca on Tue Sep 29 22:43:42 2009)
+Message-Id: <1254335663.3681.0@antares>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-fnWOf/JbixxowXAZgfA8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,169 +22,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->
-> Rex Feany <RFeany@mrv.com> wrote on 30/09/2009 11:00:02:
-> >
-> > Thus spake Joakim Tjernlund (joakim.tjernlund@transmode.se):
-> >
-> > > > Ok, I have made some minor tweaks and added debug code in
-> > > > do_page_fault(). Would be great if you could try on both
-> > > > .31 and top of tree.
-> > > >
-> > > >  Jocke
-> > >
-> > > OOPS, found a bug. Use this one instead:
-> >
-> > .31 - no change, it worked before your patch and it works after.
-> > None of your debugging printks show up. I tried removing the tlbil_va()
-> > from do_dcache_icache_coherency() and userspace goes back to be being
-> > slow/non functional.
->
-> Had a look at linus tree and there is something I don't understand.
-> Your fix, e0908085fc2391c85b85fb814ae1df377c8e0dcb, fixes a problem
-> that was introduced by 8d30c14cab30d405a05f2aaceda1e9ad57800f36 but
-> 8d30c14cab30d405a05f2aaceda1e9ad57800f36 was included in .31 and .31
-> works and top of tree does not, how can that be?
->
-> To me it seems more likely that some mm change introduced between .31 and
-> top of tree is the culprit.
-> My patch addresses the problem described in the comment:
-> /* On 8xx, cache control instructions (particularly
->  * "dcbst" from flush_dcache_icache) fault as write
->  * operation if there is an unpopulated TLB entry
->  * for the address in question. To workaround that,
->  * we invalidate the TLB here, thus avoiding dcbst
->  * misbehaviour.
->  */
-> Now you are using this old fix to paper over some other bug or so I think.
+--=-fnWOf/JbixxowXAZgfA8
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There is something fishy with the TLB status, looking into the mpc862 manual I
-don't see how it can work reliably. Need to dwell some more.
-Anyhow, I have incorporated some of my findings into a new patch,
-perhaps this will be the golden one?
+Hi John:
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 4dd38f1..b3f6687 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -709,6 +709,14 @@ ret_from_except:
- 	SYNC			/* Some chip revs have problems here... */
- 	MTMSRD(r10)		/* disable interrupts */
+Cool stuff - Grant's original one also helped me a lot to get Bestcomm =20
+running for me (I use it only for read dma)!
 
-+#ifdef CONFIG_8xx
-+	/* Tag DAR with a well know value.
-+	 * This needs to match head_8xx.S and
-+	 * do_page_fault()
-+	 */
-+	li	r3, 0x00f0
-+	mtspr	SPRN_DAR, r3
-+#endif
- 	lwz	r3,_MSR(r1)	/* Returning to user mode? */
- 	andi.	r0,r3,MSR_PR
- 	beq	resume_kernel
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 52ff8c5..de1fd58 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -39,6 +39,15 @@
- #else
- #define DO_8xx_CPU6(val, reg)
- #endif
-+
-+/* DAR needs to be tagged with a known value so that the
-+ * DataTLB Miss/Error and do_page_fault() can recognize a
-+ * buggy dcbx instruction and workaround the problem.
-+ * dcbf, dcbi, dcbst, dcbz instructions do not update DAR
-+ * when trapping into a Data TLB Miss/Error. See
-+ * DataStoreTLBMiss and DataTLBError for details
-+ */
-+
- 	__HEAD
- _ENTRY(_stext);
- _ENTRY(_start);
-@@ -222,6 +231,7 @@ DataAccess:
- 	stw	r10,_DSISR(r11)
- 	mr	r5,r10
- 	mfspr	r4,SPRN_DAR
-+	stw	r4,_DAR(r11)
- 	EXC_XFER_EE_LITE(0x300, handle_page_fault)
+Am 29.09.09 22:43 schrieb(en) John Bonesio:
+[snip]
+> +		 * It may be worth experimenting with the ALARM value =20
+> to see if
+> +		 * there is a performance impacit.  However, if it is =20
+> wrong there
+> +		 * is a risk of DMA not transferring the last chunk of =20
+> data
+> +		 */
+> +		if (write) {
+> +			out_be32(lpbfifo.regs + LPBFIFO_REG_FIFO_ALARM, =20
+> 0x1e4);
+> +			out_8(lpbfifo.regs + LPBFIFO_REG_FIFO_CONTROL, =20
+> 7);
+> +			lpbfifo.bcom_cur_task =3D lpbfifo.bcom_tx_task;
+> +		} else {
+> +			out_be32(lpbfifo.regs + LPBFIFO_REG_FIFO_ALARM, =20
+> 0x1ff);
+> +			out_8(lpbfifo.regs + LPBFIFO_REG_FIFO_CONTROL, =20
+> 0);
+> +			lpbfifo.bcom_cur_task =3D lpbfifo.bcom_rx_task;
 
- /* Instruction access exception.
-@@ -352,7 +362,7 @@ InstructionTLBMiss:
- 	 * set.  All other Linux PTE bits control the behavior
- 	 * of the MMU.
- 	 */
--2:	li	r11, 0x00f0
-+	li	r11, 0x00f0
- 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
- 	DO_8xx_CPU6(0x2d80, r3)
- 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
-@@ -365,6 +375,19 @@ InstructionTLBMiss:
- 	lwz	r3, 8(r0)
- #endif
- 	rfi
-+2:
-+	mfspr	r10, SPRN_SRR1
-+	rlwinm	r10,r10,0,5,3 /* clear bit 4(0x08000000) */
-+	mtspr	SPRN_SRR1, r10
-+
-+	mfspr	r10, SPRN_M_TW	/* Restore registers */
-+	lwz	r11, 0(r0)
-+	mtcr	r11
-+	lwz	r11, 4(r0)
-+#ifdef CONFIG_8xx_CPU6
-+	lwz	r3, 8(r0)
-+#endif
-+	b	InstructionAccess
+Hmmm, the MPC5200B User's manual, sect. 9.7.3.3 LPC Rx/Tx FIFO Control =20
+Register (pg. 323) seems to imply that only 0 or 1 are valid settings =20
+here.  Where does the 7 come from?
 
- 	. = 0x1200
- DataStoreTLBMiss:
-@@ -428,10 +451,11 @@ DataStoreTLBMiss:
- 	 * set.  All other Linux PTE bits control the behavior
- 	 * of the MMU.
- 	 */
--2:	li	r11, 0x00f0
-+	li	r11, 0x00f0
- 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
- 	DO_8xx_CPU6(0x3d80, r3)
- 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
-+	mtspr	SPRN_DAR, r11		/* Tag DAR */
+[snip]
+> +			 * In the DMA read case, the DMA doesn't =20
+> complete,
+> +			 * possibly due to incorrect watermarks in the =20
+> ALARM
+> +			 * and CONTROL regs. For now instead of trying =20
+> to
+> +			 * determine the right watermarks that will =20
+> make this
+> +			 * work, just increase the number of bytes the =20
+> FIFO is
+> +			 * expecting.
 
- 	mfspr	r10, SPRN_M_TW	/* Restore registers */
- 	lwz	r11, 0(r0)
-@@ -441,7 +465,18 @@ DataStoreTLBMiss:
- 	lwz	r3, 8(r0)
- #endif
- 	rfi
-+2:
-+	li	r10, 0
-+	mtspr	SPRN_DSISR, r10 /* Clear all bits */
+My experience is that for reads I have to set a granularity of 0 (as =20
+you already do) *and* set the 'flush' bit in the SCLPC Control =20
+Register.  See the remarks for that bit in the MPC5200B User's manual, =20
+pg. 318.  With these settings and my driver, I made several tests =20
+reading blocks (in one Bestcomm operation) between 16 bytes and 2 =20
+MBytes, and *never* had any problem, so your remark here makes me =20
+somewhat nervous!
 
-+	mfspr	r10, SPRN_M_TW	/* Restore registers */
-+	lwz	r11, 0(r0)
-+	mtcr	r11
-+	lwz	r11, 4(r0)
-+#ifdef CONFIG_8xx_CPU6
-+	lwz	r3, 8(r0)
-+#endif
-+	b	DataAccess
- /* This is an instruction TLB error on the MPC8xx.  This could be due
-  * to many reasons, such as executing guarded memory or illegal instruction
-  * addresses.  There is nothing to do but handle a big time error fault.
-@@ -492,6 +527,8 @@ DataTLBError:
- 	 * assuming we only use the dcbi instruction on kernel addresses.
- 	 */
- 	mfspr	r10, SPRN_DAR
-+	cmpwi	cr0, r10, 0x00f0	/* check if DAR holds a tag */
-+	beq-	2f
- 	rlwinm	r11, r10, 0, 0, 19
- 	ori	r11, r11, MD_EVALID
- 	mfspr	r10, SPRN_M_CASID
-@@ -550,6 +587,7 @@ DataTLBError:
- 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
- 	DO_8xx_CPU6(0x3d80, r3)
- 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
-+	mtspr	SPRN_DAR, r11		/* Tag DAR */
+In my dma read tests, the watermark (LPC Rx/Tx FIFO Alarm Register) =20
+seems to have only a (small) performance impact.  If I set the =20
+watermark to 0 (i.e. fill the fifo completely), I *never* saw any =20
+under- or overruns.  My assumption is that the fifo would stop reading =20
+the peripheral when it is full, and only resume when Bestcomm emptied =20
+it at least partly.  You you know if that is really the case?
 
- 	mfspr	r10, SPRN_M_TW	/* Restore registers */
- 	lwz	r11, 0(r0)
+[snip]
+> +
+> +	bit_fields =3D req->cs << 24 | 0x000008;
+> +	if (!write)
+> +		bit_fields |=3D 0x010000; /* read mode */
+
+See above - should be "bit_fields |=3D 0x030000" IMHO...
+
+[snip]
+> +	/* Request the Bestcomm receive (fifo --> memory) task and IRQ =20
+> */
+> +	lpbfifo.bcom_rx_task =3D
+> +		bcom_gen_bd_rx_init(2, res.start + =20
+> LPBFIFO_REG_FIFO_DATA,
+> +				    BCOM_INITIATOR_SCLPC, =20
+> BCOM_IPR_SCLPC,
+> +				    16*1024*1024);
+
+Is the limit really correct?  The manual (sect. 9.7.2.1 SCLPC Packet =20
+Size Register, pg. 316) says the maximum packet size is 16 M - 1 byte.
+
+Cheers,
+Albrecht.
+
+--=-fnWOf/JbixxowXAZgfA8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQBKw6Svn/9unNAn/9ERAhndAJ9flh+b36w1tzmioazgvjXtlnGIwgCeM4j/
+qiGH3MGRvkAA6ytqQnF+90s=
+=v8H7
+-----END PGP SIGNATURE-----
+
+--=-fnWOf/JbixxowXAZgfA8--
