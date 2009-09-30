@@ -1,22 +1,19 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8C999B7B9C
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Oct 2009 01:46:55 +1000 (EST)
+Return-Path: <khali@linux-fr.org>
+Received: from poutre.nerim.net (poutre.nerim.net [62.4.16.124])
+	by ozlabs.org (Postfix) with ESMTP id E0E06B7BD0
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Oct 2009 01:57:47 +1000 (EST)
+Date: Wed, 30 Sep 2009 17:57:44 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [PATCH] sound: Don't assume i2c device probing always succeeds
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20090930170006.76e145ca@hyperion.delvare>
+Message-ID: <20090930175744.2ad791d3@hyperion.delvare>
+In-Reply-To: <1254323111.3959.6.camel@johannes.local>
 References: <20090930152542.3ef753ee@hyperion.delvare>
 	<s5hbpksy0yq.wl%tiwai@suse.de>
 	<20090930170006.76e145ca@hyperion.delvare>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-9nANDWYa+cju1uLBmJ/R"
-Date: Wed, 30 Sep 2009 17:05:11 +0200
-Message-Id: <1254323111.3959.6.camel@johannes.local>
+	<1254323111.3959.6.camel@johannes.local>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
 	alsa-devel@alsa-project.org, Tim Shepard <shep@alum.mit.edu>,
 	Jaroslav Kysela <perex@perex.cz>
@@ -29,42 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 30 Sep 2009 17:05:11 +0200, Johannes Berg wrote:
+> On Wed, 2009-09-30 at 17:00 +0200, Jean Delvare wrote:
+> 
+> > The NULL check of client->driver, if followed by a call to
+> > i2c_unregister_device(), would indeed be enough. But unlike the onyx
+> > driver which we know we sometimes load erroneously, the other drivers
+> > should never fail.
+> 
+> All of these drivers can be loaded manually and then fail though, or am
+> I misunderstanding something?
 
---=-9nANDWYa+cju1uLBmJ/R
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I don't think so. At least tas and keywest have checks before they
+attempt to instantiate an i2c client, which I think are reliable. The
+onyx case is different because apparently some machines have it but are
+difficult to detect:
 
-On Wed, 2009-09-30 at 17:00 +0200, Jean Delvare wrote:
+	/* if that didn't work, try desperate mode for older
+	 * machines that have stuff missing from the device tree */
 
-> The NULL check of client->driver, if followed by a call to
-> i2c_unregister_device(), would indeed be enough. But unlike the onyx
-> driver which we know we sometimes load erroneously, the other drivers
-> should never fail.
+And then we have to attempt to instantiate i2c devices at a not
+completely known address, and that may fail. I think this is the reason
+why onyx has this extra client->driver NULL check and the other two
+drivers do not.
 
-All of these drivers can be loaded manually and then fail though, or am
-I misunderstanding something?
+I would really love if someone with good knowledge of the device tree
+on mac would convert all these hacks to proper i2c device declarations.
+All the infrastructure is available already, but I don't know enough
+about open firmware and mac the device tree to do it myself.
 
-johannes
-
---=-9nANDWYa+cju1uLBmJ/R
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKw3OjAAoJEODzc/N7+QmamFMQAIK1ekBv4Oe7SMJtvy2ak7aS
-DN/+VauZYbxThtspvdWxHLhgd/y2iF+tjfyGJ5FYRFyA+mnZyOUislCQ2YJEH4Sn
-B84b6QVdi/ImxdujtzLlv1Kg1nr8y9QlLcgLkbQ2F/VXFTjmSkqVzlUp1WoMtgQN
-Pg3PWzPH+brgTkLbTMiz0DGIxt6LnhJ3H7JP6FfNFL2KISyfQD8ci5Zd0K9I5JHb
-Jvp2STrgEH5lvI0wq+aiIwQfme+9WCybLPFRhDuNFg0yCk3OwlPI51er6mFcV9Ml
-s8TwAQD5Z/4x+i30uu3oXixsvIvul48Yw1Pbafd5AQYFLAGiYLOIygjSyy98pxmh
-/hKmaDmtgDMXtCTrRSLFBArSDJyUuuQZ5XcOPW/zzHjGBcslt5ITyaCIlgfBoFyd
-6i6dtGhryV/KC0Iyol55WXG6v3M8imkb8x0s6jVTG05HTq/+vXnZg7Pgkf40RGle
-OGppvKTzHAo1BSj3ux0kXH1V8D29f0tVOIOg4NnTy//gl1XAv29cDxVK8Zfhik/u
-XYspooLVktwRoHAnOA5Lj1h6bCG6p83MJjRXZehRRPowzi9i307Qd2TMuxvzm2LE
-ioU+jcR7FJLISAO68S3NMqXKqtry3VN+76WeKTo9Sz/GOf0UaoNnPRMP5h90RRfG
-6zj41PIWvLhj5vvD/LHQ
-=9htZ
------END PGP SIGNATURE-----
-
---=-9nANDWYa+cju1uLBmJ/R--
+-- 
+Jean Delvare
