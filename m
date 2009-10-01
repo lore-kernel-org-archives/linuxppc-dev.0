@@ -2,17 +2,17 @@ Return-Path: <greg@kroah.com>
 Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0952EB7BC7
+	by ozlabs.org (Postfix) with ESMTPS id 19C9AB7BC9
 	for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2009 09:00:30 +1000 (EST)
 Subject: patch
 	powerpc-8xx-fix-regression-introduced-by-cache-coherency-rewrite.patch
-	added to 2.6.30-stable tree
+	added to 2.6.31-stable tree
 To: RFeany@mrv.com, benh@kernel.crashing.org, gregkh@suse.de,
 	linuxppc-dev@ozlabs.org, rfeany@mrv.com, stable@kernel.org
 From: <gregkh@suse.de>
-Date: Thu, 01 Oct 2009 15:51:50 -0700
+Date: Thu, 01 Oct 2009 15:46:48 -0700
 In-Reply-To: <1253776614.7103.434.camel@pasglop>
-Message-Id: <20091001225419.36AB14882C@coco.kroah.org>
+Message-Id: <20091001224944.60B5A48A4A@coco.kroah.org>
 Cc: stable@kernel.org, stable-commits@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,7 +28,7 @@ This is a note to let you know that we have just queued up the patch titled
 
     Subject: powerpc/8xx: Fix regression introduced by cache coherency rewrite
 
-to the 2.6.30-stable tree.  Its filename is
+to the 2.6.31-stable tree.  Its filename is
 
     powerpc-8xx-fix-regression-introduced-by-cache-coherency-rewrite.patch
 
@@ -98,7 +98,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 +#endif
 +
  	if (!PageReserved(page) && !test_bit(PG_arch_1, &page->flags)) {
- 		pr_debug("do_dcache_icache_coherency... flushing\n");
+ 		pr_devel("do_dcache_icache_coherency... flushing\n");
  		flush_dcache_icache_page(page);
 @@ -198,7 +211,7 @@ void set_pte_at(struct mm_struct *mm, un
  	 */
@@ -122,5 +122,5 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 Patches currently in stable-queue which might be from RFeany@mrv.com are
 
-queue-2.6.30/powerpc-8xx-fix-regression-introduced-by-cache-coherency-rewrite.patch
-queue-2.6.30/powerpc-fix-incorrect-setting-of-__have_arch_pte_special.patch
+queue-2.6.31/powerpc-8xx-fix-regression-introduced-by-cache-coherency-rewrite.patch
+queue-2.6.31/powerpc-fix-incorrect-setting-of-__have_arch_pte_special.patch
