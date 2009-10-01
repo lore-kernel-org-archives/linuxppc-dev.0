@@ -1,17 +1,11 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: 64bit kernel is huge
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20090928074503.GB16073@kryten>
-References: <20090928074503.GB16073@kryten>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-IE2dVYga3bboGJnIyw8k"
-Date: Thu, 01 Oct 2009 13:36:16 +1000
-Message-Id: <1254368176.11564.85.camel@concordia>
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: 64bit kernel is huge 
+In-reply-to: <5642.1254290487@neuling.org> 
+References: <20090928074503.GB16073@kryten> <5642.1254290487@neuling.org>
+Date: Thu, 01 Oct 2009 15:06:10 +1000
+Message-ID: <14112.1254373570@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,51 +16,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-IE2dVYga3bboGJnIyw8k
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> 2.6.28     8647080	1699460	 780472	11127012	a9c8e4
+> 2.6.27     7461663	1505796	 774400	9741859		94a623
 
-On Mon, 2009-09-28 at 17:45 +1000, Anton Blanchard wrote:
-> Hi,
->=20
-> I've found at least one machine that wont boot 2.6.31-rc* with a=20
-> pseries_defconfig. If I move real-base from 0xc00000 to 0xd00000 it
-> boots fine.
->=20
-> # size vmlinux
->    text	   data	    bss	    dec	    hex	filename
-> 9812942	1982496	1105228	12900666	 c4d93a	vmlinux
->=20
-> Looks like we blow right through the 12MB mark. It desperately needs to e=
-at
-> less and lose weight.
->=20
-> Here are some of the problem areas:
->=20
-> 131072  lppaca
-> 65536   paca
->=20
-> I think we've attacked these before, not sure if there is anything left
-> we can trim.
+If you compile 28 with the 27 pseries_config, you lose most of this
+1.2MB text bloat.
 
-Why can't we dynamically allocate all but one paca? I seem to recall
-Mikey tried it but it didn't work?
+If we remove just FUNCTION_TRACER and STACK_TRACER from 28 we gain back
+about 600K.
 
-And on !ISERIES we should be able to allocate the lppacas too I think,
-the HV doesn't know about them until register_vpa().
-
-cheers
-
---=-IE2dVYga3bboGJnIyw8k
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkrEI7AACgkQdSjSd0sB4dLUvQCfT/kla/9qLkiNNwScNiAPWHMJ
-Y0EAnjDHrarkqIdcAvJqbCduVLCMtbPU
-=9j1E
------END PGP SIGNATURE-----
-
---=-IE2dVYga3bboGJnIyw8k--
+Mikey
