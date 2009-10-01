@@ -1,34 +1,15 @@
-Return-Path: <rcjenn@austin.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 85800B7BD3
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2009 05:53:23 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n91JqFwf007713
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Oct 2009 13:52:15 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n91JrDOf187672
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Oct 2009 13:53:14 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n91JrCBf008177
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Oct 2009 13:53:13 -0600
-Date: Thu, 1 Oct 2009 14:53:11 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 1/2] mm: add notifier in pageblock isolation for balloon
-	drivers
-Message-ID: <20091001195311.GA16667@austin.ibm.com>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by ozlabs.org (Postfix) with ESMTP id 3B76BB7BD5
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2009 05:55:40 +1000 (EST)
+Date: Thu, 01 Oct 2009 21:55:38 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: [PATCH] powerpc/5200: make BestComm gen_bd microcode exchangeable
+To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org
+Message-Id: <1254426938.3252.1@antares>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-XWelNosOMeK8XhYuNugS"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,187 +19,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Memory balloon drivers can allocate a large amount of memory which
-is not movable but could be freed to accommodate memory hotplug remove.
+--=-XWelNosOMeK8XhYuNugS
+Content-Type: text/plain; charset=ISO-8859-1; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Prior to calling the memory hotplug notifier chain the memory in the
-pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
-isolation will not proceed, causing the memory removal for that page
-range to fail.
+This patch adds a method for defining different microcodes than the =20
+pe-defined ones for the MPC52xx processor's BestComm General Buffer =20
+Descriptor (gen_db) tasks.  The default microcode is still the one from =20
+bcom_gen_bd_[rt]x_task, but it can be replaced by calling =20
+bcom_gen_bd_set_microcode() which is more efficient than explicitly =20
+loading it via bcom_load_image() after each bcom_gen_bd_[rt]x_reset().
 
-Rather than immediately failing pageblock isolation if the the
-migrateteype is not MIGRATE_MOVABLE, this patch checks if all of the
-pages in the pageblock are owned by a registered balloon driver using a
-notifier chain.  If all of the non-movable pages are owned by a balloon,
-they can be freed later through the memory notifier chain and the range
-can still be isolated in set_migratetype_isolate().
+Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
 ---
- drivers/base/memory.c  |   19 +++++++++++++++++++
- include/linux/memory.h |   22 ++++++++++++++++++++++
- mm/page_alloc.c        |   49 +++++++++++++++++++++++++++++++++++++++++--------
- 3 files changed, 82 insertions(+), 8 deletions(-)
 
-Index: b/drivers/base/memory.c
-===================================================================
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
- }
- EXPORT_SYMBOL(unregister_memory_notifier);
- 
-+static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
-+
-+int register_memory_isolate_notifier(struct notifier_block *nb)
+
+diff -uprN -X linux-2.6.30.3/Documentation/dontdiff =20
+linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.c =20
+linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.c
+--- linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.c	=20
+2009-07-24 23:47:51.000000000 +0200
++++ linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.c	=20
+2009-10-01 14:26:33.000000000 +0200
+@@ -78,6 +78,7 @@ struct bcom_gen_bd_priv {
+  	int		initiator;
+  	int		ipr;
+  	int		maxbufsize;
++	u32    *microcode;
+  };
+
+
+@@ -104,6 +105,7 @@ bcom_gen_bd_rx_init(int queue_len, phys_
+  	priv->initiator	=3D initiator;
+  	priv->ipr	=3D ipr;
+  	priv->maxbufsize =3D maxbufsize;
++	priv->microcode =3D bcom_gen_bd_rx_task;
+
+  	if (bcom_gen_bd_rx_reset(tsk)) {
+  		bcom_task_free(tsk);
+@@ -128,7 +130,7 @@ bcom_gen_bd_rx_reset(struct bcom_task *t
+  	var =3D (struct bcom_gen_bd_rx_var *) bcom_task_var(tsk->tasknum);
+  	inc =3D (struct bcom_gen_bd_rx_inc *) bcom_task_inc(tsk->tasknum);
+
+-	if (bcom_load_image(tsk->tasknum, bcom_gen_bd_rx_task))
++	if (bcom_load_image(tsk->tasknum, priv->microcode))
+  		return -1;
+
+  	var->enable	=3D bcom_eng->regs_base +
+@@ -188,6 +190,7 @@ bcom_gen_bd_tx_init(int queue_len, phys_
+  	priv->fifo	=3D fifo;
+  	priv->initiator	=3D initiator;
+  	priv->ipr	=3D ipr;
++	priv->microcode =3D bcom_gen_bd_tx_task;
+
+  	if (bcom_gen_bd_tx_reset(tsk)) {
+  		bcom_task_free(tsk);
+@@ -212,7 +215,7 @@ bcom_gen_bd_tx_reset(struct bcom_task *t
+  	var =3D (struct bcom_gen_bd_tx_var *) bcom_task_var(tsk->tasknum);
+  	inc =3D (struct bcom_gen_bd_tx_inc *) bcom_task_inc(tsk->tasknum);
+
+-	if (bcom_load_image(tsk->tasknum, bcom_gen_bd_tx_task))
++	if (bcom_load_image(tsk->tasknum, priv->microcode))
+  		return -1;
+
+  	var->enable	=3D bcom_eng->regs_base +
+@@ -253,6 +256,16 @@ bcom_gen_bd_tx_release(struct bcom_task
+  }
+  EXPORT_SYMBOL_GPL(bcom_gen_bd_tx_release);
+
++void
++bcom_gen_bd_set_microcode(struct bcom_task *tsk, u32 *microcode)
 +{
-+	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
++	struct bcom_gen_bd_priv *priv =3D tsk->priv;
++
++	priv->microcode =3D microcode;
 +}
-+EXPORT_SYMBOL(register_memory_isolate_notifier);
++EXPORT_SYMBOL_GPL(bcom_gen_bd_set_microcode);
 +
-+void unregister_memory_isolate_notifier(struct notifier_block *nb)
-+{
-+	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
-+}
-+EXPORT_SYMBOL(unregister_memory_isolate_notifier);
 +
- /*
-  * register_memory - Setup a sysfs device for a memory block
-  */
-@@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
- 	return blocking_notifier_call_chain(&memory_chain, val, v);
- }
- 
-+int memory_isolate_notify(unsigned long val, void *v)
-+{
-+	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
-+}
+  /* =20
+---------------------------------------------------------------------
+   * PSC support code
+   */
+diff -uprN -X linux-2.6.30.3/Documentation/dontdiff =20
+linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.h =20
+linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.h
+--- linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.h	=20
+2009-07-24 23:47:51.000000000 +0200
++++ linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.h	=20
+2009-10-01 14:26:50.000000000 +0200
+@@ -43,6 +43,9 @@ bcom_gen_bd_tx_reset(struct bcom_task *t
+  extern void
+  bcom_gen_bd_tx_release(struct bcom_task *tsk);
+
++extern void
++bcom_gen_bd_set_microcode(struct bcom_task *tsk, u32 *microcode);
 +
- /*
-  * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
-  * OK to have direct references to sparsemem variables in here.
-Index: b/include/linux/memory.h
-===================================================================
---- a/include/linux/memory.h
-+++ b/include/linux/memory.h
-@@ -50,6 +50,14 @@ struct memory_notify {
- 	int status_change_nid;
- };
- 
-+#define MEM_ISOLATE_COUNT	(1<<0)
-+
-+struct memory_isolate_notify {
-+	unsigned long start_addr;
-+	unsigned int nr_pages;
-+	unsigned int pages_found;
-+};
-+
- struct notifier_block;
- struct mem_section;
- 
-@@ -76,14 +84,28 @@ static inline int memory_notify(unsigned
- {
- 	return 0;
- }
-+static inline int register_memory_isolate_notifier(struct notifier_block *nb)
-+{
-+	return 0;
-+}
-+static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
-+{
-+}
-+static inline int memory_isolate_notify(unsigned long val, void *v)
-+{
-+	return 0;
-+}
- #else
- extern int register_memory_notifier(struct notifier_block *nb);
- extern void unregister_memory_notifier(struct notifier_block *nb);
-+extern int register_memory_isolate_notifier(struct notifier_block *nb);
-+extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
- extern int register_new_memory(int, struct mem_section *);
- extern int unregister_memory_section(struct mem_section *);
- extern int memory_dev_init(void);
- extern int remove_memory_block(unsigned long, struct mem_section *, int);
- extern int memory_notify(unsigned long val, void *v);
-+extern int memory_isolate_notify(unsigned long val, void *v);
- extern struct memory_block *find_memory_block(struct mem_section *);
- #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
- enum mem_add_context { BOOT, HOTPLUG };
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -48,6 +48,7 @@
- #include <linux/page_cgroup.h>
- #include <linux/debugobjects.h>
- #include <linux/kmemleak.h>
-+#include <linux/memory.h>
- #include <trace/events/kmem.h>
- 
- #include <asm/tlbflush.h>
-@@ -4985,23 +4986,55 @@ void set_pageblock_flags_group(struct pa
- int set_migratetype_isolate(struct page *page)
- {
- 	struct zone *zone;
--	unsigned long flags;
-+	unsigned long flags, pfn, iter;
-+	long immobile = 0;
-+	struct memory_isolate_notify arg;
-+	int notifier_ret;
- 	int ret = -EBUSY;
- 	int zone_idx;
- 
- 	zone = page_zone(page);
- 	zone_idx = zone_idx(zone);
-+
-+	pfn = page_to_pfn(page);
-+	arg.start_addr = (unsigned long)page_address(page);
-+	arg.nr_pages = pageblock_nr_pages;
-+	arg.pages_found = 0;
-+
- 	spin_lock_irqsave(&zone->lock, flags);
- 	/*
- 	 * In future, more migrate types will be able to be isolation target.
- 	 */
--	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
--	    zone_idx != ZONE_MOVABLE)
--		goto out;
--	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
--	move_freepages_block(zone, page, MIGRATE_ISOLATE);
--	ret = 0;
--out:
-+	do {
-+		if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE &&
-+		    zone_idx == ZONE_MOVABLE) {
-+			ret = 0;
-+			break;
-+		}
-+
-+		/*
-+		 * If all of the pages in a zone are used by a balloon,
-+		 * the range can be still be isolated.  The balloon will
-+		 * free these pages from the memory notifier chain.
-+		 */
-+		notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
-+		notifier_ret = notifier_to_errno(ret);
-+		if (notifier_ret || !arg.pages_found)
-+			break;
-+
-+		for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
-+			if (page_count(pfn_to_page(iter)))
-+				immobile++;
-+
-+		if (arg.pages_found == immobile)
-+			ret = 0;
-+	} while (0);
-+
-+	if (!ret) {
-+		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
-+		move_freepages_block(zone, page, MIGRATE_ISOLATE);
-+	}
-+
- 	spin_unlock_irqrestore(&zone->lock, flags);
- 	if (!ret)
- 		drain_all_pages();
+
+  /* PSC support utility wrappers */
+  struct bcom_task * bcom_psc_gen_bd_rx_init(unsigned psc_num, int =20
+queue_len,
+
+
+--=-XWelNosOMeK8XhYuNugS
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQBKxQk6n/9unNAn/9ERAsliAJ9EB0wuoI5JiYALQ/RRjH2LvaEdrgCeIA/g
+4AhZZ0E31anCfUkhJ7JBYgU=
+=TU2a
+-----END PGP SIGNATURE-----
+
+--=-XWelNosOMeK8XhYuNugS--
