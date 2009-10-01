@@ -2,17 +2,17 @@ Return-Path: <greg@kroah.com>
 Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 02AB6B7BC5
+	by ozlabs.org (Postfix) with ESMTPS id 028F0B7BB3
 	for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2009 09:00:30 +1000 (EST)
 Subject: patch powerpc-fix-incorrect-setting-of-__have_arch_pte_special.patch
-	added to 2.6.31-stable tree
+	added to 2.6.30-stable tree
 To: Bernhard.Weirich@riedel.net, benh@kernel.crashing.org,
 	bernhard.weirich@riedel.net, gregkh@suse.de,
 	linuxppc-dev@ozlabs.org, stable@kernel.org
 From: <gregkh@suse.de>
-Date: Thu, 01 Oct 2009 15:46:48 -0700
+Date: Thu, 01 Oct 2009 15:51:50 -0700
 In-Reply-To: <1253776613.7103.433.camel@pasglop>
-Message-Id: <20091001224943.74C4E48A48@coco.kroah.org>
+Message-Id: <20091001225418.41F82487FF@coco.kroah.org>
 Cc: stable@kernel.org, stable-commits@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,7 +28,7 @@ This is a note to let you know that we have just queued up the patch titled
 
     Subject: powerpc: Fix incorrect setting of __HAVE_ARCH_PTE_SPECIAL
 
-to the 2.6.31-stable tree.  Its filename is
+to the 2.6.30-stable tree.  Its filename is
 
     powerpc-fix-incorrect-setting-of-__have_arch_pte_special.patch
 
@@ -80,4 +80,4 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 Patches currently in stable-queue which might be from Bernhard.Weirich@riedel.net are
 
-queue-2.6.31/powerpc-fix-incorrect-setting-of-__have_arch_pte_special.patch
+queue-2.6.30/powerpc-fix-incorrect-setting-of-__have_arch_pte_special.patch
