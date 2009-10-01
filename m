@@ -1,18 +1,34 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
-	by ozlabs.org (Postfix) with ESMTP id B1AA5B7BB4
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2009 05:31:35 +1000 (EST)
-Date: Thu, 01 Oct 2009 21:31:25 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH] powerpc/5200: add LocalPlus bus FIFO device driver
-To: John Bonesio <bones@secretlab.ca>
-In-Reply-To: <1254422721.689.0.camel@riker> (from bones@secretlab.ca on Thu
-	Oct  1 20:45:21 2009)
-Message-Id: <1254425492.3252.0@antares>
+Return-Path: <rcjenn@austin.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 85800B7BD3
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2009 05:53:23 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n91JqFwf007713
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Oct 2009 13:52:15 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n91JrDOf187672
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Oct 2009 13:53:14 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n91JrCBf008177
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Oct 2009 13:53:13 -0600
+Date: Thu, 1 Oct 2009 14:53:11 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: [PATCH 1/2] mm: add notifier in pageblock isolation for balloon
+	drivers
+Message-ID: <20091001195311.GA16667@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=PGP-SHA1; boundary="=-BiIDt2cqqBH1MvntAwZU"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,75 +38,187 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-BiIDt2cqqBH1MvntAwZU
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Memory balloon drivers can allocate a large amount of memory which
+is not movable but could be freed to accommodate memory hotplug remove.
 
-Hi John:
+Prior to calling the memory hotplug notifier chain the memory in the
+pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
+isolation will not proceed, causing the memory removal for that page
+range to fail.
 
-Am 01.10.09 20:45 schrieb(en) John Bonesio:
-> Nowhere in the text does it say 0 and 1 are the only possible values. =20
-> And since GR is a 3 bit field instead of a 1 bit field, that implied =20
-> that to me that other values are allowed.
->=20
-> I can see how one could read the text as saying 0 and 1 are the only =20
-> values allowed. However, empirical the testing I've done, seems to =20
-> indicate that the '7' is a valid value, as it produced different =20
-> behavior than 1.
+Rather than immediately failing pageblock isolation if the the
+migrateteype is not MIGRATE_MOVABLE, this patch checks if all of the
+pages in the pageblock are owned by a registered balloon driver using a
+notifier chain.  If all of the non-movable pages are owned by a balloon,
+they can be freed later through the memory notifier chain and the range
+can still be isolated in set_migratetype_isolate().
 
-Thanks for the clarification!
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-> I've put in the suggested change to set the 'flush' bit. It didn't =20
-> seem to help. I'm not sure what else might be different between my =20
-> system and yours.
+---
+ drivers/base/memory.c  |   19 +++++++++++++++++++
+ include/linux/memory.h |   22 ++++++++++++++++++++++
+ mm/page_alloc.c        |   49 +++++++++++++++++++++++++++++++++++++++++--------
+ 3 files changed, 82 insertions(+), 8 deletions(-)
 
-My board is a self-designed one, roughly Icecube-based, with a 5200B.  =20
-The peripheral (actually a second processor) is attached in 16-bit mode =20
-to the LPB.  The main data flow goes to the 5200, so I have only a task =20
-for reading data.  As the block transfer is only one part (but with a =20
-huge block size) in a transaction, I allocate only one block for the =20
-task, i.e. I call bcom_gen_bd_rx_init(1, ...).
-
-The transaction size is always a multiple of 4 bytes, and I use the =20
-same value for the FIFO packet size and struct bcom_bd::status.  In the =20
-Control reg, I set CS, BPT=3D4, DAI, RWb and Flush.  I can isolate the =20
-code launching Bestcomm if you're interested.
-
-I ran some further tests today, which are a little confusing...
-
-When a Bestcomm IRQ arrives, the call to bcom_buffer_done() (in the =20
-isr) will always return 0.  If I just ignore that, and call =20
-bcom_retrieve_buffer() anyway, the status value will also be 0.  =20
-However, the data block is transferred completely, and it is correct (I =20
-separately transmit a crc32, which matches, and the data block itself =20
-looks fine).  Actually, I'm not really sure what this means...
-
-BTW, I noticed that the Bestcomm IRQ arrives *before* the FIFO IRQ, =20
-which IMHO is a little unlogical.  It may be a result of setting the =20
-granularity to 0 and the FIFO Alarm level to 4 (which should trigger =20
-Bestcomm only if one u32 is free in the FIFO - is that correct?  At =20
-least the drawing on Pg. 11 in Freescale's AN2604 implies that.).
-
-> We were testing using the Bestcomm on a framebuffer to refresh the =20
-> display. Without the watermarks, the DMA was getting clogged.
-
-I see.  In my case, only the /overall/ time and cpu load for the =20
-transaction are critical, and there I didn't notice significant =20
-differences.
-
-Cheers,
-Albrecht.
-
---=-BiIDt2cqqBH1MvntAwZU
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBKxQOUn/9unNAn/9ERAgJ3AJ9LswVMDDt+d5WZGFPE/g841ZkBMQCeM0Td
-9PthTN8Hy/WyzMT/LBV6cRs=
-=NIhI
------END PGP SIGNATURE-----
-
---=-BiIDt2cqqBH1MvntAwZU--
+Index: b/drivers/base/memory.c
+===================================================================
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
+ }
+ EXPORT_SYMBOL(unregister_memory_notifier);
+ 
++static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
++
++int register_memory_isolate_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
++}
++EXPORT_SYMBOL(register_memory_isolate_notifier);
++
++void unregister_memory_isolate_notifier(struct notifier_block *nb)
++{
++	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
++}
++EXPORT_SYMBOL(unregister_memory_isolate_notifier);
++
+ /*
+  * register_memory - Setup a sysfs device for a memory block
+  */
+@@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
+ 	return blocking_notifier_call_chain(&memory_chain, val, v);
+ }
+ 
++int memory_isolate_notify(unsigned long val, void *v)
++{
++	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
++}
++
+ /*
+  * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
+  * OK to have direct references to sparsemem variables in here.
+Index: b/include/linux/memory.h
+===================================================================
+--- a/include/linux/memory.h
++++ b/include/linux/memory.h
+@@ -50,6 +50,14 @@ struct memory_notify {
+ 	int status_change_nid;
+ };
+ 
++#define MEM_ISOLATE_COUNT	(1<<0)
++
++struct memory_isolate_notify {
++	unsigned long start_addr;
++	unsigned int nr_pages;
++	unsigned int pages_found;
++};
++
+ struct notifier_block;
+ struct mem_section;
+ 
+@@ -76,14 +84,28 @@ static inline int memory_notify(unsigned
+ {
+ 	return 0;
+ }
++static inline int register_memory_isolate_notifier(struct notifier_block *nb)
++{
++	return 0;
++}
++static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
++{
++}
++static inline int memory_isolate_notify(unsigned long val, void *v)
++{
++	return 0;
++}
+ #else
+ extern int register_memory_notifier(struct notifier_block *nb);
+ extern void unregister_memory_notifier(struct notifier_block *nb);
++extern int register_memory_isolate_notifier(struct notifier_block *nb);
++extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
+ extern int register_new_memory(int, struct mem_section *);
+ extern int unregister_memory_section(struct mem_section *);
+ extern int memory_dev_init(void);
+ extern int remove_memory_block(unsigned long, struct mem_section *, int);
+ extern int memory_notify(unsigned long val, void *v);
++extern int memory_isolate_notify(unsigned long val, void *v);
+ extern struct memory_block *find_memory_block(struct mem_section *);
+ #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+ enum mem_add_context { BOOT, HOTPLUG };
+Index: b/mm/page_alloc.c
+===================================================================
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -48,6 +48,7 @@
+ #include <linux/page_cgroup.h>
+ #include <linux/debugobjects.h>
+ #include <linux/kmemleak.h>
++#include <linux/memory.h>
+ #include <trace/events/kmem.h>
+ 
+ #include <asm/tlbflush.h>
+@@ -4985,23 +4986,55 @@ void set_pageblock_flags_group(struct pa
+ int set_migratetype_isolate(struct page *page)
+ {
+ 	struct zone *zone;
+-	unsigned long flags;
++	unsigned long flags, pfn, iter;
++	long immobile = 0;
++	struct memory_isolate_notify arg;
++	int notifier_ret;
+ 	int ret = -EBUSY;
+ 	int zone_idx;
+ 
+ 	zone = page_zone(page);
+ 	zone_idx = zone_idx(zone);
++
++	pfn = page_to_pfn(page);
++	arg.start_addr = (unsigned long)page_address(page);
++	arg.nr_pages = pageblock_nr_pages;
++	arg.pages_found = 0;
++
+ 	spin_lock_irqsave(&zone->lock, flags);
+ 	/*
+ 	 * In future, more migrate types will be able to be isolation target.
+ 	 */
+-	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
+-	    zone_idx != ZONE_MOVABLE)
+-		goto out;
+-	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+-	move_freepages_block(zone, page, MIGRATE_ISOLATE);
+-	ret = 0;
+-out:
++	do {
++		if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE &&
++		    zone_idx == ZONE_MOVABLE) {
++			ret = 0;
++			break;
++		}
++
++		/*
++		 * If all of the pages in a zone are used by a balloon,
++		 * the range can be still be isolated.  The balloon will
++		 * free these pages from the memory notifier chain.
++		 */
++		notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
++		notifier_ret = notifier_to_errno(ret);
++		if (notifier_ret || !arg.pages_found)
++			break;
++
++		for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
++			if (page_count(pfn_to_page(iter)))
++				immobile++;
++
++		if (arg.pages_found == immobile)
++			ret = 0;
++	} while (0);
++
++	if (!ret) {
++		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
++		move_freepages_block(zone, page, MIGRATE_ISOLATE);
++	}
++
+ 	spin_unlock_irqrestore(&zone->lock, flags);
+ 	if (!ret)
+ 		drain_all_pages();
