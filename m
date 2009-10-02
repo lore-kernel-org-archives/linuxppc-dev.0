@@ -1,24 +1,33 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 058C5B7B8F
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2009 20:54:19 +1000 (EST)
-Date: Fri, 2 Oct 2009 11:44:25 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] mm: add notifier in pageblock isolation for
-	balloon drivers
-Message-ID: <20091002104425.GN21906@csn.ul.ie>
-References: <20091001195311.GA16667@austin.ibm.com>
+	by ozlabs.org (Postfix) with ESMTPS id EBCA2B7BDA
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2009 23:06:59 +1000 (EST)
+In-Reply-To: <1254350159.5699.21.camel@pasglop>
+References: <1253843480.7103.492.camel@pasglop>	
+	<OF1870F4D5.BB673882-ONC1257640.00233638-C1257640.00236DC9@transmode.se>
+	<1254208057.5771.7.camel@pasglop>	
+	<OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>
+	<1254212198.5256.0.camel@pasglop>	
+	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
+	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>	
+	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
+	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
+	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>	
+	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
+	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
+	<1254350159.5699.21.camel@pasglop>
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
+	rewrite
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF2FCFEA43.75290607-ONC1257643.0047C81F-C1257643.0048036B@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Fri, 2 Oct 2009 15:06:34 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20091001195311.GA16667@austin.ibm.com>
+Content-type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,236 +37,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 01, 2009 at 02:53:11PM -0500, Robert Jennings wrote:
-> Memory balloon drivers can allocate a large amount of memory which
-> is not movable but could be freed to accommodate memory hotplug remove.
-> 
-> Prior to calling the memory hotplug notifier chain the memory in the
-> pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
-> isolation will not proceed, causing the memory removal for that page
-> range to fail.
-> 
-> Rather than immediately failing pageblock isolation if the the
-> migrateteype is not MIGRATE_MOVABLE, this patch checks if all of the
-> pages in the pageblock are owned by a registered balloon driver using a
-> notifier chain.  If all of the non-movable pages are owned by a balloon,
-> they can be freed later through the memory notifier chain and the range
-> can still be isolated in set_migratetype_isolate().
-> 
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-> 
-> ---
->  drivers/base/memory.c  |   19 +++++++++++++++++++
->  include/linux/memory.h |   22 ++++++++++++++++++++++
->  mm/page_alloc.c        |   49 +++++++++++++++++++++++++++++++++++++++++--------
->  3 files changed, 82 insertions(+), 8 deletions(-)
-> 
-> Index: b/drivers/base/memory.c
-> ===================================================================
-> --- a/drivers/base/memory.c
-> +++ b/drivers/base/memory.c
-> @@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
->  }
->  EXPORT_SYMBOL(unregister_memory_notifier);
->  
-> +static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
-> +
-> +int register_memory_isolate_notifier(struct notifier_block *nb)
-> +{
-> +	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
-> +}
-> +EXPORT_SYMBOL(register_memory_isolate_notifier);
-> +
-> +void unregister_memory_isolate_notifier(struct notifier_block *nb)
-> +{
-> +	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
-> +}
-> +EXPORT_SYMBOL(unregister_memory_isolate_notifier);
-> +
->  /*
->   * register_memory - Setup a sysfs device for a memory block
->   */
-> @@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
->  	return blocking_notifier_call_chain(&memory_chain, val, v);
->  }
->  
-> +int memory_isolate_notify(unsigned long val, void *v)
-> +{
-> +	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
-> +}
-> +
->  /*
->   * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
->   * OK to have direct references to sparsemem variables in here.
-> Index: b/include/linux/memory.h
-> ===================================================================
-> --- a/include/linux/memory.h
-> +++ b/include/linux/memory.h
-> @@ -50,6 +50,14 @@ struct memory_notify {
->  	int status_change_nid;
->  };
->  
-> +#define MEM_ISOLATE_COUNT	(1<<0)
-> +
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 01/10/2009 00:35:59:
+>
+>
+> > > Had a look at linus tree and there is something I don't understand.
+> > > Your fix, e0908085fc2391c85b85fb814ae1df377c8e0dcb, fixes a problem
+> > > that was introduced by 8d30c14cab30d405a05f2aaceda1e9ad57800f36 but
+> > > 8d30c14cab30d405a05f2aaceda1e9ad57800f36 was included in .31 and .31
+> > > works and top of tree does not, how can that be?
+> > >
+> > > To me it seems more likely that some mm change introduced between .31 and
+> > > top of tree is the culprit.
+> > > My patch addresses the problem described in the comment:
+> > > /* On 8xx, cache control instructions (particularly
+> > >  * "dcbst" from flush_dcache_icache) fault as write
+> > >  * operation if there is an unpopulated TLB entry
+> > >  * for the address in question. To workaround that,
+> > >  * we invalidate the TLB here, thus avoiding dcbst
+> > >  * misbehaviour.
+> > >  */
+> > > Now you are using this old fix to paper over some other bug or so I think.
+> >
+> > There is something fishy with the TLB status, looking into the mpc862 manual I
+> > don't see how it can work reliably. Need to dwell some more.
+> > Anyhow, I have incorporated some of my findings into a new patch,
+> > perhaps this will be the golden one?
+>
+> Well, I still wonder about what whole unpopulated entry business.
+>
+> >From what I can see, the TLB miss code will check _PAGE_PRESENT, and
+> when not set, it will -still- insert something into the TLB (unlike
+> all other CPU types that go straight to data access faults from there).
+>
+> So we end up populating with those unpopulated entries that will then
+> cause us to take a DSI (or ISI) instead of a TLB miss the next time
+> around ... and so we need to remove them once we do that, no ? IE. Once
+> we have actually put a valid PTE in.
+>
+> At least that's my understanding and why I believe we should always have
+> tlbil_va() in set_pte() and ptep_set_access_flags(), which boils down
+> in putting it into the 2 "filter" functions in the new code.
+>
+> Well.. actually, the ptep_set_access_flags() will already do a
+> flush_tlb_page_nohash() when the PTE is changed. So I suppose all we
+> really need here would be in set_pte_filter(), to do the same if we are
+> writing a PTE that has _PAGE_PRESENT, at least on 8xx.
+>
+> But just unconditionally doing a tlbil_va() in both the filter functions
+> shouldn't harm and also fix the problem, though Rex seems to indicate
+> that is not the case.
+>
+> Now, we -might- have something else broken on 8xx, hard to tell. You may
+> want to try to bisect, adding back the removed tlbil_va() as you go
+> backward, between .31 and upstream...
 
-This needs a comment explaining that that this is an action to count the
-number of pages within a range that have been isolated within a range of
-pages and not a default value for "nr_pages" in the next structure.
+Found something odd, perhaps Rex can test?
+I tested this on my old 2.4 and it worked well.
 
-> +struct memory_isolate_notify {
-> +	unsigned long start_addr;
-> +	unsigned int nr_pages;
-> +	unsigned int pages_found;
-> +};
+ Jocke
 
-Is there any particular reason you used virtual address of the mapped
-page instead of PFN? I am guessing at this point that the balloon driver
-is based on addresses but the code that populates the structure more
-commonly deals with PFNs. Outside of debugging code, page_address is
-rarely used in mm/page_alloc.c .
+>From dd0f213d51437bb48ff42c1c0e690f243266c133 Mon Sep 17 00:00:00 2001
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Fri, 2 Oct 2009 14:59:21 +0200
+Subject: [PATCH] powerpc, 8xx: DTLB Error must check for more errors.
 
-It's picky but it feels more natural to me to have the structure have
-start_pfn and nr_pages or start_addr and end_addr but not a mix of both.
+DataTLBError do only check for store op's. I think this
+is too narrow. Protection and and no translation errors
+needs to be checked too.
+---
+ arch/powerpc/kernel/head_8xx.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> +
->  struct notifier_block;
->  struct mem_section;
->  
-> @@ -76,14 +84,28 @@ static inline int memory_notify(unsigned
->  {
->  	return 0;
->  }
-> +static inline int register_memory_isolate_notifier(struct notifier_block *nb)
-> +{
-> +	return 0;
-> +}
-> +static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
-> +{
-> +}
-> +static inline int memory_isolate_notify(unsigned long val, void *v)
-> +{
-> +	return 0;
-> +}
->  #else
->  extern int register_memory_notifier(struct notifier_block *nb);
->  extern void unregister_memory_notifier(struct notifier_block *nb);
-> +extern int register_memory_isolate_notifier(struct notifier_block *nb);
-> +extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
->  extern int register_new_memory(int, struct mem_section *);
->  extern int unregister_memory_section(struct mem_section *);
->  extern int memory_dev_init(void);
->  extern int remove_memory_block(unsigned long, struct mem_section *, int);
->  extern int memory_notify(unsigned long val, void *v);
-> +extern int memory_isolate_notify(unsigned long val, void *v);
->  extern struct memory_block *find_memory_block(struct mem_section *);
->  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
->  enum mem_add_context { BOOT, HOTPLUG };
-> Index: b/mm/page_alloc.c
-> ===================================================================
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -48,6 +48,7 @@
->  #include <linux/page_cgroup.h>
->  #include <linux/debugobjects.h>
->  #include <linux/kmemleak.h>
-> +#include <linux/memory.h>
->  #include <trace/events/kmem.h>
->  
->  #include <asm/tlbflush.h>
-> @@ -4985,23 +4986,55 @@ void set_pageblock_flags_group(struct pa
->  int set_migratetype_isolate(struct page *page)
->  {
->  	struct zone *zone;
-> -	unsigned long flags;
-> +	unsigned long flags, pfn, iter;
-> +	long immobile = 0;
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 52ff8c5..ef8a5ce 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -472,7 +472,7 @@ DataTLBError:
+ 	/* First, make sure this was a store operation.
+ 	*/
+ 	mfspr	r10, SPRN_DSISR
+-	andis.	r11, r10, 0x0200	/* If set, indicates store op */
++	andis.	r11, r10, 0x4a00 /* If set, store, protection or no trans. */
+ 	beq	2f
 
-So, the count in the structure is unsigned long, but long here. Why the
-difference in types?
-
-> +	struct memory_isolate_notify arg;
-> +	int notifier_ret;
->  	int ret = -EBUSY;
->  	int zone_idx;
->  
->  	zone = page_zone(page);
->  	zone_idx = zone_idx(zone);
-> +
-> +	pfn = page_to_pfn(page);
-> +	arg.start_addr = (unsigned long)page_address(page);
-> +	arg.nr_pages = pageblock_nr_pages;
-> +	arg.pages_found = 0;
-> +
->  	spin_lock_irqsave(&zone->lock, flags);
->  	/*
->  	 * In future, more migrate types will be able to be isolation target.
->  	 */
-> -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
-> -	    zone_idx != ZONE_MOVABLE)
-> -		goto out;
-> -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
-> -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
-> -	ret = 0;
-> -out:
-> +	do {
-> +		if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE &&
-> +		    zone_idx == ZONE_MOVABLE) {
-
-So, this condition requires the zone be MOVABLE and the migrate type
-be movable. That prevents MIGRATE_RESERVE regions in ZONE_MOVABLE being
-off-lined even though they can likely be off-lined. It also prevents
-MIGRATE_MOVABLE sections in other zones being off-lined.
-
-Did you mean || here instead of && ?
-
-Might want to expand the comment explaining this condition instead of
-leaving it in the old location which is confusing.
-
-> +			ret = 0;
-> +			break;
-> +		}
-
-Why do you wrap all this in a do {} while(0)  instead of preserving the
-out: label and using goto?
-
-> +
-> +		/*
-> +		 * If all of the pages in a zone are used by a balloon,
-> +		 * the range can be still be isolated.  The balloon will
-> +		 * free these pages from the memory notifier chain.
-> +		 */
-> +		notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
-> +		notifier_ret = notifier_to_errno(ret);
-> +		if (notifier_ret || !arg.pages_found)
-> +			break;
-> +
-> +		for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
-> +			if (page_count(pfn_to_page(iter)))
-> +				immobile++;
-> +
-> +		if (arg.pages_found == immobile)
-
-and here you compare a signed with an unsigned type. Probably harmless
-but why do it?
-
-> +			ret = 0;
-> +	} while (0);
-> +
-
-So the out label would go here and you'd get rid of the do {} while(0)
-loop.
-
-> +	if (!ret) {
-> +		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
-> +		move_freepages_block(zone, page, MIGRATE_ISOLATE);
-> +	}
-> +
->  	spin_unlock_irqrestore(&zone->lock, flags);
->  	if (!ret)
->  		drain_all_pages();
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+ 	/* The EA of a data TLB miss is automatically stored in the MD_EPN
+--
+1.6.4.4
