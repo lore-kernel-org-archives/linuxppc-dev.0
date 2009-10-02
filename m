@@ -1,24 +1,37 @@
-Return-Path: <gknispel@proformatique.com>
-Received: from mx1.corp.proformatique.com (gon.proformatique.com
-	[91.194.178.5])
+Return-Path: <rcjenn@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.corp.proformatique.com",
-	Issuer "Proformatique CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7FF9EB7BDB
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 04:21:31 +1000 (EST)
-Date: Fri, 2 Oct 2009 20:08:48 +0200
-From: Guillaume Knispel <gknispel@proformatique.com>
-To: Michael Barkowski <michaelbarkowski@ruggedcom.com>
-Subject: Re: Is volatile always verboten for FSL QE structures?
-Message-ID: <20091002200848.06be4c5a@xilun.lan.proformatique.com>
-In-Reply-To: <4AC63112.7080404@ruggedcom.com>
-References: <4AC60AD8.8030509@ruggedcom.com> <4AC61247.1030507@freescale.com>
-	<C3FE6281-04FA-48B3-96EA-D6E68AF65D6B@kernel.crashing.org>
-	<4AC63112.7080404@ruggedcom.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Guillaume Knispel <gknispel@proformatique.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 48A8DB7BE5
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 04:31:51 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n92IOSit023775
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Oct 2009 14:24:28 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n92IVmxm229180
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Oct 2009 14:31:48 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n92ISQmD015100
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Oct 2009 14:28:28 -0400
+Date: Fri, 2 Oct 2009 13:31:45 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 1/2] mm: add notifier in pageblock isolation for
+	balloon drivers
+Message-ID: <20091002183145.GA4908@austin.ibm.com>
+References: <20091001195311.GA16667@austin.ibm.com>
+	<4AC520B5.9080600@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4AC520B5.9080600@austin.ibm.com>
+Cc: linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +41,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Barkowski wrote:
+* Nathan Fontenot (nfont@austin.ibm.com) wrote:
+> Robert Jennings wrote:
+>> Memory balloon drivers can allocate a large amount of memory which
+>> is not movable but could be freed to accommodate memory hotplug remove.
+>>
+>> Prior to calling the memory hotplug notifier chain the memory in the
+>> pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
+>> isolation will not proceed, causing the memory removal for that page
+>> range to fail.
+>>
+>> Rather than immediately failing pageblock isolation if the the
+>> migrateteype is not MIGRATE_MOVABLE, this patch checks if all of the
+>> pages in the pageblock are owned by a registered balloon driver using a
+>> notifier chain.  If all of the non-movable pages are owned by a balloon,
+>> they can be freed later through the memory notifier chain and the range
+>> can still be isolated in set_migratetype_isolate().
+>>
+>> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+>>
+>> ---
+>>  drivers/base/memory.c  |   19 +++++++++++++++++++
+>>  include/linux/memory.h |   22 ++++++++++++++++++++++
+>>  mm/page_alloc.c        |   49 +++++++++++++++++++++++++++++++++++++++++--------
+>>  3 files changed, 82 insertions(+), 8 deletions(-)
+>>
+<snip>
+>> Index: b/mm/page_alloc.c
+>> ===================================================================
+>> --- a/mm/page_alloc.c
+>> +++ b/mm/page_alloc.c
+>> @@ -48,6 +48,7 @@
+>>  #include <linux/page_cgroup.h>
+>>  #include <linux/debugobjects.h>
+>>  #include <linux/kmemleak.h>
+>> +#include <linux/memory.h>
+>>  #include <trace/events/kmem.h>
+>>   #include <asm/tlbflush.h>
+>> @@ -4985,23 +4986,55 @@ void set_pageblock_flags_group(struct pa
+>>  int set_migratetype_isolate(struct page *page)
+>>  {
+>>  	struct zone *zone;
+>> -	unsigned long flags;
+>> +	unsigned long flags, pfn, iter;
+>> +	long immobile = 0;
+>> +	struct memory_isolate_notify arg;
+>> +	int notifier_ret;
+>>  	int ret = -EBUSY;
+>>  	int zone_idx;
+>>   	zone = page_zone(page);
+>>  	zone_idx = zone_idx(zone);
+>> +
+>> +	pfn = page_to_pfn(page);
+>> +	arg.start_addr = (unsigned long)page_address(page);
+>> +	arg.nr_pages = pageblock_nr_pages;
+>> +	arg.pages_found = 0;
+>> +
+>>  	spin_lock_irqsave(&zone->lock, flags);
+>>  	/*
+>>  	 * In future, more migrate types will be able to be isolation target.
+>>  	 */
+>> -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
+>> -	    zone_idx != ZONE_MOVABLE)
+>> -		goto out;
+>> -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+>> -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
+>> -	ret = 0;
+>> -out:
+>> +	do {
+>> +		if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE &&
+>> +		    zone_idx == ZONE_MOVABLE) {
+>> +			ret = 0;
+>> +			break;
+>> +		}
+>> +
+>> +		/*
+>> +		 * If all of the pages in a zone are used by a balloon,
+>> +		 * the range can be still be isolated.  The balloon will
+>> +		 * free these pages from the memory notifier chain.
+>> +		 */
+>> +		notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
+>> +		notifier_ret = notifier_to_errno(ret);
+>
+> Should this be
+>
+> 		notifier_ret = notifier_to_errno(notifier_ret);
+>
+> -Nathan
 
-> Kumar Gala wrote:
-> > 
-> > On Oct 2, 2009, at 9:46 AM, Timur Tabi wrote:
-> > 
-> >> Michael Barkowski wrote:
-> >>> Just wondering - is there a case where using volatile for UCC
-> >>> parameter RAM for example will not work, or is the use of I/O
-> >>> accessors everywhere an attempt to be portable to other architectures?
-> >>
-> >> 'volatile' just doesn't really do what you think it should do.  The
-> >> PowerPC architecture is too complicated w.r.t. ordering of reads and
-> >> writes.  In other words, you can't trust it.
-> >>
-> >> No one should be using 'volatile' to access I/O registers.
-> > 
-> > See Documentation/volatile-considered-harmful.txt
-> > 
-> 
-> I'm happy to adopt your interpretation of it, and I appreciate the explanation.
-> 
-> from Documentation/volatile-considered-harmful.txt:
-> >   - The above-mentioned accessor functions might use volatile on
-> >     architectures where direct I/O memory access does work.  Essentially,
-> >     each accessor call becomes a little critical section on its own and
-> >     ensures that the access happens as expected by the programmer.
-> 
-> Part of it was that I wondered if this was one of those architectures.  I guess not.
-
-I guess this could only work on architectures having a totally ordered
-memory model.  Definitely not the case for Power.
+I'll correct this.  Thanks
