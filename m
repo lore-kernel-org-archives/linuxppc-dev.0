@@ -1,20 +1,24 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id B29FBB7BD9
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2009 11:34:29 +1000 (EST)
-Message-Id: <20091002012427.251860546@mini.kroah.org>
-Date: Thu, 01 Oct 2009 18:17:56 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org,
- stable@kernel.org
-Subject: [128/136] powerpc: Fix incorrect setting of __HAVE_ARCH_PTE_SPECIAL
-References: <20091002011548.335611824@mini.kroah.org>
-In-Reply-To: <20091002012911.GA18542@kroah.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, bernhard.weirich@riedel.net,
-	akpm@linux-foundation.org, torvalds@linux-foundation.org,
-	stable-review@kernel.org, alan@lxorguk.ukuu.org.uk, RFeany@mrv.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 058C5B7B8F
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2009 20:54:19 +1000 (EST)
+Date: Fri, 2 Oct 2009 11:44:25 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] mm: add notifier in pageblock isolation for
+	balloon drivers
+Message-ID: <20091002104425.GN21906@csn.ul.ie>
+References: <20091001195311.GA16667@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20091001195311.GA16667@austin.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,38 +28,236 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Oct 01, 2009 at 02:53:11PM -0500, Robert Jennings wrote:
+> Memory balloon drivers can allocate a large amount of memory which
+> is not movable but could be freed to accommodate memory hotplug remove.
+> 
+> Prior to calling the memory hotplug notifier chain the memory in the
+> pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
+> isolation will not proceed, causing the memory removal for that page
+> range to fail.
+> 
+> Rather than immediately failing pageblock isolation if the the
+> migrateteype is not MIGRATE_MOVABLE, this patch checks if all of the
+> pages in the pageblock are owned by a registered balloon driver using a
+> notifier chain.  If all of the non-movable pages are owned by a balloon,
+> they can be freed later through the memory notifier chain and the range
+> can still be isolated in set_migratetype_isolate().
+> 
+> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+> 
+> ---
+>  drivers/base/memory.c  |   19 +++++++++++++++++++
+>  include/linux/memory.h |   22 ++++++++++++++++++++++
+>  mm/page_alloc.c        |   49 +++++++++++++++++++++++++++++++++++++++++--------
+>  3 files changed, 82 insertions(+), 8 deletions(-)
+> 
+> Index: b/drivers/base/memory.c
+> ===================================================================
+> --- a/drivers/base/memory.c
+> +++ b/drivers/base/memory.c
+> @@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
+>  }
+>  EXPORT_SYMBOL(unregister_memory_notifier);
+>  
+> +static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
+> +
+> +int register_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
+> +}
+> +EXPORT_SYMBOL(register_memory_isolate_notifier);
+> +
+> +void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
+> +}
+> +EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+> +
+>  /*
+>   * register_memory - Setup a sysfs device for a memory block
+>   */
+> @@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
+>  	return blocking_notifier_call_chain(&memory_chain, val, v);
+>  }
+>  
+> +int memory_isolate_notify(unsigned long val, void *v)
+> +{
+> +	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
+> +}
+> +
+>  /*
+>   * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
+>   * OK to have direct references to sparsemem variables in here.
+> Index: b/include/linux/memory.h
+> ===================================================================
+> --- a/include/linux/memory.h
+> +++ b/include/linux/memory.h
+> @@ -50,6 +50,14 @@ struct memory_notify {
+>  	int status_change_nid;
+>  };
+>  
+> +#define MEM_ISOLATE_COUNT	(1<<0)
+> +
 
-2.6.31-stable review patch.  If anyone has any objections, please let us know.
+This needs a comment explaining that that this is an action to count the
+number of pages within a range that have been isolated within a range of
+pages and not a default value for "nr_pages" in the next structure.
 
-------------------
-From: Weirich, Bernhard <Bernhard.Weirich@riedel.net>
+> +struct memory_isolate_notify {
+> +	unsigned long start_addr;
+> +	unsigned int nr_pages;
+> +	unsigned int pages_found;
+> +};
 
-[I'm going to fix upstream differently, by having all CPU types
-actually support _PAGE_SPECIAL, but I prefer the simple and obvious
-fix for -stable. -- Ben]
+Is there any particular reason you used virtual address of the mapped
+page instead of PFN? I am guessing at this point that the balloon driver
+is based on addresses but the code that populates the structure more
+commonly deals with PFNs. Outside of debugging code, page_address is
+rarely used in mm/page_alloc.c .
 
-The test that decides whether to define __HAVE_ARCH_PTE_SPECIAL on
-powerpc is bogus and will end up always defining it, even when
-_PAGE_SPECIAL is not supported (in which case it's 0) such as on
-8xx or 40x processors.
+It's picky but it feels more natural to me to have the structure have
+start_pfn and nr_pages or start_addr and end_addr but not a mix of both.
 
-Signed-off-by: Bernhard Weirich <bernhard.weirich@riedel.net>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> +
+>  struct notifier_block;
+>  struct mem_section;
+>  
+> @@ -76,14 +84,28 @@ static inline int memory_notify(unsigned
+>  {
+>  	return 0;
+>  }
+> +static inline int register_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	return 0;
+> +}
+> +static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +}
+> +static inline int memory_isolate_notify(unsigned long val, void *v)
+> +{
+> +	return 0;
+> +}
+>  #else
+>  extern int register_memory_notifier(struct notifier_block *nb);
+>  extern void unregister_memory_notifier(struct notifier_block *nb);
+> +extern int register_memory_isolate_notifier(struct notifier_block *nb);
+> +extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
+>  extern int register_new_memory(int, struct mem_section *);
+>  extern int unregister_memory_section(struct mem_section *);
+>  extern int memory_dev_init(void);
+>  extern int remove_memory_block(unsigned long, struct mem_section *, int);
+>  extern int memory_notify(unsigned long val, void *v);
+> +extern int memory_isolate_notify(unsigned long val, void *v);
+>  extern struct memory_block *find_memory_block(struct mem_section *);
+>  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+>  enum mem_add_context { BOOT, HOTPLUG };
+> Index: b/mm/page_alloc.c
+> ===================================================================
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -48,6 +48,7 @@
+>  #include <linux/page_cgroup.h>
+>  #include <linux/debugobjects.h>
+>  #include <linux/kmemleak.h>
+> +#include <linux/memory.h>
+>  #include <trace/events/kmem.h>
+>  
+>  #include <asm/tlbflush.h>
+> @@ -4985,23 +4986,55 @@ void set_pageblock_flags_group(struct pa
+>  int set_migratetype_isolate(struct page *page)
+>  {
+>  	struct zone *zone;
+> -	unsigned long flags;
+> +	unsigned long flags, pfn, iter;
+> +	long immobile = 0;
 
+So, the count in the structure is unsigned long, but long here. Why the
+difference in types?
 
----
- arch/powerpc/include/asm/pte-common.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> +	struct memory_isolate_notify arg;
+> +	int notifier_ret;
+>  	int ret = -EBUSY;
+>  	int zone_idx;
+>  
+>  	zone = page_zone(page);
+>  	zone_idx = zone_idx(zone);
+> +
+> +	pfn = page_to_pfn(page);
+> +	arg.start_addr = (unsigned long)page_address(page);
+> +	arg.nr_pages = pageblock_nr_pages;
+> +	arg.pages_found = 0;
+> +
+>  	spin_lock_irqsave(&zone->lock, flags);
+>  	/*
+>  	 * In future, more migrate types will be able to be isolation target.
+>  	 */
+> -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
+> -	    zone_idx != ZONE_MOVABLE)
+> -		goto out;
+> -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> -	ret = 0;
+> -out:
+> +	do {
+> +		if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE &&
+> +		    zone_idx == ZONE_MOVABLE) {
 
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -176,7 +176,7 @@ extern unsigned long bad_call_to_PMD_PAG
- #define HAVE_PAGE_AGP
- 
- /* Advertise support for _PAGE_SPECIAL */
--#ifdef _PAGE_SPECIAL
-+#if _PAGE_SPECIAL != 0
- #define __HAVE_ARCH_PTE_SPECIAL
- #endif
- 
+So, this condition requires the zone be MOVABLE and the migrate type
+be movable. That prevents MIGRATE_RESERVE regions in ZONE_MOVABLE being
+off-lined even though they can likely be off-lined. It also prevents
+MIGRATE_MOVABLE sections in other zones being off-lined.
+
+Did you mean || here instead of && ?
+
+Might want to expand the comment explaining this condition instead of
+leaving it in the old location which is confusing.
+
+> +			ret = 0;
+> +			break;
+> +		}
+
+Why do you wrap all this in a do {} while(0)  instead of preserving the
+out: label and using goto?
+
+> +
+> +		/*
+> +		 * If all of the pages in a zone are used by a balloon,
+> +		 * the range can be still be isolated.  The balloon will
+> +		 * free these pages from the memory notifier chain.
+> +		 */
+> +		notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
+> +		notifier_ret = notifier_to_errno(ret);
+> +		if (notifier_ret || !arg.pages_found)
+> +			break;
+> +
+> +		for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
+> +			if (page_count(pfn_to_page(iter)))
+> +				immobile++;
+> +
+> +		if (arg.pages_found == immobile)
+
+and here you compare a signed with an unsigned type. Probably harmless
+but why do it?
+
+> +			ret = 0;
+> +	} while (0);
+> +
+
+So the out label would go here and you'd get rid of the do {} while(0)
+loop.
+
+> +	if (!ret) {
+> +		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> +		move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> +	}
+> +
+>  	spin_unlock_irqrestore(&zone->lock, flags);
+>  	if (!ret)
+>  		drain_all_pages();
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
