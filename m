@@ -1,22 +1,25 @@
-Return-Path: <johnny.hacking@gmail.com>
-Received: from mail-pz0-f193.google.com (mail-pz0-f193.google.com
-	[209.85.222.193]) by ozlabs.org (Postfix) with ESMTP id E4C861007D5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  3 Oct 2009 03:17:03 +1000 (EST)
-Received: by pzk31 with SMTP id 31so272300pzk.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 02 Oct 2009 10:17:02 -0700 (PDT)
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 00387B7BDC
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 04:12:36 +1000 (EST)
+In-Reply-To: <OF2FCFEA43.75290607-ONC1257643.0047C81F-C1257643.0048036B@transmode.se>
+References: <1253843480.7103.492.camel@pasglop>	<1254208057.5771.7.camel@pasglop>		<OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>
+	<1254212198.5256.0.camel@pasglop>		<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
+	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>		<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
+	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>
+	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
+	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>	<1254350159.5699.21.camel@pasglop>
+	<OF2FCFEA43.75290607-ONC1257643.0047C81F-C1257643.0048036B@transmode.se>
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
+	rewrite
+Message-ID: <OF02C0B1C1.7E373A8E-ONC1257643.006377F9-C1257643.0063E1CF@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Fri, 2 Oct 2009 20:10:58 +0200
 MIME-Version: 1.0
-In-Reply-To: <1253742018.7103.333.camel@pasglop>
-References: <a9b543570909230749g5bb9c302wa48f310250068f5b@mail.gmail.com>
-	<1253742018.7103.333.camel@pasglop>
-Date: Sat, 3 Oct 2009 01:17:01 +0800
-Message-ID: <cb9ecdfa0910021017s5eece937ve7af90473d5a1a33@mail.gmail.com>
-Subject: Re: linux booting fails on ppc440x5 with SRAM
-From: Johnny Hung <johnny.hacking@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Vineeth _ <blacklites@gmail.com>
+Content-type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,109 +29,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's seems a RAM initialize problem. Try to use ICE or your bootloader
-to test initialized RAM wirh write/read operation.
-Ex, use mtest in uboot to check memory. For ICE, it should be an
-detailed memory test function like hardware diagnostic.
+>
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 01/10/2009 00:35:59:
+> >
+> >
+> > > > Had a look at linus tree and there is something I don't understand.
+> > > > Your fix, e0908085fc2391c85b85fb814ae1df377c8e0dcb, fixes a problem
+> > > > that was introduced by 8d30c14cab30d405a05f2aaceda1e9ad57800f36 but
+> > > > 8d30c14cab30d405a05f2aaceda1e9ad57800f36 was included in .31 and .31
+> > > > works and top of tree does not, how can that be?
+> > > >
+> > > > To me it seems more likely that some mm change introduced between .31 and
+> > > > top of tree is the culprit.
+> > > > My patch addresses the problem described in the comment:
+> > > > /* On 8xx, cache control instructions (particularly
+> > > >  * "dcbst" from flush_dcache_icache) fault as write
+> > > >  * operation if there is an unpopulated TLB entry
+> > > >  * for the address in question. To workaround that,
+> > > >  * we invalidate the TLB here, thus avoiding dcbst
+> > > >  * misbehaviour.
+> > > >  */
+> > > > Now you are using this old fix to paper over some other bug or so I think.
+> > >
+> > > There is something fishy with the TLB status, looking into the mpc862 manual I
+> > > don't see how it can work reliably. Need to dwell some more.
+> > > Anyhow, I have incorporated some of my findings into a new patch,
+> > > perhaps this will be the golden one?
+> >
+> > Well, I still wonder about what whole unpopulated entry business.
+> >
+> > >From what I can see, the TLB miss code will check _PAGE_PRESENT, and
+> > when not set, it will -still- insert something into the TLB (unlike
+> > all other CPU types that go straight to data access faults from there).
+> >
+> > So we end up populating with those unpopulated entries that will then
+> > cause us to take a DSI (or ISI) instead of a TLB miss the next time
+> > around ... and so we need to remove them once we do that, no ? IE. Once
+> > we have actually put a valid PTE in.
+> >
+> > At least that's my understanding and why I believe we should always have
+> > tlbil_va() in set_pte() and ptep_set_access_flags(), which boils down
+> > in putting it into the 2 "filter" functions in the new code.
+> >
+> > Well.. actually, the ptep_set_access_flags() will already do a
+> > flush_tlb_page_nohash() when the PTE is changed. So I suppose all we
+> > really need here would be in set_pte_filter(), to do the same if we are
+> > writing a PTE that has _PAGE_PRESENT, at least on 8xx.
+> >
+> > But just unconditionally doing a tlbil_va() in both the filter functions
+> > shouldn't harm and also fix the problem, though Rex seems to indicate
+> > that is not the case.
+> >
+> > Now, we -might- have something else broken on 8xx, hard to tell. You may
+> > want to try to bisect, adding back the removed tlbil_va() as you go
+> > backward, between .31 and upstream...
+>
+> Found something odd, perhaps Rex can test?
+> I tested this on my old 2.4 and it worked well.
 
-2009/9/24 Benjamin Herrenschmidt <benh@kernel.crashing.org>:
-> On Wed, 2009-09-23 at 20:19 +0530, Vineeth _ wrote:
->> I am trying to port linux on IBM powerpc-440x5. I have this board
->> which has this processor, a 16MB SRAM sits on location 0x0, uart and a
->> flash.I have a simple bootloader which does the following.
->> =A0 =A0 1. Initialize the processor (as part of it, we Generates the tlb=
-s
->> for UART,16MB flash,16MB SRAM)
->> =A0 =A0 2. Initialize the UART
->> =A0 =A0 3. Copy the simple-boot linux_image (binary file) from flash to
->> 0x400000 location of SRAM.
->> =A0 =A0 4. Kernel entry to 0x400000
->
-> Not sure yet, looks like things are being overwritten during boot.
-> Interestingly enough, the DEAR value looks like an MSR value..
->
-> Hard to tell what's up. You'll have to dig a bit more youself to
-> figure out how come the kernel's getting that bad pointer.
->
-> All I can tell you is that things work fine on 440x5 cores, though
-> I haven't tested a configuration with so little memory in a while.
->
-> Ben.
->
->> zImage starting: loaded at 0x00400000 (sp: 0x004deeb0)
->> Allocating 0x1dad84 bytes for kernel ...
->> gunzipping (0x00000000 <- 0x0040c000:0x004dd3f1)...done 0x1c31cc bytes
->>
->> Linux/PowerPC load: console=3DttyS0 root=3D/dev/ram
->> Finalizing device tree... flat tree at 0x4eb300
->> id mach(): done
->> inside skybeam_register_console function
->> MMU:enterMMU:hw initMMU:mapinMMU:setioMMU:exitinside
->> _setup_arch-begininginside _setup_arch-1inside
->> _setup_arch-2setup_arch: bootmemarch: exit<7>Top of RAM: 0x1000000,
->> Total RAM: 0x1000000
->> Zone PFN ranges:
->> =A0DMA =A0 =A0 =A00x00000000 -> 0x00001000
->> =A0Normal =A0 0x00001000 -> 0x00001000
->> Movable zone start PFN for each node
->> early_node_map[1] active PFN ranges
->> =A0 =A00: 0x00000000 -> 0x00001000
->> MMU: Allocated 1088 bytes of context maps for 255 contexts
->> Built 1 zonelists in Zone order, mobility grouping off. =A0Total pages: =
-4064
->> Kernel command line: console=3DttyS0 root=3D/dev/ram
->> Unable to handle kernel paging request for data at address 0x00021000
->> Faulting instruction address: 0xc010a7c4
->> Oops: Kernel access of bad area, sig: 11 [#1]
->> PREEMPT PowerPC 44x Platform
->> Modules linked in:
->> NIP: c010a7c4 LR: c010dc50 CTR: 00000000
->> REGS: c01bfeb0 TRAP: 0300 =A0 Not tainted =A0(2.6.30)
->> MSR: 00021000 <ME,CE> =A0CR: 24000044 =A0XER: 00000000
->> DEAR: 00021000, ESR: 00000000
->> TASK =3D c01a94b8[0] 'swapper' THREAD: c01be000
->> GPR00: 00001180 c01bff60 c01a94b8 00021000 00000025 00000008 c0104968 00=
-000000
->> GPR08: 2f72616d c0110000 c0155938 c01a0000 22000024 00000000 fffff104 00=
-000000
->> GPR16: 00000000 00000000 00000000 00000000 fffffff8 000008b8 c010d758 c0=
-104968
->> GPR24: 00001198 00001190 c018a001 c01c5498 000008c0 00001188 00021000 c0=
-1c42f0
->> NIP [c010a7c4] strchr+0x0/0x3c
->> LR [c010dc50] match_token+0x138/0x228
->> Call Trace:
->> [c01bff60] [c016b99c] 0xc016b99c (unreliable)
->> [c01bffa0] [c0104a00] sort_extable+0x28/0x38
->> [c01bffb0] [c01938ec] sort_main_extable+0x20/0x30
->> [c01bffc0] [c018c734] start_kernel+0x140/0x288
->> [c01bfff0] [c0000200] skpinv+0x190/0x1cc
->> Instruction dump:
->> 7ca903a6 88040000 38a5ffff 38840001 2f800000 98090000 39290001 419e0010
->> 4200ffe4 98a90000 4e800020 4e800020 <88030000> 5484063e 7f802000 4d9e002=
-0
->> ---[ end trace 31fd0ba7d8756001 ]---
->> Kernel panic - not syncing: Attempted to kill the idle task!
->> Call Trace:
->> [c01bfd90] [c0005d5c] show_stack+0x4c/0x16c (unreliable)
->> [c01bfdd0] [c002f17c] panic+0xa0/0x168
->> [c01bfe20] [c0032eb8] do_exit+0x61c/0x638
->> [c01bfe60] [c000b60c] kernel_bad_stack+0x0/0x4c
->> [c01bfe90] [c000f310] bad_page_fault+0x90/0xd8
->> [c01bfea0] [c000e184] handle_page_fault+0x7c/0x80
->> [c01bff60] [c016b99c] 0xc016b99c
->> [c01bffa0] [c0104a00] sort_extable+0x28/0x38
->> [c01bffb0] [c01938ec] sort_main_extable+0x20/0x30
->> [c01bffc0] [c018c734] start_kernel+0x140/0x288
->> [c01bfff0] [c0000200] skpinv+0x190/0x1cc
->> Rebooting in 180 seconds..
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+That was not quite correct, sorry.
+Try this instead:
+
+>From c5f1a70561730b8a443f7081fbd9c5b023147043 Mon Sep 17 00:00:00 2001
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Fri, 2 Oct 2009 14:59:21 +0200
+Subject: [PATCH] powerpc, 8xx: DTLB Error must check for more errors.
+
+DataTLBError currently does:
+ if ((err & 0x02000000) == 0)
+    DSI();
+This won't handle a store with no valid translation.
+Change this to
+ if ((err & 0x48000000) != 0)
+    DSI();
+that is, branch to DSI if either !permission or
+!translation.
+---
+ arch/powerpc/kernel/head_8xx.S |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 52ff8c5..118bb05 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -472,8 +472,8 @@ DataTLBError:
+ 	/* First, make sure this was a store operation.
+ 	*/
+ 	mfspr	r10, SPRN_DSISR
+-	andis.	r11, r10, 0x0200	/* If set, indicates store op */
+-	beq	2f
++	andis.	r11, r10, 0x4800 /* no translation, no permission. */
++	bne	2f	/* branch if either is set */
+
+ 	/* The EA of a data TLB miss is automatically stored in the MD_EPN
+ 	 * register.  The EA of a data TLB error is automatically stored in
+--
+1.6.4.4
