@@ -1,18 +1,27 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 2EDC1B7BB9
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 19:44:24 +1000 (EST)
-Date: Sat, 3 Oct 2009 11:44:17 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Albrecht =?iso-8859-15?Q?Dre=DF?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH] powerpc/5200: make BestComm gen_bd microcode exchangeable
-Message-ID: <20091003094417.GA24206@pengutronix.de>
-References: <1254426938.3252.1@antares>
+Return-Path: <Simon.Richter@hogyros.de>
+Received: from psionic8.psi5.com (psionic.psi5.com [212.112.229.180])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.psi5.com", Issuer "psi5.com CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 2045FB7BCA
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 20:05:18 +1000 (EST)
+Received: from localhost (port-212-202-168-87.dynamic.qsc.de [212.202.168.87])
+	(using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+	(Client CN "Simon Richter",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by psionic8.psi5.com (Postfix) with ESMTPS id 3AFCFF2C012
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 11:55:36 +0200 (CEST)
+Date: Sat, 3 Oct 2009 11:55:37 +0200
+From: Simon Richter <Simon.Richter@hogyros.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Is volatile always verboten for FSL QE structures?
+Message-ID: <20091003095537.GA15992@honey.hogyros.de>
+References: <4AC60AD8.8030509@ruggedcom.com> <4AC61247.1030507@freescale.com>
+	<C3FE6281-04FA-48B3-96EA-D6E68AF65D6B@kernel.crashing.org>
+	<4AC63112.7080404@ruggedcom.com>
+	<20091002200848.06be4c5a@xilun.lan.proformatique.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
-In-Reply-To: <1254426938.3252.1@antares>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091002200848.06be4c5a@xilun.lan.proformatique.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,145 +31,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
---J2SCkAp4GZ/dPZZf
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > >> 'volatile' just doesn't really do what you think it should do.  The
+> > >> PowerPC architecture is too complicated w.r.t. ordering of reads and
+> > >> writes.  In other words, you can't trust it.
 
-Hi Albrecht,
+It's not sufficient on PowerPC.
 
-you wrote your own microcode? :)
-approach looks ok to me in general, but this patch is line-wrapped.
+It might be necessary, depending on the compiler's mood for moving stuff
+out of loops.
 
-On Thu, Oct 01, 2009 at 09:55:38PM +0200, Albrecht Dre=DF wrote:
-> This patch adds a method for defining different microcodes than the =20
-> pe-defined ones for the MPC52xx processor's BestComm General Buffer =20
+Consider:
 
-pre-defined
+| unsigned int *foo = (unsigned int *)0x12345678;
+| void bar(void) { while(*foo != 0) asm("eieio"); }
 
-> Descriptor (gen_db) tasks.  The default microcode is still the one from =
-=20
-> bcom_gen_bd_[rt]x_task, but it can be replaced by calling =20
-> bcom_gen_bd_set_microcode() which is more efficient than explicitly =20
-> loading it via bcom_load_image() after each bcom_gen_bd_[rt]x_reset().
->
-> Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
->
->
-> ---
->
->
-> diff -uprN -X linux-2.6.30.3/Documentation/dontdiff =20
-> linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.c =20
-> linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.c
-> --- linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.c	2009-07-24=
-=20
-> 23:47:51.000000000 +0200
-> +++ linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.c	2009-10-01=20
-> 14:26:33.000000000 +0200
-> @@ -78,6 +78,7 @@ struct bcom_gen_bd_priv {
->  	int		initiator;
->  	int		ipr;
->  	int		maxbufsize;
-> +	u32    *microcode;
+gcc 4.3.4 with -O3 compiles this to
 
-spaces instead of tabs
+00000000 <bar>:
+   0:   3d 20 00 00     lis     r9,0
+                        2: R_PPC_ADDR16_HA      foo
+   4:   81 69 00 00     lwz     r11,0(r9)
+                        6: R_PPC_ADDR16_LO      foo
+   8:   80 0b 00 00     lwz     r0,0(r11)
+   c:   2f 80 00 00     cmpwi   cr7,r0,0
+  10:   4d 9e 00 20     beqlr   cr7
+  14:   7c 00 06 ac     eieio
+  18:   7c 00 06 ac     eieio
+  1c:   4b ff ff f8     b       14 <bar+0x14>
 
->  };
->
->
-> @@ -104,6 +105,7 @@ bcom_gen_bd_rx_init(int queue_len, phys_
->  	priv->initiator	=3D initiator;
->  	priv->ipr	=3D ipr;
->  	priv->maxbufsize =3D maxbufsize;
-> +	priv->microcode =3D bcom_gen_bd_rx_task;
->
->  	if (bcom_gen_bd_rx_reset(tsk)) {
->  		bcom_task_free(tsk);
-> @@ -128,7 +130,7 @@ bcom_gen_bd_rx_reset(struct bcom_task *t
->  	var =3D (struct bcom_gen_bd_rx_var *) bcom_task_var(tsk->tasknum);
->  	inc =3D (struct bcom_gen_bd_rx_inc *) bcom_task_inc(tsk->tasknum);
->
-> -	if (bcom_load_image(tsk->tasknum, bcom_gen_bd_rx_task))
-> +	if (bcom_load_image(tsk->tasknum, priv->microcode))
->  		return -1;
->
->  	var->enable	=3D bcom_eng->regs_base +
-> @@ -188,6 +190,7 @@ bcom_gen_bd_tx_init(int queue_len, phys_
->  	priv->fifo	=3D fifo;
->  	priv->initiator	=3D initiator;
->  	priv->ipr	=3D ipr;
-> +	priv->microcode =3D bcom_gen_bd_tx_task;
->
->  	if (bcom_gen_bd_tx_reset(tsk)) {
->  		bcom_task_free(tsk);
-> @@ -212,7 +215,7 @@ bcom_gen_bd_tx_reset(struct bcom_task *t
->  	var =3D (struct bcom_gen_bd_tx_var *) bcom_task_var(tsk->tasknum);
->  	inc =3D (struct bcom_gen_bd_tx_inc *) bcom_task_inc(tsk->tasknum);
->
-> -	if (bcom_load_image(tsk->tasknum, bcom_gen_bd_tx_task))
-> +	if (bcom_load_image(tsk->tasknum, priv->microcode))
->  		return -1;
->
->  	var->enable	=3D bcom_eng->regs_base +
-> @@ -253,6 +256,16 @@ bcom_gen_bd_tx_release(struct bcom_task
->  }
->  EXPORT_SYMBOL_GPL(bcom_gen_bd_tx_release);
->
-> +void
-> +bcom_gen_bd_set_microcode(struct bcom_task *tsk, u32 *microcode)
-> +{
-> +	struct bcom_gen_bd_priv *priv =3D tsk->priv;
-> +
-> +	priv->microcode =3D microcode;
-> +}
-> +EXPORT_SYMBOL_GPL(bcom_gen_bd_set_microcode);
-> +
-> +
+Making the target of foo volatile properly rechecks the condition on
+each iteration.
 
-Two empty lines.
+OTOH my PPC box runs fine, so I'm probably missing something obvious.
 
->  /* =20
-> ---------------------------------------------------------------------
->   * PSC support code
->   */
-> diff -uprN -X linux-2.6.30.3/Documentation/dontdiff =20
-> linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.h =20
-> linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.h
-> --- linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.h	2009-07-24=
-=20
-> 23:47:51.000000000 +0200
-> +++ linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.h	2009-10-01=20
-> 14:26:50.000000000 +0200
-> @@ -43,6 +43,9 @@ bcom_gen_bd_tx_reset(struct bcom_task *t
->  extern void
->  bcom_gen_bd_tx_release(struct bcom_task *tsk);
->
-> +extern void
-> +bcom_gen_bd_set_microcode(struct bcom_task *tsk, u32 *microcode);
-> +
->
->  /* PSC support utility wrappers */
->  struct bcom_task * bcom_psc_gen_bd_rx_init(unsigned psc_num, int =20
-> queue_len,
->
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---J2SCkAp4GZ/dPZZf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrHHPEACgkQD27XaX1/VRvCtgCeMzLMUJss+9WX8dya/SdUcTtA
-7oIAoK3J6c4FivC8i57bTCUKfd6/yIBE
-=tk7j
------END PGP SIGNATURE-----
-
---J2SCkAp4GZ/dPZZf--
+   Simon
