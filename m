@@ -1,34 +1,18 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8A3FCB7043
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 19:29:14 +1000 (EST)
-In-Reply-To: <1254558678.7122.7.camel@pasglop>
-References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>	
-	<1254212198.5256.0.camel@pasglop>
-	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
-	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>	
-	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
-	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
-	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>	
-	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
-	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
-	<1254350159.5699.21.camel@pasglop>	
-	<20091002214949.GA20514@b07421-ec1.am.freescale.net>
-	<OF4175DD8E.796930EB-ONC1257644.002A7135-C1257644.002C7929@transmode.se>
-	<1254558678.7122.7.camel@pasglop>
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
-	rewrite
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF0216D5A2.8B77DD30-ONC1257644.0031FDC4-C1257644.0033A760@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sat, 3 Oct 2009 11:24:11 +0200
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 2EDC1B7BB9
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 19:44:24 +1000 (EST)
+Date: Sat, 3 Oct 2009 11:44:17 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Albrecht =?iso-8859-15?Q?Dre=DF?= <albrecht.dress@arcor.de>
+Subject: Re: [PATCH] powerpc/5200: make BestComm gen_bd microcode exchangeable
+Message-ID: <20091003094417.GA24206@pengutronix.de>
+References: <1254426938.3252.1@antares>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
+In-Reply-To: <1254426938.3252.1@antares>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,44 +22,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 03/10/2009 10:31:18:
+
+--J2SCkAp4GZ/dPZZf
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Albrecht,
+
+you wrote your own microcode? :)
+approach looks ok to me in general, but this patch is line-wrapped.
+
+On Thu, Oct 01, 2009 at 09:55:38PM +0200, Albrecht Dre=DF wrote:
+> This patch adds a method for defining different microcodes than the =20
+> pe-defined ones for the MPC52xx processor's BestComm General Buffer =20
+
+pre-defined
+
+> Descriptor (gen_db) tasks.  The default microcode is still the one from =
+=20
+> bcom_gen_bd_[rt]x_task, but it can be replaced by calling =20
+> bcom_gen_bd_set_microcode() which is more efficient than explicitly =20
+> loading it via bcom_load_image() after each bcom_gen_bd_[rt]x_reset().
 >
-> On Sat, 2009-10-03 at 10:05 +0200, Joakim Tjernlund wrote:
-> > Cannot shake the feeling that it this snip of code that causes it
-> >         lwz     r11, 0(r10)     /* Get the level 1 entry */
-> >         rlwinm. r10, r11,0,0,19 /* Extract page descriptor page
-> > address */
-> >         beq     2f              /* If zero, don't try to find a pte */
-> > Perhaps we can do something better? I still feel that we need to
-> > force a TLB Error as the TLBMiss does not set DSISR so we have no way
-> > of
-> > knowing if it is an load or store.
+> Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
 >
-> Can't we manufacture a DSISR and branch to the right function ?
+>
+> ---
+>
+>
+> diff -uprN -X linux-2.6.30.3/Documentation/dontdiff =20
+> linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.c =20
+> linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.c
+> --- linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.c	2009-07-24=
+=20
+> 23:47:51.000000000 +0200
+> +++ linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.c	2009-10-01=20
+> 14:26:33.000000000 +0200
+> @@ -78,6 +78,7 @@ struct bcom_gen_bd_priv {
+>  	int		initiator;
+>  	int		ipr;
+>  	int		maxbufsize;
+> +	u32    *microcode;
 
-Not if we want know if it is a load or store. There is no info to manufacture
-a DSISR from. The best we can do here is try getting the RPN physical page
-number correct. Perhaps something like this will do:
-	/* Copy 20 msb from MD_EPN to r20 to get the correct page
-	 * number. Do not rely on DAR since the dcxx instructions fails
-	 * to update DAR when they cause a DTLB Miss
-	 */
-	mfspr	r21, MD_EPN
-	li	r20, 0x0
-	rlwimi	r20, r21, 0, 0, 19
-Then go back and set the RPN accordingly.
+spaces instead of tabs
 
-The 8xx is different as as it will force a TLB error every time
-it needs to deal with a page fault.
-I suspect adding
-if (!ret)
-   _tlbil_va(address);
-in do_page_fault() will do the trick too.
+>  };
+>
+>
+> @@ -104,6 +105,7 @@ bcom_gen_bd_rx_init(int queue_len, phys_
+>  	priv->initiator	=3D initiator;
+>  	priv->ipr	=3D ipr;
+>  	priv->maxbufsize =3D maxbufsize;
+> +	priv->microcode =3D bcom_gen_bd_rx_task;
+>
+>  	if (bcom_gen_bd_rx_reset(tsk)) {
+>  		bcom_task_free(tsk);
+> @@ -128,7 +130,7 @@ bcom_gen_bd_rx_reset(struct bcom_task *t
+>  	var =3D (struct bcom_gen_bd_rx_var *) bcom_task_var(tsk->tasknum);
+>  	inc =3D (struct bcom_gen_bd_rx_inc *) bcom_task_inc(tsk->tasknum);
+>
+> -	if (bcom_load_image(tsk->tasknum, bcom_gen_bd_rx_task))
+> +	if (bcom_load_image(tsk->tasknum, priv->microcode))
+>  		return -1;
+>
+>  	var->enable	=3D bcom_eng->regs_base +
+> @@ -188,6 +190,7 @@ bcom_gen_bd_tx_init(int queue_len, phys_
+>  	priv->fifo	=3D fifo;
+>  	priv->initiator	=3D initiator;
+>  	priv->ipr	=3D ipr;
+> +	priv->microcode =3D bcom_gen_bd_tx_task;
+>
+>  	if (bcom_gen_bd_tx_reset(tsk)) {
+>  		bcom_task_free(tsk);
+> @@ -212,7 +215,7 @@ bcom_gen_bd_tx_reset(struct bcom_task *t
+>  	var =3D (struct bcom_gen_bd_tx_var *) bcom_task_var(tsk->tasknum);
+>  	inc =3D (struct bcom_gen_bd_tx_inc *) bcom_task_inc(tsk->tasknum);
+>
+> -	if (bcom_load_image(tsk->tasknum, bcom_gen_bd_tx_task))
+> +	if (bcom_load_image(tsk->tasknum, priv->microcode))
+>  		return -1;
+>
+>  	var->enable	=3D bcom_eng->regs_base +
+> @@ -253,6 +256,16 @@ bcom_gen_bd_tx_release(struct bcom_task
+>  }
+>  EXPORT_SYMBOL_GPL(bcom_gen_bd_tx_release);
+>
+> +void
+> +bcom_gen_bd_set_microcode(struct bcom_task *tsk, u32 *microcode)
+> +{
+> +	struct bcom_gen_bd_priv *priv =3D tsk->priv;
+> +
+> +	priv->microcode =3D microcode;
+> +}
+> +EXPORT_SYMBOL_GPL(bcom_gen_bd_set_microcode);
+> +
+> +
 
-So yes, there is a missing _tlbil_va() missing for 8xx somewhere
-but there is something more too.
-Maybe your new filter functions and my
- powerpc, 8xx: DTLB Error must check for more errors.
-will do the trick?
+Two empty lines.
 
- Jocke
+>  /* =20
+> ---------------------------------------------------------------------
+>   * PSC support code
+>   */
+> diff -uprN -X linux-2.6.30.3/Documentation/dontdiff =20
+> linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.h =20
+> linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.h
+> --- linux-2.6.30.3.orig/arch/powerpc/sysdev/bestcomm/gen_bd.h	2009-07-24=
+=20
+> 23:47:51.000000000 +0200
+> +++ linux-2.6.30.3/arch/powerpc/sysdev/bestcomm/gen_bd.h	2009-10-01=20
+> 14:26:50.000000000 +0200
+> @@ -43,6 +43,9 @@ bcom_gen_bd_tx_reset(struct bcom_task *t
+>  extern void
+>  bcom_gen_bd_tx_release(struct bcom_task *tsk);
+>
+> +extern void
+> +bcom_gen_bd_set_microcode(struct bcom_task *tsk, u32 *microcode);
+> +
+>
+>  /* PSC support utility wrappers */
+>  struct bcom_task * bcom_psc_gen_bd_rx_init(unsigned psc_num, int =20
+> queue_len,
+>
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--J2SCkAp4GZ/dPZZf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkrHHPEACgkQD27XaX1/VRvCtgCeMzLMUJss+9WX8dya/SdUcTtA
+7oIAoK3J6c4FivC8i57bTCUKfd6/yIBE
+=tk7j
+-----END PGP SIGNATURE-----
+
+--J2SCkAp4GZ/dPZZf--
