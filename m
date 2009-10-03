@@ -1,27 +1,35 @@
-Return-Path: <Simon.Richter@hogyros.de>
-Received: from psionic8.psi5.com (psionic.psi5.com [212.112.229.180])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.psi5.com", Issuer "psi5.com CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 2045FB7BCA
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 20:05:18 +1000 (EST)
-Received: from localhost (port-212-202-168-87.dynamic.qsc.de [212.202.168.87])
-	(using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
-	(Client CN "Simon Richter",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by psionic8.psi5.com (Postfix) with ESMTPS id 3AFCFF2C012
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 11:55:36 +0200 (CEST)
-Date: Sat, 3 Oct 2009 11:55:37 +0200
-From: Simon Richter <Simon.Richter@hogyros.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Is volatile always verboten for FSL QE structures?
-Message-ID: <20091003095537.GA15992@honey.hogyros.de>
-References: <4AC60AD8.8030509@ruggedcom.com> <4AC61247.1030507@freescale.com>
-	<C3FE6281-04FA-48B3-96EA-D6E68AF65D6B@kernel.crashing.org>
-	<4AC63112.7080404@ruggedcom.com>
-	<20091002200848.06be4c5a@xilun.lan.proformatique.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091002200848.06be4c5a@xilun.lan.proformatique.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6C2FDB7BEA
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 20:57:42 +1000 (EST)
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache
+	coherency rewrite
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+In-Reply-To: <OF0216D5A2.8B77DD30-ONC1257644.0031FDC4-C1257644.0033A760@transmode.se>
+References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>
+	<1254212198.5256.0.camel@pasglop>
+	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
+	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>
+	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
+	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
+	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>
+	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
+	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
+	<1254350159.5699.21.camel@pasglop>
+	<20091002214949.GA20514@b07421-ec1.am.freescale.net>
+	<OF4175DD8E.796930EB-ONC1257644.002A7135-C1257644.002C7929@transmode.se>
+	<1254558678.7122.7.camel@pasglop>
+	<OF0216D5A2.8B77DD30-ONC1257644.0031FDC4-C1257644.0033A760@transmode.se>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 03 Oct 2009 20:57:28 +1000
+Message-Id: <1254567448.7122.8.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,39 +39,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Sat, 2009-10-03 at 11:24 +0200, Joakim Tjernlund wrote:
+> 
+> So yes, there is a missing _tlbil_va() missing for 8xx somewhere
+> but there is something more too.
+> Maybe your new filter functions and my
+>  powerpc, 8xx: DTLB Error must check for more errors.
+> will do the trick?
 
-> > >> 'volatile' just doesn't really do what you think it should do.  The
-> > >> PowerPC architecture is too complicated w.r.t. ordering of reads and
-> > >> writes.  In other words, you can't trust it.
+Well, if we can't tell between a load and a store on a TLB miss, then
+we should probably let it create an unpopulated entry in all cases,
+so that we do take a proper DSI/ISI the second time around, which
+would then tell us where we come from...
 
-It's not sufficient on PowerPC.
-
-It might be necessary, depending on the compiler's mood for moving stuff
-out of loops.
-
-Consider:
-
-| unsigned int *foo = (unsigned int *)0x12345678;
-| void bar(void) { while(*foo != 0) asm("eieio"); }
-
-gcc 4.3.4 with -O3 compiles this to
-
-00000000 <bar>:
-   0:   3d 20 00 00     lis     r9,0
-                        2: R_PPC_ADDR16_HA      foo
-   4:   81 69 00 00     lwz     r11,0(r9)
-                        6: R_PPC_ADDR16_LO      foo
-   8:   80 0b 00 00     lwz     r0,0(r11)
-   c:   2f 80 00 00     cmpwi   cr7,r0,0
-  10:   4d 9e 00 20     beqlr   cr7
-  14:   7c 00 06 ac     eieio
-  18:   7c 00 06 ac     eieio
-  1c:   4b ff ff f8     b       14 <bar+0x14>
-
-Making the target of foo volatile properly rechecks the condition on
-each iteration.
-
-OTOH my PPC box runs fine, so I'm probably missing something obvious.
-
-   Simon
+Ben.
