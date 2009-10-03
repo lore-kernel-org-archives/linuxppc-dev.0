@@ -1,34 +1,18 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2E590B7B9F
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 21:52:25 +1000 (EST)
-In-Reply-To: <1254567448.7122.8.camel@pasglop>
-References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>	
-	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
-	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>	
-	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
-	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
-	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>	
-	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
-	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
-	<1254350159.5699.21.camel@pasglop>	
-	<20091002214949.GA20514@b07421-ec1.am.freescale.net>
-	<OF4175DD8E.796930EB-ONC1257644.002A7135-C1257644.002C7929@transmode.se>
-	<1254558678.7122.7.camel@pasglop>	 <OF0216D5A
-	<1254567448.7122.8.camel@pasglop>
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
-	rewrite
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF42B949AE.6BBE8054-ONC1257644.003EACD0-C1257644.0040CC01@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sat, 3 Oct 2009 13:47:45 +0200
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by ozlabs.org (Postfix) with ESMTP id 0242AB7BFA
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Oct 2009 23:50:24 +1000 (EST)
+Date: Sat, 03 Oct 2009 15:50:12 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: [PATCH] powerpc/5200: make BestComm gen_bd microcode exchangeable
+To: Wolfram Sang <w.sang@pengutronix.de>
+In-Reply-To: <20091003094417.GA24206@pengutronix.de> (from
+	w.sang@pengutronix.de on Sat Oct  3 11:44:17 2009)
+Message-Id: <1254577821.3331.0@antares>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-4y3kjl6WMJKMWiWKYP1Q"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,48 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--=-4y3kjl6WMJKMWiWKYP1Q
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Wolfram:
+
+Am 03.10.09 11:44 schrieb(en) Wolfram Sang:
+> you wrote your own microcode? :)
+
+I modified the bcom_gen_bd_rx_task for a LPB peripheral as to perform =20
+Endianess swapping during the transfer (works meanwhile :-).   =20
+Modifying the standard kernel code for testing seemed to be the wrong =20
+approach for me, so I wrote that patch...
+
+If possible, I would also like to have a crc32 calculation performed by =20
+BestComm, but unfortunately there is no documentation and Freescale =20
+doesn't give any support, so it's all trial and error and error and =20
+error...  If you have any idea, pointers would be appreciated!
+
+> approach looks ok to me in general, but this patch is line-wrapped.
+
+I don't think so - the message body is a "format=3Dflowed" (RFC 3676) =20
+text/plain part.  Maybe your MUA doesn't display that format correctly =20
+(Outlook?)?  Or is '3676 in general not acceptable for patches?
+
+[snip]
+> spaces instead of tabs
+[snip]
+> Two empty lines.
+
+Thanks - will submit a fixed patch next week, stay tuned...
+
+Cheers, Albrecht.
 
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 03/10/2009 12:57:28:
+P.S.: Did your mtd-ram/physmap_of patch you submitted a while ago make =20
+it into the stock kernel?  I have some pending extra work (16-bit LPB =20
+RAM access) building on top of it...
 
-> On Sat, 2009-10-03 at 11:24 +0200, Joakim Tjernlund wrote:
-> >
-> > So yes, there is a missing _tlbil_va() missing for 8xx somewhere
-> > but there is something more too.
-> > Maybe your new filter functions and my
-> >  powerpc, 8xx: DTLB Error must check for more errors.
-> > will do the trick?
->
-> Well, if we can't tell between a load and a store on a TLB miss, then
-> we should probably let it create an unpopulated entry in all cases,
-> so that we do take a proper DSI/ISI the second time around, which
-> would then tell us where we come from...
+--=-4y3kjl6WMJKMWiWKYP1Q
+Content-Type: application/pgp-signature
 
-Not quite sure what you mean here?
-Always branch to DSI at TLB Miss and create a unpopulated
-entry? That does not feel right.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-The current method is better. The only odd thing is
-the null pmd entry and what to load into RPN. I am not convinced
-that it is a problem but I would like to see a generic impl. of
-a null pmd and use that instead. A 8xx impl. of that
-looks like this(tested on 2.4, works fine)
+iD8DBQBKx1acn/9unNAn/9ERAiRaAJ98shof5l2Wphll6qr6Asz7l13NGQCgrpC7
+NBLtb0uamruBIUVTEC6zJuc=
+=gnyn
+-----END PGP SIGNATURE-----
 
-	lwz	r11, 0(r10)	/* Get the level 1 entry */
-	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
-	bne+	4f		/* If zero, use a null pmd */
-	lis	r11, null_pmd_dir@h
-	ori	r11, r11, null_pmd_dir@l
-4:	tophys(r11,r11)
-
-...
-	.data
-	.globl	null_pmd_dir
-null_pmd_dir:
-	.space	4096
-
-If the pmd_none() and friends are updated to test for a null_pmd_dir
-we can loose the test above and save 4 insn :)
-
-Anyhow did you post a patch(can't find one) about your suggested
-filter functions for 8xx? I sure would like to see one :)
+--=-4y3kjl6WMJKMWiWKYP1Q--
