@@ -1,18 +1,23 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
-	by ozlabs.org (Postfix) with ESMTP id 71F7DB7C02
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Oct 2009 01:09:50 +1000 (EST)
-Date: Sat, 03 Oct 2009 17:09:46 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH] powerpc/5200: make BestComm gen_bd microcode exchangeable
-To: Wolfram Sang <w.sang@pengutronix.de>
-In-Reply-To: <20091003144026.GA27519@pengutronix.de> (from
-	w.sang@pengutronix.de on Sat Oct  3 16:40:26 2009)
-Message-Id: <1254582586.3331.1@antares>
-MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=PGP-SHA1; boundary="=-g8dWq61TqxTUJofyJYYe"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D94FBB7BCF
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Oct 2009 08:53:48 +1100 (EST)
+Subject: Re: [patch 1/3] powerpc: Move 64bit VDSO to improve context switch
+	performance
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+In-Reply-To: <m2ocoo1qfi.fsf@igel.home>
+References: <20090714065350.659537380@samba.org>
+	<20090714065425.301516312@samba.org>
+	<m2ocophale.fsf__34527.2158309401$1254511503$gmane$org@igel.home>
+	<m28wfsef79.fsf@igel.home>  <m2ocoo1qfi.fsf@igel.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 04 Oct 2009 08:53:27 +1100
+Message-Id: <1254606807.7122.23.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,47 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-g8dWq61TqxTUJofyJYYe
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2009-10-03 at 16:51 +0200, Andreas Schwab wrote:
+> Andreas Schwab <schwab@linux-m68k.org> writes:
+> 
+> > Andreas Schwab <schwab@linux-m68k.org> writes:
+> >
+> >> Anton Blanchard <anton@samba.org> writes:
+> >>
+> >>> On 64bit applications the VDSO is the only thing in segment 0. Since the VDSO
+> >>> is position independent we can remove the hint and let get_unmapped_area pick
+> >>> an area.
+> >>
+> >> This breaks gdb.  The section table in the VDSO image when mapped into
+> >> the process no longer contains meaningful values, and gdb rejects it.
+> >
+> > The problem is that the load segment requires 64k alignment, but the
+> > page allocater of course only provides PAGE_SIZE alignment, causing the
+> > image to be unaligned in memory.
+> 
+> Here is a patch.  The disadvantage is that now gdb complains that the
+> vdso does not contain section headers, because they are no longer
+> covered by the load segment.
 
-Am 03.10.09 16:40 schrieb(en) Wolfram Sang:
-> Sorry, I hardly know anything about the microcode. From what I know, =20
-> it shouldn't be much fun due to various bugs in the Bestcomm engine.
+Maybe a better fix is to force alignment in the kernel by requesting
+size + 64k - 4k and aligning it.
 
-Ummm.  That's not encouraging! :-/
+Ben.
 
-> Hey! No need for insults! ;)
-
-Sorry, that wasn't my intention, but it's a MUA I *know* it doesn't =20
-understand it...  most OSS clients do (like Balsa, Thunderbird, kmail, =20
-etc.).
-
-> > Or is '3676 in general not acceptable for patches?
->=20
-> Maybe. Could you try without next time, and we will see if it works =20
-> better?
-
-Actually, it's in Documentation/email-clients.txt - '3676 must not be =20
-used.  Sorry, should have read that before!  (However, messages =20
-*without* folding *and* with lines > 78 characters violate RFC2822...)
-
-> Yup, since -rc1. (git log --grep=3Dmtd-ram)
-
-Thanks!
-
-Cheers, Albrecht.
-
---=-g8dWq61TqxTUJofyJYYe
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBKx2k6n/9unNAn/9ERAoTaAKCZ3ZTB99dYnOVxcu4gJ/t507yC3ACePDtZ
-Oq/b6/xmzjH42hfq8LcOzKc=
-=hVIk
------END PGP SIGNATURE-----
-
---=-g8dWq61TqxTUJofyJYYe--
+> Andreas.
+> ---
+> >From 003c323c753d8717e58220c9560329882bcfa2c2 Mon Sep 17 00:00:00 2001
+> From: Andreas Schwab <schwab@linux-m68k.org>
+> Date: Sat, 3 Oct 2009 16:46:45 +0200
+> Subject: [PATCH] powerpc: fix unaligned load segment in vdso64
+> 
+> Since the page allocator can only guarantee PAGE_SIZE alignment the load
+> segment in the vdso object cannot claim more than that alignment.  Use 4k
+> alignment which is the minimum possible page size.
+> 
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> ---
+>  arch/powerpc/kernel/vdso64/Makefile |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
+> index 79da65d..d4be303 100644
+> --- a/arch/powerpc/kernel/vdso64/Makefile
+> +++ b/arch/powerpc/kernel/vdso64/Makefile
+> @@ -10,7 +10,9 @@ obj-vdso64 := $(addprefix $(obj)/, $(obj-vdso64))
+>  GCOV_PROFILE := n
+>  
+>  EXTRA_CFLAGS := -shared -fno-common -fno-builtin
+> +# Force maximum page size of 4k so that it works with any page size
+>  EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso64.so.1 \
+> +		-Wl,-z,max-page-size=4096 \
+>  		$(call cc-ldoption, -Wl$(comma)--hash-style=sysv)
+>  EXTRA_AFLAGS := -D__VDSO64__ -s
+>  
+> -- 
+> 1.6.4.4
+> 
+> 
