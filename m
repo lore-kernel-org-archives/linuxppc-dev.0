@@ -2,14 +2,15 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5E128B7BE6
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2009 07:27:00 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 002FAB7BE7
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2009 07:28:52 +1100 (EST)
 Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache
 	coherency rewrite
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OF1CF373A5.3E3C833B-ONC1257645.002E46F1-C1257645.002F3070@transmode.se>
+In-Reply-To: <OF7C895670.A7F16A1A-ONC1257645.00620A4D-C1257645.006ED40F@transmode.se>
 References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>
+	<1254212198.5256.0.camel@pasglop>
 	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
 	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>
 	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
@@ -19,13 +20,10 @@ References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode
 	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
 	<1254350159.5699.21.camel@pasglop>
 	<20091002214949.GA20514@b07421-ec1.am.freescale.net>
-	<OF4175DD8E.796930EB-ONC1257644.002A7135-C1257644.002C7929@transmode.se>
-	<1254558678.7122.7.camel@pasglop>
-	<OF0216D5A <1254567448.7122.8.camel@pasglop>
-	<OF1CF373A5.3E3C833B-ONC1257645.002E46F1-C1257645.002F3070@transmode.se>
+	<OF7C895670.A7F16A1A-ONC1257645.00620A4D-C1257645.006ED40F@transmode.se>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 05 Oct 2009 07:26:42 +1100
-Message-Id: <1254688002.7122.28.camel@pasglop>
+Date: Mon, 05 Oct 2009 07:28:38 +1100
+Message-Id: <1254688118.7122.30.camel@pasglop>
 Mime-Version: 1.0
 Cc: Scott Wood <scottwood@freescale.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -39,42 +37,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2009-10-04 at 10:35 +0200, Joakim Tjernlund wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 03/10/2009 12:57:28:
-> >
-> > On Sat, 2009-10-03 at 11:24 +0200, Joakim Tjernlund wrote:
-> > >
-> > > So yes, there is a missing _tlbil_va() missing for 8xx somewhere
-> > > but there is something more too.
-> > > Maybe your new filter functions and my
-> > >  powerpc, 8xx: DTLB Error must check for more errors.
-> > > will do the trick?
-> >
-> > Well, if we can't tell between a load and a store on a TLB miss, then
-> > we should probably let it create an unpopulated entry in all cases,
-> > so that we do take a proper DSI/ISI the second time around, which
-> > would then tell us where we come from...
+
+> I have managed to update the TLB code to make proper use of dirty and accessed states.
+> Advantages are:
+>  - I/D TLB Miss never needs to write to the linux pte, saving a few cycles
+
+That's good, that leaves us with only 40x to fix now. Also we can remove
+atomic updates of PTEs for all non-hash. It's pointless on those CPUs
+anyway.
+
+>  - Accessed is only set by I/D TLB Error, should be a plus when SWAP is used.
+
+No need for that neither.
+
+ISI/DSI shouldn't touch the PTE. They should just fall back to C code
+which takes care of it all.l
+
+>  - _PAGE_DIRTY is mapped to 0x100, the changed bit, and is set directly
+>     and there will be no extra DTLB Error to actually set the changed bit
+>     when a page has been made dirty.
+> - Proper RO/RW mapping of user space.
 > 
-> While looking closer on 8xx TLB handling I noticed we were taking
-> an extra TLB Error when making a page dirty. Tracked it down to:
-> static inline pte_t pte_mkdirty(pte_t pte) {
-> 	pte_val(pte) |= _PAGE_DIRTY; return pte; }
-> pte_mkdirty does not set HWWRITE thus forcing a new
-> TLB error to clear it. Adding HWWRITE to pte_mkdirty fixes the
-> problem.
+> Cons:
+>  - 4 more insn in TLB Miss handlers, but the since the linux pte isn't
+>    written it should still be a win.
+>
+> However, I did this on my 2.4 tree but I can port it to 2.6 if you guys
+> can test it for me.
 
-We should just get rid of HWWRITE like I did for 44x and BookE.
+Why don't you use and test 2.6 ? :-)
 
-> Looking at (especially pte_mkclean):
-> static inline pte_t pte_wrprotect(pte_t pte) {
-> 	pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE); return pte; }
-> static inline pte_t pte_mkclean(pte_t pte) {
-> 	pte_val(pte) &= ~(_PAGE_DIRTY | _PAGE_HWWRITE); return pte; }
-> 
-> it looks like a mistake not to include HWWRITE in pte_mkdirty(),
-> what do you think?
-
-Maybe yes. No big deal right now, we have more important problems
-to fix no ? :-)
-
+Cheers,
 Ben.
