@@ -1,34 +1,24 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A8A6FB7BB4
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Oct 2009 19:39:18 +1100 (EST)
-In-Reply-To: <1254567448.7122.8.camel@pasglop>
-References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>	
-	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
-	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>	
-	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
-	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
-	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>	
-	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
-	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
-	<1254350159.5699.21.camel@pasglop>	
-	<20091002214949.GA20514@b07421-ec1.am.freescale.net>
-	<OF4175DD8E.796930EB-ONC1257644.002A7135-C1257644.002C7929@transmode.se>
-	<1254558678.7122.7.camel@pasglop>	 <OF0216D5A
-	<1254567448.7122.8.camel@pasglop>
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
-	rewrite
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF1CF373A5.3E3C833B-ONC1257645.002E46F1-C1257645.002F3070@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sun, 4 Oct 2009 10:35:25 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Return-Path: <khali@linux-fr.org>
+Received: from bamako.nerim.net (bamako.nerim.net [62.4.17.28])
+	by ozlabs.org (Postfix) with ESMTP id 30E22B7BC2
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Oct 2009 20:35:25 +1100 (EST)
+Date: Sun, 4 Oct 2009 11:35:21 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH] sound: Don't assume i2c device probing always succeeds
+Message-ID: <20091004113521.6a0c1dbb@hyperion.delvare>
+In-Reply-To: <s5hiqezk3lg.wl%tiwai@suse.de>
+References: <20090930152542.3ef753ee@hyperion.delvare>
+	<s5hbpksy0yq.wl%tiwai@suse.de>
+	<20090930170006.76e145ca@hyperion.delvare>
+	<s5h4oqkxy3e.wl%tiwai@suse.de>
+	<20090930185505.1261e183@hyperion.delvare>
+	<s5hiqezk3lg.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
+	Tim Shepard <shep@alum.mit.edu>, alsa-devel@alsa-project.org,
+	Jaroslav Kysela <perex@perex.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,36 +28,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 03/10/2009 12:57:28:
->
-> On Sat, 2009-10-03 at 11:24 +0200, Joakim Tjernlund wrote:
-> >
-> > So yes, there is a missing _tlbil_va() missing for 8xx somewhere
-> > but there is something more too.
-> > Maybe your new filter functions and my
-> >  powerpc, 8xx: DTLB Error must check for more errors.
-> > will do the trick?
->
-> Well, if we can't tell between a load and a store on a TLB miss, then
-> we should probably let it create an unpopulated entry in all cases,
-> so that we do take a proper DSI/ISI the second time around, which
-> would then tell us where we come from...
+Hi Takashi,
 
-While looking closer on 8xx TLB handling I noticed we were taking
-an extra TLB Error when making a page dirty. Tracked it down to:
-static inline pte_t pte_mkdirty(pte_t pte) {
-	pte_val(pte) |= _PAGE_DIRTY; return pte; }
-pte_mkdirty does not set HWWRITE thus forcing a new
-TLB error to clear it. Adding HWWRITE to pte_mkdirty fixes the
-problem.
+On Thu, 01 Oct 2009 08:52:59 +0200, Takashi Iwai wrote:
+> At Wed, 30 Sep 2009 18:55:05 +0200,
+> Jean Delvare wrote:
+> > 
+> > On Wed, 30 Sep 2009 17:15:49 +0200, Takashi Iwai wrote:
+> > > Yes, indeed I prefer NULL check because the user can know the error
+> > > at the right place.  I share your concern about the code addition,
+> > > though :)
+> > > 
+> > > I already made a patch below, but it's totally untested.
+> > > It'd be helpful if someone can do review and build-test it.
+> > > 
+> > > 
+> > > thanks,
+> > > 
+> > > Takashi
+> > > 
+> > > ---
+> > > diff --git a/sound/aoa/codecs/tas.c b/sound/aoa/codecs/tas.c
+> > > index f0ebc97..0f810c8 100644
+> > > --- a/sound/aoa/codecs/tas.c
+> > > +++ b/sound/aoa/codecs/tas.c
+> > > @@ -897,6 +897,10 @@ static int tas_create(struct i2c_adapter *adapter,
+> > >  	client = i2c_new_device(adapter, &info);
+> > >  	if (!client)
+> > >  		return -ENODEV;
+> > > +	if (!client->driver) {
+> > > +		i2c_unregister_device(client);
+> > > +		return -ENODEV;
+> > > +	}
+> > >  
+> > >  	/*
+> > >  	 * Let i2c-core delete that device on driver removal.
+> > > diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
+> > > index 835fa19..473c5a6 100644
+> > > --- a/sound/ppc/keywest.c
+> > > +++ b/sound/ppc/keywest.c
+> > > @@ -59,6 +59,13 @@ static int keywest_attach_adapter(struct i2c_adapter *adapter)
+> > >  	strlcpy(info.type, "keywest", I2C_NAME_SIZE);
+> > >  	info.addr = keywest_ctx->addr;
+> > >  	keywest_ctx->client = i2c_new_device(adapter, &info);
+> > > +	if (!keywest_ctx->client)
+> > > +		return -ENODEV;
+> > > +	if (!keywest_ctx->client->driver) {
+> > > +		i2c_unregister_device(keywest_ctx->client);
+> > > +		keywest_ctx->client = NULL;
+> > > +		return -ENODEV;
+> > > +	}
+> > >  	
+> > >  	/*
+> > >  	 * Let i2c-core delete that device on driver removal.
+> > 
+> > This looks good to me. Please add the following comment before the
+> > client->driver check in both drivers:
+> > 
+> > 	/*
+> > 	 * We know the driver is already loaded, so the device should be
+> > 	 * already bound. If not it means binding failed, and then there
+> > 	 * is no point in keeping the device instantiated.
+> > 	 */
+> > 
+> > Otherwise it's a little difficult to understand why the check is there.
+> 
+> Fair enough.  I applied the patch with the comment now.
+> Thanks!
 
-Looking at (especially pte_mkclean):
-static inline pte_t pte_wrprotect(pte_t pte) {
-	pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE); return pte; }
-static inline pte_t pte_mkclean(pte_t pte) {
-	pte_val(pte) &= ~(_PAGE_DIRTY | _PAGE_HWWRITE); return pte; }
+I see this is upstream now. While the keywest fix was essentially
+theoretical, the tas one addresses a crash which really could happen,
+so I think it would be worth sending to stable for 2.6.31. What do you
+think? Will you take care, or do you want me to?
 
-it looks like a mistake not to include HWWRITE in pte_mkdirty(),
-what do you think?
-
- Jocke
+Thanks,
+-- 
+Jean Delvare
