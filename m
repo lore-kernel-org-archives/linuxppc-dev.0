@@ -2,11 +2,13 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 786EBB7BF6
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2009 07:40:18 +1100 (EST)
-In-Reply-To: <1254688002.7122.28.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id D7BEBB7BC8
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2009 07:50:18 +1100 (EST)
+In-Reply-To: <1254688118.7122.30.camel@pasglop>
 References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>	
-	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>
+	<1254212198.5256.0.camel@pasglop>
+	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
+	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>	
 	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
 	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
 	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>	
@@ -14,16 +16,14 @@ References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode
 	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
 	<1254350159.5699.21.camel@pasglop>	
 	<20091002214949.GA20514@b07421-ec1.am.freescale.net>
-	<OF4175DD8E.796930EB-ONC1257644.002A7135-C1257644.002C7929@transmode.se>
-	<1254558678.7122.7.camel@pasglop>	 <OF0216D5A
-	<1254567448.7122.8.camel@pasglop>
-	<1254688002.7122.28.camel@pasglop>
+	<OF7C895670.A7F16A1A-ONC1257645.00620A4D-C1257645.006ED40F@transmode.se>
+	<1254688118.7122.30.camel@pasglop>
 Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
 	rewrite
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OFE9BBCE0A.D42052EF-ONC1257645.00711ADC-C1257645.00715B3C@transmode.se>
+Message-ID: <OFC4FF22E6.2B736FAD-ONC1257645.00715E8C-C1257645.00720E57@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sun, 4 Oct 2009 22:38:09 +0200
+Date: Sun, 4 Oct 2009 22:45:47 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Cc: Scott Wood <scottwood@freescale.com>,
@@ -38,48 +38,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 04/10/2009 22:26:42:
-> On Sun, 2009-10-04 at 10:35 +0200, Joakim Tjernlund wrote:
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 03/10/2009 12:57:28:
-> > >
-> > > On Sat, 2009-10-03 at 11:24 +0200, Joakim Tjernlund wrote:
-> > > >
-> > > > So yes, there is a missing _tlbil_va() missing for 8xx somewhere
-> > > > but there is something more too.
-> > > > Maybe your new filter functions and my
-> > > >  powerpc, 8xx: DTLB Error must check for more errors.
-> > > > will do the trick?
-> > >
-> > > Well, if we can't tell between a load and a store on a TLB miss, then
-> > > we should probably let it create an unpopulated entry in all cases,
-> > > so that we do take a proper DSI/ISI the second time around, which
-> > > would then tell us where we come from...
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 04/10/2009 22:28:38:
+>
+> > I have managed to update the TLB code to make proper use of dirty and accessed states.
+> > Advantages are:
+> >  - I/D TLB Miss never needs to write to the linux pte, saving a few cycles
+>
+> That's good, that leaves us with only 40x to fix now. Also we can remove
+> atomic updates of PTEs for all non-hash. It's pointless on those CPUs
+> anyway.
+>
+> >  - Accessed is only set by I/D TLB Error, should be a plus when SWAP is used.
+>
+> No need for that neither.
+
+Since 8xx lacks HW support for ACCESSED, the only way is map
+the page NoAccess and take a TLB Error on first access that sets
+access bit (or bails to do_page_fault)
+
+>
+> ISI/DSI shouldn't touch the PTE. They should just fall back to C code
+> which takes care of it all.l
+
+Yes, that is what I do now(i.e I only read the pte). ISI and DSI is the
+TLB Miss handlers on 8xx.
+
+>
+> >  - _PAGE_DIRTY is mapped to 0x100, the changed bit, and is set directly
+> >     and there will be no extra DTLB Error to actually set the changed bit
+> >     when a page has been made dirty.
+> > - Proper RO/RW mapping of user space.
 > >
-> > While looking closer on 8xx TLB handling I noticed we were taking
-> > an extra TLB Error when making a page dirty. Tracked it down to:
-> > static inline pte_t pte_mkdirty(pte_t pte) {
-> >    pte_val(pte) |= _PAGE_DIRTY; return pte; }
-> > pte_mkdirty does not set HWWRITE thus forcing a new
-> > TLB error to clear it. Adding HWWRITE to pte_mkdirty fixes the
-> > problem.
->
-> We should just get rid of HWWRITE like I did for 44x and BookE.
-
-I am trying :)
-
->
-> > Looking at (especially pte_mkclean):
-> > static inline pte_t pte_wrprotect(pte_t pte) {
-> >    pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE); return pte; }
-> > static inline pte_t pte_mkclean(pte_t pte) {
-> >    pte_val(pte) &= ~(_PAGE_DIRTY | _PAGE_HWWRITE); return pte; }
+> > Cons:
+> >  - 4 more insn in TLB Miss handlers, but the since the linux pte isn't
+> >    written it should still be a win.
 > >
-> > it looks like a mistake not to include HWWRITE in pte_mkdirty(),
-> > what do you think?
+> > However, I did this on my 2.4 tree but I can port it to 2.6 if you guys
+> > can test it for me.
 >
-> Maybe yes. No big deal right now, we have more important problems
-> to fix no ? :-)
+> Why don't you use and test 2.6 ? :-)
 
-The missing invalidate you guys need to work out. I have no clue
-where to put it. If we are really lucky, getting rid of HWWRITE
-might help :)
+Because porting my 8xx board to 2.6 isn't going to be easy so
+I havn't yet. One day I might when we can't get away with 2.4 on our
+old boards.
