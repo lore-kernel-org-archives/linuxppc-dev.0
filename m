@@ -1,24 +1,23 @@
-Return-Path: <khali@linux-fr.org>
-Received: from bamako.nerim.net (bamako.nerim.net [62.4.17.28])
-	by ozlabs.org (Postfix) with ESMTP id 30E22B7BC2
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Oct 2009 20:35:25 +1100 (EST)
-Date: Sun, 4 Oct 2009 11:35:21 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [PATCH] sound: Don't assume i2c device probing always succeeds
-Message-ID: <20091004113521.6a0c1dbb@hyperion.delvare>
-In-Reply-To: <s5hiqezk3lg.wl%tiwai@suse.de>
-References: <20090930152542.3ef753ee@hyperion.delvare>
-	<s5hbpksy0yq.wl%tiwai@suse.de>
-	<20090930170006.76e145ca@hyperion.delvare>
-	<s5h4oqkxy3e.wl%tiwai@suse.de>
-	<20090930185505.1261e183@hyperion.delvare>
-	<s5hiqezk3lg.wl%tiwai@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
-	Tim Shepard <shep@alum.mit.edu>, alsa-devel@alsa-project.org,
-	Jaroslav Kysela <perex@perex.cz>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 45E16B7BF4
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Oct 2009 23:35:45 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 1/3] powerpc: Move 64bit VDSO to improve context switch
+	performance
+References: <20090714065350.659537380@samba.org>
+	<20090714065425.301516312@samba.org>
+	<m2ocophale.fsf__34527.2158309401$1254511503$gmane$org@igel.home>
+	<m28wfsef79.fsf@igel.home> <m2ocoo1qfi.fsf@igel.home>
+	<1254606807.7122.23.camel@pasglop>
+Date: Sun, 04 Oct 2009 14:35:41 +0200
+In-Reply-To: <1254606807.7122.23.camel@pasglop> (Benjamin Herrenschmidt's
+	message of "Sun, 04 Oct 2009 08:53:27 +1100")
+Message-ID: <m2skdze3qa.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,79 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Takashi,
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-On Thu, 01 Oct 2009 08:52:59 +0200, Takashi Iwai wrote:
-> At Wed, 30 Sep 2009 18:55:05 +0200,
-> Jean Delvare wrote:
-> > 
-> > On Wed, 30 Sep 2009 17:15:49 +0200, Takashi Iwai wrote:
-> > > Yes, indeed I prefer NULL check because the user can know the error
-> > > at the right place.  I share your concern about the code addition,
-> > > though :)
-> > > 
-> > > I already made a patch below, but it's totally untested.
-> > > It'd be helpful if someone can do review and build-test it.
-> > > 
-> > > 
-> > > thanks,
-> > > 
-> > > Takashi
-> > > 
-> > > ---
-> > > diff --git a/sound/aoa/codecs/tas.c b/sound/aoa/codecs/tas.c
-> > > index f0ebc97..0f810c8 100644
-> > > --- a/sound/aoa/codecs/tas.c
-> > > +++ b/sound/aoa/codecs/tas.c
-> > > @@ -897,6 +897,10 @@ static int tas_create(struct i2c_adapter *adapter,
-> > >  	client = i2c_new_device(adapter, &info);
-> > >  	if (!client)
-> > >  		return -ENODEV;
-> > > +	if (!client->driver) {
-> > > +		i2c_unregister_device(client);
-> > > +		return -ENODEV;
-> > > +	}
-> > >  
-> > >  	/*
-> > >  	 * Let i2c-core delete that device on driver removal.
-> > > diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
-> > > index 835fa19..473c5a6 100644
-> > > --- a/sound/ppc/keywest.c
-> > > +++ b/sound/ppc/keywest.c
-> > > @@ -59,6 +59,13 @@ static int keywest_attach_adapter(struct i2c_adapter *adapter)
-> > >  	strlcpy(info.type, "keywest", I2C_NAME_SIZE);
-> > >  	info.addr = keywest_ctx->addr;
-> > >  	keywest_ctx->client = i2c_new_device(adapter, &info);
-> > > +	if (!keywest_ctx->client)
-> > > +		return -ENODEV;
-> > > +	if (!keywest_ctx->client->driver) {
-> > > +		i2c_unregister_device(keywest_ctx->client);
-> > > +		keywest_ctx->client = NULL;
-> > > +		return -ENODEV;
-> > > +	}
-> > >  	
-> > >  	/*
-> > >  	 * Let i2c-core delete that device on driver removal.
-> > 
-> > This looks good to me. Please add the following comment before the
-> > client->driver check in both drivers:
-> > 
-> > 	/*
-> > 	 * We know the driver is already loaded, so the device should be
-> > 	 * already bound. If not it means binding failed, and then there
-> > 	 * is no point in keeping the device instantiated.
-> > 	 */
-> > 
-> > Otherwise it's a little difficult to understand why the check is there.
-> 
-> Fair enough.  I applied the patch with the comment now.
-> Thanks!
+> Maybe a better fix is to force alignment in the kernel by requesting
+> size + 64k - 4k and aligning it.
 
-I see this is upstream now. While the keywest fix was essentially
-theoretical, the tas one addresses a crash which really could happen,
-so I think it would be worth sending to stable for 2.6.31. What do you
-think? Will you take care, or do you want me to?
+Sure you are right.
 
-Thanks,
+Andreas.
+
+>From b9441a3d2148d439e2730def3222a7b70dccc432 Mon Sep 17 00:00:00 2001
+From: Andreas Schwab <schwab@linux-m68k.org>
+Date: Sun, 4 Oct 2009 14:29:04 +0200
+Subject: [PATCH] powerpc: align vDSO base address
+
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ arch/powerpc/kernel/vdso.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index 94e2df3..137dc22 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -50,6 +50,9 @@
+ /* Max supported size for symbol names */
+ #define MAX_SYMNAME	64
+ 
++/* The alignment of the vDSO */
++#define VDSO_ALIGNMENT	(1 << 16)
++
+ extern char vdso32_start, vdso32_end;
+ static void *vdso32_kbase = &vdso32_start;
+ static unsigned int vdso32_pages;
+@@ -231,15 +234,21 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	 * pick a base address for the vDSO in process space. We try to put it
+ 	 * at vdso_base which is the "natural" base for it, but we might fail
+ 	 * and end up putting it elsewhere.
++	 * Add enough to the size so that the result can be aligned.
+ 	 */
+ 	down_write(&mm->mmap_sem);
+ 	vdso_base = get_unmapped_area(NULL, vdso_base,
+-				      vdso_pages << PAGE_SHIFT, 0, 0);
++				      (vdso_pages << PAGE_SHIFT) +
++				      ((VDSO_ALIGNMENT - 1) & PAGE_MASK),
++				      0, 0);
+ 	if (IS_ERR_VALUE(vdso_base)) {
+ 		rc = vdso_base;
+ 		goto fail_mmapsem;
+ 	}
+ 
++	/* Add required alignment. */
++	vdso_base = ALIGN(vdso_base, VDSO_ALIGNMENT);
++
+ 	/*
+ 	 * Put vDSO base into mm struct. We need to do this before calling
+ 	 * install_special_mapping or the perf counter mmap tracking code
 -- 
-Jean Delvare
+1.6.4.4
+
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
