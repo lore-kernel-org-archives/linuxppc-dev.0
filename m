@@ -1,23 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D94FBB7BCF
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Oct 2009 08:53:48 +1100 (EST)
-Subject: Re: [patch 1/3] powerpc: Move 64bit VDSO to improve context switch
-	performance
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-In-Reply-To: <m2ocoo1qfi.fsf@igel.home>
-References: <20090714065350.659537380@samba.org>
-	<20090714065425.301516312@samba.org>
-	<m2ocophale.fsf__34527.2158309401$1254511503$gmane$org@igel.home>
-	<m28wfsef79.fsf@igel.home>  <m2ocoo1qfi.fsf@igel.home>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 04 Oct 2009 08:53:27 +1100
-Message-Id: <1254606807.7122.23.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+	by ozlabs.org (Postfix) with ESMTPS id A8A6FB7BB4
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Oct 2009 19:39:18 +1100 (EST)
+In-Reply-To: <1254567448.7122.8.camel@pasglop>
+References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>	
+	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
+	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>	
+	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
+	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
+	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>	
+	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
+	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
+	<1254350159.5699.21.camel@pasglop>	
+	<20091002214949.GA20514@b07421-ec1.am.freescale.net>
+	<OF4175DD8E.796930EB-ONC1257644.002A7135-C1257644.002C7929@transmode.se>
+	<1254558678.7122.7.camel@pasglop>	 <OF0216D5A
+	<1254567448.7122.8.camel@pasglop>
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
+	rewrite
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF1CF373A5.3E3C833B-ONC1257645.002E46F1-C1257645.002F3070@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Sun, 4 Oct 2009 10:35:25 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,64 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2009-10-03 at 16:51 +0200, Andreas Schwab wrote:
-> Andreas Schwab <schwab@linux-m68k.org> writes:
-> 
-> > Andreas Schwab <schwab@linux-m68k.org> writes:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 03/10/2009 12:57:28:
+>
+> On Sat, 2009-10-03 at 11:24 +0200, Joakim Tjernlund wrote:
 > >
-> >> Anton Blanchard <anton@samba.org> writes:
-> >>
-> >>> On 64bit applications the VDSO is the only thing in segment 0. Since the VDSO
-> >>> is position independent we can remove the hint and let get_unmapped_area pick
-> >>> an area.
-> >>
-> >> This breaks gdb.  The section table in the VDSO image when mapped into
-> >> the process no longer contains meaningful values, and gdb rejects it.
-> >
-> > The problem is that the load segment requires 64k alignment, but the
-> > page allocater of course only provides PAGE_SIZE alignment, causing the
-> > image to be unaligned in memory.
-> 
-> Here is a patch.  The disadvantage is that now gdb complains that the
-> vdso does not contain section headers, because they are no longer
-> covered by the load segment.
+> > So yes, there is a missing _tlbil_va() missing for 8xx somewhere
+> > but there is something more too.
+> > Maybe your new filter functions and my
+> >  powerpc, 8xx: DTLB Error must check for more errors.
+> > will do the trick?
+>
+> Well, if we can't tell between a load and a store on a TLB miss, then
+> we should probably let it create an unpopulated entry in all cases,
+> so that we do take a proper DSI/ISI the second time around, which
+> would then tell us where we come from...
 
-Maybe a better fix is to force alignment in the kernel by requesting
-size + 64k - 4k and aligning it.
+While looking closer on 8xx TLB handling I noticed we were taking
+an extra TLB Error when making a page dirty. Tracked it down to:
+static inline pte_t pte_mkdirty(pte_t pte) {
+	pte_val(pte) |= _PAGE_DIRTY; return pte; }
+pte_mkdirty does not set HWWRITE thus forcing a new
+TLB error to clear it. Adding HWWRITE to pte_mkdirty fixes the
+problem.
 
-Ben.
+Looking at (especially pte_mkclean):
+static inline pte_t pte_wrprotect(pte_t pte) {
+	pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE); return pte; }
+static inline pte_t pte_mkclean(pte_t pte) {
+	pte_val(pte) &= ~(_PAGE_DIRTY | _PAGE_HWWRITE); return pte; }
 
-> Andreas.
-> ---
-> >From 003c323c753d8717e58220c9560329882bcfa2c2 Mon Sep 17 00:00:00 2001
-> From: Andreas Schwab <schwab@linux-m68k.org>
-> Date: Sat, 3 Oct 2009 16:46:45 +0200
-> Subject: [PATCH] powerpc: fix unaligned load segment in vdso64
-> 
-> Since the page allocator can only guarantee PAGE_SIZE alignment the load
-> segment in the vdso object cannot claim more than that alignment.  Use 4k
-> alignment which is the minimum possible page size.
-> 
-> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
-> ---
->  arch/powerpc/kernel/vdso64/Makefile |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-> index 79da65d..d4be303 100644
-> --- a/arch/powerpc/kernel/vdso64/Makefile
-> +++ b/arch/powerpc/kernel/vdso64/Makefile
-> @@ -10,7 +10,9 @@ obj-vdso64 := $(addprefix $(obj)/, $(obj-vdso64))
->  GCOV_PROFILE := n
->  
->  EXTRA_CFLAGS := -shared -fno-common -fno-builtin
-> +# Force maximum page size of 4k so that it works with any page size
->  EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso64.so.1 \
-> +		-Wl,-z,max-page-size=4096 \
->  		$(call cc-ldoption, -Wl$(comma)--hash-style=sysv)
->  EXTRA_AFLAGS := -D__VDSO64__ -s
->  
-> -- 
-> 1.6.4.4
-> 
-> 
+it looks like a mistake not to include HWWRITE in pte_mkdirty(),
+what do you think?
+
+ Jocke
