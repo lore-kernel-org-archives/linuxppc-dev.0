@@ -1,28 +1,42 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 60F8FB7BCF
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 07:37:55 +1100 (EST)
-Subject: Re: [FTRACE] Enabling function_graph causes OOPS
-From: Steven Rostedt <rostedt@goodmis.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9D751B7BAA
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 08:04:32 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n95L4HQj007790
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2009 14:04:18 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n95L6pAv001364
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2009 16:06:51 -0500 (CDT)
+Message-ID: <4ACA5F6B.6050400@freescale.com>
+Date: Mon, 05 Oct 2009 16:04:43 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1254774039.7122.35.camel@pasglop>
-References: <4A5C5D65.3030906@in.ibm.com>
-	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
-	<4A76BE81.4080707@in.ibm.com>
-	<1252458303.20985.10.camel@gandalf.stny.rr.com>
-	<4AA74AE2.5090001@in.ibm.com>
-	<1252814877.26049.93.camel@gandalf.stny.rr.com>
-	<1252816650.8375.70.camel@pasglop>
-	<1252848060.26049.647.camel@gandalf.stny.rr.com>
-	<1252873548.8375.73.camel@pasglop> <1252915227.8375.118.camel@pasglop>
-	<1254749155.13160.6.camel@gandalf.stny.rr.com>
-	<1254774039.7122.35.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 05 Oct 2009 16:37:53 -0400
-Message-Id: <1254775073.13160.13.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: rostedt@goodmis.org
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
+	rewrite
+References: <OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>	
+	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>	
+	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>	
+	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>	
+	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>	
+	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>	
+	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>	
+	<1254350159.5699.21.camel@pasglop>	
+	<20091002214949.GA20514@b07421-ec1.am.freescale.net>	
+	<1254521073.7122.5.camel@pasglop>
+	<20091005192806.GC3576@loki.buserror.net>
+	<1254774555.7122.38.camel@pasglop>
+In-Reply-To: <1254774555.7122.38.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,32 +46,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-10-06 at 07:20 +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-10-05 at 09:25 -0400, Steven Rostedt wrote:
-> > > > Sachin, can you give me more details on how you built that kernel ? (or
-> > > > give them again in case I missed them the first time around :-), ie,
-> > > > what toolchain, options, etc... or even better, give me remote access to
-> > > > the build host ?
-> > > 
-> > > Ok, got access and had a quick look... seems to be a toolchain problem
-> > > to me. I'll investigate more tomorrow.
-> > 
-> > Hi Ben,
-> > 
-> > Any more word on this issue? 
+Benjamin Herrenschmidt wrote:
+> On Mon, 2009-10-05 at 14:28 -0500, Scott Wood wrote:
+>> Yes, it hits ptep_set_access_flags() and adding _tlbil_va there helps (I
+>> didn't put it in the filter function, because that doesn't take address as a
+>> parameter).  I'd misread your suggestion as referring to the various changes
+>> to set_pte_filter() that were posted.
+>>
+>> As for unconditionally invalidating in set_pte_filter(), that doesn't boot
+>> for me unless I check for kernel addresses -- I guess we populate page
+>> tables that overlap the pinned large page region? 
 > 
-> Didn't you fix it using a TOC access ?
-> 
-> Unless I'm confusing things, I think the problem is the usage
-> of LOAD_REG_IMMEDIATE which generates relocs that we don't support
-> when CONFIG_RELOCATABLE is set.
-> 
-> I've merged a patch that post-processes the kernel now, to check
-> for such relocs so at least you should be warned at build time.
+> Good point. I think we do on 8xx. Does doing it in set_pte_filter()
+> (with the kernel check) makes any difference ? faster ? slower ? no
+> visible change ?
 
-I thought we had two issues. One was the use of the relocs that did
-cause issues. But then there was still crashes reported after that.
-IIRC. I'm still suffering jetlag, so my memory is not that fresh about
-this.
+ptep_set_access_flags() is enough to make the worst of it go away.  I'm 
+having another intermittent problem that seems to happen more often 
+without the change in set_pte_filter(), but I've yet to narrow down 
+what's actually going on there.
 
--- Steve
+-Scott
