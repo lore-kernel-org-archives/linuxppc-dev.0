@@ -1,42 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9D751B7BAA
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 08:04:32 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n95L4HQj007790
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2009 14:04:18 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n95L6pAv001364
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2009 16:06:51 -0500 (CDT)
-Message-ID: <4ACA5F6B.6050400@freescale.com>
-Date: Mon, 05 Oct 2009 16:04:43 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 38CE9B7BA9
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 08:08:15 +1100 (EST)
+In-Reply-To: <20091005200941.GD3576@loki.buserror.net>
+References: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20091005181233.GA3576@loki.buserror.net>
+	<OF44D5E829.2889B774-ONC1257646.00645628-C1257646.006568EE@transmode.se>
+	<20091005200941.GD3576@loki.buserror.net>
+Subject: Re: [PATCH 0/6] PowerPc 8xx TLB/MMU fixes
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OFFC147C60.2DA4B63D-ONC1257646.00733843-C1257646.0073CFFD@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Mon, 5 Oct 2009 23:04:58 +0200
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
-	rewrite
-References: <OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>	
-	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>	
-	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>	
-	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>	
-	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>	
-	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>	
-	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>	
-	<1254350159.5699.21.camel@pasglop>	
-	<20091002214949.GA20514@b07421-ec1.am.freescale.net>	
-	<1254521073.7122.5.camel@pasglop>
-	<20091005192806.GC3576@loki.buserror.net>
-	<1254774555.7122.38.camel@pasglop>
-In-Reply-To: <1254774555.7122.38.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-type: text/plain; charset=US-ASCII
+Cc: Rex Feany <RFeany@mrv.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,24 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2009-10-05 at 14:28 -0500, Scott Wood wrote:
->> Yes, it hits ptep_set_access_flags() and adding _tlbil_va there helps (I
->> didn't put it in the filter function, because that doesn't take address as a
->> parameter).  I'd misread your suggestion as referring to the various changes
->> to set_pte_filter() that were posted.
->>
->> As for unconditionally invalidating in set_pte_filter(), that doesn't boot
->> for me unless I check for kernel addresses -- I guess we populate page
->> tables that overlap the pinned large page region? 
-> 
-> Good point. I think we do on 8xx. Does doing it in set_pte_filter()
-> (with the kernel check) makes any difference ? faster ? slower ? no
-> visible change ?
+Scott Wood <scottwood@freescale.com> wrote on 05/10/2009 22:09:41:
+>
+> On Mon, Oct 05, 2009 at 08:27:39PM +0200, Joakim Tjernlund wrote:
+> > > After resolving the conflict, without adding tlbil_va in do_page_fault(), I
+> > > get the same stuck behavior as before.
+> >
+> > Expected, I havn't not tried to fix the missing tlbil_va(). That is
+> > different problem that you and Ben needs to sort out.
+>
+> Right, I just wanted to be clear about which results were from which
+> modifications.
+>
+> > >  With tlbil_va, I get this (not sure
+> > > if it's related to using the wrong base tree):
+> >
+> > Could be the debug code doing something bad or the
+> > "Fixup DAR from buggy dcbX instructions". Could you back that one out?
+>
+> That gets rid of the segfaults.  The bootup gets stuck running udev, though
+> -- the system is either idle, or it's stuck doing some syscall.
 
-ptep_set_access_flags() is enough to make the worst of it go away.  I'm 
-having another intermittent problem that seems to happen more often 
-without the change in set_pte_filter(), but I've yet to narrow down 
-what's actually going on there.
+Ok, that just means that my asm version of fixing up dcbX insn does not work.
 
--Scott
+>
+> I see it sometimes (but less reliably) without this patchset, so it may just
+> be changing the circumstances to expose the issue more consistently.  Or
+> maybe I'm seeing the dcbX bug?  There do seem to be dcbX instructions in the
+> dynamic linker I'm using (including a disturbing section that appears to be
+> assuming 32 byte cache lines, even though this is supposed to be an 8xx
+> RFS).
+
+Yes, every ld.so uses dcbX and icbi insn when relocatin code.
+Maybe you see some version of the dcbX bug, but my fault.c should
+fix them up. My bet would be the 32 byte cache line, it will miss
+out every second line and so the results are unreliable.
+
+>
+> I'll look into it.
+>
+> > and if that does not help, backout:
+> > "start using dcbX instructions in various copy routines" too.
+>
+> No difference.
+
+Good, it seems possible to uses the dcbX insn now. I will
+have to fixup fault a bit more though.
