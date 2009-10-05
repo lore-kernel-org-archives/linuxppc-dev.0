@@ -2,25 +2,18 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7B04CB7BBE
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 10:38:46 +1100 (EST)
-In-Reply-To: <1254784539.7122.52.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id B1019B7BA5
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 10:53:47 +1100 (EST)
+In-Reply-To: <1254782248.7122.49.camel@pasglop>
 References: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1254744999-3158-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1254744999-3158-3-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1254744999-3158-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1254773824.7122.33.camel@pasglop>	
-	<OF3182684B.BB80DBCF-ONC1257646.0073D59B-C1257646.0075AB6F@transmode.se>
-	<1254778643.7122.43.camel@pasglop>	
-	<OF16069D5F.03682AAC-ONC1257646.00774BB8-C1257646.0078E24B@transmode.se>
-	<1254780556.7122.47.camel@pasglop>	
-	<OF346FF2E6.3CCDA0FA-ONC1257646.007C13A0-C1257646.007DF396@transmode.se>
-	<1254784539.7122.52.camel@pasglop>
-Subject: Re: [PATCH 3/6] 8xx: get rid of _PAGE_HWWRITE dependency in MMU.
+	<20091005220420.GA27923@compile2.chatsunix.int.mrv.com>
+	<OF9AD6CA21.DCD59A1B-ONC1257646.007AE622-C1257646.007BB767@transmode.se>
+	<1254782248.7122.49.camel@pasglop>
+Subject: Re: [PATCH 0/6] PowerPc 8xx TLB/MMU fixes
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OFB8E4035A.83748CF0-ONC1257646.0080A097-C1257646.00819DD6@transmode.se>
+Message-ID: <OF2DE63E1A.21EA8BF0-ONC1257646.0082A7F0-C1257646.0082E281@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 6 Oct 2009 01:35:45 +0200
+Date: Tue, 6 Oct 2009 01:49:36 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Cc: Scott Wood <scottwood@freescale.com>,
@@ -35,66 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 06/10/2009 01:15:39:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 06/10/2009 00:37:28:
 >
-> On Tue, 2009-10-06 at 00:55 +0200, Joakim Tjernlund wrote:
-> > > Sure but if dirty is cleared by the kernel, then you also need to
-> > remove
-> > > write permission in the TLB or it will miss setting dirty on the
-> > next
-> > > store to the page.
+> On Tue, 2009-10-06 at 00:31 +0200, Joakim Tjernlund wrote:
 > >
-> > Dirty map to HW changed bit so if kernel clears it, the next
-> > store will trap to DTLB error. There I will check RW and clear it
-> > again
-> > without trapping to C. Is that OK? Not if I read you correcly below ..
->
-> Well, if the HW has the ability to enforce trap when store with !DIRTY,
-
-Yes, provided that the kernel invalidates the TLB too so the next access
-will provoke a TLB Miss, which will then provoke a TLB error. The TLB
-error routine checks VALID, RW and USER(if not a kernel access), then sets
-ACCESSED & DIRTY and writes the TLB(RPN reg).
-
-Perhaps the missing invalidate is haunting us here?
-
-> then that's fine, just map it that way, but you shouldn't have to handle
-> it in the DTLB error neither, the kernel will fix it up for you in
-> handle_pte_fault().
-
-Does not all ppc have the Changed bit?
-
->
-> I think I need to get myself an 8xx manual and figure out what that damn
-> MMU actually does :-)
-
-Please do, get the mpc862 users manual :)
-
->
-> > No it's really !(RW _AND_ DIRTY) -> no store permitted, and
+> > regs or regs->nip is NULL? Either one does not make sense
+> > In any case it might be a secondary problem as DAR is NULL already
+> > when you
+> > enter the page fault.
+> > >
+> > >                 insn = *((unsigned long *)regs->nip);
+> > > c000e110:       80 a9 00 00     lwz     r5,0(r9)
+> > >
+> > > fails.
 > >
-> > ..  hmm, I don't do that. I should do a
-> >     if ( store && !(pte & (RW | DIRTY))
-> >        goto DSI
-> >  in DTLB error?
+> > hmm, I wonder if you managed to invalidate the a kernel TLB?
+> > Are you using pinned kernel TLBs?
 >
-> Well, if the HW does the test of DIRTY, then it's fine, as you seem to
-> suggest above. _something_ needs to do it, either SW or HW, ie, we need
-> to catch any attempt to store to a non-dirty page to set dirty.
+> You should not dereference a user address like that. Use get_user !
 
-Yes, I think I do this.
+So how does this look? Does it change anything?
+It should as the previous way was way off :(
 
->
-> > > !(PRESENT _AND_ ACCESSED) -> no access permitted.
-> >
-> > Yes, how about those pinned kernel ptes. Do they have ACCESSED from
-> > start?
->
-> They should.
->
-> Cheers,
-> Ben.
->
->
->
->
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index c33c6de..08a392f 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -153,7 +153,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+ #ifdef DEBUG_DCBX
+ 		const char *istr = NULL;
+
+-		insn = *((unsigned long *)regs->nip);
++		__get_user(insn, (unsigned long __user *)regs->nip);
+ 		if (((insn >> (31-5)) & 0x3f) == 31) {
+ 			if (((insn >> 1) & 0x3ff) == 1014) /* dcbz ? 0x3f6 */
+ 				istr = "dcbz";
+@@ -178,11 +178,12 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+ 					       ra, rb, dar);
+ 					is_write = 0;
+ 				}
+-
++#if 0
+ 				if (trap == 0x300 && address != dar) {
+ 					__asm__ ("mtdar %0" : : "r" (dar));
+ 					return 0;
+ 				}
++#endif
+ 			}
+ 		}
+ #endif
+@@ -191,7 +192,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+
+ 			/* This is from a dcbX or icbi insn gone bad, these
+ 			 * insn do not set DAR so we have to do it here instead */
+-			insn = *((unsigned long *)regs->nip);
++			__get_user(insn, (unsigned long __user *)regs->nip);
+
+ 			ra = (insn >> (31-15)) & 0x1f; /* Reg RA */
+ 			rb = (insn >> (31-20)) & 0x1f; /* Reg RB */
