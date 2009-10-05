@@ -1,23 +1,26 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f173.google.com (mail-iw0-f173.google.com
-	[209.85.223.173]) by ozlabs.org (Postfix) with ESMTP id A60F1B7BD9
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 00:47:13 +1100 (EST)
-Received: by iwn3 with SMTP id 3so1661873iwn.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 05 Oct 2009 06:47:12 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4AC9C6AA.6060009@denx.de>
-References: <4AADF93C.3030604@denx.de> <20090914080322.GA3164@pengutronix.de>
-	<fa686aa40909140745u2cf1dba7q8ae2af53c87bd216@mail.gmail.com>
-	<4AC9A463.1080903@denx.de> <20091005095340.GA3890@pengutronix.de>
-	<4AC9C6AA.6060009@denx.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 5 Oct 2009 07:46:52 -0600
-Message-ID: <fa686aa40910050646p168c2bbfi4b432778827102c9@mail.gmail.com>
-Subject: Re: [PATCH v2] mpc5200: support for the MAN mpc5200 based board uc101
-To: hs@denx.de
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 64AFDB7B7F
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 00:47:25 +1100 (EST)
+Subject: Re: [FTRACE] Enabling function_graph causes OOPS
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1252915227.8375.118.camel@pasglop>
+References: <4A5C5D65.3030906@in.ibm.com>
+	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
+	<4A76BE81.4080707@in.ibm.com>
+	<1252458303.20985.10.camel@gandalf.stny.rr.com>
+	<4AA74AE2.5090001@in.ibm.com>
+	<1252814877.26049.93.camel@gandalf.stny.rr.com>
+	<1252816650.8375.70.camel@pasglop>
+	<1252848060.26049.647.camel@gandalf.stny.rr.com>
+	<1252873548.8375.73.camel@pasglop> <1252915227.8375.118.camel@pasglop>
+Content-Type: text/plain
+Date: Mon, 05 Oct 2009 09:25:55 -0400
+Message-Id: <1254749155.13160.6.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 5, 2009 at 4:12 AM, Heiko Schocher <hs@denx.de> wrote:
-> Wolfram Sang wrote:
->> Is this an official binding? I also did an gpio-watchdog a while ago and there
->> were some issues with the binding, IIRC. Would be nice if this has been solved
->> meanwhile.
->
-> Oh, sorry, no. I remove it.
+On Mon, 2009-09-14 at 18:00 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-09-14 at 06:25 +1000, Benjamin Herrenschmidt wrote:
+> > > > .../...
+> > > > 
+> > > > > Something is totally messed up here.
+> > > > 
+> > > > Could it be that we don't handle R_PPC64_ADDR16_* relocs in
+> > > > arch/powerpc/kernel/modules/module_64.c ?
+> > > > 
+> > > > Sachin, do you see a bunch of "Unknown ADD relocation" in your dmesg ?
+> > > 
+> > > Ben,
+> > > 
+> > > The thing is, this is kernel proper. This code is in entry_64.S not in
+> > > the module code.
+> > 
+> > Argh... indeed.
+> > 
+> > Sachin, can you give me more details on how you built that kernel ? (or
+> > give them again in case I missed them the first time around :-), ie,
+> > what toolchain, options, etc... or even better, give me remote access to
+> > the build host ?
+> 
+> Ok, got access and had a quick look... seems to be a toolchain problem
+> to me. I'll investigate more tomorrow.
 
-You don't need to remove it, but choose a compatible value within the
-board/manufacturer namespace.  ie. 'manroland,uc101-watchdog'.  You
-also need to document what it means in
-Documentation/powerpc/dts-bindings/.  If you do want to do some kind
-of generic gpio watchdog binding, then write a documentation patch for
-it and post it to devicetree-discuss for review.  Make sure you cc:
-both me and Wolfram when you post it.
+Hi Ben,
 
-Cheers,
-g.
+Any more word on this issue?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-- Steve
