@@ -1,28 +1,16 @@
-Return-Path: <hs@denx.de>
-Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
-	by ozlabs.org (Postfix) with ESMTP id 07C04B7B97
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2009 21:13:24 +1100 (EST)
-Received: from mail.invitel.hu (mail.invitel.hu [213.163.59.4])
-	by a.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
-	DCC9211A1E6
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2009 12:13:22 +0200 (CEST)
-Received: from [192.168.1.6] ([82.131.205.183])
-	by mail.invitel.hu (Invitel Messaging Server)
-	with ESMTPA id <0KR100A50DQAXNA0@invitel.hu> for
-	linuxppc-dev@ozlabs.org; Mon, 05 Oct 2009 12:13:22 +0200 (CEST)
-Date: Mon, 05 Oct 2009 12:12:58 +0200
-From: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH v2] mpc5200: support for the MAN mpc5200 based board	uc101
-In-reply-to: <20091005095340.GA3890@pengutronix.de>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Message-id: <4AC9C6AA.6060009@denx.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-References: <4AADF93C.3030604@denx.de> <20090914080322.GA3164@pengutronix.de>
-	<fa686aa40909140745u2cf1dba7q8ae2af53c87bd216@mail.gmail.com>
-	<4AC9A463.1080903@denx.de> <20091005095340.GA3890@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: hs@denx.de
+Return-Path: <joakim.tjernlund@transmode.com>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B960BB7BB7
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2009 23:16:49 +1100 (EST)
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+To: Scott Wood <scottwood@freescale.com>, Rex Feany <RFeany@mrv.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 0/6] PowerPc 8xx TLB/MMU fixes
+Date: Mon, 5 Oct 2009 14:16:33 +0200
+Message-Id: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,39 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Wolfram,
+Here are my latest code to fixup 8xx's TLB code.
+This code needs some serious testing before it
+can be commited.
+The "8xx, fault: Add some debug code to do_page_fault()" is
+purely a debug check and will be removed/disabled when
+this series appear stable.
 
-Wolfram Sang wrote:
-> On Mon, Oct 05, 2009 at 09:46:43AM +0200, Heiko Schocher wrote:
-> 
->> - serial Console on PSC1
->> - 64MB SDRAM
->> - MTD CFI Flash
->> - Ethernet FEC
->> - IDE support
->>
->> Signed-off-by: Heiko Schocher <hs@denx.de>
-[...]
-> [...]
->> +		wdt {
->> +			compatible = "generic,gpio-wdt";
->> +			reg = <0x600 0x10>;
->> +			gpios = <&gpt0 0 0>;
->> +			period = <500>;	// WDT trigger period in msec
->> +		};
-> 
-> Is this an official binding? I also did an gpio-watchdog a while ago and there
-> were some issues with the binding, IIRC. Would be nice if this has been solved
-> meanwhile.
+Scott and Rex, please disregard other patches from me and
+try these out instead.
 
-Oh, sorry, no. I remove it.
+Joakim Tjernlund (6):
+  8xx: DTLB Error must check for more errors.
+  8xx, fault: Add some debug code to do_page_fault()
+  8xx: get rid of _PAGE_HWWRITE dependency in MMU.
+  8xx: Tag DAR with 0x00f0 to catch buggy instructions.
+  8xx: Fixup DAR from buggy dcbX instructions.
+  8xx: start using dcbX instructions in various copy routines
 
-> Other than that, it looks okay to me.
-
-Ok, thanks for reviewing, I resent soon an update
-
-bye
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+ arch/powerpc/include/asm/pte-8xx.h |    9 +-
+ arch/powerpc/kernel/head_8xx.S     |  324 ++++++++++++++++++++++++++++++-----
+ arch/powerpc/kernel/misc_32.S      |   18 --
+ arch/powerpc/lib/copy_32.S         |   24 ---
+ arch/powerpc/mm/fault.c            |   82 +++++++++
+ 5 files changed, 363 insertions(+), 94 deletions(-)
