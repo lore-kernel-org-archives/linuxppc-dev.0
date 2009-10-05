@@ -1,30 +1,16 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9C62EB7BCC
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 01:47:41 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n95ElcOV013142
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2009 07:47:38 -0700 (MST)
-Subject: Re: [PATCH 4/4] powerpc/fsl: 85xx: add cache-sram support
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <F2F605B667B24B489C904986E0D60A08FF6268@zin33exm23.fsl.freescale.net>
-Date: Mon, 5 Oct 2009 09:47:35 -0500
-Message-Id: <6D81C181-23BF-4FA7-B016-779919D61957@freescale.com>
-References: <1253783426-11978-1-git-send-email-vivek.mahajan@freescale.com>
-	<1253783426-11978-2-git-send-email-vivek.mahajan@freescale.com>
-	<1253783426-11978-3-git-send-email-vivek.mahajan@freescale.com>
-	<1253783426-11978-4-git-send-email-vivek.mahajan@freescale.com>
-	<49156378-9156-4059-99C2-57E2815473BD@freescale.com>
-	<F2F605B667B24B489C904986E0D60A08FF6268@zin33exm23.fsl.freescale.net>
-To: Mahajan Vivek-B08308 <Vivek.Mahajan@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mike@terascala.com>
+Received: from hermes.terascala.com (terascala.com [75.147.14.129])
+	by ozlabs.org (Postfix) with ESMTP id A34D5B7BAF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  6 Oct 2009 02:09:23 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Regression detecting memory size on PPC440EPx
+Date: Mon, 5 Oct 2009 10:57:10 -0400
+Message-ID: <2C7DE72B9BD00F44BAECA5B0CBB873955CADF2@hermes.terascala.com>
+From: "Mike Nuss" <mike@terascala.com>
+To: <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,21 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+There was a fix a while back called "Correct memory size calculation for
+Denali based boards" that corrected the data width detection in the 4xx
+bootwrapper.
 
-On Oct 5, 2009, at 2:15 AM, Mahajan Vivek-B08308 wrote:
+This seems to have had the unintended consequence of exposing another
+bug in the same code.  I have a board very similar to Sequoia, except
+that it uses a DDR2 DIMM module.  It uses a single 256MB DIMM.  After
+upgrading to the latest kernel, which includes the previously mentioned
+fix, U-Boot works fine, but the kernel detects 512MB instead, and of
+course, the kernel panics.
 
->> From: Gala Kumar-B11780
->> Sent: Friday, September 25, 2009 12:08 AM
->>> +	mbar(1);
->>
->> why isn't eieio() sufficient here?
->
-> When I initially added / tested cache SRAM for P2020RDB, its RM talked
-> about using mbar() though mbar(1) is identical to eieio() opcode-wise.
-> Also as cache-sram works only for 85xx derivatives, so I picked mbar()
-> instead of eieio.
+The error seems to be in the calculation of row bits.  U-Boot's SPD
+detection says that the DIMM uses 13 bits, but I added some printf()s to
+the bootwrapper, and it is setting row to 14 instead.  I'm not too clear
+on how this code works; it calculates the row bits by subtracting the
+row from max_row, and maybe max_row is wrong?
 
-Let use eieio since there is no reason to special case the usage here  
-for mbar(1)
+It looks like the data width bug canceled out this bug before, since
+these values end up changing the memory size by a factor of 2 (in
+opposite directions).
 
-- k
+Could someone with a better understanding of this code take a look?
+
+Thanks,
+Mike
