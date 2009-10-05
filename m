@@ -1,26 +1,27 @@
-Return-Path: <JBeulich@novell.com>
-Received: from vpn.id2.novell.com (vpn.id2.novell.com [195.33.99.129])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "emea1-mh.id2.novell.com", Issuer "APPS" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C5409B7BC3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  5 Oct 2009 17:58:34 +1100 (EST)
-Message-Id: <4AC9B5310200007800017EA1@vpn.id2.novell.com>
-Date: Mon, 05 Oct 2009 07:58:25 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Hollis Blanchard" <hollisb@us.ibm.com>
-Subject: Re: linux-next: tree build failure
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	<1254267572.15622.1621.camel@slab.beaverton.ibm.com>
-	<4AC318450200007800017355@vpn.id2.novell.com>
-	<1254498517.3839.17.camel@slab.beaverton.ibm.com>
-In-Reply-To: <1254498517.3839.17.camel@slab.beaverton.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=__Part7358FD01.2__="
-Cc: sfr@canb.auug.org.au, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
-	linux-next@vger.kernel.org, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <hs@denx.de>
+Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
+	by ozlabs.org (Postfix) with ESMTP id A91C6B7BC6
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2009 18:05:09 +1100 (EST)
+Received: from mail.invitel.hu (mail.invitel.hu [213.163.59.4])
+	by a.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
+	B371211A0B0
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2009 09:05:07 +0200 (CEST)
+Received: from [192.168.1.6] ([82.131.205.183])
+	by mail.invitel.hu (Invitel Messaging Server)
+	with ESMTPA id <0KR10083D50IWAS0@invitel.hu> for
+	linuxppc-dev@ozlabs.org; Mon, 05 Oct 2009 09:05:07 +0200 (CEST)
+Date: Mon, 05 Oct 2009 09:46:43 +0200
+From: Heiko Schocher <hs@denx.de>
+Subject: [PATCH v2] mpc5200: support for the MAN mpc5200 based board uc101
+In-reply-to: <fa686aa40909140745u2cf1dba7q8ae2af53c87bd216@mail.gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Message-id: <4AC9A463.1080903@denx.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+References: <4AADF93C.3030604@denx.de> <20090914080322.GA3164@pengutronix.de>
+	<fa686aa40909140745u2cf1dba7q8ae2af53c87bd216@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,100 +31,374 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a MIME message. If you are reading this text, you may want to 
-consider changing to a mail reader or gateway that understands how to 
-properly handle MIME multipart messages.
+- serial Console on PSC1
+- 64MB SDRAM
+- MTD CFI Flash
+- Ethernet FEC
+- IDE support
 
---=__Part7358FD01.2__=
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Signed-off-by: Heiko Schocher <hs@denx.de>
+---
+- based on:
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
 
->>> Hollis Blanchard <hollisb@us.ibm.com> 02.10.09 17:48 >>>
->On Wed, 2009-09-30 at 07:35 +0100, Jan Beulich wrote:
->> The one Rusty suggested the other day may help here. I don't like it
->> as a drop-in replacement for BUILD_BUG_ON() though (due to it
->> deferring the error generated to the linking stage), I'd rather view
->> this as an improvement to MAYBE_BUILD_BUG_ON() (which should
->> then be used here).
->
->Can you be more specific?
->
->I have no idea what Rusty suggested where. I can't even guess what
+- checked with:
+$ ./scripts/checkpatch.pl 0001-mpc5200-support-for-the-MAN-mpc5200-based-board-uc1.patch
+total: 0 errors, 0 warnings, 324 lines checked
 
-I'm attaching Rusty's response I was referring to.
+0001-mpc5200-support-for-the-MAN-mpc5200-based-board-uc1.patch has no obvious style problems and is ready for submission.
+$
 
->MAYBE_BUILD_BUG_ON() is supposed to do (sounds like a terrible name).
+changes since v1:
 
-Agreed - but presumably better than just deleting the bogus instances
-altogether...
+- add comments from Grant Likely <grant.likely@secretlab.ca>
+  use mpc5200_defconfig as default configuration
+- add comments from Wolfram Sang <w.sang@pengutronix.de>
+- rebase against current next
 
-Jan
+ arch/powerpc/boot/dts/uc101.dts              |  317 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
+ 2 files changed, 318 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/uc101.dts
 
---=__Part7358FD01.2__=
-Content-Type: message/rfc822
+diff --git a/arch/powerpc/boot/dts/uc101.dts b/arch/powerpc/boot/dts/uc101.dts
+new file mode 100644
+index 0000000..9d79e48
+--- /dev/null
++++ b/arch/powerpc/boot/dts/uc101.dts
+@@ -0,0 +1,317 @@
++/*
++ * uc101 board Device Tree Source
++ *
++ * Copyright (C) 2009 DENX Software Engineering GmbH
++ * Heiko Schocher <hs@denx.de>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++
++/ {
++	model = "manroland,uc101";
++	compatible = "manroland,uc101";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	interrupt-parent = <&mpc5200_pic>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <0x4000>;	// L1, 16K
++			i-cache-size = <0x4000>;	// L1, 16K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x04000000>;	// 64MB
++	};
++
++	soc5200@f0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc5200-immr",
++				"fsl,mpc5200b-immr";
++		ranges = <0 0xf0000000 0x0000c000>;
++		reg = <0xf0000000 0x00000100>;
++		bus-frequency = <0>;		// from bootloader
++		system-frequency = <0>;		// from bootloader
++
++		cdm@200 {
++			compatible = "fsl,mpc5200b-cdm","fsl,mpc5200-cdm";
++			reg = <0x200 0x38>;
++		};
++
++		mpc5200_pic: interrupt-controller@500 {
++			// 5200 interrupts are encoded into two levels;
++			interrupt-controller;
++			#interrupt-cells = <3>;
++			compatible = "fsl,mpc5200b-pic","fsl,mpc5200-pic";
++			reg = <0x500 0x80>;
++			interrupts = <0 0 3>;
++		};
++
++		gpt0: timer@600 {	// GPT 0 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x600 0x10>;
++			interrupts = <1 9 0>;
++			gpio-controller;
++		};
++
++		gpt1: timer@610 {	// GPT 1 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x610 0x10>;
++			interrupts = <1 10 0>;
++			gpio-controller;
++		};
++
++		gpt2: timer@620 {	// GPT 2 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x620 0x10>;
++			interrupts = <1 11 0>;
++			gpio-controller;
++		};
++
++		gpt3: timer@630 {	// GPT 3 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x630 0x10>;
++			interrupts = <1 12 0>;
++			gpio-controller;
++		};
++
++		gpt4: timer@640 {	// GPT 4 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x640 0x10>;
++			interrupts = <1 13 0>;
++			gpio-controller;
++		};
++
++		gpt5: timer@650 {	// GPT 5 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x650 0x10>;
++			interrupts = <1 14 0>;
++			gpio-controller;
++		};
++
++		gpt6: timer@660 {	// GPT 6 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x660 0x10>;
++			interrupts = <1 15 0>;
++			gpio-controller;
++		};
++
++		gpt7: timer@670 {	// GPT 7 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x670 0x10>;
++			interrupts = <1 16 0>;
++			gpio-controller;
++		};
++
++		gpio_simple: gpio@b00 {
++			compatible = "fsl,mpc5200b-gpio","fsl,mpc5200-gpio";
++			reg = <0xb00 0x40>;
++			interrupts = <1 7 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpio_wkup: gpio@c00 {
++			compatible = "fsl,mpc5200b-gpio-wkup",
++					"fsl,mpc5200-gpio-wkup";
++			reg = <0xc00 0x40>;
++			interrupts = <1 8 0 0 3 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpio_sint: gpio_sint@b00 {
++			compatible = "fsl,mpc5200b-gpio-sint",
++					"fsl,mpc5200-gpio-sint";
++			reg = <0xb00 0x40>;
++			interrupts = <1 8 0 0 3 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		dma-controller@1200 {
++			device_type = "dma-controller";
++			compatible = "fsl,mpc5200b-bestcomm",
++					"fsl,mpc5200-bestcomm";
++			reg = <0x1200 0x80>;
++			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
++			              3 4 0  3 5 0  3 6 0  3 7 0
++			              3 8 0  3 9 0  3 10 0  3 11 0
++			              3 12 0  3 13 0  3 14 0  3 15 0>;
++		};
++
++		xlb@1f00 {
++			compatible = "fsl,mpc5200b-xlb","fsl,mpc5200-xlb";
++			reg = <0x1f00 0x100>;
++		};
++
++		serial@2000 {		// PSC1
++			compatible = "fsl,mpc5200b-psc-uart",
++					"fsl,mpc5200-psc-uart";
++			reg = <0x2000 0x100>;
++			interrupts = <2 1 0>;
++		};
++
++		serial@2200 {		// PSC2
++			compatible = "fsl,mpc5200b-psc-uart",
++					"fsl,mpc5200-psc-uart";
++			reg = <0x2200 0x100>;
++			interrupts = <2 2 0>;
++		};
++
++		serial@2c00 {		// PSC6
++			compatible = "fsl,mpc5200b-psc-uart",
++					"fsl,mpc5200-psc-uart";
++			reg = <0x2c00 0x100>;
++			interrupts = <2 6 0>;
++		};
++
++		ethernet@3000 {
++			compatible = "fsl,mpc5200b-fec","fsl,mpc5200-fec";
++			reg = <0x3000 0x400>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <2 5 0>;
++			phy-handle = <&phy0>;
++		};
++
++		mdio@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200b-mdio","fsl,mpc5200-mdio";
++			reg = <0x3000 0x400>;	// fec range, since we need to
++						// setup fec interrupts
++			interrupts = <2 5 0>;	// these are for "mii command
++						// finished", not link
++						// changes & co.
++
++			phy0: ethernet-phy@0 {
++				compatible = "intel,lxt971";
++				reg = <0>;
++			};
++		};
++
++		ata@3a00 {
++			compatible = "fsl,mpc5200b-ata","fsl,mpc5200-ata";
++			reg = <0x3a00 0x100>;
++			interrupts = <2 7 0>;
++		};
++
++		i2c@3d40 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c",
++					"fsl-i2c";
++			reg = <0x3d40 0x40>;
++			interrupts = <2 16 0>;
++			fsl,preserve-clocking;
++			clock-frequency = <400000>;
++
++			hwmon@2c {
++				compatible = "ad,adm9240";
++				reg = <0x2c>;
++			};
++			rtc@51 {
++				compatible = "nxp,pcf8563";
++				reg = <0x51>;
++			};
++		};
++
++		sram@8000 {
++			compatible = "fsl,mpc5200b-sram","fsl,mpc5200-sram";
++			reg = <0x8000 0x4000>;
++		};
++
++		wdt {
++			compatible = "generic,gpio-wdt";
++			reg = <0x600 0x10>;
++			gpios = <&gpt0 0 0>;
++			period = <500>;	// WDT trigger period in msec
++		};
++	};
++
++	localbus {
++		compatible = "fsl,mpc5200b-lpb","simple-bus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges = <0 0 0xff800000 0x00800000
++			  1 0 0x80000000 0x00800000
++			  3 0 0x80000000 0x00800000>;
++
++		flash@0,0 {
++			compatible = "cfi-flash";
++			reg = <0 0 0x00800000>;
++			bank-width = <2>;
++			device-width = <2>;
++			#size-cells = <1>;
++			#address-cells = <1>;
++			partition@0 {
++				label = "DTS";
++				reg = <0x0 0x00100000>;
++			};
++			partition@100000 {
++				label = "Kernel";
++				reg = <0x100000 0x00200000>;
++			};
++			partition@300000 {
++				label = "RootFS";
++				reg = <0x00300000 0x00200000>;
++			};
++
++			partition@500000 {
++				label = "user";
++				reg = <0x00500000 0x00200000>;
++			};
++			partition@700000 {
++				label = "U-Boot";
++				reg = <0x00700000 0x00040000>;
++			};
++			partition@740000 {
++				label = "Env";
++				reg = <0x00740000 0x00010000>;
++			};
++			partition@750000 {
++				label = "red. Env";
++				reg = <0x00750000 0x00010000>;
++			};
++			partition@760000 {
++				label = "reserve";
++				reg = <0x00760000 0x000a0000>;
++			};
++		};
++
++	};
++};
+diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+index c31e5b5..caf6d92 100644
+--- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
++++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+@@ -51,6 +51,7 @@ static void __init mpc5200_simple_setup_arch(void)
+ /* list of the supported boards */
+ static char *board[] __initdata = {
+ 	"intercontrol,digsy-mtc",
++	"manroland,uc101",
+ 	"phytec,pcm030",
+ 	"phytec,pcm032",
+ 	"promess,motionpro",
+-- 
+1.6.0.6
 
-Return-path: <rusty@rustcorp.com.au>
-Received: from novell.com (hoex.provo.novell.com [130.57.1.153])
-	by sinclair.provo.novell.com with ESMTP; Tue, 22 Sep 2009 19:34:01 -0600
-Received: from ozlabs.org not authenticated [203.10.76.45]
-	by novell.com with M+ Extreme Email Engine 2008.4.debug
-	via secured & encrypted transport (TLS);
-	Tue, 22 Sep 2009 19:34:00 -0600
-X-MailFrom: rusty@rustcorp.com.au
-Received: from vivaldi.localnet (unknown [150.101.102.135])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPSA id 94856B7B73;
-	Wed, 23 Sep 2009 10:57:03 +1000 (EST)
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Jan Beulich" <JBeulich@novell.com>
-Subject: Re: [PATCH] fix BUILD_BUG_ON() and a couple of bogus uses of it
-Date: Wed, 23 Sep 2009 10:27:00 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <4A8AEBFD0200007800010580@vpn.id2.novell.com>
-In-Reply-To: <4A8AEBFD0200007800010580@vpn.id2.novell.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909231027.01006.rusty@rustcorp.com.au>
-
-On Wed, 19 Aug 2009 01:29:25 am Jan Beulich wrote:
-> gcc permitting variable length arrays makes the current construct
-> used for BUILD_BUG_ON() useless, as that doesn't produce any diagnostic
-> if the controlling expression isn't really constant. Instead, this
-> patch makes it so that a bit field gets used here. Consequently, those
-> uses where the condition isn't really constant now also need fixing.
-> 
-> Note that in the gfp.h, kmemcheck.h, and virtio_config.h cases
-> MAYBE_BUILD_BUG_ON() really just serves documentation purposes - even
-> if the expression is compile time constant (__builtin_constant_p()
-> yields true), the array is still deemed of variable length by gcc, and
-> hence the whole expression doesn't have the intended effect.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-
-We used to use an undefined symbol here; diagnostics are worse but it catches
-more stuff.
-
-Perhaps a hybrid is the way to go?
-
-#ifndef __OPTIMIZE__
-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
-#else
-/* If it's a constant, catch it at compile time, otherwise at link time. */
-extern int __build_bug_on_failed;
-#define BUILD_BUG_ON(condition) \
-	do { 								\
-		((void)sizeof(char[1 - 2*!!(condition)]));		\
-		if (condition) __build_bug_on_failed = 1;		\
-	} while(0)
-#endif
-
-Thanks,
-Rusty.
-
---=__Part7358FD01.2__=--
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
