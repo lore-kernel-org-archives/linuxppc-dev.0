@@ -1,16 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 9805AB7BC2
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 04:44:29 +1100 (EST)
-Date: Mon, 5 Oct 2009 21:44:27 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Make it possible to select hibernation on all
-	PowerPCs
-Message-ID: <20091005174427.GA21489@oksana.dev.rtsoft.ru>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D6C4BB7BB5
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 05:12:21 +1100 (EST)
+Date: Mon, 5 Oct 2009 13:12:34 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH 0/6] PowerPc 8xx TLB/MMU fixes
+Message-ID: <20091005181233.GA3576@loki.buserror.net>
+References: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,75 +26,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Just as with kexec, hibernation may fail even on well-tested platforms:
-some PCI device, a driver of which doesn't play well with hibernation,
-is enough to break resuming.
+On Mon, Oct 05, 2009 at 02:16:33PM +0200, Joakim Tjernlund wrote:
+> Here are my latest code to fixup 8xx's TLB code.
+> This code needs some serious testing before it
+> can be commited.
+> The "8xx, fault: Add some debug code to do_page_fault()" is
+> purely a debug check and will be removed/disabled when
+> this series appear stable.
+> 
+> Scott and Rex, please disregard other patches from me and
+> try these out instead.
 
-Hibernation code is not much platform dependent, and hiding features only
-because these were not verified on a particular hardware is
-counterproductive: we just prevent the features from being widely tested.
+I'm not sure which tree you based this on, but I got some conflicts
+in pte-8xx.h using Ben's merge branch.
 
-For example, with this patch I just tested hibernation on a MPC83xx
-board, and it works quite well, modulo a few drivers that need some
-fixing.
+After resolving the conflict, without adding tlbil_va in do_page_fault(), I
+get the same stuck behavior as before.  With tlbil_va, I get this (not sure
+if it's related to using the wrong base tree):
 
-So, let's make it possible to select hibernation support for all
-PowerPCs, then let's wait for any possible bug reports, and actually fix
-(or just collect ;-) the bugs instead of hiding them. If some platforms
-really can't stand hibernation, we can make a blacklist, with proper
-comments why exactly hibernation doesn't work, whether it is possible to
-fix, and what needs to be done to fix it.
+INIT: version 2.85 booting
+Mounting /proc and /sys
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 24:   173 Segmentation fault      /etc/rc.d/init.d/$i $mode
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 24:   174 Segmentation fault      /etc/rc.d/init.d/$i $mode
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 24:   175 Segmentation fault      /etc/rc.d/init.d/$i $mode
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 24:   176 Segmentation fault      /etc/rc.d/init.d/$i $mode
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 24:   177 Segmentation fault      /etc/rc.d/init.d/$i $mode
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 24:   178 Segmentation fault      /etc/rc.d/init.d/$i $mode
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 24:   179 Segmentation fault      /etc/rc.d/init.d/$i $mode
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 24:   180 Segmentation fault      /etc/rc.d/init.d/$i $mode
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 24:   181 Segmentation fault      /etc/rc.d/init.d/$i $mode
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 24:   182 Segmentation fault      /etc/rc.d/init.d/$i $mode
+dcbz: address:1, dar:30020000!
+/etc/rc.d/rcS: line 37:   183 Segmentation fault      /etc/rc.d/rc.local $mode
+INIT: Entering runlevel: 1
+dcbz: address:1, dar:30020000!
+dcbz: address:1, dar:30020000!
+dcbz: address:1, dar:30020000!
+dcbz: address:1, dar:30020000!
+dcbz: address:1, dar:30020000!
+dcbz: address:1, dar:30020000!
+dcbz: address:1, dar:30020000!
+dcbz: address:1, dar:30020000!
+dcbz: address:1, dar:30020000!
+dcbz: address:1, dar:30020000!
+INIT: Id "l1" respawning too fast: disabled for 5 minutes
+INIT: no more processes left in this runlevel
 
-CONFIG_HIBERNATION is still =n by default, so the commit doesn't change
-anything apart from ability to set it to =y.
-
-I'm not sure if EXPERIMENTAL dependency is needed, I'd rather not add it
-for a few reasons:
-
-1) It doesn't matter much, for distro kernels user has no clue that some
-   feature is experimental. Majority of defconfigs enable EXPERIMENTAL
-   anyway (90 vs. 4, which, btw, means that EXPERIMENTAL is overused
-   in Kconfigs);
-
-2) EXPERIMENTAL is a good thing for features that change default
-   behaviour of a kernel, while for hibernation user has to explicitly
-   issue 'echo disk > /sys/power/state' to trigger any hibernation bugs;
-
-3) Per init/Kconfig, EXPERIMENTAL is a good thing to scare and discourage
-   users from 'widespread use of a feature', while we want to encourage
-   that use.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-Build-tested on 8xx, 83xx and 85xx with CONFIG_HIBERNATION=y.
-
- arch/powerpc/Kconfig |   11 -----------
- 1 files changed, 0 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index a2f66ed..85f140d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -199,19 +199,8 @@ config DEFAULT_UIMAGE
- config REDBOOT
- 	bool
- 
--config HIBERNATE_32
--	bool
--	depends on (PPC_PMAC && !SMP) || BROKEN
--	default y
--
--config HIBERNATE_64
--	bool
--	depends on BROKEN || (PPC_PMAC64 && EXPERIMENTAL)
--	default y
--
- config ARCH_HIBERNATION_POSSIBLE
- 	bool
--	depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
- 	default y
- 
- config ARCH_SUSPEND_POSSIBLE
--- 
-1.6.3.3
+-Scott
