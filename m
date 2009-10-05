@@ -2,30 +2,33 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B423DB7BB6
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 05:52:54 +1100 (EST)
-In-Reply-To: <20091005182429.GB3576@loki.buserror.net>
-References: <OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
-	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>
+	by ozlabs.org (Postfix) with ESMTPS id DB8ABB7B93
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 06:17:58 +1100 (EST)
+In-Reply-To: <1254688118.7122.30.camel@pasglop>
+References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>	
+	<1254212198.5256.0.camel@pasglop>
+	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
+	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>	
 	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
 	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
-	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>
+	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>	
 	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
 	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
-	<1254350159.5699.21.camel@pasglop>
+	<1254350159.5699.21.camel@pasglop>	
 	<20091002214949.GA20514@b07421-ec1.am.freescale.net>
-	<OF4175DD8E.796930EB-ONC1257644.002A7135-C1257644.002C7929@transmode.se>
-	<20091005182429.GB3576@loki.buserror.net>
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache	coherency
+	<OF7C895670.A7F16A1A-ONC1257645.00620A4D-C1257645.006ED40F@transmode.se>
+	<1254688118.7122.30.camel@pasglop>
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
 	rewrite
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OF84FF1827.22545513-ONC1257646.00673A80-C1257646.006781A3@transmode.se>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OFA4FCE21A.BE62CF0F-ONC1257646.0069703B-C1257646.0069E5EB@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 5 Oct 2009 20:50:33 +0200
+Date: Mon, 5 Oct 2009 21:16:41 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
-Cc: Rex Feany <RFeany@mrv.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,26 +38,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 05/10/2009 20:24:29:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 04/10/2009 22:28:38:
 >
-> On Sat, Oct 03, 2009 at 10:05:46AM +0200, Joakim Tjernlund wrote:
-> > Scott Wood <scottwood@freescale.com> wrote on 02/10/2009 23:49:49:
-> > > Adding a tlbil_va to do_page_fault makes the problem go away for me (on
-> > > top of your "merge" branch) -- none of the other changes in this thread
-> > > do (assuming I didn't miss any).  FWIW, when it gets stuck on a fault,
-> > > DSISR is 0xc0000000, and handle_mm_fault returns zero.
-> >
-> > OK, that is a no translation error for a load (assuming trap is 0x400)
 >
-> Yes, 0x400.
+> > I have managed to update the TLB code to make proper use of dirty and accessed states.
+> > Advantages are:
+> >  - I/D TLB Miss never needs to write to the linux pte, saving a few cycles
 >
-> > Do you know what insn this is?
+> That's good, that leaves us with only 40x to fix now. Also we can remove
+> atomic updates of PTEs for all non-hash. It's pointless on those CPUs
+> anyway.
 >
-> Various lbz and lwz.
+> >  - Accessed is only set by I/D TLB Error, should be a plus when SWAP is used.
+>
+> No need for that neither.
+>
+> ISI/DSI shouldn't touch the PTE. They should just fall back to C code
+> which takes care of it all.l
 
-OK, this rules out any dcbX problem. Perhaps you can try any of Bens
-ideas? Not sure what they were but hopefully you and Ben do :)
-
-Preferably after you have tested my new patches :)
+Ben, for my understanding: It seems to that the TLB Miss routines in
+head_32.S are less than optimal as it too touches the pte every time
+it hits. Would it not be better to test if ACCESSED and friends are already set
+and skip storing the same pte over and over again?
 
  Jocke
