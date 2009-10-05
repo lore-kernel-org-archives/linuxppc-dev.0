@@ -1,17 +1,30 @@
-Return-Path: <mike@terascala.com>
-Received: from hermes.terascala.com (terascala.com [75.147.14.129])
-	by ozlabs.org (Postfix) with ESMTP id A0AA5B7B7F
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F04ABB7BC3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  6 Oct 2009 03:23:20 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Regression detecting memory size on PPC440EPx
-Date: Mon, 5 Oct 2009 12:23:16 -0400
-Message-ID: <2C7DE72B9BD00F44BAECA5B0CBB873955CADF5@hermes.terascala.com>
-In-Reply-To: <4ACA194A.6070907@lebon.org.ua>
-From: "Mike Nuss" <mike@terascala.com>
-To: "Mikhail Zolotaryov" <lebon@lebon.org.ua>
+	Tue,  6 Oct 2009 04:06:16 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n95H6Cjv001041 for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 5 Oct 2009 10:06:12 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n95H6C25010332
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 5 Oct 2009 12:06:12 -0500 (CDT)
+Date: Mon, 5 Oct 2009 12:06:11 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Grzegorz Jakubowski <grzegorzj@platan.pl>
+Subject: Re: problem with PCI network card on MPC8323E but works on MPC8313E
+Message-ID: <20091005170611.GA22909@b07421-ec1.am.freescale.net>
+References: <4AC99CE4.40600@platan.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4AC99CE4.40600@platan.pl>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,23 +35,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mikhail Zolotaryov wrote:
-> Hi Mike,
->=20
-> you wrote:
-> "Row address bits : 13
-> DDR0_02 =3D 0x020C0E01
-> DDR0_42 =3D 0x00000006"
->=20
-> Register values above define that memory has 14 row address bits. The
-> correct setting is (for CAS Latency =3D 3):
-> DDR0_42 =3D 0x01000006
->=20
-> Best regards,
-> Mikhail Zolotaryov
->=20
+On Mon, Oct 05, 2009 at 09:14:44AM +0200, Grzegorz Jakubowski wrote:
+> maybe problem is with I/O ports (failed instruction was ioread8) because 
+>    on one board I/O ports are not assigned, but on MPC8323E they are 
+> invalid assigned.
+> I have no idea how to solve my problem, thanks for any help. What should 
+> I try to do?
 
-Thank you! It was a bug in U-Boot (they were encoding that register
-incorrectly). I'll submit a patch to them.
+Check your U-Boot and device tree, and make sure they agree on PCI
+configuration.  If you're running an old U-Boot, upgrade.
 
-Mike
+-Scott
