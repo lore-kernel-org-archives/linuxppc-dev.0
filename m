@@ -1,24 +1,18 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B1019B7BA5
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 10:53:47 +1100 (EST)
-In-Reply-To: <1254782248.7122.49.camel@pasglop>
-References: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<20091005220420.GA27923@compile2.chatsunix.int.mrv.com>
-	<OF9AD6CA21.DCD59A1B-ONC1257646.007AE622-C1257646.007BB767@transmode.se>
-	<1254782248.7122.49.camel@pasglop>
-Subject: Re: [PATCH 0/6] PowerPc 8xx TLB/MMU fixes
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF2DE63E1A.21EA8BF0-ONC1257646.0082A7F0-C1257646.0082E281@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 6 Oct 2009 01:49:36 +0200
+Return-Path: <wlpstxzhd@gmail.com>
+Received: from mail-ew0-f210.google.com (mail-ew0-f210.google.com
+	[209.85.219.210]) by ozlabs.org (Postfix) with ESMTP id 7BC01B7BC2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  6 Oct 2009 03:51:19 +1100 (EST)
+Received: by ewy6 with SMTP id 6so1152257ewy.6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 05 Oct 2009 09:51:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Date: Mon, 5 Oct 2009 17:51:15 +0100
+Message-ID: <6b2212cb0910050951r2fbf5c2eoad8870469ccd5ef5@mail.gmail.com>
+Subject: ramdisk decompression error
+From: Yixuan Qin <wlpstxzhd@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=0016364d265b0d7e6b047532ec5b
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,61 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 06/10/2009 00:37:28:
->
-> On Tue, 2009-10-06 at 00:31 +0200, Joakim Tjernlund wrote:
-> >
-> > regs or regs->nip is NULL? Either one does not make sense
-> > In any case it might be a secondary problem as DAR is NULL already
-> > when you
-> > enter the page fault.
-> > >
-> > >                 insn = *((unsigned long *)regs->nip);
-> > > c000e110:       80 a9 00 00     lwz     r5,0(r9)
-> > >
-> > > fails.
-> >
-> > hmm, I wonder if you managed to invalidate the a kernel TLB?
-> > Are you using pinned kernel TLBs?
->
-> You should not dereference a user address like that. Use get_user !
+--0016364d265b0d7e6b047532ec5b
+Content-Type: text/plain; charset=ISO-8859-1
 
-So how does this look? Does it change anything?
-It should as the previous way was way off :(
+Dear all,
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index c33c6de..08a392f 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -153,7 +153,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- #ifdef DEBUG_DCBX
- 		const char *istr = NULL;
+I'm new to this list. I'm installing the Embedded Linux on a Xilinx FPGA
+PPC405. The first question is that I have 1GB memory, and passed the
+standalone memory test. But when installing linux, I have to setup only to
+use 512MB memory in the device tree in order to boot the linux successfully,
+otherwise it gave an error of stack overflow. The second question is when I
+use a small size ramdisk, i.e. 4MB, the linux boots successfully, but when I
+use bigger one, i.e. 16MB, it fails most of the time, but in rare case, it
+succeeds. It either complains ramdisk decompression error, or cannot find
+init. It looks my system is very unstable, I recon it's the problem of
+memory, but it already passed with the whole memory test. Could you expert
+give any suggestion?
 
--		insn = *((unsigned long *)regs->nip);
-+		__get_user(insn, (unsigned long __user *)regs->nip);
- 		if (((insn >> (31-5)) & 0x3f) == 31) {
- 			if (((insn >> 1) & 0x3ff) == 1014) /* dcbz ? 0x3f6 */
- 				istr = "dcbz";
-@@ -178,11 +178,12 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 					       ra, rb, dar);
- 					is_write = 0;
- 				}
--
-+#if 0
- 				if (trap == 0x300 && address != dar) {
- 					__asm__ ("mtdar %0" : : "r" (dar));
- 					return 0;
- 				}
-+#endif
- 			}
- 		}
- #endif
-@@ -191,7 +192,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+Many thanks,
 
- 			/* This is from a dcbX or icbi insn gone bad, these
- 			 * insn do not set DAR so we have to do it here instead */
--			insn = *((unsigned long *)regs->nip);
-+			__get_user(insn, (unsigned long __user *)regs->nip);
+Simon
 
- 			ra = (insn >> (31-15)) & 0x1f; /* Reg RA */
- 			rb = (insn >> (31-20)) & 0x1f; /* Reg RB */
+--0016364d265b0d7e6b047532ec5b
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Dear all,<br><br>I&#39;m new to this list. I&#39;m installing the Embedded =
+Linux on a Xilinx FPGA PPC405. The first question is that I have 1GB memory=
+, and passed the standalone memory test. But when installing linux, I have =
+to setup only to use 512MB memory in the device tree in order to boot the l=
+inux successfully, otherwise it gave an error of stack overflow. The second=
+ question is when I use a small size ramdisk, i.e. 4MB, the linux boots suc=
+cessfully, but when I use bigger one, i.e. 16MB, it fails most of the time,=
+ but in rare case, it succeeds. It either complains ramdisk decompression e=
+rror, or cannot find init. It looks my system is very unstable, I recon it&=
+#39;s the problem of memory, but it already passed with the whole memory te=
+st. Could you expert give any suggestion?<br>
+<br>Many thanks,<br><br>Simon<br>
+
+--0016364d265b0d7e6b047532ec5b--
