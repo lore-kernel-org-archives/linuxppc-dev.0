@@ -1,33 +1,31 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DB8ABB7B93
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 06:17:58 +1100 (EST)
-In-Reply-To: <1254688118.7122.30.camel@pasglop>
-References: <OF490DC464.F75531A6-ONC1257640.002AC41C-C1257640.002D2820@transmode.se>	
-	<1254212198.5256.0.camel@pasglop>
-	<OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
-	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>	
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9FC6AB7BB9
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 06:27:44 +1100 (EST)
+Date: Mon, 5 Oct 2009 14:28:06 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache
+	coherency rewrite
+Message-ID: <20091005192806.GC3576@loki.buserror.net>
+References: <OF94793A12.243E8E02-ONC1257640.0040DE05-C1257640.00419DBD@transmode.se>
+	<20090929210331.GA25779@laura.chatsunix.int.mrv.com>
 	<OF5D06EC36.28A07DB5-ONC1257641.00299A2D-C1257641.002BE7B1@transmode.se>
 	<OFFEC1BDFB.17183440-ONC1257641.002D81B9-C1257641.002DC24F@transmode.se>
-	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>	
+	<20090930090002.GA2928@compile2.chatsunix.int.mrv.com>
 	<OF46F87EEF.62BE7D78-ONC1257641.003D4172-C1257641.003E1445@transmode.se>
 	<OFC29CE070.42D58057-ONC1257641.005F19FD-C1257641.005F8ED3@transmode.se>
-	<1254350159.5699.21.camel@pasglop>	
+	<1254350159.5699.21.camel@pasglop>
 	<20091002214949.GA20514@b07421-ec1.am.freescale.net>
-	<OF7C895670.A7F16A1A-ONC1257645.00620A4D-C1257645.006ED40F@transmode.se>
-	<1254688118.7122.30.camel@pasglop>
-Subject: Re: [PATCH] powerpc/8xx: fix regression introduced by cache coherency
-	rewrite
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OFA4FCE21A.BE62CF0F-ONC1257646.0069703B-C1257646.0069E5EB@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 5 Oct 2009 21:16:41 +0200
+	<1254521073.7122.5.camel@pasglop>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1254521073.7122.5.camel@pasglop>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,27 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 04/10/2009 22:28:38:
->
->
-> > I have managed to update the TLB code to make proper use of dirty and accessed states.
-> > Advantages are:
-> >  - I/D TLB Miss never needs to write to the linux pte, saving a few cycles
->
-> That's good, that leaves us with only 40x to fix now. Also we can remove
-> atomic updates of PTEs for all non-hash. It's pointless on those CPUs
-> anyway.
->
-> >  - Accessed is only set by I/D TLB Error, should be a plus when SWAP is used.
->
-> No need for that neither.
->
-> ISI/DSI shouldn't touch the PTE. They should just fall back to C code
-> which takes care of it all.l
+On Sat, Oct 03, 2009 at 08:04:33AM +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2009-10-02 at 16:49 -0500, Scott Wood wrote:
+> > Adding a tlbil_va to do_page_fault makes the problem go away for me (on
+> > top of your "merge" branch) -- none of the other changes in this thread
+> > do (assuming I didn't miss any).  FWIW, when it gets stuck on a fault,
+> > DSISR is 0xc0000000, and handle_mm_fault returns zero. 
+> 
+> But in that case, it should hit ptep_set_access_flags() (via
+> handle_mm_fault) and from there call tlbil_va (provided we add a call to
+> it in the relevant filter function which I proposed initially), no ?
 
-Ben, for my understanding: It seems to that the TLB Miss routines in
-head_32.S are less than optimal as it too touches the pte every time
-it hits. Would it not be better to test if ACCESSED and friends are already set
-and skip storing the same pte over and over again?
+Yes, it hits ptep_set_access_flags() and adding _tlbil_va there helps (I
+didn't put it in the filter function, because that doesn't take address as a
+parameter).  I'd misread your suggestion as referring to the various changes
+to set_pte_filter() that were posted.
 
- Jocke
+As for unconditionally invalidating in set_pte_filter(), that doesn't boot
+for me unless I check for kernel addresses -- I guess we populate page
+tables that overlap the pinned large page region? 
+
+-Scott
