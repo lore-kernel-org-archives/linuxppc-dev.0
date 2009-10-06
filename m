@@ -1,30 +1,23 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 87404B7BFE
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 00:22:07 +1100 (EST)
-In-Reply-To: <1254827186.6035.11.camel@pasglop>
-References: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<20091005220420.GA27923@compile2.chatsunix.int.mrv.com>
-	<OF9AD6CA21.DCD59A1B-ONC1257646.007AE622-C1257646.007BB767@transmode.se>
-	<1254782248.7122.49.camel@pasglop>	
-	<OF2DE63E1A.21EA8BF0-ONC1257646.0082A7F0-C1257646.0082E281@transmode.se>
-	<1254793935.1959.1.camel@pasglop>	
-	<OFAEE03401.0C51FEE2-ONC1257647.002C29FE-C1257647.002C917A@transmode.se>
-	<1254817969.6035.4.camel@pasglop>	
-	<OF5058A03E.5D586A94-ONC1257647.003C25B0-C1257647.003C5220@transmode.se>
-	<1254827186.6035.11.camel@pasglop>
-Subject: Re: [PATCH 0/6] PowerPc 8xx TLB/MMU fixes
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OFC5E527BE.77D28888-ONC1257647.00489546-C1257647.00491C0F@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 6 Oct 2009 15:18:33 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id C5E92B7B7B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  7 Oct 2009 00:43:36 +1100 (EST)
+Subject: Re: [PATCH] powerpc: tracing: Add powerpc tracepoints for
+	interrupt entry and exit
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20091006040554.GD16073@kryten>
+References: <20091006021903.GC16073@kryten>
+	<1254796492.13160.218.camel@gandalf.stny.rr.com>
+	<20091006040554.GD16073@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 06 Oct 2009 09:38:33 -0400
+Message-Id: <1254836313.13160.223.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
+	linuxppc-dev@lists.ozlabs.org
+Reply-To: rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,104 +27,205 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 06/10/2009 13:06:26:
->
-> On Tue, 2009-10-06 at 12:58 +0200, Joakim Tjernlund wrote:
->
-> > Here I don't care if err. insn will be 0 if it fails and the following
-> > if will be false
->
-> I'd rather you use get_user() so it does access_ok().
->
-> Else, you can probably manufacture some code that will make the kernel
-> access some MMIO register for example, which could be nasty.
->
-> At this point, you may as well also check the result even if indeed a
-> fault isn't going to matter. Just makes the code cleaner and avoids some
-> random janitor coming up with a patch later on :-)
->
-> Cheers,
-> Ben.
+On Tue, 2009-10-06 at 15:05 +1100, Anton Blanchard wrote:
+> Hi Steve,
+> 
+> > I think this may do better in a file like:
+> > 
+> > arch/powerpc/kernel/trace.h
+> > 
+> > You can look at the sample code and Makefile in samples/trace_events/
+> > that shows how to make it work outside the include/trace/events
+> > directory.
+> > 
+> > I really would like to avoid placing arch specific files in a generic
+> > directory, especially when there's a way to do it in the arch directory
+> > itself.
+> > 
+> > This also contains the arch code a bit better.
+> 
+> Much nicer! I put the header file into include/asm/trace.h so an out of
+> tree kernel module can find it easily. Does that sound reasonable?
 
-So my user space access was bust. Try slapping this on top
-It might be that my crappy user space handling also tripped the
-asm version, would be great if you could try that one again too.
+Sure.
 
-I suspect that you both, Rex and Scott, have dcbX/icbi insn's in user
-space that trip DTLB errors, that would explain everything I think.
+> 
+> Also, I ended up with an interesting include issue in trace-events.c:
+> 
+> 
+> In file included from include/linux/slab.h:162,
+>                  from include/linux/percpu.h:5,
+>                  from /root/linux-tip/arch/powerpc/include/asm/tlbflush.h:86,
+>                  from /root/linux-tip/arch/powerpc/include/asm/pgtable-ppc64.h:121,
+>                  from /root/linux-tip/arch/powerpc/include/asm/pgtable.h:23,
+>                  from include/linux/mm.h:39,
+>                  from include/linux/ring_buffer.h:5,
+>                  from include/linux/ftrace_event.h:4,
+>                  from include/trace/ftrace.h:19,
+>                  from include/trace/define_trace.h:61,
+>                  from /root/linux-tip/arch/powerpc/include/asm/trace.h:52,
+>                  from arch/powerpc/kernel/trace-events.c:2:
+> include/linux/slub_def.h: In function ‘kmalloc_large’:
+> include/linux/slub_def.h:236: error: implicit declaration of function ‘trace_kmalloc’
+> include/linux/slub_def.h: In function ‘kmalloc_node’:
+> include/linux/slub_def.h:296: error: implicit declaration of function ‘trace_kmalloc_node’
+> 
+> 
+> Which I could work around by including linux/slab.h before creating
+> the asm/trace.h tracepoints. I assume we don't see this elsewhere because
+> any non trivial file includes linux/slab.h somewhere :)
 
-      Jocke
+Yeah, you need to have normal includes before adding the
+CREATE_TRACE_POINTS macro.
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index c33c6de..d757ec8 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -152,8 +152,16 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 		unsigned long ra, rb, dar, insn;
- #ifdef DEBUG_DCBX
- 		const char *istr = NULL;
-+		int ret;
-+
-+		insn = 0;
-+		if (user_mode(regs)) {
-+			if ((ret = get_user(insn, (unsigned long __user *)regs->nip)))
-+				printk(KERN_CRIT "get_user:NIP:0x%08lx, err:%d\n",
-+				       regs->nip, ret);
-+		} else
-+			insn = *((unsigned long *)regs->nip);
+Thanks,
 
--		insn = *((unsigned long *)regs->nip);
- 		if (((insn >> (31-5)) & 0x3f) == 31) {
- 			if (((insn >> 1) & 0x3ff) == 1014) /* dcbz ? 0x3f6 */
- 				istr = "dcbz";
-@@ -178,20 +186,27 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 					       ra, rb, dar);
- 					is_write = 0;
- 				}
--
-+#if 0
- 				if (trap == 0x300 && address != dar) {
- 					__asm__ ("mtdar %0" : : "r" (dar));
- 					return 0;
- 				}
-+#endif
- 			}
- 		}
- #endif
- 		if (address == 0x00f0 && trap == 0x300) {
--			pte_t *ptep;
--
-+			int ret;
- 			/* This is from a dcbX or icbi insn gone bad, these
- 			 * insn do not set DAR so we have to do it here instead */
--			insn = *((unsigned long *)regs->nip);
-+			if (user_mode(regs)) {
-+				if ((ret = get_user(insn, (unsigned long __user *)regs->nip))) {
-+					printk(KERN_CRIT "get_user:NIP:%lx, err:%d\n",
-+					       regs->nip, ret);
-+					goto bad_area_nosemaphore;
-+				}
-+			} else
-+				insn = *((unsigned long *)regs->nip);
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
- 			ra = (insn >> (31-15)) & 0x1f; /* Reg RA */
- 			rb = (insn >> (31-20)) & 0x1f; /* Reg RB */
-@@ -206,18 +221,6 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 			       trap, address, dar, error_code, istr);
- #endif
- 			address = dar;
--#if 1
--			if (is_write && get_pteptr(mm, dar, &ptep, NULL)) {
--				pte_t my_pte = *ptep;
--
--				if (pte_present(my_pte) && pte_write(my_pte)) {
--					pte_val(my_pte) |= _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE;
--					set_pte_at(mm, dar, ptep, my_pte);
--				}
--			}
--#else
--			return 0;
--#endif
- 		}
- 	}
- #endif
+-- Steve
+
+> 
+> Anton
+> --
+> 
+> This patch adds powerpc specific tracepoints for interrupt entry and exit.
+> 
+> While we already have generic irq_handler_entry and irq_handler_exit
+> tracepoints there are cases on our virtualised powerpc machines where an
+> interrupt is presented to the OS, but subsequently handled by the hypervisor.
+> This means no OS interrupt handler is invoked.
+> 
+> Here is an example on a POWER6 machine with the patch below applied:
+>  
+> <idle>-0     [006]  3243.949840744: irq_entry: pt_regs=c0000000ce31fb10
+> <idle>-0     [006]  3243.949850520: irq_exit: pt_regs=c0000000ce31fb10
+> 
+> <idle>-0     [007]  3243.950218208: irq_entry: pt_regs=c0000000ce323b10
+> <idle>-0     [007]  3243.950224080: irq_exit: pt_regs=c0000000ce323b10
+> 
+> <idle>-0     [000]  3244.021879320: irq_entry: pt_regs=c000000000a63aa0
+> <idle>-0     [000]  3244.021883616: irq_handler_entry: irq=87 handler=eth0
+> <idle>-0     [000]  3244.021887328: irq_handler_exit: irq=87 return=handled
+> <idle>-0     [000]  3244.021897408: irq_exit: pt_regs=c000000000a63aa0
+> 
+> Here we see two phantom interrupts (no handler was invoked), followed
+> by a real interrupt for eth0. Without the tracepoints in this patch we
+> would have missed the phantom interrupts.
+> 
+> Since these would be the first arch specific tracepoints, I'd like to make
+> sure we agree on naming. The tracepoints live in events/powerpc/*, but I'm
+> wondering if the tracepoint name should also contain the arch name, eg
+> powerpc_irq_entry/powerpc_irq_exit. Thoughts?
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> --
+> 
+> Index: linux.trees.git/arch/powerpc/include/asm/trace.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux.trees.git/arch/powerpc/include/asm/trace.h	2009-10-06 14:54:25.000000000 +1100
+> @@ -0,0 +1,53 @@
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM powerpc
+> +
+> +#if !defined(_TRACE_POWERPC_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_POWERPC_H
+> +
+> +#include <linux/tracepoint.h>
+> +
+> +struct pt_regs;
+> +
+> +TRACE_EVENT(irq_entry,
+> +
+> +	TP_PROTO(struct pt_regs *regs),
+> +
+> +	TP_ARGS(regs),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(struct pt_regs *, regs)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->regs = regs;
+> +	),
+> +
+> +	TP_printk("pt_regs=%p", __entry->regs)
+> +);
+> +
+> +TRACE_EVENT(irq_exit,
+> +
+> +	TP_PROTO(struct pt_regs *regs),
+> +
+> +	TP_ARGS(regs),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(struct pt_regs *, regs)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->regs = regs;
+> +	),
+> +
+> +	TP_printk("pt_regs=%p", __entry->regs)
+> +);
+> +
+> +#endif /* _TRACE_POWERPC_H */
+> +
+> +#undef TRACE_INCLUDE_PATH
+> +#undef TRACE_INCLUDE_FILE
+> +
+> +#define TRACE_INCLUDE_PATH asm
+> +#define TRACE_INCLUDE_FILE trace
+> +
+> +#include <trace/define_trace.h>
+> Index: linux.trees.git/arch/powerpc/kernel/Makefile
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/kernel/Makefile	2009-10-06 14:02:03.000000000 +1100
+> +++ linux.trees.git/arch/powerpc/kernel/Makefile	2009-10-06 14:38:51.000000000 +1100
+> @@ -115,6 +115,8 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
+>  obj-y				+= ppc_save_regs.o
+>  endif
+>  
+> +obj-$(CONFIG_TRACEPOINTS)	+= trace-events.o
+> +
+>  # Disable GCOV in odd or sensitive code
+>  GCOV_PROFILE_prom_init.o := n
+>  GCOV_PROFILE_ftrace.o := n
+> Index: linux.trees.git/arch/powerpc/kernel/trace-events.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux.trees.git/arch/powerpc/kernel/trace-events.c	2009-10-06 14:44:57.000000000 +1100
+> @@ -0,0 +1,3 @@
+> +#include <linux/slab.h>
+> +#define CREATE_TRACE_POINTS
+> +#include <asm/trace.h>
+> Index: linux.trees.git/arch/powerpc/kernel/irq.c
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/kernel/irq.c	2009-10-06 14:02:15.000000000 +1100
+> +++ linux.trees.git/arch/powerpc/kernel/irq.c	2009-10-06 14:13:08.000000000 +1100
+> @@ -54,6 +54,7 @@
+>  #include <linux/pci.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/perf_event.h>
+> +#include <asm/trace.h>
+>  
+>  #include <asm/uaccess.h>
+>  #include <asm/system.h>
+> @@ -325,6 +326,8 @@ void do_IRQ(struct pt_regs *regs)
+>  	struct pt_regs *old_regs = set_irq_regs(regs);
+>  	unsigned int irq;
+>  
+> +	trace_irq_entry(regs);
+> +
+>  	irq_enter();
+>  
+>  	check_stack_overflow();
+> @@ -348,6 +351,8 @@ void do_IRQ(struct pt_regs *regs)
+>  		timer_interrupt(regs);
+>  	}
+>  #endif
+> +
+> +	trace_irq_exit(regs);
+>  }
+>  
+>  void __init init_IRQ(void)
