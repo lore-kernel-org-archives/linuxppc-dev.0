@@ -1,22 +1,22 @@
 Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 52925B7BCA
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 30B80B7C73
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  7 Oct 2009 02:34:13 +1100 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id n96FY99L012093
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2009 21:04:09 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n96FY9iG1966242
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2009 21:04:09 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
-	by d28av02.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n96FY8bQ028049
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 02:34:09 +1100
-Date: Tue, 6 Oct 2009 21:03:55 +0530
+	Wed,  7 Oct 2009 02:35:07 +1100 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id n96FYsws027034
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2009 21:04:54 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n96FYrqM2678994
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2009 21:04:53 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n96FYqlq015220
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2009 21:04:53 +0530
+Date: Tue, 6 Oct 2009 21:04:40 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	Joel Schopp <jschopp@austin.ibm.com>,
@@ -27,10 +27,8 @@ To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	Gautham R Shenoy <ego@in.ibm.com>,
 	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
 	Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v7 PATCH 5/7]: pSeries/cpuidle: remove dedicate/shared idle
-	loops, which will be moved to
-	arch/powerpc/platforms/pseries/processor_idle.c.
-Message-ID: <20091006153355.GB7358@linux.vnet.ibm.com>
+Subject: [v7 PATCH 6/7]: POWER: add a default_idle idle loop for POWER.
+Message-ID: <20091006153440.GC7343@linux.vnet.ibm.com>
 References: <20091006152421.GA7278@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
@@ -49,200 +47,60 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-06 20:54:21]:
 
-This patch removes the routines, pseries_shared_idle_sleep and
-pseries_dedicated_idle_sleep, since this is implemented as a part
-of arch/powerpc/platform/pseries/processor_idle.c
-
-Also, similar to x86, call cpuidle_idle_call from cpu_idle() idle
-loop instead of ppc_md.power_save.
+In arch/powerpc/kernel/idle.c create a default_idle() routine by moving
+the failover condition of the cpu_idle() idle loop. This is needed by
+cpuidle infrastructure to call default_idle when other idle routines
+are not yet registered. Functionality remains the same, but the code is
+slightly moved around.
 
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/idle.c             |   50 +++++++-----------
- arch/powerpc/platforms/pseries/setup.c |   89 ---------------------------------
- 2 files changed, 22 insertions(+), 117 deletions(-)
+ arch/powerpc/Kconfig              |    3 +++
+ arch/powerpc/include/asm/system.h |    1 +
+ arch/powerpc/kernel/idle.c        |    6 ++++++
+ 3 files changed, 10 insertions(+)
 
-Index: linux.trees.git/arch/powerpc/platforms/pseries/setup.c
+Index: linux.trees.git/arch/powerpc/Kconfig
 ===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/setup.c
-+++ linux.trees.git/arch/powerpc/platforms/pseries/setup.c
-@@ -75,9 +75,6 @@ EXPORT_SYMBOL(CMO_PageSize);
+--- linux.trees.git.orig/arch/powerpc/Kconfig
++++ linux.trees.git/arch/powerpc/Kconfig
+@@ -91,6 +91,9 @@ config ARCH_HAS_ILOG2_U64
+ config ARCH_HAS_CPU_IDLE_WAIT
+ 	def_bool y
  
- int fwnmi_active;  /* TRUE if an FWNMI handler is present */
++config ARCH_HAS_DEFAULT_IDLE
++	def_bool y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+Index: linux.trees.git/arch/powerpc/include/asm/system.h
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/include/asm/system.h
++++ linux.trees.git/arch/powerpc/include/asm/system.h
+@@ -218,6 +218,7 @@ extern unsigned long klimit;
+ extern void *alloc_maybe_bootmem(size_t size, gfp_t mask);
+ extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
  
--static void pseries_shared_idle_sleep(void);
--static void pseries_dedicated_idle_sleep(void);
--
- static struct device_node *pSeries_mpic_node;
++extern void default_idle(void);
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
  
- static void pSeries_show_cpuinfo(struct seq_file *m)
-@@ -301,18 +298,8 @@ static void __init pSeries_setup_arch(vo
- 	pSeries_nvram_init();
- 
- 	/* Choose an idle loop */
--	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
-+	if (firmware_has_feature(FW_FEATURE_SPLPAR))
- 		vpa_init(boot_cpuid);
--		if (get_lppaca()->shared_proc) {
--			printk(KERN_DEBUG "Using shared processor idle loop\n");
--			ppc_md.power_save = pseries_shared_idle_sleep;
--		} else {
--			printk(KERN_DEBUG "Using dedicated idle loop\n");
--			ppc_md.power_save = pseries_dedicated_idle_sleep;
--		}
--	} else {
--		printk(KERN_DEBUG "Using default idle loop\n");
--	}
- 
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		ppc_md.enable_pmcs = pseries_lpar_enable_pmcs;
-@@ -500,80 +487,6 @@ static int __init pSeries_probe(void)
- 	return 1;
- }
- 
--
--DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
--
--static void pseries_dedicated_idle_sleep(void)
--{ 
--	unsigned int cpu = smp_processor_id();
--	unsigned long start_snooze;
--	unsigned long in_purr, out_purr;
--
--	/*
--	 * Indicate to the HV that we are idle. Now would be
--	 * a good time to find other work to dispatch.
--	 */
--	get_lppaca()->idle = 1;
--	get_lppaca()->donate_dedicated_cpu = 1;
--	in_purr = mfspr(SPRN_PURR);
--
--	/*
--	 * We come in with interrupts disabled, and need_resched()
--	 * has been checked recently.  If we should poll for a little
--	 * while, do so.
--	 */
--	if (__get_cpu_var(smt_snooze_delay)) {
--		start_snooze = get_tb() +
--			__get_cpu_var(smt_snooze_delay) * tb_ticks_per_usec;
--		local_irq_enable();
--		set_thread_flag(TIF_POLLING_NRFLAG);
--
--		while (get_tb() < start_snooze) {
--			if (need_resched() || cpu_is_offline(cpu))
--				goto out;
--			ppc64_runlatch_off();
--			HMT_low();
--			HMT_very_low();
--		}
--
--		HMT_medium();
--		clear_thread_flag(TIF_POLLING_NRFLAG);
--		smp_mb();
--		local_irq_disable();
--		if (need_resched() || cpu_is_offline(cpu))
--			goto out;
--	}
--
--	cede_processor();
--
--out:
--	HMT_medium();
--	out_purr = mfspr(SPRN_PURR);
--	get_lppaca()->wait_state_cycles += out_purr - in_purr;
--	get_lppaca()->donate_dedicated_cpu = 0;
--	get_lppaca()->idle = 0;
--}
--
--static void pseries_shared_idle_sleep(void)
--{
--	/*
--	 * Indicate to the HV that we are idle. Now would be
--	 * a good time to find other work to dispatch.
--	 */
--	get_lppaca()->idle = 1;
--
--	/*
--	 * Yield the processor to the hypervisor.  We return if
--	 * an external interrupt occurs (which are driven prior
--	 * to returning here) or if a prod occurs from another
--	 * processor. When returning here, external interrupts
--	 * are enabled.
--	 */
--	cede_processor();
--
--	get_lppaca()->idle = 0;
--}
--
- static int pSeries_pci_probe_mode(struct pci_bus *bus)
- {
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ /*
 Index: linux.trees.git/arch/powerpc/kernel/idle.c
 ===================================================================
 --- linux.trees.git.orig/arch/powerpc/kernel/idle.c
 +++ linux.trees.git/arch/powerpc/kernel/idle.c
-@@ -25,6 +25,7 @@
- #include <linux/cpu.h>
- #include <linux/sysctl.h>
- #include <linux/tick.h>
-+#include <linux/cpuidle.h>
+@@ -113,6 +113,12 @@ void cpu_idle_wait(void)
+ }
+ EXPORT_SYMBOL_GPL(cpu_idle_wait);
  
- #include <asm/system.h>
- #include <asm/processor.h>
-@@ -60,35 +61,26 @@ void cpu_idle(void)
- 		while (!need_resched() && !cpu_should_die()) {
- 			ppc64_runlatch_off();
++void default_idle(void)
++{
++	HMT_low();
++	HMT_very_low();
++}
++
+ int powersave_nap;
  
--			if (ppc_md.power_save) {
--				clear_thread_flag(TIF_POLLING_NRFLAG);
--				/*
--				 * smp_mb is so clearing of TIF_POLLING_NRFLAG
--				 * is ordered w.r.t. need_resched() test.
--				 */
--				smp_mb();
--				local_irq_disable();
--
--				/* Don't trace irqs off for idle */
--				stop_critical_timings();
--
--				/* check again after disabling irqs */
--				if (!need_resched() && !cpu_should_die())
--					ppc_md.power_save();
--
--				start_critical_timings();
--
--				local_irq_enable();
--				set_thread_flag(TIF_POLLING_NRFLAG);
--
--			} else {
--				/*
--				 * Go into low thread priority and possibly
--				 * low power mode.
--				 */
--				HMT_low();
--				HMT_very_low();
--			}
-+			clear_thread_flag(TIF_POLLING_NRFLAG);
-+			/*
-+			 * smp_mb is so clearing of TIF_POLLING_NRFLAG
-+			 * is ordered w.r.t. need_resched() test.
-+			 */
-+			smp_mb();
-+			local_irq_disable();
-+
-+			/* Don't trace irqs off for idle */
-+			stop_critical_timings();
-+
-+			/* check again after disabling irqs */
-+			if (!need_resched() && !cpu_should_die())
-+				cpuidle_idle_call();
-+
-+			start_critical_timings();
-+
-+			local_irq_enable();
-+			set_thread_flag(TIF_POLLING_NRFLAG);
-+
- 		}
- 
- 		HMT_medium();
+ #ifdef CONFIG_SYSCTL
