@@ -1,18 +1,28 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
-	by ozlabs.org (Postfix) with ESMTP id A1341B7B7B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  6 Oct 2009 21:59:47 +1100 (EST)
-Subject: Re: SMU-base PowerMac and server_mode
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Romain Goyet <r.goyet@gmail.com>
-In-Reply-To: <8028e5750910060216x134a8a9cm461fa5a6e87eb6bb@mail.gmail.com>
-References: <8028e5750910060216x134a8a9cm461fa5a6e87eb6bb@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 06 Oct 2009 12:50:47 +0200
-Message-Id: <1254826247.4278.985.camel@thor.local>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E4A1CB7B7B
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 22:01:47 +1100 (EST)
+In-Reply-To: <1254817969.6035.4.camel@pasglop>
+References: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<20091005220420.GA27923@compile2.chatsunix.int.mrv.com>
+	<OF9AD6CA21.DCD59A1B-ONC1257646.007AE622-C1257646.007BB767@transmode.se>
+	<1254782248.7122.49.camel@pasglop>	
+	<OF2DE63E1A.21EA8BF0-ONC1257646.0082A7F0-C1257646.0082E281@transmode.se>
+	<1254793935.1959.1.camel@pasglop>	
+	<OFAEE03401.0C51FEE2-ONC1257647.002C29FE-C1257647.002C917A@transmode.se>
+	<1254817969.6035.4.camel@pasglop>
+Subject: Re: [PATCH 0/6] PowerPc 8xx TLB/MMU fixes
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF5058A03E.5D586A94-ONC1257647.003C25B0-C1257647.003C5220@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Tue, 6 Oct 2009 12:58:51 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,16 +32,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-10-06 at 11:16 +0200, Romain Goyet wrote:=20
->=20
->   I have this Quad G5 here, running GentooPPC64. Runs fine. Had a hard
-> time getting it to boot without a screen attached, but I eventually
-> managed to (yaboot was the culprit).
+>
+>
+> > > No, use get_user() not __get_user() or if you use the later, also use
+> > > access_ok(), and test the result in case it errors (if it does, you
+> > > probably want to just goto bad access and SEGV).
+> >
+> > OK, lets see what this gives us:
+>
+> Hrm... did you change anything ? :-)
 
-Out of curiosity, how did you solve this? I still have an unused monitor
-connected to mine...=20
+Yes, see below
 
---=20
-Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+>
+> Ben.
+>
+> > diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> > index c33c6de..1bf91d3 100644
+> > --- a/arch/powerpc/mm/fault.c
+> > +++ b/arch/powerpc/mm/fault.c
+> > @@ -153,7 +153,8 @@ int __kprobes do_page_fault(struct pt_regs *regs,
+> unsigned long address,
+> >  #ifdef DEBUG_DCBX
+> >        const char *istr = NULL;
+> >
+> > -      insn = *((unsigned long *)regs->nip);
+> > +      insn = 0;
+> > +      __get_user(insn, (unsigned long __user *)regs->nip);
+
+Here I don't care if err. insn will be 0 if it fails and the following
+if will be false
+
+> >        if (((insn >> (31-5)) & 0x3f) == 31) {
+> >           if (((insn >> 1) & 0x3ff) == 1014) /* dcbz ? 0x3f6 */
+> >              istr = "dcbz";
+> > @@ -171,27 +172,32 @@ int __kprobes do_page_fault(struct pt_regs *regs,
+> unsigned long address,
+> >              dar = regs->gpr[rb];
+> >              if (ra)
+> >                 dar += regs->gpr[ra];
+> > -            if (dar != address && address != 0x00f0 && trap == 0x300)
+> > +            if (dar != address && trap == 0x300)
+> >                 printk(KERN_CRIT "%s: address:%lx, dar:%lx!\n", istr, address, dar);
+> >              if (!strcmp(istr, "dcbst") && is_write) {
+> >                 printk(KERN_CRIT "dcbst R%ld,R%ld = %lx as a store, fixing!\n",
+> >                        ra, rb, dar);
+> >                 is_write = 0;
+> >              }
+> > -
+> > +#if 0
+> >              if (trap == 0x300 && address != dar) {
+> >                 __asm__ ("mtdar %0" : : "r" (dar));
+> >                 return 0;
+> >              }
+> > +#endif
+> >           }
+> >        }
+> >  #endif
+> >        if (address == 0x00f0 && trap == 0x300) {
+> > -         pte_t *ptep;
+> > +         //pte_t *ptep;
+> >
+> >           /* This is from a dcbX or icbi insn gone bad, these
+> >            * insn do not set DAR so we have to do it here instead */
+> > -         insn = *((unsigned long *)regs->nip);
+> > +         if (get_user(insn, (unsigned long __user *)regs->nip)) {
+> > +            printk(KERN_CRIT "get_user failed, NIP:%lx\n",
+> > +                   regs->nip);
+> > +            goto bad_area_nosemaphore;
+> > +         }
+
+and here I go to bad_area
