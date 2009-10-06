@@ -1,25 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 45AF7B7B77
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 12:52:29 +1100 (EST)
-Subject: Re: [PATCH 0/6] PowerPc 8xx TLB/MMU fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OF2DE63E1A.21EA8BF0-ONC1257646.0082A7F0-C1257646.0082E281@transmode.se>
-References: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091005220420.GA27923@compile2.chatsunix.int.mrv.com>
-	<OF9AD6CA21.DCD59A1B-ONC1257646.007AE622-C1257646.007BB767@transmode.se>
-	<1254782248.7122.49.camel@pasglop>
-	<OF2DE63E1A.21EA8BF0-ONC1257646.0082A7F0-C1257646.0082E281@transmode.se>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 06 Oct 2009 12:52:15 +1100
-Message-Id: <1254793935.1959.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Return-Path: <anton@ozlabs.org>
+Date: Tue, 6 Oct 2009 13:19:03 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Steven Rostedt <rostedt@goodmis.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Ingo Molnar <mingo@redhat.com>, benh@kernel.crashing.org
+Subject: [PATCH] powerpc: tracing: Add powerpc tracepoints for interrupt
+	entry and exit
+Message-ID: <20091006021903.GC16073@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,53 +19,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-\
-> So how does this look? Does it change anything?
-> It should as the previous way was way off :(
-> 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index c33c6de..08a392f 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -153,7 +153,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
->  #ifdef DEBUG_DCBX
->  		const char *istr = NULL;
-> 
-> -		insn = *((unsigned long *)regs->nip);
-> +		__get_user(insn, (unsigned long __user *)regs->nip);
 
-No, use get_user() not __get_user() or if you use the later, also use
-access_ok(), and test the result in case it errors (if it does, you
-probably want to just goto bad access and SEGV).
+This patch adds powerpc specific tracepoints for interrupt entry and exit.
 
-Cheers,
-Ben.
+While we already have generic irq_handler_entry and irq_handler_exit
+tracepoints there are cases on our virtualised powerpc machines where an
+interrupt is presented to the OS, but subsequently handled by the hypervisor.
+This means no OS interrupt handler is invoked.
 
->  		if (((insn >> (31-5)) & 0x3f) == 31) {
->  			if (((insn >> 1) & 0x3ff) == 1014) /* dcbz ? 0x3f6 */
->  				istr = "dcbz";
-> @@ -178,11 +178,12 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
->  					       ra, rb, dar);
->  					is_write = 0;
->  				}
-> -
-> +#if 0
->  				if (trap == 0x300 && address != dar) {
->  					__asm__ ("mtdar %0" : : "r" (dar));
->  					return 0;
->  				}
-> +#endif
->  			}
->  		}
->  #endif
-> @@ -191,7 +192,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
-> 
->  			/* This is from a dcbX or icbi insn gone bad, these
->  			 * insn do not set DAR so we have to do it here instead */
-> -			insn = *((unsigned long *)regs->nip);
-> +			__get_user(insn, (unsigned long __user *)regs->nip);
-> 
->  			ra = (insn >> (31-15)) & 0x1f; /* Reg RA */
->  			rb = (insn >> (31-20)) & 0x1f; /* Reg RB */
-> 
-> 
+Here is an example on a POWER6 machine with the patch below applied:
+ 
+<idle>-0     [006]  3243.949840744: irq_entry: pt_regs=c0000000ce31fb10
+<idle>-0     [006]  3243.949850520: irq_exit: pt_regs=c0000000ce31fb10
+
+<idle>-0     [007]  3243.950218208: irq_entry: pt_regs=c0000000ce323b10
+<idle>-0     [007]  3243.950224080: irq_exit: pt_regs=c0000000ce323b10
+
+<idle>-0     [000]  3244.021879320: irq_entry: pt_regs=c000000000a63aa0
+<idle>-0     [000]  3244.021883616: irq_handler_entry: irq=87 handler=eth0
+<idle>-0     [000]  3244.021887328: irq_handler_exit: irq=87 return=handled
+<idle>-0     [000]  3244.021897408: irq_exit: pt_regs=c000000000a63aa0
+
+Here we see two phantom interrupts (no handler was invoked), followed
+by a real interrupt for eth0. Without the tracepoints in this patch we
+would have missed the phantom interrupts.
+
+Since these would be the first arch specific tracepoints, I'd like to make
+sure we agree on naming. The tracepoints live in events/powerpc/*, but I'm
+wondering if the tracepoint name should also contain the arch name, eg
+powerpc_irq_entry/powerpc_irq_exit. Thoughts?
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+--
+
+Index: linux.trees.git/arch/powerpc/kernel/irq.c
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/kernel/irq.c	2009-10-06 11:11:44.000000000 +1100
++++ linux.trees.git/arch/powerpc/kernel/irq.c	2009-10-06 11:15:09.000000000 +1100
+@@ -54,6 +54,8 @@
+ #include <linux/pci.h>
+ #include <linux/debugfs.h>
+ #include <linux/perf_event.h>
++#define CREATE_TRACE_POINTS
++#include <trace/events/powerpc.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+@@ -325,6 +327,8 @@ void do_IRQ(struct pt_regs *regs)
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
+ 	unsigned int irq;
+ 
++	trace_irq_entry(regs);
++
+ 	irq_enter();
+ 
+ 	check_stack_overflow();
+@@ -348,6 +352,8 @@ void do_IRQ(struct pt_regs *regs)
+ 		timer_interrupt(regs);
+ 	}
+ #endif
++
++	trace_irq_exit(regs);
+ }
+ 
+ void __init init_IRQ(void)
+Index: linux.trees.git/include/trace/events/powerpc.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux.trees.git/include/trace/events/powerpc.h	2009-10-06 11:14:05.000000000 +1100
+@@ -0,0 +1,47 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM powerpc
++
++#if !defined(_TRACE_POWERPC_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_POWERPC_H
++
++#include <linux/ptrace.h>
++#include <linux/tracepoint.h>
++
++TRACE_EVENT(irq_entry,
++
++	TP_PROTO(struct pt_regs *regs),
++
++	TP_ARGS(regs),
++
++	TP_STRUCT__entry(
++		__field(struct pt_regs *, regs)
++	),
++
++	TP_fast_assign(
++		__entry->regs = regs;
++	),
++
++	TP_printk("pt_regs=%p", __entry->regs)
++);
++
++TRACE_EVENT(irq_exit,
++
++	TP_PROTO(struct pt_regs *regs),
++
++	TP_ARGS(regs),
++
++	TP_STRUCT__entry(
++		__field(struct pt_regs *, regs)
++	),
++
++	TP_fast_assign(
++		__entry->regs = regs;
++	),
++
++	TP_printk("pt_regs=%p", __entry->regs)
++);
++
++#endif /* _TRACE_POWERPC_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
