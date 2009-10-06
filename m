@@ -1,18 +1,20 @@
-Return-Path: <r.goyet@gmail.com>
-Received: from mail-bw0-f207.google.com (mail-bw0-f207.google.com
-	[209.85.218.207]) by ozlabs.org (Postfix) with ESMTP id 925B9B7BA1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3F777B7BCF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  6 Oct 2009 20:16:34 +1100 (EST)
-Received: by bwz3 with SMTP id 3so3269085bwz.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 06 Oct 2009 02:16:31 -0700 (PDT)
-MIME-Version: 1.0
-Date: Tue, 6 Oct 2009 11:16:31 +0200
-Message-ID: <8028e5750910060216x134a8a9cm461fa5a6e87eb6bb@mail.gmail.com>
-Subject: SMU-base PowerMac and server_mode
-From: Romain Goyet <r.goyet@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=000e0ce0eea89d1a13047540af5f
+	Tue,  6 Oct 2009 21:11:29 +1100 (EST)
+Subject: Re: SMU-base PowerMac and server_mode
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Romain Goyet <r.goyet@gmail.com>
+In-Reply-To: <8028e5750910060216x134a8a9cm461fa5a6e87eb6bb@mail.gmail.com>
+References: <8028e5750910060216x134a8a9cm461fa5a6e87eb6bb@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 06 Oct 2009 21:11:22 +1100
+Message-Id: <1254823882.6035.5.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0ce0eea89d1a13047540af5f
-Content-Type: text/plain; charset=UTF-8
+On Tue, 2009-10-06 at 11:16 +0200, Romain Goyet wrote:
+> Hi there,
+> 
+> 
+>   I have this Quad G5 here, running GentooPPC64. Runs fine. Had a hard
+> time getting it to boot without a screen attached, but I eventually
+> managed to (yaboot was the culprit). However, this machine is
+> SMU-based, and I couldn't find a way to enable the equivalent of the
+> PMU's "server_mode" (i.e. automatically reboot after a power failure).
+> Is there any known way to do that ?
 
-Hi there,
-  I have this Quad G5 here, running GentooPPC64. Runs fine. Had a hard time
-getting it to boot without a screen attached, but I eventually managed to
-(yaboot was the culprit). However, this machine is SMU-based, and I couldn't
-find a way to enable the equivalent of the PMU's "server_mode" (i.e.
-automatically reboot after a power failure). Is there any known way to do
-that ?
+I'm pretty sure I reverse engineered the necessary command a while back
+and somebody wrote a userland tool to set it, but I can't find it
+anymore :-)
 
-Kind regards,
+Google may help. Let me know if you can't find it.
 
- - Romain
-
---000e0ce0eea89d1a13047540af5f
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Hi there,<div><br></div><div>=C2=A0=C2=A0I have this Quad G5 here, running =
-GentooPPC64. Runs fine. Had a hard time getting it to boot without a screen=
- attached, but I eventually managed to (yaboot was the culprit). However, t=
-his machine is SMU-based, and I couldn&#39;t find a way to enable the equiv=
-alent of the PMU&#39;s &quot;server_mode&quot; (i.e. automatically reboot a=
-fter a power failure). Is there any known way to do that ?</div>
-<div><br></div><div>Kind regards,</div><div><br></div><div>=C2=A0- Romain</=
-div><div><br></div>
-
---000e0ce0eea89d1a13047540af5f--
+Cheers,
+Ben.
