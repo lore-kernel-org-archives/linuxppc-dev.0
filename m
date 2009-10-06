@@ -1,22 +1,22 @@
 Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [59.145.155.3])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A68AFB7BBA
+	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 22597B7C30
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  7 Oct 2009 02:26:25 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n96FQJFL014005
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 02:26:19 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n96FQNk91228886
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 02:26:23 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n96FQMEa002786
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 02:26:23 +1100
-Date: Tue, 6 Oct 2009 20:56:05 +0530
+	Wed,  7 Oct 2009 02:30:47 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp03.in.ibm.com (8.14.3/8.13.1) with ESMTP id n96FUgaD014251
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2009 21:00:42 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n96FUghl2547732
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2009 21:00:42 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n96FUeDq025582
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 02:30:41 +1100
+Date: Tue, 6 Oct 2009 21:00:28 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	Joel Schopp <jschopp@austin.ibm.com>,
@@ -27,8 +27,9 @@ To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	Gautham R Shenoy <ego@in.ibm.com>,
 	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
 	Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v7 PATCH 1/7]: cpuidle: cleanup drivers/cpuidle/cpuidle.c
-Message-ID: <20091006152605.GB7278@linux.vnet.ibm.com>
+Subject: [v7 PATCH 2/7]: cpuidle: implement a list based approach to
+	register a set of idle routines.
+Message-ID: <20091006153028.GA7343@linux.vnet.ibm.com>
 References: <20091006152421.GA7278@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
@@ -47,359 +48,161 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-06 20:54:21]:
 
-This patch cleans up drivers/cpuidle/cpuidle.c
-Earlier cpuidle assumed pm_idle as the default idle loop. Break that
-assumption and make it more generic. cpuidle_idle_call() which is the
-main idle loop of cpuidle is to be called by architectures which have
-registered to cpuidle.
+Implement a list based registering mechanism for architectures which
+have multiple sets of idle routines which are to be registered.
 
-Remove routines cpuidle_install/uninstall_idle_handler() and
-cpuidle_kick_cpus() which are not needed anymore.
+Currently, in x86 it is done by merely setting pm_idle = idle_routine
+and managing this pm_idle pointer is messy.
+
+To give an example of how this mechanism works:
+In x86, initially, idle routine is selected from the set of poll/mwait/
+c1e/default idle loops. So the selected idle loop is registered in cpuidle
+as one idle state cpuidle devices. Once ACPI comes up, it registers
+another set of idle states on top of this state. Again, suppose a module
+registers another set of idle loops, it is added to this list.
+
+This provides a clean way of registering and unregistering idle state
+routines.
+
+In the current implementation, pm_idle is set as the current idle routine
+being used and the old idle routine has to be maintained and when a module
+registers/unregisters an idle routine, confusion arises.
+
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- drivers/cpuidle/cpuidle.c  |   62 +++++----------------------------------------
- drivers/cpuidle/cpuidle.h  |    6 +---
- drivers/cpuidle/driver.c   |    4 --
- drivers/cpuidle/governor.c |   13 +++------
- drivers/cpuidle/sysfs.c    |   34 +++++++++++++-----------
- include/linux/cpuidle.h    |    4 ++
- 6 files changed, 37 insertions(+), 86 deletions(-)
+ drivers/cpuidle/cpuidle.c |   54 ++++++++++++++++++++++++++++++++++++++++------
+ include/linux/cpuidle.h   |    1 
+ 2 files changed, 48 insertions(+), 7 deletions(-)
 
 Index: linux.trees.git/drivers/cpuidle/cpuidle.c
 ===================================================================
 --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
 +++ linux.trees.git/drivers/cpuidle/cpuidle.c
-@@ -24,10 +24,6 @@
+@@ -22,6 +22,7 @@
+ #include "cpuidle.h"
+ 
  DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
++DEFINE_PER_CPU(struct list_head, cpuidle_devices_list);
  
  DEFINE_MUTEX(cpuidle_lock);
--LIST_HEAD(cpuidle_detected_devices);
--static void (*pm_idle_old)(void);
--
--static int enabled_devices;
  
- #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
- static void cpuidle_kick_cpus(void)
-@@ -47,7 +43,7 @@ static int __cpuidle_register_device(str
-  *
-  * NOTE: no locks or semaphores should be used here
-  */
--static void cpuidle_idle_call(void)
-+void cpuidle_idle_call(void)
- {
- 	struct cpuidle_device *dev = __get_cpu_var(cpuidle_devices);
- 	struct cpuidle_state *target_state;
-@@ -55,13 +51,10 @@ static void cpuidle_idle_call(void)
+@@ -112,6 +113,45 @@ void cpuidle_resume_and_unlock(void)
  
- 	/* check if the device is ready */
- 	if (!dev || !dev->enabled) {
--		if (pm_idle_old)
--			pm_idle_old();
--		else
- #if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
--			default_idle();
-+		default_idle();
- #else
--			local_irq_enable();
-+		local_irq_enable();
- #endif
- 		return;
- 	}
-@@ -75,7 +68,11 @@ static void cpuidle_idle_call(void)
- 	hrtimer_peek_ahead_timers();
- #endif
- 	/* ask the governor for the next state */
--	next_state = cpuidle_curr_governor->select(dev);
-+	if (dev->state_count > 1)
-+		next_state = cpuidle_curr_governor->select(dev);
-+	else
-+		next_state = 0;
+ EXPORT_SYMBOL_GPL(cpuidle_resume_and_unlock);
+ 
++int cpuidle_add_to_list(struct cpuidle_device *dev)
++{
++	int ret, cpu = dev->cpu;
++	struct cpuidle_device *old_dev;
 +
- 	if (need_resched())
- 		return;
- 	target_state = &dev->states[next_state];
-@@ -96,35 +93,11 @@ static void cpuidle_idle_call(void)
- }
- 
++	if (!list_empty(&per_cpu(cpuidle_devices_list, cpu))) {
++		old_dev = list_first_entry(&per_cpu(cpuidle_devices_list, cpu),
++				struct cpuidle_device, idle_list);
++		cpuidle_remove_state_sysfs(old_dev);
++	}
++
++	list_add(&dev->idle_list, &per_cpu(cpuidle_devices_list, cpu));
++	ret = cpuidle_add_state_sysfs(dev);
++	return ret;
++}
++
++void cpuidle_remove_from_list(struct cpuidle_device *dev)
++{
++	struct cpuidle_device *temp_dev;
++	struct list_head *pos;
++	int ret, cpu = dev->cpu;
++
++	list_for_each(pos, &per_cpu(cpuidle_devices_list, cpu)) {
++		temp_dev = container_of(pos, struct cpuidle_device, idle_list);
++		if (dev == temp_dev) {
++			list_del(&temp_dev->idle_list);
++			cpuidle_remove_state_sysfs(temp_dev);
++			break;
++		}
++	}
++
++	if (!list_empty(&per_cpu(cpuidle_devices_list, cpu))) {
++		temp_dev = list_first_entry(&per_cpu(cpuidle_devices_list, cpu),
++					struct cpuidle_device, idle_list);
++		ret = cpuidle_add_state_sysfs(temp_dev);
++	}
++	cpuidle_kick_cpus();
++}
++
  /**
-- * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
-- */
--void cpuidle_install_idle_handler(void)
--{
--	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
--		/* Make sure all changes finished before we switch to new idle */
--		smp_wmb();
--		pm_idle = cpuidle_idle_call;
--	}
--}
+  * cpuidle_enable_device - enables idle PM for a CPU
+  * @dev: the CPU
+@@ -136,9 +176,6 @@ int cpuidle_enable_device(struct cpuidle
+ 			return ret;
+ 	}
+ 
+-	if ((ret = cpuidle_add_state_sysfs(dev)))
+-		return ret;
 -
--/**
-- * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
-- */
--void cpuidle_uninstall_idle_handler(void)
--{
--	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
--		pm_idle = pm_idle_old;
--		cpuidle_kick_cpus();
--	}
--}
--
--/**
-  * cpuidle_pause_and_lock - temporarily disables CPUIDLE
-  */
- void cpuidle_pause_and_lock(void)
- {
- 	mutex_lock(&cpuidle_lock);
--	cpuidle_uninstall_idle_handler();
- }
- 
- EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
-@@ -134,7 +107,6 @@ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock
-  */
- void cpuidle_resume_and_unlock(void)
- {
--	cpuidle_install_idle_handler();
- 	mutex_unlock(&cpuidle_lock);
- }
- 
-@@ -182,7 +154,6 @@ int cpuidle_enable_device(struct cpuidle
- 
- 	dev->enabled = 1;
- 
--	enabled_devices++;
+ 	if (cpuidle_curr_governor->enable &&
+ 	    (ret = cpuidle_curr_governor->enable(dev)))
+ 		goto fail_sysfs;
+@@ -157,7 +194,7 @@ int cpuidle_enable_device(struct cpuidle
  	return 0;
  
  fail_sysfs:
-@@ -213,7 +184,6 @@ void cpuidle_disable_device(struct cpuid
- 		cpuidle_curr_governor->disable(dev);
+-	cpuidle_remove_state_sysfs(dev);
++	cpuidle_remove_from_list(dev);
  
- 	cpuidle_remove_state_sysfs(dev);
--	enabled_devices--;
+ 	return ret;
+ }
+@@ -182,8 +219,6 @@ void cpuidle_disable_device(struct cpuid
+ 
+ 	if (cpuidle_curr_governor->disable)
+ 		cpuidle_curr_governor->disable(dev);
+-
+-	cpuidle_remove_state_sysfs(dev);
  }
  
  EXPORT_SYMBOL_GPL(cpuidle_disable_device);
-@@ -266,7 +236,6 @@ static void poll_idle_init(struct cpuidl
-  */
- static int __cpuidle_register_device(struct cpuidle_device *dev)
- {
--	int ret;
- 	struct sys_device *sys_dev = get_cpu_sysdev((unsigned long)dev->cpu);
- 
- 	if (!sys_dev)
-@@ -274,16 +243,9 @@ static int __cpuidle_register_device(str
- 	if (!try_module_get(cpuidle_curr_driver->owner))
- 		return -EINVAL;
- 
--	init_completion(&dev->kobj_unregister);
--
- 	poll_idle_init(dev);
- 
- 	per_cpu(cpuidle_devices, dev->cpu) = dev;
--	list_add(&dev->device_list, &cpuidle_detected_devices);
--	if ((ret = cpuidle_add_sysfs(sys_dev))) {
--		module_put(cpuidle_curr_driver->owner);
--		return ret;
--	}
- 
- 	dev->registered = 1;
- 	return 0;
-@@ -305,7 +267,6 @@ int cpuidle_register_device(struct cpuid
+@@ -267,6 +302,7 @@ int cpuidle_register_device(struct cpuid
  	}
  
  	cpuidle_enable_device(dev);
--	cpuidle_install_idle_handler();
++	cpuidle_add_to_list(dev);
  
  	mutex_unlock(&cpuidle_lock);
  
-@@ -321,8 +282,6 @@ EXPORT_SYMBOL_GPL(cpuidle_register_devic
-  */
- void cpuidle_unregister_device(struct cpuidle_device *dev)
- {
--	struct sys_device *sys_dev = get_cpu_sysdev((unsigned long)dev->cpu);
--
- 	if (dev->registered == 0)
- 		return;
- 
-@@ -330,9 +289,6 @@ void cpuidle_unregister_device(struct cp
+@@ -288,6 +324,7 @@ void cpuidle_unregister_device(struct cp
+ 	cpuidle_pause_and_lock();
  
  	cpuidle_disable_device(dev);
++	cpuidle_remove_from_list(dev);
  
--	cpuidle_remove_sysfs(sys_dev);
--	list_del(&dev->device_list);
--	wait_for_completion(&dev->kobj_unregister);
  	per_cpu(cpuidle_devices, dev->cpu) = NULL;
  
- 	cpuidle_resume_and_unlock();
-@@ -384,8 +340,6 @@ static int __init cpuidle_init(void)
+@@ -338,12 +375,15 @@ static inline void latency_notifier_init
+  */
+ static int __init cpuidle_init(void)
  {
- 	int ret;
+-	int ret;
++	int ret, cpu;
  
--	pm_idle_old = pm_idle;
--
  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
  	if (ret)
  		return ret;
-Index: linux.trees.git/drivers/cpuidle/governor.c
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/governor.c
-+++ linux.trees.git/drivers/cpuidle/governor.c
-@@ -43,16 +43,14 @@ static struct cpuidle_governor * __cpuid
-  */
- int cpuidle_switch_governor(struct cpuidle_governor *gov)
- {
--	struct cpuidle_device *dev;
-+	int cpu;
  
- 	if (gov == cpuidle_curr_governor)
- 		return 0;
++	for_each_possible_cpu(cpu)
++		INIT_LIST_HEAD(&per_cpu(cpuidle_devices_list, cpu));
++
+ 	latency_notifier_init(&cpuidle_latency_notifier);
  
--	cpuidle_uninstall_idle_handler();
--
- 	if (cpuidle_curr_governor) {
--		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
--			cpuidle_disable_device(dev);
-+		for_each_online_cpu(cpu)
-+			cpuidle_disable_device(per_cpu(cpuidle_devices, cpu));
- 		module_put(cpuidle_curr_governor->owner);
- 	}
- 
-@@ -61,9 +59,8 @@ int cpuidle_switch_governor(struct cpuid
- 	if (gov) {
- 		if (!try_module_get(cpuidle_curr_governor->owner))
- 			return -EINVAL;
--		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
--			cpuidle_enable_device(dev);
--		cpuidle_install_idle_handler();
-+		for_each_online_cpu(cpu)
-+			cpuidle_enable_device(per_cpu(cpuidle_devices, cpu));
- 		printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
- 	}
- 
+ 	return 0;
 Index: linux.trees.git/include/linux/cpuidle.h
 ===================================================================
 --- linux.trees.git.orig/include/linux/cpuidle.h
 +++ linux.trees.git/include/linux/cpuidle.h
-@@ -92,7 +92,6 @@ struct cpuidle_device {
+@@ -92,6 +92,7 @@ struct cpuidle_device {
  	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
  	struct cpuidle_state	*last_state;
  
--	struct list_head 	device_list;
++	struct list_head	idle_list;
  	struct kobject		kobj;
  	struct completion	kobj_unregister;
  	void			*governor_data;
-@@ -112,6 +111,9 @@ static inline int cpuidle_get_last_resid
- 	return dev->last_residency;
- }
- 
-+extern void cpuidle_idle_call(void);
-+extern struct cpuidle_driver *cpuidle_curr_driver;
-+
- 
- /****************************
-  * CPUIDLE DRIVER INTERFACE *
-Index: linux.trees.git/drivers/cpuidle/cpuidle.h
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/cpuidle.h
-+++ linux.trees.git/drivers/cpuidle/cpuidle.h
-@@ -9,9 +9,7 @@
- 
- /* For internal use only */
- extern struct cpuidle_governor *cpuidle_curr_governor;
--extern struct cpuidle_driver *cpuidle_curr_driver;
- extern struct list_head cpuidle_governors;
--extern struct list_head cpuidle_detected_devices;
- extern struct mutex cpuidle_lock;
- extern spinlock_t cpuidle_driver_lock;
- 
-@@ -27,7 +25,7 @@ extern int cpuidle_add_class_sysfs(struc
- extern void cpuidle_remove_class_sysfs(struct sysdev_class *cls);
- extern int cpuidle_add_state_sysfs(struct cpuidle_device *device);
- extern void cpuidle_remove_state_sysfs(struct cpuidle_device *device);
--extern int cpuidle_add_sysfs(struct sys_device *sysdev);
--extern void cpuidle_remove_sysfs(struct sys_device *sysdev);
-+extern int cpuidle_add_sysfs(struct cpuidle_device *device);
-+extern void cpuidle_remove_sysfs(struct cpuidle_device *device);
- 
- #endif /* __DRIVER_CPUIDLE_H */
-Index: linux.trees.git/drivers/cpuidle/sysfs.c
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/sysfs.c
-+++ linux.trees.git/drivers/cpuidle/sysfs.c
-@@ -311,6 +311,13 @@ int cpuidle_add_state_sysfs(struct cpuid
- 	int i, ret = -ENOMEM;
- 	struct cpuidle_state_kobj *kobj;
- 
-+	init_completion(&device->kobj_unregister);
-+
-+	ret = cpuidle_add_sysfs(device);
-+	if (ret) {
-+		module_put(cpuidle_curr_driver->owner);
-+		return ret;
-+	}
- 	/* state statistics */
- 	for (i = 0; i < device->state_count; i++) {
- 		kobj = kzalloc(sizeof(struct cpuidle_state_kobj), GFP_KERNEL);
-@@ -347,35 +354,32 @@ void cpuidle_remove_state_sysfs(struct c
- 
- 	for (i = 0; i < device->state_count; i++)
- 		cpuidle_free_state_kobj(device, i);
-+
-+	cpuidle_remove_sysfs(device);
- }
- 
- /**
-  * cpuidle_add_sysfs - creates a sysfs instance for the target device
-- * @sysdev: the target device
-+ * @device: the target device
-  */
--int cpuidle_add_sysfs(struct sys_device *sysdev)
-+int cpuidle_add_sysfs(struct cpuidle_device *device)
- {
--	int cpu = sysdev->id;
--	struct cpuidle_device *dev;
- 	int error;
-+	struct sys_device *sysdev = get_cpu_sysdev((unsigned long)device->cpu);
- 
--	dev = per_cpu(cpuidle_devices, cpu);
--	error = kobject_init_and_add(&dev->kobj, &ktype_cpuidle, &sysdev->kobj,
--				     "cpuidle");
-+	error = kobject_init_and_add(&device->kobj, &ktype_cpuidle,
-+				&sysdev->kobj, "cpuidle");
- 	if (!error)
--		kobject_uevent(&dev->kobj, KOBJ_ADD);
-+		kobject_uevent(&device->kobj, KOBJ_ADD);
- 	return error;
- }
- 
- /**
-  * cpuidle_remove_sysfs - deletes a sysfs instance on the target device
-- * @sysdev: the target device
-+ * @device: the target device
-  */
--void cpuidle_remove_sysfs(struct sys_device *sysdev)
-+void cpuidle_remove_sysfs(struct cpuidle_device *device)
- {
--	int cpu = sysdev->id;
--	struct cpuidle_device *dev;
--
--	dev = per_cpu(cpuidle_devices, cpu);
--	kobject_put(&dev->kobj);
-+	kobject_put(&device->kobj);
-+	wait_for_completion(&device->kobj_unregister);
- }
-Index: linux.trees.git/drivers/cpuidle/driver.c
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/driver.c
-+++ linux.trees.git/drivers/cpuidle/driver.c
-@@ -27,10 +27,6 @@ int cpuidle_register_driver(struct cpuid
- 		return -EINVAL;
- 
- 	spin_lock(&cpuidle_driver_lock);
--	if (cpuidle_curr_driver) {
--		spin_unlock(&cpuidle_driver_lock);
--		return -EBUSY;
--	}
- 	cpuidle_curr_driver = drv;
- 	spin_unlock(&cpuidle_driver_lock);
- 
