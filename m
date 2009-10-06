@@ -1,20 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 91386B7BD0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  6 Oct 2009 17:46:25 +1100 (EST)
-Date: Tue, 6 Oct 2009 17:46:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/iseries: remove compiler version dependent hack
-Message-Id: <20091006174618.b3b1defc.sfr@canb.auug.org.au>
-In-Reply-To: <20091006172847.440e8798.sfr@canb.auug.org.au>
-References: <20091006172847.440e8798.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__6_Oct_2009_17_46_18_+1100_oVvuP3hSA5+hA/Tk"
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <vivek.mahajan@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6A096B7BB8
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2009 17:49:33 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n966nUWM009252
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2009 23:49:30 -0700 (MST)
+From: Vivek Mahajan <vivek.mahajan@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2 1/3] powerpc/fsl: 85xx: document cache-sram size as a
+	kernel parametric option
+Date: Tue,  6 Oct 2009 12:19:24 +0530
+Message-Id: <1254811766-30903-1-git-send-email-vivek.mahajan@freescale.com>
+Cc: kumar.gala@freescale.com, Vivek Mahajan <vivek.mahajan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,41 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__6_Oct_2009_17_46_18_+1100_oVvuP3hSA5+hA/Tk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Adds documentation for the size parameter of Freescale's QorIQ
+based cache-sram
 
-Hi Ben,
+Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
+---
+v2: No change
 
-On Tue, 6 Oct 2009 17:28:47 +1100 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> The creation of the flattened device tree depended on the compiler
-> putting the constant strings for an object in a section with a
-> particular name.  This was changed with recent compilers.  Do this
-> explicitly instead.
->=20
-> Without this patch, iseries kernels may silently not boot when built with
-> some compilers.
+ Documentation/kernel-parameters.txt |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-So this is probably a candidate for 2.6.32 and maybe some of the stable
-releases (if anyone cares enough).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__6_Oct_2009_17_46_18_+1100_oVvuP3hSA5+hA/Tk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrK57oACgkQjjKRsyhoI8zzjwCfUqDE1Cp7O/1yv12dqs7XGLV2
-TnoAoIlYYYQodpf3/7Z1+1emF2u0oM0Y
-=mSPV
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_Oct_2009_17_46_18_+1100_oVvuP3hSA5+hA/Tk--
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 6fa7292..8767f36 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -412,6 +412,9 @@ and is between 256 and 4096 characters. It is defined in the file
+ 
+ 	c101=		[NET] Moxa C101 synchronous serial card
+ 
++	cache-sram-size=	[PPC] Size of Freescale's QorIQ Cache SRAM
++			See Documentation/powerpc/fsl_85xx_cache_sram.txt.
++
+ 	cachesize=	[BUGS=X86-32] Override level 2 CPU cache size detection.
+ 			Sometimes CPU hardware bugs make them report the cache
+ 			size incorrectly. The kernel will attempt work arounds
+-- 
+1.5.6.5
