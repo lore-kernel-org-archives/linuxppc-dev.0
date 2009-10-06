@@ -1,23 +1,18 @@
-Return-Path: <thomas.rinder@automationtechnology.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.160])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 97A83B7B7E
+Return-Path: <r.goyet@gmail.com>
+Received: from mail-bw0-f207.google.com (mail-bw0-f207.google.com
+	[209.85.218.207]) by ozlabs.org (Postfix) with ESMTP id 925B9B7BA1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  6 Oct 2009 19:29:06 +1100 (EST)
-Received: from AT-THOMAS3 (p50999650.dip0.t-ipconnect.de [80.153.150.80])
-	by post.strato.de (fruni mo37) (RZmta 22.1)
-	with (AES128-SHA encrypted) ESMTP id 405740l9683lKj
+	Tue,  6 Oct 2009 20:16:34 +1100 (EST)
+Received: by bwz3 with SMTP id 3so3269085bwz.2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 6 Oct 2009 10:29:00 +0200 (MEST)
-From: "Thomas Rinder" <thomas.rinder@automationtechnology.de>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: XILINX  memory layout <-> physical memory
-Date: Tue, 6 Oct 2009 10:29:44 +0100
-Message-ID: <001901ca4667$8ac93b60$a05bb220$@rinder@automationtechnology.de>
+	Tue, 06 Oct 2009 02:16:31 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Tue, 6 Oct 2009 11:16:31 +0200
+Message-ID: <8028e5750910060216x134a8a9cm461fa5a6e87eb6bb@mail.gmail.com>
+Subject: SMU-base PowerMac and server_mode
+From: Romain Goyet <r.goyet@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=000e0ce0eea89d1a13047540af5f
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Betreff: XILINX memory layout <-> physical memory
+--000e0ce0eea89d1a13047540af5f
+Content-Type: text/plain; charset=UTF-8
 
-Hello,
+Hi there,
+  I have this Quad G5 here, running GentooPPC64. Runs fine. Had a hard time
+getting it to boot without a screen attached, but I eventually managed to
+(yaboot was the culprit). However, this machine is SMU-based, and I couldn't
+find a way to enable the equivalent of the PMU's "server_mode" (i.e.
+automatically reboot after a power failure). Is there any known way to do
+that ?
 
-I'm newbie in PPCLinux, don't know I'm right here.
+Kind regards,
 
-I made a ports to an AVNET FX12 minimodul and custom board (FX40/FX60) =
-based
-on linuxppc found on http://git.xilinx.com/ (ppc405 processor).
+ - Romain
 
-All works fine, but I can use/configure only the half memory size =
-available
-in the dts (for instance 32Mbytes of 64Mbytes on Avnet minimodul).
-Otherwise the kernel crashes if tries to mount the root file system =
-(ext2
-ramdisk).
+--000e0ce0eea89d1a13047540af5f
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-I expect my problem is the physical memory layout and its control. I =
-want to
-understand and control the physical memory layout.
+Hi there,<div><br></div><div>=C2=A0=C2=A0I have this Quad G5 here, running =
+GentooPPC64. Runs fine. Had a hard time getting it to boot without a screen=
+ attached, but I eventually managed to (yaboot was the culprit). However, t=
+his machine is SMU-based, and I couldn&#39;t find a way to enable the equiv=
+alent of the PMU&#39;s &quot;server_mode&quot; (i.e. automatically reboot a=
+fter a power failure). Is there any known way to do that ?</div>
+<div><br></div><div>Kind regards,</div><div><br></div><div>=C2=A0- Romain</=
+div><div><br></div>
 
-But I didn't not found documentation how the memory layout is organized =
-in
-linuxppc and
-how do I control were kernel, ramdisk etc. resides in physical memory.
-
-Could anyone give me a hint please, how-to start?
-
-Thanks a lot,
-
-Thomas
-
-Ausgehende eMail ist virenfrei.
-Von AVG =FCberpr=FCft - www.avg.de=20
-Version: 8.5.420 / Virendatenbank: 270.14.4/2416 - Ausgabedatum: =
-10/05/09
-18:23:00=20
-
-Ausgehende eMail ist virenfrei.
-Von AVG =FCberpr=FCft - www.avg.de=20
-Version: 8.5.420 / Virendatenbank: 270.14.4/2416 - Ausgabedatum: =
-10/05/09
-18:23:00=20
+--000e0ce0eea89d1a13047540af5f--
