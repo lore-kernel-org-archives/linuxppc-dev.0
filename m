@@ -1,21 +1,26 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id E15BAB7BF9
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 04:57:39 +1100 (EST)
-Date: Tue, 6 Oct 2009 10:29:08 -0700
-From: Greg KH <greg@kroah.com>
-To: Julie Zhu <julie.zhu@xilinx.com>
-Subject: Re: [PATCH] [V2] USB: Add support for Xilinx USB host controller
-Message-ID: <20091006172908.GA17760@kroah.com>
-References: <689CB232690D8D4E97DA6C76DA098E6C08A73362@XCO-EXCHVS1.xlnx.xilinx.com>
-	<24d11f7b-3f0d-4489-9eca-1d74c400504e@SG2EHSMHS006.ehs.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <24d11f7b-3f0d-4489-9eca-1d74c400504e@SG2EHSMHS006.ehs.local>
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	John Linn <linnj@xilinx.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 56BCBB7BAB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  7 Oct 2009 05:08:00 +1100 (EST)
+Subject: Re: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
+	management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
+	cpuidle to POWER.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+In-Reply-To: <20091006163521.GA10425@linux.vnet.ibm.com>
+References: <20091006152421.GA7278@linux.vnet.ibm.com>
+	<20091006163521.GA10425@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 06 Oct 2009 20:04:39 +0200
+Message-Id: <1254852279.17055.2.camel@laptop>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,14 +30,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 06, 2009 at 11:07:32AM -0600, Julie Zhu wrote:
-> Hi, Greg K-H,
-> 
-> I think we have put in all the suggested changes. Are you planning to
-> put it into your tree? Or is there something we need to do?
+On Tue, 2009-10-06 at 22:05 +0530, Arun R Bharadwaj wrote:
 
-I will queue it up in my tree.
+> Also, the per-cpu nature of registration/unregistration of cpuidle
+> has been maintained as ACPI needs this.
 
-thanks,
-
-greg k-h
+Right, so can't we ditch that and have acpi default to the lowest common
+C-state and warn when various cpus report different C-states?
