@@ -1,13 +1,14 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC PATCH 03/12] of: merge struct device_node
+Subject: [RFC PATCH 04/12] of: Move OF_IS_DYNAMIC and OF_MARK_DYNAMIC macros
+	to of.h
 To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
 	Stephen Rothwell <sfr@canb.auug.org.au>, davem@davemloft.net,
 	sparclinux@vger.kernel.org, monstr@monstr.eu,
 	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org
-Date: Tue, 06 Oct 2009 22:30:34 -0600
-Message-ID: <20091007043027.16890.46731.stgit@angua>
+Date: Tue, 06 Oct 2009 22:30:47 -0600
+Message-ID: <20091007043039.16890.182.stgit@angua>
 In-Reply-To: <20091007041007.16890.62194.stgit@angua>
 References: <20091007041007.16890.62194.stgit@angua>
 MIME-Version: 1.0
@@ -26,156 +27,35 @@ Merge of common code duplicated between Sparc, PowerPC and Microblaze
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/include/asm/prom.h |   20 --------------------
- arch/powerpc/include/asm/prom.h    |   20 --------------------
- arch/sparc/include/asm/prom.h      |   24 ------------------------
- include/linux/of.h                 |   32 ++++++++++++++++++++++++++++++++
- 4 files changed, 32 insertions(+), 64 deletions(-)
+ arch/sparc/include/asm/prom.h |    3 ---
+ include/linux/of.h            |    3 +++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
-index 11cb484..64e8b3a 100644
---- a/arch/microblaze/include/asm/prom.h
-+++ b/arch/microblaze/include/asm/prom.h
-@@ -73,26 +73,6 @@ struct boot_param_header {
- 	u32	dt_struct_size; /* size of the DT structure block */
- };
- 
--struct device_node {
--	const char *name;
--	const char *type;
--	phandle	node;
--	phandle linux_phandle;
--	char	*full_name;
--
--	struct	property *properties;
--	struct	property *deadprops; /* removed properties */
--	struct	device_node *parent;
--	struct	device_node *child;
--	struct	device_node *sibling;
--	struct	device_node *next; /* next device of same type */
--	struct	device_node *allnext; /* next in list of all nodes */
--	struct	proc_dir_entry *pde; /* this node's proc directory */
--	struct	kref kref;
--	unsigned long _flags;
--	void	*data;
--};
--
- extern struct device_node *of_chosen;
- 
- static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index c236326..c918db5 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -71,26 +71,6 @@ struct boot_param_header
- 	u32	dt_struct_size;		/* size of the DT structure block */
- };
- 
--struct device_node {
--	const char *name;
--	const char *type;
--	phandle	node;
--	phandle linux_phandle;
--	char	*full_name;
--
--	struct	property *properties;
--	struct  property *deadprops; /* removed properties */
--	struct	device_node *parent;
--	struct	device_node *child;
--	struct	device_node *sibling;
--	struct	device_node *next;	/* next device of same type */
--	struct	device_node *allnext;	/* next in list of all nodes */
--	struct  proc_dir_entry *pde;	/* this node's proc directory */
--	struct  kref kref;
--	unsigned long _flags;
--	void	*data;
--};
--
- extern struct device_node *of_chosen;
- 
- static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
 diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
-index b34f988..e5f4a1d 100644
+index e5f4a1d..ddbd870 100644
 --- a/arch/sparc/include/asm/prom.h
 +++ b/arch/sparc/include/asm/prom.h
-@@ -29,30 +29,6 @@
- #define of_prop_cmp(s1, s2)		strcasecmp((s1), (s2))
- #define of_node_cmp(s1, s2)		strcmp((s1), (s2))
- 
--struct of_irq_controller;
--struct device_node {
--	const char	*name;
--	const char	*type;
--	phandle	node;
--	char	*path_component_name;
--	char	*full_name;
--
--	struct	property *properties;
--	struct  property *deadprops; /* removed properties */
--	struct	device_node *parent;
--	struct	device_node *child;
--	struct	device_node *sibling;
--	struct	device_node *next;	/* next device of same type */
--	struct	device_node *allnext;	/* next in list of all nodes */
--	struct  proc_dir_entry *pde;	/* this node's proc directory */
--	struct  kref kref;
--	unsigned long _flags;
--	void	*data;
--	unsigned int unique_id;
--
--	struct of_irq_controller *irq_trans;
--};
--
- struct of_irq_controller {
- 	unsigned int	(*irq_build)(struct device_node *, unsigned int, void *);
+@@ -34,9 +34,6 @@ struct of_irq_controller {
  	void		*data;
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 4668b29..65a158d 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -17,6 +17,7 @@
-  */
- #include <linux/types.h>
- #include <linux/bitops.h>
-+#include <linux/kref.h>
- #include <linux/mod_devicetable.h>
- 
- typedef u32 phandle;
-@@ -31,6 +32,37 @@ struct property {
- 	unsigned int unique_id;
  };
  
-+#if defined(CONFIG_SPARC)
-+struct of_irq_controller;
-+#endif
-+
-+struct device_node {
-+	const char *name;
-+	const char *type;
-+	phandle	node;
-+#if !defined(CONFIG_SPARC)
-+	phandle linux_phandle;
-+#endif
-+	char	*full_name;
-+
-+	struct	property *properties;
-+	struct	property *deadprops;	/* removed properties */
-+	struct	device_node *parent;
-+	struct	device_node *child;
-+	struct	device_node *sibling;
-+	struct	device_node *next;	/* next device of same type */
-+	struct	device_node *allnext;	/* next in list of all nodes */
-+	struct	proc_dir_entry *pde;	/* this node's proc directory */
-+	struct	kref kref;
-+	unsigned long _flags;
-+	void	*data;
-+#if defined(CONFIG_SPARC)
-+	char	*path_component_name;
-+	unsigned int unique_id;
-+	struct of_irq_controller *irq_trans;
-+#endif
-+};
-+
- #include <asm/prom.h>
+-#define OF_IS_DYNAMIC(x) test_bit(OF_DYNAMIC, &x->_flags)
+-#define OF_MARK_DYNAMIC(x) set_bit(OF_DYNAMIC, &x->_flags)
+-
+ extern struct device_node *of_find_node_by_cpuid(int cpuid);
+ extern int of_set_property(struct device_node *node, const char *name, void *val, int len);
+ extern struct mutex of_set_property_mutex;
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 65a158d..a66c1eb 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -69,6 +69,9 @@ struct device_node {
+ #define OF_DYNAMIC	1 /* node and properties were allocated via kmalloc */
+ #define OF_DETACHED	2 /* node has been detached from the device tree */
  
- /* flag descriptions */
++#define OF_IS_DYNAMIC(x) test_bit(OF_DYNAMIC, &x->_flags)
++#define OF_MARK_DYNAMIC(x) set_bit(OF_DYNAMIC, &x->_flags)
++
+ #define OF_BAD_ADDR	((u64)-1)
+ 
+ extern struct device_node *of_find_node_by_name(struct device_node *from,
