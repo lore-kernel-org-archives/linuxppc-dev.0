@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 36833B7B99
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 08:18:13 +1100 (EST)
-Subject: Re: [PATCH 3/6] 8xx: invalidate non present TLBs
+	by ozlabs.org (Postfix) with ESMTPS id 7C2D8B7B76
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 08:18:30 +1100 (EST)
+Subject: Re: [PATCH 4/6] 8xx: Tag DAR with 0x00f0 to catch buggy instructions.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1254948364-30074-5-git-send-email-Joakim.Tjernlund@transmode.se>
 References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-5-git-send-email-Joakim.Tjernlund@transmode.se>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 08 Oct 2009 08:18:05 +1100
-Message-Id: <1254950285.2409.10.camel@pasglop>
+Date: Thu, 08 Oct 2009 08:18:21 +1100
+Message-Id: <1254950301.2409.11.camel@pasglop>
 Mime-Version: 1.0
 Cc: Scott Wood <scottwood@freescale.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -29,42 +30,91 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, 2009-10-07 at 22:46 +0200, Joakim Tjernlund wrote:
-> 8xx sometimes need to load a invalid/non-present TLBs in
-> it DTLB asm handler.
-> These must be invalidated separaly as linux mm don't.
+> dcbz, dcbf, dcbi, dcbst and icbi do not set DAR when they
+> cause a DTLB Error. Dectect this by tagging DAR with 0x00f0
+> at every exception exit that modifies DAR.
+> Test for DAR=0x00f0 in DataTLBError and bail
+> to handle_page_fault().
 
-not sure about the dsisr test here, what is the point ?
+Why not -1 ? :-)
 
-Cheers,
 Ben.
 
 > ---
->  arch/powerpc/mm/fault.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
+>  arch/powerpc/kernel/head_8xx.S |   19 ++++++++++++++++---
+>  1 files changed, 16 insertions(+), 3 deletions(-)
 > 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 7699394..72941c7 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -39,7 +39,7 @@
->  #include <asm/uaccess.h>
->  #include <asm/tlbflush.h>
->  #include <asm/siginfo.h>
-> -
-> +#include <mm/mmu_decl.h>
+> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+> index 3cf1289..37aa7d0 100644
+> --- a/arch/powerpc/kernel/head_8xx.S
+> +++ b/arch/powerpc/kernel/head_8xx.S
+> @@ -206,6 +206,8 @@ MachineCheck:
+>  	EXCEPTION_PROLOG
+>  	mfspr r4,SPRN_DAR
+>  	stw r4,_DAR(r11)
+> +	li r5,0x00f0
+> +	mtspr SPRN_DAR,r5	/* Tag DAR, to be used in DTLB Error */
+>  	mfspr r5,SPRN_DSISR
+>  	stw r5,_DSISR(r11)
+>  	addi r3,r1,STACK_FRAME_OVERHEAD
+> @@ -222,6 +224,8 @@ DataAccess:
+>  	stw	r10,_DSISR(r11)
+>  	mr	r5,r10
+>  	mfspr	r4,SPRN_DAR
+> +	li	r10,0x00f0
+> +	mtspr	SPRN_DAR,r10	/* Tag DAR, to be used in DTLB Error */
+>  	EXC_XFER_EE_LITE(0x300, handle_page_fault)
 >  
->  #ifdef CONFIG_KPROBES
->  static inline int notify_page_fault(struct pt_regs *regs)
-> @@ -243,6 +243,12 @@ good_area:
->  		goto bad_area;
->  #endif /* CONFIG_6xx */
->  #if defined(CONFIG_8xx)
-> +	/* 8xx sometimes need to load a invalid/non-present TLBs.
-> +	 * These must be invalidated separately as linux mm don't.
-> +	 */
-> +	if (error_code & 0x40000000) /* no translation? */
-> +		_tlbil_va(address);
+>  /* Instruction access exception.
+> @@ -244,6 +248,8 @@ Alignment:
+>  	EXCEPTION_PROLOG
+>  	mfspr	r4,SPRN_DAR
+>  	stw	r4,_DAR(r11)
+> +	li	r5,0x00f0
+> +	mtspr	SPRN_DAR,r5	/* Tag DAR, to be used in DTLB Error */
+>  	mfspr	r5,SPRN_DSISR
+>  	stw	r5,_DSISR(r11)
+>  	addi	r3,r1,STACK_FRAME_OVERHEAD
+> @@ -427,6 +433,7 @@ DataStoreTLBMiss:
+>  	 * of the MMU.
+>  	 */
+>  2:	li	r11, 0x00f0
+> +	mtspr	SPRN_DAR,r11	/* Tag DAR */
+>  	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
+>  	DO_8xx_CPU6(0x3d80, r3)
+>  	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
+> @@ -467,10 +474,14 @@ DataTLBError:
+>  	stw	r10, 0(r0)
+>  	stw	r11, 4(r0)
+>  
+> +	mfspr	r10, SPRN_DAR
+> +	cmpwi	cr0, r10, 0x00f0
+> +	beq-	2f	/* must be a buggy dcbX, icbi insn. */
 > +
->          /* The MPC8xx seems to always set 0x80000000, which is
->           * "undefined".  Of those that can be set, this is the only
->           * one which seems bad.
+>  	/* First, make sure this was a store operation.
+>  	*/
+> -	mfspr	r10, SPRN_DSISR
+> -	andis.	r11, r10, 0x4000 /* no translation */
+> +	mfspr	r11, SPRN_DSISR
+> +	andis.	r11, r11, 0x4000 /* no translation */
+>  	bne	2f	/* branch if set */
+>  
+>  	/* The EA of a data TLB miss is automatically stored in the MD_EPN
+> @@ -489,7 +500,8 @@ DataTLBError:
+>  	 * are initialized in mapin_ram().  This will avoid the problem,
+>  	 * assuming we only use the dcbi instruction on kernel addresses.
+>  	 */
+> -	mfspr	r10, SPRN_DAR
+> +
+> +	/* DAR is in r10 already */
+>  	rlwinm	r11, r10, 0, 0, 19
+>  	ori	r11, r11, MD_EVALID
+>  	mfspr	r10, SPRN_M_CASID
+> @@ -539,6 +551,7 @@ DataTLBError:
+>  	 * of the MMU.
+>  	 */
+>  	li	r11, 0x00f0
+> +	mtspr	SPRN_DAR,r11	/* Tag DAR */
+>  	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
+>  	DO_8xx_CPU6(0x3d80, r3)
+>  	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
