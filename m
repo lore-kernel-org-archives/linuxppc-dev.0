@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC PATCH 11/12] of: merge other miscellaneous prototypes
+Subject: [RFC PATCH 12/12] of: merge of_find_all_nodes() implementations
 To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
 	Stephen Rothwell <sfr@canb.auug.org.au>, davem@davemloft.net,
 	sparclinux@vger.kernel.org, monstr@monstr.eu,
 	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org
-Date: Tue, 06 Oct 2009 22:32:14 -0600
-Message-ID: <20091007043207.16890.89075.stgit@angua>
+Date: Tue, 06 Oct 2009 22:32:27 -0600
+Message-ID: <20091007043219.16890.40203.stgit@angua>
 In-Reply-To: <20091007041007.16890.62194.stgit@angua>
 References: <20091007041007.16890.62194.stgit@angua>
 MIME-Version: 1.0
@@ -21,84 +21,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common prototypes used by Microblaze and PowerPC
+Merge common code between Microblaze and PowerPC, and make it available
+to Sparc
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/include/asm/prom.h |   12 ------------
- arch/powerpc/include/asm/prom.h    |   14 --------------
- include/linux/of_fdt.h             |   13 +++++++++++++
- 3 files changed, 13 insertions(+), 26 deletions(-)
+ arch/microblaze/kernel/prom.c |   23 -----------------------
+ arch/powerpc/kernel/prom.c    |   23 -----------------------
+ drivers/of/base.c             |   26 +++++++++++++++++++++++++-
+ include/linux/of.h            |    3 ++-
+ 4 files changed, 27 insertions(+), 48 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
-index be4db2a..ef3ec1d 100644
---- a/arch/microblaze/include/asm/prom.h
-+++ b/arch/microblaze/include/asm/prom.h
-@@ -45,19 +45,7 @@ extern void of_attach_node(struct device_node *);
- extern void of_detach_node(struct device_node *);
+diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
+index c005cc6..b817df1 100644
+--- a/arch/microblaze/kernel/prom.c
++++ b/arch/microblaze/kernel/prom.c
+@@ -860,29 +860,6 @@ struct device_node *of_find_node_by_phandle(phandle handle)
+ EXPORT_SYMBOL(of_find_node_by_phandle);
  
- /* Other Prototypes */
--extern void finish_device_tree(void);
--extern void unflatten_device_tree(void);
- extern int early_uartlite_console(void);
--extern void early_init_devtree(void *);
--extern int machine_is_compatible(const char *compat);
--extern void print_properties(struct device_node *node);
--extern int prom_n_intr_cells(struct device_node *np);
--extern void prom_get_irq_senses(unsigned char *senses, int off, int max);
--extern int prom_add_property(struct device_node *np, struct property *prop);
--extern int prom_remove_property(struct device_node *np, struct property *prop);
--extern int prom_update_property(struct device_node *np,
--				struct property *newprop,
--				struct property *oldprop);
- 
- extern struct resource *request_OF_resource(struct device_node *node,
- 				int index, const char *name_postfix);
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index c8b5933..2ab9cbd 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -38,20 +38,6 @@ extern struct device_node *of_chosen;
- extern void of_attach_node(struct device_node *);
- extern void of_detach_node(struct device_node *);
- 
--/* Other Prototypes */
--extern void finish_device_tree(void);
--extern void unflatten_device_tree(void);
--extern void early_init_devtree(void *);
--extern int machine_is_compatible(const char *compat);
--extern void print_properties(struct device_node *node);
--extern int prom_n_intr_cells(struct device_node* np);
--extern void prom_get_irq_senses(unsigned char *senses, int off, int max);
--extern int prom_add_property(struct device_node* np, struct property* prop);
--extern int prom_remove_property(struct device_node *np, struct property *prop);
--extern int prom_update_property(struct device_node *np,
--				struct property *newprop,
--				struct property *oldprop);
+ /**
+- *	of_find_all_nodes - Get next node in global list
+- *	@prev:	Previous node or NULL to start iteration
+- *		of_node_put() will be called on it
+- *
+- *	Returns a node pointer with refcount incremented, use
+- *	of_node_put() on it when done.
+- */
+-struct device_node *of_find_all_nodes(struct device_node *prev)
+-{
+-	struct device_node *np;
 -
- #ifdef CONFIG_PPC32
- /*
-  * PCI <-> OF matching functions
-diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index ac31d4f..b41bd18 100644
---- a/include/linux/of_fdt.h
-+++ b/include/linux/of_fdt.h
-@@ -71,4 +71,17 @@ extern int __init of_flat_dt_is_compatible(unsigned long node,
- 					   const char *name);
- extern unsigned long __init of_get_flat_dt_root(void);
+-	read_lock(&devtree_lock);
+-	np = prev ? prev->allnext : allnodes;
+-	for (; np != NULL; np = np->allnext)
+-		if (of_node_get(np))
+-			break;
+-	of_node_put(prev);
+-	read_unlock(&devtree_lock);
+-	return np;
+-}
+-EXPORT_SYMBOL(of_find_all_nodes);
+-
+-/**
+  *	of_node_get - Increment refcount of a node
+  *	@node:	Node to inc refcount, NULL is supported to
+  *		simplify writing of callers
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index d4405b9..4ec3008 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -1317,29 +1317,6 @@ struct device_node *of_find_next_cache_node(struct device_node *np)
+ }
  
-+/* Other Prototypes */
-+extern void finish_device_tree(void);
-+extern void unflatten_device_tree(void);
-+extern void early_init_devtree(void *);
-+extern int machine_is_compatible(const char *compat);
-+extern void print_properties(struct device_node *node);
-+extern int prom_n_intr_cells(struct device_node* np);
-+extern void prom_get_irq_senses(unsigned char *senses, int off, int max);
-+extern int prom_add_property(struct device_node* np, struct property* prop);
-+extern int prom_remove_property(struct device_node *np, struct property *prop);
-+extern int prom_update_property(struct device_node *np,
-+				struct property *newprop,
-+				struct property *oldprop);
- #endif /* _LINUX_OF_FDT_H */
+ /**
+- *	of_find_all_nodes - Get next node in global list
+- *	@prev:	Previous node or NULL to start iteration
+- *		of_node_put() will be called on it
+- *
+- *	Returns a node pointer with refcount incremented, use
+- *	of_node_put() on it when done.
+- */
+-struct device_node *of_find_all_nodes(struct device_node *prev)
+-{
+-	struct device_node *np;
+-
+-	read_lock(&devtree_lock);
+-	np = prev ? prev->allnext : allnodes;
+-	for (; np != 0; np = np->allnext)
+-		if (of_node_get(np))
+-			break;
+-	of_node_put(prev);
+-	read_unlock(&devtree_lock);
+-	return np;
+-}
+-EXPORT_SYMBOL(of_find_all_nodes);
+-
+-/**
+  *	of_node_get - Increment refcount of a node
+  *	@node:	Node to inc refcount, NULL is supported to
+  *		simplify writing of callers
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index ddf224d..e6627b2 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -9,7 +9,8 @@
+  *
+  *  Adapted for sparc and sparc64 by David S. Miller davem@davemloft.net
+  *
+- *  Reconsolidated from arch/x/kernel/prom.c by Stephen Rothwell.
++ *  Reconsolidated from arch/x/kernel/prom.c by Stephen Rothwell and
++ *  Grant Likely.
+  *
+  *      This program is free software; you can redistribute it and/or
+  *      modify it under the terms of the GNU General Public License
+@@ -82,6 +83,29 @@ struct property *of_find_property(const struct device_node *np,
+ }
+ EXPORT_SYMBOL(of_find_property);
+ 
++/**
++ * of_find_all_nodes - Get next node in global list
++ * @prev:	Previous node or NULL to start iteration
++ *		of_node_put() will be called on it
++ *
++ * Returns a node pointer with refcount incremented, use
++ * of_node_put() on it when done.
++ */
++struct device_node *of_find_all_nodes(struct device_node *prev)
++{
++	struct device_node *np;
++
++	read_lock(&devtree_lock);
++	np = prev ? prev->allnext : allnodes;
++	for (; np != NULL; np = np->allnext)
++		if (of_node_get(np))
++			break;
++	of_node_put(prev);
++	read_unlock(&devtree_lock);
++	return np;
++}
++EXPORT_SYMBOL(of_find_all_nodes);
++
+ /*
+  * Find a property with a given name for a given node
+  * and return the value.
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 4636bba..e7facd8 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -79,6 +79,8 @@ set_node_proc_entry(struct device_node *dn, struct proc_dir_entry *de)
+ 	dn->pde = de;
+ }
+ 
++extern struct device_node *of_find_all_nodes(struct device_node *prev);
++
+ #if defined(CONFIG_SPARC)
+ /* Dummy ref counting routines - to be implemented later */
+ static inline struct device_node *of_node_get(struct device_node *node)
+@@ -90,7 +92,6 @@ static inline void of_node_put(struct device_node *node)
+ }
+ 
+ #else
+-extern struct device_node *of_find_all_nodes(struct device_node *prev);
+ extern struct device_node *of_node_get(struct device_node *node);
+ extern void of_node_put(struct device_node *node);
+ #endif
