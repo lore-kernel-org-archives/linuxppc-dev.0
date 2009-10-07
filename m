@@ -1,23 +1,19 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from viefep19-int.chello.at (viefep19-int.chello.at [62.179.121.39])
-	by ozlabs.org (Postfix) with ESMTP id E21EBB7B65
+Return-Path: <jezz@sysmic.org>
+Received: from draco.sysmic.org (sysmic.org [88.191.45.54])
+	by ozlabs.org (Postfix) with ESMTP id 5977EB7B96
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Oct 2009 01:47:30 +1100 (EST)
-Subject: Re: [v7 PATCH 3/7]: x86: refactor x86 idle power management code
-	and remove all instances of pm_idle.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: arun@linux.vnet.ibm.com
-In-Reply-To: <20091006153126.GA7358@linux.vnet.ibm.com>
-References: <20091006152421.GA7278@linux.vnet.ibm.com>
-	<20091006153126.GA7358@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 07 Oct 2009 16:45:50 +0200
-Message-Id: <1254926750.26976.253.camel@twins>
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
+	Thu,  8 Oct 2009 02:21:09 +1100 (EST)
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Nested function in drivers/of/of_mdio.c
+From: =?iso-8859-1?q?J=E9r=F4me_Pouiller?= <jezz@sysmic.org>
+Date: Wed, 7 Oct 2009 17:15:57 +0200
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200910071715.57249.jezz@sysmic.org>
+Cc: netdev <netdev@vger.kernel.org>, linuxppc <linuxppc-dev@lists.ozlabs.org>,
+	Andy Fleming <afleming@freescale.com>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,159 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-10-06 at 21:01 +0530, Arun R Bharadwaj wrote:
-> +++ linux.trees.git/arch/x86/kernel/process.c
-> @@ -9,6 +9,7 @@
->  #include <linux/pm.h>
->  #include <linux/clockchips.h>
->  #include <linux/random.h>
-> +#include <linux/cpuidle.h>
->  #include <trace/events/power.h>
->  #include <asm/system.h>
->  #include <asm/apic.h>
-> @@ -244,12 +245,6 @@ int sys_vfork(struct pt_regs *regs)
->  unsigned long boot_option_idle_override = 0;
->  EXPORT_SYMBOL(boot_option_idle_override);
->  
-> -/*
-> - * Powermanagement idle function, if any..
-> - */
-> -void (*pm_idle)(void);
-> -EXPORT_SYMBOL(pm_idle);
-> -
->  #ifdef CONFIG_X86_32
->  /*
->   * This halt magic was a workaround for ancient floppy DMA
-> @@ -329,17 +324,15 @@ static void do_nothing(void *unused)
->  }
->  
->  /*
-> - * cpu_idle_wait - Used to ensure that all the CPUs discard old value of
-> - * pm_idle and update to new pm_idle value. Required while changing pm_idle
-> - * handler on SMP systems.
-> + * cpu_idle_wait - Required while changing idle routine handler on SMP systems.
->   *
-> - * Caller must have changed pm_idle to the new value before the call. Old
-> - * pm_idle value will not be used by any CPU after the return of this function.
-> + * Caller must have changed idle routine to the new value before the call. Old
-> + * value will not be used by any CPU after the return of this function.
->   */
->  void cpu_idle_wait(void)
->  {
->         smp_mb();
-> -       /* kick all the CPUs so that they exit out of pm_idle */
-> +       /* kick all the CPUs so that they exit out of idle loop */
->         smp_call_function(do_nothing, NULL, 1);
->  }
->  EXPORT_SYMBOL_GPL(cpu_idle_wait);
-> @@ -518,15 +511,59 @@ static void c1e_idle(void)
->                 default_idle();
->  }
->  
-> +static void (*local_idle)(void);
-> +DEFINE_PER_CPU(struct cpuidle_device, idle_devices);
-> +
-> +struct cpuidle_driver cpuidle_default_driver = {
-> +       .name =         "cpuidle_default",
-> +};
-> +
-> +static int local_idle_loop(struct cpuidle_device *dev, struct cpuidle_state *st)
-> +{
-> +       ktime_t t1, t2;
-> +       s64 diff;
-> +       int ret;
-> +
-> +       t1 = ktime_get();
-> +       local_idle();
-> +       t2 = ktime_get();
-> +
-> +       diff = ktime_to_us(ktime_sub(t2, t1));
-> +       if (diff > INT_MAX)
-> +               diff = INT_MAX;
-> +       ret = (int) diff;
-> +
-> +       return ret;
-> +}
-> +
-> +static int setup_cpuidle_simple(void)
-> +{
-> +       struct cpuidle_device *dev;
-> +       int cpu;
-> +
-> +       if (!cpuidle_curr_driver)
-> +               cpuidle_register_driver(&cpuidle_default_driver);
-> +
-> +       for_each_online_cpu(cpu) {
-> +               dev = &per_cpu(idle_devices, cpu);
-> +               dev->cpu = cpu;
-> +               dev->states[0].enter = local_idle_loop;
-> +               dev->state_count = 1;
-> +               cpuidle_register_device(dev);
-> +       }
-> +       return 0;
-> +}
-> +device_initcall(setup_cpuidle_simple);
-> +
->  void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
->  {
->  #ifdef CONFIG_SMP
-> -       if (pm_idle == poll_idle && smp_num_siblings > 1) {
-> +       if (local_idle == poll_idle && smp_num_siblings > 1) {
->                 printk(KERN_WARNING "WARNING: polling idle and HT enabled,"
->                         " performance may degrade.\n");
->         }
->  #endif
-> -       if (pm_idle)
-> +       if (local_idle)
->                 return;
->  
->         if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
-> @@ -534,18 +571,20 @@ void __cpuinit select_idle_routine(const
->                  * One CPU supports mwait => All CPUs supports mwait
->                  */
->                 printk(KERN_INFO "using mwait in idle threads.\n");
-> -               pm_idle = mwait_idle;
-> +               local_idle = mwait_idle;
->         } else if (check_c1e_idle(c)) {
->                 printk(KERN_INFO "using C1E aware idle routine\n");
-> -               pm_idle = c1e_idle;
-> +               local_idle = c1e_idle;
->         } else
-> -               pm_idle = default_idle;
-> +               local_idle = default_idle;
-> +
-> +       return;
->  }
->  
->  void __init init_c1e_mask(void)
->  {
->         /* If we're using c1e_idle, we need to allocate c1e_mask. */
-> -       if (pm_idle == c1e_idle)
-> +       if (local_idle == c1e_idle)
->                 zalloc_cpumask_var(&c1e_mask, GFP_KERNEL);
->  }
->  
-> @@ -556,7 +595,7 @@ static int __init idle_setup(char *str)
->  
->         if (!strcmp(str, "poll")) {
->                 printk("using polling idle threads.\n");
-> -               pm_idle = poll_idle;
-> +               local_idle = poll_idle;
->         } else if (!strcmp(str, "mwait"))
->                 force_mwait = 1;
->         else if (!strcmp(str, "halt")) {
-> @@ -567,7 +606,7 @@ static int __init idle_setup(char *str)
->                  * To continue to load the CPU idle driver, don't touch
->                  * the boot_option_idle_override.
->                  */
-> -               pm_idle = default_idle;
-> +               local_idle = default_idle;
->                 idle_halt = 1;
->                 return 0;
->         } else if (!strcmp(str, "nomwait")) {
+Dear,
+
+I have a problem with commit 8bc487d150b939e69830c39322df4ee486efe381=20
+in file drivers/of/of_mdio.c in function of_phy_find_device.
+
+As you see, this function define match() as a nested function. My=20
+compiler (powerpc-e500-linux-gnu-gcc-3.4.1) raise an error during link=20
+due to this nested definition:
+  drivers/built-in.o(.text+0x5e2a4): In function `of_phy_find_device': /hom=
+e/jezz/linux-next/drivers/of/of_mdio.c:107:=20
+undefined reference to `__trampoline_setup'
+
+I am sure I could solve problem by rebuilding my toolchain.=20
+Nevertheless, I think nested function definition is not perfectly=20
+supported by all compilers. Also, I suggest to place function match()=20
+outside of scope of of_phy_find_device as in following patch.
+
+diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
+index bacaa53..c7b2e26 100644
+=2D-- a/drivers/of/of_mdio.c
++++ b/drivers/of/of_mdio.c
+@@ -97,6 +97,10 @@ int of_mdiobus_register(struct mii_bus *mdio, struct dev=
+ice_node *np)
+ }
+ EXPORT_SYMBOL(of_mdiobus_register);
+
++static int match(struct device *dev, void *phy_np)
++{
++       return dev_archdata_get_node(&dev->archdata) =3D=3D phy_np;
++}
+ /**
+  * of_phy_find_device - Give a PHY node, find the phy_device
+  * @phy_np: Pointer to the phy's device tree node
+@@ -106,11 +110,6 @@ EXPORT_SYMBOL(of_mdiobus_register);
+ struct phy_device *of_phy_find_device(struct device_node *phy_np)
+ {
+        struct device *d;
+=2D       int match(struct device *dev, void *phy_np)
+=2D       {
+=2D               return dev_archdata_get_node(&dev->archdata) =3D=3D phy_n=
+p;
+=2D       }
+=2D
+        if (!phy_np)
+                return NULL;
 
 
-What guarantees that the cpuidle bits actually select this
-cpuidle_default driver when you do idle=poll?
+What do you think about it?
 
-Also, cpuidle already has a poll loop in it, why duplicate that?
+Best regards,
+
+=2D-=20
+J=E9r=F4me Pouiller (jezz AT sysmic DOT org)
