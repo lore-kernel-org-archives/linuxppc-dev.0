@@ -1,24 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f174.google.com (mail-yw0-f174.google.com
-	[209.85.211.174]) by ozlabs.org (Postfix) with ESMTP id DBD9CB7B92
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A8AA2B7B8C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Oct 2009 03:11:35 +1100 (EST)
-Received: by ywh4 with SMTP id 4so298808ywh.10
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 07 Oct 2009 09:11:34 -0700 (PDT)
+	Thu,  8 Oct 2009 03:15:50 +1100 (EST)
+Date: Wed, 7 Oct 2009 11:33:42 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Romain Goyet <r.goyet@gmail.com>
+Subject: Re: SMU-base PowerMac and server_mode
+Message-ID: <20091007163341.GA7657@lixom.net>
+References: <8028e5750910060216x134a8a9cm461fa5a6e87eb6bb@mail.gmail.com>
+	<1254823882.6035.5.camel@pasglop>
+	<20091006160749.GA29195@lixom.net>
+	<8028e5750910070425v45a3e036p1444a8ee5937a4bb@mail.gmail.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <200910071715.57249.jezz@sysmic.org>
-References: <200910071715.57249.jezz@sysmic.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 7 Oct 2009 10:11:14 -0600
-Message-ID: <fa686aa40910070911x769d7d41u908fbcf6b0980962@mail.gmail.com>
-Subject: Re: Nested function in drivers/of/of_mdio.c
-To: =?ISO-8859-1?Q?J=E9r=F4me_Pouiller?= <jezz@sysmic.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev <netdev@vger.kernel.org>, linuxppc <linuxppc-dev@lists.ozlabs.org>,
-	Andy Fleming <afleming@freescale.com>,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8028e5750910070425v45a3e036p1444a8ee5937a4bb@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,72 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 7, 2009 at 9:15 AM, J=E9r=F4me Pouiller <jezz@sysmic.org> wrote=
-:
-> Dear,
->
-> I have a problem with commit 8bc487d150b939e69830c39322df4ee486efe381
-> in file drivers/of/of_mdio.c in function of_phy_find_device.
->
-> As you see, this function define match() as a nested function. My
-> compiler (powerpc-e500-linux-gnu-gcc-3.4.1) raise an error during link
-> due to this nested definition:
-> =A0drivers/built-in.o(.text+0x5e2a4): In function `of_phy_find_device': /=
-home/jezz/linux-next/drivers/of/of_mdio.c:107:
-> undefined reference to `__trampoline_setup'
->
-> I am sure I could solve problem by rebuilding my toolchain.
-> Nevertheless, I think nested function definition is not perfectly
-> supported by all compilers. Also, I suggest to place function match()
-> outside of scope of of_phy_find_device as in following patch.
+On Wed, Oct 07, 2009 at 01:25:13PM +0200, Romain Goyet wrote:
+> On Tue, Oct 6, 2009 at 6:07 PM, Olof Johansson <olof@lixom.net> wrote:
 
-I'm okay with that, but if you're moving code out of the file scope,
-then please rename the function to of_phy_match() to avoid global
-namespace conflicts.
+> > Yeah, I had one but I have since lost it.  I suspect it was on the
+> > drive of my second quad that I wiped before I sold it, thinking there
+> > was nothing of value on it. :(
+> 
+> Ha, that's too bad. Do you know if it might be online somewhere ? Maybe an
+> idea of the right keywords to google ?
 
-g.
-
->
-> diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
-> index bacaa53..c7b2e26 100644
-> --- a/drivers/of/of_mdio.c
-> +++ b/drivers/of/of_mdio.c
-> @@ -97,6 +97,10 @@ int of_mdiobus_register(struct mii_bus *mdio, struct d=
-evice_node *np)
-> =A0}
-> =A0EXPORT_SYMBOL(of_mdiobus_register);
->
-> +static int match(struct device *dev, void *phy_np)
-> +{
-> + =A0 =A0 =A0 return dev_archdata_get_node(&dev->archdata) =3D=3D phy_np;
-> +}
-> =A0/**
-> =A0* of_phy_find_device - Give a PHY node, find the phy_device
-> =A0* @phy_np: Pointer to the phy's device tree node
-> @@ -106,11 +110,6 @@ EXPORT_SYMBOL(of_mdiobus_register);
-> =A0struct phy_device *of_phy_find_device(struct device_node *phy_np)
-> =A0{
-> =A0 =A0 =A0 =A0struct device *d;
-> - =A0 =A0 =A0 int match(struct device *dev, void *phy_np)
-> - =A0 =A0 =A0 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return dev_archdata_get_node(&dev->archdata=
-) =3D=3D phy_np;
-> - =A0 =A0 =A0 }
-> -
-> =A0 =A0 =A0 =A0if (!phy_np)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return NULL;
->
->
-> What do you think about it?
->
-> Best regards,
->
-> --
-> J=E9r=F4me Pouiller (jezz AT sysmic DOT org)
->
+I searched for it, couldn't find any trace of it anywhere. I know I
+based my little tool on some small smu example that came from Ben or
+possibly Segher. I can't even find that any more. It's been a couple of
+years since I last touched it. :(
 
 
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Olof
