@@ -1,25 +1,28 @@
-Return-Path: <flar@cynthia.pants.nu>
-Received: from cynthia.pants.nu (unknown [76.245.85.235])
-	by ozlabs.org (Postfix) with ESMTP id E98D1B7B7A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Oct 2009 09:58:20 +1100 (EST)
-Date: Wed, 7 Oct 2009 15:57:58 -0700
-From: Brad Boyer <flar@allandria.com>
-To: Sam Creasey <sammy@sammy.net>
-Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
-Message-ID: <20091007225758.GD6138@cynthia.pants.nu>
-References: <20091007041007.16890.62194.stgit@angua>
-	<fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>
-	<646765f40910062218s19d540f9q14c9086bedd1d9da@mail.gmail.com>
-	<20091007135243.GC21646@anhedonia>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7153FB7B84
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 10:15:56 +1100 (EST)
+In-Reply-To: <1254954084.2409.16.camel@pasglop>
+References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-5-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1254950301.2409.11.camel@pasglop>
+	<OF36596A29.5EDD5659-ONC1257648.0079FC5B-C1257648.007A1D0B@transmode.se>
+	<1254954084.2409.16.camel@pasglop>
+Subject: Re: [PATCH 4/6] 8xx: Tag DAR with 0x00f0 to catch buggy instructions.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF763A4466.C236C6F4-ONC1257648.007F68D9-C1257648.007F85A5@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 8 Oct 2009 01:12:52 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091007135243.GC21646@anhedonia>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Julian Calaby <julian.calaby@gmail.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 07, 2009 at 09:52:43AM -0400, Sam Creasey wrote:
-> On Wed, Oct 07, 2009 at 03:18:04PM +1000, Julian Calaby wrote:
-> > On the subject of merging code, I know that the SUN3 code in m68k uses
-> > a similar prom interface to the sparc32 code. (and I've also
-> > considered unifying that and ... well ... see above) Does anyone know
-> > if it has an OpenFirmware interface for it's devices? Is OF on SUN3
-> > even remotely useful? Does Linux on SUN3 even work with modern
-> > kernels?
-> 
-> Sun3 doesn't have OF, though I've got some dormant patches to add an
-> OF emulation layer to make it easier to reuse Sparc drivers on
-> Sun3...   Never finished enough to submit, so it probably shouldn't
-> affect anything you're doing here.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 08/10/2009 00:21:24:
+>
+> On Thu, 2009-10-08 at 00:13 +0200, Joakim Tjernlund wrote:
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 07/10/2009 23:18:21:
+> > >
+> > > On Wed, 2009-10-07 at 22:46 +0200, Joakim Tjernlund wrote:
+> > > > dcbz, dcbf, dcbi, dcbst and icbi do not set DAR when they
+> > > > cause a DTLB Error. Dectect this by tagging DAR with 0x00f0
+> > > > at every exception exit that modifies DAR.
+> > > > Test for DAR=0x00f0 in DataTLBError and bail
+> > > > to handle_page_fault().
+> > >
+> > > Why not -1 ? :-)
+> >
+> > Because 0x00f0 is already in use in the TLB fast path, saves one insn.
+>
+> But will cause weird things if the user really uses 0xf0 (though granted
+> that's unlikely :-)
 
-I was also looking at using the OF code on m68k, but for a different
-reason. My goal was to get macio_bus working so we can merge a few
-of the m68k Mac drivers into the ppc Mac drivers. The simplest way
-to do that seemed to be supporting OF since macio_dev is a wrapper
-for of_device. It was also a nice way to build up a table of all the
-onboard devices in memory. Hopefully it would enable better user-space
-device detection as well.
-
-I got the framework built against an older kernel, but it wasn't enough
-to be useful at that point. This set of patches could help quite a bit.
-
-	Brad Boyer
-	flar@allandria.com
+Yeah, you will most likely end up with a segv anyway.
