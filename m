@@ -1,24 +1,19 @@
-Return-Path: <vb@vsbe.com>
-Received: from mout.perfora.net (mout.perfora.net [74.208.4.194])
-	by ozlabs.org (Postfix) with ESMTP id 1772EB7B6F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Oct 2009 03:28:32 +1100 (EST)
-Received: by vws42 with SMTP id 42so2837301vws.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 07 Oct 2009 09:23:24 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <fa686aa40910070911x769d7d41u908fbcf6b0980962@mail.gmail.com>
-References: <200910071715.57249.jezz@sysmic.org>
-	<fa686aa40910070911x769d7d41u908fbcf6b0980962@mail.gmail.com>
-From: vb@vsbe.com
-Date: Wed, 7 Oct 2009 09:23:04 -0700
-Message-ID: <f608b67d0910070923h54c30c2doae08550b0791ed1b@mail.gmail.com>
-Subject: Re: Nested function in drivers/of/of_mdio.c
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev <netdev@vger.kernel.org>, linuxppc <linuxppc-dev@lists.ozlabs.org>,
-	Andy Fleming <afleming@freescale.com>,
-	"David S. Miller" <davem@davemloft.net>
+Return-Path: <sammy@sammy.net>
+Date: Wed, 7 Oct 2009 09:52:43 -0400
+From: Sam Creasey <sammy@sammy.net>
+To: Julian Calaby <julian.calaby@gmail.com>
+Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
+Message-ID: <20091007135243.GC21646@anhedonia>
+References: <20091007041007.16890.62194.stgit@angua>
+	<fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>
+	<646765f40910062218s19d540f9q14c9086bedd1d9da@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <646765f40910062218s19d540f9q14c9086bedd1d9da@mail.gmail.com>
+Cc: Sam Creasey <sammy@sammy.net>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,84 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guys, are there other instances of nested C functions in the codebase
-or was this the first attempt?
+On Wed, Oct 07, 2009 at 03:18:04PM +1000, Julian Calaby wrote:
+> On Wed, Oct 7, 2009 at 14:49, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > On Tue, Oct 6, 2009 at 10:29 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> >>
+> >> So here goes.  I've begun the work to merge and clean up the OF device
+> >> tree handling code and this is my first set of patches.  Not fully
+> >> tested yet, but I'm getting them out to the lists so that I can start
+> >> responding to comments and collecting acks.  This first batch isn't
+> >> anything exciting, just a merge of common code
+> 
+> Good work, for what it's worth, this all looks good to me.
+> 
+> > However, I've completely devoted to this work for at least the next
+> > two months, so there are plenty more patches to follow.  Once I've
+> > got all the common code merged between Microblaze, PowerPC and Sparc
+> > I'll be fix the endian problems and making it easily usable by other
+> > architectures like ARM and MIPS.  Lots of work to be done.
+> 
+> On the subject of merging code, I know that the SUN3 code in m68k uses
+> a similar prom interface to the sparc32 code. (and I've also
+> considered unifying that and ... well ... see above) Does anyone know
+> if it has an OpenFirmware interface for it's devices? Is OF on SUN3
+> even remotely useful? Does Linux on SUN3 even work with modern
+> kernels?
 
+Sun3 doesn't have OF, though I've got some dormant patches to add an
+OF emulation layer to make it easier to reuse Sparc drivers on
+Sun3...   Never finished enough to submit, so it probably shouldn't
+affect anything you're doing here.
 
-On Wed, Oct 7, 2009 at 9:11 AM, Grant Likely <grant.likely@secretlab.ca> wr=
-ote:
-> On Wed, Oct 7, 2009 at 9:15 AM, J=E9r=F4me Pouiller <jezz@sysmic.org> wro=
-te:
->> Dear,
->>
->> I have a problem with commit 8bc487d150b939e69830c39322df4ee486efe381
->> in file drivers/of/of_mdio.c in function of_phy_find_device.
->>
->> As you see, this function define match() as a nested function. My
->> compiler (powerpc-e500-linux-gnu-gcc-3.4.1) raise an error during link
->> due to this nested definition:
->> =A0drivers/built-in.o(.text+0x5e2a4): In function `of_phy_find_device': =
-/home/jezz/linux-next/drivers/of/of_mdio.c:107:
->> undefined reference to `__trampoline_setup'
->>
->> I am sure I could solve problem by rebuilding my toolchain.
->> Nevertheless, I think nested function definition is not perfectly
->> supported by all compilers. Also, I suggest to place function match()
->> outside of scope of of_phy_find_device as in following patch.
->
-> I'm okay with that, but if you're moving code out of the file scope,
-> then please rename the function to of_phy_match() to avoid global
-> namespace conflicts.
->
-> g.
->
->>
->> diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
->> index bacaa53..c7b2e26 100644
->> --- a/drivers/of/of_mdio.c
->> +++ b/drivers/of/of_mdio.c
->> @@ -97,6 +97,10 @@ int of_mdiobus_register(struct mii_bus *mdio, struct =
-device_node *np)
->> =A0}
->> =A0EXPORT_SYMBOL(of_mdiobus_register);
->>
->> +static int match(struct device *dev, void *phy_np)
->> +{
->> + =A0 =A0 =A0 return dev_archdata_get_node(&dev->archdata) =3D=3D phy_np=
-;
->> +}
->> =A0/**
->> =A0* of_phy_find_device - Give a PHY node, find the phy_device
->> =A0* @phy_np: Pointer to the phy's device tree node
->> @@ -106,11 +110,6 @@ EXPORT_SYMBOL(of_mdiobus_register);
->> =A0struct phy_device *of_phy_find_device(struct device_node *phy_np)
->> =A0{
->> =A0 =A0 =A0 =A0struct device *d;
->> - =A0 =A0 =A0 int match(struct device *dev, void *phy_np)
->> - =A0 =A0 =A0 {
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return dev_archdata_get_node(&dev->archdat=
-a) =3D=3D phy_np;
->> - =A0 =A0 =A0 }
->> -
->> =A0 =A0 =A0 =A0if (!phy_np)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return NULL;
->>
->>
->> What do you think about it?
->>
->> Best regards,
->>
->> --
->> J=E9r=F4me Pouiller (jezz AT sysmic DOT org)
->>
->
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+As for recent kernels, I think 2.6.19 was the last sun3 I distributed
+patches for, so modern might be pushing it...
+
+-- Sam
