@@ -1,42 +1,19 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [59.145.155.7])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6C02BB7B84
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  7 Oct 2009 22:47:30 +1100 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp07.in.ibm.com (8.14.3/8.13.1) with ESMTP id n97BlNh6019071
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 17:17:23 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n97BlN982429108
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 17:17:23 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
-	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n97BlL61022829
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 22:47:23 +1100
-Date: Wed, 7 Oct 2009 17:17:20 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
-	management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
-	cpuidle to POWER.
-Message-ID: <20091007114719.GH6818@balbir.in.ibm.com>
-References: <20091006152421.GA7278@linux.vnet.ibm.com>
-	<20091006163521.GA10425@linux.vnet.ibm.com>
-	<1254852279.17055.2.camel@laptop>
-	<20091007112648.GC7646@dirshya.in.ibm.com>
+Return-Path: <monstr@monstr.eu>
+Message-ID: <4ACC861A.7020506@monstr.eu>
+Date: Wed, 07 Oct 2009 14:14:18 +0200
+From: Michal Simek <monstr@monstr.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20091007112648.GC7646@dirshya.in.ibm.com>
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Gautham R Shenoy <ego@in.ibm.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	arun@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org, Arjan van de Ven <arjan@infradead.org>
-Reply-To: balbir@linux.vnet.ibm.com
+To: microblaze-uclinux@itee.uq.edu.au
+Subject: Re: [microblaze-uclinux] Re: [RFC PATCH 05/12] of: add common header
+	for flattened device tree representation
+References: <20091007041007.16890.62194.stgit@angua>	<20091007043052.16890.15975.stgit@angua>
+	<20091007155717.8df62c4d.sfr@canb.auug.org.au>
+In-Reply-To: <20091007155717.8df62c4d.sfr@canb.auug.org.au>
+Content-Type: multipart/mixed; boundary="------------010302030702030902050009"
+Cc: monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
+	sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	davem@davemloft.net
+Reply-To: monstr@monstr.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,47 +23,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Vaidy <svaidy@linux.vnet.ibm.com> [2009-10-07 16:56:48]:
+This is a multi-part message in MIME format.
+--------------010302030702030902050009
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-06 20:04:39]:
-> 
-> > On Tue, 2009-10-06 at 22:05 +0530, Arun R Bharadwaj wrote:
-> > 
-> > > Also, the per-cpu nature of registration/unregistration of cpuidle
-> > > has been maintained as ACPI needs this.
-> > 
-> > Right, so can't we ditch that and have acpi default to the lowest common
-> > C-state and warn when various cpus report different C-states?
-> 
-> Hi Peter,
-> 
-> As Arjan mentioned previously, the per-cpu registration has to stay
-> for x86 for now due to legacy ACPI compatibility.  Breaking that may
-> break lot of existing users and we do not have a clean fallback
-> method.  
-> 
-> As far as powerpc is concerned, we can work with a single global
-> registration.  However we would like to have the same interface across
-> different archs.
-> 
-> With the new re-factoring (v7), Arun has killed most of the list
-> traversal and linking between various cpu's cpuidle_driver structures.
-> Now we have a per-cpu stack of registered devices and we lookup the
-> structs using online cpumasks.  The cpuidle_driver structure has list
-> of idle routing pointers (struct cpuidle_state) and rest of it is
-> statistics that needs to be maintained at a per-cpu level anyway.  All
-> that is duplicated here is the array of idle routines (struct
-> cpuidle_state) on each cpu.
-> 
-> The objective of the refactoring is to have a single common idle
-> routine management framework (remove pm_idle) and we have it done
-> through cpuidle registration framework.  We can incrementally remove
-> the per-cpu registration later easily by splitting the cpuidle_driver
-> structure.
->
 
-Yes, incremental refactoring makes the most sense from the do not
-break as you refactor point of view.
+
+Stephen Rothwell wrote:
+> Hi Grant,
+> 
+> Just first obvious thing:
+> 
+> On Tue, 06 Oct 2009 22:30:59 -0600 Grant Likely <grant.likely@secretlab.ca> wrote:
+>> diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
+>> index 64e8b3a..5f461f0 100644
+>> --- a/arch/microblaze/include/asm/prom.h
+>> +++ b/arch/microblaze/include/asm/prom.h
+>> @@ -17,20 +17,10 @@
+>>  #ifndef _ASM_MICROBLAZE_PROM_H
+>>  #define _ASM_MICROBLAZE_PROM_H
+>>  #ifdef __KERNEL__
+>> -
+>> -/* Definitions used by the flattened device tree */
+>> -#define OF_DT_HEADER		0xd00dfeed /* marker */
+> 
+> This is used in arch/microblaze/kernel/head.S, but you move its
+> definition inside "#ifndef __ASSEMBLY__" below.  You should probably
+> replace the include of asm/prom.h in arch/microblaze/kernel/head.S with
+> linux/of_fdt.h (assuming that the comment in there is correct).
+
+yes, Stephen is right here. I created one patch (in attachment) which fixed it. I tested your
+patches on Microblaze (noMMU and MMU) and I have no problem with compilation and simple boot-up
+works for both versions too.
+
+With that my patch: Acked-by: Michal Simek <monstr@monstr.eu>
+
+Thanks,
+Michal
+
+P.S.: I have my provider - it block my emails - that's why the patch is in attachment.
+
+> 
+>> -#define OF_DT_BEGIN_NODE	0x1 /* Start of node, full name */
+>> -#define OF_DT_END_NODE		0x2 /* End node */
+>> -#define OF_DT_PROP		0x3 /* Property: name off, size, content */
+>> -#define OF_DT_NOP		0x4 /* nop */
+>> -#define OF_DT_END		0x9
+>> -
+>> -#define OF_DT_VERSION		0x10
+>> -
+>>  #ifndef __ASSEMBLY__
+>>  
+>>  #include <linux/types.h>
+>> +#include <linux/of_fdt.h>
+>>  #include <linux/proc_fs.h>
+>>  #include <linux/platform_device.h>
+>>  #include <asm/irq.h>
+> 
+
 
 -- 
-	Balbir
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
+
+--------------010302030702030902050009
+Content-Type: text/x-patch;
+ name="0001-of-microblaze-of_fdt.h-is-used-in-asm-code.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-of-microblaze-of_fdt.h-is-used-in-asm-code.patch"
+
+>From 73b16cccc544fe8410ec8e8e893aa3357093e985 Mon Sep 17 00:00:00 2001
+From: Michal Simek <monstr@monstr.eu>
+Date: Wed, 7 Oct 2009 14:04:01 +0200
+Subject: [PATCH] of: microblaze: of_fdt.h is used in asm code.
+
+Microblaze uses OF_DT_HEADER macro to identify DTB.
+
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ arch/microblaze/kernel/head.S |    2 +-
+ include/linux/of_fdt.h        |    3 +++
+ 2 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/arch/microblaze/kernel/head.S b/arch/microblaze/kernel/head.S
+index 697ce30..3091619 100644
+--- a/arch/microblaze/kernel/head.S
++++ b/arch/microblaze/kernel/head.S
+@@ -31,7 +31,7 @@
+ #include <linux/linkage.h>
+ #include <asm/thread_info.h>
+ #include <asm/page.h>
+-#include <asm/prom.h>		/* for OF_DT_HEADER */
++#include <linux/of_fdt.h>		/* for OF_DT_HEADER */
+ 
+ #ifdef CONFIG_MMU
+ #include <asm/setup.h> /* COMMAND_LINE_SIZE */
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index b41bd18..44fecfa 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -30,6 +30,7 @@
+ 
+ #define OF_DT_VERSION		0x10
+ 
++#ifndef __ASSEMBLY__
+ /*
+  * This is what gets passed to the kernel by prom_init or kexec
+  *
+@@ -84,4 +85,6 @@ extern int prom_remove_property(struct device_node *np, struct property *prop);
+ extern int prom_update_property(struct device_node *np,
+ 				struct property *newprop,
+ 				struct property *oldprop);
++#endif /* __ASSEMBLY__ */
++
+ #endif /* _LINUX_OF_FDT_H */
+-- 
+1.5.5.1
+
+
+
+--------------010302030702030902050009--
