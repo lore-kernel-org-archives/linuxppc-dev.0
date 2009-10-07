@@ -1,13 +1,14 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC PATCH 08/12] of: merge of_read_number() an of_read_ulong()
+Subject: [RFC PATCH 09/12] of: merge of_node_get(),
+	of_node_put() and of_find_all_nodes()
 To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
 	Stephen Rothwell <sfr@canb.auug.org.au>, davem@davemloft.net,
 	sparclinux@vger.kernel.org, monstr@monstr.eu,
 	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org
-Date: Tue, 06 Oct 2009 22:31:37 -0600
-Message-ID: <20091007043129.16890.85758.stgit@angua>
+Date: Tue, 06 Oct 2009 22:31:49 -0600
+Message-ID: <20091007043142.16890.90460.stgit@angua>
 In-Reply-To: <20091007041007.16890.62194.stgit@angua>
 References: <20091007041007.16890.62194.stgit@angua>
 MIME-Version: 1.0
@@ -21,101 +22,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between Microblaze and PowerPC
+Merge common code between Sparc, PowerPC and Microblaze.
+
+Sparc differs in the implementation at this point, so this patch uses
+a #ifdef to handle sparc differently for now.  The merging of
+implementations will occur in a later patch
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/include/asm/prom.h |   12 ------------
- arch/powerpc/include/asm/prom.h    |   20 --------------------
- include/linux/of.h                 |   23 +++++++++++++++++++++++
- 3 files changed, 23 insertions(+), 32 deletions(-)
+ arch/microblaze/include/asm/prom.h |    4 ----
+ arch/powerpc/include/asm/prom.h    |    4 ----
+ arch/sparc/include/asm/prom.h      |    9 ---------
+ include/linux/of.h                 |   16 ++++++++++++++++
+ 4 files changed, 16 insertions(+), 17 deletions(-)
 
 diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
-index 180d844..d4f57ff 100644
+index d4f57ff..c92b4a9 100644
 --- a/arch/microblaze/include/asm/prom.h
 +++ b/arch/microblaze/include/asm/prom.h
-@@ -82,18 +82,6 @@ extern int release_OF_resource(struct device_node *node, int index);
-  * OF address retreival & translation
-  */
+@@ -40,10 +40,6 @@ extern struct device_node *of_chosen;
+ extern struct device_node *allnodes;	/* temporary while merging */
+ extern rwlock_t devtree_lock;	/* temporary while merging */
  
--/* Helper to read a big number; size is in cells (not bytes) */
--static inline u64 of_read_number(const u32 *cell, int size)
--{
--	u64 r = 0;
--	while (size--)
--		r = (r << 32) | *(cell++);
--	return r;
--}
+-extern struct device_node *of_find_all_nodes(struct device_node *prev);
+-extern struct device_node *of_node_get(struct device_node *node);
+-extern void of_node_put(struct device_node *node);
 -
--/* Like of_read_number, but we want an unsigned long result */
--#define of_read_ulong(cell, size)	of_read_number(cell, size)
--
- /* Translate an OF address block into a CPU physical address
-  */
- extern u64 of_translate_address(struct device_node *np, const u32 *addr);
+ /* For scanning the flat device-tree at boot time */
+ extern int __init of_scan_flat_dt(int (*it)(unsigned long node,
+ 					const char *uname, int depth,
 diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 2cfd432..d8c0525 100644
+index d8c0525..622769c 100644
 --- a/arch/powerpc/include/asm/prom.h
 +++ b/arch/powerpc/include/asm/prom.h
-@@ -89,26 +89,6 @@ extern int release_OF_resource(struct device_node* node, int index);
-  * OF address retreival & translation
-  */
+@@ -34,10 +34,6 @@ extern struct device_node *of_chosen;
  
+ #define HAVE_ARCH_DEVTREE_FIXUPS
+ 
+-extern struct device_node *of_find_all_nodes(struct device_node *prev);
+-extern struct device_node *of_node_get(struct device_node *node);
+-extern void of_node_put(struct device_node *node);
 -
--/* Helper to read a big number; size is in cells (not bytes) */
--static inline u64 of_read_number(const u32 *cell, int size)
+ /* For scanning the flat device-tree at boot time */
+ extern int __init of_scan_flat_dt(int (*it)(unsigned long node,
+ 					    const char *uname, int depth,
+diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+index ddbd870..f845828 100644
+--- a/arch/sparc/include/asm/prom.h
++++ b/arch/sparc/include/asm/prom.h
+@@ -51,15 +51,6 @@ extern void prom_build_devicetree(void);
+ extern void of_populate_present_mask(void);
+ extern void of_fill_in_cpu_data(void);
+ 
+-/* Dummy ref counting routines - to be implemented later */
+-static inline struct device_node *of_node_get(struct device_node *node)
 -{
--	u64 r = 0;
--	while (size--)
--		r = (r << 32) | *(cell++);
--	return r;
+-	return node;
+-}
+-static inline void of_node_put(struct device_node *node)
+-{
 -}
 -
--/* Like of_read_number, but we want an unsigned long result */
--#ifdef CONFIG_PPC32
--static inline unsigned long of_read_ulong(const u32 *cell, int size)
--{
--	return cell[size-1];
--}
--#else
--#define of_read_ulong(cell, size)	of_read_number(cell, size)
--#endif
--
- /* Translate an OF address block into a CPU physical address
-  */
- extern u64 of_translate_address(struct device_node *np, const u32 *addr);
+ /* These routines are here to provide compatibility with how powerpc
+  * handles IRQ mapping for OF device nodes.  We precompute and permanently
+  * register them in the of_device objects, whereas powerpc computes them
 diff --git a/include/linux/of.h b/include/linux/of.h
-index d5f6662..18e4379 100644
+index 18e4379..4636bba 100644
 --- a/include/linux/of.h
 +++ b/include/linux/of.h
-@@ -79,6 +79,29 @@ set_node_proc_entry(struct device_node *dn, struct proc_dir_entry *de)
+@@ -79,6 +79,22 @@ set_node_proc_entry(struct device_node *dn, struct proc_dir_entry *de)
  	dn->pde = de;
  }
  
-+/*
-+ * OF address retreival & translation
-+ */
-+
-+/* Helper to read a big number; size is in cells (not bytes) */
-+static inline u64 of_read_number(const u32 *cell, int size)
++#if defined(CONFIG_SPARC)
++/* Dummy ref counting routines - to be implemented later */
++static inline struct device_node *of_node_get(struct device_node *node)
 +{
-+	u64 r = 0;
-+	while (size--)
-+		r = (r << 32) | *(cell++);
-+	return r;
++	return node;
++}
++static inline void of_node_put(struct device_node *node)
++{
 +}
 +
-+/* Like of_read_number, but we want an unsigned long result */
-+#ifdef CONFIG_PPC32
-+static inline unsigned long of_read_ulong(const u32 *cell, int size)
-+{
-+	return cell[size-1];
-+}
 +#else
-+#define of_read_ulong(cell, size)	of_read_number(cell, size)
++extern struct device_node *of_find_all_nodes(struct device_node *prev);
++extern struct device_node *of_node_get(struct device_node *node);
++extern void of_node_put(struct device_node *node);
 +#endif
 +
- #include <asm/prom.h>
- 
- /* flag descriptions */
+ /*
+  * OF address retreival & translation
+  */
