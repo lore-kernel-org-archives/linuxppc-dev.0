@@ -1,31 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E9926B7B77
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 20:10:33 +1100 (EST)
-Subject: Re: [FTRACE] Enabling function_graph causes OOPS
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sachin Sant <sachinp@in.ibm.com>
-In-Reply-To: <4ACC57C4.5010002@in.ibm.com>
-References: <4A5C5D65.3030906@in.ibm.com>
-	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
-	<4A76BE81.4080707@in.ibm.com>
-	<1252458303.20985.10.camel@gandalf.stny.rr.com>
-	<4AA74AE2.5090001@in.ibm.com>
-	<1252814877.26049.93.camel@gandalf.stny.rr.com>
-	<1252816650.8375.70.camel@pasglop>
-	<1252848060.26049.647.camel@gandalf.stny.rr.com>
-	<1252873548.8375.73.camel@pasglop> <1252915227.8375.118.camel@pasglop>
-	<1254749155.13160.6.camel@gandalf.stny.rr.com>
-	<1254774039.7122.35.camel@pasglop>
-	<1254775073.13160.13.camel@gandalf.stny.rr.com>
-	<4ACC57C4.5010002@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 07 Oct 2009 20:10:21 +1100
-Message-Id: <1254906621.2409.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, rostedt@goodmis.org
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 2364CB7B92
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 20:11:45 +1100 (EST)
+Date: Wed, 7 Oct 2009 11:11:41 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc/boot/dts: drop obsolete 'fsl5200-clocking'
+Message-ID: <20091007091140.GC3177@pengutronix.de>
+References: <1252594539-25202-1-git-send-email-w.sang@pengutronix.de>
+	<fa686aa40909100805y4af7d85an602f501349a180f9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="1giRMj6yz/+FOIRq"
+In-Reply-To: <fa686aa40909100805y4af7d85an602f501349a180f9@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,19 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-10-07 at 14:26 +0530, Sachin Sant wrote:
 
-> As Ben suggested, i changed LOAD_REG_IMMEDIATE() to LOAD_REG_ADDR()
-> as follows.
-> 
-> -       LOAD_REG_IMMEDIATE(r4,ftrace_return_to_handler)
-> +       LOAD_REG_ADDR(r4,ftrace_return_to_handler)
-> 
-> With this change compile time warnings about bad relocations
-> related to ftrace are gone.
+--1giRMj6yz/+FOIRq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You also need to make sure r2 is properly loaded with the kernel TOC
-pointer, something like ld r2,PACAKTOC(r13) before the LOAD_REG_ADDR.
+On Thu, Sep 10, 2009 at 09:05:46AM -0600, Grant Likely wrote:
+> On Thu, Sep 10, 2009 at 8:55 AM, Wolfram Sang <w.sang@pengutronix.de> wro=
+te:
+> > The 'fsl5200-clocking'-property was dropped since
+> > 0d1cde235874b00905bce23f659690d060ebf475. Remove all occurences in dts-=
+files.
+> >
+> > Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> > Cc: Grant Likely <grant.likely@secretlab.ca>
+>=20
+> Looks good to me.  I'll pick it up.
 
-Cheers,
-Ben.
+Ping? :)
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--1giRMj6yz/+FOIRq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkrMW0wACgkQD27XaX1/VRuQkgCfXXYZGqgruRYW0kv93Lrsv8ZK
+76oAoMUu9wiHCVzZvYcYbieL1YpRienk
+=iC36
+-----END PGP SIGNATURE-----
+
+--1giRMj6yz/+FOIRq--
