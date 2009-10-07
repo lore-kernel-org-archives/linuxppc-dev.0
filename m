@@ -1,28 +1,21 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from viefep18-int.chello.at (viefep18-int.chello.at [62.179.121.38])
-	by ozlabs.org (Postfix) with ESMTP id E5325B7B84
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Oct 2009 00:26:06 +1100 (EST)
-Subject: Re: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
-	management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
-	cpuidle to POWER.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: balbir@linux.vnet.ibm.com
-In-Reply-To: <20091007114719.GH6818@balbir.in.ibm.com>
-References: <20091006152421.GA7278@linux.vnet.ibm.com>
-	<20091006163521.GA10425@linux.vnet.ibm.com>
-	<1254852279.17055.2.camel@laptop>
-	<20091007112648.GC7646@dirshya.in.ibm.com>
-	<20091007114719.GH6818@balbir.in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 07 Oct 2009 15:24:17 +0200
-Message-Id: <1254921857.26976.249.camel@twins>
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	arun@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org, Arjan van de Ven <arjan@infradead.org>
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <4ACC861A.7020506@monstr.eu>
+References: <20091007041007.16890.62194.stgit@angua>
+	<20091007043052.16890.15975.stgit@angua>
+	<20091007155717.8df62c4d.sfr@canb.auug.org.au>
+	<4ACC861A.7020506@monstr.eu>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 7 Oct 2009 07:38:27 -0600
+Message-ID: <fa686aa40910070638v16c1b811w4e5ecb61a9afd836@mail.gmail.com>
+Subject: Re: [microblaze-uclinux] Re: [RFC PATCH 05/12] of: add common header
+	for flattened device tree representation
+To: monstr@monstr.eu
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
+	sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,20 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-10-07 at 17:17 +0530, Balbir Singh wrote:
+On Wed, Oct 7, 2009 at 6:14 AM, Michal Simek <monstr@monstr.eu> wrote:
+>
+>
+> Stephen Rothwell wrote:
+>> Hi Grant,
+>>
+>> Just first obvious thing:
+>>
+>> On Tue, 06 Oct 2009 22:30:59 -0600 Grant Likely <grant.likely@secretlab.=
+ca> wrote:
+>>> diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/inclu=
+de/asm/prom.h
+>>> index 64e8b3a..5f461f0 100644
+>>> --- a/arch/microblaze/include/asm/prom.h
+>>> +++ b/arch/microblaze/include/asm/prom.h
+>>> @@ -17,20 +17,10 @@
+>>> =A0#ifndef _ASM_MICROBLAZE_PROM_H
+>>> =A0#define _ASM_MICROBLAZE_PROM_H
+>>> =A0#ifdef __KERNEL__
+>>> -
+>>> -/* Definitions used by the flattened device tree */
+>>> -#define OF_DT_HEADER =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00xd00dfeed /* mark=
+er */
+>>
+>> This is used in arch/microblaze/kernel/head.S, but you move its
+>> definition inside "#ifndef __ASSEMBLY__" below. =A0You should probably
+>> replace the include of asm/prom.h in arch/microblaze/kernel/head.S with
+>> linux/of_fdt.h (assuming that the comment in there is correct).
+>
+> yes, Stephen is right here. I created one patch (in attachment) which fix=
+ed it. I tested your
+> patches on Microblaze (noMMU and MMU) and I have no problem with compilat=
+ion and simple boot-up
+> works for both versions too.
+>
+> With that my patch: Acked-by: Michal Simek <monstr@monstr.eu>
 
-> > The objective of the refactoring is to have a single common idle
-> > routine management framework (remove pm_idle) and we have it done
-> > through cpuidle registration framework.  We can incrementally remove
-> > the per-cpu registration later easily by splitting the cpuidle_driver
-> > structure.
-> >
-> 
-> Yes, incremental refactoring makes the most sense from the do not
-> break as you refactor point of view.
+Thanks.  I'll merge your change with my patch so that bisect isn't broken.
 
-Sure,.. but I would have though getting rid of the per-cpu-ish-ness
-would have made the latter patches in this series easier. But maybe I'm
-lazy ;-)
+g.
 
-Let me go over the patches one more time, but they do look ok.
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
