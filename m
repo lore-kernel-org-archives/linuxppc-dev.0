@@ -1,18 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH 05/12] of: add common header for flattened device
-	tree representation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20091007043052.16890.15975.stgit@angua>
+Return-Path: <julian.calaby@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>
 References: <20091007041007.16890.62194.stgit@angua>
-	<20091007043052.16890.15975.stgit@angua>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 07 Oct 2009 16:14:27 +1100
-Message-Id: <1254892467.6035.273.camel@pasglop>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, monstr@monstr.eu,
-	microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	<fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>
+From: Julian Calaby <julian.calaby@gmail.com>
+Date: Wed, 7 Oct 2009 15:18:04 +1000
+Message-ID: <646765f40910062218s19d540f9q14c9086bedd1d9da@mail.gmail.com>
+Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Sam Creasey <sammy@sammy.net>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,46 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-10-06 at 22:30 -0600, Grant Likely wrote:
+On Wed, Oct 7, 2009 at 14:49, Grant Likely <grant.likely@secretlab.ca> wrot=
+e:
+> On Tue, Oct 6, 2009 at 10:29 PM, Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>>
+>> So here goes. =A0I've begun the work to merge and clean up the OF device
+>> tree handling code and this is my first set of patches. =A0Not fully
+>> tested yet, but I'm getting them out to the lists so that I can start
+>> responding to comments and collecting acks. =A0This first batch isn't
+>> anything exciting, just a merge of common code
 
-> --- /dev/null
-> +++ b/include/linux/of_fdt.h
-> @@ -0,0 +1,30 @@
-> +/*
-> + * Definitions for working with the Flattened Device Tree data format
-> + *
-> + * Copyright (C) 1996-2005 Paul Mackerras.
-> + *
-> + * Updates for PPC64 by Peter Bergner & David Engebretsen, IBM Corp.
-> + * Updates for SPARC by David S. Miller
-> + * Merged to common code by Grant Likely
+Good work, for what it's worth, this all looks good to me.
 
-I think you should prune the above. Make it (c) myself since I wrote the
-FDT code initially. You can add back (c) of other people as you add more
-stuff here I suppose.
+> However, I've completely devoted to this work for at least the next
+> two months, so there are plenty more patches to follow. =A0Once I've
+> got all the common code merged between Microblaze, PowerPC and Sparc
+> I'll be fix the endian problems and making it easily usable by other
+> architectures like ARM and MIPS. =A0Lots of work to be done.
 
-No big deal tho.
+On the subject of merging code, I know that the SUN3 code in m68k uses
+a similar prom interface to the sparc32 code. (and I've also
+considered unifying that and ... well ... see above) Does anyone know
+if it has an OpenFirmware interface for it's devices? Is OF on SUN3
+even remotely useful? Does Linux on SUN3 even work with modern
+kernels?
 
-Ben.
+Another issue is that there is at least one driver in the kernel that
+depends on both PPC and OF to work around the differences in the
+implementations of OpenFirmware on Sparc and PowerPC. (I submitted a
+patch for it, but can't remember the driver's name) Whilst the
+driver's author assures me that the hardware will never go anywhere
+near Sparc, it can't hurt to drop the dependency on PPC for additional
+compile testing coverage - and because it's the Right Thing. (and the
+reduction of cheap hacks like this can't be bad either.)
 
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#ifndef _LINUX_OF_FDT_H
-> +#define _LINUX_OF_FDT_H
-> +
-> +/* Definitions used by the flattened device tree */
-> +#define OF_DT_HEADER		0xd00dfeed	/* marker */
-> +#define OF_DT_BEGIN_NODE	0x1		/* Start of node, full name */
-> +#define OF_DT_END_NODE		0x2		/* End node */
-> +#define OF_DT_PROP		0x3		/* Property: name off, size,
-> +						 * content */
-> +#define OF_DT_NOP		0x4		/* nop */
-> +#define OF_DT_END		0x9
-> +
-> +#define OF_DT_VERSION		0x10
-> +
-> +#endif /* _LINUX_OF_FDT_H */
+Other than that, good work, and keep going.
+
+Thanks,
+
+--=20
+
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+.Plan: http://sites.google.com/site/juliancalaby/
