@@ -1,42 +1,41 @@
-Return-Path: <tj@kernel.org>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [59.145.155.3])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B743AB7B97
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 22:03:24 +1100 (EST)
-From: Tejun Heo <tj@kernel.org>
-To: linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Christoph Lameter <cl@linux-foundation.org>,
-	Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Robert Richter <robert.richter@amd.com>,
-	Jeremy Fitzhardinge <jeremy@xensource.com>,
-	Chris Wright <chrisw@sous-sol.org>, "H. Peter Anvin" <hpa@zytor.com>,
-	Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-	x86@kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>,
-	Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Chuck Ebbert <cebbert@redhat.com>, David Howells <dhowells@redhat.com>,
-	Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
-	Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-	Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Masami Hiramatsu <mhiramat@redhat.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 10/16] percpu: make percpu symbols in powerpc unique
-Date: Wed,  7 Oct 2009 20:01:19 +0900
-Message-Id: <1254913285-6251-11-git-send-email-tj@kernel.org>
-In-Reply-To: <1254913285-6251-1-git-send-email-tj@kernel.org>
-References: <1254913285-6251-1-git-send-email-tj@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Rusty Russell <rusty@rustcorp.com.au>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Tejun Heo <tj@kernel.org>
+	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E73D5B7B9D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  7 Oct 2009 22:26:58 +1100 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp03.in.ibm.com (8.14.3/8.13.1) with ESMTP id n97BQrnQ032001
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 16:56:53 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n97BQqk62101248
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 16:56:53 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n97BQpkH026681
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2009 16:56:52 +0530
+Date: Wed, 7 Oct 2009 16:56:48 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
+	management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
+	cpuidle to POWER.
+Message-ID: <20091007112648.GC7646@dirshya.in.ibm.com>
+References: <20091006152421.GA7278@linux.vnet.ibm.com>
+	<20091006163521.GA10425@linux.vnet.ibm.com>
+	<1254852279.17055.2.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1254852279.17055.2.camel@laptop>
+Cc: linux-arch@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	arun@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,188 +45,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch updates percpu related symbols in powerpc such that percpu
-symbols are unique and don't clash with local symbols.  This serves
-two purposes of decreasing the possibility of global percpu symbol
-collision and allowing dropping per_cpu__ prefix from percpu symbols.
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-06 20:04:39]:
 
-* arch/powerpc/kernel/perf_callchain.c: s/callchain/cpu_perf_callchain/
+> On Tue, 2009-10-06 at 22:05 +0530, Arun R Bharadwaj wrote:
+> 
+> > Also, the per-cpu nature of registration/unregistration of cpuidle
+> > has been maintained as ACPI needs this.
+> 
+> Right, so can't we ditch that and have acpi default to the lowest common
+> C-state and warn when various cpus report different C-states?
 
-* arch/powerpc/kernel/setup-common.c: s/pvr/cpu_pvr/
+Hi Peter,
 
-* arch/powerpc/platforms/pseries/dtl.c: s/dtl/cpu_dtl/
+As Arjan mentioned previously, the per-cpu registration has to stay
+for x86 for now due to legacy ACPI compatibility.  Breaking that may
+break lot of existing users and we do not have a clean fallback
+method.  
 
-* arch/powerpc/platforms/cell/interrupt.c: s/iic/cpu_iic/
+As far as powerpc is concerned, we can work with a single global
+registration.  However we would like to have the same interface across
+different archs.
 
-Partly based on Rusty Russell's "alloc_percpu: rename percpu vars
-which cause name clashes" patch.
+With the new re-factoring (v7), Arun has killed most of the list
+traversal and linking between various cpu's cpuidle_driver structures.
+Now we have a per-cpu stack of registered devices and we lookup the
+structs using online cpumasks.  The cpuidle_driver structure has list
+of idle routing pointers (struct cpuidle_state) and rest of it is
+statistics that needs to be maintained at a per-cpu level anyway.  All
+that is duplicated here is the array of idle routines (struct
+cpuidle_state) on each cpu.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
----
- arch/powerpc/include/asm/smp.h          |    2 +-
- arch/powerpc/kernel/perf_callchain.c    |    4 ++--
- arch/powerpc/kernel/setup-common.c      |    4 ++--
- arch/powerpc/kernel/smp.c               |    2 +-
- arch/powerpc/platforms/cell/interrupt.c |   14 +++++++-------
- arch/powerpc/platforms/pseries/dtl.c    |    4 ++--
- 6 files changed, 15 insertions(+), 15 deletions(-)
+The objective of the refactoring is to have a single common idle
+routine management framework (remove pm_idle) and we have it done
+through cpuidle registration framework.  We can incrementally remove
+the per-cpu registration later easily by splitting the cpuidle_driver
+structure.
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index d9ea8d3..1d3b270 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -37,7 +37,7 @@ extern void cpu_die(void);
- extern void smp_send_debugger_break(int cpu);
- extern void smp_message_recv(int);
- 
--DECLARE_PER_CPU(unsigned int, pvr);
-+DECLARE_PER_CPU(unsigned int, cpu_pvr);
- 
- #ifdef CONFIG_HOTPLUG_CPU
- extern void fixup_irqs(cpumask_t map);
-diff --git a/arch/powerpc/kernel/perf_callchain.c b/arch/powerpc/kernel/perf_callchain.c
-index 0a03cf7..fe59c44 100644
---- a/arch/powerpc/kernel/perf_callchain.c
-+++ b/arch/powerpc/kernel/perf_callchain.c
-@@ -497,11 +497,11 @@ static void perf_callchain_user_32(struct pt_regs *regs,
-  * Since we can't get PMU interrupts inside a PMU interrupt handler,
-  * we don't need separate irq and nmi entries here.
-  */
--static DEFINE_PER_CPU(struct perf_callchain_entry, callchain);
-+static DEFINE_PER_CPU(struct perf_callchain_entry, cpu_perf_callchain);
- 
- struct perf_callchain_entry *perf_callchain(struct pt_regs *regs)
- {
--	struct perf_callchain_entry *entry = &__get_cpu_var(callchain);
-+	struct perf_callchain_entry *entry = &__get_cpu_var(cpu_perf_callchain);
- 
- 	entry->nr = 0;
- 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 4271f7a..aa5aeb9 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -157,7 +157,7 @@ extern u32 cpu_temp_both(unsigned long cpu);
- #endif /* CONFIG_TAU */
- 
- #ifdef CONFIG_SMP
--DEFINE_PER_CPU(unsigned int, pvr);
-+DEFINE_PER_CPU(unsigned int, cpu_pvr);
- #endif
- 
- static int show_cpuinfo(struct seq_file *m, void *v)
-@@ -209,7 +209,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 	}
- 
- #ifdef CONFIG_SMP
--	pvr = per_cpu(pvr, cpu_id);
-+	pvr = per_cpu(cpu_pvr, cpu_id);
- #else
- 	pvr = mfspr(SPRN_PVR);
- #endif
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 9b86a74..2ebb484 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -232,7 +232,7 @@ struct thread_info *current_set[NR_CPUS];
- 
- static void __devinit smp_store_cpu_info(int id)
- {
--	per_cpu(pvr, id) = mfspr(SPRN_PVR);
-+	per_cpu(cpu_pvr, id) = mfspr(SPRN_PVR);
- }
- 
- static void __init smp_create_idle(unsigned int cpu)
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 882e470..54bad90 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -54,7 +54,7 @@ struct iic {
- 	struct device_node *node;
- };
- 
--static DEFINE_PER_CPU(struct iic, iic);
-+static DEFINE_PER_CPU(struct iic, cpu_iic);
- #define IIC_NODE_COUNT	2
- static struct irq_host *iic_host;
- 
-@@ -82,7 +82,7 @@ static void iic_unmask(unsigned int irq)
- 
- static void iic_eoi(unsigned int irq)
- {
--	struct iic *iic = &__get_cpu_var(iic);
-+	struct iic *iic = &__get_cpu_var(cpu_iic);
- 	out_be64(&iic->regs->prio, iic->eoi_stack[--iic->eoi_ptr]);
- 	BUG_ON(iic->eoi_ptr < 0);
- }
-@@ -146,7 +146,7 @@ static unsigned int iic_get_irq(void)
- 	struct iic *iic;
- 	unsigned int virq;
- 
--	iic = &__get_cpu_var(iic);
-+	iic = &__get_cpu_var(cpu_iic);
- 	*(unsigned long *) &pending =
- 		in_be64((u64 __iomem *) &iic->regs->pending_destr);
- 	if (!(pending.flags & CBE_IIC_IRQ_VALID))
-@@ -161,12 +161,12 @@ static unsigned int iic_get_irq(void)
- 
- void iic_setup_cpu(void)
- {
--	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
-+	out_be64(&__get_cpu_var(cpu_iic).regs->prio, 0xff);
- }
- 
- u8 iic_get_target_id(int cpu)
- {
--	return per_cpu(iic, cpu).target_id;
-+	return per_cpu(cpu_iic, cpu).target_id;
- }
- 
- EXPORT_SYMBOL_GPL(iic_get_target_id);
-@@ -181,7 +181,7 @@ static inline int iic_ipi_to_irq(int ipi)
- 
- void iic_cause_IPI(int cpu, int mesg)
- {
--	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
-+	out_be64(&per_cpu(cpu_iic, cpu).regs->generate, (0xf - mesg) << 4);
- }
- 
- struct irq_host *iic_get_irq_host(int node)
-@@ -348,7 +348,7 @@ static void __init init_one_iic(unsigned int hw_cpu, unsigned long addr,
- 	/* XXX FIXME: should locate the linux CPU number from the HW cpu
- 	 * number properly. We are lucky for now
- 	 */
--	struct iic *iic = &per_cpu(iic, hw_cpu);
-+	struct iic *iic = &per_cpu(cpu_iic, hw_cpu);
- 
- 	iic->regs = ioremap(addr, sizeof(struct cbe_iic_thread_regs));
- 	BUG_ON(iic->regs == NULL);
-diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
-index 937a544..c5f3116 100644
---- a/arch/powerpc/platforms/pseries/dtl.c
-+++ b/arch/powerpc/platforms/pseries/dtl.c
-@@ -54,7 +54,7 @@ struct dtl {
- 	int			buf_entries;
- 	u64			last_idx;
- };
--static DEFINE_PER_CPU(struct dtl, dtl);
-+static DEFINE_PER_CPU(struct dtl, cpu_dtl);
- 
- /*
-  * Dispatch trace log event mask:
-@@ -261,7 +261,7 @@ static int dtl_init(void)
- 
- 	/* set up the per-cpu log structures */
- 	for_each_possible_cpu(i) {
--		struct dtl *dtl = &per_cpu(dtl, i);
-+		struct dtl *dtl = &per_cpu(cpu_dtl, i);
- 		dtl->cpu = i;
- 
- 		rc = dtl_setup_file(dtl);
--- 
-1.6.4.2
+--Vaidy
