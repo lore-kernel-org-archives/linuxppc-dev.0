@@ -1,18 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20091007041007.16890.62194.stgit@angua>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 7 Oct 2009 15:57:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC PATCH 05/12] of: add common header for flattened device
+	tree representation
+Message-Id: <20091007155717.8df62c4d.sfr@canb.auug.org.au>
+In-Reply-To: <20091007043052.16890.15975.stgit@angua>
 References: <20091007041007.16890.62194.stgit@angua>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 6 Oct 2009 22:49:04 -0600
-Message-ID: <fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>
-Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
-To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
-	Stephen Rothwell <sfr@canb.auug.org.au>, davem@davemloft.net,
-	sparclinux@vger.kernel.org,
-	monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+	<20091007043052.16890.15975.stgit@angua>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__7_Oct_2009_15_57_17_+1100_l1q47go_8v2ZubGA"
+Cc: monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,70 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 6, 2009 at 10:29 PM, Grant Likely <grant.likely@secretlab.ca> w=
-rote:
-> Well, I've got to start somewhere...
+--Signature=_Wed__7_Oct_2009_15_57_17_+1100_l1q47go_8v2ZubGA
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Grant,
+
+Just first obvious thing:
+
+On Tue, 06 Oct 2009 22:30:59 -0600 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
 >
-> So here goes. =A0I've begun the work to merge and clean up the OF device
-> tree handling code and this is my first set of patches. =A0Not fully
-> tested yet, but I'm getting them out to the lists so that I can start
-> responding to comments and collecting acks. =A0This first batch isn't
-> anything exciting, just a merge of common code
+> diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include=
+/asm/prom.h
+> index 64e8b3a..5f461f0 100644
+> --- a/arch/microblaze/include/asm/prom.h
+> +++ b/arch/microblaze/include/asm/prom.h
+> @@ -17,20 +17,10 @@
+>  #ifndef _ASM_MICROBLAZE_PROM_H
+>  #define _ASM_MICROBLAZE_PROM_H
+>  #ifdef __KERNEL__
+> -
+> -/* Definitions used by the flattened device tree */
+> -#define OF_DT_HEADER		0xd00dfeed /* marker */
 
-Shoot.... most of what I wrote got trimmed accidentally.  Here's the
-rest of the text:
+This is used in arch/microblaze/kernel/head.S, but you move its
+definition inside "#ifndef __ASSEMBLY__" below.  You should probably
+replace the include of asm/prom.h in arch/microblaze/kernel/head.S with
+linux/of_fdt.h (assuming that the comment in there is correct).
 
-However, I've completely devoted to this work for at least the next
-two months, so there are plenty more patches to follow.  Once I've
-got all the common code merged between Microblaze, PowerPC and Sparc
-I'll be fix the endian problems and making it easily usable by other
-architectures like ARM and MIPS.  Lots of work to be done.
+> -#define OF_DT_BEGIN_NODE	0x1 /* Start of node, full name */
+> -#define OF_DT_END_NODE		0x2 /* End node */
+> -#define OF_DT_PROP		0x3 /* Property: name off, size, content */
+> -#define OF_DT_NOP		0x4 /* nop */
+> -#define OF_DT_END		0x9
+> -
+> -#define OF_DT_VERSION		0x10
+> -
+>  #ifndef __ASSEMBLY__
+> =20
+>  #include <linux/types.h>
+> +#include <linux/of_fdt.h>
+>  #include <linux/proc_fs.h>
+>  #include <linux/platform_device.h>
+>  #include <asm/irq.h>
 
-As for merging this stuff, because the patches cross architecture
-boundaries, I've been thinking of publishing a new git tree for
-collecting device tree related changes and getting it added to the
-linux-next tree list.  I'll commit changes to that tree once I get
-acks from each of the affected arch maintainers.  Then, either Linus
-can pull my tree directly, or I could ask a more senior maintainer
-to pull into their tree before sending a pull request to Linus.  Ben,
-David and Michal, how does that sound to you?  Stephen, would you be
-willing to add my tree to the linux-next list?
-
-Also, I'd like to take on responsibility for maintaining the cross-
-architecture device tree code.  If there are no objections, I'll
-write a patch to add a device tree section to MAINTAINERS.
-
+--=20
 Cheers,
-g.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> ---
->
-> Grant Likely (12):
-> =A0 =A0 =A0of: merge of_find_all_nodes() implementations
-> =A0 =A0 =A0of: merge other miscellaneous prototypes
-> =A0 =A0 =A0of: merge of_*_flat_dt*() functions
-> =A0 =A0 =A0of: merge of_node_get(), of_node_put() and of_find_all_nodes()
-> =A0 =A0 =A0of: merge of_read_number() an of_read_ulong()
-> =A0 =A0 =A0of: merge of_node_*_flag() and set_node_proc_entry()
-> =A0 =A0 =A0of: merge struct boot_param_header from Microblaze and PowerPC
-> =A0 =A0 =A0of: add common header for flattened device tree representation
-> =A0 =A0 =A0of: Move OF_IS_DYNAMIC and OF_MARK_DYNAMIC macros to of.h
-> =A0 =A0 =A0of: merge struct device_node
-> =A0 =A0 =A0of: merge phandle, ihandle and struct property
-> =A0 =A0 =A0of: Rework linux/of.h and asm/prom.h include ordering
->
->
-> =A0arch/microblaze/include/asm/prom.h | =A0135 +-------------------------=
--------
-> =A0arch/microblaze/kernel/prom.c =A0 =A0 =A0| =A0 23 ------
-> =A0arch/powerpc/include/asm/prom.h =A0 =A0| =A0147 ----------------------=
---------------
-> =A0arch/powerpc/kernel/prom.c =A0 =A0 =A0 =A0 | =A0 23 ------
-> =A0arch/sparc/include/asm/prom.h =A0 =A0 =A0| =A0 55 -------------
-> =A0drivers/of/base.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 26 ++++++
-> =A0include/linux/of.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0103 ++++++++++=
-+++++++++++++++
-> =A0include/linux/of_fdt.h =A0 =A0 =A0 =A0 =A0 =A0 | =A0 87 ++++++++++++++=
-+++++++
-> =A08 files changed, 221 insertions(+), 378 deletions(-)
-> =A0create mode 100644 include/linux/of_fdt.h
+--Signature=_Wed__7_Oct_2009_15_57_17_+1100_l1q47go_8v2ZubGA
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrMH60ACgkQjjKRsyhoI8xLfgCgjMLMcFnL4KQx0ayVaDj8aQNT
+TTUAoJmh6zq7NLAZ43HLqCWniBstqIor
+=JH0w
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__7_Oct_2009_15_57_17_+1100_l1q47go_8v2ZubGA--
