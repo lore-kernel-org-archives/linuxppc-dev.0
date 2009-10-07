@@ -1,22 +1,23 @@
-Return-Path: <monstr@monstr.eu>
-Message-ID: <4ACCA3ED.6090403@monstr.eu>
-Date: Wed, 07 Oct 2009 16:21:33 +0200
-From: Michal Simek <monstr@monstr.eu>
-MIME-Version: 1.0
-To: microblaze-uclinux@itee.uq.edu.au
-Subject: Re: [microblaze-uclinux] Re: [RFC PATCH 00/12] Merge common
-	OpenFirmware device tree code
-References: <20091007041007.16890.62194.stgit@angua>
-	<fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>
-	<200910070209.59311.rob@landley.net>
-	<fa686aa40910070702j470785d2ka2621122a8e2f1fd@mail.gmail.com>
-In-Reply-To: <fa686aa40910070702j470785d2ka2621122a8e2f1fd@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	devicetree-discuss@lists.ozlabs.org,
-	Rob Landley <rob@landley.net>, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
-Reply-To: monstr@monstr.eu
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from viefep19-int.chello.at (viefep19-int.chello.at [62.179.121.39])
+	by ozlabs.org (Postfix) with ESMTP id E21EBB7B65
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  8 Oct 2009 01:47:30 +1100 (EST)
+Subject: Re: [v7 PATCH 3/7]: x86: refactor x86 idle power management code
+	and remove all instances of pm_idle.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+In-Reply-To: <20091006153126.GA7358@linux.vnet.ibm.com>
+References: <20091006152421.GA7278@linux.vnet.ibm.com>
+	<20091006153126.GA7358@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 07 Oct 2009 16:45:50 +0200
+Message-Id: <1254926750.26976.253.camel@twins>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +27,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2009-10-06 at 21:01 +0530, Arun R Bharadwaj wrote:
+> +++ linux.trees.git/arch/x86/kernel/process.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/pm.h>
+>  #include <linux/clockchips.h>
+>  #include <linux/random.h>
+> +#include <linux/cpuidle.h>
+>  #include <trace/events/power.h>
+>  #include <asm/system.h>
+>  #include <asm/apic.h>
+> @@ -244,12 +245,6 @@ int sys_vfork(struct pt_regs *regs)
+>  unsigned long boot_option_idle_override = 0;
+>  EXPORT_SYMBOL(boot_option_idle_override);
+>  
+> -/*
+> - * Powermanagement idle function, if any..
+> - */
+> -void (*pm_idle)(void);
+> -EXPORT_SYMBOL(pm_idle);
+> -
+>  #ifdef CONFIG_X86_32
+>  /*
+>   * This halt magic was a workaround for ancient floppy DMA
+> @@ -329,17 +324,15 @@ static void do_nothing(void *unused)
+>  }
+>  
+>  /*
+> - * cpu_idle_wait - Used to ensure that all the CPUs discard old value of
+> - * pm_idle and update to new pm_idle value. Required while changing pm_idle
+> - * handler on SMP systems.
+> + * cpu_idle_wait - Required while changing idle routine handler on SMP systems.
+>   *
+> - * Caller must have changed pm_idle to the new value before the call. Old
+> - * pm_idle value will not be used by any CPU after the return of this function.
+> + * Caller must have changed idle routine to the new value before the call. Old
+> + * value will not be used by any CPU after the return of this function.
+>   */
+>  void cpu_idle_wait(void)
+>  {
+>         smp_mb();
+> -       /* kick all the CPUs so that they exit out of pm_idle */
+> +       /* kick all the CPUs so that they exit out of idle loop */
+>         smp_call_function(do_nothing, NULL, 1);
+>  }
+>  EXPORT_SYMBOL_GPL(cpu_idle_wait);
+> @@ -518,15 +511,59 @@ static void c1e_idle(void)
+>                 default_idle();
+>  }
+>  
+> +static void (*local_idle)(void);
+> +DEFINE_PER_CPU(struct cpuidle_device, idle_devices);
+> +
+> +struct cpuidle_driver cpuidle_default_driver = {
+> +       .name =         "cpuidle_default",
+> +};
+> +
+> +static int local_idle_loop(struct cpuidle_device *dev, struct cpuidle_state *st)
+> +{
+> +       ktime_t t1, t2;
+> +       s64 diff;
+> +       int ret;
+> +
+> +       t1 = ktime_get();
+> +       local_idle();
+> +       t2 = ktime_get();
+> +
+> +       diff = ktime_to_us(ktime_sub(t2, t1));
+> +       if (diff > INT_MAX)
+> +               diff = INT_MAX;
+> +       ret = (int) diff;
+> +
+> +       return ret;
+> +}
+> +
+> +static int setup_cpuidle_simple(void)
+> +{
+> +       struct cpuidle_device *dev;
+> +       int cpu;
+> +
+> +       if (!cpuidle_curr_driver)
+> +               cpuidle_register_driver(&cpuidle_default_driver);
+> +
+> +       for_each_online_cpu(cpu) {
+> +               dev = &per_cpu(idle_devices, cpu);
+> +               dev->cpu = cpu;
+> +               dev->states[0].enter = local_idle_loop;
+> +               dev->state_count = 1;
+> +               cpuidle_register_device(dev);
+> +       }
+> +       return 0;
+> +}
+> +device_initcall(setup_cpuidle_simple);
+> +
+>  void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+>  {
+>  #ifdef CONFIG_SMP
+> -       if (pm_idle == poll_idle && smp_num_siblings > 1) {
+> +       if (local_idle == poll_idle && smp_num_siblings > 1) {
+>                 printk(KERN_WARNING "WARNING: polling idle and HT enabled,"
+>                         " performance may degrade.\n");
+>         }
+>  #endif
+> -       if (pm_idle)
+> +       if (local_idle)
+>                 return;
+>  
+>         if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
+> @@ -534,18 +571,20 @@ void __cpuinit select_idle_routine(const
+>                  * One CPU supports mwait => All CPUs supports mwait
+>                  */
+>                 printk(KERN_INFO "using mwait in idle threads.\n");
+> -               pm_idle = mwait_idle;
+> +               local_idle = mwait_idle;
+>         } else if (check_c1e_idle(c)) {
+>                 printk(KERN_INFO "using C1E aware idle routine\n");
+> -               pm_idle = c1e_idle;
+> +               local_idle = c1e_idle;
+>         } else
+> -               pm_idle = default_idle;
+> +               local_idle = default_idle;
+> +
+> +       return;
+>  }
+>  
+>  void __init init_c1e_mask(void)
+>  {
+>         /* If we're using c1e_idle, we need to allocate c1e_mask. */
+> -       if (pm_idle == c1e_idle)
+> +       if (local_idle == c1e_idle)
+>                 zalloc_cpumask_var(&c1e_mask, GFP_KERNEL);
+>  }
+>  
+> @@ -556,7 +595,7 @@ static int __init idle_setup(char *str)
+>  
+>         if (!strcmp(str, "poll")) {
+>                 printk("using polling idle threads.\n");
+> -               pm_idle = poll_idle;
+> +               local_idle = poll_idle;
+>         } else if (!strcmp(str, "mwait"))
+>                 force_mwait = 1;
+>         else if (!strcmp(str, "halt")) {
+> @@ -567,7 +606,7 @@ static int __init idle_setup(char *str)
+>                  * To continue to load the CPU idle driver, don't touch
+>                  * the boot_option_idle_override.
+>                  */
+> -               pm_idle = default_idle;
+> +               local_idle = default_idle;
+>                 idle_halt = 1;
+>                 return 0;
+>         } else if (!strcmp(str, "nomwait")) {
 
 
-Grant Likely wrote:
-> On Wed, Oct 7, 2009 at 1:09 AM, Rob Landley <rob@landley.net> wrote:
->> On Tuesday 06 October 2009 23:49:04 Grant Likely wrote:
->>> However, I've completely devoted to this work for at least the next
->>> two months, so there are plenty more patches to follow.  Once I've
->>> got all the common code merged between Microblaze, PowerPC and Sparc
->>> I'll be fix the endian problems and making it easily usable by other
->>> architectures like ARM and MIPS.  Lots of work to be done.
->> Is there any news on getting QEMU to parse a device tree to figure out what
->> hardware to emulate?  (I.E. using the device tree code to let qemu provide
->> configurable board emulations instead of hardwiring them in C code?)
-> 
-> Not that I have, but I expect that I will be hacking on QEMU as part
-> of this work.
+What guarantees that the cpuidle bits actually select this
+cpuidle_default driver when you do idle=poll?
 
-ok great. Just let us know - we will test it.
-
-Thanks,
-Michal
-
-> 
->> Also, what would be involved in getting x86 to (at least have the option to)
->> use the device tree stuff?
-> 
-> It would be very easy once the endian issues are worked out since the
-> device tree is just a data format to be parsed.
-> 
-> g.
-> 
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+Also, cpuidle already has a poll loop in it, why duplicate that?
