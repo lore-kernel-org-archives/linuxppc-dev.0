@@ -1,18 +1,30 @@
-Return-Path: <julian.calaby@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>
-References: <20091007041007.16890.62194.stgit@angua>
-	<fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>
-From: Julian Calaby <julian.calaby@gmail.com>
-Date: Wed, 7 Oct 2009 15:18:04 +1000
-Message-ID: <646765f40910062218s19d540f9q14c9086bedd1d9da@mail.gmail.com>
-Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
+Return-Path: <hs@denx.de>
+Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
+	by ozlabs.org (Postfix) with ESMTP id CB4BFB7B7C
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 17:57:02 +1100 (EST)
+Received: from mail.invitel.hu (mail.invitel.hu [213.163.59.4])
+	by a.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
+	560FA11AAA8
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 08:56:59 +0200 (CEST)
+Received: from [192.168.1.6] ([82.131.205.57])
+	by mail.invitel.hu (Invitel Messaging Server)
+	with ESMTPA id <0KR40092JTYZ4FC0@invitel.hu> for
+	linuxppc-dev@ozlabs.org; Wed, 07 Oct 2009 08:56:59 +0200 (CEST)
+Date: Wed, 07 Oct 2009 08:40:25 +0200
+From: Heiko Schocher <hs@denx.de>
+Subject: [PATCH v3] mpc5200: support for the MAN mpc5200 based board uc101
+In-reply-to: <fa686aa40910050646p168c2bbfi4b432778827102c9@mail.gmail.com>
 To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Sam Creasey <sammy@sammy.net>, Stephen Rothwell <sfr@canb.auug.org.au>,
-	monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Message-id: <4ACC37D9.7060108@denx.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+References: <4AADF93C.3030604@denx.de> <20090914080322.GA3164@pengutronix.de>
+	<fa686aa40909140745u2cf1dba7q8ae2af53c87bd216@mail.gmail.com>
+	<4AC9A463.1080903@denx.de> <20091005095340.GA3890@pengutronix.de>
+	<4AC9C6AA.6060009@denx.de>
+	<fa686aa40910050646p168c2bbfi4b432778827102c9@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,48 +34,374 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 7, 2009 at 14:49, Grant Likely <grant.likely@secretlab.ca> wrot=
-e:
-> On Tue, Oct 6, 2009 at 10:29 PM, Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->>
->> So here goes. =A0I've begun the work to merge and clean up the OF device
->> tree handling code and this is my first set of patches. =A0Not fully
->> tested yet, but I'm getting them out to the lists so that I can start
->> responding to comments and collecting acks. =A0This first batch isn't
->> anything exciting, just a merge of common code
+- serial Console on PSC1
+- 64MB SDRAM
+- MTD CFI Flash
+- Ethernet FEC
+- I2C with PCF8563 and Temp. Sensor ADM9240
+- IDE support
 
-Good work, for what it's worth, this all looks good to me.
+Signed-off-by: Heiko Schocher <hs@denx.de>
+---
 
-> However, I've completely devoted to this work for at least the next
-> two months, so there are plenty more patches to follow. =A0Once I've
-> got all the common code merged between Microblaze, PowerPC and Sparc
-> I'll be fix the endian problems and making it easily usable by other
-> architectures like ARM and MIPS. =A0Lots of work to be done.
+- based on:
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
 
-On the subject of merging code, I know that the SUN3 code in m68k uses
-a similar prom interface to the sparc32 code. (and I've also
-considered unifying that and ... well ... see above) Does anyone know
-if it has an OpenFirmware interface for it's devices? Is OF on SUN3
-even remotely useful? Does Linux on SUN3 even work with modern
-kernels?
+- checked with:
+$ ./scripts/checkpatch.pl 0001-mpc5200-support-for-the-MAN-mpc5200-based-board-uc1.patch
+total: 0 errors, 0 warnings, 317 lines checked
 
-Another issue is that there is at least one driver in the kernel that
-depends on both PPC and OF to work around the differences in the
-implementations of OpenFirmware on Sparc and PowerPC. (I submitted a
-patch for it, but can't remember the driver's name) Whilst the
-driver's author assures me that the hardware will never go anywhere
-near Sparc, it can't hurt to drop the dependency on PPC for additional
-compile testing coverage - and because it's the Right Thing. (and the
-reduction of cheap hacks like this can't be bad either.)
+0001-mpc5200-support-for-the-MAN-mpc5200-based-board-uc1.patch has no obvious style problems and is ready for submission.
+$
 
-Other than that, good work, and keep going.
+changes since v1:
 
-Thanks,
+- add comments from Grant Likely <grant.likely@secretlab.ca>
+  use mpc5200_defconfig as default configuration
+- add comments from Wolfram Sang <w.sang@pengutronix.de>
+- rebase against current next
 
---=20
+changes since v2:
+- add comment from Wolfram Sang
+  remove unofficial binding
 
-Julian Calaby
+ arch/powerpc/boot/dts/uc101.dts              |  310 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
+ 2 files changed, 311 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/uc101.dts
 
-Email: julian.calaby@gmail.com
-.Plan: http://sites.google.com/site/juliancalaby/
+diff --git a/arch/powerpc/boot/dts/uc101.dts b/arch/powerpc/boot/dts/uc101.dts
+new file mode 100644
+index 0000000..bfb8dd9
+--- /dev/null
++++ b/arch/powerpc/boot/dts/uc101.dts
+@@ -0,0 +1,310 @@
++/*
++ * uc101 board Device Tree Source
++ *
++ * Copyright (C) 2009 DENX Software Engineering GmbH
++ * Heiko Schocher <hs@denx.de>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++
++/ {
++	model = "manroland,uc101";
++	compatible = "manroland,uc101";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	interrupt-parent = <&mpc5200_pic>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <0x4000>;	// L1, 16K
++			i-cache-size = <0x4000>;	// L1, 16K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x04000000>;	// 64MB
++	};
++
++	soc5200@f0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc5200-immr",
++				"fsl,mpc5200b-immr";
++		ranges = <0 0xf0000000 0x0000c000>;
++		reg = <0xf0000000 0x00000100>;
++		bus-frequency = <0>;		// from bootloader
++		system-frequency = <0>;		// from bootloader
++
++		cdm@200 {
++			compatible = "fsl,mpc5200b-cdm","fsl,mpc5200-cdm";
++			reg = <0x200 0x38>;
++		};
++
++		mpc5200_pic: interrupt-controller@500 {
++			// 5200 interrupts are encoded into two levels;
++			interrupt-controller;
++			#interrupt-cells = <3>;
++			compatible = "fsl,mpc5200b-pic","fsl,mpc5200-pic";
++			reg = <0x500 0x80>;
++			interrupts = <0 0 3>;
++		};
++
++		gpt0: timer@600 {	// GPT 0 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x600 0x10>;
++			interrupts = <1 9 0>;
++			gpio-controller;
++		};
++
++		gpt1: timer@610 {	// GPT 1 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x610 0x10>;
++			interrupts = <1 10 0>;
++			gpio-controller;
++		};
++
++		gpt2: timer@620 {	// GPT 2 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x620 0x10>;
++			interrupts = <1 11 0>;
++			gpio-controller;
++		};
++
++		gpt3: timer@630 {	// GPT 3 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x630 0x10>;
++			interrupts = <1 12 0>;
++			gpio-controller;
++		};
++
++		gpt4: timer@640 {	// GPT 4 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x640 0x10>;
++			interrupts = <1 13 0>;
++			gpio-controller;
++		};
++
++		gpt5: timer@650 {	// GPT 5 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x650 0x10>;
++			interrupts = <1 14 0>;
++			gpio-controller;
++		};
++
++		gpt6: timer@660 {	// GPT 6 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x660 0x10>;
++			interrupts = <1 15 0>;
++			gpio-controller;
++		};
++
++		gpt7: timer@670 {	// GPT 7 in GPIO mode
++			compatible = "fsl,mpc5200b-gpt-gpio",
++					"fsl,mpc5200-gpt-gpio";
++			#gpio-cells = <2>;
++			reg = <0x670 0x10>;
++			interrupts = <1 16 0>;
++			gpio-controller;
++		};
++
++		gpio_simple: gpio@b00 {
++			compatible = "fsl,mpc5200b-gpio","fsl,mpc5200-gpio";
++			reg = <0xb00 0x40>;
++			interrupts = <1 7 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpio_wkup: gpio@c00 {
++			compatible = "fsl,mpc5200b-gpio-wkup",
++					"fsl,mpc5200-gpio-wkup";
++			reg = <0xc00 0x40>;
++			interrupts = <1 8 0 0 3 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpio_sint: gpio_sint@b00 {
++			compatible = "fsl,mpc5200b-gpio-sint",
++					"fsl,mpc5200-gpio-sint";
++			reg = <0xb00 0x40>;
++			interrupts = <1 8 0 0 3 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		dma-controller@1200 {
++			device_type = "dma-controller";
++			compatible = "fsl,mpc5200b-bestcomm",
++					"fsl,mpc5200-bestcomm";
++			reg = <0x1200 0x80>;
++			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
++			              3 4 0  3 5 0  3 6 0  3 7 0
++			              3 8 0  3 9 0  3 10 0  3 11 0
++			              3 12 0  3 13 0  3 14 0  3 15 0>;
++		};
++
++		xlb@1f00 {
++			compatible = "fsl,mpc5200b-xlb","fsl,mpc5200-xlb";
++			reg = <0x1f00 0x100>;
++		};
++
++		serial@2000 {		// PSC1
++			compatible = "fsl,mpc5200b-psc-uart",
++					"fsl,mpc5200-psc-uart";
++			reg = <0x2000 0x100>;
++			interrupts = <2 1 0>;
++		};
++
++		serial@2200 {		// PSC2
++			compatible = "fsl,mpc5200b-psc-uart",
++					"fsl,mpc5200-psc-uart";
++			reg = <0x2200 0x100>;
++			interrupts = <2 2 0>;
++		};
++
++		serial@2c00 {		// PSC6
++			compatible = "fsl,mpc5200b-psc-uart",
++					"fsl,mpc5200-psc-uart";
++			reg = <0x2c00 0x100>;
++			interrupts = <2 6 0>;
++		};
++
++		ethernet@3000 {
++			compatible = "fsl,mpc5200b-fec","fsl,mpc5200-fec";
++			reg = <0x3000 0x400>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <2 5 0>;
++			phy-handle = <&phy0>;
++		};
++
++		mdio@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200b-mdio","fsl,mpc5200-mdio";
++			reg = <0x3000 0x400>;	// fec range, since we need to
++						// setup fec interrupts
++			interrupts = <2 5 0>;	// these are for "mii command
++						// finished", not link
++						// changes & co.
++
++			phy0: ethernet-phy@0 {
++				compatible = "intel,lxt971";
++				reg = <0>;
++			};
++		};
++
++		ata@3a00 {
++			compatible = "fsl,mpc5200b-ata","fsl,mpc5200-ata";
++			reg = <0x3a00 0x100>;
++			interrupts = <2 7 0>;
++		};
++
++		i2c@3d40 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c",
++					"fsl-i2c";
++			reg = <0x3d40 0x40>;
++			interrupts = <2 16 0>;
++			fsl,preserve-clocking;
++			clock-frequency = <400000>;
++
++			hwmon@2c {
++				compatible = "ad,adm9240";
++				reg = <0x2c>;
++			};
++			rtc@51 {
++				compatible = "nxp,pcf8563";
++				reg = <0x51>;
++			};
++		};
++
++		sram@8000 {
++			compatible = "fsl,mpc5200b-sram","fsl,mpc5200-sram";
++			reg = <0x8000 0x4000>;
++		};
++	};
++
++	localbus {
++		compatible = "fsl,mpc5200b-lpb","simple-bus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges = <0 0 0xff800000 0x00800000
++			  1 0 0x80000000 0x00800000
++			  3 0 0x80000000 0x00800000>;
++
++		flash@0,0 {
++			compatible = "cfi-flash";
++			reg = <0 0 0x00800000>;
++			bank-width = <2>;
++			device-width = <2>;
++			#size-cells = <1>;
++			#address-cells = <1>;
++			partition@0 {
++				label = "DTS";
++				reg = <0x0 0x00100000>;
++			};
++			partition@100000 {
++				label = "Kernel";
++				reg = <0x100000 0x00200000>;
++			};
++			partition@300000 {
++				label = "RootFS";
++				reg = <0x00300000 0x00200000>;
++			};
++
++			partition@500000 {
++				label = "user";
++				reg = <0x00500000 0x00200000>;
++			};
++			partition@700000 {
++				label = "U-Boot";
++				reg = <0x00700000 0x00040000>;
++			};
++			partition@740000 {
++				label = "Env";
++				reg = <0x00740000 0x00010000>;
++			};
++			partition@750000 {
++				label = "red. Env";
++				reg = <0x00750000 0x00010000>;
++			};
++			partition@760000 {
++				label = "reserve";
++				reg = <0x00760000 0x000a0000>;
++			};
++		};
++
++	};
++};
+diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+index c31e5b5..caf6d92 100644
+--- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
++++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+@@ -51,6 +51,7 @@ static void __init mpc5200_simple_setup_arch(void)
+ /* list of the supported boards */
+ static char *board[] __initdata = {
+ 	"intercontrol,digsy-mtc",
++	"manroland,uc101",
+ 	"phytec,pcm030",
+ 	"phytec,pcm032",
+ 	"promess,motionpro",
+-- 
+1.6.0.6
+
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
