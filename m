@@ -1,13 +1,16 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
+Subject: [RFC PATCH 01/12] of: Rework linux/of.h and asm/prom.h include
+	ordering
 To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
 	Stephen Rothwell <sfr@canb.auug.org.au>, davem@davemloft.net,
 	sparclinux@vger.kernel.org, monstr@monstr.eu,
 	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org
-Date: Tue, 06 Oct 2009 22:29:57 -0600
-Message-ID: <20091007041007.16890.62194.stgit@angua>
+Date: Tue, 06 Oct 2009 22:30:10 -0600
+Message-ID: <20091007043002.16890.93443.stgit@angua>
+In-Reply-To: <20091007041007.16890.62194.stgit@angua>
+References: <20091007041007.16890.62194.stgit@angua>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,41 +22,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Well, I've got to start somewhere...
+In preparation to prune things out of the Sparc, PowerPC and Microblaze
+asm/prom.h files, change the #include statements to ensure that
+even if asm/prom.h is included first, linux/of.h gets to determine the
+order in which files are processed.
 
-So here goes.  I've begun the work to merge and clean up the OF device
-tree handling code and this is my first set of patches.  Not fully
-tested yet, but I'm getting them out to the lists so that I can start
-responding to comments and collecting acks.  This first batch isn't
-anything exciting, just a merge of common code
+This patch adds a #include <linux/of.h> to each of the prom.h files
+*above* the multi-include protection macros to ensure that linux/of.h
+can define things before prom.h gets processed.
 
+At the end of the merge the cross dependencies between the files should
+be gone and a sane #include scheme can be restored.
+
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
-Grant Likely (12):
-      of: merge of_find_all_nodes() implementations
-      of: merge other miscellaneous prototypes
-      of: merge of_*_flat_dt*() functions
-      of: merge of_node_get(), of_node_put() and of_find_all_nodes()
-      of: merge of_read_number() an of_read_ulong()
-      of: merge of_node_*_flag() and set_node_proc_entry()
-      of: merge struct boot_param_header from Microblaze and PowerPC
-      of: add common header for flattened device tree representation
-      of: Move OF_IS_DYNAMIC and OF_MARK_DYNAMIC macros to of.h
-      of: merge struct device_node
-      of: merge phandle, ihandle and struct property
-      of: Rework linux/of.h and asm/prom.h include ordering
+ arch/microblaze/include/asm/prom.h |    8 ++------
+ arch/powerpc/include/asm/prom.h    |    7 +------
+ arch/sparc/include/asm/prom.h      |    7 +------
+ 3 files changed, 4 insertions(+), 18 deletions(-)
 
-
- arch/microblaze/include/asm/prom.h |  135 +--------------------------------
- arch/microblaze/kernel/prom.c      |   23 ------
- arch/powerpc/include/asm/prom.h    |  147 ------------------------------------
- arch/powerpc/kernel/prom.c         |   23 ------
- arch/sparc/include/asm/prom.h      |   55 -------------
- drivers/of/base.c                  |   26 ++++++
- include/linux/of.h                 |  103 +++++++++++++++++++++++++
- include/linux/of_fdt.h             |   87 +++++++++++++++++++++
- 8 files changed, 221 insertions(+), 378 deletions(-)
- create mode 100644 include/linux/of_fdt.h
-
--- 
-Signature
+diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
+index 37e6f30..6636889 100644
+--- a/arch/microblaze/include/asm/prom.h
++++ b/arch/microblaze/include/asm/prom.h
+@@ -12,6 +12,8 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
++#include <linux/of.h>	/* linux/of.h gets to determine #include ordering */
++
+ #ifndef _ASM_MICROBLAZE_PROM_H
+ #define _ASM_MICROBLAZE_PROM_H
+ #ifdef __KERNEL__
+@@ -305,12 +307,6 @@ extern int of_irq_to_resource(struct device_node *dev, int index,
+  */
+ extern void __iomem *of_iomap(struct device_node *device, int index);
+ 
+-/*
+- * NB: This is here while we transition from using asm/prom.h
+- * to linux/of.h
+- */
+-#include <linux/of.h>
+-
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_MICROBLAZE_PROM_H */
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 6ff0418..b0a84ea 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -1,3 +1,4 @@
++#include <linux/of.h>	/* linux/of.h gets to determine #include ordering */
+ #ifndef _POWERPC_PROM_H
+ #define _POWERPC_PROM_H
+ #ifdef __KERNEL__
+@@ -349,11 +350,5 @@ extern int of_irq_to_resource(struct device_node *dev, int index,
+  */
+ extern void __iomem *of_iomap(struct device_node *device, int index);
+ 
+-/*
+- * NB:  This is here while we transition from using asm/prom.h
+- * to linux/of.h
+- */
+-#include <linux/of.h>
+-
+ #endif /* __KERNEL__ */
+ #endif /* _POWERPC_PROM_H */
+diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+index 82a190d..0733170 100644
+--- a/arch/sparc/include/asm/prom.h
++++ b/arch/sparc/include/asm/prom.h
+@@ -1,3 +1,4 @@
++#include <linux/of.h>	/* linux/of.h gets to determine #include ordering */
+ #ifndef _SPARC_PROM_H
+ #define _SPARC_PROM_H
+ #ifdef __KERNEL__
+@@ -108,12 +109,6 @@ static inline void irq_dispose_mapping(unsigned int virq)
+ {
+ }
+ 
+-/*
+- * NB:  This is here while we transition from using asm/prom.h
+- * to linux/of.h
+- */
+-#include <linux/of.h>
+-
+ extern struct device_node *of_console_device;
+ extern char *of_console_path;
+ extern char *of_console_options;
