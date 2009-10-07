@@ -1,19 +1,20 @@
-Return-Path: <wmb@firmworks.com>
-Message-ID: <4ACCEC67.9070106@firmworks.com>
-Date: Wed, 07 Oct 2009 09:30:47 -1000
-From: Mitch Bradley <wmb@firmworks.com>
-MIME-Version: 1.0
-To: Sam Creasey <sammy@sammy.net>
-Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
-References: <20091007041007.16890.62194.stgit@angua>	<fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>	<646765f40910062218s19d540f9q14c9086bedd1d9da@mail.gmail.com>
-	<20091007135243.GC21646@anhedonia>
-In-Reply-To: <20091007135243.GC21646@anhedonia>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Julian Calaby <julian.calaby@gmail.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Return-Path: <joakim.tjernlund@transmode.com>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3A2FFB7B77
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 07:46:12 +1100 (EST)
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>, Scott Wood <scottwood@freescale.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 3/6] 8xx: invalidate non present TLBs
+Date: Wed, 7 Oct 2009 22:46:01 +0200
+Message-Id: <1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
+References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->
-> Sun3 doesn't have OF
+8xx sometimes need to load a invalid/non-present TLBs in
+it DTLB asm handler.
+These must be invalidated separaly as linux mm don't.
+---
+ arch/powerpc/mm/fault.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-When I was first developing Open Boot for the SPARCstation-1, I was also 
-simultaneously trying to do it for a Sun-3 system that was being built 
-at the same time.
-
-It proved to be too much to do both jobs at the same time, especially in 
-light of all the hardware debugging that is part of a new system 
-bringup.  So I gave up on Sun 3 and just focused on SS-1.
-
-That particular Sun-3 machine never sold very well, while the SS-1 was 
-very popular.  That was Sun's last 680x0 machine.
-
-Personally, I think that continuing to support Sun-3 in Linux is not 
-useful in a practical sense.  To the extent that supporting 
-long-obsolete platforms and devices makes the job harder for current 
-systems, it is actually harmful.  Portability and generality is good in 
-some theoretical "rightness" sense, but there are practical limits.  
-Code can become so heavily layered that approaching it requires a huge 
-commitment of effort to learn all the artificial layers.  Sometimes you 
-have to prune the dead branches so the living ones can get light and air.
-
-Taking this one step further, I don't see any real good reason to 
-continue supporting Sun4 going forward.  I got rid of my Sun4 systems 
-long ago because it was just too hard to keep them working - after 
-having used them long after most people had moved on.  Dropping Sun3 and 
-Sun4 eliminates all vestiges of the sunmon interface and also allows 
-dropping support for OBP version 1, which only shipped on SS1-class 
-machines - the first machines in the Sun4c subclass. 
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 7699394..72941c7 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -39,7 +39,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/tlbflush.h>
+ #include <asm/siginfo.h>
+-
++#include <mm/mmu_decl.h>
+ 
+ #ifdef CONFIG_KPROBES
+ static inline int notify_page_fault(struct pt_regs *regs)
+@@ -243,6 +243,12 @@ good_area:
+ 		goto bad_area;
+ #endif /* CONFIG_6xx */
+ #if defined(CONFIG_8xx)
++	/* 8xx sometimes need to load a invalid/non-present TLBs.
++	 * These must be invalidated separately as linux mm don't.
++	 */
++	if (error_code & 0x40000000) /* no translation? */
++		_tlbil_va(address);
++
+         /* The MPC8xx seems to always set 0x80000000, which is
+          * "undefined".  Of those that can be set, this is the only
+          * one which seems bad.
+-- 
+1.6.4.4
