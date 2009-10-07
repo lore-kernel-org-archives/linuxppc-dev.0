@@ -1,20 +1,42 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 58265B7B7A
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 21:42:55 +1100 (EST)
-Date: Wed, 07 Oct 2009 03:43:09 -0700 (PDT)
-Message-Id: <20091007.034309.111268582.davem@davemloft.net>
-To: olof@lixom.net
-Subject: Re: [PATCH] pasemi_mac: ethtool get settings fix
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091006161054.GB29195@lixom.net>
-References: <4AC9ED9B.5040400@ru.mvista.com>
-	<20091005132756.GA11704@ru.mvista.com>
-	<20091006161054.GB29195@lixom.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
+Return-Path: <tj@kernel.org>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B743AB7B97
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 22:03:24 +1100 (EST)
+From: Tejun Heo <tj@kernel.org>
+To: linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Robert Richter <robert.richter@amd.com>,
+	Jeremy Fitzhardinge <jeremy@xensource.com>,
+	Chris Wright <chrisw@sous-sol.org>, "H. Peter Anvin" <hpa@zytor.com>,
+	Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+	x86@kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>,
+	Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Chuck Ebbert <cebbert@redhat.com>, David Howells <dhowells@redhat.com>,
+	Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+	Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+	Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Masami Hiramatsu <mhiramat@redhat.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH 10/16] percpu: make percpu symbols in powerpc unique
+Date: Wed,  7 Oct 2009 20:01:19 +0900
+Message-Id: <1254913285-6251-11-git-send-email-tj@kernel.org>
+In-Reply-To: <1254913285-6251-1-git-send-email-tj@kernel.org>
+References: <1254913285-6251-1-git-send-email-tj@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Rusty Russell <rusty@rustcorp.com.au>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Tejun Heo <tj@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +46,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Olof Johansson <olof@lixom.net>
-Date: Tue, 6 Oct 2009 11:10:54 -0500
+This patch updates percpu related symbols in powerpc such that percpu
+symbols are unique and don't clash with local symbols.  This serves
+two purposes of decreasing the possibility of global percpu symbol
+collision and allowing dropping per_cpu__ prefix from percpu symbols.
 
-> Weird, I see my address in the to: line but I never got a copy in my inbox.
-> 
-> On Mon, Oct 05, 2009 at 05:27:56PM +0400, Valentine Barshak wrote:
->> Not all pasemi mac interfaces can have a phy attached.
->> For example, XAUI has no phy and phydev is NULL for it.
->> In this case ethtool get settings causes kernel crash.
->> Fix it by returning -EOPNOTSUPP if there's no PHY attached.
->> 
->> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> 
-> Acked-by: Olof Johansson <olof@lixom.net>
+* arch/powerpc/kernel/perf_callchain.c: s/callchain/cpu_perf_callchain/
 
-Applied to net-2.6, thanks!
+* arch/powerpc/kernel/setup-common.c: s/pvr/cpu_pvr/
+
+* arch/powerpc/platforms/pseries/dtl.c: s/dtl/cpu_dtl/
+
+* arch/powerpc/platforms/cell/interrupt.c: s/iic/cpu_iic/
+
+Partly based on Rusty Russell's "alloc_percpu: rename percpu vars
+which cause name clashes" patch.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
+---
+ arch/powerpc/include/asm/smp.h          |    2 +-
+ arch/powerpc/kernel/perf_callchain.c    |    4 ++--
+ arch/powerpc/kernel/setup-common.c      |    4 ++--
+ arch/powerpc/kernel/smp.c               |    2 +-
+ arch/powerpc/platforms/cell/interrupt.c |   14 +++++++-------
+ arch/powerpc/platforms/pseries/dtl.c    |    4 ++--
+ 6 files changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index d9ea8d3..1d3b270 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -37,7 +37,7 @@ extern void cpu_die(void);
+ extern void smp_send_debugger_break(int cpu);
+ extern void smp_message_recv(int);
+ 
+-DECLARE_PER_CPU(unsigned int, pvr);
++DECLARE_PER_CPU(unsigned int, cpu_pvr);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern void fixup_irqs(cpumask_t map);
+diff --git a/arch/powerpc/kernel/perf_callchain.c b/arch/powerpc/kernel/perf_callchain.c
+index 0a03cf7..fe59c44 100644
+--- a/arch/powerpc/kernel/perf_callchain.c
++++ b/arch/powerpc/kernel/perf_callchain.c
+@@ -497,11 +497,11 @@ static void perf_callchain_user_32(struct pt_regs *regs,
+  * Since we can't get PMU interrupts inside a PMU interrupt handler,
+  * we don't need separate irq and nmi entries here.
+  */
+-static DEFINE_PER_CPU(struct perf_callchain_entry, callchain);
++static DEFINE_PER_CPU(struct perf_callchain_entry, cpu_perf_callchain);
+ 
+ struct perf_callchain_entry *perf_callchain(struct pt_regs *regs)
+ {
+-	struct perf_callchain_entry *entry = &__get_cpu_var(callchain);
++	struct perf_callchain_entry *entry = &__get_cpu_var(cpu_perf_callchain);
+ 
+ 	entry->nr = 0;
+ 
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 4271f7a..aa5aeb9 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -157,7 +157,7 @@ extern u32 cpu_temp_both(unsigned long cpu);
+ #endif /* CONFIG_TAU */
+ 
+ #ifdef CONFIG_SMP
+-DEFINE_PER_CPU(unsigned int, pvr);
++DEFINE_PER_CPU(unsigned int, cpu_pvr);
+ #endif
+ 
+ static int show_cpuinfo(struct seq_file *m, void *v)
+@@ -209,7 +209,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 	}
+ 
+ #ifdef CONFIG_SMP
+-	pvr = per_cpu(pvr, cpu_id);
++	pvr = per_cpu(cpu_pvr, cpu_id);
+ #else
+ 	pvr = mfspr(SPRN_PVR);
+ #endif
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 9b86a74..2ebb484 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -232,7 +232,7 @@ struct thread_info *current_set[NR_CPUS];
+ 
+ static void __devinit smp_store_cpu_info(int id)
+ {
+-	per_cpu(pvr, id) = mfspr(SPRN_PVR);
++	per_cpu(cpu_pvr, id) = mfspr(SPRN_PVR);
+ }
+ 
+ static void __init smp_create_idle(unsigned int cpu)
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 882e470..54bad90 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -54,7 +54,7 @@ struct iic {
+ 	struct device_node *node;
+ };
+ 
+-static DEFINE_PER_CPU(struct iic, iic);
++static DEFINE_PER_CPU(struct iic, cpu_iic);
+ #define IIC_NODE_COUNT	2
+ static struct irq_host *iic_host;
+ 
+@@ -82,7 +82,7 @@ static void iic_unmask(unsigned int irq)
+ 
+ static void iic_eoi(unsigned int irq)
+ {
+-	struct iic *iic = &__get_cpu_var(iic);
++	struct iic *iic = &__get_cpu_var(cpu_iic);
+ 	out_be64(&iic->regs->prio, iic->eoi_stack[--iic->eoi_ptr]);
+ 	BUG_ON(iic->eoi_ptr < 0);
+ }
+@@ -146,7 +146,7 @@ static unsigned int iic_get_irq(void)
+ 	struct iic *iic;
+ 	unsigned int virq;
+ 
+-	iic = &__get_cpu_var(iic);
++	iic = &__get_cpu_var(cpu_iic);
+ 	*(unsigned long *) &pending =
+ 		in_be64((u64 __iomem *) &iic->regs->pending_destr);
+ 	if (!(pending.flags & CBE_IIC_IRQ_VALID))
+@@ -161,12 +161,12 @@ static unsigned int iic_get_irq(void)
+ 
+ void iic_setup_cpu(void)
+ {
+-	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
++	out_be64(&__get_cpu_var(cpu_iic).regs->prio, 0xff);
+ }
+ 
+ u8 iic_get_target_id(int cpu)
+ {
+-	return per_cpu(iic, cpu).target_id;
++	return per_cpu(cpu_iic, cpu).target_id;
+ }
+ 
+ EXPORT_SYMBOL_GPL(iic_get_target_id);
+@@ -181,7 +181,7 @@ static inline int iic_ipi_to_irq(int ipi)
+ 
+ void iic_cause_IPI(int cpu, int mesg)
+ {
+-	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
++	out_be64(&per_cpu(cpu_iic, cpu).regs->generate, (0xf - mesg) << 4);
+ }
+ 
+ struct irq_host *iic_get_irq_host(int node)
+@@ -348,7 +348,7 @@ static void __init init_one_iic(unsigned int hw_cpu, unsigned long addr,
+ 	/* XXX FIXME: should locate the linux CPU number from the HW cpu
+ 	 * number properly. We are lucky for now
+ 	 */
+-	struct iic *iic = &per_cpu(iic, hw_cpu);
++	struct iic *iic = &per_cpu(cpu_iic, hw_cpu);
+ 
+ 	iic->regs = ioremap(addr, sizeof(struct cbe_iic_thread_regs));
+ 	BUG_ON(iic->regs == NULL);
+diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
+index 937a544..c5f3116 100644
+--- a/arch/powerpc/platforms/pseries/dtl.c
++++ b/arch/powerpc/platforms/pseries/dtl.c
+@@ -54,7 +54,7 @@ struct dtl {
+ 	int			buf_entries;
+ 	u64			last_idx;
+ };
+-static DEFINE_PER_CPU(struct dtl, dtl);
++static DEFINE_PER_CPU(struct dtl, cpu_dtl);
+ 
+ /*
+  * Dispatch trace log event mask:
+@@ -261,7 +261,7 @@ static int dtl_init(void)
+ 
+ 	/* set up the per-cpu log structures */
+ 	for_each_possible_cpu(i) {
+-		struct dtl *dtl = &per_cpu(dtl, i);
++		struct dtl *dtl = &per_cpu(cpu_dtl, i);
+ 		dtl->cpu = i;
+ 
+ 		rc = dtl_setup_file(dtl);
+-- 
+1.6.4.2
