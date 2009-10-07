@@ -1,34 +1,40 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D2E39B7B95
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 18:49:07 +1100 (EST)
-In-Reply-To: <1254877655.6035.82.camel@pasglop>
-References: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1254744999-3158-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1254744999-3158-4-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1254773824.7122.33.camel@pasglop>
-	<OF3182684B.BB80DBCF-ONC1257646.0073D59B-C1257646.0075AB6F@transmode.se>
-	<1254778643.7122.43.camel@pasglop>	
-	<OF16069D5F.03682AAC-ONC1257646.00774BB8-C1257646.0078E24B@transmode.se>
-	<1254780556.7122.47.camel@pasglop>	
-	<OF346FF2E6.3CCDA0FA-ONC1257646.007C13A0-C1257646.007DF396@transmode.se>
-	<1254784539.7122.52.camel@pasglop>	
-	<OFB8E4035A.83748CF0-ONC1257646.0080A097-C1257646.00819DD6@transmode.se>
-	<1254789255.7122.95.camel@pasglop>	
-	<OFC64CFB37.E5E17F42-ONC1257647.0068299A-C1257647.00795ECE
-	<1254877655.6035.82.camel@pasglop>
-Subject: Re: [PATCH 3/6] 8xx: get rid of _PAGE_HWWRITE dependency in MMU.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF26D4EA84.9F0A4900-ONC1257648.0022D827-C1257648.002ACE4A@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 7 Oct 2009 09:47:33 +0200
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C4F3BB7B8F
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 19:56:47 +1100 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp09.au.ibm.com (8.14.3/8.13.1) with ESMTP id n978kFtM005393
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Oct 2009 19:46:15 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n978uhT3471314
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Oct 2009 19:56:44 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n978uhjo014682
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Oct 2009 19:56:43 +1100
+Message-ID: <4ACC57C4.5010002@in.ibm.com>
+Date: Wed, 07 Oct 2009 14:26:36 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+To: rostedt@goodmis.org
+Subject: Re: [FTRACE] Enabling function_graph causes OOPS
+References: <4A5C5D65.3030906@in.ibm.com>
+	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
+	<4A76BE81.4080707@in.ibm.com>	<1252458303.20985.10.camel@gandalf.stny.rr.com>
+	<4AA74AE2.5090001@in.ibm.com>	<1252814877.26049.93.camel@gandalf.stny.rr.com>
+	<1252816650.8375.70.camel@pasglop>
+	<1252848060.26049.647.camel@gandalf.stny.rr.com>
+	<1252873548.8375.73.camel@pasglop>
+	<1252915227.8375.118.camel@pasglop>
+	<1254749155.13160.6.camel@gandalf.stny.rr.com>
+	<1254774039.7122.35.camel@pasglop>
+	<1254775073.13160.13.camel@gandalf.stny.rr.com>
+In-Reply-To: <1254775073.13160.13.camel@gandalf.stny.rr.com>
+Content-Type: multipart/mixed; boundary="------------000505010507050106030503"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,224 +44,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 07/10/2009 03:07:35:
+This is a multi-part message in MIME format.
+--------------000505010507050106030503
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Steven Rostedt wrote:
+> On Tue, 2009-10-06 at 07:20 +1100, Benjamin Herrenschmidt wrote:
+>   
+>> On Mon, 2009-10-05 at 09:25 -0400, Steven Rostedt wrote:
+>>     
+>>>>> Sachin, can you give me more details on how you built that kernel ? (or
+>>>>> give them again in case I missed them the first time around :-), ie,
+>>>>> what toolchain, options, etc... or even better, give me remote access to
+>>>>> the build host ?
+>>>>>           
+>>>> Ok, got access and had a quick look... seems to be a toolchain problem
+>>>> to me. I'll investigate more tomorrow.
+>>>>         
+>>> Hi Ben,
+>>>
+>>> Any more word on this issue? 
+>>>       
+>> Didn't you fix it using a TOC access ?
+>>
+>> Unless I'm confusing things, I think the problem is the usage
+>> of LOAD_REG_IMMEDIATE which generates relocs that we don't support
+>> when CONFIG_RELOCATABLE is set.
+>>
+>> I've merged a patch that post-processes the kernel now, to check
+>> for such relocs so at least you should be warned at build time.
+>>     
 >
-> Allright, did a bit of reading of doco and code..
+> I thought we had two issues. One was the use of the relocs that did
+> cause issues. But then there was still crashes reported after that.
+> IIRC. I'm still suffering jetlag, so my memory is not that fresh about
+>   
+As Ben suggested, i changed LOAD_REG_IMMEDIATE() to LOAD_REG_ADDR()
+as follows.
 
-hey, this is a super, thanks!
+-       LOAD_REG_IMMEDIATE(r4,ftrace_return_to_handler)
++       LOAD_REG_ADDR(r4,ftrace_return_to_handler)
 
->
-> Doco isn't totally clear though. At some stage, it -hints- that in case
-> of a TLB "error" (match on EA/ASID but incorrect
-> protection/valid/changed/...) the offending TLB entry is automatically
-> invalidated. Do you know if that is correct ?
+With this change compile time warnings about bad relocations
+related to ftrace are gone.
 
-Nope, I don't know.
+Before the change :
+WARNING: 6 bad relocations
+c000000000008f1a R_PPC64_ADDR16_HIGHEST  __ksymtab+0x0000000000742110
+c000000000008f1e R_PPC64_ADDR16_HIGHER  __ksymtab+0x0000000000742110
+c000000000008f26 R_PPC64_ADDR16_HI  __ksymtab+0x0000000000742110
+c000000000008f2a R_PPC64_ADDR16_LO  __ksymtab+0x0000000000742110
+c00000000085e118 R_PPC64_ADDR64    __crc_per_cpu__softirq_work_list
+c0000000008662d0 R_PPC64_ADDR64    __crc_simple_prepare_write
 
->
-> I would hope so since we never do anything to remove the "invalid"
-> entries we write to the TLB when hitting non-present PTEs but then, that
-> may also explain some of our problems...
+After the change :
+WARNING: 2 bad relocations
+c00000000085e118 R_PPC64_ADDR64    __crc_per_cpu__softirq_work_list
+c0000000008662d0 R_PPC64_ADDR64    __crc_simple_prepare_write
 
-hmm, then a tlbil_va() in do_page_fault for "no translation" errors
-would help I guess.
+But i still run into oops while using ftrace function_graph.
 
->
-> Now, a few comments from what I read in the code:
->
->  - The whole writeback could be avoided in Instruction/Data TLB miss,
-> but for that, you need to make sure that the TLB entry we create has
-> valid set only if -both- present and accessed are set. That would save
-> in the case of CONFIG_SWAP, a store and a read back of TWC I suppose,
-> but you do need to find a way to do that ANDing of ACCESSED and PRESENT.
+Thanks
+-Sachin
 
-So far I have mapped !ACCESSED pages as No Access instead, maybe that
-was wrong? I thought it was easier but I will have a look at this too.
 
->
->  - I think we can get rid of HWWRITE. We can make CHANGED be the current
-> HWWRITE value, I agree with you, which matches the HW changed bit. We
-> need to be a bit careful of how we setup the PP bits tho. At this stage,
-> I see several approaches:
->
->    * One is to basically "generate" the right PP bits based on a
-> combination of _PAGE_USER and _PAGE_RW. That's the simpler approach but
-> probably uses more code in the TLB miss handler. It would look like
-> that, with MxCTR:PPCS=0
->
->   _PAGE_USER    _PAGE_RW      PP (bits 20..27)
->       0            0               011C1111    (C is _PAGE_DIRTY)
->       0            1               000C1111
->       1            0               110C1111
->       1            1               100C1111
->
-> One easy way to do that is to have _PAGE_USER and _PAGE_RW sit next to
-> each other in bit position 28 and 29 (0xc). Load a GPR with something
-> like 0110000011001000 and rotate it left by PTE & 0xc, then move the
-> resulting 3 bits into position, or something along those lines. You can
-> also give up on kernel read-only support and go down to 2 PP bits and
-> never use the extended encoding.
 
-yes, I do think the extended encoding is too much work and not worth it.
-One concern I have is if a user RO mapping also can be a kernel RO
-mapping? That is, do kernel require RW to a user page mapped RO?
+-- 
 
->
->   * Another one is to use MxCTR:PPCS=1 a mask of 100C1U00 (U is
-> _PAGE_USER) and or in ^_PAGE_RW (it could actually be made
-> reverse-polarity in the PTE but that would mean some changes to non-8xx
-> specific headers, so let's avoid it for now at least).
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
-hmm, interesting.
-Then I will also have set ACCESSED manually in TLB Miss I think.
 
->
-> At least that's the best options I can see from my reading of the doco,
-> though it's not totally clear to me what really happens when doing the
-> PPCS trick, will it generate a TLB error on a non-match or will it try
-> to TLB miss, which could be bad.
+--------------000505010507050106030503
+Content-Type: text/x-patch;
+ name="fix-ftrace-bad-relocs.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fix-ftrace-bad-relocs.patch"
 
-Yes, I don't think anybody has tested this.
+diff -Naurp a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+--- a/arch/powerpc/kernel/entry_64.S	2009-10-06 15:31:29.000000000 +0530
++++ b/arch/powerpc/kernel/entry_64.S	2009-10-06 15:34:00.000000000 +0530
+@@ -1038,7 +1038,7 @@ _GLOBAL(mod_return_to_handler)
+ 	 * We are in a module using the module's TOC.
+ 	 * Switch to our TOC to run inside the core kernel.
+ 	 */
+-	LOAD_REG_IMMEDIATE(r4,ftrace_return_to_handler)
++	LOAD_REG_ADDR(r4,ftrace_return_to_handler)
+ 	ld	r2, 8(r4)
+ 
+ 	bl	.ftrace_return_to_handler
 
->
->   * Last but not least, it wouldn't be hard to use either of the above
-> encodings, and have the PTE actually contain the right bit combination
-> already. You don't need to have a _PAGE_RW, you don't need to have a
-> _PAGE_USER  :-) Look at how I do things for book3e, where I layout the
-> 6 BookE protection bit directly in the PTE. That's a bit harder and maybe
-> will need subtle changes to pte-common.h and such to accomodate it, and
-> so probably something to experiment with as a second step, but it's the
-> most efficient approach in the long run for obvious reasons.
->
->  - I think we could have more bits pre-set to the right values in the
-> PTE, look how we play with defining some of the constants in
-> pte-common.h, might be worth having a look, but -after- we have
-> something that works :-)
->
->  - Possible bug: I'm very disturbed by the fact that DataTLBError sets
-> HWWRITE and DIRTY on a non-present PTE. It should not. Just like
-> ACCESSED. That's going to cause trouble and swap corruption, even more
-> as we move DIRTY around.
-
-Yes, this is what I fix with the first patch in my series:
-   8xx: DTLB Error must check for more errors.
-
-    DataTLBError currently does:
-     if ((err & 0x02000000) == 0)
-        DSI();
-    This won't handle a store with no valid translation.
-    Change this to
-     if ((err & 0x48000000) != 0)
-        DSI();
-    that is, branch to DSI if either !permission or
-    !translation.
-
->
->  - Maybe we can completely remove that mucking around with dirty,
-> setting of accessed etc... from DataTLBError. Just make it go to C code
-> just like InstructionAccess, as we discussed earlier, the generic code
-> will fix it up and we'll speed up page faults. It should be fairly rare
-> to take a fault due to a missing _PAGE_ACCESSED or _PAGE_DIRTY in any
-> case, so all that fixup in those exceptions is just overhead.
-
-That depends on if you set ACCESSED in TLB Miss or not I think.
-if TLB Miss maps pages as NoAccess du to missing ACCESSED then the
-first access is always going to trap to TLB Error and then to
-C just to fix DIRTY and/or ACCESSED, feels a bit more expensive
-fixing it in TLB error, no?
-
-BTW, does 2.4 update ACCESSED and DIRTY in generic code the same way
-as 2.6? It is still much easier for me to test thing in 2.4 and then
-move it over to 2.6
-
->
->  - Later on, if it rocks your boat, you may want to look into removing
-> the mucking around with swapper_pg_dir in the TLB miss. Instead, what
-> you can do is lazily copy the kernel PMDs into the user PMDs. IE. On the
-> first kernel access from a new user context, you fault, and from the
-> do_page_fault() code, we can detect that and fixup the user PMD to point
-> to the kernel page tables, thus avoiding that whole bunch of code in the
-> TLB miss. When creating new user page tables, we can pre-fill the kernel
-> PMDs too. I think x86 does that. We could do that for BookE too, though
-> it's less of a win since we have to fixup the TID in MMUCR/MAS but for
-> 8xx it would save a few instructions & conditionals in the TLB miss fast
-> path.
-
-That would be nice, I have had that idea but no clue as how to do it.
-
->
->  - I still have problems with the comment next to the "workaround"
-> tlbil_va() we have in the icache/dcache flush. It doesn't make much
-> sense to me since dcbst is going to be done by the kernel on a kernel
-> address, not a user address, so I don't see how the thing we invalidate
-> relates to the flush we do just below.... So that raises a few
-> questions:
-
-This workaround was added when we started to force TLB Errors in
-TLB Miss for missing pmd entries so it may be some other bug in the
-TLB code that makes this happen.
-Here is a link:
- http://www.mail-archive.com/linuxppc-embedded@ozlabs.org/msg07885.html
-Seems to boil down to a missing tlbie()
-
->
->    * If this is to avoid write faults on kernel pages, then we may just
-> want to have a fixup in do_page_fault() to ignore them when coming from
-> flush_dcache_icache_* using the exception table mechanism instead ?
->
->    * I don't see how it works around user faults but maybe you have a
-> clear scenario in mind
->
->    * It appears still reasonably obvious that we need that tlbil_va
-> somewhere in that fault path, but I don't know what for, I'm not sure
-> it's really what the comment says it's about. That raises back the whole
-> question of when are those "invalid" TLB entries that we create when
-> _PAGE_PRESENT is not set are going to be removed. The doc hints that
-> they go a way on TLB error, but the doc really only says so for missing
-> changed bit... so I'm tempted to say we need to basically stick a
-> tlbil_va on 8xx on both set_pte_at() and ptep_set_access_flags() for any
-> non-kernel page. What do you think ? That would be the safest.
-
-Possibly just doing a tlbil_va in do_page_fault() for no translation
-errors comes to mind.
-
->
->  - The "fake" DataAccess and InstructionAccess are useless... just a
-> spurious jump for nothing. We could implement those straight in
-> DataTLBError and InstructionTLBError, we just need to make sure that
-> the trap numbers we put in the exception frame are 0x300 and 0x400, but
-> that's just a matter of passing the right bits to EXC_XFER_EE_LITE().
->
->  - Finally, another boat-rocking optimisation to do is preload. You
-> could hook in update_mmu_cache() for 8xx to go whack an entry in the TLB
-> as well, which would avoid a TLB miss right after a page fault. But
-> again, only when things work.
->
-> None of the above of course address your DAR-not-updated concern. I
-> think your approach of "clobbering" the DAR on every storage exception
-> after it's been snapshotted and then testing for the clobber and
-> emulating the instruction is the way to go, though your patch could use
-> some cleaning there.
-
-Yes, it is full of debug cruft now.
-
->
-> I'll post comments on it separately.
-
-Thanks, I still like the asm version for two reasons:
-- It contains the problem to 8xx files
-- fixing it up in do_page_fault() may lead to a never ending loop.
-  This is mainly due to the current TLB code not using DIRTY correctly.
-
-In any case it would be nice to keep the asm version in the file, should
-we need it some day. It was rather painful to get it working so saving it
-somewhere would be nice.
-
->
-> At the end of the day, I can't help that much without HW access and/or a
-> simulator, as you can guess, and no, I'm not asking for people to send
-> me an 8xx board :-) (especially useless without a BDI imho). So I rely
-> on Scott and yourself to sort this out. But thanks for showing up, and
-> please, do port your board to 2.6 so you can test your stuff :-)
-
- :)
+--------------000505010507050106030503--
