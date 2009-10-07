@@ -1,21 +1,23 @@
-Return-Path: <crn@netunix.com>
-Date: Wed, 7 Oct 2009 21:54:34 +0100 (BST)
-From: Chris Newport <crn@netunix.com>
-To: Mitch Bradley <wmb@firmworks.com>
-Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
-In-Reply-To: <4ACCEC67.9070106@firmworks.com>
-Message-ID: <Pine.LNX.4.60.0910072148040.11795@mailgate.netunix.com>
-References: <20091007041007.16890.62194.stgit@angua>
-	<fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>
-	<646765f40910062218s19d540f9q14c9086bedd1d9da@mail.gmail.com>
-	<20091007135243.GC21646@anhedonia> <4ACCEC67.9070106@firmworks.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Sam Creasey <sammy@sammy.net>, Stephen Rothwell <sfr@canb.auug.org.au>,
-	Julian Calaby <julian.calaby@gmail.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1E0BFB7B71
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 08:15:02 +1100 (EST)
+Subject: Re: [PATCH 2/6] 8xx: get rid of _PAGE_HWWRITE dependency in MMU.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
+References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 08 Oct 2009 08:14:52 +1100
+Message-Id: <1254950092.2409.7.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +27,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 7 Oct 2009, Mitch Bradley wrote:
+On Wed, 2009-10-07 at 22:46 +0200, Joakim Tjernlund wrote:
 
-> Taking this one step further, I don't see any real good reason to continue 
-> supporting Sun4 going forward.  I got rid of my Sun4 systems long ago because 
-> it was just too hard to keep them working - after having used them long after 
-> most people had moved on.  Dropping Sun3 and Sun4 eliminates all vestiges of 
-> the sunmon interface and also allows dropping support for OBP version 1, 
-> which only shipped on SS1-class machines - the first machines in the Sun4c 
-> subclass.
+> +	andi.	r11, r10, _PAGE_USER | _PAGE_ACCESSED
+> +	cmpwi	cr0, r11, _PAGE_USER | _PAGE_ACCESSED
+> +	bne-	cr0, 2f
 
-Sun4c has also been broken for a long time and sun4d has never worked
-properly. Is it time to also prune these ?.
-That would leave only Sun4m in the 32bit kernel, which still works and
-has plenty of ongoing user interest.
+Did you mean _PAGE_PRESENT | _PAGE_ACCESSED ?
+
+> +2:
+> +	mfspr	r11, SRR1
+> +	rlwinm	r11, r11, 0, 5, 3 /* clear guarded */
+> +	mtspr	SRR1, r11
+
+What is the above for ?
+
+> +	mfspr	r10, SPRN_M_TW	/* Restore registers */
+> +	lwz	r11, 0(r0)
+> +	mtcr	r11
+> +	lwz	r11, 4(r0)
+> +#ifdef CONFIG_8xx_CPU6
+> +	lwz	r3, 8(r0)
+> +#endif
+> +	b	InstructionAccess
+>  
+
+ .../...
+
+> +	andi.	r11, r10, _PAGE_ACCESSED
+> +	bne+	cr0, 5f	/* branch if access allowed */
+> +	rlwinm	r10, r10, 0, 21, 19 /* Clear _PAGE_USER */
+> +	ori	r10, r10, _PAGE_RW  /* Set RW bit for xor below to clear it */
+> +5:	xori	r10, r10, _PAGE_RW  /* invert RW bit */
+
+Why are you clearing _PAGE_USER ? One needs to differenciate usr
+from kernel pages or user will be access to write to kernel...
+
+Why don't you do the trick I proposed in my email with loading a
+constant that contains all the bit combinations and shifting it
+by the amount defined by _PAGE_RW and _PAGE_USER used as a two
+bits index ?
+ 
+>  	/* The Linux PTE won't go exactly into the MMU TLB.
+> -	 * Software indicator bits 21, 22 and 28 must be clear.
+> +	 * Software indicator bits 22 and 28 must be clear.
+>  	 * Software indicator bits 24, 25, 26, and 27 must be
+>  	 * set.  All other Linux PTE bits control the behavior
+>  	 * of the MMU.
+> @@ -472,8 +470,8 @@ DataTLBError:
+>  	/* First, make sure this was a store operation.
+>  	*/
+>  	mfspr	r10, SPRN_DSISR
+> -	andis.	r11, r10, 0x4800 /* no translation, no permission. */
+> -	bne	2f	/* branch if either is set */
+> +	andis.	r11, r10, 0x4000 /* no translation */
+> +	bne	2f	/* branch if set */
+>  
+>  	/* The EA of a data TLB miss is automatically stored in the MD_EPN
+>  	 * register.  The EA of a data TLB error is automatically stored in
+> @@ -522,26 +520,20 @@ DataTLBError:
+>  	mfspr	r11, SPRN_MD_TWC		/* ....and get the pte address */
+>  	lwz	r10, 0(r11)		/* Get the pte */
+>  
+> -	andi.	r11, r10, _PAGE_RW	/* Is it writeable? */
+> -	beq	2f			/* Bail out if not */
+> -
+> -	/* Update 'changed', among others.
+> -	*/
+> -#ifdef CONFIG_SWAP
+> +	mfspr	r11, DSISR
+> +	andis.	r11, r11, 0x0200	/* store */
+> +	beq	5f
+> +	andi.	r11, r10, _PAGE_RW	/* writeable? */
+> +	beq	2f /* nope */
+>  	ori	r10, r10, _PAGE_DIRTY|_PAGE_HWWRITE
+> -	/* do not set the _PAGE_ACCESSED bit of a non-present page */
+> -	andi.	r11, r10, _PAGE_PRESENT
+> -	beq	4f
+> -	ori	r10, r10, _PAGE_ACCESSED
+> -4:
+> -#else
+> -	ori	r10, r10, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
+> -#endif
+> -	mfspr	r11, SPRN_MD_TWC		/* Get pte address again */
+> +5:	ori	r10, r10, _PAGE_ACCESSED
+> +	mfspr	r11, MD_TWC		/* Get pte address again */
+>  	stw	r10, 0(r11)		/* and update pte in table */
+>  
+> +	xori	r10, r10, _PAGE_RW	/* RW bit is inverted */
+> +
+>  	/* The Linux PTE won't go exactly into the MMU TLB.
+> -	 * Software indicator bits 21, 22 and 28 must be clear.
+> +	 * Software indicator bits 22 and 28 must be clear.
+>  	 * Software indicator bits 24, 25, 26, and 27 must be
+>  	 * set.  All other Linux PTE bits control the behavior
+>  	 * of the MMU.
+
+I still don't find how any of the above is useful... why not just go
+straight to C code ?
+
+Cheers,
+Ben.
