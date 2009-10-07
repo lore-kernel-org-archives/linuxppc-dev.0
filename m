@@ -2,8 +2,8 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3D419B7BB0
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 10:26:11 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id E7D55B7B9B
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Oct 2009 12:07:50 +1100 (EST)
 Subject: Re: [PATCH 3/6] 8xx: get rid of _PAGE_HWWRITE dependency in MMU.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
@@ -23,8 +23,8 @@ References: <1254744999-3158-1-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1254789255.7122.95.camel@pasglop>
 	<OFC64CFB37.E5E17F42-ONC1257647.0068299A-C1257647.00795ECE@transmode.se>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 07 Oct 2009 10:25:48 +1100
-Message-Id: <1254871548.6035.28.camel@pasglop>
+Date: Wed, 07 Oct 2009 12:07:35 +1100
+Message-Id: <1254877655.6035.82.camel@pasglop>
 Mime-Version: 1.0
 Cc: Scott Wood <scottwood@freescale.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -38,34 +38,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Allright, did a bit of reading of doco and code..
 
-> After some more thinking I don't think I do TLB Miss/Error correctly yet.
-> The problem is ACCESSED. Since I don't know if load or store in TLB Miss
-> I must choose:
->  - Assume load and do what you do above. That will incorrectly
->    set ACCESSED on store ops when mapped as RO(plus whatever more I haven't thought about yet)
-> 
->  - Trap to TLB Error and do the above. That will set ACCESSED correctly
->    but won't trap kernel space so these remain what they are.
->    Is anything depending on ACCESSED for kernel pages?
->    if so, what if we set ACCESSED on all kernel pages when mapping them at boot?
->    Will SWAP or some other service(accounting?) not like that?
+Doco isn't totally clear though. At some stage, it -hints- that in case
+of a TLB "error" (match on EA/ASID but incorrect
+protection/valid/changed/...) the offending TLB entry is automatically
+invalidated. Do you know if that is correct ?
 
-Kernel pages always have ACCESSED set and never clear it.
+I would hope so since we never do anything to remove the "invalid"
+entries we write to the TLB when hitting non-present PTEs but then, that
+may also explain some of our problems...
 
-I think the only solution here is that if -anything- doesn't look right,
-the TLB miss should create one of those "unpopulated" entries and we
-need to make sure they are properly invalidated in the subsequent fault
-path. I'll read the 8xx doco asap to make sure I get it right.
+Now, a few comments from what I read in the code:
 
-> Finally, why do you need to include DIRTY when a store OP?
-> Do you need to do COW before dirtying the page?
-> Seems to work for me to just set DIRTY in TLB Error if RW is set too
-> and not trap to C.
+ - The whole writeback could be avoided in Instruction/Data TLB miss,
+but for that, you need to make sure that the TLB entry we create has
+valid set only if -both- present and accessed are set. That would save
+in the case of CONFIG_SWAP, a store and a read back of TWC I suppose,
+but you do need to find a way to do that ANDing of ACCESSED and PRESENT.
 
-You can, but what about a load ? That shouldn't set dirty. So if you set
-dirty only on stores, then a load will bring in a page without dirty,
-you need to make sure you get another TLB error when writing to it so
-you get a chance to set dirty.
+ - I think we can get rid of HWWRITE. We can make CHANGED be the current
+HWWRITE value, I agree with you, which matches the HW changed bit. We
+need to be a bit careful of how we setup the PP bits tho. At this stage,
+I see several approaches:
 
+   * One is to basically "generate" the right PP bits based on a
+combination of _PAGE_USER and _PAGE_RW. That's the simpler approach but
+probably uses more code in the TLB miss handler. It would look like
+that, with MxCTR:PPCS=0
+
+  _PAGE_USER    _PAGE_RW      PP (bits 20..27)
+      0            0               011C1111    (C is _PAGE_DIRTY)
+      0            1               000C1111
+      1            0               110C1111
+      1            1               100C1111
+
+One easy way to do that is to have _PAGE_USER and _PAGE_RW sit next to
+each other in bit position 28 and 29 (0xc). Load a GPR with something
+like 0110000011001000 and rotate it left by PTE & 0xc, then move the
+resulting 3 bits into position, or something along those lines. You can
+also give up on kernel read-only support and go down to 2 PP bits and
+never use the extended encoding.
+
+  * Another one is to use MxCTR:PPCS=1 a mask of 100C1U00 (U is
+_PAGE_USER) and or in ^_PAGE_RW (it could actually be made
+reverse-polarity in the PTE but that would mean some changes to non-8xx
+specific headers, so let's avoid it for now at least).
+
+At least that's the best options I can see from my reading of the doco,
+though it's not totally clear to me what really happens when doing the
+PPCS trick, will it generate a TLB error on a non-match or will it try
+to TLB miss, which could be bad.
+
+  * Last but not least, it wouldn't be hard to use either of the above
+encodings, and have the PTE actually contain the right bit combination
+already. You don't need to have a _PAGE_RW, you don't need to have a
+_PAGE_USER  :-) Look at how I do things for book3e, where I layout the
+6 BookE protection bit directly in the PTE. That's a bit harder and maybe
+will need subtle changes to pte-common.h and such to accomodate it, and
+so probably something to experiment with as a second step, but it's the
+most efficient approach in the long run for obvious reasons.
+
+ - I think we could have more bits pre-set to the right values in the
+PTE, look how we play with defining some of the constants in
+pte-common.h, might be worth having a look, but -after- we have
+something that works :-)
+
+ - Possible bug: I'm very disturbed by the fact that DataTLBError sets
+HWWRITE and DIRTY on a non-present PTE. It should not. Just like
+ACCESSED. That's going to cause trouble and swap corruption, even more
+as we move DIRTY around.
+
+ - Maybe we can completely remove that mucking around with dirty,
+setting of accessed etc... from DataTLBError. Just make it go to C code
+just like InstructionAccess, as we discussed earlier, the generic code
+will fix it up and we'll speed up page faults. It should be fairly rare
+to take a fault due to a missing _PAGE_ACCESSED or _PAGE_DIRTY in any
+case, so all that fixup in those exceptions is just overhead.
+
+ - Later on, if it rocks your boat, you may want to look into removing
+the mucking around with swapper_pg_dir in the TLB miss. Instead, what
+you can do is lazily copy the kernel PMDs into the user PMDs. IE. On the
+first kernel access from a new user context, you fault, and from the
+do_page_fault() code, we can detect that and fixup the user PMD to point
+to the kernel page tables, thus avoiding that whole bunch of code in the
+TLB miss. When creating new user page tables, we can pre-fill the kernel
+PMDs too. I think x86 does that. We could do that for BookE too, though
+it's less of a win since we have to fixup the TID in MMUCR/MAS but for
+8xx it would save a few instructions & conditionals in the TLB miss fast
+path.
+
+ - I still have problems with the comment next to the "workaround"
+tlbil_va() we have in the icache/dcache flush. It doesn't make much
+sense to me since dcbst is going to be done by the kernel on a kernel
+address, not a user address, so I don't see how the thing we invalidate
+relates to the flush we do just below.... So that raises a few
+questions:
+
+   * If this is to avoid write faults on kernel pages, then we may just
+want to have a fixup in do_page_fault() to ignore them when coming from
+flush_dcache_icache_* using the exception table mechanism instead ?
+
+   * I don't see how it works around user faults but maybe you have a
+clear scenario in mind
+
+   * It appears still reasonably obvious that we need that tlbil_va
+somewhere in that fault path, but I don't know what for, I'm not sure
+it's really what the comment says it's about. That raises back the whole
+question of when are those "invalid" TLB entries that we create when
+_PAGE_PRESENT is not set are going to be removed. The doc hints that
+they go a way on TLB error, but the doc really only says so for missing
+changed bit... so I'm tempted to say we need to basically stick a
+tlbil_va on 8xx on both set_pte_at() and ptep_set_access_flags() for any
+non-kernel page. What do you think ? That would be the safest.
+
+ - The "fake" DataAccess and InstructionAccess are useless... just a
+spurious jump for nothing. We could implement those straight in
+DataTLBError and InstructionTLBError, we just need to make sure that
+the trap numbers we put in the exception frame are 0x300 and 0x400, but
+that's just a matter of passing the right bits to EXC_XFER_EE_LITE().
+
+ - Finally, another boat-rocking optimisation to do is preload. You
+could hook in update_mmu_cache() for 8xx to go whack an entry in the TLB
+as well, which would avoid a TLB miss right after a page fault. But
+again, only when things work.
+
+None of the above of course address your DAR-not-updated concern. I
+think your approach of "clobbering" the DAR on every storage exception
+after it's been snapshotted and then testing for the clobber and
+emulating the instruction is the way to go, though your patch could use
+some cleaning there.
+
+I'll post comments on it separately.
+
+At the end of the day, I can't help that much without HW access and/or a
+simulator, as you can guess, and no, I'm not asking for people to send
+me an 8xx board :-) (especially useless without a BDI imho). So I rely
+on Scott and yourself to sort this out. But thanks for showing up, and
+please, do port your board to 2.6 so you can test your stuff :-)
+
+Cheers,
 Ben.
