@@ -1,21 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
+	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id EAF97B7B6B
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 00:51:10 +1100 (EST)
+Received: by ywh11 with SMTP id 11so1652666ywh.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 07 Oct 2009 06:51:08 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1254892467.6035.273.camel@pasglop>
-References: <20091007041007.16890.62194.stgit@angua>
-	<20091007043052.16890.15975.stgit@angua>
-	<1254892467.6035.273.camel@pasglop>
+In-Reply-To: <20091007091140.GC3177@pengutronix.de>
+References: <1252594539-25202-1-git-send-email-w.sang@pengutronix.de>
+	<fa686aa40909100805y4af7d85an602f501349a180f9@mail.gmail.com>
+	<20091007091140.GC3177@pengutronix.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 7 Oct 2009 07:41:20 -0600
-Message-ID: <fa686aa40910070641g561ec833vf1cf1a0e098cdbe6@mail.gmail.com>
-Subject: Re: [RFC PATCH 05/12] of: add common header for flattened device tree
-	representation
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 7 Oct 2009 07:50:47 -0600
+Message-ID: <fa686aa40910070650u78b5654eradfaa7d8a8e43745@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/boot/dts: drop obsolete 'fsl5200-clocking'
+To: Wolfram Sang <w.sang@pengutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, monstr@monstr.eu,
-	microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 6, 2009 at 11:14 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2009-10-06 at 22:30 -0600, Grant Likely wrote:
+On Wed, Oct 7, 2009 at 3:11 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
+> On Thu, Sep 10, 2009 at 09:05:46AM -0600, Grant Likely wrote:
+>> On Thu, Sep 10, 2009 at 8:55 AM, Wolfram Sang <w.sang@pengutronix.de> wr=
+ote:
+>> > The 'fsl5200-clocking'-property was dropped since
+>> > 0d1cde235874b00905bce23f659690d060ebf475. Remove all occurences in dts=
+-files.
+>> >
+>> > Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+>> > Cc: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> Looks good to me. =A0I'll pick it up.
 >
->> --- /dev/null
->> +++ b/include/linux/of_fdt.h
->> @@ -0,0 +1,30 @@
->> +/*
->> + * Definitions for working with the Flattened Device Tree data format
->> + *
->> + * Copyright (C) 1996-2005 Paul Mackerras.
->> + *
->> + * Updates for PPC64 by Peter Bergner & David Engebretsen, IBM Corp.
->> + * Updates for SPARC by David S. Miller
->> + * Merged to common code by Grant Likely
->
-> I think you should prune the above. Make it (c) myself since I wrote the
-> FDT code initially. You can add back (c) of other people as you add more
-> stuff here I suppose.
->
-> No big deal tho.
+> Ping? :)
 
-No problem.  What is the exact copyright text that you'd like to see
-here?  I'm not going to guess on other people's copyright notice.  :-)
+Haven't forgotten about it, but got nailed by start of school year and
+conferences.  Its just a .dts change, so I have no problem merging
+even though the merge window is closed.  It will be in 2.6.32.
 
 g.
 
--- 
+--=20
 Grant Likely, B.Sc., P.Eng.
 Secret Lab Technologies Ltd.
