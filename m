@@ -1,14 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC PATCH 06/12] of: merge struct boot_param_header from Microblaze
-	and PowerPC
+Subject: [RFC PATCH 07/12] of: merge of_node_*_flag() and set_node_proc_entry()
 To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
 	Stephen Rothwell <sfr@canb.auug.org.au>, davem@davemloft.net,
 	sparclinux@vger.kernel.org, monstr@monstr.eu,
 	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org
-Date: Tue, 06 Oct 2009 22:31:12 -0600
-Message-ID: <20091007043104.16890.73844.stgit@angua>
+Date: Tue, 06 Oct 2009 22:31:24 -0600
+Message-ID: <20091007043117.16890.91667.stgit@angua>
 In-Reply-To: <20091007041007.16890.62194.stgit@angua>
 References: <20091007041007.16890.62194.stgit@angua>
 MIME-Version: 1.0
@@ -22,135 +21,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code for working with Flattened Device Tree data structure
+Merge common code between PowerPC and Microblaze
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/include/asm/prom.h |   30 ------------------------------
- arch/powerpc/include/asm/prom.h    |   31 -------------------------------
- include/linux/of_fdt.h             |   30 ++++++++++++++++++++++++++++++
- 3 files changed, 30 insertions(+), 61 deletions(-)
+ arch/microblaze/include/asm/prom.h |   16 ----------------
+ arch/powerpc/include/asm/prom.h    |   17 -----------------
+ include/linux/of.h                 |   16 ++++++++++++++++
+ 3 files changed, 16 insertions(+), 33 deletions(-)
 
 diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
-index 5f461f0..dfc4afc 100644
+index dfc4afc..180d844 100644
 --- a/arch/microblaze/include/asm/prom.h
 +++ b/arch/microblaze/include/asm/prom.h
-@@ -33,36 +33,6 @@
- #define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
- #define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
+@@ -35,24 +35,8 @@
  
--/*
-- * This is what gets passed to the kernel by prom_init or kexec
-- *
-- * The dt struct contains the device tree structure, full pathes and
-- * property contents. The dt strings contain a separate block with just
-- * the strings for the property names, and is fully page aligned and
-- * self contained in a page, so that it can be kept around by the kernel,
-- * each property name appears only once in this page (cheap compression)
-- *
-- * the mem_rsvmap contains a map of reserved ranges of physical memory,
-- * passing it here instead of in the device-tree itself greatly simplifies
-- * the job of everybody. It's just a list of u64 pairs (base/size) that
-- * ends when size is 0
-- */
--struct boot_param_header {
--	u32	magic; /* magic word OF_DT_HEADER */
--	u32	totalsize; /* total size of DT block */
--	u32	off_dt_struct; /* offset to structure */
--	u32	off_dt_strings; /* offset to strings */
--	u32	off_mem_rsvmap; /* offset to memory reserve map */
--	u32	version; /* format version */
--	u32	last_comp_version; /* last compatible version */
--	/* version 2 fields below */
--	u32	boot_cpuid_phys; /* Physical CPU id we're booting on */
--	/* version 3 fields below */
--	u32	dt_strings_size; /* size of the DT strings block */
--	/* version 17 fields below */
--	u32	dt_struct_size; /* size of the DT structure block */
--};
--
  extern struct device_node *of_chosen;
  
- static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
+-static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
+-{
+-	return test_bit(flag, &n->_flags);
+-}
+-
+-static inline void of_node_set_flag(struct device_node *n, unsigned long flag)
+-{
+-	set_bit(flag, &n->_flags);
+-}
+-
+ #define HAVE_ARCH_DEVTREE_FIXUPS
+ 
+-static inline void set_node_proc_entry(struct device_node *dn,
+-					struct proc_dir_entry *de)
+-{
+-	dn->pde = de;
+-}
+-
+ extern struct device_node *allnodes;	/* temporary while merging */
+ extern rwlock_t devtree_lock;	/* temporary while merging */
+ 
 diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 7181f8a..ef20e6c 100644
+index ef20e6c..2cfd432 100644
 --- a/arch/powerpc/include/asm/prom.h
 +++ b/arch/powerpc/include/asm/prom.h
-@@ -30,37 +30,6 @@
- #define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
- #define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
+@@ -32,25 +32,8 @@
  
--/*
-- * This is what gets passed to the kernel by prom_init or kexec
-- *
-- * The dt struct contains the device tree structure, full pathes and
-- * property contents. The dt strings contain a separate block with just
-- * the strings for the property names, and is fully page aligned and
-- * self contained in a page, so that it can be kept around by the kernel,
-- * each property name appears only once in this page (cheap compression)
-- *
-- * the mem_rsvmap contains a map of reserved ranges of physical memory,
-- * passing it here instead of in the device-tree itself greatly simplifies
-- * the job of everybody. It's just a list of u64 pairs (base/size) that
-- * ends when size is 0
-- */
--struct boot_param_header
--{
--	u32	magic;			/* magic word OF_DT_HEADER */
--	u32	totalsize;		/* total size of DT block */
--	u32	off_dt_struct;		/* offset to structure */
--	u32	off_dt_strings;		/* offset to strings */
--	u32	off_mem_rsvmap;		/* offset to memory reserve map */
--	u32	version;		/* format version */
--	u32	last_comp_version;	/* last compatible version */
--	/* version 2 fields below */
--	u32	boot_cpuid_phys;	/* Physical CPU id we're booting on */
--	/* version 3 fields below */
--	u32	dt_strings_size;	/* size of the DT strings block */
--	/* version 17 fields below */
--	u32	dt_struct_size;		/* size of the DT structure block */
--};
--
  extern struct device_node *of_chosen;
  
- static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
-diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index f81d3f8..8b87bcb 100644
---- a/include/linux/of_fdt.h
-+++ b/include/linux/of_fdt.h
-@@ -27,4 +27,34 @@
+-static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
+-{
+-	return test_bit(flag, &n->_flags);
+-}
+-
+-static inline void of_node_set_flag(struct device_node *n, unsigned long flag)
+-{
+-	set_bit(flag, &n->_flags);
+-}
+-
+-
+ #define HAVE_ARCH_DEVTREE_FIXUPS
  
- #define OF_DT_VERSION		0x10
+-static inline void set_node_proc_entry(struct device_node *dn, struct proc_dir_entry *de)
+-{
+-	dn->pde = de;
+-}
+-
+-
+ extern struct device_node *of_find_all_nodes(struct device_node *prev);
+ extern struct device_node *of_node_get(struct device_node *node);
+ extern void of_node_put(struct device_node *node);
+diff --git a/include/linux/of.h b/include/linux/of.h
+index a66c1eb..d5f6662 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -63,6 +63,22 @@ struct device_node {
+ #endif
+ };
  
-+/*
-+ * This is what gets passed to the kernel by prom_init or kexec
-+ *
-+ * The dt struct contains the device tree structure, full pathes and
-+ * property contents. The dt strings contain a separate block with just
-+ * the strings for the property names, and is fully page aligned and
-+ * self contained in a page, so that it can be kept around by the kernel,
-+ * each property name appears only once in this page (cheap compression)
-+ *
-+ * the mem_rsvmap contains a map of reserved ranges of physical memory,
-+ * passing it here instead of in the device-tree itself greatly simplifies
-+ * the job of everybody. It's just a list of u64 pairs (base/size) that
-+ * ends when size is 0
-+ */
-+struct boot_param_header {
-+	u32	magic;			/* magic word OF_DT_HEADER */
-+	u32	totalsize;		/* total size of DT block */
-+	u32	off_dt_struct;		/* offset to structure */
-+	u32	off_dt_strings;		/* offset to strings */
-+	u32	off_mem_rsvmap;		/* offset to memory reserve map */
-+	u32	version;		/* format version */
-+	u32	last_comp_version;	/* last compatible version */
-+	/* version 2 fields below */
-+	u32	boot_cpuid_phys;	/* Physical CPU id we're booting on */
-+	/* version 3 fields below */
-+	u32	dt_strings_size;	/* size of the DT strings block */
-+	/* version 17 fields below */
-+	u32	dt_struct_size;		/* size of the DT structure block */
-+};
++static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
++{
++	return test_bit(flag, &n->_flags);
++}
 +
- #endif /* _LINUX_OF_FDT_H */
++static inline void of_node_set_flag(struct device_node *n, unsigned long flag)
++{
++	set_bit(flag, &n->_flags);
++}
++
++static inline void
++set_node_proc_entry(struct device_node *dn, struct proc_dir_entry *de)
++{
++	dn->pde = de;
++}
++
+ #include <asm/prom.h>
+ 
+ /* flag descriptions */
