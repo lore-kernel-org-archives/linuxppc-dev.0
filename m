@@ -1,17 +1,18 @@
-Return-Path: <grant.likely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC PATCH 12/12] of: merge of_find_all_nodes() implementations
-To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
-	Stephen Rothwell <sfr@canb.auug.org.au>, davem@davemloft.net,
-	sparclinux@vger.kernel.org, monstr@monstr.eu,
-	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org
-Date: Tue, 06 Oct 2009 22:32:27 -0600
-Message-ID: <20091007043219.16890.40203.stgit@angua>
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
 In-Reply-To: <20091007041007.16890.62194.stgit@angua>
 References: <20091007041007.16890.62194.stgit@angua>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 6 Oct 2009 22:49:04 -0600
+Message-ID: <fa686aa40910062149p5d7141e4x3ff849fd4d191f38@mail.gmail.com>
+Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
+To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+	Stephen Rothwell <sfr@canb.auug.org.au>, davem@davemloft.net,
+	sparclinux@vger.kernel.org,
+	monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,148 +22,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between Microblaze and PowerPC, and make it available
-to Sparc
+On Tue, Oct 6, 2009 at 10:29 PM, Grant Likely <grant.likely@secretlab.ca> w=
+rote:
+> Well, I've got to start somewhere...
+>
+> So here goes. =A0I've begun the work to merge and clean up the OF device
+> tree handling code and this is my first set of patches. =A0Not fully
+> tested yet, but I'm getting them out to the lists so that I can start
+> responding to comments and collecting acks. =A0This first batch isn't
+> anything exciting, just a merge of common code
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Shoot.... most of what I wrote got trimmed accidentally.  Here's the
+rest of the text:
 
- arch/microblaze/kernel/prom.c |   23 -----------------------
- arch/powerpc/kernel/prom.c    |   23 -----------------------
- drivers/of/base.c             |   26 +++++++++++++++++++++++++-
- include/linux/of.h            |    3 ++-
- 4 files changed, 27 insertions(+), 48 deletions(-)
+However, I've completely devoted to this work for at least the next
+two months, so there are plenty more patches to follow.  Once I've
+got all the common code merged between Microblaze, PowerPC and Sparc
+I'll be fix the endian problems and making it easily usable by other
+architectures like ARM and MIPS.  Lots of work to be done.
 
-diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index c005cc6..b817df1 100644
---- a/arch/microblaze/kernel/prom.c
-+++ b/arch/microblaze/kernel/prom.c
-@@ -860,29 +860,6 @@ struct device_node *of_find_node_by_phandle(phandle handle)
- EXPORT_SYMBOL(of_find_node_by_phandle);
- 
- /**
-- *	of_find_all_nodes - Get next node in global list
-- *	@prev:	Previous node or NULL to start iteration
-- *		of_node_put() will be called on it
-- *
-- *	Returns a node pointer with refcount incremented, use
-- *	of_node_put() on it when done.
-- */
--struct device_node *of_find_all_nodes(struct device_node *prev)
--{
--	struct device_node *np;
--
--	read_lock(&devtree_lock);
--	np = prev ? prev->allnext : allnodes;
--	for (; np != NULL; np = np->allnext)
--		if (of_node_get(np))
--			break;
--	of_node_put(prev);
--	read_unlock(&devtree_lock);
--	return np;
--}
--EXPORT_SYMBOL(of_find_all_nodes);
--
--/**
-  *	of_node_get - Increment refcount of a node
-  *	@node:	Node to inc refcount, NULL is supported to
-  *		simplify writing of callers
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index d4405b9..4ec3008 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -1317,29 +1317,6 @@ struct device_node *of_find_next_cache_node(struct device_node *np)
- }
- 
- /**
-- *	of_find_all_nodes - Get next node in global list
-- *	@prev:	Previous node or NULL to start iteration
-- *		of_node_put() will be called on it
-- *
-- *	Returns a node pointer with refcount incremented, use
-- *	of_node_put() on it when done.
-- */
--struct device_node *of_find_all_nodes(struct device_node *prev)
--{
--	struct device_node *np;
--
--	read_lock(&devtree_lock);
--	np = prev ? prev->allnext : allnodes;
--	for (; np != 0; np = np->allnext)
--		if (of_node_get(np))
--			break;
--	of_node_put(prev);
--	read_unlock(&devtree_lock);
--	return np;
--}
--EXPORT_SYMBOL(of_find_all_nodes);
--
--/**
-  *	of_node_get - Increment refcount of a node
-  *	@node:	Node to inc refcount, NULL is supported to
-  *		simplify writing of callers
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index ddf224d..e6627b2 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -9,7 +9,8 @@
-  *
-  *  Adapted for sparc and sparc64 by David S. Miller davem@davemloft.net
-  *
-- *  Reconsolidated from arch/x/kernel/prom.c by Stephen Rothwell.
-+ *  Reconsolidated from arch/x/kernel/prom.c by Stephen Rothwell and
-+ *  Grant Likely.
-  *
-  *      This program is free software; you can redistribute it and/or
-  *      modify it under the terms of the GNU General Public License
-@@ -82,6 +83,29 @@ struct property *of_find_property(const struct device_node *np,
- }
- EXPORT_SYMBOL(of_find_property);
- 
-+/**
-+ * of_find_all_nodes - Get next node in global list
-+ * @prev:	Previous node or NULL to start iteration
-+ *		of_node_put() will be called on it
-+ *
-+ * Returns a node pointer with refcount incremented, use
-+ * of_node_put() on it when done.
-+ */
-+struct device_node *of_find_all_nodes(struct device_node *prev)
-+{
-+	struct device_node *np;
-+
-+	read_lock(&devtree_lock);
-+	np = prev ? prev->allnext : allnodes;
-+	for (; np != NULL; np = np->allnext)
-+		if (of_node_get(np))
-+			break;
-+	of_node_put(prev);
-+	read_unlock(&devtree_lock);
-+	return np;
-+}
-+EXPORT_SYMBOL(of_find_all_nodes);
-+
- /*
-  * Find a property with a given name for a given node
-  * and return the value.
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 4636bba..e7facd8 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -79,6 +79,8 @@ set_node_proc_entry(struct device_node *dn, struct proc_dir_entry *de)
- 	dn->pde = de;
- }
- 
-+extern struct device_node *of_find_all_nodes(struct device_node *prev);
-+
- #if defined(CONFIG_SPARC)
- /* Dummy ref counting routines - to be implemented later */
- static inline struct device_node *of_node_get(struct device_node *node)
-@@ -90,7 +92,6 @@ static inline void of_node_put(struct device_node *node)
- }
- 
- #else
--extern struct device_node *of_find_all_nodes(struct device_node *prev);
- extern struct device_node *of_node_get(struct device_node *node);
- extern void of_node_put(struct device_node *node);
- #endif
+As for merging this stuff, because the patches cross architecture
+boundaries, I've been thinking of publishing a new git tree for
+collecting device tree related changes and getting it added to the
+linux-next tree list.  I'll commit changes to that tree once I get
+acks from each of the affected arch maintainers.  Then, either Linus
+can pull my tree directly, or I could ask a more senior maintainer
+to pull into their tree before sending a pull request to Linus.  Ben,
+David and Michal, how does that sound to you?  Stephen, would you be
+willing to add my tree to the linux-next list?
+
+Also, I'd like to take on responsibility for maintaining the cross-
+architecture device tree code.  If there are no objections, I'll
+write a patch to add a device tree section to MAINTAINERS.
+
+Cheers,
+g.
+
+> ---
+>
+> Grant Likely (12):
+> =A0 =A0 =A0of: merge of_find_all_nodes() implementations
+> =A0 =A0 =A0of: merge other miscellaneous prototypes
+> =A0 =A0 =A0of: merge of_*_flat_dt*() functions
+> =A0 =A0 =A0of: merge of_node_get(), of_node_put() and of_find_all_nodes()
+> =A0 =A0 =A0of: merge of_read_number() an of_read_ulong()
+> =A0 =A0 =A0of: merge of_node_*_flag() and set_node_proc_entry()
+> =A0 =A0 =A0of: merge struct boot_param_header from Microblaze and PowerPC
+> =A0 =A0 =A0of: add common header for flattened device tree representation
+> =A0 =A0 =A0of: Move OF_IS_DYNAMIC and OF_MARK_DYNAMIC macros to of.h
+> =A0 =A0 =A0of: merge struct device_node
+> =A0 =A0 =A0of: merge phandle, ihandle and struct property
+> =A0 =A0 =A0of: Rework linux/of.h and asm/prom.h include ordering
+>
+>
+> =A0arch/microblaze/include/asm/prom.h | =A0135 +-------------------------=
+-------
+> =A0arch/microblaze/kernel/prom.c =A0 =A0 =A0| =A0 23 ------
+> =A0arch/powerpc/include/asm/prom.h =A0 =A0| =A0147 ----------------------=
+--------------
+> =A0arch/powerpc/kernel/prom.c =A0 =A0 =A0 =A0 | =A0 23 ------
+> =A0arch/sparc/include/asm/prom.h =A0 =A0 =A0| =A0 55 -------------
+> =A0drivers/of/base.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 26 ++++++
+> =A0include/linux/of.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0103 ++++++++++=
++++++++++++++++
+> =A0include/linux/of_fdt.h =A0 =A0 =A0 =A0 =A0 =A0 | =A0 87 ++++++++++++++=
++++++++
+> =A08 files changed, 221 insertions(+), 378 deletions(-)
+> =A0create mode 100644 include/linux/of_fdt.h
