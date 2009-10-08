@@ -1,42 +1,16 @@
-Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7CBABB7B68
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Oct 2009 23:01:31 +1100 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
-	by e23smtp02.au.ibm.com (8.14.3/8.13.1) with ESMTP id n98Bx6AU020775
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2009 22:59:06 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n98C1S5M434324
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2009 23:01:28 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n98C1RlV031280
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2009 23:01:28 +1100
-Date: Thu, 8 Oct 2009 17:31:20 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
-	register a set of idle routines.
-Message-ID: <20091008120120.GL20595@linux.vnet.ibm.com>
-References: <20091008094828.GA20595@linux.vnet.ibm.com>
-	<20091008095027.GC20595@linux.vnet.ibm.com>
-	<1254998162.26976.270.camel@twins>
-	<20091008104249.GJ20595@linux.vnet.ibm.com>
-	<1254999033.26976.272.camel@twins>
-	<20091008110106.GK20595@linux.vnet.ibm.com>
-	<1255001110.26976.292.camel@twins>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id AC380B7088
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 23:15:14 +1100 (EST)
+Date: Thu, 8 Oct 2009 16:15:12 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH] net: Fix OF platform drivers coldplug/hotplug when
+	compiled as modules
+Message-ID: <20091008121512.GA2390@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1255001110.26976.292.camel@twins>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-acpi@vger.kernel.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	Arjan van de Ven <arjan@infradead.org>
-Reply-To: arun@linux.vnet.ibm.com
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,99 +20,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-08 13:25:10]:
+Some OF platform drivers are missing module device tables, so they won't
+load automatically on boot. This patch fixes the issue by adding proper
+MODULE_DEVICE_TABLE() macros to the drivers.
 
-> On Thu, 2009-10-08 at 16:31 +0530, Arun R Bharadwaj wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-08 12:50:33]:
-> > 
-> > > On Thu, 2009-10-08 at 16:12 +0530, Arun R Bharadwaj wrote:
-> > > > 
-> > > > > So cpuidle didn't already have a list of idle functions it takes an
-> > > > > appropriate one from?
-> > > > > 
-> > > > 
-> > > > No.. As of now, cpuidle supported only one _set_ of idle states that
-> > > > can be registered. So in this one set, it would choose the appropriate
-> > > > idle state. But this list mechanism(actually a stack) allows for
-> > > > multiple sets.
-> > > > 
-> > > > This is needed because we have a hierarchy of idle states discovery
-> > > > in x86. First, select_idle_routine() would select poll/mwait/default/c1e.
-> > > > It doesn't know of existance of ACPI. Later when ACPI comes up,
-> > > > it registers a set of routines on top of the earlier set.
-> > > > 
-> > > > > Then what does this governor do?
-> > > > >
-> > > > 
-> > > > The governor would only select the best idle state available from the
-> > > > set of states which is at the top of the stack. (In the above case, it
-> > > > would only consider the states registered by ACPI).
-> > > > 
-> > > > If the top-of-the-stack set of idle states is unregistered, the next
-> > > > set of states on the stack are considered.
-> > > > 
-> > > > > Also, does this imply the governor doesn't consider these idle routines?
-> > > > >
-> > > > 
-> > > > As i said above, governor would only consider the idle routines which
-> > > > are at the top of the stack.
-> > > > 
-> > > > Hope this gave a better idea..
-> > > 
-> > > So does it make sense to have a set of sets?
-> > > 
-> > > Why not integrate them all into one set to be ruled by this governor
-> > > thing?
-> > > 
-> > 
-> > Right now there is a clean hierarchy. So breaking that would mean
-> > putting the registration of all idle routines under ACPI. 
-> 
-> Uhm, no, it would mean ACPI putting its idle routines on the same level
-> as all others.
-> 
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/can/sja1000/sja1000_of_platform.c |    1 +
+ drivers/net/fec_mpc52xx_phy.c                 |    1 +
+ drivers/net/fs_enet/fs_enet-main.c            |    1 +
+ drivers/net/fs_enet/mii-bitbang.c             |    1 +
+ drivers/net/fs_enet/mii-fec.c                 |    1 +
+ drivers/net/fsl_pq_mdio.c                     |    1 +
+ drivers/net/gianfar.c                         |    4 +---
+ drivers/net/ibm_newemac/core.c                |    2 ++
+ drivers/net/phy/mdio-gpio.c                   |    1 +
+ 9 files changed, 10 insertions(+), 3 deletions(-)
 
-Putting them all on the same level would mean, we need an
-enable/disable routine to enable only the currently active routines.
-
-Also, the way governor works is that, it assumes that idle routines
-are indexed in the increasing order of power benefit that can be got
-out of the state. So this would get messed up.
-
-> > So, if ACPI
-> > fails to come up or if ACPI is not supported, that would lead to
-> > problems.
-> 
-> I think the problem is that ACPI is thinking its special, that should be
-> rectified, its not.
-> 
-> >  Because if that happens now, we can fallback to the
-> > initially registered set.
-> 
-> I'm thinking its all daft and we should be having one set of idle
-> routines, if ACPI fails (a tautology if ever there was one) we simply
-> wouldn't have its idle routines to pick from.
-> 
-> > Also, if a module wants to register a set of routines later on, that
-> > cant be added to the initially registered set. So i think we need this
-> > set of sets.
-> 
-> Sounds like something is wrong alright. If you can register an idle
-> routine you should be able to unregister it too.
->
-
-Yes, we can register and unregister in a clean way now.
-Consider this. We have a set of routines A, B, C currently registered.
-Now a module comes and registers D and E, and later on at some point
-of time wants to unregister. So how do you keep track of what all idle
-routines the module registered and unregister only those?
-Best way to do that is a stack, which is how I have currently
-implemented.
-
-> What about making ACPI register its idle routines too, 1 for each C
-> state, and have the governor make a selection out of the full set?
-> 
-> That also allows you to do away with this default_idle() nonsense and
-> simply panic the box when there are no registered idle routines when the
-> box wants to go idle.
-> 
+diff --git a/drivers/net/can/sja1000/sja1000_of_platform.c b/drivers/net/can/sja1000/sja1000_of_platform.c
+index 3373560..9dd076a 100644
+--- a/drivers/net/can/sja1000/sja1000_of_platform.c
++++ b/drivers/net/can/sja1000/sja1000_of_platform.c
+@@ -213,6 +213,7 @@ static struct of_device_id __devinitdata sja1000_ofp_table[] = {
+ 	{.compatible = "nxp,sja1000"},
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, sja1000_ofp_table);
+ 
+ static struct of_platform_driver sja1000_ofp_driver = {
+ 	.owner = THIS_MODULE,
+diff --git a/drivers/net/fec_mpc52xx_phy.c b/drivers/net/fec_mpc52xx_phy.c
+index 31e6d62..ee0f3c6 100644
+--- a/drivers/net/fec_mpc52xx_phy.c
++++ b/drivers/net/fec_mpc52xx_phy.c
+@@ -155,6 +155,7 @@ static struct of_device_id mpc52xx_fec_mdio_match[] = {
+ 	{ .compatible = "mpc5200b-fec-phy", },
+ 	{}
+ };
++MODULE_DEVICE_TABLE(of, mpc52xx_fec_mdio_match);
+ 
+ struct of_platform_driver mpc52xx_fec_mdio_driver = {
+ 	.name = "mpc5200b-fec-phy",
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index 2bc2d2b..ec2f503 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -1110,6 +1110,7 @@ static struct of_device_id fs_enet_match[] = {
+ #endif
+ 	{}
+ };
++MODULE_DEVICE_TABLE(of, fs_enet_match);
+ 
+ static struct of_platform_driver fs_enet_driver = {
+ 	.name	= "fs_enet",
+diff --git a/drivers/net/fs_enet/mii-bitbang.c b/drivers/net/fs_enet/mii-bitbang.c
+index 93b481b..24ff9f4 100644
+--- a/drivers/net/fs_enet/mii-bitbang.c
++++ b/drivers/net/fs_enet/mii-bitbang.c
+@@ -221,6 +221,7 @@ static struct of_device_id fs_enet_mdio_bb_match[] = {
+ 	},
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, fs_enet_mdio_bb_match);
+ 
+ static struct of_platform_driver fs_enet_bb_mdio_driver = {
+ 	.name = "fsl-bb-mdio",
+diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
+index a2d69c1..96eba42 100644
+--- a/drivers/net/fs_enet/mii-fec.c
++++ b/drivers/net/fs_enet/mii-fec.c
+@@ -219,6 +219,7 @@ static struct of_device_id fs_enet_mdio_fec_match[] = {
+ #endif
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, fs_enet_mdio_fec_match);
+ 
+ static struct of_platform_driver fs_enet_fec_mdio_driver = {
+ 	.name = "fsl-fec-mdio",
+diff --git a/drivers/net/fsl_pq_mdio.c b/drivers/net/fsl_pq_mdio.c
+index d167090..6ac4648 100644
+--- a/drivers/net/fsl_pq_mdio.c
++++ b/drivers/net/fsl_pq_mdio.c
+@@ -407,6 +407,7 @@ static struct of_device_id fsl_pq_mdio_match[] = {
+ 	},
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, fsl_pq_mdio_match);
+ 
+ static struct of_platform_driver fsl_pq_mdio_driver = {
+ 	.name = "fsl-pq_mdio",
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 1e5289f..5bf31f1 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -2325,9 +2325,6 @@ static irqreturn_t gfar_error(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
+-/* work with hotplug and coldplug */
+-MODULE_ALIAS("platform:fsl-gianfar");
+-
+ static struct of_device_id gfar_match[] =
+ {
+ 	{
+@@ -2336,6 +2333,7 @@ static struct of_device_id gfar_match[] =
+ 	},
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, gfar_match);
+ 
+ /* Structure for a device driver */
+ static struct of_platform_driver gfar_driver = {
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index 89c82c5..4baa37c 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -24,6 +24,7 @@
+  *
+  */
+ 
++#include <linux/module.h>
+ #include <linux/sched.h>
+ #include <linux/string.h>
+ #include <linux/errno.h>
+@@ -2985,6 +2986,7 @@ static struct of_device_id emac_match[] =
+ 	},
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, emac_match);
+ 
+ static struct of_platform_driver emac_driver = {
+ 	.name = "emac",
+diff --git a/drivers/net/phy/mdio-gpio.c b/drivers/net/phy/mdio-gpio.c
+index 250e10f..8659d34 100644
+--- a/drivers/net/phy/mdio-gpio.c
++++ b/drivers/net/phy/mdio-gpio.c
+@@ -238,6 +238,7 @@ static struct of_device_id mdio_ofgpio_match[] = {
+ 	},
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, mdio_ofgpio_match);
+ 
+ static struct of_platform_driver mdio_ofgpio_driver = {
+ 	.name = "mdio-gpio",
+-- 
+1.6.3.3
