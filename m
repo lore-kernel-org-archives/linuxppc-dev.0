@@ -1,43 +1,18 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E772AB7B6B
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 01:51:51 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id n98En5Tw009360
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 01:49:05 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n98Epner1446016
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 01:51:49 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n98EpntT029718
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 01:51:49 +1100
-Message-ID: <4ACDFC83.4080205@in.ibm.com>
-Date: Thu, 08 Oct 2009 20:21:47 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] Ftrace : fix function_graph tracer OOPS
-References: <4A5C5D65.3030906@in.ibm.com>
-	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
-	<4A76BE81.4080707@in.ibm.com>
-	<1252458303.20985.10.camel@gandalf.stny.rr.com>
-	<4AA74AE2.5090001@in.ibm.com>
-	<1252814877.26049.93.camel@gandalf.stny.rr.com>
-	<1252816650.8375.70.camel@pasglop>
-	<1252848060.26049.647.camel@gandalf.stny.rr.com>
-	<1252873548.8375.73.camel@pasglop>
-	<1252915227.8375.118.camel@pasglop>
-	<1254749155.13160.6.camel@gandalf.stny.rr.com>
-	<1254774039.7122.35.camel@pasglop>
-	<1254775073.13160.13.camel@gandalf.stny.rr.com>
-	<4ACC57C4.5010002@in.ibm.com> <1254906621.2409.1.camel@pasglop>
-In-Reply-To: <1254906621.2409.1.camel@pasglop>
-Content-Type: multipart/mixed; boundary="------------080105090805070904020205"
-Cc: linuxppc-dev@ozlabs.org, rostedt@goodmis.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <20091008143301.GA6084@oksana.dev.rtsoft.ru>
+References: <1255010672-21656-1-git-send-email-w.sang@pengutronix.de>
+	<20091008143301.GA6084@oksana.dev.rtsoft.ru>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 8 Oct 2009 08:53:46 -0600
+Message-ID: <fa686aa40910080753v6f597b0h4ce835db9f7a653@mail.gmail.com>
+Subject: Re: [RFC] misc/at24: add experimental OF support for the generic
+	eeprom driver
+To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,50 +22,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------080105090805070904020205
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, Oct 8, 2009 at 8:33 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Oct 08, 2009 at 04:04:32PM +0200, Wolfram Sang wrote:
+>> As Anton introduced archdata support, I wondered if this is a suitable w=
+ay to
+>> handle the platform_data/devicetree_property-dualism (at least for some
+>> drivers).
+>
+> Yes, we handle OF in a similar way for mmc_spi driver. Though,
+>
+> [...]
+>> --- a/drivers/misc/eeprom/at24.c
+>> +++ b/drivers/misc/eeprom/at24.c
+>> @@ -22,6 +22,9 @@
+> [...]
+>> +#ifdef CONFIG_OF_I2C
+>> +#include <linux/of.h>
+>> +#endif
+> [..]
+>> +#ifdef CONFIG_OF_I2C
+>> +static void at24_get_ofdata(struct i2c_client *client, struct at24_plat=
+form_data *chip)
+>> +{
+>> + =A0 =A0 const u32 *val;
+>> + =A0 =A0 struct device_node *node =3D dev_archdata_get_node(&client->de=
+v.archdata);
+>> +
+>> + =A0 =A0 if (node) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (of_get_property(node, "read-only", NULL))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 chip->flags |=3D AT24_FLAG_REA=
+DONLY;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 val =3D of_get_property(node, "pagesize", NULL=
+);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (val)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 chip->page_size =3D *val;
+>> + =A0 =A0 }
+>> +}
+>> +#else
+>> +static void at24_get_ofdata(struct i2c_client *client, struct at24_plat=
+form_data *chip)
+>> +{ }
+>> +#endif
+>
+> #ifdefs are ugly in .c files. I'd suggest to move the OF code
+> into a separate file. As an example, see
 
-Enabling function graph causes oops due to usage of LOAD_REG_IMMEDIATE().
-As explained by Ben the usage of LOAD_REG_IMMEDIATE generates relocs that are
-not supported when CONFIG_RELOCATABLE is set.
+Please don't.  It is such a small amount of code, and I far prefer to
+see drivers self contained in a single .c file.  #ifdefs are fine IMHO
+when it is a top level block, and not inside a function block.  In the
+example you give, I do like the move toward focusing on the pdata
+structure; but the patch ads a *lot* of code for something very
+simple.  And then we'll need to do the same think for every driver
+which will ever be described in the device tree.  It's the right
+direction, but still not right.  Driver writers shouldn't have to
+write anything more than a tiny function to populate pdata from the
+device tree.  Managing that pdata instance needs to be done with
+common infrastructure (but I don't have a firm idea about how it
+should look yet).  In the mean time I think Wolfram's approach has
+lower impact.
 
-Switch to LOAD_REG_ADDR().
+g.
 
-Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
----
-
-
-
---------------080105090805070904020205
-Content-Type: text/x-patch;
- name="fix_ftrace_function_graph.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fix_ftrace_function_graph.patch"
-
-Enabling function graph causes oops due to usage of LOAD_REG_IMMEDIATE().
-As explained by Ben the usage of LOAD_REG_IMMEDIATE generates relocs that are
-not supported when CONFIG_RELOCATABLE is set. 
-
-Switch to LOAD_REG_ADDR().
-
-Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
----
-diff -Naurp old/arch/powerpc/kernel/entry_64.S new/arch/powerpc/kernel/entry_64.S
---- old/arch/powerpc/kernel/entry_64.S	2009-10-08 18:37:44.000000000 +0530
-+++ new/arch/powerpc/kernel/entry_64.S	2009-10-08 18:34:33.000000000 +0530
-@@ -1038,8 +1038,8 @@ _GLOBAL(mod_return_to_handler)
- 	 * We are in a module using the module's TOC.
- 	 * Switch to our TOC to run inside the core kernel.
- 	 */
--	LOAD_REG_IMMEDIATE(r4,ftrace_return_to_handler)
--	ld	r2, 8(r4)
-+	ld	r2, PACATOC(r13)
-+	LOAD_REG_ADDR(r4,ftrace_return_to_handler)
- 
- 	bl	.ftrace_return_to_handler
- 	nop
-
---------------080105090805070904020205--
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
