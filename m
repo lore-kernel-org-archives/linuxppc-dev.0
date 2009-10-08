@@ -1,21 +1,14 @@
-Return-Path: <joakim.tjernlund@transmode.com>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 78E7BB7B8B
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 00:25:12 +1100 (EST)
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>, Scott Wood <scottwood@freescale.com>
-Subject: [PATCH 4/6] 8xx: Tag DAR with 0x00f0 to catch buggy instructions.
-Date: Thu, 8 Oct 2009 15:24:56 +0200
-Message-Id: <1255008298-19949-5-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1255008298-19949-4-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1255008298-19949-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255008298-19949-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255008298-19949-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255008298-19949-4-git-send-email-Joakim.Tjernlund@transmode.se>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 1BE66B7B6F
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 01:04:53 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC] misc/at24: add experimental OF support for the generic eeprom
+	driver
+Date: Thu,  8 Oct 2009 16:04:32 +0200
+Message-Id: <1255010672-21656-1-git-send-email-w.sang@pengutronix.de>
+Cc: devicetree-discuss@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,82 +18,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-dcbz, dcbf, dcbi, dcbst and icbi do not set DAR when they
-cause a DTLB Error. Dectect this by tagging DAR with 0x00f0
-at every exception exit that modifies DAR.
-Test for DAR=0x00f0 in DataTLBError and bail
-to handle_page_fault().
----
- arch/powerpc/kernel/head_8xx.S |   15 ++++++++++++++-
- 1 files changed, 14 insertions(+), 1 deletions(-)
+As Anton introduced archdata support, I wondered if this is a suitable way to
+handle the platform_data/devicetree_property-dualism (at least for some
+drivers).
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 1639d16..9707dc4 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -206,6 +206,8 @@ MachineCheck:
- 	EXCEPTION_PROLOG
- 	mfspr r4,SPRN_DAR
- 	stw r4,_DAR(r11)
-+	li r5,0x00f0
-+	mtspr SPRN_DAR,r5	/* Tag DAR, to be used in DTLB Error */
- 	mfspr r5,SPRN_DSISR
- 	stw r5,_DSISR(r11)
- 	addi r3,r1,STACK_FRAME_OVERHEAD
-@@ -222,6 +224,8 @@ DataAccess:
- 	stw	r10,_DSISR(r11)
- 	mr	r5,r10
- 	mfspr	r4,SPRN_DAR
-+	li	r10,0x00f0
-+	mtspr	SPRN_DAR,r10	/* Tag DAR, to be used in DTLB Error */
- 	EXC_XFER_EE_LITE(0x300, handle_page_fault)
+If considered suitable, I would document the bindings properly. I really think
+that pagesize deserves its own property as it is specific to the hardware and I
+have seen devices with equal name and still having different pagesizes. Not too
+sure about 'read-only' though, I just copied it from flash-partitions :)
+
+Tested on a phyCORE-MPC5200-IO and build-tested on x86.
+
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/misc/eeprom/at24.c |   25 +++++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/misc/eeprom/at24.c b/drivers/misc/eeprom/at24.c
+index db39f4a..4e543e6 100644
+--- a/drivers/misc/eeprom/at24.c
++++ b/drivers/misc/eeprom/at24.c
+@@ -22,6 +22,9 @@
+ #include <linux/jiffies.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c/at24.h>
++#ifdef CONFIG_OF_I2C
++#include <linux/of.h>
++#endif
  
- /* Instruction access exception.
-@@ -244,6 +248,8 @@ Alignment:
- 	EXCEPTION_PROLOG
- 	mfspr	r4,SPRN_DAR
- 	stw	r4,_DAR(r11)
-+	li	r5,0x00f0
-+	mtspr	SPRN_DAR,r5	/* Tag DAR, to be used in DTLB Error */
- 	mfspr	r5,SPRN_DSISR
- 	stw	r5,_DSISR(r11)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
-@@ -441,6 +447,7 @@ DataStoreTLBMiss:
- 	 * of the MMU.
- 	 */
- 2:	li	r11, 0x00f0
-+	mtspr	SPRN_DAR,r11	/* Tag DAR */
- 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
- 	DO_8xx_CPU6(0x3d80, r3)
- 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
-@@ -481,6 +488,10 @@ DataTLBError:
- 	stw	r10, 0(r0)
- 	stw	r11, 4(r0)
+ /*
+  * I2C EEPROMs from most vendors are inexpensive and mostly interchangeable.
+@@ -414,6 +417,25 @@ static ssize_t at24_macc_write(struct memory_accessor *macc, const char *buf,
+ 	return at24_write(at24, buf, offset, count);
+ }
  
-+	mfspr	r10, SPRN_DAR
-+	cmpwi	cr0, r10, 0x00f0
-+	beq-	2f	/* must be a buggy dcbX, icbi insn. */
++#ifdef CONFIG_OF_I2C
++static void at24_get_ofdata(struct i2c_client *client, struct at24_platform_data *chip)
++{
++	const u32 *val;
++	struct device_node *node = dev_archdata_get_node(&client->dev.archdata);
 +
- 	mfspr	r11, SPRN_DSISR
- 	andis.	r11, r11, 0x4800	/* !translation or protection */
- 	bne	2f	/* branch if either is set */
-@@ -504,7 +515,8 @@ DataTLBError:
- 	 * are initialized in mapin_ram().  This will avoid the problem,
- 	 * assuming we only use the dcbi instruction on kernel addresses.
- 	 */
--	mfspr	r10, SPRN_DAR
++	if (node) {
++		if (of_get_property(node, "read-only", NULL))
++			chip->flags |= AT24_FLAG_READONLY;
++		val = of_get_property(node, "pagesize", NULL);
++		if (val)
++			chip->page_size = *val;
++	}
++}
++#else
++static void at24_get_ofdata(struct i2c_client *client, struct at24_platform_data *chip)
++{ }
++#endif
 +
-+	/* DAR is in r10 already */
- 	rlwinm	r11, r10, 0, 0, 19
- 	ori	r11, r11, MD_EVALID
- 	mfspr	r10, SPRN_M_CASID
-@@ -546,6 +558,7 @@ DataTLBError:
- 	 * of the MMU.
- 	 */
- 	li	r11, 0x00f0
-+	mtspr	SPRN_DAR,r11	/* Tag DAR */
- 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
- 	DO_8xx_CPU6(0x3d80, r3)
- 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
+ /*-------------------------------------------------------------------------*/
+ 
+ static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
+@@ -444,6 +466,9 @@ static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 		 */
+ 		chip.page_size = 1;
+ 
++		/* update chipdata if OF is present */
++		at24_get_ofdata(client, &chip);
++
+ 		chip.setup = NULL;
+ 		chip.context = NULL;
+ 	}
 -- 
-1.6.4.4
+1.6.3.3
