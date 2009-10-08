@@ -1,29 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 91ADEB7B6B
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 05:50:33 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n98Imhba000577
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2009 11:48:45 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n98IpMIG003584
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2009 13:51:22 -0500 (CDT)
-Date: Thu, 8 Oct 2009 13:48:42 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: nanda <nanda74pg@rediffmail.com>
-Subject: Re: Crash in the kernel panic linux mpc 832x
-Message-ID: <20091008184842.GA28235@b07421-ec1.am.freescale.net>
-References: <20090916150233.33919.qmail@f5mail-237-241.rediffmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090916150233.33919.qmail@f5mail-237-241.rediffmail.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8E15BB7B68
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 06:24:13 +1100 (EST)
+In-Reply-To: <1254950285.2409.10.camel@pasglop>
+References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254950285.2409.10.camel@pasglop>
+Subject: Re: [PATCH 3/6] 8xx: invalidate non present TLBs
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF44C1983F.1C42E290-ONC1257649.0069CAF3-C1257649.006A78D1@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 8 Oct 2009 21:22:57 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,20 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 16, 2009 at 03:02:33PM -0000, nanda wrote:
-> Hi,
->   Iam getting the below crash on new board tested on MPC832x using
->   linux-2.6.24, please let me what could be the problem on the same.
->   Does it infer any information on the exception?
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 07/10/2009 23:18:05:
+>
+> On Wed, 2009-10-07 at 22:46 +0200, Joakim Tjernlund wrote:
+> > 8xx sometimes need to load a invalid/non-present TLBs in
+> > it DTLB asm handler.
+> > These must be invalidated separaly as linux mm don't.
+>
+> not sure about the dsisr test here, what is the point ?
 
-Please try running the latest kernel.
+Without this patch I get about twice as many DTLB errors( on 2.4)
 
-> # Oops: Exception in kernel mode, sig: 4 [#1]
-> PREEMPT MPC832x RDB
-> Modules linked in:
+I have also noted that all my dcbst DTLB has the store bit set:
+  trap:300 address:10030b8c, dar:10030b8c,err:42000000 dcbst
 
-I think you left off some relevant ines before this -- was there anything
-like "kernel BUG in line ..."?  Do you have verbose BUG reporting
-enabled?
+Thare are comments in the kernel that dcbst wrongly
+generates TLB Errors with store set on 8xx. Is this really so?
+Should dcbst always trap as a load?
 
--Scott
+ Jocke
+
+>
+> Cheers,
+> Ben.
+>
+> > ---
+> >  arch/powerpc/mm/fault.c |    8 +++++++-
+> >  1 files changed, 7 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> > index 7699394..72941c7 100644
+> > --- a/arch/powerpc/mm/fault.c
+> > +++ b/arch/powerpc/mm/fault.c
+> > @@ -39,7 +39,7 @@
+> >  #include <asm/uaccess.h>
+> >  #include <asm/tlbflush.h>
+> >  #include <asm/siginfo.h>
+> > -
+> > +#include <mm/mmu_decl.h>
+> >
+> >  #ifdef CONFIG_KPROBES
+> >  static inline int notify_page_fault(struct pt_regs *regs)
+> > @@ -243,6 +243,12 @@ good_area:
+> >        goto bad_area;
+> >  #endif /* CONFIG_6xx */
+> >  #if defined(CONFIG_8xx)
+> > +   /* 8xx sometimes need to load a invalid/non-present TLBs.
+> > +    * These must be invalidated separately as linux mm don't.
+> > +    */
+> > +   if (error_code & 0x40000000) /* no translation? */
+> > +      _tlbil_va(address);
+> > +
+> >          /* The MPC8xx seems to always set 0x80000000, which is
+> >           * "undefined".  Of those that can be set, this is the only
+> >           * one which seems bad.
+>
+>
+>
+>
