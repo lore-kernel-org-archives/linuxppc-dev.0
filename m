@@ -1,15 +1,15 @@
-Return-Path: <crn@netunix.com>
-Date: Thu, 8 Oct 2009 02:29:25 +0100 (BST)
-From: Chris Newport <crn@netunix.com>
-To: David Miller <davem@davemloft.net>
+Return-Path: <davem@davemloft.net>
+Date: Wed, 07 Oct 2009 21:39:15 -0700 (PDT)
+Message-Id: <20091007.213915.37481688.davem@davemloft.net>
+To: crn@netunix.com
 Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
-In-Reply-To: <20091007.140938.255120957.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.60.0910080155210.12519@mailgate.netunix.com>
-References: <20091007135243.GC21646@anhedonia> <4ACCEC67.9070106@firmworks.com>
-	<Pine.LNX.4.60.0910072148040.11795@mailgate.netunix.com>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.60.0910080155210.12519@mailgate.netunix.com>
+References: <Pine.LNX.4.60.0910072148040.11795@mailgate.netunix.com>
 	<20091007.140938.255120957.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	<Pine.LNX.4.60.0910080155210.12519@mailgate.netunix.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Cc: sammy@sammy.net, sfr@canb.auug.org.au, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
 	julian.calaby@gmail.com, wmb@firmworks.com, linuxppc-dev@lists.ozlabs.org
@@ -22,30 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 7 Oct 2009, David Miller wrote:
+From: Chris Newport <crn@netunix.com>
+Date: Thu, 8 Oct 2009 02:29:25 +0100 (BST)
 
->> Sun4c has also been broken for a long time and sun4d has never worked
->> properly. Is it time to also prune these ?.
->> That would leave only Sun4m in the 32bit kernel, which still works and
->> has plenty of ongoing user interest.
->
-> Chris don't over-exaggerate the state.
->
-> The truth is that the whole sparc32 port is in a state of mild
-> disrepair, and many of the issues apply to all the port rather than
-> just one family of systems.  I think someone suitably motivated
-> could get most of the bugs sorted out.
->
-> There is no reason to drop support for SS1 machines, we already fully
-> build the software device tree and use all of the generic OF
-> infrastructure in the Linux kernel on those systems.  It is not a road
-> block at all for the OF genericization work, if that's what you read
-> into wmb's email.
+> Sun4d has never had SMP support and
 
-Your call, as you say there is little to be gained other than tidyness.
+Wrong.
 
-FWIW my opinions (and ICBW) are based on :-
-Sun4c machines have a max of 48 or 64Mb and very few are still working
-Sun4d has never had SMP support and this is apparantly problematic
-  due to Cray interlectual property causing a lack of bus documentation.
-  Running these heavy and power hungry lumps UP is a bit silly.
+> this is apparantly problematic due to Cray interlectual property
+>  causing a lack of bus documentation.
+
+XBUS documentation is not available, but we fully know how to
+program the SBUS interrupt controller and whatnot.  It's all
+there in the sun4d interrupt and SMP support and it did work
+just fine at one point.
+
+Amusingly the SBUS interrupt stuff on sun4d is a very close
+sibling to the IMAP/ICLR scheme used on sun4u.
