@@ -1,15 +1,43 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9A511B7B70
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 01:49:33 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH/RFC] powerpc: Fix decrementer setup on 1GHz boards
-Date: Thu,  8 Oct 2009 16:49:22 +0200
-Message-Id: <1255013362-27135-1-git-send-email-sr@denx.de>
-Cc: Anton Blanchard <anton@samba.org>, Detlev Zundel <dzu@denx.de>
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E772AB7B6B
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 01:51:51 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id n98En5Tw009360
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 01:49:05 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n98Epner1446016
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 01:51:49 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n98EpntT029718
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 01:51:49 +1100
+Message-ID: <4ACDFC83.4080205@in.ibm.com>
+Date: Thu, 08 Oct 2009 20:21:47 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] Ftrace : fix function_graph tracer OOPS
+References: <4A5C5D65.3030906@in.ibm.com>
+	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
+	<4A76BE81.4080707@in.ibm.com>
+	<1252458303.20985.10.camel@gandalf.stny.rr.com>
+	<4AA74AE2.5090001@in.ibm.com>
+	<1252814877.26049.93.camel@gandalf.stny.rr.com>
+	<1252816650.8375.70.camel@pasglop>
+	<1252848060.26049.647.camel@gandalf.stny.rr.com>
+	<1252873548.8375.73.camel@pasglop>
+	<1252915227.8375.118.camel@pasglop>
+	<1254749155.13160.6.camel@gandalf.stny.rr.com>
+	<1254774039.7122.35.camel@pasglop>
+	<1254775073.13160.13.camel@gandalf.stny.rr.com>
+	<4ACC57C4.5010002@in.ibm.com> <1254906621.2409.1.camel@pasglop>
+In-Reply-To: <1254906621.2409.1.camel@pasglop>
+Content-Type: multipart/mixed; boundary="------------080105090805070904020205"
+Cc: linuxppc-dev@ozlabs.org, rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,56 +47,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We noticed that recent kernels didn't boot on our 1GHz Canyonlands 460EX
-boards anymore. As it seems, patch 8d165db1 [powerpc: Improve
-decrementer accuracy] introduced this problem. The routine div_sc()
-overflows with shift = 32 resulting in this incorrect setup:
+This is a multi-part message in MIME format.
+--------------080105090805070904020205
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-time_init: decrementer frequency = 1000.000012 MHz
-time_init: processor frequency   = 1000.000012 MHz
-clocksource: timebase mult[400000] shift[22] registered
-clockevent: decrementer mult[33] shift[32] cpu[0]
+Enabling function graph causes oops due to usage of LOAD_REG_IMMEDIATE().
+As explained by Ben the usage of LOAD_REG_IMMEDIATE generates relocs that are
+not supported when CONFIG_RELOCATABLE is set.
 
-This patch now introduces a local div_dc64() version of this function
-so that this overflow doesn't happen anymore.
+Switch to LOAD_REG_ADDR().
 
-Signed-off-by: Stefan Roese <sr@denx.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Detlev Zundel <dzu@denx.de>
+Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
 ---
-Ben, Anton, how should we handle this? Is this patch acceptable? Or how
-should this be solved?
 
- arch/powerpc/kernel/time.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 92dc844..3ad729f 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -882,12 +882,21 @@ static void decrementer_set_mode(enum clock_event_mode mode,
- 		decrementer_set_next_event(DECREMENTER_MAX, dev);
- }
+
+--------------080105090805070904020205
+Content-Type: text/x-patch;
+ name="fix_ftrace_function_graph.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fix_ftrace_function_graph.patch"
+
+Enabling function graph causes oops due to usage of LOAD_REG_IMMEDIATE().
+As explained by Ben the usage of LOAD_REG_IMMEDIATE generates relocs that are
+not supported when CONFIG_RELOCATABLE is set. 
+
+Switch to LOAD_REG_ADDR().
+
+Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+---
+diff -Naurp old/arch/powerpc/kernel/entry_64.S new/arch/powerpc/kernel/entry_64.S
+--- old/arch/powerpc/kernel/entry_64.S	2009-10-08 18:37:44.000000000 +0530
++++ new/arch/powerpc/kernel/entry_64.S	2009-10-08 18:34:33.000000000 +0530
+@@ -1038,8 +1038,8 @@ _GLOBAL(mod_return_to_handler)
+ 	 * We are in a module using the module's TOC.
+ 	 * Switch to our TOC to run inside the core kernel.
+ 	 */
+-	LOAD_REG_IMMEDIATE(r4,ftrace_return_to_handler)
+-	ld	r2, 8(r4)
++	ld	r2, PACATOC(r13)
++	LOAD_REG_ADDR(r4,ftrace_return_to_handler)
  
-+static inline uint64_t div_sc64(unsigned long ticks, unsigned long nsec,
-+				int shift)
-+{
-+	uint64_t tmp = ((uint64_t)ticks) << shift;
-+
-+	do_div(tmp, nsec);
-+	return tmp;
-+}
-+
- static void __init setup_clockevent_multiplier(unsigned long hz)
- {
- 	u64 mult, shift = 32;
- 
- 	while (1) {
--		mult = div_sc(hz, NSEC_PER_SEC, shift);
-+		mult = div_sc64(hz, NSEC_PER_SEC, shift);
- 		if (mult && (mult >> 32UL) == 0UL)
- 			break;
- 
--- 
-1.6.4.4
+ 	bl	.ftrace_return_to_handler
+ 	nop
+
+--------------080105090805070904020205--
