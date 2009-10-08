@@ -1,24 +1,27 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 693B1B7B6B
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 07:27:30 +1100 (EST)
-Date: Thu, 8 Oct 2009 22:27:23 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] misc/at24: add experimental OF support for the generic
-	eeprom driver
-Message-ID: <20091008202723.GA8116@pengutronix.de>
-References: <1255010672-21656-1-git-send-email-w.sang@pengutronix.de>
-	<20091008143301.GA6084@oksana.dev.rtsoft.ru>
-	<fa686aa40910080753v6f597b0h4ce835db9f7a653@mail.gmail.com>
-	<20091008151007.GA21328@oksana.dev.rtsoft.ru>
-	<fa686aa40910080848r459c47baob73fc70a95a08604@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="1yeeQ81UyVL57Vl7"
-In-Reply-To: <fa686aa40910080848r459c47baob73fc70a95a08604@mail.gmail.com>
-Cc: linux-embedded@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-i2c@vger.kernel.org, devicetree-discuss@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 17318B7B6F
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 07:28:35 +1100 (EST)
+Subject: Re: [PATCH 3/6] 8xx: invalidate non present TLBs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Malek <dan@embeddedalley.com>
+In-Reply-To: <7A3C6D4C-E92B-434D-AF68-7AEEDE6DAD45@embeddedalley.com>
+References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254950285.2409.10.camel@pasglop>
+	<OF44C1983F.1C42E290-ONC1257649.0069CAF3-C1257649.006A78D1@transmode.se>
+	<7A3C6D4C-E92B-434D-AF68-7AEEDE6DAD45@embeddedalley.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 09 Oct 2009 07:28:25 +1100
+Message-Id: <1255033705.2146.17.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,50 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hoy Dan !
 
---1yeeQ81UyVL57Vl7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+While you are around ... I have a question :-)
 
-> No, this goes beyond PPC/OF.  The real issue is that it is no longer a
-> safe assumption that pdata will be a static data structure in platform
-> code.  The number of possible data sources is going to get larger, not
-> smaller.  OF is just one.  UEFI is another.  Translating that data
-> into pdata will be the problem that comes up over and over again.
-> However, translation code is still driver specific, so it belongs with
-> the driver that it translates code for.
->=20
-> So, in my opinion, translation code must:
-> 1. be *tiny* -- should be trivial to add to a driver without impacting
-> common code
-> 2. live with the driver that it translates data for; ideally in the
-> same .c file for drivers that are small.
+Do you happen to remember what the story is with the invalidation of
+"unpopulated" (aka invalid) entries ?
 
-I am with Grant on these points. It is more than just PPC.
+IE. We create those in the 8xx TLB miss when the PTE is !present (or the
+PMD is absent). Those then cause a TLB error on the next access which
+allows us to process the page fault. But when/how are those invalid
+entries supposed to be invalidated ?
 
-> > No matter how small the OF code is, I believe we shouldn't put it
-> > into the generic code. Take a look at mmc_spi case again, it can be
-> > easily extended to any arch, because there is no arch-specific stuff,
-> > but a "get/put" pattern for platform data.
+The doco seems to hint that at least in the case of an entry with the
+wrong C bit (store to an entry with C=0), the HW automatically
+invalidates it before taking the TLB Error but that's all I found.
 
-Will check this tomorrow.
+Is there a general HW policy on 8xx to invalidate TLB entries that cause
+TLB errors ? Or is the kernel expected to do it most of the time ?
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---1yeeQ81UyVL57Vl7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrOSysACgkQD27XaX1/VRvKzgCgmRbw4QYsnCx/oLx+FBH5JuPP
-g1gAn1uIVJgNUzvickgYUbHyqfzGFNTs
-=ZWWV
------END PGP SIGNATURE-----
-
---1yeeQ81UyVL57Vl7--
+Cheers,
+Ben.
