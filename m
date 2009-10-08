@@ -1,23 +1,29 @@
-Return-Path: <r.goyet@gmail.com>
-Received: from mail-bw0-f207.google.com (mail-bw0-f207.google.com
-	[209.85.218.207]) by ozlabs.org (Postfix) with ESMTP id 7AB5AB7B6B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  9 Oct 2009 01:43:53 +1100 (EST)
-Received: by bwz3 with SMTP id 3so5344855bwz.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 08 Oct 2009 07:43:50 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20091007163341.GA7657@lixom.net>
-References: <8028e5750910060216x134a8a9cm461fa5a6e87eb6bb@mail.gmail.com>
-	<1254823882.6035.5.camel@pasglop> <20091006160749.GA29195@lixom.net>
-	<8028e5750910070425v45a3e036p1444a8ee5937a4bb@mail.gmail.com>
-	<20091007163341.GA7657@lixom.net>
-Date: Thu, 8 Oct 2009 16:43:50 +0200
-Message-ID: <8028e5750910080743n1853d740jbdef51fd11fd37a6@mail.gmail.com>
-Subject: Re: SMU-base PowerMac and server_mode
-From: Romain Goyet <r.goyet@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=00151747befcdac29904756d7dd6
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 91ADEB7B6B
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 05:50:33 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n98Imhba000577
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2009 11:48:45 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n98IpMIG003584
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2009 13:51:22 -0500 (CDT)
+Date: Thu, 8 Oct 2009 13:48:42 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: nanda <nanda74pg@rediffmail.com>
+Subject: Re: Crash in the kernel panic linux mpc 832x
+Message-ID: <20091008184842.GA28235@b07421-ec1.am.freescale.net>
+References: <20090916150233.33919.qmail@f5mail-237-241.rediffmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090916150233.33919.qmail@f5mail-237-241.rediffmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,75 +33,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---00151747befcdac29904756d7dd6
-Content-Type: text/plain; charset=UTF-8
+On Wed, Sep 16, 2009 at 03:02:33PM -0000, nanda wrote:
+> Hi,
+>   Iam getting the below crash on new board tested on MPC832x using
+>   linux-2.6.24, please let me what could be the problem on the same.
+>   Does it infer any information on the exception?
 
-Ahem, that's pretty bad :'( How comes noone uses that ?
- - Romain
+Please try running the latest kernel.
 
-On Wed, Oct 7, 2009 at 6:33 PM, Olof Johansson <olof@lixom.net> wrote:
+> # Oops: Exception in kernel mode, sig: 4 [#1]
+> PREEMPT MPC832x RDB
+> Modules linked in:
 
-> On Wed, Oct 07, 2009 at 01:25:13PM +0200, Romain Goyet wrote:
-> > On Tue, Oct 6, 2009 at 6:07 PM, Olof Johansson <olof@lixom.net> wrote:
->
-> > > Yeah, I had one but I have since lost it.  I suspect it was on the
-> > > drive of my second quad that I wiped before I sold it, thinking there
-> > > was nothing of value on it. :(
-> >
-> > Ha, that's too bad. Do you know if it might be online somewhere ? Maybe
-> an
-> > idea of the right keywords to google ?
->
-> I searched for it, couldn't find any trace of it anywhere. I know I
-> based my little tool on some small smu example that came from Ben or
-> possibly Segher. I can't even find that any more. It's been a couple of
-> years since I last touched it. :(
->
->
-> -Olof
->
+I think you left off some relevant ines before this -- was there anything
+like "kernel BUG in line ..."?  Do you have verbose BUG reporting
+enabled?
 
---00151747befcdac29904756d7dd6
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<span class=3D"Apple-style-span" style=3D"font-family: arial, sans-serif; f=
-ont-size: 13px; border-collapse: collapse; ">Ahem, that&#39;s pretty bad :&=
-#39;( How comes noone uses that ?</span><div><font class=3D"Apple-style-spa=
-n" face=3D"arial, sans-serif"><span class=3D"Apple-style-span" style=3D"bor=
-der-collapse: collapse;"><br>
-</span></font></div><div><span class=3D"Apple-style-span" style=3D"font-siz=
-e: 13px; "></span><font class=3D"Apple-style-span" face=3D"arial, sans-seri=
-f"><span class=3D"Apple-style-span" style=3D"border-collapse: collapse;">=
-=C2=A0- Romain<br>
-</span></font><br><div class=3D"gmail_quote">On Wed, Oct 7, 2009 at 6:33 PM=
-, Olof Johansson <span dir=3D"ltr">&lt;<a href=3D"mailto:olof@lixom.net">ol=
-of@lixom.net</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" sty=
-le=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex;">
-<div class=3D"im">On Wed, Oct 07, 2009 at 01:25:13PM +0200, Romain Goyet wr=
-ote:<br>
-&gt; On Tue, Oct 6, 2009 at 6:07 PM, Olof Johansson &lt;<a href=3D"mailto:o=
-lof@lixom.net">olof@lixom.net</a>&gt; wrote:<br>
-<br>
-</div><div class=3D"im">&gt; &gt; Yeah, I had one but I have since lost it.=
- =C2=A0I suspect it was on the<br>
-&gt; &gt; drive of my second quad that I wiped before I sold it, thinking t=
-here<br>
-&gt; &gt; was nothing of value on it. :(<br>
-&gt;<br>
-</div><div class=3D"im">&gt; Ha, that&#39;s too bad. Do you know if it migh=
-t be online somewhere ? Maybe an<br>
-&gt; idea of the right keywords to google ?<br>
-<br>
-</div>I searched for it, couldn&#39;t find any trace of it anywhere. I know=
- I<br>
-based my little tool on some small smu example that came from Ben or<br>
-possibly Segher. I can&#39;t even find that any more. It&#39;s been a coupl=
-e of<br>
-years since I last touched it. :(<br>
-<font color=3D"#888888"><br>
-<br>
--Olof<br>
-</font></blockquote></div><br></div>
-
---00151747befcdac29904756d7dd6--
+-Scott
