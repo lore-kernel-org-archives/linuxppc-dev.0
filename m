@@ -1,19 +1,39 @@
-Return-Path: <dmitch71@gmail.com>
-Received: from mail-fx0-f214.google.com (mail-fx0-f214.google.com
-	[209.85.220.214]) by ozlabs.org (Postfix) with ESMTP id 597E7B7B68
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  9 Oct 2009 03:33:36 +1100 (EST)
-Received: by fxm10 with SMTP id 10so5733751fxm.8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 08 Oct 2009 09:33:34 -0700 (PDT)
-Sender: David Mitchell <dmitch71@gmail.com>
-From: Dave Mitchell <dmitchell@appliedmicro.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH][v2] powerpc/4xx: Add 16K FIFO size DTS entries on supported
-	platforms
-Date: Thu,  8 Oct 2009 11:33:29 -0500
-Message-Id: <1255019609-2033-1-git-send-email-dmitchell@appliedmicro.com>
-Cc: Dave Mitchell <dmitchell@appliedmicro.com>
+Return-Path: <geralds@linux.vnet.ibm.com>
+Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.17.163])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9C506B7B68
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 23:12:38 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate3.de.ibm.com (8.13.1/8.13.1) with ESMTP id n98CCRNk010064
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2009 12:12:27 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id n98CCRw12695198
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2009 14:12:28 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id n98CCQtX016360
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2009 14:12:27 +0200
+Message-ID: <4ACDD71D.30809@linux.vnet.ibm.com>
+Date: Thu, 08 Oct 2009 14:12:13 +0200
+From: Gerald Schaefer <geralds@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/2][v2] powerpc: Make the CMM memory hotplug aware
+References: <20091002184458.GC4908@austin.ibm.com>
+	<20091002185248.GD4908@austin.ibm.com>
+In-Reply-To: <20091002185248.GD4908@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
+Reply-To: gerald.schaefer@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,189 +43,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adding tx/rx-fifo-size-gige to EMAC fields for evaluation kit DTS
-files where appropriate.
+Hi,
 
-Signed-off-by: Dave Mitchell <dmitchell@appliedmicro.com>
-Acked-by: Prodyut Hazarika <phazarika@appliedmicro.com>
-Acked-by: Victor Gallardo <vgallardo@appliedmicro.com>
-Acked-by: Loc Ho <lho@appliedmicro.com>
----
- v1->v2: local date/time was out-of-sync and thus mail was as well
+I am currently working on the s390 port for the cmm + hotplug
+patch, and I'm a little confused about the memory allocation
+policy, see below. Is it correct that the balloon cannot grow
+into ZONE_MOVABLE, while the pages for the balloon page list
+can?
 
- arch/powerpc/boot/dts/canyonlands.dts |    2 ++
- arch/powerpc/boot/dts/eiger.dts       |    6 ++++++
- arch/powerpc/boot/dts/glacier.dts     |    6 ++++++
- arch/powerpc/boot/dts/haleakala.dts   |    2 ++
- arch/powerpc/boot/dts/kilauea.dts     |    4 ++++
- arch/powerpc/boot/dts/makalu.dts      |    4 ++++
- arch/powerpc/boot/dts/redwood.dts     |    1 +
- 7 files changed, 25 insertions(+), 0 deletions(-)
+Robert Jennings wrote:
+> @@ -110,6 +125,9 @@ static long cmm_alloc_pages(long nr)
+>  	cmm_dbg("Begin request for %ld pages\n", nr);
+> 
+>  	while (nr) {
+> +		if (atomic_read(&hotplug_active))
+> +			break;
+> +
+>  		addr = __get_free_page(GFP_NOIO | __GFP_NOWARN |
+>  				       __GFP_NORETRY | __GFP_NOMEMALLOC);
+>  		if (!addr)
+> @@ -119,8 +137,10 @@ static long cmm_alloc_pages(long nr)
+>  		if (!pa || pa->index >= CMM_NR_PAGES) {
+>  			/* Need a new page for the page list. */
+>  			spin_unlock(&cmm_lock);
+> -			npa = (struct cmm_page_array *)__get_free_page(GFP_NOIO | __GFP_NOWARN |
+> -								       __GFP_NORETRY | __GFP_NOMEMALLOC);
+> +			npa = (struct cmm_page_array *)__get_free_page(
+> +					GFP_NOIO | __GFP_NOWARN |
+> +					__GFP_NORETRY | __GFP_NOMEMALLOC |
+> +					__GFP_MOVABLE);
+>  			if (!npa) {
+>  				pr_info("%s: Can not allocate new page list\n", __func__);
+>  				free_page(addr);
 
-diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
-index c920170..cd56bb5 100644
---- a/arch/powerpc/boot/dts/canyonlands.dts
-+++ b/arch/powerpc/boot/dts/canyonlands.dts
-@@ -352,6 +352,7 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
-@@ -381,6 +382,7 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
-diff --git a/arch/powerpc/boot/dts/eiger.dts b/arch/powerpc/boot/dts/eiger.dts
-index c4a934f..48bcf71 100644
---- a/arch/powerpc/boot/dts/eiger.dts
-+++ b/arch/powerpc/boot/dts/eiger.dts
-@@ -316,6 +316,7 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
-@@ -345,6 +346,7 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
-@@ -375,6 +377,8 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
-+				tx-fifo-size-gige = <16384>; /* emac2&3 only */
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII1>;
-@@ -403,6 +407,8 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
-+				tx-fifo-size-gige = <16384>; /* emac2&3 only */
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII1>;
-diff --git a/arch/powerpc/boot/dts/glacier.dts b/arch/powerpc/boot/dts/glacier.dts
-index f3787a2..f6f6189 100644
---- a/arch/powerpc/boot/dts/glacier.dts
-+++ b/arch/powerpc/boot/dts/glacier.dts
-@@ -292,6 +292,7 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
-@@ -321,6 +322,7 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
-@@ -351,6 +353,8 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
-+				tx-fifo-size-gige = <16384>; /* emac2&3 only */
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII1>;
-@@ -379,6 +383,8 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
-+				tx-fifo-size-gige = <16384>; /* emac2&3 only */
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII1>;
-diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
-index 5b2a494..2b25669 100644
---- a/arch/powerpc/boot/dts/haleakala.dts
-+++ b/arch/powerpc/boot/dts/haleakala.dts
-@@ -226,6 +226,8 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
-+				tx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
-diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
-index c465614..083e68e 100644
---- a/arch/powerpc/boot/dts/kilauea.dts
-+++ b/arch/powerpc/boot/dts/kilauea.dts
-@@ -272,6 +272,8 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
-+				tx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
-@@ -300,6 +302,8 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
-+				tx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
-diff --git a/arch/powerpc/boot/dts/makalu.dts b/arch/powerpc/boot/dts/makalu.dts
-index ffc246e..63d48b6 100644
---- a/arch/powerpc/boot/dts/makalu.dts
-+++ b/arch/powerpc/boot/dts/makalu.dts
-@@ -227,6 +227,8 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
-+				tx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x0000003f>;	/* Start at 6 */
- 				rgmii-device = <&RGMII0>;
-@@ -255,6 +257,8 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+                                rx-fifo-size-gige = <16384>;
-+                                tx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
-diff --git a/arch/powerpc/boot/dts/redwood.dts b/arch/powerpc/boot/dts/redwood.dts
-index ad402c4..d2af32e 100644
---- a/arch/powerpc/boot/dts/redwood.dts
-+++ b/arch/powerpc/boot/dts/redwood.dts
-@@ -226,6 +226,7 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
- 				phy-mode = "rgmii";
- 				phy-map = <0x00000000>;
- 				rgmii-device = <&RGMII0>;
--- 
-1.6.3.2
+Why is the __GFP_MOVABLE added here, for the page list alloc, and not
+above for the balloon page alloc?
+
+--
+Regards,
+Gerald
