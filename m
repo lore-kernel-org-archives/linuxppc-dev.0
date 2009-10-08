@@ -1,28 +1,17 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from viefep15-int.chello.at (viefep15-int.chello.at [62.179.121.35])
-	by ozlabs.org (Postfix) with ESMTP id 8E40AB7B69
+Return-Path: <dmitch71@gmail.com>
+Received: from mail-ew0-f223.google.com (mail-ew0-f223.google.com
+	[209.85.219.223]) by ozlabs.org (Postfix) with ESMTP id 17654B7B80
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Oct 2009 23:26:56 +1100 (EST)
-Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
-	register a set of idle routines.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: arun@linux.vnet.ibm.com
-In-Reply-To: <20091008120120.GL20595@linux.vnet.ibm.com>
-References: <20091008094828.GA20595@linux.vnet.ibm.com>
-	<20091008095027.GC20595@linux.vnet.ibm.com>
-	<1254998162.26976.270.camel@twins>
-	<20091008104249.GJ20595@linux.vnet.ibm.com>
-	<1254999033.26976.272.camel@twins>
-	<20091008110106.GK20595@linux.vnet.ibm.com>
-	<1255001110.26976.292.camel@twins>
-	<20091008120120.GL20595@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 08 Oct 2009 14:25:37 +0200
-Message-Id: <1255004737.26976.307.camel@twins>
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org, Arjan van de Ven <arjan@infradead.org>
+	Thu,  8 Oct 2009 23:50:23 +1100 (EST)
+Received: by ewy23 with SMTP id 23so6600185ewy.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 08 Oct 2009 05:50:20 -0700 (PDT)
+Sender: David Mitchell <dmitch71@gmail.com>
+From: Dave Mitchell <dmitchell@appliedmicro.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] ibm_newemac: Added 16K Tx FIFO size support for EMAC4
+Message-Id: <1253079117-833-1-git-send-email-dmitchell@appliedmicro.com>
+Cc: Dave Mitchell <dmitchell@appliedmicro.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +20,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Date: Thu, 08 Oct 2009 12:50:25 -0000
 
-On Thu, 2009-10-08 at 17:31 +0530, Arun R Bharadwaj wrote:
-> 
-> > Uhm, no, it would mean ACPI putting its idle routines on the same level
-> > as all others.
-> > 
-> 
-> Putting them all on the same level would mean, we need an
-> enable/disable routine to enable only the currently active routines.
+Some of the EMAC V4 implementations support 16K Tx FIFOs. This
+patch adds support for this functionality and fixes typos in the
+Tx FIFO size error messages.
 
-What's this enable/disable stuff about?
+Signed-off-by: Dave Mitchell <dmitchell@appliedmicro.com>
+Acked-by: Prodyut Hazarika <phazarika@appliedmicro.com>
+Acked-by: Victor Gallardo <vgallardo@appliedmicro.com>
+Acked-by: Loc Ho <lho@appliedmicro.com>
+---
+ drivers/net/ibm_newemac/core.c |    7 +++++--
+ drivers/net/ibm_newemac/emac.h |    1 +
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-> Also, the way governor works is that, it assumes that idle routines
-> are indexed in the increasing order of power benefit that can be got
-> out of the state. So this would get messed up.
-
-Right, which is why I initially had a power-savings field in my
-proposal, so it could weight the power savings vs the wakeup latency.
-
-  http://lkml.org/lkml/2009/8/27/159
-
-There it was said that was exactly what these governors were doing,
-seems its not.
-
-> > Sounds like something is wrong alright. If you can register an idle
-> > routine you should be able to unregister it too.
-> >
-> 
-> Yes, we can register and unregister in a clean way now.
-> Consider this. We have a set of routines A, B, C currently registered.
-> Now a module comes and registers D and E, and later on at some point
-> of time wants to unregister. So how do you keep track of what all idle
-> routines the module registered and unregister only those?
-> Best way to do that is a stack, which is how I have currently
-> implemented.
-
-Right, so destroy that inner set thing, that way we only have one
-left ;-)
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index 89c82c5..c6591cb 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -443,7 +443,7 @@ static u32 __emac_calc_base_mr1(struct emac_instance *dev, int tx_size, int rx_s
+ 		ret |= EMAC_MR1_TFS_2K;
+ 		break;
+ 	default:
+-		printk(KERN_WARNING "%s: Unknown Rx FIFO size %d\n",
++		printk(KERN_WARNING "%s: Unknown Tx FIFO size %d\n",
+ 		       dev->ndev->name, tx_size);
+ 	}
+ 
+@@ -470,6 +470,9 @@ static u32 __emac4_calc_base_mr1(struct emac_instance *dev, int tx_size, int rx_
+ 	DBG2(dev, "__emac4_calc_base_mr1" NL);
+ 
+ 	switch(tx_size) {
++	case 16384:
++		ret |= EMAC4_MR1_TFS_16K;
++		break;
+ 	case 4096:
+ 		ret |= EMAC4_MR1_TFS_4K;
+ 		break;
+@@ -477,7 +480,7 @@ static u32 __emac4_calc_base_mr1(struct emac_instance *dev, int tx_size, int rx_
+ 		ret |= EMAC4_MR1_TFS_2K;
+ 		break;
+ 	default:
+-		printk(KERN_WARNING "%s: Unknown Rx FIFO size %d\n",
++		printk(KERN_WARNING "%s: Unknown Tx FIFO size %d\n",
+ 		       dev->ndev->name, tx_size);
+ 	}
+ 
+diff --git a/drivers/net/ibm_newemac/emac.h b/drivers/net/ibm_newemac/emac.h
+index 0afc2cf..d34adf9 100644
+--- a/drivers/net/ibm_newemac/emac.h
++++ b/drivers/net/ibm_newemac/emac.h
+@@ -153,6 +153,7 @@ struct emac_regs {
+ #define EMAC4_MR1_RFS_16K		0x00280000
+ #define EMAC4_MR1_TFS_2K       		0x00020000
+ #define EMAC4_MR1_TFS_4K		0x00030000
++#define EMAC4_MR1_TFS_16K		0x00050000
+ #define EMAC4_MR1_TR			0x00008000
+ #define EMAC4_MR1_MWSW_001		0x00001000
+ #define EMAC4_MR1_JPSM			0x00000800
+-- 
+1.6.3.2
