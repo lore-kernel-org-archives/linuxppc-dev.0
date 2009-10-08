@@ -1,32 +1,30 @@
-Return-Path: <hs@denx.de>
-Received: from b.relay.invitel.net (b.relay.invitel.net [62.77.203.4])
-	by ozlabs.org (Postfix) with ESMTP id 852BCB7B81
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 17:21:09 +1100 (EST)
-Received: from mail.invitel.hu (mail.invitel.hu [213.163.59.4])
-	by b.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
-	1676531A2E5
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 08:21:06 +0200 (CEST)
-Received: from [192.168.1.6] ([82.131.201.60])
-	by mail.invitel.hu (Invitel Messaging Server)
-	with ESMTPA id <0KR600LP0MZ62E40@invitel.hu> for
-	linuxppc-dev@ozlabs.org; Thu, 08 Oct 2009 08:21:06 +0200 (CEST)
-Date: Thu, 08 Oct 2009 07:54:28 +0200
-From: Heiko Schocher <hs@denx.de>
-Subject: [PATCH v4] mpc5200: support for the MAN mpc5200 based board mucmc52
-In-reply-to: <fa686aa40910070657o2b68156dq25cb44d6d6509abc@mail.gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Message-id: <4ACD7E94.1020009@denx.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-References: <4AADF93C.3030604@denx.de> <20090914080322.GA3164@pengutronix.de>
-	<fa686aa40909140745u2cf1dba7q8ae2af53c87bd216@mail.gmail.com>
-	<4AC9A463.1080903@denx.de> <20091005095340.GA3890@pengutronix.de>
-	<4AC9C6AA.6060009@denx.de>
-	<fa686aa40910050646p168c2bbfi4b432778827102c9@mail.gmail.com>
-	<4ACC37E5.4040804@denx.de> <20091007094936.GE3177@pengutronix.de>
-	<fa686aa40910070657o2b68156dq25cb44d6d6509abc@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: hs@denx.de
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CABE6B7B65
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2009 17:46:42 +1100 (EST)
+In-Reply-To: <1254961699.2417.1.camel@pasglop>
+References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1254950092.2409.7.camel@pasglop>
+	<OF8D2D6F89.B0DB8BCB-ONC1257648.00787F6E-C1257648.00799B83@transmode.se>
+	<1254954017.2409.14.camel@pasglop>	
+	<OFCA7943E6.AFEF924A-ONC1257648.007E27B0-C1257648.007F62E9@transmode.se>
+	<1254960296.2733.3.camel@pasglop>	
+	<OFE2E96EF3.F21AB563-ONC1257649.0000A4AC-C1257649.0001C04D@transmode.se>
+	<1254961699.2417.1.camel@pasglop>
+Subject: Re: [PATCH 2/6] 8xx: get rid of _PAGE_HWWRITE dependency in MMU.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OFB3DEEF6E.1F3F6AC5-ONC1257649.00246C73-C1257649.002523BD@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 8 Oct 2009 08:45:39 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,430 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-- serial Console on PSC1
-- 64MB SDRAM
-- MTD CFI Flash
-- Ethernet FEC
-- IDE support
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 08/10/2009 02:28:19:
+>
+> On Thu, 2009-10-08 at 02:19 +0200, Joakim Tjernlund wrote:
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 08/10/2009 02:04:56:
+> > >
+> > >
+> > > > Yes it does. If one adds HWEXEC it will fail, right?
+> > >
+> > > Why ? We can just filter out DSISR, we don't really care why it failed
+> > > as long as we know whether it was a store or not.
+> > >
+> > > > Also this count as a read and you could easily end up
+> > > > in the protection case(in 2.4 you do)
+> > >
+> > > I'm not sure what you mean by "the protection case" Again, the C code
+> > > shouldn't care.
+> >
+> > it does, and it should. How else should you know if you try
+> > to read a NA space?
+>
+> Generic code should sort it out in handle_mm_fault() (or earlier if it
+> can't find a VMA at all).
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
----
+How can it? You need to know more that just read and write.
 
-- based on:
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
+>
+> The DSISR munging is really not necessary I believe.
 
-- checked with:
-$ ./scripts/checkpatch.pl 0002-mpc5200-support-for-the-MAN-mpc5200-based-board-muc.patch
-total: 0 errors, 0 warnings, 360 lines checked
+Well, it is today and I don't see how you can remove it.
 
-0002-mpc5200-support-for-the-MAN-mpc5200-based-board-muc.patch has no obvious style problems and is ready for submission.
-$
+>
+> > 2.4 and 2.6 have the same handling in asm.
+>
+> Yeah but the C code, especially the generic part, is different.
 
-changes since v1:
+yes, but it seem to work the same.
 
-- add comments from Grant Likely <grant.likely@secretlab.ca>
-  use mpc5200_defconfig as default configuration, therefore added
-  SIMPLE_GPIO support in it, because this is not selectable as a
-  module.
-- add comments from Wolfram Sang <w.sang@pengutronix.de>
-- rebase against current next
+>
+> > hmm, maybe I should just call C, but 8xx isn't a speed monster so every
+> > cycle counts :)
+>
+> But that's a slow path anyways.
 
-changes since v2:
-- add comment from Wolfram Sang
-  remove unofficial binding
+How so? You take a TLB Error for the first write to
+every page.
 
-changes since v3:
-- add comment from Wolfram Sang
-  use "fsl,mpc5200b-immr" only
-  added Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
-
- arch/powerpc/boot/dts/mucmc52.dts            |  345 ++++++++++++++++++++++++++
- arch/powerpc/configs/mpc5200_defconfig       |    2 +-
- arch/powerpc/platforms/52xx/mpc5200_simple.c |    1 +
- 3 files changed, 347 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/mucmc52.dts
-
-diff --git a/arch/powerpc/boot/dts/mucmc52.dts b/arch/powerpc/boot/dts/mucmc52.dts
-new file mode 100644
-index 0000000..7b29d76
---- /dev/null
-+++ b/arch/powerpc/boot/dts/mucmc52.dts
-@@ -0,0 +1,345 @@
-+/*
-+ * mucmc52 board Device Tree Source
-+ *
-+ * Copyright (C) 2009 DENX Software Engineering GmbH
-+ * Heiko Schocher <hs@denx.de>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+
-+/ {
-+	model = "manroland,mucmc52";
-+	compatible = "manroland,mucmc52";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	interrupt-parent = <&mpc5200_pic>;
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,5200@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <32>;
-+			i-cache-line-size = <32>;
-+			d-cache-size = <0x4000>;	// L1, 16K
-+			i-cache-size = <0x4000>;	// L1, 16K
-+			timebase-frequency = <0>;	// from bootloader
-+			bus-frequency = <0>;		// from bootloader
-+			clock-frequency = <0>;		// from bootloader
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x04000000>;	// 64MB
-+	};
-+
-+	soc5200@f0000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "fsl,mpc5200b-immr";
-+		ranges = <0 0xf0000000 0x0000c000>;
-+		reg = <0xf0000000 0x00000100>;
-+		bus-frequency = <0>;		// from bootloader
-+		system-frequency = <0>;		// from bootloader
-+
-+		cdm@200 {
-+			compatible = "fsl,mpc5200b-cdm","fsl,mpc5200-cdm";
-+			reg = <0x200 0x38>;
-+		};
-+
-+		mpc5200_pic: interrupt-controller@500 {
-+			// 5200 interrupts are encoded into two levels;
-+			interrupt-controller;
-+			#interrupt-cells = <3>;
-+			compatible = "fsl,mpc5200b-pic","fsl,mpc5200-pic";
-+			reg = <0x500 0x80>;
-+			interrupts = <0 0 3>;
-+		};
-+
-+		gpt0: timer@600 {	// GPT 0 in GPIO mode
-+			compatible = "fsl,mpc5200b-gpt-gpio",
-+					"fsl,mpc5200-gpt-gpio";
-+			#gpio-cells = <2>;
-+			reg = <0x600 0x10>;
-+			interrupts = <1 9 0>;
-+			gpio-controller;
-+		};
-+
-+		gpt1: timer@610 {	// GPT 1 in GPIO mode
-+			compatible = "fsl,mpc5200b-gpt-gpio",
-+					"fsl,mpc5200-gpt-gpio";
-+			#gpio-cells = <2>;
-+			reg = <0x610 0x10>;
-+			interrupts = <1 10 0>;
-+			gpio-controller;
-+		};
-+
-+		gpt2: timer@620 {	// GPT 2 in GPIO mode
-+			compatible = "fsl,mpc5200b-gpt-gpio",
-+					"fsl,mpc5200-gpt-gpio";
-+			#gpio-cells = <2>;
-+			reg = <0x620 0x10>;
-+			interrupts = <1 11 0>;
-+			gpio-controller;
-+		};
-+
-+		gpt3: timer@630 {	// GPT 3 in GPIO mode
-+			compatible = "fsl,mpc5200b-gpt-gpio",
-+					"fsl,mpc5200-gpt-gpio";
-+			#gpio-cells = <2>;
-+			reg = <0x630 0x10>;
-+			interrupts = <1 12 0>;
-+			gpio-controller;
-+		};
-+
-+		gpio_simple: gpio@b00 {
-+			compatible = "fsl,mpc5200b-gpio","fsl,mpc5200-gpio";
-+			#gpio-cells = <2>;
-+			reg = <0xb00 0x40>;
-+			interrupts = <1 7 0>;
-+			gpio-controller;
-+		};
-+
-+		gpio_wkup: gpio@c00 {
-+			compatible = "fsl,mpc5200b-gpio-wkup",
-+					"fsl,mpc5200-gpio-wkup";
-+			#gpio-cells = <2>;
-+			reg = <0xc00 0x40>;
-+			interrupts = <1 8 0 0 3 0>;
-+			gpio-controller;
-+		};
-+
-+		dma-controller@1200 {
-+			device_type = "dma-controller";
-+			compatible = "fsl,mpc5200b-bestcomm",
-+					"fsl,mpc5200-bestcomm";
-+			reg = <0x1200 0x80>;
-+			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
-+			              3 4 0  3 5 0  3 6 0  3 7 0
-+			              3 8 0  3 9 0  3 10 0  3 11 0
-+			              3 12 0  3 13 0  3 14 0  3 15 0>;
-+		};
-+
-+		xlb@1f00 {
-+			compatible = "fsl,mpc5200b-xlb","fsl,mpc5200-xlb";
-+			reg = <0x1f00 0x100>;
-+		};
-+
-+		serial@2000 {		// PSC1
-+			compatible = "fsl,mpc5200b-psc-uart",
-+					"fsl,mpc5200-psc-uart";
-+			reg = <0x2000 0x100>;
-+			interrupts = <2 1 0>;
-+		};
-+
-+		serial@2200 {		// PSC2
-+			compatible = "fsl,mpc5200b-psc-uart",
-+					"fsl,mpc5200-psc-uart";
-+			reg = <0x2200 0x100>;
-+			interrupts = <2 2 0>;
-+		};
-+
-+		serial@2c00 {		// PSC6
-+			compatible = "fsl,mpc5200b-psc-uart",
-+					"fsl,mpc5200-psc-uart";
-+			reg = <0x2c00 0x100>;
-+			interrupts = <2 6 0>;
-+		};
-+
-+		ethernet@3000 {
-+			compatible = "fsl,mpc5200b-fec","fsl,mpc5200-fec";
-+			reg = <0x3000 0x400>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <2 5 0>;
-+			phy-handle = <&phy0>;
-+		};
-+
-+		mdio@3000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc5200b-mdio","fsl,mpc5200-mdio";
-+			reg = <0x3000 0x400>; 	// fec range, since we need to
-+						// setup fec interrupts
-+			interrupts = <2 5 0>; 	// these are for "mii command
-+						// finished", not link changes
-+						//  & co.
-+
-+			phy0: ethernet-phy@0 {
-+				compatible = "intel,lxt971";
-+				reg = <0>;
-+			};
-+		};
-+
-+		ata@3a00 {
-+			compatible = "fsl,mpc5200b-ata","fsl,mpc5200-ata";
-+			reg = <0x3a00 0x100>;
-+			interrupts = <2 7 0>;
-+		};
-+
-+		i2c@3d40 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c",
-+					"fsl-i2c";
-+			reg = <0x3d40 0x40>;
-+			interrupts = <2 16 0>;
-+
-+			hwmon@2c {
-+				compatible = "ad,adm9240";
-+				reg = <0x2c>;
-+			};
-+			rtc@51 {
-+				compatible = "nxp,pcf8563";
-+				reg = <0x51>;
-+			};
-+		};
-+
-+		sram@8000 {
-+			compatible = "fsl,mpc5200b-sram","fsl,mpc5200-sram";
-+			reg = <0x8000 0x4000>;
-+		};
-+	};
-+
-+	localbus {
-+		compatible = "fsl,mpc5200b-lpb","simple-bus";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges = <0 0 0xff800000 0x00800000
-+			  1 0 0x80000000 0x00800000
-+			  3 0 0x80000000 0x00800000>;
-+
-+		flash@0,0 {
-+			compatible = "cfi-flash";
-+			reg = <0 0 0x00800000>;
-+			bank-width = <4>;
-+			device-width = <2>;
-+			#size-cells = <1>;
-+			#address-cells = <1>;
-+			partition@0 {
-+				label = "DTS";
-+				reg = <0x0 0x00100000>;
-+			};
-+			partition@100000 {
-+				label = "Kernel";
-+				reg = <0x100000 0x00200000>;
-+			};
-+			partition@300000 {
-+				label = "RootFS";
-+				reg = <0x00300000 0x00200000>;
-+			};
-+			partition@500000 {
-+				label = "user";
-+				reg = <0x00500000 0x00200000>;
-+			};
-+			partition@700000 {
-+				label = "U-Boot";
-+				reg = <0x00700000 0x00040000>;
-+			};
-+			partition@740000 {
-+				label = "Env";
-+				reg = <0x00740000 0x00020000>;
-+			};
-+			partition@760000 {
-+				label = "red. Env";
-+				reg = <0x00760000 0x00020000>;
-+			};
-+			partition@780000 {
-+				label = "reserve";
-+				reg = <0x00780000 0x00080000>;
-+			};
-+		};
-+
-+		simple100: gpio-controller-100@3,600100 {
-+				#gpio-cells = <2>;
-+				compatible = "manroland,mucmc52-aux-gpio";
-+				reg = <3 0x00600100 0x1>;
-+				gpio-controller;
-+		};
-+		simple104: gpio-controller-104@3,600104 {
-+				#gpio-cells = <2>;
-+				compatible = "manroland,mucmc52-aux-gpio";
-+				reg = <3 0x00600104 0x1>;
-+				gpio-controller;
-+		};
-+		simple200: gpio-controller-200@3,600200 {
-+				#gpio-cells = <2>;
-+				compatible = "manroland,mucmc52-aux-gpio";
-+				reg = <3 0x00600200 0x1>;
-+				gpio-controller;
-+		};
-+		simple201: gpio-controller-201@3,600201 {
-+				#gpio-cells = <2>;
-+				compatible = "manroland,mucmc52-aux-gpio";
-+				reg = <3 0x00600201 0x1>;
-+				gpio-controller;
-+		};
-+		simple202: gpio-controller-202@3,600202 {
-+				#gpio-cells = <2>;
-+				compatible = "manroland,mucmc52-aux-gpio";
-+				reg = <3 0x00600202 0x1>;
-+				gpio-controller;
-+		};
-+		simple203: gpio-controller-203@3,600203 {
-+				#gpio-cells = <2>;
-+				compatible = "manroland,mucmc52-aux-gpio";
-+				reg = <3 0x00600203 0x1>;
-+				gpio-controller;
-+		};
-+		simple204: gpio-controller-204@3,600204 {
-+				#gpio-cells = <2>;
-+				compatible = "manroland,mucmc52-aux-gpio";
-+				reg = <3 0x00600204 0x1>;
-+				gpio-controller;
-+		};
-+		simple206: gpio-controller-206@3,600206 {
-+				#gpio-cells = <2>;
-+				compatible = "manroland,mucmc52-aux-gpio";
-+				reg = <3 0x00600206 0x1>;
-+				gpio-controller;
-+		};
-+		simple207: gpio-controller-207@3,600207 {
-+				#gpio-cells = <2>;
-+				compatible = "manroland,mucmc52-aux-gpio";
-+				reg = <3 0x00600207 0x1>;
-+				gpio-controller;
-+		};
-+		simple20f: gpio-controller-20f@3,60020f {
-+				#gpio-cells = <2>;
-+				compatible = "manroland,mucmc52-aux-gpio";
-+				reg = <3 0x0060020f 0x1>;
-+				gpio-controller;
-+		};
-+
-+	};
-+
-+	pci@f0000d00 {
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc5200-pci";
-+		reg = <0xf0000d00 0x100>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+				/* IDSEL 0x10 */
-+				0x8000 0 0 1 &mpc5200_pic 0 3 3
-+				0x8000 0 0 2 &mpc5200_pic 0 3 3
-+				0x8000 0 0 3 &mpc5200_pic 0 2 3
-+				0x8000 0 0 4 &mpc5200_pic 0 1 3
-+				>;
-+		clock-frequency = <0>; // From boot loader
-+		interrupts = <2 8 0 2 9 0 2 10 0>;
-+		bus-range = <0 0>;
-+		ranges = <0x42000000 0 0x60000000 0x60000000 0 0x10000000
-+			  0x02000000 0 0x90000000 0x90000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xa0000000 0 0x01000000>;
-+	};
-+};
-diff --git a/arch/powerpc/configs/mpc5200_defconfig b/arch/powerpc/configs/mpc5200_defconfig
-index aaa4416..d035421 100644
---- a/arch/powerpc/configs/mpc5200_defconfig
-+++ b/arch/powerpc/configs/mpc5200_defconfig
-@@ -205,7 +205,7 @@ CONFIG_RTAS_PROC=y
- CONFIG_PPC_BESTCOMM=y
- CONFIG_PPC_BESTCOMM_ATA=y
- CONFIG_PPC_BESTCOMM_FEC=y
--# CONFIG_SIMPLE_GPIO is not set
-+CONFIG_SIMPLE_GPIO=y
-
- #
- # Kernel options
-diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-index caf6d92..d45be5b 100644
---- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
-+++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-@@ -51,6 +51,7 @@ static void __init mpc5200_simple_setup_arch(void)
- /* list of the supported boards */
- static char *board[] __initdata = {
- 	"intercontrol,digsy-mtc",
-+	"manroland,mucmc52",
- 	"manroland,uc101",
- 	"phytec,pcm030",
- 	"phytec,pcm032",
--- 
-1.6.0.6
-
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+ Jocke
