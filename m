@@ -1,20 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A721DB7088
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 07:13:08 +1100 (EST)
-Subject: Re: [PATCH/RFC] powerpc: Fix decrementer setup on 1GHz boards
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <1255013362-27135-1-git-send-email-sr@denx.de>
-References: <1255013362-27135-1-git-send-email-sr@denx.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 09 Oct 2009 07:12:56 +1100
-Message-Id: <1255032776.2146.7.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
-	Detlev Zundel <dzu@denx.de>
+Return-Path: <dan@embeddedalley.com>
+Received: from easi.embeddedalley.com (easi.embeddedalley.com [71.6.201.124])
+	by ozlabs.org (Postfix) with SMTP id 1B9D0B7B65
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 07:17:24 +1100 (EST)
+In-Reply-To: <OF44C1983F.1C42E290-ONC1257649.0069CAF3-C1257649.006A78D1@transmode.se>
+References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254950285.2409.10.camel@pasglop>
+	<OF44C1983F.1C42E290-ONC1257649.0069CAF3-C1257649.006A78D1@transmode.se>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7A3C6D4C-E92B-434D-AF68-7AEEDE6DAD45@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [PATCH 3/6] 8xx: invalidate non present TLBs
+Date: Thu, 8 Oct 2009 13:11:07 -0700
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Cc: Scott Wood <scottwood@freescale.com>, Rex Feany <RFeany@mrv.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,62 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-10-08 at 16:49 +0200, Stefan Roese wrote:
-> We noticed that recent kernels didn't boot on our 1GHz Canyonlands 460EX
-> boards anymore. As it seems, patch 8d165db1 [powerpc: Improve
-> decrementer accuracy] introduced this problem. The routine div_sc()
-> overflows with shift = 32 resulting in this incorrect setup:
-> 
-> time_init: decrementer frequency = 1000.000012 MHz
-> time_init: processor frequency   = 1000.000012 MHz
-> clocksource: timebase mult[400000] shift[22] registered
-> clockevent: decrementer mult[33] shift[32] cpu[0]
-> 
-> This patch now introduces a local div_dc64() version of this function
-> so that this overflow doesn't happen anymore.
 
-Ugh ? We never expected that the decrementer would be ticking that fast.
-This is too fast actually. Somebody at AMCC must be told to stick a
-divider in front of the timebase when reaching such frequencies.
+On Oct 8, 2009, at 12:22 PM, Joakim Tjernlund wrote:
 
-Ben.
+> hare are comments in the kernel that dcbst wrongly
+> generates TLB Errors with store set on 8xx. Is this really so?
+> Should dcbst always trap as a load?
 
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Anton Blanchard <anton@samba.org>
-> Cc: Detlev Zundel <dzu@denx.de>
-> ---
-> Ben, Anton, how should we handle this? Is this patch acceptable? Or how
-> should this be solved?
-> 
->  arch/powerpc/kernel/time.c |   11 ++++++++++-
->  1 files changed, 10 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 92dc844..3ad729f 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -882,12 +882,21 @@ static void decrementer_set_mode(enum clock_event_mode mode,
->  		decrementer_set_next_event(DECREMENTER_MAX, dev);
->  }
->  
-> +static inline uint64_t div_sc64(unsigned long ticks, unsigned long nsec,
-> +				int shift)
-> +{
-> +	uint64_t tmp = ((uint64_t)ticks) << shift;
-> +
-> +	do_div(tmp, nsec);
-> +	return tmp;
-> +}
-> +
->  static void __init setup_clockevent_multiplier(unsigned long hz)
->  {
->  	u64 mult, shift = 32;
->  
->  	while (1) {
-> -		mult = div_sc(hz, NSEC_PER_SEC, shift);
-> +		mult = div_sc64(hz, NSEC_PER_SEC, shift);
->  		if (mult && (mult >> 32UL) == 0UL)
->  			break;
->  
+There are many comments written about 8xx as various
+behavior was discovered.  Worse, some of these details
+would be different among the different processor versions.
+You need to be careful and test as many different part
+versions as possible to ensure you have everything
+covered.....  then someone will find a part that doesn't
+quite work, "fix" it, and break others :-)
+
+In this particular case, the PEM does state dcbst is treated
+as a load, but from experience we know 8xx doesn't work
+that way.  Of course, since dcbst is a store operation,
+you could argue that 8xx got it correct :-)
+
+Have fun!
+
+	-- Dan
