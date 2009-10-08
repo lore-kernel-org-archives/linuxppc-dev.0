@@ -1,21 +1,22 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 61CF4B7B7E
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 07:48:12 +1100 (EST)
-Date: Thu, 8 Oct 2009 22:48:08 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] misc/at24: add experimental OF support for the generic
-	eeprom driver
-Message-ID: <20091008204808.GB8116@pengutronix.de>
-References: <1255010672-21656-1-git-send-email-w.sang@pengutronix.de>
-	<fa686aa40910080737l5b21654cw9c8f7426f9faf7c3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rS8CxjVDS/+yyDmU"
-In-Reply-To: <fa686aa40910080737l5b21654cw9c8f7426f9faf7c3@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	linux-i2c@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 01717B7B7B
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 07:48:46 +1100 (EST)
+Subject: Re: [PATCH 1/6] 8xx: DTLB Error must check for more errors.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1255008298-19949-2-git-send-email-Joakim.Tjernlund@transmode.se>
+References: <1255008298-19949-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255008298-19949-2-git-send-email-Joakim.Tjernlund@transmode.se>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 09 Oct 2009 07:48:18 +1100
+Message-Id: <1255034898.2146.23.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2009-10-08 at 15:24 +0200, Joakim Tjernlund wrote:
+> DataTLBError currently does:
+>  if ((err & 0x02000000) == 0)
+>     DSI();
+> This won't handle a store with no valid translation.
+> Change this to
+>  if ((err & 0x48000000) != 0)
+>     DSI();
+> that is, branch to DSI if either !permission or
+> !translation.
+> ---
 
---rS8CxjVDS/+yyDmU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+As I said earlier, I don't think this is necessary, just get rid of the
+whole bunch of code in DataTLBError :-)
 
+Ben.
 
-> I think in general, this is the right direction; but I'm not convinced
-> that the right pattern or form has been found yet.  What I don't like
-> on this particular patch is that it still hooks of-specific stuff into
-> an arbitrary point in the probe routine.
->=20
-> I'd like to see some pattern for retrieving or populating a
-> platform_data structure when one isn't already provided, and
-> regardless of the data source.
-
-I thought about this, too. I just wondered how many drivers would actually =
-need
-a 'pdata'-preparation routine before probe, and if this would not cause too
-much overhead for those who don't. But as you say OF might not the only case
-where this is needed, then it might be a reasonable choice to have an extra
-call fot setting up pdata. Then again, if we have preparation routines for
-OF,UEFI,... for each and every driver, uh, the bloat :(
-
-> will take a bit of experimentation to come up with the best form for
-> the pdata fetching function, but it will be better contained if it is
-> all at a single place.
-
-I might have a try :)
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---rS8CxjVDS/+yyDmU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrOUAgACgkQD27XaX1/VRug2QCfbCkq7dvWlwpUzTgNQc4emV9y
-GWYAmwcK5V1ujwnqQeL4JtZgzAGXi8qj
-=CsZx
------END PGP SIGNATURE-----
-
---rS8CxjVDS/+yyDmU--
+>  arch/powerpc/kernel/head_8xx.S |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+> index 52ff8c5..118bb05 100644
+> --- a/arch/powerpc/kernel/head_8xx.S
+> +++ b/arch/powerpc/kernel/head_8xx.S
+> @@ -472,8 +472,8 @@ DataTLBError:
+>  	/* First, make sure this was a store operation.
+>  	*/
+>  	mfspr	r10, SPRN_DSISR
+> -	andis.	r11, r10, 0x0200	/* If set, indicates store op */
+> -	beq	2f
+> +	andis.	r11, r10, 0x4800 /* no translation, no permission. */
+> +	bne	2f	/* branch if either is set */
+>  
+>  	/* The EA of a data TLB miss is automatically stored in the MD_EPN
+>  	 * register.  The EA of a data TLB error is automatically stored in
