@@ -1,18 +1,38 @@
-Return-Path: <roberto.j.guerra@gmail.com>
-Received: from mail-qy0-f187.google.com (mail-qy0-f187.google.com
-	[209.85.221.187]) by ozlabs.org (Postfix) with ESMTP id 34BEFB7BA8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 10 Oct 2009 01:14:57 +1100 (EST)
-Received: by qyk17 with SMTP id 17so7513332qyk.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 09 Oct 2009 07:14:56 -0700 (PDT)
+Return-Path: <rcjenn@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9F247B6F2B
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Oct 2009 01:33:18 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n99ESZCC027885
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 08:28:35 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n99EX89Q243644
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 08:33:10 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n99EX23V002005
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 08:33:07 -0600
+Date: Fri, 9 Oct 2009 09:33:01 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/2][v2] mm: add notifier in pageblock isolation for
+	balloon drivers
+Message-ID: <20091009143301.GA11543@austin.ibm.com>
+References: <20091002184458.GC4908@austin.ibm.com>
+	<20091009094740.fe84e46a.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Date: Fri, 9 Oct 2009 10:14:56 -0400
-Message-ID: <7c4144600910090714g524bad07ubf6cad3aaf8085ff@mail.gmail.com>
-Subject: Support for S29JL064 in MPC8272ADS?
-From: Roberto Guerra <roberto.j.guerra@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091009094740.fe84e46a.kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,139 +42,239 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-My uboot can read my flash chip, finding the uImage and the initramfs,
-and booting the kernel fine. However, I'd like the Linux kernel to
-read my flash chip so that it can update files in it.
-My flash chip is the Spansion S29JL064H (AMD), 16 bit wide, 64 Mbit.
-The chip is mapped from FF800000 to FFFFFFFF. The rootfs.jffs2 was
-written on 0XFF990000 and is 0x390000 long.
-I know that the JFFS is written correctly, because it is detected by uboot:
+* KAMEZAWA Hiroyuki (kamezawa.hiroyu@jp.fujitsu.com) wrote:
+> On Fri, 2 Oct 2009 13:44:58 -0500
+> Robert Jennings <rcj@linux.vnet.ibm.com> wrote:
+> 
+> > Memory balloon drivers can allocate a large amount of memory which
+> > is not movable but could be freed to accomodate memory hotplug remove.
+> > 
+> > Prior to calling the memory hotplug notifier chain the memory in the
+> > pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
+> > isolation will not proceed, causing the memory removal for that page
+> > range to fail.
+> > 
+> > Rather than failing pageblock isolation if the the migrateteype is not
+> > MIGRATE_MOVABLE, this patch checks if all of the pages in the pageblock
+> > are owned by a registered balloon driver (or other entity) using a
+> > notifier chain.  If all of the non-movable pages are owned by a balloon,
+> > they can be freed later through the memory notifier chain and the range
+> > can still be isolated in set_migratetype_isolate().
+> > 
+> > Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+> > 
+> > ---
+> >  drivers/base/memory.c  |   19 +++++++++++++++++++
+> >  include/linux/memory.h |   26 ++++++++++++++++++++++++++
+> >  mm/page_alloc.c        |   45 ++++++++++++++++++++++++++++++++++++++-------
+> >  3 files changed, 83 insertions(+), 7 deletions(-)
+> > 
+> > Index: b/drivers/base/memory.c
+> > ===================================================================
+> > --- a/drivers/base/memory.c
+> > +++ b/drivers/base/memory.c
+> > @@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
+> >  }
+> >  EXPORT_SYMBOL(unregister_memory_notifier);
+> >  
+> > +static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
+> > +
+> 
+> IIUC, this notifier is called under zone->lock.
+> please ATOMIC_NOTIFIER_HEAD().
 
-=> fsinfo
-### filesystem type is JFFS2
-Scanning JFFS2 FS: ....... done.
-Compression: NONE
-        frag count: 523
-        compressed sum: 138074
-        uncompressed sum: 138074
-Compression: ZERO
-        frag count: 0
-        compressed sum: 0
-        uncompressed sum: 0
-Compression: RTIME
-        frag count: 1
-        compressed sum: 48
-        uncompressed sum: 52
-Compression: RUBINMIPS
-        frag count: 0
-        compressed sum: 0
-        uncompressed sum: 0
-Compression: COPY
-        frag count: 0
-        compressed sum: 0
-        uncompressed sum: 0
-Compression: DYNRUBIN
-        frag count: 0
-        compressed sum: 0
-        uncompressed sum: 0
-Compression: ZLIB
-        frag count: 2031
-        compressed sum: 3370991
-        uncompressed sum: 7598685
+I will correct this.
 
-=> flinfo
+> > +int register_memory_isolate_notifier(struct notifier_block *nb)
+> > +{
+> > +	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
+> > +}
+> > +EXPORT_SYMBOL(register_memory_isolate_notifier);
+> > +
+> > +void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> > +{
+> > +	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
+> > +}
+> > +EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+> > +
+> >  /*
+> >   * register_memory - Setup a sysfs device for a memory block
+> >   */
+> > @@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
+> >  	return blocking_notifier_call_chain(&memory_chain, val, v);
+> >  }
+> >  
+> > +int memory_isolate_notify(unsigned long val, void *v)
+> > +{
+> > +	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
+> > +}
+> > +
+> >  /*
+> >   * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
+> >   * OK to have direct references to sparsemem variables in here.
+> > Index: b/include/linux/memory.h
+> > ===================================================================
+> > --- a/include/linux/memory.h
+> > +++ b/include/linux/memory.h
+> > @@ -50,6 +50,18 @@ struct memory_notify {
+> >  	int status_change_nid;
+> >  };
+> >  
+> > +/*
+> > + * During pageblock isolation, count the number of pages in the
+> > + * range [start_pfn, start_pfn + nr_pages)
+> > + */
+> > +#define MEM_ISOLATE_COUNT	(1<<0)
+> > +
+> > +struct memory_isolate_notify {
+> > +	unsigned long start_pfn;
+> > +	unsigned int nr_pages;
+> > +	unsigned int pages_found;
+> > +};
+> 
+> Could you add commentary for each field ?
 
-Bank # 1: CFI conformant FLASH (16 x 16)  Size: 8 MB in 142 Sectors
-  AMD Standard command set, Manufacturer ID: 0x01, Device ID: 0x7E0201
-  Erase timeout: 8192 ms, write timeout: 1 ms
+This will be documented in the next version of the patch.
 
-  Sector Start Addresses:
-  FF800000        FF802000        FF804000        FF806000        FF808000
-  FF80A000        FF80C000        FF80E000        FF810000        FF820000
-  FF830000        FF840000        FF850000        FF860000        FF870000
-  FF880000        FF890000        FF8A0000        FF8B0000        FF8C0000
-  FF8D0000        FF8E0000        FF8F0000        FF900000        FF910000
-  FF920000        FF930000        FF940000        FF950000        FF960000
-  FF970000        FF980000        FF990000        FF9A0000        FF9B0000
-  FF9C0000        FF9D0000        FF9E0000        FF9F0000        FFA00000
-  FFA10000        FFA20000        FFA30000        FFA40000        FFA50000
-  FFA60000        FFA70000        FFA80000        FFA90000        FFAA0000
-  FFAB0000        FFAC0000        FFAD0000        FFAE0000        FFAF0000
-  FFB00000        FFB10000        FFB20000        FFB30000        FFB40000
-  FFB50000        FFB60000        FFB70000        FFB80000        FFB90000
-  FFBA0000        FFBB0000        FFBC0000        FFBD0000        FFBE0000
-  FFBF0000        FFC00000        FFC10000        FFC20000        FFC30000
-  FFC40000        FFC50000        FFC60000        FFC70000        FFC80000
-  FFC90000        FFCA0000        FFCB0000        FFCC0000        FFCD0000
-  FFCE0000        FFCF0000        FFD00000        FFD10000        FFD20000
-  FFD30000        FFD40000        FFD50000        FFD60000        FFD70000
-  FFD80000        FFD90000        FFDA0000        FFDB0000        FFDC0000
-  FFDD0000        FFDE0000        FFDF0000        FFE00000        FFE10000
-  FFE20000        FFE30000        FFE40000        FFE50000        FFE60000
-  FFE70000        FFE80000        FFE90000        FFEA0000        FFEB0000
-  FFEC0000        FFED0000        FFEE0000        FFEF0000        FFF00000   RO
-  FFF10000   RO   FFF20000   RO   FFF30000   RO   FFF40000   RO   FFF50000   RO
-  FFF60000   RO   FFF70000   RO   FFF80000        FFF90000        FFFA0000
-  FFFB0000        FFFC0000        FFFD0000        FFFE0000        FFFF0000
-  FFFF2000        FFFF4000        FFFF6000        FFFF8000        FFFFA000
-  FFFFC000        FFFFE000
+> > +
+> >  struct notifier_block;
+> >  struct mem_section;
+> >  
+> > @@ -76,14 +88,28 @@ static inline int memory_notify(unsigned
+> >  {
+> >  	return 0;
+> >  }
+> > +static inline int register_memory_isolate_notifier(struct notifier_block *nb)
+> > +{
+> > +	return 0;
+> > +}
+> > +static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> > +{
+> > +}
+> > +static inline int memory_isolate_notify(unsigned long val, void *v)
+> > +{
+> > +	return 0;
+> > +}
+> >  #else
+> >  extern int register_memory_notifier(struct notifier_block *nb);
+> >  extern void unregister_memory_notifier(struct notifier_block *nb);
+> > +extern int register_memory_isolate_notifier(struct notifier_block *nb);
+> > +extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
+> >  extern int register_new_memory(int, struct mem_section *);
+> >  extern int unregister_memory_section(struct mem_section *);
+> >  extern int memory_dev_init(void);
+> >  extern int remove_memory_block(unsigned long, struct mem_section *, int);
+> >  extern int memory_notify(unsigned long val, void *v);
+> > +extern int memory_isolate_notify(unsigned long val, void *v);
+> >  extern struct memory_block *find_memory_block(struct mem_section *);
+> >  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+> >  enum mem_add_context { BOOT, HOTPLUG };
+> > Index: b/mm/page_alloc.c
+> > ===================================================================
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -48,6 +48,7 @@
+> >  #include <linux/page_cgroup.h>
+> >  #include <linux/debugobjects.h>
+> >  #include <linux/kmemleak.h>
+> > +#include <linux/memory.h>
+> >  #include <trace/events/kmem.h>
+> >  
+> >  #include <asm/tlbflush.h>
+> > @@ -4985,23 +4986,53 @@ void set_pageblock_flags_group(struct pa
+> >  int set_migratetype_isolate(struct page *page)
+> >  {
+> >  	struct zone *zone;
+> > -	unsigned long flags;
+> > +	unsigned long flags, pfn, iter;
+> > +	unsigned long immobile = 0;
+> > +	struct memory_isolate_notify arg;
+> > +	int notifier_ret;
+> >  	int ret = -EBUSY;
+> >  	int zone_idx;
+> >  
+> >  	zone = page_zone(page);
+> >  	zone_idx = zone_idx(zone);
+> > +
+> >  	spin_lock_irqsave(&zone->lock, flags);
+> > +	if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE ||
+> > +	    zone_idx == ZONE_MOVABLE) {
+> > +		ret = 0;
+> > +		goto out;
+> > +	}
+> > +
+> > +	pfn = page_to_pfn(page);
+> > +	arg.start_pfn = pfn;
+> > +	arg.nr_pages = pageblock_nr_pages;
+> > +	arg.pages_found = 0;
+> > +
+> >  	/*
+> > -	 * In future, more migrate types will be able to be isolation target.
+> > +	 * The pageblock can be isolated even if the migrate type is
+> > +	 * not *_MOVABLE.  The memory isolation notifier chain counts
+> > +	 * the number of pages in this pageblock that can be freed later
+> > +	 * through the memory notifier chain.  If all of the pages are
+> > +	 * accounted for, isolation can continue.
+> >  	 */
+> 
+> Could add explanation like this ?
+> ==
+>   Later, for example, when memory hotplug notifier runs, these pages reported as
+>   "can be isoalted" should be isolated(freed) by callbacks.
+> ==
 
-My bootargs are:
-bootargs=console=ttyCPM0,115200 root=/dev/mtdblock1 rw
-mtdparts=phys:1600K(ROM)ro,6M(root),512K(U-Boot)ro,512K(unused)
+I'll change this comment.  You and Mel both gave me good direction here.
 
-However, the kernel does not detect any flash chip (nor there's any
-indication that a CFI probe is being performed).
+> > -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
+> > -	    zone_idx != ZONE_MOVABLE)
+> > +	notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
+> > +	notifier_ret = notifier_to_errno(notifier_ret);
+> > +       	if (notifier_ret || !arg.pages_found)
+> >  		goto out;
+> > -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> > -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> > -	ret = 0;
+> > +
+> > +	for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
+> > +		if (page_count(pfn_to_page(iter)))
+> > +			immobile++;
+> > +
+> > +	if (arg.pages_found == immobile)
+> > +		ret = 0;
+> > +
+> 
+> I can't understand this part. Does this mean all pages under this pageblock
+> are used by balloon driver ?
+> IOW, memory is hotpluggable only when all pages under this pageblock is used
+> by balloon ?
+> 
+> 
+> Hmm. Can't we do this kind of check..?
+> ==
+>      for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++) {
+> 	page = pfn_to_page(iter);
+> 	if (!page_count(page) || PageLRU(page)) // This page is movable.
+> 		continue;
+> 	immobile++
+>      }
+> ==
+> Then, if a page is luckyly on LRU, we have more chances.
+> (This check can fail if a page is on percpu pagevec etc...)
+> 
+> Thanks,
+> -Kame
 
-My flash kconfig section:
+I like this change, it will be in my next patch after I finish testing.
+Thank you for your review.
 
-#
-# RAM/ROM/Flash chip drivers
-#
-CONFIG_MTD_CFI=y
-# CONFIG_MTD_JEDECPROBE is not set
-CONFIG_MTD_GEN_PROBE=y
-CONFIG_MTD_CFI_ADV_OPTIONS=y
-# CONFIG_MTD_CFI_NOSWAP is not set
-# CONFIG_MTD_CFI_BE_BYTE_SWAP is not set
-CONFIG_MTD_CFI_LE_BYTE_SWAP=y
-# CONFIG_MTD_CFI_GEOMETRY is not set
-CONFIG_MTD_MAP_BANK_WIDTH_1=y
-CONFIG_MTD_MAP_BANK_WIDTH_2=y
-CONFIG_MTD_MAP_BANK_WIDTH_4=y
-# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
-CONFIG_MTD_CFI_I1=y
-CONFIG_MTD_CFI_I2=y
-# CONFIG_MTD_CFI_I4 is not set
-# CONFIG_MTD_CFI_I8 is not set
-# CONFIG_MTD_OTP is not set
-# CONFIG_MTD_CFI_INTELEXT is not set
-CONFIG_MTD_CFI_AMDSTD=y
-# CONFIG_MTD_CFI_STAA is not set
-CONFIG_MTD_CFI_UTIL=y
-# CONFIG_MTD_RAM is not set
-# CONFIG_MTD_ROM is not set
-# CONFIG_MTD_ABSENT is not set
-
-#
-# Mapping drivers for chip access
-#
-# CONFIG_MTD_COMPLEX_MAPPINGS is not set
-# CONFIG_MTD_PHYSMAP is not set
-# CONFIG_MTD_PHYSMAP_OF is not set
-# CONFIG_MTD_INTEL_VR_NOR is not set
-# CONFIG_MTD_PLATRAM is not set
-
-#
-# Self-contained MTD device drivers
-#
-# CONFIG_MTD_PMC551 is not set
-# CONFIG_MTD_SLRAM is not set
-# CONFIG_MTD_PHRAM is not set
-# CONFIG_MTD_MTDRAM is not set
-# CONFIG_MTD_BLOCK2MTD is not set
-
-Roberto Guerra
+> >  out:
+> > +	if (!ret) {
+> > +		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> > +		move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> > +	}
+> > +
+> >  	spin_unlock_irqrestore(&zone->lock, flags);
+> >  	if (!ret)
+> >  		drain_all_pages();
+> > 
+> > --
