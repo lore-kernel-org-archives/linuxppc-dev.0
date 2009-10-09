@@ -1,34 +1,33 @@
 Return-Path: <rcjenn@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9F247B6F2B
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Oct 2009 01:33:18 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n99ESZCC027885
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 08:28:35 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n99EX89Q243644
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 08:33:10 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n99EX23V002005
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 08:33:07 -0600
-Date: Fri, 9 Oct 2009 09:33:01 -0500
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9485DB7BA7
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Oct 2009 01:43:47 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n99EX1AA027985
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 08:33:01 -0600
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n99EhKFc098366
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 08:43:21 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n99EhHX3013790
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 08:43:20 -0600
+Date: Fri, 9 Oct 2009 09:43:16 -0500
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
 Subject: Re: [PATCH 1/2][v2] mm: add notifier in pageblock isolation for
 	balloon drivers
-Message-ID: <20091009143301.GA11543@austin.ibm.com>
+Message-ID: <20091009144316.GB11543@austin.ibm.com>
 References: <20091002184458.GC4908@austin.ibm.com>
-	<20091009094740.fe84e46a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091009112136.GB24845@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091009094740.fe84e46a.kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+In-Reply-To: <20091009112136.GB24845@csn.ul.ie>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Martin Schwidefsky <schwidefsky@de.ibm.com>,
 	Badari Pulavarty <pbadari@us.ibm.com>,
 	Brian King <brking@linux.vnet.ibm.com>,
@@ -42,10 +41,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* KAMEZAWA Hiroyuki (kamezawa.hiroyu@jp.fujitsu.com) wrote:
-> On Fri, 2 Oct 2009 13:44:58 -0500
-> Robert Jennings <rcj@linux.vnet.ibm.com> wrote:
-> 
+* Mel Gorman (mel@csn.ul.ie) wrote:
+> On Fri, Oct 02, 2009 at 01:44:58PM -0500, Robert Jennings wrote:
 > > Memory balloon drivers can allocate a large amount of memory which
 > > is not movable but could be freed to accomodate memory hotplug remove.
 > > 
@@ -55,6 +52,9 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > > range to fail.
 > > 
 > > Rather than failing pageblock isolation if the the migrateteype is not
+> 
+> s/the the migrateteype/the migratetype/
+> 
 > > MIGRATE_MOVABLE, this patch checks if all of the pages in the pageblock
 > > are owned by a registered balloon driver (or other entity) using a
 > > notifier chain.  If all of the non-movable pages are owned by a balloon,
@@ -79,12 +79,6 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > >  
 > > +static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
 > > +
-> 
-> IIUC, this notifier is called under zone->lock.
-> please ATOMIC_NOTIFIER_HEAD().
-
-I will correct this.
-
 > > +int register_memory_isolate_notifier(struct notifier_block *nb)
 > > +{
 > > +	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
@@ -124,6 +118,14 @@ I will correct this.
 > > + * During pageblock isolation, count the number of pages in the
 > > + * range [start_pfn, start_pfn + nr_pages)
 > > + */
+> > 
+> 
+> The comment could have been slightly better. The count of pages in the
+> range is nr_pages - memory_holes but what you're counting is the number
+> of pages owned by the balloon driver in the notification chain.
+
+Right, it is misleading.  I'll fix this.
+
 > > +#define MEM_ISOLATE_COUNT	(1<<0)
 > > +
 > > +struct memory_isolate_notify {
@@ -131,11 +133,6 @@ I will correct this.
 > > +	unsigned int nr_pages;
 > > +	unsigned int pages_found;
 > > +};
-> 
-> Could you add commentary for each field ?
-
-This will be documented in the next version of the patch.
-
 > > +
 > >  struct notifier_block;
 > >  struct mem_section;
@@ -215,16 +212,25 @@ This will be documented in the next version of the patch.
 > > +	 * the number of pages in this pageblock that can be freed later
 > > +	 * through the memory notifier chain.  If all of the pages are
 > > +	 * accounted for, isolation can continue.
-> >  	 */
 > 
-> Could add explanation like this ?
-> ==
->   Later, for example, when memory hotplug notifier runs, these pages reported as
->   "can be isoalted" should be isolated(freed) by callbacks.
-> ==
+> This comment could have been clearer as well
+> 
+> * It may be possible to isolate a pageblock even if the migratetype is
+> * not MIGRATE_MOVABLE. The memory isolation notifier chain is used by
+> * balloon drivers to return the number of pages in a range that are held
+> * by the balloon driver to shrink memory. If all the pages are accounted
+> * for by balloons or are free, isolation can continue
 
-I'll change this comment.  You and Mel both gave me good direction here.
+ * It may be possible to isolate a pageblock even if the migratetype is
+ * not MIGRATE_MOVABLE. The memory isolation notifier chain is used by
+ * balloon drivers to return the number of pages in a range that are held
+ * by the balloon driver to shrink memory. If all the pages are accounted
+ * for by balloons, are free, or on the LRU, isolation can continue.
+ * Later, for example, when memory hotplug notifier runs, these pages
+ * reported as "can be isolated" should be isolated(freed) by the balloon
+ * driver through the memory notifier chain.
 
+> >  	 */
 > > -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
 > > -	    zone_idx != ZONE_MOVABLE)
 > > +	notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
@@ -239,33 +245,32 @@ I'll change this comment.  You and Mel both gave me good direction here.
 > > +		if (page_count(pfn_to_page(iter)))
 > > +			immobile++;
 > > +
+> 
+> This part here is not safe when CONFIG_HOLES_IN_ZONE is set. You need to
+> make it something like
+> 
+> for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++) {
+> 	if (!pfn_valid_within(pfn))
+> 		continue;
+> 
+> 	if (page_count(pfn_to_page(iter)))
+> 		immobile++;
+> }
+> 
+> You shouldn't need to run pfn_valid() as you're always starting from a valid
+> page and never going outside MAX_ORDER_NR_PAGES in this iterator.
+> 
+
+I will make this change.
+
 > > +	if (arg.pages_found == immobile)
 > > +		ret = 0;
 > > +
 > 
-> I can't understand this part. Does this mean all pages under this pageblock
-> are used by balloon driver ?
-> IOW, memory is hotpluggable only when all pages under this pageblock is used
-> by balloon ?
-> 
-> 
-> Hmm. Can't we do this kind of check..?
-> ==
->      for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++) {
-> 	page = pfn_to_page(iter);
-> 	if (!page_count(page) || PageLRU(page)) // This page is movable.
-> 		continue;
-> 	immobile++
->      }
-> ==
-> Then, if a page is luckyly on LRU, we have more chances.
-> (This check can fail if a page is on percpu pagevec etc...)
-> 
-> Thanks,
-> -Kame
+> Ok, so if all pages in a range that are in use match the count returned
+> by the balloon, then it's ok to isolate.
 
-I like this change, it will be in my next patch after I finish testing.
-Thank you for your review.
+Correct. 
 
 > >  out:
 > > +	if (!ret) {
@@ -277,4 +282,14 @@ Thank you for your review.
 > >  	if (!ret)
 > >  		drain_all_pages();
 > > 
-> > --
+> 
+> The patch looks more or less sane. It would be nice to have a follow-on patch
+> that clarified some details but it's not necessary. The pfn_valid_within()
+> should be done as a follow-on patch. I haven't actually tested this but
+> otherwise it looks ok. Once the pfn_valid_within() is sorted out, it has
+> my Ack.
+
+I'll be sending out a new revision of this patch rather than a
+follow-on due to other changes (change from BLOCKING_NOTIFIER_HEAD to
+ATOMIC_NOTIFIER_HEAD) and I will include changes discussed here.  Thank
+you for the review.
