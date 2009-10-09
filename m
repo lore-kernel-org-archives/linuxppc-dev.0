@@ -1,28 +1,31 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 3C12BB7B7A
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Oct 2009 03:21:11 +1100 (EST)
-Date: Fri, 9 Oct 2009 18:20:20 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Nate Case <ncase@xes-inc.com>
-Subject: Re: [RFC] misc/at24: add experimental OF support for the generic
-	eeprom driver
-Message-ID: <20091009162020.GB588@pengutronix.de>
-References: <1255010672-21656-1-git-send-email-w.sang@pengutronix.de>
-	<20091008143301.GA6084@oksana.dev.rtsoft.ru>
-	<fa686aa40910080753v6f597b0h4ce835db9f7a653@mail.gmail.com>
-	<20091008151007.GA21328@oksana.dev.rtsoft.ru>
-	<fa686aa40910080848r459c47baob73fc70a95a08604@mail.gmail.com>
-	<20091008202723.GA8116@pengutronix.de>
-	<20091009051409.GA2361@pengutronix.de>
-	<fa686aa40910082240w7fb2a194tcc80e7afe182e781@mail.gmail.com>
-	<1255096871.16018.49.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="b5gNqxB1S1yM7hjW"
-In-Reply-To: <1255096871.16018.49.camel@localhost.localdomain>
-Cc: devicetree-discuss@ozlabs.org, linux-embedded@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EB460B70B3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 10 Oct 2009 04:04:54 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n99H4ZgV004780 for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 9 Oct 2009 10:04:46 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n99H7PAF024002
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 9 Oct 2009 12:07:25 -0500 (CDT)
+Date: Fri, 9 Oct 2009 12:04:33 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Roberto Guerra <roberto.j.guerra@gmail.com>
+Subject: Re: Support for S29JL064 in MPC8272ADS?
+Message-ID: <20091009170433.GA17372@b07421-ec1.am.freescale.net>
+References: <7c4144600910090714g524bad07ubf6cad3aaf8085ff@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7c4144600910090714g524bad07ubf6cad3aaf8085ff@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,53 +35,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Oct 09, 2009 at 10:14:56AM -0400, Roberto Guerra wrote:
+> Hello,
+> My uboot can read my flash chip, finding the uImage and the initramfs,
+> and booting the kernel fine. However, I'd like the Linux kernel to
+> read my flash chip so that it can update files in it.
 
---b5gNqxB1S1yM7hjW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Have you described your flash chip in the device tree?
 
+> However, the kernel does not detect any flash chip (nor there's any
+> indication that a CFI probe is being performed).
 
-> I can submit that soon,  but it probably makes sense for Wolfram to
-> voice whatever his concerns were about "questionable" properties before
-> I document what's there.
+The stock device tree for mpc8272ads only specifies it as a JEDEC
+flash, not CFI.
 
-Please don't feel offended. The things I noticed are:
-
-a) no documentation
-
-b) 'polarity' is a direct mapping to the register which IMO is a hint to lo=
-ok
-closer. I haven't checked in detil, but maybe the active_low-flag could be =
-used
-for this?
-
-I mainly got alarmed that properties were mainlined without being reviewed;=
- as
-the device-tree is based on convention (which is hard to change afterwards)=
-, I
-try to make sure this will not so easily happen again (thus the
-get_maintainer-patch on lkml).
-
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---b5gNqxB1S1yM7hjW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrPYsQACgkQD27XaX1/VRvaWgCgvUNhJqjS+Ukr6FpnNyea2kOe
-ng8An12HR1WAnkJJd43Fyf4VDUcvM5Wl
-=YsSA
------END PGP SIGNATURE-----
-
---b5gNqxB1S1yM7hjW--
+-Scott
