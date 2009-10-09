@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DD742B7B70
+	by ozlabs.org (Postfix) with ESMTPS id 573E5B7B80
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  9 Oct 2009 13:15:11 +1100 (EST)
-Subject: Re: [PATCH][v2] ibm_newemac: Added 16K Tx FIFO size support for EMAC4
+	Fri,  9 Oct 2009 13:16:02 +1100 (EST)
+Subject: Re: [PATCH][v2] powerpc/4xx: Add 16K FIFO size DTS entries on
+	supported platforms
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Dave Mitchell <dmitchell@appliedmicro.com>
-In-Reply-To: <1255019541-1974-1-git-send-email-dmitchell@appliedmicro.com>
-References: <1255019541-1974-1-git-send-email-dmitchell@appliedmicro.com>
+In-Reply-To: <1255019609-2033-1-git-send-email-dmitchell@appliedmicro.com>
+References: <1255019609-2033-1-git-send-email-dmitchell@appliedmicro.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 09 Oct 2009 13:15:02 +1100
-Message-Id: <1255054502.2355.27.camel@pasglop>
+Date: Fri, 09 Oct 2009 13:15:54 +1100
+Message-Id: <1255054554.2355.28.camel@pasglop>
 Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,66 +25,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-10-08 at 11:32 -0500, Dave Mitchell wrote:
-> Some of the EMAC V4 implementations support 16K Tx FIFOs. This
-> patch adds support for this functionality and fixes typos in the
-> Tx FIFO size error messages.
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
+On Thu, 2009-10-08 at 11:33 -0500, Dave Mitchell wrote:
+> Adding tx/rx-fifo-size-gige to EMAC fields for evaluation kit DTS
+> files where appropriate.
+> 
 > Signed-off-by: Dave Mitchell <dmitchell@appliedmicro.com>
 > Acked-by: Prodyut Hazarika <phazarika@appliedmicro.com>
 > Acked-by: Victor Gallardo <vgallardo@appliedmicro.com>
 > Acked-by: Loc Ho <lho@appliedmicro.com>
 > ---
 >  v1->v2: local date/time was out-of-sync and thus mail was as well
->  
->  drivers/net/ibm_newemac/core.c |    7 +++++--
->  drivers/net/ibm_newemac/emac.h |    1 +
->  2 files changed, 6 insertions(+), 2 deletions(-)
+
+I'll have to wait for the EMAC patch to go in, so ping me if you don't
+see me take that one after that happens.
+
+Cheers,
+Ben.
+
+>  arch/powerpc/boot/dts/canyonlands.dts |    2 ++
+>  arch/powerpc/boot/dts/eiger.dts       |    6 ++++++
+>  arch/powerpc/boot/dts/glacier.dts     |    6 ++++++
+>  arch/powerpc/boot/dts/haleakala.dts   |    2 ++
+>  arch/powerpc/boot/dts/kilauea.dts     |    4 ++++
+>  arch/powerpc/boot/dts/makalu.dts      |    4 ++++
+>  arch/powerpc/boot/dts/redwood.dts     |    1 +
+>  7 files changed, 25 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
-> index 89c82c5..c6591cb 100644
-> --- a/drivers/net/ibm_newemac/core.c
-> +++ b/drivers/net/ibm_newemac/core.c
-> @@ -443,7 +443,7 @@ static u32 __emac_calc_base_mr1(struct emac_instance *dev, int tx_size, int rx_s
->  		ret |= EMAC_MR1_TFS_2K;
->  		break;
->  	default:
-> -		printk(KERN_WARNING "%s: Unknown Rx FIFO size %d\n",
-> +		printk(KERN_WARNING "%s: Unknown Tx FIFO size %d\n",
->  		       dev->ndev->name, tx_size);
->  	}
->  
-> @@ -470,6 +470,9 @@ static u32 __emac4_calc_base_mr1(struct emac_instance *dev, int tx_size, int rx_
->  	DBG2(dev, "__emac4_calc_base_mr1" NL);
->  
->  	switch(tx_size) {
-> +	case 16384:
-> +		ret |= EMAC4_MR1_TFS_16K;
-> +		break;
->  	case 4096:
->  		ret |= EMAC4_MR1_TFS_4K;
->  		break;
-> @@ -477,7 +480,7 @@ static u32 __emac4_calc_base_mr1(struct emac_instance *dev, int tx_size, int rx_
->  		ret |= EMAC4_MR1_TFS_2K;
->  		break;
->  	default:
-> -		printk(KERN_WARNING "%s: Unknown Rx FIFO size %d\n",
-> +		printk(KERN_WARNING "%s: Unknown Tx FIFO size %d\n",
->  		       dev->ndev->name, tx_size);
->  	}
->  
-> diff --git a/drivers/net/ibm_newemac/emac.h b/drivers/net/ibm_newemac/emac.h
-> index 0afc2cf..d34adf9 100644
-> --- a/drivers/net/ibm_newemac/emac.h
-> +++ b/drivers/net/ibm_newemac/emac.h
-> @@ -153,6 +153,7 @@ struct emac_regs {
->  #define EMAC4_MR1_RFS_16K		0x00280000
->  #define EMAC4_MR1_TFS_2K       		0x00020000
->  #define EMAC4_MR1_TFS_4K		0x00030000
-> +#define EMAC4_MR1_TFS_16K		0x00050000
->  #define EMAC4_MR1_TR			0x00008000
->  #define EMAC4_MR1_MWSW_001		0x00001000
->  #define EMAC4_MR1_JPSM			0x00000800
+> diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+> index c920170..cd56bb5 100644
+> --- a/arch/powerpc/boot/dts/canyonlands.dts
+> +++ b/arch/powerpc/boot/dts/canyonlands.dts
+> @@ -352,6 +352,7 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
+> @@ -381,6 +382,7 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
+> diff --git a/arch/powerpc/boot/dts/eiger.dts b/arch/powerpc/boot/dts/eiger.dts
+> index c4a934f..48bcf71 100644
+> --- a/arch/powerpc/boot/dts/eiger.dts
+> +++ b/arch/powerpc/boot/dts/eiger.dts
+> @@ -316,6 +316,7 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
+> @@ -345,6 +346,7 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
+> @@ -375,6 +377,8 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+> +				tx-fifo-size-gige = <16384>; /* emac2&3 only */
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII1>;
+> @@ -403,6 +407,8 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+> +				tx-fifo-size-gige = <16384>; /* emac2&3 only */
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII1>;
+> diff --git a/arch/powerpc/boot/dts/glacier.dts b/arch/powerpc/boot/dts/glacier.dts
+> index f3787a2..f6f6189 100644
+> --- a/arch/powerpc/boot/dts/glacier.dts
+> +++ b/arch/powerpc/boot/dts/glacier.dts
+> @@ -292,6 +292,7 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
+> @@ -321,6 +322,7 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
+> @@ -351,6 +353,8 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+> +				tx-fifo-size-gige = <16384>; /* emac2&3 only */
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII1>;
+> @@ -379,6 +383,8 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+> +				tx-fifo-size-gige = <16384>; /* emac2&3 only */
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII1>;
+> diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
+> index 5b2a494..2b25669 100644
+> --- a/arch/powerpc/boot/dts/haleakala.dts
+> +++ b/arch/powerpc/boot/dts/haleakala.dts
+> @@ -226,6 +226,8 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+> +				tx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
+> diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
+> index c465614..083e68e 100644
+> --- a/arch/powerpc/boot/dts/kilauea.dts
+> +++ b/arch/powerpc/boot/dts/kilauea.dts
+> @@ -272,6 +272,8 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+> +				tx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
+> @@ -300,6 +302,8 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+> +				tx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
+> diff --git a/arch/powerpc/boot/dts/makalu.dts b/arch/powerpc/boot/dts/makalu.dts
+> index ffc246e..63d48b6 100644
+> --- a/arch/powerpc/boot/dts/makalu.dts
+> +++ b/arch/powerpc/boot/dts/makalu.dts
+> @@ -227,6 +227,8 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+> +				tx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x0000003f>;	/* Start at 6 */
+>  				rgmii-device = <&RGMII0>;
+> @@ -255,6 +257,8 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +                                rx-fifo-size-gige = <16384>;
+> +                                tx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
+> diff --git a/arch/powerpc/boot/dts/redwood.dts b/arch/powerpc/boot/dts/redwood.dts
+> index ad402c4..d2af32e 100644
+> --- a/arch/powerpc/boot/dts/redwood.dts
+> +++ b/arch/powerpc/boot/dts/redwood.dts
+> @@ -226,6 +226,7 @@
+>  				max-frame-size = <9000>;
+>  				rx-fifo-size = <4096>;
+>  				tx-fifo-size = <2048>;
+> +				rx-fifo-size-gige = <16384>;
+>  				phy-mode = "rgmii";
+>  				phy-map = <0x00000000>;
+>  				rgmii-device = <&RGMII0>;
