@@ -1,24 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1FD94B7B72
+Return-Path: <ron.mercer@qlogic.com>
+Received: from avexch1.qlogic.com (avexch1.qlogic.com [198.70.193.115])
+	by ozlabs.org (Postfix) with ESMTP id 98D19B7B77
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 10 Oct 2009 05:15:55 +1100 (EST)
-Date: Fri, 9 Oct 2009 13:16:17 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Roberto Guerra <roberto.j.guerra@gmail.com>
-Subject: Re: Support for S29JL064 in MPC8272ADS?
-Message-ID: <20091009181617.GA14304@loki.buserror.net>
-References: <7c4144600910090714g524bad07ubf6cad3aaf8085ff@mail.gmail.com>
-	<20091009170433.GA17372@b07421-ec1.am.freescale.net>
-	<7c4144600910091059o492c870cn3ea1c1a96d2f0823@mail.gmail.com>
+	Sat, 10 Oct 2009 05:07:38 +1100 (EST)
+Date: Fri, 9 Oct 2009 10:49:33 -0700
+From: Ron Mercer <ron.mercer@qlogic.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Linux net-2.6 build error for PPC
+Message-ID: <20091009174933.GA6797@linux-ox1b.qlogic.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7c4144600910091059o492c870cn3ea1c1a96d2f0823@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+Cc: ron.mercer@qlogic.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 09, 2009 at 01:59:58PM -0400, Roberto Guerra wrote:
-> No. I did not. My FDT was simplified from the stock MPC8272ADS:
-> => fdt list
-> / {
->         model = "pq2fads";
->         compatible = "fsl,pq2fads";
->         #address-cells = <0x00000001>;
->         #size-cells = <0x00000001>;
->         cpus {
->         };
->         memory {
->         };
->         soc@f0000000 {
->         };
->         chosen {
->         };
-> };
+I recently grabbed the latest net-2.6 kernel for a powerpc test box and
+got this compile error.
 
-You need more than that.  What happened to all the content of those nodes?
+  CC      arch/powerpc/kernel/cputable.o
+    CC      arch/powerpc/kernel/ptrace.o
+      CC      arch/powerpc/kernel/syscalls.o
+        CC      arch/powerpc/kernel/irq.o
+	   CC      arch/powerpc/kernel/align.o
+	     CC      arch/powerpc/kernel/signal_32.o
+	       CC      arch/powerpc/kernel/pmc.o
+		  CC      arch/powerpc/kernel/vdso.o
+		    cc1: warnings being treated as errors
+		      arch/powerpc/kernel/vdso.c:78: warning: alignment of
+		        âso_data_storeâs greater than maximum object file
+			   alignment.  Using 32768
+			     make[1]: *** [arch/powerpc/kernel/vdso.o]
+			     Error 1
+			       make: *** [arch/powerpc/kernel] Error 2
+				  [root@localhost linux-2.6-net.git]#
 
-> I am searching how I could add the mtd branch between the "soc" and
-> the "chosen".
 
-Look at the localbus node on the mpc8272ads dts.
 
-Look at (and use) a recent upstream kernel, if you're not already.
-
--Scott
+				    Any suggestions would be appreciated.
