@@ -2,12 +2,12 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E82F6B7B79
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 11:57:25 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 7F8DBB7B78
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 11:58:25 +1100 (EST)
 Subject: Re: [PATCH 3/6] 8xx: invalidate non present TLBs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OFD13ED50D.BE2734E7-ONC1257649.007DB1F8-C1257649.007E7CB6@transmode.se>
+To: Dan Malek <dan@embeddedalley.com>
+In-Reply-To: <3DFBC735-4084-4A0C-BF8D-C9B33142FE69@embeddedalley.com>
 References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
@@ -18,10 +18,10 @@ References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1255033705.2146.17.camel@pasglop>
 	<34A4641D-8121-4EBC-9880-26CB70DD3339@embeddedalley.com>
 	<1255040628.2146.54.camel@pasglop>
-	<OFD13ED50D.BE2734E7-ONC1257649.007DB1F8-C1257649.007E7CB6@transmode.se>
+	<3DFBC735-4084-4A0C-BF8D-C9B33142FE69@embeddedalley.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 09 Oct 2009 11:56:45 +1100
-Message-Id: <1255049805.2355.23.camel@pasglop>
+Date: Fri, 09 Oct 2009 11:57:52 +1100
+Message-Id: <1255049872.2355.24.camel@pasglop>
 Mime-Version: 1.0
 Cc: Scott Wood <scottwood@freescale.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -35,35 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-10-09 at 01:01 +0200, Joakim Tjernlund wrote:
-> Ok, that's my understanding too and I think we had the tlbie in
-> > update_mmu_cache to do the trick, though the comment is misleading
-> > making it think that the only reason it's there is for the dcbst
-> > problem. At least that's my understanding. That was lost recently in
-> 2.6
-> > so I'll have to put it back properly.
+On Thu, 2009-10-08 at 17:36 -0700, Dan Malek wrote:
+> On Oct 8, 2009, at 3:23 PM, Benjamin Herrenschmidt wrote:
 > 
-> So you don't think my invalidate "only !present pages" patch in
-> do_page_fault is enough?
+> > <<
+> > • Reference and change bit updates—The MPC850 does not generate an  
+> > exception for
+> >   an R (reference) bit update. In fact, there is no entry for an R  
+> > bit in the TLB.
+> >   The change bit (C) is bit 23 in the level-two descriptor,  
+> > described in Table 8-4.
+> >   Software updates C (changed) bits, but hardware treats the C bit  
+> > (negated) as a
+> >   write-protect attribute. Therefore, attempting to write to a page  
+> > marked unmodified
+> >   invalidates that entry and causes an implementation-specific DTLB  
+> > error exception.
+> >   ^^^^^^^^^^^^^^^^^^^^^^
+> >   If change bits are not needed, set the C bit to one by default in  
+> > the PTEs.
+> 
+> How interesting....
+> 
+> I've looked at many 8xx docs and they all have the same text
+> (probably cut/paste :-))  I'd place some debug code in the C functions
+> to print out a few of the TLB Entry for various errors to see if this  
+> really
+> happens, and for other errors, too.  I guess I never stumbled into
+> this because I always thought I had to do everything from software,
+> so just made sure I did.
 
-It might well be the right solution, I was talking about the code as we
-have upstream today.
-
-> I don't think we do the pre-load to avoid the second fault, but we
-> It won't get much faster than my current patch. Trapping all DTLB
-> Errors to C won't make it faster, only more correct should there be
-> a bug in the asm version. Actually there is one that has been there
-> all the time, guarded flag is not set by DTLB Error.
-
-There's other areas of improvements I suggested that can make it faster
-such as avoiding the whole kernel/user test in the TLB misses.
-
-Removing the stuff in DataTLBError can potentially make normal page
-faults faster too by avoiding going through a bunch of useless code
-before going to do the real thing in C :-)
-
-As I said, the case of ACCESSED or DIRTY updates are rare enough to not
-warrant code in the main page fault hot path.
+I'm not sure it's worth bothering :-) I'm happy to continue assuming we
+need to tlbie and always make sure we do so.
 
 Cheers,
 Ben.
