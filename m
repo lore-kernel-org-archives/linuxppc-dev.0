@@ -1,25 +1,22 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from easi.embeddedalley.com (easi.embeddedalley.com [71.6.201.124])
-	by ozlabs.org (Postfix) with SMTP id 5BC9CB7B76
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 11:35:45 +1100 (EST)
-In-Reply-To: <1255040628.2146.54.camel@pasglop>
-References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1254950285.2409.10.camel@pasglop>
-	<OF44C1983F.1C42E290-ONC1257649.0069CAF3-C1257649.006A78D1@transmode.se>
-	<7A3C6D4C-E92B-434D-AF68-7AEEDE6DAD45@embeddedalley.com>
-	<1255033705.2146.17.camel@pasglop>
-	<34A4641D-8121-4EBC-9880-26CB70DD3339@embeddedalley.com>
-	<1255040628.2146.54.camel@pasglop>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <3DFBC735-4084-4A0C-BF8D-C9B33142FE69@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 3/6] 8xx: invalidate non present TLBs
-Date: Thu, 8 Oct 2009 17:36:07 -0700
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EB29AB7B77
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 11:54:12 +1100 (EST)
+Subject: Re: [PATCH 2/6] 8xx: Update TLB asm so it behaves as linux mm expects.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+In-Reply-To: <OF0E7CD530.5EA71A5E-ONC1257649.00797FD2-C1257649.007CEF55@transmode.se>
+References: <1255008298-19949-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255008298-19949-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255008298-19949-3-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255035843.2146.39.camel@pasglop>
+	<OF0E7CD530.5EA71A5E-ONC1257649.00797FD2-C1257649.007CEF55@transmode.se>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 09 Oct 2009 11:53:31 +1100
+Message-Id: <1255049611.2355.20.camel@pasglop>
+Mime-Version: 1.0
 Cc: Scott Wood <scottwood@freescale.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	Rex Feany <RFeany@mrv.com>
@@ -32,39 +29,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2009-10-09 at 00:44 +0200, Joakim Tjernlund wrote:
 
-On Oct 8, 2009, at 3:23 PM, Benjamin Herrenschmidt wrote:
+> accessed == 1 and present = 0 is impossible, right?
+> So basically just copy over accessed to present and
+> linux mm set both when trapping to C.
 
-> <<
-> =95 Reference and change bit updates=97The MPC850 does not generate an =
-=20
-> exception for
->   an R (reference) bit update. In fact, there is no entry for an R =20
-> bit in the TLB.
->   The change bit (C) is bit 23 in the level-two descriptor, =20
-> described in Table 8-4.
->   Software updates C (changed) bits, but hardware treats the C bit =20
-> (negated) as a
->   write-protect attribute. Therefore, attempting to write to a page =20=
+No, when present = 0, then the rest of the PTE can contain unrelated
+things, you can't trust ACCESSED.
 
-> marked unmodified
->   invalidates that entry and causes an implementation-specific DTLB =20=
+> What about the execute perms in Level 2 descriptor, page 247?
 
-> error exception.
->   ^^^^^^^^^^^^^^^^^^^^^^
->   If change bits are not needed, set the C bit to one by default in =20=
+Not useful, not fine grained enough.
 
-> the PTEs.
+> > You still need to massage the PP bits into place. I don't see that
+> > happening.
+> 
+> Not at the moment, later.
+> 
+> >
+> > As it is, your PTE contains for bit 20 and 21, which translates to:
+> >
+> >    PTE:                 Translates to PP bits:
+> > RW: 0   USER: 0          00  supervisor RW (ok)
+> > RW: 0   USER: 1          01  supervisor RW user RO (WRONG)
+> > RW: 1   USER: 0          10  supervisor RW user RW (WRONG)
+> > RW: 1   USER: 1          11  supervisor RO user RO (WRONG)
+> 
+> You got USER and RW swapped and the table is different
+> for exec.
 
-How interesting....
+Hrm, let me see... yes. You are right, I mixed RW and USER. However,
+I don't think the PP bits change do they ? IE. Basically, Read == Exec
+at the page level. So the table isn't really different between I and D.
 
-I've looked at many 8xx docs and they all have the same text
-(probably cut/paste :-))  I'd place some debug code in the C functions
-to print out a few of the TLB Entry for various errors to see if this =20=
+However, indeed, since you don't have a unified TLB, the case can be
+made that we can ignore R vs. W in the iTLB case. In which case, you get
+for iTLB:
 
-really
-happens, and for other errors, too.  I guess I never stumbled into
-this because I always thought I had to do everything from software,
-so just made sure I did.
 
-	-- Dan
+    PTE:                 Translates to PP bits:
+ RW: 0   USER: 0          00  supervisor X only (ok)
+ RW: 0   USER: 1          10  supervisor X user X (ok)
+ RW: 1   USER: 0          01  supervisor X user X (WRONG)
+ RW: 1   USER: 1          11  supervisor X user X (ok)
+
+So a page with _PAGE_RW and not _PAGE_USER would still be executable
+from user... oops :-)
+
+I think what you want for iTLB is just basically have a base of 00
+and or-in _PAGE_USER only (ie, keep _PAGE_RW clear with a rlwinm)
+so that you basically get supervisor X only if _PAGE_USER is 0 and
+both X if _PAGE_USER is 1
+
+For the dTLB, the table becomes (including your inversion of _PAGE_RW)
+
+    PTE:                 Translates to PP bits: 
+ RW: 0   USER: 0          01  supervisor RW user RO (WRONG)
+ RW: 0   USER: 1          11  supervisor RO user RO (ok)
+ RW: 1   USER: 0          00  supervisor RW only (ok)
+ RW: 1   USER: 1          10  supervisor RW user RW (ok)
+
+So it's -almost- right :-) You still got the RW:0 USER:0 case wrong,
+ie a read-only kernel page would be user readable.
+
+You can work around that by never setting kernel pages read-only (which
+we do mostly), but in the grand scheme of things, my trick I proposed
+initially would sort it out all including support for kernel RO :-)
+
+In any case, the above, while wrong, wouldn't cause crashes or issues
+for well behaved userspace so it's a step forward.
+
+> Same here as for ITLB.
+
+And still not right :-) ie. you cannot rely on the value of
+_PAGE_ACCESSED if _PAGE_PRESENT is not set.
+
+> Nope, no xori needed for exec perms
+
+Right, thanks to having a split TLB, but you still need to mask
+out one of the bits afaik.
+
+> I don't think user space would boot if I got it wrong.
+
+True. I think it's more correct than I initially thought but still
+subtely wrong :-)
+
+Cheers,
+Ben.
