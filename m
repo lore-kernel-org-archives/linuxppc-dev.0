@@ -1,25 +1,32 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-gx0-f223.google.com (mail-gx0-f223.google.com
-	[209.85.217.223]) by ozlabs.org (Postfix) with ESMTP id 6DB46B834B
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 19:29:38 +1100 (EST)
-Received: by gxk23 with SMTP id 23so3629851gxk.2
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 Oct 2009 01:29:36 -0700 (PDT)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	 akpm@linux-foundation.org
-Subject: [PATCH 3/8] iommu-helper: Use bitmap library
-Date: Fri,  9 Oct 2009 17:29:16 +0900
-Message-Id: <1255076961-21325-3-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1255076961-21325-2-git-send-email-akinobu.mita@gmail.com>
-References: <> <1255076961-21325-1-git-send-email-akinobu.mita@gmail.com>
-	<1255076961-21325-2-git-send-email-akinobu.mita@gmail.com>
-Cc: x86@kernel.org, Akinobu Mita <akinobu.mita@gmail.com>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	"David S. Miller" <davem@davemloft.net>
+Return-Path: <ego@in.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4F57FB7BB0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  9 Oct 2009 19:30:52 +1100 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp04.au.ibm.com (8.14.3/8.13.1) with ESMTP id n998RqVd022342
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Oct 2009 19:27:52 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n998SN3A1433814
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Oct 2009 19:28:23 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n998Un9P025883
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Oct 2009 19:30:50 +1100
+Subject: [PATCH v4 0/4] pseries: Add cede support for cpu-offline
+To: Nathan Fontenot <nfont@austin.ibm.com>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org
+From: Gautham R Shenoy <ego@in.ibm.com>
+Date: Fri, 09 Oct 2009 14:00:45 +0530
+Message-ID: <20091009082952.32381.32794.stgit@sofia.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,256 +36,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use bitmap library and kill some unused iommu helper functions.
+Hi,
 
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+This is version 4 of patch series that provides a framework to choose the
+state a pseries CPU must be put to when it is offlined.
+
+Previous versions can be found here:
+Version 3: http://lkml.org/lkml/2009/9/15/164
+Version 2: http://lkml.org/lkml/2009/8/28/102
+Version 1: http://lkml.org/lkml/2009/8/6/236
+
+This patch series differs considerably from the previous iterations in that:
+- It is based on top of Nathan Fontenot's
+  "pseries kernel handling of dynamic logical partitioning v2" patches
+  found here: http://lkml.org/lkml/2009/9/18/173
+
+- It does away with the sysfs tunables "available_hotplug_states" and
+  "currrent_hotplug_state", thereby refraining from exposing any platform
+  specific option to the userspace.
+
+- It provides a framework that discovers the support for ceding the vcpu
+  to the hypervisor with a latency specifier value. When such a support is
+  present, it would put the offlined CPUs into a ceded state while
+  setting the cede   latency specifier value in the VPA indicating
+  the latency expectation of the   guest OS. Hypervisor may use this for
+  better energy savings.
+
+- On platforms which don't have support for ceding with a latency specifier
+  hint, it puts the offlined CPUs into the rtas_stop_self() state.
+
+- Currently, Nathan's patches have provided sysfs interfaces
+	/sys/devices/system/cpu/{probe, release}
+  to dynamically allocate and deallocate resources respectively. The current
+  process of allocating and deallocating CPUs would require two steps,
+  namely:
+	- Write to the "probe/release" file
+	- Write to the "online" file.
+
+  This patch-series combines these two operations such that when the user
+  writes to the "probe", the CPUs would not only get allocated to the
+  partition but also onlined. Similarly, when the user writes to "release",
+  the CPUs would be offlined before they are deallocated.
+
+  Thus, the user will now have to play with only one set of sysfs tunables
+  for performing deallocate and the sysfs tunable "online" can be used for
+  the purpose of deactivating the CPU while still letting the LPAR own it.
+
+- It provides serializations for handling the writes the the "online" file
+  against the writes to "probe/release" pair so that at any given instant,
+  the user could either be deallocating the CPUs or deactivating it, but
+  not both.
+
+With this approach, I hope that the objection regarding the layering
+violation that was raised by Peter for previous approaches is
+addressed, while also providing clean interfaces for the userspace tools
+to distinguish between the deallocation and deactivation without exposing
+any platform specific details.
+
+The patchset has been tested on the available pseries platforms and it
+works as per the expectations.
+
+Comments are very much appreciated.
 ---
- arch/powerpc/kernel/iommu.c      |    4 +-
- arch/sparc/kernel/iommu.c        |    3 +-
- arch/x86/kernel/amd_iommu.c      |    4 +-
- arch/x86/kernel/pci-calgary_64.c |    6 ++--
- arch/x86/kernel/pci-gart_64.c    |    6 ++--
- include/linux/iommu-helper.h     |    3 --
- lib/iommu-helper.c               |   55 ++++---------------------------------
- 7 files changed, 18 insertions(+), 63 deletions(-)
 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index fd51578..5547ae6 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -30,7 +30,7 @@
- #include <linux/spinlock.h>
- #include <linux/string.h>
- #include <linux/dma-mapping.h>
--#include <linux/bitops.h>
-+#include <linux/bitmap.h>
- #include <linux/iommu-helper.h>
- #include <linux/crash_dump.h>
- #include <asm/io.h>
-@@ -251,7 +251,7 @@ static void __iommu_free(struct iommu_table *tbl, dma_addr_t dma_addr,
- 	}
- 
- 	ppc_md.tce_free(tbl, entry, npages);
--	iommu_area_free(tbl->it_map, free_entry, npages);
-+	bitmap_clear(tbl->it_map, free_entry, npages);
- }
- 
- static void iommu_free(struct iommu_table *tbl, dma_addr_t dma_addr,
-diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
-index 7690cc2..5fad949 100644
---- a/arch/sparc/kernel/iommu.c
-+++ b/arch/sparc/kernel/iommu.c
-@@ -11,6 +11,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/errno.h>
- #include <linux/iommu-helper.h>
-+#include <linux/bitmap.h>
- 
- #ifdef CONFIG_PCI
- #include <linux/pci.h>
-@@ -169,7 +170,7 @@ void iommu_range_free(struct iommu *iommu, dma_addr_t dma_addr, unsigned long np
- 
- 	entry = (dma_addr - iommu->page_table_map_base) >> IO_PAGE_SHIFT;
- 
--	iommu_area_free(arena->map, entry, npages);
-+	bitmap_clear(arena->map, entry, npages);
- }
- 
- int iommu_table_init(struct iommu *iommu, int tsbsize,
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 98f230f..08b1d20 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -19,7 +19,7 @@
- 
- #include <linux/pci.h>
- #include <linux/gfp.h>
--#include <linux/bitops.h>
-+#include <linux/bitmap.h>
- #include <linux/debugfs.h>
- #include <linux/scatterlist.h>
- #include <linux/dma-mapping.h>
-@@ -959,7 +959,7 @@ static void dma_ops_free_addresses(struct dma_ops_domain *dom,
- 
- 	address = (address % APERTURE_RANGE_SIZE) >> PAGE_SHIFT;
- 
--	iommu_area_free(range->bitmap, address, pages);
-+	bitmap_clear(range->bitmap, address, pages);
- 
- }
- 
-diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-index 971a3be..c87bb20 100644
---- a/arch/x86/kernel/pci-calgary_64.c
-+++ b/arch/x86/kernel/pci-calgary_64.c
-@@ -31,7 +31,7 @@
- #include <linux/string.h>
- #include <linux/crash_dump.h>
- #include <linux/dma-mapping.h>
--#include <linux/bitops.h>
-+#include <linux/bitmap.h>
- #include <linux/pci_ids.h>
- #include <linux/pci.h>
- #include <linux/delay.h>
-@@ -211,7 +211,7 @@ static void iommu_range_reserve(struct iommu_table *tbl,
- 
- 	spin_lock_irqsave(&tbl->it_lock, flags);
- 
--	iommu_area_reserve(tbl->it_map, index, npages);
-+	bitmap_set(tbl->it_map, index, npages);
- 
- 	spin_unlock_irqrestore(&tbl->it_lock, flags);
- }
-@@ -305,7 +305,7 @@ static void iommu_free(struct iommu_table *tbl, dma_addr_t dma_addr,
- 
- 	spin_lock_irqsave(&tbl->it_lock, flags);
- 
--	iommu_area_free(tbl->it_map, entry, npages);
-+	bitmap_clear(tbl->it_map, entry, npages);
- 
- 	spin_unlock_irqrestore(&tbl->it_lock, flags);
- }
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index 98a827e..3010cd1 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -22,7 +22,7 @@
- #include <linux/module.h>
- #include <linux/topology.h>
- #include <linux/interrupt.h>
--#include <linux/bitops.h>
-+#include <linux/bitmap.h>
- #include <linux/kdebug.h>
- #include <linux/scatterlist.h>
- #include <linux/iommu-helper.h>
-@@ -122,7 +122,7 @@ static void free_iommu(unsigned long offset, int size)
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&iommu_bitmap_lock, flags);
--	iommu_area_free(iommu_gart_bitmap, offset, size);
-+	bitmap_clear(iommu_gart_bitmap, offset, size);
- 	if (offset >= next_bit)
- 		next_bit = offset + size;
- 	spin_unlock_irqrestore(&iommu_bitmap_lock, flags);
-@@ -781,7 +781,7 @@ void __init gart_iommu_init(void)
- 	 * Out of IOMMU space handling.
- 	 * Reserve some invalid pages at the beginning of the GART.
- 	 */
--	iommu_area_reserve(iommu_gart_bitmap, 0, EMERGENCY_PAGES);
-+	bitmap_set(iommu_gart_bitmap, 0, EMERGENCY_PAGES);
- 
- 	agp_memory_reserved = iommu_size;
- 	printk(KERN_INFO
-diff --git a/include/linux/iommu-helper.h b/include/linux/iommu-helper.h
-index 3b068e5..64d1b63 100644
---- a/include/linux/iommu-helper.h
-+++ b/include/linux/iommu-helper.h
-@@ -14,14 +14,11 @@ static inline unsigned long iommu_device_max_index(unsigned long size,
- extern int iommu_is_span_boundary(unsigned int index, unsigned int nr,
- 				  unsigned long shift,
- 				  unsigned long boundary_size);
--extern void iommu_area_reserve(unsigned long *map, unsigned long i, int len);
- extern unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
- 				      unsigned long start, unsigned int nr,
- 				      unsigned long shift,
- 				      unsigned long boundary_size,
- 				      unsigned long align_mask);
--extern void iommu_area_free(unsigned long *map, unsigned long start,
--			    unsigned int nr);
- 
- extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len,
- 				     unsigned long io_page_size);
-diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-index dddbf22..51b53d3 100644
---- a/lib/iommu-helper.c
-+++ b/lib/iommu-helper.c
-@@ -3,40 +3,7 @@
-  */
- 
- #include <linux/module.h>
--#include <linux/bitops.h>
--
--static unsigned long find_next_zero_area(unsigned long *map,
--					 unsigned long size,
--					 unsigned long start,
--					 unsigned int nr,
--					 unsigned long align_mask)
--{
--	unsigned long index, end, i;
--again:
--	index = find_next_zero_bit(map, size, start);
--
--	/* Align allocation */
--	index = (index + align_mask) & ~align_mask;
--
--	end = index + nr;
--	if (end >= size)
--		return -1;
--	i = find_next_bit(map, end, index);
--	if (i < end) {
--		start = i + 1;
--		goto again;
--	}
--	return index;
--}
--
--void iommu_area_reserve(unsigned long *map, unsigned long i, int len)
--{
--	unsigned long end = i + len;
--	while (i < end) {
--		__set_bit(i, map);
--		i++;
--	}
--}
-+#include <linux/bitmap.h>
- 
- int iommu_is_span_boundary(unsigned int index, unsigned int nr,
- 			   unsigned long shift,
-@@ -55,30 +22,20 @@ unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
- {
- 	unsigned long index;
- again:
--	index = find_next_zero_area(map, size, start, nr, align_mask);
--	if (index != -1) {
-+	index = bitmap_find_next_zero_area(map, size, start, nr, align_mask);
-+	if (index < size) {
- 		if (iommu_is_span_boundary(index, nr, shift, boundary_size)) {
- 			/* we could do more effectively */
- 			start = index + 1;
- 			goto again;
- 		}
--		iommu_area_reserve(map, index, nr);
-+		bitmap_set(map, index, nr);
-+		return index;
- 	}
--	return index;
-+	return -1;
- }
- EXPORT_SYMBOL(iommu_area_alloc);
- 
--void iommu_area_free(unsigned long *map, unsigned long start, unsigned int nr)
--{
--	unsigned long end = start + nr;
--
--	while (start < end) {
--		__clear_bit(start, map);
--		start++;
--	}
--}
--EXPORT_SYMBOL(iommu_area_free);
--
- unsigned long iommu_num_pages(unsigned long addr, unsigned long len,
- 			      unsigned long io_page_size)
- {
+Gautham R Shenoy (4):
+      pseries: Serialize cpu hotplug operations during deactivate Vs deallocate
+      pseries: Add code to online/offline CPUs of a DLPAR node.
+      pSeries: Add hooks to put the CPU into an appropriate offline state
+      pSeries: extended_cede_processor() helper function.
+
+
+ arch/powerpc/include/asm/lppaca.h               |    9 +
+ arch/powerpc/platforms/pseries/dlpar.c          |  129 ++++++++++++++++++-
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |  157 ++++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/offline_states.h |   18 +++
+ arch/powerpc/platforms/pseries/plpar_wrappers.h |   22 +++
+ arch/powerpc/platforms/pseries/smp.c            |   19 +++
+ arch/powerpc/xmon/xmon.c                        |    3 
+ drivers/base/cpu.c                              |    2 
+ include/linux/cpu.h                             |   13 ++
+ 9 files changed, 356 insertions(+), 16 deletions(-)
+ create mode 100644 arch/powerpc/platforms/pseries/offline_states.h
+
 -- 
-1.5.4.3
+Thanks and Regards
+gautham.
