@@ -1,23 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20091009051409.GA2361@pengutronix.de>
-References: <1255010672-21656-1-git-send-email-w.sang@pengutronix.de>
-	<20091008143301.GA6084@oksana.dev.rtsoft.ru>
-	<fa686aa40910080753v6f597b0h4ce835db9f7a653@mail.gmail.com>
-	<20091008151007.GA21328@oksana.dev.rtsoft.ru>
-	<fa686aa40910080848r459c47baob73fc70a95a08604@mail.gmail.com>
-	<20091008202723.GA8116@pengutronix.de>
-	<20091009051409.GA2361@pengutronix.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 8 Oct 2009 23:40:47 -0600
-Message-ID: <fa686aa40910082240w7fb2a194tcc80e7afe182e781@mail.gmail.com>
-Subject: Re: [RFC] misc/at24: add experimental OF support for the generic
-	eeprom driver
-To: Wolfram Sang <w.sang@pengutronix.de>, Nate Case <ncase@xes-inc.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	linux-i2c@vger.kernel.org, linux-embedded@vger.kernel.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 45FF9B7334
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  9 Oct 2009 16:55:24 +1100 (EST)
+Date: Thu, 08 Oct 2009 22:55:38 -0700 (PDT)
+Message-Id: <20091008.225538.130921151.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH][v2] ibm_newemac: Added 16K Tx FIFO size support for EMAC4
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1255054502.2355.27.camel@pasglop>
+References: <1255019541-1974-1-git-send-email-dmitchell@appliedmicro.com>
+	<1255054502.2355.27.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	dmitchell@appliedmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 8, 2009 at 11:14 PM, Wolfram Sang <w.sang@pengutronix.de> wrote=
-:
->> Will check this tomorrow.
->
-> And while doing this and figuring the pro/cons of those methods, I stumbl=
-ed over this commit:
->
-> =A0 =A0 =A0 =A0gpio: pca953x: Get platform_data from OpenFirmware
-> =A0 =A0 =A0 =A0(1965d30356c1c65660ba3330927671cfe81acdd5)
->
-> It looks to me that it missed all people involved in OF/DT-development an=
-d now we
-> have undocumented and IMO questionable properties in the kernel.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 09 Oct 2009 13:15:02 +1100
 
-Hi Nate,
+> On Thu, 2009-10-08 at 11:32 -0500, Dave Mitchell wrote:
+>> Some of the EMAC V4 implementations support 16K Tx FIFOs. This
+>> patch adds support for this functionality and fixes typos in the
+>> Tx FIFO size error messages.
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+>> Signed-off-by: Dave Mitchell <dmitchell@appliedmicro.com>
+>> Acked-by: Prodyut Hazarika <phazarika@appliedmicro.com>
+>> Acked-by: Victor Gallardo <vgallardo@appliedmicro.com>
+>> Acked-by: Loc Ho <lho@appliedmicro.com>
 
-For your future reference, patches that look at the device tree should
-also cc: devicetree-discuss@lists.ozlabs.org so that new bindings can
-be reviewed and common mistakes can be avoided.  It is expected that
-new device tree bindings are accompanied with documentation describing
-what the binding is for and how it should be used (see
-Documentation/powerpc/dts-bindings).
-
-I know this change is already in mainline, but can you please post the
-device tree fragment that you're using to describe this chip?  I want
-to make sure we don't get stuck with things in the kernel that will be
-hard to maintain in the long term.
-
-Thanks,
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Applied to net-2.6, thanks!
