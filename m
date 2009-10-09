@@ -1,24 +1,17 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from easi.embeddedalley.com (easi.embeddedalley.com [71.6.201.124])
-	by ozlabs.org (Postfix) with SMTP id 75D70B7B70
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 11:04:42 +1100 (EST)
-In-Reply-To: <OFB570D3CC.F2AE189F-ONC1257649.0070C808-C1257649.00714D8A@transmode.se>
-References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1254950285.2409.10.camel@pasglop>
-	<OF44C1983F.1C42E290-ONC1257649.0069CAF3-C1257649.006A78D1@transmode.se>
-	<7A3C6D4C-E92B-434D-AF68-7AEEDE6DAD45@embeddedalley.com>
-	<OFB570D3CC.F2AE189F-ONC1257649.0070C808-C1257649.00714D8A@transmode.se>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B33095E4-DE77-493E-B9EF-79B6B031CA1B@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 3/6] 8xx: invalidate non present TLBs
-Date: Thu, 8 Oct 2009 17:05:03 -0700
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: Scott Wood <scottwood@freescale.com>, Rex Feany <RFeany@mrv.com>,
+Return-Path: <RFeany@mrv.com>
+Received: from bos-spam.mrv.com (mx5.mrv.com [140.179.254.12])
+	by ozlabs.org (Postfix) with ESMTP id 9FE84B7B7C
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 11:15:31 +1100 (EST)
+Date: Thu, 8 Oct 2009 17:15:27 -0700
+From: Rex Feany <RFeany@mrv.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH 0/6] 8xx MMU fixes
+Message-ID: <20091009001527.GA6196@compile2.chatsunix.int.mrv.com>
+References: <1255008298-19949-1-git-send-email-Joakim.Tjernlund@transmode.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1255008298-19949-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Cc: Scott Wood <scottwood@freescale.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,20 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Thus spake Joakim Tjernlund (Joakim.Tjernlund@transmode.se):
 
-On Oct 8, 2009, at 1:37 PM, Joakim Tjernlund wrote:
+> So here we go again. This time I am
+> fairly confindent I got most things correct :)
+> Also manged to use even less instructions in the
+> TLB Miss handlers.
+> 
+> Scott and Rex, forget previous versions and
+> try this one out.
 
-> Hi, been a long time since I heard from you :)
+This patch set is better, userspace seems more stable but I am still
+seeing some odd problems. This is from straceing mount, which displays
+nothing even though /proc/mounts shows everything mounted properly:
 
-Yeah, hiding among other projects :-)
+open("/proc/mounts", O_RDONLY)          = 3
+fstat64(0x3, 0x7fe7e2a8)                = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x3001f000
+read(3, 0x3001f000, 1024)               = -1 EFAULT (Bad address)
+exit_group(0)                           = ?
 
-> Anyhow, you are welcome to have a look at the patches I have been  
-> tossing out.
+it looks like the memory allocated using mmap is bad?
 
-I've been looking, but since I'm not familiar with the current
-VM implementation, there isn't much I can contribute.  If
-I see something where I can be useful, I'll speak up.
-
-Thanks.
-
-	-- Dan
+take care!
+/rex.
