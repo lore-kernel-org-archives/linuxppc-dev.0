@@ -2,20 +2,26 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EB29AB7B77
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 11:54:12 +1100 (EST)
-Subject: Re: [PATCH 2/6] 8xx: Update TLB asm so it behaves as linux mm expects.
+	by ozlabs.org (Postfix) with ESMTPS id E82F6B7B79
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 11:57:25 +1100 (EST)
+Subject: Re: [PATCH 3/6] 8xx: invalidate non present TLBs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OF0E7CD530.5EA71A5E-ONC1257649.00797FD2-C1257649.007CEF55@transmode.se>
-References: <1255008298-19949-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255008298-19949-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255008298-19949-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255035843.2146.39.camel@pasglop>
-	<OF0E7CD530.5EA71A5E-ONC1257649.00797FD2-C1257649.007CEF55@transmode.se>
+In-Reply-To: <OFD13ED50D.BE2734E7-ONC1257649.007DB1F8-C1257649.007E7CB6@transmode.se>
+References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254950285.2409.10.camel@pasglop>
+	<OF44C1983F.1C42E290-ONC1257649.0069CAF3-C1257649.006A78D1@transmode.se>
+	<7A3C6D4C-E92B-434D-AF68-7AEEDE6DAD45@embeddedalley.com>
+	<1255033705.2146.17.camel@pasglop>
+	<34A4641D-8121-4EBC-9880-26CB70DD3339@embeddedalley.com>
+	<1255040628.2146.54.camel@pasglop>
+	<OFD13ED50D.BE2734E7-ONC1257649.007DB1F8-C1257649.007E7CB6@transmode.se>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 09 Oct 2009 11:53:31 +1100
-Message-Id: <1255049611.2355.20.camel@pasglop>
+Date: Fri, 09 Oct 2009 11:56:45 +1100
+Message-Id: <1255049805.2355.23.camel@pasglop>
 Mime-Version: 1.0
 Cc: Scott Wood <scottwood@freescale.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -29,91 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-10-09 at 00:44 +0200, Joakim Tjernlund wrote:
-
-> accessed == 1 and present = 0 is impossible, right?
-> So basically just copy over accessed to present and
-> linux mm set both when trapping to C.
-
-No, when present = 0, then the rest of the PTE can contain unrelated
-things, you can't trust ACCESSED.
-
-> What about the execute perms in Level 2 descriptor, page 247?
-
-Not useful, not fine grained enough.
-
-> > You still need to massage the PP bits into place. I don't see that
-> > happening.
+On Fri, 2009-10-09 at 01:01 +0200, Joakim Tjernlund wrote:
+> Ok, that's my understanding too and I think we had the tlbie in
+> > update_mmu_cache to do the trick, though the comment is misleading
+> > making it think that the only reason it's there is for the dcbst
+> > problem. At least that's my understanding. That was lost recently in
+> 2.6
+> > so I'll have to put it back properly.
 > 
-> Not at the moment, later.
-> 
-> >
-> > As it is, your PTE contains for bit 20 and 21, which translates to:
-> >
-> >    PTE:                 Translates to PP bits:
-> > RW: 0   USER: 0          00  supervisor RW (ok)
-> > RW: 0   USER: 1          01  supervisor RW user RO (WRONG)
-> > RW: 1   USER: 0          10  supervisor RW user RW (WRONG)
-> > RW: 1   USER: 1          11  supervisor RO user RO (WRONG)
-> 
-> You got USER and RW swapped and the table is different
-> for exec.
+> So you don't think my invalidate "only !present pages" patch in
+> do_page_fault is enough?
 
-Hrm, let me see... yes. You are right, I mixed RW and USER. However,
-I don't think the PP bits change do they ? IE. Basically, Read == Exec
-at the page level. So the table isn't really different between I and D.
+It might well be the right solution, I was talking about the code as we
+have upstream today.
 
-However, indeed, since you don't have a unified TLB, the case can be
-made that we can ignore R vs. W in the iTLB case. In which case, you get
-for iTLB:
+> I don't think we do the pre-load to avoid the second fault, but we
+> It won't get much faster than my current patch. Trapping all DTLB
+> Errors to C won't make it faster, only more correct should there be
+> a bug in the asm version. Actually there is one that has been there
+> all the time, guarded flag is not set by DTLB Error.
 
+There's other areas of improvements I suggested that can make it faster
+such as avoiding the whole kernel/user test in the TLB misses.
 
-    PTE:                 Translates to PP bits:
- RW: 0   USER: 0          00  supervisor X only (ok)
- RW: 0   USER: 1          10  supervisor X user X (ok)
- RW: 1   USER: 0          01  supervisor X user X (WRONG)
- RW: 1   USER: 1          11  supervisor X user X (ok)
+Removing the stuff in DataTLBError can potentially make normal page
+faults faster too by avoiding going through a bunch of useless code
+before going to do the real thing in C :-)
 
-So a page with _PAGE_RW and not _PAGE_USER would still be executable
-from user... oops :-)
-
-I think what you want for iTLB is just basically have a base of 00
-and or-in _PAGE_USER only (ie, keep _PAGE_RW clear with a rlwinm)
-so that you basically get supervisor X only if _PAGE_USER is 0 and
-both X if _PAGE_USER is 1
-
-For the dTLB, the table becomes (including your inversion of _PAGE_RW)
-
-    PTE:                 Translates to PP bits: 
- RW: 0   USER: 0          01  supervisor RW user RO (WRONG)
- RW: 0   USER: 1          11  supervisor RO user RO (ok)
- RW: 1   USER: 0          00  supervisor RW only (ok)
- RW: 1   USER: 1          10  supervisor RW user RW (ok)
-
-So it's -almost- right :-) You still got the RW:0 USER:0 case wrong,
-ie a read-only kernel page would be user readable.
-
-You can work around that by never setting kernel pages read-only (which
-we do mostly), but in the grand scheme of things, my trick I proposed
-initially would sort it out all including support for kernel RO :-)
-
-In any case, the above, while wrong, wouldn't cause crashes or issues
-for well behaved userspace so it's a step forward.
-
-> Same here as for ITLB.
-
-And still not right :-) ie. you cannot rely on the value of
-_PAGE_ACCESSED if _PAGE_PRESENT is not set.
-
-> Nope, no xori needed for exec perms
-
-Right, thanks to having a split TLB, but you still need to mask
-out one of the bits afaik.
-
-> I don't think user space would boot if I got it wrong.
-
-True. I think it's more correct than I initially thought but still
-subtely wrong :-)
+As I said, the case of ACCESSED or DIRTY updates are rare enough to not
+warrant code in the main page fault hot path.
 
 Cheers,
 Ben.
