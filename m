@@ -1,21 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 45FF9B7334
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  9 Oct 2009 16:55:24 +1100 (EST)
-Date: Thu, 08 Oct 2009 22:55:38 -0700 (PDT)
-Message-Id: <20091008.225538.130921151.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH][v2] ibm_newemac: Added 16K Tx FIFO size support for EMAC4
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1255054502.2355.27.camel@pasglop>
-References: <1255019541-1974-1-git-send-email-dmitchell@appliedmicro.com>
-	<1255054502.2355.27.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	dmitchell@appliedmicro.com
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7DB14B7334
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 17:00:55 +1100 (EST)
+In-Reply-To: <20091009001527.GA6196@compile2.chatsunix.int.mrv.com>
+References: <1255008298-19949-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20091009001527.GA6196@compile2.chatsunix.int.mrv.com>
+Subject: Re: [PATCH 0/6] 8xx MMU fixes
+To: Rex Feany <RFeany@mrv.com>
+Message-ID: <OF505AFA1E.D2D84793-ONC125764A.0020E20A-C125764A.00210186@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Fri, 9 Oct 2009 08:00:30 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 09 Oct 2009 13:15:02 +1100
+Rex Feany <RFeany@mrv.com> wrote on 09/10/2009 02:15:27:
+>
+> Thus spake Joakim Tjernlund (Joakim.Tjernlund@transmode.se):
+>
+> > So here we go again. This time I am
+> > fairly confindent I got most things correct :)
+> > Also manged to use even less instructions in the
+> > TLB Miss handlers.
+> >
+> > Scott and Rex, forget previous versions and
+> > try this one out.
+>
+> This patch set is better, userspace seems more stable but I am still
+> seeing some odd problems. This is from straceing mount, which displays
+> nothing even though /proc/mounts shows everything mounted properly:
+>
+> open("/proc/mounts", O_RDONLY)          = 3
+> fstat64(0x3, 0x7fe7e2a8)                = 0
+> mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x3001f000
+> read(3, 0x3001f000, 1024)               = -1 EFAULT (Bad address)
+> exit_group(0)                           = ?
+>
+> it looks like the memory allocated using mmap is bad?
 
-> On Thu, 2009-10-08 at 11:32 -0500, Dave Mitchell wrote:
->> Some of the EMAC V4 implementations support 16K Tx FIFOs. This
->> patch adds support for this functionality and fixes typos in the
->> Tx FIFO size error messages.
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
->> Signed-off-by: Dave Mitchell <dmitchell@appliedmicro.com>
->> Acked-by: Prodyut Hazarika <phazarika@appliedmicro.com>
->> Acked-by: Victor Gallardo <vgallardo@appliedmicro.com>
->> Acked-by: Loc Ho <lho@appliedmicro.com>
-
-Applied to net-2.6, thanks!
+Try making the tlbil_va in fault.c unconditional, just to make sure
+there isn't any old TLBs  around.
