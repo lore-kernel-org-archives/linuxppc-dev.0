@@ -1,20 +1,20 @@
-Return-Path: <RFeany@mrv.com>
-Received: from bos-spam.mrv.com (mx5.mrv.com [140.179.254.12])
-	by ozlabs.org (Postfix) with ESMTP id E96F9B7B8E
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 17:47:03 +1100 (EST)
-Date: Thu, 8 Oct 2009 23:46:49 -0700
-From: Rex Feany <RFeany@mrv.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: [PATCH 0/6] 8xx MMU fixes
-Message-ID: <20091009064649.GA9660@compile2.chatsunix.int.mrv.com>
-References: <1255008298-19949-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091009001527.GA6196@compile2.chatsunix.int.mrv.com>
-	<OF505AFA1E.D2D84793-ONC125764A.0020E20A-C125764A.00210186@transmode.se>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF505AFA1E.D2D84793-ONC125764A.0020E20A-C125764A.00210186@transmode.se>
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <20091009063635.GD12948@yookeroo.seuss>
+References: <20091007041007.16890.62194.stgit@angua>
+	<20091007043154.16890.18883.stgit@angua>
+	<20091009063635.GD12948@yookeroo.seuss>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 9 Oct 2009 01:03:57 -0600
+Message-ID: <fa686aa40910090003i4564385cv90ee672fa4471fb5@mail.gmail.com>
+Subject: Re: [RFC PATCH 10/12] of: merge of_*_flat_dt*() functions
+To: David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, monstr@monstr.eu,
+	devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thus spake Joakim Tjernlund (joakim.tjernlund@transmode.se):
+On Fri, Oct 9, 2009 at 12:36 AM, David Gibson
+<david@gibson.dropbear.id.au> wrote:
+> On Tue, Oct 06, 2009 at 10:32:02PM -0600, Grant Likely wrote:
+>> Merge common flattened device tree code between Microblaze and PowerPC
+>
+> And I guess another question is do we want to replace these with a
+> libfdt based implementation.
 
-> Rex Feany <RFeany@mrv.com> wrote on 09/10/2009 02:15:27:
+Perhaps.  Let me get things unified and sane first though.
 
-> > open("/proc/mounts", O_RDONLY)          = 3
-> > fstat64(0x3, 0x7fe7e2a8)                = 0
-> > mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x3001f000
-> > read(3, 0x3001f000, 1024)               = -1 EFAULT (Bad address)
-> > exit_group(0)                           = ?
-> 
-> Try making the tlbil_va in fault.c unconditional, just to make sure
-> there isn't any old TLBs  around.
+g.
 
-didn't make a difference
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
