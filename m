@@ -1,24 +1,16 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BA891B7B7F
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 22:21:40 +1100 (EST)
-Date: Fri, 9 Oct 2009 12:21:36 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2][v2] mm: add notifier in pageblock isolation for
-	balloon drivers
-Message-ID: <20091009112136.GB24845@csn.ul.ie>
-References: <20091002184458.GC4908@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20091002184458.GC4908@austin.ibm.com>
+Return-Path: <joe@perches.com>
+Subject: Re: [RFC] scripts/get_maintainer: add emails based on keywords in
+	the patch
+From: Joe Perches <joe@perches.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+In-Reply-To: <1255084379-12954-1-git-send-email-w.sang@pengutronix.de>
+References: <1255084379-12954-1-git-send-email-w.sang@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 09 Oct 2009 04:23:26 -0700
+Message-Id: <1255087406.16347.108.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,238 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 02, 2009 at 01:44:58PM -0500, Robert Jennings wrote:
-> Memory balloon drivers can allocate a large amount of memory which
-> is not movable but could be freed to accomodate memory hotplug remove.
-> 
-> Prior to calling the memory hotplug notifier chain the memory in the
-> pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
-> isolation will not proceed, causing the memory removal for that page
-> range to fail.
-> 
-> Rather than failing pageblock isolation if the the migrateteype is not
+On Fri, 2009-10-09 at 12:32 +0200, Wolfram Sang wrote:
 
-s/the the migrateteype/the migratetype/
+> +my %keywords_to_mail = (
+> +	'of_get_property' => 'L: devicetree-discuss@lists.ozlabs.org',
 
-> MIGRATE_MOVABLE, this patch checks if all of the pages in the pageblock
-> are owned by a registered balloon driver (or other entity) using a
-> notifier chain.  If all of the non-movable pages are owned by a balloon,
-> they can be freed later through the memory notifier chain and the range
-> can still be isolated in set_migratetype_isolate().
-> 
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-> 
-> ---
->  drivers/base/memory.c  |   19 +++++++++++++++++++
->  include/linux/memory.h |   26 ++++++++++++++++++++++++++
->  mm/page_alloc.c        |   45 ++++++++++++++++++++++++++++++++++++++-------
->  3 files changed, 83 insertions(+), 7 deletions(-)
-> 
-> Index: b/drivers/base/memory.c
-> ===================================================================
-> --- a/drivers/base/memory.c
-> +++ b/drivers/base/memory.c
-> @@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
->  }
->  EXPORT_SYMBOL(unregister_memory_notifier);
->  
-> +static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
-> +
-> +int register_memory_isolate_notifier(struct notifier_block *nb)
-> +{
-> +	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
-> +}
-> +EXPORT_SYMBOL(register_memory_isolate_notifier);
-> +
-> +void unregister_memory_isolate_notifier(struct notifier_block *nb)
-> +{
-> +	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
-> +}
-> +EXPORT_SYMBOL(unregister_memory_isolate_notifier);
-> +
->  /*
->   * register_memory - Setup a sysfs device for a memory block
->   */
-> @@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
->  	return blocking_notifier_call_chain(&memory_chain, val, v);
->  }
->  
-> +int memory_isolate_notify(unsigned long val, void *v)
-> +{
-> +	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
-> +}
-> +
->  /*
->   * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
->   * OK to have direct references to sparsemem variables in here.
-> Index: b/include/linux/memory.h
-> ===================================================================
-> --- a/include/linux/memory.h
-> +++ b/include/linux/memory.h
-> @@ -50,6 +50,18 @@ struct memory_notify {
->  	int status_change_nid;
->  };
->  
-> +/*
-> + * During pageblock isolation, count the number of pages in the
-> + * range [start_pfn, start_pfn + nr_pages)
-> + */
-> 
+maybe: '\bof_get_property\b'
 
-The comment could have been slightly better. The count of pages in the
-range is nr_pages - memory_holes but what you're counting is the number
-of pages owned by the balloon driver in the notification chain.
+> +	    # Check the lines which a patch modifies for keywords; add mail if found.
+> +	    } elsif (m/^[+-].*($keywords_to_mail_match)/o) {
+> +		(my $keyword_mail = $keywords_to_mail{$1}) =~ s/^([LM]): //;
+> +		push( @{ ($1 eq 'L') ? \@list_to : \@email_to }, $keyword_mail );
+> +	   }
 
-> +#define MEM_ISOLATE_COUNT	(1<<0)
-> +
-> +struct memory_isolate_notify {
-> +	unsigned long start_pfn;
-> +	unsigned int nr_pages;
-> +	unsigned int pages_found;
-> +};
-> +
->  struct notifier_block;
->  struct mem_section;
->  
-> @@ -76,14 +88,28 @@ static inline int memory_notify(unsigned
->  {
->  	return 0;
->  }
-> +static inline int register_memory_isolate_notifier(struct notifier_block *nb)
-> +{
-> +	return 0;
-> +}
-> +static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
-> +{
-> +}
-> +static inline int memory_isolate_notify(unsigned long val, void *v)
-> +{
-> +	return 0;
-> +}
->  #else
->  extern int register_memory_notifier(struct notifier_block *nb);
->  extern void unregister_memory_notifier(struct notifier_block *nb);
-> +extern int register_memory_isolate_notifier(struct notifier_block *nb);
-> +extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
->  extern int register_new_memory(int, struct mem_section *);
->  extern int unregister_memory_section(struct mem_section *);
->  extern int memory_dev_init(void);
->  extern int remove_memory_block(unsigned long, struct mem_section *, int);
->  extern int memory_notify(unsigned long val, void *v);
-> +extern int memory_isolate_notify(unsigned long val, void *v);
->  extern struct memory_block *find_memory_block(struct mem_section *);
->  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
->  enum mem_add_context { BOOT, HOTPLUG };
-> Index: b/mm/page_alloc.c
-> ===================================================================
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -48,6 +48,7 @@
->  #include <linux/page_cgroup.h>
->  #include <linux/debugobjects.h>
->  #include <linux/kmemleak.h>
-> +#include <linux/memory.h>
->  #include <trace/events/kmem.h>
->  
->  #include <asm/tlbflush.h>
-> @@ -4985,23 +4986,53 @@ void set_pageblock_flags_group(struct pa
->  int set_migratetype_isolate(struct page *page)
->  {
->  	struct zone *zone;
-> -	unsigned long flags;
-> +	unsigned long flags, pfn, iter;
-> +	unsigned long immobile = 0;
-> +	struct memory_isolate_notify arg;
-> +	int notifier_ret;
->  	int ret = -EBUSY;
->  	int zone_idx;
->  
->  	zone = page_zone(page);
->  	zone_idx = zone_idx(zone);
-> +
->  	spin_lock_irqsave(&zone->lock, flags);
-> +	if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE ||
-> +	    zone_idx == ZONE_MOVABLE) {
-> +		ret = 0;
-> +		goto out;
-> +	}
-> +
-> +	pfn = page_to_pfn(page);
-> +	arg.start_pfn = pfn;
-> +	arg.nr_pages = pageblock_nr_pages;
-> +	arg.pages_found = 0;
-> +
->  	/*
-> -	 * In future, more migrate types will be able to be isolation target.
-> +	 * The pageblock can be isolated even if the migrate type is
-> +	 * not *_MOVABLE.  The memory isolation notifier chain counts
-> +	 * the number of pages in this pageblock that can be freed later
-> +	 * through the memory notifier chain.  If all of the pages are
-> +	 * accounted for, isolation can continue.
-
-This comment could have been clearer as well
-
-* It may be possible to isolate a pageblock even if the migratetype is
-* not MIGRATE_MOVABLE. The memory isolation notifier chain is used by
-* balloon drivers to return the number of pages in a range that are held
-* by the balloon driver to shrink memory. If all the pages are accounted
-* for by balloons or are free, isolation can continue
-
->  	 */
-> -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
-> -	    zone_idx != ZONE_MOVABLE)
-> +	notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
-> +	notifier_ret = notifier_to_errno(notifier_ret);
-> +       	if (notifier_ret || !arg.pages_found)
->  		goto out;
-> -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
-> -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
-> -	ret = 0;
-> +
-> +	for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
-> +		if (page_count(pfn_to_page(iter)))
-> +			immobile++;
-> +
-
-This part here is not safe when CONFIG_HOLES_IN_ZONE is set. You need to
-make it something like
-
-for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++) {
-	if (!pfn_valid_within(pfn))
-		continue;
-
-	if (page_count(pfn_to_page(iter)))
-		immobile++;
-}
-
-You shouldn't need to run pfn_valid() as you're always starting from a valid
-page and never going outside MAX_ORDER_NR_PAGES in this iterator.
-
-> +	if (arg.pages_found == immobile)
-> +		ret = 0;
-> +
-
-Ok, so if all pages in a range that are in use match the count returned
-by the balloon, then it's ok to isolate.
-
->  out:
-> +	if (!ret) {
-> +		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
-> +		move_freepages_block(zone, page, MIGRATE_ISOLATE);
-> +	}
-> +
->  	spin_unlock_irqrestore(&zone->lock, flags);
->  	if (!ret)
->  		drain_all_pages();
-> 
-
-The patch looks more or less sane. It would be nice to have a follow-on patch
-that clarified some details but it's not necessary. The pfn_valid_within()
-should be done as a follow-on patch. I haven't actually tested this but
-otherwise it looks ok. Once the pfn_valid_within() is sorted out, it has
-my Ack.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+If this facility is desired by many others, it might be
+better to have a separate file of 'regex generates email'
+read at initialization.
