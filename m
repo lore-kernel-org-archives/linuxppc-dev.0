@@ -1,18 +1,28 @@
-Return-Path: <RFeany@mrv.com>
-Received: from bos-spam.mrv.com (mx5.mrv.com [140.179.254.12])
-	by ozlabs.org (Postfix) with ESMTP id 9FE84B7B7C
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 11:15:31 +1100 (EST)
-Date: Thu, 8 Oct 2009 17:15:27 -0700
-From: Rex Feany <RFeany@mrv.com>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 0/6] 8xx MMU fixes
-Message-ID: <20091009001527.GA6196@compile2.chatsunix.int.mrv.com>
-References: <1255008298-19949-1-git-send-email-Joakim.Tjernlund@transmode.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1255008298-19949-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Return-Path: <dan@embeddedalley.com>
+Received: from easi.embeddedalley.com (easi.embeddedalley.com [71.6.201.124])
+	by ozlabs.org (Postfix) with SMTP id 5BC9CB7B76
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2009 11:35:45 +1100 (EST)
+In-Reply-To: <1255040628.2146.54.camel@pasglop>
+References: <1254948364-30074-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-3-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254948364-30074-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1254950285.2409.10.camel@pasglop>
+	<OF44C1983F.1C42E290-ONC1257649.0069CAF3-C1257649.006A78D1@transmode.se>
+	<7A3C6D4C-E92B-434D-AF68-7AEEDE6DAD45@embeddedalley.com>
+	<1255033705.2146.17.camel@pasglop>
+	<34A4641D-8121-4EBC-9880-26CB70DD3339@embeddedalley.com>
+	<1255040628.2146.54.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
+Message-Id: <3DFBC735-4084-4A0C-BF8D-C9B33142FE69@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [PATCH 3/6] 8xx: invalidate non present TLBs
+Date: Thu, 8 Oct 2009 17:36:07 -0700
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +32,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thus spake Joakim Tjernlund (Joakim.Tjernlund@transmode.se):
 
-> So here we go again. This time I am
-> fairly confindent I got most things correct :)
-> Also manged to use even less instructions in the
-> TLB Miss handlers.
-> 
-> Scott and Rex, forget previous versions and
-> try this one out.
+On Oct 8, 2009, at 3:23 PM, Benjamin Herrenschmidt wrote:
 
-This patch set is better, userspace seems more stable but I am still
-seeing some odd problems. This is from straceing mount, which displays
-nothing even though /proc/mounts shows everything mounted properly:
+> <<
+> =95 Reference and change bit updates=97The MPC850 does not generate an =
+=20
+> exception for
+>   an R (reference) bit update. In fact, there is no entry for an R =20
+> bit in the TLB.
+>   The change bit (C) is bit 23 in the level-two descriptor, =20
+> described in Table 8-4.
+>   Software updates C (changed) bits, but hardware treats the C bit =20
+> (negated) as a
+>   write-protect attribute. Therefore, attempting to write to a page =20=
 
-open("/proc/mounts", O_RDONLY)          = 3
-fstat64(0x3, 0x7fe7e2a8)                = 0
-mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x3001f000
-read(3, 0x3001f000, 1024)               = -1 EFAULT (Bad address)
-exit_group(0)                           = ?
+> marked unmodified
+>   invalidates that entry and causes an implementation-specific DTLB =20=
 
-it looks like the memory allocated using mmap is bad?
+> error exception.
+>   ^^^^^^^^^^^^^^^^^^^^^^
+>   If change bits are not needed, set the C bit to one by default in =20=
 
-take care!
-/rex.
+> the PTEs.
+
+How interesting....
+
+I've looked at many 8xx docs and they all have the same text
+(probably cut/paste :-))  I'd place some debug code in the C functions
+to print out a few of the TLB Entry for various errors to see if this =20=
+
+really
+happens, and for other errors, too.  I guess I never stumbled into
+this because I always thought I had to do everything from software,
+so just made sure I did.
+
+	-- Dan
