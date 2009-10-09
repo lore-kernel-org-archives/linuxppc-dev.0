@@ -1,25 +1,25 @@
-Return-Path: <linux@kayser.net>
-Received: from omr15.networksolutionsemail.com
-	(omr15.networksolutionsemail.com [205.178.146.65])
-	by ozlabs.org (Postfix) with ESMTP id 56F09B7334
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Oct 2009 03:04:56 +1100 (EST)
-Received: from mail.networksolutionsemail.com
-	(ns-omr15.mgt.hosting.dc2.netsol.com [10.49.6.78])
-	by omr15.networksolutionsemail.com (8.13.6/8.13.6) with SMTP id
-	n99FnYTx026168
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2009 11:49:34 -0400
-Message-Id: <BD8F08D3-871B-45CF-B588-489E09ADA70C@kayser.net>
-From: Donald Kayser <linux@kayser.net>
-To: linuxppc-dev@ozlabs.org, linuxkernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200910091550.25032.arnd@arndb.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: ppc_md.SMI replacement for 2.6
-Date: Fri, 9 Oct 2009 10:49:24 -0500
-References: <61241B44-32BD-4708-954F-AEE7560382DE@kayser.net>
-	<7AD77164-8476-4138-A390-B604CD18A221@kayser.net>
-	<449C2FDE-42DD-490C-8288-CF03224BDA34@kayser.net>
-	<200910091550.25032.arnd@arndb.de>
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1255096871.16018.49.camel@localhost.localdomain>
+References: <1255010672-21656-1-git-send-email-w.sang@pengutronix.de>
+	<20091008143301.GA6084@oksana.dev.rtsoft.ru>
+	<fa686aa40910080753v6f597b0h4ce835db9f7a653@mail.gmail.com>
+	<20091008151007.GA21328@oksana.dev.rtsoft.ru>
+	<fa686aa40910080848r459c47baob73fc70a95a08604@mail.gmail.com>
+	<20091008202723.GA8116@pengutronix.de>
+	<20091009051409.GA2361@pengutronix.de>
+	<fa686aa40910082240w7fb2a194tcc80e7afe182e781@mail.gmail.com>
+	<1255096871.16018.49.camel@localhost.localdomain>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 9 Oct 2009 10:09:21 -0600
+Message-ID: <fa686aa40910090909q5200cf8cm95e0ecfc23d464fd@mail.gmail.com>
+Subject: Re: [RFC] misc/at24: add experimental OF support for the generic
+	eeprom driver
+To: Nate Case <ncase@xes-inc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@ozlabs.org, linux-embedded@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,109 +29,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have more information on this PPC HPPB target. I compared the  
-EXCEPTION macro between 2.4 and 2.6 with respect to SMI Exceptions. I  
-noticed that in the 2.4 kernel a macro named STD_EXCEPTION was used  
-and in the 2.6 kernel their is a new EXCEPTION macro structure. In the  
-2.6 kernel, it is much different, but with the TAUException I noticed  
-that it used an EXC_XFER_STD instead of EXC_XFER_EE, so I tried it and  
-with great news, I am actually getting the exceptions correctly now.
-
-My question to anyone who understands is: is it OK to change the line  
-in arch/powerpc/kernel/head_32.S from
-
-EXCEPTION(0x1400, SMI, SMIException, EXC_XFER_EE)
-
-to
-
-EXCEPTION(0x1400, SMI, SMIException, EXC_XFER_STD)
-
-I have not decoded assembler to determine the exact differences, and I  
-will do so, but I wanted to know if there was anyone who knew why this  
-would make my SMI interrupt behave correctly.
-
-Also, as noted earlier in this post, there is no hook for notification  
-of the SMI. The vendor who did the 2.4 port provided his own hook  
-through ppc_md global variable. Would anyone care to suggest the 'best/ 
-preferred' method to provide a callback to the SMI Exception.
-
-Thanks
-Donald
-linux@kayser.net
-
-On Oct 9, 2009, at 8:50 AM, Arnd Bergmann wrote:
-
-> On Friday 09 October 2009, Donald Kayser wrote:
->> On further comparison, this section of code has been added by the
->> vendor that actually ported linux 2.4 to this PPC HPPB target. So, if
->> anyone would like to lend a thought towards System Managment
->> Exceptions on PPC, please cc me at linux@kayser.net. I will be
->> stopping the subscription to this list shortly. Regards, Donald
->
-> Hi Donald,
->
-> You should ask ppc specific questions on the linuxppc-dev@ozlabs.org
-> mailing list instead of the global linux-kernel list to increase the
-> chances of someone reading it who knows the answer.
->
-> The world of powerpc linux has changed a lot since 2.4, as you
-> undoubtedly found out. You are certainly encouraged to submit
-> your platform code for inclusion in the mainline kernel (if you
-> can do the usual cleanups necessary to do that), even for
-> old code.
->
-> I don't know a specific reason why the SMI callback was removed,
-> but I would guess that if you have a platform that requires it
-> and want it in the mainline kernel, a callback for it can be
-> added back, either through ppc_md or some other method.
->
-> 	Arnd <><
->
->> On Oct 8, 2009, at 8:37 AM, Donald Kayser wrote:
+On Fri, Oct 9, 2009 at 8:01 AM, Nate Case <ncase@xes-inc.com> wrote:
+> On Thu, 2009-10-08 at 23:40 -0600, Grant Likely wrote:
+>> For your future reference, patches that look at the device tree should
+>> also cc: devicetree-discuss@lists.ozlabs.org so that new bindings can
+>> be reviewed and common mistakes can be avoided. =A0It is expected that
+>> new device tree bindings are accompanied with documentation describing
+>> what the binding is for and how it should be used (see
+>> Documentation/powerpc/dts-bindings).
 >>
->>> I have found the differences between the 2.4 and 2.6 kernel. It is
->>> in linux-2.4/arch/ppc/kernel/traps.c and linux-2.6/arch/powerpc/
->>> kernel/traps.c in the function SMIException(). There is no longer
->>> the code segment
->>>
->>> if (ppc_md.SMI)
->>> {
->>> ppc_md.SMI(regs);
->>> return;
->>> }
->>>
->>> There is now only a
->>>
->>> die("System Management Interrupt", regs, SIGABRT);
->>>
->>> I am guessing that the SMI callback is no longer needed by the linux
->>> community at large, so I modified the code for my specific hardware
->>> (HPPB) and acknowledged the exception as in the 2.4 kernel, and
->>> returned from the exception without the call to die(). My problem
->>> now is that it doesn't seem to work. Does anyone have a reason why
->>> the SMI exception might hang the system when it has been provided a
->>> handler?
->>>
->>> Thanks in advance.
->>>
->>> Donald Kayser
->>>
->>> On Oct 7, 2009, at 10:06 AM, Donald Kayser wrote:
->>>
->>>> I have ported the 2.6 kernel to an embedded PPC target (old stuff).
->>>> I have managed to figure everything out, but can't find any
->>>> replacement for a SMI handler. The original 2.4 version for this
->>>> target has a bit of code ppc_md.SMI == SmiFuncHandler; I have not
->>>> been able to find in the current source anything like this. I am
->>>> not certain that I need to provide a handler at all, but the
->>>> original developers saw some reason for including it. The
->>>> particular handler does not do anything more than cancel a watchdog
->>>> listener for this specific target. I have been living without the
->>>> handler, but would like to find any kind of replacement if it is
->>>> supported.
->>>>
->>>> Thanks,
->>>> Donald Kayser
->>>> linux@kayser.net
+>> I know this change is already in mainline, but can you please post the
+>> device tree fragment that you're using to describe this chip? =A0I want
+>> to make sure we don't get stuck with things in the kernel that will be
+>> hard to maintain in the long term.
 >
+> Hi Grant,
 >
+> Sorry for neglecting to include devicetree-discuss on that one. =A0I was
+> in fact aware of this list, and subscribe to it. =A0I really just forgot
+> in this case.
+
+No worries, it happens.
+
+> I also have a documentation patch for it that went along with it, but it
+> wasn't ready in time and so it's been sitting in our local patch queue.
+> I can submit that soon, =A0but it probably makes sense for Wolfram to
+> voice whatever his concerns were about "questionable" properties before
+> I document what's there.
+
+Yes, please post it as soon as you can.
+
+> Here's an example device tree node for this case:
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio1: gpio@18 {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "nxp,pca955=
+7";
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0x18>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#gpio-cells =3D <2>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0gpio-controller;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0polarity =3D <0x00>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
+>
+> In this case, the linux,gpio-base property wasn't specified. =A0But, the
+> use case is identical to the pdata->gpio_base field. =A0"polarity" is use=
+d
+> for specifying polarity inversion for each line, and is in the same
+> format of the 'polarity inversion' register on the chip. =A0My reasoning
+> in the property naming was as follows:
+>
+> =A0 =A0linux,gpio-base: Linux-specific as it relates to internal GPIO
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 numbering. =A0So, it's prefixed w=
+ith "linux,"
+
+This would be the 'questionable' property.  :-)  The device tree is
+supposed to be OS agnostic, so I get the heebee geebees when I see new
+'linux,<blah>' properties defined because it means Linux internal
+implementation details are getting leaked out into the data blob.  The
+problem leakage is that the device tree should not be impacted by
+internal Linux code changes.
+
+In this particular case, specifying the exact GPIO base number doesn't
+really belong in the device tree because Linux is able to assign and
+manage GPIO numbers on its own just like all other OF GPIO controller
+drivers currently do.  In fact, that goes for pretty much all
+enumeration, not just GPIO.  In general, a particular device instance
+(uart, gpio, phy, whatever) should be resolved from its node in the
+device tree, and not by some arbitrary number assigned by the .dts
+author.  The problem with arbitrary numbers is they don't expose the
+linkage between nodes in the same way a 'phandle' does (A phandle can
+be searched for.  An arbitrary number assignment, good luck?), and
+they don't expose intended usage (its just a meaningless number, and
+it only works because userspace just happens to 'agree' to use the
+same number).
+
+> =A0 =A0polarity: Dictated by how hardware is wired up, so it's needed
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0regardless of the OS.
+
+Typically GPIO drivers have been handling this by using #gpio-cells
+set to 2, and using the 2nd cell for flags.  The priority can be
+encoded as a flag.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
