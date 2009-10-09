@@ -1,21 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
-	by ozlabs.org (Postfix) with ESMTP id BBC15B7B77
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Oct 2009 00:58:55 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Donald Kayser <linux@kayser.net>,
- linuxppc-dev@ozlabs.org
-Subject: Re: ppc_md.SMI replacement for 2.6
-Date: Fri, 9 Oct 2009 15:50:24 +0200
-References: <61241B44-32BD-4708-954F-AEE7560382DE@kayser.net>
-	<7AD77164-8476-4138-A390-B604CD18A221@kayser.net>
-	<449C2FDE-42DD-490C-8288-CF03224BDA34@kayser.net>
-In-Reply-To: <449C2FDE-42DD-490C-8288-CF03224BDA34@kayser.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200910091550.25032.arnd@arndb.de>
-Cc: linuxkernel <linux-kernel@vger.kernel.org>
+Return-Path: <ncase@xes-inc.com>
+Subject: Re: [RFC] misc/at24: add experimental OF support for the generic
+	eeprom driver
+From: Nate Case <ncase@xes-inc.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40910082240w7fb2a194tcc80e7afe182e781@mail.gmail.com>
+References: <1255010672-21656-1-git-send-email-w.sang@pengutronix.de>
+	<20091008143301.GA6084@oksana.dev.rtsoft.ru>
+	<fa686aa40910080753v6f597b0h4ce835db9f7a653@mail.gmail.com>
+	<20091008151007.GA21328@oksana.dev.rtsoft.ru>
+	<fa686aa40910080848r459c47baob73fc70a95a08604@mail.gmail.com>
+	<20091008202723.GA8116@pengutronix.de>
+	<20091009051409.GA2361@pengutronix.de>
+	<fa686aa40910082240w7fb2a194tcc80e7afe182e781@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 09 Oct 2009 09:01:11 -0500
+Message-Id: <1255096871.16018.49.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: devicetree-discuss@ozlabs.org, linux-embedded@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,75 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 09 October 2009, Donald Kayser wrote:
-> On further comparison, this section of code has been added by the  
-> vendor that actually ported linux 2.4 to this PPC HPPB target. So, if  
-> anyone would like to lend a thought towards System Managment  
-> Exceptions on PPC, please cc me at linux@kayser.net. I will be  
-> stopping the subscription to this list shortly. Regards, Donald
-
-Hi Donald,
-
-You should ask ppc specific questions on the linuxppc-dev@ozlabs.org
-mailing list instead of the global linux-kernel list to increase the
-chances of someone reading it who knows the answer.
-
-The world of powerpc linux has changed a lot since 2.4, as you
-undoubtedly found out. You are certainly encouraged to submit
-your platform code for inclusion in the mainline kernel (if you
-can do the usual cleanups necessary to do that), even for
-old code.
-
-I don't know a specific reason why the SMI callback was removed,
-but I would guess that if you have a platform that requires it
-and want it in the mainline kernel, a callback for it can be
-added back, either through ppc_md or some other method.
-
-	Arnd <><
-
-> On Oct 8, 2009, at 8:37 AM, Donald Kayser wrote:
+On Thu, 2009-10-08 at 23:40 -0600, Grant Likely wrote:
+> For your future reference, patches that look at the device tree should
+> also cc: devicetree-discuss@lists.ozlabs.org so that new bindings can
+> be reviewed and common mistakes can be avoided.  It is expected that
+> new device tree bindings are accompanied with documentation describing
+> what the binding is for and how it should be used (see
+> Documentation/powerpc/dts-bindings).
 > 
-> > I have found the differences between the 2.4 and 2.6 kernel. It is  
-> > in linux-2.4/arch/ppc/kernel/traps.c and linux-2.6/arch/powerpc/ 
-> > kernel/traps.c in the function SMIException(). There is no longer  
-> > the code segment
-> >
-> > if (ppc_md.SMI)
-> > {
-> >  ppc_md.SMI(regs);
-> >  return;
-> > }
-> >
-> > There is now only a
-> >
-> > die("System Management Interrupt", regs, SIGABRT);
-> >
-> > I am guessing that the SMI callback is no longer needed by the linux  
-> > community at large, so I modified the code for my specific hardware  
-> > (HPPB) and acknowledged the exception as in the 2.4 kernel, and  
-> > returned from the exception without the call to die(). My problem  
-> > now is that it doesn't seem to work. Does anyone have a reason why  
-> > the SMI exception might hang the system when it has been provided a  
-> > handler?
-> >
-> > Thanks in advance.
-> >
-> > Donald Kayser
-> >
-> > On Oct 7, 2009, at 10:06 AM, Donald Kayser wrote:
-> >
-> >> I have ported the 2.6 kernel to an embedded PPC target (old stuff).  
-> >> I have managed to figure everything out, but can't find any  
-> >> replacement for a SMI handler. The original 2.4 version for this  
-> >> target has a bit of code ppc_md.SMI == SmiFuncHandler; I have not  
-> >> been able to find in the current source anything like this. I am  
-> >> not certain that I need to provide a handler at all, but the  
-> >> original developers saw some reason for including it. The  
-> >> particular handler does not do anything more than cancel a watchdog  
-> >> listener for this specific target. I have been living without the  
-> >> handler, but would like to find any kind of replacement if it is  
-> >> supported.
-> >>
-> >> Thanks,
-> >> Donald Kayser
-> >> linux@kayser.net
+> I know this change is already in mainline, but can you please post the
+> device tree fragment that you're using to describe this chip?  I want
+> to make sure we don't get stuck with things in the kernel that will be
+> hard to maintain in the long term.
+
+Hi Grant,
+
+Sorry for neglecting to include devicetree-discuss on that one.  I was
+in fact aware of this list, and subscribe to it.  I really just forgot
+in this case.
+
+I also have a documentation patch for it that went along with it, but it
+wasn't ready in time and so it's been sitting in our local patch queue.
+I can submit that soon,  but it probably makes sense for Wolfram to
+voice whatever his concerns were about "questionable" properties before
+I document what's there.
+
+Here's an example device tree node for this case:
+
+               gpio1: gpio@18 {
+                        compatible = "nxp,pca9557";
+                        reg = <0x18>;
+                        #gpio-cells = <2>;
+                        gpio-controller;
+                        polarity = <0x00>;
+               };
+
+In this case, the linux,gpio-base property wasn't specified.  But, the
+use case is identical to the pdata->gpio_base field.  "polarity" is used
+for specifying polarity inversion for each line, and is in the same
+format of the 'polarity inversion' register on the chip.  My reasoning
+in the property naming was as follows:
+
+    linux,gpio-base: Linux-specific as it relates to internal GPIO
+                     numbering.  So, it's prefixed with "linux,"
+    polarity: Dictated by how hardware is wired up, so it's needed
+              regardless of the OS.
+
+- Nate
