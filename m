@@ -1,17 +1,38 @@
-Return-Path: <joe@perches.com>
-Subject: Re: [RFC] scripts/get_maintainer: add emails based on keywords in
-	the patch
-From: Joe Perches <joe@perches.com>
-To: Wolfram Sang <w.sang@pengutronix.de>
-In-Reply-To: <1255087406.16347.108.camel@Joe-Laptop.home>
-References: <1255084379-12954-1-git-send-email-w.sang@pengutronix.de>
-	<1255087406.16347.108.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 09 Oct 2009 12:01:45 -0700
-Message-Id: <1255114905.16347.137.camel@Joe-Laptop.home>
+Return-Path: <hollisb@us.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0B137B7B83
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 10 Oct 2009 06:14:14 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e8.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n99JBSpx020826
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Oct 2009 15:11:28 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n99JEBtb246166
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Oct 2009 15:14:11 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n99JEAE5026941
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Oct 2009 15:14:11 -0400
+Subject: Re: linux-next: tree build failure
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: Jan Beulich <JBeulich@novell.com>
+In-Reply-To: <4AC9B5310200007800017EA1@vpn.id2.novell.com>
+References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
+	<1254267572.15622.1621.camel@slab.beaverton.ibm.com>
+	<4AC318450200007800017355@vpn.id2.novell.com>
+	<1254498517.3839.17.camel@slab.beaverton.ibm.com>
+	<4AC9B5310200007800017EA1@vpn.id2.novell.com>
+Content-Type: text/plain
+Date: Fri, 09 Oct 2009 12:14:08 -0700
+Message-Id: <1255115648.2546.71.camel@slab.beaverton.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Cc: sfr@canb.auug.org.au, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+	linux-next@vger.kernel.org, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,185 +42,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-10-09 at 04:23 -0700, Joe Perches wrote:
-> If this facility is desired by many others, it might be
-> better to have a separate file of 'regex generates email'
-> read at initialization.
+Rusty's version of BUILD_BUG_ON() does indeed fix the build break, and
+also exposes the bug in kvmppc_account_exit_stat(). So to recap:
 
-Perhaps it's better to use the existing MAINTAINERS file
-and extend it with a new "K:" for keyword entry.
+original: built but didn't work
+Jan's: doesn't build
+Rusty's: builds and works
 
-This patch is a bit longer than necessary because the
-MAINTAINERS initial descriptions are moved around a bit.
+Where do you want to go from here?
 
-Perhaps something like this:
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
 
- MAINTAINERS               |   71 +++++++++++++++++++++++++-------------------
- scripts/get_maintainer.pl |   24 +++++++++++----
- 2 files changed, 57 insertions(+), 38 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e1da925..9e1263f 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -65,43 +65,47 @@ trivial patch so apply some common sense.
- 
- 8.	Happy hacking.
- 
--		-----------------------------------
--
--Maintainers List (try to look for most precise areas first)
-+Descriptions of section entries:
-+
-+	P: Person (obsolete)
-+	M: Mail patches to: FullName <address@domain>
-+	L: Mailing list that is relevant to this area
-+	W: Web-page with status/info
-+	T: SCM tree type and location.  Type is one of: git, hg, quilt, stgit.
-+	S: Status, one of the following:
-+	   Supported:	Someone is actually paid to look after this.
-+	   Maintained:	Someone actually looks after it.
-+	   Odd Fixes:	It has a maintainer but they don't have time to do
-+			much other than throw the odd patch in. See below..
-+	   Orphan:	No current maintainer [but maybe you could take the
-+			role as you write your new code].
-+	   Obsolete:	Old code. Something tagged obsolete generally means
-+			it has been replaced by a better system and you
-+			should be using that.
-+	F: Files and directories with wildcard patterns.
-+	   A trailing slash includes all files and subdirectory files.
-+	   F:	drivers/net/	all files in and below drivers/net
-+	   F:	drivers/net/*	all files in drivers/net, but not below
-+	   F:	*/net/*		all files in "any top level directory"/net
-+	   One pattern per line.  Multiple F: lines acceptable.
-+	X: Files and directories that are NOT maintained, same rules as F:
-+	   Files exclusions are tested before file matches.
-+	   Can be useful for excluding a specific subdirectory, for instance:
-+	   F:	net/
-+	   X:	net/ipv6/
-+	   matches all files in and below net excluding net/ipv6/
-+	K: Keyword perl regex pattern to match content in patch
-+	   All patterns are surrounded by "\b"
-+	   for instance: K: of_get_profile
-+	   will match patches that contain the word "of_get_profile"
- 
- Note: For the hard of thinking, this list is meant to remain in alphabetical
- order. If you could add yourselves to it in alphabetical order that would be
- so much easier [Ed]
- 
--P: Person (obsolete)
--M: Mail patches to: FullName <address@domain>
--L: Mailing list that is relevant to this area
--W: Web-page with status/info
--T: SCM tree type and location.  Type is one of: git, hg, quilt, stgit.
--S: Status, one of the following:
--
--	Supported:	Someone is actually paid to look after this.
--	Maintained:	Someone actually looks after it.
--	Odd Fixes:	It has a maintainer but they don't have time to do
--			much other than throw the odd patch in. See below..
--	Orphan:		No current maintainer [but maybe you could take the
--			role as you write your new code].
--	Obsolete:	Old code. Something tagged obsolete generally means
--			it has been replaced by a better system and you
--			should be using that.
-+Maintainers List (try to look for most precise areas first)
- 
--F: Files and directories with wildcard patterns.
--   A trailing slash includes all files and subdirectory files.
--	F:	drivers/net/	all files in and below drivers/net
--	F:	drivers/net/*	all files in drivers/net, but not below
--	F:	*/net/*		all files in "any top level directory"/net
--   One pattern per line.  Multiple F: lines acceptable.
--X: Files and directories that are NOT maintained, same rules as F:
--   Files exclusions are tested before file matches.
--   Can be useful for excluding a specific subdirectory, for instance:
--	F:	net/
--	X:	net/ipv6/
--   matches all files in and below net excluding net/ipv6/
-+		-----------------------------------
- 
- 3C505 NETWORK DRIVER
- M:	Philip Blundell <philb@gnu.org>
-@@ -3876,6 +3880,11 @@ S:	Maintained
- F:	Documentation/i2c/busses/i2c-ocores
- F:	drivers/i2c/busses/i2c-ocores.c
- 
-+OPEN FIRMWARE DEVICE TREE
-+L:	devicetree-discuss@lists.ozlabs.org
-+S:	Odd Fixes
-+K:	of_get_property
-+
- OPROFILE
- M:	Robert Richter <robert.richter@amd.com>
- L:	oprofile-list@lists.sf.net
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index cdb44b6..657711c 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -132,6 +132,8 @@ if (!top_of_kernel_tree($lk_path)) {
- ## Read MAINTAINERS for type/value pairs
- 
- my @typevalue = ();
-+my %keyword_hash;
-+
- open(MAINT, "<${lk_path}MAINTAINERS") || die "$P: Can't open MAINTAINERS\n";
- while (<MAINT>) {
-     my $line = $_;
-@@ -149,6 +151,8 @@ while (<MAINT>) {
- 	    if ((-d $value)) {
- 		$value =~ s@([^/])$@$1/@;
- 	    }
-+	} elsif ($type eq "K") {
-+	    $keyword_hash{@typevalue} = $value;
- 	}
- 	push(@typevalue, "$type:$value");
-     } elsif (!/^(\s)*$/) {
-@@ -188,6 +192,12 @@ if ($email_remove_duplicates) {
- 
- my @files = ();
- my @range = ();
-+my @email_to = ();
-+my @list_to = ();
-+my @scm = ();
-+my @web = ();
-+my @subsystem = ();
-+my @status = ();
- 
- foreach my $file (@ARGV) {
-     ##if $file is a directory and it lacks a trailing slash, add one
-@@ -203,6 +213,7 @@ foreach my $file (@ARGV) {
- 	my $lastfile;
- 	open(PATCH, "<$file") or die "$P: Can't open ${file}\n";
- 	while (<PATCH>) {
-+	    my $patch_line = $_;
- 	    if (m/^\+\+\+\s+(\S+)/) {
- 		my $filename = $1;
- 		$filename =~ s@^[^/]*/@@;
-@@ -213,6 +224,12 @@ foreach my $file (@ARGV) {
- 		if ($email_git_blame) {
- 		    push(@range, "$lastfile:$1:$2");
- 		}
-+	    } else {
-+		foreach my $line (keys %keyword_hash) {
-+		    if ($patch_line =~ m/^[+-].*\b$keyword_hash{$line}\b/o) {
-+			add_categories($line);
-+		    }
-+		}
- 	    }
- 	}
- 	close(PATCH);
-@@ -224,13 +241,6 @@ foreach my $file (@ARGV) {
-     }
- }
- 
--my @email_to = ();
--my @list_to = ();
--my @scm = ();
--my @web = ();
--my @subsystem = ();
--my @status = ();
--
- # Find responsible parties
- 
- foreach my $file (@files) {
+On Mon, 2009-10-05 at 07:58 +0100, Jan Beulich wrote:
+> >>> Hollis Blanchard <hollisb@us.ibm.com> 02.10.09 17:48 >>>
+> >On Wed, 2009-09-30 at 07:35 +0100, Jan Beulich wrote:
+> >> The one Rusty suggested the other day may help here. I don't like it
+> >> as a drop-in replacement for BUILD_BUG_ON() though (due to it
+> >> deferring the error generated to the linking stage), I'd rather view
+> >> this as an improvement to MAYBE_BUILD_BUG_ON() (which should
+> >> then be used here).
+> >
+> >Can you be more specific?
+> >
+> >I have no idea what Rusty suggested where. I can't even guess what
+> 
+> I'm attaching Rusty's response I was referring to.
+> 
+> >MAYBE_BUILD_BUG_ON() is supposed to do (sounds like a terrible name).
+> 
+> Agreed - but presumably better than just deleting the bogus instances
+> altogether...
+> 
+> Jan
+> email message attachment
+> > -------- Forwarded Message --------
+> > From: Rusty Russell <rusty@rustcorp.com.au>
+> > To: Jan Beulich <JBeulich@novell.com>
+> > Cc: linux-kernel@vger.kernel.org
+> > Subject: Re: [PATCH] fix BUILD_BUG_ON() and a couple of bogus uses
+> > of it
+> > Date: Wed, 23 Sep 2009 10:27:00 +0930
+> > 
+> > On Wed, 19 Aug 2009 01:29:25 am Jan Beulich wrote:
+> > > gcc permitting variable length arrays makes the current construct
+> > > used for BUILD_BUG_ON() useless, as that doesn't produce any diagnostic
+> > > if the controlling expression isn't really constant. Instead, this
+> > > patch makes it so that a bit field gets used here. Consequently, those
+> > > uses where the condition isn't really constant now also need fixing.
+> > > 
+> > > Note that in the gfp.h, kmemcheck.h, and virtio_config.h cases
+> > > MAYBE_BUILD_BUG_ON() really just serves documentation purposes - even
+> > > if the expression is compile time constant (__builtin_constant_p()
+> > > yields true), the array is still deemed of variable length by gcc, and
+> > > hence the whole expression doesn't have the intended effect.
+> > > 
+> > > Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> > 
+> > We used to use an undefined symbol here; diagnostics are worse but it catches
+> > more stuff.
+> > 
+> > Perhaps a hybrid is the way to go?
+> > 
+> > #ifndef __OPTIMIZE__
+> > #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+> > #else
+> > /* If it's a constant, catch it at compile time, otherwise at link time. */
+> > extern int __build_bug_on_failed;
+> > #define BUILD_BUG_ON(condition) \
+> > 	do { 								\
+> > 		((void)sizeof(char[1 - 2*!!(condition)]));		\
+> > 		if (condition) __build_bug_on_failed = 1;		\
+> > 	} while(0)
+> > #endif
+> > 
+> > Thanks,
+> > Rusty.
