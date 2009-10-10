@@ -1,34 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7D24DB7B80
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Oct 2009 10:43:19 +1100 (EST)
-Date: Fri, 9 Oct 2009 16:41:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: Re: [PATCH 2/8] bitmap: Introduce bitmap_set, bitmap_clear,
-	bitmap_find_next_zero_area
-Message-Id: <20091009164100.85a36188.akpm@linux-foundation.org>
-In-Reply-To: <1255076961-21325-2-git-send-email-akinobu.mita@gmail.com>
-References: <1255076961-21325-1-git-send-email-akinobu.mita@gmail.com>
-	<1255076961-21325-2-git-send-email-akinobu.mita@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Fenghua Yu <fenghua.yu@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-ia64@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
-	x86@kernel.org, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-altix@sgi.com,
-	Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>, linux-usb@vger.kernel.org,
-	"David S. Miller" <davem@davemloft.net>,
-	Lothar Wassmann <LW@KARO-electronics.de>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 2F309B7B70
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Oct 2009 20:03:10 +1100 (EST)
+Date: Sat, 10 Oct 2009 11:03:02 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [RFC] scripts/get_maintainer: add emails based on keywords in
+	the patch
+Message-ID: <20091010090302.GA11576@pengutronix.de>
+References: <1255084379-12954-1-git-send-email-w.sang@pengutronix.de>
+	<1255087406.16347.108.camel@Joe-Laptop.home>
+	<1255114905.16347.137.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
+In-Reply-To: <1255114905.16347.137.camel@Joe-Laptop.home>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,86 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri,  9 Oct 2009 17:29:15 +0900
-Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-> This introduces new bitmap functions:
-> 
-> bitmap_set: Set specified bit area
-> bitmap_clear: Clear specified bit area
-> bitmap_find_next_zero_area: Find free bit area
-> 
-> These are stolen from iommu helper.
-> 
-> I changed the return value of bitmap_find_next_zero_area if there is
-> no zero area.
-> 
-> find_next_zero_area in iommu helper: returns -1
-> bitmap_find_next_zero_area: return >= bitmap size
+--mYCpIKhGyMATD0i+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'll plan to merge this patch into 2.6.32 so we can trickle all the
-other patches into subsystems in an orderly fashion.
 
-> +void bitmap_set(unsigned long *map, int i, int len)
-> +{
-> +	int end = i + len;
-> +
-> +	while (i < end) {
-> +		__set_bit(i, map);
-> +		i++;
-> +	}
-> +}
+> Perhaps it's better to use the existing MAINTAINERS file
+> and extend it with a new "K:" for keyword entry.
 
-This is really inefficient, isn't it?  It's a pretty trivial matter to
-romp through memory 32 or 64 bits at a time.
+Yeah, makes sense to have everything in one file.
 
-> +EXPORT_SYMBOL(bitmap_set);
-> +
-> +void bitmap_clear(unsigned long *map, int start, int nr)
-> +{
-> +	int end = start + nr;
-> +
-> +	while (start < end) {
-> +		__clear_bit(start, map);
-> +		start++;
-> +	}
-> +}
-> +EXPORT_SYMBOL(bitmap_clear);
+> +	K: Keyword perl regex pattern to match content in patch
+> +	   All patterns are surrounded by "\b"
+> +	   for instance: K: of_get_profile
+> +	   will match patches that contain the word "of_get_profile"
 
-Ditto.
+=2E..in the lines which are changed?
 
-> +unsigned long bitmap_find_next_zero_area(unsigned long *map,
-> +					 unsigned long size,
-> +					 unsigned long start,
-> +					 unsigned int nr,
-> +					 unsigned long align_mask)
-> +{
-> +	unsigned long index, end, i;
-> +again:
-> +	index = find_next_zero_bit(map, size, start);
-> +
-> +	/* Align allocation */
-> +	index = (index + align_mask) & ~align_mask;
-> +
-> +	end = index + nr;
-> +	if (end >= size)
-> +		return end;
-> +	i = find_next_bit(map, end, index);
-> +	if (i < end) {
-> +		start = i + 1;
-> +		goto again;
-> +	}
-> +	return index;
-> +}
-> +EXPORT_SYMBOL(bitmap_find_next_zero_area);
+> +OPEN FIRMWARE DEVICE TREE
+> +L:	devicetree-discuss@lists.ozlabs.org
+> +S:	Odd Fixes
 
-This needs documentation, please.  It appears that `size' is the size
-of the bitmap and `nr' is the number of zeroed bits we're looking for,
-but an inattentive programmer could get those reversed.
+Maintained, I'd say. Especially as Grant Likely recently said he wants to t=
+ake care about OF.
 
-Also the semantics of `align_mask' could benefit from spelling out.  Is
-the alignment with respect to memory boundaries or with respect to
-`map' or with respect to map+start or what?
+> +K:	of_get_property
 
-And why does align_mask exist at all?  I was a bit surprised to see it
-there.  In which scenarios will it be non-zero?
+F: drivers/of/
+
+Will check the script later this weekend.
+
+Thanks,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--mYCpIKhGyMATD0i+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkrQTcYACgkQD27XaX1/VRucqQCfZdjsp0AVO2Y30Kcc4U0WFp2N
+lXIAoIwf4CTFMevnXhrpIHOgfc685loC
+=4dNO
+-----END PGP SIGNATURE-----
+
+--mYCpIKhGyMATD0i+--
