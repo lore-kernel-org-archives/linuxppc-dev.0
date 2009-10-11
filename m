@@ -2,17 +2,15 @@ Return-Path: <joakim.tjernlund@transmode.com>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7B2C1B7B70
+	by ozlabs.org (Postfix) with ESMTPS id 7D7E0B7B74
 	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 03:35:22 +1100 (EST)
 From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	Rex Feany <RFeany@mrv.com>, Scott Wood <scottwood@freescale.com>
-Subject: [PATCH 1/8] 8xx: invalidate non present TLBs
-Date: Sun, 11 Oct 2009 18:35:05 +0200
-Message-Id: <1255278912-8042-2-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Subject: [PATCH 0/8] Fix 8xx MMU/TLB.
+Date: Sun, 11 Oct 2009 18:35:04 +0200
+Message-Id: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-8xx sometimes need to load a invalid/non-present TLBs in
-it DTLB asm handler.
-These must be invalidated separaly as linux mm don't.
----
- arch/powerpc/mm/fault.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+This is the latest batch of mu 8xx MMU/TLB rework.
+I think this is complete now and will relax with
+other work the next few days. I hope I can get some
+testing from Scott and Rex during this time.
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 7699394..72941c7 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -39,7 +39,7 @@
- #include <asm/uaccess.h>
- #include <asm/tlbflush.h>
- #include <asm/siginfo.h>
--
-+#include <mm/mmu_decl.h>
- 
- #ifdef CONFIG_KPROBES
- static inline int notify_page_fault(struct pt_regs *regs)
-@@ -243,6 +243,12 @@ good_area:
- 		goto bad_area;
- #endif /* CONFIG_6xx */
- #if defined(CONFIG_8xx)
-+	/* 8xx sometimes need to load a invalid/non-present TLBs.
-+	 * These must be invalidated separately as linux mm don't.
-+	 */
-+	if (error_code & 0x40000000) /* no translation? */
-+		_tlbil_va(address);
-+
-         /* The MPC8xx seems to always set 0x80000000, which is
-          * "undefined".  Of those that can be set, this is the only
-          * one which seems bad.
--- 
-1.6.4.4
+Joakim Tjernlund (8):
+  8xx: invalidate non present TLBs
+  8xx: Update TLB asm so it behaves as linux mm expects.
+  8xx: Tag DAR with 0x00f0 to catch buggy instructions.
+  8xx: Fixup DAR from buggy dcbX instructions.
+  8xx: dcbst sets store bit in DTLB error, workaround.
+  8xx: Add missing Guarded setting in DTLB Error.
+  8xx: Restore _PAGE_WRITETHRU
+  8xx: start using dcbX instructions in various copy routines
+
+ arch/powerpc/include/asm/pte-8xx.h |   14 +-
+ arch/powerpc/kernel/head_8xx.S     |  307 ++++++++++++++++++++++++++++++------
+ arch/powerpc/kernel/misc_32.S      |   18 --
+ arch/powerpc/lib/copy_32.S         |   24 ---
+ arch/powerpc/mm/fault.c            |    8 +-
+ 5 files changed, 269 insertions(+), 102 deletions(-)
