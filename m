@@ -1,25 +1,18 @@
-Return-Path: <jkacur@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 76725B70B3
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Oct 2009 10:28:05 +1100 (EST)
-Date: Sun, 11 Oct 2009 01:27:24 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch 22/28] macintosh: Remove BKL from ans-lcd
-In-Reply-To: <20091011001324.49e9733d@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.00.0910110125000.4921@localhost.localdomain>
-References: <20091010153314.827301943@linutronix.de>
-	<20091010153349.966159859@linutronix.de>
-	<alpine.LFD.2.00.0910102309570.3669@localhost.localdomain>
-	<20091011001324.49e9733d@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jonathan Corbet <corbet@lwn.net>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Vincent Sanders <vince@simtec.co.uk>, LKML <linux-kernel@vger.kernel.org>,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Return-Path: <joakim.tjernlund@transmode.com>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7B2C1B7B70
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 03:35:22 +1100 (EST)
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>, Scott Wood <scottwood@freescale.com>
+Subject: [PATCH 1/8] 8xx: invalidate non present TLBs
+Date: Sun, 11 Oct 2009 18:35:05 +0200
+Message-Id: <1255278912-8042-2-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>
+References: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+8xx sometimes need to load a invalid/non-present TLBs in
+it DTLB asm handler.
+These must be invalidated separaly as linux mm don't.
+---
+ arch/powerpc/mm/fault.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-
-On Sun, 11 Oct 2009, Alan Cox wrote:
-
-> > There were 4 checkpatch errors on this patch, all of the type
-> > ERROR: spaces required around that '=' (ctx:WxO)
-> > #1466: FILE: drivers/macintosh/ans-lcd.c:112:
-> > +			ret =-EACCES;
-> 
-> Here's a suggestion. If a few spaces bug you that much then instead of
-> complaining about it and posting checkpatch results deal with the file
-> itself. 
-> 
-> Wait until the patch goes in and send a follow up patch that fixes up the
-> file to fit codingstyle. There's no point whining about the bits a patch
-> touches when the file wasn't in that format before, but if you've got
-> nothing better to do then doing a pass over the whole file *is* useful.
-> 
-> (Plus it gets a patch to your name ;))
-> 
-> Checkpatch whines on files that simple don't follow style are usually
-> best ignored because they make the file formatting less internally
-> consistent.
-> 
-Thanks Alan, I was sincerely debatting whether to send this because I know 
-that checkpatch can be annoying - but on the other hand, I thought it 
-prudent to run it since I was claiming to have reviewed all of those 
-patches.
-
-I like your suggestion though - next time, I won't send the mail, since 
-since the folks submitting these patches are more than capable of checking 
-that kind of thing themselves, and if I feel it's important enough, I'll 
-follow up with a trivial style patch.
-
-Cheers!
-
-John
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 7699394..72941c7 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -39,7 +39,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/tlbflush.h>
+ #include <asm/siginfo.h>
+-
++#include <mm/mmu_decl.h>
+ 
+ #ifdef CONFIG_KPROBES
+ static inline int notify_page_fault(struct pt_regs *regs)
+@@ -243,6 +243,12 @@ good_area:
+ 		goto bad_area;
+ #endif /* CONFIG_6xx */
+ #if defined(CONFIG_8xx)
++	/* 8xx sometimes need to load a invalid/non-present TLBs.
++	 * These must be invalidated separately as linux mm don't.
++	 */
++	if (error_code & 0x40000000) /* no translation? */
++		_tlbil_va(address);
++
+         /* The MPC8xx seems to always set 0x80000000, which is
+          * "undefined".  Of those that can be set, this is the only
+          * one which seems bad.
+-- 
+1.6.4.4
