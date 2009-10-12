@@ -1,27 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 560C6B7B71
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 16:08:22 +1100 (EST)
-Subject: Re: [PATCH 2/2][v3] powerpc: Make the CMM memory hotplug aware
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Robert Jennings <rcj@linux.vnet.ibm.com>
-In-Reply-To: <20091009204126.GD19114@austin.ibm.com>
-References: <20091009203803.GC19114@austin.ibm.com>
-	<20091009204126.GD19114@austin.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 12 Oct 2009 16:06:47 +1100
-Message-Id: <1255324007.2192.106.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>,
-	Gerald Schaefer <geralds@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	by ozlabs.org (Postfix) with ESMTPS id 3F502B7B70
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 16:38:21 +1100 (EST)
+In-Reply-To: <1255301096.2192.44.camel@pasglop>
+References: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1255278912-8042-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255278912-8042-3-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1255278912-8042-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255278912-8042-5-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1255278912-8042-6-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255278912-8042-7-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1255296330.2192.42.camel@pasglop>
+	<OF67239BF2.43007548-ONC125764C.007A17D3-C125764C.007A9BE3@transmode.se>
+	<1255301096.2192.44.camel@pasglop>
+Subject: Re: [PATCH 6/8] 8xx: Add missing Guarded setting in DTLB Error.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OFE59DA813.A2491F26-ONC125764D.001E597A-C125764D.001EC8E7@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Mon, 12 Oct 2009 07:36:15 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,125 +34,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-10-09 at 15:41 -0500, Robert Jennings wrote:
-> The Collaborative Memory Manager (CMM) module allocates individual pages
-> over time that are not migratable.  On a long running system this can
-> severely impact the ability to find enough pages to support a hotplug
-> memory remove operation.
-> 
-> This patch adds a memory isolation notifier and a memory hotplug notifier.
-> The memory isolation notifier will return the number of pages found
-> in the range specified.  This is used to determine if all of the used
-> pages in a pageblock are owned by the balloon (or other entities in
-> the notifier chain).  The hotplug notifier will free pages in the range
-> which is to be removed.  The priority of this hotplug notifier is low
-> so that it will be called near last, this helps avoids removing loaned
-> pages in operations that fail due to other handlers.
-> 
-> CMM activity will be halted when hotplug remove operations are active
-> and resume activity after a delay period to allow the hypervisor time
-> to adjust.
-> 
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 12/10/2009 00:44:56:
+> On Mon, 2009-10-12 at 00:19 +0200, Joakim Tjernlund wrote:
+> >
+> > I hear you, I can remove DTLB error with an add on patch later if that is OK?
+> > I cannot remove the DARFix though, when I move that to do_page_fault(), I get
+> > duplicate TLB hits on the same insn. It is like when transfer_to_handler()
+> > executes rfi, the cpu restarts the the faulting insn instead of jumping
+> > to the page fault handler, not always but often.
+>
+> I'm not sure what you mean here ...
 
-Do you need me to merge that via the powerpc tree after the relevant
-generic parts go in ? This is 2.6.33 material ?
+Just that I need to keep the DAR fix for dcbX insn in the DTLB handler. If I try
+to move it to do_page_fault() I get a lot more DTLB errors for dcbX insn.
 
-> +module_param_named(hotplug_delay, hotplug_delay, uint, S_IRUGO | S_IWUSR);
-> +MODULE_PARM_DESC(delay, "Delay (in seconds) after memory hotplug remove "
-> +		 "before activity resumes. "
-> +		 "[Default=" __stringify(CMM_HOTPLUG_DELAY) "]");
-
-What is the above ? That sounds scary :-)
-
->  module_param_named(oom_kb, oom_kb, uint, S_IRUGO | S_IWUSR);
->  MODULE_PARM_DESC(oom_kb, "Amount of memory in kb to free on OOM. "
->  		 "[Default=" __stringify(CMM_OOM_KB) "]");
-> @@ -88,6 +101,8 @@ struct cmm_page_array {
->  static unsigned long loaned_pages;
->  static unsigned long loaned_pages_target;
->  static unsigned long oom_freed_pages;
-> +static atomic_t hotplug_active = ATOMIC_INIT(0);
-> +static atomic_t hotplug_occurred = ATOMIC_INIT(0);
-
-That sounds like a hand made lock with atomics... rarely a good idea,
-tends to miss appropriate barriers etc...
- 
->  static struct cmm_page_array *cmm_page_list;
->  static DEFINE_SPINLOCK(cmm_lock);
-> @@ -110,6 +125,9 @@ static long cmm_alloc_pages(long nr)
->  	cmm_dbg("Begin request for %ld pages\n", nr);
->  
->  	while (nr) {
-> +		if (atomic_read(&hotplug_active))
-> +			break;
-> +
-
-Ok so I'm not familiar with that whole memory hotplug stuff, so the code
-might be right, but wouldn't the above be racy anyways in case hotplug
-just becomes active after this statement ?
-
-Shouldn't you use a mutex_trylock instead ? That has clearer semantics
-and will provide the appropriate memory barriers.
-
->  		addr = __get_free_page(GFP_NOIO | __GFP_NOWARN |
->  				       __GFP_NORETRY | __GFP_NOMEMALLOC);
->  		if (!addr)
-> @@ -119,8 +137,10 @@ static long cmm_alloc_pages(long nr)
->  		if (!pa || pa->index >= CMM_NR_PAGES) {
->  			/* Need a new page for the page list. */
->  			spin_unlock(&cmm_lock);
-> -			npa = (struct cmm_page_array *)__get_free_page(GFP_NOIO | __GFP_NOWARN |
-> -								       __GFP_NORETRY | __GFP_NOMEMALLOC);
-> +			npa = (struct cmm_page_array *)__get_free_page(
-> +					GFP_NOIO | __GFP_NOWARN |
-> +					__GFP_NORETRY | __GFP_NOMEMALLOC |
-> +					__GFP_MOVABLE);
->  			if (!npa) {
->  				pr_info("%s: Can not allocate new page list\n", __func__);
->  				free_page(addr);
-> @@ -273,9 +293,23 @@ static int cmm_thread(void *dummy)
->  	while (1) {
->  		timeleft = msleep_interruptible(delay * 1000);
-> 
-> -		if (kthread_should_stop() || timeleft) {
-> -			loaned_pages_target = loaned_pages;
-> +		if (kthread_should_stop() || timeleft)
->  			break;
-> +
-> +		if (atomic_read(&hotplug_active)) {
-> +			cmm_dbg("Hotplug operation in progress, activity "
-> +					"suspended\n");
-> +			continue;
-> +		}
-> +
-> +		if (atomic_dec_if_positive(&hotplug_occurred) >= 0) {
-> +			cmm_dbg("Hotplug operation has occurred, loaning "
-> +					"activity suspended for %d seconds.\n",
-> +					hotplug_delay);
-> +			timeleft = msleep_interruptible(hotplug_delay * 1000);
-> +			if (kthread_should_stop() || timeleft)
-> +				break;
-> +			continue;
->  		}
-
-I have less problems with hotplug_occured but if you use a
-mutex_trylock, overall, you can turn the above into a normal int instead
-of an atomic.
-
- ../..
-
-> +static int cmm_memory_cb(struct notifier_block *self,
-> +			unsigned long action, void *arg)
-> +{
-> +	int ret = 0;
-> +
-> +	switch (action) {
-> +	case MEM_GOING_OFFLINE:
-> +		atomic_set(&hotplug_active, 1);
-
-So that would become a mutex_lock(). Added advantage is that
-it would wait for a current CMM operation to complete.
- 
-Cheers,
-Ben.
+ Jocke
