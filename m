@@ -1,32 +1,12 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 11F07B7B70
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 18:03:29 +1100 (EST)
-In-Reply-To: <1255326374.2192.112.camel@pasglop>
-References: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1255278912-8042-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-3-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1255278912-8042-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-5-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1255278912-8042-6-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-7-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1255296330.2192.42.camel@pasglop>
-	<OF67239BF2.43007548-ONC125764C.007A17D3-C125764C.007A9BE3@transmode.se>
-	<1255301096.2192.44.camel@pasglop>	
-	<OFE59DA813.A2491F26-ONC125764D.001E597A-C125764D.001EC8E7@transmode.se>
-	<1255326374.2192.112.camel@pasglop>
-Subject: Re: [PATCH 6/8] 8xx: Add missing Guarded setting in DTLB Error.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF463AA1A7.D3BA204B-ONC125764D.0023FDA0-C125764D.00266023@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 12 Oct 2009 08:59:09 +0200
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 12 Oct 2009 18:47:34 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Fix hypervisor TLB batching
+Message-ID: <20091012074734.GB4808@kryten>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,35 +16,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 12/10/2009 07:46:14:
->
-> On Mon, 2009-10-12 at 07:36 +0200, Joakim Tjernlund wrote:
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 12/10/2009 00:44:56:
-> > > On Mon, 2009-10-12 at 00:19 +0200, Joakim Tjernlund wrote:
-> > > >
-> > > > I hear you, I can remove DTLB error with an add on patch later if that is OK?
-> > > > I cannot remove the DARFix though, when I move that to do_page_fault(), I get
-> > > > duplicate TLB hits on the same insn. It is like when transfer_to_handler()
-> > > > executes rfi, the cpu restarts the the faulting insn instead of jumping
-> > > > to the page fault handler, not always but often.
-> > >
-> > > I'm not sure what you mean here ...
-> >
-> > Just that I need to keep the DAR fix for dcbX insn in the DTLB handler. If I try
-> > to move it to do_page_fault() I get a lot more DTLB errors for dcbX insn.
->
-> I'm not sure why (ie, I didn't get your explanation about rfi and
-> restarting the faulting insn etc...) but ok, I don't mind having
-> the DAR fixup remain in the asm. It's the whole logic that looks
-> at the PTE and does things with it that I feel has no room in there :-)
 
-OK, I will send a removal patch too.
+Profiling of a page fault scalability microbenchmark shows flush_hash_range
+is not calling the batch hpte invalidate hcall (H_BULK_REMOVE).
 
->
-> BTW. Maybe the do_page_fault() thing comes from the fact that we
-> also go there via ITLB Error which doesn't set the DAR and
-> that's normal ?
+It turns out we have a duplicate firmware feature for hcall-bulk and the
+current setup code stops after finding the first match. This meant we never
+batch and always do individual invalidates.
 
-I had that idea to, but no. These have different traps numbers and
-address is set to SRR0 for ITLB and to DAR for DTLB. I test for DTLB
-trap number before doing anything.
+The patch below removes the duplicate and shifts FW_FEATURE_CMO to close
+the gap. With the patch applied the single threaded page fault rate improves
+from 217169 to 238755 per second on a POWER5 test box, a 10% improvement.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux.trees.git/arch/powerpc/include/asm/firmware.h
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/include/asm/firmware.h	2009-10-12 18:11:56.000000000 +1100
++++ linux.trees.git/arch/powerpc/include/asm/firmware.h	2009-10-12 18:21:20.000000000 +1100
+@@ -37,7 +37,7 @@
+ #define FW_FEATURE_VIO		ASM_CONST(0x0000000000004000)
+ #define FW_FEATURE_RDMA		ASM_CONST(0x0000000000008000)
+ #define FW_FEATURE_LLAN		ASM_CONST(0x0000000000010000)
+-#define FW_FEATURE_BULK		ASM_CONST(0x0000000000020000)
++#define FW_FEATURE_BULK_REMOVE	ASM_CONST(0x0000000000020000)
+ #define FW_FEATURE_XDABR	ASM_CONST(0x0000000000040000)
+ #define FW_FEATURE_MULTITCE	ASM_CONST(0x0000000000080000)
+ #define FW_FEATURE_SPLPAR	ASM_CONST(0x0000000000100000)
+@@ -45,8 +45,7 @@
+ #define FW_FEATURE_LPAR		ASM_CONST(0x0000000000400000)
+ #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
+ #define FW_FEATURE_BEAT		ASM_CONST(0x0000000001000000)
+-#define FW_FEATURE_BULK_REMOVE	ASM_CONST(0x0000000002000000)
+-#define FW_FEATURE_CMO		ASM_CONST(0x0000000004000000)
++#define FW_FEATURE_CMO		ASM_CONST(0x0000000002000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -58,8 +57,9 @@ enum {
+ 		FW_FEATURE_PERF | FW_FEATURE_DUMP | FW_FEATURE_INTERRUPT |
+ 		FW_FEATURE_MIGRATE | FW_FEATURE_PERFMON | FW_FEATURE_CRQ |
+ 		FW_FEATURE_VIO | FW_FEATURE_RDMA | FW_FEATURE_LLAN |
+-		FW_FEATURE_BULK | FW_FEATURE_XDABR | FW_FEATURE_MULTITCE |
+-		FW_FEATURE_SPLPAR | FW_FEATURE_LPAR | FW_FEATURE_CMO,
++		FW_FEATURE_BULK_REMOVE | FW_FEATURE_XDABR |
++		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
++		FW_FEATURE_CMO,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_ISERIES_POSSIBLE = FW_FEATURE_ISERIES | FW_FEATURE_LPAR,
+ 	FW_FEATURE_ISERIES_ALWAYS = FW_FEATURE_ISERIES | FW_FEATURE_LPAR,
+Index: linux.trees.git/arch/powerpc/platforms/pseries/firmware.c
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/platforms/pseries/firmware.c	2009-10-12 18:08:37.000000000 +1100
++++ linux.trees.git/arch/powerpc/platforms/pseries/firmware.c	2009-10-12 18:12:54.000000000 +1100
+@@ -51,11 +51,10 @@ firmware_features_table[FIRMWARE_MAX_FEA
+ 	{FW_FEATURE_VIO,		"hcall-vio"},
+ 	{FW_FEATURE_RDMA,		"hcall-rdma"},
+ 	{FW_FEATURE_LLAN,		"hcall-lLAN"},
+-	{FW_FEATURE_BULK,		"hcall-bulk"},
++	{FW_FEATURE_BULK_REMOVE,	"hcall-bulk"},
+ 	{FW_FEATURE_XDABR,		"hcall-xdabr"},
+ 	{FW_FEATURE_MULTITCE,		"hcall-multi-tce"},
+ 	{FW_FEATURE_SPLPAR,		"hcall-splpar"},
+-	{FW_FEATURE_BULK_REMOVE,	"hcall-bulk"},
+ };
+ 
+ /* Build up the firmware features bitmask using the contents of
