@@ -1,36 +1,27 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
+Return-Path: <Matteo.Fortini@mta.it>
+Received: from cluster-a.mailcontrol.com (cluster-a.mailcontrol.com
+	[85.115.52.190])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 69303B7B6F
+	(Client CN "*.mailcontrol.com",
+	Issuer "DigiCert Global CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C8BE9B7B69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 12 Oct 2009 22:36:14 +1100 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id n9CBa4w6006260
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2009 17:06:04 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9CBa4x12039924
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2009 17:06:04 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n9CBa30T023788
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2009 17:06:04 +0530
-Date: Mon, 12 Oct 2009 17:06:02 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v8 PATCH 1/8]: cpuidle: cleanup drivers/cpuidle/cpuidle.c
-Message-ID: <20091012113602.GC3007@balbir.in.ibm.com>
-References: <20091008094828.GA20595@linux.vnet.ibm.com>
-	<20091008094942.GB20595@linux.vnet.ibm.com>
+	Mon, 12 Oct 2009 23:00:00 +1100 (EST)
+Received: from rly07a.srv.mailcontrol.com (localhost.localdomain [127.0.0.1])
+	by rly07a.srv.mailcontrol.com (MailControl) with ESMTP id
+	n9CBE60d022588
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2009 12:14:22 +0100
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+	by rly07a.srv.mailcontrol.com (MailControl) id n9CBE0ia021605
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2009 12:14:00 +0100
+Message-ID: <4AD30DF0.1000901@mta.it>
+Date: Mon, 12 Oct 2009 13:07:28 +0200
+From: Fortini Matteo <matteo.fortini@mta.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20091008094942.GB20595@linux.vnet.ibm.com>
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	Arjan van de Ven <arjan@infradead.org>
-Reply-To: balbir@linux.vnet.ibm.com
+To: u-boot@lists.denx.de
+Subject: Linux seamless booting
+Content-Type: text/plain; charset="ISO-8859-15"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,54 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Arun R B <arun@linux.vnet.ibm.com> [2009-10-08 15:19:42]:
+Hi all,
+we've been working on a PPC512x board booting with u-boot + linux 
+2.6.24.6, and one major issue for our application is boot time.
 
-> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-08 15:18:28]:
-> 
-> This patch cleans up drivers/cpuidle/cpuidle.c
-> Earlier cpuidle assumed pm_idle as the default idle loop. Break that
-> assumption and make it more generic. cpuidle_idle_call() which is the
-> main idle loop of cpuidle is to be called by architectures which have
-> registered to cpuidle.
-> 
-> Remove routines cpuidle_install/uninstall_idle_handler() which are not
-> needed anymore.
-> 
->
+Right now, we went down to less than 6s boot time (i.e. time from power 
+off to launch of the user app), even with some drivers installed, i.e.:
 
-[snip]
+    * CAN bus
+    * GPU on PCI bus
+    * USB host
+    * UBI
 
-  /**
-> - * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
-> - */
-> -void cpuidle_install_idle_handler(void)
-> -{
-> -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
-> -		/* Make sure all changes finished before we switch to new idle */
-> -		smp_wmb();
-> -		pm_idle = cpuidle_idle_call;
-> -	}
-> -}
-> -
-> -/**
-> - * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
-> - */
-> -void cpuidle_uninstall_idle_handler(void)
-> -{
-> -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
-> -		pm_idle = pm_idle_old;
-> -		cpuidle_kick_cpus();
-> -	}
-> -}
-> -
+with r/o squashfs root and r/w ubifs configuration filesystem mounted 
+from a NOR flash memory.
 
-I see the routines above being called in from
-cpuidle_pause/resume_and_lock/unlock below and they are entries from
-ACPI on ACPI_PROCESSOR_NOTIFY_POWER and from the hotplug path, could
-you test them to make sure they are not broken. We also seem to be
-missing a cpuidle_kick_cpus() in cpuidle_pause_and_lock()
+This time could be enough for the high-level application (we're showing 
+a splash screen in about 2-3s so it's ok if the main app takes a little 
+longer to come up), but the whole system is connected to others via CAN 
+and we can't afford the "black out" period between u-boot and linux.
 
-[snip]
+Some other operating systems (e.g. QNX) have this "seamless booting" 
+function, in which drivers are started in stages, so that a (minimal) 
+functionality can be given in milliseconds, and more functionalities 
+come up as time goes by.
 
--- 
-	Balbir
+Is there a way to support something similar with the u-boot -> linux 
+solution?
+
+Thank you,
+Matteo
