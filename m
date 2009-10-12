@@ -1,16 +1,32 @@
-Return-Path: <joakim.tjernlund@transmode.com>
+Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B343DB6F2B
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 18:03:07 +1100 (EST)
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	by ozlabs.org (Postfix) with ESMTPS id 11F07B7B70
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 18:03:29 +1100 (EST)
+In-Reply-To: <1255326374.2192.112.camel@pasglop>
+References: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1255278912-8042-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255278912-8042-3-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1255278912-8042-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255278912-8042-5-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1255278912-8042-6-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255278912-8042-7-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1255296330.2192.42.camel@pasglop>
+	<OF67239BF2.43007548-ONC125764C.007A17D3-C125764C.007A9BE3@transmode.se>
+	<1255301096.2192.44.camel@pasglop>	
+	<OFE59DA813.A2491F26-ONC125764D.001E597A-C125764D.001EC8E7@transmode.se>
+	<1255326374.2192.112.camel@pasglop>
+Subject: Re: [PATCH 6/8] 8xx: Add missing Guarded setting in DTLB Error.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF463AA1A7.D3BA204B-ONC125764D.0023FDA0-C125764D.00266023@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Mon, 12 Oct 2009 08:59:09 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>, Scott Wood <scottwood@freescale.com>
-Subject: [PATCH] 8xx: Remove DIRTY pte handling in DTLB Error.
-Date: Mon, 12 Oct 2009 09:03:00 +0200
-Message-Id: <1255330980-31816-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,127 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is no need to do set the DIRTY bit directly in DTLB Error.
-Trap to do_page_fault() and let the generic MM code do the work.
----
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 12/10/2009 07:46:14:
+>
+> On Mon, 2009-10-12 at 07:36 +0200, Joakim Tjernlund wrote:
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 12/10/2009 00:44:56:
+> > > On Mon, 2009-10-12 at 00:19 +0200, Joakim Tjernlund wrote:
+> > > >
+> > > > I hear you, I can remove DTLB error with an add on patch later if that is OK?
+> > > > I cannot remove the DARFix though, when I move that to do_page_fault(), I get
+> > > > duplicate TLB hits on the same insn. It is like when transfer_to_handler()
+> > > > executes rfi, the cpu restarts the the faulting insn instead of jumping
+> > > > to the page fault handler, not always but often.
+> > >
+> > > I'm not sure what you mean here ...
+> >
+> > Just that I need to keep the DAR fix for dcbX insn in the DTLB handler. If I try
+> > to move it to do_page_fault() I get a lot more DTLB errors for dcbX insn.
+>
+> I'm not sure why (ie, I didn't get your explanation about rfi and
+> restarting the faulting insn etc...) but ok, I don't mind having
+> the DAR fixup remain in the asm. It's the whole logic that looks
+> at the PTE and does things with it that I feel has no room in there :-)
 
-Ben, here it is :)
+OK, I will send a removal patch too.
 
- arch/powerpc/kernel/head_8xx.S |   95 ----------------------------------------
- 1 files changed, 0 insertions(+), 95 deletions(-)
+>
+> BTW. Maybe the do_page_fault() thing comes from the fact that we
+> also go there via ITLB Error which doesn't set the DAR and
+> that's normal ?
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index db5207e..cb94f46 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -500,92 +500,6 @@ DataTLBError:
- 	cmpwi	cr0, r10, 0x00f0
- 	beq-	FixDAR	/* must be a buggy dcbX, icbi insn. */
- DARFix:	/* Return from dcbx instruction bug workaround, r10 holds value of DAR */
--	mfspr	r11, SPRN_DSISR
--	/* As the DAR fixup may clear store we may have all 3 states zero.
--	 * Make sure only 0x0200(store) falls down into DIRTY handling
--	 */
--	andis.	r11, r11, 0x4a00	/* !translation, protection or store */
--	srwi	r11, r11, 16
--	cmpwi	cr0, r11, 0x0200	/* just store ? */
--	bne	2f
--	/* Only Change bit left now, do it here as it is faster
--	 * than trapping to the C fault handler.
--	*/
--
--	/* The EA of a data TLB miss is automatically stored in the MD_EPN
--	 * register.  The EA of a data TLB error is automatically stored in
--	 * the DAR, but not the MD_EPN register.  We must copy the 20 most
--	 * significant bits of the EA from the DAR to MD_EPN before we
--	 * start walking the page tables.  We also need to copy the CASID
--	 * value from the M_CASID register.
--	 * Addendum:  The EA of a data TLB error is _supposed_ to be stored
--	 * in DAR, but it seems that this doesn't happen in some cases, such
--	 * as when the error is due to a dcbi instruction to a page with a
--	 * TLB that doesn't have the changed bit set.  In such cases, there
--	 * does not appear to be any way  to recover the EA of the error
--	 * since it is neither in DAR nor MD_EPN.  As a workaround, the
--	 * _PAGE_HWWRITE bit is set for all kernel data pages when the PTEs
--	 * are initialized in mapin_ram().  This will avoid the problem,
--	 * assuming we only use the dcbi instruction on kernel addresses.
--	 */
--
--	/* DAR is in r10 already */
--	rlwinm	r11, r10, 0, 0, 19
--	ori	r11, r11, MD_EVALID
--	mfspr	r10, SPRN_M_CASID
--	rlwimi	r11, r10, 0, 28, 31
--	DO_8xx_CPU6(0x3780, r3)
--	mtspr	SPRN_MD_EPN, r11
--
--	mfspr	r10, SPRN_M_TWB	/* Get level 1 table entry address */
--
--	/* If we are faulting a kernel address, we have to use the
--	 * kernel page tables.
--	 */
--	andi.	r11, r10, 0x0800
--	beq	3f
--	lis	r11, swapper_pg_dir@h
--	ori	r11, r11, swapper_pg_dir@l
--	rlwimi	r10, r11, 0, 2, 19
--3:
--	lwz	r11, 0(r10)	/* Get the level 1 entry */
--	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
--	beq	2f		/* If zero, bail */
--
--	/* We have a pte table, so fetch the pte from the table.
--	 */
--	ori	r11, r11, 1		/* Set valid bit in physical L2 page */
--	DO_8xx_CPU6(0x3b80, r3)
--	mtspr	SPRN_MD_TWC, r11	/* Load pte table base address */
--	mfspr	r10, SPRN_MD_TWC	/* ....and get the pte address */
--	lwz	r10, 0(r10)		/* Get the pte */
--	/* Insert the Guarded flag into the TWC from the Linux PTE.
--	 * It is bit 27 of both the Linux PTE and the TWC
--	 */
--	rlwimi	r11, r10, 0, 27, 27
--	/* Insert the WriteThru flag into the TWC from the Linux PTE.
--	 * It is bit 25 in the Linux PTE and bit 30 in the TWC
--	 */
--	rlwimi	r11, r10, 32-5, 30, 30
--	DO_8xx_CPU6(0x3b80, r3)
--	mtspr	SPRN_MD_TWC, r11
--	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
--
--	ori	r10, r10, _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_HWWRITE
--	stw	r10, 0(r11)		/* and update pte in table */
--	xori	r10, r10, _PAGE_RW	/* RW bit is inverted */
--
--	/* The Linux PTE won't go exactly into the MMU TLB.
--	 * Software indicator bits 22 and 28 must be clear.
--	 * Software indicator bits 24, 25, 26, and 27 must be
--	 * set.  All other Linux PTE bits control the behavior
--	 * of the MMU.
--	 */
--	li	r11, 0x00f0
--	mtspr	SPRN_DAR,r11	/* Tag DAR */
--	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
--	DO_8xx_CPU6(0x3d80, r3)
--	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
- 
- 	mfspr	r10, SPRN_M_TW	/* Restore registers */
- 	lwz	r11, 0(r0)
-@@ -594,15 +508,6 @@ DARFix:	/* Return from dcbx instruction bug workaround, r10 holds value of DAR *
- #ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
--	rfi
--2:
--	mfspr	r10, SPRN_M_TW	/* Restore registers */
--	lwz	r11, 0(r0)
--	mtcr	r11
--	lwz	r11, 4(r0)
--#ifdef CONFIG_8xx_CPU6
--	lwz	r3, 8(r0)
--#endif
- 	b	DataAccess
- 
- 	EXCEPTION(0x1500, Trap_15, unknown_exception, EXC_XFER_EE)
--- 
-1.6.4.4
+I had that idea to, but no. These have different traps numbers and
+address is set to SRR0 for ITLB and to DAR for DTLB. I test for DTLB
+trap number before doing anything.
