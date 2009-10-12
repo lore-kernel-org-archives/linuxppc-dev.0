@@ -1,40 +1,21 @@
-Return-Path: <rcjenn@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9E380B7334
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2009 06:49:20 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9CJcTRv015894
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 13:38:29 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9CJnAnY164294
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 13:49:12 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n9CJn8aO022486
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 13:49:09 -0600
-Date: Mon, 12 Oct 2009 14:49:07 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/2][v4] powerpc: Make the CMM memory hotplug aware
-Message-ID: <20091012194907.GC30941@austin.ibm.com>
-References: <20091009203803.GC19114@austin.ibm.com>
-	<20091009204126.GD19114@austin.ibm.com>
-	<1255324007.2192.106.camel@pasglop>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-iw0-f182.google.com (mail-iw0-f182.google.com
+	[209.85.223.182]) by ozlabs.org (Postfix) with ESMTP id DD974B7B7A
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2009 09:10:15 +1100 (EST)
+Received: by iwn12 with SMTP id 12so4742274iwn.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 15:10:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1255324007.2192.106.camel@pasglop>
-Cc: linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>,
-	Gerald Schaefer <geralds@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <20091012155041.GA1071@oksana.dev.rtsoft.ru>
+References: <20091012155041.GA1071@oksana.dev.rtsoft.ru>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 12 Oct 2009 15:09:53 -0700
+Message-ID: <fa686aa40910121509n1b7dba87nbe9ddf34f0b4d7c@mail.gmail.com>
+Subject: Re: [PATCH] of/platform: Implement support for dev_pm_ops
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-pm@lists.linux-foundation.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,347 +25,405 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Collaborative Memory Manager (CMM) module allocates individual pages
-over time that are not migratable.  On a long running system this can
-severely impact the ability to find enough pages to support a hotplug
-memory remove operation.
+On Mon, Oct 12, 2009 at 8:50 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> Linux power management subsystem supports vast amount of new PM
+> callbacks that are crucial for proper suspend and hibernation support
+> in drivers.
+>
+> This patch implements support for dev_pm_ops, preserving support
+> for legacy callbacks.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-This patch adds a memory isolation notifier and a memory hotplug notifier.
-The memory isolation notifier will return the number of pages found
-in the range specified.  This is used to determine if all of the used
-pages in a pageblock are owned by the balloon (or other entities in
-the notifier chain).  The hotplug notifier will free pages in the range
-which is to be removed.  The priority of this hotplug notifier is low
-so that it will be called near last, this helps avoids removing loaned
-pages in operations that fail due to other handlers.
+Hmmm...  I'm not very familiar with the PM callbacks, but change
+doesn't look right to me.  In particular, a lot of these new hooks
+don't do anything remotely of_platform bus specific.  For example,
+of_platform_pm_prepare() checks if there is drv, drv->pm, and
+drv->pm->prepare.  If all are true, then it calls drv->pm->prepare().
+I see that the platform bus platform_pm_prepare() function is
+absolutely identical.  I haven't looked, but I wouldn't be surprised
+if other busses do the same.
 
-CMM activity will be halted when hotplug remove operations are active
-and resume activity after a delay period to allow the hypervisor time
-to adjust.
+I think these simple pm ops should be made library functions that
+platform, of_platform and other simple busses can just populate their
+pm ops structure with.
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+g.
 
----
+> ---
+> =A0drivers/of/platform.c | =A0305 +++++++++++++++++++++++++++++++++++++++=
++++++++---
+> =A01 files changed, 290 insertions(+), 15 deletions(-)
+>
+> diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+> index 298de0f..d58ade1 100644
+> --- a/drivers/of/platform.c
+> +++ b/drivers/of/platform.c
+> @@ -65,47 +65,322 @@ static int of_platform_device_remove(struct device *=
+dev)
+> =A0 =A0 =A0 =A0return 0;
+> =A0}
+>
+> -static int of_platform_device_suspend(struct device *dev, pm_message_t s=
+tate)
+> +static void of_platform_device_shutdown(struct device *dev)
+> =A0{
+> =A0 =A0 =A0 =A0struct of_device *of_dev =3D to_of_device(dev);
+> =A0 =A0 =A0 =A0struct of_platform_driver *drv =3D to_of_platform_driver(d=
+ev->driver);
+> - =A0 =A0 =A0 int error =3D 0;
+>
+> - =A0 =A0 =A0 if (dev->driver && drv->suspend)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 error =3D drv->suspend(of_dev, state);
+> - =A0 =A0 =A0 return error;
+> + =A0 =A0 =A0 if (dev->driver && drv->shutdown)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drv->shutdown(of_dev);
+> =A0}
+>
+> -static int of_platform_device_resume(struct device * dev)
+> +#ifdef CONFIG_PM_SLEEP
+> +
+> +static int of_platform_legacy_suspend(struct device *dev, pm_message_t m=
+esg)
+> =A0{
+> =A0 =A0 =A0 =A0struct of_device *of_dev =3D to_of_device(dev);
+> =A0 =A0 =A0 =A0struct of_platform_driver *drv =3D to_of_platform_driver(d=
+ev->driver);
+> - =A0 =A0 =A0 int error =3D 0;
+> + =A0 =A0 =A0 int ret =3D 0;
+>
+> - =A0 =A0 =A0 if (dev->driver && drv->resume)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 error =3D drv->resume(of_dev);
+> - =A0 =A0 =A0 return error;
+> + =A0 =A0 =A0 if (dev->driver && drv->suspend)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->suspend(of_dev, mesg);
+> + =A0 =A0 =A0 return ret;
+> =A0}
+>
+> -static void of_platform_device_shutdown(struct device *dev)
+> +static int of_platform_legacy_resume(struct device *dev)
+> =A0{
+> =A0 =A0 =A0 =A0struct of_device *of_dev =3D to_of_device(dev);
+> =A0 =A0 =A0 =A0struct of_platform_driver *drv =3D to_of_platform_driver(d=
+ev->driver);
+> + =A0 =A0 =A0 int ret =3D 0;
+>
+> - =A0 =A0 =A0 if (dev->driver && drv->shutdown)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 drv->shutdown(of_dev);
+> + =A0 =A0 =A0 if (dev->driver && drv->resume)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->resume(of_dev);
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int of_platform_pm_prepare(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (drv && drv->pm && drv->pm->prepare)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->prepare(dev);
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static void of_platform_pm_complete(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> +
+> + =A0 =A0 =A0 if (drv && drv->pm && drv->pm->complete)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drv->pm->complete(dev);
+> +}
+> +
+> +#ifdef CONFIG_SUSPEND
+> +
+> +static int of_platform_pm_suspend(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->suspend)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->suspend(de=
+v);
+> + =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_suspend(dev, PMS=
+G_SUSPEND);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> =A0}
+>
+> +static int of_platform_pm_suspend_noirq(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->suspend_noirq)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->suspend_no=
+irq(dev);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int of_platform_pm_resume(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->resume)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->resume(dev=
+);
+> + =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_resume(dev);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int of_platform_pm_resume_noirq(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->resume_noirq)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->resume_noi=
+rq(dev);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +#else /* !CONFIG_SUSPEND */
+> +
+> +#define of_platform_pm_suspend =A0 =A0 =A0 =A0 NULL
+> +#define of_platform_pm_resume =A0 =A0 =A0 =A0 =A0NULL
+> +#define of_platform_pm_suspend_noirq =A0 NULL
+> +#define of_platform_pm_resume_noirq =A0 =A0NULL
+> +
+> +#endif /* !CONFIG_SUSPEND */
+> +
+> +#ifdef CONFIG_HIBERNATION
+> +
+> +static int of_platform_pm_freeze(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->freeze)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->freeze(dev=
+);
+> + =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_suspend(dev, PMS=
+G_FREEZE);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int of_platform_pm_freeze_noirq(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->freeze_noirq)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->freeze_noi=
+rq(dev);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int of_platform_pm_thaw(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->thaw)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->thaw(dev);
+> + =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_resume(dev);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int of_platform_pm_thaw_noirq(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->thaw_noirq)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->thaw_noirq=
+(dev);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int of_platform_pm_poweroff(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->poweroff)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->poweroff(d=
+ev);
+> + =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_suspend(dev, PMS=
+G_HIBERNATE);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int of_platform_pm_poweroff_noirq(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->poweroff_noirq)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->poweroff_n=
+oirq(dev);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int of_platform_pm_restore(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->restore)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->restore(de=
+v);
+> + =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_resume(dev);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int of_platform_pm_restore_noirq(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
+> + =A0 =A0 =A0 int ret =3D 0;
+> +
+> + =A0 =A0 =A0 if (!drv)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 if (drv->pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->restore_noirq)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->restore_no=
+irq(dev);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +#else /* !CONFIG_HIBERNATION */
+> +
+> +#define of_platform_pm_freeze =A0 =A0 =A0 =A0 =A0NULL
+> +#define of_platform_pm_thaw =A0 =A0 =A0 =A0 =A0 =A0NULL
+> +#define of_platform_pm_poweroff =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0NULL
+> +#define of_platform_pm_restore =A0 =A0 =A0 =A0 NULL
+> +#define of_platform_pm_freeze_noirq =A0 =A0NULL
+> +#define of_platform_pm_thaw_noirq =A0 =A0 =A0 =A0 =A0 =A0 =A0NULL
+> +#define of_platform_pm_poweroff_noirq =A0NULL
+> +#define of_platform_pm_restore_noirq =A0 NULL
+> +
+> +#endif /* !CONFIG_HIBERNATION */
+> +
+> +static struct dev_pm_ops of_platform_dev_pm_ops =3D {
+> + =A0 =A0 =A0 .prepare =3D of_platform_pm_prepare,
+> + =A0 =A0 =A0 .complete =3D of_platform_pm_complete,
+> + =A0 =A0 =A0 .suspend =3D of_platform_pm_suspend,
+> + =A0 =A0 =A0 .resume =3D of_platform_pm_resume,
+> + =A0 =A0 =A0 .freeze =3D of_platform_pm_freeze,
+> + =A0 =A0 =A0 .thaw =3D of_platform_pm_thaw,
+> + =A0 =A0 =A0 .poweroff =3D of_platform_pm_poweroff,
+> + =A0 =A0 =A0 .restore =3D of_platform_pm_restore,
+> + =A0 =A0 =A0 .suspend_noirq =3D of_platform_pm_suspend_noirq,
+> + =A0 =A0 =A0 .resume_noirq =3D of_platform_pm_resume_noirq,
+> + =A0 =A0 =A0 .freeze_noirq =3D of_platform_pm_freeze_noirq,
+> + =A0 =A0 =A0 .thaw_noirq =3D of_platform_pm_thaw_noirq,
+> + =A0 =A0 =A0 .poweroff_noirq =3D of_platform_pm_poweroff_noirq,
+> + =A0 =A0 =A0 .restore_noirq =3D of_platform_pm_restore_noirq,
+> +};
+> +
+> +#define OF_PLATFORM_PM_OPS_PTR (&of_platform_dev_pm_ops)
+> +
+> +#else /* !CONFIG_PM_SLEEP */
+> +
+> +#define OF_PLATFORM_PM_OPS_PTR NULL
+> +
+> +#endif /* !CONFIG_PM_SLEEP */
+> +
+> =A0int of_bus_type_init(struct bus_type *bus, const char *name)
+> =A0{
+> =A0 =A0 =A0 =A0bus->name =3D name;
+> =A0 =A0 =A0 =A0bus->match =3D of_platform_bus_match;
+> =A0 =A0 =A0 =A0bus->probe =3D of_platform_device_probe;
+> =A0 =A0 =A0 =A0bus->remove =3D of_platform_device_remove;
+> - =A0 =A0 =A0 bus->suspend =3D of_platform_device_suspend;
+> - =A0 =A0 =A0 bus->resume =3D of_platform_device_resume;
+> =A0 =A0 =A0 =A0bus->shutdown =3D of_platform_device_shutdown;
+> =A0 =A0 =A0 =A0bus->dev_attrs =3D of_platform_device_attrs;
+> + =A0 =A0 =A0 bus->pm =3D OF_PLATFORM_PM_OPS_PTR;
+> =A0 =A0 =A0 =A0return bus_register(bus);
+> =A0}
+>
+> --
+> 1.6.3.3
+>
 
-Changes since v3:
- * Changed from atomic to mutex for hotplug state tracking.
- * Clarified documentation for the new module parameter description.
 
-Changes since v2:
- * None, resent with parent patch to keep them together.
- 
- arch/powerpc/platforms/pseries/cmm.c |  221 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 215 insertions(+), 6 deletions(-)
 
-Index: b/arch/powerpc/platforms/pseries/cmm.c
-===================================================================
---- a/arch/powerpc/platforms/pseries/cmm.c
-+++ b/arch/powerpc/platforms/pseries/cmm.c
-@@ -38,19 +38,28 @@
- #include <asm/mmu.h>
- #include <asm/pgalloc.h>
- #include <asm/uaccess.h>
-+#include <linux/memory.h>
- 
- #include "plpar_wrappers.h"
- 
- #define CMM_DRIVER_VERSION	"1.0.0"
- #define CMM_DEFAULT_DELAY	1
-+#define CMM_HOTPLUG_DELAY	5
- #define CMM_DEBUG			0
- #define CMM_DISABLE		0
- #define CMM_OOM_KB		1024
- #define CMM_MIN_MEM_MB		256
- #define KB2PAGES(_p)		((_p)>>(PAGE_SHIFT-10))
- #define PAGES2KB(_p)		((_p)<<(PAGE_SHIFT-10))
-+/*
-+ * The priority level tries to ensure that this notifier is called as
-+ * late as possible to reduce thrashing in the shared memory pool.
-+ */
-+#define CMM_MEM_HOTPLUG_PRI	1
-+#define CMM_MEM_ISOLATE_PRI	15
- 
- static unsigned int delay = CMM_DEFAULT_DELAY;
-+static unsigned int hotplug_delay = CMM_HOTPLUG_DELAY;
- static unsigned int oom_kb = CMM_OOM_KB;
- static unsigned int cmm_debug = CMM_DEBUG;
- static unsigned int cmm_disabled = CMM_DISABLE;
-@@ -65,6 +74,10 @@ MODULE_VERSION(CMM_DRIVER_VERSION);
- module_param_named(delay, delay, uint, S_IRUGO | S_IWUSR);
- MODULE_PARM_DESC(delay, "Delay (in seconds) between polls to query hypervisor paging requests. "
- 		 "[Default=" __stringify(CMM_DEFAULT_DELAY) "]");
-+module_param_named(hotplug_delay, hotplug_delay, uint, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(delay, "Delay (in seconds) after memory hotplug remove "
-+		 "before loaning resumes. "
-+		 "[Default=" __stringify(CMM_HOTPLUG_DELAY) "]");
- module_param_named(oom_kb, oom_kb, uint, S_IRUGO | S_IWUSR);
- MODULE_PARM_DESC(oom_kb, "Amount of memory in kb to free on OOM. "
- 		 "[Default=" __stringify(CMM_OOM_KB) "]");
-@@ -92,6 +105,9 @@ static unsigned long oom_freed_pages;
- static struct cmm_page_array *cmm_page_list;
- static DEFINE_SPINLOCK(cmm_lock);
- 
-+static DEFINE_MUTEX(hotplug_mutex);
-+static int hotplug_occurred; /* protected by the hotplug mutex */
-+
- static struct task_struct *cmm_thread_ptr;
- 
- /**
-@@ -110,6 +126,17 @@ static long cmm_alloc_pages(long nr)
- 	cmm_dbg("Begin request for %ld pages\n", nr);
- 
- 	while (nr) {
-+		/* Exit if a hotplug operation is in progress or occurred */
-+		if (mutex_trylock(&hotplug_mutex)) {
-+			if (hotplug_occurred) {
-+				mutex_unlock(&hotplug_mutex);
-+				break;
-+			}
-+			mutex_unlock(&hotplug_mutex);
-+		} else {
-+			break;
-+		}
-+
- 		addr = __get_free_page(GFP_NOIO | __GFP_NOWARN |
- 				       __GFP_NORETRY | __GFP_NOMEMALLOC);
- 		if (!addr)
-@@ -119,8 +146,10 @@ static long cmm_alloc_pages(long nr)
- 		if (!pa || pa->index >= CMM_NR_PAGES) {
- 			/* Need a new page for the page list. */
- 			spin_unlock(&cmm_lock);
--			npa = (struct cmm_page_array *)__get_free_page(GFP_NOIO | __GFP_NOWARN |
--								       __GFP_NORETRY | __GFP_NOMEMALLOC);
-+			npa = (struct cmm_page_array *)__get_free_page(
-+					GFP_NOIO | __GFP_NOWARN |
-+					__GFP_NORETRY | __GFP_NOMEMALLOC |
-+					__GFP_MOVABLE);
- 			if (!npa) {
- 				pr_info("%s: Can not allocate new page list\n", __func__);
- 				free_page(addr);
-@@ -273,9 +302,28 @@ static int cmm_thread(void *dummy)
- 	while (1) {
- 		timeleft = msleep_interruptible(delay * 1000);
- 
--		if (kthread_should_stop() || timeleft) {
--			loaned_pages_target = loaned_pages;
-+		if (kthread_should_stop() || timeleft)
- 			break;
-+
-+		if (mutex_trylock(&hotplug_mutex)) {
-+			if (hotplug_occurred) {
-+				hotplug_occurred = 0;
-+				mutex_unlock(&hotplug_mutex);
-+				cmm_dbg("Hotplug operation has occurred, "
-+						"loaning activity suspended "
-+						"for %d seconds.\n",
-+						hotplug_delay);
-+				timeleft = msleep_interruptible(hotplug_delay *
-+						1000);
-+				if (kthread_should_stop() || timeleft)
-+					break;
-+				continue;
-+			}
-+			mutex_unlock(&hotplug_mutex);
-+		} else {
-+			cmm_dbg("Hotplug operation in progress, activity "
-+					"suspended\n");
-+			continue;
- 		}
- 
- 		cmm_get_mpp();
-@@ -405,6 +453,159 @@ static struct notifier_block cmm_reboot_
- };
- 
- /**
-+ * cmm_count_pages - Count the number of pages loaned in a particular range.
-+ *
-+ * @arg: memory_isolate_notify structure with address range and count
-+ *
-+ * Return value:
-+ *      0 on success
-+ **/
-+static unsigned long cmm_count_pages(void *arg)
-+{
-+	struct memory_isolate_notify *marg = arg;
-+	struct cmm_page_array *pa;
-+	unsigned long start = (unsigned long)pfn_to_kaddr(marg->start_pfn);
-+	unsigned long end = start + (marg->nr_pages << PAGE_SHIFT);
-+	unsigned long idx;
-+
-+	spin_lock(&cmm_lock);
-+	pa = cmm_page_list;
-+	while (pa) {
-+		for (idx = 0; idx < pa->index; idx++)
-+			if (pa->page[idx] >= start && pa->page[idx] < end)
-+				marg->pages_found++;
-+		pa = pa->next;
-+	}
-+	spin_unlock(&cmm_lock);
-+	return 0;
-+}
-+
-+/**
-+ * cmm_memory_isolate_cb - Handle memory isolation notifier calls
-+ * @self:	notifier block struct
-+ * @action:	action to take
-+ * @arg:	struct memory_isolate_notify data for handler
-+ *
-+ * Return value:
-+ *	NOTIFY_OK or notifier error based on subfunction return value
-+ **/
-+static int cmm_memory_isolate_cb(struct notifier_block *self,
-+				 unsigned long action, void *arg)
-+{
-+	int ret = 0;
-+
-+	if (action == MEM_ISOLATE_COUNT)
-+		ret = cmm_count_pages(arg);
-+
-+	if (ret)
-+		ret = notifier_from_errno(ret);
-+	else
-+		ret = NOTIFY_OK;
-+
-+	return ret;
-+}
-+
-+static struct notifier_block cmm_mem_isolate_nb = {
-+	.notifier_call = cmm_memory_isolate_cb,
-+	.priority = CMM_MEM_ISOLATE_PRI
-+};
-+
-+/**
-+ * cmm_mem_going_offline - Unloan pages where memory is to be removed
-+ * @arg: memory_notify structure with page range to be offlined
-+ *
-+ * Return value:
-+ *	0 on success
-+ **/
-+static int cmm_mem_going_offline(void *arg)
-+{
-+	struct memory_notify *marg = arg;
-+	unsigned long start_page = (unsigned long)pfn_to_kaddr(marg->start_pfn);
-+	unsigned long end_page = start_page + (marg->nr_pages << PAGE_SHIFT);
-+	struct cmm_page_array *pa_curr, *pa_last;
-+	unsigned long idx;
-+	unsigned long freed = 0;
-+
-+	cmm_dbg("Memory going offline, searching 0x%lx (%ld pages).\n",
-+			start_page, marg->nr_pages);
-+	spin_lock(&cmm_lock);
-+
-+	pa_last = pa_curr = cmm_page_list;
-+	while (pa_curr) {
-+		for (idx = (pa_curr->index - 1); (idx + 1) > 0; idx--) {
-+			if ((pa_curr->page[idx] < start_page) ||
-+			    (pa_curr->page[idx] >= end_page))
-+				continue;
-+
-+			plpar_page_set_active(__pa(pa_curr->page[idx]));
-+			free_page(pa_curr->page[idx]);
-+			freed++;
-+			loaned_pages--;
-+			totalram_pages++;
-+			pa_curr->page[idx] = pa_last->page[--pa_last->index];
-+			if (pa_last->index == 0) {
-+				if (pa_curr == pa_last)
-+					pa_curr = pa_last->next;
-+				pa_last = pa_last->next;
-+				free_page((unsigned long)cmm_page_list);
-+				cmm_page_list = pa_last;
-+				continue;
-+			}
-+		}
-+		pa_curr = pa_curr->next;
-+	}
-+	spin_unlock(&cmm_lock);
-+	cmm_dbg("Released %ld pages in the search range.\n", freed);
-+
-+	return 0;
-+}
-+
-+/**
-+ * cmm_memory_cb - Handle memory hotplug notifier calls
-+ * @self:	notifier block struct
-+ * @action:	action to take
-+ * @arg:	struct memory_notify data for handler
-+ *
-+ * Return value:
-+ *	NOTIFY_OK or notifier error based on subfunction return value
-+ *
-+ **/
-+static int cmm_memory_cb(struct notifier_block *self,
-+			unsigned long action, void *arg)
-+{
-+	int ret = 0;
-+
-+	switch (action) {
-+	case MEM_GOING_OFFLINE:
-+		mutex_lock(&hotplug_mutex);
-+		hotplug_occurred = 1;
-+		ret = cmm_mem_going_offline(arg);
-+		break;
-+	case MEM_OFFLINE:
-+	case MEM_CANCEL_OFFLINE:
-+		mutex_unlock(&hotplug_mutex);
-+		cmm_dbg("Memory offline operation complete.\n");
-+		break;
-+	case MEM_GOING_ONLINE:
-+	case MEM_ONLINE:
-+	case MEM_CANCEL_ONLINE:
-+		break;
-+	}
-+
-+	if (ret)
-+		ret = notifier_from_errno(ret);
-+	else
-+		ret = NOTIFY_OK;
-+
-+	return ret;
-+}
-+
-+static struct notifier_block cmm_mem_nb = {
-+	.notifier_call = cmm_memory_cb,
-+	.priority = CMM_MEM_HOTPLUG_PRI
-+};
-+
-+/**
-  * cmm_init - Module initialization
-  *
-  * Return value:
-@@ -426,18 +627,24 @@ static int cmm_init(void)
- 	if ((rc = cmm_sysfs_register(&cmm_sysdev)))
- 		goto out_reboot_notifier;
- 
-+	if (register_memory_notifier(&cmm_mem_nb) ||
-+	    register_memory_isolate_notifier(&cmm_mem_isolate_nb))
-+		goto out_unregister_notifier;
-+
- 	if (cmm_disabled)
- 		return rc;
- 
- 	cmm_thread_ptr = kthread_run(cmm_thread, NULL, "cmmthread");
- 	if (IS_ERR(cmm_thread_ptr)) {
- 		rc = PTR_ERR(cmm_thread_ptr);
--		goto out_unregister_sysfs;
-+		goto out_unregister_notifier;
- 	}
- 
- 	return rc;
- 
--out_unregister_sysfs:
-+out_unregister_notifier:
-+	unregister_memory_notifier(&cmm_mem_nb);
-+	unregister_memory_isolate_notifier(&cmm_mem_isolate_nb);
- 	cmm_unregister_sysfs(&cmm_sysdev);
- out_reboot_notifier:
- 	unregister_reboot_notifier(&cmm_reboot_nb);
-@@ -458,6 +665,8 @@ static void cmm_exit(void)
- 		kthread_stop(cmm_thread_ptr);
- 	unregister_oom_notifier(&cmm_oom_nb);
- 	unregister_reboot_notifier(&cmm_reboot_nb);
-+	unregister_memory_notifier(&cmm_mem_nb);
-+	unregister_memory_isolate_notifier(&cmm_mem_isolate_nb);
- 	cmm_free_pages(loaned_pages);
- 	cmm_unregister_sysfs(&cmm_sysdev);
- }
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
