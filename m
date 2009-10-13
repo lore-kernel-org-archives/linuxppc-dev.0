@@ -1,20 +1,34 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A16E6B7B9A
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 06:08:57 +1100 (EST)
-Date: Tue, 13 Oct 2009 12:09:12 -0700 (PDT)
-Message-Id: <20091013.120912.186003446.davem@davemloft.net>
-To: afleming@freescale.com
-Subject: Re: [PATCH 0/8] gianfar: Add support for hibernation
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <64B2BB18-32DC-4B98-95D6-F203F74040D5@freescale.com>
-References: <20091012160000.GA32406@oksana.dev.rtsoft.ru>
-	<20091012.235747.195783342.davem@davemloft.net>
-	<64B2BB18-32DC-4B98-95D6-F203F74040D5@freescale.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/8] bitmap: Introduce bitmap_set, bitmap_clear,
+	bitmap_find_next_zero_area
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+In-Reply-To: <20091013091017.GA18431@localhost.localdomain>
+References: <1255076961-21325-1-git-send-email-akinobu.mita@gmail.com>
+	<1255076961-21325-2-git-send-email-akinobu.mita@gmail.com>
+	<20091009164100.85a36188.akpm@linux-foundation.org>
+	<20091013021818.GA3898@localhost.localdomain>
+	<20091013091017.GA18431@localhost.localdomain>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-qc5/2QIIQzGbB3R6aIJb"
+Date: Wed, 14 Oct 2009 08:54:47 +1100
+Message-Id: <1255470887.21871.2.camel@concordia>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Cc: Fenghua Yu <fenghua.yu@intel.com>, x86@kernel.org,
+	linux-ia64@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	"David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, linux-altix@sgi.com,
+	Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	linuxppc-dev@ozlabs.org, Tony Luck <tony.luck@intel.com>,
+	Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-usb@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+	Lothar Wassmann <LW@KARO-electronics.de>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +38,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andy Fleming <afleming@freescale.com>
-Date: Tue, 13 Oct 2009 12:22:38 -0500
 
-> No, it was fine (though made unnecessary by other patches).  The BD
-> has a union:
-> 
->                 struct {
->                         u16     status; /* Status Fields */
->                         u16     length; /* Buffer length */
->                 };
->                 u32 lstatus;
-> 
-> so when you write "lstatus", you need to use the BD_LFLAG() macro, but
-> when you write "status", you are just setting the status bits.
+--=-qc5/2QIIQzGbB3R6aIJb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Indeed I missed that, thanks.
+On Tue, 2009-10-13 at 18:10 +0900, Akinobu Mita wrote:
+> My user space testing exposed off-by-one error find_next_zero_area
+> in iommu-helper.
+
+Why not merge those tests into the kernel as a configurable boot-time
+self-test?
+
+cheers
+
+--=-qc5/2QIIQzGbB3R6aIJb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkrU9ycACgkQdSjSd0sB4dIXTACgpxW+LkFXep2w0my10iBFI6i2
+V8MAoL7CL/p4hU/ZoKeP4Luo4ZBAcbef
+=En+T
+-----END PGP SIGNATURE-----
+
+--=-qc5/2QIIQzGbB3R6aIJb--
