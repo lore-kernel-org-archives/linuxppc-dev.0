@@ -1,16 +1,33 @@
-Return-Path: <jk@ozlabs.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-To: cbe-oss-dev@lists.ozlabs.org
-Subject: Re: [Cbe-oss-dev] [PATCH] spufs: Fix test in spufs_switch_log_read()
-Date: Tue, 13 Oct 2009 08:49:56 +0800
-References: <4AD32B3F.9060804@gmail.com>
-In-Reply-To: <4AD32B3F.9060804@gmail.com>
+Return-Path: <akinobu.mita@gmail.com>
+Received: from mail-ew0-f214.google.com (mail-ew0-f214.google.com
+	[209.85.219.214]) by ozlabs.org (Postfix) with ESMTP id 67A11B7B8B
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2009 13:26:44 +1100 (EST)
+Received: by ewy10 with SMTP id 10so9827697ewy.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2009 19:26:41 -0700 (PDT)
+Date: Tue, 13 Oct 2009 11:18:18 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/8] bitmap: Introduce bitmap_set, bitmap_clear,
+	bitmap_find_next_zero_area
+Message-ID: <20091013021818.GA3898@localhost.localdomain>
+References: <1255076961-21325-1-git-send-email-akinobu.mita@gmail.com>
+	<1255076961-21325-2-git-send-email-akinobu.mita@gmail.com>
+	<20091009164100.85a36188.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200910130849.56671.jk@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Roel Kluin <roel.kluin@gmail.com>, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091009164100.85a36188.akpm@linux-foundation.org>
+Cc: Fenghua Yu <fenghua.yu@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-ia64@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+	x86@kernel.org, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-altix@sgi.com,
+	Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Thomas Gleixner <tglx@linutronix.de>, linux-usb@vger.kernel.org,
+	"David S. Miller" <davem@davemloft.net>,
+	Lothar Wassmann <LW@KARO-electronics.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,13 +37,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Roel,
+On Fri, Oct 09, 2009 at 04:41:00PM -0700, Andrew Morton wrote:
+> On Fri,  9 Oct 2009 17:29:15 +0900
+> Akinobu Mita <akinobu.mita@gmail.com> wrote:
+> 
+> > This introduces new bitmap functions:
+> > 
+> > bitmap_set: Set specified bit area
+> > bitmap_clear: Clear specified bit area
+> > bitmap_find_next_zero_area: Find free bit area
+> > 
+> > These are stolen from iommu helper.
+> > 
+> > I changed the return value of bitmap_find_next_zero_area if there is
+> > no zero area.
+> > 
+> > find_next_zero_area in iommu helper: returns -1
+> > bitmap_find_next_zero_area: return >= bitmap size
+> 
+> I'll plan to merge this patch into 2.6.32 so we can trickle all the
+> other patches into subsystems in an orderly fashion.
 
-> Or can this test be removed?
+Sounds good.
 
-I'd prefer just to remove the test.
+> > +void bitmap_set(unsigned long *map, int i, int len)
+> > +{
+> > +	int end = i + len;
+> > +
+> > +	while (i < end) {
+> > +		__set_bit(i, map);
+> > +		i++;
+> > +	}
+> > +}
+> 
+> This is really inefficient, isn't it?  It's a pretty trivial matter to
+> romp through memory 32 or 64 bits at a time.
 
-Cheers,
+OK. I'll do
 
+> > +unsigned long bitmap_find_next_zero_area(unsigned long *map,
+> > +					 unsigned long size,
+> > +					 unsigned long start,
+> > +					 unsigned int nr,
+> > +					 unsigned long align_mask)
+> > +{
+> > +	unsigned long index, end, i;
+> > +again:
+> > +	index = find_next_zero_bit(map, size, start);
+> > +
+> > +	/* Align allocation */
+> > +	index = (index + align_mask) & ~align_mask;
+> > +
+> > +	end = index + nr;
+> > +	if (end >= size)
+> > +		return end;
+> > +	i = find_next_bit(map, end, index);
+> > +	if (i < end) {
+> > +		start = i + 1;
+> > +		goto again;
+> > +	}
+> > +	return index;
+> > +}
+> > +EXPORT_SYMBOL(bitmap_find_next_zero_area);
+> 
+> This needs documentation, please.  It appears that `size' is the size
+> of the bitmap and `nr' is the number of zeroed bits we're looking for,
+> but an inattentive programmer could get those reversed.
+> 
+> Also the semantics of `align_mask' could benefit from spelling out.  Is
+> the alignment with respect to memory boundaries or with respect to
+> `map' or with respect to map+start or what?
 
-Jeremy
+OK. I will document it.
+
+And I plan to change bitmap_find_next_zero_area() to take the alignment
+instead of an align_mask as Roland said.
+
+> And why does align_mask exist at all?  I was a bit surprised to see it
+> there.  In which scenarios will it be non-zero?
+
+Because the users of iommu-helper and mlx4 need the alignment requirement
+for the zero area.
+
+arch/powerpc/kernel/iommu.c
+arch/x86/kernel/amd_iommu.c
+arch/x86/kernel/pci-gart_64.c
+drivers/net/mlx4/alloc.c
