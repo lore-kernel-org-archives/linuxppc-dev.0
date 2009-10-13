@@ -1,19 +1,22 @@
-Return-Path: <khali@linux-fr.org>
-Received: from poutre.nerim.net (poutre.nerim.net [62.4.16.124])
-	by ozlabs.org (Postfix) with ESMTP id DB40EB7B88
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2009 20:49:51 +1100 (EST)
-Date: Tue, 13 Oct 2009 11:49:48 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: i2c-powermac fails
-Message-ID: <20091013114948.03608b7f@hyperion.delvare>
-In-Reply-To: <1255426348.2192.187.camel@pasglop>
-References: <20091013112304.74083fd1@hyperion.delvare>
-	<1255426348.2192.187.camel@pasglop>
+Return-Path: <kenneth@southpole.se>
+Received: from mail.southpole.se (mail.southpole.se [193.12.106.18])
+	by ozlabs.org (Postfix) with ESMTP id 88CC0B7B96
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 13 Oct 2009 23:41:05 +1100 (EST)
+Subject: Re: [U-Boot] Linux seamless booting
+From: Kenneth Johansson <kenneth@southpole.se>
+To: Fortini Matteo <matteo.fortini@mta.it>
+In-Reply-To: <4AD33533.5030900@mta.it>
+References: <4AD30DF0.1000901@mta.it>
+	<7c4144600910120623k2c9aea89ia0f255164f03ff89@mail.gmail.com>
+	<4AD33533.5030900@mta.it>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 13 Oct 2009 14:22:25 +0200
+Message-Id: <1255436545.4918.70.camel@kenjo-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Tim Shepard <shep@alum.mit.edu>
+Cc: "u-boot@lists.denx.de" <u-boot@lists.denx.de>,
+	Roberto Guerra <roberto.j.guerra@gmail.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,41 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 13 Oct 2009 20:32:28 +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2009-10-13 at 11:23 +0200, Jean Delvare wrote:
-> > Hi Ben, Paul,
-> > 
-> > I had a report by Tim Shepard (Cc'd) that the therm_adt746x driver
-> > sometimes fails to initialize on his PowerBook G4 running kernel
-> > 2.6.31. The following error message can be seen in the logs when the
-> > failure happens:
-> > 
-> > therm_adt746x 7-002e: Thermostat failed to read config!
-> > 
-> > After enabling low-level i2c debugging, it turns out that the problem
-> > is caused by low-level errors at the I2C bus level:
-> 
-> Nothing comes to mind immediately, but I'll have another look tomorrow.
-> 
-> Maybe we are configuring the i2c bus too fast ? Another possibility
-> would be that the device needs some retries ...
+On Mon, 2009-10-12 at 15:54 +0200, Fortini Matteo wrote:
+> Yes, that's what we're currently using, but the problem is a little 
+> broader: I should answer to CAN messages in at most 100-200ms from 
+> powerup, and that can be done in u-boot.
 
-I guess that retrying would work around the problem, yes. But I do not
-think this is the proper solution. If retries were needed, they would
-be needed all the time, not just at initialization time. And as I said,
-the SMBus specification says that devices have to always ack their
-slave address (they can always delay the transaction later if they need
-more time) so I am reasonably certain that the ADT7467 does ack his
-address always. If it seems otherwise, this suggests that either the
-message was not properly sent on the bus (so the ADT7467 did not have
-anything to ack), or the ADT7467's ack went on the bus but the I2C
-master didn't see it.
+if you are in that interval you definitely need to go to a more exotic
+start sequence than usual. 
 
-I2C bus being setup too fast sounds more likely. It might be worth
-adding an arbitrary delay after initialization, just to see if it
-helps. Not sure where though, as I'm not familiar with the Powermac
-initialization steps. Maybe right before i2c_add_adapter() in
-i2c_powermac_probe?
+one solution would be to do as you suggest and do a special driver that
+is living outside of the kernel during startup. you still need to hack
+into the interrupt code to let your "external" driver handle the CAN.
+then you need to hack up the ordinary driver to take over from yours.
 
--- 
-Jean Delvare
+I have not seen this solution on any project I worked on but should be
+doable. 
+
+optimizing the boot time of linux so it starts up in 200ms is probably
+going to be quite hard. I did 2 seconds to /sbin/init started from ide
+driver without to much trouble. removing the IDE and going to a root on
+NOR would probably get closer to 1.5 but to get down to 200ms would
+probably mean removing most of u-boot and only keep the dram setup then
+you probably need to remove most of the drivers from the kernel and load
+them later as modules. I have never really tried to do a insane fast
+boot like this so I'm not sure what problems you will run up against.
+but maybe it's possible. but 200ms feels a bit to optimistic.
+
+
+> However, handing CAN transmission control over to Linux is quite 
+> complicated nowadays, since it would involve passing structures in 
+> memory and hacking through device init.
+> It'd be nice to have a framework with which u-boot could hand-over 
+> devices to Linux in a clean and defined way.
+not likely to happen as a generic solution. Much better to just remove
+the boat loader then and work on optimizing the linux startup code. 
