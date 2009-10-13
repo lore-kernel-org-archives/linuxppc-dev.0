@@ -1,33 +1,40 @@
-Return-Path: <arnd@arndb.de>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.17.164])
+Return-Path: <rcjenn@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D0BA7B7BA1
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 00:31:03 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.1/8.13.1) with ESMTP id n9DDUw5C003017
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2009 13:30:58 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id n9DDUwSp2686998
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2009 15:30:58 +0200
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id n9DDUvom014848
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2009 15:30:58 +0200
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org, michael@ellerman.id.au
-Subject: Re: [Patch] powerpc: Fix memory leak in axon_msi.c
-Date: Tue, 13 Oct 2009 15:30:56 +0200
-References: <1255393780.9570.3.camel@concordia>
-In-Reply-To: <1255393780.9570.3.camel@concordia>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3A4A6B7BA8
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 02:49:06 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9DFliSE023099
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2009 11:47:44 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n9DFn2Ub257028
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2009 11:49:02 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n9DFmiYe024441
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2009 11:49:01 -0400
+Date: Tue, 13 Oct 2009 10:48:41 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 1/2][v2] mm: add notifier in pageblock isolation for
+	balloon drivers
+Message-ID: <20091013154841.GB18305@austin.ibm.com>
+References: <20091002184458.GC4908@austin.ibm.com>
+	<20091008163449.00dce972.akpm@linux-foundation.org>
+	<20091009202304.GB19114@austin.ibm.com>
+	<20091009204326.GH24845@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200910131530.56493.arnd@arndb.de>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, eric.sesterhenn@lsexperts.de
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091009204326.GH24845@csn.ul.ie>
+Cc: linux-mm@kvack.org, Gerald Schaefer <geralds@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,11 +44,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 13 October 2009, Michael Ellerman wrote:
-> cppcheck found a memory leak in axon_msi, if dcr_base or dcr_len are zero,
-> we have already allocated msic, so we should free it in the error path.
-> 
-> Signed-off-by: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>
-> Acked-by: Michael Ellerman <michael@ellerman.id.au>
+On Fri, Oct 09, 2009 at 21:43:26 +0100, Mal Gorman wrote:
+> As you have tested this recently, would you be willing to post the
+> results? While it's not a requirement of the patch, it would be nice to have
+> an idea of how the effectiveness of memory hot-remove is improved when used
+> with the powerpc balloon. This might convince others developers for balloons
+> to register with the notifier.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+I did ten test runs without my patches and ten test runs with my patches
+on a 2.6.32-rc3 kernel.
+
+Without the patch:
+6 out of 10 memory-remove operations without the patch removed 1 LMB
+(64Mb), the rest of the memory-remove attempts failed to remove any LMBs.
+
+With the patch:
+All of the memory-remove operations removed some LMBs.  The average
+removed was just over 11 LMBs (704Mb) per attempt.
+
+Linux was given 2Gb of memory.  During the test runs the average memory in
+use was 140Mb, not including cache and buffers, and the average amount
+consumed by the balloon was 1217Mb.  The system was idle while the
+memory remove operation was performed.  After each attempt the system
+was rebooted and allowed ~10 minutes to settle after boot.
+
+With a 2Gb configuration on POWER the LMB size is 64Mb.  The drmgr command
+(part of powerpc-utils) was used to remove memory by LBM, just as an
+end-user would.  Below is a list of the runs and the number of LMBs
+removed.
+
+Stock kernel (v2.6.32-rc3)
+--------------------------
+LMBs	Used kb	Loaned kb
+removed
+0	135232	1257280
+0	151168	1231744
+1	152128	1234176
+1	150976	1239232
+1	151808	1232064
+0	136064	1249152
+0	137088	1246976
+1	135296	1289984
+1	136384	1263104
+1	152960	1243904
+=======================
+0.60	143910	1248762 Average
+0.49	  7929	  16960 StdDev
+
+Patched kernel
+--------------------------
+LMBs	Used kb	Loaned kb
+removed
+12	134336	1294336
+10	152192	1250432
+ 9	152832	1235520
+15	153152	1237952
+12	152320	1232704
+13	135360	1252224
+11	154176	1237056
+10	153920	1243264
+10	150720	1236416
+13	151040	1230848
+=======================
+11.50	149005  1245075 Average
+ 1.75	  7158	  17738 StdDev
+
+
+Regards,
+Robert Jennings
