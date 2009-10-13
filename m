@@ -1,13 +1,16 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: [Patch] powerpc: Fix memory leak in axon_msi.c
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 13 Oct 2009 11:29:40 +1100
-Message-Id: <1255393780.9570.3.camel@concordia>
-Mime-Version: 1.0
-Cc: eric.sesterhenn@lsexperts.de
-Reply-To: michael@ellerman.id.au
+Return-Path: <jk@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+To: cbe-oss-dev@lists.ozlabs.org
+Subject: Re: [Cbe-oss-dev] [PATCH] spufs: Fix test in spufs_switch_log_read()
+Date: Tue, 13 Oct 2009 08:49:56 +0800
+References: <4AD32B3F.9060804@gmail.com>
+In-Reply-To: <4AD32B3F.9060804@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200910130849.56671.jk@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Roel Kluin <roel.kluin@gmail.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,21 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cppcheck found a memory leak in axon_msi, if dcr_base or dcr_len are zero,
-we have already allocated msic, so we should free it in the error path.
+Roel,
 
-Signed-off-by: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
+> Or can this test be removed?
 
---- linux/arch/powerpc/platforms/cell/axon_msi.c.orig	2009-10-12 14:48:26.000000000 +0200
-+++ linux/arch/powerpc/platforms/cell/axon_msi.c	2009-10-12 14:48:52.000000000 +0200
-@@ -365,7 +365,7 @@ static int axon_msi_probe(struct of_devi
- 		printk(KERN_ERR
- 		       "axon_msi: couldn't parse dcr properties on %s\n",
- 			dn->full_name);
--		goto out;
-+		goto out_free_msic;
- 	}
+I'd prefer just to remove the test.
 
- 	msic->dcr_host = dcr_map(dn, dcr_base, dcr_len);
-	
+Cheers,
+
+
+Jeremy
