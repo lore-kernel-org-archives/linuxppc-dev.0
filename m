@@ -1,25 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7B6A3B7BA7
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 06:05:11 +1100 (EST)
-In-Reply-To: <20091014172003.GD21215@loki.buserror.net>
-References: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-5-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091014172003.GD21215@loki.buserror.net>
-Subject: Re: [PATCH 4/8] 8xx: Fixup DAR from buggy dcbX instructions.
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OF64D89B73.6073827F-ONC125764F.00687BC4-C125764F.0068D4DC@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 14 Oct 2009 21:05:02 +0200
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 2EE81B7043
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Oct 2009 06:20:36 +1100 (EST)
+Message-ID: <4AD62247.4020102@grandegger.com>
+Date: Wed, 14 Oct 2009 21:11:03 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Rex Feany <RFeany@mrv.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v2] net/fec_mpc52xx: Fix kernel panic on FEC error
+References: <20091014174224.29221.18830.stgit@angua>
+In-Reply-To: <20091014174224.29221.18830.stgit@angua>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: John Bonesio <bones@secretlab.ca>, netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 14/10/2009 19:20:03:
->
-> On Sun, Oct 11, 2009 at 06:35:08PM +0200, Joakim Tjernlund wrote:
-> > This is an assembler version to fixup DAR not being set
-> > by dcbX, icbi instructions. There are two versions, one
-> > uses selfmodifing code, the other uses a
-> > jump table but is much bigger(default).
-> > ---
-> >  arch/powerpc/kernel/head_8xx.S |  146 +++++++++++++++++++++++++++++++++++++++-
-> >  1 files changed, 145 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-> > index 093176c..9839e79 100644
-> > --- a/arch/powerpc/kernel/head_8xx.S
-> > +++ b/arch/powerpc/kernel/head_8xx.S
-> > @@ -494,7 +494,8 @@ DataTLBError:
-> >
-> >     mfspr   r10, SPRN_DAR
-> >     cmpwi   cr0, r10, 0x00f0
-> > -   beq-   2f   /* must be a buggy dcbX, icbi insn. */
-> > +   beq-   FixDAR   /* must be a buggy dcbX, icbi insn. */
-> > +DARFix:   /* Return from dcbx instruction bug workaround, r10 holds value of DAR */
->
-> Both FixDAR and DARFix?  Could we make the labels a little clearer?
+Grant Likely wrote:
+> From: John Bonesio <bones@secretlab.ca>
+> 
+> The MDIO bus cannot be accessed at interrupt context, but on an FEC
+> error, the fec_mpc52xx driver reset function also tries to reset the
+> PHY.  Since the error is detected at IRQ context, and the PHY functions
+> try to sleep, the kernel ends up panicking.
+> 
+> Resetting the PHY on an FEC error isn't even necessary.  This patch
+> solves the problem by removing the PHY reset entirely.
 
-Yes, need to come up with better names :)
+There is also no need to free and re-allocate the RX buffers in
+mpc52xx_fec_reset().
 
->
-> > +/* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
-> > + * by decoding the registers used by the dcbx instruction and adding them.
-> > + * DAR is set to the calculated address and r10 also holds the EA on exit.
-> > + */
->
-> How often does this happen?  Could we just do it in C code after saving all
-> the registers, and avoid the self modifying stuff (or the big switch
-> statement equivalent)?
-
-I had some problems with the C-version. I got lots of extra TLB errors for the same address
-so I am not confident it will work in the long run.
-
-BTW, you could add a test and printk in do_page_fault on address 0x000000f0.
-if that ever hits there is a problem with dcbX fixup.
+Wolfgang.
