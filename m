@@ -1,36 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D92D9B7043
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 06:22:50 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n9EJMaJT016570
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 12:22:37 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n9EJPcsW027369
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 14:25:39 -0500 (CDT)
-Message-ID: <4AD62516.6090301@freescale.com>
-Date: Wed, 14 Oct 2009 14:23:02 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
+	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id 346C7B7B7F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Oct 2009 06:33:16 +1100 (EST)
+Received: by ywh37 with SMTP id 37so121359ywh.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 14 Oct 2009 12:33:14 -0700 (PDT)
 MIME-Version: 1.0
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: [PATCH 4/8] 8xx: Fixup DAR from buggy dcbX instructions.
-References: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-5-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091014172003.GD21215@loki.buserror.net>
-	<OF64D89B73.6073827F-ONC125764F.00687BC4-C125764F.0068D4DC@transmode.se>
-In-Reply-To: <OF64D89B73.6073827F-ONC125764F.00687BC4-C125764F.0068D4DC@transmode.se>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Rex Feany <RFeany@mrv.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <4AD62247.4020102@grandegger.com>
+References: <20091014174224.29221.18830.stgit@angua>
+	<4AD62247.4020102@grandegger.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 14 Oct 2009 13:32:54 -0600
+Message-ID: <fa686aa40910141232nab95d4al13016d4dc4fbc6cf@mail.gmail.com>
+Subject: Re: [PATCH v2] net/fec_mpc52xx: Fix kernel panic on FEC error
+To: Wolfgang Grandegger <wg@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: John Bonesio <bones@secretlab.ca>, netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,12 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund wrote:
-> BTW, you could add a test and printk in do_page_fault on address 0x000000f0.
-> if that ever hits there is a problem with dcbX fixup.
+On Wed, Oct 14, 2009 at 1:11 PM, Wolfgang Grandegger <wg@grandegger.com> wr=
+ote:
+> Grant Likely wrote:
+>> From: John Bonesio <bones@secretlab.ca>
+>>
+>> The MDIO bus cannot be accessed at interrupt context, but on an FEC
+>> error, the fec_mpc52xx driver reset function also tries to reset the
+>> PHY. =A0Since the error is detected at IRQ context, and the PHY function=
+s
+>> try to sleep, the kernel ends up panicking.
+>>
+>> Resetting the PHY on an FEC error isn't even necessary. =A0This patch
+>> solves the problem by removing the PHY reset entirely.
+>
+> There is also no need to free and re-allocate the RX buffers in
+> mpc52xx_fec_reset().
 
-It doesn't get any 0xf0 faults.
+Write and test a patch for me!  :-)
 
-FWIW, I'm not seeing the segfault any more, but I still get the lockup.
+g.
 
--Scott
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
