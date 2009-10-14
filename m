@@ -1,24 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <arun@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7FF0FB7BC0
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 39762B6F2B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Oct 2009 17:18:02 +1100 (EST)
-Subject: Re: [PATCH] powerpc: tracing: Add powerpc tracepoints for
-	interrupt entry and exit
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20091006040554.GD16073@kryten>
-References: <20091006021903.GC16073@kryten>
-	<1254796492.13160.218.camel@gandalf.stny.rr.com>
-	<20091006040554.GD16073@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 14 Oct 2009 17:17:51 +1100
-Message-Id: <1255501071.2347.42.camel@pasglop>
-Mime-Version: 1.0
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
-	linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
+	Wed, 14 Oct 2009 17:24:30 +1100 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id n9E6OEno025104
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2009 11:54:14 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n9E6OEe52400450
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2009 11:54:14 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+	by d28av04.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n9E6ODC6005037
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2009 17:24:14 +1100
+Date: Wed, 14 Oct 2009 11:54:12 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [v8 PATCH 1/8]: cpuidle: cleanup drivers/cpuidle/cpuidle.c
+Message-ID: <20091014062412.GB8605@linux.vnet.ibm.com>
+References: <20091008094828.GA20595@linux.vnet.ibm.com>
+	<20091008094942.GB20595@linux.vnet.ibm.com>
+	<20091012113602.GC3007@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20091012113602.GC3007@balbir.in.ibm.com>
+Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	Arun Bharadwaj <arun@linux.vnet.ibm.com>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
+	Arjan van de Ven <arjan@infradead.org>
+Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,167 +42,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-10-06 at 15:05 +1100, Anton Blanchard wrote:
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-10-12 17:06:02]:
 
-> This patch adds powerpc specific tracepoints for interrupt entry and exit.
+> * Arun R B <arun@linux.vnet.ibm.com> [2009-10-08 15:19:42]:
+> 
+> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-08 15:18:28]:
+> > 
+> > This patch cleans up drivers/cpuidle/cpuidle.c
+> > Earlier cpuidle assumed pm_idle as the default idle loop. Break that
+> > assumption and make it more generic. cpuidle_idle_call() which is the
+> > main idle loop of cpuidle is to be called by architectures which have
+> > registered to cpuidle.
+> > 
+> > Remove routines cpuidle_install/uninstall_idle_handler() which are not
+> > needed anymore.
+> > 
+> >
+> 
+> [snip]
+> 
+>   /**
+> > - * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
+> > - */
+> > -void cpuidle_install_idle_handler(void)
+> > -{
+> > -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
+> > -		/* Make sure all changes finished before we switch to new idle */
+> > -		smp_wmb();
+> > -		pm_idle = cpuidle_idle_call;
+> > -	}
+> > -}
+> > -
+> > -/**
+> > - * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
+> > - */
+> > -void cpuidle_uninstall_idle_handler(void)
+> > -{
+> > -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+> > -		pm_idle = pm_idle_old;
+> > -		cpuidle_kick_cpus();
+> > -	}
+> > -}
+> > -
+> 
+> I see the routines above being called in from
+> cpuidle_pause/resume_and_lock/unlock below and they are entries from
+> ACPI on ACPI_PROCESSOR_NOTIFY_POWER and from the hotplug path, could
+> you test them to make sure they are not broken. We also seem to be
+> missing a cpuidle_kick_cpus() in cpuidle_pause_and_lock()
+> 
+> [snip]
+> 
 
- .../....
+Hi Balbir,
 
-Breaks 6xx_defconfig:
+yes, we definitely need a cpuidle_kick_cpus() in
+cpuidle_pause_and_lock() since this is used while disabling the
+cpuidle_device and the cpus need to be kicked out of the idle states.
+I will test this modified code and see if it breaks hotplug.
 
-In file included from /home/benh/linux-powerpc-test/include/linux/device.h:23,
-                 from /home/benh/linux-powerpc-test/arch/powerpc/include/asm/io.h:21,
-                 from /home/benh/linux-powerpc-test/arch/powerpc/include/asm/pgtable-ppc32.h:9,
-                 from /home/benh/linux-powerpc-test/arch/powerpc/include/asm/pgtable.h:25,
-                 from /home/benh/linux-powerpc-test/include/linux/mm.h:39,
-                 from /home/benh/linux-powerpc-test/include/linux/ring_buffer.h:5,
-                 from /home/benh/linux-powerpc-test/include/linux/ftrace_event.h:4,
-                 from /home/benh/linux-powerpc-test/include/trace/ftrace.h:19,
-                 from /home/benh/linux-powerpc-test/include/trace/define_trace.h:61,
-                 from /home/benh/linux-powerpc-test/arch/powerpc/include/asm/trace.h:53,
-                 from /home/benh/linux-powerpc-test/arch/powerpc/kernel/trace-events.c:3:
-/home/benh/linux-powerpc-test/include/linux/module.h: In function ‘__module_get’:
-/home/benh/linux-powerpc-test/include/linux/module.h:471: error: implicit declaration of function ‘trace_module_get’
+thanks,
+arun
 
-Cheers,
-Ben.
-
-> While we already have generic irq_handler_entry and irq_handler_exit
-> tracepoints there are cases on our virtualised powerpc machines where an
-> interrupt is presented to the OS, but subsequently handled by the hypervisor.
-> This means no OS interrupt handler is invoked.
-> 
-> Here is an example on a POWER6 machine with the patch below applied:
->  
-> <idle>-0     [006]  3243.949840744: irq_entry: pt_regs=c0000000ce31fb10
-> <idle>-0     [006]  3243.949850520: irq_exit: pt_regs=c0000000ce31fb10
-> 
-> <idle>-0     [007]  3243.950218208: irq_entry: pt_regs=c0000000ce323b10
-> <idle>-0     [007]  3243.950224080: irq_exit: pt_regs=c0000000ce323b10
-> 
-> <idle>-0     [000]  3244.021879320: irq_entry: pt_regs=c000000000a63aa0
-> <idle>-0     [000]  3244.021883616: irq_handler_entry: irq=87 handler=eth0
-> <idle>-0     [000]  3244.021887328: irq_handler_exit: irq=87 return=handled
-> <idle>-0     [000]  3244.021897408: irq_exit: pt_regs=c000000000a63aa0
-> 
-> Here we see two phantom interrupts (no handler was invoked), followed
-> by a real interrupt for eth0. Without the tracepoints in this patch we
-> would have missed the phantom interrupts.
-> 
-> Since these would be the first arch specific tracepoints, I'd like to make
-> sure we agree on naming. The tracepoints live in events/powerpc/*, but I'm
-> wondering if the tracepoint name should also contain the arch name, eg
-> powerpc_irq_entry/powerpc_irq_exit. Thoughts?
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> --
-> 
-> Index: linux.trees.git/arch/powerpc/include/asm/trace.h
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux.trees.git/arch/powerpc/include/asm/trace.h	2009-10-06 14:54:25.000000000 +1100
-> @@ -0,0 +1,53 @@
-> +#undef TRACE_SYSTEM
-> +#define TRACE_SYSTEM powerpc
-> +
-> +#if !defined(_TRACE_POWERPC_H) || defined(TRACE_HEADER_MULTI_READ)
-> +#define _TRACE_POWERPC_H
-> +
-> +#include <linux/tracepoint.h>
-> +
-> +struct pt_regs;
-> +
-> +TRACE_EVENT(irq_entry,
-> +
-> +	TP_PROTO(struct pt_regs *regs),
-> +
-> +	TP_ARGS(regs),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(struct pt_regs *, regs)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->regs = regs;
-> +	),
-> +
-> +	TP_printk("pt_regs=%p", __entry->regs)
-> +);
-> +
-> +TRACE_EVENT(irq_exit,
-> +
-> +	TP_PROTO(struct pt_regs *regs),
-> +
-> +	TP_ARGS(regs),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(struct pt_regs *, regs)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->regs = regs;
-> +	),
-> +
-> +	TP_printk("pt_regs=%p", __entry->regs)
-> +);
-> +
-> +#endif /* _TRACE_POWERPC_H */
-> +
-> +#undef TRACE_INCLUDE_PATH
-> +#undef TRACE_INCLUDE_FILE
-> +
-> +#define TRACE_INCLUDE_PATH asm
-> +#define TRACE_INCLUDE_FILE trace
-> +
-> +#include <trace/define_trace.h>
-> Index: linux.trees.git/arch/powerpc/kernel/Makefile
-> ===================================================================
-> --- linux.trees.git.orig/arch/powerpc/kernel/Makefile	2009-10-06 14:02:03.000000000 +1100
-> +++ linux.trees.git/arch/powerpc/kernel/Makefile	2009-10-06 14:38:51.000000000 +1100
-> @@ -115,6 +115,8 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
->  obj-y				+= ppc_save_regs.o
->  endif
->  
-> +obj-$(CONFIG_TRACEPOINTS)	+= trace-events.o
-> +
->  # Disable GCOV in odd or sensitive code
->  GCOV_PROFILE_prom_init.o := n
->  GCOV_PROFILE_ftrace.o := n
-> Index: linux.trees.git/arch/powerpc/kernel/trace-events.c
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux.trees.git/arch/powerpc/kernel/trace-events.c	2009-10-06 14:44:57.000000000 +1100
-> @@ -0,0 +1,3 @@
-> +#include <linux/slab.h>
-> +#define CREATE_TRACE_POINTS
-> +#include <asm/trace.h>
-> Index: linux.trees.git/arch/powerpc/kernel/irq.c
-> ===================================================================
-> --- linux.trees.git.orig/arch/powerpc/kernel/irq.c	2009-10-06 14:02:15.000000000 +1100
-> +++ linux.trees.git/arch/powerpc/kernel/irq.c	2009-10-06 14:13:08.000000000 +1100
-> @@ -54,6 +54,7 @@
->  #include <linux/pci.h>
->  #include <linux/debugfs.h>
->  #include <linux/perf_event.h>
-> +#include <asm/trace.h>
->  
->  #include <asm/uaccess.h>
->  #include <asm/system.h>
-> @@ -325,6 +326,8 @@ void do_IRQ(struct pt_regs *regs)
->  	struct pt_regs *old_regs = set_irq_regs(regs);
->  	unsigned int irq;
->  
-> +	trace_irq_entry(regs);
-> +
->  	irq_enter();
->  
->  	check_stack_overflow();
-> @@ -348,6 +351,8 @@ void do_IRQ(struct pt_regs *regs)
->  		timer_interrupt(regs);
->  	}
->  #endif
-> +
-> +	trace_irq_exit(regs);
->  }
->  
->  void __init init_IRQ(void)
+> -- 
+> 	Balbir
