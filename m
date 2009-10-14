@@ -1,17 +1,33 @@
-Return-Path: <roel.kluin@gmail.com>
-Received: from mail-ew0-f214.google.com (mail-ew0-f214.google.com
-	[209.85.219.214]) by ozlabs.org (Postfix) with ESMTP id 262EBB7B74
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 23:02:52 +1100 (EST)
-Received: by ewy10 with SMTP id 10so11160382ewy.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 05:02:50 -0700 (PDT)
-Message-ID: <4AD5C01E.8000600@gmail.com>
-Date: Wed, 14 Oct 2009 14:12:14 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-MIME-Version: 1.0
-To: paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Prevent unsigned wrap in htab_dt_scan_page_sizes()
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 7F02AB7B76
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 23:12:17 +1100 (EST)
+Subject: Re: [PATCH] Ftrace : fix function_graph tracer OOPS
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1255500920.2347.41.camel@pasglop>
+References: <4A5C5D65.3030906@in.ibm.com>
+	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
+	<4A76BE81.4080707@in.ibm.com>
+	<1252458303.20985.10.camel@gandalf.stny.rr.com>
+	<4AA74AE2.5090001@in.ibm.com>
+	<1252814877.26049.93.camel@gandalf.stny.rr.com>
+	<1252816650.8375.70.camel@pasglop>
+	<1252848060.26049.647.camel@gandalf.stny.rr.com>
+	<1252873548.8375.73.camel@pasglop> <1252915227.8375.118.camel@pasglop>
+	<1254749155.13160.6.camel@gandalf.stny.rr.com>
+	<1254774039.7122.35.camel@pasglop>
+	<1254775073.13160.13.camel@gandalf.stny.rr.com>
+	<4ACC57C4.5010002@in.ibm.com> <1254906621.2409.1.camel@pasglop>
+	<4ACDFC83.4080205@in.ibm.com>
+	<1255489284.7113.3121.camel@gandalf.stny.rr.com>
+	<4AD56C05.9030602@in.ibm.com>  <1255500920.2347.41.camel@pasglop>
+Content-Type: text/plain
+Date: Wed, 14 Oct 2009 08:12:14 -0400
+Message-Id: <1255522334.7113.4223.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +37,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Check to prevent unsigned wrap of size before subtraction.
+On Wed, 2009-10-14 at 17:15 +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2009-10-14 at 11:43 +0530, Sachin Sant wrote:
+> 
+> > Tested both the patches. Works fine.
+> 
+> Thanks !
+> 
+> Stephen, you merge these yourself or you need me to pick them up in
+> -powerpc ?
+> 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Is this maybe better or are we certain that size can't wrap?
+Ben,
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 1ade7eb..dd2d263 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -287,7 +287,7 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
- 		DBG("Page sizes from device-tree:\n");
- 		size /= 4;
- 		cur_cpu_spec->cpu_features &= ~(CPU_FTR_16M_PAGE);
--		while(size > 0) {
-+		while(size >= 3) {
- 			unsigned int shift = prop[0];
- 			unsigned int slbenc = prop[1];
- 			unsigned int lpnum = prop[2];
-@@ -296,7 +296,7 @@ static int __init htab_dt_scan_page_sizes(unsigned long node,
- 			int idx = -1;
- 
- 			size -= 3; prop += 3;
--			while(size > 0 && lpnum) {
-+			while(size >= 2 && lpnum) {
- 				if (prop[0] == shift)
- 					lpenc = prop[1];
- 				prop += 2; size -= 2;
+You can either pull from my repo (I synced with latest Linus), or you
+can just suck in the patches. I can also resync with your repo if you
+prefer.
+
+Either way is fine with me. Just let me know which you did.
+
+-- Steve
