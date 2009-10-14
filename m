@@ -1,33 +1,40 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <hollisb@us.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5255EB7B6F
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 09:10:33 +1100 (EST)
-In-Reply-To: <1255557130.2347.58.camel@pasglop>
-References: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1255278912-8042-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255278912-8042-4-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1255278912-8042-5-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091014172003.GD21215@loki.buserror.net>	
-	<OF64D89B73.6073827F-ONC125764F.00687BC4-C125764F.0068D4DC@transmode.se>
-	<4AD62516.6090301@freescale.com>	
-	<OF22DCA2B2.1ADC3BC0-ONC125764F.006DE50F-C125764F.006E305A@transmode.se>
-	<4AD63301.6090307@freescale.com>	
-	<OF459A0F65.D3201748-ONC125764F.00738958-C125764F.00744CF0@transmode.se>
-	<4AD63F48.8030301@freescale.com> <1255555029.2347.55.camel@pasglop>	
-	<OFDAF14BF7.E3D4EBC9-ONC125764F.0076DF84-C125764F.00772817@transm
-	<1255557130.2347.58.camel@pasglop>
-Subject: Re: [PATCH 4/8] 8xx: Fixup DAR from buggy dcbX instructions.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF0FE78FDB.D4DF3BFA-ONC125764F.007997E0-C125764F.0079ACA0@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 15 Oct 2009 00:09:00 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 07A6CB7334
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Oct 2009 09:57:20 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9EMuAIr009123
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2009 16:56:10 -0600
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n9EMvAGw141386
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2009 16:57:10 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av06.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id n9EMwaDJ027221
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2009 16:58:36 -0600
+Subject: Re: linux-next: tree build failure
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: Jan Beulich <JBeulich@novell.com>
+In-Reply-To: <1255115648.2546.71.camel@slab.beaverton.ibm.com>
+References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
+	<1254267572.15622.1621.camel@slab.beaverton.ibm.com>
+	<4AC318450200007800017355@vpn.id2.novell.com>
+	<1254498517.3839.17.camel@slab.beaverton.ibm.com>
+	<4AC9B5310200007800017EA1@vpn.id2.novell.com>
+	<1255115648.2546.71.camel@slab.beaverton.ibm.com>
+Content-Type: text/plain
+Date: Wed, 14 Oct 2009 15:57:06 -0700
+Message-Id: <1255561026.29192.0.camel@slab.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: sfr@canb.auug.org.au, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+	linux-next@vger.kernel.org, akpm@linux-foundation.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,26 +44,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 14/10/2009 23:52:10:
->
-> On Wed, 2009-10-14 at 23:41 +0200, Joakim Tjernlund wrote:
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 14/10/2009 23:17:09:
-> > >
-> > > On Wed, 2009-10-14 at 16:14 -0500, Scott Wood wrote:
-> > > >
-> > > > I think the last working version was a little older than that -- and it's quite
-> > > > possible that there was underlying badness even earlier that just recently got
-> > > > exposed.  I think I want to just debug it and find out what's really going on.
-> > >
-> > > That would be good :-)
-> > >
-> > > I've been itching to do that but without HW it's not trivial :-)
-> >
-> > Meanwhile, how about the tlb asm you promised me? :)
-> > It will be a challenge I think since you only have 2 GPRs
-> > I guess it would be possible to stash yet another reg since it
-> > will fit in the cache line already used by the TLB handlers.
->
-> Let's just get it working first :-)
+On Fri, 2009-10-09 at 12:14 -0700, Hollis Blanchard wrote:
+> Rusty's version of BUILD_BUG_ON() does indeed fix the build break, and
+> also exposes the bug in kvmppc_account_exit_stat(). So to recap:
+> 
+> original: built but didn't work
+> Jan's: doesn't build
+> Rusty's: builds and works
+> 
+> Where do you want to go from here?
 
-Chicken :):)
+Jan, what are your thoughts? Your BUILD_BUG_ON patch has broken the
+build, and we still need to fix it.
+
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
