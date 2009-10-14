@@ -1,32 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DC59BB7B78
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 05:13:33 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n9EIDU9s025283
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 11:13:30 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n9EIG0GV029341
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 13:16:01 -0500 (CDT)
-Message-ID: <4AD614E4.6030005@freescale.com>
-Date: Wed, 14 Oct 2009 13:13:56 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
+	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id 17BAFB7B7D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Oct 2009 05:21:49 +1100 (EST)
+Received: by ywh37 with SMTP id 37so52514ywh.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 14 Oct 2009 11:21:47 -0700 (PDT)
 MIME-Version: 1.0
-To: Felix Radensky <felix@embedded-sol.com>
-Subject: Re: UBIFS problem on MPC8536DS
-References: <4AD5ADC9.30503@embedded-sol.com>	<4AD5C5B4.3060303@nokia.com>	<4AD5D053.9000901@embedded-sol.com>	<4AD5FFE7.7080703@nokia.com>
-	<4AD60EF4.4080306@embedded-sol.com>
-In-Reply-To: <4AD60EF4.4080306@embedded-sol.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-	Adrian Hunter <adrian.hunter@nokia.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <6E9D235B18CE694399D781F05D9C42E7A035ADDD@SI-MBX11.de.bosch.com>
+References: <6E9D235B18CE694399D781F05D9C42E7A035ADDD@SI-MBX11.de.bosch.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 14 Oct 2009 12:21:27 -0600
+Message-ID: <fa686aa40910141121r74ea411dwd602685a98eb31a5@mail.gmail.com>
+Subject: Re: MPC5200B and USB
+To: "FIXED-TERM Seeh Thomas (BEG/EMS1)" <fixed-term.Thomas.Seeh@de.bosch.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,16 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Felix Radensky wrote:
-> Yes, NAND and NOR are on the same local bus controller.
-> 
-> Maybe powerpc folks can provide some insight here.
-> Is it possible that simultaneous access to NOR and NAND
-> on MPC8536 can result in NAND timeouts ?
+On Wed, Oct 14, 2009 at 6:57 AM, FIXED-TERM Seeh Thomas (BEG/EMS1)
+<fixed-term.Thomas.Seeh@de.bosch.com> wrote:
+> Hello everyone,
+>
+> I'm working on a project to get USB ready on a MPC5200B based board.
+> On this board I'm not using Linux (but MQX), but my question is not related
+> to Linux.
+> It's more specific to USB and OHCI.
+> I will communicate with a Mass Storage Device and therefor the control
+> transfer works fine.
+> The Mass Storage Device has two endpoints for bulk transfer, one IN (from
+> device to host) and
+> one OUT (from host to device).
+>
+> If I want to communicate with the device should I have two endpoints on the
+> host side too?
 
-I've heard other reports of such problems with eLBC, but was unable to 
-reproduce it myself last time I tried.  Could you reduce this down to a 
-minimal set of specific reproduction instructions (e.g. eliminate UBI if 
-possible, or else explain how to set up UBI)?
+Sounds like you need to brush up on how USB works.  The host
+controller can talk to any endpoint on any device, and it schedules
+the transfers for them.  There are no host-side endpoints like there
+are on the device.
 
--Scott
+This question is very off-topic for this list.  You should refer to
+the USB standards documentation or look for a USB specific mailing
+list.  Please don't ask non-Linux questions on a Linux mailing list.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
