@@ -1,19 +1,17 @@
-Return-Path: <khali@linux-fr.org>
-Received: from bamako.nerim.net (bamako.nerim.net [62.4.17.28])
-	by ozlabs.org (Postfix) with ESMTP id F1BC2B7B69
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 08:02:55 +1100 (EST)
-Date: Wed, 14 Oct 2009 23:02:52 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Tim Shepard <shep@alum.mit.edu>
-Subject: Re: i2c-powermac fails
-Message-ID: <20091014230252.0d0cba8d@hyperion.delvare>
-In-Reply-To: <20091013114948.03608b7f@hyperion.delvare>
-References: <20091013112304.74083fd1@hyperion.delvare>
-	<1255426348.2192.187.camel@pasglop>
-	<20091013114948.03608b7f@hyperion.delvare>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <shep@xplot.org>
+Received: from alva.home (dsl092-066-146.bos1.dsl.speakeasy.net [66.92.66.146])
+	by ozlabs.org (Postfix) with ESMTP id 13811B7E2B
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 06:23:02 +1100 (EST)
+From: Tim Shepard <shep@alum.mit.edu>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] therm_adt746x: Don't access non-existing register 
+In-reply-to: Your message of Wed, 14 Oct 2009 17:31:32 +0200.
+	<20091014173132.2894d0fd@hyperion.delvare>
+Date: Wed, 14 Oct 2009 14:59:20 -0400
+Message-Id: <E1My94C-0002GE-00@alva.home>
+Sender: Tim Shepard <shep@xplot.org>
+Cc: Colin Leroy <colin@colino.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
 
-On Tue, 13 Oct 2009 11:49:48 +0200, Jean Delvare wrote:
-> I2C bus being setup too fast sounds more likely. It might be worth
-> adding an arbitrary delay after initialization, just to see if it
-> helps. Not sure where though, as I'm not familiar with the Powermac
-> initialization steps. Maybe right before i2c_add_adapter() in
-> i2c_powermac_probe?
+Jean,
 
-Tim, can you please give a try to this patch? Obviously your machine
-will take 5 additional seconds to boot, and this isn't meant as a real
-fix, but if it helps, this will be an interesting hint for further
-debugging attempts.
+I tried one reboot with your patch, failed as usual.
+(Patch sounds like a good idea though.)
 
---- kernel32.orig/drivers/macintosh/therm_adt746x.c
-+++ kernel32/drivers/macintosh/therm_adt746x.c
-@@ -380,6 +380,7 @@ static int probe_thermostat(struct i2c_c
- 	if (thermostat)
- 		return 0;
+			-Tim Shepard
+			 shep@alum.mit.edu
+
+
+
+tree<11>$ git describe
+v2.6.31.1-6-g0b193bc
+tree<12>$ git diff HEAD^ HEAD
+diff --git a/drivers/macintosh/therm_adt746x.c b/drivers/macintosh/therm_adt746x.c
+index 0554dae..bf9ed2d 100644
+--- a/drivers/macintosh/therm_adt746x.c
++++ b/drivers/macintosh/therm_adt746x.c
+@@ -366,7 +366,7 @@ static int probe_thermostat(struct i2c_client *client,
+        i2c_set_clientdata(client, th);
+        th->clt = client;
  
-+	msleep(5000);
- 	th = kzalloc(sizeof(struct thermostat), GFP_KERNEL);
- 	if (!th)
- 		return -ENOMEM;
-
-
--- 
-Jean Delvare
+-       rc = read_reg(th, 0);
++       rc = read_reg(th, CONFIG_REG);
+        if (rc < 0) {
+                dev_err(&client->dev, "Thermostat failed to read config!\n");
+                kfree(th);
+tree<13>$ dmesg | head
+Using PowerMac machine description
+Total memory = 1536MB; using 4096kB for hash table (at cfc00000)
+Linux version 2.6.31.1-00006-g0b193bc (shep@tree) (gcc version 4.3.2 (Debian 4.3.2-1.1) ) #9 Wed Oct 14 13:41:40 EDT 2009
+Found UniNorth memory controller & host bridge @ 0xf8000000 revision: 0xd9
+Mapped at 0xff7c0000
+Found a Intrepid mac-io controller, rev: 0, mapped at 0xff740000
+Processor NAP mode on idle enabled.
+PowerMac motherboard: PowerBook G4 15"
+console [udbg0] enabled
+Found UniNorth PCI host bridge at 0x00000000f0000000. Firmware bus number: 0->1
+tree<14>$ dmesg | grep adt
+adt746x: version 1 (supported)
+adt746x: Thermostat bus: 0, address: 0x2e, limit_adjust: 0, fan_speed: -1
+therm_adt746x 7-002e: Thermostat failed to read config!
+tree<15>$ 
