@@ -1,20 +1,22 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-px0-f177.google.com (mail-px0-f177.google.com
-	[209.85.216.177]) by ozlabs.org (Postfix) with ESMTP id B0EC7B7B74
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Oct 2009 04:43:47 +1100 (EST)
-Received: by pxi7 with SMTP id 7so12342pxi.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Oct 2009 10:43:45 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2] net/fec_mpc52xx: Fix kernel panic on FEC error
-To: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, davem@davemloft.net
-Date: Wed, 14 Oct 2009 11:43:43 -0600
-Message-ID: <20091014174224.29221.18830.stgit@angua>
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D9BC4B7B6F
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 04:49:12 +1100 (EST)
+Message-ID: <4AD60EF4.4080306@embedded-sol.com>
+Date: Wed, 14 Oct 2009 19:48:36 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: John Bonesio <bones@secretlab.ca>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Subject: Re: UBIFS problem on MPC8536DS
+References: <4AD5ADC9.30503@embedded-sol.com>
+	<4AD5C5B4.3060303@nokia.com>	<4AD5D053.9000901@embedded-sol.com>
+	<4AD5FFE7.7080703@nokia.com>
+In-Reply-To: <4AD5FFE7.7080703@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +26,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: John Bonesio <bones@secretlab.ca>
 
-The MDIO bus cannot be accessed at interrupt context, but on an FEC
-error, the fec_mpc52xx driver reset function also tries to reset the
-PHY.  Since the error is detected at IRQ context, and the PHY functions
-try to sleep, the kernel ends up panicking.
 
-Resetting the PHY on an FEC error isn't even necessary.  This patch
-solves the problem by removing the PHY reset entirely.
+Adrian Hunter wrote:
+> Felix Radensky wrote:
+>> Adrian Hunter wrote:
+>>> Felix Radensky wrote:
+>>>> Hi,
+>>>>
+>>>> I have a strange problem in linux-2.6.31 running on MPC8536DS board.
+>>>> It is 100% reproducible, by opening a 350MB tar file into ubifs volume
+>>>> on NAND flash, and starting erase of NOR flash partition right after 
+>>>> that.
+>>>>
+>>>> If I don't start  NOR erase, everything works fine. Also, If I run 
+>>>> sync after
+>>>> tar, no problem occurs.  The NOR flash is 32MB  Spansion, NAND is
+>>>> 4GB Samsung.
+>>>>
+>>>> The error messages are as follows:
+>>>>
+>>>> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+>>>> 5812:12288, written 0 bytes
+>>>> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5812
+>>>> UBI: recover PEB 5812, move data to PEB 19400
+>>>> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+>>>> 5812:512, read 512 bytes
+>>>> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+>>>> 19400:512, written 0 bytes
+>>>> UBI warning: recover_peb: failed to write to PEB 19400
+>>>> UBI: try again
+>>>> UBI: recover PEB 5812, move data to PEB 19401
+>>>> UBI: run torture test for PEB 19400
+>>>> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+>>>> 19401:512, written 0 bytes
+>>>> UBI warning: recover_peb: failed to write to PEB 19401
+>>>> UBI: try again
+>>>> UBI: recover PEB 5812, move data to PEB 19402
+>>>> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+>>>> 19402:512, written 0 bytes
+>>>> UBI warning: recover_peb: failed to write to PEB 19402
+>>>> UBI: try again
+>>>> UBI: recover PEB 5812, move data to PEB 19403
+>>>> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+>>>> 19403:512, written 0 bytes
+>>>> UBI warning: recover_peb: failed to write to PEB 19403
+>>>> UBI warning: ubi_ro_mode: switch to read-only mode
+>>>> UBIFS error (pid 1149): ubifs_wbuf_write_nolock: cannot write 2522 
+>>>> bytes to LEB 389:10240, error -5
+>>>> UBIFS warning (pid 1149): ubifs_ro_mode: switched to read-only mode, 
+>>>> error -5
+>>>> UBIFS error (pid 1149): do_writepage: cannot write page 0 of inode 
+>>>> 30708, error -5
+>>>> UBIFS error (pid 1149): make_reservation: cannot reserve 858 bytes 
+>>>> in jhead 2, error -30
+>>>> UBIFS error (pid 1149): do_writepage: cannot write page 2 of inode 
+>>>> 29486, error -30
+>>>> UBIFS error (pid 1149): make_reservation: cannot reserve 721 bytes 
+>>>> in jhead 2, error -30
+>>>> UBIFS error (pid 1149): do_writepage: cannot write page 1 of inode 
+>>>> 30070, error -30
+>>>> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+>>>> 5022:88064, written 0 bytes
+>>>> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5022
+>>>> UBI: recover PEB 5022, move data to PEB 19404
+>>>> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+>>>> 5022:512, read 512 bytes
+>>>> UBI error: ubi_io_write: read-only mode
+>>>> UBI warning: recover_peb: failed to write to PEB 19404
+>>>> UBI: try again
+>>>> UBI: recover PEB 5022, move data to PEB 19405
+>>>> UBI error: ubi_io_write: read-only mode
+>>>> UBI warning: recover_peb: failed to write to PEB 19405
+>>>> UBI: try again
+>>>> UBI: recover PEB 5022, move data to PEB 19406
+>>>> UBI error: ubi_io_write: read-only mode
+>>>> UBI warning: recover_peb: failed to write to PEB 19406
+>>>> UBI: try again
+>>>> UBI: recover PEB 5022, move data to PEB 19407
+>>>> UBI error: ubi_io_write: read-only mode
+>>>> UBI warning: recover_peb: failed to write to PEB 19407
+>>>> UBIFS error (pid 1044): ubifs_wbuf_sync_nolock: cannot write 2048 
+>>>> bytes to LEB 788:86016
+>>>> UBIFS error (pid 1044): ubifs_bg_wbufs_sync: cannot sync 
+>>>> write-buffer, error -30
+>>>> UBIFS warning (pid 1044): ubifs_ro_mode: switched to read-only mode, 
+>>>> error -30
+>>>> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+>>>> 5817:26624, written 0 bytes
+>>>> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5817
+>>>> UBI: recover PEB 5817, move data to PEB 19408
+>>>> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+>>>> 5817:512, read 512 bytes
+>>>> UBI error: ubi_io_write: read-only mode
+>>>> UBI warning: recover_peb: failed to write to PEB 19408
+>>>> UBI: try again
+>>>> UBI: recover PEB 5817, move data to PEB 19409
+>>>> UBI error: ubi_io_write: read-only mode
+>>>> UBI warning: recover_peb: failed to write to PEB 19409
+>>>> UBI: try again
+>>>> UBI: recover PEB 5817, move data to PEB 19410
+>>>> UBI error: ubi_io_write: read-only mode
+>>>> UBI warning: recover_peb: failed to write to PEB 19410
+>>>> UBI: try again
+>>>> UBI: recover PEB 5817, move data to PEB 19411
+>>>> UBI error: ubi_io_write: read-only mode
+>>>> UBI warning: recover_peb: failed to write to PEB 19411
+>>>> UBIFS error (pid 1047): ubifs_wbuf_sync_nolock: cannot write 2048 
+>>>> bytes to LEB 385:24576
+>>>> UBIFS error (pid 1047): ubifs_bg_wbufs_sync: cannot sync 
+>>>> write-buffer, error -30
+>>>> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes 
+>>>> in jhead 1, error -30
+>>>> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30709, 
+>>>> error -30
+>>>> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes 
+>>>> in jhead 1, error -30
+>>>> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30710, 
+>>>> error -30
+>>>> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes 
+>>>> in jhead 1, error -30
+>>>> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30698, 
+>>>> error -30
+>>>> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes 
+>>>> in jhead 1, error -30
+>>>> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30711, 
+>>>> error -30
+>>>>
+>>>> I'd appreciate any hints on what can cause this. Is it a hardware 
+>>>> problem, mtd layer problem
+>>>> or UBI problem ?
+>>> It sounds like you are saying one MTD partition somehow affects another.
+>>> You should check the MTD partitions are set up correctly.  Are you using
+>>> tools that make assumptions about which mtd partition is which?
+>>>
+>>> How do you erase the NOR flash?  Is the device node (/dev/mtd...) 
+>>> correct?
+>> I can also reproduce the problem by reading from NOR, i.e.
+>>
+>> dd if=/dev/mtd4 of=/dev/null
+> 
+> I doubt the problem is in UBI or UBIFS, and plenty of people use multiple
+> MTD partitions with no problem.
+> 
+> Do the NAND and NOR use the same memory controller?
+> 
+> I don't think I can be much help I'm afraid.
+> 
 
-Signed-off-by: John Bonesio <bones@secretlab.ca>
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Yes, NAND and NOR are on the same local bus controller.
 
-v2: fixed stupid misspelling of John's email address.  No changes to content.
+Maybe powerpc folks can provide some insight here.
+Is it possible that simultaneous access to NOR and NAND
+on MPC8536 can result in NAND timeouts ?
 
- drivers/net/fec_mpc52xx.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index c40113f..66dace6 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -759,12 +759,6 @@ static void mpc52xx_fec_reset(struct net_device *dev)
- 
- 	mpc52xx_fec_hw_init(dev);
- 
--	if (priv->phydev) {
--		phy_stop(priv->phydev);
--		phy_write(priv->phydev, MII_BMCR, BMCR_RESET);
--		phy_start(priv->phydev);
--	}
--
- 	bcom_fec_rx_reset(priv->rx_dmatsk);
- 	bcom_fec_tx_reset(priv->tx_dmatsk);
- 
+Felix.
