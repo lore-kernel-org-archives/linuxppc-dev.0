@@ -1,21 +1,31 @@
-Return-Path: <tj@kernel.org>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 49301B7063
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Oct 2009 12:49:50 +1100 (EST)
-Message-ID: <4AD52E37.80209@kernel.org>
-Date: Wed, 14 Oct 2009 10:49:43 +0900
-From: Tejun Heo <tj@kernel.org>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: New percpu & ppc64 perfs
-References: <1255478358.2347.28.camel@pasglop>
-In-Reply-To: <1255478358.2347.28.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 14275B7088
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 14:01:32 +1100 (EST)
+Subject: Re: [PATCH] Ftrace : fix function_graph tracer OOPS
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Sachin Sant <sachinp@in.ibm.com>
+In-Reply-To: <4ACDFC83.4080205@in.ibm.com>
+References: <4A5C5D65.3030906@in.ibm.com>
+	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
+	<4A76BE81.4080707@in.ibm.com>
+	<1252458303.20985.10.camel@gandalf.stny.rr.com>
+	<4AA74AE2.5090001@in.ibm.com>
+	<1252814877.26049.93.camel@gandalf.stny.rr.com>
+	<1252816650.8375.70.camel@pasglop>
+	<1252848060.26049.647.camel@gandalf.stny.rr.com>
+	<1252873548.8375.73.camel@pasglop> <1252915227.8375.118.camel@pasglop>
+	<1254749155.13160.6.camel@gandalf.stny.rr.com>
+	<1254774039.7122.35.camel@pasglop>
+	<1254775073.13160.13.camel@gandalf.stny.rr.com>
+	<4ACC57C4.5010002@in.ibm.com> <1254906621.2409.1.camel@pasglop>
+	<4ACDFC83.4080205@in.ibm.com>
+Content-Type: text/plain
+Date: Tue, 13 Oct 2009 23:01:24 -0400
+Message-Id: <1255489284.7113.3121.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,62 +35,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Benjamin.
-
-Benjamin Herrenschmidt wrote:
-> So I found (and fixed, though the patch isn't upstream yet) the problem
-> that was causing the new percpu to hang when accessing the top of our
-> vmalloc space.
+On Thu, 2009-10-08 at 20:21 +0530, Sachin Sant wrote:
+> Switch to LOAD_REG_ADDR().
 > 
-> However, I have some concerns about that choice of location for the
-> percpu datas.
+> Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+> ---
+> diff -Naurp old/arch/powerpc/kernel/entry_64.S
+> new/arch/powerpc/kernel/entry_64.S
+> --- old/arch/powerpc/kernel/entry_64.S  2009-10-08 18:37:44.000000000
+> +0530
+> +++ new/arch/powerpc/kernel/entry_64.S  2009-10-08 18:34:33.000000000
+> +0530
+> @@ -1038,8 +1038,8 @@ _GLOBAL(mod_return_to_handler)
+>          * We are in a module using the module's TOC.
+>          * Switch to our TOC to run inside the core kernel.
+>          */
+> -       LOAD_REG_IMMEDIATE(r4,ftrace_return_to_handler)
+> -       ld      r2, 8(r4)
+> +       ld      r2, PACATOC(r13)
+> +       LOAD_REG_ADDR(r4,ftrace_return_to_handler)
+
+Actually, the loading of this register is not needed. The original used
+the loading to get the r2.
+
+I actually wrote a fix for this a month ago. I never sent it out because
+I was distracted by other issues.
+
+I'll send out the two patches I had now.
+
+Could yo test them?
+
+Thanks!
+
+-- Steve
+
+>  
+>         bl      .ftrace_return_to_handler
+>         nop
 > 
-> Basically, our MMU divides the address space into "segments" (of 256M or
-> 1T depending on your processor capabilities) and those segments are SW
-> loaded into a relatively small (64 entries) SLB buffer.
-> 
-> Thus, by moving the per-cpu to the end of the vmalloc space, you
-> essentially make it use a different segment from the rest of the vmalloc
-> space, which will overall degrade performances by increasing pressure on
-> the SLB.
-> 
-> It would be nicer if we could provide an arch function to provide a
-> "preferred" location for the per-cpu data.
-> 
-> I can easily cook up a patch but wanted to discuss that with you first.
-> Any reason why we would keep it within vmalloc space for example ? IE. I
-> could move VMALLOC_END to below the per-cpu reserved areas, or are they
-> subject to expansion past boot time ?
-> 
-> Also, how big can they be ? Ie, will the top of the first 256M segment
-> good enough or that will risk blowing out of space ? In general,
-> machines with 256M segments won't have more than 64 or maybe 128 CPUs I
-> believe. Bigger machines will have CPUs that support 1T segments.
-
-Hmm... I don't think 256M segment will be enough.  Percpu area layout
-will follow how numa memory is laidd out.  For example, if a machine
-has 4 nodes (each one with one cpu) and memory for each node is 1G in
-size and 1G apart, the first chunk will be embedded in the linear
-mapping area (normal kernel addressable area) and each unit in the
-chunk will be apart by between 1G and 2G.  As the first chunk is
-embedded in the linear mapped area, this shouldn't cause any extra
-overhead.
-
-The vmalloc area is used when the first chunk is filled and another
-chunk need to be allocated.  From the second chunk on, vmalloc area is
-used to preserve the layout of the first chunk.  ie. Each of them will
-span across 8G bytes (they will overlap tho, so even with many dynamic
-chunks vm usage will only be slightly over 8G).
-
-The reason why vmalloc area from the top is used is that I didn't want
-this congruent allocation to compete with normal vmalloc allocations.
-Depending on the numa layout, competition between linear allocation
-and congruent allocation may create many unnecessary holes.
-
-For 256M segment, I don't think much can be done but for 1T segment,
-just limiting vmalloc area size to 1T should do the trick, no?
-
-Thanks.
-
--- 
-tejun
