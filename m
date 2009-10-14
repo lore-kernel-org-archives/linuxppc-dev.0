@@ -1,21 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f218.google.com (mail-gx0-f218.google.com
-	[209.85.217.218]) by ozlabs.org (Postfix) with ESMTP id 336AAB70B3
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 05:46:16 +1100 (EST)
-Received: by gxk10 with SMTP id 10so93212gxk.3
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 11:46:15 -0700 (PDT)
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E8CB8B7B7C
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 05:50:10 +1100 (EST)
+In-Reply-To: <20091014172351.GE21215@loki.buserror.net>
+References: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20091014172351.GE21215@loki.buserror.net>
+Subject: Re: [PATCH 0/8] Fix 8xx MMU/TLB.
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OFDE570763.C67580D5-ONC125764F.00663CA8-C125764F.00672117@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Wed, 14 Oct 2009 20:46:26 +0200
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <91cec5c64da4ca31a025fc7c45d9f1b93c8b98da.1255499081.git.michael@ellerman.id.au>
-References: <a6fc612b826ff12628e62601203d565df00c6436.1255499081.git.michael@ellerman.id.au>
-	<91cec5c64da4ca31a025fc7c45d9f1b93c8b98da.1255499081.git.michael@ellerman.id.au>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 14 Oct 2009 12:44:22 -0600
-Message-ID: <fa686aa40910141144y1776c476uc8e26e06eb57e6ac@mail.gmail.com>
-Subject: Re: [PATCH 6/6] powerpc: Enable sparse irq_descs on powerpc
-To: Michael Ellerman <michael@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Rex Feany <RFeany@mrv.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,208 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 13, 2009 at 11:45 PM, Michael Ellerman
-<michael@ellerman.id.au> wrote:
-> Defining CONFIG_SPARSE_IRQ enables generic code that gets rid of the
-> static irq_desc array, and replaces it with an array of pointers to
-> irq_descs.
+Scott Wood <scottwood@freescale.com> wrote on 14/10/2009 19:23:51:
 >
-> It also allows node local allocation of irq_descs, however we
-> currently don't have the information available to do that, so we just
-> allocate them on all on node 0.
+> On Sun, Oct 11, 2009 at 06:35:04PM +0200, Joakim Tjernlund wrote:
+> > This is the latest batch of mu 8xx MMU/TLB rework.
+> > I think this is complete now and will relax with
+> > other work the next few days. I hope I can get some
+> > testing from Scott and Rex during this time.
 >
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> I applied this stack plus "Remove DIRTY pte handling in DTLB Error" (fixing
+> up conflicts again, as well as the noted build errors), and got this:
 
-Why not make sparse IRQs manditory for all platforms?  Is there a
-performance concern with doing so?  From a maintenance perspective,
-I'd rather see IRQ descs manged in one way only to keep the code
-simple.
+Sorry about the build problems, will fixup.
 
-Cheers,
-g.
+Don't know what is causing the error though, works just fine on 2.4 :(
 
-> ---
-> =A0arch/powerpc/Kconfig =A0 =A0 =A0 =A0 =A0 =A0| =A0 13 ++++++++++++
-> =A0arch/powerpc/include/asm/irq.h =A0| =A0 =A03 ++
-> =A0arch/powerpc/kernel/irq.c =A0 =A0 =A0 | =A0 40 +++++++++++++++++++++++=
-+++++++++------
-> =A0arch/powerpc/kernel/ppc_ksyms.c | =A0 =A01 -
-> =A0arch/powerpc/kernel/setup_64.c =A0| =A0 =A05 ----
-> =A05 files changed, 49 insertions(+), 13 deletions(-)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 2230e75..825d889 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -388,6 +388,19 @@ config IRQ_ALL_CPUS
-> =A0 =A0 =A0 =A0 =A0CPU. =A0Generally saying Y is safe, although some prob=
-lems have been
-> =A0 =A0 =A0 =A0 =A0reported with SMP Power Macintoshes with this option e=
-nabled.
->
-> +config SPARSE_IRQ
-> + =A0 =A0 =A0 bool "Support sparse irq numbering"
-> + =A0 =A0 =A0 default y
-> + =A0 =A0 =A0 help
-> + =A0 =A0 =A0 =A0 This enables support for sparse irqs. This is useful fo=
-r distro
-> + =A0 =A0 =A0 =A0 kernels that want to define a high CONFIG_NR_CPUS value=
- but still
-> + =A0 =A0 =A0 =A0 want to have low kernel memory footprint on smaller mac=
-hines.
-> +
-> + =A0 =A0 =A0 =A0 ( Sparse IRQs can also be beneficial on NUMA boxes, as =
-they spread
-> + =A0 =A0 =A0 =A0 =A0 out the irq_desc[] array in a more NUMA-friendly wa=
-y. )
-> +
-> + =A0 =A0 =A0 =A0 If you don't know what to do here, say Y.
-> +
-> =A0config NUMA
-> =A0 =A0 =A0 =A0bool "NUMA support"
-> =A0 =A0 =A0 =A0depends on PPC64
-> diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/ir=
-q.h
-> index 03dc28c..c85a32f 100644
-> --- a/arch/powerpc/include/asm/irq.h
-> +++ b/arch/powerpc/include/asm/irq.h
-> @@ -38,6 +38,9 @@ extern atomic_t ppc_n_lost_interrupts;
-> =A0/* Number of irqs reserved for the legacy controller */
-> =A0#define NUM_ISA_INTERRUPTS =A0 =A0 16
->
-> +/* Same thing, used by the generic IRQ code */
-> +#define NR_IRQS_LEGACY =A0 =A0 =A0 =A0 NUM_ISA_INTERRUPTS
-> +
-> =A0/* This type is the placeholder for a hardware interrupt number. It ha=
-s to
-> =A0* be big enough to enclose whatever representation is used by a given
-> =A0* platform.
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index 63e27d5..eba5392 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -85,7 +85,10 @@ extern int tau_interrupts(int);
-> =A0#endif /* CONFIG_PPC32 */
->
-> =A0#ifdef CONFIG_PPC64
-> +
-> +#ifndef CONFIG_SPARSE_IRQ
-> =A0EXPORT_SYMBOL(irq_desc);
-> +#endif
->
-> =A0int distribute_irqs =3D 1;
->
-> @@ -613,8 +616,16 @@ void irq_set_virq_count(unsigned int count)
-> =A0static int irq_setup_virq(struct irq_host *host, unsigned int virq,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0irq_hw_number_t hw=
-irq)
-> =A0{
-> + =A0 =A0 =A0 struct irq_desc *desc;
-> +
-> + =A0 =A0 =A0 desc =3D irq_to_desc_alloc_node(virq, 0);
-> + =A0 =A0 =A0 if (!desc) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_debug("irq: -> allocating desc failed\n"=
-);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto error;
-> + =A0 =A0 =A0 }
-> +
-> =A0 =A0 =A0 =A0/* Clear IRQ_NOREQUEST flag */
-> - =A0 =A0 =A0 irq_to_desc(virq)->status &=3D ~IRQ_NOREQUEST;
-> + =A0 =A0 =A0 desc->status &=3D ~IRQ_NOREQUEST;
->
-> =A0 =A0 =A0 =A0/* map it */
-> =A0 =A0 =A0 =A0smp_wmb();
-> @@ -623,11 +634,14 @@ static int irq_setup_virq(struct irq_host *host, un=
-signed int virq,
->
-> =A0 =A0 =A0 =A0if (host->ops->map(host, virq, hwirq)) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pr_debug("irq: -> mapping failed, freeing\=
-n");
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 irq_free_virt(virq, 1);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -1;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto error;
-> =A0 =A0 =A0 =A0}
->
-> =A0 =A0 =A0 =A0return 0;
-> +
-> +error:
-> + =A0 =A0 =A0 irq_free_virt(virq, 1);
-> + =A0 =A0 =A0 return -1;
-> =A0}
->
-> =A0unsigned int irq_create_direct_mapping(struct irq_host *host)
-> @@ -1008,12 +1022,24 @@ void irq_free_virt(unsigned int virq, unsigned in=
-t count)
-> =A0 =A0 =A0 =A0spin_unlock_irqrestore(&irq_big_lock, flags);
-> =A0}
->
-> -void irq_early_init(void)
-> +int arch_early_irq_init(void)
-> =A0{
-> - =A0 =A0 =A0 unsigned int i;
-> + =A0 =A0 =A0 struct irq_desc *desc;
-> + =A0 =A0 =A0 int i;
->
-> - =A0 =A0 =A0 for (i =3D 0; i < NR_IRQS; i++)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 irq_to_desc(i)->status |=3D IRQ_NOREQUEST;
-> + =A0 =A0 =A0 for (i =3D 0; i < NR_IRQS; i++) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 desc =3D irq_to_desc(i);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (desc)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 desc->status |=3D IRQ_NOREQ=
-UEST;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return 0;
-> +}
-> +
-> +int arch_init_chip_data(struct irq_desc *desc, int node)
-> +{
-> + =A0 =A0 =A0 desc->status |=3D IRQ_NOREQUEST;
-> + =A0 =A0 =A0 return 0;
-> =A0}
->
-> =A0/* We need to create the radix trees late */
-> diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ks=
-yms.c
-> index c8b27bb..07115d6 100644
-> --- a/arch/powerpc/kernel/ppc_ksyms.c
-> +++ b/arch/powerpc/kernel/ppc_ksyms.c
-> @@ -162,7 +162,6 @@ EXPORT_SYMBOL(screen_info);
->
-> =A0#ifdef CONFIG_PPC32
-> =A0EXPORT_SYMBOL(timer_interrupt);
-> -EXPORT_SYMBOL(irq_desc);
-> =A0EXPORT_SYMBOL(tb_ticks_per_jiffy);
-> =A0EXPORT_SYMBOL(cacheable_memcpy);
-> =A0EXPORT_SYMBOL(cacheable_memzero);
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_6=
-4.c
-> index 797ea95..8e5ec92 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -357,11 +357,6 @@ void __init setup_system(void)
-> =A0 =A0 =A0 =A0 */
-> =A0 =A0 =A0 =A0initialize_cache_info();
->
-> - =A0 =A0 =A0 /*
-> - =A0 =A0 =A0 =A0* Initialize irq remapping subsystem
-> - =A0 =A0 =A0 =A0*/
-> - =A0 =A0 =A0 irq_early_init();
-> -
-> =A0#ifdef CONFIG_PPC_RTAS
-> =A0 =A0 =A0 =A0/*
-> =A0 =A0 =A0 =A0 * Initialize RTAS if available
-> --
-> 1.6.2.1
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+Assuming you fixup this error:
+ arch/powerpc/kernel/head_8xx.S:577: undefined reference to `DARfix'
+with a "b DARFix" I can only guess and I don't have a good guess even :(
+
+You could back out
+8xx: start using dcbX instructions in various copy routines
+to see if it is the dcbX insn that is causing the error.
 
 
+>
+> INIT: version 2.85 booting
+> Mounting /proc and /sys
+> Starting the hotplug events dispatcher udevd
+> udevd[177]: add_to_rules: unknown key 'MODALIAS' in /etc/udev/rules.d/60-pcmcia.rules:4
+> udevd[177]: add_to_rules: unknown key 'MODALIAS' in /etc/udev/rules.d/60-pcmcia.rules:10
+> udevd[177]: add_to_rules: unknown key 'MODALIAS' in /etc/udev/rules.d/60-pcmcia.rules:14
+> Synthesizing initial hotplug events
+> /etc/rc.d/init.d/udev: line 41:   187 Segmentation fault      udevsettle --timeout=300
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+This looks like the first error?
+
+> Setting the hostname to 8xx
+> Running depmod
+> WARNING: Couldn't open directory /lib/modules/2.6.31-08384-g2cb4b47-dirty: No
+> such file or directory
+> FATAL: Could not open /lib/modules/2.6.31-08384-g2cb4b47-dirty/
+> modules.dep.tempfor writing: No such file or directory
+> Mounting filesystems
+> BUG: soft lockup - CPU#0 stuck for 61s! [cat:265]
+
+Perhaps it is looping on the same TLB Error, caused by dcbX insn?
+
+> NIP: c000f160 LR: c000f160 CTR: 00000007
+> REGS: c3919c70 TRAP: 0901   Not tainted  (2.6.31-08384-g2cb4b47-dirty)
+> MSR: 00009032 <EE,ME,IR,DR>  CR: 88008424  XER: 00000000
+> TASK = c3944bd0[265] 'cat' THREAD: c3918000
+> GPR00: c000f160 c3919d20 c3944bd0 00000000 100180fc 00000000 00000000 00000001
+> GPR08: c393e700 00000000 03ca9d21 00000001 48000428
+> NIP [c000f160] do_page_fault+0x188/0x49c
+> LR [c000f160] do_page_fault+0x188/0x49c
+> Call Trace:
+> [c3919d20] [c000f160] do_page_fault+0x188/0x49c (unreliable)
+> [c3919dd0] [c000e3f0] handle_page_fault+0xc/0x80
+> [c3919e90] [c008910c] seq_read+0x2a4/0x558
+> [c3919ee0] [c00ab7c0] proc_reg_read+0x4c/0x70
+> [c3919ef0] [c006f47c] vfs_read+0xb4/0x158
+> [c3919f10] [c006f78c] sys_read+0x4c/0x90
+> [c3919f40] [c000dfc0] ret_from_syscall+0x0/0x38
+> Instruction dump:
+> 2f990000 419e01f0 801f0014 700a0002 418201f8 7c1900d0 541e0ffe 7fe4fb78
+> 7f85e378 7fc6f378 7f63db78 4804c31d <70690003> 7c601b78 40820230 70690004
+>
+> -Scott
+>
+>
