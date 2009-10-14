@@ -1,17 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 581F5B7334
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 08:54:03 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, scottwood@freescale.com, borntraeger@de.ibm.com,
-	brueckner@linux.vnet.ibm.com
-Subject: [PATCH] hvc_console: returning 0 from put_chars is not an error
-Date: Wed, 14 Oct 2009 16:53:46 -0500
-Message-Id: <1255557226-4403-1-git-send-email-timur@freescale.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 11730B7B78
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 08:54:44 +1100 (EST)
+Date: Wed, 14 Oct 2009 14:54:59 -0700 (PDT)
+Message-Id: <20091014.145459.118730396.davem@davemloft.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] net: Fix OF platform drivers coldplug/hotplug when
+	compiled as modules
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091008121512.GA2390@oksana.dev.rtsoft.ru>
+References: <20091008121512.GA2390@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,43 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hvc_console_print() calls the HVC client driver's put_chars() callback
-to write some characters to the console.  If the callback returns 0, that
-indicates that no characters were written (perhaps the output buffer is
-full), but hvc_console_print() treats that as an error and discards the
-rest of the buffer.
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date: Thu, 8 Oct 2009 16:15:12 +0400
 
-So change hvc_console_print() to just loop and call put_chars() again if it
-returns a 0 return code.
+> Some OF platform drivers are missing module device tables, so they won't
+> load automatically on boot. This patch fixes the issue by adding proper
+> MODULE_DEVICE_TABLE() macros to the drivers.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-This change makes hvc_console_print() behave more like hvc_push(), which does
-check for a 0 return code and re-schedules itself.
-
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
-
-This patch might cause a hang in drivers that return 0 in case of error, 
-instead of a negative number, but those drivers are broken anyway.  This 
-patch might fix drivers that return 0 to indicate that they're busy, such as
-arch/powerpc/platforms/pseries/hvconsole.c.  It will break drivers that
-return 0 if their output buffer is full, but where those buffers cannot be
-emptied while the kernel is in a loop.
-
- drivers/char/hvc_console.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index 25ce15b..0c94907 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -161,7 +161,7 @@ static void hvc_console_print(struct console *co, const char *b,
- 			}
- 		} else {
- 			r = cons_ops[index]->put_chars(vtermnos[index], c, i);
--			if (r <= 0) {
-+			if (r < 0) {
- 				/* throw away chars on error */
- 				i = 0;
- 			} else if (r > 0) {
--- 
-1.6.5
+Applied, thanks!
