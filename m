@@ -1,9 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <a6fc612b826ff12628e62601203d565df00c6436.1255499081.git.michael@ellerman.id.au>
+Message-Id: <1dc0d81f3202c61cbd1bb1508cb3a2ed04dc036a.1255499081.git.michael@ellerman.id.au>
+In-Reply-To: <a6fc612b826ff12628e62601203d565df00c6436.1255499081.git.michael@ellerman.id.au>
+References: <a6fc612b826ff12628e62601203d565df00c6436.1255499081.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/6] powerpc: Make NR_IRQS a CONFIG option
-Date: Wed, 14 Oct 2009 16:44:44 +1100 (EST)
+Subject: [PATCH 2/6] powerpc/pseries: Use irq_has_action() in eeh_disable_irq()
+Date: Wed, 14 Oct 2009 16:44:47 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,54 +15,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The irq_desc array consumes quite a lot of space, and for systems
-that don't need or can't have 512 irqs it's just wasted space.
+Rather than open-coding our own check, use irq_has_action()
+to check if an irq has an action - ie. is "in use".
 
-The first 16 are reserved for ISA, so the minimum of 32 is really
-16 - and no one has asked for more than 512 so leave that as the
-maximum.
+irq_has_action() doesn't take the descriptor lock, but it
+shouldn't matter - we're just using it as an indicator
+that the irq is in use. disable_irq_nosync() will take
+the descriptor lock before doing anything also.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/Kconfig           |   10 ++++++++++
- arch/powerpc/include/asm/irq.h |    4 ++--
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/eeh_driver.c |   18 +-----------------
+ 1 files changed, 1 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 10a0a54..2230e75 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -56,6 +56,16 @@ config IRQ_PER_CPU
- 	bool
- 	default y
+diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
+index 0e8db67..ef8e454 100644
+--- a/arch/powerpc/platforms/pseries/eeh_driver.c
++++ b/arch/powerpc/platforms/pseries/eeh_driver.c
+@@ -63,22 +63,6 @@ static void print_device_node_tree(struct pci_dn *pdn, int dent)
+ }
+ #endif
  
-+config NR_IRQS
-+	int "Number of virtual interrupt numbers"
-+	range 32 512
-+	default "512"
-+	help
-+	  This defines the number of virtual interrupt numbers the kernel
-+	  can manage. Virtual interrupt numbers are what you see in
-+	  /proc/interrupts. If you configure your system to have too few,
-+	  drivers will fail to load or worse - handle with care.
-+
- config STACKTRACE_SUPPORT
- 	bool
- 	default y
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index bbcd1aa..b83fcc8 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -34,8 +34,8 @@ extern atomic_t ppc_n_lost_interrupts;
+-/** 
+- * irq_in_use - return true if this irq is being used 
+- */
+-static int irq_in_use(unsigned int irq)
+-{
+-	int rc = 0;
+-	unsigned long flags;
+-   struct irq_desc *desc = irq_desc + irq;
+-
+-	spin_lock_irqsave(&desc->lock, flags);
+-	if (desc->action)
+-		rc = 1;
+-	spin_unlock_irqrestore(&desc->lock, flags);
+-	return rc;
+-}
+-
+ /**
+  * eeh_disable_irq - disable interrupt for the recovering device
   */
- #define NO_IRQ_IGNORE		((unsigned int)-1)
+@@ -93,7 +77,7 @@ static void eeh_disable_irq(struct pci_dev *dev)
+ 	if (dev->msi_enabled || dev->msix_enabled)
+ 		return;
  
--/* Total number of virq in the platform (make it a CONFIG_* option ? */
--#define NR_IRQS		512
-+/* Total number of virq in the platform */
-+#define NR_IRQS		CONFIG_NR_IRQS
+-	if (!irq_in_use(dev->irq))
++	if (!irq_has_action(dev->irq))
+ 		return;
  
- /* Number of irqs reserved for the legacy controller */
- #define NUM_ISA_INTERRUPTS	16
+ 	PCI_DN(dn)->eeh_mode |= EEH_MODE_IRQ_DISABLED;
 -- 
 1.6.2.1
