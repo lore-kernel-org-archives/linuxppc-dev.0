@@ -2,10 +2,10 @@ Return-Path: <felix@embedded-sol.com>
 Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 76614B7B76
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 00:03:10 +1100 (EST)
-Message-ID: <4AD5CC01.4080007@embedded-sol.com>
-Date: Wed, 14 Oct 2009 15:02:57 +0200
+	by ozlabs.org (Postfix) with ESMTPS id 92AE6B7B70
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 00:21:34 +1100 (EST)
+Message-ID: <4AD5D053.9000901@embedded-sol.com>
+Date: Wed, 14 Oct 2009 15:21:23 +0200
 From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
 To: Adrian Hunter <adrian.hunter@nokia.com>
@@ -23,8 +23,6 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-
-Hi, Adrian
 
 Adrian Hunter wrote:
 > Felix Radensky wrote:
@@ -159,14 +157,14 @@ Adrian Hunter wrote:
 >
 > How do you erase the NOR flash?  Is the device node (/dev/mtd...) 
 > correct?
->
->
-I use flash_eraseall /dev/mtd4 to erase NOR. The version of mtd-utils is 
-from
-latest mtd-utils git tree. The device nodes for NOR (mtd4) and NAND (mtd7)
-are correct:
+I can also reproduce the problem by reading from NOR, i.e.
 
-crwxr-xr-x 1 root root 90, 8 2005-08-07 13:11 mtd4
-crw-r--r-- 1 root root 90, 14 2008-07-16 18:51 mtd7
+dd if=/dev/mtd4 of=/dev/null
 
 Felix.
+>
+>
+>
+> ______________________________________________________
+> Linux MTD discussion mailing list
+> http://lists.infradead.org/mailman/listinfo/linux-mtd/
