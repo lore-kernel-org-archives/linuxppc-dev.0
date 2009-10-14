@@ -1,18 +1,30 @@
-Return-Path: <sshukla@sh.mvista.com>
-Received: from santosh (unknown [122.166.50.80])
+Return-Path: <andi@firstfloor.org>
+Received: from one.firstfloor.org (one.firstfloor.org [213.235.205.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8D72DB7063
+	by ozlabs.org (Postfix) with ESMTPS id 4BE88B7B6F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Oct 2009 17:42:31 +1100 (EST)
-Subject: [PATCH] Xilinx LL-TEMAC: Add Netpoll controller support
-From: santosh shukla <sshukla@sh.mvista.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain
-Date: Wed, 14 Oct 2009 12:09:49 +0530
-Message-Id: <1255502389.2591.18.camel@santosh>
+	Wed, 14 Oct 2009 18:18:47 +1100 (EST)
+Date: Wed, 14 Oct 2009 09:18:38 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
+	register a set of idle routines.
+Message-ID: <20091014071838.GE23248@one.firstfloor.org>
+References: <20091008094828.GA20595@linux.vnet.ibm.com>
+	<20091008095027.GC20595@linux.vnet.ibm.com>
+	<1254998162.26976.270.camel@twins>
+	<20091008104249.GJ20595@linux.vnet.ibm.com>
+	<1254999033.26976.272.camel@twins>
+	<8763akh4re.fsf@basil.nowhere.org>
+	<20091014061727.GA8605@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Reply-To: sshukla@sh.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091014061727.GA8605@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,123 +34,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Santosh Shukla <sshukla@sh.mvista.com>
-Date: Tue, 13 Oct 2009 18:55:57 +0530
-Subject: [PATCH] Xilinx LL-TEMAC: Add Netpoll controller support
+> How about something like this..
+> If the arch does not enable CONFIG_CPU_IDLE, the cpuidle_idle_call
+> which is called from cpu_idle() should call default_idle without
+> involving the registering cpuidle steps. This should prevent bloating
+> up of the kernel for archs which dont want to use cpuidle.
 
-Adding Netpoll controller support to Xilinx LL-TEMAC ethernet
-driver.Replaced Rx, Tx tasklet schedule call with their handlers,
-Added correct version of call which can execute interrupt on/off
-context i.e. dev_kfree_skb_any().
----
- drivers/net/xilinx_lltemac/xlltemac_main.c |   41 +++++++++++++++++++++++++++-
- 1 files changed, 40 insertions(+), 1 deletions(-)
+On x86 some people want small kernel too, so selecting it on a architecture
+granuality is not good. Also you can make it default, you just need
+to slim it down first.
 
-diff --git a/drivers/net/xilinx_lltemac/xlltemac_main.c b/drivers/net/xilinx_lltemac/xlltemac_main.c
-index b245422..697f474 100644
---- a/drivers/net/xilinx_lltemac/xlltemac_main.c
-+++ b/drivers/net/xilinx_lltemac/xlltemac_main.c
-@@ -87,11 +87,18 @@
- #define BUFFER_ALIGNSEND_PERF(adr) ((ALIGNMENT_SEND_PERF - ((u32) adr)) % 32)
- #define BUFFER_ALIGNRECV(adr) ((ALIGNMENT_RECV - ((u32) adr)) % 32)
- 
-+#ifndef CONFIG_NET_POLL_CONTROLLER
- /* Default TX/RX Threshold and waitbound values for SGDMA mode */
- #define DFT_TX_THRESHOLD  24
- #define DFT_TX_WAITBOUND  254
- #define DFT_RX_THRESHOLD  4
- #define DFT_RX_WAITBOUND  254
-+#else
-+#define DFT_TX_THRESHOLD  1
-+#define DFT_TX_WAITBOUND  0
-+#define DFT_RX_THRESHOLD  1
-+#define DFT_RX_WAITBOUND  0
-+#endif
- 
- #define XTE_AUTOSTRIPPING 1
- 
-@@ -1097,7 +1104,11 @@ static irqreturn_t xenet_dma_rx_interrupt(int irq, void *dev_id)
- 			list_add_tail(&lp->rcv, &receivedQueue);
- 			XLlDma_mBdRingIntDisable(&lp->Dma.RxBdRing,
- 						 XLLDMA_CR_IRQ_ALL_EN_MASK);
-+#ifndef CONFIG_NET_POLL_CONTROLLER
- 			tasklet_schedule(&DmaRecvBH);
-+#else
-+			DmaRecvHandlerBH(0);
-+#endif
- 		}
- 		spin_unlock_irqrestore(&receivedQueueSpin, flags);
- 	}
-@@ -1134,7 +1145,11 @@ static irqreturn_t xenet_dma_tx_interrupt(int irq, void *dev_id)
- 			list_add_tail(&lp->xmit, &sentQueue);
- 			XLlDma_mBdRingIntDisable(&lp->Dma.TxBdRing,
- 						 XLLDMA_CR_IRQ_ALL_EN_MASK);
-+#ifndef CONFIG_NET_POLL_CONTROLLER
- 			tasklet_schedule(&DmaSendBH);
-+#else
-+			DmaSendHandlerBH(0);
-+#endif
- 		}
- 		spin_unlock_irqrestore(&sentQueueSpin, flags);
- 	}
-@@ -1711,11 +1726,15 @@ static int xenet_DmaSend(struct sk_buff *skb, struct net_device *dev)
- 	 * SgAlloc, SgCommit sequence, which also exists in DmaSendHandlerBH Bottom
- 	 * Half, or triggered by other processor in SMP case.
- 	 */
-+#ifndef CONFIG_NET_POLL_CONTROLLER
- 	spin_lock_bh(&XTE_tx_spinlock);
-+#endif
- 
- 	xenet_DmaSend_internal(skb, dev);
- 
-+#ifndef CONFIG_NET_POLL_CONTROLLER
- 	spin_unlock_bh(&XTE_tx_spinlock);
-+#endif
- 
- 	return 0;
- }
-@@ -1764,7 +1783,7 @@ static void DmaSendHandlerBH(unsigned long p)
- 				skb = (struct sk_buff *)
- 					XLlDma_mBdGetId(BdCurPtr);
- 				if (skb)
--					dev_kfree_skb(skb);
-+					dev_kfree_skb_any(skb);
- 
- 				/* reset BD id */
- 				XLlDma_mBdSetId(BdCurPtr, NULL);
-@@ -3220,6 +3239,23 @@ static int detect_phy(struct net_local *lp, char *dev_name)
- 	return 0;		/* default to zero */
- }
- 
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+static void
-+lltemac_poll_controller(struct net_device *ndev)
-+{
-+       struct net_local *lp = netdev_priv(ndev);
-+
-+       disable_irq(lp->dma_irq_s);
-+       disable_irq(lp->dma_irq_r);
-+
-+       xenet_dma_tx_interrupt(lp->dma_irq_s, ndev);
-+       xenet_dma_rx_interrupt(lp->dma_irq_r, ndev);
-+
-+       enable_irq(lp->dma_irq_s);
-+       enable_irq(lp->dma_irq_r);
-+}
-+#endif
-+
- static struct net_device_ops xilinx_netdev_ops;
- 
- /* From include/linux/ethtool.h */
-@@ -3491,6 +3527,9 @@ static struct net_device_ops xilinx_netdev_ops = {
- 	.ndo_change_mtu	= xenet_change_mtu,
- 	.ndo_tx_timeout	= xenet_tx_timeout,
- 	.ndo_get_stats	= xenet_get_stats,
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	.ndo_poll_controller = lltemac_poll_controller,
-+#endif
- };
- 
- static struct of_device_id xtenet_fifo_of_match[] = {
+-Andi
+
 -- 
-1.6.3.3.220.g609a0
+ak@linux.intel.com -- Speaking for myself only.
