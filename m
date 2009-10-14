@@ -2,17 +2,16 @@ Return-Path: <sshukla@sh.mvista.com>
 Received: from santosh (unknown [122.166.50.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1210EB7B78
+	by ozlabs.org (Postfix) with ESMTPS id 8D72DB7063
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Oct 2009 17:32:28 +1100 (EST)
-Subject: Xilinx LL-TEMAC: Add Netpoll controller support
+	Wed, 14 Oct 2009 17:42:31 +1100 (EST)
+Subject: [PATCH] Xilinx LL-TEMAC: Add Netpoll controller support
 From: santosh shukla <sshukla@sh.mvista.com>
 To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain
-Date: Wed, 14 Oct 2009 11:23:56 +0530
-Message-Id: <1255499636.2591.9.camel@santosh>
+Date: Wed, 14 Oct 2009 12:09:49 +0530
+Message-Id: <1255502389.2591.18.camel@santosh>
 Mime-Version: 1.0
-Cc: Srikanth Krishnakar <skrishna@in.mvista.com>, john.linn@xilinx.com
 Reply-To: sshukla@sh.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,7 +27,7 @@ Date: Tue, 13 Oct 2009 18:55:57 +0530
 Subject: [PATCH] Xilinx LL-TEMAC: Add Netpoll controller support
 
 Adding Netpoll controller support to Xilinx LL-TEMAC ethernet
-driver. Replaced Rx, Tx tasklets schedule call with their handlers,
+driver.Replaced Rx, Tx tasklet schedule call with their handlers,
 Added correct version of call which can execute interrupt on/off
 context i.e. dev_kfree_skb_any().
 ---
