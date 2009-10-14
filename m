@@ -1,22 +1,16 @@
-Return-Path: <richard.cochran@omicron.at>
-Received: from ns.omicron.at (ns.omicron.at [212.183.10.25])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F2E6AB7B6F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Oct 2009 19:47:19 +1100 (EST)
-From: Richard Cochran <richard.cochran@omicron.at>
-To: "'Scott Wood'" <scottwood@freescale.com>, "'Roland Lezuo'"
-	<roland.lezuo@chello.at>
-Date: Wed, 14 Oct 2009 09:41:33 +0200
-Subject: RE: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
-Message-ID: <95DC1AA8EC908B48939B72CF375AA5E30E220693@alice.at.omicron.at>
-References: <25940478.1252060285938.JavaMail.root@viefep11.chello.at>
-	<20090909182227.GA8215@b07421-ec1.am.freescale.net>
-In-Reply-To: <20090909182227.GA8215@b07421-ec1.am.freescale.net>
-Content-Type: text/plain; charset="us-ascii"
+	by ozlabs.org (Postfix) with ESMTPS id 84788B7B77
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 21:54:06 +1100 (EST)
+Message-ID: <4AD5ADC9.30503@embedded-sol.com>
+Date: Wed, 14 Oct 2009 12:54:01 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Cc: "'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>
+To: linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
+Subject: UBIFS problem on MPC8536DS
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +20,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->-----Original Message-----
->From: linuxppc-dev-bounces On Behalf Of Scott Wood
->Sent: Wednesday, September 09, 2009 8:22 PM
->To: Roland Lezuo
->Cc: linuxppc-dev@lists.ozlabs.org
->Subject: Re: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
->
->On Fri, Sep 04, 2009 at 12:31:25PM +0200, Roland Lezuo wrote:
->> The following patch is needed to correctly assign the IRQs for the
->> gianfar driver on the MPC8313ERDB-revc boards. ERR and TX are swapped
->> as well as the interrupt lines for the two devices.
->
->And it will incorrectly assign them on older revisions of the chip.
->
->We really should have a u-boot fixup based on SVR.
+Hi,
 
-Why not just offer different dts files, one for each board revision?
+I have a strange problem in linux-2.6.31 running on MPC8536DS board.
+It is 100% reproducible, by opening a 350MB tar file into ubifs volume
+on NAND flash, and starting erase of NOR flash partition right after that.
 
-Something like:
-mpc8313erdb-revA.dts
-mpc8313erdb-revB.dts
-mpc8313erdb-revC.dts
+If I don't start  NOR erase, everything works fine. Also, If I run sync 
+after
+tar, no problem occurs.  The NOR flash is 32MB  Spansion, NAND is
+4GB Samsung.
 
-Richard
+The error messages are as follows:
+
+UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+5812:12288, written 0 bytes
+UBI warning: ubi_eba_write_leb: failed to write data to PEB 5812
+UBI: recover PEB 5812, move data to PEB 19400
+UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+5812:512, read 512 bytes
+UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+19400:512, written 0 bytes
+UBI warning: recover_peb: failed to write to PEB 19400
+UBI: try again
+UBI: recover PEB 5812, move data to PEB 19401
+UBI: run torture test for PEB 19400
+UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+19401:512, written 0 bytes
+UBI warning: recover_peb: failed to write to PEB 19401
+UBI: try again
+UBI: recover PEB 5812, move data to PEB 19402
+UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+19402:512, written 0 bytes
+UBI warning: recover_peb: failed to write to PEB 19402
+UBI: try again
+UBI: recover PEB 5812, move data to PEB 19403
+UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+19403:512, written 0 bytes
+UBI warning: recover_peb: failed to write to PEB 19403
+UBI warning: ubi_ro_mode: switch to read-only mode
+UBIFS error (pid 1149): ubifs_wbuf_write_nolock: cannot write 2522 bytes 
+to LEB 389:10240, error -5
+UBIFS warning (pid 1149): ubifs_ro_mode: switched to read-only mode, 
+error -5
+UBIFS error (pid 1149): do_writepage: cannot write page 0 of inode 
+30708, error -5
+UBIFS error (pid 1149): make_reservation: cannot reserve 858 bytes in 
+jhead 2, error -30
+UBIFS error (pid 1149): do_writepage: cannot write page 2 of inode 
+29486, error -30
+UBIFS error (pid 1149): make_reservation: cannot reserve 721 bytes in 
+jhead 2, error -30
+UBIFS error (pid 1149): do_writepage: cannot write page 1 of inode 
+30070, error -30
+UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+5022:88064, written 0 bytes
+UBI warning: ubi_eba_write_leb: failed to write data to PEB 5022
+UBI: recover PEB 5022, move data to PEB 19404
+UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+5022:512, read 512 bytes
+UBI error: ubi_io_write: read-only mode
+UBI warning: recover_peb: failed to write to PEB 19404
+UBI: try again
+UBI: recover PEB 5022, move data to PEB 19405
+UBI error: ubi_io_write: read-only mode
+UBI warning: recover_peb: failed to write to PEB 19405
+UBI: try again
+UBI: recover PEB 5022, move data to PEB 19406
+UBI error: ubi_io_write: read-only mode
+UBI warning: recover_peb: failed to write to PEB 19406
+UBI: try again
+UBI: recover PEB 5022, move data to PEB 19407
+UBI error: ubi_io_write: read-only mode
+UBI warning: recover_peb: failed to write to PEB 19407
+UBIFS error (pid 1044): ubifs_wbuf_sync_nolock: cannot write 2048 bytes 
+to LEB 788:86016
+UBIFS error (pid 1044): ubifs_bg_wbufs_sync: cannot sync write-buffer, 
+error -30
+UBIFS warning (pid 1044): ubifs_ro_mode: switched to read-only mode, 
+error -30
+UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+5817:26624, written 0 bytes
+UBI warning: ubi_eba_write_leb: failed to write data to PEB 5817
+UBI: recover PEB 5817, move data to PEB 19408
+UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+5817:512, read 512 bytes
+UBI error: ubi_io_write: read-only mode
+UBI warning: recover_peb: failed to write to PEB 19408
+UBI: try again
+UBI: recover PEB 5817, move data to PEB 19409
+UBI error: ubi_io_write: read-only mode
+UBI warning: recover_peb: failed to write to PEB 19409
+UBI: try again
+UBI: recover PEB 5817, move data to PEB 19410
+UBI error: ubi_io_write: read-only mode
+UBI warning: recover_peb: failed to write to PEB 19410
+UBI: try again
+UBI: recover PEB 5817, move data to PEB 19411
+UBI error: ubi_io_write: read-only mode
+UBI warning: recover_peb: failed to write to PEB 19411
+UBIFS error (pid 1047): ubifs_wbuf_sync_nolock: cannot write 2048 bytes 
+to LEB 385:24576
+UBIFS error (pid 1047): ubifs_bg_wbufs_sync: cannot sync write-buffer, 
+error -30
+UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+jhead 1, error -30
+UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30709, 
+error -30
+UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+jhead 1, error -30
+UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30710, 
+error -30
+UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+jhead 1, error -30
+UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30698, 
+error -30
+UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+jhead 1, error -30
+UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30711, 
+error -30
+
+I'd appreciate any hints on what can cause this. Is it a hardware 
+problem, mtd layer problem
+or UBI problem ?
+
+Thanks a lot in advance.
+
+Felix.
+ 
