@@ -1,15 +1,16 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/6] powerpc: Make NR_IRQS a CONFIG option
+Subject: Re: [PATCH 6/6] powerpc: Enable sparse irq_descs on powerpc
 From: Michael Ellerman <michael@ellerman.id.au>
 To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40910141159l402304e9y22a6b2d7d8d79759@mail.gmail.com>
+In-Reply-To: <fa686aa40910141144y1776c476uc8e26e06eb57e6ac@mail.gmail.com>
 References: <a6fc612b826ff12628e62601203d565df00c6436.1255499081.git.michael@ellerman.id.au>
-	<fa686aa40910141159l402304e9y22a6b2d7d8d79759@mail.gmail.com>
+	<91cec5c64da4ca31a025fc7c45d9f1b93c8b98da.1255499081.git.michael@ellerman.id.au>
+	<fa686aa40910141144y1776c476uc8e26e06eb57e6ac@mail.gmail.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-62l9smU8SMSnAB72veqT"
-Date: Thu, 15 Oct 2009 10:47:52 +1100
-Message-Id: <1255564072.9651.10.camel@concordia>
+	boundary="=-FCoKYUK7LrGZ9aySGy+f"
+Date: Thu, 15 Oct 2009 10:51:16 +1100
+Message-Id: <1255564276.9651.14.camel@concordia>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: michael@ellerman.id.au
@@ -23,53 +24,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-62l9smU8SMSnAB72veqT
+--=-FCoKYUK7LrGZ9aySGy+f
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2009-10-14 at 12:59 -0600, Grant Likely wrote:
-> On Tue, Oct 13, 2009 at 11:44 PM, Michael Ellerman
+On Wed, 2009-10-14 at 12:44 -0600, Grant Likely wrote:
+> On Tue, Oct 13, 2009 at 11:45 PM, Michael Ellerman
 > <michael@ellerman.id.au> wrote:
-> > The irq_desc array consumes quite a lot of space, and for systems
-> > that don't need or can't have 512 irqs it's just wasted space.
+> > Defining CONFIG_SPARSE_IRQ enables generic code that gets rid of the
+> > static irq_desc array, and replaces it with an array of pointers to
+> > irq_descs.
 > >
-> > The first 16 are reserved for ISA, so the minimum of 32 is really
-> > 16 - and no one has asked for more than 512 so leave that as the
-> > maximum.
+> > It also allows node local allocation of irq_descs, however we
+> > currently don't have the information available to do that, so we just
+> > allocate them on all on node 0.
+> >
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 >=20
-> Does it really make sense to have this as a user twiddlable value?
-> Especially when many users just don't have the background to know what
-> an appropriate value is here and will get it wrong?  I believe your
-> sparse IRQ patch has a bigger impact anyway on systems where memory is
-> tight.
+> Why not make sparse IRQs manditory for all platforms?  Is there a
+> performance concern with doing so?  From a maintenance perspective,
+> I'd rather see IRQ descs manged in one way only to keep the code
+> simple.
 
-We have users? But yes I think it's reasonable, there's a million other
-options people can fiddle with and break their kernel, I don't see that
-this is much different.
+I agree on the maintenance angle. My thinking was we'd run with it
+optional but default y for a release or two, and if no one complains we
+can make it mandatory.
 
-The sparse IRQ patch has a bigger difference on the size of the irq_desc
-array, but there are still other things that are statically sized based
-on NR_IRQs. So if you're building an machine-specific kernel and you
-know you're only going to have N interrupts, then this will give you a
-bigger saving.
-
-But I'm not super fussed, if other people think it's too dangerous we
-can drop it.
+It does make some code paths bigger, and looking up an irq_desc is going
+to take slightly more cycles. I don't think it's a big issue, but I
+thought we should try it for a while before making it mandatory. The
+code has only been tested on x86 and sh as far as I know.
 
 cheers
 
+ps. thanks for the review
 
-
---=-62l9smU8SMSnAB72veqT
+--=-FCoKYUK7LrGZ9aySGy+f
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkrWYyUACgkQdSjSd0sB4dIiEACfevng5ge/kWXo6vRaGEhuecgV
-w4IAn1Jy0ZP2+afXb2aCY/gsypt5LcHu
-=o/3T
+iEYEABECAAYFAkrWY/QACgkQdSjSd0sB4dJXaQCfWc5lnHMwbG2TDY+c2d3KL6hP
+TPgAnAxAtNrs/d1wd1CKnvtBX5n9p+XN
+=ySgu
 -----END PGP SIGNATURE-----
 
---=-62l9smU8SMSnAB72veqT--
+--=-FCoKYUK7LrGZ9aySGy+f--
