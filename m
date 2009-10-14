@@ -4,18 +4,19 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AC096B7B76
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 03:56:45 +1100 (EST)
-Date: Wed, 14 Oct 2009 11:56:56 -0500
+	by ozlabs.org (Postfix) with ESMTPS id 012BAB7B9A
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 03:57:00 +1100 (EST)
+Date: Wed, 14 Oct 2009 11:57:23 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 1/8] 8xx: invalidate non present TLBs
-Message-ID: <20091014165654.GA21215@loki.buserror.net>
+Subject: Re: [PATCH 2/8] 8xx: Update TLB asm so it behaves as linux mm expects.
+Message-ID: <20091014165720.GB21215@loki.buserror.net>
 References: <1255278912-8042-1-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1255278912-8042-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255278912-8042-3-git-send-email-Joakim.Tjernlund@transmode.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1255278912-8042-2-git-send-email-Joakim.Tjernlund@transmode.se>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1255278912-8042-3-git-send-email-Joakim.Tjernlund@transmode.se>
 Cc: Rex Feany <RFeany@mrv.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,37 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Oct 11, 2009 at 06:35:05PM +0200, Joakim Tjernlund wrote:
-> 8xx sometimes need to load a invalid/non-present TLBs in
-> it DTLB asm handler.
-> These must be invalidated separaly as linux mm don't.
-> ---
->  arch/powerpc/mm/fault.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 7699394..72941c7 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -39,7 +39,7 @@
->  #include <asm/uaccess.h>
->  #include <asm/tlbflush.h>
->  #include <asm/siginfo.h>
-> -
-> +#include <mm/mmu_decl.h>
->  
->  #ifdef CONFIG_KPROBES
->  static inline int notify_page_fault(struct pt_regs *regs)
-> @@ -243,6 +243,12 @@ good_area:
->  		goto bad_area;
->  #endif /* CONFIG_6xx */
->  #if defined(CONFIG_8xx)
-> +	/* 8xx sometimes need to load a invalid/non-present TLBs.
-> +	 * These must be invalidated separately as linux mm don't.
-> +	 */
-> +	if (error_code & 0x40000000) /* no translation? */
-> +		_tlbil_va(address);
+On Sun, Oct 11, 2009 at 06:35:06PM +0200, Joakim Tjernlund wrote:
+> +	mfspr	r11, SRR1
+> +	/* clear all error bits as TLB Miss
+> +	 * sets a few unconditionally
+> +	*/
+> +	rlwinm	r11, r11, 0, 0xffff
+> +	mtspr	SRR1, r11
 
-arch/powerpc/mm/fault.c:253: error: too few arguments to function ‘_tlbil_va’
+arch/powerpc/kernel/head_8xx.S:369: Error: unsupported relocation against SRR1
+arch/powerpc/kernel/head_8xx.S:374: Error: unsupported relocation against SRR1
 
 -Scott
