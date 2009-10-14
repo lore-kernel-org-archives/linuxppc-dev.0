@@ -1,33 +1,20 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 7F02AB7B76
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2009 23:12:17 +1100 (EST)
-Subject: Re: [PATCH] Ftrace : fix function_graph tracer OOPS
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1255500920.2347.41.camel@pasglop>
-References: <4A5C5D65.3030906@in.ibm.com>
-	<alpine.DEB.2.00.0907141844540.32740@gandalf.stny.rr.com>
-	<4A76BE81.4080707@in.ibm.com>
-	<1252458303.20985.10.camel@gandalf.stny.rr.com>
-	<4AA74AE2.5090001@in.ibm.com>
-	<1252814877.26049.93.camel@gandalf.stny.rr.com>
-	<1252816650.8375.70.camel@pasglop>
-	<1252848060.26049.647.camel@gandalf.stny.rr.com>
-	<1252873548.8375.73.camel@pasglop> <1252915227.8375.118.camel@pasglop>
-	<1254749155.13160.6.camel@gandalf.stny.rr.com>
-	<1254774039.7122.35.camel@pasglop>
-	<1254775073.13160.13.camel@gandalf.stny.rr.com>
-	<4ACC57C4.5010002@in.ibm.com> <1254906621.2409.1.camel@pasglop>
-	<4ACDFC83.4080205@in.ibm.com>
-	<1255489284.7113.3121.camel@gandalf.stny.rr.com>
-	<4AD56C05.9030602@in.ibm.com>  <1255500920.2347.41.camel@pasglop>
-Content-Type: text/plain
-Date: Wed, 14 Oct 2009 08:12:14 -0400
-Message-Id: <1255522334.7113.4223.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: rostedt@goodmis.org
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 76614B7B76
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 00:03:10 +1100 (EST)
+Message-ID: <4AD5CC01.4080007@embedded-sol.com>
+Date: Wed, 14 Oct 2009 15:02:57 +0200
+From: Felix Radensky <felix@embedded-sol.com>
+MIME-Version: 1.0
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Subject: Re: UBIFS problem on MPC8536DS
+References: <4AD5ADC9.30503@embedded-sol.com> <4AD5C5B4.3060303@nokia.com>
+In-Reply-To: <4AD5C5B4.3060303@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,23 +24,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-10-14 at 17:15 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-10-14 at 11:43 +0530, Sachin Sant wrote:
-> 
-> > Tested both the patches. Works fine.
-> 
-> Thanks !
-> 
-> Stephen, you merge these yourself or you need me to pick them up in
-> -powerpc ?
-> 
+Hi, Adrian
 
-Ben,
+Adrian Hunter wrote:
+> Felix Radensky wrote:
+>> Hi,
+>>
+>> I have a strange problem in linux-2.6.31 running on MPC8536DS board.
+>> It is 100% reproducible, by opening a 350MB tar file into ubifs volume
+>> on NAND flash, and starting erase of NOR flash partition right after 
+>> that.
+>>
+>> If I don't start  NOR erase, everything works fine. Also, If I run 
+>> sync after
+>> tar, no problem occurs.  The NOR flash is 32MB  Spansion, NAND is
+>> 4GB Samsung.
+>>
+>> The error messages are as follows:
+>>
+>> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+>> 5812:12288, written 0 bytes
+>> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5812
+>> UBI: recover PEB 5812, move data to PEB 19400
+>> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+>> 5812:512, read 512 bytes
+>> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+>> 19400:512, written 0 bytes
+>> UBI warning: recover_peb: failed to write to PEB 19400
+>> UBI: try again
+>> UBI: recover PEB 5812, move data to PEB 19401
+>> UBI: run torture test for PEB 19400
+>> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+>> 19401:512, written 0 bytes
+>> UBI warning: recover_peb: failed to write to PEB 19401
+>> UBI: try again
+>> UBI: recover PEB 5812, move data to PEB 19402
+>> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+>> 19402:512, written 0 bytes
+>> UBI warning: recover_peb: failed to write to PEB 19402
+>> UBI: try again
+>> UBI: recover PEB 5812, move data to PEB 19403
+>> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+>> 19403:512, written 0 bytes
+>> UBI warning: recover_peb: failed to write to PEB 19403
+>> UBI warning: ubi_ro_mode: switch to read-only mode
+>> UBIFS error (pid 1149): ubifs_wbuf_write_nolock: cannot write 2522 
+>> bytes to LEB 389:10240, error -5
+>> UBIFS warning (pid 1149): ubifs_ro_mode: switched to read-only mode, 
+>> error -5
+>> UBIFS error (pid 1149): do_writepage: cannot write page 0 of inode 
+>> 30708, error -5
+>> UBIFS error (pid 1149): make_reservation: cannot reserve 858 bytes in 
+>> jhead 2, error -30
+>> UBIFS error (pid 1149): do_writepage: cannot write page 2 of inode 
+>> 29486, error -30
+>> UBIFS error (pid 1149): make_reservation: cannot reserve 721 bytes in 
+>> jhead 2, error -30
+>> UBIFS error (pid 1149): do_writepage: cannot write page 1 of inode 
+>> 30070, error -30
+>> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+>> 5022:88064, written 0 bytes
+>> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5022
+>> UBI: recover PEB 5022, move data to PEB 19404
+>> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+>> 5022:512, read 512 bytes
+>> UBI error: ubi_io_write: read-only mode
+>> UBI warning: recover_peb: failed to write to PEB 19404
+>> UBI: try again
+>> UBI: recover PEB 5022, move data to PEB 19405
+>> UBI error: ubi_io_write: read-only mode
+>> UBI warning: recover_peb: failed to write to PEB 19405
+>> UBI: try again
+>> UBI: recover PEB 5022, move data to PEB 19406
+>> UBI error: ubi_io_write: read-only mode
+>> UBI warning: recover_peb: failed to write to PEB 19406
+>> UBI: try again
+>> UBI: recover PEB 5022, move data to PEB 19407
+>> UBI error: ubi_io_write: read-only mode
+>> UBI warning: recover_peb: failed to write to PEB 19407
+>> UBIFS error (pid 1044): ubifs_wbuf_sync_nolock: cannot write 2048 
+>> bytes to LEB 788:86016
+>> UBIFS error (pid 1044): ubifs_bg_wbufs_sync: cannot sync 
+>> write-buffer, error -30
+>> UBIFS warning (pid 1044): ubifs_ro_mode: switched to read-only mode, 
+>> error -30
+>> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+>> 5817:26624, written 0 bytes
+>> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5817
+>> UBI: recover PEB 5817, move data to PEB 19408
+>> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+>> 5817:512, read 512 bytes
+>> UBI error: ubi_io_write: read-only mode
+>> UBI warning: recover_peb: failed to write to PEB 19408
+>> UBI: try again
+>> UBI: recover PEB 5817, move data to PEB 19409
+>> UBI error: ubi_io_write: read-only mode
+>> UBI warning: recover_peb: failed to write to PEB 19409
+>> UBI: try again
+>> UBI: recover PEB 5817, move data to PEB 19410
+>> UBI error: ubi_io_write: read-only mode
+>> UBI warning: recover_peb: failed to write to PEB 19410
+>> UBI: try again
+>> UBI: recover PEB 5817, move data to PEB 19411
+>> UBI error: ubi_io_write: read-only mode
+>> UBI warning: recover_peb: failed to write to PEB 19411
+>> UBIFS error (pid 1047): ubifs_wbuf_sync_nolock: cannot write 2048 
+>> bytes to LEB 385:24576
+>> UBIFS error (pid 1047): ubifs_bg_wbufs_sync: cannot sync 
+>> write-buffer, error -30
+>> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+>> jhead 1, error -30
+>> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30709, 
+>> error -30
+>> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+>> jhead 1, error -30
+>> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30710, 
+>> error -30
+>> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+>> jhead 1, error -30
+>> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30698, 
+>> error -30
+>> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+>> jhead 1, error -30
+>> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30711, 
+>> error -30
+>>
+>> I'd appreciate any hints on what can cause this. Is it a hardware 
+>> problem, mtd layer problem
+>> or UBI problem ?
+>
+> It sounds like you are saying one MTD partition somehow affects another.
+> You should check the MTD partitions are set up correctly.  Are you using
+> tools that make assumptions about which mtd partition is which?
+>
+> How do you erase the NOR flash?  Is the device node (/dev/mtd...) 
+> correct?
+>
+>
+I use flash_eraseall /dev/mtd4 to erase NOR. The version of mtd-utils is 
+from
+latest mtd-utils git tree. The device nodes for NOR (mtd4) and NAND (mtd7)
+are correct:
 
-You can either pull from my repo (I synced with latest Linus), or you
-can just suck in the patches. I can also resync with your repo if you
-prefer.
+crwxr-xr-x 1 root root 90, 8 2005-08-07 13:11 mtd4
+crw-r--r-- 1 root root 90, 14 2008-07-16 18:51 mtd7
 
-Either way is fine with me. Just let me know which you did.
-
--- Steve
+Felix.
