@@ -1,42 +1,24 @@
-Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [59.145.155.9])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3FAB6B7BAD
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7FF0FB7BC0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Oct 2009 17:17:37 +1100 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp09.in.ibm.com (8.14.3/8.13.1) with ESMTP id n9E66uhl014769
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2009 11:36:56 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9E6HVWg2510946
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2009 11:47:31 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n9E6HTvO028830
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2009 17:17:30 +1100
-Date: Wed, 14 Oct 2009 11:47:27 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
-	register a set of idle routines.
-Message-ID: <20091014061727.GA8605@linux.vnet.ibm.com>
-References: <20091008094828.GA20595@linux.vnet.ibm.com>
-	<20091008095027.GC20595@linux.vnet.ibm.com>
-	<1254998162.26976.270.camel@twins>
-	<20091008104249.GJ20595@linux.vnet.ibm.com>
-	<1254999033.26976.272.camel@twins>
-	<8763akh4re.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <8763akh4re.fsf@basil.nowhere.org>
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-	Arun Bharadwaj <arun@linux.vnet.ibm.com>,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	Arjan van de Ven <arjan@infradead.org>
-Reply-To: arun@linux.vnet.ibm.com
+	Wed, 14 Oct 2009 17:18:02 +1100 (EST)
+Subject: Re: [PATCH] powerpc: tracing: Add powerpc tracepoints for
+	interrupt entry and exit
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20091006040554.GD16073@kryten>
+References: <20091006021903.GC16073@kryten>
+	<1254796492.13160.218.camel@gandalf.stny.rr.com>
+	<20091006040554.GD16073@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 14 Oct 2009 17:17:51 +1100
+Message-Id: <1255501071.2347.42.camel@pasglop>
+Mime-Version: 1.0
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
+	linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,39 +28,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Andi Kleen <andi@firstfloor.org> [2009-10-12 20:00:05]:
+On Tue, 2009-10-06 at 15:05 +1100, Anton Blanchard wrote:
 
-> Peter Zijlstra <a.p.zijlstra@chello.nl> writes:
-> >
-> > So does it make sense to have a set of sets?
-> >
-> > Why not integrate them all into one set to be ruled by this governor
-> > thing?
-> 
-> cpuidle is currently optional, that is why the two level hierarchy
-> is there so that you can still have simple idle selection without it.
-> 
-> % size drivers/cpuidle/*.o
->    text    data     bss     dec     hex filename
->    5514    1416      44    6974    1b3e drivers/cpuidle/built-in.o
-> 
-> Adding it unconditionally would add ~7k to everyone who wants idle functions.
-> 
-> I think making it unconditional would require putting it on a serious
-> diet first.
-> 
+> This patch adds powerpc specific tracepoints for interrupt entry and exit.
 
-Hi Andi,
+ .../....
 
-Yes, this is a valid point.
+Breaks 6xx_defconfig:
 
-How about something like this..
-If the arch does not enable CONFIG_CPU_IDLE, the cpuidle_idle_call
-which is called from cpu_idle() should call default_idle without
-involving the registering cpuidle steps. This should prevent bloating
-up of the kernel for archs which dont want to use cpuidle.
+In file included from /home/benh/linux-powerpc-test/include/linux/device.h:23,
+                 from /home/benh/linux-powerpc-test/arch/powerpc/include/asm/io.h:21,
+                 from /home/benh/linux-powerpc-test/arch/powerpc/include/asm/pgtable-ppc32.h:9,
+                 from /home/benh/linux-powerpc-test/arch/powerpc/include/asm/pgtable.h:25,
+                 from /home/benh/linux-powerpc-test/include/linux/mm.h:39,
+                 from /home/benh/linux-powerpc-test/include/linux/ring_buffer.h:5,
+                 from /home/benh/linux-powerpc-test/include/linux/ftrace_event.h:4,
+                 from /home/benh/linux-powerpc-test/include/trace/ftrace.h:19,
+                 from /home/benh/linux-powerpc-test/include/trace/define_trace.h:61,
+                 from /home/benh/linux-powerpc-test/arch/powerpc/include/asm/trace.h:53,
+                 from /home/benh/linux-powerpc-test/arch/powerpc/kernel/trace-events.c:3:
+/home/benh/linux-powerpc-test/include/linux/module.h: In function ‘__module_get’:
+/home/benh/linux-powerpc-test/include/linux/module.h:471: error: implicit declaration of function ‘trace_module_get’
 
---arun
-> -Andi
-> -- 
-> ak@linux.intel.com -- Speaking for myself only.
+Cheers,
+Ben.
+
+> While we already have generic irq_handler_entry and irq_handler_exit
+> tracepoints there are cases on our virtualised powerpc machines where an
+> interrupt is presented to the OS, but subsequently handled by the hypervisor.
+> This means no OS interrupt handler is invoked.
+> 
+> Here is an example on a POWER6 machine with the patch below applied:
+>  
+> <idle>-0     [006]  3243.949840744: irq_entry: pt_regs=c0000000ce31fb10
+> <idle>-0     [006]  3243.949850520: irq_exit: pt_regs=c0000000ce31fb10
+> 
+> <idle>-0     [007]  3243.950218208: irq_entry: pt_regs=c0000000ce323b10
+> <idle>-0     [007]  3243.950224080: irq_exit: pt_regs=c0000000ce323b10
+> 
+> <idle>-0     [000]  3244.021879320: irq_entry: pt_regs=c000000000a63aa0
+> <idle>-0     [000]  3244.021883616: irq_handler_entry: irq=87 handler=eth0
+> <idle>-0     [000]  3244.021887328: irq_handler_exit: irq=87 return=handled
+> <idle>-0     [000]  3244.021897408: irq_exit: pt_regs=c000000000a63aa0
+> 
+> Here we see two phantom interrupts (no handler was invoked), followed
+> by a real interrupt for eth0. Without the tracepoints in this patch we
+> would have missed the phantom interrupts.
+> 
+> Since these would be the first arch specific tracepoints, I'd like to make
+> sure we agree on naming. The tracepoints live in events/powerpc/*, but I'm
+> wondering if the tracepoint name should also contain the arch name, eg
+> powerpc_irq_entry/powerpc_irq_exit. Thoughts?
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> --
+> 
+> Index: linux.trees.git/arch/powerpc/include/asm/trace.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux.trees.git/arch/powerpc/include/asm/trace.h	2009-10-06 14:54:25.000000000 +1100
+> @@ -0,0 +1,53 @@
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM powerpc
+> +
+> +#if !defined(_TRACE_POWERPC_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_POWERPC_H
+> +
+> +#include <linux/tracepoint.h>
+> +
+> +struct pt_regs;
+> +
+> +TRACE_EVENT(irq_entry,
+> +
+> +	TP_PROTO(struct pt_regs *regs),
+> +
+> +	TP_ARGS(regs),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(struct pt_regs *, regs)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->regs = regs;
+> +	),
+> +
+> +	TP_printk("pt_regs=%p", __entry->regs)
+> +);
+> +
+> +TRACE_EVENT(irq_exit,
+> +
+> +	TP_PROTO(struct pt_regs *regs),
+> +
+> +	TP_ARGS(regs),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(struct pt_regs *, regs)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->regs = regs;
+> +	),
+> +
+> +	TP_printk("pt_regs=%p", __entry->regs)
+> +);
+> +
+> +#endif /* _TRACE_POWERPC_H */
+> +
+> +#undef TRACE_INCLUDE_PATH
+> +#undef TRACE_INCLUDE_FILE
+> +
+> +#define TRACE_INCLUDE_PATH asm
+> +#define TRACE_INCLUDE_FILE trace
+> +
+> +#include <trace/define_trace.h>
+> Index: linux.trees.git/arch/powerpc/kernel/Makefile
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/kernel/Makefile	2009-10-06 14:02:03.000000000 +1100
+> +++ linux.trees.git/arch/powerpc/kernel/Makefile	2009-10-06 14:38:51.000000000 +1100
+> @@ -115,6 +115,8 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
+>  obj-y				+= ppc_save_regs.o
+>  endif
+>  
+> +obj-$(CONFIG_TRACEPOINTS)	+= trace-events.o
+> +
+>  # Disable GCOV in odd or sensitive code
+>  GCOV_PROFILE_prom_init.o := n
+>  GCOV_PROFILE_ftrace.o := n
+> Index: linux.trees.git/arch/powerpc/kernel/trace-events.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux.trees.git/arch/powerpc/kernel/trace-events.c	2009-10-06 14:44:57.000000000 +1100
+> @@ -0,0 +1,3 @@
+> +#include <linux/slab.h>
+> +#define CREATE_TRACE_POINTS
+> +#include <asm/trace.h>
+> Index: linux.trees.git/arch/powerpc/kernel/irq.c
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/kernel/irq.c	2009-10-06 14:02:15.000000000 +1100
+> +++ linux.trees.git/arch/powerpc/kernel/irq.c	2009-10-06 14:13:08.000000000 +1100
+> @@ -54,6 +54,7 @@
+>  #include <linux/pci.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/perf_event.h>
+> +#include <asm/trace.h>
+>  
+>  #include <asm/uaccess.h>
+>  #include <asm/system.h>
+> @@ -325,6 +326,8 @@ void do_IRQ(struct pt_regs *regs)
+>  	struct pt_regs *old_regs = set_irq_regs(regs);
+>  	unsigned int irq;
+>  
+> +	trace_irq_entry(regs);
+> +
+>  	irq_enter();
+>  
+>  	check_stack_overflow();
+> @@ -348,6 +351,8 @@ void do_IRQ(struct pt_regs *regs)
+>  		timer_interrupt(regs);
+>  	}
+>  #endif
+> +
+> +	trace_irq_exit(regs);
+>  }
+>  
+>  void __init init_IRQ(void)
