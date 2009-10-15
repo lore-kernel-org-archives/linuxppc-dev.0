@@ -1,17 +1,24 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6F5DBB7B7F
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 07:28:55 +1100 (EST)
-Message-Id: <20091015202758.441681409@linutronix.de>
-Date: Thu, 15 Oct 2009 20:28:38 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 2/5] macintosh: Remove BKL from nvram driver
-References: <20091015202722.372890083@linutronix.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, ALan Cox <alan@lxorguk.ukuu.org.uk>,
-	linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 25F63B7B92
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 16 Oct 2009 07:36:57 +1100 (EST)
+Subject: Re: powerpc problem with .data.page_aligned -> __page_aligned_data
+	conversion
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tim Abbott <tabbott@ksplice.com>
+In-Reply-To: <alpine.DEB.1.10.0910151229340.25434@dr-wily.mit.edu>
+References: <1255584772.2347.86.camel@pasglop>
+	<alpine.DEB.1.10.0910151229340.25434@dr-wily.mit.edu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Oct 2009 07:00:09 +1100
+Message-Id: <1255636809.2347.103.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, sam@ravnborg.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,62 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Drop the bkl from nvram_llseek() as it obviously protects nothing. The
-file offset is safe in essence.
+On Thu, 2009-10-15 at 12:37 -0400, Tim Abbott wrote:
+> Just to make sure I understand the nature of the problem, is the
+> current 
+> breakage that gcc < 4.3 will _warn_ on any compilation units on ppc64
+> that 
+> use __page_aligned data, or something worse?
+> 
+> The cropping is clearly a potential problem, but I read the rest of
+> your 
+> email as saying that the cropping of the alignment isn't actually a 
+> problem with the current kernel because the kernel is currently only
+> using 
+> the macro with things whose size is divisible by PAGE_SIZE.  However,
+> I am 
+> not sure how to reconcile that with using the word "break" above...
 
-The ioctl can be converted to unlocked_ioctl because it just calls
-pmac_get_partition() which reads a value from an array which was
-initialized at early boot time. No need for serialization.
+Break is because we use -Werror on arch/powerpc :-)
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
----
- drivers/macintosh/nvram.c |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
-
-Index: linux-2.6-tip/drivers/macintosh/nvram.c
-===================================================================
---- linux-2.6-tip.orig/drivers/macintosh/nvram.c
-+++ linux-2.6-tip/drivers/macintosh/nvram.c
-@@ -13,7 +13,6 @@
- #include <linux/fcntl.h>
- #include <linux/nvram.h>
- #include <linux/init.h>
--#include <linux/smp_lock.h>
- #include <asm/uaccess.h>
- #include <asm/nvram.h>
- 
-@@ -21,7 +20,6 @@
- 
- static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
- {
--	lock_kernel();
- 	switch (origin) {
- 	case 1:
- 		offset += file->f_pos;
-@@ -30,12 +28,10 @@ static loff_t nvram_llseek(struct file *
- 		offset += NVRAM_SIZE;
- 		break;
- 	}
--	if (offset < 0) {
--		unlock_kernel();
-+	if (offset < 0)
- 		return -EINVAL;
--	}
-+
- 	file->f_pos = offset;
--	unlock_kernel();
- 	return file->f_pos;
- }
- 
-@@ -76,8 +72,7 @@ static ssize_t write_nvram(struct file *
- 	return p - buf;
- }
- 
--static int nvram_ioctl(struct inode *inode, struct file *file,
--	unsigned int cmd, unsigned long arg)
-+static long nvram_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	switch(cmd) {
- 		case PMAC_NVRAM_GET_OFFSET:
+Ben.
