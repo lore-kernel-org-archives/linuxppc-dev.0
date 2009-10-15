@@ -1,33 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E4793B7B91
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 07:07:41 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n9FK7SaK011802
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 13:07:28 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n9FK9xP4014697
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 15:09:59 -0500 (CDT)
-Message-ID: <4AD7811A.6040501@freescale.com>
-Date: Thu, 15 Oct 2009 15:07:54 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Felix Radensky <felix@embedded-sol.com>
-Subject: Re: UBIFS problem on MPC8536DS
-References: <4AD5ADC9.30503@embedded-sol.com>	<4AD5C5B4.3060303@nokia.com>	<4AD5D053.9000901@embedded-sol.com>	<4AD5FFE7.7080703@nokia.com>
-	<4AD60EF4.4080306@embedded-sol.com>
-	<4AD614E4.6030005@freescale.com>
-In-Reply-To: <4AD614E4.6030005@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-	Adrian Hunter <adrian.hunter@nokia.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6F5DBB7B7F
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 07:28:55 +1100 (EST)
+Message-Id: <20091015202758.441681409@linutronix.de>
+Date: Thu, 15 Oct 2009 20:28:38 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [patch 2/5] macintosh: Remove BKL from nvram driver
+References: <20091015202722.372890083@linutronix.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, ALan Cox <alan@lxorguk.ukuu.org.uk>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,24 +21,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Felix Radensky wrote:
->> Yes, NAND and NOR are on the same local bus controller.
->>
->> Maybe powerpc folks can provide some insight here.
->> Is it possible that simultaneous access to NOR and NAND
->> on MPC8536 can result in NAND timeouts ?
-> 
-> I've heard other reports of such problems with eLBC, but was unable to 
-> reproduce it myself last time I tried.  Could you reduce this down to a 
-> minimal set of specific reproduction instructions (e.g. eliminate UBI if 
-> possible, or else explain how to set up UBI)?
+Drop the bkl from nvram_llseek() as it obviously protects nothing. The
+file offset is safe in essence.
 
-OK, I was able to reproduce the problem on mpc8572 simply by sticking a 
-read to NOR flash inside fsl_elbc_run_command -- I'm not sure what 
-happened last time I tried.
+The ioctl can be converted to unlocked_ioctl because it just calls
+pmac_get_partition() which reads a value from an array which was
+initialized at early boot time. No need for serialization.
 
-I suppose we'll need a special NOR mapping driver that does some sync 
-with the NAND driver.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+---
+ drivers/macintosh/nvram.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
--Scott
+Index: linux-2.6-tip/drivers/macintosh/nvram.c
+===================================================================
+--- linux-2.6-tip.orig/drivers/macintosh/nvram.c
++++ linux-2.6-tip/drivers/macintosh/nvram.c
+@@ -13,7 +13,6 @@
+ #include <linux/fcntl.h>
+ #include <linux/nvram.h>
+ #include <linux/init.h>
+-#include <linux/smp_lock.h>
+ #include <asm/uaccess.h>
+ #include <asm/nvram.h>
+ 
+@@ -21,7 +20,6 @@
+ 
+ static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
+ {
+-	lock_kernel();
+ 	switch (origin) {
+ 	case 1:
+ 		offset += file->f_pos;
+@@ -30,12 +28,10 @@ static loff_t nvram_llseek(struct file *
+ 		offset += NVRAM_SIZE;
+ 		break;
+ 	}
+-	if (offset < 0) {
+-		unlock_kernel();
++	if (offset < 0)
+ 		return -EINVAL;
+-	}
++
+ 	file->f_pos = offset;
+-	unlock_kernel();
+ 	return file->f_pos;
+ }
+ 
+@@ -76,8 +72,7 @@ static ssize_t write_nvram(struct file *
+ 	return p - buf;
+ }
+ 
+-static int nvram_ioctl(struct inode *inode, struct file *file,
+-	unsigned int cmd, unsigned long arg)
++static long nvram_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	switch(cmd) {
+ 		case PMAC_NVRAM_GET_OFFSET:
