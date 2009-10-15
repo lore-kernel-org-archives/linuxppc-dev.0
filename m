@@ -1,22 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9035CB7B7C
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 12:12:59 +1100 (EST)
-Subject: Re: I think I have 8xx working...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rex Feany <RFeany@mrv.com>
-In-Reply-To: <20091015010855.GA32710@compile2.chatsunix.int.mrv.com>
-References: <20091015004127.GA15570@laura.chatsunix.int.mrv.com>
-	<1255568772.2347.60.camel@pasglop>
-	<20091015010855.GA32710@compile2.chatsunix.int.mrv.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 15 Oct 2009 12:12:50 +1100
-Message-Id: <1255569170.2347.62.camel@pasglop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <blofeldus@yahoo.com>
+Received: from web53511.mail.re2.yahoo.com (web53511.mail.re2.yahoo.com
+	[206.190.39.65]) by ozlabs.org (Postfix) with SMTP id AF012B7088
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Oct 2009 14:56:56 +1100 (EST)
+Message-ID: <71202.24923.qm@web53511.mail.re2.yahoo.com>
+Date: Wed, 14 Oct 2009 20:56:53 -0700 (PDT)
+From: roger blofeld <blofeldus@yahoo.com>
+Subject: Yenta + sata_sil + 2.6.30.8 fails because dma_ops==NULL
+To: linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +19,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-10-14 at 18:08 -0700, Rex Feany wrote:
-> Thus spake Benjamin Herrenschmidt (benh@kernel.crashing.org):
-> 
-> > On Wed, 2009-10-14 at 17:41 -0700, Rex Feany wrote:
-> > > The biggest problem for me turned out to be the MMU context IDs being
-> > > clamped to 32 when the 8xx only has 16. With this, things are a bit more
-> > > stable :)
-> > 
-> > This is with Joakim patches or without ?
-> 
-> with just one: adding tlbil_va() to do_page_fault().
+Hi
+ I have a powerbook G4 which has drives connected via a cardbus sata_sil. It is running fedora 11. It boots fine with 2.6.27.35-170.2.94.fc10.ppc, but with 2.6.30.8-64.fc11.ppc because of an error in the probe function of sata_sil.
 
-Ah cool, at least that keeps my sanity, I didn't get how it could work
-at all without that bit :-)
+ I have traced the problem to be the line in sata_sil.c function sil_init_one
 
-Scott, Joakim: It will be interesting to figure out exactly what is the
-condition where that is necessary. It definitely should make the one
-in set_pte_filter() or ptep_set_access_flags_filter() unnecessary.
+    rc = pci_set_dma_mask(pdev, ATA_DMA_MASK);
 
-Joakim, you mentioned increased amount of TLB errors or misses when
-doing that too often, that sounds a bit weird and worth investigating
+which returns -5 (-EIO) because 
 
-Finally we could implement preload from update_mmu_cache() but that's a
-different matter alltogether.
+ get_dma_ops(&pdev->dev);
 
-Cheers,
-Ben.
+returns NULL.
+
+I looked at the diffs to sata_sil.c between these kernel revs and didn't see the problem. Seems to be something at a higher level changed.
+
+Any ideas where I should look or how to find the real cause?
+
+Thanks
+-roger
+
+P.S., on the working kernel lspci gives:
+0001:11:00.0 Mass storage controller: Silicon Image, Inc. SiI 3512 [SATALink/SATARaid] Serial ATA Controller (rev 01)
+
+
+      
