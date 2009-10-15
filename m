@@ -1,30 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6D76DB7043
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 09:03:57 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n9FM3sIj013747
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 15:03:54 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n9FM6wL6004441
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 17:06:59 -0500 (CDT)
-Message-ID: <4AD79C64.9060206@freescale.com>
-Date: Thu, 15 Oct 2009 17:04:20 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <paul.gibson2074@gmail.com>
+Received: from mail-vw0-f204.google.com (mail-vw0-f204.google.com
+	[209.85.212.204]) by ozlabs.org (Postfix) with ESMTP id 68708B7B92
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 10:03:26 +1100 (EST)
+Received: by vws42 with SMTP id 42so703143vws.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 16:03:24 -0700 (PDT)
 MIME-Version: 1.0
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
-References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+In-Reply-To: <20091015183039.A577EECA6BE@gemini.denx.de>
+References: <4AD5ADC9.30503@embedded-sol.com> <4AD6F172.6030407@aimvalley.nl>
+	<4AD6FD4E.9060507@marel.com> <4AD70585.40302@gmail.com>
+	<4AD70927.3030401@marel.com>
+	<20091015183039.A577EECA6BE@gemini.denx.de>
+Date: Fri, 16 Oct 2009 09:03:24 +1000
+Message-ID: <26b052040910151603y8fc9b00g678d6a873083f1e7@mail.gmail.com>
+Subject: Re: MPC5121 CAN and USB
+From: Paul Gibson <paul.gibson2074@gmail.com>
+To: Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: =?ISO-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kari.davidsson@marel.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund wrote:
-> Now updated with Scott's remarks.
-> There is still(probably) a trivial conflict in pte-8xx.h
-> 
-> Joakim Tjernlund (8):
->   8xx: invalidate non present TLBs
->   8xx: Update TLB asm so it behaves as linux mm expects.
->   8xx: Tag DAR with 0x00f0 to catch buggy instructions.
->   8xx: Fixup DAR from buggy dcbX instructions.
->   8xx: Add missing Guarded setting in DTLB Error.
->   8xx: Restore _PAGE_WRITETHRU
->   8xx: start using dcbX instructions in various copy routines
->   8xx: Remove DIRTY pte handling in DTLB Error.
-> 
->  arch/powerpc/include/asm/pte-8xx.h |   14 +-
->  arch/powerpc/kernel/head_8xx.S     |  341 +++++++++++++++++++++++------------
->  arch/powerpc/kernel/misc_32.S      |   18 --
->  arch/powerpc/lib/copy_32.S         |   24 ---
->  arch/powerpc/mm/fault.c            |    8 +-
->  5 files changed, 238 insertions(+), 167 deletions(-)
+>> The kernel from the BSP on Freescale site is crashing on the CAN in my c=
+ase
+>> =A0(might be a hardware bug).
+>
+> I don;t think so. There are some problems in this code, for example
+> the clocks seem to be wrong. Not toi menthin that the whole code is
+> hoplessly old and without chance of ever being merged into mainline.
 
-I still see the lockup with the dcbX patch.  Reverting that (and with 
-Rex's patch) things look OK.
+The clocks are definitely wrong, but should not cause the crashing.
+The only fix I needed for the ADS512101 board was to set the clock to
+66MHz, instead of 100MHz in drivers/can/mscan/mscan.c:
+clk->rate =3D 66000000;
 
--Scott
+Its a hack I know.
+
+> The "ltib-mpc5121ads-20090602" branch reflects the exact state of the
+> kernel contained in the LTIB with this name (dated July 2009, despite
+> the name; based at 2.6.24.6, i. e. 7+ kernel versions behind).
+
+I have diff'ed this and it is very similar to the ltib in the BSP.
+The MBX patches may be missing though.  These patches can be obtained
+via the Freescale SDK for the OpenGL on the MPC5121e webpage.
+
+Paul
