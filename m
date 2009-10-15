@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <vishnus@lc1105.zin33.ap.freescale.net>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A92D5B7B78
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 17:26:22 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 15 Oct 2009 17:25:53 +1100
-Message-Id: <1255587953.2347.97.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B8BA0B7B68
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 17:48:52 +1100 (EST)
+From: Vishnu Suresh <Vishnu@freescale.com>
+To: linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+	herbert@gondor.apana.org.au, dan.j.williams@intel.com
+Subject: [PATCH v0 1/2] DMA: fsldma: Disable DMA_INTERRUPT when Async_tx
+	enabled
+Date: Thu, 15 Oct 2009 12:11:05 +0530
+Message-Id: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
+Cc: Vishnu Suresh <Vishnu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+This patch disables the use of DMA_INTERRUPT capability with Async_tx
 
-A tad late due mostly to me being on vacation :-) Here's some powerpc
-fixes for 2.6.32, not that much and nothing really big.
+The fsldma produces a null transfer with DMA_INTERRUPT
+capability when used with Async_tx. When RAID devices queue
+a transaction via Async_tx, this  results in a hang.
 
-The following changes since commit 80f506918fdaaca6b574ba931536a58ce015c7be:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.dk/linux-2.6-block
+Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
+---
+ drivers/dma/fsldma.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Anton Blanchard (1):
-      powerpc: Fix hypervisor TLB batching
-
-Anton Vorontsov (1):
-      powerpc/kgdb: Fix build failure caused by "kgdb.c: unused variable 'acc'"
-
-Benjamin Herrenschmidt (3):
-      powerpc/pmac: Fix issues with sleep on some powerbooks
-      powerpc/mm: Fix hang accessing top of vmalloc space
-      Merge commit 'ftrace/ppc' into merge
-
-Dragos Tatulea (1):
-      powerpc/oprofile: Add ppc750 CL as supported by oprofile
-
-Heiko Schocher (1):
-      powerpc/pci: Fix MODPOST warning
-
-Michael Ellerman (1):
-      powerpc: Fix memory leak in axon_msi.c
-
-Sean MacLennan (1):
-      powerpc: warning: allocated section `.data_nosave' not in segment
-
-Steven Rostedt (2):
-      powerpc/ftrace: show real return addresses in modules
-      powerpc64/ftrace: use PACA to retrieve TOC in mod_return_to_handler
-
- arch/powerpc/include/asm/firmware.h       |   10 +++---
- arch/powerpc/kernel/cputable.c            |    2 +
- arch/powerpc/kernel/entry_64.S            |    3 +-
- arch/powerpc/kernel/kgdb.c                |    6 ----
- arch/powerpc/kernel/pci-common.c          |    2 +-
- arch/powerpc/kernel/process.c             |   10 +++++--
- arch/powerpc/kernel/vmlinux.lds.S         |    1 +
- arch/powerpc/mm/slb_low.S                 |   10 +++----
- arch/powerpc/platforms/cell/axon_msi.c    |    2 +-
- arch/powerpc/platforms/powermac/low_i2c.c |    7 +++-
- arch/powerpc/platforms/pseries/firmware.c |    3 +-
- drivers/macintosh/via-pmu.c               |   40 ++++++++++++++++------------
- 12 files changed, 51 insertions(+), 45 deletions(-)
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 296f9e7..66d9b39 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1200,7 +1200,13 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 						- fdev->reg.start + 1);
+ 
+ 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
++#ifndef CONFIG_ASYNC_CORE
++	/*
++	 * The DMA_INTERRUPT async_tx is a NULL transfer, which will
++	 * triger a PE interrupt.
++	 */
+ 	dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
++#endif
+ 	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+ 	fdev->common.device_alloc_chan_resources = fsl_dma_alloc_chan_resources;
+ 	fdev->common.device_free_chan_resources = fsl_dma_free_chan_resources;
+-- 
+1.6.4.2
