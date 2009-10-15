@@ -1,10 +1,11 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: benh@kernel.crashing.org
-MIME-Version: 1.0
 Subject: [PATCH] powerpc perf events: Fix priority of MSR HV vs PR bits 
-Date: Thu, 15 Oct 2009 16:11:57 +1100
-Message-ID: <15714.1255583517@neuling.org>
+In-reply-to: <15714.1255583517@neuling.org> 
+References: <15714.1255583517@neuling.org>
+Date: Thu, 15 Oct 2009 16:32:15 +1100
+Message-ID: <18412.1255584735@neuling.org>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -18,13 +19,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 The architecture defines that if MSR PR is set we are in problem state
 irrespective of the HV bit.  This fixes perf events to reflect this.
 
+Also, on bare metal systems, samples taken in Linux will now be reported
+as kernel rather than hypervisor.  
+
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 CC: paulus@samba.org
 ---
-Tested on PHYP and BML.
-
-This could go back into 31 too with s/event/counters/g.  It only
-effects bare metal on server chips, so no biggy if it doesn't.  
+Paulus suggested that the comment needed updating to reflect the
+additional functionality that I've changed.
 
  arch/powerpc/kernel/perf_event.c |   17 ++++++++++-------
  1 file changed, 10 insertions(+), 7 deletions(-)
