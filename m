@@ -1,23 +1,17 @@
-Return-Path: <joakim.tjernlund@transmode.com>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4BFE3B7D3A
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 20:04:42 +1100 (EST)
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: Scott Wood <scottwood@freescale.com>, Rex Feany <RFeany@mrv.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 6/8] 8xx: Restore _PAGE_WRITETHRU
-Date: Thu, 15 Oct 2009 11:04:24 +0200
-Message-Id: <1255597466-30976-7-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1255597466-30976-6-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255597466-30976-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255597466-30976-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255597466-30976-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255597466-30976-5-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1255597466-30976-6-git-send-email-Joakim.Tjernlund@transmode.se>
+Return-Path: <nvbolhuis@aimvalley.nl>
+Received: from smtp-vbr7.xs4all.nl (smtp-vbr7.xs4all.nl [194.109.24.27])
+	by ozlabs.org (Postfix) with ESMTP id C6640B7B68
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 21:01:30 +1100 (EST)
+Message-ID: <4AD6F172.6030407@aimvalley.nl>
+Date: Thu, 15 Oct 2009 11:54:58 +0200
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+MIME-Version: 1.0
+To: Felix Radensky <felix@embedded-sol.com>
+Subject: Re: UBIFS problem on MPC8536DS
+References: <4AD5ADC9.30503@embedded-sol.com>
+In-Reply-To: <4AD5ADC9.30503@embedded-sol.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +21,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-8xx has not had WRITETHRU due to lack of bits in the pte.
-After the recent rewrite of the 8xx TLB code, there are
-two bits left. Use one of them to WRITETHRU.
+Hi Felix,
 
-Perhaps use the last SW bit to PAGE_SPECIAL or PAGE_FILE?
+do you have CONFIG_NO_HZ defined ?
+
+I've seen similar problems with powerpc + CONFIG_NO_HZ. In my case the low-level
+do_write_buffer (cfi_cmdset_0002.c) timed out too early. See
+http://lkml.org/lkml/2009/9/3/84
+
+Maybe in your case it's the do_erase_chip timing out too early.
+
 ---
- arch/powerpc/include/asm/pte-8xx.h |    5 +++--
- arch/powerpc/kernel/head_8xx.S     |    8 ++++++++
- 2 files changed, 11 insertions(+), 2 deletions(-)
+NvBolhuis.
 
-diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
-index f23cd15..9349d83 100644
---- a/arch/powerpc/include/asm/pte-8xx.h
-+++ b/arch/powerpc/include/asm/pte-8xx.h
-@@ -34,12 +34,13 @@
- #define _PAGE_SHARED	0x0004	/* No ASID (context) compare */
- #define _PAGE_DIRTY	0x0100	/* C: page changed */
- 
--/* These 3 software bits must be masked out when the entry is loaded
-- * into the TLB, 2 SW bits left.
-+/* These 4 software bits must be masked out when the entry is loaded
-+ * into the TLB, 1 SW bit left(0x0080).
-  */
- #define _PAGE_EXEC	0x0008	/* software: i-cache coherency required */
- #define _PAGE_GUARDED	0x0010	/* software: guarded access */
- #define _PAGE_ACCESSED	0x0020	/* software: page referenced */
-+#define _PAGE_WRITETHRU	0x0040	/* software: caching is write through */
- 
- /* Setting any bits in the nibble with the follow two controls will
-  * require a TLB exception handler change.  It is assumed unused bits
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index a1512e9..6fadc44 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -422,6 +422,10 @@ DataStoreTLBMiss:
- 	 * above.
- 	 */
- 	rlwimi	r11, r10, 0, 27, 27
-+	/* Insert the WriteThru flag into the TWC from the Linux PTE.
-+	 * It is bit 25 in the Linux PTE and bit 30 in the TWC
-+	 */
-+	rlwimi	r11, r10, 32-5, 30, 30
- 	DO_8xx_CPU6(0x3b80, r3)
- 	mtspr	SPRN_MD_TWC, r11
- 
-@@ -559,6 +563,10 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
- 	 * It is bit 27 of both the Linux PTE and the TWC
- 	 */
- 	rlwimi	r11, r10, 0, 27, 27
-+	/* Insert the WriteThru flag into the TWC from the Linux PTE.
-+	 * It is bit 25 in the Linux PTE and bit 30 in the TWC
-+	 */
-+	rlwimi	r11, r10, 32-5, 30, 30
- 	DO_8xx_CPU6(0x3b80, r3)
- 	mtspr	SPRN_MD_TWC, r11
- 	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
--- 
-1.6.4.4
+
+
+
+
+Felix Radensky wrote:
+> Hi,
+> 
+> I have a strange problem in linux-2.6.31 running on MPC8536DS board.
+> It is 100% reproducible, by opening a 350MB tar file into ubifs volume
+> on NAND flash, and starting erase of NOR flash partition right after that.
+> 
+> If I don't start  NOR erase, everything works fine. Also, If I run sync 
+> after
+> tar, no problem occurs.  The NOR flash is 32MB  Spansion, NAND is
+> 4GB Samsung.
+> 
+> The error messages are as follows:
+> 
+> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+> 5812:12288, written 0 bytes
+> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5812
+> UBI: recover PEB 5812, move data to PEB 19400
+> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+> 5812:512, read 512 bytes
+> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+> 19400:512, written 0 bytes
+> UBI warning: recover_peb: failed to write to PEB 19400
+> UBI: try again
+> UBI: recover PEB 5812, move data to PEB 19401
+> UBI: run torture test for PEB 19400
+> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+> 19401:512, written 0 bytes
+> UBI warning: recover_peb: failed to write to PEB 19401
+> UBI: try again
+> UBI: recover PEB 5812, move data to PEB 19402
+> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+> 19402:512, written 0 bytes
+> UBI warning: recover_peb: failed to write to PEB 19402
+> UBI: try again
+> UBI: recover PEB 5812, move data to PEB 19403
+> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
+> 19403:512, written 0 bytes
+> UBI warning: recover_peb: failed to write to PEB 19403
+> UBI warning: ubi_ro_mode: switch to read-only mode
+> UBIFS error (pid 1149): ubifs_wbuf_write_nolock: cannot write 2522 bytes 
+> to LEB 389:10240, error -5
+> UBIFS warning (pid 1149): ubifs_ro_mode: switched to read-only mode, 
+> error -5
+> UBIFS error (pid 1149): do_writepage: cannot write page 0 of inode 
+> 30708, error -5
+> UBIFS error (pid 1149): make_reservation: cannot reserve 858 bytes in 
+> jhead 2, error -30
+> UBIFS error (pid 1149): do_writepage: cannot write page 2 of inode 
+> 29486, error -30
+> UBIFS error (pid 1149): make_reservation: cannot reserve 721 bytes in 
+> jhead 2, error -30
+> UBIFS error (pid 1149): do_writepage: cannot write page 1 of inode 
+> 30070, error -30
+> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+> 5022:88064, written 0 bytes
+> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5022
+> UBI: recover PEB 5022, move data to PEB 19404
+> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+> 5022:512, read 512 bytes
+> UBI error: ubi_io_write: read-only mode
+> UBI warning: recover_peb: failed to write to PEB 19404
+> UBI: try again
+> UBI: recover PEB 5022, move data to PEB 19405
+> UBI error: ubi_io_write: read-only mode
+> UBI warning: recover_peb: failed to write to PEB 19405
+> UBI: try again
+> UBI: recover PEB 5022, move data to PEB 19406
+> UBI error: ubi_io_write: read-only mode
+> UBI warning: recover_peb: failed to write to PEB 19406
+> UBI: try again
+> UBI: recover PEB 5022, move data to PEB 19407
+> UBI error: ubi_io_write: read-only mode
+> UBI warning: recover_peb: failed to write to PEB 19407
+> UBIFS error (pid 1044): ubifs_wbuf_sync_nolock: cannot write 2048 bytes 
+> to LEB 788:86016
+> UBIFS error (pid 1044): ubifs_bg_wbufs_sync: cannot sync write-buffer, 
+> error -30
+> UBIFS warning (pid 1044): ubifs_ro_mode: switched to read-only mode, 
+> error -30
+> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
+> 5817:26624, written 0 bytes
+> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5817
+> UBI: recover PEB 5817, move data to PEB 19408
+> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
+> 5817:512, read 512 bytes
+> UBI error: ubi_io_write: read-only mode
+> UBI warning: recover_peb: failed to write to PEB 19408
+> UBI: try again
+> UBI: recover PEB 5817, move data to PEB 19409
+> UBI error: ubi_io_write: read-only mode
+> UBI warning: recover_peb: failed to write to PEB 19409
+> UBI: try again
+> UBI: recover PEB 5817, move data to PEB 19410
+> UBI error: ubi_io_write: read-only mode
+> UBI warning: recover_peb: failed to write to PEB 19410
+> UBI: try again
+> UBI: recover PEB 5817, move data to PEB 19411
+> UBI error: ubi_io_write: read-only mode
+> UBI warning: recover_peb: failed to write to PEB 19411
+> UBIFS error (pid 1047): ubifs_wbuf_sync_nolock: cannot write 2048 bytes 
+> to LEB 385:24576
+> UBIFS error (pid 1047): ubifs_bg_wbufs_sync: cannot sync write-buffer, 
+> error -30
+> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+> jhead 1, error -30
+> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30709, 
+> error -30
+> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+> jhead 1, error -30
+> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30710, 
+> error -30
+> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+> jhead 1, error -30
+> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30698, 
+> error -30
+> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
+> jhead 1, error -30
+> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30711, 
+> error -30
+> 
+> I'd appreciate any hints on what can cause this. Is it a hardware 
+> problem, mtd layer problem
+> or UBI problem ?
+> 
+> Thanks a lot in advance.
+> 
+> Felix.
+> 
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
