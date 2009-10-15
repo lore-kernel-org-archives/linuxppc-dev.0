@@ -1,24 +1,18 @@
-Return-Path: <tabbott@MIT.EDU>
-Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
-	[18.7.7.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C8195B7B7C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Oct 2009 03:45:12 +1100 (EST)
-Date: Thu, 15 Oct 2009 12:37:20 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc problem with .data.page_aligned -> __page_aligned_data
-	conversion
-In-Reply-To: <1255584772.2347.86.camel@pasglop>
-Message-ID: <alpine.DEB.1.10.0910151229340.25434@dr-wily.mit.edu>
-References: <1255584772.2347.86.camel@pasglop>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id BDB0CB7B8C
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 03:46:44 +1100 (EST)
+Received: by gxk28 with SMTP id 28so1014888gxk.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 09:46:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, sam@ravnborg.org,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Sender: glikely@secretlab.ca
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 15 Oct 2009 10:46:22 -0600
+Message-ID: <fa686aa40910150946s70ad4013y15cbf9e29c5e50f2@mail.gmail.com>
+Subject: Please pull mpc5200 and OF changes
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +22,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 15 Oct 2009, Benjamin Herrenschmidt wrote:
+Hi Ben.
 
-> For some weird reason, our gcc until 4.3 (fixed in 4.3) had the weird
-> idea that the alignment attribute should not be allowed to force an
-> alignment greater than 32k. If attempted, it would warn -and- crop the
-> alignment to 32k.
-[...]
-> This has a few issues for us:
-> 
-> 	- The patch that converted bits of powerpc to the new macro break since
-> it now hits that bug
+Here are some OF and MPC5200 changes needed for 2.6.32.  Mostly
+defconfig updates and a couple of new board dts files.
 
-Hi Ben,
+Cheers,
+g.
 
-Just to make sure I understand the nature of the problem, is the current 
-breakage that gcc < 4.3 will _warn_ on any compilation units on ppc64 that 
-use __page_aligned data, or something worse?
+The following changes since commit 161291396e76e0832c08f617eb9bd364d1648148=
+:
+  Linus Torvalds (1):
+        Linux 2.6.32-rc4
 
-The cropping is clearly a potential problem, but I read the rest of your 
-email as saying that the cropping of the alignment isn't actually a 
-problem with the current kernel because the kernel is currently only using 
-the macro with things whose size is divisible by PAGE_SIZE.  However, I am 
-not sure how to reconcile that with using the word "break" above...
+are available in the git repository at:
 
-	-Tim Abbott
+  git://git.secretlab.ca/git/linux-2.6 merge
+
+Grant Likely (1):
+      powerpc/5200: Update defconfigs
+
+Heiko Schocher (2):
+      mpc5200: support for the MAN mpc5200 based board uc101
+      mpc5200: support for the MAN mpc5200 based board mucmc52
+
+Julia Lawall (1):
+      drivers/serial/mpc52xx_uart.c: Use UPIO_MEM rather than SERIAL_IO_MEM
+
+J=E9r=F4me Pouiller (1):
+      of: Remove nested function
+
+Wolfram Sang (1):
+      powerpc/boot/dts: drop obsolete 'fsl5200-clocking'
+
+ arch/powerpc/boot/dts/cm5200.dts              |    1 -
+ arch/powerpc/boot/dts/digsy_mtc.dts           |    1 -
+ arch/powerpc/boot/dts/lite5200.dts            |    2 -
+ arch/powerpc/boot/dts/lite5200b.dts           |    2 -
+ arch/powerpc/boot/dts/media5200.dts           |    2 -
+ arch/powerpc/boot/dts/motionpro.dts           |    1 -
+ arch/powerpc/boot/dts/mpc5121ads.dts          |    3 -
+ arch/powerpc/boot/dts/mucmc52.dts             |  332 +++++++++++++++++++++=
+++++
+ arch/powerpc/boot/dts/pcm030.dts              |    2 -
+ arch/powerpc/boot/dts/pcm032.dts              |    2 -
+ arch/powerpc/boot/dts/tqm5200.dts             |    1 -
+ arch/powerpc/boot/dts/uc101.dts               |  284 +++++++++++++++++++++
+ arch/powerpc/configs/52xx/cm5200_defconfig    |  136 ++++++----
+ arch/powerpc/configs/52xx/lite5200b_defconfig |  153 ++++++++----
+ arch/powerpc/configs/52xx/motionpro_defconfig |  146 +++++++----
+ arch/powerpc/configs/52xx/pcm030_defconfig    |  142 ++++++-----
+ arch/powerpc/configs/52xx/tqm5200_defconfig   |  148 +++++++----
+ arch/powerpc/configs/mpc5200_defconfig        |  192 ++++++++++-----
+ arch/powerpc/platforms/52xx/mpc5200_simple.c  |    2 +
+ drivers/of/of_mdio.c                          |   13 +-
+ drivers/serial/mpc52xx_uart.c                 |    2 +-
+ 21 files changed, 1196 insertions(+), 371 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mucmc52.dts
+ create mode 100644 arch/powerpc/boot/dts/uc101.dts
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
