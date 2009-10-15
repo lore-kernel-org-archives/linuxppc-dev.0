@@ -1,24 +1,18 @@
-Return-Path: <tabbott@MIT.EDU>
-Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
-	[18.7.7.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B61DEB7EDB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Oct 2009 03:46:55 +1100 (EST)
-Date: Thu, 15 Oct 2009 12:46:13 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc problem with .data.page_aligned -> __page_aligned_data
-	conversion
-In-Reply-To: <1255584772.2347.86.camel@pasglop>
-Message-ID: <alpine.DEB.1.10.0910150832290.27415@dr-wily.mit.edu>
-References: <1255584772.2347.86.camel@pasglop>
+Return-Path: <RFeany@mrv.com>
+Received: from bos-spam.mrv.com (mx5.mrv.com [140.179.254.12])
+	by ozlabs.org (Postfix) with ESMTP id 2A289B7B96
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 03:56:55 +1100 (EST)
+Date: Thu, 15 Oct 2009 09:56:50 -0700
+From: Rex Feany <RFeany@mrv.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
+Message-ID: <20091015165650.GA3837@compile2.chatsunix.int.mrv.com>
+References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, sam@ravnborg.org,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 15 Oct 2009, Benjamin Herrenschmidt wrote:
+arch/powerpc/kernel/head_8xx.o: In function `FixupDAR':
+/home/rfeany/src/lnxnm/linux-dev/arch/powerpc/kernel/head_8xx.S:576: undefined reference to `DARfix'
 
-> What do you recommend I do ? 
-> I can ban gcc < 4.3 but that's a bit harsh :-) 
+With all of your patches applied I have this problem:
 
-Yeah, let's try to avoid that.
+open("/proc/mounts", O_RDONLY)          = 3
+fstat64(0x3, 0x7fc6ad58)                = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x3001f000
+read(3, 0x3001f000, 1024)               = -1 EFAULT (Bad address)
+exit_group(0)                           = ?
 
-> I know a few people that won't be happy to be unable to build newer 
-> kernels with current distro gccs.
-> 
-> Or can do the above making the macro definition drop the alignment part
-> on powerpc. Will work for now, but will require great care to avoid
-> subtle and nasty breakage (basically same as before)
+but it works fine with /dev/zero:
 
-Yeah, I'd be afraid that changing the generic __page_aligned_data might 
-cause unexpected problems on some other architecture.
+open("/dev/zero", O_RDONLY)             = 3
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x30001000
+read(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 1024) = 1024
 
-> Or maybe I can do the above but only when using gcc < 4.3 so at least if
-> the breakage happen, that will only be with older gccs ...
+If I revert "8xx: start using dcbX instructions in various copy
+routines" then it works again. I think it is the cache instructions
+added to __copy_tofrom_user: reading from /dev/zero is OK (it uses
+__clear_user, no dcbX), but copy_to_user() fails.
 
-It sounds like from your grepping, you don't believe that dropping the 
-alignment part will actually cause any problems on powerpc currently?
+It seems stable with all but the dcbX patch applied. I haven't been able
+to crash it yet, anyway :)
 
-If so, dropping the alignment part on powerpc with gcc < 4.3 seems best to 
-me.  It limits the workaround in time (eventually gcc < 4.3 will be 
-history).  It also limits it in scope (to powerpc), where at least you're 
-well aware of the issue and can pay attention to new code being added that 
-uses __page_aligned_data.  Since most code that has page-aligned data 
-structures is architecture-specific, there's a good chance that any new 
-code that would break will be at least looked at by you (and given how few 
-places it is used currently, this seems pretty unlikely to actually come 
-up).
-
-	-Tim Abbott
+take care!
+/rex.
