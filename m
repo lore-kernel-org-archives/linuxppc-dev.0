@@ -2,17 +2,16 @@ Return-Path: <joakim.tjernlund@transmode.com>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8123FB7C8C
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 20:04:39 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 2E63FB7C0D
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 20:04:41 +1100 (EST)
 From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 To: Scott Wood <scottwood@freescale.com>, Rex Feany <RFeany@mrv.com>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 7/8] 8xx: start using dcbX instructions in various copy
-	routines
-Date: Thu, 15 Oct 2009 11:04:25 +0200
-Message-Id: <1255597466-30976-8-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1255597466-30976-7-git-send-email-Joakim.Tjernlund@transmode.se>
+Subject: [PATCH 8/8] 8xx: Remove DIRTY pte handling in DTLB Error.
+Date: Thu, 15 Oct 2009 11:04:26 +0200
+Message-Id: <1255597466-30976-9-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1255597466-30976-8-git-send-email-Joakim.Tjernlund@transmode.se>
 References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1255597466-30976-2-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1255597466-30976-3-git-send-email-Joakim.Tjernlund@transmode.se>
@@ -20,6 +19,7 @@ References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1255597466-30976-5-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1255597466-30976-6-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1255597466-30976-7-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255597466-30976-8-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,114 +29,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that 8xx can fixup dcbX instructions, start using them
-where possible like every other PowerPc arch do.
+There is no need to do set the DIRTY bit directly in DTLB Error.
+Trap to do_page_fault() and let the generic MM code do the work.
 ---
- arch/powerpc/kernel/misc_32.S |   18 ------------------
- arch/powerpc/lib/copy_32.S    |   24 ------------------------
- 2 files changed, 0 insertions(+), 42 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |   96 ----------------------------------------
+ 1 files changed, 0 insertions(+), 96 deletions(-)
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 15f28e0..b92095e 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -495,15 +495,7 @@ _GLOBAL(clear_pages)
- 	li	r0,PAGE_SIZE/L1_CACHE_BYTES
- 	slw	r0,r0,r4
- 	mtctr	r0
--#ifdef CONFIG_8xx
--	li	r4, 0
--1:	stw	r4, 0(r3)
--	stw	r4, 4(r3)
--	stw	r4, 8(r3)
--	stw	r4, 12(r3)
--#else
- 1:	dcbz	0,r3
--#endif
- 	addi	r3,r3,L1_CACHE_BYTES
- 	bdnz	1b
- 	blr
-@@ -528,15 +520,6 @@ _GLOBAL(copy_page)
- 	addi	r3,r3,-4
- 	addi	r4,r4,-4
- 
--#ifdef CONFIG_8xx
--	/* don't use prefetch on 8xx */
--    	li	r0,4096/L1_CACHE_BYTES
--	mtctr	r0
--1:	COPY_16_BYTES
--	bdnz	1b
--	blr
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 6fadc44..c60636e 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -500,102 +500,6 @@ DataTLBError:
+ 	cmpwi	cr0, r10, 0x00f0
+ 	beq-	FixupDAR	/* must be a buggy dcbX, icbi insn. */
+ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR */
+-	mfspr	r11, SPRN_DSISR
+-	/* As the DAR fixup may clear store we may have all 3 states zero.
+-	 * Make sure only 0x0200(store) falls down into DIRTY handling
+-	 */
+-	andis.	r11, r11, 0x4a00	/* !translation, protection or store */
+-	srwi	r11, r11, 16
+-	cmpwi	cr0, r11, 0x0200	/* just store ? */
+-	bne	2f
+-	/* Only Change bit left now, do it here as it is faster
+-	 * than trapping to the C fault handler.
+-	*/
 -
--#else	/* not 8xx, we can prefetch */
- 	li	r5,4
- 
- #if MAX_COPY_PREFETCH > 1
-@@ -577,7 +560,6 @@ _GLOBAL(copy_page)
- 	li	r0,MAX_COPY_PREFETCH
- 	li	r11,4
- 	b	2b
--#endif	/* CONFIG_8xx */
- 
- /*
-  * void atomic_clear_mask(atomic_t mask, atomic_t *addr)
-diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-index c657de5..74a7f41 100644
---- a/arch/powerpc/lib/copy_32.S
-+++ b/arch/powerpc/lib/copy_32.S
-@@ -98,20 +98,7 @@ _GLOBAL(cacheable_memzero)
- 	bdnz	4b
- 3:	mtctr	r9
- 	li	r7,4
--#if !defined(CONFIG_8xx)
- 10:	dcbz	r7,r6
--#else
--10:	stw	r4, 4(r6)
--	stw	r4, 8(r6)
--	stw	r4, 12(r6)
--	stw	r4, 16(r6)
--#if CACHE_LINE_SIZE >= 32
--	stw	r4, 20(r6)
--	stw	r4, 24(r6)
--	stw	r4, 28(r6)
--	stw	r4, 32(r6)
--#endif /* CACHE_LINE_SIZE */
--#endif
- 	addi	r6,r6,CACHELINE_BYTES
- 	bdnz	10b
- 	clrlwi	r5,r8,32-LG_CACHELINE_BYTES
-@@ -200,9 +187,7 @@ _GLOBAL(cacheable_memcpy)
- 	mtctr	r0
- 	beq	63f
- 53:
--#if !defined(CONFIG_8xx)
- 	dcbz	r11,r6
--#endif
- 	COPY_16_BYTES
- #if L1_CACHE_BYTES >= 32
- 	COPY_16_BYTES
-@@ -356,14 +341,6 @@ _GLOBAL(__copy_tofrom_user)
- 	li	r11,4
- 	beq	63f
- 
--#ifdef CONFIG_8xx
--	/* Don't use prefetch on 8xx */
--	mtctr	r0
--	li	r0,0
--53:	COPY_16_BYTES_WITHEX(0)
--	bdnz	53b
+-	/* The EA of a data TLB miss is automatically stored in the MD_EPN
+-	 * register.  The EA of a data TLB error is automatically stored in
+-	 * the DAR, but not the MD_EPN register.  We must copy the 20 most
+-	 * significant bits of the EA from the DAR to MD_EPN before we
+-	 * start walking the page tables.  We also need to copy the CASID
+-	 * value from the M_CASID register.
+-	 * Addendum:  The EA of a data TLB error is _supposed_ to be stored
+-	 * in DAR, but it seems that this doesn't happen in some cases, such
+-	 * as when the error is due to a dcbi instruction to a page with a
+-	 * TLB that doesn't have the changed bit set.  In such cases, there
+-	 * does not appear to be any way  to recover the EA of the error
+-	 * since it is neither in DAR nor MD_EPN.  As a workaround, the
+-	 * _PAGE_HWWRITE bit is set for all kernel data pages when the PTEs
+-	 * are initialized in mapin_ram().  This will avoid the problem,
+-	 * assuming we only use the dcbi instruction on kernel addresses.
+-	 */
 -
--#else /* not CONFIG_8xx */
- 	/* Here we decide how far ahead to prefetch the source */
- 	li	r3,4
- 	cmpwi	r0,1
-@@ -416,7 +393,6 @@ _GLOBAL(__copy_tofrom_user)
- 	li	r3,4
- 	li	r7,0
- 	bne	114b
--#endif /* CONFIG_8xx */
- 
- 63:	srwi.	r0,r5,2
- 	mtctr	r0
+-	/* DAR is in r10 already */
+-	rlwinm	r11, r10, 0, 0, 19
+-	ori	r11, r11, MD_EVALID
+-	mfspr	r10, SPRN_M_CASID
+-	rlwimi	r11, r10, 0, 28, 31
+-	DO_8xx_CPU6(0x3780, r3)
+-	mtspr	SPRN_MD_EPN, r11
+-
+-	mfspr	r10, SPRN_M_TWB	/* Get level 1 table entry address */
+-
+-	/* If we are faulting a kernel address, we have to use the
+-	 * kernel page tables.
+-	 */
+-	andi.	r11, r10, 0x0800
+-	beq	3f
+-	lis	r11, swapper_pg_dir@h
+-	ori	r11, r11, swapper_pg_dir@l
+-	rlwimi	r10, r11, 0, 2, 19
+-3:
+-	lwz	r11, 0(r10)	/* Get the level 1 entry */
+-	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
+-	beq	2f		/* If zero, bail */
+-
+-	/* We have a pte table, so fetch the pte from the table.
+-	 */
+-	ori	r11, r11, 1		/* Set valid bit in physical L2 page */
+-	DO_8xx_CPU6(0x3b80, r3)
+-	mtspr	SPRN_MD_TWC, r11	/* Load pte table base address */
+-	mfspr	r10, SPRN_MD_TWC	/* ....and get the pte address */
+-	lwz	r10, 0(r10)		/* Get the pte */
+-	/* Insert the Guarded flag into the TWC from the Linux PTE.
+-	 * It is bit 27 of both the Linux PTE and the TWC
+-	 */
+-	rlwimi	r11, r10, 0, 27, 27
+-	/* Insert the WriteThru flag into the TWC from the Linux PTE.
+-	 * It is bit 25 in the Linux PTE and bit 30 in the TWC
+-	 */
+-	rlwimi	r11, r10, 32-5, 30, 30
+-	DO_8xx_CPU6(0x3b80, r3)
+-	mtspr	SPRN_MD_TWC, r11
+-	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
+-
+-	ori	r10, r10, _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_HWWRITE
+-	stw	r10, 0(r11)		/* and update pte in table */
+-	xori	r10, r10, _PAGE_RW	/* RW bit is inverted */
+-
+-	/* The Linux PTE won't go exactly into the MMU TLB.
+-	 * Software indicator bits 22 and 28 must be clear.
+-	 * Software indicator bits 24, 25, 26, and 27 must be
+-	 * set.  All other Linux PTE bits control the behavior
+-	 * of the MMU.
+-	 */
+-	li	r11, 0x00f0
+-	mtspr	SPRN_DAR,r11	/* Tag DAR */
+-	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
+-	DO_8xx_CPU6(0x3d80, r3)
+-	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
+-
+-	mfspr	r10, SPRN_M_TW	/* Restore registers */
+-	lwz	r11, 0(r0)
+-	mtcr	r11
+-	lwz	r11, 4(r0)
+-#ifdef CONFIG_8xx_CPU6
+-	lwz	r3, 8(r0)
+-#endif
+-	rfi
+-2:
+ 	mfspr	r10, SPRN_M_TW	/* Restore registers */
+ 	lwz	r11, 0(r0)
+ 	mtcr	r11
 -- 
 1.6.4.4
