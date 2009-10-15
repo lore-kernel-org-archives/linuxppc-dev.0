@@ -1,18 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
-	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id BDB0CB7B8C
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 03:46:44 +1100 (EST)
-Received: by gxk28 with SMTP id 28so1014888gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 09:46:43 -0700 (PDT)
+Return-Path: <tabbott@MIT.EDU>
+Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
+	[18.7.7.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B61DEB7EDB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 16 Oct 2009 03:46:55 +1100 (EST)
+Date: Thu, 15 Oct 2009 12:46:13 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc problem with .data.page_aligned -> __page_aligned_data
+	conversion
+In-Reply-To: <1255584772.2347.86.camel@pasglop>
+Message-ID: <alpine.DEB.1.10.0910150832290.27415@dr-wily.mit.edu>
+References: <1255584772.2347.86.camel@pasglop>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 15 Oct 2009 10:46:22 -0600
-Message-ID: <fa686aa40910150946s70ad4013y15cbf9e29c5e50f2@mail.gmail.com>
-Subject: Please pull mpc5200 and OF changes
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, sam@ravnborg.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,66 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben.
+On Thu, 15 Oct 2009, Benjamin Herrenschmidt wrote:
 
-Here are some OF and MPC5200 changes needed for 2.6.32.  Mostly
-defconfig updates and a couple of new board dts files.
+> What do you recommend I do ? 
+> I can ban gcc < 4.3 but that's a bit harsh :-) 
 
-Cheers,
-g.
+Yeah, let's try to avoid that.
 
-The following changes since commit 161291396e76e0832c08f617eb9bd364d1648148=
-:
-  Linus Torvalds (1):
-        Linux 2.6.32-rc4
+> I know a few people that won't be happy to be unable to build newer 
+> kernels with current distro gccs.
+> 
+> Or can do the above making the macro definition drop the alignment part
+> on powerpc. Will work for now, but will require great care to avoid
+> subtle and nasty breakage (basically same as before)
 
-are available in the git repository at:
+Yeah, I'd be afraid that changing the generic __page_aligned_data might 
+cause unexpected problems on some other architecture.
 
-  git://git.secretlab.ca/git/linux-2.6 merge
+> Or maybe I can do the above but only when using gcc < 4.3 so at least if
+> the breakage happen, that will only be with older gccs ...
 
-Grant Likely (1):
-      powerpc/5200: Update defconfigs
+It sounds like from your grepping, you don't believe that dropping the 
+alignment part will actually cause any problems on powerpc currently?
 
-Heiko Schocher (2):
-      mpc5200: support for the MAN mpc5200 based board uc101
-      mpc5200: support for the MAN mpc5200 based board mucmc52
+If so, dropping the alignment part on powerpc with gcc < 4.3 seems best to 
+me.  It limits the workaround in time (eventually gcc < 4.3 will be 
+history).  It also limits it in scope (to powerpc), where at least you're 
+well aware of the issue and can pay attention to new code being added that 
+uses __page_aligned_data.  Since most code that has page-aligned data 
+structures is architecture-specific, there's a good chance that any new 
+code that would break will be at least looked at by you (and given how few 
+places it is used currently, this seems pretty unlikely to actually come 
+up).
 
-Julia Lawall (1):
-      drivers/serial/mpc52xx_uart.c: Use UPIO_MEM rather than SERIAL_IO_MEM
-
-J=E9r=F4me Pouiller (1):
-      of: Remove nested function
-
-Wolfram Sang (1):
-      powerpc/boot/dts: drop obsolete 'fsl5200-clocking'
-
- arch/powerpc/boot/dts/cm5200.dts              |    1 -
- arch/powerpc/boot/dts/digsy_mtc.dts           |    1 -
- arch/powerpc/boot/dts/lite5200.dts            |    2 -
- arch/powerpc/boot/dts/lite5200b.dts           |    2 -
- arch/powerpc/boot/dts/media5200.dts           |    2 -
- arch/powerpc/boot/dts/motionpro.dts           |    1 -
- arch/powerpc/boot/dts/mpc5121ads.dts          |    3 -
- arch/powerpc/boot/dts/mucmc52.dts             |  332 +++++++++++++++++++++=
-++++
- arch/powerpc/boot/dts/pcm030.dts              |    2 -
- arch/powerpc/boot/dts/pcm032.dts              |    2 -
- arch/powerpc/boot/dts/tqm5200.dts             |    1 -
- arch/powerpc/boot/dts/uc101.dts               |  284 +++++++++++++++++++++
- arch/powerpc/configs/52xx/cm5200_defconfig    |  136 ++++++----
- arch/powerpc/configs/52xx/lite5200b_defconfig |  153 ++++++++----
- arch/powerpc/configs/52xx/motionpro_defconfig |  146 +++++++----
- arch/powerpc/configs/52xx/pcm030_defconfig    |  142 ++++++-----
- arch/powerpc/configs/52xx/tqm5200_defconfig   |  148 +++++++----
- arch/powerpc/configs/mpc5200_defconfig        |  192 ++++++++++-----
- arch/powerpc/platforms/52xx/mpc5200_simple.c  |    2 +
- drivers/of/of_mdio.c                          |   13 +-
- drivers/serial/mpc52xx_uart.c                 |    2 +-
- 21 files changed, 1196 insertions(+), 371 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/mucmc52.dts
- create mode 100644 arch/powerpc/boot/dts/uc101.dts
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+	-Tim Abbott
