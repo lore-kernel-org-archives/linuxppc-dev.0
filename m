@@ -1,30 +1,30 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4891AB7B77
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 02:26:27 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e9.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9FFMcmb006687
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 11:22:38 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9FFQNhv164970
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 11:26:23 -0400
-Received: from d01av01.pok.ibm.com (d03av01 [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n9FFQLFF016369
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 11:26:22 -0400
-Message-ID: <4AD73E83.7010908@austin.ibm.com>
-Date: Thu, 15 Oct 2009 10:23:47 -0500
+	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 69A20B7B80
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 02:40:33 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e7.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9FFbXQm023427
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 11:37:33 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n9FFeUfR251104
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 11:40:30 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n9FFeTmF007874
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 11:40:29 -0400
+Message-ID: <4AD74261.9040504@austin.ibm.com>
+Date: Thu, 15 Oct 2009 10:40:17 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: michael@ellerman.id.au
-Subject: Re: [PATCH 4/5 v3] kernel handling of memory DLPAR
+Subject: Re: [PATCH 5/5 v2] kernel handling of CPU DLPAR
 References: <4AB39FB3.1020608@austin.ibm.com>	
-	<4AB3A13D.1060405@austin.ibm.com> <4AD4C346.20801@austin.ibm.com>
-	<1255473061.21871.40.camel@concordia>
-In-Reply-To: <1255473061.21871.40.camel@concordia>
+	<4AB3A172.4090601@austin.ibm.com> <4AD4C3A3.5050103@austin.ibm.com>
+	<1255473054.21871.39.camel@concordia>
+In-Reply-To: <1255473054.21871.39.camel@concordia>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,299 +37,163 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Michael Ellerman wrote:
-> On Tue, 2009-10-13 at 13:13 -0500, Nathan Fontenot wrote:
->> This adds the capability to DLPAR add and remove memory from the kernel.  The
+> On Tue, 2009-10-13 at 13:14 -0500, Nathan Fontenot wrote:
+>> This adds the capability to DLPAR add and remove CPUs from the kernel. The
+>> creates two new files /sys/devices/system/cpu/probe and
+>> /sys/devices/system/cpu/release to handle the DLPAR addition and removal of
+>> CPUs respectively.
 > 
-> Hi Nathan,
+> How does this relate to the existing cpu hotplug mechanism? Or is this
+> making the cpu exist (possible), vs marking it as online?
+
+This update makes the cpu exist, it does not mark the cpu online.
+
 > 
-> Sorry to only get around to reviewing version 3, time is a commodity in
-> short supply :)
+> Is some other platform going to want to do the same? ie. should the
+> probe/release part be in generic code?
+
+I thought about making this generic code, perhaps a follow-on patch to move
+the creation of the probe/release files to generic code to see what the
+community thinks.  I would assume there would still need to be a arch and/or
+platforms specific callout to do the real work.
+
 > 
 >> Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
 >> ===================================================================
->> --- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-10-08 11:08:42.000000000 -0500
->> +++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-10-13 13:08:22.000000000 -0500
->> @@ -16,6 +16,10 @@
->>  #include <linux/notifier.h>
->>  #include <linux/proc_fs.h>
->>  #include <linux/spinlock.h>
->> +#include <linux/memory_hotplug.h>
->> +#include <linux/sysdev.h>
->> +#include <linux/sysfs.h>
->> +
+>> --- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-10-13 13:08:22.000000000 -0500
+>> +++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-10-13 13:09:00.000000000 -0500
+>> @@ -1,11 +1,11 @@
+>>  /*
+>> - * dlpar.c - support for dynamic reconfiguration (including PCI
+>> - * Hotplug and Dynamic Logical Partitioning on RPA platforms).
+>> + * dlpar.c - support for dynamic reconfiguration (including PCI,
+> 
+> We know it's dlpar.c :)
+
+heh! good point.  Consider it gone.
+
+> 
+>> + * Memory, and CPU Hotplug and Dynamic Logical Partitioning on
+>> + * PAPR platforms).
+>>   *
+>>   * Copyright (C) 2009 Nathan Fontenot
+>>   * Copyright (C) 2009 IBM Corporation
+>>   *
+>> - *
+>>   * This program is free software; you can redistribute it and/or
+>>   * modify it under the terms of the GNU General Public License version
+>>   * 2 as published by the Free Software Foundation.
+>> @@ -19,6 +19,7 @@
+>>  #include <linux/memory_hotplug.h>
+>>  #include <linux/sysdev.h>
+>>  #include <linux/sysfs.h>
+>> +#include <linux/cpu.h>
 >>  
+>>
 >>  #include <asm/prom.h>
->>  #include <asm/machdep.h>
->> @@ -404,11 +408,165 @@
+>> @@ -408,6 +409,82 @@
 >>  	return 0;
 >>  }
 >>  
->> +#ifdef CONFIG_MEMORY_HOTPLUG
->> +
->> +static struct property *clone_property(struct property *old_prop)
->> +{
->> +	struct property *new_prop;
->> +
->> +	new_prop = kzalloc((sizeof *new_prop), GFP_KERNEL);
->> +	if (!new_prop)
->> +		return NULL;
->> +
->> +	new_prop->name = kzalloc(strlen(old_prop->name) + 1, GFP_KERNEL);
-> 
-> kstrdup()?
-
-Ahhh.. I did not know of kstrdup().  I will update to use this instead.
-
-> 
->> +	new_prop->value = kzalloc(old_prop->length + 1, GFP_KERNEL);
->> +	if (!new_prop->name || !new_prop->value) {
->> +		free_property(new_prop);
->> +		return NULL;
->> +	}
->> +
->> +	strcpy(new_prop->name, old_prop->name);
->> +	memcpy(new_prop->value, old_prop->value, old_prop->length);
->> +	new_prop->length = old_prop->length;
->> +
->> +	return new_prop;
->> +}
->> +
->> +int platform_probe_memory(u64 phys_addr)
+>> +#ifdef CONFIG_HOTPLUG_CPU
+>> +static ssize_t cpu_probe_store(struct class *class, const char *buf,
+>> +			       size_t count)
 >> +{
 >> +	struct device_node *dn;
->> +	struct property *new_prop, *old_prop;
->> +	struct property *lmb_sz_prop;
->> +	struct of_drconf_cell *drmem;
->> +	u64 lmb_size;
->> +	int num_entries, i, rc;
->> +
->> +	if (!phys_addr)
->> +		return -EINVAL;
->> +
->> +	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
->> +	if (!dn)
->> +		return -EINVAL;
->> +
->> +	lmb_sz_prop = of_find_property(dn, "ibm,lmb-size", NULL);
->> +	lmb_size = *(u64 *)lmb_sz_prop->value;
-> 
-> of_get_property() ?
-
-ok, will switch to of_find_property()
-
->> +
->> +	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
-> 
-> I know we should never fail to find these properties, but it would be
-> nice to check just in case.
-> 
-
-yes, will update.
-
->> +
->> +	num_entries = *(u32 *)old_prop->value;
->> +	drmem = (struct of_drconf_cell *)
->> +				((char *)old_prop->value + sizeof(u32));
-> 
-> You do this dance twice (see below), a struct might make it cleaner.
-
-Agreed.  I think I will make this update in a separate patch.  Updating
-this to use a of_drconf struct would benefit this code as well as the code
-in powerpc/numa.c that also deals with manipulating this property.
-
-> 
->> +	for (i = 0; i < num_entries; i++) {
->> +		u64 lmb_end_addr = drmem[i].base_addr + lmb_size;
->> +		if (phys_addr >= drmem[i].base_addr
->> +		    && phys_addr < lmb_end_addr)
->> +			break;
->> +	}
->> +
->> +	if (i >= num_entries) {
->> +		of_node_put(dn);
->> +		return -EINVAL;
->> +	}
->> +
->> +	if (drmem[i].flags & DRCONF_MEM_ASSIGNED) {
->> +		of_node_put(dn);
->> +		return 0;
-> 
-> This is the already added case?
-
-Yes.  In this case the lmb is already assigned to the system.
-
-> 
->> +	}
->> +
->> +	rc = acquire_drc(drmem[i].drc_index);
->> +	if (rc) {
->> +		of_node_put(dn);
->> +		return -1;
-> 
-> -1 ?
-
-Yeah, bad choice.
-
-> 
->> +	}
->> +
->> +	new_prop = clone_property(old_prop);
->> +	drmem = (struct of_drconf_cell *)
->> +				((char *)new_prop->value + sizeof(u32));
->> +
->> +	drmem[i].flags |= DRCONF_MEM_ASSIGNED;
->> +	prom_update_property(dn, new_prop, old_prop);
->> +
->> +	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
->> +					  PSERIES_DRCONF_MEM_ADD,
->> +					  &drmem[i].base_addr);
->> +	if (rc == NOTIFY_BAD) {
->> +		prom_update_property(dn, old_prop, new_prop);
->> +		release_drc(drmem[i].drc_index);
->> +	}
->> +
->> +	of_node_put(dn);
->> +	return rc == NOTIFY_BAD ? -1 : 0;
-> 
-> -1 ?
-
-Another bad return code choice.
-
-> 
->> +}
->> +
->> +static ssize_t memory_release_store(struct class *class, const char *buf,
->> +				    size_t count)
->> +{
 >> +	unsigned long drc_index;
->> +	struct device_node *dn;
->> +	struct property *new_prop, *old_prop;
->> +	struct of_drconf_cell *drmem;
->> +	int num_entries;
->> +	int i, rc;
+>> +	char *cpu_name;
+>> +	int rc;
 >> +
 >> +	rc = strict_strtoul(buf, 0, &drc_index);
 >> +	if (rc)
 >> +		return -EINVAL;
 >> +
->> +	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
->> +	if (!dn)
->> +		return 0;
-> 
-> 0 really?
-
-... and again...
-
-> 
->> +
->> +	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
->> +	new_prop = clone_property(old_prop);
->> +
->> +	num_entries = *(u32 *)new_prop->value;
->> +	drmem = (struct of_drconf_cell *)
->> +				((char *)new_prop->value + sizeof(u32));
->> +
->> +	for (i = 0; i < num_entries; i++) {
->> +		if (drmem[i].drc_index == drc_index)
->> +			break;
->> +	}
->> +
->> +	if (i >= num_entries) {
->> +		free_property(new_prop);
->> +		of_node_put(dn);
->> +		return -EINVAL;
->> +	}
-> 
-> Couldn't use old_prop up until here? They're identical aren't they, so
-> you can do the clone here and you can avoid the free in the above error
-> case.
-> 
-
-Yes, this is possible.  I will clean this up.
-
->> +	drmem[i].flags &= ~DRCONF_MEM_ASSIGNED;
->> +	prom_update_property(dn, new_prop, old_prop);
->> +
->> +	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
->> +					  PSERIES_DRCONF_MEM_REMOVE,
->> +					  &drmem[i].base_addr);
->> +	if (rc != NOTIFY_BAD)
->> +		rc = release_drc(drc_index);
->> +
->> +	if (rc)
->> +		prom_update_property(dn, old_prop, new_prop);
->> +
->> +	of_node_put(dn);
->> +	return rc ? -1 : count;
-> 
-> -1, EPERM?
-
-EPERM.
-
-> 
->> +}
->> +
->> +static struct class_attribute class_attr_mem_release =
->> +			__ATTR(release, S_IWUSR, NULL, memory_release_store);
->> +#endif
->> +
->>  static int pseries_dlpar_init(void)
->>  {
->>  	if (!machine_is(pseries))
->>  		return 0;
->>  
->> +#ifdef CONFIG_MEMORY_HOTPLUG
->> +	if (sysfs_create_file(&memory_sysdev_class.kset.kobj,
->> +			      &class_attr_mem_release.attr))
->> +		printk(KERN_INFO "DLPAR: Could not create sysfs memory "
->> +		       "release file\n");
->> +#endif
->> +
->>  	return 0;
->>  }
->>  device_initcall(pseries_dlpar_init);
->> Index: powerpc/arch/powerpc/mm/mem.c
->> ===================================================================
->> --- powerpc.orig/arch/powerpc/mm/mem.c	2009-10-08 11:07:45.000000000 -0500
->> +++ powerpc/arch/powerpc/mm/mem.c	2009-10-08 11:08:54.000000000 -0500
->> @@ -111,8 +111,19 @@
->>  #ifdef CONFIG_MEMORY_HOTPLUG
->>  
->>  #ifdef CONFIG_NUMA
->> +int __attribute ((weak)) platform_probe_memory(u64 start)
-> 
-> __weak
-> 
-> Though be careful, I think this is vulnerable to a bug in some
-> toolchains where the compiler will inline this version. See the comment
-> around early_irq_init() in kernel/softirq.c for example.
-> 
-> This will need to be a ppc_md hook as soon as another platform supports
-> memory hotplug, though that may be never :)
-> 
-
-I didn't know any other way to implement this.  If using a weak symbol is ok
-I will leave it.  I am open to suggestions if there is a better way to do this.
-
-thanks for reviewing the patch.
-
--Nathan
-
->> +{
->> +	return 0;
->> +}
->> +
->>  int memory_add_physaddr_to_nid(u64 start)
->>  {
->> +	int rc;
->> +
->> +	rc = platform_probe_memory(start);
+>> +	rc = acquire_drc(drc_index);
 >> +	if (rc)
 >> +		return rc;
 >> +
->>  	return hot_add_scn_to_nid(start);
->>  }
->>  #endif
+>> +	dn = configure_connector(drc_index);
+>> +	if (!dn) {
+>> +		release_drc(drc_index);
+>> +		return rc;
+>> +	}
+>> +
+>> +	/* fixup dn name */
+>> +	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus/") + 1,
+>> +			   GFP_KERNEL);
+>> +	if (!cpu_name) {
+>> +		free_cc_nodes(dn);
+>> +		release_drc(drc_index);
+>> +		return -ENOMEM;
+>> +	}
+>> +
+>> +	sprintf(cpu_name, "/cpus/%s", dn->full_name);
+>> +	kfree(dn->full_name);
+>> +	dn->full_name = cpu_name;
+> 
+> What was all that? Firmware gives us a bogus full name? But the parent
+> is right?
+
+Yeah, this has always been an oddity to me.  The name that is given to us
+from firmware puts the cpu node in the root of the device tree as opposed
+to /cpus.  Since cpu nodes are in /cpus, the name is fixed up to reflect this.
+
+This name fixup has always been done by the drmgr userspace command, which is
+where this functionality is being imported from.
+
+> 
+>> +	rc = add_device_tree_nodes(dn);
+>> +	if (rc)
+>> +		release_drc(drc_index);
+>> +
+>> +	return rc ? rc : count;
+> 
+> You're sure rc is < 0.
+> 
+Oh, good catch.
+
+>> +}
+>> +
+>> +static ssize_t cpu_release_store(struct class *class, const char *buf,
+>> +				 size_t count)
+>> +{
+>> +	struct device_node *dn;
+>> +	u32 *drc_index;
+>> +	int rc;
+>> +
+>> +	dn = of_find_node_by_path(buf);
+>> +	if (!dn)
+>> +		return -EINVAL;
+>> +
+>> +	drc_index = (u32 *)of_get_property(dn, "ibm,my-drc-index", NULL);
+> 
+> No cast required.
+
+ok.
+
+thanks for the review.
+
+-Nathan
+
+> 
+>> +	if (!drc_index) {
+>> +		of_node_put(dn);
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	rc = release_drc(*drc_index);
+>> +	if (rc) {
+>> +		of_node_put(dn);
+>> +		return rc;
+>> +	}
+>> +
+>> +	rc = remove_device_tree_nodes(dn);
+>> +	if (rc)
+>> +		acquire_drc(*drc_index);
+>> +
+>> +	of_node_put(dn);
+>> +	return rc ? rc : count;
+>> +}
+> 
 > 
 > cheers
-> 
