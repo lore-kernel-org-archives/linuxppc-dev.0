@@ -4,29 +4,30 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B1E4EB7B80
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 06:32:31 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by ozlabs.org (Postfix) with ESMTPS id E4793B7B91
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 07:07:41 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n9FJWSK3001054
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 12:32:29 -0700 (MST)
+	n9FK7SaK011802
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 13:07:28 -0700 (MST)
 Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
 	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n9FJZLOO027570
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 14:35:21 -0500 (CDT)
-Message-ID: <4AD778E6.7020806@freescale.com>
-Date: Thu, 15 Oct 2009 14:32:54 -0500
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n9FK9xP4014697
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 15:09:59 -0500 (CDT)
+Message-ID: <4AD7811A.6040501@freescale.com>
+Date: Thu, 15 Oct 2009 15:07:54 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: Re: [PATCH] hvc_console: returning 0 from put_chars is not an error
-References: <1255557226-4403-1-git-send-email-timur@freescale.com>	<200910152041.26646.borntraeger@de.ibm.com>	<4AD770A9.6070509@freescale.com>
-	<200910152126.28024.borntraeger@de.ibm.com>
-In-Reply-To: <200910152126.28024.borntraeger@de.ibm.com>
+To: Felix Radensky <felix@embedded-sol.com>
+Subject: Re: UBIFS problem on MPC8536DS
+References: <4AD5ADC9.30503@embedded-sol.com>	<4AD5C5B4.3060303@nokia.com>	<4AD5D053.9000901@embedded-sol.com>	<4AD5FFE7.7080703@nokia.com>
+	<4AD60EF4.4080306@embedded-sol.com>
+	<4AD614E4.6030005@freescale.com>
+In-Reply-To: <4AD614E4.6030005@freescale.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, brueckner@linux.vnet.ibm.com,
-	Timur Tabi <timur@freescale.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+	Adrian Hunter <adrian.hunter@nokia.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,13 +37,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christian Borntraeger wrote:
-> About the backends, there are some that spin until the text is delivered (e.g. 
-> virtio) , others can drop (e.g. iucv is a connection oriented protocol and it 
-> will (and has to) drop if there is no connection). 
+Scott Wood wrote:
+> Felix Radensky wrote:
+>> Yes, NAND and NOR are on the same local bus controller.
+>>
+>> Maybe powerpc folks can provide some insight here.
+>> Is it possible that simultaneous access to NOR and NAND
+>> on MPC8536 can result in NAND timeouts ?
+> 
+> I've heard other reports of such problems with eLBC, but was unable to 
+> reproduce it myself last time I tried.  Could you reduce this down to a 
+> minimal set of specific reproduction instructions (e.g. eliminate UBI if 
+> possible, or else explain how to set up UBI)?
 
-Sure, dropping due to not having a connection makes sense.  That's 
-different from merely being busy.  Can the iucv code tell the difference 
-between those two states?
+OK, I was able to reproduce the problem on mpc8572 simply by sticking a 
+read to NOR flash inside fsl_elbc_run_command -- I'm not sure what 
+happened last time I tried.
+
+I suppose we'll need a special NOR mapping driver that does some sync 
+with the NAND driver.
 
 -Scott
