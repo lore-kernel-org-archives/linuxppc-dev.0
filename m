@@ -1,16 +1,24 @@
-Return-Path: <fboudra@gmail.com>
-Received: from mail-ew0-f214.google.com (mail-ew0-f214.google.com
-	[209.85.219.214]) by ozlabs.org (Postfix) with ESMTP id 95F2EB7B77
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 00:36:47 +1100 (EST)
-MIME-Version: 1.0
-Date: Thu, 15 Oct 2009 15:36:44 +0200
-Message-ID: <6a2e33620910150636o7e58423cqef1dddba0a880aae@mail.gmail.com>
-Subject: kernel oops issue in localbus driver
-From: Fathi Boudra <fboudra@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: fboudra@gmail.com
+Return-Path: <khali@linux-fr.org>
+Received: from bamako.nerim.net (bamako.nerim.net [62.4.17.28])
+	by ozlabs.org (Postfix) with ESMTP id 89220B7B80
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 01:05:16 +1100 (EST)
+Date: Thu, 15 Oct 2009 16:05:13 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: i2c-powermac fails
+Message-ID: <20091015160513.5c356b7e@hyperion.delvare>
+In-Reply-To: <1255605559.2347.102.camel@pasglop>
+References: <20091013112304.74083fd1@hyperion.delvare>
+	<1255426348.2192.187.camel@pasglop>
+	<20091013114948.03608b7f@hyperion.delvare>
+	<20091014230252.0d0cba8d@hyperion.delvare>
+	<1255555575.2347.56.camel@pasglop>
+	<20091015124923.23863a94@hyperion.delvare>
+	<1255605559.2347.102.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, Tim Shepard <shep@alum.mit.edu>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,68 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 15 Oct 2009 22:19:19 +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2009-10-15 at 12:49 +0200, Jean Delvare wrote:
+> > Oh. Well, if that was the case, we would see errors all the time, not
+> > just during initialization, right? Or does the I2C clock frequency
+> > change over time somehow?
+> 
+> No but maybe we are a bit on the "limit" of the device and some
+> registers take long to respond than others ?
 
-I have a FPGA connected to a MPC8347 through localbus.
+Unlikely. The ADT7460 can run at I2C clock rates up to 400 kHz while
+the Keywest I2C runs at 25, 50 or 100 kHz if I read the code properly.
+I don't know what exact speed is used on Tim's system, apparently it is
+read from the hardware in the device tree directly?
 
-The following kernel oops occurs sometimes:
+We could have low_i2c.c log the I2C clock frequency and/or try to force
+the lowest speed (25 kHz) and see if it helps, but I very much doubt
+it. And I'd rather wait for Tim to report the result with my last patch
+first.
 
-Unable to handle kernel paging request for data at address 0x7ddfecb0
-Faulting instruction address: 0xc00145f4
-Oops: Kernel access of bad area, sig: 11 [#1]
-PREEMPT
-Modules linked in: ath_pci ath_rate_minstrel ath_hal wlan_acl
-wlan_ccmp wlan_scan_ap wlan_scan_sta wlan_tkip wlan_wep wlan_xauth
-wlan gpio localbus
-NIP: C00145F4 LR: D1083C74 CTR: 000001C3
-REGS: c700ddb0 TRAP: 0300   Tainted: P       (2.6.18)
-MSR: 00009032 <EE,ME,IR,DR>  CR: 20024042  XER: 20000000
-DAR: 7DDFECB0, DSISR: 22000000
-TASK = c7786810[345] 'femain' THREAD: c700c000
-GPR00: 00000000 C700DE60 C7786810 7DDFEBC8 C90620EC 00000F00 7DDFECAC
-7196E7E0
-GPR08: 0EECA261 D1090000 0021ED00 C00145D0 00001000 704C6206 00000000
-1005924D
-GPR16: C0034D7C 7DDFEBC8 C700DE9C 00000F00 00000000 C787A3C0 D1090000
-00000000
-GPR24: 00000000 D1090000 7DDFEBC8 D1090000 000003C0 C9062000 7DDFEBC8
-D108E954
-NIP [C00145F4] memcpy+0x24/0x9c
-LR [D1083C74] lbp_memcpy32_fromio+0x54/0x98 [localbus]
-Call Trace:
-[C700DE60] [C019B780] preempt_schedule_irq+0x64/0xa4 (unreliable)
-[C700DE80] [D10813C0] fpgadecenc_read+0x3ac/0x4b0 [localbus]
---- Exception: 7ddfebc8 at 0xc700df40
-    LR = _start+0x40000000/0xc
-[C700DEF0] [C005F4DC] vfs_read+0x9c/0x140 (unreliable)
-[C700DF10] [C005F840] sys_read+0x4c/0x90
-[C700DF40] [C000F89C] ret_from_syscall+0x0/0x38
---- Exception: c01 at 0x300bb7dc
-    LR = 0x3001ed40
-Instruction dump:
-4e800020 7c032040 418100a0 54a7e8ff 38c3fffc 3884fffc 41820028
-70c00003
-7ce903a6 40820054 80e40004 85040008 <90e60004> 95060008 4200fff0 70a50007
-
-It seems there's an issue in the localbus driver (lbp_memcpy32_fromio
-is a wrapper function for the localbus memory access):
-
-ssize_t lbp_memcpy_fromio(void *dest, void *source, __u32 count32)
-{
-	/* attempt to acquire the semaphore */
-	down(&sem_lb);
-	/* critical region */
-	mb();
-	memcpy_fromio(dest, source, count32 * 4);
-	mb();
-	/* release the given semaphore */
-	up(&sem_lb);
-}
-
-Aren't we supposed to use down_interruptible() instead ?
-I didn't write the driver and would like to fix it.
-Any hints will be appreciated.
-
-cheers,
-
-Fathi
+-- 
+Jean Delvare
