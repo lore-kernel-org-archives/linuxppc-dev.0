@@ -1,26 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <tabbott@MIT.EDU>
+Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
+	[18.7.7.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C81E2B7B7E
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C8195B7B7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Oct 2009 03:27:26 +1100 (EST)
-Date: Thu, 15 Oct 2009 11:27:28 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Richard Cochran <richard.cochran@omicron.at>
-Subject: Re: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
-Message-ID: <20091015162728.GB3730@loki.buserror.net>
-References: <25940478.1252060285938.JavaMail.root@viefep11.chello.at>
-	<20090909182227.GA8215@b07421-ec1.am.freescale.net>
-	<95DC1AA8EC908B48939B72CF375AA5E30E220693@alice.at.omicron.at>
-	<20091014152722.GA17867@b07421-ec1.am.freescale.net>
-	<95DC1AA8EC908B48939B72CF375AA5E30E2AE72C@alice.at.omicron.at>
+	Fri, 16 Oct 2009 03:45:12 +1100 (EST)
+Date: Thu, 15 Oct 2009 12:37:20 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc problem with .data.page_aligned -> __page_aligned_data
+	conversion
+In-Reply-To: <1255584772.2347.86.camel@pasglop>
+Message-ID: <alpine.DEB.1.10.0910151229340.25434@dr-wily.mit.edu>
+References: <1255584772.2347.86.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <95DC1AA8EC908B48939B72CF375AA5E30E2AE72C@alice.at.omicron.at>
-Cc: "'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, sam@ravnborg.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 15, 2009 at 02:19:30PM +0200, Richard Cochran wrote:
-> >-----Original Message----- From: Scott Wood [mailto:scottwood@freescale.com]
-> >Because that would be three times the device trees to maintain, and a
-> >source of user confusion.
+On Thu, 15 Oct 2009, Benjamin Herrenschmidt wrote:
+
+> For some weird reason, our gcc until 4.3 (fixed in 4.3) had the weird
+> idea that the alignment attribute should not be allowed to force an
+> alignment greater than 32k. If attempted, it would warn -and- crop the
+> alignment to 32k.
+[...]
+> This has a few issues for us:
 > 
-> I wonder which is more confusing for the user:
-> 
-> 1. Choosing one of three dts files.
+> 	- The patch that converted bits of powerpc to the new macro break since
+> it now hits that bug
 
-Possibly incorrectly.
+Hi Ben,
 
-> 2. Having only one dts for his board, but Ethernet doesn't work.
+Just to make sure I understand the nature of the problem, is the current 
+breakage that gcc < 4.3 will _warn_ on any compilation units on ppc64 that 
+use __page_aligned data, or something worse?
 
-The point is to fix u-boot so that it *does* work with only one dts.  If
-people not upgrading u-boot is your concern, we could put the fixup in the
-Linux platform code instead.
+The cropping is clearly a potential problem, but I read the rest of your 
+email as saying that the cropping of the alignment isn't actually a 
+problem with the current kernel because the kernel is currently only using 
+the macro with things whose size is divisible by PAGE_SIZE.  However, I am 
+not sure how to reconcile that with using the word "break" above...
 
-And feel free to ask through official Freescale support channels why the
-U-Boot that shipped on these boards does not have such a fixup (or why they
-decided it was better to make late-rev 8313's interrupt assignments match
-other 83xx than for all revs of the same part number to have the same
-interrupt assignments).
-
--Scott
+	-Tim Abbott
