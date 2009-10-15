@@ -1,18 +1,18 @@
-Return-Path: <RFeany@mrv.com>
-Received: from bos-spam.mrv.com (mx5.mrv.com [140.179.254.12])
-	by ozlabs.org (Postfix) with ESMTP id 2A289B7B96
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 03:56:55 +1100 (EST)
-Date: Thu, 15 Oct 2009 09:56:50 -0700
-From: Rex Feany <RFeany@mrv.com>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
-Message-ID: <20091015165650.GA3837@compile2.chatsunix.int.mrv.com>
-References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <20091015120007.3780c59b.sfr@canb.auug.org.au>
+References: <20091007041007.16890.62194.stgit@angua>
+	<20091015120007.3780c59b.sfr@canb.auug.org.au>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 15 Oct 2009 11:06:15 -0600
+Message-ID: <fa686aa40910151006k43b07c30q1e43c3b1ae4af561@mail.gmail.com>
+Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +22,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch/powerpc/kernel/head_8xx.o: In function `FixupDAR':
-/home/rfeany/src/lnxnm/linux-dev/arch/powerpc/kernel/head_8xx.S:576: undefined reference to `DARfix'
+On Wed, Oct 14, 2009 at 7:00 PM, Stephen Rothwell <sfr@canb.auug.org.au> wr=
+ote:
+> Hi Grant,
+>
+> On Tue, 06 Oct 2009 22:29:57 -0600 Grant Likely <grant.likely@secretlab.c=
+a> wrote:
+>>
+>> Well, I've got to start somewhere...
+>>
+>> So here goes. =A0I've begun the work to merge and clean up the OF device
+>> tree handling code and this is my first set of patches. =A0Not fully
+>> tested yet, but I'm getting them out to the lists so that I can start
+>> responding to comments and collecting acks. =A0This first batch isn't
+>> anything exciting, just a merge of common code
+>
+> This all looks OK to me. =A0One thing: =A0I started in this as well some =
+time
+> ago and in my attempt I was hoping to avoid the ARCH ifdefs in linux/of.h
+> by creating asm/of.h and moving the differing bits in there ...
 
-With all of your patches applied I have this problem:
+Thanks Stephen.
 
-open("/proc/mounts", O_RDONLY)          = 3
-fstat64(0x3, 0x7fc6ad58)                = 0
-mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x3001f000
-read(3, 0x3001f000, 1024)               = -1 EFAULT (Bad address)
-exit_group(0)                           = ?
+At the moment I'm purposefully experimenting with doing arch #ifdefs
+in the hope that it will lead to obvious places where the code can be
+generalized even further.  I'll see how it looks before I commit down
+that path though.
 
-but it works fine with /dev/zero:
+In the mean time, I've pushed out the current series with acked-bys
+added to my git server.  I think I'm ready for things to start going
+into linux-next.  Since this is the first time I've asked for a tree
+to be added to linux-next, please let me know if you see anything
+troublesome or problematic.  Here's the tree:
 
-open("/dev/zero", O_RDONLY)             = 3
-mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x30001000
-read(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 1024) = 1024
+The following changes since commit 4bdf0bb7d64cf672199519b3d808e2a82f5b59e9=
+:
+  Grant Likely (1):
+        powerpc/5200: Update defconfigs
 
-If I revert "8xx: start using dcbX instructions in various copy
-routines" then it works again. I think it is the cache instructions
-added to __copy_tofrom_user: reading from /dev/zero is OK (it uses
-__clear_user, no dcbX), but copy_to_user() fails.
+are available in the git repository at:
 
-It seems stable with all but the dcbX patch applied. I haven't been able
-to crash it yet, anyway :)
+  git://git.secretlab.ca/git/linux-2.6 next-devicetree
 
-take care!
-/rex.
+Grant Likely (12):
+      of: Rework linux/of.h and asm/prom.h include ordering
+      of: merge phandle, ihandle and struct property
+      of: merge struct device_node
+      of: Move OF_IS_DYNAMIC and OF_MARK_DYNAMIC macros to of.h
+      of: add common header for flattened device tree representation
+      of: merge struct boot_param_header from Microblaze and PowerPC
+      of: merge of_node_*_flag() and set_node_proc_entry()
+      of: merge of_read_number() an of_read_ulong()
+      of: merge of_node_get(), of_node_put() and of_find_all_nodes()
+      of: merge of_*_flat_dt*() functions
+      of: merge other miscellaneous prototypes
+      of: merge of_find_all_nodes() implementations
+
+ arch/microblaze/include/asm/prom.h |  135 +-------------------------------=
+-
+ arch/microblaze/kernel/head.S      |    2 +-
+ arch/microblaze/kernel/prom.c      |   23 ------
+ arch/powerpc/include/asm/prom.h    |  147 +-------------------------------=
+----
+ arch/powerpc/kernel/prom.c         |   23 ------
+ arch/sparc/include/asm/prom.h      |   55 +-------------
+ drivers/of/base.c                  |   26 ++++++-
+ include/linux/of.h                 |  103 +++++++++++++++++++++++++
+ include/linux/of_fdt.h             |   86 +++++++++++++++++++++
+ 9 files changed, 221 insertions(+), 379 deletions(-)
+ create mode 100644 include/linux/of_fdt.h
+
+
+> I'll send out the two patches I did just to show what I mean (these are
+> from before microblaze was using the OF stuff).
+
+Got them, thanks.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
