@@ -1,20 +1,37 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 31C88B7B89
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 05:39:42 +1100 (EST)
-To: =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: MPC5121 CAN and USB
+Return-Path: <borntraeger@de.ibm.com>
+Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6FFE6B7B8B
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 05:42:16 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate5.uk.ibm.com (8.14.3/8.13.8) with ESMTP id n9FIfdCx179148
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 18:41:44 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id n9FIfTBo1482916
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 19:41:29 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id n9FIfSG5002398
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 19:41:29 +0100
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] hvc_console: returning 0 from put_chars is not an error
+Date: Thu, 15 Oct 2009 20:41:26 +0200
+References: <1255557226-4403-1-git-send-email-timur@freescale.com>
+	<200910151305.47100.borntraeger@de.ibm.com>
+	<20091015160906.GA3730@loki.buserror.net>
+In-Reply-To: <20091015160906.GA3730@loki.buserror.net>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <4AD70927.3030401@marel.com>
-References: <4AD5ADC9.30503@embedded-sol.com> <4AD6F172.6030407@aimvalley.nl>
-	<4AD6FD4E.9060507@marel.com> <4AD70585.40302@gmail.com>
-	<4AD70927.3030401@marel.com>
-Date: Thu, 15 Oct 2009 20:30:39 +0200
-Message-Id: <20091015183039.A577EECA6BE@gemini.denx.de>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"paul.gibson2074@gmail.com" <paul.gibson2074@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200910152041.26646.borntraeger@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, brueckner@linux.vnet.ibm.com,
+	Timur Tabi <timur@freescale.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,53 +41,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?=,
-
-In message <4AD70927.3030401@marel.com> you wrote:
+Am Donnerstag 15 Oktober 2009 18:09:06 schrieb Scott Wood:
+> On Thu, Oct 15, 2009 at 01:05:47PM +0200, Christian Borntraeger wrote:
+> > The fact that struct console->write returns void indicates that the
+> > console layer is not interested in errors. We have two policies we can
+> > implement:
+> >
+> > 1. drop console messages if case of congestion but keep the system going
+> > 2. dont drop messages and wait, even if the system might come to a
+> > complete stop
+> >
+> > Looking at drivers/char/vt.c
+> >         /* console busy or not yet initialized */
+> >         if (!printable)
+> >                 return;
+> >         if (!spin_trylock(&printing_lock))
+> >                 return;
+> > could mean that  Linux consoles should not block.
 > 
-> The kernel from the BSP on Freescale site is crashing on the CAN in my case
->  (might be a hardware bug).
+> That's a bit different -- the code above is testing for potential deadlocks
+> within Linux (or a not-yet-initialized console), not a device that has yet
+> to process the last batch of characters we threw at it.  Plus, given the
+> "console must be locked when we get here" comment, I'm not sure that you'll
+> ever see contention on printing_lock?
+> 
+> Serial consoles currently block when waiting for the buffer to drain:
 
-I don;t think so. There are some problems in this code, for example
-the clocks seem to be wrong. Not toi menthin that the whole code is
-hoplessly old and without chance of ever being merged into mainline.
+Right. Looking at more drivers it seems that both ways (waiting and dropping) 
+are used.
 
-> I could not find the source for the kernel in the BSP or on the freescale site.
+Hmmm, if we are ok with having both options, we should let the hvc backend 
+decide if it wants to drain or to discard.
 
-Extracting just the sources from LTIB (without actually building all
-of it) is indeed not exactly easy.
+If we just busy loop, it actually does not matter how we let hvc_console react 
+on 0, as long as we adopt all backends to use that interface consistent.
 
-> I had not looked at http://git.denx.de/?p=linux-2.6-denx.git;a=shortlog;h=refs/heads/ltib-mpc5121ads-20090602
+On the other hand, backends might want to do special magic on congestion so I 
+personally tend to let the backend loop instead of hvc_console. But I am really  
+not sure.
 
-Be careful. There are several branches that are intended for reference
-only, or reflect work in progress. These are usually not intended for
-use real use in a project:
-
-The "ltib-mpc5121ads-20090602" branch reflects the exact state of the
-kernel contained in the LTIB with this name (dated July 2009, despite
-the name; based at 2.6.24.6, i. e. 7+ kernel versions behind).
-
-The "mpc512x" branch contains a much smaller subset of drivers, but is
-based on a more recent kernel tree (2.6.31-rc5) and is the base of our
-(currently dozing) attempts to push this code into mainline.
-
-> I am now in the progress of cloning the linux-mpc512x git from denx and building from it.
-> Hopefully that will help me.
-
-Do not do this. This old repository was intended for co-operation
-with John Rigby, when he was still working for Freescale. It is a
-dead end and totally unsupported. Guess I should remove it. Indeed.
-Removed now. Sorry for the confusion.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Anyone who knows history, particularly the history of Europe, will, I
-think, recognize that the domination of education or of government by
-any one particular religious faith is never a happy  arrangement  for
-the people.                                       - Eleanor Roosevelt
+Christian
