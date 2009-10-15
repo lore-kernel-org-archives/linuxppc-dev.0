@@ -1,15 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Thu, 15 Oct 2009 12:00:07 +1100
+Date: Thu, 15 Oct 2009 12:01:44 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
-Message-Id: <20091015120007.3780c59b.sfr@canb.auug.org.au>
-In-Reply-To: <20091007041007.16890.62194.stgit@angua>
+Subject: [PATCH 1/2] of: create asm/of.h
+Message-Id: <20091015120144.73ef384c.sfr@canb.auug.org.au>
+In-Reply-To: <20091015120007.3780c59b.sfr@canb.auug.org.au>
 References: <20091007041007.16890.62194.stgit@angua>
+	<20091015120007.3780c59b.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__15_Oct_2009_12_00_07_+1100_F.cmwanLGW4bt_y7"
+Content-Type: text/plain; charset=US-ASCII
 Cc: monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
 	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
@@ -22,45 +21,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__15_Oct_2009_12_00_07_+1100_F.cmwanLGW4bt_y7
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This creates asm/of.h for powerpc and sparc and includes it
+from linux/of.h, it also moves the first trivial stuff there from
+asm/prom.h
 
-Hi Grant,
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/include/asm/of.h   |   23 +++++++++++++++++++++++
+ arch/powerpc/include/asm/prom.h |    7 -------
+ arch/sparc/include/asm/of.h     |   24 ++++++++++++++++++++++++
+ arch/sparc/include/asm/prom.h   |    7 -------
+ include/linux/of.h              |    1 +
+ 5 files changed, 48 insertions(+), 14 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/of.h
+ create mode 100644 arch/sparc/include/asm/of.h
 
-On Tue, 06 Oct 2009 22:29:57 -0600 Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->
-> Well, I've got to start somewhere...
->=20
-> So here goes.  I've begun the work to merge and clean up the OF device
-> tree handling code and this is my first set of patches.  Not fully
-> tested yet, but I'm getting them out to the lists so that I can start
-> responding to comments and collecting acks.  This first batch isn't
-> anything exciting, just a merge of common code
+diff --git a/arch/powerpc/include/asm/of.h b/arch/powerpc/include/asm/of.h
+new file mode 100644
+index 0000000..1c1089a
+--- /dev/null
++++ b/arch/powerpc/include/asm/of.h
+@@ -0,0 +1,23 @@
++#ifndef _POWERPC_OF_H
++#define _POWERPC_OF_H
++/*
++ * Definitions for accessing the in memory device tree.
++ *
++ * Extracted from prom.h
++ *	Copyright (C) 1996-2005 Paul Mackerras.
++ *	Updates for PPC64 by Peter Bergner & David Engebretsen, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	1
++#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
++
++#define of_compat_cmp(s1, s2, l)	strcasecmp((s1), (s2))
++#define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
++#define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
++
++#endif /* _POWERPC_OF_H */
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 6ff0418..07aef9f 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -21,13 +21,6 @@
+ #include <asm/irq.h>
+ #include <asm/atomic.h>
+ 
+-#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	1
+-#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
+-
+-#define of_compat_cmp(s1, s2, l)	strcasecmp((s1), (s2))
+-#define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
+-#define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
+-
+ /* Definitions used by the flattened device tree */
+ #define OF_DT_HEADER		0xd00dfeed	/* marker */
+ #define OF_DT_BEGIN_NODE	0x1		/* Start of node, full name */
+diff --git a/arch/sparc/include/asm/of.h b/arch/sparc/include/asm/of.h
+new file mode 100644
+index 0000000..57ab8f9
+--- /dev/null
++++ b/arch/sparc/include/asm/of.h
+@@ -0,0 +1,24 @@
++#ifndef _SPARC_OF_H
++#define _SPARC_OF_H
++/*
++ * Definitions for accessing the in memory device tree.
++ *
++ * Extracted from prom.h
++ *	Copyright (C) 1996-2005 Paul Mackerras.
++ *	Updates for PPC64 by Peter Bergner & David Engebretsen, IBM Corp.
++ *	Updates for SPARC by David S. Miller
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	2
++#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
++
++#define of_compat_cmp(s1, s2, l)	strncmp((s1), (s2), (l))
++#define of_prop_cmp(s1, s2)		strcasecmp((s1), (s2))
++#define of_node_cmp(s1, s2)		strcmp((s1), (s2))
++
++#endif /* _SPARC_OF_H */
+diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+index 82a190d..4b6ec43 100644
+--- a/arch/sparc/include/asm/prom.h
++++ b/arch/sparc/include/asm/prom.h
+@@ -21,13 +21,6 @@
+ #include <linux/mutex.h>
+ #include <asm/atomic.h>
+ 
+-#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	2
+-#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
+-
+-#define of_compat_cmp(s1, s2, l)	strncmp((s1), (s2), (l))
+-#define of_prop_cmp(s1, s2)		strcasecmp((s1), (s2))
+-#define of_node_cmp(s1, s2)		strcmp((s1), (s2))
+-
+ typedef u32 phandle;
+ typedef u32 ihandle;
+ 
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 7be2d10..3bfdaec 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -19,6 +19,7 @@
+ #include <linux/bitops.h>
+ #include <linux/mod_devicetable.h>
+ 
++#include <asm/of.h>
+ #include <asm/prom.h>
+ 
+ /* flag descriptions */
+-- 
+1.6.4.3
 
-This all looks OK to me.  One thing:  I started in this as well some time
-ago and in my attempt I was hoping to avoid the ARCH ifdefs in linux/of.h
-by creating asm/of.h and moving the differing bits in there ...
-
-I'll send out the two patches I did just to show what I mean (these are
-from before microblaze was using the OF stuff).
-
---=20
+-- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__15_Oct_2009_12_00_07_+1100_F.cmwanLGW4bt_y7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrWdBcACgkQjjKRsyhoI8w26gCgrC6aXsKjJZJN+rq7j8hhiiDb
-ZK0AnRqc0bw0h1mbhMJ1vnCTuvoej99J
-=ZMeC
------END PGP SIGNATURE-----
-
---Signature=_Thu__15_Oct_2009_12_00_07_+1100_F.cmwanLGW4bt_y7--
