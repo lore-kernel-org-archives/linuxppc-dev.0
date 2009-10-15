@@ -1,17 +1,11 @@
-Return-Path: <nvbolhuis@aimvalley.nl>
-Received: from smtp-vbr7.xs4all.nl (smtp-vbr7.xs4all.nl [194.109.24.27])
-	by ozlabs.org (Postfix) with ESMTP id C6640B7B68
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 21:01:30 +1100 (EST)
-Message-ID: <4AD6F172.6030407@aimvalley.nl>
-Date: Thu, 15 Oct 2009 11:54:58 +0200
-From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+Return-Path: <willy.jacobs@nl.thalesgroup.com>
+Message-ID: <4AD6F5D4.7080909@nl.thalesgroup.com>
+Date: Thu, 15 Oct 2009 12:13:40 +0200
+From: willy jacobs <willy.jacobs@nl.thalesgroup.com>
 MIME-Version: 1.0
-To: Felix Radensky <felix@embedded-sol.com>
-Subject: Re: UBIFS problem on MPC8536DS
-References: <4AD5ADC9.30503@embedded-sol.com>
-In-Reply-To: <4AD5ADC9.30503@embedded-sol.com>
+To: Linuxppc-dev@lists.ozlabs.org
+Subject: Instable kernel  (2.6.29 or 2.6.31) on MPC8548 with 2 GByte RAM
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,157 +15,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Felix,
+On our MPC8548 (latest die revision) based boards with 2 GByte DDR2 RAM we see an stable kernel when
 
-do you have CONFIG_NO_HZ defined ?
+CONFIG_HIGHMEM is not set
 
-I've seen similar problems with powerpc + CONFIG_NO_HZ. In my case the low-level
-do_write_buffer (cfi_cmdset_0002.c) timed out too early. See
-http://lkml.org/lkml/2009/9/3/84
+In this case only the first 768 MB will be used (as reported by /proc/cpuinfo).
+Tested with/without the RT-patches for 2.6.29.6(-rt23) and 2.6.31.2(-rt13) kernels.
 
-Maybe in your case it's the do_erase_chip timing out too early.
+With CONFIG_HIGHMEM=y (2048 MB reported) we see (under "heavy" load conditions) regulary page
+errors like this (with/without RT patches):
 
----
-NvBolhuis.
+BUG: Bad page state in process loadgen  pfn:7e31d
+page:c17c23a0 flags:80000000 count:0 mapcount:-128 mapping:(null) index:48105
+Call Trace:
+[ef867d20] [c00072ac] show_stack+0x34/0x160 (unreliable)
+[ef867d50] [c006fcd0] bad_page+0x90/0x13c
+[ef867d70] [c0070d94] get_page_from_freelist+0x424/0x45c
+[ef867de0] [c0070ea4] __alloc_pages_nodemask+0xd8/0x48c
+[ef867e40] [c0082bf0] handle_mm_fault+0x404/0x740
+[ef867e90] [c00131bc] do_page_fault+0x150/0x460
+[ef867f40] [c001017c] handle_page_fault+0xc/0x80
+
+With the RT-patches we see already during Linux startup at lot of these errors (from several processes):
+
+BUG: scheduling while atomic: pam_console_app/0x00000001/802, CPU#0
+Modules linked in:
+Call Trace:
+[ef28dce0] [c00072ac] show_stack+0x34/0x160 (unreliable)
+[ef28dd10] [c002fa90] __schedule_bug+0x6c/0x80
+[ef28dd30] [c02660fc] __schedule+0x264/0x338
+[ef28dd60] [c0266400] schedule+0x1c/0x40
+[ef28dd70] [c0267898] rt_spin_lock_slowlock+0x124/0x264
+[ef28dde0] [c0079154] __lru_cache_add+0x24/0xa8
+[ef28de00] [c008ee04] page_add_new_anon_rmap+0x58/0x88
+[ef28de20] [c0086ff8] handle_mm_fault+0x5a4/0x804
+[ef28de80] [c0013590] do_page_fault+0x14c/0x49c
+[ef28df40] [c00101c4] handle_page_fault+0xc/0x80
+BUG: scheduling while atomic: pam_console_app/0x00000001/807, CPU#0
+Modules linked in:
+Call Trace:
+[ef323a30] [c00072ac] show_stack+0x34/0x160 (unreliable)
+[ef323a60] [c002fa90] __schedule_bug+0x6c/0x80
+[ef323a80] [c02660fc] __schedule+0x264/0x338
+[ef323ab0] [c0266400] schedule+0x1c/0x40
+[ef323ac0] [c0267898] rt_spin_lock_slowlock+0x124/0x264
+[ef323b30] [c0079154] __lru_cache_add+0x24/0xa8
+[ef323b50] [c008ee04] page_add_new_anon_rmap+0x58/0x88
+[ef323b70] [c0086ff8] handle_mm_fault+0x5a4/0x804
+[ef323bd0] [c0013590] do_page_fault+0x14c/0x49c
+[ef323c90] [c00101c4] handle_page_fault+0xc/0x80
+[ef323d50] [00000007] 0x7
+[ef323d80] [c0071320] generic_file_aio_read+0x2d4/0x6bc
+[ef323e00] [c00ffe98] nfs_file_read+0x124/0x178
+[ef323e30] [c009d56c] do_sync_read+0xc4/0x138
+[ef323ef0] [c009e0a4] vfs_read+0xc4/0x188
+[ef323f10] [c009e514] sys_read+0x4c/0x90
+[ef323f40] [c000fd84] ret_from_syscall+0x0/0x3c
+
+Anyone experience with MPC8548 with 2 GByte RAM (HIGHMEM)?
+
+Regards,
+-- 
+willy
+Unclassified
 
 
+------------------------------------------------------------------------------------------------------------
+Disclaimer:
 
-
-
-Felix Radensky wrote:
-> Hi,
-> 
-> I have a strange problem in linux-2.6.31 running on MPC8536DS board.
-> It is 100% reproducible, by opening a 350MB tar file into ubifs volume
-> on NAND flash, and starting erase of NOR flash partition right after that.
-> 
-> If I don't start  NOR erase, everything works fine. Also, If I run sync 
-> after
-> tar, no problem occurs.  The NOR flash is 32MB  Spansion, NAND is
-> 4GB Samsung.
-> 
-> The error messages are as follows:
-> 
-> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
-> 5812:12288, written 0 bytes
-> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5812
-> UBI: recover PEB 5812, move data to PEB 19400
-> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
-> 5812:512, read 512 bytes
-> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
-> 19400:512, written 0 bytes
-> UBI warning: recover_peb: failed to write to PEB 19400
-> UBI: try again
-> UBI: recover PEB 5812, move data to PEB 19401
-> UBI: run torture test for PEB 19400
-> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
-> 19401:512, written 0 bytes
-> UBI warning: recover_peb: failed to write to PEB 19401
-> UBI: try again
-> UBI: recover PEB 5812, move data to PEB 19402
-> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
-> 19402:512, written 0 bytes
-> UBI warning: recover_peb: failed to write to PEB 19402
-> UBI: try again
-> UBI: recover PEB 5812, move data to PEB 19403
-> UBI error: ubi_io_write: error -5 while writing 512 bytes to PEB 
-> 19403:512, written 0 bytes
-> UBI warning: recover_peb: failed to write to PEB 19403
-> UBI warning: ubi_ro_mode: switch to read-only mode
-> UBIFS error (pid 1149): ubifs_wbuf_write_nolock: cannot write 2522 bytes 
-> to LEB 389:10240, error -5
-> UBIFS warning (pid 1149): ubifs_ro_mode: switched to read-only mode, 
-> error -5
-> UBIFS error (pid 1149): do_writepage: cannot write page 0 of inode 
-> 30708, error -5
-> UBIFS error (pid 1149): make_reservation: cannot reserve 858 bytes in 
-> jhead 2, error -30
-> UBIFS error (pid 1149): do_writepage: cannot write page 2 of inode 
-> 29486, error -30
-> UBIFS error (pid 1149): make_reservation: cannot reserve 721 bytes in 
-> jhead 2, error -30
-> UBIFS error (pid 1149): do_writepage: cannot write page 1 of inode 
-> 30070, error -30
-> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
-> 5022:88064, written 0 bytes
-> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5022
-> UBI: recover PEB 5022, move data to PEB 19404
-> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
-> 5022:512, read 512 bytes
-> UBI error: ubi_io_write: read-only mode
-> UBI warning: recover_peb: failed to write to PEB 19404
-> UBI: try again
-> UBI: recover PEB 5022, move data to PEB 19405
-> UBI error: ubi_io_write: read-only mode
-> UBI warning: recover_peb: failed to write to PEB 19405
-> UBI: try again
-> UBI: recover PEB 5022, move data to PEB 19406
-> UBI error: ubi_io_write: read-only mode
-> UBI warning: recover_peb: failed to write to PEB 19406
-> UBI: try again
-> UBI: recover PEB 5022, move data to PEB 19407
-> UBI error: ubi_io_write: read-only mode
-> UBI warning: recover_peb: failed to write to PEB 19407
-> UBIFS error (pid 1044): ubifs_wbuf_sync_nolock: cannot write 2048 bytes 
-> to LEB 788:86016
-> UBIFS error (pid 1044): ubifs_bg_wbufs_sync: cannot sync write-buffer, 
-> error -30
-> UBIFS warning (pid 1044): ubifs_ro_mode: switched to read-only mode, 
-> error -30
-> UBI error: ubi_io_write: error -5 while writing 2048 bytes to PEB 
-> 5817:26624, written 0 bytes
-> UBI warning: ubi_eba_write_leb: failed to write data to PEB 5817
-> UBI: recover PEB 5817, move data to PEB 19408
-> UBI error: ubi_io_read: error -74 while reading 512 bytes from PEB 
-> 5817:512, read 512 bytes
-> UBI error: ubi_io_write: read-only mode
-> UBI warning: recover_peb: failed to write to PEB 19408
-> UBI: try again
-> UBI: recover PEB 5817, move data to PEB 19409
-> UBI error: ubi_io_write: read-only mode
-> UBI warning: recover_peb: failed to write to PEB 19409
-> UBI: try again
-> UBI: recover PEB 5817, move data to PEB 19410
-> UBI error: ubi_io_write: read-only mode
-> UBI warning: recover_peb: failed to write to PEB 19410
-> UBI: try again
-> UBI: recover PEB 5817, move data to PEB 19411
-> UBI error: ubi_io_write: read-only mode
-> UBI warning: recover_peb: failed to write to PEB 19411
-> UBIFS error (pid 1047): ubifs_wbuf_sync_nolock: cannot write 2048 bytes 
-> to LEB 385:24576
-> UBIFS error (pid 1047): ubifs_bg_wbufs_sync: cannot sync write-buffer, 
-> error -30
-> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
-> jhead 1, error -30
-> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30709, 
-> error -30
-> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
-> jhead 1, error -30
-> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30710, 
-> error -30
-> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
-> jhead 1, error -30
-> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30698, 
-> error -30
-> UBIFS error (pid 1149): make_reservation: cannot reserve 160 bytes in 
-> jhead 1, error -30
-> UBIFS error (pid 1149): ubifs_write_inode: can't write inode 30711, 
-> error -30
-> 
-> I'd appreciate any hints on what can cause this. Is it a hardware 
-> problem, mtd layer problem
-> or UBI problem ?
-> 
-> Thanks a lot in advance.
-> 
-> Felix.
-> 
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+If you are not the intended recipient of this email, please notify the sender and delete it. 
+Any unauthorized copying, disclosure or distribution of this email or its attachment(s) is forbidden. 
+Thales Nederland BV will not accept liability for any damage caused by this email or its attachment(s). 
+Thales Nederland BV is seated in Hengelo and is registered at the Chamber of Commerce under number 06061578.
+------------------------------------------------------------------------------------------------------------
