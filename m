@@ -1,24 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 25F63B7B92
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Oct 2009 07:36:57 +1100 (EST)
-Subject: Re: powerpc problem with .data.page_aligned -> __page_aligned_data
-	conversion
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tim Abbott <tabbott@ksplice.com>
-In-Reply-To: <alpine.DEB.1.10.0910151229340.25434@dr-wily.mit.edu>
-References: <1255584772.2347.86.camel@pasglop>
-	<alpine.DEB.1.10.0910151229340.25434@dr-wily.mit.edu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 16 Oct 2009 07:00:09 +1100
-Message-Id: <1255636809.2347.103.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, sam@ravnborg.org,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6D76DB7043
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 09:03:57 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n9FM3sIj013747
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 15:03:54 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n9FM6wL6004441
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 17:06:59 -0500 (CDT)
+Message-ID: <4AD79C64.9060206@freescale.com>
+Date: Thu, 15 Oct 2009 17:04:20 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
+References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +34,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-10-15 at 12:37 -0400, Tim Abbott wrote:
-> Just to make sure I understand the nature of the problem, is the
-> current 
-> breakage that gcc < 4.3 will _warn_ on any compilation units on ppc64
-> that 
-> use __page_aligned data, or something worse?
+Joakim Tjernlund wrote:
+> Now updated with Scott's remarks.
+> There is still(probably) a trivial conflict in pte-8xx.h
 > 
-> The cropping is clearly a potential problem, but I read the rest of
-> your 
-> email as saying that the cropping of the alignment isn't actually a 
-> problem with the current kernel because the kernel is currently only
-> using 
-> the macro with things whose size is divisible by PAGE_SIZE.  However,
-> I am 
-> not sure how to reconcile that with using the word "break" above...
+> Joakim Tjernlund (8):
+>   8xx: invalidate non present TLBs
+>   8xx: Update TLB asm so it behaves as linux mm expects.
+>   8xx: Tag DAR with 0x00f0 to catch buggy instructions.
+>   8xx: Fixup DAR from buggy dcbX instructions.
+>   8xx: Add missing Guarded setting in DTLB Error.
+>   8xx: Restore _PAGE_WRITETHRU
+>   8xx: start using dcbX instructions in various copy routines
+>   8xx: Remove DIRTY pte handling in DTLB Error.
+> 
+>  arch/powerpc/include/asm/pte-8xx.h |   14 +-
+>  arch/powerpc/kernel/head_8xx.S     |  341 +++++++++++++++++++++++------------
+>  arch/powerpc/kernel/misc_32.S      |   18 --
+>  arch/powerpc/lib/copy_32.S         |   24 ---
+>  arch/powerpc/mm/fault.c            |    8 +-
+>  5 files changed, 238 insertions(+), 167 deletions(-)
 
-Break is because we use -Werror on arch/powerpc :-)
+I still see the lockup with the dcbX patch.  Reverting that (and with 
+Rex's patch) things look OK.
 
-Ben.
+-Scott
