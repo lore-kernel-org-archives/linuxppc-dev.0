@@ -2,18 +2,24 @@ Return-Path: <joakim.tjernlund@transmode.com>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DC843B7B98
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 20:04:34 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 8123FB7C8C
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 20:04:39 +1100 (EST)
 From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 To: Scott Wood <scottwood@freescale.com>, Rex Feany <RFeany@mrv.com>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/8] 8xx: Update TLB asm so it behaves as linux mm expects.
-Date: Thu, 15 Oct 2009 11:04:20 +0200
-Message-Id: <1255597466-30976-3-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1255597466-30976-2-git-send-email-Joakim.Tjernlund@transmode.se>
+Subject: [PATCH 7/8] 8xx: start using dcbX instructions in various copy
+	routines
+Date: Thu, 15 Oct 2009 11:04:25 +0200
+Message-Id: <1255597466-30976-8-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1255597466-30976-7-git-send-email-Joakim.Tjernlund@transmode.se>
 References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
 	<1255597466-30976-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255597466-30976-3-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255597466-30976-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255597466-30976-5-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255597466-30976-6-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1255597466-30976-7-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,205 +29,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the TLB asm to make proper use of _PAGE_DIRY and _PAGE_ACCESSED.
-Get rid of _PAGE_HWWRITE too.
-Pros:
- - I/D TLB Miss never needs to write to the linux pte.
- - _PAGE_ACCESSED is only set on TLB Error fixing accounting
- - _PAGE_DIRTY is mapped to 0x100, the changed bit, and is set directly
-    when a page has been made dirty.
- - Proper RO/RW mapping of user space.
- - Free up 2 SW TLB bits in the linux pte(add back _PAGE_WRITETHRU ?)
- - kernel RO/user NA support.
-Cons:
- - A few more instructions in the TLB Miss routines.
+Now that 8xx can fixup dcbX instructions, start using them
+where possible like every other PowerPc arch do.
 ---
- arch/powerpc/include/asm/pte-8xx.h |   13 ++---
- arch/powerpc/kernel/head_8xx.S     |   99 ++++++++++++++++++-----------------
- 2 files changed, 57 insertions(+), 55 deletions(-)
+ arch/powerpc/kernel/misc_32.S |   18 ------------------
+ arch/powerpc/lib/copy_32.S    |   24 ------------------------
+ 2 files changed, 0 insertions(+), 42 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
-index 8c6e312..f23cd15 100644
---- a/arch/powerpc/include/asm/pte-8xx.h
-+++ b/arch/powerpc/include/asm/pte-8xx.h
-@@ -32,22 +32,21 @@
- #define _PAGE_FILE	0x0002	/* when !present: nonlinear file mapping */
- #define _PAGE_NO_CACHE	0x0002	/* I: cache inhibit */
- #define _PAGE_SHARED	0x0004	/* No ASID (context) compare */
-+#define _PAGE_DIRTY	0x0100	/* C: page changed */
- 
--/* These five software bits must be masked out when the entry is loaded
-- * into the TLB.
-+/* These 3 software bits must be masked out when the entry is loaded
-+ * into the TLB, 2 SW bits left.
-  */
- #define _PAGE_EXEC	0x0008	/* software: i-cache coherency required */
- #define _PAGE_GUARDED	0x0010	/* software: guarded access */
--#define _PAGE_DIRTY	0x0020	/* software: page changed */
--#define _PAGE_RW	0x0040	/* software: user write access allowed */
--#define _PAGE_ACCESSED	0x0080	/* software: page referenced */
-+#define _PAGE_ACCESSED	0x0020	/* software: page referenced */
- 
- /* Setting any bits in the nibble with the follow two controls will
-  * require a TLB exception handler change.  It is assumed unused bits
-  * are always zero.
-  */
--#define _PAGE_HWWRITE	0x0100	/* h/w write enable: never set in Linux PTE */
--#define _PAGE_USER	0x0800	/* One of the PP bits, the other is USER&~RW */
-+#define _PAGE_RW	0x0400	/* lsb PP bits, inverted in HW */
-+#define _PAGE_USER	0x0800	/* msb PP bits */
- 
- #define _PMD_PRESENT	0x0001
- #define _PMD_BAD	0x0ff0
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 52ff8c5..2011230 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -333,26 +333,20 @@ InstructionTLBMiss:
- 	mfspr	r11, SPRN_MD_TWC	/* ....and get the pte address */
- 	lwz	r10, 0(r11)	/* Get the pte */
- 
--#ifdef CONFIG_SWAP
--	/* do not set the _PAGE_ACCESSED bit of a non-present page */
--	andi.	r11, r10, _PAGE_PRESENT
--	beq	4f
--	ori	r10, r10, _PAGE_ACCESSED
--	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
--	stw	r10, 0(r11)
--4:
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 15f28e0..b92095e 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -495,15 +495,7 @@ _GLOBAL(clear_pages)
+ 	li	r0,PAGE_SIZE/L1_CACHE_BYTES
+ 	slw	r0,r0,r4
+ 	mtctr	r0
+-#ifdef CONFIG_8xx
+-	li	r4, 0
+-1:	stw	r4, 0(r3)
+-	stw	r4, 4(r3)
+-	stw	r4, 8(r3)
+-	stw	r4, 12(r3)
 -#else
--	ori	r10, r10, _PAGE_ACCESSED
--	stw	r10, 0(r11)
+ 1:	dcbz	0,r3
 -#endif
-+	andi.	r11, r10, _PAGE_ACCESSED | _PAGE_PRESENT
-+	cmpwi	cr0, r11, _PAGE_ACCESSED | _PAGE_PRESENT
-+	bne-	cr0, 2f
-+
-+	/* Clear PP lsb, 0x400 */
-+	rlwinm 	r10, r10, 0, 22, 20
+ 	addi	r3,r3,L1_CACHE_BYTES
+ 	bdnz	1b
+ 	blr
+@@ -528,15 +520,6 @@ _GLOBAL(copy_page)
+ 	addi	r3,r3,-4
+ 	addi	r4,r4,-4
  
- 	/* The Linux PTE won't go exactly into the MMU TLB.
--	 * Software indicator bits 21, 22 and 28 must be clear.
-+	 * Software indicator bits 22 and 28 must be clear.
- 	 * Software indicator bits 24, 25, 26, and 27 must be
- 	 * set.  All other Linux PTE bits control the behavior
- 	 * of the MMU.
- 	 */
--2:	li	r11, 0x00f0
-+	li	r11, 0x00f0
- 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
- 	DO_8xx_CPU6(0x2d80, r3)
- 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
-@@ -365,6 +359,22 @@ InstructionTLBMiss:
- 	lwz	r3, 8(r0)
- #endif
- 	rfi
-+2:
-+	mfspr	r11, SPRN_SRR1
-+	/* clear all error bits as TLB Miss
-+	 * sets a few unconditionally
-+	*/
-+	rlwinm	r11, r11, 0, 0xffff
-+	mtspr	SPRN_SRR1, r11
-+
-+	mfspr	r10, SPRN_M_TW	/* Restore registers */
-+	lwz	r11, 0(r0)
-+	mtcr	r11
-+	lwz	r11, 4(r0)
-+#ifdef CONFIG_8xx_CPU6
-+	lwz	r3, 8(r0)
-+#endif
-+	b	InstructionAccess
- 
- 	. = 0x1200
- DataStoreTLBMiss:
-@@ -409,21 +419,27 @@ DataStoreTLBMiss:
- 	DO_8xx_CPU6(0x3b80, r3)
- 	mtspr	SPRN_MD_TWC, r11
- 
--#ifdef CONFIG_SWAP
--	/* do not set the _PAGE_ACCESSED bit of a non-present page */
--	andi.	r11, r10, _PAGE_PRESENT
--	beq	4f
--	ori	r10, r10, _PAGE_ACCESSED
--4:
--	/* and update pte in table */
--#else
--	ori	r10, r10, _PAGE_ACCESSED
--#endif
--	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
--	stw	r10, 0(r11)
-+	/* Both _PAGE_ACCESSED and _PAGE_PRESENT has to be set.
-+	 * We also need to know if the insn is a load/store, so:
-+	 * Clear _PAGE_PRESENT and load that which will
-+	 * trap into DTLB Error with store bit set accordinly.
-+	 */
-+	/* PRESENT=0x1, ACCESSED=0x20
-+	 * r11 = ((r10 & PRESENT) & ((r10 & ACCESSED) >> 5));
-+	 * r10 = (r10 & ~PRESENT) | r11;
-+	 */
-+	rlwinm	r11, r10, 32-5, 31, 31
-+	and	r11, r11, r10
-+	rlwimi	r10, r11, 0, 31, 31
-+
-+	/* Honour kernel RO, User NA */
-+	andi.	r11, r10, _PAGE_USER | _PAGE_RW
-+	bne-	cr0, 5f
-+	ori	r10,r10, 0x200 /* Extended encoding, bit 22 */
-+5:	xori	r10, r10, _PAGE_RW  /* invert RW bit */
- 
- 	/* The Linux PTE won't go exactly into the MMU TLB.
--	 * Software indicator bits 21, 22 and 28 must be clear.
-+	 * Software indicator bits 22 and 28 must be clear.
- 	 * Software indicator bits 24, 25, 26, and 27 must be
- 	 * set.  All other Linux PTE bits control the behavior
- 	 * of the MMU.
-@@ -469,11 +485,12 @@ DataTLBError:
- 	stw	r10, 0(r0)
- 	stw	r11, 4(r0)
- 
--	/* First, make sure this was a store operation.
-+	mfspr	r11, SPRN_DSISR
-+	andis.	r11, r11, 0x4800	/* !translation or protection */
-+	bne	2f	/* branch if either is set */
-+	/* Only Change bit left now, do it here as it is faster
-+	 * than trapping to the C fault handler.
- 	*/
--	mfspr	r10, SPRN_DSISR
--	andis.	r11, r10, 0x0200	/* If set, indicates store op */
--	beq	2f
- 
- 	/* The EA of a data TLB miss is automatically stored in the MD_EPN
- 	 * register.  The EA of a data TLB error is automatically stored in
-@@ -522,26 +539,12 @@ DataTLBError:
- 	mfspr	r11, SPRN_MD_TWC		/* ....and get the pte address */
- 	lwz	r10, 0(r11)		/* Get the pte */
- 
--	andi.	r11, r10, _PAGE_RW	/* Is it writeable? */
--	beq	2f			/* Bail out if not */
+-#ifdef CONFIG_8xx
+-	/* don't use prefetch on 8xx */
+-    	li	r0,4096/L1_CACHE_BYTES
+-	mtctr	r0
+-1:	COPY_16_BYTES
+-	bdnz	1b
+-	blr
 -
--	/* Update 'changed', among others.
--	*/
--#ifdef CONFIG_SWAP
--	ori	r10, r10, _PAGE_DIRTY|_PAGE_HWWRITE
--	/* do not set the _PAGE_ACCESSED bit of a non-present page */
--	andi.	r11, r10, _PAGE_PRESENT
--	beq	4f
--	ori	r10, r10, _PAGE_ACCESSED
--4:
--#else
--	ori	r10, r10, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
--#endif
--	mfspr	r11, SPRN_MD_TWC		/* Get pte address again */
-+	ori	r10, r10, _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_HWWRITE
- 	stw	r10, 0(r11)		/* and update pte in table */
-+	xori	r10, r10, _PAGE_RW	/* RW bit is inverted */
+-#else	/* not 8xx, we can prefetch */
+ 	li	r5,4
  
- 	/* The Linux PTE won't go exactly into the MMU TLB.
--	 * Software indicator bits 21, 22 and 28 must be clear.
-+	 * Software indicator bits 22 and 28 must be clear.
- 	 * Software indicator bits 24, 25, 26, and 27 must be
- 	 * set.  All other Linux PTE bits control the behavior
- 	 * of the MMU.
+ #if MAX_COPY_PREFETCH > 1
+@@ -577,7 +560,6 @@ _GLOBAL(copy_page)
+ 	li	r0,MAX_COPY_PREFETCH
+ 	li	r11,4
+ 	b	2b
+-#endif	/* CONFIG_8xx */
+ 
+ /*
+  * void atomic_clear_mask(atomic_t mask, atomic_t *addr)
+diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
+index c657de5..74a7f41 100644
+--- a/arch/powerpc/lib/copy_32.S
++++ b/arch/powerpc/lib/copy_32.S
+@@ -98,20 +98,7 @@ _GLOBAL(cacheable_memzero)
+ 	bdnz	4b
+ 3:	mtctr	r9
+ 	li	r7,4
+-#if !defined(CONFIG_8xx)
+ 10:	dcbz	r7,r6
+-#else
+-10:	stw	r4, 4(r6)
+-	stw	r4, 8(r6)
+-	stw	r4, 12(r6)
+-	stw	r4, 16(r6)
+-#if CACHE_LINE_SIZE >= 32
+-	stw	r4, 20(r6)
+-	stw	r4, 24(r6)
+-	stw	r4, 28(r6)
+-	stw	r4, 32(r6)
+-#endif /* CACHE_LINE_SIZE */
+-#endif
+ 	addi	r6,r6,CACHELINE_BYTES
+ 	bdnz	10b
+ 	clrlwi	r5,r8,32-LG_CACHELINE_BYTES
+@@ -200,9 +187,7 @@ _GLOBAL(cacheable_memcpy)
+ 	mtctr	r0
+ 	beq	63f
+ 53:
+-#if !defined(CONFIG_8xx)
+ 	dcbz	r11,r6
+-#endif
+ 	COPY_16_BYTES
+ #if L1_CACHE_BYTES >= 32
+ 	COPY_16_BYTES
+@@ -356,14 +341,6 @@ _GLOBAL(__copy_tofrom_user)
+ 	li	r11,4
+ 	beq	63f
+ 
+-#ifdef CONFIG_8xx
+-	/* Don't use prefetch on 8xx */
+-	mtctr	r0
+-	li	r0,0
+-53:	COPY_16_BYTES_WITHEX(0)
+-	bdnz	53b
+-
+-#else /* not CONFIG_8xx */
+ 	/* Here we decide how far ahead to prefetch the source */
+ 	li	r3,4
+ 	cmpwi	r0,1
+@@ -416,7 +393,6 @@ _GLOBAL(__copy_tofrom_user)
+ 	li	r3,4
+ 	li	r7,0
+ 	bne	114b
+-#endif /* CONFIG_8xx */
+ 
+ 63:	srwi.	r0,r5,2
+ 	mtctr	r0
 -- 
 1.6.4.4
