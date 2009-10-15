@@ -1,25 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 47811B7B7B
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 22:19:52 +1100 (EST)
-Subject: Re: i2c-powermac fails
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20091015124923.23863a94@hyperion.delvare>
-References: <20091013112304.74083fd1@hyperion.delvare>
-	<1255426348.2192.187.camel@pasglop>
-	<20091013114948.03608b7f@hyperion.delvare>
-	<20091014230252.0d0cba8d@hyperion.delvare>
-	<1255555575.2347.56.camel@pasglop>
-	<20091015124923.23863a94@hyperion.delvare>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 15 Oct 2009 22:19:19 +1100
-Message-Id: <1255605559.2347.102.camel@pasglop>
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, Tim Shepard <shep@alum.mit.edu>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <paul.gibson2074@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
+	by ozlabs.org (Postfix) with ESMTP id E2A9DB7B80
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 22:21:07 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 5so269742qwd.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 04:21:06 -0700 (PDT)
+Message-ID: <4AD70585.40302@gmail.com>
+Date: Thu, 15 Oct 2009 21:20:37 +1000
+From: Paul Gibson <paul.gibson2074@gmail.com>
+MIME-Version: 1.0
+Subject: Re: MPC5121 CAN and USB
+References: <4AD5ADC9.30503@embedded-sol.com> <4AD6F172.6030407@aimvalley.nl>
+	<4AD6FD4E.9060507@marel.com>
+In-Reply-To: <4AD6FD4E.9060507@marel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Reply-To: paul.gibson2074@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,13 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-10-15 at 12:49 +0200, Jean Delvare wrote:
-> Oh. Well, if that was the case, we would see errors all the time, not
-> just during initialization, right? Or does the I2C clock frequency
-> change over time somehow?
+In my opinion the best place is the BSP available on the MPC5121e page 
+on the Freescale site.
 
-No but maybe we are a bit on the "limit" of the device and some
-registers take long to respond than others ?
+I actually use the kernel in the git repository here which is similar to 
+the BSP:
+http://git.denx.de/?p=linux-2.6-denx.git;a=shortlog;h=refs/heads/ltib-mpc5121ads-20090602 
+or here:
+http://git.denx.de/?p=linux-mpc512x.git;a=summary
 
-Cheers,
-Ben.
+I have found both to be very stable, also with the CAN and USB.
+
+Paul
+
+Kári Davíðsson wrote:
+> Hello,
+>
+> Where is the most current linux work for the Freescale MPC5121 cpu 
+> stored.
+> What I am specifically interested in at this time is the CAN and USB 
+> subsystems.
+>
+> rg
+> kd
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
