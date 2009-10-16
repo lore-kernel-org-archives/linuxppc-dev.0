@@ -1,22 +1,28 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 9FDADB7BD7
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 03:00:37 +1100 (EST)
-Date: Fri, 16 Oct 2009 08:33:34 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH v0 1/2] DMA: fsldma: Disable DMA_INTERRUPT when
-	Async_tx enabled
-Message-ID: <20091016153334.GA27401@ovro.caltech.edu>
-References: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
-	<e9c3a7c20910151825o67cd2712id91aead70f84987c@mail.gmail.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BA3E6B7BD8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 17 Oct 2009 03:01:04 +1100 (EST)
+Date: Fri, 16 Oct 2009 11:01:25 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Richard Cochran <richard.cochran@omicron.at>
+Subject: Re: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
+Message-ID: <20091016160125.GC11838@loki.buserror.net>
+References: <25940478.1252060285938.JavaMail.root@viefep11.chello.at>
+	<20090909182227.GA8215@b07421-ec1.am.freescale.net>
+	<95DC1AA8EC908B48939B72CF375AA5E30E220693@alice.at.omicron.at>
+	<20091014152722.GA17867@b07421-ec1.am.freescale.net>
+	<95DC1AA8EC908B48939B72CF375AA5E30E2AE72C@alice.at.omicron.at>
+	<20091015162728.GB3730@loki.buserror.net>
+	<95DC1AA8EC908B48939B72CF375AA5E30E2AE800@alice.at.omicron.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <e9c3a7c20910151825o67cd2712id91aead70f84987c@mail.gmail.com>
-Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-	linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Vishnu Suresh <Vishnu@freescale.com>,
-	linux-crypto@vger.kernel.org, Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <95DC1AA8EC908B48939B72CF375AA5E30E2AE800@alice.at.omicron.at>
+Cc: "'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,70 +32,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 15, 2009 at 06:25:14PM -0700, Dan Williams wrote:
-> [ added Leo and Timur to the Cc ]
+On Fri, Oct 16, 2009 at 08:31:19AM +0200, Richard Cochran wrote:
+> > -----Original Message-----
+> > From: Scott Wood [mailto:scottwood@freescale.com]
+> > Subject: Re: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
+> >
+> > On Thu, Oct 15, 2009 at 02:19:30PM +0200, Richard Cochran wrote:
+> > > 2. Having only one dts for his board, but Ethernet doesn't work.
+> >
+> > The point is to fix u-boot so that it *does* work with only one dts.  If
+> > people not upgrading u-boot is your concern, we could put the fixup in the
+> > Linux platform code instead.
 > 
-> On Wed, Oct 14, 2009 at 11:41 PM, Vishnu Suresh <Vishnu@freescale.com> wrote:
-> > This patch disables the use of DMA_INTERRUPT capability with Async_tx
-> >
-> > The fsldma produces a null transfer with DMA_INTERRUPT
-> > capability when used with Async_tx. When RAID devices queue
-> > a transaction via Async_tx, this  results in a hang.
-> >
-> > Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
-> > ---
-> >  drivers/dma/fsldma.c |    6 ++++++
-> >  1 files changed, 6 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> > index 296f9e7..66d9b39 100644
-> > --- a/drivers/dma/fsldma.c
-> > +++ b/drivers/dma/fsldma.c
-> > @@ -1200,7 +1200,13 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
-> >                                                - fdev->reg.start + 1);
-> >
-> >        dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
-> > +#ifndef CONFIG_ASYNC_CORE
-> > +       /*
-> > +        * The DMA_INTERRUPT async_tx is a NULL transfer, which will
-> > +        * triger a PE interrupt.
-> > +        */
-> >        dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
-> > +#endif
-> >        dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
-> >        fdev->common.device_alloc_chan_resources = fsl_dma_alloc_chan_resources;
-> >        fdev->common.device_free_chan_resources = fsl_dma_free_chan_resources;
+> Yes, I was thinking that upgrading u-boot can be problematic for
+> people who don't have a JTAG flash tool, in case things go wrong.
+
+Right, so we could put a fixup in Linux as well to handle that case (make
+sure not to blindly reverse, though, in case u-boot has already fixed it
+up).
+
+> But I thought the whole point of the device tree was, that it is easy
+> to produce a dts that exactly matches a particular physical board
+> design.
+
+It's the dtb that the kernel sees (possibly after platform fixups, though
+that's not the ideal case) that is supposed to exactly match the hardware. 
+The dts is just one source (albeit the most significant one) of the data
+that goes into the final dtb.
+
+There are boards that have several orthogonal configuration options that
+can't be probed -- we'd have to provide dozens (or worse) of .dts files in
+order to cover all of them without any runtime fixup.  Not to mention things
+like memory size and clock frequency...
+
+> If MPC8313-ERDB REVC has a different IRQ routing, then doesn't
+> it deserve its own dts? 
+
+I'm inclined to say no, though I wouldn't object too hard in this case if
+people really want it.  But we should still put in a u-boot fixup so that if
+you have a new u-boot it doesn't matter which dts you use.
+
+> Or do only *some* of the REVC boards have this
+> routing?
+
+They should all have it.
+
+> > And feel free to ask through official Freescale support channels why the
+> > U-Boot that shipped on these boards does not have such a fixup (or why they
+> > decided it was better to make late-rev 8313's interrupt assignments match
+> > other 83xx than for all revs of the same part number to have the same
+> > interrupt assignments).
 > 
-> You are basically saying that fsl_dma_prep_interrupt() is buggy.  Can
-> that routine be fixed rather than this piecemeal solution?  If it
-> cannot be fixed (i.e. hardware issue) then fsl_dma_prep_interrupt()
-> should just be disabled/deleted altogether.
-> 
+> It sounds like you are not overly satisfied with Freescale's handling
+> of their BSPs ;)
 
-For what it's worth, I've used the following code in the recent past,
-without any issues. This was on an 83xx, within the last few kernel
-releases. I haven't tried it on the latest -rc.
+:-)
 
-Using device_prep_dma_memcpy() can trigger a callback as well, so the
-interrupt feature isn't strictly needed. Just attach the callback to the
-last memcpy operation.
+Things are slowly getting better, but it'd be good for the BSP teams to hear
+from customers (and not just other internal groups) saying they want more
+up-to-date software that doesn't diverge as much from mainline.
 
-static dma_cookie_t dma_async_interrupt(struct dma_chan *chan,
-                                        dma_async_tx_callback callback,
-                                        void *data)
-{
-        struct dma_device *dev = chan->device;
-        struct dma_async_tx_descriptor *tx; 
+And getting u-boot right before shipping it on a board is particularly
+important.
 
-        /* Set up the DMA */
-        tx = dev->device_prep_dma_interrupt(chan, DMA_PREP_INTERRUPT);
-        if (!tx)
-                return -ENOMEM;
+> To be fair, I am happy that Freescale appears to take Linux support
+> seriously, but I do think they drop the ball once a BSP is
+> published. For example, the MPC8313-ERDB ships with kernel 2.6.23
+> (with the old style dts) and a fair number of non-mainstream
+> patches. It is not so easy to get a recent kernel booting on that
+> board.
 
-        tx->callback = callback;
-        tx->callback_param = data;
+What problems have you been having with upstream kernels on mpc8313erdb,
+other than this IRQ issue?  It should work, though the BSP may have extra
+features that haven't been pushed upstream.
 
-        return tx->tx_submit(tx);
-}
+> I have the LITE5200B, MPC8313-ERDB, MPC8572DS, and the P2020DS in
+> house, and it is really the same, sad story with each of
+> them. Wouldn't it be grand if the development boards would boot "out
+> of the box" when compiling the most recent kernel with default config?
 
-Ira
+That's what the group I'm in tries to make sure happens (for the
+mpc8xxx/qoriq chips) -- but we're outnumbered by the BSP developers, so some
+BSP features tend to be missing.  Basic board support should be there,
+though.
+
+I just booted 2.6.32-rc4 straight from Linus on an mpc8572ds yesterday. 
+I've booted various upstream kernels on mpc8313erdb (typically an older rev,
+though).
+
+-Scott
