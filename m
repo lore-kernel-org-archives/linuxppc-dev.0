@@ -1,16 +1,18 @@
-Return-Path: <a.llano@ziv.es>
-Received: from correo.ziv.es (correo.ziv.es [77.226.243.115])
-	by ozlabs.org (Postfix) with ESMTP id C6E65B7BBF
+Return-Path: <asierllano@gmail.com>
+Received: from ey-out-1920.google.com (ey-out-1920.google.com [74.125.78.149])
+	by ozlabs.org (Postfix) with ESMTP id 79ACBB7BBF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Oct 2009 22:51:03 +1100 (EST)
+	Fri, 16 Oct 2009 23:00:49 +1100 (EST)
+Received: by ey-out-1920.google.com with SMTP id 3so370385eyh.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 16 Oct 2009 05:00:46 -0700 (PDT)
 Subject: [PATCH] Found skb leak in mpc5200 fec on rxfifo error
-From: "Asier Llano Palacios" <a.llano@ziv.es>
-To: <linuxppc-dev@lists.ozlabs.org>, "Grant Likely" <grant.likely@secretlab.ca>
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 16 Oct 2009 13:51:50 +0200
-Message-ID: <1255693910.4683.161.camel@allano>
-MIME-Version: 1.0
+From: Asier Llano Palacios <asierllano@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org, Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain
+Date: Fri, 16 Oct 2009 14:01:37 +0200
+Message-Id: <1255694497.4683.163.camel@allano>
+Mime-Version: 1.0
 Cc: a.arzuaga@ziv.es
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,6 +22,10 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+(I'm sorry about my previous message with a legal notice, this time
+I resent it with another mail server that doesn't include the legal
+notice for me)
 
 Hi all,
 
@@ -62,7 +68,7 @@ Patch I managed to do:
  irqs, but I have a remaining problem: The last  packet to be transmited
  is waiting for a packet to be received in order to egress (I don't know
  why but I detected it experimentaly).
-=20
+ 
 Anyone with more experience can tell me what's wrong in this patch?
 
 Thank you in advance,
@@ -75,114 +81,89 @@ Signed-off-by: Asier Llano <a.llano@ziv.es>
 
 diff -urpN linux-2.6.31.2/drivers/net/fec_mpc52xx.c
 linux-2.6.31.2-fec_mpc52xx_skb_leak/drivers/net/fec_mpc52xx.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+================================================================
 --- linux-2.6.31.2/drivers/net/fec_mpc52xx.c
 +++ linux-2.6.31.2-fec_mpc52xx_skb_leak/drivers/net/fec_mpc52xx.c
 @@ -85,13 +85,20 @@ MODULE_PARM_DESC(debug, "debugging messa
-=20
+ 
  static void mpc52xx_fec_tx_timeout(struct net_device *dev)
  {
-+	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
++	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
 +	unsigned long flags;
 +
  	dev_warn(&dev->dev, "transmit timed out\n");
-=20
+ 
 +	spin_lock_irqsave(&priv->lock, flags);
 +
  	mpc52xx_fec_reset(dev);
-=20
+ 
  	dev->stats.tx_errors++;
-=20
+ 
  	netif_wake_queue(dev);
 +
 +	spin_unlock_irqrestore(&priv->lock, flags);
  }
-=20
+ 
  static void mpc52xx_fec_set_paddr(struct net_device *dev, u8 *mac)
 @@ -359,8 +366,9 @@ static irqreturn_t mpc52xx_fec_tx_interr
  {
- 	struct net_device *dev =3D dev_id;
- 	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+ 	struct net_device *dev = dev_id;
+ 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
 +	unsigned long flags;
-=20
+ 
 -	spin_lock(&priv->lock);
 +	spin_lock_irqsave(&priv->lock, flags);
-=20
+ 
  	while (bcom_buffer_done(priv->tx_dmatsk)) {
  		struct sk_buff *skb;
 @@ -375,7 +383,7 @@ static irqreturn_t mpc52xx_fec_tx_interr
-=20
+ 
  	netif_wake_queue(dev);
-=20
+ 
 -	spin_unlock(&priv->lock);
 +	spin_unlock_irqrestore(&priv->lock, flags);
-=20
+ 
  	return IRQ_HANDLED;
  }
 @@ -384,6 +392,9 @@ static irqreturn_t mpc52xx_fec_rx_interr
  {
- 	struct net_device *dev =3D dev_id;
- 	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+ 	struct net_device *dev = dev_id;
+ 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
 +	unsigned long flags;
 +
 +	spin_lock_irqsave(&priv->lock, flags);
-=20
+ 
  	while (bcom_buffer_done(priv->rx_dmatsk)) {
  		struct sk_buff *skb;
 @@ -445,6 +456,8 @@ static irqreturn_t mpc52xx_fec_rx_interr
  		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
  	}
-=20
+ 
 +	spin_unlock_irqrestore(&priv->lock, flags);
 +
  	return IRQ_HANDLED;
  }
-=20
+ 
 @@ -454,6 +467,7 @@ static irqreturn_t mpc52xx_fec_interrupt
- 	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
- 	struct mpc52xx_fec __iomem *fec =3D priv->fec;
+ 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
+ 	struct mpc52xx_fec __iomem *fec = priv->fec;
  	u32 ievent;
 +	unsigned long flags;
-=20
- 	ievent =3D in_be32(&fec->ievent);
-=20
+ 
+ 	ievent = in_be32(&fec->ievent);
+ 
 @@ -471,9 +485,14 @@ static irqreturn_t mpc52xx_fec_interrupt
  		if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
  			dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
-=20
+ 
 +		spin_lock_irqsave(&priv->lock, flags);
 +
  		mpc52xx_fec_reset(dev);
-=20
+ 
  		netif_wake_queue(dev);
 +
 +		spin_unlock_irqrestore(&priv->lock, flags);
 +
  		return IRQ_HANDLED;
- 	}=20
-=20
------------------------------------------ PLEASE NOTE =
--------------------------------------------
-This message, along with any attachments, may be confidential or legally =
-privileged.=20
-It is intended only for the named person(s), who is/are the only =
-authorized recipients.
-If this message has reached you in error, kindly destroy it without =
-review and notify the sender immediately.
-Thank you for your help.
-ZIV uses virus scanning software but excludes any liability for viruses =
-contained in any attachment.
-=20
------------------------------------- ROGAMOS LEA ESTE TEXTO =
--------------------------------
-Este mensaje y sus anexos pueden contener informaci=F3n confidencial y/o =
-con derecho legal.=20
-Est=E1 dirigido =FAnicamente a la/s persona/s o entidad/es rese=F1adas =
-como =FAnico destinatario autorizado.
-Si este mensaje le hubiera llegado por error, por favor elim=EDnelo sin =
-revisarlo ni reenviarlo y notif=EDquelo inmediatamente al remitente. =
-Gracias por su colaboraci=F3n. =20
-ZIV utiliza software antivirus, pero no se hace responsable de los virus =
-contenidos en los ficheros anexos.
+ 	}
+ 
