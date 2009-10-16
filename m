@@ -1,20 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Fri, 16 Oct 2009 10:38:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
-Message-Id: <20091016103829.323c89d7.sfr@canb.auug.org.au>
-In-Reply-To: <fa686aa40910151006k43b07c30q1e43c3b1ae4af561@mail.gmail.com>
-References: <20091007041007.16890.62194.stgit@angua>
-	<20091015120007.3780c59b.sfr@canb.auug.org.au>
-	<fa686aa40910151006k43b07c30q1e43c3b1ae4af561@mail.gmail.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 5/5 v2] kernel handling of CPU DLPAR
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+In-Reply-To: <4AD74261.9040504@austin.ibm.com>
+References: <4AB39FB3.1020608@austin.ibm.com>
+	<4AB3A172.4090601@austin.ibm.com>  <4AD4C3A3.5050103@austin.ibm.com>
+	<1255473054.21871.39.camel@concordia> <4AD74261.9040504@austin.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-LiCUG5fWpGldCZ7cbDZY"
+Date: Fri, 16 Oct 2009 11:52:04 +1100
+Message-Id: <1255654324.5626.53.camel@concordia>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__16_Oct_2009_10_38_29_+1100_rYgps1CinLaddb/v"
-Cc: monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,81 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__16_Oct_2009_10_38_29_+1100_rYgps1CinLaddb/v
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-LiCUG5fWpGldCZ7cbDZY
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi Grant,
-
-On Thu, 15 Oct 2009 11:06:15 -0600 Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->
-> In the mean time, I've pushed out the current series with acked-bys
-> added to my git server.  I think I'm ready for things to start going
-> into linux-next.  Since this is the first time I've asked for a tree
-> to be added to linux-next, please let me know if you see anything
-> troublesome or problematic.  Here's the tree:
+On Thu, 2009-10-15 at 10:40 -0500, Nathan Fontenot wrote:
+> Michael Ellerman wrote:
+> > On Tue, 2009-10-13 at 13:14 -0500, Nathan Fontenot wrote:
+> >> This adds the capability to DLPAR add and remove CPUs from the kernel.=
+ The
+> >> creates two new files /sys/devices/system/cpu/probe and
+> >> /sys/devices/system/cpu/release to handle the DLPAR addition and remov=
+al of
+> >> CPUs respectively.
+> >=20
+> > How does this relate to the existing cpu hotplug mechanism? Or is this
+> > making the cpu exist (possible), vs marking it as online?
 >=20
-> The following changes since commit 4bdf0bb7d64cf672199519b3d808e2a82f5b59=
-e9:
->   Grant Likely (1):
->         powerpc/5200: Update defconfigs
-
-Um, that commit is in no tree but yours ...
-
-> are available in the git repository at:
+> This update makes the cpu exist, it does not mark the cpu online.
 >=20
->   git://git.secretlab.ca/git/linux-2.6 next-devicetree
+> >=20
+> > Is some other platform going to want to do the same? ie. should the
+> > probe/release part be in generic code?
+>=20
+> I thought about making this generic code, perhaps a follow-on patch to mo=
+ve
+> the creation of the probe/release files to generic code to see what the
+> community thinks.  I would assume there would still need to be a arch and=
+/or
+> platforms specific callout to do the real work.
 
-I have added this for today, but note that it contains stuff that is not
-devicetree related.  Trees in linux-next should be based on other trees
-in linux-next (almost always Linus' tree, but any other nonrebasing tree
-is fine).
+I'm not so worried about the code being generic, there's not much that
+would be generic. More the mechanism. We don't want to add probe/release
+to powerpc, and then have a different mechanism get added later by some
+other platform, or generically.
 
-Thanks for adding your subsystem tree as a participant of linux-next.  As
-you may know, this is not a judgment of your code.  The purpose of
-linux-next is for integration testing and to lower the impact of
-conflicts between subsystems in the next merge window.=20
+But I guess you CC'ed lkml and there's not much more to do, I don't know
+specifically who'd care about it.
 
-You will need to ensure that the patches/commits in your tree/series have
-been:
-     * submitted under GPL v2 (or later) and include the Contributor's
-	Signed-off-by,
-     * posted to the relevant mailing list,
-     * reviewed by you (or another maintainer of your subsystem tree),
-     * successfully unit tested, and=20
-     * destined for the current or next Linux merge window.
+cheers
 
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).  It is allowed to be rebased if you deem it necessary.
 
---=20
-Cheers,
-Stephen Rothwell=20
-sfr@canb.auug.org.au
-
-Legal Stuff:
-By participating in linux-next, your subsystem tree contributions are
-public and will be included in the linux-next trees.  You may be sent
-e-mail messages indicating errors or other issues when the
-patches/commits from your subsystem tree are merged and tested in
-linux-next.  These messages may also be cross-posted to the linux-next
-mailing list, the linux-kernel mailing list, etc.  The linux-next tree
-project and IBM (my employer) make no warranties regarding the linux-next
-project, the testing procedures, the results, the e-mails, etc.  If you
-don't agree to these ground rules, let me know and I'll remove your tree
-from participation in linux-next.
-
---Signature=_Fri__16_Oct_2009_10_38_29_+1100_rYgps1CinLaddb/v
-Content-Type: application/pgp-signature
+--=-LiCUG5fWpGldCZ7cbDZY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkrXsnUACgkQjjKRsyhoI8y2YgCePiBZY9OJAjVAfpDfG5Qx9pVh
-CRwAnj0xw+gJATQsgdVT+s94ZPRuMAwu
-=A5u+
+iEYEABECAAYFAkrXw7QACgkQdSjSd0sB4dLuBQCfcDS+jmkHlLnWg2pgCNz6nFOB
+2KoAmgPG7D5Rl2pPRvPTaafaJJssS3Di
+=1D4M
 -----END PGP SIGNATURE-----
 
---Signature=_Fri__16_Oct_2009_10_38_29_+1100_rYgps1CinLaddb/v--
+--=-LiCUG5fWpGldCZ7cbDZY--
