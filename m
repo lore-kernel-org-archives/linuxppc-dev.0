@@ -1,37 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 17939B7BB6
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 11727B7BBD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Oct 2009 03:17:40 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n9GGHbw4010461 for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Oct 2009 09:17:37 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n9GGKWCo005083
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Oct 2009 11:20:32 -0500 (CDT)
-Message-ID: <4AD89CBB.6040600@freescale.com>
-Date: Fri, 16 Oct 2009 11:18:03 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Roberto Guerra <roberto.j.guerra@gmail.com>
-Subject: Re: Support for S29JL064 in MPC8272ADS?
-References: <7c4144600910090714g524bad07ubf6cad3aaf8085ff@mail.gmail.com>	
-	<20091009170433.GA17372@b07421-ec1.am.freescale.net>	
-	<7c4144600910091059o492c870cn3ea1c1a96d2f0823@mail.gmail.com>	
-	<20091009181617.GA14304@loki.buserror.net>	
-	<7c4144600910141434y26972dbbnb776c4ef89d15a17@mail.gmail.com>	
-	<4AD6454C.60705@freescale.com>
-	<7c4144600910160837y3d70ccd2yeeeb220da7e556c3@mail.gmail.com>
-In-Reply-To: <7c4144600910160837y3d70ccd2yeeeb220da7e556c3@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+	Sat, 17 Oct 2009 03:30:30 +1100 (EST)
+Subject: Re: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
+Mime-Version: 1.0 (Apple Message framework v1076)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20091016160125.GC11838@loki.buserror.net>
+Date: Fri, 16 Oct 2009 11:30:22 -0500
+Message-Id: <5F7F54D6-0487-433C-B58B-E6FA3F816CDB@kernel.crashing.org>
+References: <25940478.1252060285938.JavaMail.root@viefep11.chello.at>
+	<20090909182227.GA8215@b07421-ec1.am.freescale.net>
+	<95DC1AA8EC908B48939B72CF375AA5E30E220693@alice.at.omicron.at>
+	<20091014152722.GA17867@b07421-ec1.am.freescale.net>
+	<95DC1AA8EC908B48939B72CF375AA5E30E2AE72C@alice.at.omicron.at>
+	<20091015162728.GB3730@loki.buserror.net>
+	<95DC1AA8EC908B48939B72CF375AA5E30E2AE800@alice.at.omicron.at>
+	<20091016160125.GC11838@loki.buserror.net>
+To: Richard Cochran <richard.cochran@omicron.at>
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,56 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Roberto Guerra wrote:
-> mtdparts=phys:1600K(ROM)ro,6M(root),512K(U-Boot)ro,512K(unused)
-> rootfstype=jffs2
-> => bootm 200000 - 400000
-> <snip>
-> physmap platform flash device: 00800000 at ff800000
-> physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
->  Amd/Fujitsu Extended Query Table at 0x0040
-> physmap-flash.0: CFI does not contain boot bank location. Assuming
-> top.
 
-Hmm, you seem to be using physmap rather than physmap_of -- so it won't 
-even be looking at your device tree node.
+On Oct 16, 2009, at 11:01 AM, Scott Wood wrote:
 
-> List of all partitions:
-> 0100       4096 ram0 (driver?)
-> 0101       4096 ram1 (driver?)
-> 0102       4096 ram2 (driver?)
-> 0103       4096 ram3 (driver?)
-> 0104       4096 ram4 (driver?)
-> 0105       4096 ram5 (driver?)
-> 0106       4096 ram6 (driver?)
-> 0107       4096 ram7 (driver?)
-> 0108       4096 ram8 (driver?)
-> 0109       4096 ram9 (driver?)
-> 010a       4096 ram10 (driver?)
-> 010b       4096 ram11 (driver?)
-> 010c       4096 ram12 (driver?)
-> 010d       4096 ram13 (driver?)
-> 010e       4096 ram14 (driver?)
-> 010f       4096 ram15 (driver?)
+>>
+>> I have the LITE5200B, MPC8313-ERDB, MPC8572DS, and the P2020DS in
+>> house, and it is really the same, sad story with each of
+>> them. Wouldn't it be grand if the development boards would boot "out
+>> of the box" when compiling the most recent kernel with default  
+>> config?
+>
+> That's what the group I'm in tries to make sure happens (for the
+> mpc8xxx/qoriq chips) -- but we're outnumbered by the BSP developers,  
+> so some
+> BSP features tend to be missing.  Basic board support should be there,
+> though.
+>
+> I just booted 2.6.32-rc4 straight from Linus on an mpc8572ds  
+> yesterday.
+> I've booted various upstream kernels on mpc8313erdb (typically an  
+> older rev,
+> though).
 
-Where are all these coming from?
+Also, if they don't boot out of the box report an issue on this list.   
+That is part of the community testing aspect of open source.
 
-> The key change in my kernel config was the BIG_ENDIAN=Y.
-> The kernel probes the AMD chip, but it can't see the partitions.
-
-Even without partiitons, you should see the whole flash device...
-
-> I guess now I will have to define my mtd partitions in either FDT or
-> in the kernel arguments.
-> Which is the best way to define them?
-
-If you're defining a standard layout for the platform that's unlikely to 
-change, I'd go with the device tree.  Otherwise, I'd go with whatever's 
-most convenient.
-
-> If the partitions are defined in
-> both FDT and bootargs, which one takes precedence?
-
-The command line takes precedence.
-
--Scott
+- k
