@@ -1,19 +1,37 @@
-Return-Path: <a.llano@ziv.es>
-Received: from correo.ziv.es (correo.ziv.es [77.226.243.115])
-	by ozlabs.org (Postfix) with ESMTP id B5474B7BCF
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 17939B7BB6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Oct 2009 03:09:33 +1100 (EST)
-Subject: Re: [PATCH] Found skb leak in mpc5200 fec on rxfifo error
-From: "Asier Llano Palacios" <a.llano@ziv.es>
-To: <linuxppc-dev@lists.ozlabs.org>
-In-Reply-To: <1255694497.4683.163.camel@allano>
-References: <1255694497.4683.163.camel@allano>
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 16 Oct 2009 18:10:19 +0200
-Message-ID: <1255709419.4683.203.camel@allano>
+	Sat, 17 Oct 2009 03:17:40 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n9GGHbw4010461 for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 16 Oct 2009 09:17:37 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n9GGKWCo005083
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 16 Oct 2009 11:20:32 -0500 (CDT)
+Message-ID: <4AD89CBB.6040600@freescale.com>
+Date: Fri, 16 Oct 2009 11:18:03 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Cc: a.arzuaga@ziv.es
+To: Roberto Guerra <roberto.j.guerra@gmail.com>
+Subject: Re: Support for S29JL064 in MPC8272ADS?
+References: <7c4144600910090714g524bad07ubf6cad3aaf8085ff@mail.gmail.com>	
+	<20091009170433.GA17372@b07421-ec1.am.freescale.net>	
+	<7c4144600910091059o492c870cn3ea1c1a96d2f0823@mail.gmail.com>	
+	<20091009181617.GA14304@loki.buserror.net>	
+	<7c4144600910141434y26972dbbnb776c4ef89d15a17@mail.gmail.com>	
+	<4AD6454C.60705@freescale.com>
+	<7c4144600910160837y3d70ccd2yeeeb220da7e556c3@mail.gmail.com>
+In-Reply-To: <7c4144600910160837y3d70ccd2yeeeb220da7e556c3@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,195 +41,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sorry, but it seems that the patch did already do the work. The other
-problems were hardware problems and are not related to this patch (it
-even happened without applying it). So it seems that the skb leak may be
-solved with the provided patch.
+Roberto Guerra wrote:
+> mtdparts=phys:1600K(ROM)ro,6M(root),512K(U-Boot)ro,512K(unused)
+> rootfstype=jffs2
+> => bootm 200000 - 400000
+> <snip>
+> physmap platform flash device: 00800000 at ff800000
+> physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
+>  Amd/Fujitsu Extended Query Table at 0x0040
+> physmap-flash.0: CFI does not contain boot bank location. Assuming
+> top.
 
-Kind regards,
-Asier
+Hmm, you seem to be using physmap rather than physmap_of -- so it won't 
+even be looking at your device tree node.
 
-El vie, 16-10-2009 a las 14:01 +0200, Asier Llano Palacios escribi=F3:
-> (I'm sorry about my previous message with a legal notice, this time
-> I resent it with another mail server that doesn't include the legal
-> notice for me)
->=20
-> Hi all,
->=20
-> I finally found why in my mpc5200 based system (and in the lite5200) I
-> had leaks of skbs when receiving ethernet traffic at 100 Mbit/s so =
-that
-> we generated an rxfifo error (to be able to get it I even reduced the
-> speed of the CPU using the PLL jumpers).
->=20
-> The problem was:
->=20
-> The reception packets are handled in the interrupt handler:
-> mpc52xx_fec_rx_interrupt. So this interrupt is being handled all the
-> time because we are receiving packets continuously.
->=20
-> The reception fifo errors are handled in the interrupt handler:
-> mpc52xx_fec_interrupt. This interruption is being handled very often
-> because we are receiving more packets that what we can handle, and =
-that
-> generates a fifo reception error.
->=20
-> So it is very usual that the mpc52xx_fec_interrupt handler is executed
-> at the middle of the mpc52xx_fec_rx_interrupt handler. And I think =
-that
-> it is not designed for that purpose.
->=20
-> The mpc52xx_fec_rx_interrupt uses bcom_retrieve_buffer and
-> bcom_submit_next_buffer. The mpc52xx_fec_interrupt calls to
-> mpc52xx_fec_reset which calls to mpc52xx_fec_free_rx_buffers and
-> mpc52xx_fec_alloc_rx_buffers, which at the end call =
-bcom_retrieve_buffer
-> and bcom_submit_next_buffer.
->=20
-> Then we have two problems because of the same origin:
->  - bcom_retrieve_buffer and bcom_submit_next_buffer doesn't seem to be
->    atomic, so they cannot be called from one interrupt nested from
->    another one being executing those functions.
->  - Even if they were atomic, the mpc52xx_fec_rx_interrupt and the
->    mpc52xx_fec_reset functions are not intended to be called at the
->    same time.
->=20
-> Patch I managed to do:
->  I've managed to perform a patch that avoids the leak disabling the
->  irqs, but I have a remaining problem: The last  packet to be =
-transmited
->  is waiting for a packet to be received in order to egress (I don't =
-know
->  why but I detected it experimentaly).
-> =20
-> Anyone with more experience can tell me what's wrong in this patch?
->=20
-> Thank you in advance,
-> Asier
->=20
-> Signed-off-by: Asier Llano <a.llano@ziv.es>
-> ---
->  drivers/net/fec_mpc52xx.c |   23 +++++++++++++++++++++--
->  1 file changed, 21 insertions(+), 2 deletions(-)
->=20
-> diff -urpN linux-2.6.31.2/drivers/net/fec_mpc52xx.c
-> linux-2.6.31.2-fec_mpc52xx_skb_leak/drivers/net/fec_mpc52xx.c
-> =
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.31.2/drivers/net/fec_mpc52xx.c
-> +++ linux-2.6.31.2-fec_mpc52xx_skb_leak/drivers/net/fec_mpc52xx.c
-> @@ -85,13 +85,20 @@ MODULE_PARM_DESC(debug, "debugging messa
-> =20
->  static void mpc52xx_fec_tx_timeout(struct net_device *dev)
->  {
-> +	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
-> +	unsigned long flags;
-> +
->  	dev_warn(&dev->dev, "transmit timed out\n");
-> =20
-> +	spin_lock_irqsave(&priv->lock, flags);
-> +
->  	mpc52xx_fec_reset(dev);
-> =20
->  	dev->stats.tx_errors++;
-> =20
->  	netif_wake_queue(dev);
-> +
-> +	spin_unlock_irqrestore(&priv->lock, flags);
->  }
-> =20
->  static void mpc52xx_fec_set_paddr(struct net_device *dev, u8 *mac)
-> @@ -359,8 +366,9 @@ static irqreturn_t mpc52xx_fec_tx_interr
->  {
->  	struct net_device *dev =3D dev_id;
->  	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
-> +	unsigned long flags;
-> =20
-> -	spin_lock(&priv->lock);
-> +	spin_lock_irqsave(&priv->lock, flags);
-> =20
->  	while (bcom_buffer_done(priv->tx_dmatsk)) {
->  		struct sk_buff *skb;
-> @@ -375,7 +383,7 @@ static irqreturn_t mpc52xx_fec_tx_interr
-> =20
->  	netif_wake_queue(dev);
-> =20
-> -	spin_unlock(&priv->lock);
-> +	spin_unlock_irqrestore(&priv->lock, flags);
-> =20
->  	return IRQ_HANDLED;
->  }
-> @@ -384,6 +392,9 @@ static irqreturn_t mpc52xx_fec_rx_interr
->  {
->  	struct net_device *dev =3D dev_id;
->  	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&priv->lock, flags);
-> =20
->  	while (bcom_buffer_done(priv->rx_dmatsk)) {
->  		struct sk_buff *skb;
-> @@ -445,6 +456,8 @@ static irqreturn_t mpc52xx_fec_rx_interr
->  		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
->  	}
-> =20
-> +	spin_unlock_irqrestore(&priv->lock, flags);
-> +
->  	return IRQ_HANDLED;
->  }
-> =20
-> @@ -454,6 +467,7 @@ static irqreturn_t mpc52xx_fec_interrupt
->  	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
->  	struct mpc52xx_fec __iomem *fec =3D priv->fec;
->  	u32 ievent;
-> +	unsigned long flags;
-> =20
->  	ievent =3D in_be32(&fec->ievent);
-> =20
-> @@ -471,9 +485,14 @@ static irqreturn_t mpc52xx_fec_interrupt
->  		if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
->  			dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
-> =20
-> +		spin_lock_irqsave(&priv->lock, flags);
-> +
->  		mpc52xx_fec_reset(dev);
-> =20
->  		netif_wake_queue(dev);
-> +
-> +		spin_unlock_irqrestore(&priv->lock, flags);
-> +
->  		return IRQ_HANDLED;
->  	}
-> =20
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev=20
-=20
------------------------------------------ PLEASE NOTE =
--------------------------------------------
-This message, along with any attachments, may be confidential or legally =
-privileged.=20
-It is intended only for the named person(s), who is/are the only =
-authorized recipients.
-If this message has reached you in error, kindly destroy it without =
-review and notify the sender immediately.
-Thank you for your help.
-ZIV uses virus scanning software but excludes any liability for viruses =
-contained in any attachment.
-=20
------------------------------------- ROGAMOS LEA ESTE TEXTO =
--------------------------------
-Este mensaje y sus anexos pueden contener informaci=F3n confidencial y/o =
-con derecho legal.=20
-Est=E1 dirigido =FAnicamente a la/s persona/s o entidad/es rese=F1adas =
-como =FAnico destinatario autorizado.
-Si este mensaje le hubiera llegado por error, por favor elim=EDnelo sin =
-revisarlo ni reenviarlo y notif=EDquelo inmediatamente al remitente. =
-Gracias por su colaboraci=F3n. =20
-ZIV utiliza software antivirus, pero no se hace responsable de los virus =
-contenidos en los ficheros anexos.
+> List of all partitions:
+> 0100       4096 ram0 (driver?)
+> 0101       4096 ram1 (driver?)
+> 0102       4096 ram2 (driver?)
+> 0103       4096 ram3 (driver?)
+> 0104       4096 ram4 (driver?)
+> 0105       4096 ram5 (driver?)
+> 0106       4096 ram6 (driver?)
+> 0107       4096 ram7 (driver?)
+> 0108       4096 ram8 (driver?)
+> 0109       4096 ram9 (driver?)
+> 010a       4096 ram10 (driver?)
+> 010b       4096 ram11 (driver?)
+> 010c       4096 ram12 (driver?)
+> 010d       4096 ram13 (driver?)
+> 010e       4096 ram14 (driver?)
+> 010f       4096 ram15 (driver?)
+
+Where are all these coming from?
+
+> The key change in my kernel config was the BIG_ENDIAN=Y.
+> The kernel probes the AMD chip, but it can't see the partitions.
+
+Even without partiitons, you should see the whole flash device...
+
+> I guess now I will have to define my mtd partitions in either FDT or
+> in the kernel arguments.
+> Which is the best way to define them?
+
+If you're defining a standard layout for the platform that's unlikely to 
+change, I'd go with the device tree.  Otherwise, I'd go with whatever's 
+most convenient.
+
+> If the partitions are defined in
+> both FDT and bootargs, which one takes precedence?
+
+The command line takes precedence.
+
+-Scott
