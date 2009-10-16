@@ -1,19 +1,16 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 5/5 v2] kernel handling of CPU DLPAR
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-In-Reply-To: <4AD74261.9040504@austin.ibm.com>
-References: <4AB39FB3.1020608@austin.ibm.com>
-	<4AB3A172.4090601@austin.ibm.com>  <4AD4C3A3.5050103@austin.ibm.com>
-	<1255473054.21871.39.camel@concordia> <4AD74261.9040504@austin.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-LiCUG5fWpGldCZ7cbDZY"
-Date: Fri, 16 Oct 2009 11:52:04 +1100
-Message-Id: <1255654324.5626.53.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <wilbur512@gmail.com>
+Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
+	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 29DF3B7B78
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 12:12:36 +1100 (EST)
+Received: by yxe8 with SMTP id 8so1416681yxe.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 18:12:35 -0700 (PDT)
+MIME-Version: 1.0
+Date: Fri, 16 Oct 2009 09:12:34 +0800
+Message-ID: <e997b7420910151812m3de16f67hdb756bcd1f40ddc@mail.gmail.com>
+Subject: Problem when disabled interrupt in system call (ppc8270)
+From: "wilbur.chan" <wilbur512@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,58 +20,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+ppc 8270, kernel 2.6.21.7
 
---=-LiCUG5fWpGldCZ7cbDZY
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2009-10-15 at 10:40 -0500, Nathan Fontenot wrote:
-> Michael Ellerman wrote:
-> > On Tue, 2009-10-13 at 13:14 -0500, Nathan Fontenot wrote:
-> >> This adds the capability to DLPAR add and remove CPUs from the kernel.=
- The
-> >> creates two new files /sys/devices/system/cpu/probe and
-> >> /sys/devices/system/cpu/release to handle the DLPAR addition and remov=
-al of
-> >> CPUs respectively.
-> >=20
-> > How does this relate to the existing cpu hotplug mechanism? Or is this
-> > making the cpu exist (possible), vs marking it as online?
->=20
-> This update makes the cpu exist, it does not mark the cpu online.
->=20
-> >=20
-> > Is some other platform going to want to do the same? ie. should the
-> > probe/release part be in generic code?
->=20
-> I thought about making this generic code, perhaps a follow-on patch to mo=
-ve
-> the creation of the probe/release files to generic code to see what the
-> community thinks.  I would assume there would still need to be a arch and=
-/or
-> platforms specific callout to do the real work.
-
-I'm not so worried about the code being generic, there's not much that
-would be generic. More the mechanism. We don't want to add probe/release
-to powerpc, and then have a different mechanism get added later by some
-other platform, or generically.
-
-But I guess you CC'ed lkml and there's not much more to do, I don't know
-specifically who'd care about it.
-
-cheers
+I took the following steps:
 
 
---=-LiCUG5fWpGldCZ7cbDZY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+In a system call function , say , sys_reboot, interrupt was disabled
+by local_irq_disable.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Then ,  value at the address of 0xc000050  was set to a value , say ,
+0x1234.  Code was like this :
 
-iEYEABECAAYFAkrXw7QACgkQdSjSd0sB4dLuBQCfcDS+jmkHlLnWg2pgCNz6nFOB
-2KoAmgPG7D5Rl2pPRvPTaafaJJssS3Di
-=1D4M
------END PGP SIGNATURE-----
+sys_reboot()
+{
+local_irq_disable();
+*(volatile unsigned long * )0xc1000050 = 0x1234;
+ while(1)
+   {
+    ;
+   }
+}
 
---=-LiCUG5fWpGldCZ7cbDZY--
+Finally, I reset the board (with power still on)  into uboot,using
+'md 0x1000050' to display the content at physical address 0x1000050,
+and found that , it was not 0x1234.
+
+
+However, if I delete the local_irq_disable() in sys_reboot, everything
+went well---After I reset the board, 'md 0x1000050' return the value
+0x1234.
+
+
+So, this really puzzled me , could someone explain why this happed?  Thank you.
+
+
+
+PS:
+
+static inline unsigned long local_irq_disable(void)
+{
+	unsigned long flags, zero;
+
+	__asm__ __volatile__("li %1,0; lbz %0,%2(13); stb %1,%2(13)"
+	: "=r" (flags), "=&r" (zero)
+	: "i" (offsetof(struct paca_struct, soft_enabled))
+	: "memory");
+
+	return flags;
+}
