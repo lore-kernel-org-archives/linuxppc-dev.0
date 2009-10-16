@@ -1,22 +1,22 @@
 Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C7825B7C03
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BAF90B7BAC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Oct 2009 20:46:58 +1100 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id n9GKZoJ0007131
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2009 07:35:50 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9G9kuRM1044642
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2009 20:46:56 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n9G9ktIh010205
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2009 20:46:56 +1100
-Date: Fri, 16 Oct 2009 15:16:46 +0530
+	Fri, 16 Oct 2009 20:47:46 +1100 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp02.au.ibm.com (8.14.3/8.13.1) with ESMTP id n9G9jJlx024603
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2009 20:45:19 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n9G9j4FZ1392678
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2009 20:45:04 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n9G9lhhG003808
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2009 20:47:44 +1100
+Date: Fri, 16 Oct 2009 15:17:34 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -24,8 +24,8 @@ To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
 	Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
 	Andi Kleen <andi@firstfloor.org>, Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v9 PATCH 7/9]: POWER: add a default_idle idle loop for POWER.
-Message-ID: <20091016094646.GI27350@linux.vnet.ibm.com>
+Subject: [v9 PATCH 8/9]: pSeries: implement pSeries processor idle module.
+Message-ID: <20091016094734.GJ27350@linux.vnet.ibm.com>
 References: <20091016093850.GB27350@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
@@ -44,60 +44,300 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-16 15:08:50]:
 
-In arch/powerpc/kernel/idle.c create a default_idle() routine by moving
-the failover condition of the cpu_idle() idle loop. This is needed by
-cpuidle infrastructure to call default_idle when other idle routines
-are not yet registered. Functionality remains the same, but the code is
-slightly moved around.
-
+This patch creates arch/powerpc/platforms/pseries/processor_idle.c,
+which implements the cpuidle infrastructure for pseries.
+It implements a pseries_cpuidle_loop() which would be the main idle loop
+called from cpu_idle(). It makes decision of entering either
+dedicated_snooze_loop or dedicated_cede_loop for dedicated lpar and
+shared_cede_loop for shared lpar processor based on the
+decision taken by the cpuidle governor.
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- arch/powerpc/Kconfig              |    3 +++
- arch/powerpc/include/asm/system.h |    1 +
- arch/powerpc/kernel/idle.c        |    6 ++++++
- 3 files changed, 10 insertions(+)
+ arch/powerpc/include/asm/system.h               |    1 
+ arch/powerpc/kernel/sysfs.c                     |    2 
+ arch/powerpc/platforms/pseries/Makefile         |    1 
+ arch/powerpc/platforms/pseries/processor_idle.c |  210 ++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/pseries.h        |    8 
+ 5 files changed, 222 insertions(+)
 
-Index: linux.trees.git/arch/powerpc/Kconfig
+Index: linux.trees.git/arch/powerpc/platforms/pseries/Makefile
 ===================================================================
---- linux.trees.git.orig/arch/powerpc/Kconfig
-+++ linux.trees.git/arch/powerpc/Kconfig
-@@ -94,6 +94,9 @@ config ARCH_HAS_ILOG2_U64
- config ARCH_HAS_CPU_IDLE_WAIT
- 	def_bool y
+--- linux.trees.git.orig/arch/powerpc/platforms/pseries/Makefile
++++ linux.trees.git/arch/powerpc/platforms/pseries/Makefile
+@@ -26,3 +26,4 @@ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst
+ obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
+ obj-$(CONFIG_CMM)		+= cmm.o
+ obj-$(CONFIG_DTL)		+= dtl.o
++obj-$(CONFIG_PSERIES_PROCESSOR_IDLE)	+= processor_idle.o
+Index: linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/platforms/pseries/pseries.h
++++ linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
+@@ -10,6 +10,8 @@
+ #ifndef _PSERIES_PSERIES_H
+ #define _PSERIES_PSERIES_H
  
-+config ARCH_HAS_DEFAULT_IDLE
-+	def_bool y
++#include <linux/cpuidle.h>
 +
- config GENERIC_HWEIGHT
- 	bool
- 	default y
+ extern void __init fw_feature_init(const char *hypertas, unsigned long len);
+ 
+ struct pt_regs;
+@@ -40,4 +42,10 @@ extern unsigned long rtas_poweron_auto;
+ 
+ extern void find_udbg_vterm(void);
+ 
++DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
++
++#ifdef CONFIG_PSERIES_PROCESSOR_IDLE
++extern struct cpuidle_driver pseries_idle_driver;
++#endif
++
+ #endif /* _PSERIES_PSERIES_H */
+Index: linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
+===================================================================
+--- /dev/null
++++ linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
+@@ -0,0 +1,210 @@
++/*
++ *  processor_idle - idle state cpuidle driver.
++ *  Adapted from drivers/acpi/processor_idle.c
++ *
++ *  Arun R Bharadwaj <arun@linux.vnet.ibm.com>
++ *
++ *  Copyright (C) 2009 IBM Corporation.
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or (at
++ *  your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/moduleparam.h>
++#include <linux/cpuidle.h>
++
++#include <asm/paca.h>
++#include <asm/reg.h>
++#include <asm/system.h>
++#include <asm/machdep.h>
++#include <asm/firmware.h>
++
++#include "plpar_wrappers.h"
++#include "pseries.h"
++
++MODULE_AUTHOR("Arun R Bharadwaj");
++MODULE_DESCRIPTION("pSeries Idle State Driver");
++MODULE_LICENSE("GPL");
++
++struct cpuidle_driver pseries_idle_driver = {
++	.name =		"pseries_idle",
++	.owner =	THIS_MODULE,
++};
++
++DEFINE_PER_CPU(struct cpuidle_device, pseries_dev);
++
++#define IDLE_STATE_COUNT	2
++
++/* pSeries Idle state Flags */
++#define	PSERIES_DEDICATED_SNOOZE	(0x01)
++#define	PSERIES_DEDICATED_CEDE		(0x02)
++#define	PSERIES_SHARED_CEDE		(0x03)
++
++static int pseries_idle_init(struct cpuidle_device *dev)
++{
++	return cpuidle_register_device(dev);
++}
++
++static void shared_cede_loop(void)
++{
++	get_lppaca()->idle = 1;
++	cede_processor();
++	get_lppaca()->idle = 0;
++}
++
++static void dedicated_snooze_loop(void)
++{
++	local_irq_enable();
++	set_thread_flag(TIF_POLLING_NRFLAG);
++	while (!need_resched()) {
++		ppc64_runlatch_off();
++		HMT_low();
++		HMT_very_low();
++	}
++	HMT_medium();
++	clear_thread_flag(TIF_POLLING_NRFLAG);
++	smp_mb();
++	local_irq_disable();
++}
++
++static void dedicated_cede_loop(void)
++{
++	ppc64_runlatch_off();
++	HMT_medium();
++	cede_processor();
++}
++
++static int pseries_cpuidle_loop(struct cpuidle_device *dev,
++				struct cpuidle_state *st)
++{
++	ktime_t t1, t2;
++	s64 diff;
++	int ret;
++	unsigned long in_purr, out_purr;
++
++	get_lppaca()->idle = 1;
++	get_lppaca()->donate_dedicated_cpu = 1;
++	in_purr = mfspr(SPRN_PURR);
++
++	t1 = ktime_get();
++
++	if (st->flags & PSERIES_SHARED_CEDE)
++		shared_cede_loop();
++	else if (st->flags & PSERIES_DEDICATED_SNOOZE)
++		dedicated_snooze_loop();
++	else
++		dedicated_cede_loop();
++
++	t2 = ktime_get();
++	diff = ktime_to_us(ktime_sub(t2, t1));
++	if (diff > INT_MAX)
++		diff = INT_MAX;
++
++	ret = (int) diff;
++
++	out_purr = mfspr(SPRN_PURR);
++	get_lppaca()->wait_state_cycles += out_purr - in_purr;
++	get_lppaca()->donate_dedicated_cpu = 0;
++	get_lppaca()->idle = 0;
++
++	return ret;
++}
++
++static int pseries_setup_cpuidle(struct cpuidle_device *dev, int cpu)
++{
++	int i;
++	struct cpuidle_state *state;
++
++	dev->cpu = cpu;
++
++	if (get_lppaca()->shared_proc) {
++		state = &dev->states[0];
++		snprintf(state->name, CPUIDLE_NAME_LEN, "IDLE");
++		state->enter = pseries_cpuidle_loop;
++		strncpy(state->desc, "shared_cede", CPUIDLE_DESC_LEN);
++		state->flags = PSERIES_SHARED_CEDE;
++		state->exit_latency = 0;
++		state->target_residency = 0;
++		return 0;
++	}
++
++	for (i = 0; i < IDLE_STATE_COUNT; i++) {
++		state = &dev->states[i];
++
++		snprintf(state->name, CPUIDLE_NAME_LEN, "CEDE%d", i);
++		state->enter = pseries_cpuidle_loop;
++
++		switch (i) {
++		case 0:
++			strncpy(state->desc, "snooze", CPUIDLE_DESC_LEN);
++			state->flags = PSERIES_DEDICATED_SNOOZE;
++			state->exit_latency = 0;
++			state->target_residency = 0;
++			break;
++
++		case 1:
++			strncpy(state->desc, "cede", CPUIDLE_DESC_LEN);
++			state->flags = PSERIES_DEDICATED_CEDE;
++			state->exit_latency = 1;
++			state->target_residency =
++					__get_cpu_var(smt_snooze_delay);
++			break;
++		}
++	}
++	dev->state_count = IDLE_STATE_COUNT;
++
++	return 0;
++}
++
++void update_smt_snooze_delay(int snooze)
++{
++	int cpu;
++	for_each_online_cpu(cpu)
++		per_cpu(pseries_dev, cpu).states[0].target_residency = snooze;
++}
++
++static int __init pseries_processor_idle_init(void)
++{
++	int cpu;
++	int result;
++
++	result = cpuidle_register_driver(&pseries_idle_driver);
++
++	if (result < 0)
++		return result;
++
++	printk(KERN_DEBUG "pSeries idle driver registered\n");
++
++	if (!firmware_has_feature(FW_FEATURE_SPLPAR)) {
++		printk(KERN_DEBUG "Using default idle\n");
++		return 0;
++	}
++
++	for_each_online_cpu(cpu) {
++		pseries_setup_cpuidle(&per_cpu(pseries_dev, cpu), cpu);
++		pseries_idle_init(&per_cpu(pseries_dev, cpu));
++	}
++
++	printk(KERN_DEBUG "Using cpuidle idle loop\n");
++
++	return 0;
++}
++
++device_initcall(pseries_processor_idle_init);
 Index: linux.trees.git/arch/powerpc/include/asm/system.h
 ===================================================================
 --- linux.trees.git.orig/arch/powerpc/include/asm/system.h
 +++ linux.trees.git/arch/powerpc/include/asm/system.h
-@@ -218,6 +218,7 @@ extern unsigned long klimit;
- extern void *alloc_maybe_bootmem(size_t size, gfp_t mask);
- extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+@@ -548,6 +548,7 @@ extern void account_system_vtime(struct 
+ extern struct dentry *powerpc_debugfs_root;
  
-+extern void default_idle(void);
- extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+ void cpu_idle_wait(void);
++extern void update_smt_snooze_delay(int snooze);
  
- /*
-Index: linux.trees.git/arch/powerpc/kernel/idle.c
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_SYSTEM_H */
+Index: linux.trees.git/arch/powerpc/kernel/sysfs.c
 ===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/idle.c
-+++ linux.trees.git/arch/powerpc/kernel/idle.c
-@@ -121,6 +121,12 @@ void cpu_idle_wait(void)
+--- linux.trees.git.orig/arch/powerpc/kernel/sysfs.c
++++ linux.trees.git/arch/powerpc/kernel/sysfs.c
+@@ -18,6 +18,7 @@
+ #include <asm/machdep.h>
+ #include <asm/smp.h>
+ #include <asm/pmc.h>
++#include <asm/system.h>
+ 
+ #include "cacheinfo.h"
+ 
+@@ -51,6 +52,7 @@ static ssize_t store_smt_snooze_delay(st
+ 		return -EINVAL;
+ 
+ 	per_cpu(smt_snooze_delay, cpu->sysdev.id) = snooze;
++	update_smt_snooze_delay(snooze);
+ 
+ 	return count;
  }
- EXPORT_SYMBOL_GPL(cpu_idle_wait);
- 
-+void default_idle(void)
-+{
-+	HMT_low();
-+	HMT_very_low();
-+}
-+
- int powersave_nap;
- 
- #ifdef CONFIG_SYSCTL
