@@ -1,23 +1,20 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-vw0-f204.google.com (mail-vw0-f204.google.com
-	[209.85.212.204]) by ozlabs.org (Postfix) with ESMTP id 133B1B7BA4
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 12:25:16 +1100 (EST)
-Received: by vws42 with SMTP id 42so748778vws.17
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 18:25:15 -0700 (PDT)
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Sender: dan.j.williams@gmail.com
-In-Reply-To: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
-References: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
-Date: Thu, 15 Oct 2009 18:25:14 -0700
-Message-ID: <e9c3a7c20910151825o67cd2712id91aead70f84987c@mail.gmail.com>
-Subject: Re: [PATCH v0 1/2] DMA: fsldma: Disable DMA_INTERRUPT when Async_tx
-	enabled
-From: Dan Williams <dan.j.williams@intel.com>
-To: Vishnu Suresh <Vishnu@freescale.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <20091016103829.323c89d7.sfr@canb.auug.org.au>
+References: <20091007041007.16890.62194.stgit@angua>
+	<20091015120007.3780c59b.sfr@canb.auug.org.au>
+	<fa686aa40910151006k43b07c30q1e43c3b1ae4af561@mail.gmail.com>
+	<20091016103829.323c89d7.sfr@canb.auug.org.au>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 15 Oct 2009 21:18:21 -0600
+Message-ID: <fa686aa40910152018i2dbf1876s4de3771e42f9c3d@mail.gmail.com>
+Subject: Re: [RFC PATCH 00/12] Merge common OpenFirmware device tree code
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-	linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-crypto@vger.kernel.org, Timur Tabi <timur@freescale.com>
+Cc: monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ added Leo and Timur to the Cc ]
+On Thu, Oct 15, 2009 at 5:38 PM, Stephen Rothwell <sfr@canb.auug.org.au> wr=
+ote:
+> Hi Grant,
+>
+> On Thu, 15 Oct 2009 11:06:15 -0600 Grant Likely <grant.likely@secretlab.c=
+a> wrote:
+>>
+>> In the mean time, I've pushed out the current series with acked-bys
+>> added to my git server. =A0I think I'm ready for things to start going
+>> into linux-next. =A0Since this is the first time I've asked for a tree
+>> to be added to linux-next, please let me know if you see anything
+>> troublesome or problematic. =A0Here's the tree:
+>>
+>> The following changes since commit 4bdf0bb7d64cf672199519b3d808e2a82f5b5=
+9e9:
+>> =A0 Grant Likely (1):
+>> =A0 =A0 =A0 =A0 powerpc/5200: Update defconfigs
+>
+> Um, that commit is in no tree but yours ...
 
-On Wed, Oct 14, 2009 at 11:41 PM, Vishnu Suresh <Vishnu@freescale.com> wrot=
-e:
-> This patch disables the use of DMA_INTERRUPT capability with Async_tx
->
-> The fsldma produces a null transfer with DMA_INTERRUPT
-> capability when used with Async_tx. When RAID devices queue
-> a transaction via Async_tx, this =A0results in a hang.
->
-> Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
-> ---
-> =A0drivers/dma/fsldma.c | =A0 =A06 ++++++
-> =A01 files changed, 6 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index 296f9e7..66d9b39 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -1200,7 +1200,13 @@ static int __devinit of_fsl_dma_probe(struct of_de=
-vice *dev,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0- fdev->reg.start + 1);
->
-> =A0 =A0 =A0 =A0dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
-> +#ifndef CONFIG_ASYNC_CORE
-> + =A0 =A0 =A0 /*
-> + =A0 =A0 =A0 =A0* The DMA_INTERRUPT async_tx is a NULL transfer, which w=
-ill
-> + =A0 =A0 =A0 =A0* triger a PE interrupt.
-> + =A0 =A0 =A0 =A0*/
-> =A0 =A0 =A0 =A0dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
-> +#endif
-> =A0 =A0 =A0 =A0dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
-> =A0 =A0 =A0 =A0fdev->common.device_alloc_chan_resources =3D fsl_dma_alloc=
-_chan_resources;
-> =A0 =A0 =A0 =A0fdev->common.device_free_chan_resources =3D fsl_dma_free_c=
-han_resources;
+It should be in Ben's merge tree shortly, and Linus' shortly after
+that, but yeah that was lazy.  It was the tree that I tested my
+commits on, and I should have either rebased or waited until it
+actually hit mainline.  I just wanted to get the ball rolling before
+heading out the door for Japan.
 
-You are basically saying that fsl_dma_prep_interrupt() is buggy.  Can
-that routine be fixed rather than this piecemeal solution?  If it
-cannot be fixed (i.e. hardware issue) then fsl_dma_prep_interrupt()
-should just be disabled/deleted altogether.
+>> are available in the git repository at:
+>>
+>> =A0 git://git.secretlab.ca/git/linux-2.6 next-devicetree
+>
+> I have added this for today, but note that it contains stuff that is not
+> devicetree related. =A0Trees in linux-next should be based on other trees
+> in linux-next (almost always Linus' tree, but any other nonrebasing tree
+> is fine).
 
---
-Dan
+Thanks.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
