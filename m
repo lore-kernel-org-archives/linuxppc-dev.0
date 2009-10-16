@@ -1,11 +1,20 @@
-Return-Path: <jeff@theptrgroup.com>
-Message-ID: <4AD8CD30.6020003@theptrgroup.com>
-Date: Fri, 16 Oct 2009 15:44:48 -0400
-From: Jeff Angielski <jeff@theptrgroup.com>
+Return-Path: <RFeany@mrv.com>
+Received: from bos-spam.mrv.com (mx5.mrv.com [140.179.254.12])
+	by ozlabs.org (Postfix) with ESMTP id 8AB1CB7C35
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 07:25:46 +1100 (EST)
+Date: Fri, 16 Oct 2009 13:25:41 -0700
+From: Rex Feany <RFeany@mrv.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
+Message-ID: <20091016202541.GA16358@compile2.chatsunix.int.mrv.com>
+References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20091015165650.GA3837@compile2.chatsunix.int.mrv.com>
+	<OFF665748B.AAF26319-ONC1257651.00296F23-C1257651.002D6BF7@transmode.se>
 MIME-Version: 1.0
-To: Linuxppc-dev@lists.ozlabs.org, Joel Lord <Lord@Assurtech.com>
-Subject: c67x00 with mpc85xx
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OFF665748B.AAF26319-ONC1257651.00296F23-C1257651.002D6BF7@transmode.se>
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,27 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Thus spake Joakim Tjernlund (joakim.tjernlund@transmode.se):
 
-We are using the Cypress USB Host (CY7C67300) with a Freescale MPC8544 
-and can only get it to work if we add a delay after writing to the 
-hardware registers through the HPI.
+> Right, it is the pte table walk that is blowing up.
+> I just noted that 2.6 lacks a tophys() call in its table walk
+> so I removed that one(there is one more tophys call but I don't think
+> it should be removed).
+> Try this addon patch:
 
-We tried playing with the SCY settings in the GPCM but nothing helps. 
-It is only when we add usecs of delay after our write() functions that 
-the hardware works.
+no difference
 
-The datasheets make no mention of any write-then-read requirements and 
-the FAEs are stumped right now.
-
-I was just hoping somebody had some experiencing interfacing this chip 
-to the PowerPC and that they could offer some suggestions or ideas.
-
-
-TIA,
-Jeff
-
-
--- 
-Jeff Angielski
-The PTR Group
-www.theptrgroup.com
+take care!
+/rex.
