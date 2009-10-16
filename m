@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 68565B875B
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 04:21:55 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id D0E46B8224
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 04:22:47 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Add a Book-3E 64-bit defconfig
+Mime-Version: 1.0 (Apple Message framework v1076)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/5] powerpc: Cleanup lib/Kconfig.debug
-Date: Fri, 16 Oct 2009 12:21:39 -0500
-Message-Id: <1255713699-21852-6-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1255713699-21852-5-git-send-email-galak@kernel.crashing.org>
-References: <1255713699-21852-1-git-send-email-galak@kernel.crashing.org>
-	<1255713699-21852-2-git-send-email-galak@kernel.crashing.org>
-	<1255713699-21852-3-git-send-email-galak@kernel.crashing.org>
-	<1255713699-21852-4-git-send-email-galak@kernel.crashing.org>
-	<1255713699-21852-5-git-send-email-galak@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1255712717-21221-1-git-send-email-galak@kernel.crashing.org>
+Date: Fri, 16 Oct 2009 12:22:26 -0500
+Message-Id: <A136CC2D-DAEF-40FB-A4D2-E2C1EBFE9034@kernel.crashing.org>
+References: <1255712717-21221-1-git-send-email-galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We don't need an explicit PPC64 in the DEBUG_PREEMPT dependancies as all
-PPC platforms now support TRACE_IRQFLAGS_SUPPORT.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- lib/Kconfig.debug |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Oct 16, 2009, at 12:05 PM, Kumar Gala wrote:
 
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 30df586..234ceb1 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -392,7 +392,7 @@ config DEBUG_KMEMLEAK_TEST
- 
- config DEBUG_PREEMPT
- 	bool "Debug preemptible kernel"
--	depends on DEBUG_KERNEL && PREEMPT && (TRACE_IRQFLAGS_SUPPORT || PPC64)
-+	depends on DEBUG_KERNEL && PREEMPT && TRACE_IRQFLAGS_SUPPORT
- 	default y
- 	help
- 	  If you say Y here then the kernel will use a debug variant of the
--- 
-1.6.0.6
+> This defconfig's purpose at this time is to help catch compile errors
+> between Book-3S and Book-3E support in ppc64.  It is based on the
+> ppc64_defconfig with some things disabled that we dont support on
+> Book-3E right now (hugetlbfs, slices, etc.)
+>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> arch/powerpc/configs/ppc64e_defconfig | 2199 ++++++++++++++++++++++++ 
+> +++++++++
+> 1 files changed, 2199 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/configs/ppc64e_defconfig
+
+Ben,
+
+Please apply this for v2.6.32 as it should help going forward catching  
+compile issues.
+
+Stephen, Michaeal,
+
+Can we get this added to the build testing for next and to kisskb.
+
+thanks.
+
+- k
