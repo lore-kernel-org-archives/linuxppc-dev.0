@@ -1,16 +1,23 @@
-Return-Path: <wilbur512@gmail.com>
-Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
-	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 29DF3B7B78
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 12:12:36 +1100 (EST)
-Received: by yxe8 with SMTP id 8so1416681yxe.17
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 18:12:35 -0700 (PDT)
+Return-Path: <dan.j.williams@gmail.com>
+Received: from mail-vw0-f204.google.com (mail-vw0-f204.google.com
+	[209.85.212.204]) by ozlabs.org (Postfix) with ESMTP id 133B1B7BA4
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 12:25:16 +1100 (EST)
+Received: by vws42 with SMTP id 42so748778vws.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2009 18:25:15 -0700 (PDT)
 MIME-Version: 1.0
-Date: Fri, 16 Oct 2009 09:12:34 +0800
-Message-ID: <e997b7420910151812m3de16f67hdb756bcd1f40ddc@mail.gmail.com>
-Subject: Problem when disabled interrupt in system call (ppc8270)
-From: "wilbur.chan" <wilbur512@gmail.com>
-To: linuxppc-dev@ozlabs.org
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
+References: <1255588866-4133-1-git-send-email-Vishnu@freescale.com>
+Date: Thu, 15 Oct 2009 18:25:14 -0700
+Message-ID: <e9c3a7c20910151825o67cd2712id91aead70f84987c@mail.gmail.com>
+Subject: Re: [PATCH v0 1/2] DMA: fsldma: Disable DMA_INTERRUPT when Async_tx
+	enabled
+From: Dan Williams <dan.j.williams@intel.com>
+To: Vishnu Suresh <Vishnu@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
+	linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-crypto@vger.kernel.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,51 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ppc 8270, kernel 2.6.21.7
+[ added Leo and Timur to the Cc ]
 
-I took the following steps:
+On Wed, Oct 14, 2009 at 11:41 PM, Vishnu Suresh <Vishnu@freescale.com> wrot=
+e:
+> This patch disables the use of DMA_INTERRUPT capability with Async_tx
+>
+> The fsldma produces a null transfer with DMA_INTERRUPT
+> capability when used with Async_tx. When RAID devices queue
+> a transaction via Async_tx, this =A0results in a hang.
+>
+> Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
+> ---
+> =A0drivers/dma/fsldma.c | =A0 =A06 ++++++
+> =A01 files changed, 6 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> index 296f9e7..66d9b39 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -1200,7 +1200,13 @@ static int __devinit of_fsl_dma_probe(struct of_de=
+vice *dev,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0- fdev->reg.start + 1);
+>
+> =A0 =A0 =A0 =A0dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+> +#ifndef CONFIG_ASYNC_CORE
+> + =A0 =A0 =A0 /*
+> + =A0 =A0 =A0 =A0* The DMA_INTERRUPT async_tx is a NULL transfer, which w=
+ill
+> + =A0 =A0 =A0 =A0* triger a PE interrupt.
+> + =A0 =A0 =A0 =A0*/
+> =A0 =A0 =A0 =A0dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
+> +#endif
+> =A0 =A0 =A0 =A0dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+> =A0 =A0 =A0 =A0fdev->common.device_alloc_chan_resources =3D fsl_dma_alloc=
+_chan_resources;
+> =A0 =A0 =A0 =A0fdev->common.device_free_chan_resources =3D fsl_dma_free_c=
+han_resources;
 
+You are basically saying that fsl_dma_prep_interrupt() is buggy.  Can
+that routine be fixed rather than this piecemeal solution?  If it
+cannot be fixed (i.e. hardware issue) then fsl_dma_prep_interrupt()
+should just be disabled/deleted altogether.
 
-In a system call function , say , sys_reboot, interrupt was disabled
-by local_irq_disable.
-
-Then ,  value at the address of 0xc000050  was set to a value , say ,
-0x1234.  Code was like this :
-
-sys_reboot()
-{
-local_irq_disable();
-*(volatile unsigned long * )0xc1000050 = 0x1234;
- while(1)
-   {
-    ;
-   }
-}
-
-Finally, I reset the board (with power still on)  into uboot,using
-'md 0x1000050' to display the content at physical address 0x1000050,
-and found that , it was not 0x1234.
-
-
-However, if I delete the local_irq_disable() in sys_reboot, everything
-went well---After I reset the board, 'md 0x1000050' return the value
-0x1234.
-
-
-So, this really puzzled me , could someone explain why this happed?  Thank you.
-
-
-
-PS:
-
-static inline unsigned long local_irq_disable(void)
-{
-	unsigned long flags, zero;
-
-	__asm__ __volatile__("li %1,0; lbz %0,%2(13); stb %1,%2(13)"
-	: "=r" (flags), "=&r" (zero)
-	: "i" (offsetof(struct paca_struct, soft_enabled))
-	: "memory");
-
-	return flags;
-}
+--
+Dan
