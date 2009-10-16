@@ -1,28 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BA3E6B7BD8
+Return-Path: <a.llano@ziv.es>
+Received: from correo.ziv.es (correo.ziv.es [77.226.243.115])
+	by ozlabs.org (Postfix) with ESMTP id B5474B7BCF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Oct 2009 03:01:04 +1100 (EST)
-Date: Fri, 16 Oct 2009 11:01:25 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Richard Cochran <richard.cochran@omicron.at>
-Subject: Re: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
-Message-ID: <20091016160125.GC11838@loki.buserror.net>
-References: <25940478.1252060285938.JavaMail.root@viefep11.chello.at>
-	<20090909182227.GA8215@b07421-ec1.am.freescale.net>
-	<95DC1AA8EC908B48939B72CF375AA5E30E220693@alice.at.omicron.at>
-	<20091014152722.GA17867@b07421-ec1.am.freescale.net>
-	<95DC1AA8EC908B48939B72CF375AA5E30E2AE72C@alice.at.omicron.at>
-	<20091015162728.GB3730@loki.buserror.net>
-	<95DC1AA8EC908B48939B72CF375AA5E30E2AE800@alice.at.omicron.at>
+	Sat, 17 Oct 2009 03:09:33 +1100 (EST)
+Subject: Re: [PATCH] Found skb leak in mpc5200 fec on rxfifo error
+From: "Asier Llano Palacios" <a.llano@ziv.es>
+To: <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1255694497.4683.163.camel@allano>
+References: <1255694497.4683.163.camel@allano>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Fri, 16 Oct 2009 18:10:19 +0200
+Message-ID: <1255709419.4683.203.camel@allano>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <95DC1AA8EC908B48939B72CF375AA5E30E2AE800@alice.at.omicron.at>
-Cc: "'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>
+Cc: a.arzuaga@ziv.es
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,92 +23,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 16, 2009 at 08:31:19AM +0200, Richard Cochran wrote:
-> > -----Original Message-----
-> > From: Scott Wood [mailto:scottwood@freescale.com]
-> > Subject: Re: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
-> >
-> > On Thu, Oct 15, 2009 at 02:19:30PM +0200, Richard Cochran wrote:
-> > > 2. Having only one dts for his board, but Ethernet doesn't work.
-> >
-> > The point is to fix u-boot so that it *does* work with only one dts.  If
-> > people not upgrading u-boot is your concern, we could put the fixup in the
-> > Linux platform code instead.
-> 
-> Yes, I was thinking that upgrading u-boot can be problematic for
-> people who don't have a JTAG flash tool, in case things go wrong.
+Sorry, but it seems that the patch did already do the work. The other
+problems were hardware problems and are not related to this patch (it
+even happened without applying it). So it seems that the skb leak may be
+solved with the provided patch.
 
-Right, so we could put a fixup in Linux as well to handle that case (make
-sure not to blindly reverse, though, in case u-boot has already fixed it
-up).
+Kind regards,
+Asier
 
-> But I thought the whole point of the device tree was, that it is easy
-> to produce a dts that exactly matches a particular physical board
-> design.
-
-It's the dtb that the kernel sees (possibly after platform fixups, though
-that's not the ideal case) that is supposed to exactly match the hardware. 
-The dts is just one source (albeit the most significant one) of the data
-that goes into the final dtb.
-
-There are boards that have several orthogonal configuration options that
-can't be probed -- we'd have to provide dozens (or worse) of .dts files in
-order to cover all of them without any runtime fixup.  Not to mention things
-like memory size and clock frequency...
-
-> If MPC8313-ERDB REVC has a different IRQ routing, then doesn't
-> it deserve its own dts? 
-
-I'm inclined to say no, though I wouldn't object too hard in this case if
-people really want it.  But we should still put in a u-boot fixup so that if
-you have a new u-boot it doesn't matter which dts you use.
-
-> Or do only *some* of the REVC boards have this
-> routing?
-
-They should all have it.
-
-> > And feel free to ask through official Freescale support channels why the
-> > U-Boot that shipped on these boards does not have such a fixup (or why they
-> > decided it was better to make late-rev 8313's interrupt assignments match
-> > other 83xx than for all revs of the same part number to have the same
-> > interrupt assignments).
-> 
-> It sounds like you are not overly satisfied with Freescale's handling
-> of their BSPs ;)
-
-:-)
-
-Things are slowly getting better, but it'd be good for the BSP teams to hear
-from customers (and not just other internal groups) saying they want more
-up-to-date software that doesn't diverge as much from mainline.
-
-And getting u-boot right before shipping it on a board is particularly
-important.
-
-> To be fair, I am happy that Freescale appears to take Linux support
-> seriously, but I do think they drop the ball once a BSP is
-> published. For example, the MPC8313-ERDB ships with kernel 2.6.23
-> (with the old style dts) and a fair number of non-mainstream
-> patches. It is not so easy to get a recent kernel booting on that
-> board.
-
-What problems have you been having with upstream kernels on mpc8313erdb,
-other than this IRQ issue?  It should work, though the BSP may have extra
-features that haven't been pushed upstream.
-
-> I have the LITE5200B, MPC8313-ERDB, MPC8572DS, and the P2020DS in
-> house, and it is really the same, sad story with each of
-> them. Wouldn't it be grand if the development boards would boot "out
-> of the box" when compiling the most recent kernel with default config?
-
-That's what the group I'm in tries to make sure happens (for the
-mpc8xxx/qoriq chips) -- but we're outnumbered by the BSP developers, so some
-BSP features tend to be missing.  Basic board support should be there,
-though.
-
-I just booted 2.6.32-rc4 straight from Linus on an mpc8572ds yesterday. 
-I've booted various upstream kernels on mpc8313erdb (typically an older rev,
-though).
-
--Scott
+El vie, 16-10-2009 a las 14:01 +0200, Asier Llano Palacios escribi=F3:
+> (I'm sorry about my previous message with a legal notice, this time
+> I resent it with another mail server that doesn't include the legal
+> notice for me)
+>=20
+> Hi all,
+>=20
+> I finally found why in my mpc5200 based system (and in the lite5200) I
+> had leaks of skbs when receiving ethernet traffic at 100 Mbit/s so =
+that
+> we generated an rxfifo error (to be able to get it I even reduced the
+> speed of the CPU using the PLL jumpers).
+>=20
+> The problem was:
+>=20
+> The reception packets are handled in the interrupt handler:
+> mpc52xx_fec_rx_interrupt. So this interrupt is being handled all the
+> time because we are receiving packets continuously.
+>=20
+> The reception fifo errors are handled in the interrupt handler:
+> mpc52xx_fec_interrupt. This interruption is being handled very often
+> because we are receiving more packets that what we can handle, and =
+that
+> generates a fifo reception error.
+>=20
+> So it is very usual that the mpc52xx_fec_interrupt handler is executed
+> at the middle of the mpc52xx_fec_rx_interrupt handler. And I think =
+that
+> it is not designed for that purpose.
+>=20
+> The mpc52xx_fec_rx_interrupt uses bcom_retrieve_buffer and
+> bcom_submit_next_buffer. The mpc52xx_fec_interrupt calls to
+> mpc52xx_fec_reset which calls to mpc52xx_fec_free_rx_buffers and
+> mpc52xx_fec_alloc_rx_buffers, which at the end call =
+bcom_retrieve_buffer
+> and bcom_submit_next_buffer.
+>=20
+> Then we have two problems because of the same origin:
+>  - bcom_retrieve_buffer and bcom_submit_next_buffer doesn't seem to be
+>    atomic, so they cannot be called from one interrupt nested from
+>    another one being executing those functions.
+>  - Even if they were atomic, the mpc52xx_fec_rx_interrupt and the
+>    mpc52xx_fec_reset functions are not intended to be called at the
+>    same time.
+>=20
+> Patch I managed to do:
+>  I've managed to perform a patch that avoids the leak disabling the
+>  irqs, but I have a remaining problem: The last  packet to be =
+transmited
+>  is waiting for a packet to be received in order to egress (I don't =
+know
+>  why but I detected it experimentaly).
+> =20
+> Anyone with more experience can tell me what's wrong in this patch?
+>=20
+> Thank you in advance,
+> Asier
+>=20
+> Signed-off-by: Asier Llano <a.llano@ziv.es>
+> ---
+>  drivers/net/fec_mpc52xx.c |   23 +++++++++++++++++++++--
+>  1 file changed, 21 insertions(+), 2 deletions(-)
+>=20
+> diff -urpN linux-2.6.31.2/drivers/net/fec_mpc52xx.c
+> linux-2.6.31.2-fec_mpc52xx_skb_leak/drivers/net/fec_mpc52xx.c
+> =
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.31.2/drivers/net/fec_mpc52xx.c
+> +++ linux-2.6.31.2-fec_mpc52xx_skb_leak/drivers/net/fec_mpc52xx.c
+> @@ -85,13 +85,20 @@ MODULE_PARM_DESC(debug, "debugging messa
+> =20
+>  static void mpc52xx_fec_tx_timeout(struct net_device *dev)
+>  {
+> +	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+> +	unsigned long flags;
+> +
+>  	dev_warn(&dev->dev, "transmit timed out\n");
+> =20
+> +	spin_lock_irqsave(&priv->lock, flags);
+> +
+>  	mpc52xx_fec_reset(dev);
+> =20
+>  	dev->stats.tx_errors++;
+> =20
+>  	netif_wake_queue(dev);
+> +
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+>  }
+> =20
+>  static void mpc52xx_fec_set_paddr(struct net_device *dev, u8 *mac)
+> @@ -359,8 +366,9 @@ static irqreturn_t mpc52xx_fec_tx_interr
+>  {
+>  	struct net_device *dev =3D dev_id;
+>  	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+> +	unsigned long flags;
+> =20
+> -	spin_lock(&priv->lock);
+> +	spin_lock_irqsave(&priv->lock, flags);
+> =20
+>  	while (bcom_buffer_done(priv->tx_dmatsk)) {
+>  		struct sk_buff *skb;
+> @@ -375,7 +383,7 @@ static irqreturn_t mpc52xx_fec_tx_interr
+> =20
+>  	netif_wake_queue(dev);
+> =20
+> -	spin_unlock(&priv->lock);
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+> =20
+>  	return IRQ_HANDLED;
+>  }
+> @@ -384,6 +392,9 @@ static irqreturn_t mpc52xx_fec_rx_interr
+>  {
+>  	struct net_device *dev =3D dev_id;
+>  	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&priv->lock, flags);
+> =20
+>  	while (bcom_buffer_done(priv->rx_dmatsk)) {
+>  		struct sk_buff *skb;
+> @@ -445,6 +456,8 @@ static irqreturn_t mpc52xx_fec_rx_interr
+>  		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
+>  	}
+> =20
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+> +
+>  	return IRQ_HANDLED;
+>  }
+> =20
+> @@ -454,6 +467,7 @@ static irqreturn_t mpc52xx_fec_interrupt
+>  	struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+>  	struct mpc52xx_fec __iomem *fec =3D priv->fec;
+>  	u32 ievent;
+> +	unsigned long flags;
+> =20
+>  	ievent =3D in_be32(&fec->ievent);
+> =20
+> @@ -471,9 +485,14 @@ static irqreturn_t mpc52xx_fec_interrupt
+>  		if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
+>  			dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
+> =20
+> +		spin_lock_irqsave(&priv->lock, flags);
+> +
+>  		mpc52xx_fec_reset(dev);
+> =20
+>  		netif_wake_queue(dev);
+> +
+> +		spin_unlock_irqrestore(&priv->lock, flags);
+> +
+>  		return IRQ_HANDLED;
+>  	}
+> =20
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev=20
+=20
+----------------------------------------- PLEASE NOTE =
+-------------------------------------------
+This message, along with any attachments, may be confidential or legally =
+privileged.=20
+It is intended only for the named person(s), who is/are the only =
+authorized recipients.
+If this message has reached you in error, kindly destroy it without =
+review and notify the sender immediately.
+Thank you for your help.
+ZIV uses virus scanning software but excludes any liability for viruses =
+contained in any attachment.
+=20
+------------------------------------ ROGAMOS LEA ESTE TEXTO =
+-------------------------------
+Este mensaje y sus anexos pueden contener informaci=F3n confidencial y/o =
+con derecho legal.=20
+Est=E1 dirigido =FAnicamente a la/s persona/s o entidad/es rese=F1adas =
+como =FAnico destinatario autorizado.
+Si este mensaje le hubiera llegado por error, por favor elim=EDnelo sin =
+revisarlo ni reenviarlo y notif=EDquelo inmediatamente al remitente. =
+Gracias por su colaboraci=F3n. =20
+ZIV utiliza software antivirus, pero no se hace responsable de los virus =
+contenidos en los ficheros anexos.
