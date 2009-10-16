@@ -1,21 +1,28 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 88045B7B8D
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 19:20:20 +1100 (EST)
-In-Reply-To: <20091015165650.GA3837@compile2.chatsunix.int.mrv.com>
-References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091015165650.GA3837@compile2.chatsunix.int.mrv.com>
-Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
-To: Rex Feany <RFeany@mrv.com>
-Message-ID: <OFF665748B.AAF26319-ONC1257651.00296F23-C1257651.002D6BF7@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Fri, 16 Oct 2009 10:16:07 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id 25101B7BB4
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2009 19:42:48 +1100 (EST)
+Subject: Re: i2c-powermac fails
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <20091016094449.190e1a21@hyperion.delvare>
+References: <20091013112304.74083fd1@hyperion.delvare>
+	<1255426348.2192.187.camel@pasglop>
+	<20091013114948.03608b7f@hyperion.delvare>
+	<20091014230252.0d0cba8d@hyperion.delvare>
+	<1255555575.2347.56.camel@pasglop>
+	<20091015124923.23863a94@hyperion.delvare>
+	<1255605559.2347.102.camel@pasglop>
+	<20091015160513.5c356b7e@hyperion.delvare>
+	<20091016094449.190e1a21@hyperion.delvare>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Oct 2009 19:42:36 +1100
+Message-Id: <1255682556.19032.22.camel@pasglop>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, Tim Shepard <shep@alum.mit.edu>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,54 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rex Feany <RFeany@mrv.com> wrote on 15/10/2009 18:56:50:
->
-> arch/powerpc/kernel/head_8xx.o: In function `FixupDAR':
-> /home/rfeany/src/lnxnm/linux-dev/arch/powerpc/kernel/head_8xx.S:576: undefined
-> reference to `DARfix'
->
-> With all of your patches applied I have this problem:
->
-> open("/proc/mounts", O_RDONLY)          = 3
-> fstat64(0x3, 0x7fc6ad58)                = 0
-> mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x3001f000
-> read(3, 0x3001f000, 1024)               = -1 EFAULT (Bad address)
-> exit_group(0)                           = ?
->
-> but it works fine with /dev/zero:
->
-> open("/dev/zero", O_RDONLY)             = 3
-> mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x30001000
-> read(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0
-> \0"..., 1024) = 1024
->
-> If I revert "8xx: start using dcbX instructions in various copy
-> routines" then it works again. I think it is the cache instructions
-> added to __copy_tofrom_user: reading from /dev/zero is OK (it uses
-> __clear_user, no dcbX), but copy_to_user() fails.
+On Fri, 2009-10-16 at 09:44 +0200, Jean Delvare wrote:
+> On Thu, 15 Oct 2009 16:05:13 +0200, Jean Delvare wrote:
+> > On Thu, 15 Oct 2009 22:19:19 +1100, Benjamin Herrenschmidt wrote:
+> > > On Thu, 2009-10-15 at 12:49 +0200, Jean Delvare wrote:
+> > > > Oh. Well, if that was the case, we would see errors all the time, not
+> > > > just during initialization, right? Or does the I2C clock frequency
+> > > > change over time somehow?
+> > > 
+> > > No but maybe we are a bit on the "limit" of the device and some
+> > > registers take long to respond than others ?
+> > 
+> > Unlikely. The ADT7460 can run at I2C clock rates up to 400 kHz while
+> > the Keywest I2C runs at 25, 50 or 100 kHz if I read the code properly.
+> > I don't know what exact speed is used on Tim's system, apparently it is
+> > read from the hardware in the device tree directly?
+> > 
+> > We could have low_i2c.c log the I2C clock frequency and/or try to force
+> > the lowest speed (25 kHz) and see if it helps, but I very much doubt
+> > it. And I'd rather wait for Tim to report the result with my last patch
+> > first.
+> 
+> Ben, wouldn't this recent patch of yours be worth testing too?
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=11a50873ef2b3c1c3fe99a661c22c08f35d93553
+> 
+> If it solves problems at resume time, I guess it might also solve
+> problems at boot time?
 
-Yes, only copy_tofrom_user will actually case a TLBError with
-the dcbX insn.
+I doubt it. The problem was related to the way interrupts get turned off
+at suspend time by the generic code, which is unrelated to what happens
+at boot.
 
->
-> It seems stable with all but the dcbX patch applied. I haven't been able
-> to crash it yet, anyway :)
-
-Right, it is the pte table walk that is blowing up.
-I just noted that 2.6 lacks a tophys() call in its table walk
-so I removed that one(there is one more tophys call but I don't think
-it should be removed).
-Try this addon patch:
-
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 3df4a17..0e91da4 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -540,7 +540,6 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
-      mtspr SPRN_MD_EPN, r10
-      mfspr r11, SPRN_M_TWB	/* Get level 1 table entry address */
-      lwz   r11, 0(r11)	/* Get the level 1 entry */
--     tophys  (r11, r11)
-      DO_8xx_CPU6(0x3b80, r3)
-      mtspr SPRN_MD_TWC, r11	/* Load pte table base address */
-      mfspr r11, SPRN_MD_TWC	/* ....and get the pte address */
+Cheers,
+Ben.
