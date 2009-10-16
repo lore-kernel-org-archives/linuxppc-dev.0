@@ -2,21 +2,21 @@ Return-Path: <arun@linux.vnet.ibm.com>
 Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 900EBB7BB2
+	by ozlabs.org (Postfix) with ESMTPS id 3B899B7BB0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Oct 2009 20:39:02 +1100 (EST)
+	Fri, 16 Oct 2009 20:40:29 +1100 (EST)
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id n9GKRpBS001330
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2009 07:27:51 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id n9GKTKh0002317
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2009 07:29:20 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
 	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9G9cwUe1331232
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2009 20:38:58 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n9G9cvcY032403
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2009 20:38:58 +1100
-Date: Fri, 16 Oct 2009 15:08:50 +0530
+	n9G9eRoh1147036
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2009 20:40:27 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n9G9eNTQ016898
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2009 20:40:26 +1100
+Date: Fri, 16 Oct 2009 15:10:17 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -24,10 +24,12 @@ To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
 	Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
 	Andi Kleen <andi@firstfloor.org>, Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v9 PATCH 0/9]: cpuidle: Cleanup cpuidle/ Introduce cpuidle to POWER.
-Message-ID: <20091016093850.GB27350@linux.vnet.ibm.com>
+Subject: [v9 PATCH 1/9]: cpuidle: Design documentation patch
+Message-ID: <20091016094017.GC27350@linux.vnet.ibm.com>
+References: <20091016093850.GB27350@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20091016093850.GB27350@linux.vnet.ibm.com>
 Cc: linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Reply-To: arun@linux.vnet.ibm.com
@@ -40,44 +42,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-16 15:08:50]:
 
-This patchset introduces cpuidle infrastructure to POWER, prototyping
-for pSeries, and also does a major refactoring of current x86 idle
-power management and a cleanup of cpuidle infrastructure.
+This patch adds a little information about the redesigned cpuidle
+infrastructure in Documentation/cpuidle/core.txt
 
-This patch series has been in discussion for quite a while now and
-below are the links to the previous discussions.
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ Documentation/cpuidle/core.txt |   35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-Hopefully, this is ready to be included in the -tip tree.
-
-v8 --> http://lkml.org/lkml/2009/10/8/82
-v7 --> http://lkml.org/lkml/2009/10/6/278
-v6 --> http://lkml.org/lkml/2009/9/22/180
-v5 --> http://lkml.org/lkml/2009/9/22/26
-v4 --> http://lkml.org/lkml/2009/9/1/133
-v3 --> http://lkml.org/lkml/2009/8/27/124
-v2 --> http://lkml.org/lkml/2009/8/26/233
-v1 --> http://lkml.org/lkml/2009/8/19/150
-
-
-Changes in this version:
-----------------------------------------
-        *Added documentation for the new design regarding registration
-        of idle routines in Documentation/cpuidle/core.txt
-
-        *Platforms which do not want the code bloat of cpuidle can
-        disable CONFIG_CPU_IDLE. Alternate definition of
-        cpuidle_idle_call is provided which would call the appropriate
-        idle routine provided by the arch without the overhead of
-        registration and governors.
-        (Thanks to Andi for raising this isuue)
-
-        *I had missed a cpuidle_kick_cpus() in
-        cpuidle_pause_and_lock() which is called from the hotplug
-        path. So added that and tested this patchset by subjecting it
-        to cpuhotplug torture.
-        (Thanks to Balbir for noticing this)
-
-
---arun
+Index: linux.trees.git/Documentation/cpuidle/core.txt
+===================================================================
+--- linux.trees.git.orig/Documentation/cpuidle/core.txt
++++ linux.trees.git/Documentation/cpuidle/core.txt
+@@ -21,3 +21,38 @@ which can be used to switch governors at
+ is meant for developer testing only. In normal usage, kernel picks the
+ best governor based on governor ratings.
+ SEE ALSO: sysfs.txt in this directory.
++
++Design:
++
++Cpuidle allows for registration of multiple sets of idle routines.
++The latest registered set is used by cpuidle governors as the current
++active set to choose the right idle state. This set is managed as a
++list and each time the newly registered set is added to the head of the
++list and made the current active set.
++
++An example of how this would work on x86 is shown below.
++
++-----------------					-----------------
++|		|					|		|
++| choose b/w	|	mwait is chosen			|    mwait	|
++| mwait, poll,	|-------------------------------------> |(current active|
++| default, c1e	|	register to cpuidle		|    set)	|
++|		|	with mwait as the idle routine	|		|
++-----------------					-----------------
++
++
++-----------------					-----------------
++|		|					|  c1, c2, c3	|
++|     ACPI	|	register to cpuidle		|   (current)	|
++|   discovery	|-------------------------------------> |---------------|
++|		|	with c1, c2, c3			|     mwait	|
++|		|	as set of idle routines		|		|
++-----------------					-----------------
++
++With this mechanism, a module can register and unregister its set of
++idle routines at run time in a clean manner.
++
++The main idle routine called inside cpu_idle() of every arch is defined in
++driver/cpuidle/cpuidle.c which would in turn call the idle routine selected
++by the governor. If the CONFIG_CPU_IDLE is disabled, the arch needs to
++provide an alternate definition for cpuidle_idle_call().
