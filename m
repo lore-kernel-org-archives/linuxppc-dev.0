@@ -1,28 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 11727B7BBD
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Oct 2009 03:30:30 +1100 (EST)
-Subject: Re: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20091016160125.GC11838@loki.buserror.net>
-Date: Fri, 16 Oct 2009 11:30:22 -0500
-Message-Id: <5F7F54D6-0487-433C-B58B-E6FA3F816CDB@kernel.crashing.org>
-References: <25940478.1252060285938.JavaMail.root@viefep11.chello.at>
-	<20090909182227.GA8215@b07421-ec1.am.freescale.net>
-	<95DC1AA8EC908B48939B72CF375AA5E30E220693@alice.at.omicron.at>
-	<20091014152722.GA17867@b07421-ec1.am.freescale.net>
-	<95DC1AA8EC908B48939B72CF375AA5E30E2AE72C@alice.at.omicron.at>
-	<20091015162728.GB3730@loki.buserror.net>
-	<95DC1AA8EC908B48939B72CF375AA5E30E2AE800@alice.at.omicron.at>
-	<20091016160125.GC11838@loki.buserror.net>
-To: Richard Cochran <richard.cochran@omicron.at>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 777B9B7BD9
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 03:44:38 +1100 (EST)
+Date: Fri, 16 Oct 2009 20:44:36 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jeff Garzik <jgarzik@redhat.com>
+Subject: [PATCH] sata_fsl: Split hard and soft reset
+Message-ID: <20091016164436.GA12897@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, Jiang Yutang <b14898@freescale.com>,
+	Ashish Kalra <Ashish.Kalra@freescale.com>, linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +20,204 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Jiang Yutang <b14898@freescale.com>
 
-On Oct 16, 2009, at 11:01 AM, Scott Wood wrote:
+Split sata_fsl_softreset() into hard and soft resets to make
+error-handling more efficient & device and PMP detection more
+reliable.
 
->>
->> I have the LITE5200B, MPC8313-ERDB, MPC8572DS, and the P2020DS in
->> house, and it is really the same, sad story with each of
->> them. Wouldn't it be grand if the development boards would boot "out
->> of the box" when compiling the most recent kernel with default  
->> config?
->
-> That's what the group I'm in tries to make sure happens (for the
-> mpc8xxx/qoriq chips) -- but we're outnumbered by the BSP developers,  
-> so some
-> BSP features tend to be missing.  Basic board support should be there,
-> though.
->
-> I just booted 2.6.32-rc4 straight from Linus on an mpc8572ds  
-> yesterday.
-> I've booted various upstream kernels on mpc8313erdb (typically an  
-> older rev,
-> though).
+Also includes fix for PMP support, driver tested with Sil3726,
+Sil4726 & Exar PMP controllers.
 
-Also, if they don't boot out of the box report an issue on this list.   
-That is part of the community testing aspect of open source.
+[AV: Also fixes resuming from deep sleep on MPC8315 CPUs]
 
-- k
+Signed-off-by: Jiang Yutang <b14898@freescale.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/ata/sata_fsl.c |   84 +++++++++++++++++++++++++-----------------------
+ 1 files changed, 44 insertions(+), 40 deletions(-)
+
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index d344db4..172b57e 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -707,34 +707,17 @@ static unsigned int sata_fsl_dev_classify(struct ata_port *ap)
+ 	return ata_dev_classify(&tf);
+ }
+ 
+-static int sata_fsl_prereset(struct ata_link *link, unsigned long deadline)
+-{
+-	/* FIXME: Never skip softreset, sata_fsl_softreset() is
+-	 * combination of soft and hard resets.  sata_fsl_softreset()
+-	 * needs to be splitted into soft and hard resets.
+-	 */
+-	return 0;
+-}
+-
+-static int sata_fsl_softreset(struct ata_link *link, unsigned int *class,
++static int sata_fsl_hardreset(struct ata_link *link, unsigned int *class,
+ 					unsigned long deadline)
+ {
+ 	struct ata_port *ap = link->ap;
+-	struct sata_fsl_port_priv *pp = ap->private_data;
+ 	struct sata_fsl_host_priv *host_priv = ap->host->private_data;
+ 	void __iomem *hcr_base = host_priv->hcr_base;
+-	int pmp = sata_srst_pmp(link);
+ 	u32 temp;
+-	struct ata_taskfile tf;
+-	u8 *cfis;
+-	u32 Serror;
+ 	int i = 0;
+ 	unsigned long start_jiffies;
+ 
+-	DPRINTK("in xx_softreset\n");
+-
+-	if (pmp != SATA_PMP_CTRL_PORT)
+-		goto issue_srst;
++	DPRINTK("in xx_hardreset\n");
+ 
+ try_offline_again:
+ 	/*
+@@ -749,7 +732,7 @@ try_offline_again:
+ 
+ 	if (temp & ONLINE) {
+ 		ata_port_printk(ap, KERN_ERR,
+-				"Softreset failed, not off-lined %d\n", i);
++				"Hardreset failed, not off-lined %d\n", i);
+ 
+ 		/*
+ 		 * Try to offline controller atleast twice
+@@ -761,7 +744,7 @@ try_offline_again:
+ 			goto try_offline_again;
+ 	}
+ 
+-	DPRINTK("softreset, controller off-lined\n");
++	DPRINTK("hardreset, controller off-lined\n");
+ 	VPRINTK("HStatus = 0x%x\n", ioread32(hcr_base + HSTATUS));
+ 	VPRINTK("HControl = 0x%x\n", ioread32(hcr_base + HCONTROL));
+ 
+@@ -786,11 +769,11 @@ try_offline_again:
+ 
+ 	if (!(temp & ONLINE)) {
+ 		ata_port_printk(ap, KERN_ERR,
+-				"Softreset failed, not on-lined\n");
++				"Hardreset failed, not on-lined\n");
+ 		goto err;
+ 	}
+ 
+-	DPRINTK("softreset, controller off-lined & on-lined\n");
++	DPRINTK("hardreset, controller off-lined & on-lined\n");
+ 	VPRINTK("HStatus = 0x%x\n", ioread32(hcr_base + HSTATUS));
+ 	VPRINTK("HControl = 0x%x\n", ioread32(hcr_base + HCONTROL));
+ 
+@@ -806,7 +789,7 @@ try_offline_again:
+ 				"No Device OR PHYRDY change,Hstatus = 0x%x\n",
+ 				ioread32(hcr_base + HSTATUS));
+ 		*class = ATA_DEV_NONE;
+-		goto out;
++		return 0;
+ 	}
+ 
+ 	/*
+@@ -819,11 +802,44 @@ try_offline_again:
+ 	if ((temp & 0xFF) != 0x18) {
+ 		ata_port_printk(ap, KERN_WARNING, "No Signature Update\n");
+ 		*class = ATA_DEV_NONE;
+-		goto out;
++		goto do_followup_srst;
+ 	} else {
+ 		ata_port_printk(ap, KERN_INFO,
+ 				"Signature Update detected @ %d msecs\n",
+ 				jiffies_to_msecs(jiffies - start_jiffies));
++		*class = sata_fsl_dev_classify(ap);
++		return 0;
++	}
++
++do_followup_srst:
++	/*
++	 * request libATA to perform follow-up softreset
++	 */
++	return -EAGAIN;
++
++err:
++	return -EIO;
++}
++
++static int sata_fsl_softreset(struct ata_link *link, unsigned int *class,
++					unsigned long deadline)
++{
++	struct ata_port *ap = link->ap;
++	struct sata_fsl_port_priv *pp = ap->private_data;
++	struct sata_fsl_host_priv *host_priv = ap->host->private_data;
++	void __iomem *hcr_base = host_priv->hcr_base;
++	int pmp = sata_srst_pmp(link);
++	u32 temp;
++	struct ata_taskfile tf;
++	u8 *cfis;
++	u32 Serror;
++
++	DPRINTK("in xx_softreset\n");
++
++	if (ata_link_offline(link)) {
++		DPRINTK("PHY reports no device\n");
++		*class = ATA_DEV_NONE;
++		return 0;
+ 	}
+ 
+ 	/*
+@@ -834,7 +850,6 @@ try_offline_again:
+ 	 * reached here, we can send a command to the target device
+ 	 */
+ 
+-issue_srst:
+ 	DPRINTK("Sending SRST/device reset\n");
+ 
+ 	ata_tf_init(link->device, &tf);
+@@ -860,6 +875,8 @@ issue_srst:
+ 		ioread32(CA + hcr_base), ioread32(CC + hcr_base));
+ 
+ 	iowrite32(0xFFFF, CC + hcr_base);
++	if (pmp != SATA_PMP_CTRL_PORT)
++		iowrite32(pmp, CQPMP + hcr_base);
+ 	iowrite32(1, CQ + hcr_base);
+ 
+ 	temp = ata_wait_register(CQ + hcr_base, 0x1, 0x1, 1, 5000);
+@@ -926,7 +943,6 @@ issue_srst:
+ 		VPRINTK("cereg = 0x%x\n", ioread32(hcr_base + CE));
+ 	}
+ 
+-out:
+ 	return 0;
+ 
+ err:
+@@ -988,18 +1004,6 @@ static void sata_fsl_error_intr(struct ata_port *ap)
+ 		ehi->err_mask |= AC_ERR_ATA_BUS;
+ 		ehi->action |= ATA_EH_SOFTRESET;
+ 
+-		/*
+-		 * Ignore serror in case of fatal errors as we always want
+-		 * to do a soft-reset of the FSL SATA controller. Analyzing
+-		 * serror may cause libata to schedule a hard-reset action,
+-		 * and hard-reset currently does not do controller
+-		 * offline/online, causing command timeouts and leads to an
+-		 * un-recoverable state, hence make libATA ignore
+-		 * autopsy in case of fatal errors.
+-		 */
+-
+-		ehi->flags |= ATA_EHI_NO_AUTOPSY;
+-
+ 		freeze = 1;
+ 	}
+ 
+@@ -1267,8 +1271,8 @@ static struct ata_port_operations sata_fsl_ops = {
+ 
+ 	.freeze = sata_fsl_freeze,
+ 	.thaw = sata_fsl_thaw,
+-	.prereset = sata_fsl_prereset,
+ 	.softreset = sata_fsl_softreset,
++	.hardreset = sata_fsl_hardreset,
+ 	.pmp_softreset = sata_fsl_softreset,
+ 	.error_handler = sata_fsl_error_handler,
+ 	.post_internal_cmd = sata_fsl_post_internal_cmd,
+-- 
+1.6.3.3
