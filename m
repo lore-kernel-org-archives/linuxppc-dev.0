@@ -1,19 +1,28 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9C1D1B7B91
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Oct 2009 06:35:08 +1100 (EST)
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Mixing hard and soft floating point?
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-fx0-f221.google.com (mail-fx0-f221.google.com
+	[209.85.220.221]) by ozlabs.org (Postfix) with ESMTP id B8A8FB7B74
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Oct 2009 10:18:01 +1100 (EST)
+Received: by fxm21 with SMTP id 21so3696057fxm.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 16:17:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <OFEC00B9FB.B03AA854-ONC1257652.00644350-C1257652.00651551@transmode.se>
-References: <OFC920E57F.DFABC29F-ONC1257652.00421E11-C1257652.0043478A@transmode.se>
-	<20091017181224.97FFBF15432@gemini.denx.de>
-	<OFEC00B9FB.B03AA854-ONC1257652.00644350-C1257652.00651551@transmode.se>
-Date: Sat, 17 Oct 2009 21:34:54 +0200
-Message-Id: <20091017193454.7978FF15432@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Sender: timur.tabi@gmail.com
+In-Reply-To: <20091016084924.GB4234@linux.vnet.ibm.com>
+References: <1255557226-4403-1-git-send-email-timur@freescale.com>
+	<200910152041.26646.borntraeger@de.ibm.com>
+	<4AD770A9.6070509@freescale.com>
+	<200910152126.28024.borntraeger@de.ibm.com>
+	<4AD778E6.7020806@freescale.com>
+	<20091016084924.GB4234@linux.vnet.ibm.com>
+Date: Sat, 17 Oct 2009 18:17:58 -0500
+Message-ID: <ed82fe3e0910171617v6cdec1f9r9dc33cfb8852a31a@mail.gmail.com>
+Subject: Re: [PATCH] hvc_console: returning 0 from put_chars is not an error
+From: Timur Tabi <timur@freescale.com>
+To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+	Scott Wood <scottwood@freescale.com>,
+	Christian Borntraeger <borntraeger@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Joakim Tjernlund,
+On Fri, Oct 16, 2009 at 3:49 AM, Hendrik Brueckner
+<brueckner@linux.vnet.ibm.com> wrote:
 
-In message <OFEC00B9FB.B03AA854-ONC1257652.00644350-C1257652.00651551@transmode.se> you wrote:
->
-> > Recompile and relink it with soft-fp as well. Or ask the provider to
-> > do that.
-> 
-> That is what I am trying do/find out. The supplier claims that
-> it should not be a problem and is ATM unwilling to recompile the app/libs.
-> I am not convinced won't cause problems, not to mention performance degradation.
+> The states are handled by the hvc_iucv itself:
+> If the hvc_iucv code has a connection established, terminal or console data
+> are queued and sent to the peer. If the state is disconnected, terminal and
+> console data is discarded internally.
 
-If the application is really using FP instructions a lot, then there
-is a huge difference between using soft-float and MATH_EMU; I
-remember test cases where soft-float was faster by factors of
-500...1000.
-
-> OK, but then you don't mix some libs/apps with soft and other
-> apps/libs with hard FP?
-
-No, we never tried that. Sounds scary to me.
-
-Best regards,
-
-Wolfgang Denk
+So what is the plan now?
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The connection between the language in which we think/program and the
-problems and solutions we can imagine is very close. For this  reason
-restricting  language  features  with  the intent of eliminating pro-
-grammer errors is at best dangerous.
-               - Bjarne Stroustrup in "The  C++ Programming Language"
+Timur Tabi
+Linux kernel developer at Freescale
