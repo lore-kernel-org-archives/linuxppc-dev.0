@@ -2,21 +2,21 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C01A0B7B69
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 22:28:23 +1100 (EST)
-In-Reply-To: <20091016202541.GA16358@compile2.chatsunix.int.mrv.com>
+	by ozlabs.org (Postfix) with ESMTPS id 164BFB7B72
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 23:03:26 +1100 (EST)
+In-Reply-To: <OF2BB5EF59.1EE0A77D-ONC1257652.003D79DC-C1257652.003EA687@LocalDomain>
 References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
 	<20091015165650.GA3837@compile2.chatsunix.int.mrv.com>
 	<OFF665748B.AAF26319-ONC1257651.00296F23-C1257651.002D6BF7@transmode.se>
 	<20091016202541.GA16358@compile2.chatsunix.int.mrv.com>
+	<OF2BB5EF59.1EE0A77D-ONC1257652.003D79DC-C1257652.003EA687@LocalDomain>
 Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
-To: Rex Feany <RFeany@mrv.com>
-Message-ID: <OF2BB5EF59.1EE0A77D-ONC1257652.003D79DC-C1257652.003EA687@transmode.se>
+Message-ID: <OFA43B9FDF.F43B1705-ONC1257652.0041B12F-C1257652.004211A3@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sat, 17 Oct 2009 13:24:18 +0200
+Date: Sat, 17 Oct 2009 14:01:38 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
+Cc: Scott Wood <scottwood@freescale.com>, Rex Feany <RFeany@mrv.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,118 +27,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rex Feany <RFeany@mrv.com> wrote on 16/10/2009 22:25:41:
+Joakim Tjernlund/Transmode wrote on 17/10/2009 13:24:18:
 >
-> Thus spake Joakim Tjernlund (joakim.tjernlund@transmode.se):
+> Rex Feany <RFeany@mrv.com> wrote on 16/10/2009 22:25:41:
+> >
+> > Thus spake Joakim Tjernlund (joakim.tjernlund@transmode.se):
+> >
+> > > Right, it is the pte table walk that is blowing up.
+> > > I just noted that 2.6 lacks a tophys() call in its table walk
+> > > so I removed that one(there is one more tophys call but I don't think
+> > > it should be removed).
+> > > Try this addon patch:
+> >
+> > no difference
+
+> OK, thinking a bit more, this part should not be executed as
+> copy_tofrom_user executes in kernel space.
 >
-> > Right, it is the pte table walk that is blowing up.
-> > I just noted that 2.6 lacks a tophys() call in its table walk
-> > so I removed that one(there is one more tophys call but I don't think
-> > it should be removed).
-> > Try this addon patch:
->
-> no difference
+> Any chance you can stick a HW breakpoint on FixupDAR?
+> Perhaps there is something different with kernel
+> virtual address to phys address?
+> A simple topys() works in 2.4, but perhaps not in 2.6?
+> this is the part of interest:
+> FixupDAR: /* Entry point for dcbx workaround. */
+>  /* fetch instruction from memory. */
+>  mfspr r10, SPRN_SRR0
+>  andis. r11, r10, 0x8000
+>  tophys  (r11, r10)
+>  beq- 139b  /* Branch if user space address */
+> 140: lwz r11,0(r11)
 
-OK, thinking a bit more, this part should not be executed as
-copy_tofrom_user executes in kernel space.
+Probably better to walk the kernel page table too. Does this
+make a difference(needs the tophys() patch I posted earlier):
 
-Any chance you can stick a HW breakpoint on FixupDAR?
-Perhaps there is something different with kernel
-virtual address to phys address?
-A simple topys() works in 2.4, but perhaps not in 2.6?
-this is the part of interest:
-FixupDAR:	/* Entry point for dcbx workaround. */
-      /* fetch instruction from memory. */
-      mfspr r10, SPRN_SRR0
-      andis.      r11, r10, 0x8000
-      tophys  (r11, r10)
-      beq-  139b		/* Branch if user space address */
-140:  lwz   r11,0(r11)
 
-If not kernel dcbX works, you could see if user space does.
-Here is a start:
+>From 862dda30c3d3d3bedcc605e8520626408a26891c Mon Sep 17 00:00:00 2001
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Sat, 17 Oct 2009 13:54:03 +0200
+Subject: [PATCH] 8xx: Walk the page table for kernel addresses too.
 
-#include <errno.h>
-#include <sys/mman.h>
-#include <stdio.h>
+---
+ arch/powerpc/kernel/head_8xx.S |   25 ++++++++++++-------------
+ 1 files changed, 12 insertions(+), 13 deletions(-)
 
-dcbz(void const *ptr)
-{
-      __asm__ ("dcbz 0, %0" : : "r" (ptr) : "memory");
-}
-
-dcbf(void const *ptr)
-{
-      __asm__ ("dcbf 0, %0" : : "r" (ptr) : "memory");
-}
-
-dcbi(void const *ptr)
-{
-      __asm__ ("dcbi 0, %0" : : "r" (ptr) : "memory");
-}
-
-dcbst(void const *ptr)
-{
-      __asm__ ("dcbst 0, %0" : : "r" (ptr) : "memory");
-}
-
-icbi(void const *ptr)
-{
-      __asm__ ("icbi 0, %0" : : "r" (ptr) : "memory");
-}
-
-dcbt(void const *ptr) /* no TLB Miss */
-{
-      __asm__ ("dcbt 0, %0" : : "r" (ptr) : "memory");
-}
-
-dcbtst(void const *ptr) /* no TLB Miss */
-{
-      __asm__ ("dcbtst 0, %0" : : "r" (ptr) : "memory");
-}
-
-static const unsigned long const a[16*4094] ;
-main()
-{
-      volatile unsigned long b, *ptr = &a[10*4096], *mptr;
-      b = *ptr;
-
-      mptr = mmap(NULL, 16*4094, PROT_WRITE | PROT_READ, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-      if (mptr == MAP_FAILED)
-            printf("mmap failed:%s\n", strerror(errno));
-
-      ptr = mptr;
-#if 0
-      dcbst(&a[2*4096]);
-      b = *ptr;
-      dcbf(&a[6*4096]);
-      b = *ptr;
-      dcbz(&a[4*4096]);
-      b = *ptr;
-      dcbst(&a[8*4096]);
-      dcbst(&a[8*4096]);
-#endif
-      *ptr = 17;
-      printf("dcbst(ptr)\n"); fflush(stdout);
-      dcbst(ptr);
-      *(ptr+3+1024) = 18;
-
-      printf("dcbst(ptr+3*1024)\n"); fflush(stdout);
-      dcbst(ptr+3*1024);
-
-      printf("dcbt(ptr+5*1024)\n"); fflush(stdout);
-      dcbt(ptr+5*1024);
-
-      printf("dcbz(ptr+2*1024)\n"); fflush(stdout);
-      dcbf(&a[6*4096]);
-
-      printf("dcbz(&a[4*4096])\n"); fflush(stdout);
-      dcbz(&a[4*4096]); fflush(stdout);
-
-      printf("dcbf(&a[6*4096])\n"); fflush(stdout);
-      dcbf(&a[6*4096]);
-
-      //dcbz(ptr+2*1024);
-      //dcbi(&a[6*4096]);
-      //icbi(&a[8*4096]);
-}
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 0e91da4..edc9e9b 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -532,28 +532,27 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
+  * by decoding the registers used by the dcbx instruction and adding them.
+  * DAR is set to the calculated address and r10 also holds the EA on exit.
+  */
+-#define NO_SELF_MODIFYING_CODE /* define if you don't want to use self modifying code */
+-     nop	/* A few nops to make the modified_instr: space below cache line aligned */
+-     nop
+-139:	/* fetch instruction from userspace memory */
++ /* define if you don't want to use self modifying code */
++#define NO_SELF_MODIFYING_CODE
++FixupDAR:/* Entry point for dcbx workaround. */
++	/* fetch instruction from memory. */
++     mfspr r10, SPRN_SRR0
+      DO_8xx_CPU6(0x3780, r3)
+      mtspr SPRN_MD_EPN, r10
+      mfspr r11, SPRN_M_TWB	/* Get level 1 table entry address */
+-     lwz   r11, 0(r11)	/* Get the level 1 entry */
++     cmplwi      cr0, r11, 0x0800
++     blt-  3f		/* Branch if user space */
++     lis   r11, swapper_pg_dir@h
++     ori   r11, r11, swapper_pg_dir@l
++     rlwimi      r11, r11, 0, 2, 19
++3:   lwz   r11, 0(r11)	/* Get the level 1 entry */
+      DO_8xx_CPU6(0x3b80, r3)
+      mtspr SPRN_MD_TWC, r11	/* Load pte table base address */
+      mfspr r11, SPRN_MD_TWC	/* ....and get the pte address */
+      lwz   r11, 0(r11)	/* Get the pte */
+      /* concat physical page address(r11) and page offset(r10) */
+      rlwimi      r11, r10, 0, 20, 31
+-     b     140f
+-FixupDAR:	/* Entry point for dcbx workaround. */
+-	/* fetch instruction from memory. */
+-     mfspr r10, SPRN_SRR0
+-     andis.      r11, r10, 0x8000
+-     tophys  (r11, r10)
+-     beq-  139b		/* Branch if user space address */
+-140: lwz   r11,0(r11)
++     lwz   r11,0(r11)
+ /* Check if it really is a dcbx instruction. */
+ /* dcbt and dcbtst does not generate DTLB Misses/Errors,
+  * no need to include them here */
+--
+1.6.4.4
