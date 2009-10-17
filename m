@@ -1,30 +1,17 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-qy0-f186.google.com (mail-qy0-f186.google.com
-	[209.85.221.186]) by ozlabs.org (Postfix) with ESMTP id 98492B7B7A
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Oct 2009 02:42:05 +1100 (EST)
-Received: by qyk16 with SMTP id 16so2045549qyk.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 08:42:04 -0700 (PDT)
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 2CE0CB7B74
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Oct 2009 05:12:28 +1100 (EST)
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Mixing hard and soft floating point?
 MIME-Version: 1.0
-In-Reply-To: <20091017235117U.fujita.tomonori@lab.ntt.co.jp>
-References: <20091013091017.GA18431@localhost.localdomain>
-	<20091017224028V.fujita.tomonori@lab.ntt.co.jp>
-	<961aa3350910170743n4c9947d1ka0bd31aa1c7b9917@mail.gmail.com>
-	<20091017235117U.fujita.tomonori@lab.ntt.co.jp>
-Date: Sun, 18 Oct 2009 00:42:04 +0900
-Message-ID: <961aa3350910170842w58a72be0id5fbd0e3a5058a1c@mail.gmail.com>
-Subject: Re: [PATCH 2/8] bitmap: Introduce bitmap_set, bitmap_clear,
-	bitmap_find_next_zero_area
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: fenghua.yu@intel.com, gregkh@suse.de, tglx@linutronix.de,
-	tony.luck@intel.com, x86@kernel.org, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-altix@sgi.com,
-	yevgenyp@mellanox.co.il, linuxppc-dev@ozlabs.org,
-	mingo@redhat.com, paulus@samba.org, hpa@zytor.com,
-	sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
-	akpm@linux-foundation.org, linux-usb@vger.kernel.org,
-	davem@davemloft.net, LW@karo-electronics.de
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <OFC920E57F.DFABC29F-ONC1257652.00421E11-C1257652.0043478A@transmode.se>
+References: <OFC920E57F.DFABC29F-ONC1257652.00421E11-C1257652.0043478A@transmode.se>
+Date: Sat, 17 Oct 2009 20:12:24 +0200
+Message-Id: <20091017181224.97FFBF15432@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,45 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> >> --- a/lib/iommu-helper.c
->> >> +++ b/lib/iommu-helper.c
->> >> @@ -19,7 +19,7 @@ again:
->> >> =A0 =A0 =A0 index =3D (index + align_mask) & ~align_mask;
->> >>
->> >> =A0 =A0 =A0 end =3D index + nr;
->> >> - =A0 =A0 if (end >=3D size)
->> >> + =A0 =A0 if (end > size)
->> >
->> > I think that this is intentional; the last byte of the limit doesn't
->> > work.
->>
->> It looks ok to me. Without above change, find_next_zero_area cannot
->> find a 64 bits zeroed area in next sample code.
->
-> I meant that we don't want to find such area for IOMMUs (IIRC, it code
-> came from POWER IOMMU).
+Dear Joakim Tjernlund,
 
-OK, I see.  I think we need the comment about it.
+In message <OFC920E57F.DFABC29F-ONC1257652.00421E11-C1257652.0043478A@transmode.se> you wrote:
+> 
+> Anyone tried mixing hard and soft FP in on soft float CPU such as 83xx?
 
-So we cannot replace find_next_zero_area by bitmap_find_next_zero_area
-and current -mmotm has the bug introduced by this patch in iommu-helper
-and I also introduced the bug in bitmap_find_next_zero_area if
-align_mask !=3D 0 in
-bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area-fix.pat=
-ch
+Hm... most 83xx have a FPU.
 
-Andrew, please drop
+> Been trying to figure out if this is a good idea or not.
+> Any combinations that will or won't work?
 
-lib-iommu-helperc-fix-off-by-one-error-in-find_next_zero_area.patch
-iommu-helper-simplify-find_next_zero_area.patch
-bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area.patch
-bitmap-introduce-bitmap_set-bitmap_clear-bitmap_find_next_zero_area-fix.pat=
-ch
-iommu-helper-use-bitmap-library.patch
-isp1362-hcd-use-bitmap_find_next_zero_area.patch
-mlx4-use-bitmap_find_next_zero_area.patch
-sparc-use-bitmap_find_next_zero_area.patch
-ia64-use-bitmap_find_next_zero_area.patch
-genalloc-use-bitmap_find_next_zero_area.patch
+What exactly do you mean by "mixing"? You cannot (at least not with
+any reasonable effort) mix hard and soft FP in the same application /
+linked object. And it would be pretty difficult to setup separate
+libraries for and all that stuff for both hard and soft FP binaries
+in one system.
 
-I'll overhaul the patchset and retry again.
+I doubt if such a setup makes sense at all.
+
+> Generally I got soft FP in all system libs but there might be
+> an binary application which will use hard FP.
+
+Recompile and relink it with soft-fp as well. Or ask the provider to
+do that.
+
+> Is the MATH_EMU option in the kernel reliable(for 8xx too)?
+
+It's reliable enough to install and run standard  distributions  like
+Debian, Ubuntu, or Fedora, but I have to admit that we haven't stress
+tested any special FP test suites in such an environment. In everyday
+use I didn't see any real issues, though.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+If I can have honesty, it's easier to overlook mistakes.
+	-- Kirk, "Space Seed", stardate 3141.9
