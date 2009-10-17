@@ -1,19 +1,30 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C2E05B7334
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 23:18:27 +1100 (EST)
-Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
-	by gw1.transmode.se (Postfix) with ESMTP id 59A26650002
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 14:18:24 +0200 (CEST)
-Subject: Mixing hard and soft floating point?
-To: linuxppc-dev@ozlabs.org
-Message-ID: <OFC920E57F.DFABC29F-ONC1257652.00421E11-C1257652.0043478A@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sat, 17 Oct 2009 14:14:52 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	by ozlabs.org (Postfix) with ESMTPS id 7D9E4B7B78
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Oct 2009 01:14:18 +1100 (EST)
+Date: Sat, 17 Oct 2009 22:43:02 +0900
+To: akinobu.mita@gmail.com
+Subject: Re: [PATCH 2/8] bitmap: Introduce bitmap_set, bitmap_clear,
+	bitmap_find_next_zero_area
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091013091017.GA18431@localhost.localdomain>
+References: <20091009164100.85a36188.akpm@linux-foundation.org>
+	<20091013021818.GA3898@localhost.localdomain>
+	<20091013091017.GA18431@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20091017224028V.fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-usb@vger.kernel.org, linux-ia64@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, hpa@zytor.com,
+	sparclinux@vger.kernel.org, LW@KARO-electronics.de,
+	x86@kernel.org, linux-altix@sgi.com, mingo@redhat.com,
+	fenghua.yu@intel.com, yevgenyp@mellanox.co.il,
+	tglx@linutronix.de, tony.luck@intel.com, netdev@vger.kernel.org,
+	gregkh@suse.de, linux-kernel@vger.kernel.org,
+	fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
+	davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,14 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 13 Oct 2009 18:10:17 +0900
+Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-Anyone tried mixing hard and soft FP in on soft float CPU such as 83xx?
+> My user space testing exposed off-by-one error find_next_zero_area
+> in iommu-helper. Some zero area cannot be found by this bug.
+> 
+> Subject: [PATCH] Fix off-by-one error in find_next_zero_area
+> 
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> ---
+>  lib/iommu-helper.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
+> index 75dbda0..afc58bc 100644
+> --- a/lib/iommu-helper.c
+> +++ b/lib/iommu-helper.c
+> @@ -19,7 +19,7 @@ again:
+>  	index = (index + align_mask) & ~align_mask;
+>  
+>  	end = index + nr;
+> -	if (end >= size)
+> +	if (end > size)
 
-Been trying to figure out if this is a good idea or not.
-Any combinations that will or won't work?
-
-Generally I got soft FP in all system libs but there might be
-an binary application which will use hard FP.
-Is the MATH_EMU option in the kernel reliable(for 8xx too)?
-
- Jocke
+I think that this is intentional; the last byte of the limit doesn't
+work.
