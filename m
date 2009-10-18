@@ -1,28 +1,25 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-fx0-f221.google.com (mail-fx0-f221.google.com
-	[209.85.220.221]) by ozlabs.org (Postfix) with ESMTP id B8A8FB7B74
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Oct 2009 10:18:01 +1100 (EST)
-Received: by fxm21 with SMTP id 21so3696057fxm.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2009 16:17:59 -0700 (PDT)
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5789CB7B76
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Oct 2009 20:38:30 +1100 (EST)
+Message-ID: <4ADAE205.7070106@embedded-sol.com>
+Date: Sun, 18 Oct 2009 11:38:13 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <20091016084924.GB4234@linux.vnet.ibm.com>
-References: <1255557226-4403-1-git-send-email-timur@freescale.com>
-	<200910152041.26646.borntraeger@de.ibm.com>
-	<4AD770A9.6070509@freescale.com>
-	<200910152126.28024.borntraeger@de.ibm.com>
-	<4AD778E6.7020806@freescale.com>
-	<20091016084924.GB4234@linux.vnet.ibm.com>
-Date: Sat, 17 Oct 2009 18:17:58 -0500
-Message-ID: <ed82fe3e0910171617v6cdec1f9r9dc33cfb8852a31a@mail.gmail.com>
-Subject: Re: [PATCH] hvc_console: returning 0 from put_chars is not an error
-From: Timur Tabi <timur@freescale.com>
-To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-	Scott Wood <scottwood@freescale.com>,
-	Christian Borntraeger <borntraeger@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: UBIFS problem on MPC8536DS
+References: <4AD5ADC9.30503@embedded-sol.com>
+	<4AD5C5B4.3060303@nokia.com>	<4AD5D053.9000901@embedded-sol.com>
+	<4AD5FFE7.7080703@nokia.com>	<4AD60EF4.4080306@embedded-sol.com>	<4AD614E4.6030005@freescale.com>
+	<4AD7811A.6040501@freescale.com>	<4AD7FE37.1060705@embedded-sol.com>
+	<20091016153128.GA11838@loki.buserror.net>
+In-Reply-To: <20091016153128.GA11838@loki.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+	Adrian Hunter <adrian.hunter@nokia.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,16 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 16, 2009 at 3:49 AM, Hendrik Brueckner
-<brueckner@linux.vnet.ibm.com> wrote:
+Hi, Scott
 
-> The states are handled by the hvc_iucv itself:
-> If the hvc_iucv code has a connection established, terminal or console data
-> are queued and sent to the peer. If the state is disconnected, terminal and
-> console data is discarded internally.
+Scott Wood wrote:
+> On Fri, Oct 16, 2009 at 07:01:43AM +0200, Felix Radensky wrote:
+>> Thanks for confirmation. So the real problem is eLBC ?
+>> What happens if I access other devices on eLBC (e.g. FPGA)
+>> simultaneously with NAND or NOR ?
+> 
+> AFAICT, the problem is NAND being accessed simultaneously with anything else
+> on the eLBC (at least GPCM -- not sure about UPM).  Instead of delaying the
+> memory-like transaction until the NAND special operation has completed, it
+> seems to just abort the NAND operation.
+> 
+> eLBC can't really tell the difference whether you've got NOR or FPGA hooked
+> up to a GPCM chip select, so the problem should still apply.
+> 
 
-So what is the plan now?
+Can you please provide some code example of synchronizing GPCM and NAND ?
+I may try implementing the NOR mapping driver you were talking about.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Thanks.
+
+Felix.
