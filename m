@@ -1,15 +1,22 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sun, 18 Oct 2009 22:24:06 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH 2/3] powerpc: perf_event: Cleanup output by adding symbols
-Message-ID: <20091018112406.GO4808@kryten>
-References: <20091018112328.GN4808@kryten>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3195CB7B9A
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Oct 2009 22:32:15 +1100 (EST)
+In-Reply-To: <20091017193454.7978FF15432@gemini.denx.de>
+References: <OFC920E57F.DFABC29F-ONC1257652.00421E11-C1257652.0043478A@transmode.se>
+	<20091017181224.97FFBF15432@gemini.denx.de>
+	<OFEC00B9FB.B03AA854-ONC1257652.00644350-C1257652.00651551@transmode.se>
+	<20091017193454.7978FF15432@gemini.denx.de>
+Subject: Re: Mixing hard and soft floating point?
+To: Wolfgang Denk <wd@denx.de>
+Message-ID: <OFEFBDE7C9.DA9D5B8B-ONC1257653.003E3DC6-C1257653.003F0B37@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Sun, 18 Oct 2009 13:28:36 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091018112328.GN4808@kryten>
-Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, paulus@samba.org,
-	a.p.zijlstra@chello.nl
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,30 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Wolfgang Denk <wd@denx.de> wrote on 17/10/2009 21:34:54:
+>
+> Dear Joakim Tjernlund,
+>
+> In message <OFEC00B9FB.B03AA854-ONC1257652.00644350-C1257652.
+> 00651551@transmode.se> you wrote:
+> >
+> > > Recompile and relink it with soft-fp as well. Or ask the provider to
+> > > do that.
+> >
+> > That is what I am trying do/find out. The supplier claims that
+> > it should not be a problem and is ATM unwilling to recompile the app/libs.
+> > I am not convinced won't cause problems, not to mention performance degradation.
+>
+> If the application is really using FP instructions a lot, then there
+> is a huge difference between using soft-float and MATH_EMU; I
+> remember test cases where soft-float was faster by factors of
+> 500...1000.
 
-Add some dummy symbols for the branches at 0xf00, 0xf20 and 0xf40,
-otherwise hits end up in trap_0e which is confusing to the user.
+Ouch, I had no idea that it could be that much.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+>
+> > OK, but then you don't mix some libs/apps with soft and other
+> > apps/libs with hard FP?
+>
+> No, we never tried that. Sounds scary to me.
 
-Index: linux.trees.git/arch/powerpc/kernel/exceptions-64s.S
-===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/exceptions-64s.S	2009-07-06 10:13:56.000000000 +1000
-+++ linux.trees.git/arch/powerpc/kernel/exceptions-64s.S	2009-07-06 10:13:57.000000000 +1000
-@@ -185,12 +185,15 @@
- 	 * prolog code of the PerformanceMonitor one. A little
- 	 * trickery is thus necessary
- 	 */
-+performance_monitor_pSeries_1:
- 	. = 0xf00
- 	b	performance_monitor_pSeries
- 
-+altivec_unavailable_pSeries_1:
- 	. = 0xf20
- 	b	altivec_unavailable_pSeries
- 
-+vsx_unavailable_pSeries_1:
- 	. = 0xf40
- 	b	vsx_unavailable_pSeries
- 
+Yes, it did to me too. That is why I figured I should ask on the
+list.
