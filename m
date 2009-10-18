@@ -1,22 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 051E4B7B69
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Oct 2009 23:37:55 +1100 (EST)
-Date: Sun, 18 Oct 2009 23:37:49 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 2/3] powerpc: Create PPC_WARN_ALIGNMENT to match
-	PPC_WARN_EMULATED
-Message-Id: <20091018233749.0a17ff78.sfr@canb.auug.org.au>
-In-Reply-To: <20091018111126.GL4808@kryten>
-References: <20091018110929.GK4808@kryten>
-	<20091018111126.GL4808@kryten>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__18_Oct_2009_23_37_49_+1100_hhor9XLfdVfYPguI"
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, mingo@elte.hu
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id D0BAEB7B78
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Oct 2009 00:10:06 +1100 (EST)
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Mixing hard and soft floating point?
+MIME-Version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <OFEFBDE7C9.DA9D5B8B-ONC1257653.003E3DC6-C1257653.003F0B37@transmode.se>
+References: <OFC920E57F.DFABC29F-ONC1257652.00421E11-C1257652.0043478A@transmode.se>
+	<20091017181224.97FFBF15432@gemini.denx.de>
+	<OFEC00B9FB.B03AA854-ONC1257652.00644350-C1257652.00651551@transmode.se>
+	<20091017193454.7978FF15432@gemini.denx.de>
+	<OFEFBDE7C9.DA9D5B8B-ONC1257653.003E3DC6-C1257653.003F0B37@transmode.se>
+Date: Sun, 18 Oct 2009 15:10:02 +0200
+Message-Id: <20091018131002.B851B3F6F0@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Sun__18_Oct_2009_23_37_49_+1100_hhor9XLfdVfYPguI
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Dear Joakim Tjernlund,
 
-Hi Anton,
-
-On Sun, 18 Oct 2009 22:11:26 +1100 Anton Blanchard <anton@samba.org> wrote:
+In message <OFEFBDE7C9.DA9D5B8B-ONC1257653.003E3DC6-C1257653.003F0B37@transmode.se> you wrote:
 >
-> @@ -66,8 +66,12 @@ extern void ppc_warn_emulated_print(cons
-> =20
->  #else /* !CONFIG_PPC_EMULATED_STATS */
-> =20
-> -#define PPC_WARN_EMULATED(type)	do { } while (0)
-> +#define __PPC_WARN_EMULATED(type)	do { } while (0)
-> +#define __PPC_WARN_ALIGNMENT(type)	do { } while (0)
+> > If the application is really using FP instructions a lot, then there
+> > is a huge difference between using soft-float and MATH_EMU; I
+> > remember test cases where soft-float was faster by factors of
+> > 500...1000.
+> 
+> Ouch, I had no idea that it could be that much.
 
-I think this last line is not needed?
+Well, consider really simple operations, like FP add or similar, and
+compare the library code for the soft-FP implementationagainst the
+cost for a trap into the kernel. Or even worse - a consider simple
+assignment ("float x, foo; x = foo"); with soft-float: "lis 9,x@ha;
+stw 3,x@l(9)" = 2 instructions, with MATH_EMU "lis 9,x@ha; stfs
+1,x@l(9)" = 1 insn plus a kernel trap.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+For real numbers, run a benchmark that models your real use case.
 
---Signature=_Sun__18_Oct_2009_23_37_49_+1100_hhor9XLfdVfYPguI
-Content-Type: application/pgp-signature
+Best regards,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Wolfgang Denk
 
-iEYEARECAAYFAkrbDB0ACgkQjjKRsyhoI8xEIQCggsBJxLWjQl03PpJo4bGUJZOl
-1WMAn3KZuaX751h1SrDhXxiJBnDmY/l9
-=TRv2
------END PGP SIGNATURE-----
-
---Signature=_Sun__18_Oct_2009_23_37_49_+1100_hhor9XLfdVfYPguI--
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Little known fact about Middle Earth:   The Hobbits had a very sophi-
+sticated computer network!   It was a Tolkien Ring...
