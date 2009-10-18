@@ -1,21 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id D0BAEB7B78
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Oct 2009 00:10:06 +1100 (EST)
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Mixing hard and soft floating point?
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <OFEFBDE7C9.DA9D5B8B-ONC1257653.003E3DC6-C1257653.003F0B37@transmode.se>
-References: <OFC920E57F.DFABC29F-ONC1257652.00421E11-C1257652.0043478A@transmode.se>
-	<20091017181224.97FFBF15432@gemini.denx.de>
-	<OFEC00B9FB.B03AA854-ONC1257652.00644350-C1257652.00651551@transmode.se>
-	<20091017193454.7978FF15432@gemini.denx.de>
-	<OFEFBDE7C9.DA9D5B8B-ONC1257653.003E3DC6-C1257653.003F0B37@transmode.se>
-Date: Sun, 18 Oct 2009 15:10:02 +0200
-Message-Id: <20091018131002.B851B3F6F0@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/3] powerpc perf_event: Add alignment-faults and
+	emulation-faults software events
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20091018111300.GM4808@kryten>
+References: <20091018110929.GK4808@kryten> <20091018111126.GL4808@kryten>
+	<20091018111300.GM4808@kryten>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-ZZtt9XYGfs4yRBQtKZhE"
+Date: Mon, 19 Oct 2009 10:50:05 +1100
+Message-Id: <1255909805.4192.5.camel@concordia>
+Mime-Version: 1.0
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, mingo@elte.hu
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Joakim Tjernlund,
 
-In message <OFEFBDE7C9.DA9D5B8B-ONC1257653.003E3DC6-C1257653.003F0B37@transmode.se> you wrote:
->
-> > If the application is really using FP instructions a lot, then there
-> > is a huge difference between using soft-float and MATH_EMU; I
-> > remember test cases where soft-float was faster by factors of
-> > 500...1000.
-> 
-> Ouch, I had no idea that it could be that much.
+--=-ZZtt9XYGfs4yRBQtKZhE
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Well, consider really simple operations, like FP add or similar, and
-compare the library code for the soft-FP implementationagainst the
-cost for a trap into the kernel. Or even worse - a consider simple
-assignment ("float x, foo; x = foo"); with soft-float: "lis 9,x@ha;
-stw 3,x@l(9)" = 2 instructions, with MATH_EMU "lis 9,x@ha; stfs
-1,x@l(9)" = 1 insn plus a kernel trap.
+On Sun, 2009-10-18 at 22:13 +1100, Anton Blanchard wrote:
+> Hook up the alignment-faults and emulation-faults events for powerpc.
+>=20
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>=20
+> Index: linux.trees.git/arch/powerpc/include/asm/emulated_ops.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux.trees.git.orig/arch/powerpc/include/asm/emulated_ops.h	2009-09-=
+22 13:45:07.000000000 +1000
+> +++ linux.trees.git/arch/powerpc/include/asm/emulated_ops.h	2009-09-22 13=
+:45:27.000000000 +1000
+> @@ -19,6 +19,7 @@
+>  #define _ASM_POWERPC_EMULATED_OPS_H
+> =20
+>  #include <asm/atomic.h>
+> +#include <linux/perf_event.h>
+> =20
+>=20
+>  #ifdef CONFIG_PPC_EMULATED_STATS
+> @@ -71,7 +72,18 @@ extern void ppc_warn_emulated_print(cons
+> =20
+>  #endif /* !CONFIG_PPC_EMULATED_STATS */
+> =20
+> -#define PPC_WARN_EMULATED(type, regs)	__PPC_WARN_EMULATED(type)
+> -#define PPC_WARN_ALIGNMENT(type, regs)	__PPC_WARN_EMULATED(type)
+> +#define PPC_WARN_EMULATED(type, regs)					\
+> +	do {								\
+> +		perf_sw_event(PERF_COUNT_SW_EMULATION_FAULTS,		\
+> +			1, 0, regs, 0);					\
+> +		__PPC_WARN_EMULATED(type);				\
+> +	} while (0)
+> +
+> +#define PPC_WARN_ALIGNMENT(type, regs)					\
+> +	do {								\
+> +		perf_sw_event(PERF_COUNT_SW_ALIGNMENT_FAULTS,		\
+> +			1, 0, regs, regs->dar);				\
+> +		__PPC_WARN_EMULATED(type);				\
+> +	} while (0)
 
-For real numbers, run a benchmark that models your real use case.
+Does that work with perfxxx configured off?
 
-Best regards,
+cheers
 
-Wolfgang Denk
+--=-ZZtt9XYGfs4yRBQtKZhE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Little known fact about Middle Earth:   The Hobbits had a very sophi-
-sticated computer network!   It was a Tolkien Ring...
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkrbqakACgkQdSjSd0sB4dKPQQCeItH0ghULWUJ4WmGRMpUgG79k
+RFoAn3RBua1T2wFfb2ey9eL5jDw4M3oZ
+=8rqU
+-----END PGP SIGNATURE-----
+
+--=-ZZtt9XYGfs4yRBQtKZhE--
