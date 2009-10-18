@@ -1,14 +1,15 @@
 Return-Path: <anton@ozlabs.org>
-Date: Sun, 18 Oct 2009 22:09:29 +1100
+Date: Sun, 18 Oct 2009 22:24:29 +1100
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, mingo@elte.hu, paulus@samba.org,
-	a.p.zijlstra@chello.nl
-Subject: [PATCH 1/3] perf_event: Add alignment-faults and emulation-faults
-	software events
-Message-ID: <20091018110929.GK4808@kryten>
+To: benh@kernel.crashing.org
+Subject: [PATCH 3/3] powerpc: perf_event: Hide iseries_check_pending_irqs
+Message-ID: <20091018112429.GP4808@kryten>
+References: <20091018112328.GN4808@kryten> <20091018112406.GO4808@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20091018112406.GO4808@kryten>
+Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, paulus@samba.org,
+	a.p.zijlstra@chello.nl
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,89 +20,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Add two more sw events that are common to many cpus.
-
-Alignment faults: When a load or store is not aligned properly.
-
-Emulation faults: When an instruction is emulated in software.
-
-Both cause a very significant slowdown (100x or worse), so identifying and
-fixing them is very important.
+If CONFIG_PPC_ISERIES isn't defined we end up with iseries_check_pending_irqs
+and do_work at the same address. perf ends up picking
+iseries_check_pending_irqs which creates confusing backtraces. Hide it.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
----
+--
 
-Index: linux.trees.git/include/linux/perf_event.h
+Index: linux.trees.git/arch/powerpc/kernel/entry_64.S
 ===================================================================
---- linux.trees.git.orig/include/linux/perf_event.h	2009-10-16 11:17:17.000000000 +1100
-+++ linux.trees.git/include/linux/perf_event.h	2009-10-16 11:17:29.000000000 +1100
-@@ -102,6 +102,8 @@ enum perf_sw_ids {
- 	PERF_COUNT_SW_CPU_MIGRATIONS		= 4,
- 	PERF_COUNT_SW_PAGE_FAULTS_MIN		= 5,
- 	PERF_COUNT_SW_PAGE_FAULTS_MAJ		= 6,
-+	PERF_COUNT_SW_ALIGNMENT_FAULTS		= 7,
-+	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
+--- linux.trees.git.orig/arch/powerpc/kernel/entry_64.S	2009-10-16 11:06:10.000000000 +1100
++++ linux.trees.git/arch/powerpc/kernel/entry_64.S	2009-10-16 11:06:28.000000000 +1100
+@@ -551,7 +551,7 @@ restore:
+ BEGIN_FW_FTR_SECTION
+ 	ld	r5,SOFTE(r1)
+ FW_FTR_SECTION_ELSE
+-	b	iseries_check_pending_irqs
++	b	.Liseries_check_pending_irqs
+ ALT_FW_FTR_SECTION_END_IFCLR(FW_FEATURE_ISERIES)
+ 2:
+ 	TRACE_AND_RESTORE_IRQ(r5);
+@@ -623,7 +623,7 @@ ALT_FW_FTR_SECTION_END_IFCLR(FW_FEATURE_
  
- 	PERF_COUNT_SW_MAX,			/* non-ABI */
- };
-Index: linux.trees.git/include/linux/perf_counter.h
-===================================================================
---- linux.trees.git.orig/include/linux/perf_counter.h	2009-10-16 11:16:10.000000000 +1100
-+++ linux.trees.git/include/linux/perf_counter.h	2009-10-16 11:17:29.000000000 +1100
-@@ -106,6 +106,8 @@ enum perf_sw_ids {
- 	PERF_COUNT_SW_CPU_MIGRATIONS		= 4,
- 	PERF_COUNT_SW_PAGE_FAULTS_MIN		= 5,
- 	PERF_COUNT_SW_PAGE_FAULTS_MAJ		= 6,
-+	PERF_COUNT_SW_ALIGNMENT_FAULTS		= 7,
-+	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
+ #endif /* CONFIG_PPC_BOOK3E */
  
- 	PERF_COUNT_SW_MAX,			/* non-ABI */
- };
-Index: linux.trees.git/kernel/perf_event.c
-===================================================================
---- linux.trees.git.orig/kernel/perf_event.c	2009-10-16 11:17:17.000000000 +1100
-+++ linux.trees.git/kernel/perf_event.c	2009-10-16 11:17:29.000000000 +1100
-@@ -4255,6 +4255,8 @@ static const struct pmu *sw_perf_event_i
- 	case PERF_COUNT_SW_PAGE_FAULTS_MAJ:
- 	case PERF_COUNT_SW_CONTEXT_SWITCHES:
- 	case PERF_COUNT_SW_CPU_MIGRATIONS:
-+	case PERF_COUNT_SW_ALIGNMENT_FAULTS:
-+	case PERF_COUNT_SW_EMULATION_FAULTS:
- 		if (!event->parent) {
- 			atomic_inc(&perf_swevent_enabled[event_id]);
- 			event->destroy = sw_perf_event_destroy;
-Index: linux.trees.git/tools/perf/design.txt
-===================================================================
---- linux.trees.git.orig/tools/perf/design.txt	2009-10-16 11:16:10.000000000 +1100
-+++ linux.trees.git/tools/perf/design.txt	2009-10-16 11:17:29.000000000 +1100
-@@ -137,6 +137,8 @@ enum sw_event_ids {
- 	PERF_COUNT_SW_CPU_MIGRATIONS	= 4,
- 	PERF_COUNT_SW_PAGE_FAULTS_MIN	= 5,
- 	PERF_COUNT_SW_PAGE_FAULTS_MAJ	= 6,
-+	PERF_COUNT_SW_ALIGNMENT_FAULTS	= 7,
-+	PERF_COUNT_SW_EMULATION_FAULTS	= 8,
- };
- 
- Counters of the type PERF_TYPE_TRACEPOINT are available when the ftrace event
-Index: linux.trees.git/tools/perf/util/parse-events.c
-===================================================================
---- linux.trees.git.orig/tools/perf/util/parse-events.c	2009-10-16 11:16:10.000000000 +1100
-+++ linux.trees.git/tools/perf/util/parse-events.c	2009-10-16 11:17:29.000000000 +1100
-@@ -47,6 +47,8 @@ static struct event_symbol event_symbols
-   { CSW(PAGE_FAULTS_MAJ),	"major-faults",		""		},
-   { CSW(CONTEXT_SWITCHES),	"context-switches",	"cs"		},
-   { CSW(CPU_MIGRATIONS),	"cpu-migrations",	"migrations"	},
-+  { CSW(ALIGNMENT_FAULTS),	"alignment-faults",	""		},
-+  { CSW(EMULATION_FAULTS),	"emulation-faults",	""		},
- };
- 
- #define __PERF_EVENT_FIELD(config, name) \
-@@ -75,6 +77,8 @@ static const char *sw_event_names[] = {
- 	"CPU-migrations",
- 	"minor-faults",
- 	"major-faults",
-+	"alignment-faults",
-+	"emulation-faults",
- };
- 
- #define MAX_ALIASES 8
+-iseries_check_pending_irqs:
++.Liseries_check_pending_irqs:
+ #ifdef CONFIG_PPC_ISERIES
+ 	ld	r5,SOFTE(r1)
+ 	cmpdi	0,r5,0
