@@ -1,21 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DED69B7BA3
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Oct 2009 15:24:20 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Fix compile errors found by new ppc64e_defconfig
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1255910308.4192.8.camel@concordia>
-References: <1255712717-21221-1-git-send-email-galak@kernel.crashing.org>
-	<1255712717-21221-2-git-send-email-galak@kernel.crashing.org>
-	<1255910308.4192.8.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 19 Oct 2009 13:24:07 +0900
-Message-Id: <1255926247.2182.0.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 18A55B7B96
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Oct 2009 18:17:51 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: MPC5121 CAN and USB
+Date: Mon, 19 Oct 2009 08:46:51 +0200
+References: <4AD5ADC9.30503@embedded-sol.com>
+	<26b052040910151603y8fc9b00g678d6a873083f1e7@mail.gmail.com>
+	<20091015231005.D2CE9F15432@gemini.denx.de>
+In-Reply-To: <20091015231005.D2CE9F15432@gemini.denx.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200910190846.51906.david.jander@protonic.nl>
+Cc: =?iso-8859-1?q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Gibson <paul.gibson2074@gmail.com>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-10-19 at 10:58 +1100, Michael Ellerman wrote:
-
-> >  	if (bus->self) {
-> > +#ifdef CONFIG_PPC_STD_MMU_64
-> >  		struct resource *res = bus->resource[0];
-> > +#endif
-> >  
-> >  		pr_debug("IO unmapping for PCI-PCI bridge %s\n",
-> >  			 pci_name(bus->self));
-> 104 
-> 105 #ifdef CONFIG_PPC_STD_MMU_64                                                
-> 106                 __flush_hash_table_range(&init_mm, res->start + _IO_BASE,
-> 107                                          res->end + _IO_BASE + 1);
-> 108 #endif
-> 109		return 0;
-> 110	 }
+On Friday 16 October 2009 01:10:05 am Wolfgang Denk wrote:
+> Dear Paul,
 > 
-> So just expand the ifdef around the pr_debug()?
+> In message <26b052040910151603y8fc9b00g678d6a873083f1e7@mail.gmail.com> you 
+wrote:
+> > > The "ltib-mpc5121ads-20090602" branch reflects the exact state of the
+> > > kernel contained in the LTIB with this name (dated July 2009, despite
+> > > the name; based at 2.6.24.6, i. e. 7+ kernel versions behind).
+> >
+> > I have diff'ed this and it is very similar to the ltib in the BSP.
+> > The MBX patches may be missing though.  These patches can be obtained
+> > via the Freescale SDK for the OpenGL on the MPC5121e webpage.
+> 
+> Who cares. This code is about 8 (!) kernel releases behind. Scrap
+> it.
 
-I'd rather move the pr_debug to after the ifdef, it doesn't need to
-absolutely be before the __flush_hash_* call, it's more to see in the
-log whether the bus was properly unmapped when doing unplug.
+I would love to, but as it stands, this is still the best we can get for the 
+MPC5121e :-(
+I took that branch, merged the MBX patch in from the LTIB and ported the new 
+NFC driver from the 'mpc512x' branch back to this one, since the original 
+driver is buggy. 
+The latest OpenGL-ES libraries and MBX drivers released are closed-source, 
+buggy, but stable and seem to work well if your program doesn't do the kinds 
+of things that make it crash. 
+If you know the limitations of this and can live with it, it might be 
+bearable... I don't have any other option :-(
 
-Cheers,
-Ben.
+Best regards,
+
+-- 
+David Jander
+Protonic Holland.
