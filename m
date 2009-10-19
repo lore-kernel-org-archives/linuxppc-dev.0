@@ -1,22 +1,20 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 18A55B7B96
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Oct 2009 18:17:51 +1100 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: MPC5121 CAN and USB
-Date: Mon, 19 Oct 2009 08:46:51 +0200
-References: <4AD5ADC9.30503@embedded-sol.com>
-	<26b052040910151603y8fc9b00g678d6a873083f1e7@mail.gmail.com>
-	<20091015231005.D2CE9F15432@gemini.denx.de>
-In-Reply-To: <20091015231005.D2CE9F15432@gemini.denx.de>
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 99328B7BA4
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Oct 2009 18:23:45 +1100 (EST)
+Date: Mon, 19 Oct 2009 09:23:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 3/3] powerpc: perf_event: Hide iseries_check_pending_irqs
+Message-ID: <20091019072334.GA17960@elte.hu>
+References: <20091018112328.GN4808@kryten> <20091018112406.GO4808@kryten>
+	<20091018112429.GP4808@kryten>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200910190846.51906.david.jander@protonic.nl>
-Cc: =?iso-8859-1?q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Gibson <paul.gibson2074@gmail.com>, Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091018112429.GP4808@kryten>
+Cc: paulus@samba.org, a.p.zijlstra@chello.nl, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 16 October 2009 01:10:05 am Wolfgang Denk wrote:
-> Dear Paul,
+
+* Anton Blanchard <anton@samba.org> wrote:
+
+> If CONFIG_PPC_ISERIES isn't defined we end up with iseries_check_pending_irqs
+> and do_work at the same address. perf ends up picking
+> iseries_check_pending_irqs which creates confusing backtraces. Hide it.
 > 
-> In message <26b052040910151603y8fc9b00g678d6a873083f1e7@mail.gmail.com> you 
-wrote:
-> > > The "ltib-mpc5121ads-20090602" branch reflects the exact state of the
-> > > kernel contained in the LTIB with this name (dated July 2009, despite
-> > > the name; based at 2.6.24.6, i. e. 7+ kernel versions behind).
-> >
-> > I have diff'ed this and it is very similar to the ltib in the BSP.
-> > The MBX patches may be missing though.  These patches can be obtained
-> > via the Freescale SDK for the OpenGL on the MPC5121e webpage.
-> 
-> Who cares. This code is about 8 (!) kernel releases behind. Scrap
-> it.
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-I would love to, but as it stands, this is still the best we can get for the 
-MPC5121e :-(
-I took that branch, merged the MBX patch in from the LTIB and ported the new 
-NFC driver from the 'mpc512x' branch back to this one, since the original 
-driver is buggy. 
-The latest OpenGL-ES libraries and MBX drivers released are closed-source, 
-buggy, but stable and seem to work well if your program doesn't do the kinds 
-of things that make it crash. 
-If you know the limitations of this and can live with it, it might be 
-bearable... I don't have any other option :-(
+Just to confirm - these 3 symbol fixes are for the PowerPC tree, not for 
+the perf events tree, right? There's nothing perf specific about the 
+fixes - kgdb, systemtap and other debugging/instrumentation frameworks 
+will benefit from more precise symbol generation too.
 
-Best regards,
-
--- 
-David Jander
-Protonic Holland.
+	Ingo
