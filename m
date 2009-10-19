@@ -1,18 +1,27 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from localhost.localdomain (unknown [93.100.123.135])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 98F0BB7B72
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2009 05:29:11 +1100 (EST)
-Date: Mon, 19 Oct 2009 22:28:58 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [RFC] PowerPC64: Use preempt_schedule_irq instead of
-	preempt_schedule when returning from exceptions
-Message-ID: <20091019182858.GA10495@ru.mvista.com>
+	by ozlabs.org (Postfix) with ESMTPS id 3216EB7B6F
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2009 06:40:11 +1100 (EST)
+Message-ID: <4ADCC08D.5080207@embedded-sol.com>
+Date: Mon, 19 Oct 2009 21:39:57 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: olof@lixom.net, paulus@samba.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: UBIFS problem on MPC8536DS
+References: <4AD5ADC9.30503@embedded-sol.com> <4AD5C5B4.3060303@nokia.com>
+	<4AD5D053.9000901@embedded-sol.com> <4AD5FFE7.7080703@nokia.com>
+	<4AD60EF4.4080306@embedded-sol.com>
+	<4AD614E4.6030005@freescale.com> <4AD7811A.6040501@freescale.com>
+	<4AD7FE37.1060705@embedded-sol.com>
+	<20091016153128.GA11838@loki.buserror.net>
+	<4ADAE205.7070106@embedded-sol.com>
+	<20091019154002.GC19074@loki.buserror.net>
+In-Reply-To: <20091019154002.GC19074@loki.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,62 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use preempt_schedule_irq to prevent infinite irq-entry and
-eventual stack overflow problems with fast-paced IRQ sources.
-This kind of problems has been observed on the PASemi Electra IDE
-controller. We have to make sure we are soft-disabled before calling
-preempt_schedule_irq and hard disable interrupts after that
-to avoid unrecoverable exceptions.
+Scott Wood wrote:
+> On Sun, Oct 18, 2009 at 11:38:13AM +0200, Felix Radensky wrote:
+>   
+>> Hi, Scott
+>>
+>> Scott Wood wrote:
+>>     
+>>> On Fri, Oct 16, 2009 at 07:01:43AM +0200, Felix Radensky wrote:
+>>>       
+>>>> Thanks for confirmation. So the real problem is eLBC ?
+>>>> What happens if I access other devices on eLBC (e.g. FPGA)
+>>>> simultaneously with NAND or NOR ?
+>>>>         
+>>> AFAICT, the problem is NAND being accessed simultaneously with anything else
+>>> on the eLBC (at least GPCM -- not sure about UPM).  Instead of delaying the
+>>> memory-like transaction until the NAND special operation has completed, it
+>>> seems to just abort the NAND operation.
+>>>
+>>> eLBC can't really tell the difference whether you've got NOR or FPGA hooked
+>>> up to a GPCM chip select, so the problem should still apply.
+>>>
+>>>       
+>> Can you please provide some code example of synchronizing GPCM and NAND ?
+>>     
+>
+> I don't have any.  It's something that would have to be written.
+>   
+OK, no problem. I just wanted to get an idea of what should be done.
+Should the NOR code poll some eLBC register to wait for completion of
+NAND special operation ? Can you tell what register is relevant ?
 
-This patch also moves the "clrrdi r9,r1,THREAD_SHIFT" out of
-the #ifdef CONFIG_PPC_BOOK3E scope, since r9 is clobbered
-and has to be restored in both cases.
+Thanks.
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/kernel/entry_64.S |   25 ++++++-------------------
- 1 file changed, 6 insertions(+), 19 deletions(-)
-
-diff -pruN linux-2.6.orig/arch/powerpc/kernel/entry_64.S linux-2.6.new/arch/powerpc/kernel/entry_64.S
---- linux-2.6.orig/arch/powerpc/kernel/entry_64.S	2009-10-17 03:46:26.000000000 +0400
-+++ linux-2.6.new/arch/powerpc/kernel/entry_64.S	2009-10-19 17:35:16.000000000 +0400
-@@ -660,33 +660,20 @@ do_work:
- 	bne	restore
- 	/* here we are preempting the current task */
- 1:
--#ifdef CONFIG_TRACE_IRQFLAGS
--	bl	.trace_hardirqs_on
--	/* Note: we just clobbered r10 which used to contain the previous
--	 * MSR before the hard-disabling done by the caller of do_work.
--	 * We don't have that value anymore, but it doesn't matter as
--	 * we will hard-enable unconditionally, we can just reload the
--	 * current MSR into r10
--	 */
--	mfmsr	r10
--#endif /* CONFIG_TRACE_IRQFLAGS */
--	li	r0,1
-+	/* ensure we are soft-disabled */
-+	li	r0,0
- 	stb	r0,PACASOFTIRQEN(r13)
--	stb	r0,PACAHARDIRQEN(r13)
-+	bl	.preempt_schedule_irq
-+	/* hard-disable interrupts */
- #ifdef CONFIG_PPC_BOOK3E
--	wrteei	1
--	bl	.preempt_schedule
- 	wrteei	0
- #else
--	ori	r10,r10,MSR_EE
--	mtmsrd	r10,1		/* reenable interrupts */
--	bl	.preempt_schedule
- 	mfmsr	r10
--	clrrdi	r9,r1,THREAD_SHIFT
--	rldicl	r10,r10,48,1	/* disable interrupts again */
-+	rldicl	r10,r10,48,1
- 	rotldi	r10,r10,16
- 	mtmsrd	r10,1
- #endif /* CONFIG_PPC_BOOK3E */
-+	clrrdi	r9,r1,THREAD_SHIFT
- 	ld	r4,TI_FLAGS(r9)
- 	andi.	r0,r4,_TIF_NEED_RESCHED
- 	bne	1b
+Felix.
