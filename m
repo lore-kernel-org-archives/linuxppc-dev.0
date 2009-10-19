@@ -1,22 +1,22 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+Return-Path: <Matteo.Fortini@mta.it>
+Received: from cluster-a.mailcontrol.com (cluster-a.mailcontrol.com
+	[85.115.52.190])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 40D5BB7BBF
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Oct 2009 18:25:29 +1100 (EST)
-Date: Mon, 19 Oct 2009 09:25:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 3/3] powerpc perf_event: Add alignment-faults and
-	emulation-faults software events
-Message-ID: <20091019072517.GB17960@elte.hu>
-References: <20091018110929.GK4808@kryten> <20091018111126.GL4808@kryten>
-	<20091018111300.GM4808@kryten>
+	(Client CN "*.mailcontrol.com",
+	Issuer "DigiCert Global CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 31F1AB6F2B
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Oct 2009 18:52:36 +1100 (EST)
+Received: from mail.mta.it (mail.mta.it [89.96.171.250])
+	by rly12a.srv.mailcontrol.com (MailControl) with ESMTP id
+	n9J7qFYg013515
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Oct 2009 08:52:30 +0100
+Message-ID: <4ADC1AAD.60606@mta.it>
+Date: Mon, 19 Oct 2009 09:52:13 +0200
+From: Fortini Matteo <matteo.fortini@mta.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091018111300.GM4808@kryten>
-Cc: paulus@samba.org, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+To: linux-ppc list <linuxppc-dev@ozlabs.org>
+Subject: Acceleration for map_copy_from on powerpc 512x
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,17 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
+I'm working on a powerpc (PPC512x) embedded Linux product, and while I 
+was trying to improve boot time, I found I could exploit the hw in order 
+to speed up reading from NOR flashes.
+The Linux/mtd version we're using is 2.6.24.6+Freescale patches.
+Basically, I needed to hack the map_copy_from, which for my arch and 
+uncached areas translates to a memcpy, in order to use the SCLPC FIFO, 
+with a performance benefit of >2x on aligned multiple of 32Bytes transfers.
 
-* Anton Blanchard <anton@samba.org> wrote:
+I didn't find a cleaner way than just #ifdef'ing the map_copy_from call 
+and substitute with my call on relevant cases. I wonder if there is a 
+cleaner way.
 
-> Hook up the alignment-faults and emulation-faults events for powerpc.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+And yes, as soon as I've cleaned up the code a little bit, I will 
+definitely post a patch about it.
 
-nice.
+Moreover: a huge benefit would come from exploiting DMA on these 
+transfers, but I found I'm in_atomic while doing map_copy_from... is 
+there an alternative way of locking than just disabling preemption?
+I know maybe a newer kernel has already fixed it, but we're kind of 
+stuck with the old one since we don't have time to port all of our 
+device drivers to 2.6.3x
 
-The first patch is for perf events - it would be nice if we could do the 
-two PowerPC changes via the perf events tree - that would speed up the 
-upstream availability of this new feature. Ben, what do you think?
-
-	Ingo
+Thanks,
+Matteo
