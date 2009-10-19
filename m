@@ -1,27 +1,24 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 523FFB7B69
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 1D54AB7B75
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 20 Oct 2009 02:51:45 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e6.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9JFunsA026658
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2009 11:56:49 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9JFpfNk198126
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2009 11:51:41 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id n9JFpaLD000577
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2009 09:51:37 -0600
-Message-Id: <200910191551.n9JFpZeQ000505@d03av01.boulder.ibm.com>
-Subject: [PATCH 1/1] powerpc: Add kdump support to Collaborative Memory Manager
-To: benh@kernel.crashing.org
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Mon, 19 Oct 2009 10:51:34 -0500
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+	Tue, 20 Oct 2009 04:05:45 +1100 (EST)
+Subject: Re: [PATCH] powerpc: tracing: Add powerpc tracepoints for
+	interrupt entry and exit
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20091018110109.GJ4808@kryten>
+References: <20091006021903.GC16073@kryten>
+	<1254796492.13160.218.camel@gandalf.stny.rr.com>
+	<20091006040554.GD16073@kryten> <1255501071.2347.42.camel@pasglop>
+	<20091018110109.GJ4808@kryten>
+Content-Type: text/plain
+Date: Mon, 19 Oct 2009 13:00:42 -0400
+Message-Id: <1255971642.18347.138.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: Ingo Molnar <mingo@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+	Frederic Weisbecker <fweisbec@gmail.com>
+Reply-To: rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,85 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, 2009-10-18 at 22:01 +1100, Anton Blanchard wrote:
+> Hi Ben,
+> 
+> > Breaks 6xx_defconfig:
+> 
+> Yuck. Since the CREATE_TRACE_POINTS stuff appears to need a non trivial number
+> of includes it might be best just to fold it into one of the tracepoint call
+> sites like this.
+> 
+> --
+> 
+> This patch adds powerpc specific tracepoints for interrupt entry and exit.
+> 
+> While we already have generic irq_handler_entry and irq_handler_exit
+> tracepoints there are cases on our virtualised powerpc machines where an
+> interrupt is presented to the OS, but subsequently handled by the hypervisor.
+> This means no OS interrupt handler is invoked.
+> 
+> Here is an example on a POWER6 machine with the patch below applied:
+>  
+> <idle>-0     [006]  3243.949840744: irq_entry: pt_regs=c0000000ce31fb10
+> <idle>-0     [006]  3243.949850520: irq_exit: pt_regs=c0000000ce31fb10
+> 
+> <idle>-0     [007]  3243.950218208: irq_entry: pt_regs=c0000000ce323b10
+> <idle>-0     [007]  3243.950224080: irq_exit: pt_regs=c0000000ce323b10
+> 
+> <idle>-0     [000]  3244.021879320: irq_entry: pt_regs=c000000000a63aa0
+> <idle>-0     [000]  3244.021883616: irq_handler_entry: irq=87 handler=eth0
+> <idle>-0     [000]  3244.021887328: irq_handler_exit: irq=87 return=handled
+> <idle>-0     [000]  3244.021897408: irq_exit: pt_regs=c000000000a63aa0
+> 
+> Here we see two phantom interrupts (no handler was invoked), followed
+> by a real interrupt for eth0. Without the tracepoints in this patch we
+> would have missed the phantom interrupts.
+> 
+> Since these would be the first arch specific tracepoints, I'd like to make
+> sure we agree on naming. The tracepoints live in events/powerpc/*, but I'm
+> wondering if the tracepoint name should also contain the arch name, eg
+> powerpc_irq_entry/powerpc_irq_exit. Thoughts?
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> --
 
-When running Active Memory Sharing, the Collaborative Memory Manager (CMM)
-may mark some pages as "loaned" with the hypervisor. Periodically, the
-CMM will query the hypervisor for a loan request, which is a single signed
-value. When kexec'ing into a kdump kernel, the CMM driver in the kdump
-kernel is not aware of the pages the previous kernel had marked as "loaned",
-so the hypervisor and the CMM driver are out of sync. Fix the CMM driver
-to handle this scenario by ignoring requests to decrease the number of loaned
-pages if we don't think we have any pages loaned. Pages that are marked as
-"loaned" which are not in the balloon will automatically get switched to "active"
-the next time we touch the page. This also fixes the case where totalram_pages
-is smaller than min_mem_mb, which can occur during kdump.
+I'm fine with the name "powerpc".
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
-
- arch/powerpc/platforms/pseries/Kconfig |    2 +-
- arch/powerpc/platforms/pseries/cmm.c   |   29 +++++++++++++++++++----------
- 2 files changed, 20 insertions(+), 11 deletions(-)
-
-diff -puN arch/powerpc/platforms/pseries/cmm.c~powerpc_cmm_fix_kdump arch/powerpc/platforms/pseries/cmm.c
---- linux-2.6/arch/powerpc/platforms/pseries/cmm.c~powerpc_cmm_fix_kdump	2009-09-24 16:35:00.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/cmm.c	2009-09-25 10:24:19.000000000 -0500
-@@ -229,8 +229,9 @@ static void cmm_get_mpp(void)
- {
- 	int rc;
- 	struct hvcall_mpp_data mpp_data;
--	unsigned long active_pages_target;
--	signed long page_loan_request;
-+	signed long active_pages_target, page_loan_request, target;
-+	signed long total_pages = totalram_pages + loaned_pages;
-+	signed long min_mem_pages = (min_mem_mb * 1024 * 1024) / PAGE_SIZE;
- 
- 	rc = h_get_mpp(&mpp_data);
- 
-@@ -238,17 +239,25 @@ static void cmm_get_mpp(void)
- 		return;
- 
- 	page_loan_request = div_s64((s64)mpp_data.loan_request, PAGE_SIZE);
--	loaned_pages_target = page_loan_request + loaned_pages;
--	if (loaned_pages_target > oom_freed_pages)
--		loaned_pages_target -= oom_freed_pages;
-+	target = page_loan_request + (signed long)loaned_pages;
-+
-+	if (target < 0 || total_pages < min_mem_pages)
-+		target = 0;
-+
-+	if (target > oom_freed_pages)
-+		target -= oom_freed_pages;
- 	else
--		loaned_pages_target = 0;
-+		target = 0;
-+
-+	active_pages_target = total_pages - target;
-+
-+	if (min_mem_pages > active_pages_target)
-+		target = total_pages - min_mem_pages;
- 
--	active_pages_target = totalram_pages + loaned_pages - loaned_pages_target;
-+	if (target < 0)
-+		target = 0;
- 
--	if ((min_mem_mb * 1024 * 1024) > (active_pages_target * PAGE_SIZE))
--		loaned_pages_target = totalram_pages + loaned_pages -
--			((min_mem_mb * 1024 * 1024) / PAGE_SIZE);
-+	loaned_pages_target = target;
- 
- 	cmm_dbg("delta = %ld, loaned = %lu, target = %lu, oom = %lu, totalram = %lu\n",
- 		page_loan_request, loaned_pages, loaned_pages_target,
-diff -puN arch/powerpc/platforms/pseries/Kconfig~powerpc_cmm_fix_kdump arch/powerpc/platforms/pseries/Kconfig
---- linux-2.6/arch/powerpc/platforms/pseries/Kconfig~powerpc_cmm_fix_kdump	2009-09-24 16:35:00.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/Kconfig	2009-09-24 16:35:00.000000000 -0500
-@@ -59,7 +59,7 @@ config PPC_SMLPAR
- 
- config CMM
- 	tristate "Collaborative memory management"
--	depends on PPC_SMLPAR && !CRASH_DUMP
-+	depends on PPC_SMLPAR
- 	default y
- 	help
- 	  Select this option, if you want to enable the kernel interface
-_
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
