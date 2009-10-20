@@ -1,22 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 29253B7B7A
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2009 15:12:57 +1100 (EST)
-Subject: Re: [PATCH 3/3] powerpc: perf_event: Hide iseries_check_pending_irqs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20091020035058.GU4808@kryten>
-References: <20091018112328.GN4808@kryten> <20091018112406.GO4808@kryten>
-	<20091018112429.GP4808@kryten> <20091019072334.GA17960@elte.hu>
-	<20091020035058.GU4808@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 20 Oct 2009 13:12:44 +0900
-Message-Id: <1256011964.8313.6.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>, paulus@samba.org,
-	a.p.zijlstra@chello.nl
+Return-Path: <rusty@rustcorp.com.au>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: [PATCH] BUILD_BUG_ON: make it handle more cases
+Date: Tue, 20 Oct 2009 14:15:33 +1030
+References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
+	<200910201142.34006.rusty@rustcorp.com.au>
+	<1256002193.6546.2.camel@slab>
+In-Reply-To: <1256002193.6546.2.camel@slab>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Message-Id: <200910201415.34361.rusty@rustcorp.com.au>
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+	linux-next@vger.kernel.org, Jan Beulich <JBeulich@novell.com>,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,20 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-10-20 at 14:50 +1100, Anton Blanchard wrote:
-> Hi Ingo,
-> 
-> > Just to confirm - these 3 symbol fixes are for the PowerPC tree, not for 
-> > the perf events tree, right? There's nothing perf specific about the 
-> > fixes - kgdb, systemtap and other debugging/instrumentation frameworks 
-> > will benefit from more precise symbol generation too.
-> 
-> Yeah, while they were written to fix perf backtrace issues they are
-> definitely not perf specific. Hopefully Ben will queue them up in his
-> tree for the next merge window :)
+BUILD_BUG_ON used to use the optimizer to do code elimination or fail
+at link time; it was changed to first the size of a negative array (a
+nicer compile time error), then (in
+8c87df457cb58fe75b9b893007917cf8095660a0) to a bitfield.
 
-Right, I'm overdue for a powerpc-next but with some family issues last
-couple of week and KS/JLS this week, it' a bit hard :-)
+bitfields: needs a literal constant at parse time, and can't be put under
+	"if (__builtin_constant_p(x))" for example.
+negative array: can handle anything, but if the compiler can't tell it's
+	a constant, silently has no effect.
+link time: breaks link if the compiler can't determine the value, but the
+	linker output is not usually as informative as a compiler error.
 
-Ben.
+If we use the negative-array-size method *and* the link time trick,
+we get the ability to use BUILD_BUG_ON() under __builtin_constant_p()
+branches, and maximal ability for the compiler to detect errors at
+build time.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -683,12 +683,6 @@ struct sysinfo {
+ 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
+ };
+ 
+-/* Force a compilation error if condition is true */
+-#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
+-
+-/* Force a compilation error if condition is constant and true */
+-#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
+-
+ /* Force a compilation error if condition is true, but also produce a
+    result (of value 0 and type size_t), so the expression can be used
+    e.g. in a structure initializer (or where-ever else comma expressions
+@@ -696,6 +690,33 @@ struct sysinfo {
+ #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
+ #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
+ 
++/**
++ * BUILD_BUG_ON - break compile if a condition is true.
++ * @cond: the condition which the compiler should know is false.
++ *
++ * If you have some code which relies on certain constants being equal, or
++ * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
++ * detect if someone changes it.
++ *
++ * The implementation uses gcc's reluctance to create a negative array, but
++ * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
++ * to inline functions).  So as a fallback we use the optimizer; if it can't
++ * prove the condition is false, it will cause a link error on the undefined
++ * "__build_bug_on_failed".  This error message can be harder to track down
++ * though, hence the two different methods.
++ */
++#ifndef __OPTIMIZE__
++#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
++#else
++extern int __build_bug_on_failed;
++#define BUILD_BUG_ON(condition)					\
++	do {							\
++		((void)sizeof(char[1 - 2*!!(condition)]));	\
++		if (condition) __build_bug_on_failed = 1;	\
++	} while(0)
++#endif
++#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
++
+ /* Trap pasters of __FUNCTION__ at compile-time */
+ #define __FUNCTION__ (__func__)
  
