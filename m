@@ -1,19 +1,27 @@
-Return-Path: <rusty@rustcorp.com.au>
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: [PATCH] BUILD_BUG_ON: make it handle more cases
-Date: Tue, 20 Oct 2009 14:15:33 +1030
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	<200910201142.34006.rusty@rustcorp.com.au>
-	<1256002193.6546.2.camel@slab>
-In-Reply-To: <1256002193.6546.2.camel@slab>
+Return-Path: <richard.cochran@omicron.at>
+Received: from ns.omicron.at (ns.omicron.at [212.183.10.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1191BB7B7A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 20 Oct 2009 21:01:30 +1100 (EST)
+From: Richard Cochran <richard.cochran@omicron.at>
+To: "'Scott Wood'" <scottwood@freescale.com>
+Date: Tue, 20 Oct 2009 12:01:19 +0200
+Subject: RE: [PATCH] * mpc8313erdb.dts: Fixed eTSEC interrupt assignment.
+Message-ID: <95DC1AA8EC908B48939B72CF375AA5E30E2AECFD@alice.at.omicron.at>
+References: <25940478.1252060285938.JavaMail.root@viefep11.chello.at>
+	<20090909182227.GA8215@b07421-ec1.am.freescale.net>
+	<95DC1AA8EC908B48939B72CF375AA5E30E220693@alice.at.omicron.at>
+	<20091014152722.GA17867@b07421-ec1.am.freescale.net>
+	<95DC1AA8EC908B48939B72CF375AA5E30E2AE72C@alice.at.omicron.at>
+	<20091015162728.GB3730@loki.buserror.net>
+	<95DC1AA8EC908B48939B72CF375AA5E30E2AE800@alice.at.omicron.at>
+	<20091016160125.GC11838@loki.buserror.net>
+In-Reply-To: <20091016160125.GC11838@loki.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Message-Id: <200910201415.34361.rusty@rustcorp.com.au>
-Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
-	linux-next@vger.kernel.org, Jan Beulich <JBeulich@novell.com>,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: "'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,72 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-BUILD_BUG_ON used to use the optimizer to do code elimination or fail
-at link time; it was changed to first the size of a negative array (a
-nicer compile time error), then (in
-8c87df457cb58fe75b9b893007917cf8095660a0) to a bitfield.
+> -----Original Message-----
+> From: Scott Wood [mailto:scottwood@freescale.com]
+>
+> What problems have you been having with upstream kernels on mpc8313erdb,
+> other than this IRQ issue?  It should work, though the BSP may have extra
+> features that haven't been pushed upstream.
 
-bitfields: needs a literal constant at parse time, and can't be put under
-	"if (__builtin_constant_p(x))" for example.
-negative array: can handle anything, but if the compiler can't tell it's
-	a constant, silently has no effect.
-link time: breaks link if the compiler can't determine the value, but the
-	linker output is not usually as informative as a compiler error.
+I have been working from kernel 2.6.30 (although the very latest
+kernel is just the same WRT these problems, AFAICT). I had to patch in
+order to sovle the following three problems:
 
-If we use the negative-array-size method *and* the link time trick,
-we get the ability to use BUILD_BUG_ON() under __builtin_constant_p()
-branches, and maximal ability for the compiler to detect errors at
-build time.
+1. The flash layout in the DTS does not match the default partitioning
+   from Freescale. In the current dts, the NAND partitioning is wrong,
+   and there is no partitioning for the NOR flash given.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+2. The eTSEC interrupt issue that started this thread.
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -683,12 +683,6 @@ struct sysinfo {
- 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
- };
- 
--/* Force a compilation error if condition is true */
--#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
--
--/* Force a compilation error if condition is constant and true */
--#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
--
- /* Force a compilation error if condition is true, but also produce a
-    result (of value 0 and type size_t), so the expression can be used
-    e.g. in a structure initializer (or where-ever else comma expressions
-@@ -696,6 +690,33 @@ struct sysinfo {
- #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
- #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
- 
-+/**
-+ * BUILD_BUG_ON - break compile if a condition is true.
-+ * @cond: the condition which the compiler should know is false.
-+ *
-+ * If you have some code which relies on certain constants being equal, or
-+ * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
-+ * detect if someone changes it.
-+ *
-+ * The implementation uses gcc's reluctance to create a negative array, but
-+ * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
-+ * to inline functions).  So as a fallback we use the optimizer; if it can't
-+ * prove the condition is false, it will cause a link error on the undefined
-+ * "__build_bug_on_failed".  This error message can be harder to track down
-+ * though, hence the two different methods.
-+ */
-+#ifndef __OPTIMIZE__
-+#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
-+#else
-+extern int __build_bug_on_failed;
-+#define BUILD_BUG_ON(condition)					\
-+	do {							\
-+		((void)sizeof(char[1 - 2*!!(condition)]));	\
-+		if (condition) __build_bug_on_failed = 1;	\
-+	} while(0)
-+#endif
-+#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
-+
- /* Trap pasters of __FUNCTION__ at compile-time */
- #define __FUNCTION__ (__func__)
- 
+3. The PTP IO signals are not configured in a vanilla linux. For this,
+   you need parts of a Freescale patch. [1] Their PTP implementation
+   gianfar driver is horrible, but still, the IO configuration in
+   these two files in the patch is necessary to get any external
+   signals from the PTP clock:
+
+   arch/powerpc/platforms/83xx/mpc8313_rdb.c
+   arch/powerpc/platforms/83xx/mpc83xx.h
+
+It may be that point 1 is not so important, since the flash layout is
+perhaps a very personal thing, but I would still expect the default
+dts to match the default partitioning from Freescale.
+
+Point 2 is obviously essential, and if you buy the mpc8313 for its PTP
+capabilities, as I did, then point 3 is a show stopper, as well.
+
+> I just booted 2.6.32-rc4 straight from Linus on an mpc8572ds yesterday.
+> I've booted various upstream kernels on mpc8313erdb (typically an older r=
+ev,
+> though).
+
+Okay, you are right, the mpc8572ds does seem to work pretty well.
+
+Perhaps we can fix up the above three issues?
+
+Richard
+
+[1] http://www.bitshrine.org/gpp_info/linux-fsl-2.6.23-MPC8313ERDB-IEEE-158=
+8.patch.html
