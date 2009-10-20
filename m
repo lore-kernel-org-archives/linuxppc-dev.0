@@ -1,29 +1,16 @@
-Return-Path: <sourcejedi.lkml@googlemail.com>
-Received: from mail-fx0-f219.google.com (mail-fx0-f219.google.com
-	[209.85.220.219]) by ozlabs.org (Postfix) with ESMTP id 1142AB7B8F
+Return-Path: <Lixin.Yao@HSTX.com>
+Received: from mail.hstx.com (mail.hstx.com [64.95.133.106])
+	by ozlabs.org (Postfix) with ESMTP id D638DB7B9A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 21 Oct 2009 01:43:16 +1100 (EST)
-Received: by fxm19 with SMTP id 19so6551616fxm.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 20 Oct 2009 07:43:14 -0700 (PDT)
+	Wed, 21 Oct 2009 03:24:37 +1100 (EST)
 MIME-Version: 1.0
-In-Reply-To: <20091020135835.GB2462@hack>
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	<200910201142.34006.rusty@rustcorp.com.au>
-	<1256002193.6546.2.camel@slab>
-	<200910201415.34361.rusty@rustcorp.com.au>
-	<20091020135835.GB2462@hack>
-Date: Tue, 20 Oct 2009 15:43:13 +0100
-Message-ID: <9b2b86520910200743h4e134cf8jd2860d42b3936597@mail.gmail.com>
-Subject: Re: [PATCH] BUILD_BUG_ON: make it handle more cases
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: sfr@canb.auug.org.au, Hollis Blanchard <hollisb@us.ibm.com>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, Jan Beulich <JBeulich@novell.com>,
-	linux-next@vger.kernel.org, kvm-ppc@vger.kernel.org,
-	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CA519F.CA11895E"
+Subject: Device Tree Corrupted after unflatten_device_tree()
+Date: Tue, 20 Oct 2009 09:10:06 -0700
+Message-ID: <03D77CA4AC7F4D48A6AB5DA3F1001B3FB5BB88@exchtxus2.HSTX.global.vpn>
+From: "Lixin Yao" <Lixin.Yao@HSTX.com>
+To: <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,96 +20,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/20/09, Am=E9rico Wang <xiyou.wangcong@gmail.com> wrote:
-> On Tue, Oct 20, 2009 at 02:15:33PM +1030, Rusty Russell wrote:
->>BUILD_BUG_ON used to use the optimizer to do code elimination or fail
->>at link time; it was changed to first the size of a negative array (a
->>nicer compile time error), then (in
->>8c87df457cb58fe75b9b893007917cf8095660a0) to a bitfield.
->>
->>bitfields: needs a literal constant at parse time, and can't be put under
->>	"if (__builtin_constant_p(x))" for example.
->>negative array: can handle anything, but if the compiler can't tell it's
->>	a constant, silently has no effect.
->>link time: breaks link if the compiler can't determine the value, but the
->>	linker output is not usually as informative as a compiler error.
->>
->>If we use the negative-array-size method *and* the link time trick,
->>we get the ability to use BUILD_BUG_ON() under __builtin_constant_p()
->>branches, and maximal ability for the compiler to detect errors at
->>build time.
->>
->>Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->>
->>diff --git a/include/linux/kernel.h b/include/linux/kernel.h
->>--- a/include/linux/kernel.h
->>+++ b/include/linux/kernel.h
->>@@ -683,12 +683,6 @@ struct sysinfo {
->> 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. *=
-/
->> };
->>
->>-/* Force a compilation error if condition is true */
->>-#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
->>-
->>-/* Force a compilation error if condition is constant and true */
->>-#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
->>-
->> /* Force a compilation error if condition is true, but also produce a
->>    result (of value 0 and type size_t), so the expression can be used
->>    e.g. in a structure initializer (or where-ever else comma expressions
->>@@ -696,6 +690,33 @@ struct sysinfo {
->> #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
->> #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
->>
->>+/**
->>+ * BUILD_BUG_ON - break compile if a condition is true.
->>+ * @cond: the condition which the compiler should know is false.
->>+ *
->>+ * If you have some code which relies on certain constants being equal, =
-or
->>+ * other compile-time-evaluated condition, you should use BUILD_BUG_ON t=
-o
->>+ * detect if someone changes it.
->>+ *
->>+ * The implementation uses gcc's reluctance to create a negative array,
->> but
->>+ * gcc (as of 4.4) only emits that error for obvious cases (eg. not
->> arguments
->>+ * to inline functions).  So as a fallback we use the optimizer; if it
->> can't
->>+ * prove the condition is false, it will cause a link error on the
->> undefined
->>+ * "__build_bug_on_failed".  This error message can be harder to track
->> down
->>+ * though, hence the two different methods.
->>+ */
->>+#ifndef __OPTIMIZE__
->>+#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)])=
-)
->>+#else
->>+extern int __build_bug_on_failed;
->
-> Hmm, what exactly is __build_bug_on_failed?
+This is a multi-part message in MIME format.
 
-Well, we haven't added a definition for it in this patch.  I'm sure
-grep will tell you it wasn't defined before hand either.  So any
-reference to it is an error - which will be reported at link time.
+------_=_NextPart_001_01CA519F.CA11895E
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
->>+#define BUILD_BUG_ON(condition)					\
->>+	do {							\
->>+		((void)sizeof(char[1 - 2*!!(condition)]));	\
->>+		if (condition) __build_bug_on_failed =3D 1;	\
+I use a board with MPC866T and 2.6.28 Linux Kernel.  Occasionally, the
+unflattened device is corrupted after "unflatten_device_tree()" which
+causes crash of kernel when device tree is traversed later on.
 
-If "condition" is known false at compile time, gcc -O will eliminate
-the code which refers to __build_bug_on_failed.  If it's not proved to
-be false - it will break the build, which is exactly what we want
-BUILD_BUG_ON to do.
+I looked at the fixes in lib/lmb.c, arch/powerpc/mm, arch/powerpc/kernel
+etc since 2.6.28 to 2.6.32-r4 (the most recent version) and could not
+fix my problem.
 
->>+	} while(0)
->>+#endif
->>+#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
->>+
->> /* Trap pasters of __FUNCTION__ at compile-time */
->> #define __FUNCTION__ (__func__)
->>
+I have had a hard time trying to determine the cause.=20
+
+arch/powerpc/kernel/setup_32.c
+void __init setup_arch(char **cmdline_p)
+{
+	*cmdline_p =3D cmd_line;
+
+	/* so udelay does something sensible, assume <=3D 1000 bogomips */
+	loops_per_jiffy =3D 500000000 / HZ;
+
+	unflatten_device_tree();
+	/* UNFLATTENED DEVICE TREE IS CORRUPTED SOMETIMES HERE */
+	check_for_initrd();
+
+   	......
+}
+
+Any ideas?
+
+Thanks.
+
+Lixin Yao
+Harris Startex Networks Inc.
+RTP, NC, USA
+
+------_=_NextPart_001_01CA519F.CA11895E
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7651.59">
+<TITLE>Device Tree Corrupted after unflatten_device_tree()</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT FACE=3D"Calibri">I use a =
+board</FONT> <FONT FACE=3D"Calibri">with MPC866T and 2.6.28 Linux =
+Kernel.</FONT>&nbsp;<FONT FACE=3D"Calibri"></FONT> <FONT =
+FACE=3D"Calibri">Occa</FONT></SPAN><SPAN LANG=3D"en-us"><FONT =
+FACE=3D"Calibri">s</FONT></SPAN><SPAN LANG=3D"en-us"><FONT =
+FACE=3D"Calibri">ionally</FONT></SPAN><SPAN LANG=3D"en-us"><FONT =
+FACE=3D"Calibri">, the unflattened</FONT></SPAN><SPAN LANG=3D"en-us"> =
+<FONT FACE=3D"Calibri">device is corrupted after</FONT></SPAN><SPAN =
+LANG=3D"en-us"> <FONT FACE=3D"Calibri">&#8220;</FONT></SPAN><SPAN =
+LANG=3D"en-us"><FONT =
+FACE=3D"Calibri">unflatten_device_tree</FONT></SPAN><SPAN =
+LANG=3D"en-us"><FONT FACE=3D"Calibri">()</FONT></SPAN><SPAN =
+LANG=3D"en-us"><FONT FACE=3D"Calibri">&#8221;</FONT></SPAN><SPAN =
+LANG=3D"en-us"><FONT FACE=3D"Calibri"> which causes crash of kernel when =
+device tree is traversed</FONT></SPAN><SPAN LANG=3D"en-us"><FONT =
+FACE=3D"Calibri"> later on.</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT FACE=3D"Calibri">I</FONT> <FONT =
+FACE=3D"Calibri">looked at the fixes in</FONT></SPAN><SPAN =
+LANG=3D"en-us"> <FONT FACE=3D"Calibri">lib/lmb.c,</FONT><FONT =
+FACE=3D"Calibri"> arch/powerpc/mm, arch/powerpc/kernel etc since 2.6.28 =
+to 2.6.32</FONT><FONT FACE=3D"Calibri">-r4 (the most recent version) =
+and</FONT></SPAN><SPAN LANG=3D"en-us"> <FONT FACE=3D"Calibri">could not =
+fix my problem</FONT></SPAN><SPAN LANG=3D"en-us">.</SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT FACE=3D"Calibri">I have had a =
+hard time trying to determine the cause.</FONT></SPAN><SPAN =
+LANG=3D"en-us"> </SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"></SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT =
+FACE=3D"Calibri">arch/powerpc/kernel/</FONT></SPAN><SPAN =
+LANG=3D"en-us"><FONT FACE=3D"Calibri">setup_32.c</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT FACE=3D"Calibri">void __init =
+setup_arch(char **cmdline_p)</FONT></SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT =
+FACE=3D"Calibri">{</FONT></SPAN></P>
+
+<P DIR=3DLTR><SPAN =
+LANG=3D"en-us">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT =
+FACE=3D"Calibri">*cmdline_p =3D cmd_line;</FONT></SPAN></P>
+
+<P DIR=3DLTR><SPAN =
+LANG=3D"en-us">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT =
+FACE=3D"Calibri">/* so udelay does something sensible, assume &lt;=3D =
+1000 bogomips */</FONT></SPAN></P>
+
+<P DIR=3DLTR><SPAN =
+LANG=3D"en-us">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT =
+FACE=3D"Calibri">loops_per_jiffy =3D 500000000 / HZ;</FONT></SPAN></P>
+
+<P DIR=3DLTR><SPAN =
+LANG=3D"en-us">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT =
+FACE=3D"Calibri">unflatten_device_tree();</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN></P>
+
+<P DIR=3DLTR><SPAN =
+LANG=3D"en-us">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT =
+FACE=3D"Calibri">/*</FONT> <FONT FACE=3D"Calibri">UNFLATTENED</FONT> =
+<FONT FACE=3D"Calibri">DEVICE TREE IS C</FONT><FONT =
+FACE=3D"Calibri">ORRUPTED SOMETIMES HERE */</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN></P>
+
+<P DIR=3DLTR><SPAN =
+LANG=3D"en-us">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT =
+FACE=3D"Calibri">check_for_initrd();</FONT></SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT FACE=3D"Calibri">&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;</FONT></SPAN><SPAN LANG=3D"en-us"> <FONT =
+FACE=3D"Calibri">&#8230;</FONT><FONT =
+FACE=3D"Calibri">&#8230;</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us">}</SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT FACE=3D"Calibri">Any =
+ideas?</FONT></SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT =
+FACE=3D"Calibri">Thanks.</FONT></SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT FACE=3D"Calibri">Lixin =
+Yao</FONT></SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT FACE=3D"Calibri">Harris Startex =
+Networks Inc.</FONT></SPAN></P>
+
+<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT FACE=3D"Calibri">RTP</FONT><FONT =
+FACE=3D"Calibri">, NC, USA</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01CA519F.CA11895E--
