@@ -1,24 +1,19 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4A919B7B77
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2009 07:19:45 +1100 (EST)
-Message-ID: <4ADCC9CE.6070403@embedded-sol.com>
-Date: Mon, 19 Oct 2009 22:19:26 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <rusty@rustcorp.com.au>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: linux-next: tree build failure
+Date: Tue, 20 Oct 2009 11:42:32 +1030
+References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
+	<4AD6EB17020000780001A050@vpn.id2.novell.com>
+	<1255976369.13995.98.camel@slab.beaverton.ibm.com>
+In-Reply-To: <1255976369.13995.98.camel@slab.beaverton.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: UBIFS problem on MPC8536DS
-References: <4AD5ADC9.30503@embedded-sol.com>
-	<4AD5C5B4.3060303@nokia.com>	<4AD5D053.9000901@embedded-sol.com>
-	<4AD5FFE7.7080703@nokia.com>	<4AD60EF4.4080306@embedded-sol.com>	<4AD614E4.6030005@freescale.com>
-	<4AD7811A.6040501@freescale.com>	<4AD7FE37.1060705@embedded-sol.com>	<20091016153128.GA11838@loki.buserror.net>	<4ADAE205.7070106@embedded-sol.com>	<20091019154002.GC19074@loki.buserror.net>	<4ADCC08D.5080207@embedded-sol.com>
-	<4ADCC247.6080107@freescale.com>
-In-Reply-To: <4ADCC247.6080107@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Message-Id: <200910201142.34006.rusty@rustcorp.com.au>
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+	linux-next@vger.kernel.org, Jan Beulich <JBeulich@novell.com>,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Felix Radensky wrote:
->> OK, no problem. I just wanted to get an idea of what should be done.
->> Should the NOR code poll some eLBC register to wait for completion of
->> NAND special operation ? Can you tell what register is relevant ?
->
-> I was thinking you'd just share a mutex with the NAND code.
+On Tue, 20 Oct 2009 04:49:29 am Hollis Blanchard wrote:
+> On Thu, 2009-10-15 at 08:27 +0100, Jan Beulich wrote:
+> > My perspective is that it just uncovered already existing brokenness.
+> 
+> Sorry, I thought it was clear, but to be more explicit: I propose the
+> following patch, which replaces the current BUILD_BUG_ON implementation
+> with Rusty's version.
 
-Thanks. Do I understand correctly that in fsl_ebc_nand.c this mutex should
-protect the execution of special operation and wait for completion in
-fsl_elbc_run_command() routine ?
+OK, I switched my brain back on.  Yeah, I agree: we may still want
+BUILD_OR_RUNTIME_BUG_ON one day, but I like this.
 
-Felix.
+It's just missing the giant comment that it needs :)
+
+/**
+ * BUILD_BUG_ON - break compile if a condition is true.
+ * @cond: the condition which the compiler should know is false.
+ *
+ * If you have some code which relies on certain constants being equal, or
+ * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
+ * detect if someone changes it.
+ *
+ * The implementation uses gcc's reluctance to create a negative array, but
+ * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
+ * to inline functions).  So as a fallback we use the optimizer; if it can't
+ * prove the condition is false, it will cause a link error on the undefined
+ * "__build_bug_on_failed".  This error is less neat, and can be harder to
+ * track down.
+ */
+
+Thanks!
+Rusty.
