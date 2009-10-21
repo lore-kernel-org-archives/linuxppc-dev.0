@@ -1,14 +1,19 @@
-Return-Path: <nm127@freemail.hu>
-Received: from mail01a.mail.t-online.hu (mail01a.mail.t-online.hu [84.2.40.6])
-	by ozlabs.org (Postfix) with ESMTP id 8BF5FB7BA0
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 09:27:50 +1100 (EST)
-Message-ID: <4ADE37DC.4070909@freemail.hu>
-Date: Wed, 21 Oct 2009 00:21:16 +0200
-From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 8B714B7BDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 00:17:52 +1100 (EST)
+Date: Wed, 21 Oct 2009 15:17:47 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device driver
+Message-ID: <20091021131747.GG12819@pengutronix.de>
+References: <20090618025030.12363.69402.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org
-Subject: Linux for MPC5554 or MPC5534 (core e200z6)?
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="gm5TwAJMO0F2iVRz"
+In-Reply-To: <20090618025030.12363.69402.stgit@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,28 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+
+--gm5TwAJMO0F2iVRz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
 Hi Grant,
-Hello List,
 
-is there anybody who was successfully run Linux kernel on Freescale MPC5554
-[1], [2] or on Freescale MPC5534 [3], [4]? Both of these embedded PowerPC
-controllers have the e200z6 core.
+On Wed, Jun 17, 2009 at 08:55:01PM -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>=20
+> Adds support for the dedicated SPI device on the Freescale MPC5200(b)
+> SoC.
+>=20
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-Is there anybody who is working with these controllers or with the e200z6 core?
+do you have an updated version to share? Or is V4 still 'status quo'?
 
-References:
-[1] Freescale MPC5554
-    http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5554
+Genki de ;)
 
-[2] MPC5553/MPC5554 Microcontroller Reference Manual
-    http://www.freescale.com/files/32bit/doc/ref_manual/MPC5553_MPC5554_RM.pdf
+   Wolfram
 
-[3] Freescale MPC5534
-http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5534
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-[4] MPC5534 Microcontroller Reference Manual
-    http://www.freescale.com/files/32bit/doc/ref_manual/MPC5534RM.pdf
+--gm5TwAJMO0F2iVRz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Regards,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-	Márton Németh
+iEYEARECAAYFAkrfCfsACgkQD27XaX1/VRvKKQCghwigd52gAcPc1AxAiz9EZs9b
+kBsAoK9sRHJ8TfJ5x9ezMXr+qcdAG6bs
+=QfgA
+-----END PGP SIGNATURE-----
+
+--gm5TwAJMO0F2iVRz--
