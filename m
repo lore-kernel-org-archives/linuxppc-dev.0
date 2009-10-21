@@ -1,26 +1,26 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B2E7DB7BCD
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 01:46:23 +1100 (EST)
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7D099B7BD3
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 01:48:05 +1100 (EST)
 Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
-	by e9.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9LEgInh007873
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 10:42:18 -0400
+	by e2.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9LEeevu005535
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 10:40:40 -0400
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
 	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9LEkKoW164424
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 10:46:20 -0400
+	n9LEm2a3189164
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 10:48:02 -0400
 Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
 	by d01av02.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n9LEjul7032484
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 10:45:56 -0400
-Message-ID: <4ADF1EB7.2090709@austin.ibm.com>
-Date: Wed, 21 Oct 2009 09:46:15 -0500
+	n9LElcLs010806
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 10:47:38 -0400
+Message-ID: <4ADF1F04.2070300@austin.ibm.com>
+Date: Wed, 21 Oct 2009 09:47:32 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/5 v4] Kernel Handling of memory DLPAR
+Subject: [PATCH 5/5 v4] Kernel Handling of cpu DLPAR
 References: <4ADF1C49.2030201@austin.ibm.com>
 In-Reply-To: <4ADF1C49.2030201@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -34,243 +34,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds the capability to DLPAR add and remove memory from the kernel.  The
-patch extends the powerpc handling of memory_add_physaddr_to_nid(), which is
-called from the sysfs memory 'probe' file to first ensure that the memory
-has been added to the system.  This is done by creating a platform specific
-callout from the routine.  The pseries implementation of this handles the
-DLPAR work to add the memory to the system and update the device tree.
+This adds the capability to DLPAR add and remove CPUs from the kernel. The
+creates two new files /sys/devices/system/cpu/probe and 
+/sys/devices/system/cpu/release to handle the DLPAR addition and removal of
+CPUs respectively.
 
-The patch also creates a pseries only 'release' sys file, 
-/sys/devices/system/memory/release.  This file handles the DLPAR release of
-memory back to firmware and updating of the device-tree.
+CPU DLPAR add is accomplished by writing the drc-index of the CPU to the
+probe file, and removal is done by writing the device-tree path of the cpu
+to the release file.
 
 Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com>
 ---
-
 Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
 ===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-10-19 11:59:10.000000000 -0500
-+++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-10-19 11:59:43.000000000 -0500
-@@ -16,6 +16,10 @@
- #include <linux/notifier.h>
- #include <linux/proc_fs.h>
- #include <linux/spinlock.h>
-+#include <linux/memory_hotplug.h>
-+#include <linux/sysdev.h>
-+#include <linux/sysfs.h>
-+
+--- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-10-19 11:59:43.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-10-19 11:59:48.000000000 -0500
+@@ -1,11 +1,10 @@
+ /*
+- * dlpar.c - support for dynamic reconfiguration (including PCI
+- * Hotplug and Dynamic Logical Partitioning on RPA platforms).
++ * Support for dynamic reconfiguration (including PCI, Memory, and CPU
++ * Hotplug and Dynamic Logical Partitioning on PAPR platforms).
+  *
+  * Copyright (C) 2009 Nathan Fontenot
+  * Copyright (C) 2009 IBM Corporation
+  *
+- *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License version
+  * 2 as published by the Free Software Foundation.
+@@ -19,7 +18,7 @@
+ #include <linux/memory_hotplug.h>
+ #include <linux/sysdev.h>
+ #include <linux/sysfs.h>
+-
++#include <linux/cpu.h>
  
  #include <asm/prom.h>
  #include <asm/machdep.h>
-@@ -404,11 +408,186 @@
+@@ -408,6 +407,82 @@
  	return 0;
  }
  
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+
-+static struct property *clone_property(struct property *old_prop)
++#ifdef CONFIG_HOTPLUG_CPU
++static ssize_t cpu_probe_store(struct class *class, const char *buf,
++			       size_t count)
 +{
-+	struct property *new_prop;
-+
-+	new_prop = kzalloc((sizeof *new_prop), GFP_KERNEL);
-+	if (!new_prop)
-+		return NULL;
-+
-+	new_prop->name = kstrdup(old_prop->name, GFP_KERNEL);
-+	new_prop->value = kzalloc(old_prop->length + 1, GFP_KERNEL);
-+	if (!new_prop->name || !new_prop->value) {
-+		free_property(new_prop);
-+		return NULL;
-+	}
-+
-+	memcpy(new_prop->value, old_prop->value, old_prop->length);
-+	new_prop->length = old_prop->length;
-+
-+	return new_prop;
-+}
-+
-+int platform_probe_memory(u64 phys_addr)
-+{
-+	struct device_node *dn = NULL;
-+	struct property *new_prop;
-+	struct property *old_prop;
-+	struct of_drconf_cell *drmem;
-+	const u64 *lmb_size;
-+	int num_entries, i;
-+	int rc = -EINVAL;
-+
-+	if (!phys_addr)
-+		goto memory_probe_exit;
-+
-+	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (!dn)
-+		goto memory_probe_exit;
-+
-+	lmb_size = of_get_property(dn, "ibm,lmb-size", NULL);
-+	if (!lmb_size)
-+		goto memory_probe_exit;
-+
-+	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
-+	if (!old_prop)
-+		goto memory_probe_exit;
-+
-+	num_entries = *(u32 *)old_prop->value;
-+	drmem = (struct of_drconf_cell *)
-+				((char *)old_prop->value + sizeof(u32));
-+
-+	for (i = 0; i < num_entries; i++) {
-+		u64 lmb_end_addr = drmem[i].base_addr + *lmb_size;
-+		if (phys_addr >= drmem[i].base_addr
-+		    && phys_addr < lmb_end_addr)
-+			break;
-+	}
-+
-+	if (i >= num_entries)
-+		goto memory_probe_exit;
-+
-+	if (drmem[i].flags & DRCONF_MEM_ASSIGNED) {
-+		/* This lmb is already adssigned to the system, nothing to do */
-+		rc = 0;
-+		goto memory_probe_exit;
-+	}
-+
-+	rc = acquire_drc(drmem[i].drc_index);
-+	if (rc) {
-+		rc = -EINVAL;
-+		goto memory_probe_exit;
-+	}
-+
-+	new_prop = clone_property(old_prop);
-+	drmem = (struct of_drconf_cell *)
-+				((char *)new_prop->value + sizeof(u32));
-+
-+	drmem[i].flags |= DRCONF_MEM_ASSIGNED;
-+	rc = prom_update_property(dn, new_prop, old_prop);
-+	if (rc) {
-+		free_property(new_prop);
-+		rc = -EINVAL;
-+		goto memory_probe_exit;
-+	}
-+
-+	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
-+					  PSERIES_DRCONF_MEM_ADD,
-+					  &drmem[i].base_addr);
-+	if (rc == NOTIFY_BAD) {
-+		prom_update_property(dn, old_prop, new_prop);
-+		release_drc(drmem[i].drc_index);
-+		rc = -EINVAL;
-+	} else
-+		rc = 0;
-+
-+memory_probe_exit:
-+	of_node_put(dn);
-+	return rc;
-+}
-+
-+static ssize_t memory_release_store(struct class *class, const char *buf,
-+				    size_t count)
-+{
-+	unsigned long drc_index;
 +	struct device_node *dn;
-+	struct property *new_prop, *old_prop;
-+	struct of_drconf_cell *drmem;
-+	int num_entries;
-+	int i;
-+	int rc = -EINVAL;
++	unsigned long drc_index;
++	char *cpu_name;
++	int rc;
 +
 +	rc = strict_strtoul(buf, 0, &drc_index);
 +	if (rc)
-+		return rc;
++		return -EINVAL;
 +
-+	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (!dn)
-+		return rc;
++	rc = acquire_drc(drc_index);
++	if (rc)
++		return -EINVAL;
 +
-+	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
-+	if (!old_prop)
-+		goto memory_release_exit;
-+
-+	num_entries = *(u32 *)old_prop->value;
-+	drmem = (struct of_drconf_cell *)
-+				((char *)old_prop->value + sizeof(u32));
-+
-+	for (i = 0; i < num_entries; i++) {
-+		if (drmem[i].drc_index == drc_index)
-+			break;
++	dn = configure_connector(drc_index);
++	if (!dn) {
++		release_drc(drc_index);
++		return -EINVAL;
 +	}
 +
-+	if (i >= num_entries)
-+		goto memory_release_exit;
-+
-+	new_prop = clone_property(old_prop);
-+	drmem = (struct of_drconf_cell *)
-+				((char *)new_prop->value + sizeof(u32));
-+
-+	drmem[i].flags &= ~DRCONF_MEM_ASSIGNED;
-+	rc = prom_update_property(dn, new_prop, old_prop);
-+	if (rc) {
-+		free_property(new_prop);
-+		rc = -EINVAL;
-+		goto memory_release_exit;
++	/* fixup dn name */
++	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus/") + 1,
++			   GFP_KERNEL);
++	if (!cpu_name) {
++		free_cc_nodes(dn);
++		release_drc(drc_index);
++		return -ENOMEM;
 +	}
 +
-+	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
-+					  PSERIES_DRCONF_MEM_REMOVE,
-+					  &drmem[i].base_addr);
-+	if (rc != NOTIFY_BAD)
-+		rc = release_drc(drc_index);
++	sprintf(cpu_name, "/cpus/%s", dn->full_name);
++	kfree(dn->full_name);
++	dn->full_name = cpu_name;
 +
-+	if (rc) {
-+		prom_update_property(dn, old_prop, new_prop);
-+		rc = -EINVAL;
-+	}
++	rc = add_device_tree_nodes(dn);
++	if (rc)
++		release_drc(drc_index);
 +
-+memory_release_exit:
-+	of_node_put(dn);
-+	return rc ? rc : count;
++	return rc ? -EINVAL : count;
 +}
 +
-+static struct class_attribute class_attr_mem_release =
-+			__ATTR(release, S_IWUSR, NULL, memory_release_store);
-+#endif
++static ssize_t cpu_release_store(struct class *class, const char *buf,
++				 size_t count)
++{
++	struct device_node *dn;
++	const u32 *drc_index;
++	int rc;
 +
- static int pseries_dlpar_init(void)
- {
- 	if (!machine_is(pseries))
- 		return 0;
++	dn = of_find_node_by_path(buf);
++	if (!dn)
++		return -EINVAL;
++
++	drc_index = of_get_property(dn, "ibm,my-drc-index", NULL);
++	if (!drc_index) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	rc = release_drc(*drc_index);
++	if (rc) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	rc = remove_device_tree_nodes(dn);
++	if (rc)
++		acquire_drc(*drc_index);
++
++	of_node_put(dn);
++	return rc ? -EINVAL : count;
++}
++
++#endif /* CONFIG_HOTPLUG_CPU */
++
+ #ifdef CONFIG_MEMORY_HOTPLUG
  
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+	if (sysfs_create_file(&memory_sysdev_class.kset.kobj,
-+			      &class_attr_mem_release.attr))
-+		printk(KERN_INFO "DLPAR: Could not create sysfs memory "
+ static struct property *clone_property(struct property *old_prop)
+@@ -574,6 +649,13 @@
+ 
+ static struct class_attribute class_attr_mem_release =
+ 			__ATTR(release, S_IWUSR, NULL, memory_release_store);
++#endif /* CONFIG_MEMORY_HOTPLUG */
++
++#ifdef CONFIG_HOTPLUG_CPU
++static struct class_attribute class_attr_cpu_probe =
++			__ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
++static struct class_attribute class_attr_cpu_release =
++			__ATTR(release, S_IWUSR, NULL, cpu_release_store);
+ #endif
+ 
+ static int pseries_dlpar_init(void)
+@@ -588,6 +670,18 @@
+ 		       "release file\n");
+ #endif
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++	if (sysfs_create_file(&cpu_sysdev_class.kset.kobj,
++			      &class_attr_cpu_probe.attr))
++		printk(KERN_INFO "DLPAR: Could not create sysfs cpu "
++		       "probe file\n");
++
++	if (sysfs_create_file(&cpu_sysdev_class.kset.kobj,
++			      &class_attr_cpu_release.attr))
++		printk(KERN_INFO "DLPAR: Could not create sysfs cpu "
 +		       "release file\n");
 +#endif
 +
  	return 0;
  }
  device_initcall(pseries_dlpar_init);
-Index: powerpc/arch/powerpc/mm/mem.c
-===================================================================
---- powerpc.orig/arch/powerpc/mm/mem.c	2009-10-19 11:58:38.000000000 -0500
-+++ powerpc/arch/powerpc/mm/mem.c	2009-10-19 11:59:43.000000000 -0500
-@@ -111,8 +111,19 @@
- #ifdef CONFIG_MEMORY_HOTPLUG
- 
- #ifdef CONFIG_NUMA
-+int __attribute ((weak)) platform_probe_memory(u64 start)
-+{
-+	return 0;
-+}
-+
- int memory_add_physaddr_to_nid(u64 start)
- {
-+	int rc;
-+
-+	rc = platform_probe_memory(start);
-+	if (rc)
-+		return rc;
-+
- 	return hot_add_scn_to_nid(start);
- }
- #endif
