@@ -1,21 +1,18 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id EC077B7B9F
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 04:06:47 +1100 (EST)
-Date: Wed, 21 Oct 2009 19:06:41 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device driver
-Message-ID: <20091021170641.GA3106@pengutronix.de>
-References: <20090618025030.12363.69402.stgit@localhost.localdomain>
-	<20091021131747.GG12819@pengutronix.de>
-	<fa686aa40910210745l7d19d6ecq303ee990bed82c62@mail.gmail.com>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 3DB1DB7B76
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 04:50:16 +1100 (EST)
+To: Vivek Mahajan <vivek.mahajan@freescale.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH v3 2/3] powerpc/fsl: 85xx: document cache-sram
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
-In-Reply-To: <fa686aa40910210745l7d19d6ecq303ee990bed82c62@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <1256129459-10685-2-git-send-email-vivek.mahajan@freescale.com>
+References: <1256129459-10685-1-git-send-email-vivek.mahajan@freescale.com>
+	<1256129459-10685-2-git-send-email-vivek.mahajan@freescale.com>
+Date: Wed, 21 Oct 2009 19:50:12 +0200
+Message-Id: <20091021175012.ED29819F73@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Dear Vivek Mahajan,
 
---UugvWAfsgieZRqgk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In message <1256129459-10685-2-git-send-email-vivek.mahajan@freescale.com> you wrote:
+> Adds documentation for Freescale's QorIQ based cache-sram as under:-
+> 
+> * How to enable it from a low level driver
+> * How to set its size
+...
+> +The size of the above cache SRAM memory window is passed via the
+> +kernel command line as <cache-sram-size=....>
 
+Would it not make more sense to configure this property through the
+device tree? 
 
-> V4 was supposed to go in during the merge window.  But I haven't heard
-> anything from David (and I didn't pursue it either).  Unless David
-> objects, I'll put it into either my -merge or my -next tree; depending
-> on what Ben and Linus prefer.
+Best regards,
 
-I wondered if there was going to be a V5 as you said you fixed a few things
-according to my review and couldn't find an updated patch for that.
+Wolfgang Denk
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---UugvWAfsgieZRqgk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrfP6EACgkQD27XaX1/VRsh3QCePLvQeu0ERCeJvx2l5LrEtDY4
-/Q8An1B29qosnUF62OBV3AstrTFxSnJM
-=5evQ
------END PGP SIGNATURE-----
-
---UugvWAfsgieZRqgk--
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Don't worry about people stealing your ideas. If your ideas are  any
+good, you'll have to ram them down people's throats."  - Howard Aiken
