@@ -1,27 +1,27 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D784BB7BC1
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 01:43:15 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9LEf7Mb024384
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 08:41:07 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9LEguum210030
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 08:42:57 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n9LEgjlu021399
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 08:42:46 -0600
-Message-ID: <4ADF1DE1.2070303@austin.ibm.com>
-Date: Wed, 21 Oct 2009 09:42:41 -0500
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EE743B7BE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 01:44:38 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e34.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9LEdmQu012550
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 08:39:48 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n9LEiO2p029228
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 08:44:27 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id n9LEiMb1009499
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 08:44:22 -0600
+Message-ID: <4ADF1E42.3020907@austin.ibm.com>
+Date: Wed, 21 Oct 2009 09:44:18 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/5 v4] move of_drconf_cell definition to prom.h
+Subject: [PATCH 3/5 v4] Export memory_sysdev_class
 References: <4ADF1C49.2030201@austin.ibm.com>
 In-Reply-To: <4ADF1C49.2030201@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -35,56 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the definition of the of_drconf_cell struct from numa.c to prom.h.  This
-is needed so that we can parse the ibm,dynamic-memory device-tree property
-when DLPAR adding and removing memory.
+Export the memory_sysdev_class structure.  This is needed so we can create
+a 'release' file in sysfs in addition to the existing 'probe' file in
+order to support DLPAR removal of memory on the powerpc/pseries platform.
+The new 'release' file will be powerpc/pseries only.
 
 Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com>
 ---
 
-Index: powerpc/arch/powerpc/include/asm/prom.h
+Index: powerpc/drivers/base/memory.c
 ===================================================================
---- powerpc.orig/arch/powerpc/include/asm/prom.h	2009-10-19 11:56:51.000000000 -0500
-+++ powerpc/arch/powerpc/include/asm/prom.h	2009-10-19 11:59:31.000000000 -0500
-@@ -349,6 +349,18 @@
-  */
- extern void __iomem *of_iomap(struct device_node *device, int index);
+--- powerpc.orig/drivers/base/memory.c	2009-10-19 11:56:51.000000000 -0500
++++ powerpc/drivers/base/memory.c	2009-10-19 11:59:36.000000000 -0500
+@@ -28,9 +28,10 @@
  
-+struct of_drconf_cell {
-+	u64	base_addr;
-+	u32	drc_index;
-+	u32	reserved;
-+	u32	aa_index;
-+	u32	flags;
-+};
-+
-+#define DRCONF_MEM_ASSIGNED	0x00000008
-+#define DRCONF_MEM_AI_INVALID	0x00000040
-+#define DRCONF_MEM_RESERVED	0x00000080
+ #define MEMORY_CLASS_NAME	"memory"
+ 
+-static struct sysdev_class memory_sysdev_class = {
++struct sysdev_class memory_sysdev_class = {
+ 	.name = MEMORY_CLASS_NAME,
+ };
++EXPORT_SYMBOL(memory_sysdev_class);
+ 
+ static const char *memory_uevent_name(struct kset *kset, struct kobject *kobj)
+ {
+Index: powerpc/include/linux/memory_hotplug.h
+===================================================================
+--- powerpc.orig/include/linux/memory_hotplug.h	2009-10-19 11:58:43.000000000 -0500
++++ powerpc/include/linux/memory_hotplug.h	2009-10-19 11:59:36.000000000 -0500
+@@ -12,6 +12,8 @@
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ 
++extern struct sysdev_class memory_sysdev_class;
 +
  /*
-  * NB:  This is here while we transition from using asm/prom.h
-  * to linux/of.h
-Index: powerpc/arch/powerpc/mm/numa.c
-===================================================================
---- powerpc.orig/arch/powerpc/mm/numa.c	2009-10-19 11:56:51.000000000 -0500
-+++ powerpc/arch/powerpc/mm/numa.c	2009-10-19 11:59:31.000000000 -0500
-@@ -296,18 +296,6 @@
- 	return result;
- }
- 
--struct of_drconf_cell {
--	u64	base_addr;
--	u32	drc_index;
--	u32	reserved;
--	u32	aa_index;
--	u32	flags;
--};
--
--#define DRCONF_MEM_ASSIGNED	0x00000008
--#define DRCONF_MEM_AI_INVALID	0x00000040
--#define DRCONF_MEM_RESERVED	0x00000080
--
- /*
-  * Read the next lmb list entry from the ibm,dynamic-memory property
-  * and return the information in the provided of_drconf_cell structure.
+  * Types for free bootmem.
+  * The normal smallest mapcount is -1. Here is smaller value than it.
