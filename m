@@ -1,31 +1,22 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EE743B7BE6
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 01:44:38 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e34.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9LEdmQu012550
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 08:39:48 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9LEiO2p029228
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 08:44:27 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id n9LEiMb1009499
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 08:44:22 -0600
-Message-ID: <4ADF1E42.3020907@austin.ibm.com>
-Date: Wed, 21 Oct 2009 09:44:18 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id 452D5B7BE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 01:45:26 +1100 (EST)
+Received: by gxk28 with SMTP id 28so6017282gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 07:45:25 -0700 (PDT)
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/5 v4] Export memory_sysdev_class
-References: <4ADF1C49.2030201@austin.ibm.com>
-In-Reply-To: <4ADF1C49.2030201@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-kernel@vger.kernel.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <20091021131747.GG12819@pengutronix.de>
+References: <20090618025030.12363.69402.stgit@localhost.localdomain>
+	<20091021131747.GG12819@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 21 Oct 2009 23:45:05 +0900
+Message-ID: <fa686aa40910210745l7d19d6ecq303ee990bed82c62@mail.gmail.com>
+Subject: Re: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device driver
+To: Wolfram Sang <w.sang@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,40 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Export the memory_sysdev_class structure.  This is needed so we can create
-a 'release' file in sysfs in addition to the existing 'probe' file in
-order to support DLPAR removal of memory on the powerpc/pseries platform.
-The new 'release' file will be powerpc/pseries only.
+On Wed, Oct 21, 2009 at 10:17 PM, Wolfram Sang <w.sang@pengutronix.de> wrote:
+> Hi Grant,
+>
+> On Wed, Jun 17, 2009 at 08:55:01PM -0600, Grant Likely wrote:
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> Adds support for the dedicated SPI device on the Freescale MPC5200(b)
+>> SoC.
+>>
+>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>
+> do you have an updated version to share? Or is V4 still 'status quo'?
 
-Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com>
----
+V4 was supposed to go in during the merge window.  But I haven't heard
+anything from David (and I didn't pursue it either).  Unless David
+objects, I'll put it into either my -merge or my -next tree; depending
+on what Ben and Linus prefer.
 
-Index: powerpc/drivers/base/memory.c
-===================================================================
---- powerpc.orig/drivers/base/memory.c	2009-10-19 11:56:51.000000000 -0500
-+++ powerpc/drivers/base/memory.c	2009-10-19 11:59:36.000000000 -0500
-@@ -28,9 +28,10 @@
- 
- #define MEMORY_CLASS_NAME	"memory"
- 
--static struct sysdev_class memory_sysdev_class = {
-+struct sysdev_class memory_sysdev_class = {
- 	.name = MEMORY_CLASS_NAME,
- };
-+EXPORT_SYMBOL(memory_sysdev_class);
- 
- static const char *memory_uevent_name(struct kset *kset, struct kobject *kobj)
- {
-Index: powerpc/include/linux/memory_hotplug.h
-===================================================================
---- powerpc.orig/include/linux/memory_hotplug.h	2009-10-19 11:58:43.000000000 -0500
-+++ powerpc/include/linux/memory_hotplug.h	2009-10-19 11:59:36.000000000 -0500
-@@ -12,6 +12,8 @@
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- 
-+extern struct sysdev_class memory_sysdev_class;
-+
- /*
-  * Types for free bootmem.
-  * The normal smallest mapcount is -1. Here is smaller value than it.
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
