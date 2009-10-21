@@ -1,31 +1,21 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 80C7CB7B96
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 03:03:42 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9LFv1Zx018096
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 09:57:02 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n9LG3aWa170372
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 10:03:37 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n9LG3Ues006222
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 10:03:32 -0600
-Subject: Re: [PATCH 3/5 v4] Export memory_sysdev_class
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-In-Reply-To: <4ADF1E42.3020907@austin.ibm.com>
-References: <4ADF1C49.2030201@austin.ibm.com> <4ADF1E42.3020907@austin.ibm.com>
-Content-Type: text/plain
-Date: Wed, 21 Oct 2009 09:03:29 -0700
-Message-Id: <1256141009.23737.22.camel@nimitz>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id EC077B7B9F
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 04:06:47 +1100 (EST)
+Date: Wed, 21 Oct 2009 19:06:41 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v4] powerpc/5200: Add mpc5200-spi (non-PSC) device driver
+Message-ID: <20091021170641.GA3106@pengutronix.de>
+References: <20090618025030.12363.69402.stgit@localhost.localdomain>
+	<20091021131747.GG12819@pengutronix.de>
+	<fa686aa40910210745l7d19d6ecq303ee990bed82c62@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
+In-Reply-To: <fa686aa40910210745l7d19d6ecq303ee990bed82c62@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,17 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-10-21 at 09:44 -0500, Nathan Fontenot wrote:
-> Export the memory_sysdev_class structure.  This is needed so we can create
-> a 'release' file in sysfs in addition to the existing 'probe' file in
-> order to support DLPAR removal of memory on the powerpc/pseries platform.
-> The new 'release' file will be powerpc/pseries only.
 
-Please do it in generic code.  You may only need it on ppc today, but
-somebody else is going to want the same thing tomorrow on another arch.
+--UugvWAfsgieZRqgk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It's also nice to keep all of the stuff doing the actual sysfs munging
-in one place.  I know it'll cost a few stubs for calling in and out of
-arch code, but it should save some work down the road for somebody else.
 
--- Dave
+> V4 was supposed to go in during the merge window.  But I haven't heard
+> anything from David (and I didn't pursue it either).  Unless David
+> objects, I'll put it into either my -merge or my -next tree; depending
+> on what Ben and Linus prefer.
+
+I wondered if there was going to be a V5 as you said you fixed a few things
+according to my review and couldn't find an updated patch for that.
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--UugvWAfsgieZRqgk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkrfP6EACgkQD27XaX1/VRsh3QCePLvQeu0ERCeJvx2l5LrEtDY4
+/Q8An1B29qosnUF62OBV3AstrTFxSnJM
+=5evQ
+-----END PGP SIGNATURE-----
+
+--UugvWAfsgieZRqgk--
