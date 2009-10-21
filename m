@@ -1,21 +1,24 @@
-Return-Path: <jkacur@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 75E47B7BA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 08:54:26 +1100 (EST)
-Date: Wed, 21 Oct 2009 23:53:21 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
+Return-Path: <fweisbec@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
+	by ozlabs.org (Postfix) with ESMTP id 9881FB7B9F
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 09:16:25 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so3461195fga.3
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2009 15:16:23 -0700 (PDT)
+Date: Thu, 22 Oct 2009 00:16:21 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: John Kacur <jkacur@redhat.com>
 Subject: Re: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
-In-Reply-To: <20091021214537.GD4880@nowhere>
-Message-ID: <alpine.LFD.2.00.0910212350210.3526@localhost.localdomain>
+Message-ID: <20091021221619.GF4880@nowhere>
 References: <20091010153314.827301943@linutronix.de>
 	<20091010153349.966159859@linutronix.de>
 	<alpine.LFD.2.00.0910212305090.3526@localhost.localdomain>
 	<20091021212137.GB4880@nowhere>
 	<alpine.LFD.2.00.0910212327160.3526@localhost.localdomain>
 	<20091021214537.GD4880@nowhere>
+	<alpine.LFD.2.00.0910212350210.3526@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LFD.2.00.0910212350210.3526@localhost.localdomain>
 Cc: Arnd Bergmann <arndbergmann@googlemail.com>,
 	Jonathan Corbet <corbet@lwn.net>,
 	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
@@ -30,46 +33,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On Wed, 21 Oct 2009, Frederic Weisbecker wrote:
-
-> On Wed, Oct 21, 2009 at 11:33:17PM +0200, John Kacur wrote:
-> > > Should we better pushdown default_llseek to every to every
-> > > file operations that don't implement llseek?
-> > > I don't know how many of them don't implement llseek() though.
-> > > 
-> > > That said we can't continue anymore with this default attribution
-> > > of default_llseek() on new fops.
-> > > 
+On Wed, Oct 21, 2009 at 11:53:21PM +0200, John Kacur wrote:
+> > No problem with that. Setting no_llseek or generic_file_llseek_unlocked,
+> > depending on the context is the right thing to do.
 > > 
-> > If you don't explicitly set it to no_llseek, you automatically get the
-> > default_llseek, which uses the BKL. So if your driver doesn't need it, it 
-> > is best to explicitly set it to no_llseek.
+> > What I'm wondering about concerns the future code that will have
+> > no llsek() implemented in their fops.
+> > 
+> > We can't continue to use default_llseek() for future code unless we
+> > want to continue these post reviews and fixes forever.
+> > 
 > 
+> I'm thinking that the simplier approach, would be to make the 
+> default_llseek the unlocked one. Then you only have to audit the drivers 
+> that have the BKL - ie the ones we are auditing anyway, and explicitly set 
+> them to the bkl locked llseek.
 > 
-> Sure, that's the right thing to do.
-> 
->  
-> > There is also a generic_file_llseek_unlocked, somewhat analogous to the 
-> > unlocked_ioctls that you can use if you don't need to provide a full 
-> > llseek yourself.
-> 
-> 
-> No problem with that. Setting no_llseek or generic_file_llseek_unlocked,
-> depending on the context is the right thing to do.
-> 
-> What I'm wondering about concerns the future code that will have
-> no llsek() implemented in their fops.
-> 
-> We can't continue to use default_llseek() for future code unless we
-> want to continue these post reviews and fixes forever.
-> 
+> There might be a hidden interaction though between the non-unlocked 
+> variety of ioctls and default llseek though.
 
-I'm thinking that the simplier approach, would be to make the 
-default_llseek the unlocked one. Then you only have to audit the drivers 
-that have the BKL - ie the ones we are auditing anyway, and explicitly set 
-them to the bkl locked llseek.
 
-There might be a hidden interaction though between the non-unlocked 
-variety of ioctls and default llseek though.
+I fear that won't work because the bkl in default_llseek() does not
+only synchronizes with others uses of the bkl in a driver, it also
+synchronizes lseek() itself.
+
+As an example offset change is not atomic. This is a long long, so
+updating its value is not atomic in 32 bits archs.
