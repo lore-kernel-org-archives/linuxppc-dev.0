@@ -1,16 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 22 Oct 2009 09:10:33 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Lixin Yao <Lixin.Yao@HSTX.com>
-Subject: Re: Device Tree Corrupted after unflatten_device_tree()
-Message-ID: <20091021221033.GB12560@yookeroo.seuss>
-References: <03D77CA4AC7F4D48A6AB5DA3F1001B3FB5BB88@exchtxus2.HSTX.global.vpn>
-	<1256079691.8902.3.camel@concordia>
-	<03D77CA4AC7F4D48A6AB5DA3F1001B3FB5BB8B@exchtxus2.HSTX.global.vpn>
+Return-Path: <rob@landley.net>
+Received: from grelber.thyrsus.com
+	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
+	by ozlabs.org (Postfix) with ESMTP id B67D5B7BA4
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 22 Oct 2009 09:54:53 +1100 (EST)
+From: Rob Landley <rob@landley.net>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Serial console under current qemu: bisected.
+Date: Wed, 21 Oct 2009 17:54:48 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <03D77CA4AC7F4D48A6AB5DA3F1001B3FB5BB8B@exchtxus2.HSTX.global.vpn>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200910211754.49223.rob@landley.net>
+Cc: alan@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 21, 2009 at 10:43:55AM -0700, Lixin Yao wrote:
-> When corrupted, curtain blocks of 64 bytes are messed up.
-> This is a screen dump of a good unflattened device at beginning:
+Last week I reported a bug:
 
-[snip]
-> When corrupted, it becomes following, note the 64 bock at 0x03ffdf00
-> is messed up. And this kind of corruptions occur several times
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-October/076727.html
 
-[snip]
-> 03ffdf00 : ffffffff ffff000c db055be0 08060001  ..........[.....
-> 03ffdf10 : 08000604 0001000c db055be0 ac141001  ..........[.....
-> 03ffdf20 : 00000000 0000ac14 10530000 10530000  .........S...S..
-> 03ffdf30 : 08000604 0001000c 36681bfe f874c01e  ........6h...t..
+I managed to drill past the unrelated breakage and bisect it back to the 
+relevant commit: It was introduced leading up to 2.6.29, by commit 
+f751928e0ddf54ea4fe5546f35e99efc5b5d9938 written by Alan Cox.
 
-Uh, oh.  That looks like a broadcast ethernet packet (ARP,
-specifically).  Looks like a network device used by the firmware
-hasn't been quiesced properly before booting the kernel and is DMAing
-stuff straight on top of kernel memory.  You'll probably need a hook
-in the bootwrapper to shut down the ethernet.
+It seems to make the kernel panic as soon as IRQs are enabled in the presence 
+of CONFIG_SERIAL_PMACZILOG=y.  It's trivially reproducible under current qemu-
+git.  Kernels before that boot to a shell prompt, kernels after that panic as 
+soon as init launches.  (They work fine when you're not using a serial 
+console.)
 
-There are some examples of this in arch/powerpc/boot already - look
-for ibm4xx_quiesce_eth().
-
+Rob
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Latency is more important than throughput. It's that simple. - Linus Torvalds
