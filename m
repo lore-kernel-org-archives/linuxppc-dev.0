@@ -1,19 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AD8B2B7BB2
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2009 01:22:49 +1100 (EST)
-Subject: Re: How to mount rootfs though harddisk when booting?
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <e997b7420910220708i63b85ca1n256f332ddc6819c1@mail.gmail.com>
-Date: Thu, 22 Oct 2009 09:22:42 -0500
-Message-Id: <CAEDEFF6-55D3-43AA-BA6C-92D14CBA8A79@kernel.crashing.org>
-References: <e997b7420910220708i63b85ca1n256f332ddc6819c1@mail.gmail.com>
-To: "wilbur.chan" <wilbur512@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E7E3DB7BB6
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2009 02:31:28 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e38.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9MFQwgS003739
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 09:26:58 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n9MFVBRi122360
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 09:31:13 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id n9MFV6IM027653
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 09:31:07 -0600
+Message-ID: <4AE07AB7.2070901@austin.ibm.com>
+Date: Thu, 22 Oct 2009 10:31:03 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/5 v4] Export memory_sysdev_class
+References: <4ADF1C49.2030201@austin.ibm.com>	
+	<4ADF1E42.3020907@austin.ibm.com>
+	<1256141009.23737.22.camel@nimitz>
+In-Reply-To: <1256141009.23737.22.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,46 +38,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 22, 2009, at 9:08 AM, wilbur.chan wrote:
+Dave Hansen wrote:
+> On Wed, 2009-10-21 at 09:44 -0500, Nathan Fontenot wrote:
+>> Export the memory_sysdev_class structure.  This is needed so we can create
+>> a 'release' file in sysfs in addition to the existing 'probe' file in
+>> order to support DLPAR removal of memory on the powerpc/pseries platform.
+>> The new 'release' file will be powerpc/pseries only.
+> 
+> Please do it in generic code.  You may only need it on ppc today, but
+> somebody else is going to want the same thing tomorrow on another arch.
 
-> mpc85xx with sata harddisk,which has a rootfs on sda3.
->
-> I ' ve tried to use  freescale's kernel image , which is  togehther
-> with the mpc85xx board, to successfully mount the sda3 filesystem when
-> booting,
->
->
-> But when I used my own kernle, it failed:
->
->
->
-> I am using  kernel 2.6.21.7 to mount the harddisk as the rootfs.
->
-> However, it failed in booting and print:
->
->
-> VFS: Cannot open root device "sda3" or unknown-block(0,0)
->
-> My kernel's bootargs are as followed:
->
->
-> root=/dev/sda3 rw console=ttyS0,115200 console=tty0
->
->
-> I guess there were some incorrect configs when doing kernel
-> menuconfig,  I' ve set "ext2,ext3", and some "sata" ,"scsi" configs,
->
-> but that might be  not enough.
->
->
-> May anyone please give me some  suggestions?
->
-> THX in advance.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+I thought about this but wasn't sure if having the probe/release sysfs files
+for memory and cpu be in generic code would be accepted.
 
-Post the full kernel boot log.
+Would it be acceptable to put the new release file for memory under the
+ARCH_MEMORY_PROBE config option?  This would reduce the number of arch'es
+that would require stubs as it appears only powerpc and x86 define this.
 
-- k
+I could do the same thing for the cpu probe/release files and a new
+ARCH_CPU_PROBE config option which would eliminate the required stubs
+in arch'es other than powerpc right now.
+
+-Nathan Fontenot
+  
+> 
+> It's also nice to keep all of the stuff doing the actual sysfs munging
+> in one place.  I know it'll cost a few stubs for calling in and out of
+> arch code, but it should save some work down the road for somebody else.
+> 
+> -- Dave
+> 
