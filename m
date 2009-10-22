@@ -1,35 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 658C2B7BA6
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2009 03:07:16 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n9MG7Bqg016944
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 09:07:12 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n9MGAIX2002097
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 11:10:18 -0500 (CDT)
-Message-ID: <4AE08348.9000102@freescale.com>
-Date: Thu, 22 Oct 2009 11:07:36 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <Lixin.Yao@HSTX.com>
+Received: from mail.hstx.com (mail.hstx.com [64.95.133.106])
+	by ozlabs.org (Postfix) with ESMTP id 12EFDB7BB8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 23 Oct 2009 05:15:33 +1100 (EST)
 MIME-Version: 1.0
-To: Felix Radensky <felix@embedded-sol.com>
-Subject: Re: UBIFS problem on MPC8536DS
-References: <4AD5ADC9.30503@embedded-sol.com>
-	<4AD5C5B4.3060303@nokia.com>	<4AD5D053.9000901@embedded-sol.com>
-	<4AD5FFE7.7080703@nokia.com>	<4AD60EF4.4080306@embedded-sol.com>	<4AD614E4.6030005@freescale.com>
-	<4AD7811A.6040501@freescale.com>	<4AD7FE37.1060705@embedded-sol.com>
-	<20091016153128.GA11838@loki.buserror.net>
-	<4AE015DD.1010009@embedded-sol.com>
-In-Reply-To: <4AE015DD.1010009@embedded-sol.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Device Tree Corrupted after unflatten_device_tree()
+Date: Thu, 22 Oct 2009 11:14:34 -0700
+Message-ID: <03D77CA4AC7F4D48A6AB5DA3F1001B3FB5BB8C@exchtxus2.HSTX.global.vpn>
+In-Reply-To: <20091021221033.GB12560@yookeroo.seuss>
+References: <03D77CA4AC7F4D48A6AB5DA3F1001B3FB5BB88@exchtxus2.HSTX.global.vpn>
+	<1256079691.8902.3.camel@concordia>
+	<03D77CA4AC7F4D48A6AB5DA3F1001B3FB5BB8B@exchtxus2.HSTX.global.vpn>
+	<20091021221033.GB12560@yookeroo.seuss>
+From: "Lixin Yao" <Lixin.Yao@HSTX.com>
+To: "David Gibson" <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,16 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Felix Radensky wrote:
-> Are you aware of Freescale plans to fix the problem in new silicon 
-> revisions ?
+Hi, David/Michael,
 
-I don't know anything yet -- still trying to get in touch with the 
-relevant hardware people.
+Great great finding! I added halting FEC (the Ethernet controller in
+MPC866)=20
+in platforms_fixups() and the problem disappears.
 
-> Also, can you please tell what CPUs are affected by this, except 8536 
-> and 8572.
+Thank you very much!
 
-I suppose anything with an eLBC could be affected.
+Lixin
 
--Scott
+-----Original Message-----
+From: David Gibson [mailto:david@gibson.dropbear.id.au]=20
+Sent: Wednesday, October 21, 2009 6:11 PM
+To: Lixin Yao
+Cc: michael@ellerman.id.au; linuxppc-dev@lists.ozlabs.org
+Subject: Re: Device Tree Corrupted after unflatten_device_tree()
+
+On Wed, Oct 21, 2009 at 10:43:55AM -0700, Lixin Yao wrote:
+> When corrupted, curtain blocks of 64 bytes are messed up.
+> This is a screen dump of a good unflattened device at beginning:
+
+[snip]
+> When corrupted, it becomes following, note the 64 bock at 0x03ffdf00
+> is messed up. And this kind of corruptions occur several times
+
+[snip]
+> 03ffdf00 : ffffffff ffff000c db055be0 08060001  ..........[.....
+> 03ffdf10 : 08000604 0001000c db055be0 ac141001  ..........[.....
+> 03ffdf20 : 00000000 0000ac14 10530000 10530000  .........S...S..
+> 03ffdf30 : 08000604 0001000c 36681bfe f874c01e  ........6h...t..
+
+Uh, oh.  That looks like a broadcast ethernet packet (ARP,
+specifically).  Looks like a network device used by the firmware
+hasn't been quiesced properly before booting the kernel and is DMAing
+stuff straight on top of kernel memory.  You'll probably need a hook
+in the bootwrapper to shut down the ethernet.
+
+There are some examples of this in arch/powerpc/boot already - look
+for ibm4xx_quiesce_eth().
+
+--=20
+David Gibson			| I'll have my music baroque, and my
+code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_
+_other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
