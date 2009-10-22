@@ -1,32 +1,35 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A3210B7BBB
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2009 02:56:56 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e9.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9MFqldZ020880
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 11:52:47 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9MFuqfM052876
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 11:56:52 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n9M9wcmv009246
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 05:58:38 -0400
-Subject: Re: [PATCH 3/5 v4] Export memory_sysdev_class
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-In-Reply-To: <4AE07AB7.2070901@austin.ibm.com>
-References: <4ADF1C49.2030201@austin.ibm.com>
-	<4ADF1E42.3020907@austin.ibm.com> <1256141009.23737.22.camel@nimitz>
-	<4AE07AB7.2070901@austin.ibm.com>
-Content-Type: text/plain
-Date: Thu, 22 Oct 2009 08:56:46 -0700
-Message-Id: <1256227006.23737.784.camel@nimitz>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 658C2B7BA6
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2009 03:07:16 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n9MG7Bqg016944
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 09:07:12 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n9MGAIX2002097
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2009 11:10:18 -0500 (CDT)
+Message-ID: <4AE08348.9000102@freescale.com>
+Date: Thu, 22 Oct 2009 11:07:36 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Felix Radensky <felix@embedded-sol.com>
+Subject: Re: UBIFS problem on MPC8536DS
+References: <4AD5ADC9.30503@embedded-sol.com>
+	<4AD5C5B4.3060303@nokia.com>	<4AD5D053.9000901@embedded-sol.com>
+	<4AD5FFE7.7080703@nokia.com>	<4AD60EF4.4080306@embedded-sol.com>	<4AD614E4.6030005@freescale.com>
+	<4AD7811A.6040501@freescale.com>	<4AD7FE37.1060705@embedded-sol.com>
+	<20091016153128.GA11838@loki.buserror.net>
+	<4AE015DD.1010009@embedded-sol.com>
+In-Reply-To: <4AE015DD.1010009@embedded-sol.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +39,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-10-22 at 10:31 -0500, Nathan Fontenot wrote:
-> Dave Hansen wrote:
-> > On Wed, 2009-10-21 at 09:44 -0500, Nathan Fontenot wrote:
-> >> Export the memory_sysdev_class structure.  This is needed so we can create
-> >> a 'release' file in sysfs in addition to the existing 'probe' file in
-> >> order to support DLPAR removal of memory on the powerpc/pseries platform.
-> >> The new 'release' file will be powerpc/pseries only.
-> > 
-> > Please do it in generic code.  You may only need it on ppc today, but
-> > somebody else is going to want the same thing tomorrow on another arch.
-> 
-> I thought about this but wasn't sure if having the probe/release sysfs files
-> for memory and cpu be in generic code would be accepted.
+Felix Radensky wrote:
+> Are you aware of Freescale plans to fix the problem in new silicon 
+> revisions ?
 
-Although we don't want to pollute the generic code with lots of per-arch
-cruft, this still looks pretty generic to me.  It is also really nice to
-have all of the sysfs files for one directory be in a single place in
-the source.
+I don't know anything yet -- still trying to get in touch with the 
+relevant hardware people.
 
-> Would it be acceptable to put the new release file for memory under the
-> ARCH_MEMORY_PROBE config option?
+> Also, can you please tell what CPUs are affected by this, except 8536 
+> and 8572.
 
-That sounds fine to me.  It may need a slightly tuned name if you can
-think of anything better.  I can't off the top of my head.
+I suppose anything with an eLBC could be affected.
 
-x86's is really only there for testing reasons.   I would use mem= to
-shrink a machine's memory at boot then use the probe file to re-add it
-later.  I did that before I had hardware that could do real hotplug.
-
-> This would reduce the number of arch'es
-> that would require stubs as it appears only powerpc and x86 define this.
-
-Yeah, that'd be a nice side-effect I guess.
-
--- Dave
+-Scott
