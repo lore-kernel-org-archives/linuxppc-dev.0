@@ -1,13 +1,23 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 2B2B6B7BBB
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2009 22:26:12 +1100 (EST)
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: spi-devel-general@lists.sourceforge.net
-Subject: [PATCH] spi/mpc52xx: check for invalid PSC usage
-Date: Fri, 23 Oct 2009 13:25:57 +0200
-Message-Id: <1256297157-28246-1-git-send-email-w.sang@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>
+Return-Path: <pavel@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+	[195.113.26.193]) by ozlabs.org (Postfix) with ESMTP id E229CB7BB2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 24 Oct 2009 03:07:18 +1100 (EST)
+Date: Fri, 23 Oct 2009 18:07:11 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v9 PATCH 4/9]: x86: refactor x86 idle power management code
+	and remove all instances of pm_idle.
+Message-ID: <20091023160711.GB1431@ucw.cz>
+References: <20091016093850.GB27350@linux.vnet.ibm.com>
+	<20091016094308.GF27350@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091016094308.GF27350@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,46 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add checks to allow only PSCs capable of SPI.
-Also turn printk to dev_err while we are here.
+On Fri 2009-10-16 15:13:08, Arun R Bharadwaj wrote:
+> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-16 15:08:50]:
+> 
+> This patch cleans up x86 of all instances of pm_idle.
+> 
+> pm_idle which was earlier called from cpu_idle() idle loop
+> is replaced by cpuidle_idle_call.
+> 
+> x86 also registers to cpuidle when the idle routine is selected,
+> by populating the cpuidle_device data structure for each cpu.
+> 
+> This is replicated for apm module and for xen, which also used pm_idle.
+> 
+> 
+> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+> ---
+>  arch/x86/kernel/apm_32.c      |   55 ++++++++++++++++++++++++-
+>  arch/x86/kernel/process.c     |   90 ++++++++++++++++++++++++++++++++----------
+>  arch/x86/kernel/process_32.c  |    3 -
+>  arch/x86/kernel/process_64.c  |    3 -
+>  arch/x86/xen/setup.c          |   40 ++++++++++++++++++
+>  drivers/acpi/processor_core.c |    9 ++--
+>  drivers/cpuidle/cpuidle.c     |   16 +++++--
+>  7 files changed, 182 insertions(+), 34 deletions(-)
+...
+> +static int local_idle_loop(struct cpuidle_device *dev, struct cpuidle_state *st)
+> +{
+> +	ktime_t t1, t2;
+> +	s64 diff;
+> +	int ret;
+> +
+> +	t1 = ktime_get();
+> +	local_idle();
+> +	t2 = ktime_get();
+> +
+> +	diff = ktime_to_us(ktime_sub(t2, t1));
+> +	if (diff > INT_MAX)
+> +		diff = INT_MAX;
+> +	ret = (int) diff;
+> +
+> +	return ret;
+> +}
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
----
+So we get this routine essentially 3 times. Is there no way to share
+the code?
 
-Grant, if the patch is OK, maybe it can also go via your tree?
-
- drivers/spi/mpc52xx_psc_spi.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
-index 1b74d5c..1d11a6d 100644
---- a/drivers/spi/mpc52xx_psc_spi.c
-+++ b/drivers/spi/mpc52xx_psc_spi.c
-@@ -467,19 +467,18 @@ static int __init mpc52xx_psc_spi_of_probe(struct of_device *op,
- 
- 	regaddr_p = of_get_address(op->node, 0, &size64, NULL);
- 	if (!regaddr_p) {
--		printk(KERN_ERR "Invalid PSC address\n");
-+		dev_err(&op->dev, "Invalid PSC address\n");
- 		return -EINVAL;
- 	}
- 	regaddr64 = of_translate_address(op->node, regaddr_p);
- 
--	/* get PSC id (1..6, used by port_config) */
-+	/* get PSC id (only 1,2,3,6 can do SPI) */
- 	if (op->dev.platform_data == NULL) {
- 		const u32 *psc_nump;
- 
- 		psc_nump = of_get_property(op->node, "cell-index", NULL);
--		if (!psc_nump || *psc_nump > 5) {
--			printk(KERN_ERR "mpc52xx_psc_spi: Device node %s has invalid "
--					"cell-index property\n", op->node->full_name);
-+		if (!psc_nump || (*psc_nump > 2 && *psc_nump != 5)) {
-+			dev_err(&op->dev, "PSC can't do SPI\n");
- 			return -EINVAL;
- 		}
- 		id = *psc_nump + 1;
 -- 
-1.6.3.3
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
