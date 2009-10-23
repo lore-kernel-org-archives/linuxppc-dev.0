@@ -1,19 +1,13 @@
-Return-Path: <memorylost@tin.it>
-Received: from smtp-out01.alice.it (smtp-out01.alice.it [85.33.2.12])
-	by ozlabs.org (Postfix) with ESMTP id 37BD8B7BBC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Oct 2009 21:00:13 +1100 (EST)
-Message-ID: <4AE17E97.40907@tin.it>
-Date: Fri, 23 Oct 2009 11:59:51 +0200
-From: LD <memorylost@tin.it>
-MIME-Version: 1.0
-To: Chen Hongjun-R66092 <hong-jun.chen@freescale.com>
-Subject: Re: MPC5121e DIU driver - kernel crash writing alpha component
-References: <4AE1585E.60002@tin.it>
-	<3A45394FD742FA419B760BB8D398F9ED8F6CF3@zch01exm26.fsl.freescale.net>
-In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED8F6CF3@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux ppc mailing list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 2B2B6B7BBB
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2009 22:26:12 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: spi-devel-general@lists.sourceforge.net
+Subject: [PATCH] spi/mpc52xx: check for invalid PSC usage
+Date: Fri, 23 Oct 2009 13:25:57 +0200
+Message-Id: <1256297157-28246-1-git-send-email-w.sang@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,70 +17,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Add checks to allow only PSCs capable of SPI.
+Also turn printk to dev_err while we are here.
 
-Hi Chen,
-many thanks for your very fast answer.
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+---
 
-If I understand well, the situation is as follows:
+Grant, if the patch is OK, maybe it can also go via your tree?
 
-32 bits mode, plane1 - if I write any alpha component != 0 I have a system hang
-; writing alpha components in any other plane is ok.
+ drivers/spi/mpc52xx_psc_spi.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-- -----
-
-- From my first tries I had lockups also in 16 bits 5-6-5 modes, but in this
-moment I cannot precisely track down things.
-Is there something I cannot do in plane1 in 16 bits modes ?
-
-- -----
-
-With the previous processor stepping I was not experiencing this problem ; is it
-something specific from 0M36P ?
-
-- -----
-
-- From this, if I cannot write something in plane1 I would think about a kernel
-display driver patch: a user program ->can not<- lock the system by writing
-something wrong.
-So... two paths:
-
-- - do not "publish" plane1 as /dev/fb0, but plane2 will be /dev/fb0
-or
-- - see suggestion about double buffering and filtering alpha components
-
-Thanks,
-best regards
-
-Lucio Dona'
-
-Chen Hongjun-R66092 wrote:
->> Hi, 
-> 
->> Pls refer to my comment embedded. 
-> 
-> 
-> The board is booting ok (NFS), but my user space app keeps 
-> crashing the kernel.
-> 
-> If, from user space, I write some alpha component != 0 in 
-> this plane then I have a complete system crash.
-> The reference pdf says "There is no alpha component defined 
-> for plane1 because there are no planes behind it."
-> 
-> 
->> Sure, panel0 doesn't support alpha function, so you can't operate it.
-> 
-> 
->> You can replace panel0 with panel1, which can support alpha function.
-> 
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iD8DBQFK4X6XvxHCsvXy9okRApsxAJ40VJ+2/+sP4XW1qoviZlQm6m+0HQCgjkmB
-p2zNmK+Eyf++r9w0fEQxZxs=
-=HWm0
------END PGP SIGNATURE-----
+diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
+index 1b74d5c..1d11a6d 100644
+--- a/drivers/spi/mpc52xx_psc_spi.c
++++ b/drivers/spi/mpc52xx_psc_spi.c
+@@ -467,19 +467,18 @@ static int __init mpc52xx_psc_spi_of_probe(struct of_device *op,
+ 
+ 	regaddr_p = of_get_address(op->node, 0, &size64, NULL);
+ 	if (!regaddr_p) {
+-		printk(KERN_ERR "Invalid PSC address\n");
++		dev_err(&op->dev, "Invalid PSC address\n");
+ 		return -EINVAL;
+ 	}
+ 	regaddr64 = of_translate_address(op->node, regaddr_p);
+ 
+-	/* get PSC id (1..6, used by port_config) */
++	/* get PSC id (only 1,2,3,6 can do SPI) */
+ 	if (op->dev.platform_data == NULL) {
+ 		const u32 *psc_nump;
+ 
+ 		psc_nump = of_get_property(op->node, "cell-index", NULL);
+-		if (!psc_nump || *psc_nump > 5) {
+-			printk(KERN_ERR "mpc52xx_psc_spi: Device node %s has invalid "
+-					"cell-index property\n", op->node->full_name);
++		if (!psc_nump || (*psc_nump > 2 && *psc_nump != 5)) {
++			dev_err(&op->dev, "PSC can't do SPI\n");
+ 			return -EINVAL;
+ 		}
+ 		id = *psc_nump + 1;
+-- 
+1.6.3.3
