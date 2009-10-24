@@ -1,15 +1,15 @@
 Return-Path: <wilbur512@gmail.com>
 Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
-	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 0B1F0B7BCA
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2009 18:20:03 +1100 (EST)
-Received: by yxe8 with SMTP id 8so9407415yxe.17
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2009 00:20:01 -0700 (PDT)
+	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 6F76DB7BCA
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2009 18:25:24 +1100 (EST)
+Received: by yxe8 with SMTP id 8so9409262yxe.17
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2009 00:25:23 -0700 (PDT)
 MIME-Version: 1.0
 In-Reply-To: <CAEDEFF6-55D3-43AA-BA6C-92D14CBA8A79@kernel.crashing.org>
 References: <e997b7420910220708i63b85ca1n256f332ddc6819c1@mail.gmail.com>
 	<CAEDEFF6-55D3-43AA-BA6C-92D14CBA8A79@kernel.crashing.org>
-Date: Sat, 24 Oct 2009 15:20:01 +0800
-Message-ID: <e997b7420910240020s32e07cdcr65c007242792ba1e@mail.gmail.com>
+Date: Sat, 24 Oct 2009 15:25:22 +0800
+Message-ID: <e997b7420910240025j59361f09oea3b4df67d8dac68@mail.gmail.com>
 Subject: Re: How to mount rootfs though harddisk when booting?
 From: "wilbur.chan" <wilbur512@gmail.com>
 To: Kumar Gala <galak@kernel.crashing.org>
@@ -25,130 +25,173 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 2009/10/22 Kumar Gala <galak@kernel.crashing.org>:
-
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
 > Post the full kernel boot log.
 >
 > - k
 >
 
-This is my booting  log using ramdisk, I want to mount sata disk after
-booting. However, sata disk module seemed not to be installed
-properly, system only found 8M of it,as a matter of fact
+And this is the booting log of freescale linux kernel, which
+successfully mount the sata disk (sda3) as the rootfs:
 
-p2020ds board has 160 GB disk space.
-
-
-Detail:
 
 Using P2020 DS machine description
 Memory CAM mapping: CAM0=256Mb, CAM1=256Mb, CAM2=256Mb residual: 1280Mb
-Linux version 2.6.21.7-EMBSYS-CGEL-3.04.10.P6.F7.B2 (root@localhost.localdomain)
- (gcc version 4.1.2 20070626 (Red Hat 4.1.2-14)) #7 SMP PREEMPT Thu Oct 22 09:10
-:31 CST 2009
-Found initrd at 0xefbf6000:0xeffff1d6
+Linux version 2.6.28.1-00295-g6dbbaa6-dirty (ted@xeon2) (gcc version 4.2.3 (Sour
+cery G++ Lite 4.2-171)) #1 SMP Thu Mar 5 14:31:02 CST 2009
+CPU maps initialized for 1 thread per core
+console [udbg0] enabled
 setup_arch: bootmem
 mpc85xx_ds_setup_arch()
-Found FSL PCI host bridge at 0x00000000ffe09000.Firmware bus number: 0->2
- ->Hose at 0xc05a8000, cfg_addr=0xfdffd000,cfg_data=0xfdffd004
-Found FSL PCI host bridge at 0x00000000ffe08000.Firmware bus number: 0->0
- ->Hose at 0xc05a8100, cfg_addr=0xfdfeb000,cfg_data=0xfdfeb004
-Found FSL PCI host bridge at 0x00000000ffe0a000.Firmware bus number: 0->0
- ->Hose at 0xc05a8200, cfg_addr=0xfdfd9000,cfg_data=0xfdfd9004
+Found FSL PCI host bridge at 0x00000000ffe09000. Firmware bus number: 0->2
+PCI host bridge /pcie@ffe09000 (primary) ranges:
+ MEM 0x00000000a0000000..0x00000000bfffffff -> 0x00000000a0000000
+  IO 0x00000000ffc10000..0x00000000ffc1ffff -> 0x0000000000000000
+Found FSL PCI host bridge at 0x00000000ffe08000. Firmware bus number: 0->0
+PCI host bridge /pcie@ffe08000  ranges:
+ MEM 0x0000000080000000..0x000000009fffffff -> 0x0000000080000000
+  IO 0x00000000ffc00000..0x00000000ffc0ffff -> 0x0000000000000000
+Found FSL PCI host bridge at 0x00000000ffe0a000. Firmware bus number: 0->0
+PCI host bridge /pcie@ffe0a000  ranges:
+ MEM 0x00000000c0000000..0x00000000dfffffff -> 0x00000000c0000000
+  IO 0x00000000ffc20000..0x00000000ffc2ffff -> 0x0000000000000000
 MPC85xx DS board from Freescale Semiconductor
 arch: exit
 Zone PFN ranges:
-  DMA             0 ->   196608
-  Normal     196608 ->   196608
-  HighMem    196608 ->   524288
+  DMA      0x00000000 -> 0x00030000
+  Normal   0x00030000 -> 0x00030000
+  HighMem  0x00030000 -> 0x00080000
+Movable zone start PFN for each node
 early_node_map[1] active PFN ranges
-    0:        0 ->   524288
-Built 1 zonelists.  Total pages: 520192
-system bbx : start(phy)=0x5c8000 ,start(vir)=0xc05c8000 , size = 0x5ffc
-Kernel command line: root=/dev/ram console=ttyS0,115200
+    0: 0x00000000 -> 0x00080000
+MMU: Allocated 1088 bytes of context maps for 255 contexts
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 520192
+Kernel command line: root=/dev/sda3 rw console=ttyS0,115200
 mpic: Setting up MPIC " OpenPIC  " version 1.2 at ffe40000, max 2 CPUs
-mpic: ISU size: 108, shift: 7, mask: 7f
-mpic: Initializing for 108 sources
-hwtimer: Added openpic_timer (PowerPC kernel OpenPIC timer) at index=0
+mpic: ISU size: 256, shift: 8, mask: ff
+mpic: Initializing for 256 sources
 i8259 legacy interrupt controller initialized
 PID hash table entries: 4096 (order: 12, 16384 bytes)
-
-Using P2020 DS machine description
-Memory CAM mapping: CAM0=256Mb, CAM1=256Mb, CAM2=256Mb residual: 1280Mb
-Linux version 2.6.21.7-EMBSYS-CGEL-3.04.10.P6.F7.B2 (root@localhost.localdomain)
- (gcc version 4.1.2 20070626 (Red Hat 4.1.2-14)) #7 SMP PREEMPT Thu Oct 22 09:10
-:31 CST 2009
-Found initrd at 0xefbf6000:0xeffff1d6
-Found FSL PCI host bridge at 0x00000000ffe09000.Firmware bus number: 0->2
- ->Hose at 0xc05a8000, cfg_addr=0xfdffd000,cfg_data=0xfdffd004
-Found FSL PCI host bridge at 0x00000000ffe08000.Firmware bus number: 0->0
- ->Hose at 0xc05a8100, cfg_addr=0xfdfeb000,cfg_data=0xfdfeb004
-Found FSL PCI host bridge at 0x00000000ffe0a000.Firmware bus number: 0->0
- ->Hose at 0xc05a8200, cfg_addr=0xfdfd9000,cfg_data=0xfdfd9004
-MPC85xx DS board from Freescale Semiconductor
-Zone PFN ranges:
-  DMA             0 ->   196608
-  Normal     196608 ->   196608
-  HighMem    196608 ->   524288
-early_node_map[1] active PFN ranges
-    0:        0 ->   524288
-Built 1 zonelists.  Total pages: 520192
-system bbx : start(phy)=0x5c8000 ,start(vir)=0xc05c8000 , size = 0x5ffc
-Kernel command line: root=/dev/ram console=ttyS0,115200
-mpic: Setting up MPIC " OpenPIC  " version 1.2 at ffe40000, max 2 CPUs
-mpic: ISU size: 108, shift: 7, mask: 7f
-mpic: Initializing for 108 sources
-hwtimer: Added openpic_timer (PowerPC kernel OpenPIC timer) at index=0
-i8259 legacy interrupt controller initialized
-PID hash table entries: 4096 (order: 12, 16384 bytes)
+clocksource: timebase mult[400029f] shift[22] registered
+Console: colour dummy device 80x25
 Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
 Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-Memory: 2068844k/2097152k available (5232k kernel code, 1338008k reserved, 292k
-data, 194k bss, 192k init)
+Memory: 2073196k/2097152k available (5300k kernel code, 23088k reserved, 168k da
+ta, 186k bss, 220k init)
+SLUB: Genslabs=12, HWalign=32, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+Calibrating delay loop... 124.67 BogoMIPS (lpj=249344)
 Mount-cache hash table entries: 512
 mpic: requesting IPIs ...
 Processor 1 found.
-Synchronizing timebase
-Got ack
-Min 6 (score -99), Max 7 (score 299)
-Final offset: 6 (101/300)
 Brought up 2 CPUs
+net_namespace: 496 bytes
 NET: Registered protocol family 16
+
 PCI: Probing PCI hardware
-PCI: 0000:00:00.0: class b20 doesn't match header type 01. Ignoring class.
-PCI: Transparent bridge - 0000:01:00.0
-PCI: 0001:03:00.0: class b20 doesn't match header type 01. Ignoring class.
-PCI: 0002:05:00.0: class b20 doesn't match header type 01. Ignoring class.
-Generic PHY: Registered new driver
+pci 0000:00:00.0: ignoring class b20 (doesn't match header type 01)
+pci 0000:00:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:00.0: PME# disabled
+pci 0000:01:00.0: PME# supported from D0 D3hot D3cold
+pci 0000:01:00.0: PME# disabled
+pci 0000:02:1c.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:02:1c.0: PME# disabled
+pci 0000:02:1c.1: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:02:1c.1: PME# disabled
+pci 0000:02:1c.2: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:02:1c.2: PME# disabled
+pci 0000:02:1c.3: PME# supported from D0 D3hot D3cold
+pci 0000:02:1c.3: PME# disabled
+pci 0000:02:1f.1: PME# supported from D3hot
+pci 0000:02:1f.1: PME# disabled
+pci 0000:01:00.0: transparent bridge
+pci 0001:03:00.0: ignoring class b20 (doesn't match header type 01)
+pci 0001:03:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0001:03:00.0: PME# disabled
+pci 0002:05:00.0: ignoring class b20 (doesn't match header type 01)
+pci 0002:05:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0002:05:00.0: PME# disabled
+pci 0000:01:00.0: PCI bridge, secondary bus 0000:02
+pci 0000:01:00.0:   IO window: 0x1000-0x1fff
+pci 0000:01:00.0:   MEM window: 0xa0000000-0xa00fffff
+pci 0000:01:00.0:   PREFETCH window: disabled
+pci 0000:00:00.0: PCI bridge, secondary bus 0000:01
+pci 0000:00:00.0:   IO window: 0x00-0xffff
+pci 0000:00:00.0:   MEM window: 0xa0000000-0xbfffffff
+pci 0000:00:00.0:   PREFETCH window: disabled
+pci 0000:00:00.0: enabling device (0106 -> 0107)
+pci 0001:03:00.0: PCI bridge, secondary bus 0001:04
+pci 0001:03:00.0:   IO window: 0x00-0xffff
+pci 0001:03:00.0:   MEM window: 0x80000000-0x9fffffff
+pci 0001:03:00.0:   PREFETCH window: disabled
+pci 0001:03:00.0: enabling device (0106 -> 0107)
+pci 0002:05:00.0: PCI bridge, secondary bus 0002:06
+pci 0002:05:00.0:   IO window: 0x00-0xffff
+pci 0002:05:00.0:   MEM window: 0xc0000000-0xdfffffff
+pci 0002:05:00.0:   PREFETCH window: disabled
+pci 0002:05:00.0: enabling device (0106 -> 0107)
+bus: 00 index 0 io port: [0x00-0xffff]
+bus: 00 index 1 mmio: [0xa0000000-0xbfffffff]
+bus: 01 index 0 io port: [0x00-0xffff]
+bus: 01 index 1 mmio: [0xa0000000-0xbfffffff]
+bus: 01 index 2 mmio: [0x0-0x0]
+bus: 01 index 3 mmio: [0x0-0x0]
+bus: 02 index 0 io port: [0x1000-0x1fff]
+bus: 02 index 1 mmio: [0xa0000000-0xa00fffff]
+bus: 02 index 2 mmio: [0x0-0x0]
+bus: 02 index 3 io port: [0x00-0xffff]
+bus: 02 index 4 mmio: [0xa0000000-0xbfffffff]
+bus: 02 index 5 mmio: [0x0-0x0]
+bus: 02 index 6 mmio: [0x0-0x0]
+bus: 03 index 0 io port: [0xfffee000-0xffffdfff]
+bus: 03 index 1 mmio: [0x80000000-0x9fffffff]
+bus: 04 index 0 io port: [0xfffee000-0xffffdfff]
+bus: 04 index 1 mmio: [0x80000000-0x9fffffff]
+bus: 04 index 2 mmio: [0x0-0x0]
+bus: 04 index 3 mmio: [0x0-0x0]
+bus: 05 index 0 io port: [0xfffdc000-0xfffebfff]
+bus: 05 index 1 mmio: [0xc0000000-0xdfffffff]
+bus: 06 index 0 io port: [0xfffdc000-0xfffebfff]
+bus: 06 index 1 mmio: [0xc0000000-0xdfffffff]
+bus: 06 index 2 mmio: [0x0-0x0]
+bus: 06 index 3 mmio: [0x0-0x0]
 SCSI subsystem initialized
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
 NET: Registered protocol family 2
 IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
-TCP established hash table entries: 131072 (order: 9, 2097152 bytes)
-TCP bind hash table entries: 65536 (order: 7, 786432 bytes)
+TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
+TCP bind hash table entries: 65536 (order: 7, 524288 bytes)
 TCP: Hash tables configured (established 131072 bind 65536)
 TCP reno registered
-Unpacking initramfs... done
-Freeing initrd memory: 4132k freed
+NET: Registered protocol family 1
 mpc85xx_spi_init >>
-No valid ESPI Node found
 audit: initializing netlink socket (disabled)
-audit(1.756:1): initialized
+type=2000 audit(0.720:1): initialized
 highmem bounce pool size: 64 pages
 Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+NTFS driver 2.1.29 [Flags: R/O].
+msgmni has been set to 1490
+alg: No test for cipher_null (cipher_null-generic)
+alg: No test for digest_null (digest_null-generic)
+alg: No test for compress_null (compress_null-generic)
+alg: No test for stdrng (krng)
 io scheduler noop registered
 io scheduler anticipatory registered
 io scheduler deadline registered
 io scheduler cfq registered (default)
-Time: timebase clocksource has been installed.
-Generic RTC Driver v1.07
-Macintosh non-volatile memory driver v1.1
-Serial: 8250/16550 driver $Revision: 1.90 $ 2 ports, IRQ sharing enabled
-serial8250.0: ttyS0 at MMIO map 0xffe04500 mem 0xf1000500 (irq = 42) is a 16550A
-serial8250.0: ttyS1 at MMIO map 0xffe04600 mem 0xf1002600 (irq = 42) is a 16550A
+Generic non-volatile memory driver v1.1
+Serial: 8250/16550 driver2 ports, IRQ sharing enabled
+serial8250.0: ttyS0 at MMIO 0xffe04500 (irq = 42) is a 16550A
+                                                             console handover: b
+oot [udbg0] -> real [ttyS0]
+serial8250.0: ttyS1 at MMIO 0xffe04600 (irq = 42) is a 16550A
+brd: module loaded
+loop: module loaded
+nbd: registered device at major 43
+e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
+e1000e: Copyright (c) 1999-2008 Intel Corporation.
+Gianfar MII Bus: probed
+Gianfar MII Bus: probed
 Gianfar MII Bus: probed
 eth0: Gianfar Ethernet Controller Version 1.2, 00:e0:0c:02:00:fd
 eth0: Running with NAPI enabled
@@ -159,93 +202,130 @@ eth1: 256/256 RX/TX BD ring size
 eth2: Gianfar Ethernet Controller Version 1.2, 00:e0:0c:02:02:fd
 eth2: Running with NAPI enabled
 eth2: 256/256 RX/TX BD ring size
-Vitesse VSC8244: Registered new driver
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-Loading iSCSI transport class v2.0-724.
-iscsi: registered transport (tcp)
-Loading Adaptec I2O RAID: Version 2.4 Build 5go
-Detecting Adaptec I2O RAID controllers...
-Adaptec aacraid driver (1.1-5[2423]-mh3)
-aic94xx: Adaptec aic94xx SAS/SATA driver version 1.0.3 loaded
-__ioremap(): phys addr 000c8000 is RAM lr c027318c
-__ioremap(): phys addr 000ca000 is RAM lr c027318c
-__ioremap(): phys addr 000ce000 is RAM lr c027318c
-__ioremap(): phys addr 000de000 is RAM lr c027318c
-__ioremap(): phys addr 000cc000 is RAM lr c027318c
-__ioremap(): phys addr 000d0000 is RAM lr c027318c
-__ioremap(): phys addr 000e0000 is RAM lr c027318c
-scsi: <fdomain> Detection failed (no card)
-QLogic Fibre Channel HBA Driver
-iscsi: registered transport (qla4xxx)
-QLogic iSCSI HBA Driver
-Emulex LightPulse Fibre Channel SCSI driver 8.1.11
-Copyright(c) 2004-2006 Emulex.  All rights reserved.
-DC390: clustering now enabled by default. If you get problems load
-        with "disable_clustering=1" and report to maintainers
-megasas: 00.00.03.10-rc1 Wed Feb 14 10:14:25 PST 2007
-3ware Storage Controller device driver for Linux v1.26.02.002.
-3ware 9000 Storage Controller device driver for Linux v2.26.02.008.
-nsp32: loading...
-RocketRAID 3xxx SATA Controller driver v1.0 (060426)
-stex: Promise SuperTrak EX Driver version: 3.1.0.1
-scsi0 : scsi_debug, version 1.81 [20070104], dev_size_mb=8, opts=0x0
-scsi 0:0:0:0: Direct-Access     Linux    scsi_debug       0004 PQ: 0 ANSI: 5
-SCSI device sda: 16384 512-byte hdwr sectors (8 MB)
-sda: Write Protect is off
-SCSI device sda: write cache: enabled, read cache: enabled, supports DPO and FUA
-SCSI device sda: 16384 512-byte hdwr sectors (8 MB)
-sda: Write Protect is off
-SCSI device sda: write cache: enabled, read cache: enabled, supports DPO and FUA
- sda: unknown partition table
-sd 0:0:0:0: Attached scsi disk sda
-sd 0:0:0:0: Attached scsi generic sg0 type 0
+sky2 driver version 1.22
+st: Version 20080504, fixed bufsize 32768, s/g segs 256
+Driver 'st' needs updating - please use bus_type methods
+Driver 'sd' needs updating - please use bus_type methods
+Driver 'sr' needs updating - please use bus_type methods
 ahci 0000:02:1f.1: AHCI 0001.0000 32 slots 4 ports 3 Gbps 0xf impl SATA mode
-ahci 0000:02:1f.1: flags: ncq ilck pm led clo pmp pio slum part
-ata1: SATA max UDMA/133 cmd 0xf1812500 ctl 0x00000000 bmdma 0x00000000 irq 18
-ata2: SATA max UDMA/133 cmd 0xf1812580 ctl 0x00000000 bmdma 0x00000000 irq 18
-ata3: SATA max UDMA/133 cmd 0xf1812600 ctl 0x00000000 bmdma 0x00000000 irq 18
-ata4: SATA max UDMA/133 cmd 0xf1812680 ctl 0x00000000 bmdma 0x00000000 irq 18
+ahci 0000:02:1f.1: flags: ncq sntf ilck pm led clo pmp pio slum part
+scsi0 : ahci
 scsi1 : ahci
-ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata1.00: qc timeout (cmd 0xec)
-ata1.00: failed to IDENTIFY (I/O error, err_mask=0x104)
-ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata1.00: qc timeout (cmd 0xec)
-ata1.00: failed to IDENTIFY (I/O error, err_mask=0x104)
-ata1.00: limiting speed to UDMA7:PIO5
-ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata1.00: qc timeout (cmd 0xec)
-ata1.00: failed to IDENTIFY (I/O error, err_mask=0x104)
-ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
 scsi2 : ahci
-ata2: SATA link down (SStatus 0 SControl 300)
 scsi3 : ahci
+ata1: SATA max UDMA/133 abar m1024@0xa0003400 port 0xa0003500 irq 18
+ata2: SATA max UDMA/133 abar m1024@0xa0003400 port 0xa0003580 irq 18
+ata3: SATA max UDMA/133 abar m1024@0xa0003400 port 0xa0003600 irq 18
+ata4: SATA max UDMA/133 abar m1024@0xa0003400 port 0xa0003680 irq 18
+ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+ata1.00: ATA-8: Hitachi HDP725016GLA380, GMBOA52A, max UDMA/133
+ata1.00: 312581808 sectors, multi 0: LBA48 NCQ (depth 31/32)
+ata1.00: configured for UDMA/133
+ata2: SATA link down (SStatus 0 SControl 300)
 ata3: SATA link down (SStatus 0 SControl 300)
-scsi4 : ahci
 ata4: SATA link down (SStatus 0 SControl 300)
-ata5: PATA max UDMA/133 cmd 0xfdfee000 ctl 0xfdfee00a bmdma 0xfdfee020 irq 18
-ata6: PATA max UDMA/133 cmd 0xfdfee010 ctl 0xfdfee01a bmdma 0xfdfee028 irq 18
+scsi 0:0:0:0: Direct-Access     ATA      Hitachi HDP72501 GMBO PQ: 0 ANSI: 5
+sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors: (160 GB/149 GiB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO
+ or FUA
+sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors: (160 GB/149 GiB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO
+ or FUA
+ sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+sd 0:0:0:0: [sda] Attached SCSI disk
+sd 0:0:0:0: Attached scsi generic sg0 type 0
+scsi4 : pata_ali
 scsi5 : pata_ali
-scsi6 : pata_ali
-Fusion MPT base driver 3.04.04
-Copyright (c) 1999-2007 LSI Logic Corporation
-Fusion MPT SPI Host driver 3.04.04
-Fusion MPT FC Host driver 3.04.04
-Fusion MPT SAS Host driver 3.04.04
-Fusion MPT misc device (ioctl) driver 3.04.04
-mptctl: Registered with Fusion MPT base driver
-mptctl: /dev/mptctl @ (major,minor=10,220)
-device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
+ata5: PATA max UDMA/133 cmd 0x1000 ctl 0x1008 bmdma 0x1020 irq 14
+ata6: PATA max UDMA/133 cmd 0x1010 ctl 0x1018 bmdma 0x1028 irq 14
+fsl_m25p80 spi28672.0: s25sl128b (16384 Kbytes)
+fsl_espi.0: Freescale eSPI Controller driver at 0xf1094000 (irq = 59)
+usbmon: debugfs is not available
+ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+fsl-ehci fsl-ehci.0: Freescale On-Chip EHCI Host Controller
+fsl-ehci fsl-ehci.0: new USB bus registered, assigned bus number 1
+fsl-ehci fsl-ehci.0: irq 28, io base 0xffe22000
+fsl-ehci fsl-ehci.0: USB 2.0 started, EHCI 1.00
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 1 port detected
+ehci_hcd 0000:02:1c.3: Found HC with no IRQ.  Check BIOS/PCI 0000:02:1c.3 setup!
+ehci_hcd 0000:02:1c.3: init 0000:02:1c.3 fail, -19
+ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+ohci_hcd 0000:02:1c.0: Found HC with no IRQ.  Check BIOS/PCI 0000:02:1c.0 setup!
+ohci_hcd 0000:02:1c.0: init 0000:02:1c.0 fail, -19
+ohci_hcd 0000:02:1c.1: Found HC with no IRQ.  Check BIOS/PCI 0000:02:1c.1 setup!
+ohci_hcd 0000:02:1c.1: init 0000:02:1c.1 fail, -19
+ohci_hcd 0000:02:1c.2: Found HC with no IRQ.  Check BIOS/PCI 0000:02:1c.2 setup!
+ohci_hcd 0000:02:1c.2: init 0000:02:1c.2 fail, -19
+Initializing USB Mass Storage driver...
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+i8042.c: No controller found.
+rtc_cmos rtc_cmos: rtc core: registered rtc_cmos as rtc0
+rtc0: alarms up to one day, 114 bytes nvram
+usbcore: registered new interface driver usbhid
+usbhid: v2.6:USB HID core driver
+Advanced Linux Sound Architecture Driver Version 1.0.18rc3.
+ALSA device list:
+  No soundcards found.
 IPv4 over IPv4 tunneling driver
 GRE over IPv4 tunneling driver
 TCP cubic registered
-NET: Registered protocol family 1
+Initializing XFRM netlink socket
+NET: Registered protocol family 10
+IPv6 over IPv4 tunneling driver
 NET: Registered protocol family 17
-/home/xuezhh/kernel/cgel-svn-new/target-cgl/kernel-version/cgel3.0/linux/drivers
-/rtc/hctosys.c: unable to open rtc device (rtc0)
-Freeing unused kernel memory: 192k init
+NET: Registered protocol family 15
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+rtc_cmos rtc_cmos: setting system clock to 1970-06-23 12:08:10 UTC (14990890)
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs warning: mounting unchecked fs, running e2fsck is recommended
+EXT3 FS on sda3, internal journal
+EXT3-fs: recovery complete.
+EXT3-fs: mounted filesystem with ordered data mode.
+VFS: Mounted root (ext3 filesystem).
+Freeing unused kernel memory: 220k init
+Mounting /proc and /sys
+Starting the hotplug events dispatcher udevd
+Synthesizing initial hotplug events
+Setting the hostname to p2020ds
+Running depmod
+WARNING: Couldn't open directory /lib/modules/2.6.28.1-00295-g6dbbaa6-dirty: No
+such file or directory
+FATAL: Could not open /lib/modules/2.6.28.1-00295-g6dbbaa6-dirty/modules.dep.tem
+p for writing: No such file or directory
+Mounting filesystems
+Starting syslogd and klogd
+Running sysctl
+Setting up networking on loopback device:
+Setting up networking on eth0:
+ADDRCONF(NETDEV_UP): eth0: link is not ready
+Adding static route for default gateway to 192.168.1.1:
+Setting nameserver to 192.168.1.1 in /etc/resolvADDRCONF(NETDEV_UP): eth1: link
+is not ready
+.conf:
+Setting up networking on eth1:
+Adding static route for default gateway to 192.168.1.1:
+Setting nameserver to 192.168.1.1 in /etc/resolv.conf:
+Starting inetd:
+Starting the port mapper:
+Setting time from ntp server:
+/bin/ntpclient: option requires an argument -- h
+Usage: /bin/ntpclient [-c count] [-d] [-g goodness] -h hostname [-i interval]
+        [-l] [-p port] [-r] [-s]
 
-Processing /etc/profile... Done
 
-#
+        Welcome to Freescale Semiconductor Embedded Linux Environment
+
+!!!!! WARNING !!!!!!!
+
+The default password for the root account is: root
+please change this password using the 'passwd' command
+and then edit this message (/etc/issue) to remove this message
+
+p2020ds login: PHY: mdio@24520:00 - Link is Up - 100/Full
+ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
