@@ -1,16 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2C361B7B76
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 13:14:00 +1100 (EST)
-Date: Wed, 28 Oct 2009 13:13:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: linux-next: manual merge of the sh tree with the powerpc-merge tree
-Message-Id: <20091028131356.7a6ba355.sfr@canb.auug.org.au>
+Return-Path: <sshukla@celestialsys.com>
+Received: from santosh (unknown [122.166.50.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 01A64B7BEB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 28 Oct 2009 14:16:39 +1100 (EST)
+Subject: [PATCH] Xilinx LL-TEMAC: Add Netpoll controller support
+From: santosh shukla <sshukla@celestialsys.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Date: Tue, 27 Oct 2009 19:32:52 +0530
+Message-Id: <1256652172.2479.6.camel@santosh>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Cc: john.linn@xilinx.com
+Reply-To: sshukla@celestialsys.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,33 +23,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Paul,
+From: Santosh Shukla <sshukla@sh.mvista.com>
+Date: Tue, 13 Oct 2009 18:55:57 +0530
+Subject: [PATCH] Xilinx LL-TEMAC: Add Netpoll controller support
 
-Today's linux-next merge of the sh tree got a conflict in fs/Kconfig
-between commit 0cd9ad73b8d181737005ff4e506b9b6bd043f4dd ("powerpc: Limit
-hugetlbfs support to PPC64 Book-3S machines") from the powerpc-merge tree
-and commit ffb4a73d8906f71910e6c83ec2b499e70025ee8e ("sh: Fix hugetlbfs
-dependencies for SH-3 && MMU configurations") from the sh tree.
+Adding Netpoll controller support to Xilinx LL-TEMAC ethernet
+driver.Replaced Rx, Tx tasklet schedule call with their handlers,
+Added correct version of call which can execute interrupt on/off
+context i.e. dev_kfree_skb_any().
+---
+ drivers/net/xilinx_lltemac/xlltemac_main.c |   41 +++++++++++++++++++++++++++-
+ 1 files changed, 40 insertions(+), 1 deletions(-)
 
-I fixed it up (see below) and can carry the fix for a while (the
-powerpc-merge commit should be in Linus' tree soon).
+diff --git a/drivers/net/xilinx_lltemac/xlltemac_main.c b/drivers/net/xilinx_lltemac/xlltemac_main.c
+index b245422..697f474 100644
+--- a/drivers/net/xilinx_lltemac/xlltemac_main.c
++++ b/drivers/net/xilinx_lltemac/xlltemac_main.c
+@@ -87,11 +87,18 @@
+ #define BUFFER_ALIGNSEND_PERF(adr) ((ALIGNMENT_SEND_PERF - ((u32) adr)) % 32)
+ #define BUFFER_ALIGNRECV(adr) ((ALIGNMENT_RECV - ((u32) adr)) % 32)
+ 
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ /* Default TX/RX Threshold and waitbound values for SGDMA mode */
+ #define DFT_TX_THRESHOLD  24
+ #define DFT_TX_WAITBOUND  254
+ #define DFT_RX_THRESHOLD  4
+ #define DFT_RX_WAITBOUND  254
++#else
++#define DFT_TX_THRESHOLD  1
++#define DFT_TX_WAITBOUND  0
++#define DFT_RX_THRESHOLD  1
++#define DFT_RX_WAITBOUND  0
++#endif
+ 
+ #define XTE_AUTOSTRIPPING 1
+ 
+@@ -1097,7 +1104,11 @@ static irqreturn_t xenet_dma_rx_interrupt(int irq, void *dev_id)
+ 			list_add_tail(&lp->rcv, &receivedQueue);
+ 			XLlDma_mBdRingIntDisable(&lp->Dma.RxBdRing,
+ 						 XLLDMA_CR_IRQ_ALL_EN_MASK);
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ 			tasklet_schedule(&DmaRecvBH);
++#else
++			DmaRecvHandlerBH(0);
++#endif
+ 		}
+ 		spin_unlock_irqrestore(&receivedQueueSpin, flags);
+ 	}
+@@ -1134,7 +1145,11 @@ static irqreturn_t xenet_dma_tx_interrupt(int irq, void *dev_id)
+ 			list_add_tail(&lp->xmit, &sentQueue);
+ 			XLlDma_mBdRingIntDisable(&lp->Dma.TxBdRing,
+ 						 XLLDMA_CR_IRQ_ALL_EN_MASK);
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ 			tasklet_schedule(&DmaSendBH);
++#else
++			DmaSendHandlerBH(0);
++#endif
+ 		}
+ 		spin_unlock_irqrestore(&sentQueueSpin, flags);
+ 	}
+@@ -1711,11 +1726,15 @@ static int xenet_DmaSend(struct sk_buff *skb, struct net_device *dev)
+ 	 * SgAlloc, SgCommit sequence, which also exists in DmaSendHandlerBH Bottom
+ 	 * Half, or triggered by other processor in SMP case.
+ 	 */
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ 	spin_lock_bh(&XTE_tx_spinlock);
++#endif
+ 
+ 	xenet_DmaSend_internal(skb, dev);
+ 
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ 	spin_unlock_bh(&XTE_tx_spinlock);
++#endif
+ 
+ 	return 0;
+ }
+@@ -1764,7 +1783,7 @@ static void DmaSendHandlerBH(unsigned long p)
+ 				skb = (struct sk_buff *)
+ 					XLlDma_mBdGetId(BdCurPtr);
+ 				if (skb)
+-					dev_kfree_skb(skb);
++					dev_kfree_skb_any(skb);
+ 
+ 				/* reset BD id */
+ 				XLlDma_mBdSetId(BdCurPtr, NULL);
+@@ -3220,6 +3239,23 @@ static int detect_phy(struct net_local *lp, char *dev_name)
+ 	return 0;		/* default to zero */
+ }
+ 
++#ifdef CONFIG_NET_POLL_CONTROLLER
++static void
++lltemac_poll_controller(struct net_device *ndev)
++{
++       struct net_local *lp = netdev_priv(ndev);
++
++       disable_irq(lp->dma_irq_s);
++       disable_irq(lp->dma_irq_r);
++
++       xenet_dma_tx_interrupt(lp->dma_irq_s, ndev);
++       xenet_dma_rx_interrupt(lp->dma_irq_r, ndev);
++
++       enable_irq(lp->dma_irq_s);
++       enable_irq(lp->dma_irq_r);
++}
++#endif
++
+ static struct net_device_ops xilinx_netdev_ops;
+ 
+ /* From include/linux/ethtool.h */
+@@ -3491,6 +3527,9 @@ static struct net_device_ops xilinx_netdev_ops = {
+ 	.ndo_change_mtu	= xenet_change_mtu,
+ 	.ndo_tx_timeout	= xenet_tx_timeout,
+ 	.ndo_get_stats	= xenet_get_stats,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller = lltemac_poll_controller,
++#endif
+ };
+ 
+ static struct of_device_id xtenet_fifo_of_match[] = {
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc fs/Kconfig
-index f93d0ed,48b81f9..0000000
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@@ -135,8 -135,8 +135,8 @@@ config TMPFS_POSIX_AC
-  
-  config HUGETLBFS
-  	bool "HugeTLB file system support"
-- 	depends on X86 || IA64 || PPC_BOOK3S_64 || SPARC64 || (SUPERH && MMU) || \
- -	depends on X86 || IA64 || PPC64 || SPARC64 || (S390 && 64BIT) || \
- -		   SYS_SUPPORTS_HUGETLBFS || BROKEN
-++	depends on X86 || IA64 || PPC_BOOK3S_64 || SPARC64 || \
- +		   (S390 && 64BIT) || SYS_SUPPORTS_HUGETLBFS || BROKEN
-  	help
-  	  hugetlbfs is a filesystem backing for HugeTLB pages, based on
-  	  ramfs. For architectures that support it, say Y here and read
+1.6.3.3.220.g609a0
