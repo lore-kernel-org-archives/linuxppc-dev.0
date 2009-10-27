@@ -2,18 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 83601B6F2B
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2009 14:11:08 +1100 (EST)
-Subject: Re: [3/6] Allow more flexible layouts for hugepage pagetables
+	by ozlabs.org (Postfix) with ESMTPS id CE6E2B7BA3
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2009 14:21:51 +1100 (EST)
+Subject: Re: [PATCH 10/16] percpu: make percpu symbols in powerpc unique
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20091016052212.E1DE0B7BBD@ozlabs.org>
-References: <20091016052212.E1DE0B7BBD@ozlabs.org>
+To: Tejun Heo <tj@kernel.org>
+In-Reply-To: <1255500125-3210-11-git-send-email-tj@kernel.org>
+References: <1255500125-3210-1-git-send-email-tj@kernel.org>
+	<1255500125-3210-11-git-send-email-tj@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Oct 2009 14:10:59 +1100
-Message-ID: <1256613059.11607.18.camel@pasglop>
+Date: Tue, 27 Oct 2009 14:19:49 +1100
+Message-ID: <1256613589.11607.29.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: cl@linux-foundation.org, rusty@rustcorp.com.au,
+	linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+	linuxppc-dev@ozlabs.org, mingo@redhat.com,
+	Paul Mackerras <paulus@samba.org>, cebbert@redhat.com,
+	hpa@zytor.com, tglx@linutronix.de, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-10-16 at 16:22 +1100, David Gibson wrote:
+On Wed, 2009-10-14 at 15:01 +0900, Tejun Heo wrote:
+> This patch updates percpu related symbols in powerpc such that percpu
+> symbols are unique and don't clash with local symbols.  This serves
+> two purposes of decreasing the possibility of global percpu symbol
+> collision and allowing dropping per_cpu__ prefix from percpu symbols.
+> 
+> * arch/powerpc/kernel/perf_callchain.c: s/callchain/cpu_perf_callchain/
+> 
+> * arch/powerpc/kernel/setup-common.c: s/pvr/cpu_pvr/
+> 
+> * arch/powerpc/platforms/pseries/dtl.c: s/dtl/cpu_dtl/
+> 
+> * arch/powerpc/platforms/cell/interrupt.c: s/iic/cpu_iic/
+> 
+> Partly based on Rusty Russell's "alloc_percpu: rename percpu vars
+> which cause name clashes" patch.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
 
-So far haven't seen anything blatantly wrong, in fact, this patch
-results in some nice cleanups.
-
-One thing tho...
-
-> -#ifdef CONFIG_HUGETLB_PAGE
-> -       /* Handle hugepage regions */
-> -       if (HPAGE_SHIFT && mmu_huge_psizes[psize]) {
-> -               DBG_LOW(" -> huge page !\n");
-> -               return hash_huge_page(mm, access, ea, vsid, local, trap);
-> -       }
-> -#endif /* CONFIG_HUGETLB_PAGE */
-> -
->  #ifndef CONFIG_PPC_64K_PAGES
->         /* If we use 4K pages and our psize is not 4K, then we are hitting
->          * a special driver mapping, we need to align the address before
-> @@ -961,12 +954,18 @@ int hash_page(unsigned long ea, unsigned
->  #endif /* CONFIG_PPC_64K_PAGES */
-
-You basically made the above code be run with huge pages. This may not
-be what you want ... It will result in cropping the low EA bits probably
-at a stage where you don't want that (it might also be a non-issue, I
-just want you to double check :-)
-
-I suppose one option would be to remove that alignment and duplicate
-the PTEs when creating those "special" mappings (afaik the only user
-is spufs using 64K pages to map the local store)
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Cheers,
 Ben.
