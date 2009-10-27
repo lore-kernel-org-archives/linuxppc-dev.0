@@ -1,19 +1,19 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-Received: from kronos.usurf.usu.edu (kronos.usurf.usu.edu [129.123.194.129])
-	by ozlabs.org (Postfix) with ESMTP id 372B2B7BBD
+Return-Path: <santosh.shukla1982@gmail.com>
+Received: from mail-pw0-f43.google.com (mail-pw0-f43.google.com
+	[209.85.160.43]) by ozlabs.org (Postfix) with ESMTP id B0DAEB7BCC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 28 Oct 2009 01:28:25 +1100 (EST)
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-To: "john.p.price@l-3com.com" <john.p.price@l-3com.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 27 Oct 2009 08:28:17 -0600
-Subject: RE: Network Stack SKB Reallocation
-Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F0330D36118@midas.usurf.usu.edu>
-References: <BB99A6BA28709744BF22A68E6D7EB51F0330BEB38D@midas.usurf.usu.edu>
-	<B9639434CFA424438117913649CDB78710729A20@MA_EXCHANGE.corp.sds.l-3com.com>
-In-Reply-To: <B9639434CFA424438117913649CDB78710729A20@MA_EXCHANGE.corp.sds.l-3com.com>
-Content-Type: text/plain; charset="us-ascii"
+	Wed, 28 Oct 2009 01:30:29 +1100 (EST)
+Received: by pwj6 with SMTP id 6so119078pwj.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 27 Oct 2009 07:30:28 -0700 (PDT)
 MIME-Version: 1.0
+Date: Tue, 27 Oct 2009 20:00:27 +0530
+Message-ID: <4b48ce310910270730v75ad2f69hca0581fe30e54600@mail.gmail.com>
+Subject: [PATCH] Xilinx LL-TEMAC: Add Netpoll controller support
+From: Santosh Shukla <santosh.shukla1982@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: john.linn@xilinx.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,172 +23,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi John,
+From: Santosh Shukla <sshukla@in.mvista.com>
+Date: Tue, 13 Oct 2009 18:55:57 +0530
+Subject: [PATCH] Xilinx LL-TEMAC: Add Netpoll controller support
 
-> I have a custom board with custom fpga's connected to the PPC405EX
-> EBC
-> bus on banks 2 and 3.  Running linux 2.6.29.1.  The board collects
-> data
-> and dma's it to a scatter-gather dma buffer and then uses TCP/writev
-> +
-> Ethernet 9KB Jumbo packets to transmit data off of the board.
+Adding Netpoll controller support to Xilinx LL-TEMAC ethernet
+driver.Replaced Rx, Tx tasklet schedule call with their handlers,
+Added correct version of call which can execute interrupt on/off
+context i.e. dev_kfree_skb_any().
+---
+ drivers/net/xilinx_lltemac/xlltemac_main.c |   41 +++++++++++++++++++++++++++-
+ 1 files changed, 40 insertions(+), 1 deletions(-)
 
-We are also doing something similar, however we do not transmit the data of=
-f the board - we are storing it to disk.  What we are seeing is that memory=
- gets so fragmented during normal operation that the EMAC driver cannot fin=
-d a contiguous block of memory large enough for the MTU (a 9000 byte MTU re=
-quires 4 pages of memory, or 16384 bytes).
->=20
-> Our systems have 7 of these data collection boards, we are seeing
-> the
-> following stack trace, the boards do not crash apparently the just
-> continue to run.
->=20
-> ~ # BUG: Bad page state in process dcb  pfn:080db
-> page:c03d2b60 flags:00044000 count:0 mapcount:0 mapping:(null)
-> index:3718
-> Call Trace:
-> [ce871980] [c0006bc0] show_stack+0x44/0x16c (unreliable)
-> [ce8719c0] [c005374c] bad_page+0x94/0x12c
-> [ce8719e0] [c0053c30] __free_pages_ok+0x364/0x3ec
-> [ce871a20] [c0057c00] put_compound_page+0x48/0x60
-> [ce871a30] [c0075520] kfree+0xd4/0xd8
-> [ce871a40] [c0175140] skb_release_data+0x80/0xc8
-> [ce871a50] [c0174f30] __kfree_skb+0x18/0xe8
-> [ce871a60] [c01ab9e4] tcp_ack+0x48c/0x1a84
-> [ce871af0] [c01add8c] tcp_rcv_state_process+0x70/0x9ac
-> [ce871b10] [c01b47fc] tcp_v4_do_rcv+0x9c/0x1a8
-> [ce871b40] [c01b6328] tcp_v4_rcv+0x4d4/0x5b8
-> [ce871b70] [c0198b90] ip_local_deliver+0x90/0x140
-> [ce871b90] [c0198f24] ip_rcv+0x2e4/0x4bc
->=20
->=20
-> The above occurs on at least one of the seven boards over the course
-> of
-> a multi-day run.
+diff --git a/drivers/net/xilinx_lltemac/xlltemac_main.c
+b/drivers/net/xilinx_lltemac/xlltemac_main.c
+index b245422..697f474 100644
+--- a/drivers/net/xilinx_lltemac/xlltemac_main.c
++++ b/drivers/net/xilinx_lltemac/xlltemac_main.c
+@@ -87,11 +87,18 @@
+ #define BUFFER_ALIGNSEND_PERF(adr) ((ALIGNMENT_SEND_PERF - ((u32) adr)) % 32)
+ #define BUFFER_ALIGNRECV(adr) ((ALIGNMENT_RECV - ((u32) adr)) % 32)
 
-This is very similar output that I would get when memory got fragmented, ho=
-wever my BUG showed its face when I tried to allocate, not to free, so the =
-issue might be somewhere else.
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ /* Default TX/RX Threshold and waitbound values for SGDMA mode */
+ #define DFT_TX_THRESHOLD  24
+ #define DFT_TX_WAITBOUND  254
+ #define DFT_RX_THRESHOLD  4
+ #define DFT_RX_WAITBOUND  254
++#else
++#define DFT_TX_THRESHOLD  1
++#define DFT_TX_WAITBOUND  0
++#define DFT_RX_THRESHOLD  1
++#define DFT_RX_WAITBOUND  0
++#endif
 
-> Another trace from an actual crash, occurs not so often;
->=20
-> DCB: tcp connection request accepted - line length: 18168
-> Unable to handle kernel paging request for data at address
-> 0x0004009c
-> Faulting instruction address: 0xc017500c
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> DCB
-> Modules linked in: ds3b3 dma ds3b2
-> NIP: c017500c LR: c01351f8 CTR: c013513c
-> REGS: cd779aa0 TRAP: 0300   Not tainted  (2.6.29.1)
-> MSR: 00029030 <EE,ME,CE,IR,DR>  CR: 42424024  XER: 2000005f
-> DEAR: 0004009c, ESR: 00000000
-> TASK =3D ce8883f0[770] 'dcb' THREAD: cd778000
-> GPR00: 00000060 cd779b50 ce8883f0 00040000 00000020 c001220c
-> 00000001
-> 00000014
-> GPR08: 00000002 0004009c 00000003 000000c0 22424022 10183238
-> 000022f4
-> 00000001
-> GPR16: 00000020 000022f4 000237c0 00000000 cd6590e4 13511000
-> 00000008
-> bfe9d520
-> GPR24: ce8e2c34 ce8e2c2c ce811ce0 00000001 00000018 ce811360
-> 00000300
-> ce8113c0
-> NIP [c017500c] kfree_skb+0xc/0x38
-> LR [c01351f8] emac_poll_tx+0xbc/0x310
-> Call Trace:
-> [cd779b50] [c001220c] __mtdcr_table+0x0/0x3ff8 (unreliable)
-> [cd779b70] [c0132248] mal_poll+0x44/0x1c8
-> [cd779ba0] [c017fb10] net_rx_action+0x94/0x188
-> [cd779bd0] [c0024740] __do_softirq+0x84/0x124
-> [cd779c00] [c0004f10] do_softirq+0x58/0x5c
-> [cd779c10] [c00245b0] irq_exit+0x48/0x58
-> [cd779c20] [c0004fb4] do_IRQ+0xa0/0xc4
-> [cd779c40] [c000eba0] ret_from_except+0x0/0x18
-> [cd779d00] [c01a4ec0] tcp_sendmsg+0x220/0xbf0
-> [cd779d80] [c016dd18] sock_aio_write+0xf0/0x104
-> [cd779de0] [c007a5b0] do_sync_readv_writev+0xbc/0x130
-> [cd779e90] [c007ae54] do_readv_writev+0xb4/0x1c4
-> [cd779f10] [c007b010] sys_writev+0x4c/0x90
-> [cd779f40] [c000e558] ret_from_syscall+0x0/0x3c
-> Instruction dump:
-> 3d20c02b 80695ac4 7fe4fb78 4bf00fb9 80010014 83e1000c 7c0803a6
-> 38210010
-> 4e800020 2c030000 4d820020 3923009c <8003009c> 2f800001 409e0008
-> 4bffff00
-> Kernel panic - not syncing: Fatal exception in interrupt
-> Rebooting in 1 seconds..
->=20
->=20
-> So the questions I have for you are as follows;
->=20
-> 	1. Do either of these trace appear related to the issue your
-> driver patch will fix?
+ #define XTE_AUTOSTRIPPING 1
 
-I don't believe so - especially since I do not have a working patch.  I hav=
-e come to the conclusion that the driver works as is and we are just going =
-to have to deal with the memory fragmentation.
-=20
-> 	2. If I set path MTU to 1500, will that avoid the issue?
+@@ -1097,7 +1104,11 @@ static irqreturn_t xenet_dma_rx_interrupt(int
+irq, void *dev_id)
+ 			list_add_tail(&lp->rcv, &receivedQueue);
+ 			XLlDma_mBdRingIntDisable(&lp->Dma.RxBdRing,
+ 						 XLLDMA_CR_IRQ_ALL_EN_MASK);
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ 			tasklet_schedule(&DmaRecvBH);
++#else
++			DmaRecvHandlerBH(0);
++#endif
+ 		}
+ 		spin_unlock_irqrestore(&receivedQueueSpin, flags);
+ 	}
+@@ -1134,7 +1145,11 @@ static irqreturn_t xenet_dma_tx_interrupt(int
+irq, void *dev_id)
+ 			list_add_tail(&lp->xmit, &sentQueue);
+ 			XLlDma_mBdRingIntDisable(&lp->Dma.TxBdRing,
+ 						 XLLDMA_CR_IRQ_ALL_EN_MASK);
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ 			tasklet_schedule(&DmaSendBH);
++#else
++			DmaSendHandlerBH(0);
++#endif
+ 		}
+ 		spin_unlock_irqrestore(&sentQueueSpin, flags);
+ 	}
+@@ -1711,11 +1726,15 @@ static int xenet_DmaSend(struct sk_buff *skb,
+struct net_device *dev)
+ 	 * SgAlloc, SgCommit sequence, which also exists in DmaSendHandlerBH Bottom
+ 	 * Half, or triggered by other processor in SMP case.
+ 	 */
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ 	spin_lock_bh(&XTE_tx_spinlock);
++#endif
 
-I believe it would, see answer to question 3.
+ 	xenet_DmaSend_internal(skb, dev);
 
-> 	3. Would you have any further suggestions?
++#ifndef CONFIG_NET_POLL_CONTROLLER
+ 	spin_unlock_bh(&XTE_tx_spinlock);
++#endif
 
-The road I believe that we are going to take is move to a 4000 byte MTU.  T=
-he 405EX MAL has a 4080 byte limit anyway, so keeping the MTU to 4000 bytes=
- guarantees that a whole packet will fit into a single page in memory, so i=
-f you are still getting memory errors or problems allocating a new SKB, the=
-n you have much bigger issues because either your memory is having problems=
- or you are just plain out of memory completely.
+ 	return 0;
+ }
+@@ -1764,7 +1783,7 @@ static void DmaSendHandlerBH(unsigned long p)
+ 				skb = (struct sk_buff *)
+ 					XLlDma_mBdGetId(BdCurPtr);
+ 				if (skb)
+-					dev_kfree_skb(skb);
++					dev_kfree_skb_any(skb);
 
-The reason we are going that route is because the Linux network stack recyc=
-les and frees an SKB that is passed up to it from the driver.  So, when I a=
-llocated 256 4-page buffers and used those to replace the rx_skb that conta=
-ined the data, the stack would free that buffer for me (it is so helpful :\=
-) and when I would try to reuse it later, the kernel would panic because th=
-at was not a valid SKB.
+ 				/* reset BD id */
+ 				XLlDma_mBdSetId(BdCurPtr, NULL);
+@@ -3220,6 +3239,23 @@ static int detect_phy(struct net_local *lp,
+char *dev_name)
+ 	return 0;		/* default to zero */
+ }
 
-So, moral of the story is keep your MTU at 4000 or lower.  This hammers you=
-r throughput, but it seems to be the best we can do given the way the stack=
- works.
++#ifdef CONFIG_NET_POLL_CONTROLLER
++static void
++lltemac_poll_controller(struct net_device *ndev)
++{
++       struct net_local *lp = netdev_priv(ndev);
++
++       disable_irq(lp->dma_irq_s);
++       disable_irq(lp->dma_irq_r);
++
++       xenet_dma_tx_interrupt(lp->dma_irq_s, ndev);
++       xenet_dma_rx_interrupt(lp->dma_irq_r, ndev);
++
++       enable_irq(lp->dma_irq_s);
++       enable_irq(lp->dma_irq_r);
++}
++#endif
++
+ static struct net_device_ops xilinx_netdev_ops;
 
-If anyone has any other solutions, that would be GREAT!  I would love to be=
- able to use a 9000 byte MTU without getting out of memory errors simply du=
-e to fragmentation.
+ /* From include/linux/ethtool.h */
+@@ -3491,6 +3527,9 @@ static struct net_device_ops xilinx_netdev_ops = {
+ 	.ndo_change_mtu	= xenet_change_mtu,
+ 	.ndo_tx_timeout	= xenet_tx_timeout,
+ 	.ndo_get_stats	= xenet_get_stats,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller = lltemac_poll_controller,
++#endif
+ };
 
-HTH,
-
-Jonathan
-
-
->=20
-> -----Original Message-----
-> From: linuxppc-dev-bounces+john.p.price=3Dl-3com.com@lists.ozlabs.org
-> [mailto:linuxppc-dev-bounces+john.p.price=3Dl-
-> 3com.com@lists.ozlabs.org]
-> On Behalf Of Jonathan Haws
-> Sent: Monday, October 26, 2009 2:43 PM
-> To: linuxppc-dev@lists.ozlabs.org
-> Subject: Network Stack SKB Reallocation
->=20
-> Quick question about the network stack in general:
->=20
-> Does the stack itself release an SKB allocated by the device driver
-> back
-> to the heap upstream, or does it require that the device driver
-> handle
-> that?
->=20
-> Thanks!
->=20
-> Jonathan
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+ static struct of_device_id xtenet_fifo_of_match[] = {
+-- 
+1.6.3.3.220.g609a0
