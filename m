@@ -1,18 +1,29 @@
-Return-Path: <anton@ozlabs.org>
-Date: Tue, 27 Oct 2009 16:02:23 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Steven Rostedt <rostedt@goodmis.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Ingo Molnar <mingo@redhat.com>, benh@kernel.crashing.org
-Subject: hypervisor call trace module
-Message-ID: <20091027050223.GI3085@kryten>
-References: <20091027044742.GB3085@kryten> <20091027044914.GC3085@kryten>
-	<20091027045029.GD3085@kryten> <20091027045109.GE3085@kryten>
-	<20091027045157.GF3085@kryten> <20091027045224.GG3085@kryten>
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8CC22B7C14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 27 Oct 2009 16:23:15 +1100 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp09.au.ibm.com (8.14.3/8.13.1) with ESMTP id n9RG8GI2008240
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2009 03:08:16 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n9R5KIXL1323104
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2009 16:20:18 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n9R5NBcq020847
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2009 16:23:12 +1100
+Date: Tue, 27 Oct 2009 16:22:58 +1100
+From: David Gibson <dwg@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [0/6] Assorted hugepage cleanups (v4)
+Message-ID: <20091027052258.GD20694@yookeroo.seuss>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="oC1+HKm2/end4ao3"
-In-Reply-To: <20091027045224.GG3085@kryten>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,190 +33,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Currently, ordinary pages use one pagetable layout, and each different
+hugepage size uses a slightly different variant layout.  A number of
+places which need to walk the pagetable must first check the slice map
+to see what the pagetable layout then handle the various different
+forms.  New hardware, like Book3E is liable to introduce more possible
+variants.
 
---oC1+HKm2/end4ao3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This patch series, therefore, is designed to simplify the matter by
+limiting knowledge of the pagetable layout to only the allocation
+path.  With this patch, ordinary pages are handled as ever, with a
+fixed 4 (or 3) level tree.  All other variants branch off from some
+layer of that with a specially marked PGD/PUD/PMD pointer which also
+contains enough information to interpret the directories below that
+point.  This means that things walking the pagetables (without
+allocating) don't need to look up the slice map, they can just step
+down the tree in the usual way, branching off to the "non-standard
+layout" path for hugepages, which uses the embdded information to
+interpret the tree from that point on.
 
+This reduces the source size in a number of places, and means that
+newer variants on the pagetable layout to handle new hardware and new
+features will need to alter the existing code in less places.
 
-Here is an example of using the hcall tracepoints. This kernel
-module provides strace like functionality for hypervisor hcalls:
+In addition we split out the hash / classic MMU specific code into a
+separate hugetlbpage-hash64.c file.  This will make adding support for
+other MMUs (like 440 and/or Book3E) easier.
 
--> 0x64(ff000002, 1, 2, d0000000034d7a71, f, c000000000a6f388, 1, c000000000989008, c000000000a3f480)
-  <- 0x64()
+I've used the libhugetlbfs testsuite to test these patches on a
+Power5+ machine, but they could certainly do with more testing. In
+particular, I don't have any suitable hardware to test 16G pages.
 
-Which was an EOI (opcode 0x64) of 0xff000002
+V2: Made the tweaks that BenH suggested to patch 2 of the original
+series.  Some corresponding tweaks in patch 3 to match.
 
-There are a number of drivers that carry a lot of hcall related debug
-code just in case we have to chase down a bug. I'm hoping hcall tracepoints
-could replace it all and allow for much more powerful debugging.
+V3: Fix a bug in the creation of the pgrable caches.  Slightly extend
+the initialization cleanup.  Add a new patch cleaning up the hugepage
+pte accessor functions.
 
-Anton
+V4: Revisions based on BenH's comments, fix compile breakage for
+!CONFIG_HUGETLB_PAGE.
 
---oC1+HKm2/end4ao3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=Makefile
-
-obj-m := hcall_trace.o
-KDIR := /lib/modules/$(shell uname -r)/build
-PWD := $(shell pwd)
-default:
-	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
-
-clean:
-	rm -rf *.mod.c *.ko *.o .*.cmd .tmp_versions Module.markers modules.order Module.symvers
-
---oC1+HKm2/end4ao3
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename="hcall_trace.c"
-
-/*
- * Hypervisor hcall trace
- *
- * Look for output in /sys/kernel/debug/powerpc/hcall_trace/
- * 
- * Copyright (C) 2009 Anton Blanchard <anton@au.ibm.com>, IBM
- *      
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version
- * 2 of the License, or (at your option) any later version.
- */             
-                        
-#include <linux/module.h>
-#include <linux/debugfs.h>
-#include <linux/relay.h>
-#include <asm/trace.h>
-
-#define SUBBUF_SIZE	131072
-#define N_SUBBUFS	8
-
-#define BUFLEN		512
-
-static struct rchan *log_chan;
-
-static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
-{
-	char buf[BUFLEN];
-
-	/* Don't log H_CEDE */
-	if (opcode == H_CEDE)
-		return;
-
-	snprintf(buf, BUFLEN,
-		"-> 0x%lx(%lx, %lx, %lx, %lx, %lx, %lx, %lx, %lx, %lx)\n",
-		opcode, *args, *(args+1), *(args+2), *(args+3), *(args+4),
-		*(args+5), *(args+6), *(args+7), *(args+8));
-
-	relay_write(log_chan, buf, strlen(buf));
-}
-
-static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
-			     unsigned long *retbuf)
-{
-	char buf[BUFLEN];
-
-	/* Don't log H_CEDE */
-	if (opcode == H_CEDE)
-		return;
-
-	if (retbuf)
-		snprintf(buf, BUFLEN, 
-		    "  <- 0x%lx(%lx, %lx, %lx, %lx, %lx, %lx, %lx, %lx, %lx)\n",
-			opcode, *retbuf, *(retbuf+1),
-			*(retbuf+2), *(retbuf+3), *(retbuf+4), *(retbuf+5),
-			*(retbuf+6), *(retbuf+7), *(retbuf+8));
-	else
-		sprintf(buf, "  <- 0x%lx()\n", opcode);
-
-	relay_write(log_chan, buf, strlen(buf));
-}
-
-static struct dentry *create_buf_file_handler(const char *filename,
-					      struct dentry *parent, int mode,
-					      struct rchan_buf *buf,
-					      int *is_global)
-{
-	return debugfs_create_file(filename, mode, parent, buf,
-		&relay_file_operations);
-}
-
-static int remove_buf_file_handler(struct dentry *dentry)
-{
-	debugfs_remove(dentry);
-	return 0;
-}
-
-static int subbuf_start(struct rchan_buf *buf, void *subbuf, void *prev_subbuf,
-			size_t prev_padding)
-{
-	return 1;
-}
-
-static struct rchan_callbacks relay_callbacks =
-{
-	.create_buf_file = create_buf_file_handler,
-	.remove_buf_file = remove_buf_file_handler,
-	.subbuf_start = subbuf_start,
-};
-
-static struct dentry *debugfs_root;
-
-static int __init hcall_trace_init(void)
-{
-	debugfs_root = debugfs_create_dir("hcall_trace", powerpc_debugfs_root);
-
-	if (debugfs_root == ERR_PTR(-ENODEV)) {
-		printk(KERN_ERR "Debugfs not configured\n");
-		goto err_out;
-	}
-
-	if (!debugfs_root) {
-		printk(KERN_ERR "Could not create debugfs directory\n");
-		goto err_out;
-	}
-
-	log_chan = relay_open("cpu", debugfs_root, SUBBUF_SIZE,
-			      N_SUBBUFS, &relay_callbacks, NULL);
-	if (!log_chan) {
-		printk(KERN_ERR "relay_open failed\n");
-		goto err_relay_open;
-	}
-
-	if (register_trace_hcall_entry(probe_hcall_entry)) {
-		printk(KERN_ERR "probe_hcall_entry probe point failed\n");
-		goto err_probe_hcall_entry;
-	}
-
-	if (register_trace_hcall_exit(probe_hcall_exit)) {
-		printk(KERN_ERR "probe_hcall_exit probe point failed\n");
-		goto err_probe_hcall_exit;
-	}
-
-	return 0;
-
-err_probe_hcall_exit:
-	unregister_trace_hcall_entry(probe_hcall_entry);
-err_probe_hcall_entry:
-	relay_close(log_chan);
-err_relay_open:
-	debugfs_remove(debugfs_root);
-err_out:
-	return -ENODEV;
-}
-
-static void __exit hcall_trace_exit(void)
-{
-	unregister_trace_hcall_exit(probe_hcall_exit);
-	unregister_trace_hcall_entry(probe_hcall_entry);
-
-	relay_close(log_chan);
-	debugfs_remove(debugfs_root);
-}
-
-module_init(hcall_trace_init)
-module_exit(hcall_trace_exit)
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Anton Blanchard");
-
---oC1+HKm2/end4ao3--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
