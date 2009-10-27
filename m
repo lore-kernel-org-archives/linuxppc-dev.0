@@ -1,26 +1,15 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 80D1FB7BA8
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+Received: from kronos.usurf.usu.edu (kronos.usurf.usu.edu [129.123.194.129])
+	by ozlabs.org (Postfix) with ESMTP id 7B960B7BC6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 28 Oct 2009 06:54:56 +1100 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id C427CC50CA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 27 Oct 2009 20:54:47 +0100 (CET)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Micrel PHY KSZ8001 on MPC5200B FEC
-References: <mailman.1186.1256651657.12812.linuxppc-dev@lists.ozlabs.org>
-	<200910271549.n9RFn3ep028623@nti1.com>
-In-Reply-To: <200910271549.n9RFn3ep028623@nti1.com>
+	Wed, 28 Oct 2009 06:59:41 +1100 (EST)
+From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 27 Oct 2009 13:59:31 -0600
+Subject: Accessing flash directly from User Space
+Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F0330D3666C@midas.usurf.usu.edu>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Message-ID: <200910272054.47398.roman.fietze@telemotive.de>
-Date: Tue, 27 Oct 2009 20:54:47 +0100
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Suvidh,
+I know this is probably a really dumb question, but a wise man once said th=
+at the only stupid question is the one that is not asked.
 
-On Tuesday 27 October 2009 17:47:51 suvidh kankariya wrote:
+So, I have written a flash driver in VxWorks that simply addresses the flas=
+h directly and handles all the hardware accesses just fine.  I am porting t=
+hat to Linux and need it to run in user space (mainly to simplify the inter=
+face with the user - I want to keep it the same as in VxWorks).  Here is a =
+snippet of what my question is:
 
-> A driver for micrel phy exists in /drivers/net/phy/micrel.c. in
-> 2.6.30.
+static uint8_t bflashEraseSector(int sa, int verbose)
+{
+	uint16_t * flash =3D (uint16_t *) NOR_FLASH_BASE_ADRS;
+	uint32_t offset;
 
-Am I somewhat blind, or do you have access to other 2.6.30's than I
-have?
+	...
 
-I searched git.kernel.org, git.denx.de and git.secretlab.ca, but could
-not find that file, neither in the current master, nor in older tags
-somewhat related to "2.6.30", nor in any local clone in any version of
-the 2.6 since "He" created the repos.
+	/* We divide by 2 here to adjust for the 16-bit offset into the address */
+	offset =3D sa * NOR_FLASH_SECTOR_SIZE / 2;
+	flash[BFLASH_SECTOR_ERASE_ADDR1] =3D BFLASH_SECTOR_ERASE_BYTE1;
 
+	...
 
-> If you are using older kernel you may want to copy it.
+}
 
-2.6.30 and 2.6.31 from DENX or kernel.org.
+I am trying to get a pointer to NOR_FLASH_BASE_ADRS which is defined to be =
+0xFC000000.  I then dereference that directly to write to the flash.
 
+How can I get that pointer?  Unfortunately I cannot simply use the address =
+of the flash.  Is there some magical function call that gives me access to =
+that portion of the memory space?
 
-Roman
+Thanks for the help!
 
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+Jonathan
+
+PS - I know that I could simply use the MTD driver provided by the kernel, =
+but I need to be able to keep the interface the same so we can use previous=
+ly written code.
