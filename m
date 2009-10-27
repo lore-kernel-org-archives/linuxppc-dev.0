@@ -2,9 +2,9 @@ Return-Path: <dgibson@ozlabs.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	<linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [4/6] Cleanup initialization of hugepages on powerpc
+Subject: [5/6] Split hash MMU specific hugepage code into a new file
 In-Reply-To: <20091027052258.GD20694@yookeroo.seuss>
-Message-Id: <20091027052431.B9CF4B7C07@ozlabs.org>
+Message-Id: <20091027052431.C6E3EB7C0B@ozlabs.org>
 Date: Tue, 27 Oct 2009 16:24:31 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -15,245 +15,412 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch simplifies the logic used to initialize hugepages on
-powerpc.  The somewhat oddly named set_huge_psize() is renamed to
-add_huge_page_size() and now does all necessary verification of
-whether it's given a valid hugepage sizes (instead of just some) and
-instantiates the generic hstate structure (but no more).  
-
-hugetlbpage_init() now steps through the available pagesizes, checks
-if they're valid for hugepages by calling add_huge_page_size() and
-initializes the kmem_caches for the hugepage pagetables.  This means
-we can now eliminate the mmu_huge_psizes array, since we no longer
-need to pass the sizing information for the pagetable caches from
-set_huge_psize() into hugetlbpage_init()
-
-Determination of the default huge page size is also moved from the
-hash code into the general hugepage code.
+This patch separates the parts of hugetlbpage.c which are inherently
+specific to the hash MMU into a new hugelbpage-hash64.c file.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 
 ---
- arch/powerpc/include/asm/page_64.h |    2 
- arch/powerpc/mm/hash_utils_64.c    |   10 --
- arch/powerpc/mm/hugetlbpage.c      |  130 +++++++++++++++++--------------------
- 3 files changed, 64 insertions(+), 78 deletions(-)
+ arch/powerpc/include/asm/hugetlb.h   |    3 
+ arch/powerpc/mm/Makefile             |    5 -
+ arch/powerpc/mm/hugetlbpage-hash64.c |  167 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/hugetlbpage.c        |  168 -----------------------------------
+ 4 files changed, 176 insertions(+), 167 deletions(-)
 
-Index: linux-a2/arch/powerpc/mm/hugetlbpage.c
+Index: working-2.6/arch/powerpc/mm/Makefile
 ===================================================================
---- linux-a2.orig/arch/powerpc/mm/hugetlbpage.c	2009-10-15 16:40:49.000000000 +1100
-+++ linux-a2/arch/powerpc/mm/hugetlbpage.c	2009-10-15 16:41:33.000000000 +1100
-@@ -37,27 +37,17 @@
- static unsigned long gpage_freearray[MAX_NUMBER_GPAGES];
- static unsigned nr_gpages;
+--- working-2.6.orig/arch/powerpc/mm/Makefile	2009-10-27 15:07:38.000000000 +1100
++++ working-2.6/arch/powerpc/mm/Makefile	2009-10-27 15:08:09.000000000 +1100
+@@ -28,7 +28,10 @@ obj-$(CONFIG_44x)		+= 44x_mmu.o
+ obj-$(CONFIG_FSL_BOOKE)		+= fsl_booke_mmu.o
+ obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
+ obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
+-obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
++ifeq ($(CONFIG_HUGETLB_PAGE),y)
++obj-y				+= hugetlbpage.o
++obj-$(CONFIG_PPC_STD_MMU_64)	+= hugetlbpage-hash64.o
++endif
+ obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
+ obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
+ obj-$(CONFIG_HIGHMEM)		+= highmem.o
+Index: working-2.6/arch/powerpc/mm/hugetlbpage-hash64.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/mm/hugetlbpage-hash64.c	2009-10-27 15:08:09.000000000 +1100
+@@ -0,0 +1,167 @@
++/*
++ * PPC64 Huge TLB Page Support for hash based MMUs (POWER4 and later)
++ *
++ * Copyright (C) 2003 David Gibson, IBM Corporation.
++ *
++ * Based on the IA-32 version:
++ * Copyright (C) 2002, Rohit Seth <rohit.seth@intel.com>
++ */
++
++#include <linux/mm.h>
++#include <linux/hugetlb.h>
++#include <asm/pgtable.h>
++#include <asm/pgalloc.h>
++#include <asm/cacheflush.h>
++#include <asm/machdep.h>
++
++/*
++ * Called by asm hashtable.S for doing lazy icache flush
++ */
++static unsigned int hash_huge_page_do_lazy_icache(unsigned long rflags,
++					pte_t pte, int trap, unsigned long sz)
++{
++	struct page *page;
++	int i;
++
++	if (!pfn_valid(pte_pfn(pte)))
++		return rflags;
++
++	page = pte_page(pte);
++
++	/* page is dirty */
++	if (!test_bit(PG_arch_1, &page->flags) && !PageReserved(page)) {
++		if (trap == 0x400) {
++			for (i = 0; i < (sz / PAGE_SIZE); i++)
++				__flush_dcache_icache(page_address(page+i));
++			set_bit(PG_arch_1, &page->flags);
++		} else {
++			rflags |= HPTE_R_N;
++		}
++	}
++	return rflags;
++}
++
++int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
++		     pte_t *ptep, unsigned long trap, int local, int ssize,
++		     unsigned int shift, unsigned int mmu_psize)
++{
++	unsigned long old_pte, new_pte;
++	unsigned long va, rflags, pa, sz;
++	long slot;
++	int err = 1;
++
++	BUG_ON(shift != mmu_psize_defs[mmu_psize].shift);
++
++	/* Search the Linux page table for a match with va */
++	va = hpt_va(ea, vsid, ssize);
++
++	/*
++	 * Check the user's access rights to the page.  If access should be
++	 * prevented then send the problem up to do_page_fault.
++	 */
++	if (unlikely(access & ~pte_val(*ptep)))
++		goto out;
++	/*
++	 * At this point, we have a pte (old_pte) which can be used to build
++	 * or update an HPTE. There are 2 cases:
++	 *
++	 * 1. There is a valid (present) pte with no associated HPTE (this is
++	 *	the most common case)
++	 * 2. There is a valid (present) pte with an associated HPTE. The
++	 *	current values of the pp bits in the HPTE prevent access
++	 *	because we are doing software DIRTY bit management and the
++	 *	page is currently not DIRTY.
++	 */
++
++
++	do {
++		old_pte = pte_val(*ptep);
++		if (old_pte & _PAGE_BUSY)
++			goto out;
++		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
++	} while(old_pte != __cmpxchg_u64((unsigned long *)ptep,
++					 old_pte, new_pte));
++
++	rflags = 0x2 | (!(new_pte & _PAGE_RW));
++ 	/* _PAGE_EXEC -> HW_NO_EXEC since it's inverted */
++	rflags |= ((new_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
++	sz = ((1UL) << shift);
++	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
++		/* No CPU has hugepages but lacks no execute, so we
++		 * don't need to worry about that case */
++		rflags = hash_huge_page_do_lazy_icache(rflags, __pte(old_pte),
++						       trap, sz);
++
++	/* Check if pte already has an hpte (case 2) */
++	if (unlikely(old_pte & _PAGE_HASHPTE)) {
++		/* There MIGHT be an HPTE for this pte */
++		unsigned long hash, slot;
++
++		hash = hpt_hash(va, shift, ssize);
++		if (old_pte & _PAGE_F_SECOND)
++			hash = ~hash;
++		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
++		slot += (old_pte & _PAGE_F_GIX) >> 12;
++
++		if (ppc_md.hpte_updatepp(slot, rflags, va, mmu_psize,
++					 ssize, local) == -1)
++			old_pte &= ~_PAGE_HPTEFLAGS;
++	}
++
++	if (likely(!(old_pte & _PAGE_HASHPTE))) {
++		unsigned long hash = hpt_hash(va, shift, ssize);
++		unsigned long hpte_group;
++
++		pa = pte_pfn(__pte(old_pte)) << PAGE_SHIFT;
++
++repeat:
++		hpte_group = ((hash & htab_hash_mask) *
++			      HPTES_PER_GROUP) & ~0x7UL;
++
++		/* clear HPTE slot informations in new PTE */
++#ifdef CONFIG_PPC_64K_PAGES
++		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HPTE_SUB0;
++#else
++		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HASHPTE;
++#endif
++		/* Add in WIMG bits */
++		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
++				      _PAGE_COHERENT | _PAGE_GUARDED));
++
++		/* Insert into the hash table, primary slot */
++		slot = ppc_md.hpte_insert(hpte_group, va, pa, rflags, 0,
++					  mmu_psize, ssize);
++
++		/* Primary is full, try the secondary */
++		if (unlikely(slot == -1)) {
++			hpte_group = ((~hash & htab_hash_mask) *
++				      HPTES_PER_GROUP) & ~0x7UL;
++			slot = ppc_md.hpte_insert(hpte_group, va, pa, rflags,
++						  HPTE_V_SECONDARY,
++						  mmu_psize, ssize);
++			if (slot == -1) {
++				if (mftb() & 0x1)
++					hpte_group = ((hash & htab_hash_mask) *
++						      HPTES_PER_GROUP)&~0x7UL;
++
++				ppc_md.hpte_remove(hpte_group);
++				goto repeat;
++                        }
++		}
++
++		if (unlikely(slot == -2))
++			panic("hash_huge_page: pte_insert failed\n");
++
++		new_pte |= (slot << 12) & (_PAGE_F_SECOND | _PAGE_F_GIX);
++	}
++
++	/*
++	 * No need to use ldarx/stdcx here
++	 */
++	*ptep = __pte(new_pte & ~_PAGE_BUSY);
++
++	err = 0;
++
++ out:
++	return err;
++}
+Index: working-2.6/arch/powerpc/mm/hugetlbpage.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/hugetlbpage.c	2009-10-27 15:08:07.000000000 +1100
++++ working-2.6/arch/powerpc/mm/hugetlbpage.c	2009-10-27 15:08:09.000000000 +1100
+@@ -7,29 +7,17 @@
+  * Copyright (C) 2002, Rohit Seth <rohit.seth@intel.com>
+  */
  
--/* Array of valid huge page sizes - non-zero value(hugepte_shift) is
-- * stored for the huge page sizes that are valid.
+-#include <linux/init.h>
+-#include <linux/fs.h>
+ #include <linux/mm.h>
++#include <linux/io.h>
+ #include <linux/hugetlb.h>
+-#include <linux/pagemap.h>
+-#include <linux/slab.h>
+-#include <linux/err.h>
+-#include <linux/sysctl.h>
+-#include <asm/mman.h>
++#include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlb.h>
+-#include <asm/tlbflush.h>
+-#include <asm/mmu_context.h>
+-#include <asm/machdep.h>
+-#include <asm/cputable.h>
+-#include <asm/spu.h>
+ 
+ #define PAGE_SHIFT_64K	16
+ #define PAGE_SHIFT_16M	24
+ #define PAGE_SHIFT_16G	34
+ 
+-#define NUM_LOW_AREAS	(0x100000000UL >> SID_SHIFT)
+-#define NUM_HIGH_AREAS	(PGTABLE_RANGE >> HTLB_AREA_SHIFT)
+ #define MAX_NUMBER_GPAGES	1024
+ 
+ /* Tracks the 16G pages after the device tree is scanned and before the
+@@ -502,158 +490,6 @@ unsigned long vma_mmu_pagesize(struct vm
+ 	return 1UL << mmu_psize_to_shift(psize);
+ }
+ 
+-/*
+- * Called by asm hashtable.S for doing lazy icache flush
 - */
--static unsigned int mmu_huge_psizes[MMU_PAGE_COUNT] = { }; /* initialize all to 0 */
+-static unsigned int hash_huge_page_do_lazy_icache(unsigned long rflags,
+-					pte_t pte, int trap, unsigned long sz)
+-{
+-	struct page *page;
+-	int i;
 -
- /* Flag to mark huge PD pointers.  This means pmd_bad() and pud_bad()
-  * will choke on pointers to hugepte tables, which is handy for
-  * catching screwups early. */
- 
- static inline int shift_to_mmu_psize(unsigned int shift)
- {
--	switch (shift) {
--#ifndef CONFIG_PPC_64K_PAGES
--	case PAGE_SHIFT_64K:
--	    return MMU_PAGE_64K;
--#endif
--	case PAGE_SHIFT_16M:
--	    return MMU_PAGE_16M;
--	case PAGE_SHIFT_16G:
--	    return MMU_PAGE_16G;
--	}
-+	int psize;
-+
-+	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize)
-+		if (mmu_psize_defs[psize].shift == shift)
-+			return psize;
- 	return -1;
- }
- 
-@@ -502,8 +492,6 @@ unsigned long hugetlb_get_unmapped_area(
- 	struct hstate *hstate = hstate_file(file);
- 	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
- 
--	if (!mmu_huge_psizes[mmu_psize])
--		return -EINVAL;
- 	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1, 0);
- }
- 
-@@ -666,47 +654,46 @@ repeat:
- 	return err;
- }
- 
--static void __init set_huge_psize(int psize)
-+static int __init add_huge_page_size(unsigned long long size)
- {
--	unsigned pdshift;
-+	int shift = __ffs(size);
-+	int mmu_psize;
- 
- 	/* Check that it is a page size supported by the hardware and
--	 * that it fits within pagetable limits. */
--	if (mmu_psize_defs[psize].shift &&
--		mmu_psize_defs[psize].shift < SID_SHIFT_1T &&
--		(mmu_psize_defs[psize].shift > MIN_HUGEPTE_SHIFT ||
--		 mmu_psize_defs[psize].shift == PAGE_SHIFT_64K ||
--		 mmu_psize_defs[psize].shift == PAGE_SHIFT_16G)) {
--		/* Return if huge page size has already been setup or is the
--		 * same as the base page size. */
--		if (mmu_huge_psizes[psize] ||
--		   mmu_psize_defs[psize].shift == PAGE_SHIFT)
--			return;
--		hugetlb_add_hstate(mmu_psize_defs[psize].shift - PAGE_SHIFT);
-+	 * that it fits within pagetable and slice limits. */
-+	if (!is_power_of_2(size)
-+	    || (shift > SLICE_HIGH_SHIFT) || (shift <= PAGE_SHIFT))
-+		return -EINVAL;
- 
--		if (mmu_psize_defs[psize].shift < PMD_SHIFT)
--			pdshift = PMD_SHIFT;
--		else if (mmu_psize_defs[psize].shift < PUD_SHIFT)
--			pdshift = PUD_SHIFT;
--		else
--			pdshift = PGDIR_SHIFT;
--		mmu_huge_psizes[psize] = pdshift - mmu_psize_defs[psize].shift;
--	}
-+	if ((mmu_psize = shift_to_mmu_psize(shift)) < 0)
-+		return -EINVAL;
-+
-+#ifdef CONFIG_SPU_FS_64K_LS
-+	/* Disable support for 64K huge pages when 64K SPU local store
-+	 * support is enabled as the current implementation conflicts.
-+	 */
-+	if (shift == PAGE_SHIFT_64K)
-+		return -EINVAL;
-+#endif /* CONFIG_SPU_FS_64K_LS */
-+
-+	BUG_ON(mmu_psize_defs[mmu_psize].shift != shift);
-+
-+	/* Return if huge page size has already been setup */
-+	if (size_to_hstate(size))
-+		return 0;
-+
-+	hugetlb_add_hstate(shift - PAGE_SHIFT);
-+
-+	return 0;
- }
- 
- static int __init hugepage_setup_sz(char *str)
- {
- 	unsigned long long size;
--	int mmu_psize;
--	int shift;
- 
- 	size = memparse(str, &str);
- 
--	shift = __ffs(size);
--	mmu_psize = shift_to_mmu_psize(shift);
--	if (mmu_psize >= 0 && mmu_psize_defs[mmu_psize].shift)
--		set_huge_psize(mmu_psize);
--	else
-+	if (add_huge_page_size(size) != 0)
- 		printk(KERN_WARNING "Invalid huge page size specified(%llu)\n", size);
- 
- 	return 1;
-@@ -720,31 +707,40 @@ static int __init hugetlbpage_init(void)
- 	if (!cpu_has_feature(CPU_FTR_16M_PAGE))
- 		return -ENODEV;
- 
--	/* Add supported huge page sizes.  Need to change HUGE_MAX_HSTATE
--	 * and adjust PTE_NONCACHE_NUM if the number of supported huge page
--	 * sizes changes.
--	 */
--	set_huge_psize(MMU_PAGE_16M);
--	set_huge_psize(MMU_PAGE_16G);
-+	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
-+		unsigned shift;
-+		unsigned pdshift;
- 
--	/* Temporarily disable support for 64K huge pages when 64K SPU local
--	 * store support is enabled as the current implementation conflicts.
--	 */
--#ifndef CONFIG_SPU_FS_64K_LS
--	set_huge_psize(MMU_PAGE_64K);
--#endif
-+		if (!mmu_psize_defs[psize].shift)
-+			continue;
- 
--	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
--		if (mmu_huge_psizes[psize]) {
--			pgtable_cache_add(mmu_huge_psizes[psize], NULL);
--			if (!PGT_CACHE(mmu_huge_psizes[psize]))
--				panic("hugetlbpage_init(): could not create "
--				      "pgtable cache for %d bit pagesize\n",
--				      mmu_psize_to_shift(psize));
+-	if (!pfn_valid(pte_pfn(pte)))
+-		return rflags;
+-
+-	page = pte_page(pte);
+-
+-	/* page is dirty */
+-	if (!test_bit(PG_arch_1, &page->flags) && !PageReserved(page)) {
+-		if (trap == 0x400) {
+-			for (i = 0; i < (sz / PAGE_SIZE); i++)
+-				__flush_dcache_icache(page_address(page+i));
+-			set_bit(PG_arch_1, &page->flags);
+-		} else {
+-			rflags |= HPTE_R_N;
 -		}
-+		shift = mmu_psize_to_shift(psize);
-+
-+		if (add_huge_page_size(1ULL << shift) < 0)
-+			continue;
-+
-+		if (shift < PMD_SHIFT)
-+			pdshift = PMD_SHIFT;
-+		else if (shift < PUD_SHIFT)
-+			pdshift = PUD_SHIFT;
-+		else
-+			pdshift = PGDIR_SHIFT;
-+
-+		pgtable_cache_add(pdshift - shift, NULL);
-+		if (!PGT_CACHE(pdshift - shift))
-+			panic("hugetlbpage_init(): could not create "
-+			      "pgtable cache for %d bit pagesize\n", shift);
- 	}
- 
-+
-+	/* Set default large page size. Currently, we pick 16M or 1M
-+	 * depending on what is available
-+	 */
-+	if (mmu_psize_defs[MMU_PAGE_16M].shift)
-+		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_16M].shift;
-+	else if (mmu_psize_defs[MMU_PAGE_1M].shift)
-+		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_1M].shift;
-+
- 	return 0;
- }
+-	}
+-	return rflags;
+-}
 -
- module_init(hugetlbpage_init);
-Index: linux-a2/arch/powerpc/include/asm/page_64.h
-===================================================================
---- linux-a2.orig/arch/powerpc/include/asm/page_64.h	2009-10-15 16:39:59.000000000 +1100
-+++ linux-a2/arch/powerpc/include/asm/page_64.h	2009-10-15 16:41:34.000000000 +1100
-@@ -90,7 +90,7 @@ extern unsigned int HPAGE_SHIFT;
- #define HPAGE_SIZE		((1UL) << HPAGE_SHIFT)
- #define HPAGE_MASK		(~(HPAGE_SIZE - 1))
- #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
--#define HUGE_MAX_HSTATE		3
-+#define HUGE_MAX_HSTATE		(MMU_PAGE_COUNT-1)
- 
- #endif /* __ASSEMBLY__ */
- 
-Index: linux-a2/arch/powerpc/mm/hash_utils_64.c
-===================================================================
---- linux-a2.orig/arch/powerpc/mm/hash_utils_64.c	2009-10-15 16:40:47.000000000 +1100
-+++ linux-a2/arch/powerpc/mm/hash_utils_64.c	2009-10-15 16:41:33.000000000 +1100
-@@ -481,16 +481,6 @@ static void __init htab_init_page_sizes(
- #ifdef CONFIG_HUGETLB_PAGE
- 	/* Reserve 16G huge page memory sections for huge pages */
- 	of_scan_flat_dt(htab_dt_scan_hugepage_blocks, NULL);
+-int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+-		     pte_t *ptep, unsigned long trap, int local, int ssize,
+-		     unsigned int shift, unsigned int mmu_psize)
+-{
+-	unsigned long old_pte, new_pte;
+-	unsigned long va, rflags, pa, sz;
+-	long slot;
+-	int err = 1;
 -
--/* Set default large page size. Currently, we pick 16M or 1M depending
--	 * on what is available
+-	BUG_ON(shift != mmu_psize_defs[mmu_psize].shift);
+-
+-	/* Search the Linux page table for a match with va */
+-	va = hpt_va(ea, vsid, ssize);
+-
+-	/* 
+-	 * Check the user's access rights to the page.  If access should be
+-	 * prevented then send the problem up to do_page_fault.
 -	 */
--	if (mmu_psize_defs[MMU_PAGE_16M].shift)
--		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_16M].shift;
--	/* With 4k/4level pagetables, we can't (for now) cope with a
--	 * huge page size < PMD_SIZE */
--	else if (mmu_psize_defs[MMU_PAGE_1M].shift)
--		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_1M].shift;
- #endif /* CONFIG_HUGETLB_PAGE */
- }
+-	if (unlikely(access & ~pte_val(*ptep)))
+-		goto out;
+-	/*
+-	 * At this point, we have a pte (old_pte) which can be used to build
+-	 * or update an HPTE. There are 2 cases:
+-	 *
+-	 * 1. There is a valid (present) pte with no associated HPTE (this is 
+-	 *	the most common case)
+-	 * 2. There is a valid (present) pte with an associated HPTE. The
+-	 *	current values of the pp bits in the HPTE prevent access
+-	 *	because we are doing software DIRTY bit management and the
+-	 *	page is currently not DIRTY. 
+-	 */
+-
+-
+-	do {
+-		old_pte = pte_val(*ptep);
+-		if (old_pte & _PAGE_BUSY)
+-			goto out;
+-		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
+-	} while(old_pte != __cmpxchg_u64((unsigned long *)ptep,
+-					 old_pte, new_pte));
+-
+-	rflags = 0x2 | (!(new_pte & _PAGE_RW));
+- 	/* _PAGE_EXEC -> HW_NO_EXEC since it's inverted */
+-	rflags |= ((new_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
+-	sz = ((1UL) << shift);
+-	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+-		/* No CPU has hugepages but lacks no execute, so we
+-		 * don't need to worry about that case */
+-		rflags = hash_huge_page_do_lazy_icache(rflags, __pte(old_pte),
+-						       trap, sz);
+-
+-	/* Check if pte already has an hpte (case 2) */
+-	if (unlikely(old_pte & _PAGE_HASHPTE)) {
+-		/* There MIGHT be an HPTE for this pte */
+-		unsigned long hash, slot;
+-
+-		hash = hpt_hash(va, shift, ssize);
+-		if (old_pte & _PAGE_F_SECOND)
+-			hash = ~hash;
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		slot += (old_pte & _PAGE_F_GIX) >> 12;
+-
+-		if (ppc_md.hpte_updatepp(slot, rflags, va, mmu_psize,
+-					 ssize, local) == -1)
+-			old_pte &= ~_PAGE_HPTEFLAGS;
+-	}
+-
+-	if (likely(!(old_pte & _PAGE_HASHPTE))) {
+-		unsigned long hash = hpt_hash(va, shift, ssize);
+-		unsigned long hpte_group;
+-
+-		pa = pte_pfn(__pte(old_pte)) << PAGE_SHIFT;
+-
+-repeat:
+-		hpte_group = ((hash & htab_hash_mask) *
+-			      HPTES_PER_GROUP) & ~0x7UL;
+-
+-		/* clear HPTE slot informations in new PTE */
+-#ifdef CONFIG_PPC_64K_PAGES
+-		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HPTE_SUB0;
+-#else
+-		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HASHPTE;
+-#endif
+-		/* Add in WIMG bits */
+-		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
+-				      _PAGE_COHERENT | _PAGE_GUARDED));
+-
+-		/* Insert into the hash table, primary slot */
+-		slot = ppc_md.hpte_insert(hpte_group, va, pa, rflags, 0,
+-					  mmu_psize, ssize);
+-
+-		/* Primary is full, try the secondary */
+-		if (unlikely(slot == -1)) {
+-			hpte_group = ((~hash & htab_hash_mask) *
+-				      HPTES_PER_GROUP) & ~0x7UL; 
+-			slot = ppc_md.hpte_insert(hpte_group, va, pa, rflags,
+-						  HPTE_V_SECONDARY,
+-						  mmu_psize, ssize);
+-			if (slot == -1) {
+-				if (mftb() & 0x1)
+-					hpte_group = ((hash & htab_hash_mask) *
+-						      HPTES_PER_GROUP)&~0x7UL;
+-
+-				ppc_md.hpte_remove(hpte_group);
+-				goto repeat;
+-                        }
+-		}
+-
+-		if (unlikely(slot == -2))
+-			panic("hash_huge_page: pte_insert failed\n");
+-
+-		new_pte |= (slot << 12) & (_PAGE_F_SECOND | _PAGE_F_GIX);
+-	}
+-
+-	/*
+-	 * No need to use ldarx/stdcx here
+-	 */
+-	*ptep = __pte(new_pte & ~_PAGE_BUSY);
+-
+-	err = 0;
+-
+- out:
+-	return err;
+-}
+-
+ static int __init add_huge_page_size(unsigned long long size)
+ {
+ 	int shift = __ffs(size);
+Index: working-2.6/arch/powerpc/include/asm/hugetlb.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/include/asm/hugetlb.h	2009-10-27 15:08:04.000000000 +1100
++++ working-2.6/arch/powerpc/include/asm/hugetlb.h	2009-10-27 15:08:09.000000000 +1100
+@@ -3,6 +3,9 @@
+ 
+ #include <asm/page.h>
+ 
++pte_t *huge_pte_offset_and_shift(struct mm_struct *mm,
++				 unsigned long addr, unsigned *shift);
++
+ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+ 			   unsigned long len);
  
