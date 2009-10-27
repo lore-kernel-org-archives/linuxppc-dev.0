@@ -1,21 +1,23 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 58772B7BCC
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C4576B7BCC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 28 Oct 2009 10:37:33 +1100 (EST)
+	Wed, 28 Oct 2009 10:41:38 +1100 (EST)
 Subject: Re: [PATCH 1/6] powerpc: tracing: Add powerpc tracepoints for
 	interrupt entry and exit
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20091027044742.GB3085@kryten>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: rostedt@goodmis.org
+In-Reply-To: <1256680832.26028.469.camel@gandalf.stny.rr.com>
 References: <20091027044742.GB3085@kryten>
-Content-Type: text/plain
-Date: Tue, 27 Oct 2009 18:00:32 -0400
-Message-Id: <1256680832.26028.469.camel@gandalf.stny.rr.com>
+	<1256680832.26028.469.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 28 Oct 2009 10:41:28 +1100
+Message-ID: <1256686888.11607.131.camel@pasglop>
 Mime-Version: 1.0
 Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>,
-	linuxppc-dev@lists.ozlabs.org
-Reply-To: rostedt@goodmis.org
+	linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,7 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have no problem with any of these changes. I guess this is up to Ben
-and company to decide the rest.
+On Tue, 2009-10-27 at 18:00 -0400, Steven Rostedt wrote:
+> I have no problem with any of these changes. I guess this is up to Ben
+> and company to decide the rest.
 
--- Steve
+I'll stick them into my -next branch, hopefully today or tomorrow.
+
+The ppc "perf_events" specific bits are going to go via paulus first.
+
+Cheers,
+Ben.
