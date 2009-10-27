@@ -1,21 +1,18 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7E68BB7BB2
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 03:42:41 +1100 (EST)
-In-Reply-To: <20091027155841.GA25916@loki.buserror.net>
-References: <OF2108C9F5.3115433C-ONC125765C.003129B4-C125765C.0032EE38@transmode.se>
-	<20091027155841.GA25916@loki.buserror.net>
-Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OFFEC32D14.53996C13-ONC125765C.005AC522-C125765C.005B6498@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 27 Oct 2009 17:38:15 +0100
+Return-Path: <jeff@theptrgroup.com>
+Received: from mail.theptrgroup.com (mail.theptrgroup.com [71.178.251.9])
+	by ozlabs.org (Postfix) with ESMTP id BBEB2B7BB1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 28 Oct 2009 04:03:12 +1100 (EST)
+Message-ID: <4AE727CD.3020509@theptrgroup.com>
+Date: Tue, 27 Oct 2009 13:03:09 -0400
+From: Jeff Angielski <jeff@theptrgroup.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Rex Feany <RFeany@mrv.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: luigi.mantellini.ml@gmail.com
+Subject: Re: Low BogoMips
+References: <200910271627.06549.luigi.mantellini.ml@gmail.com>
+In-Reply-To: <200910271627.06549.luigi.mantellini.ml@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,59 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 27/10/2009 16:58:41:
->
-> On Tue, Oct 27, 2009 at 10:16:17AM +0100, Joakim Tjernlund wrote:
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 27/10/2009 01:00:53:
-> > >
-> > > On Mon, 2009-10-26 at 16:26 -0700, Dan Malek wrote:
-> > > > Just be careful the get_user() doesn't regenerate the same
-> > > > translation error you are trying to fix by being here......
-> >
-> > yes, I had some problems with this initially but managed to work around
-> > that. I noticed another problem though, I got multiple TLB errors for the
-> > same address when I did it in C. Noticed by just printk:ing every hit for
-> > a dcbX insn in do_page_fault. I can't explain it, but it seems like when
-> > moving to C you have to execute a rfi insn and that might somehow restart
-> > the dcbX insn before moving on to the page fault routine(or something
-> > totally different)
->
-> The rfi should be to other kernel code -- there is no way that it should be
-> restarting the dcbX (other than when trying to turn a TLB miss into a TLB
-> error).  Can you post the C version, maybe we can see what's going wrong?
+Luigi 'Comio' Mantellini wrote:
+> Hi All,
+> 
+> my name is Luigi. I'm working on a stripped-down mpc8541 board (that has just 
+> a serian and twe enets).
+> I have an issue on delay calibration. In fact my at boot time I see the 
+> following on the serial console:
+> 
+> ....
+> Calibrating delay loop... 83.20 BogoMIPS (lpj=166400)
+> ....
+> 
+> This value seems to be too low and I suspect an error propagated from u-boot.
+> 
+> Can anyone help me to understand a good way to investigate this problem? which 
+> registers or configuration values I need to check?
+> 
+> I will post the necessary snips of code or configuration if required.
+> 
+> Thanks a lot for your help,
 
-I don't have it for 2.6 and I never did cleanup up my 2.4 version.
-Your best bet is to look at one of the earlier patches such
-as:
-  Add some debug code to do_page_fault
-and fix the remaining bits.
+On the PowerPC, the BogoMIPS is not an estimate of the performance of 
+the CPU, but rather related to the internal timebase register frequency.
 
-> Is the empty TLB entry from the miss getting invalidated in the dcbX fixup
-> case?
+"With recent kernels, when build with ARCH=powerpc, we now use the
+hardware timebase instead of bogus processor loops for short timings.
+Thus our bogomips value is no longer the speed at which the processor
+runs empty loops, but the actual processor timebase value as obtained
+after calibration at boot. " - Benjamin Herrenschmidt
 
-Yes, in all cases it was invalidated.
+Google(powerpc, bogomips, timebase)=happiness
 
->
-> > > It shouldn't since it will always come up with a proper DAR but
-> > > you may want to double check before hand that your instruction
-> > > address you are loading from is -not- your marker value for bad DAR.
-> >
-> > hmm, I check that the insn really is a dcbX insn, but not that the address is
-> > != 0x00f0. Don't see how it could be as if something is wrong with
-> > the insn address you get ITLB error instead of a DTLB error.
->
-> I'm guessing he meant the data address you're loading.
 
-Hopefully and I am already looking at the OP code to make sure it is
-a dcbX insn.
-
->
-> > Anyhow, things seems stalled as I haven't heard from Scott or Rex for a
-> > while. If this isn't working now, I really don't know what is wrong and
-> > need some debugging help.
->
-> I'll test the latest version, but I have some scheduling latency. :-)
-
-Get yourself a new scheduler :)
-
-   Jocke
+-- 
+Jeff Angielski
+The PTR Group
+www.theptrgroup.com
