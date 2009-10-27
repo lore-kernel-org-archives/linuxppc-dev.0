@@ -1,29 +1,28 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <Matteo.Fortini@mta.it>
+Received: from cluster-a.mailcontrol.com (cluster-a.mailcontrol.com
+	[85.115.52.190])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 79600B7C06
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2009 20:16:56 +1100 (EST)
-In-Reply-To: <1256601653.2076.51.camel@pasglop>
-References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<20091015165650.GA3837@compile2.chatsunix.int.mrv.com>
-	<OFF665748B.AAF26319-ONC1257651.00296F23-C1257651.002D6BF7@transmode.se>
-	<20091016202541.GA16358@compile2.chatsunix.int.mrv.com>	
-	<OF2BB5EF59.1EE0A77D-ONC1257652.003D79DC-C1257652.003EA687@LocalDomain>
-	<OFA43B9FDF.F43B1705-ONC1257652.0041B12F-C1257652.004211A3@transmode.se>
-	<1256597241.2076.38.camel@pasglop>	
-	<21C04675-E563-49E2-B2E6-7CAB9D8BE985@embeddedalley.com>
-	<1256601653.2076.51.camel@pasglop>
-Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF2108C9F5.3115433C-ONC125765C.003129B4-C125765C.0032EE38@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 27 Oct 2009 10:16:17 +0100
+	(Client CN "*.mailcontrol.com",
+	Issuer "DigiCert Global CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9F499B7BB9
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2009 21:02:59 +1100 (EST)
+Received: from rly11a.srv.mailcontrol.com (localhost.localdomain [127.0.0.1])
+	by rly11a.srv.mailcontrol.com (MailControl) with ESMTP id
+	n9RA2qm7022270
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2009 10:02:53 GMT
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+	by rly11a.srv.mailcontrol.com (MailControl) id n9RA2Foe019796
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2009 10:02:15 GMT
+Message-ID: <4AE6C51F.9050203@mta.it>
+Date: Tue, 27 Oct 2009 11:02:07 +0100
+From: Fortini Matteo <matteo.fortini@mta.it>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+To: Kenneth Johansson <kenneth@southpole.se>
+Subject: Re: Acceleration for map_copy_from on powerpc 512x
+References: <4ADC1AAD.60606@mta.it> <1256135453.22238.27.camel@kenjo-laptop>
+In-Reply-To: <1256135453.22238.27.camel@kenjo-laptop>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +32,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 27/10/2009 01:00:53:
->
-> On Mon, 2009-10-26 at 16:26 -0700, Dan Malek wrote:
-> > Just be careful the get_user() doesn't regenerate the same
-> > translation error you are trying to fix by being here......
+The simple_map_init() works at a higher level, what I'm redefining is a 
+function called by mtd->read()
 
-yes, I had some problems with this initially but managed to work around that.
-I noticed another problem though, I got multiple TLB errors for the same
-address when I did it in C. Noticed by just printk:ing every hit
-for a dcbX insn in do_page_fault. I can't explain it, but it seems
-like when moving to C you have to execute a rfi insn and that might somehow
-restart the dcbX insn before moving on to the page fault routine(or something
-totally different)
+The block size for e.g. a dd if=/dev/mtd0 of=/dev/null
+with the default block size (I believe it's 512Bytes), fetches from 
+/dev/mtd0 4096 Bytes at a time.
+I'd prefer the kernel to be scheduling other tasks meanwhile, instead of 
+busy-waiting on completion.
 
->
-> It shouldn't since it will always come up with a proper DAR but
-> you may want to double check before hand that your instruction
-> address you are loading from is -not- your marker value for bad DAR.
+Regards
 
-hmm, I check that the insn really is a dcbX insn, but not that the address is
-!= 0x00f0. Don't see how it could be as if something is wrong with
-the insn address you get ITLB error instead of a DTLB error.
-
-Anyhow, things seems stalled as I haven't heard from Scott or Rex for a while.
-If this isn't working now, I really don't know what is wrong and need
-some debugging help.
-
+Kenneth Johansson ha scritto:
+> On Mon, 2009-10-19 at 09:52 +0200, Fortini Matteo wrote:
 >
-> > It is nice doing things in C code, but you have to be aware
-> > of the environment and the side effects when in this kind
+>   
+>> I didn't find a cleaner way than just #ifdef'ing the map_copy_from call 
+>> and substitute with my call on relevant cases. I wonder if there is a 
+>> cleaner way.
+>>     
 >
-> Yup.
+> Remove the call to simple_map_init() and do it manually in your driver
+> with your own functions.
 >
-> Cheers,
-> Ben.
+>   
+>> And yes, as soon as I've cleaned up the code a little bit, I will 
+>> definitely post a patch about it.
+>>
+>> Moreover: a huge benefit would come from exploiting DMA on these 
+>> transfers, 
+>>     
+>
+> probably depends on the block size if it's a gain or not. What is the
+> size you normally see. 
 >
 >
->
+>   
