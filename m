@@ -1,19 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C8E0FB7BC2
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2009 18:11:43 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Oct 2009 18:10:52 +1100
-Message-ID: <1256627452.11607.90.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTPS id 79600B7C06
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2009 20:16:56 +1100 (EST)
+In-Reply-To: <1256601653.2076.51.camel@pasglop>
+References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<20091015165650.GA3837@compile2.chatsunix.int.mrv.com>
+	<OFF665748B.AAF26319-ONC1257651.00296F23-C1257651.002D6BF7@transmode.se>
+	<20091016202541.GA16358@compile2.chatsunix.int.mrv.com>	
+	<OF2BB5EF59.1EE0A77D-ONC1257652.003D79DC-C1257652.003EA687@LocalDomain>
+	<OFA43B9FDF.F43B1705-ONC1257652.0041B12F-C1257652.004211A3@transmode.se>
+	<1256597241.2076.38.camel@pasglop>	
+	<21C04675-E563-49E2-B2E6-7CAB9D8BE985@embeddedalley.com>
+	<1256601653.2076.51.camel@pasglop>
+Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF2108C9F5.3115433C-ONC125765C.003129B4-C125765C.0032EE38@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Tue, 27 Oct 2009 10:16:17 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,63 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 27/10/2009 01:00:53:
+>
+> On Mon, 2009-10-26 at 16:26 -0700, Dan Malek wrote:
+> > Just be careful the get_user() doesn't regenerate the same
+> > translation error you are trying to fix by being here......
 
-Some of these might have been better in -rc4 or earlier, all my fault
-for having some backlog that I'm still going through. So we have some
-bug fixes (not necessarily regressions but also generally simple
-enough that I decided to go for 2.6.32 anyways) and a few very trivial
-Kconfig cleanups (outside of arch/powerpc but related to our symbols)
-from Kumar that could go anytime.
+yes, I had some problems with this initially but managed to work around that.
+I noticed another problem though, I got multiple TLB errors for the same
+address when I did it in C. Noticed by just printk:ing every hit
+for a dcbX insn in do_page_fault. I can't explain it, but it seems
+like when moving to C you have to execute a rfi insn and that might somehow
+restart the dcbX insn before moving on to the page fault routine(or something
+totally different)
 
-The following changes since commit 964fe080d94db82a3268443e9b9ece4c60246414:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../rusty/linux-2.6-for-linus
+>
+> It shouldn't since it will always come up with a proper DAR but
+> you may want to double check before hand that your instruction
+> address you are loading from is -not- your marker value for bad DAR.
 
-are available in the git repository at:
+hmm, I check that the insn really is a dcbX insn, but not that the address is
+!= 0x00f0. Don't see how it could be as if something is wrong with
+the insn address you get ITLB error instead of a DTLB error.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+Anyhow, things seems stalled as I haven't heard from Scott or Rex for a while.
+If this isn't working now, I really don't know what is wrong and need
+some debugging help.
 
-Andreas Schwab (2):
-      powerpc: Fix segment mapping in vdso32
-      powerpc: Align vDSO base address
-
-Benjamin Herrenschmidt (1):
-      powerpc/ppc64: Use preempt_schedule_irq instead of preempt_schedule
-
-Josh Boyer (1):
-      powerpc/booke: Fix xmon single step on PowerPC Book-E
-
-Kumar Gala (7):
-      powerpc: Add a Book-3E 64-bit defconfig
-      powerpc: Fix compile errors found by new ppc64e_defconfig
-      powerpc: Limit hugetlbfs support to PPC64 Book-3S machines
-      powerpc: Limit memory hotplug support to PPC64 Book-3S machines
-      powerpc: Minor cleanup to init/Kconfig
-      powerpc: Minor cleanup to sound/ppc/Kconfig
-      powerpc: Minor cleanup to lib/Kconfig.debug
-
-Michael Neuling (1):
-      powerpc/perf_events: Fix priority of MSR HV vs PR bits
-
-Stephen Rothwell (1):
-      powerpc/iseries: Remove compiler version dependent hack
-
- arch/powerpc/configs/ppc64e_defconfig   | 2199 +++++++++++++++++++++++++++++++
- arch/powerpc/kernel/entry_64.S          |   41 +-
- arch/powerpc/kernel/pci_64.c            |    2 +
- arch/powerpc/kernel/perf_event.c        |   17 +-
- arch/powerpc/kernel/process.c           |    2 +-
- arch/powerpc/kernel/setup_64.c          |    1 -
- arch/powerpc/kernel/vdso.c              |   11 +-
- arch/powerpc/kernel/vdso32/vdso32.lds.S |    4 +-
- arch/powerpc/platforms/iseries/Makefile |   11 +-
- arch/powerpc/platforms/iseries/dt.c     |   56 +-
- arch/powerpc/xmon/xmon.c                |   20 +-
- fs/Kconfig                              |    2 +-
- init/Kconfig                            |    2 +-
- lib/Kconfig.debug                       |    2 +-
- mm/Kconfig                              |    2 +-
- sound/ppc/Kconfig                       |    2 +-
- 16 files changed, 2294 insertions(+), 80 deletions(-)
- create mode 100644 arch/powerpc/configs/ppc64e_defconfig
+>
+> > It is nice doing things in C code, but you have to be aware
+> > of the environment and the side effects when in this kind
+>
+> Yup.
+>
+> Cheers,
+> Ben.
+>
+>
+>
