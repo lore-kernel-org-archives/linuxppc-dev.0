@@ -1,17 +1,17 @@
 Return-Path: <anton@ozlabs.org>
-Date: Tue, 27 Oct 2009 15:51:09 +1100
+Date: Tue, 27 Oct 2009 16:02:23 +1100
 From: Anton Blanchard <anton@samba.org>
 To: Steven Rostedt <rostedt@goodmis.org>,
 	Frederic Weisbecker <fweisbec@gmail.com>,
 	Ingo Molnar <mingo@redhat.com>, benh@kernel.crashing.org
-Subject: [PATCH 4/6] powerpc: tracing: Give hypervisor call tracepoints
-	access to arguments
-Message-ID: <20091027045109.GE3085@kryten>
+Subject: hypervisor call trace module
+Message-ID: <20091027050223.GI3085@kryten>
 References: <20091027044742.GB3085@kryten> <20091027044914.GC3085@kryten>
-	<20091027045029.GD3085@kryten>
+	<20091027045029.GD3085@kryten> <20091027045109.GE3085@kryten>
+	<20091027045157.GF3085@kryten> <20091027045224.GG3085@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091027045029.GD3085@kryten>
+Content-Type: multipart/mixed; boundary="oC1+HKm2/end4ao3"
+In-Reply-To: <20091027045224.GG3085@kryten>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,188 +23,189 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-While most users of the hcall tracepoints will only want the opcode and return
-code, some will want all the arguments. To avoid the complexity of using
-varargs we pass a pointer to the register save area which contain all
-arguments.
+--oC1+HKm2/end4ao3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
 
-Index: linux.trees.git/arch/powerpc/platforms/pseries/hvCall.S
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/hvCall.S	2009-10-27 14:29:09.000000000 +1100
-+++ linux.trees.git/arch/powerpc/platforms/pseries/hvCall.S	2009-10-27 14:29:16.000000000 +1100
-@@ -30,7 +30,7 @@ hcall_tracepoint_refcount:
-  * in early init (eg when populating the MMU hashtable) by using an
-  * unconditional cpu feature.
-  */
--#define HCALL_INST_PRECALL					\
-+#define HCALL_INST_PRECALL(FIRST_REG)				\
- BEGIN_FTR_SECTION;						\
- 	b	1f;						\
- END_FTR_SECTION(0, 1);						\
-@@ -47,6 +47,7 @@ END_FTR_SECTION(0, 1);						\
- 	std	r9,STK_PARM(r9)(r1);				\
- 	std	r10,STK_PARM(r10)(r1);				\
- 	std	r0,16(r1);					\
-+	addi	r4,r1,STK_PARM(FIRST_REG);			\
- 	stdu	r1,-STACK_FRAME_OVERHEAD(r1);			\
- 	bl	.__trace_hcall_entry;				\
- 	addi	r1,r1,STACK_FRAME_OVERHEAD;			\
-@@ -68,7 +69,7 @@ END_FTR_SECTION(0, 1);						\
-  * in early init (eg when populating the MMU hashtable) by using an
-  * unconditional cpu feature.
-  */
--#define HCALL_INST_POSTCALL					\
-+#define __HCALL_INST_POSTCALL					\
- BEGIN_FTR_SECTION;						\
- 	b	1f;						\
- END_FTR_SECTION(0, 1);						\
-@@ -88,9 +89,19 @@ END_FTR_SECTION(0, 1);						\
- 	ld	r3,STK_PARM(r3)(r1);				\
- 	mtlr	r0;						\
- 1:
-+
-+#define HCALL_INST_POSTCALL_NORETS				\
-+	li	r5,0;						\
-+	__HCALL_INST_POSTCALL
-+
-+#define HCALL_INST_POSTCALL(BUFREG)				\
-+	mr	r5,BUFREG;					\
-+	__HCALL_INST_POSTCALL
-+
- #else
--#define HCALL_INST_PRECALL
--#define HCALL_INST_POSTCALL
-+#define HCALL_INST_PRECALL(FIRST_ARG)
-+#define HCALL_INST_POSTCALL_NORETS
-+#define HCALL_INST_POSTCALL(BUFREG)
- #endif
- 
- 	.text
-@@ -101,11 +112,11 @@ _GLOBAL(plpar_hcall_norets)
- 	mfcr	r0
- 	stw	r0,8(r1)
- 
--	HCALL_INST_PRECALL
-+	HCALL_INST_PRECALL(r4)
- 
- 	HVSC				/* invoke the hypervisor */
- 
--	HCALL_INST_POSTCALL
-+	HCALL_INST_POSTCALL_NORETS
- 
- 	lwz	r0,8(r1)
- 	mtcrf	0xff,r0
-@@ -117,7 +128,7 @@ _GLOBAL(plpar_hcall)
- 	mfcr	r0
- 	stw	r0,8(r1)
- 
--	HCALL_INST_PRECALL
-+	HCALL_INST_PRECALL(r5)
- 
- 	std     r4,STK_PARM(r4)(r1)     /* Save ret buffer */
- 
-@@ -136,7 +147,7 @@ _GLOBAL(plpar_hcall)
- 	std	r6, 16(r12)
- 	std	r7, 24(r12)
- 
--	HCALL_INST_POSTCALL
-+	HCALL_INST_POSTCALL(r12)
- 
- 	lwz	r0,8(r1)
- 	mtcrf	0xff,r0
-@@ -183,7 +194,7 @@ _GLOBAL(plpar_hcall9)
- 	mfcr	r0
- 	stw	r0,8(r1)
- 
--	HCALL_INST_PRECALL
-+	HCALL_INST_PRECALL(r5)
- 
- 	std     r4,STK_PARM(r4)(r1)     /* Save ret buffer */
- 
-@@ -211,7 +222,7 @@ _GLOBAL(plpar_hcall9)
- 	std	r11,56(r12)
- 	std	r0, 64(r12)
- 
--	HCALL_INST_POSTCALL
-+	HCALL_INST_POSTCALL(r12)
- 
- 	lwz	r0,8(r1)
- 	mtcrf	0xff,r0
-Index: linux.trees.git/arch/powerpc/include/asm/trace.h
-===================================================================
---- linux.trees.git.orig/arch/powerpc/include/asm/trace.h	2009-10-27 14:28:15.000000000 +1100
-+++ linux.trees.git/arch/powerpc/include/asm/trace.h	2009-10-27 14:29:16.000000000 +1100
-@@ -81,9 +81,9 @@ extern void hcall_tracepoint_unregfunc(v
- 
- TRACE_EVENT_FN(hcall_entry,
- 
--	TP_PROTO(unsigned long opcode),
-+	TP_PROTO(unsigned long opcode, unsigned long *args),
- 
--	TP_ARGS(opcode),
-+	TP_ARGS(opcode, args),
- 
- 	TP_STRUCT__entry(
- 		__field(unsigned long, opcode)
-@@ -100,9 +100,10 @@ TRACE_EVENT_FN(hcall_entry,
- 
- TRACE_EVENT_FN(hcall_exit,
- 
--	TP_PROTO(unsigned long opcode, unsigned long retval),
-+	TP_PROTO(unsigned long opcode, unsigned long retval,
-+		unsigned long *retbuf),
- 
--	TP_ARGS(opcode, retval),
-+	TP_ARGS(opcode, retval, retbuf),
- 
- 	TP_STRUCT__entry(
- 		__field(unsigned long, opcode)
-Index: linux.trees.git/arch/powerpc/platforms/pseries/lpar.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/lpar.c	2009-10-27 14:28:16.000000000 +1100
-+++ linux.trees.git/arch/powerpc/platforms/pseries/lpar.c	2009-10-27 14:29:16.000000000 +1100
-@@ -683,13 +683,14 @@ void hcall_tracepoint_unregfunc(void)
- 	hcall_tracepoint_refcount--;
- }
- 
--void __trace_hcall_entry(unsigned long opcode)
-+void __trace_hcall_entry(unsigned long opcode, unsigned long *args)
- {
--	trace_hcall_entry(opcode);
-+	trace_hcall_entry(opcode, args);
- }
- 
--void __trace_hcall_exit(long opcode, unsigned long retval)
-+void __trace_hcall_exit(long opcode, unsigned long retval,
-+			unsigned long *retbuf)
- {
--	trace_hcall_exit(opcode, retval);
-+	trace_hcall_exit(opcode, retval, retbuf);
- }
- #endif
-Index: linux.trees.git/arch/powerpc/platforms/pseries/hvCall_inst.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/hvCall_inst.c	2009-10-27 14:28:16.000000000 +1100
-+++ linux.trees.git/arch/powerpc/platforms/pseries/hvCall_inst.c	2009-10-27 14:29:16.000000000 +1100
-@@ -102,7 +102,7 @@ static const struct file_operations hcal
- #define CPU_NAME_BUF_SIZE	32
- 
- 
--static void probe_hcall_entry(unsigned long opcode)
-+static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
- {
- 	struct hcall_stats *h;
- 
-@@ -114,7 +114,8 @@ static void probe_hcall_entry(unsigned l
- 	h->purr_start = mfspr(SPRN_PURR);
- }
- 
--static void probe_hcall_exit(unsigned long opcode, unsigned long retval)
-+static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
-+			     unsigned long *retbuf)
- {
- 	struct hcall_stats *h;
- 
+Here is an example of using the hcall tracepoints. This kernel
+module provides strace like functionality for hypervisor hcalls:
+
+-> 0x64(ff000002, 1, 2, d0000000034d7a71, f, c000000000a6f388, 1, c000000000989008, c000000000a3f480)
+  <- 0x64()
+
+Which was an EOI (opcode 0x64) of 0xff000002
+
+There are a number of drivers that carry a lot of hcall related debug
+code just in case we have to chase down a bug. I'm hoping hcall tracepoints
+could replace it all and allow for much more powerful debugging.
+
+Anton
+
+--oC1+HKm2/end4ao3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=Makefile
+
+obj-m := hcall_trace.o
+KDIR := /lib/modules/$(shell uname -r)/build
+PWD := $(shell pwd)
+default:
+	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
+
+clean:
+	rm -rf *.mod.c *.ko *.o .*.cmd .tmp_versions Module.markers modules.order Module.symvers
+
+--oC1+HKm2/end4ao3
+Content-Type: text/x-csrc; charset=us-ascii
+Content-Disposition: attachment; filename="hcall_trace.c"
+
+/*
+ * Hypervisor hcall trace
+ *
+ * Look for output in /sys/kernel/debug/powerpc/hcall_trace/
+ * 
+ * Copyright (C) 2009 Anton Blanchard <anton@au.ibm.com>, IBM
+ *      
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version
+ * 2 of the License, or (at your option) any later version.
+ */             
+                        
+#include <linux/module.h>
+#include <linux/debugfs.h>
+#include <linux/relay.h>
+#include <asm/trace.h>
+
+#define SUBBUF_SIZE	131072
+#define N_SUBBUFS	8
+
+#define BUFLEN		512
+
+static struct rchan *log_chan;
+
+static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
+{
+	char buf[BUFLEN];
+
+	/* Don't log H_CEDE */
+	if (opcode == H_CEDE)
+		return;
+
+	snprintf(buf, BUFLEN,
+		"-> 0x%lx(%lx, %lx, %lx, %lx, %lx, %lx, %lx, %lx, %lx)\n",
+		opcode, *args, *(args+1), *(args+2), *(args+3), *(args+4),
+		*(args+5), *(args+6), *(args+7), *(args+8));
+
+	relay_write(log_chan, buf, strlen(buf));
+}
+
+static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
+			     unsigned long *retbuf)
+{
+	char buf[BUFLEN];
+
+	/* Don't log H_CEDE */
+	if (opcode == H_CEDE)
+		return;
+
+	if (retbuf)
+		snprintf(buf, BUFLEN, 
+		    "  <- 0x%lx(%lx, %lx, %lx, %lx, %lx, %lx, %lx, %lx, %lx)\n",
+			opcode, *retbuf, *(retbuf+1),
+			*(retbuf+2), *(retbuf+3), *(retbuf+4), *(retbuf+5),
+			*(retbuf+6), *(retbuf+7), *(retbuf+8));
+	else
+		sprintf(buf, "  <- 0x%lx()\n", opcode);
+
+	relay_write(log_chan, buf, strlen(buf));
+}
+
+static struct dentry *create_buf_file_handler(const char *filename,
+					      struct dentry *parent, int mode,
+					      struct rchan_buf *buf,
+					      int *is_global)
+{
+	return debugfs_create_file(filename, mode, parent, buf,
+		&relay_file_operations);
+}
+
+static int remove_buf_file_handler(struct dentry *dentry)
+{
+	debugfs_remove(dentry);
+	return 0;
+}
+
+static int subbuf_start(struct rchan_buf *buf, void *subbuf, void *prev_subbuf,
+			size_t prev_padding)
+{
+	return 1;
+}
+
+static struct rchan_callbacks relay_callbacks =
+{
+	.create_buf_file = create_buf_file_handler,
+	.remove_buf_file = remove_buf_file_handler,
+	.subbuf_start = subbuf_start,
+};
+
+static struct dentry *debugfs_root;
+
+static int __init hcall_trace_init(void)
+{
+	debugfs_root = debugfs_create_dir("hcall_trace", powerpc_debugfs_root);
+
+	if (debugfs_root == ERR_PTR(-ENODEV)) {
+		printk(KERN_ERR "Debugfs not configured\n");
+		goto err_out;
+	}
+
+	if (!debugfs_root) {
+		printk(KERN_ERR "Could not create debugfs directory\n");
+		goto err_out;
+	}
+
+	log_chan = relay_open("cpu", debugfs_root, SUBBUF_SIZE,
+			      N_SUBBUFS, &relay_callbacks, NULL);
+	if (!log_chan) {
+		printk(KERN_ERR "relay_open failed\n");
+		goto err_relay_open;
+	}
+
+	if (register_trace_hcall_entry(probe_hcall_entry)) {
+		printk(KERN_ERR "probe_hcall_entry probe point failed\n");
+		goto err_probe_hcall_entry;
+	}
+
+	if (register_trace_hcall_exit(probe_hcall_exit)) {
+		printk(KERN_ERR "probe_hcall_exit probe point failed\n");
+		goto err_probe_hcall_exit;
+	}
+
+	return 0;
+
+err_probe_hcall_exit:
+	unregister_trace_hcall_entry(probe_hcall_entry);
+err_probe_hcall_entry:
+	relay_close(log_chan);
+err_relay_open:
+	debugfs_remove(debugfs_root);
+err_out:
+	return -ENODEV;
+}
+
+static void __exit hcall_trace_exit(void)
+{
+	unregister_trace_hcall_exit(probe_hcall_exit);
+	unregister_trace_hcall_entry(probe_hcall_entry);
+
+	relay_close(log_chan);
+	debugfs_remove(debugfs_root);
+}
+
+module_init(hcall_trace_init)
+module_exit(hcall_trace_exit)
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Anton Blanchard");
+
+--oC1+HKm2/end4ao3--
