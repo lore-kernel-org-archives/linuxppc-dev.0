@@ -1,23 +1,20 @@
-Return-Path: <ayman@elkhashab.com>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 343E9B7BBB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 28 Oct 2009 04:32:45 +1100 (EST)
-Received: from crust.elkhashab.com ([24.28.25.36])
-	by hrndva-omta02.mail.rr.com with ESMTP
-	id <20091027172738886.YTRI24001@hrndva-omta02.mail.rr.com>
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2009 17:27:41 +0000
-Received: from [192.168.1.20] (millhouse.elkhashab.com [192.168.1.20])
-	by crust.elkhashab.com (8.14.3/8.14.3/Debian-5) with ESMTP id
-	n9RHRYsQ019170
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2009 12:27:34 -0500
-Message-ID: <4AE72D83.7000404@elkhashab.com>
-Date: Tue, 27 Oct 2009 12:27:31 -0500
-From: Ayman El-Khashab <ayman@elkhashab.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
+	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id B9D30B7BC3
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 04:45:17 +1100 (EST)
+Received: by ywh37 with SMTP id 37so377206ywh.17
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2009 10:45:16 -0700 (PDT)
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: help with unhandled IRQ error with mpt2sas driver and powerpc 460EX
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Sender: glikely@secretlab.ca
+In-Reply-To: <fa686aa40910150946s70ad4013y15cbf9e29c5e50f2@mail.gmail.com>
+References: <fa686aa40910150946s70ad4013y15cbf9e29c5e50f2@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 27 Oct 2009 11:44:56 -0600
+Message-ID: <fa686aa40910271044w683f78e7odb0d90e48e418e82@mail.gmail.com>
+Subject: Re: Please pull mpc5200 and OF changes
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,53 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, I am using the mpt2sas driver on the canyonlands / 460EX board.  
-I've already found and fixed one problem, but can't get past the 
-unhandled IRQ.
+Hey Ben,
 
-The first problem I noticed is that the physical address is read into a 
-32 bit variable, but the 460ex has a 36 bit bus so the ioremap would 
-always fail.  I've change the defn of chip_phys in mpt2sas_base.h to u64 
-and that cleared up that issue.   As soon as the unmask_interrupts 
-method is called (or not long after), I get an interrupt -- presumably 
-from the sas controller.  If I comment out the unmask, the interrupt 
-never occurs.  If I unmask them, I get the interrupt.  I've traced the 
-code through the interrupt handler all the way to ~ line 757.
+I don't see these pulled into your tree yet.  Can you please this tree
+into your merge branch?
 
- rpf = &ioc->reply_post_free[ioc->reply_post_host_index];
+Thanks,
+g.
 
-I've verified that at the end of this, IRQ_NONE is returned.  At this 
-point the kernel prints the following -- the last statements lead me to 
-think that the sas controller expected something but never got it.  I am 
-unsure how to proceed at this point.  I am using a denx kernel head 
-pulled from git today since there were some changes to thsi driver for 
-endian issues.
+On Thu, Oct 15, 2009 at 10:46 AM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
+> Hi Ben.
+>
+> Here are some OF and MPC5200 changes needed for 2.6.32. =A0Mostly
+> defconfig updates and a couple of new board dts files.
+>
+> Cheers,
+> g.
+>
+> The following changes since commit 161291396e76e0832c08f617eb9bd364d16481=
+48:
+> =A0Linus Torvalds (1):
+> =A0 =A0 =A0 =A0Linux 2.6.32-rc4
+>
+> are available in the git repository at:
+>
+> =A0git://git.secretlab.ca/git/linux-2.6 merge
+>
+> Grant Likely (1):
+> =A0 =A0 =A0powerpc/5200: Update defconfigs
+>
+> Heiko Schocher (2):
+> =A0 =A0 =A0mpc5200: support for the MAN mpc5200 based board uc101
+> =A0 =A0 =A0mpc5200: support for the MAN mpc5200 based board mucmc52
+>
+> Julia Lawall (1):
+> =A0 =A0 =A0drivers/serial/mpc52xx_uart.c: Use UPIO_MEM rather than SERIAL=
+_IO_MEM
+>
+> J=E9r=F4me Pouiller (1):
+> =A0 =A0 =A0of: Remove nested function
+>
+> Wolfram Sang (1):
+> =A0 =A0 =A0powerpc/boot/dts: drop obsolete 'fsl5200-clocking'
+>
+> =A0arch/powerpc/boot/dts/cm5200.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A01=
+ -
+> =A0arch/powerpc/boot/dts/digsy_mtc.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A01 -
+> =A0arch/powerpc/boot/dts/lite5200.dts =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A02 -
+> =A0arch/powerpc/boot/dts/lite5200b.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A02 -
+> =A0arch/powerpc/boot/dts/media5200.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A02 -
+> =A0arch/powerpc/boot/dts/motionpro.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A01 -
+> =A0arch/powerpc/boot/dts/mpc5121ads.dts =A0 =A0 =A0 =A0 =A0| =A0 =A03 -
+> =A0arch/powerpc/boot/dts/mucmc52.dts =A0 =A0 =A0 =A0 =A0 =A0 | =A0332 +++=
+++++++++++++++++++++++
+> =A0arch/powerpc/boot/dts/pcm030.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A02=
+ -
+> =A0arch/powerpc/boot/dts/pcm032.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A02=
+ -
+> =A0arch/powerpc/boot/dts/tqm5200.dts =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A01 -
+> =A0arch/powerpc/boot/dts/uc101.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0284 +=
+++++++++++++++++++++
+> =A0arch/powerpc/configs/52xx/cm5200_defconfig =A0 =A0| =A0136 ++++++----
+> =A0arch/powerpc/configs/52xx/lite5200b_defconfig | =A0153 ++++++++----
+> =A0arch/powerpc/configs/52xx/motionpro_defconfig | =A0146 +++++++----
+> =A0arch/powerpc/configs/52xx/pcm030_defconfig =A0 =A0| =A0142 ++++++-----
+> =A0arch/powerpc/configs/52xx/tqm5200_defconfig =A0 | =A0148 +++++++----
+> =A0arch/powerpc/configs/mpc5200_defconfig =A0 =A0 =A0 =A0| =A0192 +++++++=
++++-----
+> =A0arch/powerpc/platforms/52xx/mpc5200_simple.c =A0| =A0 =A02 +
+> =A0drivers/of/of_mdio.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0 13 +-
+> =A0drivers/serial/mpc52xx_uart.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =
+=A02 +-
+> =A021 files changed, 1196 insertions(+), 371 deletions(-)
+> =A0create mode 100644 arch/powerpc/boot/dts/mucmc52.dts
+> =A0create mode 100644 arch/powerpc/boot/dts/uc101.dts
+>
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+>
 
-irq 18: nobody cared (try booting with the "irqpoll" option)
-Call Trace:
-[c0367df0] [c0005eac] show_stack+0x44/0x16c (unreliable)
-[c0367e30] [c004eedc] __report_bad_irq+0x34/0xb8
-[c0367e50] [c004f118] note_interrupt+0x1b8/0x224
-[c0367e80] [c004ff50] handle_level_irq+0xa0/0x11c
-[c0367e90] [c0018ba4] uic_irq_cascade+0xf8/0x12c
-[c0367eb0] [c00041d0] do_IRQ+0x98/0xb4
-[c0367ed0] [c000df40] ret_from_except+0x0/0x18
-[c0367f90] [c0006ed8] cpu_idle+0x50/0xd8
-[c0367fb0] [c000197c] rest_init+0x5c/0x70
-[c0367fc0] [c0320848] start_kernel+0x224/0x2a0
-[c0367ff0] [c0000200] skpinv+0x190/0x1cc
-handlers:
-[<c01aba98>] (_base_interrupt+0x0/0x8f8)
-Disabling IRQ #18
-mpt2sas0: _base_event_notification: timeout
-mf:
-        07000000 00000000 00000000 00000000 00000000 0f2f3fff fffffffc 
-ffffffff
-        ffffffff 00000000 00000000
-mpt2sas0: sending diag reset !!
-mpt2sas0: diag reset: SUCCESS
-mpt2sas0: failure at 
-drivers/scsi/mpt2sas/mpt2sas_scsih.c:5989/_scsih_probe()!
 
-Thanks
-Ayman
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
