@@ -1,27 +1,27 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9FBADB7B77
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2009 08:52:23 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9SKmTew023540
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 14:48:29 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n9SKxY0k148666
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 14:59:38 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id n9SKxX0H000970
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 14:59:33 -0600
-Message-ID: <4AE8B0B1.4020102@austin.ibm.com>
-Date: Wed, 28 Oct 2009 15:59:29 -0500
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 611B41007E9
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2009 08:53:19 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9SKuWg6024417
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 14:56:32 -0600
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+	id n9SKwUlq149414
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 14:58:35 -0600
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id n9SKwUuW002549
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 14:58:30 -0600
+Message-ID: <4AE8B072.1070603@austin.ibm.com>
+Date: Wed, 28 Oct 2009 15:58:26 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 6/6 v5] CPU DLPAR Handling
+Subject: [PATCH 5/6 v5] CPU probe/release files
 References: <4AE8ADCF.6090104@austin.ibm.com>
 In-Reply-To: <4AE8ADCF.6090104@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -34,130 +34,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Register the pseries specific handler for the powerpc architecture handlers
-for the cpu probe and release files.  This also implements the cpu DLPAR
-addition and removal of CPUS from the system.
+Create new probe and release sysfs files to facilitate adding and removing
+cpus from the system.  This also creates the powerpc specific stubs to handle
+the arch callouts from writes to the sysfs files.
 
-Signed-off-by: Nathan Fontenot <nfont at asutin.ibm.com>
+The creation and use of these files is regulated by the 
+CONFIG_ARCH_CPU_PROBE_RELEASE option so that only architectures that need the
+capability will have the files created.
+
+Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com>
 ---
 
-Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+Index: powerpc/drivers/base/cpu.c
 ===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-10-28 15:21:49.000000000 -0500
-+++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-10-28 15:21:56.000000000 -0500
-@@ -1,11 +1,10 @@
- /*
-- * dlpar.c - support for dynamic reconfiguration (including PCI
-- * Hotplug and Dynamic Logical Partitioning on RPA platforms).
-+ * Support for dynamic reconfiguration (including PCI, Memory, and CPU
-+ * Hotplug and Dynamic Logical Partitioning on PAPR platforms).
-  *
-  * Copyright (C) 2009 Nathan Fontenot
-  * Copyright (C) 2009 IBM Corporation
-  *
-- *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License version
-  * 2 as published by the Free Software Foundation.
-@@ -19,7 +18,7 @@
- #include <linux/memory_hotplug.h>
- #include <linux/sysdev.h>
- #include <linux/sysfs.h>
--
-+#include <linux/cpu.h>
- 
- #include <asm/prom.h>
- #include <asm/machdep.h>
-@@ -408,6 +407,80 @@
- 	return 0;
+--- powerpc.orig/drivers/base/cpu.c	2009-10-28 15:20:34.000000000 -0500
++++ powerpc/drivers/base/cpu.c	2009-10-28 15:21:53.000000000 -0500
+@@ -54,6 +54,7 @@
+ 		ret = count;
+ 	return ret;
  }
++
+ static SYSDEV_ATTR(online, 0644, show_online, store_online);
  
+ static void __cpuinit register_cpu_control(struct cpu *cpu)
+@@ -72,6 +73,38 @@
+ 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
+ 	return;
+ }
++
 +#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+static ssize_t cpu_probe(const char *buf, size_t count)
++static ssize_t cpu_probe_store(struct class *class, const char *buf,
++			       size_t count)
 +{
-+	struct device_node *dn;
-+	unsigned long drc_index;
-+	char *cpu_name;
-+	int rc;
-+
-+	rc = strict_strtoul(buf, 0, &drc_index);
-+	if (rc)
-+		return -EINVAL;
-+
-+	rc = acquire_drc(drc_index);
-+	if (rc)
-+		return -EINVAL;
-+
-+	dn = configure_connector(drc_index);
-+	if (!dn) {
-+		release_drc(drc_index);
-+		return -EINVAL;
-+	}
-+
-+	/* fixup dn name */
-+	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus/") + 1,
-+			   GFP_KERNEL);
-+	if (!cpu_name) {
-+		free_cc_nodes(dn);
-+		release_drc(drc_index);
-+		return -ENOMEM;
-+	}
-+
-+	sprintf(cpu_name, "/cpus/%s", dn->full_name);
-+	kfree(dn->full_name);
-+	dn->full_name = cpu_name;
-+
-+	rc = add_device_tree_nodes(dn);
-+	if (rc)
-+		release_drc(drc_index);
-+
-+	return rc ? -EINVAL : count;
++	return arch_cpu_probe(buf, count);
 +}
 +
-+static ssize_t cpu_release(const char *buf, size_t count)
++static ssize_t cpu_release_store(struct class *class, const char *buf,
++				 size_t count)
 +{
-+	struct device_node *dn;
-+	const u32 *drc_index;
-+	int rc;
-+
-+	dn = of_find_node_by_path(buf);
-+	if (!dn)
-+		return -EINVAL;
-+
-+	drc_index = of_get_property(dn, "ibm,my-drc-index", NULL);
-+	if (!drc_index) {
-+		of_node_put(dn);
-+		return -EINVAL;
-+	}
-+
-+	rc = release_drc(*drc_index);
-+	if (rc) {
-+		of_node_put(dn);
-+		return -EINVAL;
-+	}
-+
-+	rc = remove_device_tree_nodes(dn);
-+	if (rc)
-+		acquire_drc(*drc_index);
-+
-+	of_node_put(dn);
-+	return rc ? -EINVAL : count;
++	return arch_cpu_release(buf, count);
 +}
 +
++static CLASS_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
++static CLASS_ATTR(release, S_IWUSR, NULL, cpu_release_store);
++
++int __init cpu_probe_release_init(void)
++{
++	int rc;
++
++	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
++			       &class_attr_probe.attr);
++	if (!rc)
++		rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
++				       &class_attr_release.attr);
++
++	return rc;
++}
++device_initcall(cpu_probe_release_init);
 +#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
 +
- #ifdef CONFIG_MEMORY_HOTPLUG
- 
- static struct property *clone_property(struct property *old_prop)
-@@ -591,6 +664,11 @@
- 	ppc_md.memory_probe = memory_probe;
+ #else /* ... !CONFIG_HOTPLUG_CPU */
+ static inline void register_cpu_control(struct cpu *cpu)
+ {
+Index: powerpc/arch/powerpc/include/asm/machdep.h
+===================================================================
+--- powerpc.orig/arch/powerpc/include/asm/machdep.h	2009-10-28 15:21:47.000000000 -0500
++++ powerpc/arch/powerpc/include/asm/machdep.h	2009-10-28 15:21:53.000000000 -0500
+@@ -274,6 +274,11 @@
+ 	int (*memory_probe)(u64);
  #endif
  
 +#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+	ppc_md.cpu_release = cpu_release;
-+	ppc_md.cpu_probe = cpu_probe;
++	ssize_t (*cpu_probe)(const char *, size_t);
++	ssize_t (*cpu_release)(const char *, size_t);
 +#endif
 +
- 	return 0;
+ };
+ 
+ extern void e500_idle(void);
+Index: powerpc/arch/powerpc/kernel/sysfs.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/sysfs.c	2009-10-28 15:20:34.000000000 -0500
++++ powerpc/arch/powerpc/kernel/sysfs.c	2009-10-28 15:21:53.000000000 -0500
+@@ -461,6 +461,25 @@
+ 
+ 	cacheinfo_cpu_offline(cpu);
  }
- device_initcall(pseries_dlpar_init);
++
++#ifdef CONFIG_ARCH_PROBE_RELEASE
++ssize_t arch_cpu_probe(const char *buf, size_t count)
++{
++	if (ppc_md.cpu_probe)
++		return ppc_md.cpu_probe(buf, count);
++
++	return -EINVAL;
++}
++
++ssize_t arch_cpu_release(const char *buf, size_t count)
++{
++	if (ppc_md.cpu_release)
++		return ppc_md.cpu_release(buf, count);
++
++	return -EINVAL;
++}
++#endif /* CONFIG_ARCH_PROBE_RELEASE */
++
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+ static int __cpuinit sysfs_cpu_notify(struct notifier_block *self,
+Index: powerpc/arch/powerpc/Kconfig
+===================================================================
+--- powerpc.orig/arch/powerpc/Kconfig	2009-10-28 15:21:47.000000000 -0500
++++ powerpc/arch/powerpc/Kconfig	2009-10-28 15:21:53.000000000 -0500
+@@ -320,6 +320,10 @@
+ 
+ 	  Say N if you are unsure.
+ 
++config ARCH_CPU_PROBE_RELEASE
++	def_bool y
++	depends on HOTPLUG_CPU
++
+ config ARCH_ENABLE_MEMORY_HOTPLUG
+ 	def_bool y
+ 
+Index: powerpc/include/linux/cpu.h
+===================================================================
+--- powerpc.orig/include/linux/cpu.h	2009-10-28 15:20:34.000000000 -0500
++++ powerpc/include/linux/cpu.h	2009-10-28 15:21:53.000000000 -0500
+@@ -43,6 +43,10 @@
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern void unregister_cpu(struct cpu *cpu);
++#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
++extern ssize_t arch_cpu_probe(const char *, size_t);
++extern ssize_t arch_cpu_release(const char *, size_t);
++#endif
+ #endif
+ 
+ struct notifier_block;
+Index: powerpc/arch/powerpc/kernel/smp.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/smp.c	2009-10-28 15:20:34.000000000 -0500
++++ powerpc/arch/powerpc/kernel/smp.c	2009-10-28 15:21:53.000000000 -0500
+@@ -364,7 +364,24 @@
+ 	set_cpu_online(cpu, true);
+ 	local_irq_enable();
+ }
++
++#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
++ssize_t arch_cpu_probe(const char *buf, size_t count)
++{
++	if (ppc_md.cpu_probe)
++		return ppc_md.cpu_probe(buf, count);
++
++	return -EINVAL;
++}
++ssize_t arch_cpu_release(const char *buf, size_t count)
++{
++	if (ppc_md.cpu_release)
++		return ppc_md.cpu_release(buf, count);
++
++	return -EINVAL;
++}
+ #endif
++#endif /* CONFIG_HOTPLUG_CPU */
+ 
+ static int __devinit cpu_enable(unsigned int cpu)
+ {
