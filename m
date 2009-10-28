@@ -1,22 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4F378B7BED
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Oct 2009 09:18:03 +1100 (EST)
-Subject: Re: Cache enable missing while creating TLBs for PPC440
-	platform.head_44x.S file.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Vineeth _ <blacklites@gmail.com>
-In-Reply-To: <a9b543570910280639j1ea9038du452249e89215a57e@mail.gmail.com>
-References: <a9b543570910280639j1ea9038du452249e89215a57e@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 29 Oct 2009 09:17:51 +1100
-Message-ID: <1256768271.26770.9.camel@pasglop>
-Mime-Version: 1.0
-Cc: Johnny Hung <johnny.hacking@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	Wolfgang Denk <wd@denx.de>
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CF4F8B7BF1
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2009 09:21:34 +1100 (EST)
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e5.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9SKhdB5012735
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 16:43:39 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n9SKrgVl1347612
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 16:53:42 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n9SKrg9v023978
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 16:53:42 -0400
+Message-ID: <4AE8AF4D.4030403@austin.ibm.com>
+Date: Wed, 28 Oct 2009 15:53:33 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/6 v5] Kernel DLPAR Infrastructure
+References: <4AE8ADCF.6090104@austin.ibm.com>
+In-Reply-To: <4AE8ADCF.6090104@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,67 +33,470 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-10-28 at 19:09 +0530, Vineeth _ wrote:
-> Hi,
-> we are porting Linux 2.6.30 on a ppc440x5 based board.
-> when we check the kernel code in arch/powerpc/kernel/head_44x.S file @
-> line number 162,
-> while creating the TLB for 256MB, the cache enable/disable property is
-> not set by the kernel ? or are we missing smthing ?
-> when we gave that particular attribute, things started working. Please
-> find the kernel code below. We added "PPC44x_TLB_I" attribute to set
-> the cache, kernel started working.
+This patch provides the kernel DLPAR infrastructure in a new filed named
+dlpar.c.  The functionality provided is for acquiring and releasing a resource
+from firmware and the parsing of information returned from the
+ibm,configure-connector rtas call.  Additionally this exports the pSeries
+reconfiguration notifier chain so that it can be invoked when device tree 
+updates are made.
 
-Ugh ?
+Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com> 
+---
 
-Why would you want to set I on the kernel memory ? I means "cache
-inhibited", which -disables- the cache. You really don't want that. You
-must have something else wrong.
-
-Cheers,
-Ben.
-
-> ----arch/powerpc/kernel/head_44x.S
-> 
-> /* Load the kernel PID = 0 */
-> li  r0,0
-> mtspr   SPRN_PID,r0
-> sync
-> 
-> /* Initialize MMUCR */
-> li  r5,0
-> mtspr   SPRN_MMUCR,r5
-> sync
-> 
-> /* pageid fields */
-> clrrwi  r3,r3,10        /* Mask off the effective page number */
-> ori r3,r3,PPC44x_TLB_VALID | PPC44x_TLB_256M
-> 
-> /* xlat fields */
-> clrrwi  r4,r4,10        /* Mask off the real page number */
-> /* ERPN is 0 for first 4GB page */
-> 
-> /* attrib fields */
-> /* Added guarded bit to protect against speculative loads/stores */
-> li  r5,0
-> ori r5,r5,(PPC44x_TLB_I|PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX
-> | PPC44x_TLB_G)
-> /* that cache thing u see above line is added by some malguns there's
-> some issue */
-> 
-> li      r0,63                    /* TLB slot 63 */
-> 
-> tlbwe   r3,r0,PPC44x_TLB_PAGEID /* Load the pageid fields */
-> tlbwe   r4,r0,PPC44x_TLB_XLAT   /* Load the translation fields */
-> tlbwe   r5,r0,PPC44x_TLB_ATTRIB /* Load the attrib/access fields */
-> 
-> ---------
-> 
-> Is this can be considered as a good patch ?
-> 
-> Thanks
-> Vineeth _
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-10-28 15:21:38.000000000 -0500
+@@ -0,0 +1,414 @@
++/*
++ * dlpar.c - support for dynamic reconfiguration (including PCI
++ * Hotplug and Dynamic Logical Partitioning on RPA platforms).
++ *
++ * Copyright (C) 2009 Nathan Fontenot
++ * Copyright (C) 2009 IBM Corporation
++ *
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version
++ * 2 as published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/kref.h>
++#include <linux/notifier.h>
++#include <linux/proc_fs.h>
++#include <linux/spinlock.h>
++
++#include <asm/prom.h>
++#include <asm/machdep.h>
++#include <asm/uaccess.h>
++#include <asm/rtas.h>
++#include <asm/pSeries_reconfig.h>
++
++#define CFG_CONN_WORK_SIZE	4096
++static char workarea[CFG_CONN_WORK_SIZE];
++static DEFINE_SPINLOCK(workarea_lock);
++
++struct cc_workarea {
++	u32	drc_index;
++	u32	zero;
++	u32	name_offset;
++	u32	prop_length;
++	u32	prop_offset;
++};
++
++static struct property *parse_cc_property(char *workarea)
++{
++	struct property *prop;
++	struct cc_workarea *ccwa;
++	char *name;
++	char *value;
++
++	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
++	if (!prop)
++		return NULL;
++
++	ccwa = (struct cc_workarea *)workarea;
++	name = workarea + ccwa->name_offset;
++	prop->name = kzalloc(strlen(name) + 1, GFP_KERNEL);
++	if (!prop->name) {
++		kfree(prop);
++		return NULL;
++	}
++
++	strcpy(prop->name, name);
++
++	prop->length = ccwa->prop_length;
++	value = workarea + ccwa->prop_offset;
++	prop->value = kzalloc(prop->length, GFP_KERNEL);
++	if (!prop->value) {
++		kfree(prop->name);
++		kfree(prop);
++		return NULL;
++	}
++
++	memcpy(prop->value, value, prop->length);
++	return prop;
++}
++
++static void free_property(struct property *prop)
++{
++	kfree(prop->name);
++	kfree(prop->value);
++	kfree(prop);
++}
++
++static struct device_node *parse_cc_node(char *work_area)
++{
++	struct device_node *dn;
++	struct cc_workarea *ccwa;
++	char *name;
++
++	dn = kzalloc(sizeof(*dn), GFP_KERNEL);
++	if (!dn)
++		return NULL;
++
++	ccwa = (struct cc_workarea *)work_area;
++	name = work_area + ccwa->name_offset;
++	dn->full_name = kzalloc(strlen(name) + 1, GFP_KERNEL);
++	if (!dn->full_name) {
++		kfree(dn);
++		return NULL;
++	}
++
++	strcpy(dn->full_name, name);
++	return dn;
++}
++
++static void free_one_cc_node(struct device_node *dn)
++{
++	struct property *prop;
++
++	while (dn->properties) {
++		prop = dn->properties;
++		dn->properties = prop->next;
++		free_property(prop);
++	}
++
++	kfree(dn->full_name);
++	kfree(dn);
++}
++
++static void free_cc_nodes(struct device_node *dn)
++{
++	if (dn->child)
++		free_cc_nodes(dn->child);
++
++	if (dn->sibling)
++		free_cc_nodes(dn->sibling);
++
++	free_one_cc_node(dn);
++}
++
++#define NEXT_SIBLING    1
++#define NEXT_CHILD      2
++#define NEXT_PROPERTY   3
++#define PREV_PARENT     4
++#define MORE_MEMORY     5
++#define CALL_AGAIN	-2
++#define ERR_CFG_USE     -9003
++
++struct device_node *configure_connector(u32 drc_index)
++{
++	struct device_node *dn;
++	struct device_node *first_dn = NULL;
++	struct device_node *last_dn = NULL;
++	struct property *property;
++	struct property *last_property = NULL;
++	struct cc_workarea *ccwa;
++	int cc_token;
++	int rc;
++
++	cc_token = rtas_token("ibm,configure-connector");
++	if (cc_token == RTAS_UNKNOWN_SERVICE)
++		return NULL;
++
++	spin_lock(&workarea_lock);
++
++	ccwa = (struct cc_workarea *)&workarea[0];
++	ccwa->drc_index = drc_index;
++	ccwa->zero = 0;
++
++	rc = rtas_call(cc_token, 2, 1, NULL, workarea, NULL);
++	while (rc) {
++		switch (rc) {
++		case NEXT_SIBLING:
++			dn = parse_cc_node(workarea);
++			if (!dn)
++				goto cc_error;
++
++			dn->parent = last_dn->parent;
++			last_dn->sibling = dn;
++			last_dn = dn;
++			break;
++
++		case NEXT_CHILD:
++			dn = parse_cc_node(workarea);
++			if (!dn)
++				goto cc_error;
++
++			if (!first_dn)
++				first_dn = dn;
++			else {
++				dn->parent = last_dn;
++				if (last_dn)
++					last_dn->child = dn;
++			}
++
++			last_dn = dn;
++			break;
++
++		case NEXT_PROPERTY:
++			property = parse_cc_property(workarea);
++			if (!property)
++				goto cc_error;
++
++			if (!last_dn->properties)
++				last_dn->properties = property;
++			else
++				last_property->next = property;
++
++			last_property = property;
++			break;
++
++		case PREV_PARENT:
++			last_dn = last_dn->parent;
++			break;
++
++		case CALL_AGAIN:
++			break;
++
++		case MORE_MEMORY:
++		case ERR_CFG_USE:
++		default:
++			printk(KERN_ERR "Unexpected Error (%d) "
++			       "returned from configure-connector\n", rc);
++			goto cc_error;
++		}
++
++		rc = rtas_call(cc_token, 2, 1, NULL, workarea, NULL);
++	}
++
++	spin_unlock(&workarea_lock);
++	return first_dn;
++
++cc_error:
++	spin_unlock(&workarea_lock);
++
++	if (first_dn)
++		free_cc_nodes(first_dn);
++
++	return NULL;
++}
++
++static struct device_node *derive_parent(const char *path)
++{
++	struct device_node *parent;
++	char parent_path[128];
++	int parent_path_len;
++
++	parent_path_len = strrchr(path, '/') - path + 1;
++	strlcpy(parent_path, path, parent_path_len);
++
++	parent = of_find_node_by_path(parent_path);
++
++	return parent;
++}
++
++static int add_one_node(struct device_node *dn)
++{
++	struct proc_dir_entry *ent;
++	int rc;
++
++	of_node_set_flag(dn, OF_DYNAMIC);
++	kref_init(&dn->kref);
++	dn->parent = derive_parent(dn->full_name);
++
++	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++					  PSERIES_RECONFIG_ADD, dn);
++	if (rc == NOTIFY_BAD) {
++		printk(KERN_ERR "Failed to add device node %s\n",
++		       dn->full_name);
++		return -ENOMEM; /* For now, safe to assume kmalloc failure */
++	}
++
++	of_attach_node(dn);
++
++#ifdef CONFIG_PROC_DEVICETREE
++	ent = proc_mkdir(strrchr(dn->full_name, '/') + 1, dn->parent->pde);
++	if (ent)
++		proc_device_tree_add_node(dn, ent);
++#endif
++
++	of_node_put(dn->parent);
++	return 0;
++}
++
++int add_device_tree_nodes(struct device_node *dn)
++{
++	struct device_node *child = dn->child;
++	struct device_node *sibling = dn->sibling;
++	int rc;
++
++	dn->child = NULL;
++	dn->sibling = NULL;
++	dn->parent = NULL;
++
++	rc = add_one_node(dn);
++	if (rc)
++		return rc;
++
++	if (child) {
++		rc = add_device_tree_nodes(child);
++		if (rc)
++			return rc;
++	}
++
++	if (sibling)
++		rc = add_device_tree_nodes(sibling);
++
++	return rc;
++}
++
++static int remove_one_node(struct device_node *dn)
++{
++	struct device_node *parent = dn->parent;
++	struct property *prop = dn->properties;
++
++#ifdef CONFIG_PROC_DEVICETREE
++	while (prop) {
++		remove_proc_entry(prop->name, dn->pde);
++		prop = prop->next;
++	}
++
++	if (dn->pde)
++		remove_proc_entry(dn->pde->name, parent->pde);
++#endif
++
++	blocking_notifier_call_chain(&pSeries_reconfig_chain,
++			    PSERIES_RECONFIG_REMOVE, dn);
++	of_detach_node(dn);
++	of_node_put(dn); /* Must decrement the refcount */
++
++	return 0;
++}
++
++static int _remove_device_tree_nodes(struct device_node *dn)
++{
++	int rc;
++
++	if (dn->child) {
++		rc = _remove_device_tree_nodes(dn->child);
++		if (rc)
++			return rc;
++	}
++
++	if (dn->sibling) {
++		rc = _remove_device_tree_nodes(dn->sibling);
++		if (rc)
++			return rc;
++	}
++
++	rc = remove_one_node(dn);
++	return rc;
++}
++
++int remove_device_tree_nodes(struct device_node *dn)
++{
++	int rc;
++
++	if (dn->child) {
++		rc = _remove_device_tree_nodes(dn->child);
++		if (rc)
++			return rc;
++	}
++
++	rc = remove_one_node(dn);
++	return rc;
++}
++
++#define DR_ENTITY_SENSE		9003
++#define DR_ENTITY_PRESENT	1
++#define DR_ENTITY_UNUSABLE	2
++#define ALLOCATION_STATE	9003
++#define ALLOC_UNUSABLE		0
++#define ALLOC_USABLE		1
++#define ISOLATION_STATE		9001
++#define ISOLATE			0
++#define UNISOLATE		1
++
++int acquire_drc(u32 drc_index)
++{
++	int dr_status, rc;
++
++	rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
++		       DR_ENTITY_SENSE, drc_index);
++	if (rc || dr_status != DR_ENTITY_UNUSABLE)
++		return -1;
++
++	rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_USABLE);
++	if (rc)
++		return rc;
++
++	rc = rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
++	if (rc) {
++		rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
++		return rc;
++	}
++
++	return 0;
++}
++
++int release_drc(u32 drc_index)
++{
++	int dr_status, rc;
++
++	rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
++		       DR_ENTITY_SENSE, drc_index);
++	if (rc || dr_status != DR_ENTITY_PRESENT)
++		return -1;
++
++	rc = rtas_set_indicator(ISOLATION_STATE, drc_index, ISOLATE);
++	if (rc)
++		return rc;
++
++	rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
++	if (rc) {
++		rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
++		return rc;
++	}
++
++	return 0;
++}
++
++static int pseries_dlpar_init(void)
++{
++	if (!machine_is(pseries))
++		return 0;
++
++	return 0;
++}
++device_initcall(pseries_dlpar_init);
+Index: powerpc/arch/powerpc/platforms/pseries/Makefile
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/Makefile	2009-10-28 15:20:38.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/Makefile	2009-10-28 15:21:38.000000000 -0500
+@@ -8,7 +8,7 @@
+ 
+ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
+ 			   setup.o iommu.o ras.o rtasd.o \
+-			   firmware.o power.o
++			   firmware.o power.o dlpar.o
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_XICS)	+= xics.o
+ obj-$(CONFIG_SCANLOG)	+= scanlog.o
+Index: powerpc/arch/powerpc/include/asm/pSeries_reconfig.h
+===================================================================
+--- powerpc.orig/arch/powerpc/include/asm/pSeries_reconfig.h	2009-10-28 15:20:38.000000000 -0500
++++ powerpc/arch/powerpc/include/asm/pSeries_reconfig.h	2009-10-28 15:21:38.000000000 -0500
+@@ -17,6 +17,7 @@
+ #ifdef CONFIG_PPC_PSERIES
+ extern int pSeries_reconfig_notifier_register(struct notifier_block *);
+ extern void pSeries_reconfig_notifier_unregister(struct notifier_block *);
++extern struct blocking_notifier_head pSeries_reconfig_chain;
+ #else /* !CONFIG_PPC_PSERIES */
+ static inline int pSeries_reconfig_notifier_register(struct notifier_block *nb)
+ {
+Index: powerpc/arch/powerpc/platforms/pseries/reconfig.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/reconfig.c	2009-10-28 15:20:38.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/reconfig.c	2009-10-28 15:21:38.000000000 -0500
+@@ -96,7 +96,7 @@
+ 	return parent;
+ }
+ 
+-static BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
++BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
+ 
+ int pSeries_reconfig_notifier_register(struct notifier_block *nb)
+ {
