@@ -1,29 +1,21 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 90581B7C32
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2009 08:48:36 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e2.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id n9SKlPnm001035
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 16:47:25 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9SKsvpZ079046
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 16:54:57 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n9SKsv7O027767
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 16:54:57 -0400
-Message-ID: <4AE8AF9C.3060101@austin.ibm.com>
-Date: Wed, 28 Oct 2009 15:54:52 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 88B711007E3
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2009 08:50:31 +1100 (EST)
+Message-ID: <4AE8B761.3090902@ru.mvista.com>
+Date: Thu, 29 Oct 2009 00:28:01 +0300
+From: Valentine <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/6 v5] Move of_drconf_cell to prom.h
-References: <4AE8ADCF.6090104@austin.ibm.com>
-In-Reply-To: <4AE8ADCF.6090104@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v3] powerpc/ppc64: Use preempt_schedule_irq instead of
+	preempt_schedule
+References: <20091019182858.GA10495@ru.mvista.com>	
+	<1256601324.2076.49.camel@pasglop>
+	<1256622077.11607.85.camel@pasglop>	
+	<4AE89936.6080803@ru.mvista.com> <1256761844.26770.2.camel@pasglop>
+In-Reply-To: <1256761844.26770.2.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: olof@lixom.net, linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,56 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the definition of the of_drconf_cell struct from numa.c to prom.h.  This
-is needed so that we can parse the ibm,dynamic-memory device-tree property
-when DLPAR adding and removing memory.
+Benjamin Herrenschmidt wrote:
+> On Wed, 2009-10-28 at 22:19 +0300, Valentine wrote:
+> 
+>> I'm just not sure that we need to clear HARDIRQEN here, since we don't 
+>> really hard-disable the the interrupts.
+> 
+> We do, or rather, we come in with the interrupts hard disabled, no ?
 
-Signed-off-by: Nathan Fontenot <nfont at austin.ibm.com> 
----
+Yes, looks like the interrupts are disabled at this point (before 
+preempt_schedule_irq) most of the times, but we don't hard-disable them 
+here. We just soft-disable them to make preempt_schedule_irq happy. Even 
+if an interrupt fires, it will be hard-disabled and the hardirq flag 
+will be cleared by the exception handler right away. I just think that 
+there's no need to clear hardirq flag if we don't clear MSR_EE.
 
-Index: powerpc/arch/powerpc/include/asm/prom.h
-===================================================================
---- powerpc.orig/arch/powerpc/include/asm/prom.h	2009-10-28 15:20:37.000000000 -0500
-+++ powerpc/arch/powerpc/include/asm/prom.h	2009-10-28 15:21:44.000000000 -0500
-@@ -349,6 +349,18 @@
-  */
- extern void __iomem *of_iomap(struct device_node *device, int index);
- 
-+struct of_drconf_cell {
-+	u64	base_addr;
-+	u32	drc_index;
-+	u32	reserved;
-+	u32	aa_index;
-+	u32	flags;
-+};
-+
-+#define DRCONF_MEM_ASSIGNED	0x00000008
-+#define DRCONF_MEM_AI_INVALID	0x00000040
-+#define DRCONF_MEM_RESERVED	0x00000080
-+
- /*
-  * NB:  This is here while we transition from using asm/prom.h
-  * to linux/of.h
-Index: powerpc/arch/powerpc/mm/numa.c
-===================================================================
---- powerpc.orig/arch/powerpc/mm/numa.c	2009-10-28 15:20:37.000000000 -0500
-+++ powerpc/arch/powerpc/mm/numa.c	2009-10-28 15:21:44.000000000 -0500
-@@ -296,18 +296,6 @@
- 	return result;
- }
- 
--struct of_drconf_cell {
--	u64	base_addr;
--	u32	drc_index;
--	u32	reserved;
--	u32	aa_index;
--	u32	flags;
--};
--
--#define DRCONF_MEM_ASSIGNED	0x00000008
--#define DRCONF_MEM_AI_INVALID	0x00000040
--#define DRCONF_MEM_RESERVED	0x00000080
--
- /*
-  * Read the next lmb list entry from the ibm,dynamic-memory property
-  * and return the information in the provided of_drconf_cell structure.
+Thanks,
+Val.
+> 
+> Ben.
+> 
+>> Thanks,
+>> Val.
+>>
+>>> +	TRACE_DISABLE_INTS
+>>> +
+>>> +	/* Call the scheduler with soft IRQs off */
+>>> +1:	bl	.preempt_schedule_irq
+>>> +
+>>> +	/* Hard-disable interrupts again (and update PACA) */
+>>>  #ifdef CONFIG_PPC_BOOK3E
+>>> -	wrteei	1
+>>> -	bl	.preempt_schedule
+>>>  	wrteei	0
+>>>  #else
+>>> -	ori	r10,r10,MSR_EE
+>>> -	mtmsrd	r10,1		/* reenable interrupts */
+>>> -	bl	.preempt_schedule
+>>>  	mfmsr	r10
+>>> -	clrrdi	r9,r1,THREAD_SHIFT
+>>> -	rldicl	r10,r10,48,1	/* disable interrupts again */
+>>> +	rldicl	r10,r10,48,1
+>>>  	rotldi	r10,r10,16
+>>>  	mtmsrd	r10,1
+>>>  #endif /* CONFIG_PPC_BOOK3E */
+>>> +	li	r0,0
+>>> +	stb	r0,PACAHARDIRQEN(r13)
+>>> +
+>>> +	/* Re-test flags and eventually loop */
+>>> +	clrrdi	r9,r1,THREAD_SHIFT
+>>>  	ld	r4,TI_FLAGS(r9)
+>>>  	andi.	r0,r4,_TIF_NEED_RESCHED
+>>>  	bne	1b
+>>>  	b	restore
+>>>  
+>>>  user_work:
+>>> -#endif
+>>> +#endif /* CONFIG_PREEMPT */
+>>> +
+>>>  	/* Enable interrupts */
+>>>  #ifdef CONFIG_PPC_BOOK3E
+>>>  	wrteei	1
+> 
+> 
