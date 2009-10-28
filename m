@@ -1,20 +1,16 @@
-Return-Path: <pengxihan@gmail.com>
-Received: from mail-pw0-f50.google.com (mail-pw0-f50.google.com
-	[209.85.160.50]) by ozlabs.org (Postfix) with ESMTP id 26F40B7B93
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 11:45:17 +1100 (EST)
-Received: by pwi4 with SMTP id 4so487736pwi.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Oct 2009 17:45:17 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20091027182830.8e99be49.kim.phillips@freescale.com>
-References: <389deec70910262043v34bcd7edy6f00241d126b1816@mail.gmail.com>
-	<20091027182830.8e99be49.kim.phillips@freescale.com>
-Date: Wed, 28 Oct 2009 08:45:17 +0800
-Message-ID: <389deec70910271745l71b042e3l2e1d11edcc788dab@mail.gmail.com>
-Subject: Re: Is there a patch for MPC8548 XOR?
-From: hank peng <pengxihan@gmail.com>
-To: Kim Phillips <kim.phillips@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 2C361B7B76
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 13:14:00 +1100 (EST)
+Date: Wed, 28 Oct 2009 13:13:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mundt <lethal@linux-sh.org>
+Subject: linux-next: manual merge of the sh tree with the powerpc-merge tree
+Message-Id: <20091028131356.7a6ba355.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,28 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2009/10/28 Kim Phillips <kim.phillips@freescale.com>:
-> On Tue, 27 Oct 2009 11:43:34 +0800
-> hank peng <pengxihan@gmail.com> wrote:
->
->> I want to use its' XOR engine to compute raid5 parity, but I can't
->> find this function in 2.6.30 downloaded from kernel.org, someone know
->> if there is a patch?
->
-> try this:
->
-> http://patchwork.ozlabs.org/patch/36067/
->
-Thanks, but I have three questions:
-1. Will the patch be added to kernel in the future?
-2. If I have problem in using this patch, will you or other guys help
-me to fix it?
-3. Is this patch based on 2.6.30, because we are using this version of kernel.
+Hi Paul,
 
-> Kim
->
+Today's linux-next merge of the sh tree got a conflict in fs/Kconfig
+between commit 0cd9ad73b8d181737005ff4e506b9b6bd043f4dd ("powerpc: Limit
+hugetlbfs support to PPC64 Book-3S machines") from the powerpc-merge tree
+and commit ffb4a73d8906f71910e6c83ec2b499e70025ee8e ("sh: Fix hugetlbfs
+dependencies for SH-3 && MMU configurations") from the sh tree.
 
-
-
+I fixed it up (see below) and can carry the fix for a while (the
+powerpc-merge commit should be in Linus' tree soon).
 -- 
-The simplest is not all best but the best is surely the simplest!
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc fs/Kconfig
+index f93d0ed,48b81f9..0000000
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@@ -135,8 -135,8 +135,8 @@@ config TMPFS_POSIX_AC
+  
+  config HUGETLBFS
+  	bool "HugeTLB file system support"
+- 	depends on X86 || IA64 || PPC_BOOK3S_64 || SPARC64 || (SUPERH && MMU) || \
+ -	depends on X86 || IA64 || PPC64 || SPARC64 || (S390 && 64BIT) || \
+ -		   SYS_SUPPORTS_HUGETLBFS || BROKEN
+++	depends on X86 || IA64 || PPC_BOOK3S_64 || SPARC64 || \
+ +		   (S390 && 64BIT) || SYS_SUPPORTS_HUGETLBFS || BROKEN
+  	help
+  	  hugetlbfs is a filesystem backing for HugeTLB pages, based on
+  	  ramfs. For architectures that support it, say Y here and read
