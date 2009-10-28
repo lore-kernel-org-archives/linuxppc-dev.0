@@ -1,23 +1,27 @@
 Return-Path: <Jonathan.Haws@sdl.usu.edu>
 Received: from kronos.usurf.usu.edu (kronos.usurf.usu.edu [129.123.194.129])
-	by ozlabs.org (Postfix) with ESMTP id 051BEB7BE2
+	by ozlabs.org (Postfix) with ESMTP id A3EF6B7BF3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Oct 2009 01:39:03 +1100 (EST)
+	Thu, 29 Oct 2009 01:46:12 +1100 (EST)
 From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Wed, 28 Oct 2009 08:38:54 -0600
+To: Kenneth Johansson <kenneth@southpole.se>
+Date: Wed, 28 Oct 2009 08:45:59 -0600
 Subject: RE: Accessing flash directly from User Space
-Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F0330D36A3D@midas.usurf.usu.edu>
+Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F0330D36A50@midas.usurf.usu.edu>
 References: <BB99A6BA28709744BF22A68E6D7EB51F0330D3666C@midas.usurf.usu.edu>
 	<4AE7545F.80805@billgatliff.com>
 	<BB99A6BA28709744BF22A68E6D7EB51F0330D366B6@midas.usurf.usu.edu>
 	<4AE75859.5050108@billgatliff.com>
 	<BB99A6BA28709744BF22A68E6D7EB51F0330D3688B@midas.usurf.usu.edu>
-	<20091028112430.GO22408@zod.rchland.ibm.com>
-In-Reply-To: <20091028112430.GO22408@zod.rchland.ibm.com>
+	<4AE774ED.8050502@freescale.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D368AA@midas.usurf.usu.edu>
+	<4AE7775D.8080502@freescale.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D368E3@midas.usurf.usu.edu>
+	<1256723805.32158.241.camel@kenjo-laptop>
+In-Reply-To: <1256723805.32158.241.camel@kenjo-laptop>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Bill Gatliff <bgat@billgatliff.com>,
+Cc: Scott Wood <scottwood@freescale.com>, Bill Gatliff <bgat@billgatliff.com>,
 	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,43 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Tue, Oct 27, 2009 at 04:24:53PM -0600, Jonathan Haws wrote:
-> >> >>> How can I get that pointer?  Unfortunately I cannot simply
-> use
-> >> the
-> >> >>>
-> >> >> address of the flash.  Is there some magical function call
-> that
-> >> >> gives me access to that portion of the memory space?
-> >> >>
-> >> >> $ man 2 mmap
-> >> >>
-> >> >> You want MAP_SHARED and O_SYNC.
-> >> >>
-> >> >
-> >> >
-> >> > To use that I need to have a file descriptor to a device, do I
-> >> not?  However, I do not have a base flash driver to give me that
-> >> file descriptor.  Am I missing something with that call?
-> >> >
-> >>
-> >> /dev/mem
-> >>
-> >Okay, I now have access to the flash memory, however when I write
-> to it the writes do not take.  I have tried calling msync() on the
-> mapping to no avail.  I have opened the fd with O_SYNC, but cannot
-> get things to work right.
+> On Tue, 2009-10-27 at 16:52 -0600, Jonathan Haws wrote:
+> > > Jonathan Haws wrote:
+> > > > I had thought about using MTD, but decided against it because
+> with
+> > > > previous benchmarking that we did with MTD and our custom
+> driver,
+> > > we
+> > > > found that our custom driver was about 10x faster.
+> > >
+> > > Ouch.  Any idea where the slowdown is coming from?
 > >
-> >Here are the calls:
+> > From what I remember (I would have to dig up notes to make sure)
+> it is something to do with MTD looking for a signal to go high that
+> is processed a bunch before MTD even sees it.  Our flash produces a
+> hardware ready signal that we are triggering off of to move on.  MTD
+> took much longer to report to us that the hardware was ready.
 > >
-> >	int fd =3D open("/dev/mem", O_SYNC | O_RDWR);
-> >	uint16_t * flash =3D (uint16_t *)mmap(NULL, NOR_FLASH_SIZE,
-> >			(PROT_READ | PROT_WRITE), MAP_PRIVATE, fd,
-> >			NOR_FLASH_BASE_ADRS);
+> > Thanks
+> >
 >=20
-> What board and CPU are you using?  Is your flash really at
-> 0xFC800000, or is
-> that the virtual address that VxWorks puts it at?
+> It would be interesting to know in more detail what is was. If we
+> have a
+> 10x performance increase hiding from for us I would be very
+> interested
+> in knowing where it is.
+>=20
+> Are you using some custom command to the flash that the generic chip
+> drivers in Linux is not yet supporting ?
 
-I am using a custom board based on the AMCC Kilauea development board.  It =
-uses a 405EX CPU.  Yes, the flash is really at 0xFC000000.
+Looking through our notes and talking with the engineer who was performing =
+the tests, it was exactly that - MTD was waiting for a signal that was prod=
+uced differently than the hardware ready signal.  By simply polling the fla=
+sh until the hardware ready signal toggled we were able to get a much faste=
+r read and write speed.  Granted, most of our signals are being sent throug=
+h a CPLD, so that may be why MTD did not work as well.
