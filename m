@@ -1,17 +1,29 @@
-Return-Path: <anton@ozlabs.org>
-Date: Wed, 28 Oct 2009 15:46:55 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 2/3] powerpc: Create PPC_WARN_ALIGNMENT to match
-	PPC_WARN_EMULATED
-Message-ID: <20091028044655.GK3085@kryten>
-References: <20091018110929.GK4808@kryten> <20091018111126.GL4808@kryten>
-	<20091018233749.0a17ff78.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091018233749.0a17ff78.sfr@canb.auug.org.au>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, mingo@elte.hu
+Return-Path: <akinobu.mita@gmail.com>
+Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
+	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id 53DD5B7BD9
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 19:43:34 +1100 (EST)
+Received: by ywh37 with SMTP id 37so502969ywh.17
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2009 01:43:33 -0700 (PDT)
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+Subject: [PATCH 1/7] bitmap: Introduce bitmap_set, bitmap_clear,
+	bitmap_find_next_zero_area
+Date: Wed, 28 Oct 2009 17:43:11 +0900
+Message-Id: <1256719397-4258-1-git-send-email-akinobu.mita@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-ia64@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Lothar Wassmann <LW@KARO-electronics.de>, x86@kernel.org,
+	linux-altix@sgi.com, Ingo Molnar <mingo@redhat.com>,
+	Fenghua Yu <fenghua.yu@intel.com>, Joerg Roedel <joerg.roedel@amd.com>,
+	Akinobu Mita <akinobu.mita@gmail.com>,
+	Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Tony Luck <tony.luck@intel.com>, netdev@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,186 +33,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
-Hi Stephen,
+This introduces new bitmap functions:
 
-> I think this last line is not needed?
+bitmap_set: Set specified bit area
+bitmap_clear: Clear specified bit area
+bitmap_find_next_zero_area: Find free bit area
 
-Right you are!
+These are mostly stolen from iommu helper. The differences are:
 
-Anton
+- Use find_next_bit instead of doing test_bit for each bit
 
---
+- Rewrite bitmap_set and bitmap_clear
 
-perf_event wants a separate event for alignment and emulation faults,
-so create another emulation event. This will make it easy to hook in
-perf_event at one spot.
+  Instead of setting or clearing for each bit.
 
-We pass in regs which will be required for these events.
+- Check the last bit of the limit
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
+  iommu-helper doesn't want to find such area
+
+- The return value if there is no zero area
+
+  find_next_zero_area in iommu helper: returns -1
+  bitmap_find_next_zero_area: return >= bitmap size
+
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Lothar Wassmann <LW@KARO-electronics.de>
+Cc: linux-usb@vger.kernel.org
+Cc: Roland Dreier <rolandd@cisco.com>
+Cc: Yevgeny Petrilin <yevgenyp@mellanox.co.il>
+Cc: netdev@vger.kernel.org
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: linux-altix@sgi.com
+Cc: Joerg Roedel <joerg.roedel@amd.com>
 ---
+ include/linux/bitmap.h |   11 ++++++
+ lib/bitmap.c           |   81 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 92 insertions(+), 0 deletions(-)
 
-Updated to remove unused define, as suggested by Stephen.
-
-Index: linux.trees.git/arch/powerpc/include/asm/emulated_ops.h
-===================================================================
---- linux.trees.git.orig/arch/powerpc/include/asm/emulated_ops.h	2009-10-19 09:46:58.000000000 +1100
-+++ linux.trees.git/arch/powerpc/include/asm/emulated_ops.h	2009-10-21 14:57:00.000000000 +1100
-@@ -57,7 +57,7 @@ extern u32 ppc_warn_emulated;
+diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
+index 756d78b..daf8c48 100644
+--- a/include/linux/bitmap.h
++++ b/include/linux/bitmap.h
+@@ -42,6 +42,9 @@
+  * bitmap_empty(src, nbits)			Are all bits zero in *src?
+  * bitmap_full(src, nbits)			Are all bits set in *src?
+  * bitmap_weight(src, nbits)			Hamming Weight: number set bits
++ * bitmap_set(dst, pos, nbits)			Set specified bit area
++ * bitmap_clear(dst, pos, nbits)		Clear specified bit area
++ * bitmap_find_next_zero_area(buf, len, pos, n, mask)	Find bit free area
+  * bitmap_shift_right(dst, src, n, nbits)	*dst = *src >> n
+  * bitmap_shift_left(dst, src, n, nbits)	*dst = *src << n
+  * bitmap_remap(dst, src, old, new, nbits)	*dst = map(old, new)(src)
+@@ -108,6 +111,14 @@ extern int __bitmap_subset(const unsigned long *bitmap1,
+ 			const unsigned long *bitmap2, int bits);
+ extern int __bitmap_weight(const unsigned long *bitmap, int bits);
  
- extern void ppc_warn_emulated_print(const char *type);
- 
--#define PPC_WARN_EMULATED(type)						 \
-+#define __PPC_WARN_EMULATED(type)					 \
- 	do {								 \
- 		atomic_inc(&ppc_emulated.type.val);			 \
- 		if (ppc_warn_emulated)					 \
-@@ -66,8 +66,11 @@ extern void ppc_warn_emulated_print(cons
- 
- #else /* !CONFIG_PPC_EMULATED_STATS */
- 
--#define PPC_WARN_EMULATED(type)	do { } while (0)
-+#define __PPC_WARN_EMULATED(type)	do { } while (0)
- 
- #endif /* !CONFIG_PPC_EMULATED_STATS */
- 
-+#define PPC_WARN_EMULATED(type, regs)	__PPC_WARN_EMULATED(type)
-+#define PPC_WARN_ALIGNMENT(type, regs)	__PPC_WARN_EMULATED(type)
++extern void bitmap_set(unsigned long *map, int i, int len);
++extern void bitmap_clear(unsigned long *map, int start, int nr);
++extern unsigned long bitmap_find_next_zero_area(unsigned long *map,
++					 unsigned long size,
++					 unsigned long start,
++					 unsigned int nr,
++					 unsigned long align_mask);
 +
- #endif /* _ASM_POWERPC_EMULATED_OPS_H */
-Index: linux.trees.git/arch/powerpc/kernel/align.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/align.c	2009-10-19 09:46:58.000000000 +1100
-+++ linux.trees.git/arch/powerpc/kernel/align.c	2009-10-21 10:21:35.000000000 +1100
-@@ -732,7 +732,7 @@ int fix_alignment(struct pt_regs *regs)
+ extern int bitmap_scnprintf(char *buf, unsigned int len,
+ 			const unsigned long *src, int nbits);
+ extern int __bitmap_parse(const char *buf, unsigned int buflen, int is_user,
+diff --git a/lib/bitmap.c b/lib/bitmap.c
+index 7025658..11bf497 100644
+--- a/lib/bitmap.c
++++ b/lib/bitmap.c
+@@ -271,6 +271,87 @@ int __bitmap_weight(const unsigned long *bitmap, int bits)
+ }
+ EXPORT_SYMBOL(__bitmap_weight);
  
- #ifdef CONFIG_SPE
- 	if ((instr >> 26) == 0x4) {
--		PPC_WARN_EMULATED(spe);
-+		PPC_WARN_ALIGNMENT(spe, regs);
- 		return emulate_spe(regs, reg, instr);
- 	}
- #endif
-@@ -786,7 +786,7 @@ int fix_alignment(struct pt_regs *regs)
- 			flags |= SPLT;
- 			nb = 8;
- 		}
--		PPC_WARN_EMULATED(vsx);
-+		PPC_WARN_ALIGNMENT(vsx, regs);
- 		return emulate_vsx(addr, reg, areg, regs, flags, nb);
- 	}
- #endif
-@@ -794,7 +794,7 @@ int fix_alignment(struct pt_regs *regs)
- 	 * the exception of DCBZ which is handled as a special case here
- 	 */
- 	if (instr == DCBZ) {
--		PPC_WARN_EMULATED(dcbz);
-+		PPC_WARN_ALIGNMENT(dcbz, regs);
- 		return emulate_dcbz(regs, addr);
- 	}
- 	if (unlikely(nb == 0))
-@@ -804,7 +804,7 @@ int fix_alignment(struct pt_regs *regs)
- 	 * function
- 	 */
- 	if (flags & M) {
--		PPC_WARN_EMULATED(multiple);
-+		PPC_WARN_ALIGNMENT(multiple, regs);
- 		return emulate_multiple(regs, addr, reg, nb,
- 					flags, instr, swiz);
- 	}
-@@ -825,11 +825,11 @@ int fix_alignment(struct pt_regs *regs)
- 
- 	/* Special case for 16-byte FP loads and stores */
- 	if (nb == 16) {
--		PPC_WARN_EMULATED(fp_pair);
-+		PPC_WARN_ALIGNMENT(fp_pair, regs);
- 		return emulate_fp_pair(addr, reg, flags);
- 	}
- 
--	PPC_WARN_EMULATED(unaligned);
-+	PPC_WARN_ALIGNMENT(unaligned, regs);
- 
- 	/* If we are loading, get the data from user space, else
- 	 * get it from register values
-Index: linux.trees.git/arch/powerpc/kernel/traps.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/traps.c	2009-10-19 09:46:58.000000000 +1100
-+++ linux.trees.git/arch/powerpc/kernel/traps.c	2009-10-21 10:21:35.000000000 +1100
-@@ -759,7 +759,7 @@ static int emulate_instruction(struct pt
- 
- 	/* Emulate the mfspr rD, PVR. */
- 	if ((instword & PPC_INST_MFSPR_PVR_MASK) == PPC_INST_MFSPR_PVR) {
--		PPC_WARN_EMULATED(mfpvr);
-+		PPC_WARN_EMULATED(mfpvr, regs);
- 		rd = (instword >> 21) & 0x1f;
- 		regs->gpr[rd] = mfspr(SPRN_PVR);
- 		return 0;
-@@ -767,7 +767,7 @@ static int emulate_instruction(struct pt
- 
- 	/* Emulating the dcba insn is just a no-op.  */
- 	if ((instword & PPC_INST_DCBA_MASK) == PPC_INST_DCBA) {
--		PPC_WARN_EMULATED(dcba);
-+		PPC_WARN_EMULATED(dcba, regs);
- 		return 0;
- 	}
- 
-@@ -776,7 +776,7 @@ static int emulate_instruction(struct pt
- 		int shift = (instword >> 21) & 0x1c;
- 		unsigned long msk = 0xf0000000UL >> shift;
- 
--		PPC_WARN_EMULATED(mcrxr);
-+		PPC_WARN_EMULATED(mcrxr, regs);
- 		regs->ccr = (regs->ccr & ~msk) | ((regs->xer >> shift) & msk);
- 		regs->xer &= ~0xf0000000UL;
- 		return 0;
-@@ -784,19 +784,19 @@ static int emulate_instruction(struct pt
- 
- 	/* Emulate load/store string insn. */
- 	if ((instword & PPC_INST_STRING_GEN_MASK) == PPC_INST_STRING) {
--		PPC_WARN_EMULATED(string);
-+		PPC_WARN_EMULATED(string, regs);
- 		return emulate_string_inst(regs, instword);
- 	}
- 
- 	/* Emulate the popcntb (Population Count Bytes) instruction. */
- 	if ((instword & PPC_INST_POPCNTB_MASK) == PPC_INST_POPCNTB) {
--		PPC_WARN_EMULATED(popcntb);
-+		PPC_WARN_EMULATED(popcntb, regs);
- 		return emulate_popcntb_inst(regs, instword);
- 	}
- 
- 	/* Emulate isel (Integer Select) instruction */
- 	if ((instword & PPC_INST_ISEL_MASK) == PPC_INST_ISEL) {
--		PPC_WARN_EMULATED(isel);
-+		PPC_WARN_EMULATED(isel, regs);
- 		return emulate_isel(regs, instword);
- 	}
- 
-@@ -995,7 +995,7 @@ void SoftwareEmulation(struct pt_regs *r
- #ifdef CONFIG_MATH_EMULATION
- 	errcode = do_mathemu(regs);
- 	if (errcode >= 0)
--		PPC_WARN_EMULATED(math);
-+		PPC_WARN_EMULATED(math, regs);
- 
- 	switch (errcode) {
- 	case 0:
-@@ -1018,7 +1018,7 @@ void SoftwareEmulation(struct pt_regs *r
- #elif defined(CONFIG_8XX_MINIMAL_FPEMU)
- 	errcode = Soft_emulate_8xx(regs);
- 	if (errcode >= 0)
--		PPC_WARN_EMULATED(8xx);
-+		PPC_WARN_EMULATED(8xx, regs);
- 
- 	switch (errcode) {
- 	case 0:
-@@ -1129,7 +1129,7 @@ void altivec_assist_exception(struct pt_
- 
- 	flush_altivec_to_thread(current);
- 
--	PPC_WARN_EMULATED(altivec);
-+	PPC_WARN_EMULATED(altivec, regs);
- 	err = emulate_altivec(regs);
- 	if (err == 0) {
- 		regs->nip += 4;		/* skip emulated instruction */
++#define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) % BITS_PER_LONG))
++
++void bitmap_set(unsigned long *map, int start, int nr)
++{
++	unsigned long *p = map + BIT_WORD(start);
++	const int size = start + nr;
++	int bits_to_set = BITS_PER_LONG - (start % BITS_PER_LONG);
++	unsigned long mask_to_set = BITMAP_FIRST_WORD_MASK(start);
++
++	while (nr - bits_to_set >= 0) {
++		*p |= mask_to_set;
++		nr -= bits_to_set;
++		bits_to_set = BITS_PER_LONG;
++		mask_to_set = ~0UL;
++		p++;
++	}
++	if (nr) {
++		mask_to_set &= BITMAP_LAST_WORD_MASK(size);
++		*p |= mask_to_set;
++	}
++}
++EXPORT_SYMBOL(bitmap_set);
++
++void bitmap_clear(unsigned long *map, int start, int nr)
++{
++	unsigned long *p = map + BIT_WORD(start);
++	const int size = start + nr;
++	int bits_to_clear = BITS_PER_LONG - (start % BITS_PER_LONG);
++	unsigned long mask_to_clear = BITMAP_FIRST_WORD_MASK(start);
++
++	while (nr - bits_to_clear >= 0) {
++		*p &= ~mask_to_clear;
++		nr -= bits_to_clear;
++		bits_to_clear = BITS_PER_LONG;
++		mask_to_clear = ~0UL;
++		p++;
++	}
++	if (nr) {
++		mask_to_clear &= BITMAP_LAST_WORD_MASK(size);
++		*p &= ~mask_to_clear;
++	}
++}
++EXPORT_SYMBOL(bitmap_clear);
++
++/*
++ * bitmap_find_next_zero_area - find a contiguous aligned zero area
++ * @map: The address to base the search on
++ * @size: The bitmap size in bits
++ * @start: The bitnumber to start searching at
++ * @nr: The number of zeroed bits we're looking for
++ * @align_mask: Alignment mask for zero area
++ *
++ * The @align_mask should be one less than a power of 2; the effect is that
++ * the bit offset of all zero areas this function finds is multiples of that
++ * power of 2. A @align_mask of 0 means no alignment is required.
++ */
++unsigned long bitmap_find_next_zero_area(unsigned long *map,
++					 unsigned long size,
++					 unsigned long start,
++					 unsigned int nr,
++					 unsigned long align_mask)
++{
++	unsigned long index, end, i;
++again:
++	index = find_next_zero_bit(map, size, start);
++
++	/* Align allocation */
++	index = __ALIGN_MASK(index, align_mask);
++
++	end = index + nr;
++	if (end > size)
++		return end;
++	i = find_next_bit(map, end, index);
++	if (i < end) {
++		start = i + 1;
++		goto again;
++	}
++	return index;
++}
++EXPORT_SYMBOL(bitmap_find_next_zero_area);
++
+ /*
+  * Bitmap printing & parsing functions: first version by Bill Irwin,
+  * second version by Paul Jackson, third by Joe Korty.
+-- 
+1.6.5.1
