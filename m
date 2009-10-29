@@ -1,24 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 490A2B7C00
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2009 11:49:42 +1100 (EST)
-Subject: Re: [PATCH v3] powerpc/ppc64: Use preempt_schedule_irq instead of
-	preempt_schedule
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Valentine <vbarshak@ru.mvista.com>
-In-Reply-To: <4AE8CA95.7060402@ru.mvista.com>
-References: <20091019182858.GA10495@ru.mvista.com>
-	<1256601324.2076.49.camel@pasglop> <1256622077.11607.85.camel@pasglop>
-	<4AE89936.6080803@ru.mvista.com> <1256761844.26770.2.camel@pasglop>
-	<4AE8B761.3090902@ru.mvista.com> <1256765834.26770.6.camel@pasglop>
-	<4AE8CA95.7060402@ru.mvista.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 29 Oct 2009 11:49:33 +1100
-Message-ID: <1256777373.26770.14.camel@pasglop>
-Mime-Version: 1.0
-Cc: olof@lixom.net, linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <19176.59441.523075.445864@drongo.ozlabs.ibm.com>
+Date: Thu, 29 Oct 2009 11:56:17 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, Benjamin Herrenschmidt
+	<benh@kernel.crashing.org>
+Subject: [GIT PULL] perf_event/tracing/powerpc patches from Anton Blanchard
+Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,82 +18,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Here is a series of patches from Anton Blanchard that implement some
+nice tracing and perf_event features on powerpc.  One of them is
+generic perf_event stuff (adding software events for alignment faults
+and instruction emulation faults).
 
-> Yes, the MSR_EE is cleared before we jump to do_work. I'm OK with 
-> clearing the hardirqenable flag. I just assumed that the hardirq flag 
-> was supposed to reflect the MSR_EE state, so it looked a bit odd 
-> clearing the MSR_EE at one place and then reflecting the change at another.
+Since this touches the perf_event and tracing subsystems as well as the
+powerpc architecture code, I think the best way forward is for both
+Ingo and Ben to pull it into their trees.  I have based it on the most
+recent point in Linus' tree that Ingo had pulled into his perf
+branches (as of yesterday or so).
 
-Yeah well, it is supposed to reflect EE in the "general case", it's just
-that in the exception entry/exit, we take shortcuts when turning EE off
-for short amount of times without reflecting it in the PACA. This is
-why, in this case, since we are going back to C code, I want to have it
-"fixed up" to reflect reality.
+Thanks,
+Paul.
 
-Cheers,
-Ben.
+The following changes since commit a3ccf63ee643ef243cbf8918da8b3f9238f10029:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../ieee1394/linux1394-2.6
 
-> Anyway, the patch works fine.
-> 
-> Thanks,
-> Val.
-> 
-> So either we
-> > set it back, or we clear HARDIRQEN to reflect it. It will be re-enable
-> > as soon as preempt_schedule_irq() calls local_irq_enable() which is soon
-> > enough anyways.
-> > 
-> > Also that avoids perf interrupt sneaking in since those act as NMIs in
-> > that regard and -will- get in even when soft disabled.
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> >> Thanks,
-> >> Val.
-> >>> Ben.
-> >>>
-> >>>> Thanks,
-> >>>> Val.
-> >>>>
-> >>>>> +	TRACE_DISABLE_INTS
-> >>>>> +
-> >>>>> +	/* Call the scheduler with soft IRQs off */
-> >>>>> +1:	bl	.preempt_schedule_irq
-> >>>>> +
-> >>>>> +	/* Hard-disable interrupts again (and update PACA) */
-> >>>>>  #ifdef CONFIG_PPC_BOOK3E
-> >>>>> -	wrteei	1
-> >>>>> -	bl	.preempt_schedule
-> >>>>>  	wrteei	0
-> >>>>>  #else
-> >>>>> -	ori	r10,r10,MSR_EE
-> >>>>> -	mtmsrd	r10,1		/* reenable interrupts */
-> >>>>> -	bl	.preempt_schedule
-> >>>>>  	mfmsr	r10
-> >>>>> -	clrrdi	r9,r1,THREAD_SHIFT
-> >>>>> -	rldicl	r10,r10,48,1	/* disable interrupts again */
-> >>>>> +	rldicl	r10,r10,48,1
-> >>>>>  	rotldi	r10,r10,16
-> >>>>>  	mtmsrd	r10,1
-> >>>>>  #endif /* CONFIG_PPC_BOOK3E */
-> >>>>> +	li	r0,0
-> >>>>> +	stb	r0,PACAHARDIRQEN(r13)
-> >>>>> +
-> >>>>> +	/* Re-test flags and eventually loop */
-> >>>>> +	clrrdi	r9,r1,THREAD_SHIFT
-> >>>>>  	ld	r4,TI_FLAGS(r9)
-> >>>>>  	andi.	r0,r4,_TIF_NEED_RESCHED
-> >>>>>  	bne	1b
-> >>>>>  	b	restore
-> >>>>>  
-> >>>>>  user_work:
-> >>>>> -#endif
-> >>>>> +#endif /* CONFIG_PREEMPT */
-> >>>>> +
-> >>>>>  	/* Enable interrupts */
-> >>>>>  #ifdef CONFIG_PPC_BOOK3E
-> >>>>>  	wrteei	1
-> >>>
-> > 
-> > 
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git master
+
+Anton Blanchard (14):
+      powerpc: perf_event: Log invalid data addresses as all 1s
+      powerpc: perf_event: Enable SDAR in continous sample mode
+      perf_event: Add alignment-faults and emulation-faults software events
+      powerpc: Create PPC_WARN_ALIGNMENT to match PPC_WARN_EMULATED
+      powerpc: perf_event: Add alignment-faults and emulation-faults software events
+      powerpc: tracing: Add powerpc tracepoints for interrupt entry and exit
+      powerpc: tracing: Add powerpc tracepoints for timer entry and exit
+      powerpc: tracing: Add hypervisor call tracepoints
+      powerpc: tracing: Give hypervisor call tracepoints access to arguments
+      powerpc: Disable HCALL_STATS by default
+      powerpc: Export powerpc_debugfs_root
+      powerpc: perf_event: Cleanup copy_page output by hiding setup symbol
+      powerpc: perf_event: Hide iseries_check_pending_irqs
+      powerpc: perf_event: Cleanup output by adding symbols
+
+ arch/powerpc/Kconfig.debug                   |    2 +-
+ arch/powerpc/configs/pseries_defconfig       |    2 +-
+ arch/powerpc/include/asm/emulated_ops.h      |   19 ++++-
+ arch/powerpc/include/asm/hvcall.h            |    2 +
+ arch/powerpc/include/asm/reg.h               |    2 +
+ arch/powerpc/include/asm/trace.h             |  133 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/align.c                  |   12 +-
+ arch/powerpc/kernel/entry_64.S               |    4 +-
+ arch/powerpc/kernel/exceptions-64s.S         |    3 +
+ arch/powerpc/kernel/irq.c                    |    6 +
+ arch/powerpc/kernel/perf_event.c             |    2 +-
+ arch/powerpc/kernel/power5+-pmu.c            |    4 -
+ arch/powerpc/kernel/power5-pmu.c             |    6 +-
+ arch/powerpc/kernel/power6-pmu.c             |    2 +-
+ arch/powerpc/kernel/power7-pmu.c             |    6 +-
+ arch/powerpc/kernel/ppc970-pmu.c             |    4 -
+ arch/powerpc/kernel/setup-common.c           |    1 +
+ arch/powerpc/kernel/time.c                   |    6 +
+ arch/powerpc/kernel/traps.c                  |   18 ++--
+ arch/powerpc/lib/copypage_64.S               |    4 +-
+ arch/powerpc/platforms/pseries/hvCall.S      |  132 +++++++++++++++----------
+ arch/powerpc/platforms/pseries/hvCall_inst.c |   38 ++++++++
+ arch/powerpc/platforms/pseries/lpar.c        |   33 +++++++
+ include/linux/perf_counter.h                 |    2 +
+ include/linux/perf_event.h                   |    2 +
+ kernel/perf_event.c                          |    2 +
+ tools/perf/design.txt                        |    2 +
+ tools/perf/util/parse-events.c               |    4 +
+ 28 files changed, 357 insertions(+), 96 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/trace.h
