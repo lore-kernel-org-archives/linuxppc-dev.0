@@ -1,22 +1,25 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EABABB7BC5
+Return-Path: <kenneth@southpole.se>
+Received: from mail.southpole.se (mail.southpole.se [193.12.106.18])
+	by ozlabs.org (Postfix) with ESMTP id 34A5CB7C12
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Oct 2009 20:16:15 +1100 (EST)
-In-Reply-To: <OFE3AA516D.46A96178-ONC125765E.0030DA7C-C125765E.00317B8C@transmode.se>
-References: <BB99A6BA28709744BF22A68E6D7EB51F0330D3666C@midas.usurf.usu.edu>	<4AE7545F.80805@billgatliff.com>
-	<BB99A6BA28709744BF22A68E6D7EB51F0330D366B6@midas.usurf.usu.edu>	<4AE75859.5050108@billgatliff.com>
-	<BB99A6BA28709744BF22A68E6D7EB51F0330D3688B@midas.usurf.usu.edu>	<20091028112430.GO22408@zod.rchland.ibm.com>
-	<BB99A6BA28709744BF22A68E6D7EB51F0330D36A3D@midas.usurf.usu.edu>	<BB99A6BA28709744BF22A68E6D7EB51F0330E22259@midas.usurf.usu.edu>
-	<OFE3AA516D.46A96178-ONC125765E.0030DA7C-C125765E.00317B8C@transmode.se>
+	Thu, 29 Oct 2009 22:09:00 +1100 (EST)
 Subject: RE: Accessing flash directly from User Space [SOLVED]
-Message-ID: <OF8B45B496.CDDD0639-ONC125765E.0032ACFE-C125765E.0032E44F@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 29 Oct 2009 10:15:52 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+From: Kenneth Johansson <kenneth@southpole.se>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+In-Reply-To: <OFE3AA516D.46A96178-ONC125765E.0030DA7C-C125765E.00317B8C@transmode.se>
+References: <BB99A6BA28709744BF22A68E6D7EB51F0330D3666C@midas.usurf.usu.edu>
+	<4AE7545F.80805@billgatliff.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D366B6@midas.usurf.usu.edu>
+	<4AE75859.5050108@billgatliff.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D3688B@midas.usurf.usu.edu>
+	<20091028112430.GO22408@zod.rchland.ibm.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D36A3D@midas.usurf.usu.edu>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330E22259@midas.usurf.usu.edu>
+	<OFE3AA516D.46A96178-ONC125765E.0030DA7C-C125765E.00317B8C@transmode.se>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 29 Oct 2009 12:08:56 +0100
+Message-ID: <1256814536.24490.36.camel@kenjo-laptop>
+Mime-Version: 1.0
 Cc: Bill Gatliff <bgat@billgatliff.com>,
 	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
 	Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
@@ -29,7 +32,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->
+On Thu, 2009-10-29 at 10:00 +0100, Joakim Tjernlund wrote:
 > >
 > > > > On Tue, Oct 27, 2009 at 04:24:53PM -0600, Jonathan Haws wrote:
 > > > > >> >>> How can I get that pointer?  Unfortunately I cannot simply
@@ -86,12 +89,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > >
 > > Anyway, to make a long story short, I inserted an msync() after each
 > > assignment to the flash.  This resolved my problem and I can now program my flash.
->
+> 
 > Ouch, this was news to me too. Calling msync() after every write kills performance.
 > We use mmap(/dev/mem) to access HW and havn't seen any issues yet. Is this
 > perhaps a new behaviour for mmap(/dev/mem) and is there a way
 > to avoid calling msync()?
 
-Does O_DIRECT help? (you may need to define _GNU_SOURCE before #include)
-
- Jocke
+The address range should be outside the dram and thus uncached. Any
+write to any address in the range mmaped should go directly to the NOR
+flash. Any other behavior is a bug. It's not mapping an actual file
+here.
