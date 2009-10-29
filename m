@@ -1,32 +1,26 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
-	by ozlabs.org (Postfix) with ESMTP id 7674DB7BF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2009 19:53:31 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 8so372698qwh.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2009 01:53:29 -0700 (PDT)
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 23E361007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Oct 2009 20:07:49 +1100 (EST)
+In-Reply-To: <BB99A6BA28709744BF22A68E6D7EB51F0330E22259@midas.usurf.usu.edu>
+References: <BB99A6BA28709744BF22A68E6D7EB51F0330D3666C@midas.usurf.usu.edu>	<4AE7545F.80805@billgatliff.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D366B6@midas.usurf.usu.edu>	<4AE75859.5050108@billgatliff.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D3688B@midas.usurf.usu.edu>	<20091028112430.GO22408@zod.rchland.ibm.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D36A3D@midas.usurf.usu.edu>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330E22259@midas.usurf.usu.edu>
+Subject: RE: Accessing flash directly from User Space [SOLVED]
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Message-ID: <OFE3AA516D.46A96178-ONC125765E.0030DA7C-C125765E.00317B8C@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 29 Oct 2009 10:00:28 +0100
 MIME-Version: 1.0
-In-Reply-To: <20091028131141.523854cb.akpm@linux-foundation.org>
-References: <1256719397-4258-1-git-send-email-akinobu.mita@gmail.com>
-	<20091028131141.523854cb.akpm@linux-foundation.org>
-Date: Thu, 29 Oct 2009 17:53:29 +0900
-Message-ID: <961aa3350910290153n70c3d982w10699ac28be63b6c@mail.gmail.com>
-Subject: Re: [PATCH 1/7] bitmap: Introduce bitmap_set, bitmap_clear,
-	bitmap_find_next_zero_area
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-usb@vger.kernel.org, linux-ia64@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Lothar Wassmann <LW@karo-electronics.de>, x86@kernel.org,
-	linux-altix@sgi.com, Ingo Molnar <mingo@redhat.com>,
-	Fenghua Yu <fenghua.yu@intel.com>, Joerg Roedel <joerg.roedel@amd.com>,
-	Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Tony Luck <tony.luck@intel.com>, netdev@vger.kernel.org,
-	Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	"David S. Miller" <davem@davemloft.net>
+Content-type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Bill Gatliff <bgat@billgatliff.com>,
+	Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,30 +30,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2009/10/29 Andrew Morton <akpm@linux-foundation.org>:
 >
-> Why were these patches resent? =A0What changed?
+> > > On Tue, Oct 27, 2009 at 04:24:53PM -0600, Jonathan Haws wrote:
+> > > >> >>> How can I get that pointer?  Unfortunately I cannot simply
+> > > use
+> > > >> the
+> > > >> >>>
+> > > >> >> address of the flash.  Is there some magical function call
+> > > that
+> > > >> >> gives me access to that portion of the memory space?
+> > > >> >>
+> > > >> >> $ man 2 mmap
+> > > >> >>
+> > > >> >> You want MAP_SHARED and O_SYNC.
+> > > >> >>
+> > > >> >
+> > > >> >
+> > > >> > To use that I need to have a file descriptor to a device, do
+> > I
+> > > >> not?  However, I do not have a base flash driver to give me
+> > that
+> > > >> file descriptor.  Am I missing something with that call?
+> > > >> >
+> > > >>
+> > > >> /dev/mem
+> > > >>
+> > > >Okay, I now have access to the flash memory, however when I write
+> > > to it the writes do not take.  I have tried calling msync() on the
+> > > mapping to no avail.  I have opened the fd with O_SYNC, but cannot
+> > > get things to work right.
+> > > >
+> > > >Here are the calls:
+> > > >
+> > > >   int fd = open("/dev/mem", O_SYNC | O_RDWR);
+> > > >   uint16_t * flash = (uint16_t *)mmap(NULL, NOR_FLASH_SIZE,
+> > > >         (PROT_READ | PROT_WRITE), MAP_PRIVATE, fd,
+> > > >         NOR_FLASH_BASE_ADRS);
+> > >
+> > > What board and CPU are you using?  Is your flash really at
+> > > 0xFC800000, or is
+> > > that the virtual address that VxWorks puts it at?
+> >
+> > I am using a custom board based on the AMCC Kilauea development
+> > board.  It uses a 405EX CPU.  Yes, the flash is really at
+> > 0xFC000000.
 >
-> Everybody who is going to review these patches has already reviewed
-> them and now they need to review them all again?
+> I have found the problem.  It occurred to me in the shower (okay not really,
+> but most good ideas happen there).
+>
+> What was happening is that I was in fact able to write to the correct
+> registers.  However, I would try and write to them in a batch.  But the way
+> mmap works (at least according to the man page) with MAP_SHARED is that the
+> file may not be updated until msync() is called.  Now, I thought that O_SYNC
+> would take care of that when I open /dev/mem, but that was not the case.
+>
+> Anyway, to make a long story short, I inserted an msync() after each
+> assignment to the flash.  This resolved my problem and I can now program my flash.
 
-I resent the patches because the iommu-helper change was not correct
-and I introduced serious bug in bitmap_find_next_zero_area()
-if align_mask !=3D 0 in follow-up patch then those were dropped from
-the -mm tree.
+Ouch, this was news to me too. Calling msync() after every write kills performance.
+We use mmap(/dev/mem) to access HW and havn't seen any issues yet. Is this
+perhaps a new behaviour for mmap(/dev/mem) and is there a way
+to avoid calling msync()?
 
-Only [PATCH 1/7] and [PATCH 2/7] have changes since the first submission of
-this patch set.
-
-* [PATCH 1/7]
-- Rewrite bitmap_set() and bitmap_clear()
-- Let bitmap_find_next_zero_area() check the last bit of the limit
-- Add kerneldoc for bitmap_find_next_zero_area()
-
-* [PATCH 2/7]
-- Convert find_next_zero_area() to use bitmap_find_next_zero_area() correct=
-ly
-  iommu-helper doesn't want to search the last bit of the limist in bitmap
-
-* [PATCH 3/7] - [PATCH 7/7]
-- No changes
+     Jocke
