@@ -1,22 +1,41 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ADFB6B7BF1
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2009 10:16:23 +1100 (EST)
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.01.0910290911550.31845@localhost.localdomain>
-References: <1256627452.11607.90.camel@pasglop>
-	<alpine.LFD.2.01.0910290911550.31845@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 30 Oct 2009 10:16:12 +1100
-Message-ID: <1256858172.6372.26.camel@pasglop>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E7A02B7BE9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 30 Oct 2009 10:30:43 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n9TNUdP2021117 for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Oct 2009 16:30:39 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n9TNUdFf005788
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Oct 2009 18:30:40 -0500 (CDT)
+Date: Thu, 29 Oct 2009 18:30:38 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: Accessing flash directly from User Space [SOLVED]
+Message-ID: <20091029233038.GA21587@b07421-ec1.am.freescale.net>
+References: <BB99A6BA28709744BF22A68E6D7EB51F0330D3666C@midas.usurf.usu.edu>
+	<4AE7545F.80805@billgatliff.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D366B6@midas.usurf.usu.edu>
+	<4AE75859.5050108@billgatliff.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D3688B@midas.usurf.usu.edu>
+	<20091028112430.GO22408@zod.rchland.ibm.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330D36A3D@midas.usurf.usu.edu>
+	<BB99A6BA28709744BF22A68E6D7EB51F0330E22259@midas.usurf.usu.edu>
+	<OFE3AA516D.46A96178-ONC125765E.0030DA7C-C125765E.00317B8C@transmode.se>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OFE3AA516D.46A96178-ONC125765E.0030DA7C-C125765E.00317B8C@transmode.se>
+Cc: Bill Gatliff <bgat@billgatliff.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +45,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-10-29 at 09:14 -0700, Linus Torvalds wrote:
+On Thu, Oct 29, 2009 at 10:00:28AM +0100, Joakim Tjernlund wrote:
+> > I have found the problem.  It occurred to me in the shower (okay not really,
+> > but most good ideas happen there).
+> >
+> > What was happening is that I was in fact able to write to the correct
+> > registers.  However, I would try and write to them in a batch.  But the way
+> > mmap works (at least according to the man page) with MAP_SHARED is that the
+> > file may not be updated until msync() is called.  Now, I thought that O_SYNC
+> > would take care of that when I open /dev/mem, but that was not the case.
+> >
+> > Anyway, to make a long story short, I inserted an msync() after each
+> > assignment to the flash.  This resolved my problem and I can now program my flash.
 > 
-> On Tue, 27 Oct 2009, Benjamin Herrenschmidt wrote:
-> > 
-> > Kumar Gala (7):
-> >       powerpc: Add a Book-3E 64-bit defconfig
-> >       powerpc: Fix compile errors found by new ppc64e_defconfig
-> >       powerpc: Limit hugetlbfs support to PPC64 Book-3S machines
-> 
-> This is incredibly ugly. Why should the generic fs/Kconfig know about some 
-> random odd architecture detail like PPC_BOOK3S_64?
-> 
-> I merged it, and noticed this because Super-H caused clashes by cleaning 
-> up. I would suggest PowerPC do the same.
+> Ouch, this was news to me too. Calling msync() after every write kills performance.
+> We use mmap(/dev/mem) to access HW and havn't seen any issues yet. Is this
+> perhaps a new behaviour for mmap(/dev/mem) and is there a way
+> to avoid calling msync()?
 
-Right. I noticed the same thing yesterday and planned to do so today
+I suspect that the msync() was merely serving as a very heavyweight
+memory barrier.
 
-> This patch is not signed-off, nor do I want any credit. But if it works on 
-> ppc, please send me something like this back.
-
-I'll stick something like that in my tree and send you a pull request.
-
-Cheers,
-Ben.
-
-> 		Linus
-> ---
->  arch/powerpc/Kconfig |    3 +++
->  fs/Kconfig           |    2 +-
->  2 files changed, 4 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 10a0a54..877db84 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -131,6 +131,9 @@ config PPC
->  	select GENERIC_ATOMIC64 if PPC32
->  	select HAVE_PERF_EVENTS
->  
-> +config SYS_SUPPORTS_HUGETLBFS
-> +	defbool PPC_BOOK3S_64
-> +
->  config EARLY_PRINTK
->  	bool
->  	default y
-> diff --git a/fs/Kconfig b/fs/Kconfig
-> index 2126078..64d44ef 100644
-> --- a/fs/Kconfig
-> +++ b/fs/Kconfig
-> @@ -135,7 +135,7 @@ config TMPFS_POSIX_ACL
->  
->  config HUGETLBFS
->  	bool "HugeTLB file system support"
-> -	depends on X86 || IA64 || PPC_BOOK3S_64 || SPARC64 || (S390 && 64BIT) || \
-> +	depends on X86 || IA64 || SPARC64 || (S390 && 64BIT) || \
->  		   SYS_SUPPORTS_HUGETLBFS || BROKEN
->  	help
->  	  hugetlbfs is a filesystem backing for HugeTLB pages, based on
+-Scott
