@@ -1,28 +1,23 @@
-Return-Path: <kenneth@southpole.se>
-Received: from mail.southpole.se (mail.southpole.se [193.12.106.18])
-	by ozlabs.org (Postfix) with ESMTP id 34A5CB7C12
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Oct 2009 22:09:00 +1100 (EST)
-Subject: RE: Accessing flash directly from User Space [SOLVED]
-From: Kenneth Johansson <kenneth@southpole.se>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OFE3AA516D.46A96178-ONC125765E.0030DA7C-C125765E.00317B8C@transmode.se>
-References: <BB99A6BA28709744BF22A68E6D7EB51F0330D3666C@midas.usurf.usu.edu>
-	<4AE7545F.80805@billgatliff.com>
-	<BB99A6BA28709744BF22A68E6D7EB51F0330D366B6@midas.usurf.usu.edu>
-	<4AE75859.5050108@billgatliff.com>
-	<BB99A6BA28709744BF22A68E6D7EB51F0330D3688B@midas.usurf.usu.edu>
-	<20091028112430.GO22408@zod.rchland.ibm.com>
-	<BB99A6BA28709744BF22A68E6D7EB51F0330D36A3D@midas.usurf.usu.edu>
-	<BB99A6BA28709744BF22A68E6D7EB51F0330E22259@midas.usurf.usu.edu>
-	<OFE3AA516D.46A96178-ONC125765E.0030DA7C-C125765E.00317B8C@transmode.se>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 29 Oct 2009 12:08:56 +0100
-Message-ID: <1256814536.24490.36.camel@kenjo-laptop>
-Mime-Version: 1.0
-Cc: Bill Gatliff <bgat@billgatliff.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 10B12B7C11
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2009 03:15:30 +1100 (EST)
+Date: Thu, 29 Oct 2009 09:14:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+In-Reply-To: <1256627452.11607.90.camel@pasglop>
+Message-ID: <alpine.LFD.2.01.0910290911550.31845@localhost.localdomain>
+References: <1256627452.11607.90.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,70 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-10-29 at 10:00 +0100, Joakim Tjernlund wrote:
-> >
-> > > > On Tue, Oct 27, 2009 at 04:24:53PM -0600, Jonathan Haws wrote:
-> > > > >> >>> How can I get that pointer?  Unfortunately I cannot simply
-> > > > use
-> > > > >> the
-> > > > >> >>>
-> > > > >> >> address of the flash.  Is there some magical function call
-> > > > that
-> > > > >> >> gives me access to that portion of the memory space?
-> > > > >> >>
-> > > > >> >> $ man 2 mmap
-> > > > >> >>
-> > > > >> >> You want MAP_SHARED and O_SYNC.
-> > > > >> >>
-> > > > >> >
-> > > > >> >
-> > > > >> > To use that I need to have a file descriptor to a device, do
-> > > I
-> > > > >> not?  However, I do not have a base flash driver to give me
-> > > that
-> > > > >> file descriptor.  Am I missing something with that call?
-> > > > >> >
-> > > > >>
-> > > > >> /dev/mem
-> > > > >>
-> > > > >Okay, I now have access to the flash memory, however when I write
-> > > > to it the writes do not take.  I have tried calling msync() on the
-> > > > mapping to no avail.  I have opened the fd with O_SYNC, but cannot
-> > > > get things to work right.
-> > > > >
-> > > > >Here are the calls:
-> > > > >
-> > > > >   int fd = open("/dev/mem", O_SYNC | O_RDWR);
-> > > > >   uint16_t * flash = (uint16_t *)mmap(NULL, NOR_FLASH_SIZE,
-> > > > >         (PROT_READ | PROT_WRITE), MAP_PRIVATE, fd,
-> > > > >         NOR_FLASH_BASE_ADRS);
-> > > >
-> > > > What board and CPU are you using?  Is your flash really at
-> > > > 0xFC800000, or is
-> > > > that the virtual address that VxWorks puts it at?
-> > >
-> > > I am using a custom board based on the AMCC Kilauea development
-> > > board.  It uses a 405EX CPU.  Yes, the flash is really at
-> > > 0xFC000000.
-> >
-> > I have found the problem.  It occurred to me in the shower (okay not really,
-> > but most good ideas happen there).
-> >
-> > What was happening is that I was in fact able to write to the correct
-> > registers.  However, I would try and write to them in a batch.  But the way
-> > mmap works (at least according to the man page) with MAP_SHARED is that the
-> > file may not be updated until msync() is called.  Now, I thought that O_SYNC
-> > would take care of that when I open /dev/mem, but that was not the case.
-> >
-> > Anyway, to make a long story short, I inserted an msync() after each
-> > assignment to the flash.  This resolved my problem and I can now program my flash.
-> 
-> Ouch, this was news to me too. Calling msync() after every write kills performance.
-> We use mmap(/dev/mem) to access HW and havn't seen any issues yet. Is this
-> perhaps a new behaviour for mmap(/dev/mem) and is there a way
-> to avoid calling msync()?
 
-The address range should be outside the dram and thus uncached. Any
-write to any address in the range mmaped should go directly to the NOR
-flash. Any other behavior is a bug. It's not mapping an actual file
-here.
+
+On Tue, 27 Oct 2009, Benjamin Herrenschmidt wrote:
+> 
+> Kumar Gala (7):
+>       powerpc: Add a Book-3E 64-bit defconfig
+>       powerpc: Fix compile errors found by new ppc64e_defconfig
+>       powerpc: Limit hugetlbfs support to PPC64 Book-3S machines
+
+This is incredibly ugly. Why should the generic fs/Kconfig know about some 
+random odd architecture detail like PPC_BOOK3S_64?
+
+I merged it, and noticed this because Super-H caused clashes by cleaning 
+up. I would suggest PowerPC do the same.
+
+This patch is not signed-off, nor do I want any credit. But if it works on 
+ppc, please send me something like this back.
+
+		Linus
+---
+ arch/powerpc/Kconfig |    3 +++
+ fs/Kconfig           |    2 +-
+ 2 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 10a0a54..877db84 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -131,6 +131,9 @@ config PPC
+ 	select GENERIC_ATOMIC64 if PPC32
+ 	select HAVE_PERF_EVENTS
+ 
++config SYS_SUPPORTS_HUGETLBFS
++	defbool PPC_BOOK3S_64
++
+ config EARLY_PRINTK
+ 	bool
+ 	default y
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 2126078..64d44ef 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -135,7 +135,7 @@ config TMPFS_POSIX_ACL
+ 
+ config HUGETLBFS
+ 	bool "HugeTLB file system support"
+-	depends on X86 || IA64 || PPC_BOOK3S_64 || SPARC64 || (S390 && 64BIT) || \
++	depends on X86 || IA64 || SPARC64 || (S390 && 64BIT) || \
+ 		   SYS_SUPPORTS_HUGETLBFS || BROKEN
+ 	help
+ 	  hugetlbfs is a filesystem backing for HugeTLB pages, based on
