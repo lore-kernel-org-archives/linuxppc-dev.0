@@ -1,18 +1,17 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-pb-sasl-sd.pobox.com [64.74.157.62])
-	by ozlabs.org (Postfix) with ESMTP id 11CA1B7BF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2009 15:07:39 +1100 (EST)
-Subject: Re: [PATCH 1/6 v5] Kernel DLPAR Infrastructure
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1256785731.26770.38.camel@pasglop>
-References: <4AE8ADCF.6090104@austin.ibm.com>
-	<4AE8AF4D.4030403@austin.ibm.com> <1256785731.26770.38.camel@pasglop>
-Content-Type: text/plain
-Date: Wed, 28 Oct 2009 22:59:13 -0500
-Message-Id: <1256788753.6279.165.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 5DD81B7B70
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Oct 2009 17:26:55 +1100 (EST)
+To: Wolfram Sang <w.sang@pengutronix.de>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: SPRN_SVR for MPC5121e?
+MIME-Version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <20091028152324.GC3920@pengutronix.de>
+References: <20091028152324.GC3920@pengutronix.de>
+Date: Thu, 29 Oct 2009 07:26:50 +0100
+Message-Id: <20091029062650.79D42E916D8@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-10-29 at 14:08 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-10-28 at 15:53 -0500, Nathan Fontenot wrote:
-> > +	struct device_node *dn;
-> > +	struct device_node *first_dn = NULL;
-> > +	struct device_node *last_dn = NULL;
-> > +	struct property *property;
-> > +	struct property *last_property = NULL;
-> > +	struct cc_workarea *ccwa;
-> > +	int cc_token;
-> > +	int rc;
-> > +
-> > +	cc_token = rtas_token("ibm,configure-connector");
-> > +	if (cc_token == RTAS_UNKNOWN_SERVICE)
-> > +		return NULL;
-> > +
-> > +	spin_lock(&workarea_lock);
-> > +
-> > +	ccwa = (struct cc_workarea *)&workarea[0];
-> > +	ccwa->drc_index = drc_index;
-> > +	ccwa->zero = 0;
-> 
-> Popping a free page with gfp (or just kmalloc'ing 4K) would avoid the
-> need for the lock too.
+Dear Wolfram Sang,
 
-Not kmalloc -- the alignment of the buffer isn't guaranteed when
-slub/slab debug is on, and iirc  the work area needs to be 4K-aligned.
-__get_free_page should be fine, I think.
+In message <20091028152324.GC3920@pengutronix.de> you wrote:
+> 
+> my MPC5121e (Rev2) has PVR/SVR: 0x8086_2010/0x8018_0020 (as mentioned in the manual)
+...
+> Does someone here have a Rev1 and can ultimately confirm and/or supply the
+> complete PVR/SVR for Rev1? Couldn't find any hint neither in the manual nor in
+> the web.
+
+We saw
+
+	PVR/SVR = 0x80862010 / 0x80180010 for MPC5121
+and
+
+	PVR/SVR = 0x80862010 / 0x80180030 for MPC5123
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Quantum particles: The dreams that stuff is made of.
