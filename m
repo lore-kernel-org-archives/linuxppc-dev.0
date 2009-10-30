@@ -2,17 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 15F4BB7C3E
+	by ozlabs.org (Postfix) with ESMTPS id 57AFDB7C3D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 30 Oct 2009 17:20:07 +1100 (EST)
-Subject: [PATCH] powerpc/8xx: Fix build breakage with sparse irq changes
+	Fri, 30 Oct 2009 17:26:49 +1100 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n9U6Qiju010771
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2009 01:26:45 -0500
+Subject: powerpc "next" branch update
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 30 Oct 2009 17:19:57 +1100
-Message-ID: <1256883597.6372.70.camel@pasglop>
+Date: Fri, 30 Oct 2009 17:26:43 +1100
+Message-ID: <1256884003.6372.72.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,24 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hoy hoy !
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+It's late, I know, but finally here's a first batch of patches in
+powerpc "next" branch that I pushed out today. Hopefully more to come
+as I start pulling from Kumar, Grant, etc... 
 
-Sticking that on top of my -next branch
+Cheers,
+Ben.
 
-diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c b/arch/powerpc/platforms/8xx/m8xx_setup.c
-index 385acfc..242954c 100644
---- a/arch/powerpc/platforms/8xx/m8xx_setup.c
-+++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
-@@ -222,7 +222,7 @@ static void cpm_cascade(unsigned int irq, struct irq_desc *desc)
- 	int cascade_irq;
- 
- 	if ((cascade_irq = cpm_get_irq()) >= 0) {
--		struct irq_desc *cdesc = irq_desc + cascade_irq;
-+		struct irq_desc *cdesc = irq_to_desc(cascade_irq);
- 
- 		generic_handle_irq(cascade_irq);
- 		cdesc->chip->eoi(cascade_irq);
--- 
-1.6.1.2.14.gf26b5
+Alexey Dobriyan (1):
+      Convert /proc/device-tree/ to seq_file
+
+Anton Vorontsov (2):
+      powerpc: Make it possible to select hibernation on all PowerPCs
+      of/platform: Implement support for dev_pm_ops
+
+Benjamin Herrenschmidt (4):
+      powerpc: Cleanup Kconfig selection of hugetlbfs support
+      powerpc: Move /proc/ppc64 to /proc/powerpc and add symlink
+      powerpc/chrp: Use the same RTAS daemon as pSeries
+      powerpc/8xx: Fix build breakage with sparse irq changes
+
+Brian King (1):
+      powerpc: Add kdump support to Collaborative Memory Manager
+
+David Gibson (6):
+      powerpc/mm: Make hpte_need_flush() correctly mask for multiple page sizes
+      powerpc/mm: Cleanup management of kmem_caches for pagetables
+      powerpc/mm: Allow more flexible layouts for hugepage pagetables
+      powerpc/mm: Cleanup initialization of hugepages on powerpc
+      powerpc/mm: Split hash MMU specific hugepage code into a new file
+      powerpc/mm: Bring hugepage PTE accessor functions back into sync with normal accessors
+
+Jean Delvare (1):
+      powerpc/therm_adt746x: Don't access non-existing register
+
+Michael Ellerman (7):
+      powerpc/ps3: Use pr_devel() in ps3/mm.c
+      powerpc: Make NR_IRQS a CONFIG option
+      powerpc/pseries: Use irq_has_action() in eeh_disable_irq()
+      powerpc: Remove get_irq_desc()
+      powerpc: Make virq_debug_show() cope with sparse irq_descs
+      powerpc: Rearrange and fix show_interrupts() for sparse irq_descs
+      powerpc: Enable sparse irq_descs on powerpc
+
+Michael Neuling (1):
+      powerpc: Fix potential compile error irqs_disabled_flags
+
+Olof Johansson (1):
+      powerpc: pasemi_defconfig update
+
+Thomas Gleixner (3):
+      powerpc/nvram_64: Remove unused code
+      powerpc/nvram_64: Check nvram_error_log_index in nvram_clear_error_log()
+      powerpc/nvram_64: Mark init code __init
