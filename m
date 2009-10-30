@@ -1,16 +1,35 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 30 Oct 2009 16:05:59 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [2/6] Cleanup management of kmem_caches for pagetables
-Message-ID: <20091030050559.GA3505@yookeroo.seuss>
-References: <20091027052258.GD20694@yookeroo.seuss>
-	<20091027052431.B0876B7BF0@ozlabs.org>
-	<20091029022718.GC10725@yookeroo.seuss>
-	<20091030033922.GA4144@yookeroo.seuss>
+Return-Path: <ego@in.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5D56FB7C25
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 30 Oct 2009 16:22:55 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id n9U5MdGF031417
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2009 16:22:39 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	n9U5MoS71351900
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2009 16:22:50 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	n9U5Mnnx006406
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2009 16:22:50 +1100
+Subject: [PATCH v5 1/4] pSeries: extended_cede_processor() helper function.
+To: Nathan Fontenot <nfont@austin.ibm.com>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>
+From: Gautham R Shenoy <ego@in.ibm.com>
+Date: Fri, 30 Oct 2009 10:52:48 +0530
+Message-ID: <20091030052248.25493.79881.stgit@sofia.in.ibm.com>
+In-Reply-To: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
+References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091030033922.GA4144@yookeroo.seuss>
+Content-Type: text/plain; charset="utf-8"
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+	Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,531 +39,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 30, 2009 at 02:39:22PM +1100, David Gibson wrote:
-> On Thu, Oct 29, 2009 at 01:27:18PM +1100, David Gibson wrote:
-> > Oops, there was one big, nasty, stupid bug in this patch.  Corrected
-> > patch below.
-> 
-> Ugh.  And another, which broke compile on all 32-bit platforms.  I'm
-> running out of brown paper bags :(.
+This patch provides an extended_cede_processor() helper function
+which takes the cede latency hint as an argument. This hint is to be passed
+on to the hypervisor to cede to the corresponding state on platforms
+which support it.
 
-And now one that might built for 32-bit SMP.  Sigh
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/lppaca.h               |    9 ++++++++-
+ arch/powerpc/platforms/pseries/plpar_wrappers.h |   22 ++++++++++++++++++++++
+ arch/powerpc/xmon/xmon.c                        |    3 ++-
+ 3 files changed, 32 insertions(+), 2 deletions(-)
 
-Cleanup management of kmem_caches for pagetables
-
-Currently we have a fair bit of rather fiddly code to manage the
-various kmem_caches used to store page tables of various levels.  We
-generally have two caches holding some combination of PGD, PUD and PMD
-tables, plus several more for the special hugepage pagetables.
-
-This patch cleans this all up by taking a different approach.  Rather
-than the caches being designated as for PUDs or for hugeptes for 16M
-pages, the caches are simply allocated to be a specific size.  Thus
-sharing of caches between different types/levels of pagetables happens
-naturally.  The pagetable size, where needed, is passed around encoded
-in the same way as {PGD,PUD,PMD}_INDEX_SIZE; that is n where the
-pagetable contains 2^n pointers.
-
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
-
-Index: working-2.6/arch/powerpc/mm/init_64.c
-===================================================================
---- working-2.6.orig/arch/powerpc/mm/init_64.c	2009-09-28 12:50:46.000000000 +1000
-+++ working-2.6/arch/powerpc/mm/init_64.c	2009-10-30 15:55:09.000000000 +1100
-@@ -119,30 +119,58 @@ static void pmd_ctor(void *addr)
- 	memset(addr, 0, PMD_TABLE_SIZE);
+diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
+index f78f65c..14b592d 100644
+--- a/arch/powerpc/include/asm/lppaca.h
++++ b/arch/powerpc/include/asm/lppaca.h
+@@ -100,7 +100,14 @@ struct lppaca {
+ 	// Used to pass parms from the OS to PLIC for SetAsrAndRfid
+ 	u64	saved_gpr3;		// Saved GPR3                   x20-x27
+ 	u64	saved_gpr4;		// Saved GPR4                   x28-x2F
+-	u64	saved_gpr5;		// Saved GPR5                   x30-x37
++	union {
++		u64	saved_gpr5;	/* Saved GPR5               x30-x37 */
++		struct {
++			u8	cede_latency_hint;  /*			x30 */
++			u8	reserved[7];        /*		    x31-x36 */
++		} fields;
++	} gpr5_dword;
++
+ 
+ 	u8	dtl_enable_mask;	// Dispatch Trace Log mask	x38-x38
+ 	u8	donate_dedicated_cpu;	// Donate dedicated CPU cycles  x39-x39
+diff --git a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+index a24a6b2..0603c91 100644
+--- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
++++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+@@ -9,11 +9,33 @@ static inline long poll_pending(void)
+ 	return plpar_hcall_norets(H_POLL_PENDING);
  }
  
--static const unsigned int pgtable_cache_size[2] = {
--	PGD_TABLE_SIZE, PMD_TABLE_SIZE
--};
--static const char *pgtable_cache_name[ARRAY_SIZE(pgtable_cache_size)] = {
--#ifdef CONFIG_PPC_64K_PAGES
--	"pgd_cache", "pmd_cache",
--#else
--	"pgd_cache", "pud_pmd_cache",
--#endif /* CONFIG_PPC_64K_PAGES */
--};
--
--#ifdef CONFIG_HUGETLB_PAGE
--/* Hugepages need an extra cache per hugepagesize, initialized in
-- * hugetlbpage.c.  We can't put into the tables above, because HPAGE_SHIFT
-- * is not compile time constant. */
--struct kmem_cache *pgtable_cache[ARRAY_SIZE(pgtable_cache_size)+MMU_PAGE_COUNT];
--#else
--struct kmem_cache *pgtable_cache[ARRAY_SIZE(pgtable_cache_size)];
--#endif
-+struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
-+
-+/*
-+ * Create a kmem_cache() for pagetables.  This is not used for PTE
-+ * pages - they're linked to struct page, come from the normal free
-+ * pages pool and have a different entry size (see real_pte_t) to
-+ * everything else.  Caches created by this function are used for all
-+ * the higher level pagetables, and for hugepage pagetables.
-+ */
-+void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
++static inline u8 get_cede_latency_hint(void)
 +{
-+	char *name;
-+	unsigned long table_size = sizeof(void *) << shift;
-+	unsigned long align = table_size;
-+
-+	/* When batching pgtable pointers for RCU freeing, we store
-+	 * the index size in the low bits.  Table alignment must be
-+	 * big enough to fit it */
-+	unsigned long minalign = MAX_PGTABLE_INDEX_SIZE + 1;
-+	struct kmem_cache *new;
-+
-+	/* It would be nice if this was a BUILD_BUG_ON(), but at the
-+	 * moment, gcc doesn't seem to recognize is_power_of_2 as a
-+	 * constant expression, so so much for that. */
-+	BUG_ON(!is_power_of_2(minalign));
-+	BUG_ON((shift < 1) || (shift > MAX_PGTABLE_INDEX_SIZE));
-+
-+	if (PGT_CACHE(shift))
-+		return; /* Already have a cache of this size */
-+
-+	align = max_t(unsigned long, align, minalign);
-+	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
-+	new = kmem_cache_create(name, table_size, align, 0, ctor);
-+	PGT_CACHE(shift) = new;
-+
-+	pr_debug("Allocated pgtable cache for order %d\n", shift);
++	return get_lppaca()->gpr5_dword.fields.cede_latency_hint;
 +}
 +
- 
- void pgtable_cache_init(void)
- {
--	pgtable_cache[0] = kmem_cache_create(pgtable_cache_name[0], PGD_TABLE_SIZE, PGD_TABLE_SIZE, SLAB_PANIC, pgd_ctor);
--	pgtable_cache[1] = kmem_cache_create(pgtable_cache_name[1], PMD_TABLE_SIZE, PMD_TABLE_SIZE, SLAB_PANIC, pmd_ctor);
-+	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
-+	pgtable_cache_add(PMD_INDEX_SIZE, pmd_ctor);
-+	if (!PGT_CACHE(PGD_INDEX_SIZE) || !PGT_CACHE(PMD_INDEX_SIZE))
-+		panic("Couldn't allocate pgtable caches");
++static inline void set_cede_latency_hint(u8 latency_hint)
++{
++	get_lppaca()->gpr5_dword.fields.cede_latency_hint = latency_hint;
++}
 +
-+	/* In all current configs, when the PUD index exists it's the
-+	 * same size as either the pgd or pmd index.  Verify that the
-+	 * initialization above has also created a PUD cache.  This
-+	 * will need re-examiniation if we add new possibilities for
-+	 * the pagetable layout. */
-+	BUG_ON(PUD_INDEX_SIZE && !PGT_CACHE(PUD_INDEX_SIZE));
+ static inline long cede_processor(void)
+ {
+ 	return plpar_hcall_norets(H_CEDE);
  }
  
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
-Index: working-2.6/arch/powerpc/include/asm/pgalloc-64.h
-===================================================================
---- working-2.6.orig/arch/powerpc/include/asm/pgalloc-64.h	2009-08-03 16:00:45.000000000 +1000
-+++ working-2.6/arch/powerpc/include/asm/pgalloc-64.h	2009-10-30 14:05:24.000000000 +1100
-@@ -11,27 +11,39 @@
- #include <linux/cpumask.h>
- #include <linux/percpu.h>
- 
-+/*
-+ * Functions that deal with pagetables that could be at any level of
-+ * the table need to be passed an "index_size" so they know how to
-+ * handle allocation.  For PTE pages (which are linked to a struct
-+ * page for now, and drawn from the main get_free_pages() pool), the
-+ * allocation size will be (2^index_size * sizeof(pointer)) and
-+ * allocations are drawn from the kmem_cache in PGT_CACHE(index_size).
-+ *
-+ * The maximum index size needs to be big enough to allow any
-+ * pagetable sizes we need, but small enough to fit in the low bits of
-+ * any page table pointer.  In other words all pagetables, even tiny
-+ * ones, must be aligned to allow at least enough low 0 bits to
-+ * contain this value.  This value is also used as a mask, so it must
-+ * be one less than a power of two.
-+ */
-+#define MAX_PGTABLE_INDEX_SIZE	0xf
++static inline long extended_cede_processor(unsigned long latency_hint)
++{
++	long rc;
++	u8 old_latency_hint = get_cede_latency_hint();
 +
- #ifndef CONFIG_PPC_SUBPAGE_PROT
- static inline void subpage_prot_free(pgd_t *pgd) {}
++	set_cede_latency_hint(latency_hint);
++	rc = cede_processor();
++	set_cede_latency_hint(old_latency_hint);
++
++	return rc;
++}
++
+ static inline long vpa_call(unsigned long flags, unsigned long cpu,
+ 		unsigned long vpa)
+ {
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index c6f0a71..57124cf 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1623,7 +1623,8 @@ static void super_regs(void)
+ 			       ptrLpPaca->saved_srr0, ptrLpPaca->saved_srr1);
+ 			printf("    Saved Gpr3=%.16lx  Saved Gpr4=%.16lx \n",
+ 			       ptrLpPaca->saved_gpr3, ptrLpPaca->saved_gpr4);
+-			printf("    Saved Gpr5=%.16lx \n", ptrLpPaca->saved_gpr5);
++			printf("    Saved Gpr5=%.16lx \n",
++				ptrLpPaca->gpr5_dword.saved_gpr5);
+ 		}
  #endif
  
- extern struct kmem_cache *pgtable_cache[];
--
--#define PGD_CACHE_NUM		0
--#define PUD_CACHE_NUM		1
--#define PMD_CACHE_NUM		1
--#define HUGEPTE_CACHE_NUM	2
--#define PTE_NONCACHE_NUM	7  /* from GFP rather than kmem_cache */
-+#define PGT_CACHE(shift) (pgtable_cache[(shift)-1])
- 
- static inline pgd_t *pgd_alloc(struct mm_struct *mm)
- {
--	return kmem_cache_alloc(pgtable_cache[PGD_CACHE_NUM], GFP_KERNEL);
-+	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE), GFP_KERNEL);
- }
- 
- static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- {
- 	subpage_prot_free(pgd);
--	kmem_cache_free(pgtable_cache[PGD_CACHE_NUM], pgd);
-+	kmem_cache_free(PGT_CACHE(PGD_INDEX_SIZE), pgd);
- }
- 
- #ifndef CONFIG_PPC_64K_PAGES
-@@ -40,13 +52,13 @@ static inline void pgd_free(struct mm_st
- 
- static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
--	return kmem_cache_alloc(pgtable_cache[PUD_CACHE_NUM],
-+	return kmem_cache_alloc(PGT_CACHE(PUD_INDEX_SIZE),
- 				GFP_KERNEL|__GFP_REPEAT);
- }
- 
- static inline void pud_free(struct mm_struct *mm, pud_t *pud)
- {
--	kmem_cache_free(pgtable_cache[PUD_CACHE_NUM], pud);
-+	kmem_cache_free(PGT_CACHE(PUD_INDEX_SIZE), pud);
- }
- 
- static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
-@@ -78,13 +90,13 @@ static inline void pmd_populate_kernel(s
- 
- static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
--	return kmem_cache_alloc(pgtable_cache[PMD_CACHE_NUM],
-+	return kmem_cache_alloc(PGT_CACHE(PMD_INDEX_SIZE),
- 				GFP_KERNEL|__GFP_REPEAT);
- }
- 
- static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
- {
--	kmem_cache_free(pgtable_cache[PMD_CACHE_NUM], pmd);
-+	kmem_cache_free(PGT_CACHE(PMD_INDEX_SIZE), pmd);
- }
- 
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
-@@ -107,24 +119,22 @@ static inline pgtable_t pte_alloc_one(st
- 	return page;
- }
- 
--static inline void pgtable_free(pgtable_free_t pgf)
-+static inline void pgtable_free(void *table, unsigned index_size)
- {
--	void *p = (void *)(pgf.val & ~PGF_CACHENUM_MASK);
--	int cachenum = pgf.val & PGF_CACHENUM_MASK;
--
--	if (cachenum == PTE_NONCACHE_NUM)
--		free_page((unsigned long)p);
--	else
--		kmem_cache_free(pgtable_cache[cachenum], p);
-+	if (!index_size)
-+		free_page((unsigned long)table);
-+	else {
-+		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
-+		kmem_cache_free(PGT_CACHE(index_size), table);
-+	}
- }
- 
--#define __pmd_free_tlb(tlb, pmd,addr)		      \
--	pgtable_free_tlb(tlb, pgtable_free_cache(pmd, \
--		PMD_CACHE_NUM, PMD_TABLE_SIZE-1))
-+#define __pmd_free_tlb(tlb, pmd, addr)		      \
-+	pgtable_free_tlb(tlb, pmd, PMD_INDEX_SIZE)
- #ifndef CONFIG_PPC_64K_PAGES
- #define __pud_free_tlb(tlb, pud, addr)		      \
--	pgtable_free_tlb(tlb, pgtable_free_cache(pud, \
--		PUD_CACHE_NUM, PUD_TABLE_SIZE-1))
-+	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
-+
- #endif /* CONFIG_PPC_64K_PAGES */
- 
- #define check_pgt_cache()	do { } while (0)
-Index: working-2.6/arch/powerpc/include/asm/pgalloc.h
-===================================================================
---- working-2.6.orig/arch/powerpc/include/asm/pgalloc.h	2009-08-14 16:07:54.000000000 +1000
-+++ working-2.6/arch/powerpc/include/asm/pgalloc.h	2009-10-30 14:05:24.000000000 +1100
-@@ -24,25 +24,6 @@ static inline void pte_free(struct mm_st
- 	__free_page(ptepage);
- }
- 
--typedef struct pgtable_free {
--	unsigned long val;
--} pgtable_free_t;
--
--/* This needs to be big enough to allow for MMU_PAGE_COUNT + 2 to be stored
-- * and small enough to fit in the low bits of any naturally aligned page
-- * table cache entry. Arbitrarily set to 0x1f, that should give us some
-- * room to grow
-- */
--#define PGF_CACHENUM_MASK	0x1f
--
--static inline pgtable_free_t pgtable_free_cache(void *p, int cachenum,
--						unsigned long mask)
--{
--	BUG_ON(cachenum > PGF_CACHENUM_MASK);
--
--	return (pgtable_free_t){.val = ((unsigned long) p & ~mask) | cachenum};
--}
--
- #ifdef CONFIG_PPC64
- #include <asm/pgalloc-64.h>
- #else
-@@ -50,12 +31,12 @@ static inline pgtable_free_t pgtable_fre
- #endif
- 
- #ifdef CONFIG_SMP
--extern void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf);
-+extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, unsigned shift);
- extern void pte_free_finish(void);
- #else /* CONFIG_SMP */
--static inline void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf)
-+static inline void pgtable_free_tlb(struct mmu_gather *tlb, void *table, unsigned shift)
- {
--	pgtable_free(pgf);
-+	pgtable_free(table, shift);
- }
- static inline void pte_free_finish(void) { }
- #endif /* !CONFIG_SMP */
-@@ -63,12 +44,9 @@ static inline void pte_free_finish(void)
- static inline void __pte_free_tlb(struct mmu_gather *tlb, struct page *ptepage,
- 				  unsigned long address)
- {
--	pgtable_free_t pgf = pgtable_free_cache(page_address(ptepage),
--						PTE_NONCACHE_NUM,
--						PTE_TABLE_SIZE-1);
- 	tlb_flush_pgtable(tlb, address);
- 	pgtable_page_dtor(ptepage);
--	pgtable_free_tlb(tlb, pgf);
-+	pgtable_free_tlb(tlb, page_address(ptepage), 0);
- }
- 
- #endif /* __KERNEL__ */
-Index: working-2.6/arch/powerpc/mm/pgtable.c
-===================================================================
---- working-2.6.orig/arch/powerpc/mm/pgtable.c	2009-10-27 11:59:11.000000000 +1100
-+++ working-2.6/arch/powerpc/mm/pgtable.c	2009-10-30 14:05:24.000000000 +1100
-@@ -49,12 +49,12 @@ struct pte_freelist_batch
- {
- 	struct rcu_head	rcu;
- 	unsigned int	index;
--	pgtable_free_t	tables[0];
-+	unsigned long	tables[0];
- };
- 
- #define PTE_FREELIST_SIZE \
- 	((PAGE_SIZE - sizeof(struct pte_freelist_batch)) \
--	  / sizeof(pgtable_free_t))
-+	  / sizeof(unsigned long))
- 
- static void pte_free_smp_sync(void *arg)
- {
-@@ -64,13 +64,13 @@ static void pte_free_smp_sync(void *arg)
- /* This is only called when we are critically out of memory
-  * (and fail to get a page in pte_free_tlb).
-  */
--static void pgtable_free_now(pgtable_free_t pgf)
-+static void pgtable_free_now(void *table, unsigned shift)
- {
- 	pte_freelist_forced_free++;
- 
- 	smp_call_function(pte_free_smp_sync, NULL, 1);
- 
--	pgtable_free(pgf);
-+	pgtable_free(table, shift);
- }
- 
- static void pte_free_rcu_callback(struct rcu_head *head)
-@@ -79,8 +79,12 @@ static void pte_free_rcu_callback(struct
- 		container_of(head, struct pte_freelist_batch, rcu);
- 	unsigned int i;
- 
--	for (i = 0; i < batch->index; i++)
--		pgtable_free(batch->tables[i]);
-+	for (i = 0; i < batch->index; i++) {
-+		void *table = (void *)(batch->tables[i] & ~MAX_PGTABLE_INDEX_SIZE);
-+		unsigned shift = batch->tables[i] & MAX_PGTABLE_INDEX_SIZE;
-+
-+		pgtable_free(table, shift);
-+	}
- 
- 	free_page((unsigned long)batch);
- }
-@@ -91,25 +95,28 @@ static void pte_free_submit(struct pte_f
- 	call_rcu(&batch->rcu, pte_free_rcu_callback);
- }
- 
--void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf)
-+void pgtable_free_tlb(struct mmu_gather *tlb, void *table, unsigned shift)
- {
- 	/* This is safe since tlb_gather_mmu has disabled preemption */
- 	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
-+	unsigned long pgf;
- 
- 	if (atomic_read(&tlb->mm->mm_users) < 2 ||
- 	    cpumask_equal(mm_cpumask(tlb->mm), cpumask_of(smp_processor_id()))){
--		pgtable_free(pgf);
-+		pgtable_free(table, shift);
- 		return;
- 	}
- 
- 	if (*batchp == NULL) {
- 		*batchp = (struct pte_freelist_batch *)__get_free_page(GFP_ATOMIC);
- 		if (*batchp == NULL) {
--			pgtable_free_now(pgf);
-+			pgtable_free_now(table, shift);
- 			return;
- 		}
- 		(*batchp)->index = 0;
- 	}
-+	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
-+	pgf = (unsigned long)table | shift;
- 	(*batchp)->tables[(*batchp)->index++] = pgf;
- 	if ((*batchp)->index == PTE_FREELIST_SIZE) {
- 		pte_free_submit(*batchp);
-Index: working-2.6/arch/powerpc/mm/hugetlbpage.c
-===================================================================
---- working-2.6.orig/arch/powerpc/mm/hugetlbpage.c	2009-10-30 14:05:24.000000000 +1100
-+++ working-2.6/arch/powerpc/mm/hugetlbpage.c	2009-10-30 15:57:46.000000000 +1100
-@@ -43,26 +43,14 @@ static unsigned nr_gpages;
- unsigned int mmu_huge_psizes[MMU_PAGE_COUNT] = { }; /* initialize all to 0 */
- 
- #define hugepte_shift			mmu_huge_psizes
--#define PTRS_PER_HUGEPTE(psize)		(1 << hugepte_shift[psize])
--#define HUGEPTE_TABLE_SIZE(psize)	(sizeof(pte_t) << hugepte_shift[psize])
-+#define HUGEPTE_INDEX_SIZE(psize)	(mmu_huge_psizes[(psize)])
-+#define PTRS_PER_HUGEPTE(psize)		(1 << mmu_huge_psizes[psize])
- 
- #define HUGEPD_SHIFT(psize)		(mmu_psize_to_shift(psize) \
--						+ hugepte_shift[psize])
-+					 + HUGEPTE_INDEX_SIZE(psize))
- #define HUGEPD_SIZE(psize)		(1UL << HUGEPD_SHIFT(psize))
- #define HUGEPD_MASK(psize)		(~(HUGEPD_SIZE(psize)-1))
- 
--/* Subtract one from array size because we don't need a cache for 4K since
-- * is not a huge page size */
--#define HUGE_PGTABLE_INDEX(psize)	(HUGEPTE_CACHE_NUM + psize - 1)
--#define HUGEPTE_CACHE_NAME(psize)	(huge_pgtable_cache_name[psize])
--
--static const char *huge_pgtable_cache_name[MMU_PAGE_COUNT] = {
--	[MMU_PAGE_64K]	= "hugepte_cache_64K",
--	[MMU_PAGE_1M]	= "hugepte_cache_1M",
--	[MMU_PAGE_16M]	= "hugepte_cache_16M",
--	[MMU_PAGE_16G]	= "hugepte_cache_16G",
--};
--
- /* Flag to mark huge PD pointers.  This means pmd_bad() and pud_bad()
-  * will choke on pointers to hugepte tables, which is handy for
-  * catching screwups early. */
-@@ -114,15 +102,15 @@ static inline pte_t *hugepte_offset(huge
- static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 			   unsigned long address, unsigned int psize)
- {
--	pte_t *new = kmem_cache_zalloc(pgtable_cache[HUGE_PGTABLE_INDEX(psize)],
--				      GFP_KERNEL|__GFP_REPEAT);
-+	pte_t *new = kmem_cache_zalloc(PGT_CACHE(hugepte_shift[psize]),
-+				       GFP_KERNEL|__GFP_REPEAT);
- 
- 	if (! new)
- 		return -ENOMEM;
- 
- 	spin_lock(&mm->page_table_lock);
- 	if (!hugepd_none(*hpdp))
--		kmem_cache_free(pgtable_cache[HUGE_PGTABLE_INDEX(psize)], new);
-+		kmem_cache_free(PGT_CACHE(hugepte_shift[psize]), new);
- 	else
- 		hpdp->pd = (unsigned long)new | HUGEPD_OK;
- 	spin_unlock(&mm->page_table_lock);
-@@ -271,9 +259,7 @@ static void free_hugepte_range(struct mm
- 
- 	hpdp->pd = 0;
- 	tlb->need_flush = 1;
--	pgtable_free_tlb(tlb, pgtable_free_cache(hugepte,
--						 HUGEPTE_CACHE_NUM+psize-1,
--						 PGF_CACHENUM_MASK));
-+	pgtable_free_tlb(tlb, hugepte, hugepte_shift[psize]);
- }
- 
- static void hugetlb_free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
-@@ -698,8 +684,6 @@ static void __init set_huge_psize(int ps
- 		if (mmu_huge_psizes[psize] ||
- 		   mmu_psize_defs[psize].shift == PAGE_SHIFT)
- 			return;
--		if (WARN_ON(HUGEPTE_CACHE_NAME(psize) == NULL))
--			return;
- 		hugetlb_add_hstate(mmu_psize_defs[psize].shift - PAGE_SHIFT);
- 
- 		switch (mmu_psize_defs[psize].shift) {
-@@ -753,9 +737,9 @@ static int __init hugetlbpage_init(void)
- 	if (!cpu_has_feature(CPU_FTR_16M_PAGE))
- 		return -ENODEV;
- 
--	/* Add supported huge page sizes.  Need to change HUGE_MAX_HSTATE
--	 * and adjust PTE_NONCACHE_NUM if the number of supported huge page
--	 * sizes changes.
-+	/* Add supported huge page sizes.  Need to change
-+	 *  HUGE_MAX_HSTATE if the number of supported huge page sizes
-+	 *  changes.
- 	 */
- 	set_huge_psize(MMU_PAGE_16M);
- 	set_huge_psize(MMU_PAGE_16G);
-@@ -769,16 +753,11 @@ static int __init hugetlbpage_init(void)
- 
- 	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
- 		if (mmu_huge_psizes[psize]) {
--			pgtable_cache[HUGE_PGTABLE_INDEX(psize)] =
--				kmem_cache_create(
--					HUGEPTE_CACHE_NAME(psize),
--					HUGEPTE_TABLE_SIZE(psize),
--					HUGEPTE_TABLE_SIZE(psize),
--					0,
--					NULL);
--			if (!pgtable_cache[HUGE_PGTABLE_INDEX(psize)])
--				panic("hugetlbpage_init(): could not create %s"\
--				      "\n", HUGEPTE_CACHE_NAME(psize));
-+			pgtable_cache_add(hugepte_shift[psize], NULL);
-+			if (!PGT_CACHE(hugepte_shift[psize]))
-+				panic("hugetlbpage_init(): could not create "
-+				      "pgtable cache for %d bit pagesize\n",
-+				      mmu_psize_to_shift(psize));
- 		}
- 	}
- 
-Index: working-2.6/arch/powerpc/include/asm/pgtable-ppc64.h
-===================================================================
---- working-2.6.orig/arch/powerpc/include/asm/pgtable-ppc64.h	2009-08-28 13:46:31.000000000 +1000
-+++ working-2.6/arch/powerpc/include/asm/pgtable-ppc64.h	2009-10-30 15:55:09.000000000 +1100
-@@ -354,6 +354,7 @@ static inline void __ptep_set_access_fla
- #define pgoff_to_pte(off)	((pte_t) {((off) << PTE_RPN_SHIFT)|_PAGE_FILE})
- #define PTE_FILE_MAX_BITS	(BITS_PER_LONG - PTE_RPN_SHIFT)
- 
-+void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
- void pgtable_cache_init(void);
- 
- /*
-Index: working-2.6/arch/powerpc/include/asm/pgalloc-32.h
-===================================================================
---- working-2.6.orig/arch/powerpc/include/asm/pgalloc-32.h	2009-10-30 14:09:30.000000000 +1100
-+++ working-2.6/arch/powerpc/include/asm/pgalloc-32.h	2009-10-30 15:57:20.000000000 +1100
-@@ -3,7 +3,8 @@
- 
- #include <linux/threads.h>
- 
--#define PTE_NONCACHE_NUM	0  /* dummy for now to share code w/ppc64 */
-+/* For 32-bit, all levels of page tables are just drawn from get_free_page() */
-+#define MAX_PGTABLE_INDEX_SIZE	0
- 
- extern void __bad_pte(pmd_t *pmd);
- 
-@@ -36,11 +37,10 @@ extern void pgd_free(struct mm_struct *m
- extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
- extern pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr);
- 
--static inline void pgtable_free(pgtable_free_t pgf)
-+static inline void pgtable_free(void *table, unsigned index_size)
- {
--	void *p = (void *)(pgf.val & ~PGF_CACHENUM_MASK);
--
--	free_page((unsigned long)p);
-+	BUG_ON(index_size); /* 32-bit doesn't use this */
-+	free_page((unsigned long)table);
- }
- 
- #define check_pgt_cache()	do { } while (0)
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
