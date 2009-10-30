@@ -1,12 +1,12 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id BE317B7C33
+	by ozlabs.org (Postfix) with ESMTP id C36A9B7C35
 	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 02:47:34 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm@vger.kernel.org
-Subject: [PATCH 07/27] Add book3s_64 highmem asm code
-Date: Fri, 30 Oct 2009 16:47:07 +0100
-Message-Id: <1256917647-6200-8-git-send-email-agraf@suse.de>
+Subject: [PATCH 11/27] Add book3s_64 Host MMU handling
+Date: Fri, 30 Oct 2009 16:47:11 +0100
+Message-Id: <1256917647-6200-12-git-send-email-agraf@suse.de>
 In-Reply-To: <1256917647-6200-1-git-send-email-agraf@suse.de>
 References: <1256917647-6200-1-git-send-email-agraf@suse.de>
 Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
@@ -24,45 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is the of entry / exit code. In order to switch between host and guest
-context, we need to switch register state and call the exit code handler on
-exit.
+We designed the Book3S port of KVM as modular as possible. Most
+of the code could be easily used on a Book3S_32 host as well.
 
-This assembly file does exactly that. To finally enter the guest it calls
-into book3s_64_slb.S. On exit it gets jumped at from book3s_64_slb.S too.
+The main difference between 32 and 64 bit cores is the MMU. To keep
+things well separated, we treat the book3s_64 MMU as one possible compile
+option.
+
+This patch adds all the MMU helpers the rest of the code needs in
+order to modify the host's MMU, like setting PTEs and segments.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 
 ---
 
-v3 -> v4:
+v5 -> v6
 
-  - header rename fix
+  - don't take mmap_sem
+  - dprintk instead if scattered #ifdef's
+  - minor cleanups
+  - // -> /* */ (book3s_64_mmu_host.c)
 ---
- arch/powerpc/include/asm/kvm_ppc.h      |    1 +
- arch/powerpc/kvm/book3s_64_interrupts.S |  392 +++++++++++++++++++++++++++++++
- 2 files changed, 393 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/kvm/book3s_64_interrupts.S
+ arch/powerpc/kvm/book3s_64_mmu_host.c |  408 +++++++++++++++++++++++++++++++++
+ 1 files changed, 408 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/kvm/book3s_64_mmu_host.c
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 2c6ee34..269ee46 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -39,6 +39,7 @@ enum emulation_result {
- extern int __kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu);
- extern char kvmppc_handlers_start[];
- extern unsigned long kvmppc_handler_len;
-+extern void kvmppc_handler_highmem(void);
- 
- extern void kvmppc_dump_vcpu(struct kvm_vcpu *vcpu);
- extern int kvmppc_handle_load(struct kvm_run *run, struct kvm_vcpu *vcpu,
-diff --git a/arch/powerpc/kvm/book3s_64_interrupts.S b/arch/powerpc/kvm/book3s_64_interrupts.S
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
 new file mode 100644
-index 0000000..7b55d80
+index 0000000..f2899b2
 --- /dev/null
-+++ b/arch/powerpc/kvm/book3s_64_interrupts.S
-@@ -0,0 +1,392 @@
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -0,0 +1,408 @@
 +/*
++ * Copyright (C) 2009 SUSE Linux Products GmbH. All rights reserved.
++ *
++ * Authors:
++ *     Alexander Graf <agraf@suse.de>
++ *     Kevin Wolf <mail@kevin-wolf.de>
++ *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License, version 2, as
 + * published by the Free Software Foundation.
@@ -75,384 +74,394 @@ index 0000000..7b55d80
 + * You should have received a copy of the GNU General Public License
 + * along with this program; if not, write to the Free Software
 + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright SUSE Linux Products GmbH 2009
-+ *
-+ * Authors: Alexander Graf <agraf@suse.de>
 + */
 +
-+#include <asm/ppc_asm.h>
-+#include <asm/kvm_asm.h>
-+#include <asm/reg.h>
-+#include <asm/page.h>
-+#include <asm/asm-offsets.h>
-+#include <asm/exception-64s.h>
-+
-+#define KVMPPC_HANDLE_EXIT .kvmppc_handle_exit
-+#define ULONG_SIZE 8
-+#define VCPU_GPR(n)     (VCPU_GPRS + (n * ULONG_SIZE))
-+
-+.macro mfpaca tmp_reg, src_reg, offset, vcpu_reg
-+	ld	\tmp_reg, (PACA_EXMC+\offset)(r13)
-+	std	\tmp_reg, VCPU_GPR(\src_reg)(\vcpu_reg)
-+.endm
-+
-+.macro DISABLE_INTERRUPTS
-+       mfmsr   r0
-+       rldicl  r0,r0,48,1
-+       rotldi  r0,r0,16
-+       mtmsrd  r0,1
-+.endm
-+
-+/*****************************************************************************
-+ *                                                                           *
-+ *     Guest entry / exit code that is in kernel module memory (highmem)     *
-+ *                                                                           *
-+ ****************************************************************************/
-+
-+/* Registers:
-+ *  r3: kvm_run pointer
-+ *  r4: vcpu pointer
-+ */
-+_GLOBAL(__kvmppc_vcpu_entry)
-+
-+kvm_start_entry:
-+	/* Write correct stack frame */
-+	mflr    r0
-+	std     r0,16(r1)
-+
-+	/* Save host state to the stack */
-+	stdu	r1, -SWITCH_FRAME_SIZE(r1)
-+
-+	/* Save r3 (kvm_run) and r4 (vcpu) */
-+	SAVE_2GPRS(3, r1)
-+
-+	/* Save non-volatile registers (r14 - r31) */
-+	SAVE_NVGPRS(r1)
-+
-+	/* Save LR */
-+	mflr	r14
-+	std	r14, _LINK(r1)
-+
-+/* XXX optimize non-volatile loading away */
-+kvm_start_lightweight:
-+
-+	DISABLE_INTERRUPTS
-+
-+	/* Save R1/R2 in the PACA */
-+	std	r1, PACAR1(r13)
-+	std	r2, (PACA_EXMC+EX_SRR0)(r13)
-+	ld	r3, VCPU_HIGHMEM_HANDLER(r4)
-+	std	r3, PACASAVEDMSR(r13)
-+
-+	/* Load non-volatile guest state from the vcpu */
-+	ld	r14, VCPU_GPR(r14)(r4)
-+	ld	r15, VCPU_GPR(r15)(r4)
-+	ld	r16, VCPU_GPR(r16)(r4)
-+	ld	r17, VCPU_GPR(r17)(r4)
-+	ld	r18, VCPU_GPR(r18)(r4)
-+	ld	r19, VCPU_GPR(r19)(r4)
-+	ld	r20, VCPU_GPR(r20)(r4)
-+	ld	r21, VCPU_GPR(r21)(r4)
-+	ld	r22, VCPU_GPR(r22)(r4)
-+	ld	r23, VCPU_GPR(r23)(r4)
-+	ld	r24, VCPU_GPR(r24)(r4)
-+	ld	r25, VCPU_GPR(r25)(r4)
-+	ld	r26, VCPU_GPR(r26)(r4)
-+	ld	r27, VCPU_GPR(r27)(r4)
-+	ld	r28, VCPU_GPR(r28)(r4)
-+	ld	r29, VCPU_GPR(r29)(r4)
-+	ld	r30, VCPU_GPR(r30)(r4)
-+	ld	r31, VCPU_GPR(r31)(r4)
-+
-+	ld	r9, VCPU_PC(r4)			/* r9 = vcpu->arch.pc */
-+	ld	r10, VCPU_SHADOW_MSR(r4)	/* r10 = vcpu->arch.shadow_msr */
-+
-+	ld	r3, VCPU_TRAMPOLINE_ENTER(r4)
-+	mtsrr0	r3
-+
-+	LOAD_REG_IMMEDIATE(r3, MSR_KERNEL & ~(MSR_IR | MSR_DR))
-+	mtsrr1	r3
-+
-+	/* Load guest state in the respective registers */
-+	lwz	r3, VCPU_CR(r4)		/* r3 = vcpu->arch.cr */
-+	stw	r3, (PACA_EXMC + EX_CCR)(r13)
-+
-+	ld	r3, VCPU_CTR(r4)	/* r3 = vcpu->arch.ctr */
-+	mtctr	r3			/* CTR = r3 */
-+
-+	ld	r3, VCPU_LR(r4)		/* r3 = vcpu->arch.lr */
-+	mtlr	r3			/* LR = r3 */
-+
-+	ld	r3, VCPU_XER(r4)	/* r3 = vcpu->arch.xer */
-+	std	r3, (PACA_EXMC + EX_R3)(r13)
-+
-+	/* Some guests may need to have dcbz set to 32 byte length.
-+	 *
-+	 * Usually we ensure that by patching the guest's instructions
-+	 * to trap on dcbz and emulate it in the hypervisor.
-+	 *
-+	 * If we can, we should tell the CPU to use 32 byte dcbz though,
-+	 * because that's a lot faster.
-+	 */
-+
-+	ld	r3, VCPU_HFLAGS(r4)
-+	rldicl.	r3, r3, 0, 63		/* CR = ((r3 & 1) == 0) */
-+	beq	no_dcbz32_on
-+
-+	mfspr   r3,SPRN_HID5
-+	ori     r3, r3, 0x80		/* XXX HID5_dcbz32 = 0x80 */
-+	mtspr   SPRN_HID5,r3
-+
-+no_dcbz32_on:
-+	/*	Load guest GPRs */
-+
-+	ld	r3, VCPU_GPR(r9)(r4)
-+	std	r3, (PACA_EXMC + EX_R9)(r13)
-+	ld	r3, VCPU_GPR(r10)(r4)
-+	std	r3, (PACA_EXMC + EX_R10)(r13)
-+	ld	r3, VCPU_GPR(r11)(r4)
-+	std	r3, (PACA_EXMC + EX_R11)(r13)
-+	ld	r3, VCPU_GPR(r12)(r4)
-+	std	r3, (PACA_EXMC + EX_R12)(r13)
-+	ld	r3, VCPU_GPR(r13)(r4)
-+	std	r3, (PACA_EXMC + EX_R13)(r13)
-+
-+	ld	r0, VCPU_GPR(r0)(r4)
-+	ld	r1, VCPU_GPR(r1)(r4)
-+	ld	r2, VCPU_GPR(r2)(r4)
-+	ld	r3, VCPU_GPR(r3)(r4)
-+	ld	r5, VCPU_GPR(r5)(r4)
-+	ld	r6, VCPU_GPR(r6)(r4)
-+	ld	r7, VCPU_GPR(r7)(r4)
-+	ld	r8, VCPU_GPR(r8)(r4)
-+	ld	r4, VCPU_GPR(r4)(r4)
-+
-+	/* This sets the Magic value for the trampoline */
-+
-+	li	r11, 1
-+	stb	r11, PACA_KVM_IN_GUEST(r13)
-+
-+	/* Jump to SLB patching handlder and into our guest */
-+	RFI
-+
-+/*
-+ * This is the handler in module memory. It gets jumped at from the
-+ * lowmem trampoline code, so it's basically the guest exit code.
-+ *
-+ */
-+
-+.global kvmppc_handler_highmem
-+kvmppc_handler_highmem:
-+
-+	/*
-+	 * Register usage at this point:
-+	 *
-+	 * R00   = guest R13
-+	 * R01   = host R1
-+	 * R02   = host R2
-+	 * R10   = guest PC
-+	 * R11   = guest MSR
-+	 * R12   = exit handler id
-+	 * R13   = PACA
-+	 * PACA.exmc.R9    = guest R1
-+	 * PACA.exmc.R10   = guest R10
-+	 * PACA.exmc.R11   = guest R11
-+	 * PACA.exmc.R12   = guest R12
-+	 * PACA.exmc.R13   = guest R2
-+	 * PACA.exmc.DAR   = guest DAR
-+	 * PACA.exmc.DSISR = guest DSISR
-+	 * PACA.exmc.LR    = guest instruction
-+	 * PACA.exmc.CCR   = guest CR
-+	 * PACA.exmc.SRR0  = guest R0
-+	 *
-+	 */
-+
-+	std	r3, (PACA_EXMC+EX_R3)(r13)
-+
-+	/* save the exit id in R3 */
-+	mr	r3, r12
-+
-+	/* R12 = vcpu */
-+	ld	r12, GPR4(r1)
-+
-+	/* Now save the guest state */
-+
-+	std	r0, VCPU_GPR(r13)(r12)
-+	std	r4, VCPU_GPR(r4)(r12)
-+	std	r5, VCPU_GPR(r5)(r12)
-+	std	r6, VCPU_GPR(r6)(r12)
-+	std	r7, VCPU_GPR(r7)(r12)
-+	std	r8, VCPU_GPR(r8)(r12)
-+	std	r9, VCPU_GPR(r9)(r12)
-+
-+	/* get registers from PACA */
-+	mfpaca	r5, r0, EX_SRR0, r12
-+	mfpaca	r5, r3, EX_R3, r12
-+	mfpaca	r5, r1, EX_R9, r12
-+	mfpaca	r5, r10, EX_R10, r12
-+	mfpaca	r5, r11, EX_R11, r12
-+	mfpaca	r5, r12, EX_R12, r12
-+	mfpaca	r5, r2, EX_R13, r12
-+
-+	lwz	r5, (PACA_EXMC+EX_LR)(r13)
-+	stw	r5, VCPU_LAST_INST(r12)
-+
-+	lwz	r5, (PACA_EXMC+EX_CCR)(r13)
-+	stw	r5, VCPU_CR(r12)
-+
-+	ld	r5, VCPU_HFLAGS(r12)
-+	rldicl.	r5, r5, 0, 63		/* CR = ((r5 & 1) == 0) */
-+	beq	no_dcbz32_off
-+
-+	mfspr   r5,SPRN_HID5
-+	rldimi  r5,r5,6,56
-+	mtspr   SPRN_HID5,r5
-+
-+no_dcbz32_off:
-+
-+	/* XXX maybe skip on lightweight? */
-+	std	r14, VCPU_GPR(r14)(r12)
-+	std	r15, VCPU_GPR(r15)(r12)
-+	std	r16, VCPU_GPR(r16)(r12)
-+	std	r17, VCPU_GPR(r17)(r12)
-+	std	r18, VCPU_GPR(r18)(r12)
-+	std	r19, VCPU_GPR(r19)(r12)
-+	std	r20, VCPU_GPR(r20)(r12)
-+	std	r21, VCPU_GPR(r21)(r12)
-+	std	r22, VCPU_GPR(r22)(r12)
-+	std	r23, VCPU_GPR(r23)(r12)
-+	std	r24, VCPU_GPR(r24)(r12)
-+	std	r25, VCPU_GPR(r25)(r12)
-+	std	r26, VCPU_GPR(r26)(r12)
-+	std	r27, VCPU_GPR(r27)(r12)
-+	std	r28, VCPU_GPR(r28)(r12)
-+	std	r29, VCPU_GPR(r29)(r12)
-+	std	r30, VCPU_GPR(r30)(r12)
-+	std	r31, VCPU_GPR(r31)(r12)
-+
-+	/* Restore non-volatile host registers (r14 - r31) */
-+	REST_NVGPRS(r1)
-+
-+	/* Save guest PC (R10) */
-+	std	r10, VCPU_PC(r12)
-+
-+	/* Save guest msr (R11) */
-+	std	r11, VCPU_SHADOW_MSR(r12)
-+
-+	/* Save guest CTR (in R12) */
-+	mfctr	r5
-+	std	r5, VCPU_CTR(r12)
-+
-+	/* Save guest LR */
-+	mflr	r5
-+	std	r5, VCPU_LR(r12)
-+
-+	/* Save guest XER */
-+	mfxer	r5
-+	std	r5, VCPU_XER(r12)
-+
-+	/* Save guest DAR */
-+	ld	r5, (PACA_EXMC+EX_DAR)(r13)
-+	std	r5, VCPU_FAULT_DEAR(r12)
-+
-+	/* Save guest DSISR */
-+	lwz	r5, (PACA_EXMC+EX_DSISR)(r13)
-+	std	r5, VCPU_FAULT_DSISR(r12)
-+
-+	/* Restore host msr -> SRR1 */
-+	ld	r7, VCPU_HOST_MSR(r12)
-+	mtsrr1	r7
-+
-+	/* Restore host IP -> SRR0 */
-+	ld	r6, VCPU_HOST_RETIP(r12)
-+	mtsrr0	r6
-+
-+	/*
-+	 * For some interrupts, we need to call the real Linux
-+	 * handler, so it can do work for us. This has to happen
-+	 * as if the interrupt arrived from the kernel though,
-+	 * so let's fake it here where most state is restored.
-+	 *
-+	 * Call Linux for hardware interrupts/decrementer
-+	 * r3 = address of interrupt handler (exit reason)
-+	 */
-+
-+	cmpwi	r3, BOOK3S_INTERRUPT_EXTERNAL
-+	beq	call_linux_handler
-+	cmpwi	r3, BOOK3S_INTERRUPT_DECREMENTER
-+	beq	call_linux_handler
-+
-+	/* Back to Interruptable Mode! (goto kvm_return_point) */
-+	RFI
-+
-+call_linux_handler:
-+
-+	/*
-+	 * If we land here we need to jump back to the handler we
-+	 * came from.
-+	 *
-+	 * We have a page that we can access from real mode, so let's
-+	 * jump back to that and use it as a trampoline to get back into the
-+	 * interrupt handler!
-+	 *
-+	 * R3 still contains the exit code,
-+	 * R6 VCPU_HOST_RETIP and
-+	 * R7 VCPU_HOST_MSR
-+	 */
-+
-+	mtlr	r3
-+
-+	ld	r5, VCPU_TRAMPOLINE_LOWMEM(r12)
-+	mtsrr0	r5
-+	LOAD_REG_IMMEDIATE(r5, MSR_KERNEL & ~(MSR_IR | MSR_DR))
-+	mtsrr1	r5
-+
-+	RFI
-+
-+.global kvm_return_point
-+kvm_return_point:
-+
-+	/* Jump back to lightweight entry if we're supposed to */
-+	/* go back into the guest */
-+	mr	r5, r3
-+	/* Restore r3 (kvm_run) and r4 (vcpu) */
-+	REST_2GPRS(3, r1)
-+	bl	KVMPPC_HANDLE_EXIT
-+
-+#if 0 /* XXX get lightweight exits back */
-+	cmpwi	r3, RESUME_GUEST
-+	bne	kvm_exit_heavyweight
-+
-+	/* put VCPU and KVM_RUN back into place and roll again! */
-+	REST_2GPRS(3, r1)
-+	b	kvm_start_lightweight
-+
-+kvm_exit_heavyweight:
-+	/* Restore non-volatile host registers */
-+	ld	r14, _LINK(r1)
-+	mtlr	r14
-+	REST_NVGPRS(r1)
-+
-+	addi    r1, r1, SWITCH_FRAME_SIZE
++#include <linux/kvm_host.h>
++
++#include <asm/kvm_ppc.h>
++#include <asm/kvm_book3s.h>
++#include <asm/mmu-hash64.h>
++#include <asm/machdep.h>
++#include <asm/mmu_context.h>
++#include <asm/hw_irq.h>
++
++#define PTE_SIZE 12
++#define VSID_ALL 0
++
++/* #define DEBUG_MMU */
++/* #define DEBUG_SLB */
++
++#ifdef DEBUG_MMU
++#define dprintk_mmu(a, ...) printk(KERN_INFO a, __VA_ARGS__)
 +#else
-+	ld	r4, _LINK(r1)
-+	mtlr	r4
-+
-+	cmpwi	r3, RESUME_GUEST
-+	bne	kvm_exit_heavyweight
-+
-+	REST_2GPRS(3, r1)
-+
-+	addi    r1, r1, SWITCH_FRAME_SIZE
-+
-+	b	kvm_start_entry
-+
-+kvm_exit_heavyweight:
-+
-+	addi    r1, r1, SWITCH_FRAME_SIZE
++#define dprintk_mmu(a, ...) do { } while(0)
 +#endif
 +
-+	blr
++#ifdef DEBUG_SLB
++#define dprintk_slb(a, ...) printk(KERN_INFO a, __VA_ARGS__)
++#else
++#define dprintk_slb(a, ...) do { } while(0)
++#endif
++
++static void invalidate_pte(struct hpte_cache *pte)
++{
++	dprintk_mmu("KVM: Flushing SPT %d: 0x%llx (0x%llx) -> 0x%llx\n",
++		    i, pte->pte.eaddr, pte->pte.vpage, pte->host_va);
++
++	ppc_md.hpte_invalidate(pte->slot, pte->host_va,
++			       MMU_PAGE_4K, MMU_SEGSIZE_256M,
++			       false);
++	pte->host_va = 0;
++	kvm_release_pfn_dirty(pte->pfn);
++}
++
++void kvmppc_mmu_pte_flush(struct kvm_vcpu *vcpu, u64 guest_ea, u64 ea_mask)
++{
++	int i;
++
++	dprintk_mmu("KVM: Flushing %d Shadow PTEs: 0x%llx & 0x%llx\n",
++		    vcpu->arch.hpte_cache_offset, guest_ea, ea_mask);
++	BUG_ON(vcpu->arch.hpte_cache_offset > HPTEG_CACHE_NUM);
++
++	guest_ea &= ea_mask;
++	for (i = 0; i < vcpu->arch.hpte_cache_offset; i++) {
++		struct hpte_cache *pte;
++
++		pte = &vcpu->arch.hpte_cache[i];
++		if (!pte->host_va)
++			continue;
++
++		if ((pte->pte.eaddr & ea_mask) == guest_ea) {
++			invalidate_pte(pte);
++		}
++	}
++
++	/* Doing a complete flush -> start from scratch */
++	if (!ea_mask)
++		vcpu->arch.hpte_cache_offset = 0;
++}
++
++void kvmppc_mmu_pte_vflush(struct kvm_vcpu *vcpu, u64 guest_vp, u64 vp_mask)
++{
++	int i;
++
++	dprintk_mmu("KVM: Flushing %d Shadow vPTEs: 0x%llx & 0x%llx\n",
++		    vcpu->arch.hpte_cache_offset, guest_vp, vp_mask);
++	BUG_ON(vcpu->arch.hpte_cache_offset > HPTEG_CACHE_NUM);
++
++	guest_vp &= vp_mask;
++	for (i = 0; i < vcpu->arch.hpte_cache_offset; i++) {
++		struct hpte_cache *pte;
++
++		pte = &vcpu->arch.hpte_cache[i];
++		if (!pte->host_va)
++			continue;
++
++		if ((pte->pte.vpage & vp_mask) == guest_vp) {
++			invalidate_pte(pte);
++		}
++	}
++}
++
++void kvmppc_mmu_pte_pflush(struct kvm_vcpu *vcpu, u64 pa_start, u64 pa_end)
++{
++	int i;
++
++	dprintk_mmu("KVM: Flushing %d Shadow pPTEs: 0x%llx & 0x%llx\n",
++		    vcpu->arch.hpte_cache_offset, guest_pa, pa_mask);
++	BUG_ON(vcpu->arch.hpte_cache_offset > HPTEG_CACHE_NUM);
++
++	for (i = 0; i < vcpu->arch.hpte_cache_offset; i++) {
++		struct hpte_cache *pte;
++
++		pte = &vcpu->arch.hpte_cache[i];
++		if (!pte->host_va)
++			continue;
++
++		if ((pte->pte.raddr >= pa_start) &&
++		    (pte->pte.raddr < pa_end)) {
++			invalidate_pte(pte);
++		}
++	}
++}
++
++struct kvmppc_pte *kvmppc_mmu_find_pte(struct kvm_vcpu *vcpu, u64 ea, bool data)
++{
++	int i;
++	u64 guest_vp;
++
++	guest_vp = vcpu->arch.mmu.ea_to_vp(vcpu, ea, false);
++	for (i=0; i<vcpu->arch.hpte_cache_offset; i++) {
++		struct hpte_cache *pte;
++
++		pte = &vcpu->arch.hpte_cache[i];
++		if (!pte->host_va)
++			continue;
++
++		if (pte->pte.vpage == guest_vp)
++			return &pte->pte;
++	}
++
++	return NULL;
++}
++
++static int kvmppc_mmu_hpte_cache_next(struct kvm_vcpu *vcpu)
++{
++	if (vcpu->arch.hpte_cache_offset == HPTEG_CACHE_NUM)
++		kvmppc_mmu_pte_flush(vcpu, 0, 0);
++
++	return vcpu->arch.hpte_cache_offset++;
++}
++
++/* We keep 512 gvsid->hvsid entries, mapping the guest ones to the array using
++ * a hash, so we don't waste cycles on looping */
++static u16 kvmppc_sid_hash(struct kvm_vcpu *vcpu, u64 gvsid)
++{
++	return (u16)(((gvsid >> (SID_MAP_BITS * 7)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 6)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 5)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 4)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 3)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 2)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 1)) & SID_MAP_MASK) ^
++		     ((gvsid >> (SID_MAP_BITS * 0)) & SID_MAP_MASK));
++}
++
++
++static struct kvmppc_sid_map *find_sid_vsid(struct kvm_vcpu *vcpu, u64 gvsid)
++{
++	struct kvmppc_sid_map *map;
++	u16 sid_map_mask;
++
++	if (vcpu->arch.msr & MSR_PR)
++		gvsid |= VSID_PR;
++
++	sid_map_mask = kvmppc_sid_hash(vcpu, gvsid);
++	map = &to_book3s(vcpu)->sid_map[sid_map_mask];
++	if (map->guest_vsid == gvsid) {
++		dprintk_slb("SLB: Searching 0x%llx -> 0x%llx\n",
++			    gvsid, map->host_vsid);
++		return map;
++	}
++
++	map = &to_book3s(vcpu)->sid_map[SID_MAP_MASK - sid_map_mask];
++	if (map->guest_vsid == gvsid) {
++		dprintk_slb("SLB: Searching 0x%llx -> 0x%llx\n",
++			    gvsid, map->host_vsid);
++		return map;
++	}
++
++	dprintk_slb("SLB: Searching 0x%llx -> not found\n", gvsid);
++	return NULL;
++}
++
++int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
++{
++	pfn_t hpaddr;
++	ulong hash, hpteg, va;
++	u64 vsid;
++	int ret;
++	int rflags = 0x192;
++	int vflags = 0;
++	int attempt = 0;
++	struct kvmppc_sid_map *map;
++
++	/* Get host physical address for gpa */
++	hpaddr = gfn_to_pfn(vcpu->kvm, orig_pte->raddr >> PAGE_SHIFT);
++	if (kvm_is_error_hva(hpaddr)) {
++		printk(KERN_INFO "Couldn't get guest page for gfn %llx!\n", orig_pte->eaddr);
++		return -EINVAL;
++	}
++	hpaddr <<= PAGE_SHIFT;
++#if PAGE_SHIFT == 12
++#elif PAGE_SHIFT == 16
++	hpaddr |= orig_pte->raddr & 0xf000;
++#else
++#error Unknown page size
++#endif
++
++	/* and write the mapping ea -> hpa into the pt */
++	vcpu->arch.mmu.esid_to_vsid(vcpu, orig_pte->eaddr >> SID_SHIFT, &vsid);
++	map = find_sid_vsid(vcpu, vsid);
++	if (!map) {
++		kvmppc_mmu_map_segment(vcpu, orig_pte->eaddr);
++		map = find_sid_vsid(vcpu, vsid);
++	}
++	BUG_ON(!map);
++
++	vsid = map->host_vsid;
++	va = hpt_va(orig_pte->eaddr, vsid, MMU_SEGSIZE_256M);
++
++	if (!orig_pte->may_write)
++		rflags |= HPTE_R_PP;
++	else
++		mark_page_dirty(vcpu->kvm, orig_pte->raddr >> PAGE_SHIFT);
++
++	if (!orig_pte->may_execute)
++		rflags |= HPTE_R_N;
++
++	hash = hpt_hash(va, PTE_SIZE, MMU_SEGSIZE_256M);
++
++map_again:
++	hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
++
++	/* In case we tried normal mapping already, let's nuke old entries */
++	if (attempt > 1)
++		if (ppc_md.hpte_remove(hpteg) < 0)
++			return -1;
++
++	ret = ppc_md.hpte_insert(hpteg, va, hpaddr, rflags, vflags, MMU_PAGE_4K, MMU_SEGSIZE_256M);
++
++	if (ret < 0) {
++		/* If we couldn't map a primary PTE, try a secondary */
++#ifdef USE_SECONDARY
++		hash = ~hash;
++		attempt++;
++		if (attempt % 2)
++			vflags = HPTE_V_SECONDARY;
++		else
++			vflags = 0;
++#else
++		attempt = 2;
++#endif
++		goto map_again;
++	} else {
++		int hpte_id = kvmppc_mmu_hpte_cache_next(vcpu);
++		struct hpte_cache *pte = &vcpu->arch.hpte_cache[hpte_id];
++
++		dprintk_mmu("KVM: %c%c Map 0x%llx: [%lx] 0x%lx (0x%llx) -> %lx\n",
++			    ((rflags & HPTE_R_PP) == 3) ? '-' : 'w',
++			    (rflags & HPTE_R_N) ? '-' : 'x',
++			    orig_pte->eaddr, hpteg, va, orig_pte->vpage, hpaddr);
++
++		pte->slot = hpteg + (ret & 7);
++		pte->host_va = va;
++		pte->pte = *orig_pte;
++		pte->pfn = hpaddr >> PAGE_SHIFT;
++	}
++
++	return 0;
++}
++
++static struct kvmppc_sid_map *create_sid_map(struct kvm_vcpu *vcpu, u64 gvsid)
++{
++	struct kvmppc_sid_map *map;
++	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
++	u16 sid_map_mask;
++	static int backwards_map = 0;
++
++	if (vcpu->arch.msr & MSR_PR)
++		gvsid |= VSID_PR;
++
++	/* We might get collisions that trap in preceding order, so let's
++	   map them differently */
++
++	sid_map_mask = kvmppc_sid_hash(vcpu, gvsid);
++	if (backwards_map)
++		sid_map_mask = SID_MAP_MASK - sid_map_mask;
++
++	map = &to_book3s(vcpu)->sid_map[sid_map_mask];
++
++	/* Make sure we're taking the other map next time */
++	backwards_map = !backwards_map;
++
++	/* Uh-oh ... out of mappings. Let's flush! */
++	if (vcpu_book3s->vsid_next == vcpu_book3s->vsid_max) {
++		vcpu_book3s->vsid_next = vcpu_book3s->vsid_first;
++		memset(vcpu_book3s->sid_map, 0,
++		       sizeof(struct kvmppc_sid_map) * SID_MAP_NUM);
++		kvmppc_mmu_pte_flush(vcpu, 0, 0);
++		kvmppc_mmu_flush_segments(vcpu);
++	}
++	map->host_vsid = vcpu_book3s->vsid_next++;
++
++	map->guest_vsid = gvsid;
++	map->valid = true;
++
++	return map;
++}
++
++static int kvmppc_mmu_next_segment(struct kvm_vcpu *vcpu, ulong esid)
++{
++	int i;
++	int max_slb_size = 64;
++	int found_inval = -1;
++	int r;
++
++	if (!get_paca()->kvm_slb_max)
++		get_paca()->kvm_slb_max = 1;
++
++	/* Are we overwriting? */
++	for (i = 1; i < get_paca()->kvm_slb_max; i++) {
++		if (!(get_paca()->kvm_slb[i].esid & SLB_ESID_V))
++			found_inval = i;
++		else if ((get_paca()->kvm_slb[i].esid & ESID_MASK) == esid)
++			return i;
++	}
++
++	/* Found a spare entry that was invalidated before */
++	if (found_inval > 0)
++		return found_inval;
++
++	/* No spare invalid entry, so create one */
++
++	if (mmu_slb_size < 64)
++		max_slb_size = mmu_slb_size;
++
++	/* Overflowing -> purge */
++	if ((get_paca()->kvm_slb_max) == max_slb_size)
++		kvmppc_mmu_flush_segments(vcpu);
++
++	r = get_paca()->kvm_slb_max;
++	get_paca()->kvm_slb_max++;
++
++	return r;
++}
++
++int kvmppc_mmu_map_segment(struct kvm_vcpu *vcpu, ulong eaddr)
++{
++	u64 esid = eaddr >> SID_SHIFT;
++	u64 slb_esid = (eaddr & ESID_MASK) | SLB_ESID_V;
++	u64 slb_vsid = SLB_VSID_USER;
++	u64 gvsid;
++	int slb_index;
++	struct kvmppc_sid_map *map;
++
++	slb_index = kvmppc_mmu_next_segment(vcpu, eaddr & ESID_MASK);
++
++	if (vcpu->arch.mmu.esid_to_vsid(vcpu, esid, &gvsid)) {
++		/* Invalidate an entry */
++		get_paca()->kvm_slb[slb_index].esid = 0;
++		return -ENOENT;
++	}
++
++	map = find_sid_vsid(vcpu, gvsid);
++	if (!map)
++		map = create_sid_map(vcpu, gvsid);
++
++	map->guest_esid = esid;
++
++	slb_vsid |= (map->host_vsid << 12);
++	slb_vsid &= ~SLB_VSID_KP;
++	slb_esid |= slb_index;
++
++	get_paca()->kvm_slb[slb_index].esid = slb_esid;
++	get_paca()->kvm_slb[slb_index].vsid = slb_vsid;
++
++	dprintk_slb("slbmte %#llx, %#llx\n", slb_vsid, slb_esid);
++
++	return 0;
++}
++
++void kvmppc_mmu_flush_segments(struct kvm_vcpu *vcpu)
++{
++	get_paca()->kvm_slb_max = 1;
++	get_paca()->kvm_slb[0].esid = 0;
++}
++
++void kvmppc_mmu_destroy(struct kvm_vcpu *vcpu)
++{
++	kvmppc_mmu_pte_flush(vcpu, 0, 0);
++}
 -- 
 1.6.0.2
