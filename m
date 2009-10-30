@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4F304B7C38
+	by ozlabs.org (Postfix) with ESMTPS id 53B51B7C3A
 	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 02:47:40 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm@vger.kernel.org
-Subject: [PATCH 25/27] Fix trace.h
-Date: Fri, 30 Oct 2009 16:47:25 +0100
-Message-Id: <1256917647-6200-26-git-send-email-agraf@suse.de>
+Subject: [PATCH 23/27] Export new PACA constants in asm-offsets
+Date: Fri, 30 Oct 2009 16:47:23 +0100
+Message-Id: <1256917647-6200-24-git-send-email-agraf@suse.de>
 In-Reply-To: <1256917647-6200-1-git-send-email-agraf@suse.de>
 References: <1256917647-6200-1-git-send-email-agraf@suse.de>
 Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
@@ -26,41 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It looks like the variable "pc" is defined. At least the current code always
-failed on me stating that "pc" is already defined somewhere else.
+In order to access fields in the PACA from assembly code, we need
+to generate offsets using asm-offsets.c.
 
-Let's use _pc instead, because that doesn't collide.
-
-Is this the right approach? Does it break on 440 too? If not, why not?
+So let's add the new PACA related bits, we just introduced!
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/trace.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/asm-offsets.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
-index 67f219d..a8e8400 100644
---- a/arch/powerpc/kvm/trace.h
-+++ b/arch/powerpc/kvm/trace.h
-@@ -12,8 +12,8 @@
-  * Tracepoint for guest mode entry.
-  */
- TRACE_EVENT(kvm_ppc_instr,
--	TP_PROTO(unsigned int inst, unsigned long pc, unsigned int emulate),
--	TP_ARGS(inst, pc, emulate),
-+	TP_PROTO(unsigned int inst, unsigned long _pc, unsigned int emulate),
-+	TP_ARGS(inst, _pc, emulate),
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index aba3ea6..e2e2082 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -190,6 +190,11 @@ int main(void)
+ 	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
+ 	DEFINE(PACA_DATA_OFFSET, offsetof(struct paca_struct, data_offset));
+ 	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
++#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
++	DEFINE(PACA_KVM_IN_GUEST, offsetof(struct paca_struct, kvm_in_guest));
++	DEFINE(PACA_KVM_SLB, offsetof(struct paca_struct, kvm_slb));
++	DEFINE(PACA_KVM_SLB_MAX, offsetof(struct paca_struct, kvm_slb_max));
++#endif
+ #endif /* CONFIG_PPC64 */
  
- 	TP_STRUCT__entry(
- 		__field(	unsigned int,	inst		)
-@@ -23,7 +23,7 @@ TRACE_EVENT(kvm_ppc_instr,
- 
- 	TP_fast_assign(
- 		__entry->inst		= inst;
--		__entry->pc		= pc;
-+		__entry->pc		= _pc;
- 		__entry->emulate	= emulate;
- 	),
- 
+ 	/* RTAS */
 -- 
 1.6.0.2
