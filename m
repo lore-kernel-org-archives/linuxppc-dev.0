@@ -1,16 +1,20 @@
-Return-Path: <heyanandsu@gmail.com>
-Received: from mail-gx0-f223.google.com (mail-gx0-f223.google.com
-	[209.85.217.223]) by ozlabs.org (Postfix) with ESMTP id 8034EB7C34
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2009 20:35:33 +1100 (EST)
-Received: by gxk23 with SMTP id 23so3222660gxk.2
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2009 02:35:31 -0700 (PDT)
-MIME-Version: 1.0
-Date: Fri, 30 Oct 2009 10:35:31 +0100
-Message-ID: <231e15c10910300235y6b2332a6na587060f98814a3e@mail.gmail.com>
-Subject: R_PPC_PLTREL24 reloc against local symbol
-From: Pu Yiqiao <heyanandsu@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=0016362839e6c0cd3e047723bf9b
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id C5EB9B7C36
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 02:47:34 +1100 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: kvm@vger.kernel.org
+Subject: [PATCH 26/27] Use Little Endian for Dirty Bitmap
+Date: Fri, 30 Oct 2009 16:47:26 +0100
+Message-Id: <1256917647-6200-27-git-send-email-agraf@suse.de>
+In-Reply-To: <1256917647-6200-1-git-send-email-agraf@suse.de>
+References: <1256917647-6200-1-git-send-email-agraf@suse.de>
+Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+	Hollis Blanchard <hollisb@us.ibm.com>,
+	Marcelo Tosatti <mtosatti@redhat.com>,
+	kvm-ppc <kvm-ppc@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Avi Kivity <avi@redhat.com>, bphilips@suse.de,
+	Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,57 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016362839e6c0cd3e047723bf9b
-Content-Type: text/plain; charset=ISO-8859-1
+We currently use host endian long types to store information
+in the dirty bitmap.
 
-Hi,
-Now I am trying to work on ppc440. And when I compile my program I received
-this error message while ld:
-ppc_4xx-ld: fifo_tmp.o(.text+0x6158): R_PPC_PLTREL24 reloc against local
-symbol
-fifo_tmp.o: could not read symbols: Bad value
-I am using ELDK 4.2.
-and the compile flags is as following:
- /eldk4.2/ppc_4xx/usr/bin/../
-cc1 -quiet -nostdinc -v -I/home/joy/work/ppc/partikle//user/ulibc/include
--imultilib m403/pic -iprefix
-/eldk4.2/ppc_4xx/usr/bin/../lib/gcc/powerpc-linux/4.2.2/ -D__unix__
--D__gnu_linux__ -D__linux__ -Dunix -D__unix -Dlinux -D__linux -Asystem=linux
--Asystem=unix -Asystem=posix -Dxm_ppc440 fifo.c -quiet -dumpbase fifo.c
--mcpu=403 -auxbase-strip fifo.o -O2 -Wall -Wno-pointer-sign -version
--fexceptions -fno-builtin -fno-strict-aliasing -fPIC -fno-stack-protector
--fomit-frame-pointer -o /tmp/ccOIjGSh.s
- as -m403 -V -Qy -K PIC -o fifo.o /tmp/ccOIjGSh.s
+This works reasonably well on Little Endian targets, because the
+u32 after the first contains the next 32 bits. On Big Endian this
+breaks completely though, forcing us to be inventive here.
 
-Is there someone know why this is happend and how to resolve it?
-Thank you.
+So Ben suggested to always use Little Endian, which looks reasonable.
 
+We only have dirty bitmap implemented in Little Endian targets so far
+and since PowerPC would be the first Big Endian platform, we can just
+as well switch to Little Endian always with little effort without
+breaking existing targets.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ virt/kvm/kvm_main.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index bd44fb4..972f9fb 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -49,6 +49,7 @@
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
++#include <asm-generic/bitops/le.h>
+ 
+ #ifdef KVM_COALESCED_MMIO_PAGE_OFFSET
+ #include "coalesced_mmio.h"
+@@ -1071,8 +1072,8 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
+ 		unsigned long rel_gfn = gfn - memslot->base_gfn;
+ 
+ 		/* avoid RMW */
+-		if (!test_bit(rel_gfn, memslot->dirty_bitmap))
+-			set_bit(rel_gfn, memslot->dirty_bitmap);
++		if (!generic_test_le_bit(rel_gfn, memslot->dirty_bitmap))
++			generic___set_le_bit(rel_gfn, memslot->dirty_bitmap);
+ 	}
+ }
+ 
 -- 
-Best wishes
-
-                       Pu Yiqiao(Joy)
-
---0016362839e6c0cd3e047723bf9b
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi, <br>Now I am trying to work on ppc440. And when I compile my program I =
-received this error message while ld:<br>ppc_4xx-ld: fifo_tmp.o(.text+0x615=
-8): R_PPC_PLTREL24 reloc against local symbol<br>fifo_tmp.o: could not read=
- symbols: Bad value<br>
-I am using ELDK 4.2. <br>and the compile flags is as following:<br>=A0/eldk=
-4.2/ppc_4xx/usr/bin/../<div id=3D":59" class=3D"ii gt">cc1 -quiet -nostdinc=
- -v -I/home/joy/work/ppc/partikle//user/ulibc/include -imultilib m403/pic -=
-iprefix /eldk4.2/ppc_4xx/usr/bin/../lib/gcc/powerpc-linux/4.2.2/
--D__unix__ -D__gnu_linux__ -D__linux__ -Dunix -D__unix -Dlinux
--D__linux -Asystem=3Dlinux -Asystem=3Dunix -Asystem=3Dposix -Dxm_ppc440
-fifo.c -quiet -dumpbase fifo.c -mcpu=3D403 -auxbase-strip fifo.o -O2
--Wall -Wno-pointer-sign -version -fexceptions -fno-builtin
--fno-strict-aliasing -fPIC -fno-stack-protector -fomit-frame-pointer -o
-/tmp/ccOIjGSh.s<br>=A0as -m403 -V -Qy -K PIC -o fifo.o /tmp/ccOIjGSh.s<br><=
-br></div>Is there someone know why this is happend and how to resolve it?<b=
-r>Thank you.<br clear=3D"all"><br>-- <br>Best wishes<br><br> =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Pu Yiqiao(Joy)<br>
-<br><br>
-
---0016362839e6c0cd3e047723bf9b--
+1.6.0.2
