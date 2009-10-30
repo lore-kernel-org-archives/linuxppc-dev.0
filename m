@@ -1,12 +1,12 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id D764BB7C38
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 02:47:36 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 3E915B7C34
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 02:47:37 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm@vger.kernel.org
-Subject: [PATCH 16/27] Add desktop PowerPC specific emulation
-Date: Fri, 30 Oct 2009 16:47:16 +0100
-Message-Id: <1256917647-6200-17-git-send-email-agraf@suse.de>
+Subject: [PATCH 22/27] Add fields to PACA
+Date: Fri, 30 Oct 2009 16:47:22 +0100
+Message-Id: <1256917647-6200-23-git-send-email-agraf@suse.de>
 In-Reply-To: <1256917647-6200-1-git-send-email-agraf@suse.de>
 References: <1256917647-6200-1-git-send-email-agraf@suse.de>
 Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
@@ -24,137 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Little opcodes behave differently on desktop and embedded PowerPC cores.
-In order to reflect those differences, let's add some #ifdef code to emulate.c.
+For KVM we need to store some information in the PACA, so we
+need to extend it.
 
-We could probably also handle them in the core specific emulation files, but I
-would prefer to reuse as much code as possible.
+This patch adds KVM SLB shadow related entries to the PACA and
+a field that indicates if we're inside a guest.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
-
 ---
+ arch/powerpc/include/asm/paca.h |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-v4 -> v5:
-
-  - use get_tb instead of mftb
-  - make ppc32 and ppc64 emulation share more code
----
- arch/powerpc/kvm/emulate.c |   49 +++++++++++++++++++++++++++++++++++---------
- 1 files changed, 39 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index 50d411d..1ec5e07 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -32,6 +32,7 @@
- #include "trace.h"
- 
- #define OP_TRAP 3
-+#define OP_TRAP_64 2
- 
- #define OP_31_XOP_LWZX      23
- #define OP_31_XOP_LBZX      87
-@@ -64,16 +65,36 @@
- #define OP_STH  44
- #define OP_STHU 45
- 
-+#ifdef CONFIG_PPC64
-+static int kvmppc_dec_enabled(struct kvm_vcpu *vcpu)
-+{
-+	return 1;
-+}
-+#else
-+static int kvmppc_dec_enabled(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->arch.tcr & TCR_DIE;
-+}
-+#endif
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 7d8514c..5e9b4ef 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -129,6 +129,15 @@ struct paca_struct {
+ 	u64 system_time;		/* accumulated system TB ticks */
+ 	u64 startpurr;			/* PURR/TB value snapshot */
+ 	u64 startspurr;			/* SPURR value snapshot */
 +
- void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
- {
- 	unsigned long nr_jiffies;
- 
--	if (vcpu->arch.tcr & TCR_DIE) {
-+#ifdef CONFIG_PPC64
-+	/* POWER4+ triggers a dec interrupt if the value is < 0 */
-+	if (vcpu->arch.dec & 0x80000000) {
-+		del_timer(&vcpu->arch.dec_timer);
-+		kvmppc_core_queue_dec(vcpu);
-+		return;
-+	}
++#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
++	struct  {
++		u64     esid;
++		u64     vsid;
++	} kvm_slb[64];			/* guest SLB */
++	u8 kvm_slb_max;			/* highest used guest slb entry */
++	u8 kvm_in_guest;		/* are we inside the guest? */
 +#endif
-+	if (kvmppc_dec_enabled(vcpu)) {
- 		/* The decrementer ticks at the same rate as the timebase, so
- 		 * that's how we convert the guest DEC value to the number of
- 		 * host ticks. */
+ };
  
--		vcpu->arch.dec_jiffies = mftb();
-+		vcpu->arch.dec_jiffies = get_tb();
- 		nr_jiffies = vcpu->arch.dec / tb_ticks_per_jiffy;
- 		mod_timer(&vcpu->arch.dec_timer,
- 		          get_jiffies_64() + nr_jiffies);
-@@ -113,9 +134,15 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 	/* this default type might be overwritten by subcategories */
- 	kvmppc_set_exit_type(vcpu, EMULATED_INST_EXITS);
- 
-+	pr_debug(KERN_INFO "Emulating opcode %d / %d\n", get_op(inst), get_xop(inst));
-+
- 	switch (get_op(inst)) {
- 	case OP_TRAP:
-+#ifdef CONFIG_PPC64
-+	case OP_TRAP_64:
-+#else
- 		vcpu->arch.esr |= ESR_PTR;
-+#endif
- 		kvmppc_core_queue_program(vcpu);
- 		advance = 0;
- 		break;
-@@ -190,17 +217,19 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 			case SPRN_SRR1:
- 				vcpu->arch.gpr[rt] = vcpu->arch.srr1; break;
- 			case SPRN_PVR:
--				vcpu->arch.gpr[rt] = mfspr(SPRN_PVR); break;
-+				vcpu->arch.gpr[rt] = vcpu->arch.pvr; break;
- 			case SPRN_PIR:
--				vcpu->arch.gpr[rt] = mfspr(SPRN_PIR); break;
-+				vcpu->arch.gpr[rt] = vcpu->vcpu_id; break;
-+			case SPRN_MSSSR0:
-+				vcpu->arch.gpr[rt] = 0; break;
- 
- 			/* Note: mftb and TBRL/TBWL are user-accessible, so
- 			 * the guest can always access the real TB anyways.
- 			 * In fact, we probably will never see these traps. */
- 			case SPRN_TBWL:
--				vcpu->arch.gpr[rt] = mftbl(); break;
-+				vcpu->arch.gpr[rt] = get_tb() >> 32; break;
- 			case SPRN_TBWU:
--				vcpu->arch.gpr[rt] = mftbu(); break;
-+				vcpu->arch.gpr[rt] = get_tb(); break;
- 
- 			case SPRN_SPRG0:
- 				vcpu->arch.gpr[rt] = vcpu->arch.sprg0; break;
-@@ -215,11 +244,9 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 
- 			case SPRN_DEC:
- 			{
--				u64 jd = mftb() - vcpu->arch.dec_jiffies;
-+				u64 jd = get_tb() - vcpu->arch.dec_jiffies;
- 				vcpu->arch.gpr[rt] = vcpu->arch.dec - jd;
--#ifdef DEBUG_EMUL
--				printk(KERN_INFO "mfDEC: %x - %llx = %lx\n", vcpu->arch.dec, jd, vcpu->arch.gpr[rt]);
--#endif
-+				pr_debug(KERN_INFO "mfDEC: %x - %llx = %lx\n", vcpu->arch.dec, jd, vcpu->arch.gpr[rt]);
- 				break;
- 			}
- 			default:
-@@ -271,6 +298,8 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 			case SPRN_TBWL: break;
- 			case SPRN_TBWU: break;
- 
-+			case SPRN_MSSSR0: break;
-+
- 			case SPRN_DEC:
- 				vcpu->arch.dec = vcpu->arch.gpr[rs];
- 				kvmppc_emulate_dec(vcpu);
+ extern struct paca_struct paca[];
 -- 
 1.6.0.2
