@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DFE35B7C3B
+	by ozlabs.org (Postfix) with ESMTPS id C9959B7BAE
 	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 02:47:35 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm@vger.kernel.org
-Subject: [PATCH 05/27] Add asm/kvm_book3s.h
-Date: Fri, 30 Oct 2009 16:47:05 +0100
-Message-Id: <1256917647-6200-6-git-send-email-agraf@suse.de>
+Subject: [PATCH 08/27] Add SLB switching code for entry/exit
+Date: Fri, 30 Oct 2009 16:47:08 +0100
+Message-Id: <1256917647-6200-9-git-send-email-agraf@suse.de>
 In-Reply-To: <1256917647-6200-1-git-send-email-agraf@suse.de>
 References: <1256917647-6200-1-git-send-email-agraf@suse.de>
 Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
@@ -26,27 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds the book3s specific header file that contains structs that
-are only valid on book3s specific code.
+This is the really low level of guest entry/exit code.
+
+Book3s_64 has an SLB, which stores all ESID -> VSID mappings we're
+currently aware of.
+
+The segments in the guest differ from the ones on the host, so we need
+to switch the SLB to tell the MMU that we're in a new context.
+
+So we store a shadow of the guest's SLB in the PACA, switch to that on
+entry and only restore bolted entries on exit, leaving the rest to the
+Linux SLB fault handler.
+
+That way we get a really clean way of switching the SLB.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
-
 ---
+ arch/powerpc/kvm/book3s_64_slb.S |  277 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 277 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/kvm/book3s_64_slb.S
 
-v3 -> v4:
-
-  - use context_id instead of mm_alloc
----
- arch/powerpc/include/asm/kvm_book3s.h |  136 +++++++++++++++++++++++++++++++++
- 1 files changed, 136 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/include/asm/kvm_book3s.h
-
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+diff --git a/arch/powerpc/kvm/book3s_64_slb.S b/arch/powerpc/kvm/book3s_64_slb.S
 new file mode 100644
-index 0000000..c601133
+index 0000000..00a8367
 --- /dev/null
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -0,0 +1,136 @@
++++ b/arch/powerpc/kvm/book3s_64_slb.S
+@@ -0,0 +1,277 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License, version 2, as
@@ -66,122 +71,263 @@ index 0000000..c601133
 + * Authors: Alexander Graf <agraf@suse.de>
 + */
 +
-+#ifndef __ASM_KVM_BOOK3S_H__
-+#define __ASM_KVM_BOOK3S_H__
++/******************************************************************************
++ *                                                                            *
++ *                               Entry code                                   *
++ *                                                                            *
++ *****************************************************************************/
 +
-+#include <linux/types.h>
-+#include <linux/kvm_host.h>
-+#include <asm/kvm_ppc.h>
++.global kvmppc_handler_trampoline_enter
++kvmppc_handler_trampoline_enter:
 +
-+struct kvmppc_slb {
-+	u64 esid;
-+	u64 vsid;
-+	u64 orige;
-+	u64 origv;
-+	bool valid;
-+	bool Ks;
-+	bool Kp;
-+	bool nx;
-+	bool large;
-+	bool class;
-+};
++	/* Required state:
++	 *
++	 * MSR = ~IR|DR
++	 * R13 = PACA
++	 * R9 = guest IP
++	 * R10 = guest MSR
++	 * R11 = free
++	 * R12 = free
++	 * PACA[PACA_EXMC + EX_R9] = guest R9
++	 * PACA[PACA_EXMC + EX_R10] = guest R10
++	 * PACA[PACA_EXMC + EX_R11] = guest R11
++	 * PACA[PACA_EXMC + EX_R12] = guest R12
++	 * PACA[PACA_EXMC + EX_R13] = guest R13
++	 * PACA[PACA_EXMC + EX_CCR] = guest CR
++	 * PACA[PACA_EXMC + EX_R3] = guest XER
++	 */
 +
-+struct kvmppc_sr {
-+	u32 raw;
-+	u32 vsid;
-+	bool Ks;
-+	bool Kp;
-+	bool nx;
-+};
++	mtsrr0	r9
++	mtsrr1	r10
 +
-+struct kvmppc_bat {
-+	u32 bepi;
-+	u32 bepi_mask;
-+	bool vs;
-+	bool vp;
-+	u32 brpn;
-+	u8 wimg;
-+	u8 pp;
-+};
++	mtspr	SPRN_SPRG_SCRATCH0, r0
 +
-+struct kvmppc_sid_map {
-+	u64 guest_vsid;
-+	u64 guest_esid;
-+	u64 host_vsid;
-+	bool valid;
-+};
++	/* Remove LPAR shadow entries */
 +
-+#define SID_MAP_BITS    9
-+#define SID_MAP_NUM     (1 << SID_MAP_BITS)
-+#define SID_MAP_MASK    (SID_MAP_NUM - 1)
++#if SLB_NUM_BOLTED == 3
 +
-+struct kvmppc_vcpu_book3s {
-+	struct kvm_vcpu vcpu;
-+	struct kvmppc_sid_map sid_map[SID_MAP_NUM];
-+	struct kvmppc_slb slb[64];
-+	struct {
-+		u64 esid;
-+		u64 vsid;
-+	} slb_shadow[64];
-+	u8 slb_shadow_max;
-+	struct kvmppc_sr sr[16];
-+	struct kvmppc_bat ibat[8];
-+	struct kvmppc_bat dbat[8];
-+	u64 hid[6];
-+	int slb_nr;
-+	u64 sdr1;
-+	u64 dsisr;
-+	u64 hior;
-+	u64 msr_mask;
-+	u64 vsid_first;
-+	u64 vsid_next;
-+	u64 vsid_max;
-+	int context_id;
-+};
++	ld	r12, PACA_SLBSHADOWPTR(r13)
++	ld	r10, 0x10(r12)
++	ld	r11, 0x18(r12)
++	/* Invalid? Skip. */
++	rldicl. r0, r10, 37, 63
++	beq	slb_entry_skip_1
++	xoris	r9, r10, SLB_ESID_V@h
++	std	r9, 0x10(r12)
++slb_entry_skip_1:
++	ld	r9, 0x20(r12)
++	/* Invalid? Skip. */
++	rldicl. r0, r9, 37, 63
++	beq	slb_entry_skip_2
++	xoris	r9, r9, SLB_ESID_V@h
++	std	r9, 0x20(r12)
++slb_entry_skip_2:
++	ld	r9, 0x30(r12)
++	/* Invalid? Skip. */
++	rldicl. r0, r9, 37, 63
++	beq	slb_entry_skip_3
++	xoris	r9, r9, SLB_ESID_V@h
++	std	r9, 0x30(r12)
++slb_entry_skip_3:
++	
++#else
++#error unknown number of bolted entries
++#endif
 +
-+#define CONTEXT_HOST		0
-+#define CONTEXT_GUEST		1
-+#define CONTEXT_GUEST_END	2
++	/* Flush SLB */
 +
-+#define VSID_REAL	0xfffffffffff00000
-+#define VSID_REAL_DR	0xffffffffffe00000
-+#define VSID_REAL_IR	0xffffffffffd00000
-+#define VSID_BAT	0xffffffffffc00000
-+#define VSID_PR		0x8000000000000000
++	slbia
 +
-+extern void kvmppc_mmu_pte_flush(struct kvm_vcpu *vcpu, u64 ea, u64 ea_mask);
-+extern void kvmppc_mmu_pte_vflush(struct kvm_vcpu *vcpu, u64 vp, u64 vp_mask);
-+extern void kvmppc_mmu_pte_pflush(struct kvm_vcpu *vcpu, u64 pa_start, u64 pa_end);
-+extern void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 new_msr);
-+extern void kvmppc_mmu_book3s_64_init(struct kvm_vcpu *vcpu);
-+extern void kvmppc_mmu_book3s_32_init(struct kvm_vcpu *vcpu);
-+extern int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *pte);
-+extern int kvmppc_mmu_map_segment(struct kvm_vcpu *vcpu, ulong eaddr);
-+extern void kvmppc_mmu_flush_segments(struct kvm_vcpu *vcpu);
-+extern struct kvmppc_pte *kvmppc_mmu_find_pte(struct kvm_vcpu *vcpu, u64 ea, bool data);
-+extern int kvmppc_ld(struct kvm_vcpu *vcpu, ulong eaddr, int size, void *ptr, bool data);
-+extern int kvmppc_st(struct kvm_vcpu *vcpu, ulong eaddr, int size, void *ptr);
-+extern void kvmppc_book3s_queue_irqprio(struct kvm_vcpu *vcpu, unsigned int vec);
++	/* r0 = esid & ESID_MASK */
++	rldicr  r10, r10, 0, 35
++	/* r0 |= CLASS_BIT(VSID) */
++	rldic   r12, r11, 56 - 36, 36
++	or      r10, r10, r12
++	slbie	r10
 +
-+extern u32 kvmppc_trampoline_lowmem;
-+extern u32 kvmppc_trampoline_enter;
++	isync
 +
-+static inline struct kvmppc_vcpu_book3s *to_book3s(struct kvm_vcpu *vcpu)
-+{
-+	return container_of(vcpu, struct kvmppc_vcpu_book3s, vcpu);
-+}
++	/* Fill SLB with our shadow */
 +
-+static inline ulong dsisr(void)
-+{
-+	ulong r;
-+	asm ( "mfdsisr %0 " : "=r" (r) );
-+	return r;
-+}
++	lbz	r12, PACA_KVM_SLB_MAX(r13)
++	mulli	r12, r12, 16
++	addi	r12, r12, PACA_KVM_SLB
++	add	r12, r12, r13
 +
-+extern void kvm_return_point(void);
++	/* for (r11 = kvm_slb; r11 < kvm_slb + kvm_slb_size; r11+=slb_entry) */
++	li	r11, PACA_KVM_SLB
++	add	r11, r11, r13
 +
-+#define INS_DCBZ			0x7c0007ec
++slb_loop_enter:
 +
-+#endif /* __ASM_KVM_BOOK3S_H__ */
++	ld	r10, 0(r11)
++
++	rldicl. r0, r10, 37, 63
++	beq	slb_loop_enter_skip
++
++	ld	r9, 8(r11)
++	slbmte	r9, r10
++
++slb_loop_enter_skip:
++	addi	r11, r11, 16
++	cmpd	cr0, r11, r12
++	blt	slb_loop_enter
++
++slb_do_enter:
++
++	/* Enter guest */
++
++	mfspr	r0, SPRN_SPRG_SCRATCH0
++
++	ld	r9, (PACA_EXMC+EX_R9)(r13)
++	ld	r10, (PACA_EXMC+EX_R10)(r13)
++	ld	r12, (PACA_EXMC+EX_R12)(r13)
++
++	lwz	r11, (PACA_EXMC+EX_CCR)(r13)
++	mtcr	r11
++
++	ld	r11, (PACA_EXMC+EX_R3)(r13)
++	mtxer	r11
++
++	ld	r11, (PACA_EXMC+EX_R11)(r13)
++	ld	r13, (PACA_EXMC+EX_R13)(r13)
++
++	RFI
++kvmppc_handler_trampoline_enter_end:
++
++
++
++/******************************************************************************
++ *                                                                            *
++ *                               Exit code                                    *
++ *                                                                            *
++ *****************************************************************************/
++
++.global kvmppc_handler_trampoline_exit
++kvmppc_handler_trampoline_exit:
++
++	/* Register usage at this point:
++	 *
++	 * SPRG_SCRATCH0 = guest R13
++	 * R01           = host R1
++	 * R02           = host R2
++	 * R10           = guest PC
++	 * R11           = guest MSR
++	 * R12           = exit handler id
++	 * R13           = PACA
++	 * PACA.exmc.CCR  = guest CR
++	 * PACA.exmc.R9  = guest R1
++	 * PACA.exmc.R10 = guest R10
++	 * PACA.exmc.R11 = guest R11
++	 * PACA.exmc.R12 = guest R12
++	 * PACA.exmc.R13 = guest R2
++	 *
++	 */
++
++	/* Save registers */
++
++	std	r0, (PACA_EXMC+EX_SRR0)(r13)
++	std	r9, (PACA_EXMC+EX_R3)(r13)
++	std	r10, (PACA_EXMC+EX_LR)(r13)
++	std	r11, (PACA_EXMC+EX_DAR)(r13)
++
++	/*
++	 * In order for us to easily get the last instruction,
++	 * we got the #vmexit at, we exploit the fact that the
++	 * virtual layout is still the same here, so we can just
++	 * ld from the guest's PC address
++	 */
++
++	/* We only load the last instruction when it's safe */
++	cmpwi	r12, BOOK3S_INTERRUPT_DATA_STORAGE
++	beq	ld_last_inst
++	cmpwi	r12, BOOK3S_INTERRUPT_PROGRAM
++	beq	ld_last_inst
++
++	b	no_ld_last_inst
++
++ld_last_inst:
++	/* Save off the guest instruction we're at */
++	/*    1) enable paging for data */
++	mfmsr	r9
++	ori	r11, r9, MSR_DR			/* Enable paging for data */
++	mtmsr	r11
++	/*    2) fetch the instruction */
++	lwz	r0, 0(r10)
++	/*    3) disable paging again */
++	mtmsr	r9
++
++no_ld_last_inst:
++
++	/* Restore bolted entries from the shadow and fix it along the way */
++
++	/* We don't store anything in entry 0, so we don't need to take care of that */
++	slbia
++	isync
++
++#if SLB_NUM_BOLTED == 3
++
++	ld	r11, PACA_SLBSHADOWPTR(r13)
++
++	ld	r10, 0x10(r11)
++	cmpdi	r10, 0
++	beq	slb_exit_skip_1
++	oris	r10, r10, SLB_ESID_V@h
++	ld	r9, 0x18(r11)
++	slbmte	r9, r10
++	std	r10, 0x10(r11)
++slb_exit_skip_1:
++	
++	ld	r10, 0x20(r11)
++	cmpdi	r10, 0
++	beq	slb_exit_skip_2
++	oris	r10, r10, SLB_ESID_V@h
++	ld	r9, 0x28(r11)
++	slbmte	r9, r10
++	std	r10, 0x20(r11)
++slb_exit_skip_2:
++	
++	ld	r10, 0x30(r11)
++	cmpdi	r10, 0
++	beq	slb_exit_skip_3
++	oris	r10, r10, SLB_ESID_V@h
++	ld	r9, 0x38(r11)
++	slbmte	r9, r10
++	std	r10, 0x30(r11)
++slb_exit_skip_3:
++	
++#else
++#error unknown number of bolted entries
++#endif
++
++slb_do_exit:
++
++	/* Restore registers */
++
++	ld	r11, (PACA_EXMC+EX_DAR)(r13)
++	ld	r10, (PACA_EXMC+EX_LR)(r13)
++	ld	r9, (PACA_EXMC+EX_R3)(r13)
++
++	/* Save last inst */
++	stw	r0, (PACA_EXMC+EX_LR)(r13)
++
++	/* Save DAR and DSISR before going to paged mode */
++	mfdar	r0
++	std	r0, (PACA_EXMC+EX_DAR)(r13)
++	mfdsisr	r0
++	stw	r0, (PACA_EXMC+EX_DSISR)(r13)
++
++	/* RFI into the highmem handler */
++	mfmsr	r0
++	ori	r0, r0, MSR_IR|MSR_DR|MSR_RI	/* Enable paging */
++	mtsrr1	r0
++	ld	r0, PACASAVEDMSR(r13)		/* Highmem handler address */
++	mtsrr0	r0
++
++	mfspr	r0, SPRN_SPRG_SCRATCH0
++
++	RFI
++kvmppc_handler_trampoline_exit_end:
++
 -- 
 1.6.0.2
