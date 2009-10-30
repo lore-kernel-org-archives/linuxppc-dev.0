@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DCEA9B7C37
+	by ozlabs.org (Postfix) with ESMTPS id C9B8DB7C34
 	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 02:47:35 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm@vger.kernel.org
-Subject: [PATCH 03/27] Add Book3s definitions
-Date: Fri, 30 Oct 2009 16:47:03 +0100
-Message-Id: <1256917647-6200-4-git-send-email-agraf@suse.de>
+Subject: [PATCH 04/27] Add Book3s fields to vcpu structs
+Date: Fri, 30 Oct 2009 16:47:04 +0100
+Message-Id: <1256917647-6200-5-git-send-email-agraf@suse.de>
 In-Reply-To: <1256917647-6200-1-git-send-email-agraf@suse.de>
 References: <1256917647-6200-1-git-send-email-agraf@suse.de>
 Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
@@ -26,71 +26,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need quite a bunch of new constants for KVM on Book3s,
-so let's define them now.
+We need to store more information than we currently have for vcpus
+when running on Book3s.
 
-These constants will be used in later patches.
+So let's extend the internal struct definitions.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 
 ---
 
-v3 -> v4
+v3 -> v4:
 
-  - remove old kernel compat code
+  - use context_id instead of mm_context
+
+v4 -> v5:
+
+  - always include pvr in vcpu struct
 ---
- arch/powerpc/include/asm/kvm_asm.h |   39 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 39 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h |   73 ++++++++++++++++++++++++++++++++++-
+ 1 files changed, 72 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
-index 56bfae5..19ddb35 100644
---- a/arch/powerpc/include/asm/kvm_asm.h
-+++ b/arch/powerpc/include/asm/kvm_asm.h
-@@ -49,6 +49,45 @@
- #define BOOKE_INTERRUPT_SPE_FP_ROUND 34
- #define BOOKE_INTERRUPT_PERFORMANCE_MONITOR 35
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index c9c930e..2cff5fe 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -37,6 +37,8 @@
+ #define KVM_NR_PAGE_SIZES	1
+ #define KVM_PAGES_PER_HPAGE(x)	(1UL<<31)
  
-+/* book3s */
++#define HPTEG_CACHE_NUM 1024
 +
-+#define BOOK3S_INTERRUPT_SYSTEM_RESET	0x100
-+#define BOOK3S_INTERRUPT_MACHINE_CHECK	0x200
-+#define BOOK3S_INTERRUPT_DATA_STORAGE	0x300
-+#define BOOK3S_INTERRUPT_DATA_SEGMENT	0x380
-+#define BOOK3S_INTERRUPT_INST_STORAGE	0x400
-+#define BOOK3S_INTERRUPT_INST_SEGMENT	0x480
-+#define BOOK3S_INTERRUPT_EXTERNAL	0x500
-+#define BOOK3S_INTERRUPT_ALIGNMENT	0x600
-+#define BOOK3S_INTERRUPT_PROGRAM	0x700
-+#define BOOK3S_INTERRUPT_FP_UNAVAIL	0x800
-+#define BOOK3S_INTERRUPT_DECREMENTER	0x900
-+#define BOOK3S_INTERRUPT_SYSCALL	0xc00
-+#define BOOK3S_INTERRUPT_TRACE		0xd00
-+#define BOOK3S_INTERRUPT_PERFMON	0xf00
-+#define BOOK3S_INTERRUPT_ALTIVEC	0xf20
-+#define BOOK3S_INTERRUPT_VSX		0xf40
-+
-+#define BOOK3S_IRQPRIO_SYSTEM_RESET		0
-+#define BOOK3S_IRQPRIO_DATA_SEGMENT		1
-+#define BOOK3S_IRQPRIO_INST_SEGMENT		2
-+#define BOOK3S_IRQPRIO_DATA_STORAGE		3
-+#define BOOK3S_IRQPRIO_INST_STORAGE		4
-+#define BOOK3S_IRQPRIO_ALIGNMENT		5
-+#define BOOK3S_IRQPRIO_PROGRAM			6
-+#define BOOK3S_IRQPRIO_FP_UNAVAIL		7
-+#define BOOK3S_IRQPRIO_ALTIVEC			8
-+#define BOOK3S_IRQPRIO_VSX			9
-+#define BOOK3S_IRQPRIO_SYSCALL			10
-+#define BOOK3S_IRQPRIO_MACHINE_CHECK		11
-+#define BOOK3S_IRQPRIO_DEBUG			12
-+#define BOOK3S_IRQPRIO_EXTERNAL			13
-+#define BOOK3S_IRQPRIO_DECREMENTER		14
-+#define BOOK3S_IRQPRIO_PERFORMANCE_MONITOR	15
-+#define BOOK3S_IRQPRIO_MAX			16
-+
-+#define BOOK3S_HFLAG_DCBZ32			0x1
-+
- #define RESUME_FLAG_NV          (1<<0)  /* Reload guest nonvolatile state? */
- #define RESUME_FLAG_HOST        (1<<1)  /* Resume host? */
+ struct kvm;
+ struct kvm_run;
+ struct kvm_vcpu;
+@@ -63,6 +65,17 @@ struct kvm_vcpu_stat {
+ 	u32 dec_exits;
+ 	u32 ext_intr_exits;
+ 	u32 halt_wakeup;
++#ifdef CONFIG_PPC64
++	u32 pf_storage;
++	u32 pf_instruc;
++	u32 sp_storage;
++	u32 sp_instruc;
++	u32 queue_intr;
++	u32 ld;
++	u32 ld_slow;
++	u32 st;
++	u32 st_slow;
++#endif
+ };
  
+ enum kvm_exit_types {
+@@ -109,9 +122,53 @@ struct kvmppc_exit_timing {
+ struct kvm_arch {
+ };
+ 
++struct kvmppc_pte {
++	u64 eaddr;
++	u64 vpage;
++	u64 raddr;
++	bool may_read;
++	bool may_write;
++	bool may_execute;
++};
++
++struct kvmppc_mmu {
++	/* book3s_64 only */
++	void (*slbmte)(struct kvm_vcpu *vcpu, u64 rb, u64 rs);
++	u64  (*slbmfee)(struct kvm_vcpu *vcpu, u64 slb_nr);
++	u64  (*slbmfev)(struct kvm_vcpu *vcpu, u64 slb_nr);
++	void (*slbie)(struct kvm_vcpu *vcpu, u64 slb_nr);
++	void (*slbia)(struct kvm_vcpu *vcpu);
++	/* book3s */
++	void (*mtsrin)(struct kvm_vcpu *vcpu, u32 srnum, ulong value);
++	u32  (*mfsrin)(struct kvm_vcpu *vcpu, u32 srnum);
++	int  (*xlate)(struct kvm_vcpu *vcpu, gva_t eaddr, struct kvmppc_pte *pte, bool data);
++	void (*reset_msr)(struct kvm_vcpu *vcpu);
++	void (*tlbie)(struct kvm_vcpu *vcpu, ulong addr, bool large);
++	int  (*esid_to_vsid)(struct kvm_vcpu *vcpu, u64 esid, u64 *vsid);
++	u64  (*ea_to_vp)(struct kvm_vcpu *vcpu, gva_t eaddr, bool data);
++	bool (*is_dcbz32)(struct kvm_vcpu *vcpu);
++};
++
++struct hpte_cache {
++	u64 host_va;
++	u64 pfn;
++	ulong slot;
++	struct kvmppc_pte pte;
++};
++
+ struct kvm_vcpu_arch {
+-	u32 host_stack;
++	ulong host_stack;
+ 	u32 host_pid;
++#ifdef CONFIG_PPC64
++	ulong host_msr;
++	ulong host_r2;
++	void *host_retip;
++	ulong trampoline_lowmem;
++	ulong trampoline_enter;
++	ulong highmem_handler;
++	ulong host_paca_phys;
++	struct kvmppc_mmu mmu;
++#endif
+ 
+ 	u64 fpr[32];
+ 	ulong gpr[32];
+@@ -123,6 +180,10 @@ struct kvm_vcpu_arch {
+ 	ulong xer;
+ 
+ 	ulong msr;
++#ifdef CONFIG_PPC64
++	ulong shadow_msr;
++	ulong hflags;
++#endif
+ 	u32 mmucr;
+ 	ulong sprg0;
+ 	ulong sprg1;
+@@ -149,6 +210,7 @@ struct kvm_vcpu_arch {
+ 	u32 ivor[64];
+ 	ulong ivpr;
+ 	u32 pir;
++	u32 pvr;
+ 
+ 	u32 shadow_pid;
+ 	u32 pid;
+@@ -174,6 +236,9 @@ struct kvm_vcpu_arch {
+ #endif
+ 
+ 	u32 last_inst;
++#ifdef CONFIG_PPC64
++	ulong fault_dsisr;
++#endif
+ 	ulong fault_dear;
+ 	ulong fault_esr;
+ 	gpa_t paddr_accessed;
+@@ -186,7 +251,13 @@ struct kvm_vcpu_arch {
+ 	u32 cpr0_cfgaddr; /* holds the last set cpr0_cfgaddr */
+ 
+ 	struct timer_list dec_timer;
++	u64 dec_jiffies;
+ 	unsigned long pending_exceptions;
++
++#ifdef CONFIG_PPC64
++	struct hpte_cache hpte_cache[HPTEG_CACHE_NUM];
++	int hpte_cache_offset;
++#endif
+ };
+ 
+ #endif /* __POWERPC_KVM_HOST_H__ */
 -- 
 1.6.0.2
