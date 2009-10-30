@@ -1,25 +1,16 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 589401007E1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 31 Oct 2009 04:49:20 +1100 (EST)
-Date: Fri, 30 Oct 2009 18:49:04 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Subject: Re: Accessing flash directly from User Space [SOLVED]
-Message-ID: <20091030174904.GA2061@iram.es>
-References: <BB99A6BA28709744BF22A68E6D7EB51F0330E23124@midas.usurf.usu.edu>
-	<200910301556.11349.mb@bu3sch.de>
-	<20091030150855.GA15046@mail.gnudd.com>
-	<200910301624.03989.mb@bu3sch.de> <4AEB0ABB.8070605@neli.hopto.org>
-	<BB99A6BA28709744BF22A68E6D7EB51F0330EE1316@midas.usurf.usu.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BB99A6BA28709744BF22A68E6D7EB51F0330EE1316@midas.usurf.usu.edu>
-Cc: "bgat@billgatliff.com" <bgat@billgatliff.com>,
-	"scottwood@freescale.com" <scottwood@freescale.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Alessandro Rubini <rubini@gnudd.com>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id CC0D61007F8
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 04:54:18 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Date: Fri, 30 Oct 2009 18:53:51 +0100
+Message-Id: <1256925231-21917-1-git-send-email-w.sang@pengutronix.de>
+In-Reply-To: <20091030105414.GD717@sirena.org.uk>
+References: <20091030105414.GD717@sirena.org.uk>
+Subject: [PATCH V2] mpc512x/clock: fix clk_get logic
+Cc: Roel Kluin <roel.kluin@gmail.com>, Wolfgang Denk <wd@denx.de>,
+	Mark Brown <broonie@sirena.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +20,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 30, 2009 at 10:46:46AM -0600, Jonathan Haws wrote:
-> > Michael Buesch wrote:
-> > > Yes, I think the barrier is wrong.
-> > > Please try with
-> > >
-> > > #define mb()	__asm__ __volatile__("eieio\n sync\n" : : :
-> > "memory")
-> > 
-> > 
-> > For uncached memory, eieio should be enough.
-> 
-> I tried eieio alone and it did not work.  It needed the above command to take care of it all.
+The current matching logic returns a clock even if only one out of two
+arguments matches. This is wrong as devices may utilize more than one clock, so
+only the first clock out of those is returned if the dev-match alone is
+considered sufficent (noticed while working on the CAN driver). The proposed
+new method will:
 
-Surprising. But sync is a superset of eieio, no?
+- return -EINVAL if both arguments are NULL
+- skip the relevant check if one argument is NULL (first match wins)
+- otherwise both arguments need to match
 
-In this case a sync alone should be sufficient (although an eieio
-followed by a sync should not be much slower than a sync alone).
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Mark Brown <broonie@sirena.org.uk>
+Cc: Roel Kluin <roel.kluin@gmail.com>
+Cc: Wolfgang Denk <wd@denx.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+---
 
-	Gabriel
+After Mark's valid comment, I'll try harder ;)
+
+ arch/powerpc/platforms/512x/clock.c |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
+index 84544d0..4168457 100644
+--- a/arch/powerpc/platforms/512x/clock.c
++++ b/arch/powerpc/platforms/512x/clock.c
+@@ -53,19 +53,21 @@ static DEFINE_MUTEX(clocks_mutex);
+ static struct clk *mpc5121_clk_get(struct device *dev, const char *id)
+ {
+ 	struct clk *p, *clk = ERR_PTR(-ENOENT);
+-	int dev_match = 0;
+-	int id_match = 0;
++	/* If one argument is not given, skip its match */
++	bool id_matched = !id;
++	bool dev_matched = !dev;
+ 
+-	if (dev == NULL || id == NULL)
+-		return NULL;
++	/* We need at least one argument */
++	if (!dev && !id)
++		return ERR_PTR(-EINVAL);
+ 
+ 	mutex_lock(&clocks_mutex);
+ 	list_for_each_entry(p, &clocks, node) {
+ 		if (dev == p->dev)
+-			dev_match++;
+-		if (strcmp(id, p->name) == 0)
+-			id_match++;
+-		if ((dev_match || id_match) && try_module_get(p->owner)) {
++			dev_matched = true;
++		if (id && strcmp(id, p->name) == 0)
++			id_matched = true;
++		if (dev_matched && id_matched && try_module_get(p->owner)) {
+ 			clk = p;
+ 			break;
+ 		}
+-- 
+1.6.3.3
