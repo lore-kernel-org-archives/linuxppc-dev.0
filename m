@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C9B8DB7C34
+	by ozlabs.org (Postfix) with ESMTPS id DFE35B7C3B
 	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 02:47:35 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm@vger.kernel.org
-Subject: [PATCH 04/27] Add Book3s fields to vcpu structs
-Date: Fri, 30 Oct 2009 16:47:04 +0100
-Message-Id: <1256917647-6200-5-git-send-email-agraf@suse.de>
+Subject: [PATCH 05/27] Add asm/kvm_book3s.h
+Date: Fri, 30 Oct 2009 16:47:05 +0100
+Message-Id: <1256917647-6200-6-git-send-email-agraf@suse.de>
 In-Reply-To: <1256917647-6200-1-git-send-email-agraf@suse.de>
 References: <1256917647-6200-1-git-send-email-agraf@suse.de>
 Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
@@ -26,10 +26,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to store more information than we currently have for vcpus
-when running on Book3s.
-
-So let's extend the internal struct definitions.
+This adds the book3s specific header file that contains structs that
+are only valid on book3s specific code.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 
@@ -37,143 +35,153 @@ Signed-off-by: Alexander Graf <agraf@suse.de>
 
 v3 -> v4:
 
-  - use context_id instead of mm_context
-
-v4 -> v5:
-
-  - always include pvr in vcpu struct
+  - use context_id instead of mm_alloc
 ---
- arch/powerpc/include/asm/kvm_host.h |   73 ++++++++++++++++++++++++++++++++++-
- 1 files changed, 72 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s.h |  136 +++++++++++++++++++++++++++++++++
+ 1 files changed, 136 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/kvm_book3s.h
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index c9c930e..2cff5fe 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -37,6 +37,8 @@
- #define KVM_NR_PAGE_SIZES	1
- #define KVM_PAGES_PER_HPAGE(x)	(1UL<<31)
- 
-+#define HPTEG_CACHE_NUM 1024
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+new file mode 100644
+index 0000000..c601133
+--- /dev/null
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -0,0 +1,136 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++ *
++ * Copyright SUSE Linux Products GmbH 2009
++ *
++ * Authors: Alexander Graf <agraf@suse.de>
++ */
 +
- struct kvm;
- struct kvm_run;
- struct kvm_vcpu;
-@@ -63,6 +65,17 @@ struct kvm_vcpu_stat {
- 	u32 dec_exits;
- 	u32 ext_intr_exits;
- 	u32 halt_wakeup;
-+#ifdef CONFIG_PPC64
-+	u32 pf_storage;
-+	u32 pf_instruc;
-+	u32 sp_storage;
-+	u32 sp_instruc;
-+	u32 queue_intr;
-+	u32 ld;
-+	u32 ld_slow;
-+	u32 st;
-+	u32 st_slow;
-+#endif
- };
- 
- enum kvm_exit_types {
-@@ -109,9 +122,53 @@ struct kvmppc_exit_timing {
- struct kvm_arch {
- };
- 
-+struct kvmppc_pte {
-+	u64 eaddr;
-+	u64 vpage;
-+	u64 raddr;
-+	bool may_read;
-+	bool may_write;
-+	bool may_execute;
++#ifndef __ASM_KVM_BOOK3S_H__
++#define __ASM_KVM_BOOK3S_H__
++
++#include <linux/types.h>
++#include <linux/kvm_host.h>
++#include <asm/kvm_ppc.h>
++
++struct kvmppc_slb {
++	u64 esid;
++	u64 vsid;
++	u64 orige;
++	u64 origv;
++	bool valid;
++	bool Ks;
++	bool Kp;
++	bool nx;
++	bool large;
++	bool class;
 +};
 +
-+struct kvmppc_mmu {
-+	/* book3s_64 only */
-+	void (*slbmte)(struct kvm_vcpu *vcpu, u64 rb, u64 rs);
-+	u64  (*slbmfee)(struct kvm_vcpu *vcpu, u64 slb_nr);
-+	u64  (*slbmfev)(struct kvm_vcpu *vcpu, u64 slb_nr);
-+	void (*slbie)(struct kvm_vcpu *vcpu, u64 slb_nr);
-+	void (*slbia)(struct kvm_vcpu *vcpu);
-+	/* book3s */
-+	void (*mtsrin)(struct kvm_vcpu *vcpu, u32 srnum, ulong value);
-+	u32  (*mfsrin)(struct kvm_vcpu *vcpu, u32 srnum);
-+	int  (*xlate)(struct kvm_vcpu *vcpu, gva_t eaddr, struct kvmppc_pte *pte, bool data);
-+	void (*reset_msr)(struct kvm_vcpu *vcpu);
-+	void (*tlbie)(struct kvm_vcpu *vcpu, ulong addr, bool large);
-+	int  (*esid_to_vsid)(struct kvm_vcpu *vcpu, u64 esid, u64 *vsid);
-+	u64  (*ea_to_vp)(struct kvm_vcpu *vcpu, gva_t eaddr, bool data);
-+	bool (*is_dcbz32)(struct kvm_vcpu *vcpu);
++struct kvmppc_sr {
++	u32 raw;
++	u32 vsid;
++	bool Ks;
++	bool Kp;
++	bool nx;
 +};
 +
-+struct hpte_cache {
-+	u64 host_va;
-+	u64 pfn;
-+	ulong slot;
-+	struct kvmppc_pte pte;
++struct kvmppc_bat {
++	u32 bepi;
++	u32 bepi_mask;
++	bool vs;
++	bool vp;
++	u32 brpn;
++	u8 wimg;
++	u8 pp;
 +};
 +
- struct kvm_vcpu_arch {
--	u32 host_stack;
-+	ulong host_stack;
- 	u32 host_pid;
-+#ifdef CONFIG_PPC64
-+	ulong host_msr;
-+	ulong host_r2;
-+	void *host_retip;
-+	ulong trampoline_lowmem;
-+	ulong trampoline_enter;
-+	ulong highmem_handler;
-+	ulong host_paca_phys;
-+	struct kvmppc_mmu mmu;
-+#endif
- 
- 	u64 fpr[32];
- 	ulong gpr[32];
-@@ -123,6 +180,10 @@ struct kvm_vcpu_arch {
- 	ulong xer;
- 
- 	ulong msr;
-+#ifdef CONFIG_PPC64
-+	ulong shadow_msr;
-+	ulong hflags;
-+#endif
- 	u32 mmucr;
- 	ulong sprg0;
- 	ulong sprg1;
-@@ -149,6 +210,7 @@ struct kvm_vcpu_arch {
- 	u32 ivor[64];
- 	ulong ivpr;
- 	u32 pir;
-+	u32 pvr;
- 
- 	u32 shadow_pid;
- 	u32 pid;
-@@ -174,6 +236,9 @@ struct kvm_vcpu_arch {
- #endif
- 
- 	u32 last_inst;
-+#ifdef CONFIG_PPC64
-+	ulong fault_dsisr;
-+#endif
- 	ulong fault_dear;
- 	ulong fault_esr;
- 	gpa_t paddr_accessed;
-@@ -186,7 +251,13 @@ struct kvm_vcpu_arch {
- 	u32 cpr0_cfgaddr; /* holds the last set cpr0_cfgaddr */
- 
- 	struct timer_list dec_timer;
-+	u64 dec_jiffies;
- 	unsigned long pending_exceptions;
++struct kvmppc_sid_map {
++	u64 guest_vsid;
++	u64 guest_esid;
++	u64 host_vsid;
++	bool valid;
++};
 +
-+#ifdef CONFIG_PPC64
-+	struct hpte_cache hpte_cache[HPTEG_CACHE_NUM];
-+	int hpte_cache_offset;
-+#endif
- };
- 
- #endif /* __POWERPC_KVM_HOST_H__ */
++#define SID_MAP_BITS    9
++#define SID_MAP_NUM     (1 << SID_MAP_BITS)
++#define SID_MAP_MASK    (SID_MAP_NUM - 1)
++
++struct kvmppc_vcpu_book3s {
++	struct kvm_vcpu vcpu;
++	struct kvmppc_sid_map sid_map[SID_MAP_NUM];
++	struct kvmppc_slb slb[64];
++	struct {
++		u64 esid;
++		u64 vsid;
++	} slb_shadow[64];
++	u8 slb_shadow_max;
++	struct kvmppc_sr sr[16];
++	struct kvmppc_bat ibat[8];
++	struct kvmppc_bat dbat[8];
++	u64 hid[6];
++	int slb_nr;
++	u64 sdr1;
++	u64 dsisr;
++	u64 hior;
++	u64 msr_mask;
++	u64 vsid_first;
++	u64 vsid_next;
++	u64 vsid_max;
++	int context_id;
++};
++
++#define CONTEXT_HOST		0
++#define CONTEXT_GUEST		1
++#define CONTEXT_GUEST_END	2
++
++#define VSID_REAL	0xfffffffffff00000
++#define VSID_REAL_DR	0xffffffffffe00000
++#define VSID_REAL_IR	0xffffffffffd00000
++#define VSID_BAT	0xffffffffffc00000
++#define VSID_PR		0x8000000000000000
++
++extern void kvmppc_mmu_pte_flush(struct kvm_vcpu *vcpu, u64 ea, u64 ea_mask);
++extern void kvmppc_mmu_pte_vflush(struct kvm_vcpu *vcpu, u64 vp, u64 vp_mask);
++extern void kvmppc_mmu_pte_pflush(struct kvm_vcpu *vcpu, u64 pa_start, u64 pa_end);
++extern void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 new_msr);
++extern void kvmppc_mmu_book3s_64_init(struct kvm_vcpu *vcpu);
++extern void kvmppc_mmu_book3s_32_init(struct kvm_vcpu *vcpu);
++extern int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *pte);
++extern int kvmppc_mmu_map_segment(struct kvm_vcpu *vcpu, ulong eaddr);
++extern void kvmppc_mmu_flush_segments(struct kvm_vcpu *vcpu);
++extern struct kvmppc_pte *kvmppc_mmu_find_pte(struct kvm_vcpu *vcpu, u64 ea, bool data);
++extern int kvmppc_ld(struct kvm_vcpu *vcpu, ulong eaddr, int size, void *ptr, bool data);
++extern int kvmppc_st(struct kvm_vcpu *vcpu, ulong eaddr, int size, void *ptr);
++extern void kvmppc_book3s_queue_irqprio(struct kvm_vcpu *vcpu, unsigned int vec);
++
++extern u32 kvmppc_trampoline_lowmem;
++extern u32 kvmppc_trampoline_enter;
++
++static inline struct kvmppc_vcpu_book3s *to_book3s(struct kvm_vcpu *vcpu)
++{
++	return container_of(vcpu, struct kvmppc_vcpu_book3s, vcpu);
++}
++
++static inline ulong dsisr(void)
++{
++	ulong r;
++	asm ( "mfdsisr %0 " : "=r" (r) );
++	return r;
++}
++
++extern void kvm_return_point(void);
++
++#define INS_DCBZ			0x7c0007ec
++
++#endif /* __ASM_KVM_BOOK3S_H__ */
 -- 
 1.6.0.2
