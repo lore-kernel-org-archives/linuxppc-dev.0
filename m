@@ -1,36 +1,14 @@
-Return-Path: <ego@in.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [59.145.155.6])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 05B11B810F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 30 Oct 2009 16:23:10 +1100 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp06.in.ibm.com (8.14.3/8.13.1) with ESMTP id n9U5N41N001273
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2009 10:53:04 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	n9U5N4sS2076754
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2009 10:53:04 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	n9U5N3eV007480
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2009 10:53:04 +0530
-Subject: [PATCH v5 4/4] pseries: Serialize cpu hotplug operations during
-	deactivate Vs deallocate
-To: Nathan Fontenot <nfont@austin.ibm.com>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>
-From: Gautham R Shenoy <ego@in.ibm.com>
-Date: Fri, 30 Oct 2009 10:53:04 +0530
-Message-ID: <20091030052304.25493.41341.stgit@sofia.in.ibm.com>
-In-Reply-To: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
-References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 30 Oct 2009 16:29:32 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [4/6] Cleanup initialization of hugepages on powerpc
+Message-ID: <20091030052932.GA4170@yookeroo.seuss>
+References: <20091027052258.GD20694@yookeroo.seuss>
+	<20091027052431.B9CF4B7C07@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-	Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091027052431.B9CF4B7C07@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,167 +18,249 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the cpu-allocation/deallocation process comprises of two steps:
-- Set the indicators and to update the device tree with DLPAR node
-  information.
+This patch got apply-broken by the fixes to the earlier patch in the
+series.  Here's the fixed version.
 
-- Online/offline the allocated/deallocated CPU.
+Cleanup initialization of hugepages on powerpc
 
-This is achieved by writing to the sysfs tunables "probe" during allocation
-and "release" during deallocation.
+This patch simplifies the logic used to initialize hugepages on
+powerpc.  The somewhat oddly named set_huge_psize() is renamed to
+add_huge_page_size() and now does all necessary verification of
+whether it's given a valid hugepage sizes (instead of just some) and
+instantiates the generic hstate structure (but no more).  
 
-At the sametime, the userspace can independently online/offline the CPUs of
-the system using the sysfs tunable "online".
+hugetlbpage_init() now steps through the available pagesizes, checks
+if they're valid for hugepages by calling add_huge_page_size() and
+initializes the kmem_caches for the hugepage pagetables.  This means
+we can now eliminate the mmu_huge_psizes array, since we no longer
+need to pass the sizing information for the pagetable caches from
+set_huge_psize() into hugetlbpage_init()
 
-It is quite possible that when a userspace tool offlines a CPU
-for the purpose of deallocation and is in the process of updating the device
-tree, some other userspace tool could bring the CPU back online by writing to
-the "online" sysfs tunable thereby causing the deallocate process to fail.
+Determination of the default huge page size is also moved from the
+hash code into the general hugepage code.
 
-The solution to this is to serialize writes to the "probe/release" sysfs
-tunable with the writes to the "online" sysfs tunable.
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
 
-This patch employs a mutex to provide this serialization, which is a no-op on
-all architectures except PPC_PSERIES
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
----
- arch/powerpc/platforms/pseries/dlpar.c |   28 +++++++++++++++++++++++-----
- drivers/base/cpu.c                     |    2 ++
- include/linux/cpu.h                    |   13 +++++++++++++
- 3 files changed, 38 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 8e04a69..b6fc6ab 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -501,6 +501,18 @@ int release_drc(u32 drc_index)
- }
+Index: working-2.6/arch/powerpc/mm/hugetlbpage.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/hugetlbpage.c	2009-10-30 16:16:20.000000000 +1100
++++ working-2.6/arch/powerpc/mm/hugetlbpage.c	2009-10-30 16:19:32.000000000 +1100
+@@ -37,27 +37,17 @@
+ static unsigned long gpage_freearray[MAX_NUMBER_GPAGES];
+ static unsigned nr_gpages;
  
- #ifdef CONFIG_HOTPLUG_CPU
-+static DEFINE_MUTEX(pseries_cpu_hotplug_mutex);
-+
-+void cpu_hotplug_driver_lock()
-+{
-+	mutex_lock(&pseries_cpu_hotplug_mutex);
-+}
-+
-+void cpu_hotplug_driver_unlock()
-+{
-+	mutex_unlock(&pseries_cpu_hotplug_mutex);
-+}
-+
- static ssize_t cpu_probe_store(struct class *class, const char *buf,
- 			       size_t count)
+-/* Array of valid huge page sizes - non-zero value(hugepte_shift) is
+- * stored for the huge page sizes that are valid.
+- */
+-static unsigned int mmu_huge_psizes[MMU_PAGE_COUNT] = { }; /* initialize all to 0 */
+-
+ /* Flag to mark huge PD pointers.  This means pmd_bad() and pud_bad()
+  * will choke on pointers to hugepte tables, which is handy for
+  * catching screwups early. */
+ 
+ static inline int shift_to_mmu_psize(unsigned int shift)
  {
-@@ -509,18 +521,19 @@ static ssize_t cpu_probe_store(struct class *class, const char *buf,
- 	char *cpu_name;
- 	int rc;
- 
-+	cpu_hotplug_driver_lock();
- 	rc = strict_strtoul(buf, 0, &drc_index);
- 	if (rc)
--		return -EINVAL;
-+		goto out;
- 
- 	rc = acquire_drc(drc_index);
- 	if (rc)
--		return -EINVAL;
-+		goto out;
- 
- 	dn = configure_connector(drc_index);
- 	if (!dn) {
- 		release_drc(drc_index);
--		return -EINVAL;
-+		goto out;
- 	}
- 
- 	/* fixup dn name */
-@@ -529,7 +542,8 @@ static ssize_t cpu_probe_store(struct class *class, const char *buf,
- 	if (!cpu_name) {
- 		free_cc_nodes(dn);
- 		release_drc(drc_index);
--		return -ENOMEM;
-+		rc = -ENOMEM;
-+		goto out;
- 	}
- 
- 	sprintf(cpu_name, "/cpus/%s", dn->full_name);
-@@ -541,6 +555,8 @@ static ssize_t cpu_probe_store(struct class *class, const char *buf,
- 		release_drc(drc_index);
- 
- 	rc = online_node_cpus(dn);
-+out:
-+	cpu_hotplug_driver_unlock();
- 
- 	return rc ? -EINVAL : count;
- }
-@@ -562,6 +578,7 @@ static ssize_t cpu_release_store(struct class *class, const char *buf,
- 		return -EINVAL;
- 	}
- 
-+	cpu_hotplug_driver_lock();
- 	rc = offline_node_cpus(dn);
- 
- 	if (rc)
-@@ -570,7 +587,7 @@ static ssize_t cpu_release_store(struct class *class, const char *buf,
- 	rc = release_drc(*drc_index);
- 	if (rc) {
- 		of_node_put(dn);
--		return -EINVAL;
-+		goto out;
- 	}
- 
- 	rc = remove_device_tree_nodes(dn);
-@@ -579,6 +596,7 @@ static ssize_t cpu_release_store(struct class *class, const char *buf,
- 
- 	of_node_put(dn);
- out:
-+	cpu_hotplug_driver_unlock();
- 	return rc ? -EINVAL : count;
+-	switch (shift) {
+-#ifndef CONFIG_PPC_64K_PAGES
+-	case PAGE_SHIFT_64K:
+-	    return MMU_PAGE_64K;
+-#endif
+-	case PAGE_SHIFT_16M:
+-	    return MMU_PAGE_16M;
+-	case PAGE_SHIFT_16G:
+-	    return MMU_PAGE_16G;
+-	}
++	int psize;
++
++	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize)
++		if (mmu_psize_defs[psize].shift == shift)
++			return psize;
+ 	return -1;
  }
  
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index e62a4cc..07c3f05 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -35,6 +35,7 @@ static ssize_t __ref store_online(struct sys_device *dev, struct sysdev_attribut
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
- 	ssize_t ret;
+@@ -502,8 +492,6 @@ unsigned long hugetlb_get_unmapped_area(
+ 	struct hstate *hstate = hstate_file(file);
+ 	int mmu_psize = shift_to_mmu_psize(huge_page_shift(hstate));
  
-+	cpu_hotplug_driver_lock();
- 	switch (buf[0]) {
- 	case '0':
- 		ret = cpu_down(cpu->sysdev.id);
-@@ -49,6 +50,7 @@ static ssize_t __ref store_online(struct sys_device *dev, struct sysdev_attribut
- 	default:
- 		ret = -EINVAL;
+-	if (!mmu_huge_psizes[mmu_psize])
+-		return -EINVAL;
+ 	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1, 0);
+ }
+ 
+@@ -666,47 +654,46 @@ repeat:
+ 	return err;
+ }
+ 
+-static void __init set_huge_psize(int psize)
++static int __init add_huge_page_size(unsigned long long size)
+ {
+-	unsigned pdshift;
++	int shift = __ffs(size);
++	int mmu_psize;
+ 
+ 	/* Check that it is a page size supported by the hardware and
+-	 * that it fits within pagetable limits. */
+-	if (mmu_psize_defs[psize].shift &&
+-		mmu_psize_defs[psize].shift < SID_SHIFT_1T &&
+-		(mmu_psize_defs[psize].shift > MIN_HUGEPTE_SHIFT ||
+-		 mmu_psize_defs[psize].shift == PAGE_SHIFT_64K ||
+-		 mmu_psize_defs[psize].shift == PAGE_SHIFT_16G)) {
+-		/* Return if huge page size has already been setup or is the
+-		 * same as the base page size. */
+-		if (mmu_huge_psizes[psize] ||
+-		   mmu_psize_defs[psize].shift == PAGE_SHIFT)
+-			return;
+-		hugetlb_add_hstate(mmu_psize_defs[psize].shift - PAGE_SHIFT);
++	 * that it fits within pagetable and slice limits. */
++	if (!is_power_of_2(size)
++	    || (shift > SLICE_HIGH_SHIFT) || (shift <= PAGE_SHIFT))
++		return -EINVAL;
+ 
+-		if (mmu_psize_defs[psize].shift < PMD_SHIFT)
+-			pdshift = PMD_SHIFT;
+-		else if (mmu_psize_defs[psize].shift < PUD_SHIFT)
+-			pdshift = PUD_SHIFT;
+-		else
+-			pdshift = PGDIR_SHIFT;
+-		mmu_huge_psizes[psize] = pdshift - mmu_psize_defs[psize].shift;
+-	}
++	if ((mmu_psize = shift_to_mmu_psize(shift)) < 0)
++		return -EINVAL;
++
++#ifdef CONFIG_SPU_FS_64K_LS
++	/* Disable support for 64K huge pages when 64K SPU local store
++	 * support is enabled as the current implementation conflicts.
++	 */
++	if (shift == PAGE_SHIFT_64K)
++		return -EINVAL;
++#endif /* CONFIG_SPU_FS_64K_LS */
++
++	BUG_ON(mmu_psize_defs[mmu_psize].shift != shift);
++
++	/* Return if huge page size has already been setup */
++	if (size_to_hstate(size))
++		return 0;
++
++	hugetlb_add_hstate(shift - PAGE_SHIFT);
++
++	return 0;
+ }
+ 
+ static int __init hugepage_setup_sz(char *str)
+ {
+ 	unsigned long long size;
+-	int mmu_psize;
+-	int shift;
+ 
+ 	size = memparse(str, &str);
+ 
+-	shift = __ffs(size);
+-	mmu_psize = shift_to_mmu_psize(shift);
+-	if (mmu_psize >= 0 && mmu_psize_defs[mmu_psize].shift)
+-		set_huge_psize(mmu_psize);
+-	else
++	if (add_huge_page_size(size) != 0)
+ 		printk(KERN_WARNING "Invalid huge page size specified(%llu)\n", size);
+ 
+ 	return 1;
+@@ -720,30 +707,39 @@ static int __init hugetlbpage_init(void)
+ 	if (!cpu_has_feature(CPU_FTR_16M_PAGE))
+ 		return -ENODEV;
+ 
+-	/* Add supported huge page sizes.  Need to change
+-	 *  HUGE_MAX_HSTATE if the number of supported huge page sizes
+-	 *  changes.
+-	 */
+-	set_huge_psize(MMU_PAGE_16M);
+-	set_huge_psize(MMU_PAGE_16G);
++	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
++		unsigned shift;
++		unsigned pdshift;
+ 
+-	/* Temporarily disable support for 64K huge pages when 64K SPU local
+-	 * store support is enabled as the current implementation conflicts.
+-	 */
+-#ifndef CONFIG_SPU_FS_64K_LS
+-	set_huge_psize(MMU_PAGE_64K);
+-#endif
++		if (!mmu_psize_defs[psize].shift)
++			continue;
+ 
+-	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+-		if (mmu_huge_psizes[psize]) {
+-			pgtable_cache_add(mmu_huge_psizes[psize], NULL);
+-			if (!PGT_CACHE(mmu_huge_psizes[psize]))
+-				panic("hugetlbpage_init(): could not create "
+-				      "pgtable cache for %d bit pagesize\n",
+-				      mmu_psize_to_shift(psize));
+-		}
++		shift = mmu_psize_to_shift(psize);
++
++		if (add_huge_page_size(1ULL << shift) < 0)
++			continue;
++
++		if (shift < PMD_SHIFT)
++			pdshift = PMD_SHIFT;
++		else if (shift < PUD_SHIFT)
++			pdshift = PUD_SHIFT;
++		else
++			pdshift = PGDIR_SHIFT;
++
++		pgtable_cache_add(pdshift - shift, NULL);
++		if (!PGT_CACHE(pdshift - shift))
++			panic("hugetlbpage_init(): could not create "
++			      "pgtable cache for %d bit pagesize\n", shift);
  	}
-+	cpu_hotplug_driver_unlock();
  
- 	if (ret >= 0)
- 		ret = count;
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index 4753619..b0ad4e1 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -115,6 +115,19 @@ extern void put_online_cpus(void);
- #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
- int cpu_down(unsigned int cpu);
- 
-+#ifdef CONFIG_PPC_PSERIES
-+extern void cpu_hotplug_driver_lock(void);
-+extern void cpu_hotplug_driver_unlock(void);
-+#else
-+static inline void cpu_hotplug_driver_lock(void)
-+{
-+}
++	/* Set default large page size. Currently, we pick 16M or 1M
++	 * depending on what is available
++	 */
++	if (mmu_psize_defs[MMU_PAGE_16M].shift)
++		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_16M].shift;
++	else if (mmu_psize_defs[MMU_PAGE_1M].shift)
++		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_1M].shift;
 +
-+static inline void cpu_hotplug_driver_unlock(void)
-+{
-+}
-+#endif
-+
- #else		/* CONFIG_HOTPLUG_CPU */
+ 	return 0;
+ }
  
- #define get_online_cpus()	do { } while (0)
+Index: working-2.6/arch/powerpc/include/asm/page_64.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/include/asm/page_64.h	2009-08-14 16:07:54.000000000 +1000
++++ working-2.6/arch/powerpc/include/asm/page_64.h	2009-10-30 16:16:30.000000000 +1100
+@@ -90,7 +90,7 @@ extern unsigned int HPAGE_SHIFT;
+ #define HPAGE_SIZE		((1UL) << HPAGE_SHIFT)
+ #define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+ #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+-#define HUGE_MAX_HSTATE		3
++#define HUGE_MAX_HSTATE		(MMU_PAGE_COUNT-1)
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+Index: working-2.6/arch/powerpc/mm/hash_utils_64.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/hash_utils_64.c	2009-10-30 16:16:20.000000000 +1100
++++ working-2.6/arch/powerpc/mm/hash_utils_64.c	2009-10-30 16:16:30.000000000 +1100
+@@ -481,16 +481,6 @@ static void __init htab_init_page_sizes(
+ #ifdef CONFIG_HUGETLB_PAGE
+ 	/* Reserve 16G huge page memory sections for huge pages */
+ 	of_scan_flat_dt(htab_dt_scan_hugepage_blocks, NULL);
+-
+-/* Set default large page size. Currently, we pick 16M or 1M depending
+-	 * on what is available
+-	 */
+-	if (mmu_psize_defs[MMU_PAGE_16M].shift)
+-		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_16M].shift;
+-	/* With 4k/4level pagetables, we can't (for now) cope with a
+-	 * huge page size < PMD_SIZE */
+-	else if (mmu_psize_defs[MMU_PAGE_1M].shift)
+-		HPAGE_SHIFT = mmu_psize_defs[MMU_PAGE_1M].shift;
+ #endif /* CONFIG_HUGETLB_PAGE */
+ }
+ 
+
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
