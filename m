@@ -1,27 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 18AB01007D3
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 23:02:21 +1100 (EST)
-References: <1256917647-6200-1-git-send-email-agraf@suse.de>
-	<1256917647-6200-20-git-send-email-agraf@suse.de>
-	<20091031153719.10a4e61b.sfr@canb.auug.org.au>
-Message-Id: <4A927295-575F-4AF2-AA7E-D83CBAC6C343@suse.de>
-From: Alexander Graf <agraf@suse.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20091031153719.10a4e61b.sfr@canb.auug.org.au>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Mime-Version: 1.0 (iPhone Mail 7A341)
-Subject: Re: [PATCH 19/27] Export symbols for KVM module
-Date: Sat, 31 Oct 2009 13:02:14 +0100
-Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-	Hollis Blanchard <hollisb@us.ibm.com>,
-	Marcelo Tosatti <mtosatti@redhat.com>, kvm-ppc <kvm-ppc@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Avi Kivity <avi@redhat.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-	"bphilips@suse.de" <bphilips@suse.de>, Olof Johansson <olof@lixom.net>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id EB0E4B7C54
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Nov 2009 00:01:40 +1100 (EST)
+Date: Sat, 31 Oct 2009 14:01:31 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: mpc512x/clock: fix clk_get logic
+Message-ID: <20091031130131.GA23009@pengutronix.de>
+References: <1256894234-11264-1-git-send-email-w.sang@pengutronix.de>
+	<1256939657.6372.81.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
+In-Reply-To: <1256939657.6372.81.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,38 +24,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Am 31.10.2009 um 05:37 schrieb Stephen Rothwell <sfr@canb.auug.org.au>:
+--LZvS9be/3tNcYl/X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Hi Alexander,
->
-> On Fri, 30 Oct 2009 16:47:19 +0100 Alexander Graf <agraf@suse.de>  
-> wrote:
->>
->> diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ 
->> ppc_ksyms.c
->> index c8b27bb..baf778c 100644
->> --- a/arch/powerpc/kernel/ppc_ksyms.c
->> +++ b/arch/powerpc/kernel/ppc_ksyms.c
->> @@ -163,11 +163,12 @@ EXPORT_SYMBOL(screen_info);
->> #ifdef CONFIG_PPC32
->> EXPORT_SYMBOL(timer_interrupt);
->> EXPORT_SYMBOL(irq_desc);
->> -EXPORT_SYMBOL(tb_ticks_per_jiffy);
->> EXPORT_SYMBOL(cacheable_memcpy);
->> EXPORT_SYMBOL(cacheable_memzero);
->> #endif
->>
->> +EXPORT_SYMBOL(tb_ticks_per_jiffy);
->
-> Since you are moving this anyway, how about moving it into
-> arch/powerpc/kernel/time.c where tb_ticks_per_jiffy is defined.
+Hello Ben,
 
-Well the fun part is that the hrtimer conversion patch actually  
-deprecates this change.
+> Have you considered switching to my proposed device-tree based clock
+> reprentation ?
 
-I merely forgot to change the export back.
+You mean this one?
 
-So I suppose I'll leave things here as is and then revert this chunk  
-in the hrtimer patch.
+http://patchwork.ozlabs.org/patch/31551/
 
-Alex
+Sorry, I have missed it up to now :(
+
+While I think (after one glimpse) this moves things into the right directio=
+n,
+my priority at the moment is to get the mscan driver working on 512x (and t=
+hen
+to mainline). For that, I needed the patch I posted. I hope I can have anot=
+her
+look at your proposal later on, it looks really worth it.
+
+Until then I'd propose to consider this patch as it fixes a bug in clock
+assignment. But I leave the final decision to you maintainers, of course.
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--LZvS9be/3tNcYl/X
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkrsNSsACgkQD27XaX1/VRtTzwCeLyTJ42+b2WDXqLf8ul+n4fLk
+RDEAoMf+nmmYFgHVO6FFv2jGn9iLjsUG
+=UDFz
+-----END PGP SIGNATURE-----
+
+--LZvS9be/3tNcYl/X--
