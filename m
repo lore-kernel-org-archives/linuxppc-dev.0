@@ -1,27 +1,27 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D62E4B7C26
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 21:36:22 +1100 (EST)
-In-Reply-To: <20091030173749.GA855@loki.buserror.net>
-References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091015165650.GA3837@compile2.chatsunix.int.mrv.com>
-	<OFF665748B.AAF26319-ONC1257651.00296F23-C1257651.002D6BF7@transmode.se>
-	<20091016202541.GA16358@compile2.chatsunix.int.mrv.com>
-	<OF2BB5EF59.1EE0A77D-ONC1257652.003D79DC-C1257652.003EA687@LocalDomain>
-	<OFA43B9FDF.F43B1705-ONC1257652.0041B12F-C1257652.004211A3@transmode.se>
-	<20091030171607.GA781@loki.buserror.net>
-	<20091030173749.GA855@loki.buserror.net>
-Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OF84854360.0A0B7183-ONC1257660.0039741A-C1257660.0039CBF9@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sat, 31 Oct 2009 11:31:17 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Rex Feany <RFeany@mrv.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 18AB01007D3
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Oct 2009 23:02:21 +1100 (EST)
+References: <1256917647-6200-1-git-send-email-agraf@suse.de>
+	<1256917647-6200-20-git-send-email-agraf@suse.de>
+	<20091031153719.10a4e61b.sfr@canb.auug.org.au>
+Message-Id: <4A927295-575F-4AF2-AA7E-D83CBAC6C343@suse.de>
+From: Alexander Graf <agraf@suse.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20091031153719.10a4e61b.sfr@canb.auug.org.au>
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
+Mime-Version: 1.0 (iPhone Mail 7A341)
+Subject: Re: [PATCH 19/27] Export symbols for KVM module
+Date: Sat, 31 Oct 2009 13:02:14 +0100
+Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+	Hollis Blanchard <hollisb@us.ibm.com>,
+	Marcelo Tosatti <mtosatti@redhat.com>, kvm-ppc <kvm-ppc@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Avi Kivity <avi@redhat.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	"bphilips@suse.de" <bphilips@suse.de>, Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +31,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 30/10/2009 18:37:49:
->
-> On Fri, Oct 30, 2009 at 12:16:07PM -0500, Scott Wood wrote:
-> > On Sat, Oct 17, 2009 at 02:01:38PM +0200, Joakim Tjernlund wrote:
-> > > +     mfspr r10, SPRN_SRR0
-> > >       DO_8xx_CPU6(0x3780, r3)
-> > >       mtspr SPRN_MD_EPN, r10
-> > >       mfspr r11, SPRN_M_TWB   /* Get level 1 table entry address */
-> > > -     lwz   r11, 0(r11)   /* Get the level 1 entry */
-> > > +     cmplwi      cr0, r11, 0x0800
-> > > +     blt-  3f      /* Branch if user space */
-> > > +     lis   r11, swapper_pg_dir@h
-> > > +     ori   r11, r11, swapper_pg_dir@l
-> > > +     rlwimi      r11, r11, 0, 2, 19
-> >
-> > That rlwimi is a no-op -- I think you meant to use a different register
-> > here?
-> >
-> > > +3:   lwz   r11, 0(r11)   /* Get the level 1 entry */
-> > >       DO_8xx_CPU6(0x3b80, r3)
-> > >       mtspr SPRN_MD_TWC, r11   /* Load pte table base address */
-> > >       mfspr r11, SPRN_MD_TWC   /* ....and get the pte address */
-> > >       lwz   r11, 0(r11)   /* Get the pte */
-> > >       /* concat physical page address(r11) and page offset(r10) */
-> > >       rlwimi      r11, r10, 0, 20, 31
-> >
-> > But r10 here contains SRR0 from above, and this is a data TLB error.
->
-> Never mind that last one, forgot that you'd be wanting to load the
-> instruction. :-P
->
-> But the rlwimi is what's causing the machine checks.  I replaced it with:
 
-Yes, I see now that it is wrong.
+Am 31.10.2009 um 05:37 schrieb Stephen Rothwell <sfr@canb.auug.org.au>:
 
-> rlwinm   r11, r11, 0, 0x3ffff000
-> rlwimi   r11, r10, 22, 0xffc
+> Hi Alexander,
 >
-> and things seem to work.  You could probably replace the rlwinm by
-> subtracting PAGE_OFFSET from swapper_pg_dir instead.
+> On Fri, 30 Oct 2009 16:47:19 +0100 Alexander Graf <agraf@suse.de>  
+> wrote:
+>>
+>> diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ 
+>> ppc_ksyms.c
+>> index c8b27bb..baf778c 100644
+>> --- a/arch/powerpc/kernel/ppc_ksyms.c
+>> +++ b/arch/powerpc/kernel/ppc_ksyms.c
+>> @@ -163,11 +163,12 @@ EXPORT_SYMBOL(screen_info);
+>> #ifdef CONFIG_PPC32
+>> EXPORT_SYMBOL(timer_interrupt);
+>> EXPORT_SYMBOL(irq_desc);
+>> -EXPORT_SYMBOL(tb_ticks_per_jiffy);
+>> EXPORT_SYMBOL(cacheable_memcpy);
+>> EXPORT_SYMBOL(cacheable_memzero);
+>> #endif
+>>
+>> +EXPORT_SYMBOL(tb_ticks_per_jiffy);
+>
+> Since you are moving this anyway, how about moving it into
+> arch/powerpc/kernel/time.c where tb_ticks_per_jiffy is defined.
 
-Would you mind produce a proper path on top of my series? I am blind
-here so I can only guess what will work or not.
-Then Rex can give it some beating and we can push this to Ben
+Well the fun part is that the hrtimer conversion patch actually  
+deprecates this change.
+
+I merely forgot to change the export back.
+
+So I suppose I'll leave things here as is and then revert this chunk  
+in the hrtimer patch.
+
+Alex
