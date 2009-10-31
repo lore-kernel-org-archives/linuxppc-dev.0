@@ -1,27 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 94627B7C25
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Nov 2009 08:38:00 +1100 (EST)
-Subject: Re: [PATCH 20/27] Split init_new_context and destroy_context
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-In-Reply-To: <4AECAA0A.1080304@suse.de>
-References: <1256917647-6200-1-git-send-email-agraf@suse.de>
-	<1256917647-6200-21-git-send-email-agraf@suse.de>
-	<20091031154059.750d7213.sfr@canb.auug.org.au>
-	<4AECAA0A.1080304@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 01 Nov 2009 08:37:41 +1100
-Message-ID: <1257025061.7907.20.camel@pasglop>
-Mime-Version: 1.0
-Cc: Kevin Wolf <kwolf@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-	Arnd Bergmann <arnd@arndb.de>, Hollis Blanchard <hollisb@us.ibm.com>,
-	Marcelo Tosatti <mtosatti@redhat.com>,
-	kvm-ppc <kvm-ppc@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-	bphilips@suse.de, Olof Johansson <olof@lixom.net>
+	by ozlabs.org (Postfix) with ESMTPS id 019C5B7C61
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun,  1 Nov 2009 09:32:26 +1100 (EST)
+In-Reply-To: <200910312135.34196.mb@bu3sch.de>
+References: <BB99A6BA28709744BF22A68E6D7EB51F0330E23124@midas.usurf.usu.edu>
+	<200910311742.56280.mb@bu3sch.de>
+	<OF7FB0F99B.2962ECBA-ONC1257660.006EDDB5-C1257660.006F2808@transmode.se>
+	<200910312135.34196.mb@bu3sch.de>
+Subject: Re: Accessing flash directly from User Space [SOLVED]
+To: Michael Buesch <mb@bu3sch.de>
+Message-ID: <OFA2803682.B247ED64-ONC1257660.007B44F5-C1257660.007BB531@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Sat, 31 Oct 2009 23:31:13 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: "scottwood@freescale.com" <scottwood@freescale.com>,
+	Alessandro Rubini <rubini@gnudd.com>,
+	"bgat@billgatliff.com" <bgat@billgatliff.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +31,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2009-10-31 at 22:20 +0100, Alexander Graf wrote:
-> Stephen Rothwell wrote:
-> > Hi Alexander,
+Michael Buesch <mb@bu3sch.de> wrote on 31/10/2009 21:35:31:
+>
+> On Saturday 31 October 2009 21:14:07 Joakim Tjernlund wrote:
+> > Michael Buesch <mb@bu3sch.de> wrote on 31/10/2009 17:42:54:
+> > >
+> > > On Saturday 31 October 2009 14:26:48 Joakim Tjernlund wrote:
+> > > > >
+> > > > > > On Friday 30 October 2009 16:08:55 Alessandro Rubini wrote:
+> > > > > > > > asm("eieio; sync");
+> > > > > > >
+> > > > > > > Hmm...
+> > > > > > >    : : : "memory"
+> > > > > > >
+> > > > > > > And, doesn't ";" start a comment in assembly? (no, not on powerpc
+> > > > > > it seems)
+> > > > > >
+> > > > > > Yes, I think the barrier is wrong.
+> > > > > > Please try with
+> > > > > >
+> > > > > > #define mb()   __asm__ __volatile__("eieio\n sync\n" : : :
+> > > > > > "memory")
+> > > > >
+> > > > > That definition worked great.  I must have missed the : : : "memory" bit when
+> > > > > I was digging through code.
+> > > > >
+> > > > > Thanks, that gives me about a 2x speedup over the msync() calls.
+> > > >
+> > > > Exactly when should you use the barrier? At every access,
+> > > > every read or when changing from write to read?
+> > >
+> > > Well, it depends on the device you are accessing. I'll give you a small
+> pseudo example.
+> > >
+> > > mmio[0] = address;
+> > > mmio[1] = data;
+> > > mb();
+> > > mmio[3] |= 0x01; /* This triggers an operation -> address=data */
+> > > /* probably also need an mb() here, if the following code
+> > >  * depends on the operation to be triggered. */
 > >
-> > On Fri, 30 Oct 2009 16:47:20 +0100 Alexander Graf <agraf@suse.de> wrote:
-> >   
-> >> --- a/arch/powerpc/include/asm/mmu_context.h
-> >> +++ b/arch/powerpc/include/asm/mmu_context.h
-> >> @@ -23,6 +23,11 @@ extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
-> >>  extern void set_context(unsigned long id, pgd_t *pgd);
-> >>  
-> >>  #ifdef CONFIG_PPC_BOOK3S_64
-> >> +extern int __init_new_context(void);
-> >> +extern void __destroy_context(int context_id);
-> >> +#endif
-> >> +
-> >> +#ifdef CONFIG_PPC_BOOK3S_64
-> >>     
-> >
-> > don't add the #endif/#ifdef pair ...
-> 
-> Any other comments? I'd like to wind up a final patch set so I can stop
-> spamming on all those MLs :-).
+> > So anything that depends on the previous accesses needs a mb()
+>
+> No, not really. I would always put an mb() where the comment is.
+> Imagine you have two instances of the above (probably in a loop):
+>
+> mmio[0] = address;
+> mmio[1] = data;
+> mb();
+> mmio[3] |= 0x01; /* This triggers an operation -> address=data */
+> mb();
+>
+> mmio[0] = address;
+> mmio[1] = data;
+> mb();
+> mmio[3] |= 0x01; /* This triggers an operation -> address=data */
+> mb();
+>
+> > hmm, the mmio[0] and mmio[1] are written in order I hope?
+>
+> We do not care in this example, as the write to [3] does trigger
+> the device operation. We do only care that [0] and [1] are set
+> when [3] is written. We do not care in what order [0] and [1] are written.
 
-Just send an update for -that- patch to the list.
+In this example yes, I was wondering in general.
 
-Ben.
+>
+> This is just an artificial example, but I think you get my point.
+> My point just being is that an mb() does only belong where it matters.
+> And what matters is defined by your device specifications.
+
+So what does guarded memory mapping on ppc mean really? If I need
+that much mb(), guarded does not seem to do much.
+
+ Jocke
