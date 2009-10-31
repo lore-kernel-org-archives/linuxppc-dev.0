@@ -1,27 +1,21 @@
-Return-Path: <mb@bu3sch.de>
-Received: from vs166246.vserver.de (bu3sch.de [62.75.166.246])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D0A98B7C3E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  1 Nov 2009 07:36:17 +1100 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: Accessing flash directly from User Space [SOLVED]
-Date: Sat, 31 Oct 2009 21:35:31 +0100
-References: <BB99A6BA28709744BF22A68E6D7EB51F0330E23124@midas.usurf.usu.edu>
-	<200910311742.56280.mb@bu3sch.de>
-	<OF7FB0F99B.2962ECBA-ONC1257660.006EDDB5-C1257660.006F2808@transmode.se>
-In-Reply-To: <OF7FB0F99B.2962ECBA-ONC1257660.006EDDB5-C1257660.006F2808@transmode.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200910312135.34196.mb@bu3sch.de>
-Cc: "scottwood@freescale.com" <scottwood@freescale.com>,
-	Alessandro Rubini <rubini@gnudd.com>,
-	"bgat@billgatliff.com" <bgat@billgatliff.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+	by ozlabs.org (Postfix) with ESMTPS id 5F345B7C5A
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Nov 2009 07:48:12 +1100 (EST)
+Subject: Re: mpc512x/clock: fix clk_get logic
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfram Sang <w.sang@pengutronix.de>
+In-Reply-To: <20091031130131.GA23009@pengutronix.de>
+References: <1256894234-11264-1-git-send-email-w.sang@pengutronix.de>
+	<1256939657.6372.81.camel@pasglop>
+	<20091031130131.GA23009@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 01 Nov 2009 07:48:02 +1100
+Message-ID: <1257022082.7907.7.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,69 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday 31 October 2009 21:14:07 Joakim Tjernlund wrote:
-> Michael Buesch <mb@bu3sch.de> wrote on 31/10/2009 17:42:54:
-> >
-> > On Saturday 31 October 2009 14:26:48 Joakim Tjernlund wrote:
-> > > >
-> > > > > On Friday 30 October 2009 16:08:55 Alessandro Rubini wrote:
-> > > > > > > asm("eieio; sync");
-> > > > > >
-> > > > > > Hmm...
-> > > > > >    : : : "memory"
-> > > > > >
-> > > > > > And, doesn't ";" start a comment in assembly? (no, not on powerpc
-> > > > > it seems)
-> > > > >
-> > > > > Yes, I think the barrier is wrong.
-> > > > > Please try with
-> > > > >
-> > > > > #define mb()   __asm__ __volatile__("eieio\n sync\n" : : :
-> > > > > "memory")
-> > > >
-> > > > That definition worked great.  I must have missed the : : : "memory" bit when
-> > > > I was digging through code.
-> > > >
-> > > > Thanks, that gives me about a 2x speedup over the msync() calls.
-> > >
-> > > Exactly when should you use the barrier? At every access,
-> > > every read or when changing from write to read?
-> >
-> > Well, it depends on the device you are accessing. I'll give you a small pseudo example.
-> >
-> > mmio[0] = address;
-> > mmio[1] = data;
-> > mb();
-> > mmio[3] |= 0x01; /* This triggers an operation -> address=data */
-> > /* probably also need an mb() here, if the following code
-> >  * depends on the operation to be triggered. */
+On Sat, 2009-10-31 at 14:01 +0100, Wolfram Sang wrote:
+> Hello Ben,
 > 
-> So anything that depends on the previous accesses needs a mb()
+> > Have you considered switching to my proposed device-tree based clock
+> > reprentation ?
+> 
+> You mean this one?
+> 
+> http://patchwork.ozlabs.org/patch/31551/
+> 
+> Sorry, I have missed it up to now :(
+> 
+> While I think (after one glimpse) this moves things into the right direction,
+> my priority at the moment is to get the mscan driver working on 512x (and then
+> to mainline). For that, I needed the patch I posted. I hope I can have another
+> look at your proposal later on, it looks really worth it.
+> 
+> Until then I'd propose to consider this patch as it fixes a bug in clock
+> assignment. But I leave the final decision to you maintainers, of course.
 
-No, not really. I would always put an mb() where the comment is.
-Imagine you have two instances of the above (probably in a loop):
+Sure I don't have major objections against your patch (though who is
+formally mpc512x maintainer to ack it ?), I just wanted to make sure you
+had a look at my proposal since this is almost the only platform to use
+the clock API today in arch/powerpc.
 
-mmio[0] = address;
-mmio[1] = data;
-mb();
-mmio[3] |= 0x01; /* This triggers an operation -> address=data */
-mb();
-
-mmio[0] = address;
-mmio[1] = data;
-mb();
-mmio[3] |= 0x01; /* This triggers an operation -> address=data */
-mb();
-
-> hmm, the mmio[0] and mmio[1] are written in order I hope?
-
-We do not care in this example, as the write to [3] does trigger
-the device operation. We do only care that [0] and [1] are set
-when [3] is written. We do not care in what order [0] and [1] are written.
-
-This is just an artificial example, but I think you get my point.
-My point just being is that an mb() does only belong where it matters.
-And what matters is defined by your device specifications.
-
--- 
-Greetings, Michael.
+Cheers,
+Ben.
