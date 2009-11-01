@@ -1,28 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BFCE61007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  1 Nov 2009 21:03:17 +1100 (EST)
-In-Reply-To: <OFA2803682.B247ED64-ONC1257660.007B44F5-C1257660.007BB531@transmode.se>
-References: <BB99A6BA28709744BF22A68E6D7EB51F0330E23124@midas.usurf.usu.edu>
-	<200910311742.56280.mb@bu3sch.de>
-	<OF7FB0F99B.2962ECBA-ONC1257660.006EDDB5-C1257660.006F2808@transmode.se>
-	<200910312135.34196.mb@bu3sch.de>
-	<OFA2803682.B247ED64-ONC1257660.007B44F5-C1257660.007BB531@transmode.se>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <67287DD7-C1FB-48B8-871C-52CA101C4BC8@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Accessing flash directly from User Space [SOLVED]
-Date: Sun, 1 Nov 2009 11:07:24 +0100
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: "bgat@billgatliff.com" <bgat@billgatliff.com>,
-	Alessandro Rubini <rubini@gnudd.com>,
-	Jonathan Haws <Jonathan.Haws@sdl.usu.edu>,
-	"scottwood@freescale.com" <scottwood@freescale.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id B5BC3B7C4A
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Nov 2009 22:41:35 +1100 (EST)
+Date: Sun, 1 Nov 2009 22:41:29 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Giuseppe Coviello <cjg@cruxppc.org>
+Subject: Re: Fail building 2.6.31.x for CHRP using gcc-4.4.x
+Message-Id: <20091101224129.4ea50c7b.sfr@canb.auug.org.au>
+In-Reply-To: <a265241c0911010117m65335b80g94457a07d0610cbe@mail.gmail.com>
+References: <a265241c0911010117m65335b80g94457a07d0610cbe@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__1_Nov_2009_22_41_29_+1100_S=45ue82K.1Ch1mz"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>> mmio[0] = address;
->>>> mmio[1] = data;
->>>> mb();
+--Signature=_Sun__1_Nov_2009_22_41_29_+1100_S=45ue82K.1Ch1mz
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-eieio is enough here.
+Hi Giuseppe,
 
->>>> mmio[3] |= 0x01; /* This triggers an operation -> address=data */
->>>> /* probably also need an mb() here, if the following code
->>>>  * depends on the operation to be triggered. */
-
-No, a sync does not guarantee the device has seen the store yet;
-you need something specific to the device to guarantee this.
-Usually a load (from the same register!) followed by code that
-makes sure the load has finished is sufficient (and necessary).
-
->>> hmm, the mmio[0] and mmio[1] are written in order I hope?
->>
->> We do not care in this example, as the write to [3] does trigger
->> the device operation. We do only care that [0] and [1] are set
->> when [3] is written. We do not care in what order [0] and [1] are  
->> written.
+On Sun, 1 Nov 2009 10:17:00 +0100 Giuseppe Coviello <cjg@cruxppc.org> wrote:
 >
-> In this example yes, I was wondering in general.
+> Hi, we are having trouble while building kernel 2.6.31.x and also
+> 2.6.32rc for CHRP platforms using gcc-4.4.x, the error that give us
+> the compilation is:
+>=20
+>   CC      arch/powerpc/sysdev/indirect_pci.o
+>   CC      arch/powerpc/sysdev/i8259.o
+>   LD      arch/powerpc/sysdev/built-in.o
+>   CC      arch/powerpc/platforms/chrp/setup.o
+> cc1: warnings being treated as errors
+> arch/powerpc/platforms/chrp/setup.c: In function 'chrp_event_scan':
+> arch/powerpc/platforms/chrp/setup.c:378: error: the frame size of 1040
+> bytes is larger than 1024 bytes
+> make[2]: *** [arch/powerpc/platforms/chrp/setup.o] Error 1
+> make[1]: *** [arch/powerpc/platforms/chrp] Error 2
+> make: *** [arch/powerpc/platforms] Error
+>=20
+> The same kernel, with the same configuration builds fine using gcc-4.3.x.
 
-The writes will not be reordered, but they can be combined,
-unless you put an eieio (or sync) inbetween.
+For now, just enable CONFIG_PPC_DISABLE_WERROR.
 
-> So what does guarded memory mapping on ppc mean really? If I need
-> that much mb(), guarded does not seem to do much.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Loosely speaking, guarded means no prefetch is done.
+--Signature=_Sun__1_Nov_2009_22_41_29_+1100_S=45ue82K.1Ch1mz
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Segher
+iEYEARECAAYFAkrtc+kACgkQjjKRsyhoI8x+wQCfTaFq20RsZ6K0ynxFKOmwBDSU
+HxYAoJOPrHXMPR/RmzzkBi/3okZ4IZds
+=uyLf
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__1_Nov_2009_22_41_29_+1100_S=45ue82K.1Ch1mz--
