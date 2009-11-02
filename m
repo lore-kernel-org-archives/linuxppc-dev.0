@@ -1,22 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8C3C0100810
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 09:02:42 +1100 (EST)
-From: Alexander Graf <agraf@suse.de>
-To: kvm@vger.kernel.org
-Subject: [PATCH 27/28] Use hrtimers for the decrementer
-Date: Mon,  2 Nov 2009 23:02:31 +0100
-Message-Id: <1257199351-2238-3-git-send-email-agraf@suse.de>
-In-Reply-To: <1257199351-2238-1-git-send-email-agraf@suse.de>
-References: <1257199351-2238-1-git-send-email-agraf@suse.de>
-Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-	Hollis Blanchard <hollisb@us.ibm.com>,
-	Marcelo Tosatti <mtosatti@redhat.com>,
-	kvm-ppc <kvm-ppc@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Avi Kivity <avi@redhat.com>, bphilips@suse.de,
-	Olof Johansson <olof@lixom.net>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 818931007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  3 Nov 2009 09:19:40 +1100 (EST)
+Subject: Re: Filtering bits in set_pte_at()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+In-Reply-To: <Pine.LNX.4.64.0911021256330.32400@sister.anvils>
+References: <1256957081.6372.344.camel@pasglop>
+	<Pine.LNX.4.64.0911021256330.32400@sister.anvils>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 03 Nov 2009 09:19:27 +1100
+Message-ID: <1257200367.7907.50.camel@pasglop>
+Mime-Version: 1.0
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, linuxppc-dev@lists.ozlabs.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,153 +26,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Following S390's good example we should use hrtimers for the decrementer too!
-This patch converts the timer from the old mechanism to hrtimers.
+On Mon, 2009-11-02 at 13:27 +0000, Hugh Dickins wrote:
+> On Sat, 31 Oct 2009, Benjamin Herrenschmidt wrote:
+> 
+> > Hi folks !
+> > 
+> > So I have a little problem on powerpc ... :-)
+> 
+> Thanks a lot for running this by us.
 
-Signed-off-by: Alexander Graf <agraf@suse.de>
+Heh, I though you may have been bored :-)
 
----
+> I've not looked to see if there are more such issues in arch/powerpc
+> itself, but those instances you mention are the only ones I managed
+> to find: uses of update_mmu_cache() and that hugetlb_cow() one.
 
-v6 -> v7:
+Right, that's all I spotted so far
 
-  - remove non-hrtimer export
----
- arch/powerpc/include/asm/kvm_host.h |    6 ++++--
- arch/powerpc/kernel/ppc_ksyms.c     |    3 +--
- arch/powerpc/kvm/emulate.c          |   18 +++++++++++-------
- arch/powerpc/kvm/powerpc.c          |   20 ++++++++++++++++++--
- 4 files changed, 34 insertions(+), 13 deletions(-)
+> The hugetlb_cow() one involves not set_pte_at() but set_huge_pte_at(),
+> so you'd want to change that too?  And presumably set_pte_at_notify()?
+> It all seems a lot of tedium, when so very few places are interested
+> in the pte after they've set it.
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 2cff5fe..1201f62 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -21,7 +21,8 @@
- #define __POWERPC_KVM_HOST_H__
- 
- #include <linux/mutex.h>
--#include <linux/timer.h>
-+#include <linux/hrtimer.h>
-+#include <linux/interrupt.h>
- #include <linux/types.h>
- #include <linux/kvm_types.h>
- #include <asm/kvm_asm.h>
-@@ -250,7 +251,8 @@ struct kvm_vcpu_arch {
- 
- 	u32 cpr0_cfgaddr; /* holds the last set cpr0_cfgaddr */
- 
--	struct timer_list dec_timer;
-+	struct hrtimer dec_timer;
-+	struct tasklet_struct tasklet;
- 	u64 dec_jiffies;
- 	unsigned long pending_exceptions;
- 
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index baf778c..c8b27bb 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -163,12 +163,11 @@ EXPORT_SYMBOL(screen_info);
- #ifdef CONFIG_PPC32
- EXPORT_SYMBOL(timer_interrupt);
- EXPORT_SYMBOL(irq_desc);
-+EXPORT_SYMBOL(tb_ticks_per_jiffy);
- EXPORT_SYMBOL(cacheable_memcpy);
- EXPORT_SYMBOL(cacheable_memzero);
- #endif
- 
--EXPORT_SYMBOL(tb_ticks_per_jiffy);
--
- #ifdef CONFIG_PPC32
- EXPORT_SYMBOL(switch_mmu_context);
- #endif
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index 1ec5e07..4a9ac66 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -18,7 +18,7 @@
-  */
- 
- #include <linux/jiffies.h>
--#include <linux/timer.h>
-+#include <linux/hrtimer.h>
- #include <linux/types.h>
- #include <linux/string.h>
- #include <linux/kvm_host.h>
-@@ -79,12 +79,13 @@ static int kvmppc_dec_enabled(struct kvm_vcpu *vcpu)
- 
- void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
- {
--	unsigned long nr_jiffies;
-+	unsigned long dec_nsec;
- 
-+	pr_debug("mtDEC: %x\n", vcpu->arch.dec);
- #ifdef CONFIG_PPC64
- 	/* POWER4+ triggers a dec interrupt if the value is < 0 */
- 	if (vcpu->arch.dec & 0x80000000) {
--		del_timer(&vcpu->arch.dec_timer);
-+		hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
- 		kvmppc_core_queue_dec(vcpu);
- 		return;
- 	}
-@@ -94,12 +95,15 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
- 		 * that's how we convert the guest DEC value to the number of
- 		 * host ticks. */
- 
-+		hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
-+		dec_nsec = vcpu->arch.dec;
-+		dec_nsec *= 1000;
-+		dec_nsec /= tb_ticks_per_usec;
-+		hrtimer_start(&vcpu->arch.dec_timer, ktime_set(0, dec_nsec),
-+			      HRTIMER_MODE_REL);
- 		vcpu->arch.dec_jiffies = get_tb();
--		nr_jiffies = vcpu->arch.dec / tb_ticks_per_jiffy;
--		mod_timer(&vcpu->arch.dec_timer,
--		          get_jiffies_64() + nr_jiffies);
- 	} else {
--		del_timer(&vcpu->arch.dec_timer);
-+		hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
- 	}
- }
- 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 4ae3490..4c582ed 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -23,6 +23,7 @@
- #include <linux/kvm_host.h>
- #include <linux/module.h>
- #include <linux/vmalloc.h>
-+#include <linux/hrtimer.h>
- #include <linux/fs.h>
- #include <asm/cputable.h>
- #include <asm/uaccess.h>
-@@ -209,10 +210,25 @@ static void kvmppc_decrementer_func(unsigned long data)
- 	}
- }
- 
-+/*
-+ * low level hrtimer wake routine. Because this runs in hardirq context
-+ * we schedule a tasklet to do the real work.
-+ */
-+enum hrtimer_restart kvmppc_decrementer_wakeup(struct hrtimer *timer)
-+{
-+	struct kvm_vcpu *vcpu;
-+
-+	vcpu = container_of(timer, struct kvm_vcpu, arch.dec_timer);
-+	tasklet_schedule(&vcpu->arch.tasklet);
-+
-+	return HRTIMER_NORESTART;
-+}
-+
- int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
- {
--	setup_timer(&vcpu->arch.dec_timer, kvmppc_decrementer_func,
--	            (unsigned long)vcpu);
-+	hrtimer_init(&vcpu->arch.dec_timer, CLOCK_REALTIME, HRTIMER_MODE_ABS);
-+	tasklet_init(&vcpu->arch.tasklet, kvmppc_decrementer_func, (ulong)vcpu);
-+	vcpu->arch.dec_timer.function = kvmppc_decrementer_wakeup;
- 
- 	return 0;
- }
--- 
-1.6.0.2
+We need to change set_huge_pte_at() too. Currently, David fixed the
+problem in a local tree by making hugetlb_cow() re-read the PTE . 
+
+set_pte_at_notify() would probably be similar, I'm not too familiar with
+its usage scenario yet to be honest.
+
+> > What do you suggest we do here ? Among the options at hand:
+> > 
+> >  - Ugly but would probably "just work" with the last amount of changes:
+> > we could make set_pte_at() be a macro on powerpc that modifies it's PTE
+> > value argument :-) (I -did- warn it was ugly !)
+> 
+> I'm not keen on that one :)
+
+Yeah. Me neither :-)
+
+> >  - Another one slightly less bad that would require more work but mostly
+> > mechanical arch header updates would be to make set_pte_at() return the
+> > new value of the PTE, and thus change the callsites to something like:
+> > 
+> > 	entry = set_pte_at(mm, addr, ptep, entry)
+> 
+> I prefer that, but it still seems more trouble than it's worth.
+
+Right. I was hoping you might have a better idea :-)
+
+> And though I prefer it to set_pte_at(mm, addr, ptep, &entry)
+> (which would anyway complicate many of the callsites), it might
+> unnecessarily increase the codesize for all architectures (depends
+> on whether gcc notices entry isn't used afterwards anyway).
+
+Macro or static inlines back to __set_pte_at(..., entry) in those archs
+would probably take care of avoiding the bloat but still a lot of churn.
+> >
+> >  - Any other idea ? We could use another PTE bit (_PAGE_HWEXEC), in
+> > fact, we used to, but we are really short on PTE bits nowadays and I
+> > freed that one up to get _PAGE_SPECIAL... _PAGE_EXEC is trivial to
+> > "recover" from ptep_set_access_flags() on an exec fault or from the VM
+> > prot.
+> 
+> No, please don't go ransacking your PTE for a sparish bit.
+
+Yeah, the whole exercise for me was initially to -save- PTE bits :-)
+
+> You're being a very good citizen to want to bring this so forcefully
+> to the attention of any user of set_pte_at(); but given how few care,
+> and the other such functions you'd want to change too, am I being
+> disgracefully lazy to suggest that you simply change the occasional
+> 
+> 		update_mmu_cache(vma, address, pte);
+> to
+> 		/* powerpc's set_pte_at might have adjusted the pte */
+> 		update_mmu_cache(vma, address, *ptep);
+> 
+> ?  Which would make no difference to those architectures whose
+> update_mmu_cache() is an empty macro.  And fix the mm/hugetlb.c
+> instance in a similar way?
+
+That would do fine. In fact, I've always been slightly annoyed by
+set_pte_at() not taking the PTE pointer for other reasons such as on
+64-K pages, we have a "hidden" part of the PTE that is at PTE address +
+32K, or we may want to get to the PTE page for some reason (some arch
+store things there) etc...
+
+IE. update_mmu_cache() would be more generally useful if it took the
+ptep instead of the pte. Of course, I'm sure some embedded archs are
+going to cry for the added load here ... 
+
+I like your idea. I'll look into doing a patch converting it and will
+post it here.
+
+Thanks !
+
+Cheers,
+Ben.
