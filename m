@@ -1,23 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
-	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id D969E100831
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 05:03:45 +1100 (EST)
-Received: by ywh37 with SMTP id 37so5395771ywh.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 02 Nov 2009 10:03:44 -0800 (PST)
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 55C66B7C3D
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 05:40:28 +1100 (EST)
+Date: Mon, 2 Nov 2009 19:40:23 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] mpc512x/clocks: initialize CAN clocks
+Message-ID: <20091102184023.GB3805@pengutronix.de>
+References: <1256925231-21917-1-git-send-email-w.sang@pengutronix.de>
+	<1257175056-26093-1-git-send-email-w.sang@pengutronix.de>
+	<fa686aa40911021002x6d895606s57bca0f9fdd4e81b@mail.gmail.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20091102135244.GC4696@pengutronix.de>
-References: <1256297157-28246-1-git-send-email-w.sang@pengutronix.de>
-	<fa686aa40910311822i4ba27b2bs350c5684cd57187b@mail.gmail.com>
-	<20091102135244.GC4696@pengutronix.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 2 Nov 2009 11:03:24 -0700
-Message-ID: <fa686aa40911021003r7c622654k654cd91d4ee58184@mail.gmail.com>
-Subject: Re: [PATCH] spi/mpc52xx: check for invalid PSC usage
-To: Wolfram Sang <w.sang@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: spi-devel-general@lists.sourceforge.net,
-	David Brownell <dbrownell@users.sourceforge.net>, linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="O5XBE6gyVG5Rl6Rj"
+In-Reply-To: <fa686aa40911021002x6d895606s57bca0f9fdd4e81b@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Chen Hongjun <hong-jun.chen@freescale.com>,
+	John Rigby <jrigby@freescale.com>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 2, 2009 at 6:53 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
->> I wouldn't even bother. =A0It's not actively dangerous to try and use
->> PSC{4,5} in SPI mode. =A0It just not going to work. =A0Besides, the
->> MPC5200 common code already checks for an invalid PSC number when
->> setting the clock divisor.
->>
->> Have you seen cases of users trying to do the wrong thing with the
->> crippled PSCs?
->
-> Yes, that was the reason for this patch :) How about this patch to give u=
-sers a
-> better idea than just -ENODEV via set_psc_clkdiv? ...[/me hacks]...
-> Uuuh, there is even a bug which makes the case go unnoticed.
 
-Sure.  This looks okay to me.  I'll pick it up.
+--O5XBE6gyVG5Rl6Rj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-g.
+
+> These clock controllers are 1:1 dedicated to the CAN devices, correct?
+
+Yes.
+
+>  Wouldn't it make more sense to put this code directly into the CAN
+> bus device driver instead of in common code?  And allocated the clk
+> structure at driver probe time?
+
+Yes, just...
+
+> It seems like the only shared bit seems to be access to the mccr register=
+s.
+
+=2E..we can't access registers from two drivers?? Ah, wait, you are probably
+aiming at moving the mscan_init-function to the can-driver and to expose the
+mscan_calc_rate function from here? That sounds good in deed, will update!
+
+Thanks,
+
+   Wolfram
 
 --=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--O5XBE6gyVG5Rl6Rj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkrvJ5cACgkQD27XaX1/VRuk5gCfYWhjsYAEHPLn5UlfaBfXsPXk
+p48AnAxmSolsyXS7wC6y99SdiHtZ+gof
+=1Kc4
+-----END PGP SIGNATURE-----
+
+--O5XBE6gyVG5Rl6Rj--
