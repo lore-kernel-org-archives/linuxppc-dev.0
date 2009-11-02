@@ -1,24 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
-	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 341D2B7C1B
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 03:37:49 +1100 (EST)
-Received: by yxe8 with SMTP id 8so5326130yxe.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 02 Nov 2009 08:37:48 -0800 (PST)
+	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id E0DDEB7C11
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 03:41:20 +1100 (EST)
+Received: by yxe8 with SMTP id 8so5329819yxe.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 02 Nov 2009 08:41:19 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <20091102142232.GD4696@pengutronix.de>
-References: <1256894234-11264-1-git-send-email-w.sang@pengutronix.de>
-	<1256939657.6372.81.camel@pasglop>
-	<20091031130131.GA23009@pengutronix.de>
-	<1257022082.7907.7.camel@pasglop>
-	<20091102142232.GD4696@pengutronix.de>
+In-Reply-To: <4AEF086D.9010600@austin.ibm.com>
+References: <4AE8ADCF.6090104@austin.ibm.com>
+	<4AE8AF4D.4030403@austin.ibm.com>
+	<1256785731.26770.38.camel@pasglop> <4AEF086D.9010600@austin.ibm.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 2 Nov 2009 09:37:28 -0700
-Message-ID: <fa686aa40911020837g78339e06rf8c1679b2d94c895@mail.gmail.com>
-Subject: Re: mpc512x/clock: fix clk_get logic
-To: Wolfram Sang <w.sang@pengutronix.de>
+Date: Mon, 2 Nov 2009 09:40:59 -0700
+Message-ID: <fa686aa40911020840s3a6a4819g85f3be3a305820bf@mail.gmail.com>
+Subject: Re: [PATCH 1/6 v5] Kernel DLPAR Infrastructure
+To: Nathan Fontenot <nfont@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Wolfgang Denk <wd@denx.de>, linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,21 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 2, 2009 at 7:22 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
->> Sure I don't have major objections against your patch (though who is
->> formally mpc512x maintainer to ack it ?),
->
-> Grant is maintainer for MPC5xxx.
+On Mon, Nov 2, 2009 at 9:27 AM, Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> I saw that Grant Likely is doing updates to all of the of_* stuff right now,
+> would it be ok to have these routines here, renamed as dlpar_*, and look
+> to merge them in with Grant's updates when he finishes?
 
-Is this patch intended for mainline?  I've received so many 5121
-patches that only apply against a Denx tree that I'm starting to
-ignore them.  Until the bulk of the out-of-tree 5121 support is
-merged, it would be helpful to specifically mention in the patch
-description whether or not it should be merged upstream.
+No because then we're stuck with renaming the API at a later date.
+Name it what it is, and put it where it belongs.  I'll deal with any
+merge breakage as it occurs.
 
-Cheers,
 g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
