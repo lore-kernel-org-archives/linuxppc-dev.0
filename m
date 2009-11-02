@@ -1,21 +1,20 @@
 Return-Path: <w.sang@pengutronix.de>
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 3B2B31007D2
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 00:14:34 +1100 (EST)
-Date: Mon, 2 Nov 2009 14:14:27 +0100
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 327B9B7BFB
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 00:53:26 +1100 (EST)
+Date: Mon, 2 Nov 2009 14:53:11 +0100
 From: Wolfram Sang <w.sang@pengutronix.de>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] mpc52xx-psc-spi: refactor probe and remove to make use
-	of of_register_spi_devices()
-Message-ID: <20091102131427.GB4696@pengutronix.de>
-References: <1256931852-13255-1-git-send-email-w.sang@pengutronix.de>
-	<fa686aa40910311803m43504167s1ad802aecd2b4344@mail.gmail.com>
+Subject: Re: [PATCH] spi/mpc52xx: check for invalid PSC usage
+Message-ID: <20091102135244.GC4696@pengutronix.de>
+References: <1256297157-28246-1-git-send-email-w.sang@pengutronix.de>
+	<fa686aa40910311822i4ba27b2bs350c5684cd57187b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="E39vaYmALEf/7YXx"
-In-Reply-To: <fa686aa40910311803m43504167s1ad802aecd2b4344@mail.gmail.com>
-Cc: =?iso-8859-15?Q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>,
-	spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+	protocol="application/pgp-signature"; boundary="bajzpZikUji1w+G9"
+In-Reply-To: <fa686aa40910311822i4ba27b2bs350c5684cd57187b@mail.gmail.com>
+Cc: spi-devel-general@lists.sourceforge.net,
+	David Brownell <dbrownell@users.sourceforge.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,110 +25,90 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---E39vaYmALEf/7YXx
+--bajzpZikUji1w+G9
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Grant,
-
-> the patch referenced above is a little ugly.  Adding the call should
-
-Agreed. I just referenced it to show there are more people wanting this
-feature.
-
-> be really simple.  I've drafted a patch to do only that step and
-> attached it to this mail.  If this one works for you, then I'll merge
-> it immediately into -next.
-
-One minor comment, but works in general:
-
-Acked-by: Wolfram Sang <w.sang@pengutronix.de>
-
-> Also, I'm resistant to changing the probe layout on this driver at
-> this time.  With the work being done to generalize the OF support
-> code, there is a strong possibility that of_platform will be
-> deprecated in favor of going back to using the platform bus directly
-> (just like how OF support works for i2c, spi, etc).  I'd rather not
-> refactor the driver until I'm certain of the direction that things are
-> going to go.
-
-And this was possibly the best answer I could get \o/ Sounds really promisi=
-ng,
-is there somewhere a discussion about how OF-generalization could happen?
-
-> From 7629d40dc343ff216b752d5c68654dc9d30f0c91 Mon Sep 17 00:00:00 2001
-> From: Grant Likely <grant.likely@secretlab.ca>
-> Date: Sat, 31 Oct 2009 17:49:38 -0600
-> Subject: [PATCH] spi/mpc5200: Register SPI devices described in device tr=
-ee
+> I wouldn't even bother.  It's not actively dangerous to try and use
+> PSC{4,5} in SPI mode.  It just not going to work.  Besides, the
+> MPC5200 common code already checks for an invalid PSC number when
+> setting the clock divisor.
 >=20
-> Add call to of_register_spi_devices() to register SPI devices described
-> in the OF device tree.
->=20
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->  drivers/spi/mpc52xx_psc_spi.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
->=20
-> diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
-> index 1b74d5c..b445464 100644
-> --- a/drivers/spi/mpc52xx_psc_spi.c
-> +++ b/drivers/spi/mpc52xx_psc_spi.c
-> @@ -17,6 +17,7 @@
->  #include <linux/errno.h>
->  #include <linux/interrupt.h>
->  #include <linux/of_platform.h>
-> +#include <linux/of_spi.h>
->  #include <linux/workqueue.h>
->  #include <linux/completion.h>
->  #include <linux/io.h>
-> @@ -464,6 +465,7 @@ static int __init mpc52xx_psc_spi_of_probe(struct of_=
-device *op,
->  	const u32 *regaddr_p;
->  	u64 regaddr64, size64;
->  	s16 id =3D -1;
-> +	int rc;
-> =20
->  	regaddr_p =3D of_get_address(op->node, 0, &size64, NULL);
->  	if (!regaddr_p) {
-> @@ -485,8 +487,12 @@ static int __init mpc52xx_psc_spi_of_probe(struct of=
-_device *op,
->  		id =3D *psc_nump + 1;
->  	}
-> =20
-> -	return mpc52xx_psc_spi_do_probe(&op->dev, (u32)regaddr64, (u32)size64,
-> +	rc =3D mpc52xx_psc_spi_do_probe(&op->dev, (u32)regaddr64, (u32)size64,
->  					irq_of_parse_and_map(op->node, 0), id);
-> +	if (!rc)
+> Have you seen cases of users trying to do the wrong thing with the
+> crippled PSCs?
 
-A matter of taste, maybe: I'd prefer
+Yes, that was the reason for this patch :) How about this patch to give use=
+rs a
+better idea than just -ENODEV via set_psc_clkdiv? ...[/me hacks]...
+Uuuh, there is even a bug which makes the case go unnoticed.
 
-	if (rc =3D=3D 0)
+=3D=3D=3D
 
-as (!ptr) is often used for catching errors with pointers, but here it is t=
-he
-'all went OK'-path.
+Subject: [PATCH] spi/mpc52xx-psc-spi: check for valid PSC
 
-> +		of_register_spi_devices(dev_get_drvdata(&op->dev), op->node);
-> +
-> +	return rc;
->  }
-> =20
->  static int __exit mpc52xx_psc_spi_of_remove(struct of_device *op)
-> --=20
-> 1.6.3.3
->=20
+This driver calls mpc52xx_set_psc_clkdiv() but doesn't check its return val=
+ue
+to see if the PSC is actually valid for SPI use. Add the check and a hint f=
+or
+the user.
 
-Regards,
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+---
+ drivers/spi/mpc52xx_psc_spi.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-   Wolfram
+diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
+index 1b74d5c..e268437 100644
+--- a/drivers/spi/mpc52xx_psc_spi.c
++++ b/drivers/spi/mpc52xx_psc_spi.c
+@@ -313,11 +313,13 @@ static int mpc52xx_psc_spi_port_config(int psc_id, st=
+ruct mpc52xx_psc_spi *mps)
+ 	struct mpc52xx_psc __iomem *psc =3D mps->psc;
+ 	struct mpc52xx_psc_fifo __iomem *fifo =3D mps->fifo;
+ 	u32 mclken_div;
+-	int ret =3D 0;
++	int ret;
+=20
+ 	/* default sysclk is 512MHz */
+ 	mclken_div =3D (mps->sysclk ? mps->sysclk : 512000000) / MCLK;
+-	mpc52xx_set_psc_clkdiv(psc_id, mclken_div);
++	ret =3D mpc52xx_set_psc_clkdiv(psc_id, mclken_div);
++	if (ret)
++		return ret;
+=20
+ 	/* Reset the PSC into a known state */
+ 	out_8(&psc->command, MPC52xx_PSC_RST_RX);
+@@ -341,7 +343,7 @@ static int mpc52xx_psc_spi_port_config(int psc_id, stru=
+ct mpc52xx_psc_spi *mps)
+=20
+ 	mps->bits_per_word =3D 8;
+=20
+-	return ret;
++	return 0;
+ }
+=20
+ static irqreturn_t mpc52xx_psc_spi_isr(int irq, void *dev_id)
+@@ -410,8 +412,10 @@ static int __init mpc52xx_psc_spi_do_probe(struct devi=
+ce *dev, u32 regaddr,
+ 		goto free_master;
+=20
+ 	ret =3D mpc52xx_psc_spi_port_config(master->bus_num, mps);
+-	if (ret < 0)
++	if (ret < 0) {
++		dev_err(dev, "can't configure PSC! Is it capable of SPI?\n");
+ 		goto free_irq;
++	}
+=20
+ 	spin_lock_init(&mps->lock);
+ 	init_completion(&mps->done);
 
 --=20
 Pengutronix e.K.                           | Wolfram Sang                |
 Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
---E39vaYmALEf/7YXx
+--bajzpZikUji1w+G9
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -137,9 +116,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkru2zMACgkQD27XaX1/VRsXlwCginnzWtZPW2+yQLX4X4OasbYl
-1ysAoKrEMvAdFSUqPpUEDNLqXfTcVaOf
-=JRui
+iEYEARECAAYFAkru5EcACgkQD27XaX1/VRvwfwCbBsp3Xw3V8FRDmz3dHvEvJCQy
+tdcAn0tsMj3WX7C+DUZBA8p0nQCNXh2Z
+=PK+b
 -----END PGP SIGNATURE-----
 
---E39vaYmALEf/7YXx--
+--bajzpZikUji1w+G9--
