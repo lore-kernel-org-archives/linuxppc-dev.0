@@ -1,20 +1,20 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 327B9B7BFB
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 00:53:26 +1100 (EST)
-Date: Mon, 2 Nov 2009 14:53:11 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] spi/mpc52xx: check for invalid PSC usage
-Message-ID: <20091102135244.GC4696@pengutronix.de>
-References: <1256297157-28246-1-git-send-email-w.sang@pengutronix.de>
-	<fa686aa40910311822i4ba27b2bs350c5684cd57187b@mail.gmail.com>
+Return-Path: <hugh.dickins@tiscali.co.uk>
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com
+	(mk-filter-4-a-1.mail.uk.tiscali.com [212.74.100.55])
+	by ozlabs.org (Postfix) with ESMTP id 03F28B7BF1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  3 Nov 2009 00:38:47 +1100 (EST)
+Date: Mon, 2 Nov 2009 13:27:59 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Filtering bits in set_pte_at()
+In-Reply-To: <1256957081.6372.344.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0911021256330.32400@sister.anvils>
+References: <1256957081.6372.344.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bajzpZikUji1w+G9"
-In-Reply-To: <fa686aa40910311822i4ba27b2bs350c5684cd57187b@mail.gmail.com>
-Cc: spi-devel-general@lists.sourceforge.net,
-	David Brownell <dbrownell@users.sourceforge.net>, linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, linuxppc-dev@lists.ozlabs.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,101 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, 31 Oct 2009, Benjamin Herrenschmidt wrote:
 
---bajzpZikUji1w+G9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Hi folks !
+> 
+> So I have a little problem on powerpc ... :-)
 
-> I wouldn't even bother.  It's not actively dangerous to try and use
-> PSC{4,5} in SPI mode.  It just not going to work.  Besides, the
-> MPC5200 common code already checks for an invalid PSC number when
-> setting the clock divisor.
->=20
-> Have you seen cases of users trying to do the wrong thing with the
-> crippled PSCs?
+Thanks a lot for running this by us.
 
-Yes, that was the reason for this patch :) How about this patch to give use=
-rs a
-better idea than just -ENODEV via set_psc_clkdiv? ...[/me hacks]...
-Uuuh, there is even a bug which makes the case go unnoticed.
+> 
+> Due to the way I'm attempting to do my I$/D$ coherency on embedded
+> processors, I basically need to "filter out" _PAGE_EXEC in set_pte_at()
+> if the page isn't clean (PG_arch_1) and the set_pte_at() isn't caused by
+> an exec fault. etc...
+> 
+> The problem with that approach (current upstream) is that the generic
+> code tends not to read back the PTE, and thus still carries around a PTE
+> value that doesn't match what was actually written.
+> 
+> For example, we end up with update_mmu_cache() called with an "entry"
+> argument that has _PAGE_EXEC set while we really didn't write it into
+> the page tables. This will be problematic when we finally add preloading
+> directly into the TLB on those processors. There's at least one other
+> fishy case where huetlbfs would carry the PTE value around and later do
+> the wrong thing because pte_same() with the loaded one failed.
 
-=3D=3D=3D
+I've not looked to see if there are more such issues in arch/powerpc
+itself, but those instances you mention are the only ones I managed
+to find: uses of update_mmu_cache() and that hugetlb_cow() one.
 
-Subject: [PATCH] spi/mpc52xx-psc-spi: check for valid PSC
+The hugetlb_cow() one involves not set_pte_at() but set_huge_pte_at(),
+so you'd want to change that too?  And presumably set_pte_at_notify()?
+It all seems a lot of tedium, when so very few places are interested
+in the pte after they've set it.
 
-This driver calls mpc52xx_set_psc_clkdiv() but doesn't check its return val=
-ue
-to see if the PSC is actually valid for SPI use. Add the check and a hint f=
-or
-the user.
+> 
+> What do you suggest we do here ? Among the options at hand:
+> 
+>  - Ugly but would probably "just work" with the last amount of changes:
+> we could make set_pte_at() be a macro on powerpc that modifies it's PTE
+> value argument :-) (I -did- warn it was ugly !)
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Grant Likely <grant.likely@secretlab.ca>
----
- drivers/spi/mpc52xx_psc_spi.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
+I'm not keen on that one :)
 
-diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
-index 1b74d5c..e268437 100644
---- a/drivers/spi/mpc52xx_psc_spi.c
-+++ b/drivers/spi/mpc52xx_psc_spi.c
-@@ -313,11 +313,13 @@ static int mpc52xx_psc_spi_port_config(int psc_id, st=
-ruct mpc52xx_psc_spi *mps)
- 	struct mpc52xx_psc __iomem *psc =3D mps->psc;
- 	struct mpc52xx_psc_fifo __iomem *fifo =3D mps->fifo;
- 	u32 mclken_div;
--	int ret =3D 0;
-+	int ret;
-=20
- 	/* default sysclk is 512MHz */
- 	mclken_div =3D (mps->sysclk ? mps->sysclk : 512000000) / MCLK;
--	mpc52xx_set_psc_clkdiv(psc_id, mclken_div);
-+	ret =3D mpc52xx_set_psc_clkdiv(psc_id, mclken_div);
-+	if (ret)
-+		return ret;
-=20
- 	/* Reset the PSC into a known state */
- 	out_8(&psc->command, MPC52xx_PSC_RST_RX);
-@@ -341,7 +343,7 @@ static int mpc52xx_psc_spi_port_config(int psc_id, stru=
-ct mpc52xx_psc_spi *mps)
-=20
- 	mps->bits_per_word =3D 8;
-=20
--	return ret;
-+	return 0;
- }
-=20
- static irqreturn_t mpc52xx_psc_spi_isr(int irq, void *dev_id)
-@@ -410,8 +412,10 @@ static int __init mpc52xx_psc_spi_do_probe(struct devi=
-ce *dev, u32 regaddr,
- 		goto free_master;
-=20
- 	ret =3D mpc52xx_psc_spi_port_config(master->bus_num, mps);
--	if (ret < 0)
-+	if (ret < 0) {
-+		dev_err(dev, "can't configure PSC! Is it capable of SPI?\n");
- 		goto free_irq;
-+	}
-=20
- 	spin_lock_init(&mps->lock);
- 	init_completion(&mps->done);
+> 
+>  - Another one slightly less bad that would require more work but mostly
+> mechanical arch header updates would be to make set_pte_at() return the
+> new value of the PTE, and thus change the callsites to something like:
+> 
+> 	entry = set_pte_at(mm, addr, ptep, entry)
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+I prefer that, but it still seems more trouble than it's worth.
 
---bajzpZikUji1w+G9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+And though I prefer it to set_pte_at(mm, addr, ptep, &entry)
+(which would anyway complicate many of the callsites), it might
+unnecessarily increase the codesize for all architectures (depends
+on whether gcc notices entry isn't used afterwards anyway).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> 
+>  - Any other idea ? We could use another PTE bit (_PAGE_HWEXEC), in
+> fact, we used to, but we are really short on PTE bits nowadays and I
+> freed that one up to get _PAGE_SPECIAL... _PAGE_EXEC is trivial to
+> "recover" from ptep_set_access_flags() on an exec fault or from the VM
+> prot.
 
-iEYEARECAAYFAkru5EcACgkQD27XaX1/VRvwfwCbBsp3Xw3V8FRDmz3dHvEvJCQy
-tdcAn0tsMj3WX7C+DUZBA8p0nQCNXh2Z
-=PK+b
------END PGP SIGNATURE-----
+No, please don't go ransacking your PTE for a sparish bit.
 
---bajzpZikUji1w+G9--
+You're being a very good citizen to want to bring this so forcefully
+to the attention of any user of set_pte_at(); but given how few care,
+and the other such functions you'd want to change too, am I being
+disgracefully lazy to suggest that you simply change the occasional
+
+		update_mmu_cache(vma, address, pte);
+to
+		/* powerpc's set_pte_at might have adjusted the pte */
+		update_mmu_cache(vma, address, *ptep);
+
+?  Which would make no difference to those architectures whose
+update_mmu_cache() is an empty macro.  And fix the mm/hugetlb.c
+instance in a similar way?
+
+Hugh
