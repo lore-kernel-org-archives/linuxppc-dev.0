@@ -1,22 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 818931007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  3 Nov 2009 09:19:40 +1100 (EST)
-Subject: Re: Filtering bits in set_pte_at()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-In-Reply-To: <Pine.LNX.4.64.0911021256330.32400@sister.anvils>
-References: <1256957081.6372.344.camel@pasglop>
-	<Pine.LNX.4.64.0911021256330.32400@sister.anvils>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 03 Nov 2009 09:19:27 +1100
-Message-ID: <1257200367.7907.50.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4A252B7C28
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 10:10:39 +1100 (EST)
+Date: Tue, 3 Nov 2009 10:10:32 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH V2] mpc512x/clock: fix clk_get logic
+Message-Id: <20091103101032.496a0290.sfr@canb.auug.org.au>
+In-Reply-To: <fa686aa40911020948o673b058emba4bb2ccfc1cfd17@mail.gmail.com>
+References: <20091030105414.GD717@sirena.org.uk>
+	<1256925231-21917-1-git-send-email-w.sang@pengutronix.de>
+	<fa686aa40911020948o673b058emba4bb2ccfc1cfd17@mail.gmail.com>
 Mime-Version: 1.0
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, linuxppc-dev@lists.ozlabs.org,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__3_Nov_2009_10_10_32_+1100_y/08cLERD3yBLUYq"
+Cc: linuxppc-dev@ozlabs.org, Roel Kluin <roel.kluin@gmail.com>,
+	Wolfgang Denk <wd@denx.de>, Mark Brown <broonie@sirena.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,100 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-11-02 at 13:27 +0000, Hugh Dickins wrote:
-> On Sat, 31 Oct 2009, Benjamin Herrenschmidt wrote:
-> 
-> > Hi folks !
-> > 
-> > So I have a little problem on powerpc ... :-)
-> 
-> Thanks a lot for running this by us.
+--Signature=_Tue__3_Nov_2009_10_10_32_+1100_y/08cLERD3yBLUYq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Heh, I though you may have been bored :-)
+Hi Grant,
 
-> I've not looked to see if there are more such issues in arch/powerpc
-> itself, but those instances you mention are the only ones I managed
-> to find: uses of update_mmu_cache() and that hugetlb_cow() one.
+On Mon, 2 Nov 2009 10:48:58 -0700 Grant Likely <grant.likely@secretlab.ca> =
+wrote:
+>
+> Using bool/true/false doesn't seem to be a common pattern in the
+> kernel.  Anyone know what the winds of prevailing opinion are
+> regarding 'bool' in kernel code?
 
-Right, that's all I spotted so far
+Its a good thing.
 
-> The hugetlb_cow() one involves not set_pte_at() but set_huge_pte_at(),
-> so you'd want to change that too?  And presumably set_pte_at_notify()?
-> It all seems a lot of tedium, when so very few places are interested
-> in the pte after they've set it.
-
-We need to change set_huge_pte_at() too. Currently, David fixed the
-problem in a local tree by making hugetlb_cow() re-read the PTE . 
-
-set_pte_at_notify() would probably be similar, I'm not too familiar with
-its usage scenario yet to be honest.
-
-> > What do you suggest we do here ? Among the options at hand:
-> > 
-> >  - Ugly but would probably "just work" with the last amount of changes:
-> > we could make set_pte_at() be a macro on powerpc that modifies it's PTE
-> > value argument :-) (I -did- warn it was ugly !)
-> 
-> I'm not keen on that one :)
-
-Yeah. Me neither :-)
-
-> >  - Another one slightly less bad that would require more work but mostly
-> > mechanical arch header updates would be to make set_pte_at() return the
-> > new value of the PTE, and thus change the callsites to something like:
-> > 
-> > 	entry = set_pte_at(mm, addr, ptep, entry)
-> 
-> I prefer that, but it still seems more trouble than it's worth.
-
-Right. I was hoping you might have a better idea :-)
-
-> And though I prefer it to set_pte_at(mm, addr, ptep, &entry)
-> (which would anyway complicate many of the callsites), it might
-> unnecessarily increase the codesize for all architectures (depends
-> on whether gcc notices entry isn't used afterwards anyway).
-
-Macro or static inlines back to __set_pte_at(..., entry) in those archs
-would probably take care of avoiding the bloat but still a lot of churn.
-> >
-> >  - Any other idea ? We could use another PTE bit (_PAGE_HWEXEC), in
-> > fact, we used to, but we are really short on PTE bits nowadays and I
-> > freed that one up to get _PAGE_SPECIAL... _PAGE_EXEC is trivial to
-> > "recover" from ptep_set_access_flags() on an exec fault or from the VM
-> > prot.
-> 
-> No, please don't go ransacking your PTE for a sparish bit.
-
-Yeah, the whole exercise for me was initially to -save- PTE bits :-)
-
-> You're being a very good citizen to want to bring this so forcefully
-> to the attention of any user of set_pte_at(); but given how few care,
-> and the other such functions you'd want to change too, am I being
-> disgracefully lazy to suggest that you simply change the occasional
-> 
-> 		update_mmu_cache(vma, address, pte);
-> to
-> 		/* powerpc's set_pte_at might have adjusted the pte */
-> 		update_mmu_cache(vma, address, *ptep);
-> 
-> ?  Which would make no difference to those architectures whose
-> update_mmu_cache() is an empty macro.  And fix the mm/hugetlb.c
-> instance in a similar way?
-
-That would do fine. In fact, I've always been slightly annoyed by
-set_pte_at() not taking the PTE pointer for other reasons such as on
-64-K pages, we have a "hidden" part of the PTE that is at PTE address +
-32K, or we may want to get to the PTE page for some reason (some arch
-store things there) etc...
-
-IE. update_mmu_cache() would be more generally useful if it took the
-ptep instead of the pte. Of course, I'm sure some embedded archs are
-going to cry for the added load here ... 
-
-I like your idea. I'll look into doing a patch converting it and will
-post it here.
-
-Thanks !
-
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__3_Nov_2009_10_10_32_+1100_y/08cLERD3yBLUYq
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrvZugACgkQjjKRsyhoI8xfawCgpkvWf+u8/V8T5p5mhFYWGTka
+/5UAn09rkkx+E/6dBQLass9uWhhJYeBk
+=rKnD
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__3_Nov_2009_10_10_32_+1100_y/08cLERD3yBLUYq--
