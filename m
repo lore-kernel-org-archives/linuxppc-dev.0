@@ -2,13 +2,13 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6EAAB1007FD
+	by ozlabs.org (Postfix) with ESMTPS id 8C3C0100810
 	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 09:02:42 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm@vger.kernel.org
-Subject: [PATCH 20/28] Split init_new_context and destroy_context
-Date: Mon,  2 Nov 2009 23:02:30 +0100
-Message-Id: <1257199351-2238-2-git-send-email-agraf@suse.de>
+Subject: [PATCH 27/28] Use hrtimers for the decrementer
+Date: Mon,  2 Nov 2009 23:02:31 +0100
+Message-Id: <1257199351-2238-3-git-send-email-agraf@suse.de>
 In-Reply-To: <1257199351-2238-1-git-send-email-agraf@suse.de>
 References: <1257199351-2238-1-git-send-email-agraf@suse.de>
 Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
@@ -26,11 +26,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For KVM we need to allocate a new context id, but don't really care about
-all the mm context around it.
-
-So let's split the alloc and destroy functions for the context id, so we can
-grab one without allocating an mm context.
+Following S390's good example we should use hrtimers for the decrementer too!
+This patch converts the timer from the old mechanism to hrtimers.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 
@@ -38,83 +35,144 @@ Signed-off-by: Alexander Graf <agraf@suse.de>
 
 v6 -> v7:
 
-  - don't #ifdef twice
+  - remove non-hrtimer export
 ---
- arch/powerpc/include/asm/mmu_context.h |    2 ++
- arch/powerpc/mm/mmu_context_hash64.c   |   24 +++++++++++++++++++++---
- 2 files changed, 23 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h |    6 ++++--
+ arch/powerpc/kernel/ppc_ksyms.c     |    3 +--
+ arch/powerpc/kvm/emulate.c          |   18 +++++++++++-------
+ arch/powerpc/kvm/powerpc.c          |   20 ++++++++++++++++++--
+ 4 files changed, 34 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index b34e94d..26383e0 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -23,6 +23,8 @@ extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
- extern void set_context(unsigned long id, pgd_t *pgd);
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 2cff5fe..1201f62 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -21,7 +21,8 @@
+ #define __POWERPC_KVM_HOST_H__
  
- #ifdef CONFIG_PPC_BOOK3S_64
-+extern int __init_new_context(void);
-+extern void __destroy_context(int context_id);
- static inline void mmu_context_init(void) { }
- #else
- extern void mmu_context_init(void);
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index dbeb86a..b9e4cc2 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -18,6 +18,7 @@
- #include <linux/mm.h>
- #include <linux/spinlock.h>
- #include <linux/idr.h>
-+#include <linux/module.h>
+ #include <linux/mutex.h>
+-#include <linux/timer.h>
++#include <linux/hrtimer.h>
++#include <linux/interrupt.h>
+ #include <linux/types.h>
+ #include <linux/kvm_types.h>
+ #include <asm/kvm_asm.h>
+@@ -250,7 +251,8 @@ struct kvm_vcpu_arch {
  
- #include <asm/mmu_context.h>
+ 	u32 cpr0_cfgaddr; /* holds the last set cpr0_cfgaddr */
  
-@@ -32,7 +33,7 @@ static DEFINE_IDR(mmu_context_idr);
- #define NO_CONTEXT	0
- #define MAX_CONTEXT	((1UL << 19) - 1)
+-	struct timer_list dec_timer;
++	struct hrtimer dec_timer;
++	struct tasklet_struct tasklet;
+ 	u64 dec_jiffies;
+ 	unsigned long pending_exceptions;
  
--int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
-+int __init_new_context(void)
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index baf778c..c8b27bb 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -163,12 +163,11 @@ EXPORT_SYMBOL(screen_info);
+ #ifdef CONFIG_PPC32
+ EXPORT_SYMBOL(timer_interrupt);
+ EXPORT_SYMBOL(irq_desc);
++EXPORT_SYMBOL(tb_ticks_per_jiffy);
+ EXPORT_SYMBOL(cacheable_memcpy);
+ EXPORT_SYMBOL(cacheable_memzero);
+ #endif
+ 
+-EXPORT_SYMBOL(tb_ticks_per_jiffy);
+-
+ #ifdef CONFIG_PPC32
+ EXPORT_SYMBOL(switch_mmu_context);
+ #endif
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index 1ec5e07..4a9ac66 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -18,7 +18,7 @@
+  */
+ 
+ #include <linux/jiffies.h>
+-#include <linux/timer.h>
++#include <linux/hrtimer.h>
+ #include <linux/types.h>
+ #include <linux/string.h>
+ #include <linux/kvm_host.h>
+@@ -79,12 +79,13 @@ static int kvmppc_dec_enabled(struct kvm_vcpu *vcpu)
+ 
+ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
  {
- 	int index;
- 	int err;
-@@ -57,6 +58,18 @@ again:
- 		return -ENOMEM;
- 	}
+-	unsigned long nr_jiffies;
++	unsigned long dec_nsec;
  
-+	return index;
-+}
-+EXPORT_SYMBOL_GPL(__init_new_context);
-+
-+int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
-+{
-+	int index;
-+
-+	index = __init_new_context();
-+	if (index < 0)
-+		return index;
-+
- 	/* The old code would re-promote on fork, we don't do that
- 	 * when using slices as it could cause problem promoting slices
- 	 * that have been forced down to 4K
-@@ -68,11 +81,16 @@ again:
- 	return 0;
++	pr_debug("mtDEC: %x\n", vcpu->arch.dec);
+ #ifdef CONFIG_PPC64
+ 	/* POWER4+ triggers a dec interrupt if the value is < 0 */
+ 	if (vcpu->arch.dec & 0x80000000) {
+-		del_timer(&vcpu->arch.dec_timer);
++		hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
+ 		kvmppc_core_queue_dec(vcpu);
+ 		return;
+ 	}
+@@ -94,12 +95,15 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+ 		 * that's how we convert the guest DEC value to the number of
+ 		 * host ticks. */
+ 
++		hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
++		dec_nsec = vcpu->arch.dec;
++		dec_nsec *= 1000;
++		dec_nsec /= tb_ticks_per_usec;
++		hrtimer_start(&vcpu->arch.dec_timer, ktime_set(0, dec_nsec),
++			      HRTIMER_MODE_REL);
+ 		vcpu->arch.dec_jiffies = get_tb();
+-		nr_jiffies = vcpu->arch.dec / tb_ticks_per_jiffy;
+-		mod_timer(&vcpu->arch.dec_timer,
+-		          get_jiffies_64() + nr_jiffies);
+ 	} else {
+-		del_timer(&vcpu->arch.dec_timer);
++		hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
+ 	}
  }
  
--void destroy_context(struct mm_struct *mm)
-+void __destroy_context(int context_id)
- {
- 	spin_lock(&mmu_context_lock);
--	idr_remove(&mmu_context_idr, mm->context.id);
-+	idr_remove(&mmu_context_idr, context_id);
- 	spin_unlock(&mmu_context_lock);
-+}
-+EXPORT_SYMBOL_GPL(__destroy_context);
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 4ae3490..4c582ed 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -23,6 +23,7 @@
+ #include <linux/kvm_host.h>
+ #include <linux/module.h>
+ #include <linux/vmalloc.h>
++#include <linux/hrtimer.h>
+ #include <linux/fs.h>
+ #include <asm/cputable.h>
+ #include <asm/uaccess.h>
+@@ -209,10 +210,25 @@ static void kvmppc_decrementer_func(unsigned long data)
+ 	}
+ }
  
-+void destroy_context(struct mm_struct *mm)
++/*
++ * low level hrtimer wake routine. Because this runs in hardirq context
++ * we schedule a tasklet to do the real work.
++ */
++enum hrtimer_restart kvmppc_decrementer_wakeup(struct hrtimer *timer)
 +{
-+	__destroy_context(mm->context.id);
- 	mm->context.id = NO_CONTEXT;
++	struct kvm_vcpu *vcpu;
++
++	vcpu = container_of(timer, struct kvm_vcpu, arch.dec_timer);
++	tasklet_schedule(&vcpu->arch.tasklet);
++
++	return HRTIMER_NORESTART;
++}
++
+ int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
+ {
+-	setup_timer(&vcpu->arch.dec_timer, kvmppc_decrementer_func,
+-	            (unsigned long)vcpu);
++	hrtimer_init(&vcpu->arch.dec_timer, CLOCK_REALTIME, HRTIMER_MODE_ABS);
++	tasklet_init(&vcpu->arch.tasklet, kvmppc_decrementer_func, (ulong)vcpu);
++	vcpu->arch.dec_timer.function = kvmppc_decrementer_wakeup;
+ 
+ 	return 0;
  }
 -- 
 1.6.0.2
