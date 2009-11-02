@@ -1,22 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 4A252B7C28
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 10:10:39 +1100 (EST)
-Date: Tue, 3 Nov 2009 10:10:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH V2] mpc512x/clock: fix clk_get logic
-Message-Id: <20091103101032.496a0290.sfr@canb.auug.org.au>
-In-Reply-To: <fa686aa40911020948o673b058emba4bb2ccfc1cfd17@mail.gmail.com>
-References: <20091030105414.GD717@sirena.org.uk>
-	<1256925231-21917-1-git-send-email-w.sang@pengutronix.de>
-	<fa686aa40911020948o673b058emba4bb2ccfc1cfd17@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__3_Nov_2009_10_10_32_+1100_y/08cLERD3yBLUYq"
-Cc: linuxppc-dev@ozlabs.org, Roel Kluin <roel.kluin@gmail.com>,
-	Wolfgang Denk <wd@denx.de>, Mark Brown <broonie@sirena.org.uk>
+Return-Path: <hugh.dickins@tiscali.co.uk>
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com
+	(mk-filter-4-a-1.mail.uk.tiscali.com [212.74.100.55])
+	by ozlabs.org (Postfix) with ESMTP id BF6DDB7BF3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  3 Nov 2009 10:45:50 +1100 (EST)
+Date: Mon, 2 Nov 2009 23:45:44 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Filtering bits in set_pte_at()
+In-Reply-To: <1257200367.7907.50.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0911022342070.30581@sister.anvils>
+References: <1256957081.6372.344.camel@pasglop>
+	<Pine.LNX.4.64.0911021256330.32400@sister.anvils>
+	<1257200367.7907.50.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, linuxppc-dev@lists.ozlabs.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__3_Nov_2009_10_10_32_+1100_y/08cLERD3yBLUYq
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 3 Nov 2009, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-11-02 at 13:27 +0000, Hugh Dickins wrote:
+> 
+> > You're being a very good citizen to want to bring this so forcefully
+> > to the attention of any user of set_pte_at(); but given how few care,
+> > and the other such functions you'd want to change too, am I being
+> > disgracefully lazy to suggest that you simply change the occasional
+> > 
+> > 		update_mmu_cache(vma, address, pte);
+> > to
+> > 		/* powerpc's set_pte_at might have adjusted the pte */
+> > 		update_mmu_cache(vma, address, *ptep);
+> > 
+> > ?  Which would make no difference to those architectures whose
+> > update_mmu_cache() is an empty macro.  And fix the mm/hugetlb.c
+> > instance in a similar way?
+> 
+> That would do fine. In fact, I've always been slightly annoyed by
+> set_pte_at() not taking the PTE pointer for other reasons such as on
+> 64-K pages, we have a "hidden" part of the PTE that is at PTE address +
+> 32K, or we may want to get to the PTE page for some reason (some arch
+> store things there) etc...
+> 
+> IE. update_mmu_cache() would be more generally useful if it took the
+> ptep instead of the pte. Of course, I'm sure some embedded archs are
+> going to cry for the added load here ... 
+> 
+> I like your idea. I'll look into doing a patch converting it and will
+> post it here.
 
-Hi Grant,
+Well, I wasn't proposing
 
-On Mon, 2 Nov 2009 10:48:58 -0700 Grant Likely <grant.likely@secretlab.ca> =
-wrote:
->
-> Using bool/true/false doesn't seem to be a common pattern in the
-> kernel.  Anyone know what the winds of prevailing opinion are
-> regarding 'bool' in kernel code?
+		update_mmu_cache(vma, address, ptep);
+but
+		update_mmu_cache(vma, address, *ptep);
 
-Its a good thing.
+which may not meet your future idea, but is much less churn for now
+i.e. no change to any of the arch's update_mmu_cache(),
+just a change to some of its callsites.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__3_Nov_2009_10_10_32_+1100_y/08cLERD3yBLUYq
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrvZugACgkQjjKRsyhoI8xfawCgpkvWf+u8/V8T5p5mhFYWGTka
-/5UAn09rkkx+E/6dBQLass9uWhhJYeBk
-=rKnD
------END PGP SIGNATURE-----
-
---Signature=_Tue__3_Nov_2009_10_10_32_+1100_y/08cLERD3yBLUYq--
+Hugh
