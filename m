@@ -1,31 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 67C44B7C2F
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Nov 2009 20:59:18 +1100 (EST)
-References: <1256917647-6200-1-git-send-email-agraf@suse.de>
-	<1256917647-6200-9-git-send-email-agraf@suse.de>
-	<6695.1257117827@neuling.org>
-	<00BF2D99-F2CE-4204-B4B4-0D113FD54CE6@suse.de>
-	<11094.1257154783@neuling.org>
-Message-Id: <19B56615-F516-4099-89FA-8E2F05FE17B3@suse.de>
-From: Alexander Graf <agraf@suse.de>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <11094.1257154783@neuling.org>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Mime-Version: 1.0 (iPhone Mail 7A341)
-Subject: Re: [PATCH 08/27] Add SLB switching code for entry/exit
-Date: Mon, 2 Nov 2009 10:59:09 +0100
-Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-	Hollis Blanchard <hollisb@us.ibm.com>,
-	Marcelo Tosatti <mtosatti@redhat.com>, kvm-ppc <kvm-ppc@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Avi Kivity <avi@redhat.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-	"bphilips@suse.de" <bphilips@suse.de>, Olof Johansson <olof@lixom.net>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 3B2B31007D2
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 00:14:34 +1100 (EST)
+Date: Mon, 2 Nov 2009 14:14:27 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] mpc52xx-psc-spi: refactor probe and remove to make use
+	of of_register_spi_devices()
+Message-ID: <20091102131427.GB4696@pengutronix.de>
+References: <1256931852-13255-1-git-send-email-w.sang@pengutronix.de>
+	<fa686aa40910311803m43504167s1ad802aecd2b4344@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="E39vaYmALEf/7YXx"
+In-Reply-To: <fa686aa40910311803m43504167s1ad802aecd2b4344@mail.gmail.com>
+Cc: =?iso-8859-15?Q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>,
+	spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,230 +26,120 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Am 02.11.2009 um 10:39 schrieb Michael Neuling <mikey@neuling.org>:
+--E39vaYmALEf/7YXx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->>>> This is the really low level of guest entry/exit code.
->>>>
->>>> Book3s_64 has an SLB, which stores all ESID -> VSID mappings we're
->>>> currently aware of.
->>>>
->>>> The segments in the guest differ from the ones on the host, so we
->>>> need
->>>> to switch the SLB to tell the MMU that we're in a new context.
->>>>
->>>> So we store a shadow of the guest's SLB in the PACA, switch to that
->>>> on
->>>> entry and only restore bolted entries on exit, leaving the rest to
->>>> the
->>>> Linux SLB fault handler.
->>>>
->>>> That way we get a really clean way of switching the SLB.
->>>>
->>>> Signed-off-by: Alexander Graf <agraf@suse.de>
->>>> ---
->>>> arch/powerpc/kvm/book3s_64_slb.S |  277 ++++++++++++++++++++++++++ 
->>>> ++
->>>> ++++++++
->>> ++
->>>> 1 files changed, 277 insertions(+), 0 deletions(-)
->>>> create mode 100644 arch/powerpc/kvm/book3s_64_slb.S
->>>>
->>>> diff --git a/arch/powerpc/kvm/book3s_64_slb.S b/arch/powerpc/kvm/
->>>> book3s_64_sl
->>> b.S
->>>> new file mode 100644
->>>> index 0000000..00a8367
->>>> --- /dev/null
->>>> +++ b/arch/powerpc/kvm/book3s_64_slb.S
->>>> @@ -0,0 +1,277 @@
->>>> +/*
->>>> + * This program is free software; you can redistribute it and/or
->>>> modify
->>>> + * it under the terms of the GNU General Public License, version
->>>> 2, as
->>>> + * published by the Free Software Foundation.
->>>> + *
->>>> + * This program is distributed in the hope that it will be useful,
->>>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->>>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->>>> + * GNU General Public License for more details.
->>>> + *
->>>> + * You should have received a copy of the GNU General Public  
->>>> License
->>>> + * along with this program; if not, write to the Free Software
->>>> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
->>>> 02110-1301, USA.
->>>> + *
->>>> + * Copyright SUSE Linux Products GmbH 2009
->>>> + *
->>>> + * Authors: Alexander Graf <agraf@suse.de>
->>>> + */
->>>> +
->>>> +/
->>>> ***
->>>> ***
->>>> *** 
->>>> ******************************************************************
->>> ***
->>>> + *
->>> *
->>>> + *                               Entry code
->>> *
->>>> + *
->>> *
->>>> +
->>>> ***
->>>> ***
->>>> *** 
->>>> ******************************************************************
->>> **/
->>>> +
->>>> +.global kvmppc_handler_trampoline_enter
->>>> +kvmppc_handler_trampoline_enter:
->>>> +
->>>> +    /* Required state:
->>>> +     *
->>>> +     * MSR = ~IR|DR
->>>> +     * R13 = PACA
->>>> +     * R9 = guest IP
->>>> +     * R10 = guest MSR
->>>> +     * R11 = free
->>>> +     * R12 = free
->>>> +     * PACA[PACA_EXMC + EX_R9] = guest R9
->>>> +     * PACA[PACA_EXMC + EX_R10] = guest R10
->>>> +     * PACA[PACA_EXMC + EX_R11] = guest R11
->>>> +     * PACA[PACA_EXMC + EX_R12] = guest R12
->>>> +     * PACA[PACA_EXMC + EX_R13] = guest R13
->>>> +     * PACA[PACA_EXMC + EX_CCR] = guest CR
->>>> +     * PACA[PACA_EXMC + EX_R3] = guest XER
->>>> +     */
->>>> +
->>>> +    mtsrr0    r9
->>>> +    mtsrr1    r10
->>>> +
->>>> +    mtspr    SPRN_SPRG_SCRATCH0, r0
->>>> +
->>>> +    /* Remove LPAR shadow entries */
->>>> +
->>>> +#if SLB_NUM_BOLTED == 3
->>>
->>> You could alternatively check the persistent entry in the  
->>> slb_shawdow
->>> buffer.  This would give you a run time check.  Not sure what's best
->>> though.
->>
->> Well we're in the hot path here, so anything using as few registers  
->> as
->> possible and being simple is the best :-). I'd guess the more we are
->> clever at compile time the better.
->
-> Yeah, I tend to agree.
->
->>
->>>
->>>
->>>> +
->>>> +    ld    r12, PACA_SLBSHADOWPTR(r13)
->>>> +    ld    r10, 0x10(r12)
->>>> +    ld    r11, 0x18(r12)
->>>
->>> Can you define something in asm-offsets.c for these magic constants
->>> 0x10
->>> and 0x18.  Similarly below.
->>>
->>>> +    /* Invalid? Skip. */
->>>> +    rldicl. r0, r10, 37, 63
->>>> +    beq    slb_entry_skip_1
->>>> +    xoris    r9, r10, SLB_ESID_V@h
->>>> +    std    r9, 0x10(r12)
->>>> +slb_entry_skip_1:
->>>> +    ld    r9, 0x20(r12)
->>>> +    /* Invalid? Skip. */
->>>> +    rldicl. r0, r9, 37, 63
->>>> +    beq    slb_entry_skip_2
->>>> +    xoris    r9, r9, SLB_ESID_V@h
->>>> +    std    r9, 0x20(r12)
->>>> +slb_entry_skip_2:
->>>> +    ld    r9, 0x30(r12)
->>>> +    /* Invalid? Skip. */
->>>> +    rldicl. r0, r9, 37, 63
->>>> +    beq    slb_entry_skip_3
->>>> +    xoris    r9, r9, SLB_ESID_V@h
->>>> +    std    r9, 0x30(r12)
->>>
->>> Can these 3 be made into a macro?
->>
->> Phew - dynamically generating jump points sounds rather hard. I can
->> give it a try...
->>
->>>
->>>> +slb_entry_skip_3:
->>>> +
->>>> +#else
->>>> +#error unknown number of bolted entries
->>>> +#endif
->>>> +
->>>> +    /* Flush SLB */
->>>> +
->>>> +    slbia
->>>> +
->>>> +    /* r0 = esid & ESID_MASK */
->>>> +    rldicr  r10, r10, 0, 35
->>>> +    /* r0 |= CLASS_BIT(VSID) */
->>>> +    rldic   r12, r11, 56 - 36, 36
->>>> +    or      r10, r10, r12
->>>> +    slbie    r10
->>>> +
->>>> +    isync
->>>> +
->>>> +    /* Fill SLB with our shadow */
->>>> +
->>>> +    lbz    r12, PACA_KVM_SLB_MAX(r13)
->>>> +    mulli    r12, r12, 16
->>>> +    addi    r12, r12, PACA_KVM_SLB
->>>> +    add    r12, r12, r13
->>>> +
->>>> +    /* for (r11 = kvm_slb; r11 < kvm_slb + kvm_slb_size;
->>>> r11+=slb_entry) */
->>>> +    li    r11, PACA_KVM_SLB
->>>> +    add    r11, r11, r13
->>>> +
->>>> +slb_loop_enter:
->>>> +
->>>> +    ld    r10, 0(r11)
->>>> +
->>>> +    rldicl. r0, r10, 37, 63
->>>> +    beq    slb_loop_enter_skip
->>>> +
->>>> +    ld    r9, 8(r11)
->>>> +    slbmte    r9, r10
->>>
->>> If you're updating the first 3 slbs, you need to make sure the slb
->>> shadow is updated at the same time
->>
->> Well - what happens if we don't? We'd get a segment fault when phyp
->> stole our entry! So what? Let it fault, see the mapping is already
->> there and get back in again :-).
->
-> The problem is you won't take the segment fault as PHYP may put a  
-> valid
-> entry in there.  PHYP will put back what's in the shadow buffer, which
-> could be valid hence no segment fault.
+Hi Grant,
 
-The shadow buffer contains V=0 entries :).
+> the patch referenced above is a little ugly.  Adding the call should
 
-Alex
+Agreed. I just referenced it to show there are more people wanting this
+feature.
 
->
->>> (BTW dumb question: can we run this
->>> under PHYP?)
->>
->> Yes, I tested it on bare metal, phyp and a PS3.
->
-> Nice!
->
-> Mikey
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> be really simple.  I've drafted a patch to do only that step and
+> attached it to this mail.  If this one works for you, then I'll merge
+> it immediately into -next.
+
+One minor comment, but works in general:
+
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
+
+> Also, I'm resistant to changing the probe layout on this driver at
+> this time.  With the work being done to generalize the OF support
+> code, there is a strong possibility that of_platform will be
+> deprecated in favor of going back to using the platform bus directly
+> (just like how OF support works for i2c, spi, etc).  I'd rather not
+> refactor the driver until I'm certain of the direction that things are
+> going to go.
+
+And this was possibly the best answer I could get \o/ Sounds really promisi=
+ng,
+is there somewhere a discussion about how OF-generalization could happen?
+
+> From 7629d40dc343ff216b752d5c68654dc9d30f0c91 Mon Sep 17 00:00:00 2001
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Date: Sat, 31 Oct 2009 17:49:38 -0600
+> Subject: [PATCH] spi/mpc5200: Register SPI devices described in device tr=
+ee
+>=20
+> Add call to of_register_spi_devices() to register SPI devices described
+> in the OF device tree.
+>=20
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>  drivers/spi/mpc52xx_psc_spi.c |    8 +++++++-
+>  1 files changed, 7 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
+> index 1b74d5c..b445464 100644
+> --- a/drivers/spi/mpc52xx_psc_spi.c
+> +++ b/drivers/spi/mpc52xx_psc_spi.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/errno.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/of_platform.h>
+> +#include <linux/of_spi.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/completion.h>
+>  #include <linux/io.h>
+> @@ -464,6 +465,7 @@ static int __init mpc52xx_psc_spi_of_probe(struct of_=
+device *op,
+>  	const u32 *regaddr_p;
+>  	u64 regaddr64, size64;
+>  	s16 id =3D -1;
+> +	int rc;
+> =20
+>  	regaddr_p =3D of_get_address(op->node, 0, &size64, NULL);
+>  	if (!regaddr_p) {
+> @@ -485,8 +487,12 @@ static int __init mpc52xx_psc_spi_of_probe(struct of=
+_device *op,
+>  		id =3D *psc_nump + 1;
+>  	}
+> =20
+> -	return mpc52xx_psc_spi_do_probe(&op->dev, (u32)regaddr64, (u32)size64,
+> +	rc =3D mpc52xx_psc_spi_do_probe(&op->dev, (u32)regaddr64, (u32)size64,
+>  					irq_of_parse_and_map(op->node, 0), id);
+> +	if (!rc)
+
+A matter of taste, maybe: I'd prefer
+
+	if (rc =3D=3D 0)
+
+as (!ptr) is often used for catching errors with pointers, but here it is t=
+he
+'all went OK'-path.
+
+> +		of_register_spi_devices(dev_get_drvdata(&op->dev), op->node);
+> +
+> +	return rc;
+>  }
+> =20
+>  static int __exit mpc52xx_psc_spi_of_remove(struct of_device *op)
+> --=20
+> 1.6.3.3
+>=20
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--E39vaYmALEf/7YXx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkru2zMACgkQD27XaX1/VRsXlwCginnzWtZPW2+yQLX4X4OasbYl
+1ysAoKrEMvAdFSUqPpUEDNLqXfTcVaOf
+=JRui
+-----END PGP SIGNATURE-----
+
+--E39vaYmALEf/7YXx--
