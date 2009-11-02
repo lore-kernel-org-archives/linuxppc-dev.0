@@ -1,12 +1,16 @@
 Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 605EBB7BBA
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 09:02:37 +1100 (EST)
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6EAAB1007FD
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Nov 2009 09:02:42 +1100 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm@vger.kernel.org
-Subject: [PATCH 08/28] Add SLB switching code for entry/exit
-Date: Mon,  2 Nov 2009 23:02:29 +0100
-Message-Id: <1257199351-2238-1-git-send-email-agraf@suse.de>
+Subject: [PATCH 20/28] Split init_new_context and destroy_context
+Date: Mon,  2 Nov 2009 23:02:30 +0100
+Message-Id: <1257199351-2238-2-git-send-email-agraf@suse.de>
+In-Reply-To: <1257199351-2238-1-git-send-email-agraf@suse.de>
+References: <1257199351-2238-1-git-send-email-agraf@suse.de>
 Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
 	Hollis Blanchard <hollisb@us.ibm.com>,
 	Marcelo Tosatti <mtosatti@redhat.com>,
@@ -22,19 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is the really low level of guest entry/exit code.
+For KVM we need to allocate a new context id, but don't really care about
+all the mm context around it.
 
-Book3s_64 has an SLB, which stores all ESID -> VSID mappings we're
-currently aware of.
-
-The segments in the guest differ from the ones on the host, so we need
-to switch the SLB to tell the MMU that we're in a new context.
-
-So we store a shadow of the guest's SLB in the PACA, switch to that on
-entry and only restore bolted entries on exit, leaving the rest to the
-Linux SLB fault handler.
-
-That way we get a really clean way of switching the SLB.
+So let's split the alloc and destroy functions for the context id, so we can
+grab one without allocating an mm context.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 
@@ -42,279 +38,83 @@ Signed-off-by: Alexander Graf <agraf@suse.de>
 
 v6 -> v7:
 
-  - use macros for slb bolt / unbolt
+  - don't #ifdef twice
 ---
- arch/powerpc/kvm/book3s_64_slb.S |  262 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 262 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/kvm/book3s_64_slb.S
+ arch/powerpc/include/asm/mmu_context.h |    2 ++
+ arch/powerpc/mm/mmu_context_hash64.c   |   24 +++++++++++++++++++++---
+ 2 files changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_slb.S b/arch/powerpc/kvm/book3s_64_slb.S
-new file mode 100644
-index 0000000..ecd237a
---- /dev/null
-+++ b/arch/powerpc/kvm/book3s_64_slb.S
-@@ -0,0 +1,262 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright SUSE Linux Products GmbH 2009
-+ *
-+ * Authors: Alexander Graf <agraf@suse.de>
-+ */
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index b34e94d..26383e0 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -23,6 +23,8 @@ extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
+ extern void set_context(unsigned long id, pgd_t *pgd);
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
++extern int __init_new_context(void);
++extern void __destroy_context(int context_id);
+ static inline void mmu_context_init(void) { }
+ #else
+ extern void mmu_context_init(void);
+diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
+index dbeb86a..b9e4cc2 100644
+--- a/arch/powerpc/mm/mmu_context_hash64.c
++++ b/arch/powerpc/mm/mmu_context_hash64.c
+@@ -18,6 +18,7 @@
+ #include <linux/mm.h>
+ #include <linux/spinlock.h>
+ #include <linux/idr.h>
++#include <linux/module.h>
+ 
+ #include <asm/mmu_context.h>
+ 
+@@ -32,7 +33,7 @@ static DEFINE_IDR(mmu_context_idr);
+ #define NO_CONTEXT	0
+ #define MAX_CONTEXT	((1UL << 19) - 1)
+ 
+-int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
++int __init_new_context(void)
+ {
+ 	int index;
+ 	int err;
+@@ -57,6 +58,18 @@ again:
+ 		return -ENOMEM;
+ 	}
+ 
++	return index;
++}
++EXPORT_SYMBOL_GPL(__init_new_context);
 +
-+#define SHADOW_SLB_ESID(num)	(SLBSHADOW_SAVEAREA + (num * 0x10))
-+#define SHADOW_SLB_VSID(num)	(SLBSHADOW_SAVEAREA + (num * 0x10) + 0x8)
-+#define UNBOLT_SLB_ENTRY(num) \
-+	ld	r9, SHADOW_SLB_ESID(num)(r12); \
-+	/* Invalid? Skip. */; \
-+	rldicl. r0, r9, 37, 63; \
-+	beq	slb_entry_skip_ ## num; \
-+	xoris	r9, r9, SLB_ESID_V@h; \
-+	std	r9, SHADOW_SLB_ESID(num)(r12); \
-+  slb_entry_skip_ ## num:
++int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
++{
++	int index;
 +
-+#define REBOLT_SLB_ENTRY(num) \
-+	ld	r10, SHADOW_SLB_ESID(num)(r11); \
-+	cmpdi	r10, 0; \
-+	beq	slb_exit_skip_1; \
-+	oris	r10, r10, SLB_ESID_V@h; \
-+	ld	r9, SHADOW_SLB_VSID(num)(r11); \
-+	slbmte	r9, r10; \
-+	std	r10, SHADOW_SLB_ESID(num)(r11); \
-+slb_exit_skip_ ## num:
++	index = __init_new_context();
++	if (index < 0)
++		return index;
 +
-+/******************************************************************************
-+ *                                                                            *
-+ *                               Entry code                                   *
-+ *                                                                            *
-+ *****************************************************************************/
-+
-+.global kvmppc_handler_trampoline_enter
-+kvmppc_handler_trampoline_enter:
-+
-+	/* Required state:
-+	 *
-+	 * MSR = ~IR|DR
-+	 * R13 = PACA
-+	 * R9 = guest IP
-+	 * R10 = guest MSR
-+	 * R11 = free
-+	 * R12 = free
-+	 * PACA[PACA_EXMC + EX_R9] = guest R9
-+	 * PACA[PACA_EXMC + EX_R10] = guest R10
-+	 * PACA[PACA_EXMC + EX_R11] = guest R11
-+	 * PACA[PACA_EXMC + EX_R12] = guest R12
-+	 * PACA[PACA_EXMC + EX_R13] = guest R13
-+	 * PACA[PACA_EXMC + EX_CCR] = guest CR
-+	 * PACA[PACA_EXMC + EX_R3] = guest XER
-+	 */
-+
-+	mtsrr0	r9
-+	mtsrr1	r10
-+
-+	mtspr	SPRN_SPRG_SCRATCH0, r0
-+
-+	/* Remove LPAR shadow entries */
-+
-+#if SLB_NUM_BOLTED == 3
-+
-+	ld	r12, PACA_SLBSHADOWPTR(r13)
-+
-+	/* Save off the first entry so we can slbie it later */
-+	ld	r10, SHADOW_SLB_ESID(0)(r12)
-+	ld	r11, SHADOW_SLB_VSID(0)(r12)
-+
-+	/* Remove bolted entries */
-+	UNBOLT_SLB_ENTRY(0)
-+	UNBOLT_SLB_ENTRY(1)
-+	UNBOLT_SLB_ENTRY(2)
-+	
-+#else
-+#error unknown number of bolted entries
-+#endif
-+
-+	/* Flush SLB */
-+
-+	slbia
-+
-+	/* r0 = esid & ESID_MASK */
-+	rldicr  r10, r10, 0, 35
-+	/* r0 |= CLASS_BIT(VSID) */
-+	rldic   r12, r11, 56 - 36, 36
-+	or      r10, r10, r12
-+	slbie	r10
-+
-+	isync
-+
-+	/* Fill SLB with our shadow */
-+
-+	lbz	r12, PACA_KVM_SLB_MAX(r13)
-+	mulli	r12, r12, 16
-+	addi	r12, r12, PACA_KVM_SLB
-+	add	r12, r12, r13
-+
-+	/* for (r11 = kvm_slb; r11 < kvm_slb + kvm_slb_size; r11+=slb_entry) */
-+	li	r11, PACA_KVM_SLB
-+	add	r11, r11, r13
-+
-+slb_loop_enter:
-+
-+	ld	r10, 0(r11)
-+
-+	rldicl. r0, r10, 37, 63
-+	beq	slb_loop_enter_skip
-+
-+	ld	r9, 8(r11)
-+	slbmte	r9, r10
-+
-+slb_loop_enter_skip:
-+	addi	r11, r11, 16
-+	cmpd	cr0, r11, r12
-+	blt	slb_loop_enter
-+
-+slb_do_enter:
-+
-+	/* Enter guest */
-+
-+	mfspr	r0, SPRN_SPRG_SCRATCH0
-+
-+	ld	r9, (PACA_EXMC+EX_R9)(r13)
-+	ld	r10, (PACA_EXMC+EX_R10)(r13)
-+	ld	r12, (PACA_EXMC+EX_R12)(r13)
-+
-+	lwz	r11, (PACA_EXMC+EX_CCR)(r13)
-+	mtcr	r11
-+
-+	ld	r11, (PACA_EXMC+EX_R3)(r13)
-+	mtxer	r11
-+
-+	ld	r11, (PACA_EXMC+EX_R11)(r13)
-+	ld	r13, (PACA_EXMC+EX_R13)(r13)
-+
-+	RFI
-+kvmppc_handler_trampoline_enter_end:
-+
-+
-+
-+/******************************************************************************
-+ *                                                                            *
-+ *                               Exit code                                    *
-+ *                                                                            *
-+ *****************************************************************************/
-+
-+.global kvmppc_handler_trampoline_exit
-+kvmppc_handler_trampoline_exit:
-+
-+	/* Register usage at this point:
-+	 *
-+	 * SPRG_SCRATCH0 = guest R13
-+	 * R01           = host R1
-+	 * R02           = host R2
-+	 * R10           = guest PC
-+	 * R11           = guest MSR
-+	 * R12           = exit handler id
-+	 * R13           = PACA
-+	 * PACA.exmc.CCR  = guest CR
-+	 * PACA.exmc.R9  = guest R1
-+	 * PACA.exmc.R10 = guest R10
-+	 * PACA.exmc.R11 = guest R11
-+	 * PACA.exmc.R12 = guest R12
-+	 * PACA.exmc.R13 = guest R2
-+	 *
-+	 */
-+
-+	/* Save registers */
-+
-+	std	r0, (PACA_EXMC+EX_SRR0)(r13)
-+	std	r9, (PACA_EXMC+EX_R3)(r13)
-+	std	r10, (PACA_EXMC+EX_LR)(r13)
-+	std	r11, (PACA_EXMC+EX_DAR)(r13)
-+
-+	/*
-+	 * In order for us to easily get the last instruction,
-+	 * we got the #vmexit at, we exploit the fact that the
-+	 * virtual layout is still the same here, so we can just
-+	 * ld from the guest's PC address
-+	 */
-+
-+	/* We only load the last instruction when it's safe */
-+	cmpwi	r12, BOOK3S_INTERRUPT_DATA_STORAGE
-+	beq	ld_last_inst
-+	cmpwi	r12, BOOK3S_INTERRUPT_PROGRAM
-+	beq	ld_last_inst
-+
-+	b	no_ld_last_inst
-+
-+ld_last_inst:
-+	/* Save off the guest instruction we're at */
-+	/*    1) enable paging for data */
-+	mfmsr	r9
-+	ori	r11, r9, MSR_DR			/* Enable paging for data */
-+	mtmsr	r11
-+	/*    2) fetch the instruction */
-+	lwz	r0, 0(r10)
-+	/*    3) disable paging again */
-+	mtmsr	r9
-+
-+no_ld_last_inst:
-+
-+	/* Restore bolted entries from the shadow and fix it along the way */
-+
-+	/* We don't store anything in entry 0, so we don't need to take care of it */
-+	slbia
-+	isync
-+
-+#if SLB_NUM_BOLTED == 3
-+
-+	ld	r11, PACA_SLBSHADOWPTR(r13)
-+
-+	REBOLT_SLB_ENTRY(0)
-+	REBOLT_SLB_ENTRY(1)
-+	REBOLT_SLB_ENTRY(2)
-+	
-+#else
-+#error unknown number of bolted entries
-+#endif
-+
-+slb_do_exit:
-+
-+	/* Restore registers */
-+
-+	ld	r11, (PACA_EXMC+EX_DAR)(r13)
-+	ld	r10, (PACA_EXMC+EX_LR)(r13)
-+	ld	r9, (PACA_EXMC+EX_R3)(r13)
-+
-+	/* Save last inst */
-+	stw	r0, (PACA_EXMC+EX_LR)(r13)
-+
-+	/* Save DAR and DSISR before going to paged mode */
-+	mfdar	r0
-+	std	r0, (PACA_EXMC+EX_DAR)(r13)
-+	mfdsisr	r0
-+	stw	r0, (PACA_EXMC+EX_DSISR)(r13)
-+
-+	/* RFI into the highmem handler */
-+	mfmsr	r0
-+	ori	r0, r0, MSR_IR|MSR_DR|MSR_RI	/* Enable paging */
-+	mtsrr1	r0
-+	ld	r0, PACASAVEDMSR(r13)		/* Highmem handler address */
-+	mtsrr0	r0
-+
-+	mfspr	r0, SPRN_SPRG_SCRATCH0
-+
-+	RFI
-+kvmppc_handler_trampoline_exit_end:
-+
+ 	/* The old code would re-promote on fork, we don't do that
+ 	 * when using slices as it could cause problem promoting slices
+ 	 * that have been forced down to 4K
+@@ -68,11 +81,16 @@ again:
+ 	return 0;
+ }
+ 
+-void destroy_context(struct mm_struct *mm)
++void __destroy_context(int context_id)
+ {
+ 	spin_lock(&mmu_context_lock);
+-	idr_remove(&mmu_context_idr, mm->context.id);
++	idr_remove(&mmu_context_idr, context_id);
+ 	spin_unlock(&mmu_context_lock);
++}
++EXPORT_SYMBOL_GPL(__destroy_context);
+ 
++void destroy_context(struct mm_struct *mm)
++{
++	__destroy_context(mm->context.id);
+ 	mm->context.id = NO_CONTEXT;
+ }
 -- 
 1.6.0.2
