@@ -1,21 +1,14 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 8B36FB7C28
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Nov 2009 20:26:40 +1100 (EST)
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 08/27] Add SLB switching code for entry/exit
+In-reply-to: <00BF2D99-F2CE-4204-B4B4-0D113FD54CE6@suse.de>
 References: <1256917647-6200-1-git-send-email-agraf@suse.de>
-	<1256917647-6200-12-git-send-email-agraf@suse.de>
-	<7786.1257118763@neuling.org>
-Message-Id: <463AF0FC-6573-445F-89C5-F5C21D2332AB@suse.de>
-From: Alexander Graf <agraf@suse.de>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <7786.1257118763@neuling.org>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Mime-Version: 1.0 (iPhone Mail 7A341)
-Subject: Re: [PATCH 11/27] Add book3s_64 Host MMU handling
-Date: Mon, 2 Nov 2009 10:26:30 +0100
+	<1256917647-6200-9-git-send-email-agraf@suse.de>
+	<6695.1257117827@neuling.org>
+	<00BF2D99-F2CE-4204-B4B4-0D113FD54CE6@suse.de>
+Date: Mon, 02 Nov 2009 20:39:43 +1100
+Message-ID: <11094.1257154783@neuling.org>
 Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
 	Hollis Blanchard <hollisb@us.ibm.com>,
 	Marcelo Tosatti <mtosatti@redhat.com>, kvm-ppc <kvm-ppc@vger.kernel.org>,
@@ -31,67 +24,212 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> >> This is the really low level of guest entry/exit code.
+> >>
+> >> Book3s_64 has an SLB, which stores all ESID -> VSID mappings we're
+> >> currently aware of.
+> >>
+> >> The segments in the guest differ from the ones on the host, so we  
+> >> need
+> >> to switch the SLB to tell the MMU that we're in a new context.
+> >>
+> >> So we store a shadow of the guest's SLB in the PACA, switch to that  
+> >> on
+> >> entry and only restore bolted entries on exit, leaving the rest to  
+> >> the
+> >> Linux SLB fault handler.
+> >>
+> >> That way we get a really clean way of switching the SLB.
+> >>
+> >> Signed-off-by: Alexander Graf <agraf@suse.de>
+> >> ---
+> >> arch/powerpc/kvm/book3s_64_slb.S |  277 ++++++++++++++++++++++++++++ 
+> >> ++++++++
+> > ++
+> >> 1 files changed, 277 insertions(+), 0 deletions(-)
+> >> create mode 100644 arch/powerpc/kvm/book3s_64_slb.S
+> >>
+> >> diff --git a/arch/powerpc/kvm/book3s_64_slb.S b/arch/powerpc/kvm/ 
+> >> book3s_64_sl
+> > b.S
+> >> new file mode 100644
+> >> index 0000000..00a8367
+> >> --- /dev/null
+> >> +++ b/arch/powerpc/kvm/book3s_64_slb.S
+> >> @@ -0,0 +1,277 @@
+> >> +/*
+> >> + * This program is free software; you can redistribute it and/or  
+> >> modify
+> >> + * it under the terms of the GNU General Public License, version  
+> >> 2, as
+> >> + * published by the Free Software Foundation.
+> >> + *
+> >> + * This program is distributed in the hope that it will be useful,
+> >> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> >> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> >> + * GNU General Public License for more details.
+> >> + *
+> >> + * You should have received a copy of the GNU General Public License
+> >> + * along with this program; if not, write to the Free Software
+> >> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA   
+> >> 02110-1301, USA.
+> >> + *
+> >> + * Copyright SUSE Linux Products GmbH 2009
+> >> + *
+> >> + * Authors: Alexander Graf <agraf@suse.de>
+> >> + */
+> >> +
+> >> +/ 
+> >> *** 
+> >> *** 
+> >> *********************************************************************
+> > ***
+> >> + *
+> >  *
+> >> + *                               Entry code
+> >  *
+> >> + *
+> >  *
+> >> +  
+> >> *** 
+> >> *** 
+> >> *********************************************************************
+> > **/
+> >> +
+> >> +.global kvmppc_handler_trampoline_enter
+> >> +kvmppc_handler_trampoline_enter:
+> >> +
+> >> +    /* Required state:
+> >> +     *
+> >> +     * MSR = ~IR|DR
+> >> +     * R13 = PACA
+> >> +     * R9 = guest IP
+> >> +     * R10 = guest MSR
+> >> +     * R11 = free
+> >> +     * R12 = free
+> >> +     * PACA[PACA_EXMC + EX_R9] = guest R9
+> >> +     * PACA[PACA_EXMC + EX_R10] = guest R10
+> >> +     * PACA[PACA_EXMC + EX_R11] = guest R11
+> >> +     * PACA[PACA_EXMC + EX_R12] = guest R12
+> >> +     * PACA[PACA_EXMC + EX_R13] = guest R13
+> >> +     * PACA[PACA_EXMC + EX_CCR] = guest CR
+> >> +     * PACA[PACA_EXMC + EX_R3] = guest XER
+> >> +     */
+> >> +
+> >> +    mtsrr0    r9
+> >> +    mtsrr1    r10
+> >> +
+> >> +    mtspr    SPRN_SPRG_SCRATCH0, r0
+> >> +
+> >> +    /* Remove LPAR shadow entries */
+> >> +
+> >> +#if SLB_NUM_BOLTED == 3
+> >
+> > You could alternatively check the persistent entry in the slb_shawdow
+> > buffer.  This would give you a run time check.  Not sure what's best
+> > though.
+> 
+> Well we're in the hot path here, so anything using as few registers as  
+> possible and being simple is the best :-). I'd guess the more we are  
+> clever at compile time the better.
 
-Am 02.11.2009 um 00:39 schrieb Michael Neuling <mikey@neuling.org>:
+Yeah, I tend to agree.
 
-> <snip>
->> +static void invalidate_pte(struct hpte_cache *pte)
->> +{
->> +    dprintk_mmu("KVM: Flushing SPT %d: 0x%llx (0x%llx) -> 0x%llx\n",
->> +            i, pte->pte.eaddr, pte->pte.vpage, pte->host_va);
->> +
->> +    ppc_md.hpte_invalidate(pte->slot, pte->host_va,
->> +                   MMU_PAGE_4K, MMU_SEGSIZE_256M,
->> +                   false);
->
-> Are we assuming 256M segments here (and elsewhere)?
+> 
+> >
+> >
+> >> +
+> >> +    ld    r12, PACA_SLBSHADOWPTR(r13)
+> >> +    ld    r10, 0x10(r12)
+> >> +    ld    r11, 0x18(r12)
+> >
+> > Can you define something in asm-offsets.c for these magic constants  
+> > 0x10
+> > and 0x18.  Similarly below.
+> >
+> >> +    /* Invalid? Skip. */
+> >> +    rldicl. r0, r10, 37, 63
+> >> +    beq    slb_entry_skip_1
+> >> +    xoris    r9, r10, SLB_ESID_V@h
+> >> +    std    r9, 0x10(r12)
+> >> +slb_entry_skip_1:
+> >> +    ld    r9, 0x20(r12)
+> >> +    /* Invalid? Skip. */
+> >> +    rldicl. r0, r9, 37, 63
+> >> +    beq    slb_entry_skip_2
+> >> +    xoris    r9, r9, SLB_ESID_V@h
+> >> +    std    r9, 0x20(r12)
+> >> +slb_entry_skip_2:
+> >> +    ld    r9, 0x30(r12)
+> >> +    /* Invalid? Skip. */
+> >> +    rldicl. r0, r9, 37, 63
+> >> +    beq    slb_entry_skip_3
+> >> +    xoris    r9, r9, SLB_ESID_V@h
+> >> +    std    r9, 0x30(r12)
+> >
+> > Can these 3 be made into a macro?
+> 
+> Phew - dynamically generating jump points sounds rather hard. I can  
+> give it a try...
+> 
+> >
+> >> +slb_entry_skip_3:
+> >> +
+> >> +#else
+> >> +#error unknown number of bolted entries
+> >> +#endif
+> >> +
+> >> +    /* Flush SLB */
+> >> +
+> >> +    slbia
+> >> +
+> >> +    /* r0 = esid & ESID_MASK */
+> >> +    rldicr  r10, r10, 0, 35
+> >> +    /* r0 |= CLASS_BIT(VSID) */
+> >> +    rldic   r12, r11, 56 - 36, 36
+> >> +    or      r10, r10, r12
+> >> +    slbie    r10
+> >> +
+> >> +    isync
+> >> +
+> >> +    /* Fill SLB with our shadow */
+> >> +
+> >> +    lbz    r12, PACA_KVM_SLB_MAX(r13)
+> >> +    mulli    r12, r12, 16
+> >> +    addi    r12, r12, PACA_KVM_SLB
+> >> +    add    r12, r12, r13
+> >> +
+> >> +    /* for (r11 = kvm_slb; r11 < kvm_slb + kvm_slb_size;  
+> >> r11+=slb_entry) */
+> >> +    li    r11, PACA_KVM_SLB
+> >> +    add    r11, r11, r13
+> >> +
+> >> +slb_loop_enter:
+> >> +
+> >> +    ld    r10, 0(r11)
+> >> +
+> >> +    rldicl. r0, r10, 37, 63
+> >> +    beq    slb_loop_enter_skip
+> >> +
+> >> +    ld    r9, 8(r11)
+> >> +    slbmte    r9, r10
+> >
+> > If you're updating the first 3 slbs, you need to make sure the slb
+> > shadow is updated at the same time
+> 
+> Well - what happens if we don't? We'd get a segment fault when phyp  
+> stole our entry! So what? Let it fault, see the mapping is already  
+> there and get back in again :-).
 
-Yes, on the host we only create 256MB segments. What the guest uses is  
-a different question.
+The problem is you won't take the segment fault as PHYP may put a valid
+entry in there.  PHYP will put back what's in the shadow buffer, which
+could be valid hence no segment fault.
 
->
-> <snip>
->> +static int kvmppc_mmu_next_segment(struct kvm_vcpu *vcpu, ulong  
->> esid)
->> +{
->> +    int i;
->> +    int max_slb_size = 64;
->> +    int found_inval = -1;
->> +    int r;
->> +
->> +    if (!get_paca()->kvm_slb_max)
->> +        get_paca()->kvm_slb_max = 1;
->> +
->> +    /* Are we overwriting? */
->> +    for (i = 1; i < get_paca()->kvm_slb_max; i++) {
->> +        if (!(get_paca()->kvm_slb[i].esid & SLB_ESID_V))
->> +            found_inval = i;
->> +        else if ((get_paca()->kvm_slb[i].esid & ESID_MASK) == esid)
->> +            return i;
->> +    }
->> +
->> +    /* Found a spare entry that was invalidated before */
->> +    if (found_inval > 0)
->> +        return found_inval;
->> +
->> +    /* No spare invalid entry, so create one */
->> +
->> +    if (mmu_slb_size < 64)
->> +        max_slb_size = mmu_slb_size;
->
-> Can we just use the global mmu_slb_size eliminate max_slb_size?
+> > (BTW dumb question: can we run this
+> > under PHYP?)
+> 
+> Yes, I tested it on bare metal, phyp and a PS3.
 
-Hm, for a strange reason I wanted to have at most 64 slb entries.  
-Maybe the struct can't hold more? I'll check again as soon as I'm on a  
-notebook again.
+Nice!
 
-Alex
-
->
-> <snip>
->
-> Mikey
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Mikey
