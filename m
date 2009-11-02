@@ -1,18 +1,20 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 11/27] Add book3s_64 Host MMU handling
-In-reply-to: <1256917647-6200-12-git-send-email-agraf@suse.de>
-References: <1256917647-6200-1-git-send-email-agraf@suse.de>
-	<1256917647-6200-12-git-send-email-agraf@suse.de>
-Date: Mon, 02 Nov 2009 10:39:23 +1100
-Message-ID: <7786.1257118763@neuling.org>
-Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-	Hollis Blanchard <hollisb@us.ibm.com>,
-	Marcelo Tosatti <mtosatti@redhat.com>,
-	kvm-ppc <kvm-ppc@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-	bphilips@suse.de, Olof Johansson <olof@lixom.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9BCDBB7C11
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  2 Nov 2009 16:11:11 +1100 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id nA25B4pH025531
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 1 Nov 2009 23:11:05 -0600
+Subject: [PATCH] powerpc: Avoid giving out RTC dates below EPOCH
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 02 Nov 2009 16:11:03 +1100
+Message-ID: <1257138663.7907.32.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,48 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<snip>
-> +static void invalidate_pte(struct hpte_cache *pte)
-> +{
-> +	dprintk_mmu("KVM: Flushing SPT %d: 0x%llx (0x%llx) -> 0x%llx\n",
-> +		    i, pte->pte.eaddr, pte->pte.vpage, pte->host_va);
-> +
-> +	ppc_md.hpte_invalidate(pte->slot, pte->host_va,
-> +			       MMU_PAGE_4K, MMU_SEGSIZE_256M,
-> +			       false);
+Doing so causes xtime to be negative which crashes the timekeeping
+code in funny ways when doing suspend/resume
 
-Are we assuming 256M segments here (and elsewhere)?
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-<snip>
-> +static int kvmppc_mmu_next_segment(struct kvm_vcpu *vcpu, ulong esid)
-> +{
-> +	int i;
-> +	int max_slb_size = 64;
-> +	int found_inval = -1;
-> +	int r;
-> +
-> +	if (!get_paca()->kvm_slb_max)
-> +		get_paca()->kvm_slb_max = 1;
-> +
-> +	/* Are we overwriting? */
-> +	for (i = 1; i < get_paca()->kvm_slb_max; i++) {
-> +		if (!(get_paca()->kvm_slb[i].esid & SLB_ESID_V))
-> +			found_inval = i;
-> +		else if ((get_paca()->kvm_slb[i].esid & ESID_MASK) == esid)
-> +			return i;
-> +	}
-> +
-> +	/* Found a spare entry that was invalidated before */
-> +	if (found_inval > 0)
-> +		return found_inval;
-> +
-> +	/* No spare invalid entry, so create one */
-> +
-> +	if (mmu_slb_size < 64)
-> +		max_slb_size = mmu_slb_size;
-
-Can we just use the global mmu_slb_size eliminate max_slb_size?
-
-<snip>
-
-Mikey
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 92dc844..6a7ce0e 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -777,7 +777,7 @@ int update_persistent_clock(struct timespec now)
+ 	return ppc_md.set_rtc_time(&tm);
+ }
+ 
+-void read_persistent_clock(struct timespec *ts)
++static void __read_persistent_clock(struct timespec *ts)
+ {
+ 	struct rtc_time tm;
+ 	static int first = 1;
+@@ -800,10 +800,23 @@ void read_persistent_clock(struct timespec *ts)
+ 		return;
+ 	}
+ 	ppc_md.get_rtc_time(&tm);
++
+ 	ts->tv_sec = mktime(tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
+ 			    tm.tm_hour, tm.tm_min, tm.tm_sec);
+ }
+ 
++void read_persistent_clock(struct timespec *ts)
++{
++	__read_persistent_clock(&ts);
++
++	/* Sanitize it in case real time clock is set below EPOCH */
++	if (ts->tv_sec < 0) {
++		ts->tv_sec = 0;
++		ts->tv_nsec = 0;
++	}
++		
++}
++
+ /* clocksource code */
+ static cycle_t rtc_read(struct clocksource *cs)
+ {
