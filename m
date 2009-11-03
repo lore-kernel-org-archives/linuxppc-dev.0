@@ -1,27 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A11D9B7BE2
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2009 08:38:58 +1100 (EST)
-Subject: Re: [PATCH 14/27] Add book3s_64 specific opcode emulation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-In-Reply-To: <280C9FF6-1C52-4856-9F60-15DA0659FC31@suse.de>
-References: <1256917647-6200-1-git-send-email-agraf@suse.de>
-	<1256917647-6200-15-git-send-email-agraf@suse.de>
-	<A1CBD511-FF08-48BB-A8D6-9F66E20F770B@kernel.crashing.org>
-	<280C9FF6-1C52-4856-9F60-15DA0659FC31@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 04 Nov 2009 08:38:33 +1100
-Message-ID: <1257284313.7907.80.camel@pasglop>
-Mime-Version: 1.0
-Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-	Hollis Blanchard <hollisb@us.ibm.com>,
-	Marcelo Tosatti <mtosatti@redhat.com>,
-	kvm-ppc <kvm-ppc@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-	bphilips@suse.de, Olof Johansson <olof@lixom.net>
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+Received: from kronos.usurf.usu.edu (kronos.usurf.usu.edu [129.123.194.129])
+	by ozlabs.org (Postfix) with ESMTP id 52AC7B7BDD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  4 Nov 2009 10:37:47 +1100 (EST)
+From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 3 Nov 2009 16:37:38 -0700
+Subject: DMA to User-Space
+Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,72 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-11-03 at 10:06 +0100, Alexander Graf wrote:
+All,
 
-> > DCBZ zeroes out a cache line, not 32 bytes; except on 970, where there
-> > are HID bits to make it work on 32 bytes only, and an extra DCBZL insn
-> > that always clears a full cache line (128 bytes).
-> 
-> Yes. We only come here when we patched the dcbz opcodes to invalid  
-> instructions because cache line size of target == 32.
-> On 970 with MSR_HV = 0 we actually use the dcbz 32-bytes mode.
-> 
-> Admittedly though, this could be a lot more clever.
+I have what may be an unconventional question:
 
-Yeah well, we also really need to fix ppc32 Linux to use the device-tree
-provided cache line size :-) For 64-bits, that should already be the
-case, and thus the emulation trick shouldn't be useful as long as you
-properly provide the guest with the right size in the device-tree.
+Our application consists of data being captured by an FPGA, processed, and =
+transferred to SDRAM.  I simply give the FPGA an address of where I want it=
+ stored in SDRAM and it simply DMAs the data over and interrupts me when fi=
+nished.  I then take that data and store it to disk.
 
-(Though glibc can be nasty, afaik it might load up optimized variants of
-some routines with hard wired cache line sizes based on the CPU type)
+I have code in user space that handles all of the writing to disk nicely an=
+d fast enough for my application (I am capturing data at about 35-40 Mbytes=
+/sec).
 
-> >> +	switch (sprn) {
-> >> +	case SPRN_IBAT0U ... SPRN_IBAT3L:
-> >> +		bat = &vcpu_book3s->ibat[(sprn - SPRN_IBAT0U) / 2];
-> >> +		break;
-> >> +	case SPRN_IBAT4U ... SPRN_IBAT7L:
-> >> +		bat = &vcpu_book3s->ibat[(sprn - SPRN_IBAT4U) / 2];
-> >> +		break;
-> >> +	case SPRN_DBAT0U ... SPRN_DBAT3L:
-> >> +		bat = &vcpu_book3s->dbat[(sprn - SPRN_DBAT0U) / 2];
-> >> +		break;
-> >> +	case SPRN_DBAT4U ... SPRN_DBAT7L:
-> >> +		bat = &vcpu_book3s->dbat[(sprn - SPRN_DBAT4U) / 2];
-> >> +		break;
-> >
-> > Do xBAT4..7 have the same SPR numbers on all CPUs?  They are CPU- 
-> > specific
-> > SPRs, after all.  Some CPUs have only six, some only four, some  
-> > none, btw.
-> 
-> For now only Linux runs which only uses the first 3(?) IIRC. But yes,  
-> it's probably worth looking into at one point or the other.
-> 
-> >
-> >> +	case SPRN_HID0:
-> >> +		to_book3s(vcpu)->hid[0] = vcpu->arch.gpr[rs];
-> >> +		break;
-> >> +	case SPRN_HID1:
-> >> +		to_book3s(vcpu)->hid[1] = vcpu->arch.gpr[rs];
-> >> +		break;
-> >> +	case SPRN_HID2:
-> >> +		to_book3s(vcpu)->hid[2] = vcpu->arch.gpr[rs];
-> >> +		break;
-> >> +	case SPRN_HID4:
-> >> +		to_book3s(vcpu)->hid[4] = vcpu->arch.gpr[rs];
-> >> +		break;
-> >> +	case SPRN_HID5:
-> >> +		to_book3s(vcpu)->hid[5] = vcpu->arch.gpr[rs];
-> >
-> > HIDs are different per CPU; and worse, different CPUs have different
-> > registers (SPR #s) for the same register name!
-> 
-> Sigh :-(
+My question is this:  is it possible to give a user-space pointer to the FP=
+GA to DMA to?  It seems like I would have problems with alignment, address =
+manipulation, and a whole slew of other issues.
 
-On the other hand, you can probably just "Swallow" all of these and
-Linux won't even notice, except for the case of the sleep state maybe on
-6xx/7xx/7xxx. Just a matter of knowing what your are emulating as guest.
+What would be the best way to accomplish something like that?  I want to ha=
+ndle all the disk access in user-space, but I do not want to have to copy 4=
+0 MB/s from kernel space to user-space either.
 
-Cheers,
-Ben.
+I can maintain an allocated, DMA-safe buffer in kernel space if needed.  Ca=
+n I simply get a user-space pointer to that buffer?  What calls are needed =
+to translate addresses?
+
+Thanks for the help!  I am still a newbie when it comes to kernel programmi=
+ng, so I really appreciate the help!
+
+Jonathan
