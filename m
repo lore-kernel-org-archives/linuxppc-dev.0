@@ -1,27 +1,15 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 64D1CB7BDE
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2009 00:36:57 +1100 (EST)
-In-Reply-To: <20091030173749.GA855@loki.buserror.net>
-References: <1255597466-30976-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091015165650.GA3837@compile2.chatsunix.int.mrv.com>
-	<OFF665748B.AAF26319-ONC1257651.00296F23-C1257651.002D6BF7@transmode.se>
-	<20091016202541.GA16358@compile2.chatsunix.int.mrv.com>
-	<OF2BB5EF59.1EE0A77D-ONC1257652.003D79DC-C1257652.003EA687@LocalDomain>
-	<OFA43B9FDF.F43B1705-ONC1257652.0041B12F-C1257652.004211A3@transmode.se>
-	<20091030171607.GA781@loki.buserror.net>
-	<20091030173749.GA855@loki.buserror.net>
-Subject: Re: [PATCH 0/8]  Fix 8xx MMU/TLB
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OFD5642C2D.808C2FF1-ONC1257663.004A341C-C1257663.004A6C26@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 3 Nov 2009 14:32:53 +0100
+Return-Path: <fthain@telegraphics.com.au>
+Received: from mail.telegraphics.com.au (www.telegraphics.com.au
+	[204.15.192.19]) by ozlabs.org (Postfix) with ESMTP id 8C329B7BE5
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2009 00:46:45 +1100 (EST)
+Date: Wed, 4 Nov 2009 00:46:44 +1100 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH 10/13] mac68k: start CUDA early
+Message-ID: <alpine.OSX.2.00.0911031502250.483@silk.local>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Rex Feany <RFeany@mrv.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,52 +19,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 30/10/2009 18:37:49:
->
-> On Fri, Oct 30, 2009 at 12:16:07PM -0500, Scott Wood wrote:
-> > On Sat, Oct 17, 2009 at 02:01:38PM +0200, Joakim Tjernlund wrote:
-> > > +     mfspr r10, SPRN_SRR0
-> > >       DO_8xx_CPU6(0x3780, r3)
-> > >       mtspr SPRN_MD_EPN, r10
-> > >       mfspr r11, SPRN_M_TWB   /* Get level 1 table entry address */
-> > > -     lwz   r11, 0(r11)   /* Get the level 1 entry */
-> > > +     cmplwi      cr0, r11, 0x0800
-> > > +     blt-  3f      /* Branch if user space */
-> > > +     lis   r11, swapper_pg_dir@h
-> > > +     ori   r11, r11, swapper_pg_dir@l
-> > > +     rlwimi      r11, r11, 0, 2, 19
-> >
-> > That rlwimi is a no-op -- I think you meant to use a different register
-> > here?
-> >
-> > > +3:   lwz   r11, 0(r11)   /* Get the level 1 entry */
-> > >       DO_8xx_CPU6(0x3b80, r3)
-> > >       mtspr SPRN_MD_TWC, r11   /* Load pte table base address */
-> > >       mfspr r11, SPRN_MD_TWC   /* ....and get the pte address */
-> > >       lwz   r11, 0(r11)   /* Get the pte */
-> > >       /* concat physical page address(r11) and page offset(r10) */
-> > >       rlwimi      r11, r10, 0, 20, 31
-> >
-> > But r10 here contains SRR0 from above, and this is a data TLB error.
->
-> Never mind that last one, forgot that you'd be wanting to load the
-> instruction. :-P
->
-> But the rlwimi is what's causing the machine checks.  I replaced it with:
-> rlwinm   r11, r11, 0, 0x3ffff000
-> rlwimi   r11, r10, 22, 0xffc
->
-> and things seem to work.  You could probably replace the rlwinm by
-> subtracting PAGE_OFFSET from swapper_pg_dir instead.
+The valkyriefb driver needs the CUDA to work in order to set the video 
+mode at boot. Initialising the device earlier, and bring the m68k code 
+closer to the powermac code.
 
-Just guessing here, do you mean:
-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
-	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
-	rlwimi	r11, r10, 22, 0xffc
-or
-	lis	r11, swapper_pg_dir@h
-	ori	r11, r11, swapper_pg_dir@l
-	subis	r11, r11 PAGE_OFFSET
-	rlwimi	r11, r10, 22, 0xffc
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
- Jocke
+---
+ arch/m68k/mac/config.c       |    6 ++++
+ drivers/macintosh/via-cuda.c |   57 +++++++++++++++++++++++++++----------------
+ 2 files changed, 43 insertions(+), 20 deletions(-)
+
+Index: linux-2.6.31/arch/m68k/mac/config.c
+===================================================================
+--- linux-2.6.31.orig/arch/m68k/mac/config.c	2009-11-03 03:23:42.000000000 +1100
++++ linux-2.6.31/arch/m68k/mac/config.c	2009-11-03 03:23:43.000000000 +1100
+@@ -23,6 +23,8 @@
+ #include <linux/init.h>
+ #include <linux/vt_kern.h>
+ #include <linux/platform_device.h>
++#include <linux/adb.h>
++#include <linux/cuda.h>
+ 
+ #define BOOTINFO_COMPAT_1_0
+ #include <asm/setup.h>
+@@ -889,6 +891,10 @@ static void __init mac_identify(void)
+ 	oss_init();
+ 	psc_init();
+ 	baboon_init();
++
++#ifdef CONFIG_ADB_CUDA
++	find_via_cuda();
++#endif
+ }
+ 
+ static void __init mac_report_hardware(void)
+Index: linux-2.6.31/drivers/macintosh/via-cuda.c
+===================================================================
+--- linux-2.6.31.orig/drivers/macintosh/via-cuda.c	2009-11-03 03:23:24.000000000 +1100
++++ linux-2.6.31/drivers/macintosh/via-cuda.c	2009-11-03 03:23:43.000000000 +1100
+@@ -117,7 +117,33 @@ struct adb_driver via_cuda_driver = {
+ };
+ #endif /* CONFIG_ADB */
+ 
+-#ifdef CONFIG_PPC
++#ifdef CONFIG_MAC
++int __init find_via_cuda(void)
++{
++    struct adb_request req;
++    int err;
++
++    if (macintosh_config->adb_type != MAC_ADB_CUDA)
++	return 0;
++
++    via = via1;
++    cuda_state = idle;
++
++    err = cuda_init_via();
++    if (err) {
++	printk(KERN_ERR "cuda_init_via() failed\n");
++	via = NULL;
++	return 0;
++    }
++
++    /* enable autopoll */
++    cuda_request(&req, NULL, 3, CUDA_PACKET, CUDA_AUTOPOLL, 1);
++    while (!req.complete)
++	cuda_poll();
++
++    return 1;
++}
++#else
+ int __init find_via_cuda(void)
+ {
+     struct adb_request req;
+@@ -175,7 +201,7 @@ int __init find_via_cuda(void)
+     vias = NULL;
+     return 0;
+ }
+-#endif /* CONFIG_PPC */
++#endif /* !defined CONFIG_MAC */
+ 
+ static int __init via_cuda_start(void)
+ {
+@@ -184,14 +210,14 @@ static int __init via_cuda_start(void)
+ 
+ #ifdef CONFIG_MAC
+     cuda_irq = IRQ_MAC_ADB;
+-#else /* CONFIG_MAC */
++#else
+     cuda_irq = irq_of_parse_and_map(vias, 0);
+     if (cuda_irq == NO_IRQ) {
+ 	printk(KERN_ERR "via-cuda: can't map interrupts for %s\n",
+ 	       vias->full_name);
+ 	return -ENODEV;
+     }
+-#endif /* CONFIG_MAC */
++#endif
+ 
+     if (request_irq(cuda_irq, cuda_interrupt, 0, "ADB", cuda_interrupt)) {
+ 	printk(KERN_ERR "via-cuda: can't request irq %d\n", cuda_irq);
+@@ -216,7 +242,6 @@ cuda_probe(void)
+ #else
+     if (macintosh_config->adb_type != MAC_ADB_CUDA)
+ 	return -ENODEV;
+-    via = via1;
+ #endif
+     return 0;
+ }
+@@ -224,20 +249,9 @@ cuda_probe(void)
+ static int __init
+ cuda_init(void)
+ {
+-#ifdef CONFIG_PPC
+     if (via == NULL)
+ 	return -ENODEV;
+     return 0;
+-#else 
+-    int err = cuda_init_via();
+-    if (err) {
+-	printk(KERN_ERR "cuda_init_via() failed\n");
+-	return -ENODEV;
+-    }
+-    out_8(&via[IER], IER_SET|SR_INT); /* enable interrupt from SR */
+-
+-    return via_cuda_start();
+-#endif
+ }
+ #endif /* CONFIG_ADB */
+ 
+@@ -430,9 +444,12 @@ cuda_poll(void)
+     /* cuda_interrupt only takes a normal lock, we disable
+      * interrupts here to avoid re-entering and thus deadlocking.
+      */
+-    disable_irq(cuda_irq);
+-    cuda_interrupt(0, NULL);
+-    enable_irq(cuda_irq);
++    if (cuda_fully_inited) {
++	disable_irq(cuda_irq);
++	cuda_interrupt(0, NULL);
++	enable_irq(cuda_irq);
++    } else
++	cuda_interrupt(0, NULL);
+ }
+ 
+ static irqreturn_t
+@@ -446,7 +463,7 @@ cuda_interrupt(int irq, void *arg)
+     
+     spin_lock(&cuda_lock);
+ 
+-    /* On powermacs, this handler is registered for the VIA IRQ. But it uses
++    /* On powermacs, this handler is registered for the VIA IRQ. But they use
+      * just the shift register IRQ -- other VIA interrupt sources are disabled.
+      * On m68k macs, the VIA IRQ sources are dispatched individually. Unless
+      * we are polling, the shift register IRQ flag has already been cleared.
