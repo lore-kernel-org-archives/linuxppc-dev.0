@@ -1,22 +1,23 @@
-Return-Path: <Bo.Liu@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id DF26CB7BCA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  4 Nov 2009 15:24:02 +1100 (EST)
-Message-ID: <4AF0E4A0.30802@windriver.com>
-Date: Wed, 04 Nov 2009 10:19:12 +0800
-From: Tonyliu <Bo.Liu@windriver.com>
-MIME-Version: 1.0
-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Subject: Re: DMA to User-Space
-References: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>
-In-Reply-To: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Reply-To: Bo.Liu@windriver.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 55066B7B9F
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2009 17:25:31 +1100 (EST)
+Subject: Re: mpc8548 does not make use of DMA when doing memory copy?
+Mime-Version: 1.0 (Apple Message framework v1076)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <389deec70911030638g4a90dae7hd5a164e3d2bd178f@mail.gmail.com>
+Date: Wed, 4 Nov 2009 00:25:06 -0600
+Message-Id: <FC64291C-9A7E-486A-991E-6CB2A5D8CA27@kernel.crashing.org>
+References: <389deec70911020740k13b56bc6kdad3bfaa39916f54@mail.gmail.com>
+	<15E6E326-D17B-42D7-AA22-2CA319C2A808@kernel.crashing.org>
+	<389deec70911021635v6e12a976t9e20fb5f12d8987b@mail.gmail.com>
+	<4AEFEC64.3070608@neli.hopto.org>
+	<389deec70911030638g4a90dae7hd5a164e3d2bd178f@mail.gmail.com>
+To: hank peng <pengxihan@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jonathan Haws wrote:
-> All,
->
-> I have what may be an unconventional question:
->
-> Our application consists of data being captured by an FPGA, processed, and transferred to SDRAM.  I simply give the FPGA an address of where I want it stored in SDRAM and it simply DMAs the data over and interrupts me when finished.  I then take that data and store it to disk.
->
-> I have code in user space that handles all of the writing to disk nicely and fast enough for my application (I am capturing data at about 35-40 Mbytes/sec).
->
-> My question is this:  is it possible to give a user-space pointer to the FPGA to DMA to?  It seems like I would have problems with alignment, address manipulation, and a whole slew of other issues.
->   
-> What would be the best way to accomplish something like that?  I want to handle all the disk access in user-space, but I do not want to have to copy 40 MB/s from kernel space to user-space either.
->   
-You can maintain a DMA buffer in kernel, then mmap to user space. And 
-maybe you need some handshake between FPGA and the apps to balance input 
-datas  with datas to disk.
-> I can maintain an allocated, DMA-safe buffer in kernel space if needed.  Can I simply get a user-space pointer to that buffer?  What calls are needed to translate addresses?
->   
-Use remap_pfn_range()  in your kernel DMA buffer manipulation driver 
-.mmap() handler to export DMA  buffer address to user space.
 
-Tony
-> Thanks for the help!  I am still a newbie when it comes to kernel programming, so I really appreciate the help!
->
-> Jonathan
->
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->   
+On Nov 3, 2009, at 8:38 AM, hank peng wrote:
 
+> 2009/11/3 Micha Nelissen <micha@neli.hopto.org>:
+>> hank peng wrote:
+>>>
+>>> I remember normal memory copy can also be done (chosen by user) by  
+>>> DMA
+>>> engine on IOP80331(Intel embedded cpu, xscale arch), so why ppc
+>>> platform didn't make use of DMA doing memory copy, I think it can
+>>> increase performance, please correct me if I am wrong!
+>>
+>> AFAIK the DMA engine has only an asynchronous mode (not very smart  
+>> IMHO).
+>> This means you always have the overhead of context switch +  
+>> interrupt +
+>> context switch, so the transfer has to be quite large for this to  
+>> pay off.
+>>
+> but if the amount of data I want to copy is big enough? can we benefit
+> from using DMA in such case?
 
--- 
-Tony Liu | Liu Bo
--------------------------------------------------------------
-WIND RIVER | China Development Center
-Tel: 86-10-8477-8542 ext: 8542 |  Fax: 86-10-64790367
-(M): 86-136-7117-3612
-Address: 15/F, Wangjing TowerB, Chaoyang District, Beijing, P.R.China
+Correct, we just don't make normal memcpy do this.  There isn't  
+anything stopping specific call from using the async DMA API to get  
+memcpy behavior.
+
+- k
