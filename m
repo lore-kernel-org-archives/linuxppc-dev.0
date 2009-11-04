@@ -1,22 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A007CB7B8F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 Nov 2009 07:52:10 +1100 (EST)
-Subject: Re: Regarding FPGA based cascaded PIC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thirumalai <thirumalai.p@datapatterns.co.in>
-In-Reply-To: <2DA2EE8F96D44EF69D4D8A712410E546@itd210>
-References: <06737AFD409844ED8DF3D43EFA83A906@itd210>
-	<1257315924.13611.54.camel@pasglop>
-	<2DA2EE8F96D44EF69D4D8A712410E546@itd210>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 05 Nov 2009 07:51:22 +1100
-Message-ID: <1257367882.13611.65.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 59BDDB7B9D
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 09:07:44 +1100 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e8.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nA4I43FI017105
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 13:04:03 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nA4M7fCD096322
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 17:07:41 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nA4M7fT0011257
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 17:07:41 -0500
+Message-ID: <4AF1FB29.50905@austin.ibm.com>
+Date: Wed, 04 Nov 2009 16:07:37 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
+MIME-Version: 1.0
+To: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au
+Subject: [RFC PATCH 0/5] Merge common dynamic OF device tree code
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,50 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-11-04 at 18:09 +0530, Thirumalai wrote:
-> you understood correctly. Here the problem lies.Correct me if i am wrong. So 
-> you are telling that irq_of_parse_and_map() will invoke the map/xlate of my 
-> FPGA pic. Right.
-> 
-> But this is what not happening. Instead of calling my map/xlate functions 
-> the irq_of_parse_and_map() function is invoking mpic's map/xlate function.
+This is a follow on to Grant Likely's patches, attempting to merge the common
+pieces of dynamic OF device tree updating.  These patches move the common
+code for adding and removing nodes and properties from the device tree to
+drivers/of/of_dynamic.c and wraps them under the new OF_DYNAMIC config
+option.  Additionally this makes the necessary updates to powerpc and
+microblaze arch's for this move.
 
-irq_of_parse_and_map() will call the map/xlate function of the parent
-PIC for the given interrupt.
-
-In your case, the interrupts you are calling it for are defined as being
-interrupts wiring the FPGA to the MPIC, hence are MPIC inputs, and thus
-will be parsed/mapped by the MPIC. From the MPIC standpoint, the FPGA is
-just a device.
-
-So the code is doing what you tell it to do :-)
-
-I don't understand what you are actually trying to acheive. If those 3
-interrupts aren't outputs from the FPGA to the MPIC but input to the
-FPGA then they shouldn't be there, they should be device interrupts
-connected to the FPGA. Those will end up with map/xlate called in the
-FPGA host.
-
-Ben.
-
-> Here is the piece of code that we are using.
-> 
-> fpga_pic_irq_host = irq_alloc_host(pic, IRQ_HOST_MAP_LINEAR,
->                         DPVPX0659_FPGA_NUM_IRQS,&fpga_pic_host_ops,
->                         NO_IRQ);
->         if (fpga_pic_irq_host == NULL) {
->                 printk("FPGA PIC: Unable to allocate host\n");
->                 return;
->         }
-> 
->         for (i = 0; i < 3; i++) {
->                 fpga_irqs[i] = irq_of_parse_and_map(pic, i);
->                 if (fpga_irqs[i] == NO_IRQ) {
->                         printk("FPGA PIC: can't get irq %d.\n", i);
->                         continue;
->                 }
->                 printk("interrupt from device tree : %d \n",fpga_irqs[i]);
->                 set_irq_chained_handler(dpvpx0659_fpga_irqs[i],dpvpx0659_fpga_pic_cascade);
->         }
-> 
-> 
+Nathan Fontenot (5)
+	- Move the declaration of devtree_lock and allnodes to linux/of.h
+	- Create drivers/of/of_dynamic.c from common code.
+	- powerpc and pseries updates
+	- microblaze updates
+	- powerpc/iseries updates
