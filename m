@@ -1,18 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 4 Nov 2009 14:22:42 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Filtering bits in set_pte_at()
-Message-ID: <20091104032242.GC27772@yookeroo.seuss>
-References: <1256957081.6372.344.camel@pasglop>
-	<Pine.LNX.4.64.0911021256330.32400@sister.anvils>
-	<1257200367.7907.50.camel@pasglop>
+Return-Path: <Bo.Liu@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id DF26CB7BCA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  4 Nov 2009 15:24:02 +1100 (EST)
+Message-ID: <4AF0E4A0.30802@windriver.com>
+Date: Wed, 04 Nov 2009 10:19:12 +0800
+From: Tonyliu <Bo.Liu@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1257200367.7907.50.camel@pasglop>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-	Hugh Dickins <hugh.dickins@tiscali.co.uk>, linuxppc-dev@lists.ozlabs.org,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Subject: Re: DMA to User-Space
+References: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>
+In-Reply-To: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: Bo.Liu@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 03, 2009 at 09:19:27AM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-11-02 at 13:27 +0000, Hugh Dickins wrote:
-> > On Sat, 31 Oct 2009, Benjamin Herrenschmidt wrote:
-> > 
-> > > Hi folks !
-> > > 
-> > > So I have a little problem on powerpc ... :-)
-> > 
-> > Thanks a lot for running this by us.
-> 
-> Heh, I though you may have been bored :-)
-> 
-> > I've not looked to see if there are more such issues in arch/powerpc
-> > itself, but those instances you mention are the only ones I managed
-> > to find: uses of update_mmu_cache() and that hugetlb_cow() one.
-> 
-> Right, that's all I spotted so far
-> 
-> > The hugetlb_cow() one involves not set_pte_at() but set_huge_pte_at(),
-> > so you'd want to change that too?  And presumably set_pte_at_notify()?
-> > It all seems a lot of tedium, when so very few places are interested
-> > in the pte after they've set it.
-> 
-> We need to change set_huge_pte_at() too. Currently, David fixed the
-> problem in a local tree by making hugetlb_cow() re-read the PTE . 
+Jonathan Haws wrote:
+> All,
+>
+> I have what may be an unconventional question:
+>
+> Our application consists of data being captured by an FPGA, processed, and transferred to SDRAM.  I simply give the FPGA an address of where I want it stored in SDRAM and it simply DMAs the data over and interrupts me when finished.  I then take that data and store it to disk.
+>
+> I have code in user space that handles all of the writing to disk nicely and fast enough for my application (I am capturing data at about 35-40 Mbytes/sec).
+>
+> My question is this:  is it possible to give a user-space pointer to the FPGA to DMA to?  It seems like I would have problems with alignment, address manipulation, and a whole slew of other issues.
+>   
+> What would be the best way to accomplish something like that?  I want to handle all the disk access in user-space, but I do not want to have to copy 40 MB/s from kernel space to user-space either.
+>   
+You can maintain a DMA buffer in kernel, then mmap to user space. And 
+maybe you need some handshake between FPGA and the apps to balance input 
+datas  with datas to disk.
+> I can maintain an allocated, DMA-safe buffer in kernel space if needed.  Can I simply get a user-space pointer to that buffer?  What calls are needed to translate addresses?
+>   
+Use remap_pfn_range()  in your kernel DMA buffer manipulation driver 
+.mmap() handler to export DMA  buffer address to user space.
 
-Well, actually I have another cleanup patch in the queue which makes
-set_huge_pte_at() equal to set_pte_at() on powerpc, and I was using
-that on the tree where this problem became apparent.
+Tony
+> Thanks for the help!  I am still a newbie when it comes to kernel programming, so I really appreciate the help!
+>
+> Jonathan
+>
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>   
+
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Tony Liu | Liu Bo
+-------------------------------------------------------------
+WIND RIVER | China Development Center
+Tel: 86-10-8477-8542 ext: 8542 |  Fax: 86-10-64790367
+(M): 86-136-7117-3612
+Address: 15/F, Wangjing TowerB, Chaoyang District, Beijing, P.R.China
