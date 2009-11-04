@@ -1,27 +1,28 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6D38CB7BB3
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 09:19:42 +1100 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e3.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nA4MBMI5018657
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 17:11:22 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nA4MJc8b1581182
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 17:19:38 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nA4MJcfm024997
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 17:19:38 -0500
-Message-ID: <4AF1FDF4.2000308@austin.ibm.com>
-Date: Wed, 04 Nov 2009 16:19:32 -0600
+	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6AE7EB7BA2
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 09:20:54 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e38.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nA4MGPED001098
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 15:16:25 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	nA4MKmav226032
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 15:20:49 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id nA4MHUlD030109
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 15:17:31 -0700
+Message-ID: <4AF1FE3D.3080601@austin.ibm.com>
+Date: Wed, 04 Nov 2009 16:20:45 -0600
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
 	microblaze-uclinux@itee.uq.edu.au
-Subject: [RFC PATCH 4/5] Microblaze updates for OF dynamic code
+Subject: [RFC PATCH 5/5] powerpc/iseries updates for new OF dynamic code
 References: <4AF1FB29.50905@austin.ibm.com>
 In-Reply-To: <4AF1FB29.50905@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -34,307 +35,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch removes the common OF dynamic device tree updating from the
-microblaze prom.c file to now use the generic OF code.
+Update the powerpc/iseries vio code to use the new generic OF dynamic code.
 
-NOTE:  I have no means of building and testing for the microblaze architecture.
-I'll sign off on this with the understanding that it has not even passed the
-compile test yet.
+NOTE: I have no means of testing iseries kernels, this does at least pass the
+compile test for me.
 
 Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 ---
 
-Index: linux-next/arch/microblaze/kernel/prom.c
+Index: linux-next/arch/powerpc/platforms/iseries/vio.c
 ===================================================================
---- linux-next.orig/arch/microblaze/kernel/prom.c	2009-11-03 13:20:25.000000000 -0600
-+++ linux-next/arch/microblaze/kernel/prom.c	2009-11-03 14:01:34.000000000 -0600
-@@ -30,6 +30,7 @@
- #include <linux/debugfs.h>
- #include <linux/irq.h>
- #include <linux/lmb.h>
-+#include <linux/of.h>
- 
- #include <asm/prom.h>
- #include <asm/page.h>
-@@ -859,252 +860,6 @@
+--- linux-next.orig/arch/powerpc/platforms/iseries/vio.c	2009-11-02 13:39:40.000000000 -0600
++++ linux-next/arch/powerpc/platforms/iseries/vio.c	2009-11-03 12:34:19.000000000 -0600
+@@ -80,8 +80,7 @@
+ 	kfree(np);
  }
- EXPORT_SYMBOL(of_find_node_by_phandle);
  
--/**
-- *	of_node_get - Increment refcount of a node
-- *	@node:	Node to inc refcount, NULL is supported to
-- *		simplify writing of callers
-- *
-- *	Returns node.
-- */
--struct device_node *of_node_get(struct device_node *node)
--{
--	if (node)
--		kref_get(&node->kref);
--	return node;
--}
--EXPORT_SYMBOL(of_node_get);
--
--static inline struct device_node *kref_to_device_node(struct kref *kref)
--{
--	return container_of(kref, struct device_node, kref);
--}
--
--/**
-- *	of_node_release - release a dynamically allocated node
-- *	@kref:  kref element of the node to be released
-- *
-- *	In of_node_put() this function is passed to kref_put()
-- *	as the destructor.
-- */
--static void of_node_release(struct kref *kref)
--{
--	struct device_node *node = kref_to_device_node(kref);
--	struct property *prop = node->properties;
--
--	/* We should never be releasing nodes that haven't been detached. */
--	if (!of_node_check_flag(node, OF_DETACHED)) {
--		printk(KERN_INFO "WARNING: Bad of_node_put() on %s\n",
--			node->full_name);
--		dump_stack();
--		kref_init(&node->kref);
--		return;
--	}
--
--	if (!of_node_check_flag(node, OF_DYNAMIC))
--		return;
--
--	while (prop) {
--		struct property *next = prop->next;
--		kfree(prop->name);
--		kfree(prop->value);
--		kfree(prop);
--		prop = next;
--
--		if (!prop) {
--			prop = node->deadprops;
--			node->deadprops = NULL;
--		}
--	}
--	kfree(node->full_name);
--	kfree(node->data);
--	kfree(node);
--}
--
--/**
-- *	of_node_put - Decrement refcount of a node
-- *	@node:	Node to dec refcount, NULL is supported to
-- *		simplify writing of callers
-- *
-- */
--void of_node_put(struct device_node *node)
--{
--	if (node)
--		kref_put(&node->kref, of_node_release);
--}
--EXPORT_SYMBOL(of_node_put);
--
--/*
-- * Plug a device node into the tree and global list.
-- */
--void of_attach_node(struct device_node *np)
--{
--	unsigned long flags;
--
--	write_lock_irqsave(&devtree_lock, flags);
--	np->sibling = np->parent->child;
--	np->allnext = allnodes;
--	np->parent->child = np;
--	allnodes = np;
--	write_unlock_irqrestore(&devtree_lock, flags);
--}
--
--/*
-- * "Unplug" a node from the device tree.  The caller must hold
-- * a reference to the node.  The memory associated with the node
-- * is not freed until its refcount goes to zero.
-- */
--void of_detach_node(struct device_node *np)
--{
--	struct device_node *parent;
--	unsigned long flags;
--
--	write_lock_irqsave(&devtree_lock, flags);
--
--	parent = np->parent;
--	if (!parent)
--		goto out_unlock;
--
--	if (allnodes == np)
--		allnodes = np->allnext;
--	else {
--		struct device_node *prev;
--		for (prev = allnodes;
--		     prev->allnext != np;
--		     prev = prev->allnext)
--			;
--		prev->allnext = np->allnext;
--	}
--
--	if (parent->child == np)
--		parent->child = np->sibling;
--	else {
--		struct device_node *prevsib;
--		for (prevsib = np->parent->child;
--		     prevsib->sibling != np;
--		     prevsib = prevsib->sibling)
--			;
--		prevsib->sibling = np->sibling;
--	}
--
--	of_node_set_flag(np, OF_DETACHED);
--
--out_unlock:
--	write_unlock_irqrestore(&devtree_lock, flags);
--}
--
--/*
-- * Add a property to a node
-- */
--int prom_add_property(struct device_node *np, struct property *prop)
--{
--	struct property **next;
--	unsigned long flags;
--
--	prop->next = NULL;
--	write_lock_irqsave(&devtree_lock, flags);
--	next = &np->properties;
--	while (*next) {
--		if (strcmp(prop->name, (*next)->name) == 0) {
--			/* duplicate ! don't insert it */
--			write_unlock_irqrestore(&devtree_lock, flags);
--			return -1;
--		}
--		next = &(*next)->next;
--	}
--	*next = prop;
--	write_unlock_irqrestore(&devtree_lock, flags);
--
+-static struct device_node *new_node(const char *path,
+-		struct device_node *parent)
++static struct device_node *new_node(const char *path)
+ {
+ 	struct device_node *np = kzalloc(sizeof(*np), GFP_KERNEL);
+ 
+@@ -93,9 +92,6 @@
+ 		return NULL;
+ 	}
+ 	strcpy(np->full_name, path);
+-	of_node_set_flag(np, OF_DYNAMIC);
+-	kref_init(&np->kref);
+-	np->parent = of_node_get(parent);
+ 	return np;
+ }
+ 
+@@ -122,7 +118,7 @@
+ 
+ 	if (!nprop)
+ 		return 0;
+-	prom_add_property(np, nprop);
++	of_property_attach(np, nprop);
+ 	return 1;
+ }
+ 
+@@ -133,19 +129,19 @@
+ 
+ 	if (!nprop)
+ 		return 0;
+-	prom_add_property(np, nprop);
++	of_property_attach(np, nprop);
+ 	return 1;
+ }
+ 
+-static struct device_node *do_device_node(struct device_node *parent,
+-		const char *name, u32 reg, u32 unit, const char *type,
+-		const char *compat, struct vio_resource *res)
++static struct device_node *do_device_node(const char *name, u32 reg,
++		u32 unit, const char *type, const char *compat,
++		struct vio_resource *res)
+ {
+ 	struct device_node *np;
+ 	char path[32];
+ 
+ 	snprintf(path, sizeof(path), "/vdevice/%s@%08x", name, reg);
+-	np = new_node(path, parent);
++	np = new_node(path);
+ 	if (!np)
+ 		return NULL;
+ 	if (!add_string_property(np, "name", name) ||
+@@ -168,15 +164,6 @@
+ 	np->name = of_get_property(np, "name", NULL);
+ 	np->type = of_get_property(np, "device_type", NULL);
+ 	of_attach_node(np);
 -#ifdef CONFIG_PROC_DEVICETREE
--	/* try to add to proc as well if it was initialized */
--	if (np->pde)
--		proc_device_tree_add_prop(np->pde, prop);
--#endif /* CONFIG_PROC_DEVICETREE */
+-	if (parent->pde) {
+-		struct proc_dir_entry *ent;
 -
--	return 0;
--}
--
--/*
-- * Remove a property from a node.  Note that we don't actually
-- * remove it, since we have given out who-knows-how-many pointers
-- * to the data using get-property.  Instead we just move the property
-- * to the "dead properties" list, so it won't be found any more.
-- */
--int prom_remove_property(struct device_node *np, struct property *prop)
--{
--	struct property **next;
--	unsigned long flags;
--	int found = 0;
--
--	write_lock_irqsave(&devtree_lock, flags);
--	next = &np->properties;
--	while (*next) {
--		if (*next == prop) {
--			/* found the node */
--			*next = prop->next;
--			prop->next = np->deadprops;
--			np->deadprops = prop;
--			found = 1;
--			break;
--		}
--		next = &(*next)->next;
+-		ent = proc_mkdir(strrchr(np->full_name, '/') + 1, parent->pde);
+-		if (ent)
+-			proc_device_tree_add_node(np, ent);
 -	}
--	write_unlock_irqrestore(&devtree_lock, flags);
--
--	if (!found)
--		return -ENODEV;
--
--#ifdef CONFIG_PROC_DEVICETREE
--	/* try to remove the proc node as well */
--	if (np->pde)
--		proc_device_tree_remove_prop(np->pde, prop);
--#endif /* CONFIG_PROC_DEVICETREE */
--
--	return 0;
--}
--
--/*
-- * Update a property in a node.  Note that we don't actually
-- * remove it, since we have given out who-knows-how-many pointers
-- * to the data using get-property.  Instead we just move the property
-- * to the "dead properties" list, and add the new property to the
-- * property list
-- */
--int prom_update_property(struct device_node *np,
--			 struct property *newprop,
--			 struct property *oldprop)
--{
--	struct property **next;
--	unsigned long flags;
--	int found = 0;
--
--	write_lock_irqsave(&devtree_lock, flags);
--	next = &np->properties;
--	while (*next) {
--		if (*next == oldprop) {
--			/* found the node */
--			newprop->next = oldprop->next;
--			*next = newprop;
--			oldprop->next = np->deadprops;
--			np->deadprops = oldprop;
--			found = 1;
--			break;
--		}
--		next = &(*next)->next;
--	}
--	write_unlock_irqrestore(&devtree_lock, flags);
--
--	if (!found)
--		return -ENODEV;
--
--#ifdef CONFIG_PROC_DEVICETREE
--	/* try to add to proc as well if it was initialized */
--	if (np->pde)
--		proc_device_tree_update_prop(np->pde, newprop, oldprop);
--#endif /* CONFIG_PROC_DEVICETREE */
--
--	return 0;
--}
--
- #if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
- static struct debugfs_blob_wrapper flat_dt_blob;
+-#endif
+ 	return np;
  
-Index: linux-next/arch/microblaze/include/asm/prom.h
-===================================================================
---- linux-next.orig/arch/microblaze/include/asm/prom.h	2009-11-03 13:20:25.000000000 -0600
-+++ linux-next/arch/microblaze/include/asm/prom.h	2009-11-03 14:01:34.000000000 -0600
-@@ -38,10 +38,6 @@
+  node_free:
+@@ -190,16 +177,11 @@
+  */
+ struct vio_dev *vio_create_viodasd(u32 unit)
+ {
+-	struct device_node *vio_root;
+ 	struct device_node *np;
+ 	struct vio_dev *vdev = NULL;
  
- #define HAVE_ARCH_DEVTREE_FIXUPS
+-	vio_root = of_find_node_by_path("/vdevice");
+-	if (!vio_root)
+-		return NULL;
+-	np = do_device_node(vio_root, "viodasd", FIRST_VIODASD + unit, unit,
++	np = do_device_node("viodasd", FIRST_VIODASD + unit, unit,
+ 			"block", "IBM,iSeries-viodasd", NULL);
+-	of_node_put(vio_root);
+ 	if (np) {
+ 		vdev = vio_register_device_node(np);
+ 		if (!vdev)
+@@ -254,7 +236,7 @@
+ 	}
+ }
  
--/* For updating the device tree at runtime */
--extern void of_attach_node(struct device_node *);
--extern void of_detach_node(struct device_node *);
+-static void __init probe_disk(struct device_node *vio_root, u32 unit)
++static void __init probe_disk(u32 unit)
+ {
+ 	HvLpEvent_Rc hvrc;
+ 	struct vio_waitevent we;
+@@ -305,11 +287,11 @@
+ 		return;
+ 	}
+ 
+-	do_device_node(vio_root, "viodasd", FIRST_VIODASD + unit, unit,
++	do_device_node("viodasd", FIRST_VIODASD + unit, unit,
+ 			"block", "IBM,iSeries-viodasd", NULL);
+ }
+ 
+-static void __init get_viodasd_info(struct device_node *vio_root)
++static void __init get_viodasd_info(void)
+ {
+ 	int rc;
+ 	u32 unit;
+@@ -326,7 +308,7 @@
+ 	vio_setHandler(viomajorsubtype_blockio, handle_block_event);
+ 
+ 	for (unit = 0; unit < HVMAXARCHITECTEDVIRTUALDISKS; unit++)
+-		probe_disk(vio_root, unit);
++		probe_disk(unit);
+ 
+ 	vio_clearHandler(viomajorsubtype_blockio);
+ 	viopath_close(viopath_hostLp, viomajorsubtype_blockio, 2);
+@@ -372,7 +354,7 @@
+ 	}
+ }
+ 
+-static void __init get_viocd_info(struct device_node *vio_root)
++static void __init get_viocd_info(void)
+ {
+ 	HvLpEvent_Rc hvrc;
+ 	u32 unit;
+@@ -430,7 +412,7 @@
+ 
+ 	for (unit = 0; (unit < HVMAXARCHITECTEDVIRTUALCDROMS) &&
+ 			unitinfo[unit].rsrcname[0]; unit++) {
+-		if (!do_device_node(vio_root, "viocd", FIRST_VIOCD + unit, unit,
++		if (!do_device_node("viocd", FIRST_VIOCD + unit, unit,
+ 				"block", "IBM,iSeries-viocd", &unitinfo[unit]))
+ 			break;
+ 	}
+@@ -464,7 +446,7 @@
+ 	}
+ }
+ 
+-static void __init get_viotape_info(struct device_node *vio_root)
++static void __init get_viotape_info(void)
+ {
+ 	HvLpEvent_Rc hvrc;
+ 	u32 unit;
+@@ -507,7 +489,7 @@
+ 
+ 	for (unit = 0; (unit < HVMAXARCHITECTEDVIRTUALTAPES) &&
+ 			unitinfo[unit].rsrcname[0]; unit++) {
+-		if (!do_device_node(vio_root, "viotape", FIRST_VIOTAPE + unit,
++		if (!do_device_node("viotape", FIRST_VIOTAPE + unit,
+ 				unit, "byte", "IBM,iSeries-viotape",
+ 				&unitinfo[unit]))
+ 			break;
+@@ -522,7 +504,6 @@
+ 
+ static int __init iseries_vio_init(void)
+ {
+-	struct device_node *vio_root;
+ 	int ret = -ENODEV;
+ 
+ 	if (!firmware_has_feature(FW_FEATURE_ISERIES))
+@@ -530,25 +511,19 @@
+ 
+ 	iommu_vio_init();
+ 
+-	vio_root = of_find_node_by_path("/vdevice");
+-	if (!vio_root)
+-		goto out;
 -
- /* Other Prototypes */
- extern int early_uartlite_console(void);
+ 	if (viopath_hostLp == HvLpIndexInvalid) {
+ 		vio_set_hostlp();
+ 		/* If we don't have a host, bail out */
+ 		if (viopath_hostLp == HvLpIndexInvalid)
+-			goto put_node;
++			goto out;
+ 	}
  
-Index: linux-next/arch/microblaze/Kconfig
-===================================================================
---- linux-next.orig/arch/microblaze/Kconfig	2009-11-02 13:39:39.000000000 -0600
-+++ linux-next/arch/microblaze/Kconfig	2009-11-03 14:02:21.000000000 -0600
-@@ -112,6 +112,9 @@
- config OF
- 	def_bool y
+-	get_viodasd_info(vio_root);
+-	get_viocd_info(vio_root);
+-	get_viotape_info(vio_root);
++	get_viodasd_info();
++	get_viocd_info();
++	get_viotape_info();
  
-+config OF_DYNAMIC
-+	def_bool y
-+
- config PROC_DEVICETREE
- 	bool "Support for device tree in /proc"
- 	depends on PROC_FS
+ 	ret = 0;
+ 
+- put_node:
+-	of_node_put(vio_root);
+  out:
+ 	return ret;
+ }
