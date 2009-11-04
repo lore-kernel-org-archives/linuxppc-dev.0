@@ -1,32 +1,21 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
+Return-Path: <thirumalai.p@datapatterns.co.in>
+Received: from ns0.datapatterns.co.in (ns0.datapatterns.co.in [121.242.18.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 91C37B7BCB
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2009 23:38:52 +1100 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id nA4CcjFH016292
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 18:08:45 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nA4Ccjhk1855576
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 18:08:45 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nA4CciRQ011500
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 18:08:45 +0530
-Message-ID: <4AF175D4.7030507@in.ibm.com>
-Date: Wed, 04 Nov 2009 18:08:44 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5DB91B7BC2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  4 Nov 2009 23:39:54 +1100 (EST)
+Message-ID: <2DA2EE8F96D44EF69D4D8A712410E546@itd210>
+From: "Thirumalai" <thirumalai.p@datapatterns.co.in>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+References: <06737AFD409844ED8DF3D43EFA83A906@itd210>
+	<1257315924.13611.54.camel@pasglop>
+In-Reply-To: <1257315924.13611.54.camel@pasglop>
+Subject: Re: Regarding FPGA based cascaded PIC
+Date: Wed, 4 Nov 2009 18:09:28 +0530
 MIME-Version: 1.0
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: Re: [powerpc] Next tree Nov 2 : kernel BUG at mm/mmap.c:2135!
-References: <20091102173845.210d1c57.sfr@canb.auug.org.au>
-	<4AEEA279.4040106@in.ibm.com>
-In-Reply-To: <4AEEA279.4040106@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, dwg@au1.ibm.com,
-	linux-next@vger.kernel.org
+Content-Type: text/plain; format=flowed; charset="utf-8"; reply-type=original
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,73 +25,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sachin Sant wrote:
-> Today's next tree failed to boot on a POWER 6 box with :
+
+----- Original Message ----- 
+From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+To: "Thirumalai" <thirumalai.p@datapatterns.co.in>
+Cc: <scottwood@freescale.com>
+Sent: Wednesday, November 04, 2009 11:55 AM
+Subject: Re: Regarding FPGA based cascaded PIC
+
+
+> On Wed, 2009-11-04 at 10:48 +0530, Thirumalai wrote:
+>> Hi Ben,
+>>         I am a having MPC8640D based board on which i am in the process 
+>> of
+>> writing cascaded interrupt handler for my FPGA based PIC. I need some
+>> clarification on writing customized cascaded interrupt handler. As for as 
+>> my
+>> understanding we need to use  irq_alloc_host() function for allocating 
+>> the
+>> irq_host for my FPGA pic and we should use irq_of_parse_and_map() 
+>> function
+>> for parsing and assignment of virtual IRQ from my device tree. In my case 
+>> my
+>> FPGA based PIC is giving interrupts to 3 external interrupt of MPC8640D 
+>> i.e
+>> 1,2,3 . So i have written my fpga-pic node as follows on my device tree.
 >
-> ------------[ cut here ]------------
-> kernel BUG at mm/mmap.c:2135!
-> Oops: Exception in kernel mode, sig: 5 [#2]
-> SMP NR_CPUS=1024 NUMA pSeries
-Problem exists with today's next as well.
-
-Likely cause for this problem seems to the following commit.
-If i revert this patch the machine boots fine.
-
-commit a0668cdc154e54bf0c85182e0535eea237d53146
-powerpc/mm: Cleanup management of kmem_caches for pagetables
-
-Thanks
--Sachin
-
-> Modules linked in: ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
-> NIP: c00000000014e30c LR: c00000000014e2f8 CTR: c00000000014db88
-> REGS: c0000000db703620 TRAP: 0700   Tainted: G      D     
-> (2.6.32-rc5-autotest-next-20091102)
-> MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24022442  XER: 2000000c
-> TASK = c0000000db7f6fe0[76] 'init' THREAD: c0000000db700000 CPU: 1
-> GPR00: 0000000000000001 c0000000db7038a0 c000000000b19900 
-> 0000000000000000
-> GPR04: c0000000db406a40 000000000000000c c0000000fe10c370 
-> c000000000bb2800
-> GPR08: 000000000000db40 0000000000000000 c0000000dfdc0e00 
-> 000000000000000c
-> GPR12: 0000000044022442 c000000000bb2800 00000000ffffffff 
-> ffffffffffffffff
-> GPR16: 0000000008430000 00000000003c0000 c0000000db703ea0 
-> c0000000db569108
-> GPR20: c0000000db568908 0000000000000000 c0000000db703d60 
-> 0000000000000000
-> GPR24: 0000000000000001 0000000000040100 c0000000fe503580 
-> c0000000db1ac180
-> GPR28: 0000000000000000 c000000000f812d0 c000000000a84f00 
-> 0000000000000000
-> NIP [c00000000014e30c] .exit_mmap+0x190/0x1b8
-> LR [c00000000014e2f8] .exit_mmap+0x17c/0x1b8
-> Call Trace:
-> [c0000000db7038a0] [c00000000014e2f8] .exit_mmap+0x17c/0x1b8 (unreliable)
-> [c0000000db703950] [c0000000000916cc] .mmput+0x54/0x164
-> [c0000000db7039e0] [c0000000000968d8] .exit_mm+0x17c/0x1a0
-> [c0000000db703a90] [c000000000098cb8] .do_exit+0x248/0x784
-> [c0000000db703b70] [c0000000000992a8] .do_group_exit+0xb4/0xe8
-> [c0000000db703c00] [c0000000000aca2c] .get_signal_to_deliver+0x3ec/0x478
-> [c0000000db703cf0] [c0000000000134ac] .do_signal+0x6c/0x31c
-> [c0000000db703e30] [c000000000008b7c] do_work+0x24/0x28
-> Instruction dump:
-> 7c8407b4 387d0018 4800ab11 60000000 939d0008 7fe3fb78 4bfffdbd 7c7f1b79
-> 4082fff4 e81b00e8 3120ffff 7c090110 <0b000000> 382100b0 e8010010 eb61ffd8
-> ---[ end trace ec052ac77a8e7cb4 ]---
-> Fixing recursive fault but reboot is needed!
+> Please post to the mailing list linuxppc-dev@lists.ozlabs.org for such
+> questions.
 >
-> mm/mmap.c:2135 corresponds to :
+>> fpga-pic@dc000000 {
+>>                         compatible = "dp,fpga-pic";
+>>                         reg = <0xdc000000 0x7fff>;
+>>                         interrupt-controller;
+>>                         #interrupt-cells = <3>;
+>>                         interrupts = <1 1 2 1 3 1>;
+>>                         interrupt-parent = <&mpic>;
+>> };
 >
-> BUG_ON(mm->nr_ptes > (FIRST_USER_ADDRESS+PMD_SIZE-1)>>PMD_SHIFT);
+> 3 cells per interrupt ? that's a lot :-) What do you put in there ?
+>
+>>  mpic: pic@40000 {
+>>                         clock-frequency = <0>;
+>>                         interrupt-controller;
+>>                         #address-cells = <0>;
+>>                         #interrupt-cells = <2>;
+>>                         reg = <0x40000 0x40000>;
+>>                         compatible = "chrp,open-pic";
+>>                         device_type = "open-pic";
+>>                         big-endian;
+>>                 };
+>
+> So far it looks reasonable...
+>
+>> The function irq_of_parse_and_map is returning VIRQ as 16,17,18
+>> successfully. i hooked my chained interrupt handler for this VIRQ using
+>> set_irq_chained_handler function. On my user defined interrupt handler 
+>> when
+>> i am searching the vector need to be returned i am getting 0 as vector. 
+>> ie
+>> using the function irq_linear_revmap.
+>>
+>> So here my doubt:
+>> ============
+>> Even irq_alloc_host has returned a irq_host for my pic, Why my custom map
+>> funtion is not called during irq_of_parse_and_map function. Instead of my
+>> map/xlate function it is calling mpic's map/xlate function?
+>
+> That's where I don't follow you...
+>
+> So interrupts 1,2,3 in your example are outputs of the FPGA PIC
+> connected to inputs 1,2,3 of the MPIC. Those get mapped to virq 16.17
+> and 18. Those are really MPIC interrupts.
+>
+> At some stage some interrupts -below- your FPGA PIC (whatever devices
+> you have on the FPGA) are going to fire. it's -those- interrupts that
+> will use map/xlate from the FPGA host when irq_of_parse_and_map() is
+> called for them
 >
 
--- 
+you understood correctly. Here the problem lies.Correct me if i am wrong. So 
+you are telling that irq_of_parse_and_map() will invoke the map/xlate of my 
+FPGA pic. Right.
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+But this is what not happening. Instead of calling my map/xlate functions 
+the irq_of_parse_and_map() function is invoking mpic's map/xlate function.
+
+Here is the piece of code that we are using.
+
+fpga_pic_irq_host = irq_alloc_host(pic, IRQ_HOST_MAP_LINEAR,
+                        DPVPX0659_FPGA_NUM_IRQS,&fpga_pic_host_ops,
+                        NO_IRQ);
+        if (fpga_pic_irq_host == NULL) {
+                printk("FPGA PIC: Unable to allocate host\n");
+                return;
+        }
+
+        for (i = 0; i < 3; i++) {
+                fpga_irqs[i] = irq_of_parse_and_map(pic, i);
+                if (fpga_irqs[i] == NO_IRQ) {
+                        printk("FPGA PIC: can't get irq %d.\n", i);
+                        continue;
+                }
+                printk("interrupt from device tree : %d \n",fpga_irqs[i]);
+                set_irq_chained_handler(dpvpx0659_fpga_irqs[i],dpvpx0659_fpga_pic_cascade);
+        }
+
+> IE. When -those- fire, the FPGA emits one of the 3 interrupts, and your
+> cascade handler gets called. It will then fetch off the FPGA PIC what
+> interrupts happened and revmap that.
+>
+> Cheers,
+> Ben.
+>
+>> Kindly reply me soon.
+>> Regards
+>> Thirumalai
+>>
+>>
+Thank you
+Thirumalai 
+
+
+**************** CAUTION - Disclaimer *****************This email may contain confidential and privileged material for the
+sole use of the intended recipient(s). Any review, use, retention, distribution or disclosure by others is strictly prohibited. If you are not the intended recipient (or authorized to receive for the recipient), please contact the sender by reply email and delete all copies of this message. Also, email is susceptible to data corruption, interception, tampering, unauthorized amendment and viruses. We only send and receive emails on the basis that we are not liable for any such corruption, interception, tampering, amendment or viruses or any consequence thereof. 
+*********** End of Disclaimer ***********DataPatterns ITS Group**********
