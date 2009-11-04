@@ -1,27 +1,32 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <sachinp@in.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E187FB7BC6
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2009 22:35:42 +1100 (EST)
-Subject: Re: [PATCH 14/27] Add book3s_64 specific opcode emulation
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1257324441.13611.55.camel@pasglop>
-Date: Wed, 4 Nov 2009 12:35:29 +0100
-Message-Id: <A9E9F4C0-3AC8-4A50-AE9E-9C96126C24BC@suse.de>
-References: <1256917647-6200-1-git-send-email-agraf@suse.de>
-	<280C9FF6-1C52-4856-9F60-15DA0659FC31@suse.de>
-	<1257284313.7907.80.camel@pasglop>
-	<200911040943.46617.arnd@arndb.de>
-	<1257324441.13611.55.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kevin Wolf <kwolf@redhat.com>, Hollis Blanchard <hollisb@us.ibm.com>,
-	Marcelo Tosatti <mtosatti@redhat.com>,
-	kvm-ppc <kvm-ppc@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>, Avi Kivity <avi@redhat.com>,
-	kvm@vger.kernel.org, bphilips@suse.de, Olof Johansson <olof@lixom.net>
+	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 91C37B7BCB
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2009 23:38:52 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id nA4CcjFH016292
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 18:08:45 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nA4Ccjhk1855576
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 18:08:45 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nA4CciRQ011500
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Nov 2009 18:08:45 +0530
+Message-ID: <4AF175D4.7030507@in.ibm.com>
+Date: Wed, 04 Nov 2009 18:08:44 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+MIME-Version: 1.0
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: Re: [powerpc] Next tree Nov 2 : kernel BUG at mm/mmap.c:2135!
+References: <20091102173845.210d1c57.sfr@canb.auug.org.au>
+	<4AEEA279.4040106@in.ibm.com>
+In-Reply-To: <4AEEA279.4040106@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, dwg@au1.ibm.com,
+	linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +36,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 04.11.2009, at 09:47, Benjamin Herrenschmidt wrote:
-
-> On Wed, 2009-11-04 at 09:43 +0100, Arnd Bergmann wrote:
->> On Tuesday 03 November 2009, Benjamin Herrenschmidt wrote:
->>> (Though glibc can be nasty, afaik it might load up optimized
->> variants of
->>> some routines with hard wired cache line sizes based on the CPU
->> type)
->>
->> You can also get application with hand-coded cache optimizations
->> that are even harder, if not impossible, to fix.
+Sachin Sant wrote:
+> Today's next tree failed to boot on a POWER 6 box with :
 >
-> Right. But those are already broken across CPU variants anyways.
+> ------------[ cut here ]------------
+> kernel BUG at mm/mmap.c:2135!
+> Oops: Exception in kernel mode, sig: 5 [#2]
+> SMP NR_CPUS=1024 NUMA pSeries
+Problem exists with today's next as well.
 
-... which might be the reason you're using KVM in the first place.
+Likely cause for this problem seems to the following commit.
+If i revert this patch the machine boots fine.
 
-Alex
+commit a0668cdc154e54bf0c85182e0535eea237d53146
+powerpc/mm: Cleanup management of kmem_caches for pagetables
+
+Thanks
+-Sachin
+
+> Modules linked in: ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
+> NIP: c00000000014e30c LR: c00000000014e2f8 CTR: c00000000014db88
+> REGS: c0000000db703620 TRAP: 0700   Tainted: G      D     
+> (2.6.32-rc5-autotest-next-20091102)
+> MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24022442  XER: 2000000c
+> TASK = c0000000db7f6fe0[76] 'init' THREAD: c0000000db700000 CPU: 1
+> GPR00: 0000000000000001 c0000000db7038a0 c000000000b19900 
+> 0000000000000000
+> GPR04: c0000000db406a40 000000000000000c c0000000fe10c370 
+> c000000000bb2800
+> GPR08: 000000000000db40 0000000000000000 c0000000dfdc0e00 
+> 000000000000000c
+> GPR12: 0000000044022442 c000000000bb2800 00000000ffffffff 
+> ffffffffffffffff
+> GPR16: 0000000008430000 00000000003c0000 c0000000db703ea0 
+> c0000000db569108
+> GPR20: c0000000db568908 0000000000000000 c0000000db703d60 
+> 0000000000000000
+> GPR24: 0000000000000001 0000000000040100 c0000000fe503580 
+> c0000000db1ac180
+> GPR28: 0000000000000000 c000000000f812d0 c000000000a84f00 
+> 0000000000000000
+> NIP [c00000000014e30c] .exit_mmap+0x190/0x1b8
+> LR [c00000000014e2f8] .exit_mmap+0x17c/0x1b8
+> Call Trace:
+> [c0000000db7038a0] [c00000000014e2f8] .exit_mmap+0x17c/0x1b8 (unreliable)
+> [c0000000db703950] [c0000000000916cc] .mmput+0x54/0x164
+> [c0000000db7039e0] [c0000000000968d8] .exit_mm+0x17c/0x1a0
+> [c0000000db703a90] [c000000000098cb8] .do_exit+0x248/0x784
+> [c0000000db703b70] [c0000000000992a8] .do_group_exit+0xb4/0xe8
+> [c0000000db703c00] [c0000000000aca2c] .get_signal_to_deliver+0x3ec/0x478
+> [c0000000db703cf0] [c0000000000134ac] .do_signal+0x6c/0x31c
+> [c0000000db703e30] [c000000000008b7c] do_work+0x24/0x28
+> Instruction dump:
+> 7c8407b4 387d0018 4800ab11 60000000 939d0008 7fe3fb78 4bfffdbd 7c7f1b79
+> 4082fff4 e81b00e8 3120ffff 7c090110 <0b000000> 382100b0 e8010010 eb61ffd8
+> ---[ end trace ec052ac77a8e7cb4 ]---
+> Fixing recursive fault but reboot is needed!
+>
+> mm/mmap.c:2135 corresponds to :
+>
+> BUG_ON(mm->nr_ptes > (FIRST_USER_ADDRESS+PMD_SIZE-1)>>PMD_SHIFT);
+>
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
