@@ -1,17 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
-	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id A419AB7BC3
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2009 17:34:43 +1100 (EST)
-Received: by gxk28 with SMTP id 28so699991gxk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 03 Nov 2009 22:34:42 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Pierre Ossman <drzeus@drzeus.cx>,
-	Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] mmc: fix missing module license declaration in of_mmc_spi.c
-Date: Tue,  3 Nov 2009 23:34:04 -0700
-Message-Id: <1257316444-7385-1-git-send-email-grant.likely@secretlab.ca>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 0F34DB7BC7
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2009 19:43:59 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 14/27] Add book3s_64 specific opcode emulation
+Date: Wed, 4 Nov 2009 09:43:46 +0100
+References: <1256917647-6200-1-git-send-email-agraf@suse.de>
+	<280C9FF6-1C52-4856-9F60-15DA0659FC31@suse.de>
+	<1257284313.7907.80.camel@pasglop>
+In-Reply-To: <1257284313.7907.80.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <200911040943.46617.arnd@arndb.de>
+Cc: Kevin Wolf <kwolf@redhat.com>, Hollis Blanchard <hollisb@us.ibm.com>,
+	Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
+	kvm-ppc <kvm-ppc@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+	bphilips@suse.de, Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,25 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Driver cannot be used as a module without this patch.
+On Tuesday 03 November 2009, Benjamin Herrenschmidt wrote:
+> (Though glibc can be nasty, afaik it might load up optimized variants of
+> some routines with hard wired cache line sizes based on the CPU type)
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
- drivers/mmc/host/of_mmc_spi.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+You can also get application with hand-coded cache optimizations
+that are even harder, if not impossible, to fix.
 
-diff --git a/drivers/mmc/host/of_mmc_spi.c b/drivers/mmc/host/of_mmc_spi.c
-index fb2921f..644f67e 100644
---- a/drivers/mmc/host/of_mmc_spi.c
-+++ b/drivers/mmc/host/of_mmc_spi.c
-@@ -22,6 +22,8 @@
- #include <linux/mmc/core.h>
- #include <linux/mmc/host.h>
- 
-+MODULE_LICENSE("GPL");
-+
- enum {
- 	CD_GPIO = 0,
- 	WP_GPIO,
--- 
-1.6.3.3
+	Arnd <><
