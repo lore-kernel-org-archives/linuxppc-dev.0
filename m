@@ -2,21 +2,15 @@ Return-Path: <joakim.tjernlund@transmode.com>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 90B74B7BCA
+	by ozlabs.org (Postfix) with ESMTPS id 93339B7BCB
 	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 00:38:49 +1100 (EST)
 From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 To: Scott Wood <scottwood@freescale.com>, Rex Feany <RFeany@mrv.com>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 5/8] 8xx: Add missing Guarded setting in DTLB Error.
-Date: Wed, 4 Nov 2009 14:38:37 +0100
-Message-Id: <1257341920-29277-6-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1257341920-29277-5-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1257341920-29277-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1257341920-29277-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1257341920-29277-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1257341920-29277-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1257341920-29277-5-git-send-email-Joakim.Tjernlund@transmode.se>
+Subject: [PATCH 0/8] 8xx: Misc fixes for buggy insn
+Date: Wed, 4 Nov 2009 14:38:32 +0100
+Message-Id: <1257341920-29277-1-git-send-email-Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-only DTLB Miss did set this bit, DTLB Error needs too otherwise
-the setting is lost when the page becomes dirty.
+Here is the latest(last?) round of this series. I
+hope I got everything right now.
+Scott and Rex, please test and send ACK/NACK.
 
-Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
----
- arch/powerpc/kernel/head_8xx.S |   13 ++++++++++---
- 1 files changed, 10 insertions(+), 3 deletions(-)
+  Jocke
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 1d8e4e3..18e9901 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -552,9 +552,16 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
- 	 */
- 	ori	r11, r11, 1		/* Set valid bit in physical L2 page */
- 	DO_8xx_CPU6(0x3b80, r3)
--	mtspr	SPRN_MD_TWC, r11		/* Load pte table base address */
--	mfspr	r11, SPRN_MD_TWC		/* ....and get the pte address */
--	lwz	r10, 0(r11)		/* Get the pte */
-+	mtspr	SPRN_MD_TWC, r11	/* Load pte table base address */
-+	mfspr	r10, SPRN_MD_TWC	/* ....and get the pte address */
-+	lwz	r10, 0(r10)		/* Get the pte */
-+	/* Insert the Guarded flag into the TWC from the Linux PTE.
-+	 * It is bit 27 of both the Linux PTE and the TWC
-+	 */
-+	rlwimi	r11, r10, 0, 27, 27
-+	DO_8xx_CPU6(0x3b80, r3)
-+	mtspr	SPRN_MD_TWC, r11
-+	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
- 
- 	ori	r10, r10, _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_HWWRITE
- 	stw	r10, 0(r11)		/* and update pte in table */
--- 
-1.6.4.4
+Joakim Tjernlund (8):
+  8xx: invalidate non present TLBs
+  8xx: Update TLB asm so it behaves as linux mm expects.
+  8xx: Tag DAR with 0x00f0 to catch buggy instructions.
+  8xx: Fixup DAR from buggy dcbX instructions.
+  8xx: Add missing Guarded setting in DTLB Error.
+  8xx: Restore _PAGE_WRITETHRU
+  8xx: start using dcbX instructions in various copy routines
+  8xx: Remove DIRTY pte handling in DTLB Error.
+
+ arch/powerpc/include/asm/pte-8xx.h |   14 +-
+ arch/powerpc/kernel/head_8xx.S     |  308 ++++++++++++++++++++++--------------
+ arch/powerpc/kernel/misc_32.S      |   18 --
+ arch/powerpc/lib/copy_32.S         |   24 ---
+ arch/powerpc/mm/fault.c            |    8 +-
+ 5 files changed, 205 insertions(+), 167 deletions(-)
