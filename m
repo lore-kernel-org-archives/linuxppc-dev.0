@@ -1,15 +1,18 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-Received: from kronos.usurf.usu.edu (kronos.usurf.usu.edu [129.123.194.129])
-	by ozlabs.org (Postfix) with ESMTP id 52AC7B7BDD
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  4 Nov 2009 10:37:47 +1100 (EST)
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 3 Nov 2009 16:37:38 -0700
-Subject: DMA to User-Space
-Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 4 Nov 2009 14:22:42 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Filtering bits in set_pte_at()
+Message-ID: <20091104032242.GC27772@yookeroo.seuss>
+References: <1256957081.6372.344.camel@pasglop>
+	<Pine.LNX.4.64.0911021256330.32400@sister.anvils>
+	<1257200367.7907.50.camel@pasglop>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1257200367.7907.50.camel@pasglop>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+	Hugh Dickins <hugh.dickins@tiscali.co.uk>, linuxppc-dev@lists.ozlabs.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,32 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All,
+On Tue, Nov 03, 2009 at 09:19:27AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-11-02 at 13:27 +0000, Hugh Dickins wrote:
+> > On Sat, 31 Oct 2009, Benjamin Herrenschmidt wrote:
+> > 
+> > > Hi folks !
+> > > 
+> > > So I have a little problem on powerpc ... :-)
+> > 
+> > Thanks a lot for running this by us.
+> 
+> Heh, I though you may have been bored :-)
+> 
+> > I've not looked to see if there are more such issues in arch/powerpc
+> > itself, but those instances you mention are the only ones I managed
+> > to find: uses of update_mmu_cache() and that hugetlb_cow() one.
+> 
+> Right, that's all I spotted so far
+> 
+> > The hugetlb_cow() one involves not set_pte_at() but set_huge_pte_at(),
+> > so you'd want to change that too?  And presumably set_pte_at_notify()?
+> > It all seems a lot of tedium, when so very few places are interested
+> > in the pte after they've set it.
+> 
+> We need to change set_huge_pte_at() too. Currently, David fixed the
+> problem in a local tree by making hugetlb_cow() re-read the PTE . 
 
-I have what may be an unconventional question:
+Well, actually I have another cleanup patch in the queue which makes
+set_huge_pte_at() equal to set_pte_at() on powerpc, and I was using
+that on the tree where this problem became apparent.
 
-Our application consists of data being captured by an FPGA, processed, and =
-transferred to SDRAM.  I simply give the FPGA an address of where I want it=
- stored in SDRAM and it simply DMAs the data over and interrupts me when fi=
-nished.  I then take that data and store it to disk.
-
-I have code in user space that handles all of the writing to disk nicely an=
-d fast enough for my application (I am capturing data at about 35-40 Mbytes=
-/sec).
-
-My question is this:  is it possible to give a user-space pointer to the FP=
-GA to DMA to?  It seems like I would have problems with alignment, address =
-manipulation, and a whole slew of other issues.
-
-What would be the best way to accomplish something like that?  I want to ha=
-ndle all the disk access in user-space, but I do not want to have to copy 4=
-0 MB/s from kernel space to user-space either.
-
-I can maintain an allocated, DMA-safe buffer in kernel space if needed.  Ca=
-n I simply get a user-space pointer to that buffer?  What calls are needed =
-to translate addresses?
-
-Thanks for the help!  I am still a newbie when it comes to kernel programmi=
-ng, so I really appreciate the help!
-
-Jonathan
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
