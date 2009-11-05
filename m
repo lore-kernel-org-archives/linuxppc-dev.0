@@ -1,23 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1EF94B7B78
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 01:02:49 +1100 (EST)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 89E74B7BA4
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 01:04:09 +1100 (EST)
+Date: Thu, 5 Nov 2009 17:04:07 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH 5/7] powerpc/85xx: Add power management support for
 	MPC85xxMDS boards
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <197B3989-3373-4172-B5FA-727CA1EEE2AA@kernel.crashing.org>
-Date: Thu, 5 Nov 2009 08:02:44 -0600
-Message-Id: <AFE1C29A-88D4-4A1D-B7AD-A797CCC855D3@kernel.crashing.org>
+Message-ID: <20091105140407.GA16698@oksana.dev.rtsoft.ru>
 References: <20090915214321.GA19377@oksana.dev.rtsoft.ru>
 	<20090915214359.GE24821@oksana.dev.rtsoft.ru>
 	<197B3989-3373-4172-B5FA-727CA1EEE2AA@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <197B3989-3373-4172-B5FA-727CA1EEE2AA@kernel.crashing.org>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
 	Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +26,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Nov 5, 2009, at 7:58 AM, Kumar Gala wrote:
-
->
-> On Sep 15, 2009, at 4:43 PM, Anton Vorontsov wrote:
->
->> - Add power management controller nodes;
->> - Add interrupts for RTC nodes, the RTC interrupt may be used as a
->> wakeup source;
->> - Add sleep properties and sleep-nexus nodes.
->>
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->> Acked-by: Scott Wood <scottwood@freescale.com>
->> ---
->> arch/powerpc/boot/dts/mpc8568mds.dts      |  119 ++++++++++++++++++ 
->> +----------
->> arch/powerpc/boot/dts/mpc8569mds.dts      |  111 +++++++++++++++++ 
->> +---------
->> arch/powerpc/platforms/85xx/mpc85xx_mds.c |    1 +
->> 3 files changed, 153 insertions(+), 78 deletions(-)
->
-> diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/ 
-> boot/dts/mpc8568mds.dts
-> index 00c2bbd..6d892ba 100644
+On Thu, Nov 05, 2009 at 07:58:49AM -0600, Kumar Gala wrote:
+[...]
 > --- a/arch/powerpc/boot/dts/mpc8568mds.dts
 > +++ b/arch/powerpc/boot/dts/mpc8568mds.dts
 > @@ -40,6 +40,8 @@
@@ -59,9 +36,14 @@ On Nov 5, 2009, at 7:58 AM, Kumar Gala wrote:
 > 			i-cache-size = <0x8000>;		// L1, 32K
 > +			sleep = <&pmc 0x00008000	// core
 > +				 &pmc 0x00004000>;	// timebase
->
+> 
 > Just so I'm clear this is the devdisr bit position?
 
-Also where in the code do we use this?  I'm not seeing it.
+Yep, as described in the bindings.
 
-- k
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
