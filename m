@@ -1,26 +1,32 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id BEEDDB7B8F
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 03:57:40 +1100 (EST)
-Date: Thu, 5 Nov 2009 19:57:38 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: [PATCH RFC] gianfar: Do not call skb recycling with disabled IRQs
-Message-ID: <20091105165738.GA31923@oksana.dev.rtsoft.ru>
-References: <20091104225711.GA30844@oksana.dev.rtsoft.ru>
-	<E1N62ti-0003iS-K2@jdl.com>
-	<20091105142028.GB17171@oksana.dev.rtsoft.ru>
-	<E1N63WM-0003xK-PN@jdl.com> <E1N64UY-00049g-Hb@jdl.com>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8E00FB7BA4
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 03:59:56 +1100 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e3.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nA5Gpab7011127
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 11:51:36 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nA5GxrKB108774
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 11:59:53 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nA5GxrNs026388
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 11:59:53 -0500
+Message-ID: <4AF3046A.4050508@austin.ibm.com>
+Date: Thu, 05 Nov 2009 10:59:22 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <E1N64UY-00049g-Hb@jdl.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andy Fleming <afleming@freescale.com>,
-	Jason Wessel <jason.wessel@windriver.com>,
-	Stephen Hemminger <shemminger@vyatta.com>,
-	David Miller <davem@davemloft.net>,
-	Lennert Buytenhek <buytenh@wantstofly.org>
-Reply-To: avorontsov@ru.mvista.com
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC PATCH 2/5] Merge dynamic OF code to of_dynamic.c
+References: <4AF1FB29.50905@austin.ibm.com> <4AF1FD46.9050101@austin.ibm.com>
+	<fa686aa40911042355l73c7511bod3b2f651e9c9a5a4@mail.gmail.com>
+In-Reply-To: <fa686aa40911042355l73c7511bod3b2f651e9c9a5a4@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,158 +36,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Before calling gfar_clean_tx_ring() we grab an irqsave spinlock, and
-then try to recycle an skb, which requires IRQs to be enabled. This
-leads to the following badness:
-
-nf_conntrack version 0.5.0 (1008 buckets, 4032 max)
-------------[ cut here ]------------
-Badness at kernel/softirq.c:143
-NIP: c003e3c4 LR: c423a528 CTR: c003e344
-...
-NIP [c003e3c4] local_bh_enable+0x80/0xc4
-LR [c423a528] destroy_conntrack+0xd4/0x13c [nf_conntrack]
-Call Trace:
-[c15d1b60] [c003e32c] local_bh_disable+0x1c/0x34 (unreliable)
-[c15d1b70] [c423a528] destroy_conntrack+0xd4/0x13c [nf_conntrack]
-[c15d1b80] [c02c6370] nf_conntrack_destroy+0x3c/0x70
---- Exception: c428168c at 0xc15d1c50
-LR = 0xc15d1c40
-[c15d1ba0] [c0286f3c] skb_release_head_state+0x100/0x104 (unreliable)
-[c15d1bb0] [c0288340] skb_recycle_check+0x8c/0x10c
-[c15d1bc0] [c01e1688] gfar_poll+0x190/0x384
-[c15d1c10] [c02935ac] net_rx_action+0xec/0x22c
-[c15d1c50] [c003dd8c] __do_softirq+0xe8/0x224
-[c15d1ca0] [c000624c] do_softirq+0x78/0x80
-[c15d1cb0] [c003d868] irq_exit+0x60/0x78
-...
-
-We can't easily get rid of the irqsave spinlock, because we must
-guard ourselves from start_xmit.
-
-So, fix this by dropping the irqsave spinlock from both xmit_start
-and clean_tx_ring routines. Instead, lock the whole tx queue via
-netif_tx_lock_bh() in clean_tx_ring().
-
-Reported-by: Jon Loeliger <jdl@jdl.com>
-Not-yet-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-On Thu, Nov 05, 2009 at 09:43:18AM -0600, Jon Loeliger wrote:
-[...]
-> This is with essentially a stock 2.6.31 kernel for an 8315.
-> I've seen the problem for both task 'insmod' and 'iptables'.
-> Um, conn_track is a module being loaded here.  Our brief analysis
-> runs like this:
+Grant Likely wrote:
+> Hi Nathan,
 > 
->     This is an issue with the gianfar driver.  In gfar_poll(), irqs are
->     disabled for the handling of gfar_clean_tx_ring(dev) (line 1928).
->     In this call, skbs can call skb_recycle_check, which can release
->     head state (net/core/skbuff.c@506), which can cause conntrack
->     cleanup (net/core/skbuff.c@402->include/linux/skbuff.h@1923), which
->     cannot be done with IRQs disabled...that is the badness.
+> Thanks for the patches.  Comments below.
+> 
+> On Wed, Nov 4, 2009 at 3:16 PM, Nathan Fontenot <nfont@austin.ibm.com> wrote:
+>> Creation of the OF dynamic device tree update code in drivers/of.  This
+>> merges the common device tree updating routines to add/remove nodes and
+>> properties from powerpc and microblaze.  All of the new code is conditional
+>> based on a new OF_DYNAMIC config option.
+> 
+> Rather than one patch to create all the moved functions, and then
+> subsequent patches to remove the duplicates from each arch, I've been
+> using the pattern of one patch for each function or couple of
+> functions to both remove from the old files and add to the new home.
+> Would you be able to do the same for your patches here?  The merging
+> is complicated enough without having to track changes to a function
+> between separate commits.  Moving one function at a time will also
+> make bisecting more friendly.
+>
 
-Ugh.
+Shouldn't be a problem.
 
-We may try to call netif_tx_lock_bh() in gfar_clean_tx_ring() and
-drop the irqsave spinlock start_xmit (sky2-like scheme).
-
-But that basically means that with skb recycling we can't safely
-use KGDBoE, though we can add something like this:
-
-| diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-| index a00ec63..4d82bd7 100644
-| --- a/drivers/net/gianfar.c
-| +++ b/drivers/net/gianfar.c
-| @@ -1619,7 +1619,8 @@ static int gfar_clean_tx_ring(struct net_device *dev)
-|  		 * If there's room in the queue (limit it to rx_buffer_size)
-|  		 * we add this skb back into the pool, if it's the right size
-|  		 */
-| -		if (skb_queue_len(&priv->rx_recycle) < priv->rx_ring_size &&
-| +		if (!irqs_disabled() &&
-| +			skb_queue_len(&priv->rx_recycle) < priv->rx_ring_size &&
-|  				skb_recycle_check(skb, priv->rx_buffer_size +
-|  					RXBUF_ALIGNMENT))
-| 			__skb_queue_head(&priv->rx_recycle, skb);
-
-So we won't recycle skbs with irqs disabled.
-
-Anyway, apart from KGDBoE, the following patch might fix the conntrack
-issue, can you try it?
-
-With this patch the kernel boots via NFS, and survives netperf, though
-I'd like to audit changes a little more and run some netperf tests, I
-might also put the netif_tx_lock_bh() stuff out of the loop.
-
-So this patch isn't for the merge.
-
- drivers/net/gianfar.c |   19 +++----------------
- 1 files changed, 3 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 197b358..a0ae604 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -1899,10 +1899,8 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	u32 lstatus;
- 	int i, rq = 0;
- 	u32 bufaddr;
--	unsigned long flags;
- 	unsigned int nr_frags, length;
  
--
- 	rq = skb->queue_mapping;
- 	tx_queue = priv->tx_queue[rq];
- 	txq = netdev_get_tx_queue(dev, rq);
-@@ -1928,14 +1926,11 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	/* total number of fragments in the SKB */
- 	nr_frags = skb_shinfo(skb)->nr_frags;
+> Also, have you checked what impact these changes have on SPARC?
+>
+
+I took a look at sparc code, but will do again as I redo the patches to
+make there are no impacts. 
  
--	spin_lock_irqsave(&tx_queue->txlock, flags);
--
- 	/* check if there is space to queue this packet */
- 	if ((nr_frags+1) > tx_queue->num_txbdfree) {
- 		/* no space, stop the queue */
- 		netif_tx_stop_queue(txq);
- 		dev->stats.tx_fifo_errors++;
--		spin_unlock_irqrestore(&tx_queue->txlock, flags);
- 		return NETDEV_TX_BUSY;
- 	}
- 
-@@ -2033,9 +2028,6 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	/* Tell the DMA to go go go */
- 	gfar_write(&regs->tstat, TSTAT_CLEAR_THALT >> tx_queue->qindex);
- 
--	/* Unlock priv */
--	spin_unlock_irqrestore(&tx_queue->txlock, flags);
--
- 	return NETDEV_TX_OK;
- }
- 
-@@ -2550,7 +2542,6 @@ static int gfar_poll(struct napi_struct *napi, int budget)
- 	int tx_cleaned = 0, i, left_over_budget = budget;
- 	unsigned long serviced_queues = 0;
- 	int num_queues = 0;
--	unsigned long flags;
- 
- 	num_queues = gfargrp->num_rx_queues;
- 	budget_per_queue = budget/num_queues;
-@@ -2570,13 +2561,9 @@ static int gfar_poll(struct napi_struct *napi, int budget)
- 			rx_queue = priv->rx_queue[i];
- 			tx_queue = priv->tx_queue[rx_queue->qindex];
- 
--			/* If we fail to get the lock,
--			 * don't bother with the TX BDs */
--			if (spin_trylock_irqsave(&tx_queue->txlock, flags)) {
--				tx_cleaned += gfar_clean_tx_ring(tx_queue);
--				spin_unlock_irqrestore(&tx_queue->txlock,
--							flags);
--			}
-+			netif_tx_lock_bh(priv->ndev);
-+			tx_cleaned += gfar_clean_tx_ring(tx_queue);
-+			netif_tx_unlock_bh(priv->ndev);
- 
- 			rx_cleaned_per_queue = gfar_clean_rx_ring(rx_queue,
- 							budget_per_queue);
--- 
-1.6.3.3
+>> --- linux-next.orig/drivers/of/Makefile 2009-11-03 11:18:08.000000000 -0600
+>> +++ linux-next/drivers/of/Makefile      2009-11-03 13:42:35.000000000 -0600
+>> @@ -1,6 +1,7 @@
+>> obj-y = base.o
+>> -obj-$(CONFIG_OF_DEVICE) += device.o platform.o
+>> -obj-$(CONFIG_OF_GPIO)   += gpio.o
+>> -obj-$(CONFIG_OF_I2C)   += of_i2c.o
+>> -obj-$(CONFIG_OF_SPI)   += of_spi.o
+>> -obj-$(CONFIG_OF_MDIO)  += of_mdio.o
+>> +obj-$(CONFIG_OF_DEVICE)                += device.o platform.o
+>> +obj-$(CONFIG_OF_GPIO)          += gpio.o
+>> +obj-$(CONFIG_OF_I2C)           += of_i2c.o
+>> +obj-$(CONFIG_OF_SPI)           += of_spi.o
+>> +obj-$(CONFIG_OF_MDIO)          += of_mdio.o
+>> +obj-$(CONFIG_OF_DYNAMIC)       += of_dynamic.o
+> 
+> Unrelated whitespace churn makes it hard to see what actually changed.
+> 
+ok.
+
+-Nathan Fontenot
