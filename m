@@ -2,24 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0188FB7F88
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 00:47:33 +1100 (EST)
-Subject: Re: [PATCH 6/8] spi_mpc8xxx: Factor out SPI mode change steps into a
-	call
+	by ozlabs.org (Postfix) with ESMTPS id 8568FB7B6F
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 00:52:37 +1100 (EST)
+Subject: Re: [PATCH 3/6] P2020DS: Fixup sdhc to use PIO mode
 Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+Content-Type: text/plain; charset=us-ascii; format=flowed
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20091012164924.GF4578@oksana.dev.rtsoft.ru>
-Date: Thu, 5 Nov 2009 07:47:21 -0600
-Message-Id: <B265B3EB-6F4F-45FB-98E8-39C9B03572B9@kernel.crashing.org>
-References: <20091012164841.GA32214@oksana.dev.rtsoft.ru>
-	<20091012164924.GF4578@oksana.dev.rtsoft.ru>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <CF6163088BDE8747873ADAA4AF922BF287EDB0@zmy16exm21.fsl.freescale.net>
+Date: Thu, 5 Nov 2009 07:52:25 -0600
+Message-Id: <56F6ACCC-7FE8-44E6-BF5E-6361997F524F@kernel.crashing.org>
+References: <1253696892-15262-1-git-send-email-B22826@freescale.com>
+	<1253696892-15262-2-git-send-email-B22826@freescale.com>
+	<1253696892-15262-3-git-send-email-B22826@freescale.com>
+	<20090923115518.GB6425@oksana.dev.rtsoft.ru>
+	<CF6163088BDE8747873ADAA4AF922BF287EDB0@zmy16exm21.fsl.freescale.net>
+To: Gao Guanhua-B22826 <B22826@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, sdhci-devel@lists.ossman.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +28,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 12, 2009, at 11:49 AM, Anton Vorontsov wrote:
+On Sep 24, 2009, at 3:28 AM, Gao Guanhua-B22826 wrote:
 
-> We'll add more steps soon, so get rid of the duplication.
+> Thanks, I will add them.
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
-> drivers/spi/spi_mpc8xxx.c |   56 ++++++++++++++++++ 
-> +-------------------------
-> 1 files changed, 24 insertions(+), 32 deletions(-)
+>> -----Original Message-----
+>> From: Anton Vorontsov [mailto:avorontsov@ru.mvista.com]
+>> Sent: Wednesday, September 23, 2009 7:55 PM
+>> To: Gao Guanhua-B22826
+>> Cc: sdhci-devel@lists.ossman.eu; linuxppc-dev@ozlabs.org
+>> Subject: Re: [PATCH 3/6] P2020DS: Fixup sdhc to use PIO mode
+>>
+>> On Wed, Sep 23, 2009 at 05:08:09PM +0800, Gao Guanhua wrote:
+>>> The SDHC can not work on DMA mode because of the hardware
+>> bug, so we
+>>> set a broken dma flag and use PIO mode. This patch applies
+>> to Rev1.0.
+>>
+>> Signed-off-by line is missing (in all patches).
+>
 
-applied to next
+Any plan to update & repost these patches?
 
 - k
