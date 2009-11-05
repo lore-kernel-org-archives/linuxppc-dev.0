@@ -1,21 +1,22 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8076DB7B7A
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 01:41:10 +1100 (EST)
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH RFC] gianfar: Make polling safe with IRQs disabled 
-In-reply-to: <20091105142028.GB17171@oksana.dev.rtsoft.ru> 
-References: <20091104225711.GA30844@oksana.dev.rtsoft.ru>
-	<E1N62ti-0003iS-K2@jdl.com>
-	<20091105142028.GB17171@oksana.dev.rtsoft.ru>
-Date: Thu, 05 Nov 2009 08:41:06 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1N63WM-0003xK-PN@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, Jason Wessel <jason.wessel@windriver.com>,
-	Andy Fleming <afleming@freescale.com>,
-	David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id AE445B7BB4
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 01:41:52 +1100 (EST)
+Subject: Re: [PATCH 3/5] powerpc/86xx: Enable NVRAM on GE Fanuc's SBC610
+Mime-Version: 1.0 (Apple Message framework v1076)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4AF2DFC4.80307@gefanuc.com>
+Date: Thu, 5 Nov 2009 08:41:44 -0600
+Message-Id: <E79EA452-7A7B-4496-ACC8-9B4EF45E8D1A@kernel.crashing.org>
+References: <20090702154928.31202.65107.stgit@ES-J7S4D2J.amer.consind.ge.com>
+	<20090702161231.31202.87763.stgit@ES-J7S4D2J.amer.consind.ge.com>
+	<DAE90CFA-DC33-4BF6-9381-35B0BC1D45C4@kernel.crashing.org>
+	<4AF2DFC4.80307@gefanuc.com>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> 
-> Hm, then I'd better remove the #ifdef CONFIG_NETPOLL.
-> 
-> Interestingly though, why conn_track does the polling with irqs
-> disabled, could be a bug in the conn_track? Because pretty much
-> drivers assume that polling is called with IRQs enabled.
-> 
-> If it's easily reproducible, could you replace the printk() with
-> WARN_ON(1) and post the backtrace? Or I can try to reproduce the
-> issue if you tell me how.
-> 
-> Thanks!
 
-Yeah, I can reproduce it.  I'll try and get that for you.
+On Nov 5, 2009, at 8:23 AM, Martyn Welch wrote:
 
-jdl
+> Kumar Gala wrote:
+>>
+>> On Jul 2, 2009, at 11:12 AM, Martyn Welch wrote:
+>>
+>>> This patch enables the NVRAM found on the GE Fanuc SBC610
+>>>
+>>> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+>>> ---
+>>>
+>>> arch/powerpc/boot/dts/gef_sbc610.dts           |    6 ++++++
+>>> arch/powerpc/configs/86xx/gef_sbc610_defconfig |    4 ++--
+>>> arch/powerpc/platforms/86xx/Kconfig            |    1 +
+>>> arch/powerpc/platforms/86xx/gef_sbc610.c       |    5 +++++
+>>> 4 files changed, 14 insertions(+), 2 deletions(-)
+>>
+>> I assume these still work w/the updates to the other patches?
+>>
+>> - k
+> I'm just updating your tree to ensure that the patches still apply  
+> (and compile) cleanly. I'm fairly confident that they will.
+
+looks like I'm getting some defconfig merge conflicts.  I'll deal with  
+them but will apply these after defconfig updates make it into benh's  
+next tree.
+
+- k
