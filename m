@@ -2,19 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6C8AFB7B77
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 00:15:41 +1100 (EST)
-Subject: Re: [PATCH][v2] powerpc/85xx: Create dts for each core in CAMP mode
-	for P2020RDB
+	by ozlabs.org (Postfix) with ESMTPS id EC576B7E8E
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 00:15:48 +1100 (EST)
+Subject: Re: [PATCH 1/7] powerpc/qe: Make qe_reset() code path safe for
+	repeated invocation
 Mime-Version: 1.0 (Apple Message framework v1076)
 Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1253380436-1590-1-git-send-email-poonam.aggrwal@freescale.com>
-Date: Thu, 5 Nov 2009 07:15:34 -0600
-Message-Id: <20089317-3713-44BA-ABDE-ECC73DADE4F0@kernel.crashing.org>
-References: <1253380436-1590-1-git-send-email-poonam.aggrwal@freescale.com>
-To: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20090915214352.GA24821@oksana.dev.rtsoft.ru>
+Date: Thu, 5 Nov 2009 07:15:42 -0600
+Message-Id: <236D3307-03C3-453A-B308-DC7D2D3300B9@kernel.crashing.org>
+References: <20090915214321.GA19377@oksana.dev.rtsoft.ru>
+	<20090915214352.GA24821@oksana.dev.rtsoft.ru>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +27,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Sep 19, 2009, at 12:13 PM, Poonam Aggrwal wrote:
+On Sep 15, 2009, at 4:43 PM, Anton Vorontsov wrote:
 
-> This patch creates the dts files for each core and splits the  
-> devices between
-> the two cores for P2020RDB.
+> For MPC8569 CPUs we'll need to reset QE after each suspend, so make
+> qe_reset() code path suitable for repeated invocation, that is:
 >
-> core0 has memory, L2, i2c, spi, dma1, usb, eth0, eth1, crypto,  
-> global-util, pci0
-> core1 has L2, dma2, eth0, pci1, msi.
+> - Don't initialize rheap structures if already initialized;
+> - Don't allocate muram for SDMA if already allocated, just  
+> reinitialize
+>  registers with previously allocated muram offset;
+> - Remove __init attributes from qe_reset() and cpm_muram_init();
 >
-> MPIC is shared between two cores but each core will protect its
-> interrupts from other core by using "protected-sources" of mpic.
->
-> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> - based on http://www.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-> - branch->next
-> - Removed interrupt properties for serial ports to make them work in  
-> polling mode.
-> arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |  363 ++++++++++++++++ 
-> +++++++++
-> arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |  184 +++++++++++++
-> arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |   10 +-
-> 3 files changed, 556 insertions(+), 1 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-> create mode 100644 arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
+> arch/powerpc/include/asm/qe.h    |    2 +-
+> arch/powerpc/sysdev/cpm_common.c |    5 ++++-
+> arch/powerpc/sysdev/qe_lib/qe.c  |   12 +++++++-----
+> 3 files changed, 12 insertions(+), 7 deletions(-)
 
 applied to next.
 
