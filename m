@@ -1,26 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8536CB7BB3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 Nov 2009 11:20:32 +1100 (EST)
-Date: Thu, 5 Nov 2009 11:20:20 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] BUILD_BUG_ON: make it handle more cases
-Message-Id: <20091105112020.33f02552.sfr@canb.auug.org.au>
-In-Reply-To: <200910201415.34361.rusty@rustcorp.com.au>
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	<200910201142.34006.rusty@rustcorp.com.au>
-	<1256002193.6546.2.camel@slab>
-	<200910201415.34361.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__5_Nov_2009_11_20_20_+1100_+dqOcjvsFQwyL1KA"
-Cc: Hollis Blanchard <hollisb@us.ibm.com>, linux-kernel@vger.kernel.org,
-	kvm-ppc@vger.kernel.org, linux-next@vger.kernel.org,
-	Jan Beulich <JBeulich@novell.com>, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5DD8BB7BB3
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 11:48:52 +1100 (EST)
+In-Reply-To: <280C9FF6-1C52-4856-9F60-15DA0659FC31@suse.de>
+References: <1256917647-6200-1-git-send-email-agraf@suse.de>
+	<1256917647-6200-15-git-send-email-agraf@suse.de>
+	<A1CBD511-FF08-48BB-A8D6-9F66E20F770B@kernel.crashing.org>
+	<280C9FF6-1C52-4856-9F60-15DA0659FC31@suse.de>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <070A7C13-92FC-482E-B72B-FDE84501E132@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 14/27] Add book3s_64 specific opcode emulation
+Date: Thu, 5 Nov 2009 01:53:29 +0100
+To: Alexander Graf <agraf@suse.de>
+Cc: Kevin Wolf <kwolf@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+	Hollis Blanchard <hollisb@us.ibm.com>,
+	Marcelo Tosatti <mtosatti@redhat.com>,
+	kvm-ppc <kvm-ppc@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+	bphilips@suse.de, Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,55 +31,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__5_Nov_2009_11_20_20_+1100_+dqOcjvsFQwyL1KA
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Rusty,
-
-On Tue, 20 Oct 2009 14:15:33 +1030 Rusty Russell <rusty@rustcorp.com.au> wr=
-ote:
+>>> +		case OP_31_XOP_EIOIO:
+>>> +			break;
+>>
+>> Have you always executed an eieio or sync when you get here, or
+>> do you just not allow direct access to I/O devices?  Other context
+>> synchronising insns are not enough, they do not broadcast on the
+>> bus.
 >
-> +#ifndef __OPTIMIZE__
-> +#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
-> +#else
-> +extern int __build_bug_on_failed;
-> +#define BUILD_BUG_ON(condition)					\
-> +	do {							\
-> +		((void)sizeof(char[1 - 2*!!(condition)]));	\
-> +		if (condition) __build_bug_on_failed =3D 1;	\
-> +	} while(0)
-> +#endif
-> +#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
-> +
+> There is no device passthrough yet :-). It's theoretically  
+> possible, but nothing for it is implemented so far.
 
-I decided to try this in linux-next, but an x86_64 allmodconfig build
-gave this (gcc 4.4.0):
+You could just always do an eieio here, it's not expensive at all
+compared to the emulation trap itself.
 
-ERROR: "__build_bug_on_failed" [drivers/net/virtio_net.ko] undefined!
-ERROR: "__build_bug_on_failed" [drivers/block/virtio_blk.ko] undefined!
+However -- eieio is a Book II insn, it will never trap anyway!
 
-I assume that this is caused by the "MAYBE_BUILD_BUG_ON(fbit >=3D 32)" in
-virtio_has_feature() (in include/linux/virtio_config.h) which is called
-all over the place.  Unfortunately, virtio_has_feature() gets uninlined
-in those two files ...
+>>> +		case OP_31_XOP_DCBZ:
+>>> +		{
+>>> +			ulong rb =  vcpu->arch.gpr[get_rb(inst)];
+>>> +			ulong ra = 0;
+>>> +			ulong addr;
+>>> +			u32 zeros[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+>>> +
+>>> +			if (get_ra(inst))
+>>> +				ra = vcpu->arch.gpr[get_ra(inst)];
+>>> +
+>>> +			addr = (ra + rb) & ~31ULL;
+>>> +			if (!(vcpu->arch.msr & MSR_SF))
+>>> +				addr &= 0xffffffff;
+>>> +
+>>> +			if (kvmppc_st(vcpu, addr, 32, zeros)) {
+>>
+>> DCBZ zeroes out a cache line, not 32 bytes; except on 970, where  
+>> there
+>> are HID bits to make it work on 32 bytes only, and an extra DCBZL  
+>> insn
+>> that always clears a full cache line (128 bytes).
+>
+> Yes. We only come here when we patched the dcbz opcodes to invalid  
+> instructions
 
-I have taken the patch back out again for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ah yes, I forgot.  Could you rename it to OP_31_XOP_FAKE_32BIT_DCBZ
+or such?
 
---Signature=_Thu__5_Nov_2009_11_20_20_+1100_+dqOcjvsFQwyL1KA
-Content-Type: application/pgp-signature
+> because cache line size of target == 32.
+> On 970 with MSR_HV = 0 we actually use the dcbz 32-bytes mode.
+>
+> Admittedly though, this could be a lot more clever.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+>>> +		/* guest HID5 set can change is_dcbz32 */
+>>> +		if (vcpu->arch.mmu.is_dcbz32(vcpu) &&
+>>> +		    (mfmsr() & MSR_HV))
+>>> +			vcpu->arch.hflags |= BOOK3S_HFLAG_DCBZ32;
+>>> +		break;
+>>
+>> Wait, does this mean you allow other HID writes when MSR[HV] isn't
+>> set?  All HIDs (and many other SPRs) cannot be read or written in
+>> supervisor mode.
+>
+> When we're running in MSR_HV=0 mode on a 970 we can use the 32 byte  
+> dcbz HID flag. So all we need to do is tell our entry/exit code to  
+> set this bit.
 
-iEYEARECAAYFAkryGkQACgkQjjKRsyhoI8yNnwCgqxtqC7HlRrQPSf2/86SIICQx
-NNUAn0WTwWtUTvocyofSmByl1KGyiCwd
-=1ISe
------END PGP SIGNATURE-----
+Which patch contains that entry/exit code?
 
---Signature=_Thu__5_Nov_2009_11_20_20_+1100_+dqOcjvsFQwyL1KA--
+> If we're on 970 on a hypervisor or on a non-970 though we can't use  
+> the HID5 bit, so we need to binary patch the opcodes.
+>
+> So in order to emulate real 970 behavior, we need to be able to  
+> emulate that HID5 bit too! That's what this chunk of code does - it  
+> basically sets us in dcbz32 mode when allowed on 970 guests.
+
+But when MSR[HV]=0 and MSR[PR]=0, mtspr to a hypervisor resource
+will not trap but be silently ignored.  Sorry for not being more clear.
+...Oh.  You run your guest as MSR[PR]=1 anyway!  Tricky.
+
+
+Segher
