@@ -1,21 +1,15 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 58699B7B96
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 Nov 2009 21:11:31 +1100 (EST)
-Date: Thu, 5 Nov 2009 11:11:21 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 00/11] More OF merge patches
-Message-ID: <20091105101121.GE3478@pengutronix.de>
-References: <20091105073728.10460.6061.stgit@angua>
+Return-Path: <Frank.Prepelica@ubidyne.com>
+Received: from mail.ubidyne.com (mail.ubidyne.com [212.211.133.238])
+	by ozlabs.org (Postfix) with ESMTP id 04413B7B99
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 21:14:56 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="y2zxS2PfCDLh6JVG"
-In-Reply-To: <20091105073728.10460.6061.stgit@angua>
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: System hangs when exceeding a certain initramfs size
+Date: Thu, 5 Nov 2009 11:02:46 +0100
+Message-ID: <29DC34A6B43468409F5A371CFE34E849F9AFBA@ex01.ads.ubidyne.de>
+From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi all,
 
---y2zxS2PfCDLh6JVG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I experience the issue when the kernel image (including the initramfs)
+exceeds a=20
+certain size (>6MB) that after unpacking the kernel the systems hangs
+at:
 
-On Thu, Nov 05, 2009 at 12:45:09AM -0700, Grant Likely wrote:
+bootm 2000000 - 3000000
+## Booting image at 02000000 ...
+   Image Name:   Linux-2.6.29
+   Created:      2009-11-04  14:25:01 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    6798037 Bytes =3D  6.5 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+   Booting using the fdt at 0x3000000
+   Loading Device Tree to 00ffc000, end 00ffefff ... OK
 
-> I've also pushed this series out to the test-devicetree branch on my
-> git server if anyone cares to pull and test:
 
-I did :) Works fine on my phyCORE-IO (MPC5200B). If you pick up my comments:
+I've found some hints regarding this problem (load_address in the
+wrapper script)=20
+but this doesn't works for me.=20
 
-Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
+I'm using Kernel v2.6.29 and U-Boot v1.3.0 on a customized MPC8313ERDB
+board
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Thank you for any help!
 
---y2zxS2PfCDLh6JVG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrypMkACgkQD27XaX1/VRtQ5ACeM+lgu7WV3d++al8FtKudoSpG
-dVQAnRwQwD5qzr2CdncE5tJGrLjLVUlr
-=rjbW
------END PGP SIGNATURE-----
-
---y2zxS2PfCDLh6JVG--
+Kind regards
+Frank
