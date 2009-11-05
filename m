@@ -1,32 +1,39 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <B05799@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8E00FB7BA4
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 03:59:56 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e3.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nA5Gpab7011127
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 11:51:36 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nA5GxrKB108774
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 11:59:53 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nA5GxrNs026388
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 11:59:53 -0500
-Message-ID: <4AF3046A.4050508@austin.ibm.com>
-Date: Thu, 05 Nov 2009 10:59:22 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CD910B7B99
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 04:23:12 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nA5HN9uD003124
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 10:23:10 -0700 (MST)
+Received: from zin33exm22.fsl.freescale.net (zin33exm22.ap.freescale.net
+	[10.232.192.20])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id nA5HQvc2027674
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 11:26:59 -0600 (CST)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 2/5] Merge dynamic OF code to of_dynamic.c
-References: <4AF1FB29.50905@austin.ibm.com> <4AF1FD46.9050101@austin.ibm.com>
-	<fa686aa40911042355l73c7511bod3b2f651e9c9a5a4@mail.gmail.com>
-In-Reply-To: <fa686aa40911042355l73c7511bod3b2f651e9c9a5a4@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH RFC] gianfar: Do not call skb recycling with disabled IRQs
+Date: Thu, 5 Nov 2009 22:53:08 +0530
+Message-ID: <9F4C7D19E8361D4C94921B95BE08B81B950713@zin33exm22.fsl.freescale.net>
+In-Reply-To: <20091105165738.GA31923@oksana.dev.rtsoft.ru>
+References: <20091104225711.GA30844@oksana.dev.rtsoft.ru>
+	<E1N62ti-0003iS-K2@jdl.com>
+	<20091105142028.GB17171@oksana.dev.rtsoft.ru>
+	<E1N63WM-0003xK-PN@jdl.com> <E1N64UY-00049g-Hb@jdl.com>
+	<20091105165738.GA31923@oksana.dev.rtsoft.ru>
+From: "Kumar Gopalpet-B05799" <B05799@freescale.com>
+To: <avorontsov@ru.mvista.com>, "Jon Loeliger" <jdl@jdl.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Fleming Andy-AFLEMING <afleming@freescale.com>,
+	Jason Wessel <jason.wessel@windriver.com>,
+	Stephen Hemminger <shemminger@vyatta.com>,
+	David Miller <davem@davemloft.net>,
+	Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,54 +43,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> Hi Nathan,
-> 
-> Thanks for the patches.  Comments below.
-> 
-> On Wed, Nov 4, 2009 at 3:16 PM, Nathan Fontenot <nfont@austin.ibm.com> wrote:
->> Creation of the OF dynamic device tree update code in drivers/of.  This
->> merges the common device tree updating routines to add/remove nodes and
->> properties from powerpc and microblaze.  All of the new code is conditional
->> based on a new OF_DYNAMIC config option.
-> 
-> Rather than one patch to create all the moved functions, and then
-> subsequent patches to remove the duplicates from each arch, I've been
-> using the pattern of one patch for each function or couple of
-> functions to both remove from the old files and add to the new home.
-> Would you be able to do the same for your patches here?  The merging
-> is complicated enough without having to track changes to a function
-> between separate commits.  Moving one function at a time will also
-> make bisecting more friendly.
+=20
+
+
+[.....]
+> drivers/net/gianfar.c |   19 +++----------------
+> 1 files changed, 3 insertions(+), 16 deletions(-)
 >
+>diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c=20
+>index 197b358..a0ae604 100644
+>--- a/drivers/net/gianfar.c
+>+++ b/drivers/net/gianfar.c
+>@@ -1899,10 +1899,8 @@ static int gfar_start_xmit(struct=20
+>sk_buff *skb, struct net_device *dev)
+> 	u32 lstatus;
+> 	int i, rq =3D 0;
+> 	u32 bufaddr;
+>-	unsigned long flags;
+> 	unsigned int nr_frags, length;
+>=20
+>-
+> 	rq =3D skb->queue_mapping;
+> 	tx_queue =3D priv->tx_queue[rq];
+> 	txq =3D netdev_get_tx_queue(dev, rq);
+>@@ -1928,14 +1926,11 @@ static int gfar_start_xmit(struct=20
+>sk_buff *skb, struct net_device *dev)
+> 	/* total number of fragments in the SKB */
+> 	nr_frags =3D skb_shinfo(skb)->nr_frags;
+>=20
+>-	spin_lock_irqsave(&tx_queue->txlock, flags);
+>-
+> 	/* check if there is space to queue this packet */
+> 	if ((nr_frags+1) > tx_queue->num_txbdfree) {
+> 		/* no space, stop the queue */
+> 		netif_tx_stop_queue(txq);
+> 		dev->stats.tx_fifo_errors++;
+>-		spin_unlock_irqrestore(&tx_queue->txlock, flags);
+> 		return NETDEV_TX_BUSY;
+> 	}
+>=20
+>@@ -2033,9 +2028,6 @@ static int gfar_start_xmit(struct=20
+>sk_buff *skb, struct net_device *dev)
+> 	/* Tell the DMA to go go go */
+> 	gfar_write(&regs->tstat, TSTAT_CLEAR_THALT >> tx_queue->qindex);
+>=20
+>-	/* Unlock priv */
+>-	spin_unlock_irqrestore(&tx_queue->txlock, flags);
+>-
+> 	return NETDEV_TX_OK;
+> }
+>=20
+>@@ -2550,7 +2542,6 @@ static int gfar_poll(struct napi_struct=20
+>*napi, int budget)
+> 	int tx_cleaned =3D 0, i, left_over_budget =3D budget;
+> 	unsigned long serviced_queues =3D 0;
+> 	int num_queues =3D 0;
+>-	unsigned long flags;
+>=20
+> 	num_queues =3D gfargrp->num_rx_queues;
+> 	budget_per_queue =3D budget/num_queues;
+>@@ -2570,13 +2561,9 @@ static int gfar_poll(struct napi_struct=20
+>*napi, int budget)
+> 			rx_queue =3D priv->rx_queue[i];
+> 			tx_queue =3D priv->tx_queue[rx_queue->qindex];
+>=20
+>-			/* If we fail to get the lock,
+>-			 * don't bother with the TX BDs */
+>-			if=20
+>(spin_trylock_irqsave(&tx_queue->txlock, flags)) {
+>-				tx_cleaned +=3D=20
+>gfar_clean_tx_ring(tx_queue);
+>-			=09
+>spin_unlock_irqrestore(&tx_queue->txlock,
+>-							flags);
+>-			}
+>+			netif_tx_lock_bh(priv->ndev);
 
-Shouldn't be a problem.
+Will this not lead to locking all the tx queues even though at this
+point we are working on a "particular queue" ?
 
- 
-> Also, have you checked what impact these changes have on SPARC?
->
+>+			tx_cleaned +=3D gfar_clean_tx_ring(tx_queue);
+>+			netif_tx_unlock_bh(priv->ndev);
+>=20
+> 			rx_cleaned_per_queue =3D=20
+>gfar_clean_rx_ring(rx_queue,
+> 						=09
+>budget_per_queue);
+>--
 
-I took a look at sparc code, but will do again as I redo the patches to
-make there are no impacts. 
- 
->> --- linux-next.orig/drivers/of/Makefile 2009-11-03 11:18:08.000000000 -0600
->> +++ linux-next/drivers/of/Makefile      2009-11-03 13:42:35.000000000 -0600
->> @@ -1,6 +1,7 @@
->> obj-y = base.o
->> -obj-$(CONFIG_OF_DEVICE) += device.o platform.o
->> -obj-$(CONFIG_OF_GPIO)   += gpio.o
->> -obj-$(CONFIG_OF_I2C)   += of_i2c.o
->> -obj-$(CONFIG_OF_SPI)   += of_spi.o
->> -obj-$(CONFIG_OF_MDIO)  += of_mdio.o
->> +obj-$(CONFIG_OF_DEVICE)                += device.o platform.o
->> +obj-$(CONFIG_OF_GPIO)          += gpio.o
->> +obj-$(CONFIG_OF_I2C)           += of_i2c.o
->> +obj-$(CONFIG_OF_SPI)           += of_spi.o
->> +obj-$(CONFIG_OF_MDIO)          += of_mdio.o
->> +obj-$(CONFIG_OF_DYNAMIC)       += of_dynamic.o
-> 
-> Unrelated whitespace churn makes it hard to see what actually changed.
-> 
-ok.
+--
 
--Nathan Fontenot
+Thanks
+Sandeep
