@@ -1,32 +1,22 @@
-Return-Path: <max@hinterhof.net>
-Received: from mail.nusquama.org (mail.nusquama.org [85.131.211.20])
+Return-Path: <James.Bottomley@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.nusquama.org", Issuer "Max Vozeler" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 4EE93B7B9A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  6 Nov 2009 01:36:11 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.nusquama.org (Postfix) with ESMTP id 5E6243C110
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 Nov 2009 15:06:31 +0100 (CET)
-Received: from quark.vpn.nusquama.org (ip-92-50-90-221.unitymediagroup.de
-	[92.50.90.221])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "quark.vpn.nusquama.org", Issuer "Max Vozeler" (verified OK))
-	by mail.nusquama.org (Postfix) with ESMTP id 1E9EE3C10E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 Nov 2009 15:06:31 +0100 (CET)
-Resent-Message-ID: <20091105140603.GB11157@quark.vpn.nusquama.org>
-Date: Wed, 4 Nov 2009 13:39:49 +0100
-From: Max Vozeler <max@hinterhof.net>
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: term_adt746x: Invert bit required on this Powerbook G4
-Message-ID: <20091104123949.GA9104@quark.vpn.nusquama.org>
-References: <20091104122355.GA7269@quark.vpn.nusquama.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091104122355.GA7269@quark.vpn.nusquama.org>
-Cc: linuxppc-dev@lists.ozlab.org
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 95537B7BBC
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 03:07:22 +1100 (EST)
+Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit
+	resources.
+From: James Bottomley <James.Bottomley@suse.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20091105134330.GA30489@zod.rchland.ibm.com>
+References: <1253053555-25097-1-git-send-email-pbathija@amcc.com>
+	<20091105134330.GA30489@zod.rchland.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 05 Nov 2009 10:07:06 -0600
+Message-Id: <1257437226.2753.64.camel@mulgrave.site>
+Mime-Version: 1.0
+Cc: Eric.Moore@lsi.com, pbathija@amcc.com, linux-scsi@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +26,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 04, 2009 at 01:23:55PM +0100, Max Vozeler wrote:
-> After some poking around, in which everything seemed to be
-> according to plan including write of 0 to both FAN_SPD_SET regs,
-> I noticed that explicitly *setting* the invert bit as in 
+On Thu, 2009-11-05 at 08:43 -0500, Josh Boyer wrote:
+> On Tue, Sep 15, 2009 at 03:25:55PM -0700, pbathija@amcc.com wrote:
+> >From: Pravin Bathija <pbathija@amcc.com>
+> >
+> >Powerpc 44x uses 36 bit real address while the real address defined
+> >in MPT Fusion driver is of type 32 bit. This causes ioremap to fail and driver
+> >fails to initialize. This fix changes the data types representing the real
+> >address from unsigned long 32-bit types to "phys_addr_t" which is 64-bit. The
+> >driver has been tested, the disks get discovered correctly and can do IO. Also,
+> >replaced phys_addr_t with resource_size_t as suggested by Ben.
+> >
+> >Signed-off-by: Pravin Bathija <pbathija@amcc.com>
+> >Acked-by: Feng Kan <fkan@amcc.com>
+> >Acked-by: Prodyut Hazarika <phazarika@amcc.com>
+> >Acked-by: Loc Ho <lho@amcc.com>
+> >Acked-by: Tirumala Reddy Marri <tmarri@amcc.com>
+> >Acked-by: Victor Gallardo <vgallardo@amcc.com>
 > 
->  -		write_reg(th, MANUAL_MODE[fan],
->  -			(manual|MANUAL_MASK) & (~INVERT_MASK));
->  +		write_reg(th, MANUAL_MODE[fan],
->  +			(manual|MANUAL_MASK|INVERT_MASK));
+> Is this patch included in the scsi tree at all?  I can't seem to find it in
+> linux-next and I know it's not in the powerpc tree.  Are there further changes
+> needed, or has it simply been missed?
+
+What was the feedback from LSI ... I haven't seen any here?
+
+> josh
 > 
-> seems to cure it. The fan appears to behave normally now, it
-> turns on slowly when the temp limits are reached, otherwise it
-> stays off. The temperature is reasonable (ie, no too hot).
-> 
-> So, puzzeled, I checked the spec, and it appears very clear on
-> the question of invert: It should be off by default.
+> >
+> >---
+> > drivers/message/fusion/mptbase.c |   34 +++++++++++++++++++++++++---------
+> > drivers/message/fusion/mptbase.h |    5 +++--
+> > 2 files changed, 28 insertions(+), 11 deletions(-)
+> >
+> >diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
+> >index 5d496a9..e296f2e 100644
+> >--- a/drivers/message/fusion/mptbase.c
+> >+++ b/drivers/message/fusion/mptbase.c
+> >@@ -1510,11 +1510,12 @@ static int
+> > mpt_mapresources(MPT_ADAPTER *ioc)
+> > {
+> > 	u8		__iomem *mem;
+> >+	u8		__iomem *port;
+> > 	int		 ii;
+> >-	unsigned long	 mem_phys;
+> >-	unsigned long	 port;
+> >-	u32		 msize;
+> >-	u32		 psize;
+> >+	resource_size_t	 mem_phys;
+> >+	resource_size_t	 port_phys;
+> >+	resource_size_t	 msize;
+> >+	resource_size_t	 psize;
+> > 	u8		 revision;
+> > 	int		 r = -ENODEV;
+> > 	struct pci_dev *pdev;
+> >@@ -1552,13 +1553,13 @@ mpt_mapresources(MPT_ADAPTER *ioc)
+> > 	}
+> >
+> > 	mem_phys = msize = 0;
+> >-	port = psize = 0;
+> >+	port_phys = psize = 0;
+> > 	for (ii = 0; ii < DEVICE_COUNT_RESOURCE; ii++) {
+> > 		if (pci_resource_flags(pdev, ii) & PCI_BASE_ADDRESS_SPACE_IO) {
+> > 			if (psize)
+> > 				continue;
+> > 			/* Get I/O space! */
+> >-			port = pci_resource_start(pdev, ii);
+> >+			port_phys = pci_resource_start(pdev, ii);
+> > 			psize = pci_resource_len(pdev, ii);
+> > 		} else {
+> > 			if (msize)
+> >@@ -1580,14 +1581,23 @@ mpt_mapresources(MPT_ADAPTER *ioc)
+> > 		return -EINVAL;
+> > 	}
+> > 	ioc->memmap = mem;
+> >-	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem = %p, mem_phys = %lx\n",
+> >-	    ioc->name, mem, mem_phys));
+> >+	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem = %p, mem_phys = %llx\n",
+> >+	    ioc->name, mem, (u64)mem_phys));
+> >
+> > 	ioc->mem_phys = mem_phys;
+> > 	ioc->chip = (SYSIF_REGS __iomem *)mem;
+> >
+> > 	/* Save Port IO values in case we need to do downloadboot */
+> >-	ioc->pio_mem_phys = port;
+> >+	port = ioremap(port_phys, psize);
+> >+	if (port == NULL) {
+> >+		printk(MYIOC_s_ERR_FMT " : ERROR - Unable to map adapter"
+> >+			" port !\n", ioc->name);
+> >+		return -EINVAL;
 
-Another datapoint: 
+So this looks problematic on a few platforms ... what happens to
+platforms that have no IO space?  They automatically fail here and it
+looks like the adapter never attaches.
 
-The PRAM battery in this Powerbook is old, so it forgets e.g.
-clock state completely when not connected to the power supply.
-
-These are the PWM1/PWM2 registers during probe_thermostat() 
-after such a complete poweroff:
-
-[   28.332700] adt746x: ADT7460 initializing
-[   28.385266] ZZZ MANUAL_MODE[0] 0xd2
-[   28.385832] ZZZ MANUAL_MODE[1] 0x82
-
-So if I'm reading this correctly, PWM1 starts off with the 
-invert bit (0x10) set, for some reason.
-
-	Max
+James
