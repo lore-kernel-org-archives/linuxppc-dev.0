@@ -1,17 +1,21 @@
-Return-Path: <grant.likely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 11/11] of/flattree: Merge early_init_dt_check_for_initrd()
-To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	benh@kernel.crashing.org, sfr@canb.auug.org.au,
-	davem@davemloft.net, sparclinux@vger.kernel.org,
-	monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au
-Date: Thu, 05 Nov 2009 00:47:47 -0700
-Message-ID: <20091105074724.10460.4083.stgit@angua>
-In-Reply-To: <20091105073728.10460.6061.stgit@angua>
-References: <20091105073728.10460.6061.stgit@angua>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id 6A49DB7BC5
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 18:55:36 +1100 (EST)
+Received: by gxk28 with SMTP id 28so1719937gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 04 Nov 2009 23:55:35 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Sender: glikely@secretlab.ca
+In-Reply-To: <4AF1FD46.9050101@austin.ibm.com>
+References: <4AF1FB29.50905@austin.ibm.com> <4AF1FD46.9050101@austin.ibm.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 5 Nov 2009 00:55:15 -0700
+Message-ID: <fa686aa40911042355l73c7511bod3b2f651e9c9a5a4@mail.gmail.com>
+Subject: Re: [RFC PATCH 2/5] Merge dynamic OF code to of_dynamic.c
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,165 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between PowerPC and Microblaze
+Hi Nathan,
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Thanks for the patches.  Comments below.
 
- arch/microblaze/kernel/prom.c |   32 --------------------------------
- arch/powerpc/kernel/prom.c    |   30 ------------------------------
- drivers/of/fdt.c              |   37 +++++++++++++++++++++++++++++++++++++
- include/linux/of_fdt.h        |    1 +
- 4 files changed, 38 insertions(+), 62 deletions(-)
+On Wed, Nov 4, 2009 at 3:16 PM, Nathan Fontenot <nfont@austin.ibm.com> wrot=
+e:
+> Creation of the OF dynamic device tree update code in drivers/of. =A0This
+> merges the common device tree updating routines to add/remove nodes and
+> properties from powerpc and microblaze. =A0All of the new code is conditi=
+onal
+> based on a new OF_DYNAMIC config option.
 
-diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index a38e373..7959495 100644
---- a/arch/microblaze/kernel/prom.c
-+++ b/arch/microblaze/kernel/prom.c
-@@ -113,38 +113,6 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	return 0;
- }
- 
--#ifdef CONFIG_BLK_DEV_INITRD
--static void __init early_init_dt_check_for_initrd(unsigned long node)
--{
--	unsigned long l;
--	u32 *prop;
--
--	pr_debug("Looking for initrd properties... ");
--
--	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
--	if (prop) {
--		initrd_start = (unsigned long)
--					__va((u32)of_read_ulong(prop, l/4));
--
--		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
--		if (prop) {
--			initrd_end = (unsigned long)
--					__va((u32)of_read_ulong(prop, 1/4));
--			initrd_below_start_ok = 1;
--		} else {
--			initrd_start = 0;
--		}
--	}
--
--	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
--					initrd_start, initrd_end);
--}
--#else
--static inline void early_init_dt_check_for_initrd(unsigned long node)
--{
--}
--#endif /* CONFIG_BLK_DEV_INITRD */
--
- static int __init early_init_dt_scan_chosen(unsigned long node,
- 				const char *uname, int depth, void *data)
- {
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 7f88566..1ecd6c6 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -373,36 +373,6 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	return 0;
- }
- 
--#ifdef CONFIG_BLK_DEV_INITRD
--static void __init early_init_dt_check_for_initrd(unsigned long node)
--{
--	unsigned long l;
--	u32 *prop;
--
--	DBG("Looking for initrd properties... ");
--
--	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
--	if (prop) {
--		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
--
--		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
--		if (prop) {
--			initrd_end = (unsigned long)
--					__va(of_read_ulong(prop, l/4));
--			initrd_below_start_ok = 1;
--		} else {
--			initrd_start = 0;
--		}
--	}
--
--	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
--}
--#else
--static inline void early_init_dt_check_for_initrd(unsigned long node)
--{
--}
--#endif /* CONFIG_BLK_DEV_INITRD */
--
- static int __init early_init_dt_scan_chosen(unsigned long node,
- 					    const char *uname, int depth, void *data)
- {
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index ad3a2b6..3c58f10 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -11,6 +11,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/lmb.h>
-+#include <linux/initrd.h>
- #include <linux/of.h>
- #include <linux/of_fdt.h>
- 
-@@ -370,6 +371,42 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
- 	return mem;
- }
- 
-+#ifdef CONFIG_BLK_DEV_INITRD
-+/**
-+ * early_init_dt_check_for_initrd - Decode initrd location from flat tree
-+ * @node: reference to node containing initrd location ('chosen')
-+ */
-+void __init early_init_dt_check_for_initrd(unsigned long node)
-+{
-+	unsigned long len;
-+	u32 *prop;
-+
-+	pr_debug("Looking for initrd properties... ");
-+
-+	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &len);
-+	if (prop) {
-+		initrd_start = (unsigned long)
-+				__va(of_read_ulong(prop, len/4));
-+
-+		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &len);
-+		if (prop) {
-+			initrd_end = (unsigned long)
-+				__va(of_read_ulong(prop, len/4));
-+			initrd_below_start_ok = 1;
-+		} else {
-+			initrd_start = 0;
-+		}
-+	}
-+
-+	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
-+		 initrd_start, initrd_end);
-+}
-+#else
-+inline void early_init_dt_check_for_initrd(unsigned long node)
-+{
-+}
-+#endif /* CONFIG_BLK_DEV_INITRD */
-+
- /**
-  * unflatten_device_tree - create tree of device_nodes from flat blob
-  *
-diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index 81231e0..ec2db82 100644
---- a/include/linux/of_fdt.h
-+++ b/include/linux/of_fdt.h
-@@ -69,6 +69,7 @@ extern void *of_get_flat_dt_prop(unsigned long node, const char *name,
- 				 unsigned long *size);
- extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
- extern unsigned long of_get_flat_dt_root(void);
-+extern void early_init_dt_check_for_initrd(unsigned long node);
- 
- /* Other Prototypes */
- extern void finish_device_tree(void);
+Rather than one patch to create all the moved functions, and then
+subsequent patches to remove the duplicates from each arch, I've been
+using the pattern of one patch for each function or couple of
+functions to both remove from the old files and add to the new home.
+Would you be able to do the same for your patches here?  The merging
+is complicated enough without having to track changes to a function
+between separate commits.  Moving one function at a time will also
+make bisecting more friendly.
+
+Also, have you checked what impact these changes have on SPARC?
+
+> --- linux-next.orig/drivers/of/Makefile 2009-11-03 11:18:08.000000000 -06=
+00
+> +++ linux-next/drivers/of/Makefile =A0 =A0 =A02009-11-03 13:42:35.0000000=
+00 -0600
+> @@ -1,6 +1,7 @@
+> obj-y =3D base.o
+> -obj-$(CONFIG_OF_DEVICE) +=3D device.o platform.o
+> -obj-$(CONFIG_OF_GPIO) =A0 +=3D gpio.o
+> -obj-$(CONFIG_OF_I2C) =A0 +=3D of_i2c.o
+> -obj-$(CONFIG_OF_SPI) =A0 +=3D of_spi.o
+> -obj-$(CONFIG_OF_MDIO) =A0+=3D of_mdio.o
+> +obj-$(CONFIG_OF_DEVICE) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0+=3D device.o pla=
+tform.o
+> +obj-$(CONFIG_OF_GPIO) =A0 =A0 =A0 =A0 =A0+=3D gpio.o
+> +obj-$(CONFIG_OF_I2C) =A0 =A0 =A0 =A0 =A0 +=3D of_i2c.o
+> +obj-$(CONFIG_OF_SPI) =A0 =A0 =A0 =A0 =A0 +=3D of_spi.o
+> +obj-$(CONFIG_OF_MDIO) =A0 =A0 =A0 =A0 =A0+=3D of_mdio.o
+> +obj-$(CONFIG_OF_DYNAMIC) =A0 =A0 =A0 +=3D of_dynamic.o
+
+Unrelated whitespace churn makes it hard to see what actually changed.
+
+Thanks,
+g.
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
