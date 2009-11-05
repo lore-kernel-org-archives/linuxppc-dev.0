@@ -1,22 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 94E19B7BA9
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 06:59:12 +1100 (EST)
-Subject: Re: [PATCH 1/3] powerpc/83xx/suspend: Clear deep_sleeping
-	after	devices resume
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4AF32C0B.4010109@freescale.com>
-Date: Thu, 5 Nov 2009 13:59:05 -0600
-Message-Id: <7A8DBFC0-69D9-406B-B1AC-3EAC8EE26C58@kernel.crashing.org>
-References: <20090923190041.GA18944@oksana.dev.rtsoft.ru>	<20090923190113.GA19932@oksana.dev.rtsoft.ru>	<043A102D-9F70-4287-B34E-17FF9AE90EE1@kernel.crashing.org>	<4AF30406.3080101@freescale.com>
-	<2F8E2E66-8398-4ACD-9697-6C2AB6E39CD3@kernel.crashing.org>
-	<4AF32C0B.4010109@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id 28E67B7B9A
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 07:00:34 +1100 (EST)
+Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit
+	resources.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: James Bottomley <James.Bottomley@suse.de>
+In-Reply-To: <1257437226.2753.64.camel@mulgrave.site>
+References: <1253053555-25097-1-git-send-email-pbathija@amcc.com>
+	<20091105134330.GA30489@zod.rchland.ibm.com>
+	<1257437226.2753.64.camel@mulgrave.site>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 06 Nov 2009 07:00:18 +1100
+Message-ID: <1257451218.13611.114.camel@pasglop>
+Mime-Version: 1.0
+Cc: Eric.Moore@lsi.com, pbathija@amcc.com, linux-scsi@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2009-11-05 at 10:07 -0600, James Bottomley wrote:
 
-On Nov 5, 2009, at 1:48 PM, Scott Wood wrote:
+> > > 	ioc->memmap = mem;
+> > >-	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem = %p, mem_phys = %lx\n",
+> > >-	    ioc->name, mem, mem_phys));
+> > >+	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem = %p, mem_phys = %llx\n",
+> > >+	    ioc->name, mem, (u64)mem_phys));
+> > >
+> > > 	ioc->mem_phys = mem_phys;
+> > > 	ioc->chip = (SYSIF_REGS __iomem *)mem;
+> > >
+> > > 	/* Save Port IO values in case we need to do downloadboot */
+> > >-	ioc->pio_mem_phys = port;
+> > >+	port = ioremap(port_phys, psize);
+> > >+	if (port == NULL) {
+> > >+		printk(MYIOC_s_ERR_FMT " : ERROR - Unable to map adapter"
+> > >+			" port !\n", ioc->name);
+> > >+		return -EINVAL;
+> 
+> So this looks problematic on a few platforms ... what happens to
+> platforms that have no IO space?  They automatically fail here and it
+> looks like the adapter never attaches.
 
-> Kumar Gala wrote:
->> On Nov 5, 2009, at 10:57 AM, Scott Wood wrote:
->>> Kumar Gala wrote:
->>>> On Sep 23, 2009, at 2:01 PM, Anton Vorontsov wrote:
->>>>> Currently 83xx PMC driver clears deep_sleeping variable very  
->>>>> early,
->>>>> before devices are resumed. This makes fsl_deep_sleep() unusable  
->>>>> in
->>>>> drivers' resume() callback.
->>>>>
->>>>> Sure, drivers can store fsl_deep_sleep() value on suspend and use
->>>>> the stored value on resume. But a better solution is to postpone
->>>>> clearing the deep_sleeping variable, i.e. move it into finish()
->>>>> callback.
->>>>>
->>>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>>>> ---
->>>>> arch/powerpc/platforms/83xx/suspend.c |    4 ++--
->>>>> 1 files changed, 2 insertions(+), 2 deletions(-)
->>>> Scott, any comments or an ack?
->>>
->>> ACK
->> thanks, is that an ACK for all 3?
->
-> The first.  Patch 2 looks OK as well.
->
-> As for patch 3, Ben objected to the sleep-nexus stuff on IRC.
+Yup, that part of the patch looks wrong.
 
-Is sleep-nexus new?  I thought we've had that for a bit.
+However, a mechanical replacement of unsigned long's with
+resource_size_t to hold physical addresses should be fine despite the
+lack of feedback from LSI.
 
-- k
+Pravin, that ioremap definitely seems like it has nothing to do there,
+port IO is already remapped for you by the core PCI code and should work
+"as is". Please respin without that change.
+
+Cheers,
+Ben.
