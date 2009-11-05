@@ -1,32 +1,19 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 55407B7BA0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 Nov 2009 16:22:02 +1100 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp09.au.ibm.com (8.14.3/8.13.1) with ESMTP id nA55LxkT012855
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2009 16:21:59 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nA55Iwtu888966
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2009 16:18:58 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nA55LxW8013670
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Nov 2009 16:21:59 +1100
-Subject: Re: [PATCH] powerpc/mm: Remove debug context clamping from nohash code
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <6BAA37ED-F9DB-43A6-867B-B63D65926185@kernel.crashing.org>
-References: <1257377992.13611.77.camel@pasglop>
-	<6BAA37ED-F9DB-43A6-867B-B63D65926185@kernel.crashing.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 22083B7BAF
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 16:43:47 +1100 (EST)
+Subject: Re: [PATCH] PCI: Fix regression in powerpc MSI-X
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andre Detsch <adetsch@br.ibm.com>
+In-Reply-To: <200911041303.19695.adetsch@br.ibm.com>
+References: <200911041303.19695.adetsch@br.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 05 Nov 2009 16:21:53 +1100
-Message-ID: <1257398513.13611.92.camel@pasglop>
+Date: Thu, 05 Nov 2009 16:43:31 +1100
+Message-ID: <1257399811.13611.94.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,41 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-11-04 at 23:16 -0600, Kumar Gala wrote:
-> On Nov 4, 2009, at 5:39 PM, Benjamin Herrenschmidt wrote:
+On Wed, 2009-11-04 at 13:03 -0200, Andre Detsch wrote:
+> Patch f598282f5145036312d90875d0ed5c14b49fd8a7 exposed a problem in
+> powerpc MSI-X functionality, making network interfaces such as ixgbe
+> and cxgb3 stop to work when MSI-X is enabled. RX interrupts were not
+> being generated.
 > 
-> > I inadvertently left that debug code enabled, causing the number of
-> > contexts to be clamped to 31 which is going to slow things down on
-> > 4xx and just plain breaks 8xx
-> >
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > ---
-> > arch/powerpc/mm/mmu_context_nohash.c |    4 ++--
-> > 1 files changed, 2 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/ 
-> > mmu_context_nohash.c
-> > index c2f93dc..be4f34c 100644
-> > --- a/arch/powerpc/mm/mmu_context_nohash.c
-> > +++ b/arch/powerpc/mm/mmu_context_nohash.c
-> > @@ -25,8 +25,8 @@
-> >  *     also clear mm->cpu_vm_mask bits when processes are migrated
-> >  */
-> >
-> > -#define DEBUG_MAP_CONSISTENCY
-> > -#define DEBUG_CLAMP_LAST_CONTEXT   31
-> > +//#define DEBUG_MAP_CONSISTENCY
-> > +//#define DEBUG_CLAMP_LAST_CONTEXT   31
-> > //#define DEBUG_HARDER
-> >
-> > /* We don't use DEBUG because it tends to be compiled in always  
-> > nowadays
-> 
-> Can you send this to stable.
+> The problem was caused because MSI irq was not being effectively
+> unmasked after device initialization.
 
-No need. .31 doesn't have the clamp, it went in afterward afaik
-(my bad) though stable does have DEBUG_MAP_CONSISTENCY which you
-may want to remove for perfs.
+Patch is wrapped...
 
-Cheers,
 Ben.
+
+> Signed-off-by: Andre Detsch <adetsch@br.ibm.com>
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> 
+> Index: linux-2.6/arch/powerpc/platforms/pseries/msi.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/platforms/pseries/msi.c	2009-11-04 
+> 06:35:39.000000000 -0700
+> +++ linux-2.6/arch/powerpc/platforms/pseries/msi.c	2009-11-04 
+> 07:23:27.000000000 -0700
+> @@ -432,8 +432,6 @@ static int rtas_setup_msi_irqs(struct pc
+>  		/* Read config space back so we can restore after reset */
+>  		read_msi_msg(virq, &msg);
+>  		entry->msg = msg;
+> -
+> -		unmask_msi_irq(virq);
+>  	}
+>  
+>  	return 0;
+> Index: linux-2.6/arch/powerpc/platforms/pseries/xics.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/platforms/pseries/xics.c	2009-11-04 
+> 06:35:39.000000000 -0700
+> +++ linux-2.6/arch/powerpc/platforms/pseries/xics.c	2009-11-04 
+> 07:23:27.000000000 -0700
+> @@ -18,6 +18,7 @@
+>  #include <linux/init.h>
+>  #include <linux/radix-tree.h>
+>  #include <linux/cpu.h>
+> +#include <linux/msi.h>
+>  #include <linux/of.h>
+>  
+>  #include <asm/firmware.h>
+> @@ -219,6 +220,14 @@ static void xics_unmask_irq(unsigned int
+>  
+>  static unsigned int xics_startup(unsigned int virq)
+>  {
+> +	/*
+> +	 * The generic MSI code returns with the interrupt disabled on the
+> +	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
+> +	 * at that level, so we do it here by hand.
+> +	 */
+> +	if (irq_to_desc(virq)->msi_desc)
+> +		unmask_msi_irq(virq);
+> +
+>  	/* unmask it */
+>  	xics_unmask_irq(virq);
+>  	return 0;
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
