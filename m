@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from exprod5og105.obsmtp.com (exprod5og105.obsmtp.com [64.18.0.180])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DE481B7BBA
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 01:49:43 +1100 (EST)
-Subject: Re: [PATCH 0/2] Setting GPIOs simultaneously
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
-Date: Thu, 5 Nov 2009 08:49:38 -0600
-Message-Id: <AB7471E8-F924-418B-83A3-2DC48CC707CA@kernel.crashing.org>
-References: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
-To: avorontsov@ru.mvista.com
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id 7DAE3B7C2B
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 01:51:35 +1100 (EST)
+Message-ID: <4AF2E6DE.7050601@gefanuc.com>
+Date: Thu, 05 Nov 2009 14:53:18 +0000
+From: Martyn Welch <martyn.welch@gefanuc.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 3/5] powerpc/86xx: Enable NVRAM on GE Fanuc's SBC610
+References: <20090702154928.31202.65107.stgit@ES-J7S4D2J.amer.consind.ge.com>
+	<20090702161231.31202.87763.stgit@ES-J7S4D2J.amer.consind.ge.com>
+	<DAE90CFA-DC33-4BF6-9381-35B0BC1D45C4@kernel.crashing.org>
+	<4AF2DFC4.80307@gefanuc.com>
+	<E79EA452-7A7B-4496-ACC8-9B4EF45E8D1A@kernel.crashing.org>
+In-Reply-To: <E79EA452-7A7B-4496-ACC8-9B4EF45E8D1A@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Jul 13, 2009, at 10:19 AM, Anton Vorontsov wrote:
-
-> Hi all,
+Kumar Gala wrote:
 >
-> I've been sitting on these patches for some time, but now it appears
-> that the set_sync() feature is needed elsewhere. So here are the
-> patches.
+> On Nov 5, 2009, at 8:23 AM, Martyn Welch wrote:
 >
-> Joakim, I think this is what you need.
+>> Kumar Gala wrote:
+>>>
+>>> On Jul 2, 2009, at 11:12 AM, Martyn Welch wrote:
+>>>
+>>>> This patch enables the NVRAM found on the GE Fanuc SBC610
+>>>>
+>>>> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+>>>> ---
+>>>>
+>>>> arch/powerpc/boot/dts/gef_sbc610.dts           |    6 ++++++
+>>>> arch/powerpc/configs/86xx/gef_sbc610_defconfig |    4 ++--
+>>>> arch/powerpc/platforms/86xx/Kconfig            |    1 +
+>>>> arch/powerpc/platforms/86xx/gef_sbc610.c       |    5 +++++
+>>>> 4 files changed, 14 insertions(+), 2 deletions(-)
+>>>
+>>> I assume these still work w/the updates to the other patches?
+>>>
+>>> - k
+>> I'm just updating your tree to ensure that the patches still apply 
+>> (and compile) cleanly. I'm fairly confident that they will.
 >
-> Thanks,
+> looks like I'm getting some defconfig merge conflicts.  I'll deal with 
+> them but will apply these after defconfig updates make it into benh's 
+> next tree.
+>
+> - k
+The patches are sitting in stgit here - I noticed the offset of the 
+defconfig changes was different, but didn't notice anything else 
+different. I can resend if that's easier?
 
-What this resolved or dropped?
+Martyn
 
-- k
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
