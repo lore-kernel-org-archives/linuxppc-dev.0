@@ -2,22 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3D31B100896
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 01:58:27 +1100 (EST)
-Subject: Re: [PATCH 1/3] powerpc/fsl: Make fsl_deep_sleep() usable w/ modules
-	and non-83xx builds
+	by ozlabs.org (Postfix) with ESMTPS id C1029B7BBC
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 02:03:32 +1100 (EST)
+Subject: Re: [PATCH] sata_fsl: Split hard and soft reset
 Mime-Version: 1.0 (Apple Message framework v1076)
 Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20090923185238.GA18755@oksana.dev.rtsoft.ru>
-Date: Thu, 5 Nov 2009 08:58:21 -0600
-Message-Id: <AD863DB3-24D6-4325-BB07-3B7E53C34AA7@kernel.crashing.org>
-References: <20090923185158.GA29065@oksana.dev.rtsoft.ru>
-	<20090923185238.GA18755@oksana.dev.rtsoft.ru>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linux-usb@vger.kernel.org, Jerry Huang <Chang-Ming.Huang@freescale.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org,
-	Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20091016164436.GA12897@oksana.dev.rtsoft.ru>
+Date: Thu, 5 Nov 2009 09:02:47 -0600
+Message-Id: <795A2621-9D6C-4D1F-B07B-24E15C55B03F@kernel.crashing.org>
+References: <20091016164436.GA12897@oksana.dev.rtsoft.ru>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-ide <linux-ide@vger.kernel.org>,
+	linux-ppc list <linuxppc-dev@ozlabs.org>,
+	Ashish Kalra <Ashish.Kalra@freescale.com>,
+	Jiang Yutang <b14898@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +27,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Sep 23, 2009, at 1:52 PM, Anton Vorontsov wrote:
+On Oct 16, 2009, at 11:44 AM, Anton Vorontsov wrote:
 
-> Export is needed for modular builds, and a static inline stub is  
-> needed
-> for non-MPC83xx builds.
+> From: Jiang Yutang <b14898@freescale.com>
 >
+> Split sata_fsl_softreset() into hard and soft resets to make
+> error-handling more efficient & device and PMP detection more
+> reliable.
+>
+> Also includes fix for PMP support, driver tested with Sil3726,
+> Sil4726 & Exar PMP controllers.
+>
+> [AV: Also fixes resuming from deep sleep on MPC8315 CPUs]
+>
+> Signed-off-by: Jiang Yutang <b14898@freescale.com>
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> arch/powerpc/platforms/83xx/suspend.c |    1 +
-> include/linux/fsl_devices.h           |    4 ++++
-> 2 files changed, 5 insertions(+), 0 deletions(-)
+> drivers/ata/sata_fsl.c |   84 ++++++++++++++++++++++++ 
+> +-----------------------
+> 1 files changed, 44 insertions(+), 40 deletions(-)
 
-applied to next
+Jeff,
+
+any update on this going in for .32?
 
 - k
