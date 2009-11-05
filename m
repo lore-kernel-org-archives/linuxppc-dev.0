@@ -1,23 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 28E67B7B9A
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 07:00:34 +1100 (EST)
-Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit
-	resources.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: James Bottomley <James.Bottomley@suse.de>
-In-Reply-To: <1257437226.2753.64.camel@mulgrave.site>
-References: <1253053555-25097-1-git-send-email-pbathija@amcc.com>
-	<20091105134330.GA30489@zod.rchland.ibm.com>
-	<1257437226.2753.64.camel@mulgrave.site>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 06 Nov 2009 07:00:18 +1100
-Message-ID: <1257451218.13611.114.camel@pasglop>
-Mime-Version: 1.0
-Cc: Eric.Moore@lsi.com, pbathija@amcc.com, linux-scsi@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 65119B7B9D
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 07:02:52 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nA5K2nVY016892
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 13:02:49 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nA5K60E1027126
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 14:06:00 -0600 (CST)
+Message-ID: <4AF32F82.8040801@freescale.com>
+Date: Thu, 05 Nov 2009 14:03:14 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc/83xx/suspend: Clear deep_sleeping
+	after	devices resume
+References: <20090923190041.GA18944@oksana.dev.rtsoft.ru>	<20090923190113.GA19932@oksana.dev.rtsoft.ru>	<043A102D-9F70-4287-B34E-17FF9AE90EE1@kernel.crashing.org>	<4AF30406.3080101@freescale.com>
+	<2F8E2E66-8398-4ACD-9697-6C2AB6E39CD3@kernel.crashing.org>
+	<4AF32C0B.4010109@freescale.com>
+	<7A8DBFC0-69D9-406B-B1AC-3EAC8EE26C58@kernel.crashing.org>
+In-Reply-To: <7A8DBFC0-69D9-406B-B1AC-3EAC8EE26C58@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +37,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-11-05 at 10:07 -0600, James Bottomley wrote:
-
-> > > 	ioc->memmap = mem;
-> > >-	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem = %p, mem_phys = %lx\n",
-> > >-	    ioc->name, mem, mem_phys));
-> > >+	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem = %p, mem_phys = %llx\n",
-> > >+	    ioc->name, mem, (u64)mem_phys));
-> > >
-> > > 	ioc->mem_phys = mem_phys;
-> > > 	ioc->chip = (SYSIF_REGS __iomem *)mem;
-> > >
-> > > 	/* Save Port IO values in case we need to do downloadboot */
-> > >-	ioc->pio_mem_phys = port;
-> > >+	port = ioremap(port_phys, psize);
-> > >+	if (port == NULL) {
-> > >+		printk(MYIOC_s_ERR_FMT " : ERROR - Unable to map adapter"
-> > >+			" port !\n", ioc->name);
-> > >+		return -EINVAL;
+Kumar Gala wrote:
+> On Nov 5, 2009, at 1:48 PM, Scott Wood wrote:
+>> As for patch 3, Ben objected to the sleep-nexus stuff on IRC.
 > 
-> So this looks problematic on a few platforms ... what happens to
-> platforms that have no IO space?  They automatically fail here and it
-> looks like the adapter never attaches.
+> Is sleep-nexus new?  I thought we've had that for a bit.
 
-Yup, that part of the patch looks wrong.
+It's been around in a few dts files, but as was noted, nothing uses this 
+stuff yet.
 
-However, a mechanical replacement of unsigned long's with
-resource_size_t to hold physical addresses should be fine despite the
-lack of feedback from LSI.
-
-Pravin, that ioremap definitely seems like it has nothing to do there,
-port IO is already remapped for you by the core PCI code and should work
-"as is". Please respin without that change.
-
-Cheers,
-Ben.
+-Scott
