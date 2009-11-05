@@ -1,15 +1,32 @@
-Return-Path: <Frank.Prepelica@ubidyne.com>
-Received: from mail.ubidyne.com (mail.ubidyne.com [212.211.133.238])
-	by ozlabs.org (Postfix) with ESMTP id 04413B7B99
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 21:14:56 +1100 (EST)
+Return-Path: <adetsch@br.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AC6C1B7B78
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 23:04:22 +1100 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e9.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nA5BxZGt008521
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 06:59:35 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nA5C4EHt100400
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 07:04:19 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nA5C4DPO009440
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 07:04:13 -0500
+From: Andre Detsch <adetsch@br.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] PCI: Fix regression in powerpc MSI-X
+Date: Thu, 5 Nov 2009 10:04:09 -0200
+References: <200911041303.19695.adetsch@br.ibm.com>
+	<1257399811.13611.94.camel@pasglop>
+In-Reply-To: <1257399811.13611.94.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: System hangs when exceeding a certain initramfs size
-Date: Thu, 5 Nov 2009 11:02:46 +0100
-Message-ID: <29DC34A6B43468409F5A371CFE34E849F9AFBA@ex01.ads.ubidyne.de>
-From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <200911051004.09233.adetsch@br.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,35 +36,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+Patch f598282f5145036312d90875d0ed5c14b49fd8a7 exposed a problem in
+powerpc MSI-X functionality, making network interfaces such as ixgbe
+and cxgb3 stop to work when MSI-X is enabled. RX interrupts were not
+being generated.
 
-I experience the issue when the kernel image (including the initramfs)
-exceeds a=20
-certain size (>6MB) that after unpacking the kernel the systems hangs
-at:
+The problem was caused because MSI irq was not being effectively
+unmasked after device initialization.
 
-bootm 2000000 - 3000000
-## Booting image at 02000000 ...
-   Image Name:   Linux-2.6.29
-   Created:      2009-11-04  14:25:01 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    6798037 Bytes =3D  6.5 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-   Booting using the fdt at 0x3000000
-   Loading Device Tree to 00ffc000, end 00ffefff ... OK
+Signed-off-by: Andre Detsch <adetsch@br.ibm.com>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-
-I've found some hints regarding this problem (load_address in the
-wrapper script)=20
-but this doesn't works for me.=20
-
-I'm using Kernel v2.6.29 and U-Boot v1.3.0 on a customized MPC8313ERDB
-board
-
-Thank you for any help!
-
-Kind regards
-Frank
+Index: linux-2.6/arch/powerpc/platforms/pseries/msi.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/pseries/msi.c	2009-11-04 06:35:39.000000000 -0700
++++ linux-2.6/arch/powerpc/platforms/pseries/msi.c	2009-11-04 07:23:27.000000000 -0700
+@@ -432,8 +432,6 @@ static int rtas_setup_msi_irqs(struct pc
+ 		/* Read config space back so we can restore after reset */
+ 		read_msi_msg(virq, &msg);
+ 		entry->msg = msg;
+-
+-		unmask_msi_irq(virq);
+ 	}
+ 
+ 	return 0;
+Index: linux-2.6/arch/powerpc/platforms/pseries/xics.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/pseries/xics.c	2009-11-04 06:35:39.000000000 -0700
++++ linux-2.6/arch/powerpc/platforms/pseries/xics.c	2009-11-04 07:23:27.000000000 -0700
+@@ -18,6 +18,7 @@
+ #include <linux/init.h>
+ #include <linux/radix-tree.h>
+ #include <linux/cpu.h>
++#include <linux/msi.h>
+ #include <linux/of.h>
+ 
+ #include <asm/firmware.h>
+@@ -219,6 +220,14 @@ static void xics_unmask_irq(unsigned int
+ 
+ static unsigned int xics_startup(unsigned int virq)
+ {
++	/*
++	 * The generic MSI code returns with the interrupt disabled on the
++	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
++	 * at that level, so we do it here by hand.
++	 */
++	if (irq_to_desc(virq)->msi_desc)
++		unmask_msi_irq(virq);
++
+ 	/* unmask it */
+ 	xics_unmask_irq(virq);
+ 	return 0;
