@@ -1,13 +1,14 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 03/11] of/flattree: merge of_get_flat_dt_root
+Subject: [PATCH 04/11] of/flattree: remove __init annotations from the header
+	file
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	benh@kernel.crashing.org, sfr@canb.auug.org.au,
 	davem@davemloft.net, sparclinux@vger.kernel.org,
 	monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au
-Date: Thu, 05 Nov 2009 00:45:48 -0700
-Message-ID: <20091105074540.10460.75479.stgit@angua>
+Date: Thu, 05 Nov 2009 00:46:01 -0700
+Message-ID: <20091105074553.10460.2893.stgit@angua>
 In-Reply-To: <20091105073728.10460.6061.stgit@angua>
 References: <20091105073728.10460.6061.stgit@angua>
 MIME-Version: 1.0
@@ -21,83 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between PowerPC and MicroBlaze
+__init annotation belongs in the .c file, not the header.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/kernel/prom.c |   12 ------------
- arch/powerpc/kernel/prom.c    |   12 ------------
- drivers/of/fdt.c              |   16 ++++++++++++++++
- 3 files changed, 16 insertions(+), 24 deletions(-)
+ include/linux/of_fdt.h |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index 0db8ee6..7eb6f8b 100644
---- a/arch/microblaze/kernel/prom.c
-+++ b/arch/microblaze/kernel/prom.c
-@@ -50,18 +50,6 @@ typedef u32 cell_t;
- /* export that to outside world */
- struct device_node *of_chosen;
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index d1a79f3..81231e0 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -62,15 +62,13 @@ extern struct boot_param_header *initial_boot_params;
  
--unsigned long __init of_get_flat_dt_root(void)
--{
--	unsigned long p = ((unsigned long)initial_boot_params) +
--		initial_boot_params->off_dt_struct;
--
--	while (*((u32 *)p) == OF_DT_NOP)
--		p += 4;
--	BUG_ON(*((u32 *)p) != OF_DT_BEGIN_NODE);
--	p += 4;
--	return _ALIGN(p + strlen((char *)p) + 1, 4);
--}
--
- /**
-  * This function can be used within scan_flattened_dt callback to get
-  * access to properties
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 14a07b9..b5d5f85 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -80,18 +80,6 @@ extern rwlock_t devtree_lock;	/* temporary while merging */
- /* export that to outside world */
- struct device_node *of_chosen;
+ /* For scanning the flat device-tree at boot time */
+ extern char *find_flat_dt_string(u32 offset);
+-extern int __init of_scan_flat_dt(int (*it)(unsigned long node,
+-					    const char *uname, int depth,
+-					    void *data),
+-				  void *data);
+-extern void __init *of_get_flat_dt_prop(unsigned long node, const char *name,
+-					unsigned long *size);
+-extern int __init of_flat_dt_is_compatible(unsigned long node,
+-					   const char *name);
+-extern unsigned long __init of_get_flat_dt_root(void);
++extern int of_scan_flat_dt(int (*it)(unsigned long node, const char *uname,
++				     int depth, void *data),
++			   void *data);
++extern void *of_get_flat_dt_prop(unsigned long node, const char *name,
++				 unsigned long *size);
++extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
++extern unsigned long of_get_flat_dt_root(void);
  
--unsigned long __init of_get_flat_dt_root(void)
--{
--	unsigned long p = ((unsigned long)initial_boot_params) +
--		initial_boot_params->off_dt_struct;
--
--	while(*((u32 *)p) == OF_DT_NOP)
--		p += 4;
--	BUG_ON (*((u32 *)p) != OF_DT_BEGIN_NODE);
--	p += 4;
--	return _ALIGN(p + strlen((char *)p) + 1, 4);
--}
--
- /**
-  * This  function can be used within scan_flattened_dt callback to get
-  * access to properties
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index 7c3c13c..a6e869e 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -84,3 +84,19 @@ int __init of_scan_flat_dt(int (*it)(unsigned long node,
- 
- 	return rc;
- }
-+
-+/**
-+ * of_get_flat_dt_root - find the root node in the flat blob
-+ */
-+unsigned long __init of_get_flat_dt_root(void)
-+{
-+	unsigned long p = ((unsigned long)initial_boot_params) +
-+		initial_boot_params->off_dt_struct;
-+
-+	while (*((u32 *)p) == OF_DT_NOP)
-+		p += 4;
-+	BUG_ON(*((u32 *)p) != OF_DT_BEGIN_NODE);
-+	p += 4;
-+	return _ALIGN(p + strlen((char *)p) + 1, 4);
-+}
-+
+ /* Other Prototypes */
+ extern void finish_device_tree(void);
