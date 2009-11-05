@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 05/11] of/flattree: merge of_get_flat_dt_prop
+Subject: [PATCH 06/11] of/flattree: Merge of_flat_dt_is_compatible
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	benh@kernel.crashing.org, sfr@canb.auug.org.au,
 	davem@davemloft.net, sparclinux@vger.kernel.org,
 	monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au
-Date: Thu, 05 Nov 2009 00:46:13 -0700
-Message-ID: <20091105074606.10460.23775.stgit@angua>
+Date: Thu, 05 Nov 2009 00:46:26 -0700
+Message-ID: <20091105074618.10460.86348.stgit@angua>
 In-Reply-To: <20091105073728.10460.6061.stgit@angua>
 References: <20091105073728.10460.6061.stgit@angua>
 MIME-Version: 1.0
@@ -26,165 +26,100 @@ Merge common code between PowerPC and Microblaze
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/kernel/prom.c |   42 ----------------------------------------
- arch/powerpc/kernel/prom.c    |   42 ----------------------------------------
- drivers/of/fdt.c              |   43 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 43 insertions(+), 84 deletions(-)
+ arch/microblaze/kernel/prom.c |   19 -------------------
+ arch/powerpc/kernel/prom.c    |   19 -------------------
+ drivers/of/fdt.c              |   24 ++++++++++++++++++++++++
+ 3 files changed, 24 insertions(+), 38 deletions(-)
 
 diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index 7eb6f8b..d75c625 100644
+index d75c625..eb27bd3 100644
 --- a/arch/microblaze/kernel/prom.c
 +++ b/arch/microblaze/kernel/prom.c
-@@ -50,48 +50,6 @@ typedef u32 cell_t;
+@@ -50,25 +50,6 @@ typedef u32 cell_t;
  /* export that to outside world */
  struct device_node *of_chosen;
  
--/**
-- * This function can be used within scan_flattened_dt callback to get
-- * access to properties
-- */
--void *__init of_get_flat_dt_prop(unsigned long node, const char *name,
--				unsigned long *size)
+-int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
 -{
--	unsigned long p = node;
+-	const char *cp;
+-	unsigned long cplen, l;
 -
--	do {
--		u32 tag = *((u32 *)p);
--		u32 sz, noff;
--		const char *nstr;
+-	cp = of_get_flat_dt_prop(node, "compatible", &cplen);
+-	if (cp == NULL)
+-		return 0;
+-	while (cplen > 0) {
+-		if (strncasecmp(cp, compat, strlen(compat)) == 0)
+-			return 1;
+-		l = strlen(cp) + 1;
+-		cp += l;
+-		cplen -= l;
+-	}
 -
--		p += 4;
--		if (tag == OF_DT_NOP)
--			continue;
--		if (tag != OF_DT_PROP)
--			return NULL;
--
--		sz = *((u32 *)p);
--		noff = *((u32 *)(p + 4));
--		p += 8;
--		if (initial_boot_params->version < 0x10)
--			p = _ALIGN(p, sz >= 8 ? 8 : 4);
--
--		nstr = find_flat_dt_string(noff);
--		if (nstr == NULL) {
--			printk(KERN_WARNING "Can't find property index"
--				" name !\n");
--			return NULL;
--		}
--		if (strcmp(name, nstr) == 0) {
--			if (size)
--				*size = sz;
--			return (void *)p;
--		}
--		p += sz;
--		p = _ALIGN(p, 4);
--	} while (1);
+-	return 0;
 -}
 -
- int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
+ static void *__init unflatten_dt_alloc(unsigned long *mem, unsigned long size,
+ 					unsigned long align)
  {
- 	const char *cp;
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index b5d5f85..cd0a2bf 100644
+index cd0a2bf..413e608 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
-@@ -80,48 +80,6 @@ extern rwlock_t devtree_lock;	/* temporary while merging */
+@@ -80,25 +80,6 @@ extern rwlock_t devtree_lock;	/* temporary while merging */
  /* export that to outside world */
  struct device_node *of_chosen;
  
--/**
-- * This  function can be used within scan_flattened_dt callback to get
-- * access to properties
-- */
--void* __init of_get_flat_dt_prop(unsigned long node, const char *name,
--				 unsigned long *size)
+-int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
 -{
--	unsigned long p = node;
+-	const char* cp;
+-	unsigned long cplen, l;
 -
--	do {
--		u32 tag = *((u32 *)p);
--		u32 sz, noff;
--		const char *nstr;
+-	cp = of_get_flat_dt_prop(node, "compatible", &cplen);
+-	if (cp == NULL)
+-		return 0;
+-	while (cplen > 0) {
+-		if (strncasecmp(cp, compat, strlen(compat)) == 0)
+-			return 1;
+-		l = strlen(cp) + 1;
+-		cp += l;
+-		cplen -= l;
+-	}
 -
--		p += 4;
--		if (tag == OF_DT_NOP)
--			continue;
--		if (tag != OF_DT_PROP)
--			return NULL;
--
--		sz = *((u32 *)p);
--		noff = *((u32 *)(p + 4));
--		p += 8;
--		if (initial_boot_params->version < 0x10)
--			p = _ALIGN(p, sz >= 8 ? 8 : 4);
--
--		nstr = find_flat_dt_string(noff);
--		if (nstr == NULL) {
--			printk(KERN_WARNING "Can't find property index"
--			       " name !\n");
--			return NULL;
--		}
--		if (strcmp(name, nstr) == 0) {
--			if (size)
--				*size = sz;
--			return (void *)p;
--		}
--		p += sz;
--		p = _ALIGN(p, 4);
--	} while(1);
+-	return 0;
 -}
 -
- int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
+ static void *__init unflatten_dt_alloc(unsigned long *mem, unsigned long size,
+ 				       unsigned long align)
  {
- 	const char* cp;
 diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index a6e869e..7a51343 100644
+index 7a51343..01a7f5f 100644
 --- a/drivers/of/fdt.c
 +++ b/drivers/of/fdt.c
-@@ -100,3 +100,46 @@ unsigned long __init of_get_flat_dt_root(void)
- 	return _ALIGN(p + strlen((char *)p) + 1, 4);
+@@ -143,3 +143,27 @@ void *__init of_get_flat_dt_prop(unsigned long node, const char *name,
+ 	} while (1);
  }
  
 +/**
-+ * of_get_flat_dt_prop - Given a node in the flat blob, return the property pointer
-+ *
-+ * This  function can be used within scan_flattened_dt callback to get
-+ * access to properties
++ * of_flat_dt_is_compatible - Return true if given node has compat in compatible list
++ * @node: node to test
++ * @compat: compatible string to compare with compatible list.
 + */
-+void *__init of_get_flat_dt_prop(unsigned long node, const char *name,
-+				 unsigned long *size)
++int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
 +{
-+	unsigned long p = node;
++	const char *cp;
++	unsigned long cplen, l;
 +
-+	do {
-+		u32 tag = *((u32 *)p);
-+		u32 sz, noff;
-+		const char *nstr;
++	cp = of_get_flat_dt_prop(node, "compatible", &cplen);
++	if (cp == NULL)
++		return 0;
++	while (cplen > 0) {
++		if (strncasecmp(cp, compat, strlen(compat)) == 0)
++			return 1;
++		l = strlen(cp) + 1;
++		cp += l;
++		cplen -= l;
++	}
 +
-+		p += 4;
-+		if (tag == OF_DT_NOP)
-+			continue;
-+		if (tag != OF_DT_PROP)
-+			return NULL;
-+
-+		sz = *((u32 *)p);
-+		noff = *((u32 *)(p + 4));
-+		p += 8;
-+		if (initial_boot_params->version < 0x10)
-+			p = _ALIGN(p, sz >= 8 ? 8 : 4);
-+
-+		nstr = find_flat_dt_string(noff);
-+		if (nstr == NULL) {
-+			pr_warning("Can't find property index name !\n");
-+			return NULL;
-+		}
-+		if (strcmp(name, nstr) == 0) {
-+			if (size)
-+				*size = sz;
-+			return (void *)p;
-+		}
-+		p += sz;
-+		p = _ALIGN(p, 4);
-+	} while (1);
++	return 0;
 +}
 +
