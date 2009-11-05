@@ -1,41 +1,23 @@
-Return-Path: <B05799@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 28671B7B9F
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 04:53:41 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nA5HrS8R011680
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 10:53:28 -0700 (MST)
-Received: from zin33exm22.fsl.freescale.net (zin33exm22.ap.freescale.net
-	[10.232.192.20])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nA5Hub11015120
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 11:56:38 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH RFC] gianfar: Do not call skb recycling with disabled IRQs
-Date: Thu, 5 Nov 2009 23:23:23 +0530
-Message-ID: <9F4C7D19E8361D4C94921B95BE08B81B950715@zin33exm22.fsl.freescale.net>
-In-Reply-To: <E1N66Jp-0004Y0-8Q@jdl.com>
-References: <20091104225711.GA30844@oksana.dev.rtsoft.ru>
-	<E1N62ti-0003iS-K2@jdl.com>
-	<20091105142028.GB17171@oksana.dev.rtsoft.ru>
-	<E1N63WM-0003xK-PN@jdl.com> <E1N64UY-00049g-Hb@jdl.com>
-	<20091105165738.GA31923@oksana.dev.rtsoft.ru>
-	<9F4C7D19E8361D4C94921B95BE08B81B950713@zin33exm22.fsl.freescale.net>
-	<E1N66Jp-0004Y0-8Q@jdl.com>
-From: "Kumar Gopalpet-B05799" <B05799@freescale.com>
-To: "Jon Loeliger" <jdl@jdl.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Fleming Andy-AFLEMING <afleming@freescale.com>,
-	Jason Wessel <jason.wessel@windriver.com>,
-	Stephen Hemminger <shemminger@vyatta.com>,
-	David Miller <davem@davemloft.net>,
-	Lennert Buytenhek <buytenh@wantstofly.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0CB23B7B9C
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 05:36:21 +1100 (EST)
+Subject: Re: [PATCH 1/3] powerpc/83xx/suspend: Clear deep_sleeping after
+	devices resume
+Mime-Version: 1.0 (Apple Message framework v1076)
+Content-Type: text/plain; charset=us-ascii; format=flowed
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4AF30406.3080101@freescale.com>
+Date: Thu, 5 Nov 2009 12:36:13 -0600
+Message-Id: <2F8E2E66-8398-4ACD-9697-6C2AB6E39CD3@kernel.crashing.org>
+References: <20090923190041.GA18944@oksana.dev.rtsoft.ru>
+	<20090923190113.GA19932@oksana.dev.rtsoft.ru>
+	<043A102D-9F70-4287-B34E-17FF9AE90EE1@kernel.crashing.org>
+	<4AF30406.3080101@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,36 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
->
->Similar but different question:  What version is this patch based upon?
->I can't find:
->
->    > >index 197b358..a0ae604 100644
->
->My search of 2.6.31 up through current linux head=20
->(v2.6.32-rc6-26-g91d3f9b) and benh's current head=20
->(94a8d5caba74211ec76dac80fc6e2d5c391530df) do not have a=20
->version of this code with separate txqueues.
->
->I confess I'm not too familiar with the history here, so I=20
->don't know if that feature is in flux, or came, or went, or what.
->
->That boils down to:  I can't directly apply your patch, but I=20
->could hand-fudge its intent, but only on a single tx queue variant.
->
 
-You might want to get the code base from the top of davem/net-next-2.6
-tree
+On Nov 5, 2009, at 10:57 AM, Scott Wood wrote:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git
+> Kumar Gala wrote:
+>> On Sep 23, 2009, at 2:01 PM, Anton Vorontsov wrote:
+>>> Currently 83xx PMC driver clears deep_sleeping variable very early,
+>>> before devices are resumed. This makes fsl_deep_sleep() unusable in
+>>> drivers' resume() callback.
+>>>
+>>> Sure, drivers can store fsl_deep_sleep() value on suspend and use
+>>> the stored value on resume. But a better solution is to postpone
+>>> clearing the deep_sleeping variable, i.e. move it into finish()
+>>> callback.
+>>>
+>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> ---
+>>> arch/powerpc/platforms/83xx/suspend.c |    4 ++--
+>>> 1 files changed, 2 insertions(+), 2 deletions(-)
+>> Scott, any comments or an ack?
+>
+> ACK
 
-The multi queue is a feature available in etsec2.0 version. On older
-versions you might want to=20
-work in a single queue mode itself.
+thanks, is that an ACK for all 3?
 
-
---
-
-Thanks
-Sandeep
+- k
