@@ -1,26 +1,32 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <B07421@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 062D8B7B94
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 03:52:40 +1100 (EST)
-Date: Thu, 5 Nov 2009 10:53:01 -0600
+	by ozlabs.org (Postfix) with ESMTPS id 7F541B7B91
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 03:57:19 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nA5GvG7U024475
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 09:57:17 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nA5H0Pln026160
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 11:00:25 -0600 (CST)
+Message-ID: <4AF30406.3080101@freescale.com>
+Date: Thu, 05 Nov 2009 10:57:42 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 5/7] powerpc/85xx: Add power management support for
-	MPC85xxMDS boards
-Message-ID: <20091105165301.GC1667@loki.buserror.net>
-References: <20090915214321.GA19377@oksana.dev.rtsoft.ru>
-	<20090915214359.GE24821@oksana.dev.rtsoft.ru>
-	<197B3989-3373-4172-B5FA-727CA1EEE2AA@kernel.crashing.org>
-	<20091105140407.GA16698@oksana.dev.rtsoft.ru>
-	<39FA5DC3-BE71-442B-9EDC-2764D1391074@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <39FA5DC3-BE71-442B-9EDC-2764D1391074@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc/83xx/suspend: Clear deep_sleeping after
+	devices resume
+References: <20090923190041.GA18944@oksana.dev.rtsoft.ru>
+	<20090923190113.GA19932@oksana.dev.rtsoft.ru>
+	<043A102D-9F70-4287-B34E-17FF9AE90EE1@kernel.crashing.org>
+In-Reply-To: <043A102D-9F70-4287-B34E-17FF9AE90EE1@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 05, 2009 at 08:06:51AM -0600, Kumar Gala wrote:
->
-> On Nov 5, 2009, at 8:04 AM, Anton Vorontsov wrote:
->
->> On Thu, Nov 05, 2009 at 07:58:49AM -0600, Kumar Gala wrote:
->> [...]
->>> --- a/arch/powerpc/boot/dts/mpc8568mds.dts
->>> +++ b/arch/powerpc/boot/dts/mpc8568mds.dts
->>> @@ -40,6 +40,8 @@
->>> 			i-cache-line-size = <32>;	// 32 bytes
->>> 			d-cache-size = <0x8000>;		// L1, 32K
->>> 			i-cache-size = <0x8000>;		// L1, 32K
->>> +			sleep = <&pmc 0x00008000	// core
->>> +				 &pmc 0x00004000>;	// timebase
->>>
->>> Just so I'm clear this is the devdisr bit position?
+Kumar Gala wrote:
+> 
+> On Sep 23, 2009, at 2:01 PM, Anton Vorontsov wrote:
+> 
+>> Currently 83xx PMC driver clears deep_sleeping variable very early,
+>> before devices are resumed. This makes fsl_deep_sleep() unusable in
+>> drivers' resume() callback.
 >>
->> Yep, as described in the bindings.
->
-> I don't think the binding is clear that for 85xx these are DEVDISR bit  
-> positions for the given SoC.
+>> Sure, drivers can store fsl_deep_sleep() value on suspend and use
+>> the stored value on resume. But a better solution is to postpone
+>> clearing the deep_sleeping variable, i.e. move it into finish()
+>> callback.
+>>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>> ---
+>> arch/powerpc/platforms/83xx/suspend.c |    4 ++--
+>> 1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Scott, any comments or an ack?
 
->From dts-bindings/fsl/pmc.txt:
-
-  fsl,mpc8548-pmc: Sleep specifiers consist of one or two cells, the
-  first of which will be ORed into DEVDISR (and the second into
-  DEVDISR2, if present -- this cell should be zero or absent if the
-  hardware does not have DEVDISR2) upon a request for permanent device
-  disabling.  This sleep controller does not support configuring devices
-  to disable during system sleep (unless supported by another compatible
-  match), or dynamically.
+ACK
 
 -Scott
