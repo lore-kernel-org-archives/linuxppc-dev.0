@@ -1,23 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 3D9EAB7BAB
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 19:13:34 +1100 (EST)
-Date: Thu, 5 Nov 2009 19:13:28 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 49FDFB7B70
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  5 Nov 2009 19:39:58 +1100 (EST)
+Date: Thu, 5 Nov 2009 09:39:45 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: 2.6.33 -next tree
-Message-Id: <20091105191328.d63eeb1b.sfr@canb.auug.org.au>
-In-Reply-To: <fa686aa40911050008r33cff773w191e97654efacf19@mail.gmail.com>
-References: <fa686aa40911042210q5bbbca2fi82911b7245d17588@mail.gmail.com>
-	<20091105190228.916c845c.sfr@canb.auug.org.au>
-	<fa686aa40911050008r33cff773w191e97654efacf19@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__5_Nov_2009_19_13_28_+1100_mnRHFQ=Qn6paiJUS"
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 01/11] of/flattree: merge find_flat_dt_string and
+	initial_boot_params
+Message-ID: <20091105083945.GA3478@pengutronix.de>
+References: <20091105073728.10460.6061.stgit@angua>
+	<20091105074515.10460.83467.stgit@angua>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
+In-Reply-To: <20091105074515.10460.83467.stgit@angua>
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,64 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__5_Nov_2009_19_13_28_+1100_mnRHFQ=Qn6paiJUS
-Content-Type: text/plain; charset=US-ASCII
+
+--WIyZ46R2i8wDzkSu
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Grant,
+On Thu, Nov 05, 2009 at 12:45:22AM -0700, Grant Likely wrote:
+> Merge common code between Microblaze and PowerPC.  Also move instance of
+> ---
+>=20
+>  arch/microblaze/Kconfig       |    1 +
 
-On Thu, 5 Nov 2009 01:08:53 -0700 Grant Likely <grant.likely@secretlab.ca> =
-wrote:
->
-> It is 5xxx and virtex related stuff, plus a smattering of generic ppc
-> changes.  "5xxx-and-virtex" perhaps?
-
-OK, done.
-
-Thanks for adding your subsystem tree as a participant of linux-next.  As
-you may know, this is not a judgment of your code.  The purpose of
-linux-next is for integration testing and to lower the impact of
-conflicts between subsystems in the next merge window.=20
-
-You will need to ensure that the patches/commits in your tree/series have
-been:
-     * submitted under GPL v2 (or later) and include the Contributor's
-	Signed-off-by,
-     * posted to the relevant mailing list,
-     * reviewed by you (or another maintainer of your subsystem tree),
-     * successfully unit tested, and=20
-     * destined for the current or next Linux merge window.
-
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).  It is allowed to be rebased if you deem it necessary.
+Commit message cut off?
 
 --=20
-Cheers,
-Stephen Rothwell=20
-sfr@canb.auug.org.au
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-Legal Stuff:
-By participating in linux-next, your subsystem tree contributions are
-public and will be included in the linux-next trees.  You may be sent
-e-mail messages indicating errors or other issues when the
-patches/commits from your subsystem tree are merged and tested in
-linux-next.  These messages may also be cross-posted to the linux-next
-mailing list, the linux-kernel mailing list, etc.  The linux-next tree
-project and IBM (my employer) make no warranties regarding the linux-next
-project, the testing procedures, the results, the e-mails, etc.  If you
-don't agree to these ground rules, let me know and I'll remove your tree
-from participation in linux-next.
-
---Signature=_Thu__5_Nov_2009_19_13_28_+1100_mnRHFQ=Qn6paiJUS
-Content-Type: application/pgp-signature
+--WIyZ46R2i8wDzkSu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkryiSgACgkQjjKRsyhoI8wSugCgskUXVcr+vCoc+rTd+54kMdbI
-gOEAnRkLbPEGE4fz9ZXGfOpZKppYKIqI
-=FAWm
+iEYEARECAAYFAkryj1EACgkQD27XaX1/VRt++ACfdbkh9Rs1W7zbNvc9drjv+cLU
+wjsAnRvLdOcmefx/zIQADFXbXTjtz5kg
+=7v2o
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__5_Nov_2009_19_13_28_+1100_mnRHFQ=Qn6paiJUS--
+--WIyZ46R2i8wDzkSu--
