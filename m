@@ -1,20 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
-	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id 2205DB7BB7
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 19:09:19 +1100 (EST)
-Received: by ywh37 with SMTP id 37so8081367ywh.17
-	for <linuxppc-dev@ozlabs.org>; Thu, 05 Nov 2009 00:09:17 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20091105190228.916c845c.sfr@canb.auug.org.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 3D9EAB7BAB
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 19:13:34 +1100 (EST)
+Date: Thu, 5 Nov 2009 19:13:28 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: 2.6.33 -next tree
+Message-Id: <20091105191328.d63eeb1b.sfr@canb.auug.org.au>
+In-Reply-To: <fa686aa40911050008r33cff773w191e97654efacf19@mail.gmail.com>
 References: <fa686aa40911042210q5bbbca2fi82911b7245d17588@mail.gmail.com>
 	<20091105190228.916c845c.sfr@canb.auug.org.au>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 5 Nov 2009 01:08:53 -0700
-Message-ID: <fa686aa40911050008r33cff773w191e97654efacf19@mail.gmail.com>
-Subject: Re: 2.6.33 -next tree
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	<fa686aa40911050008r33cff773w191e97654efacf19@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__5_Nov_2009_19_13_28_+1100_mnRHFQ=Qn6paiJUS"
 Cc: Andrew Morton <akpm@linux-foundation.org>,
 	David Brownell <dbrownell@users.sourceforge.net>,
 	linuxppc-dev <linuxppc-dev@ozlabs.org>
@@ -27,24 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 5, 2009 at 1:02 AM, Stephen Rothwell <sfr@canb.auug.org.au> wro=
-te:
-> On Wed, 4 Nov 2009 23:10:21 -0700 Grant Likely <grant.likely@secretlab.ca=
-> wrote:
->> Steven, can you please add this tree to your linux-next pull list?
->> This is the branch where I put stuff that gets fed up to Ben. =A0This is
->> separate from the branch that I'm using to collect OF related changes
->> and that you are already pulling in.
+--Signature=_Thu__5_Nov_2009_19_13_28_+1100_mnRHFQ=Qn6paiJUS
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Grant,
+
+On Thu, 5 Nov 2009 01:08:53 -0700 Grant Likely <grant.likely@secretlab.ca> =
+wrote:
 >
-> What would you like this called? =A0If you don't think of anything, I wil=
-l
-> call it "52xx", but it seems like it may be of wider scope than that.
+> It is 5xxx and virtex related stuff, plus a smattering of generic ppc
+> changes.  "5xxx-and-virtex" perhaps?
 
-It is 5xxx and virtex related stuff, plus a smattering of generic ppc
-changes.  "5xxx-and-virtex" perhaps?
+OK, done.
 
-g.
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgment of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window.=20
+
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+	Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and=20
+     * destined for the current or next Linux merge window.
+
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
 
 --=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Cheers,
+Stephen Rothwell=20
+sfr@canb.auug.org.au
+
+Legal Stuff:
+By participating in linux-next, your subsystem tree contributions are
+public and will be included in the linux-next trees.  You may be sent
+e-mail messages indicating errors or other issues when the
+patches/commits from your subsystem tree are merged and tested in
+linux-next.  These messages may also be cross-posted to the linux-next
+mailing list, the linux-kernel mailing list, etc.  The linux-next tree
+project and IBM (my employer) make no warranties regarding the linux-next
+project, the testing procedures, the results, the e-mails, etc.  If you
+don't agree to these ground rules, let me know and I'll remove your tree
+from participation in linux-next.
+
+--Signature=_Thu__5_Nov_2009_19_13_28_+1100_mnRHFQ=Qn6paiJUS
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkryiSgACgkQjjKRsyhoI8wSugCgskUXVcr+vCoc+rTd+54kMdbI
+gOEAnRkLbPEGE4fz9ZXGfOpZKppYKIqI
+=FAWm
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__5_Nov_2009_19_13_28_+1100_mnRHFQ=Qn6paiJUS--
