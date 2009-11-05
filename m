@@ -2,20 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 41FE6B7B94
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 00:15:56 +1100 (EST)
-Subject: Re: [PATCH 2/7] powerpc/qe: QE also shuts down on MPC8568
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	by ozlabs.org (Postfix) with ESMTPS id CF1CFB7B65
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 00:24:14 +1100 (EST)
+Date: Thu, 5 Nov 2009 07:24:06 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20090915214354.GB24821@oksana.dev.rtsoft.ru>
-Date: Thu, 5 Nov 2009 07:15:49 -0600
-Message-Id: <98358BC3-7A8A-445D-BB82-0D2049AA5D47@kernel.crashing.org>
-References: <20090915214321.GA19377@oksana.dev.rtsoft.ru>
-	<20090915214354.GB24821@oksana.dev.rtsoft.ru>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull from 'merge' branch for 2.6.32
+Message-ID: <Pine.LNX.4.64.0911050723300.2779@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The following changes since commit 38634e6769920929385f1ffc8820dc3e893cc630:
+  Benjamin Herrenschmidt (1):
+        powerpc/kvm: Remove problematic BUILD_BUG_ON statement
 
-On Sep 15, 2009, at 4:43 PM, Anton Vorontsov wrote:
+are available in the git repository at:
 
-> It appears that QE shuts down on all MPC85xx CPUs (i.e. MPC8568 and
-> MPC8569) and thus needs reset upon resume.
->
-> So modify qe_alive_during_sleep() to account that.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/include/asm/qe.h   |   23 ++++++++++++++++++++++-
-> arch/powerpc/sysdev/qe_lib/qe.c |   13 -------------
-> 2 files changed, 22 insertions(+), 14 deletions(-)
+  master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-applied to next.
+Anton Vorontsov (2):
+      powerpc/85xx: Fix USB GPIOs for MPC8569E-MDS boards
+      powerpc/83xx: Fix u-boot partion size for MPC8377E-WLAN boards
 
-- k
+Paul Gortmaker (1):
+      powerpc/85xx: sbc8548 - fixup of PCI-e related DTS fields
+
+Roel Kluin (1):
+      powerpc/82xx: kmalloc failure ignored in ep8248e_mdio_probe()
+
+ arch/powerpc/boot/dts/mpc8377_wlan.dts |    2 +-
+ arch/powerpc/boot/dts/mpc8569mds.dts   |    4 ++--
+ arch/powerpc/boot/dts/sbc8548.dts      |   17 ++++++++---------
+ arch/powerpc/platforms/82xx/ep8248e.c  |   15 ++++++++++++++-
+ 4 files changed, 25 insertions(+), 13 deletions(-)
