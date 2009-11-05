@@ -2,18 +2,25 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 22083B7BAF
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 16:43:47 +1100 (EST)
-Subject: Re: [PATCH] PCI: Fix regression in powerpc MSI-X
+	by ozlabs.org (Postfix) with ESMTPS id 0F961B7BAD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  5 Nov 2009 17:01:46 +1100 (EST)
+Subject: Re: [PATCH] BUILD_BUG_ON: make it handle more cases
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andre Detsch <adetsch@br.ibm.com>
-In-Reply-To: <200911041303.19695.adetsch@br.ibm.com>
-References: <200911041303.19695.adetsch@br.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <200910201415.34361.rusty@rustcorp.com.au>
+References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
+	<200910201142.34006.rusty@rustcorp.com.au>
+	<1256002193.6546.2.camel@slab>
+	<200910201415.34361.rusty@rustcorp.com.au>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 05 Nov 2009 16:43:31 +1100
-Message-ID: <1257399811.13611.94.camel@pasglop>
+Date: Thu, 05 Nov 2009 17:01:26 +1100
+Message-ID: <1257400886.13611.98.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: sfr@canb.auug.org.au, Hollis Blanchard <hollisb@us.ibm.com>,
+	linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+	linux-next@vger.kernel.org, Jan Beulich <JBeulich@novell.com>,
+	akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,66 +30,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-11-04 at 13:03 -0200, Andre Detsch wrote:
-> Patch f598282f5145036312d90875d0ed5c14b49fd8a7 exposed a problem in
-> powerpc MSI-X functionality, making network interfaces such as ixgbe
-> and cxgb3 stop to work when MSI-X is enabled. RX interrupts were not
-> being generated.
-> 
-> The problem was caused because MSI irq was not being effectively
-> unmasked after device initialization.
+On Tue, 2009-10-20 at 14:15 +1030, Rusty Russell wrote:
+> BUILD_BUG_ON used to use the optimizer to do code elimination or fail
+> at link time; it was changed to first the size of a negative array (a
+> nicer compile time error), then (in
+> 8c87df457cb58fe75b9b893007917cf8095660a0) to a bitfield.
 
-Patch is wrapped...
+What's the status with this patch ? The lack of it breaks my KVM stuff
+in powerpc...
 
+Cheers,
 Ben.
 
-> Signed-off-by: Andre Detsch <adetsch@br.ibm.com>
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> bitfields: needs a literal constant at parse time, and can't be put under
+> 	"if (__builtin_constant_p(x))" for example.
+> negative array: can handle anything, but if the compiler can't tell it's
+> 	a constant, silently has no effect.
+> link time: breaks link if the compiler can't determine the value, but the
+> 	linker output is not usually as informative as a compiler error.
 > 
-> Index: linux-2.6/arch/powerpc/platforms/pseries/msi.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/pseries/msi.c	2009-11-04 
-> 06:35:39.000000000 -0700
-> +++ linux-2.6/arch/powerpc/platforms/pseries/msi.c	2009-11-04 
-> 07:23:27.000000000 -0700
-> @@ -432,8 +432,6 @@ static int rtas_setup_msi_irqs(struct pc
->  		/* Read config space back so we can restore after reset */
->  		read_msi_msg(virq, &msg);
->  		entry->msg = msg;
+> If we use the negative-array-size method *and* the link time trick,
+> we get the ability to use BUILD_BUG_ON() under __builtin_constant_p()
+> branches, and maximal ability for the compiler to detect errors at
+> build time.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -683,12 +683,6 @@ struct sysinfo {
+>  	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
+>  };
+>  
+> -/* Force a compilation error if condition is true */
+> -#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
 > -
-> -		unmask_msi_irq(virq);
->  	}
+> -/* Force a compilation error if condition is constant and true */
+> -#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
+> -
+>  /* Force a compilation error if condition is true, but also produce a
+>     result (of value 0 and type size_t), so the expression can be used
+>     e.g. in a structure initializer (or where-ever else comma expressions
+> @@ -696,6 +690,33 @@ struct sysinfo {
+>  #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
+>  #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
 >  
->  	return 0;
-> Index: linux-2.6/arch/powerpc/platforms/pseries/xics.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/pseries/xics.c	2009-11-04 
-> 06:35:39.000000000 -0700
-> +++ linux-2.6/arch/powerpc/platforms/pseries/xics.c	2009-11-04 
-> 07:23:27.000000000 -0700
-> @@ -18,6 +18,7 @@
->  #include <linux/init.h>
->  #include <linux/radix-tree.h>
->  #include <linux/cpu.h>
-> +#include <linux/msi.h>
->  #include <linux/of.h>
->  
->  #include <asm/firmware.h>
-> @@ -219,6 +220,14 @@ static void xics_unmask_irq(unsigned int
->  
->  static unsigned int xics_startup(unsigned int virq)
->  {
-> +	/*
-> +	 * The generic MSI code returns with the interrupt disabled on the
-> +	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
-> +	 * at that level, so we do it here by hand.
-> +	 */
-> +	if (irq_to_desc(virq)->msi_desc)
-> +		unmask_msi_irq(virq);
+> +/**
+> + * BUILD_BUG_ON - break compile if a condition is true.
+> + * @cond: the condition which the compiler should know is false.
+> + *
+> + * If you have some code which relies on certain constants being equal, or
+> + * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
+> + * detect if someone changes it.
+> + *
+> + * The implementation uses gcc's reluctance to create a negative array, but
+> + * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
+> + * to inline functions).  So as a fallback we use the optimizer; if it can't
+> + * prove the condition is false, it will cause a link error on the undefined
+> + * "__build_bug_on_failed".  This error message can be harder to track down
+> + * though, hence the two different methods.
+> + */
+> +#ifndef __OPTIMIZE__
+> +#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+> +#else
+> +extern int __build_bug_on_failed;
+> +#define BUILD_BUG_ON(condition)					\
+> +	do {							\
+> +		((void)sizeof(char[1 - 2*!!(condition)]));	\
+> +		if (condition) __build_bug_on_failed = 1;	\
+> +	} while(0)
+> +#endif
+> +#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
 > +
->  	/* unmask it */
->  	xics_unmask_irq(virq);
->  	return 0;
+>  /* Trap pasters of __FUNCTION__ at compile-time */
+>  #define __FUNCTION__ (__func__)
+>  
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@lists.ozlabs.org
