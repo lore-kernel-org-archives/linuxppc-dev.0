@@ -1,20 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
-	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 87A00B7BBB
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Nov 2009 17:10:42 +1100 (EST)
-Received: by yxe8 with SMTP id 8so8046395yxe.17
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Nov 2009 22:10:41 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 4 Nov 2009 23:10:21 -0700
-Message-ID: <fa686aa40911042210q5bbbca2fi82911b7245d17588@mail.gmail.com>
-Subject: 2.6.33 -next tree
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: David Brownell <dbrownell@users.sourceforge.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C1556B7BB9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  5 Nov 2009 17:12:56 +1100 (EST)
+Subject: [PATCH] powerpc/kvm: Remove problematic BUILD_BUG_ON statement
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 05 Nov 2009 17:12:50 +1100
+Message-ID: <1257401570.13611.103.camel@pasglop>
+Mime-Version: 1.0
+Cc: Hollis Blanchard <hollisb@us.ibm.com>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,77 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben, Stephen.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-I just prepared my next branch for 2.6.33:
-git://git.secretlab.ca/git/linux-2.6 next
+I'm going to stick this into my -merge branch and send it to Linus today
+until we fix it for real
 
-Steven, can you please add this tree to your linux-next pull list?
-This is the branch where I put stuff that gets fed up to Ben.  This is
-separate from the branch that I'm using to collect OF related changes
-and that you are already pulling in.
-
-Ben, can you please pull this branch into your -next tree for 2.6.33?
-
-Andrew & David, you'll notice that I've also got some SPI and MMC
-changes in this branch (PPC and OF related stuff) since there is no
-current MMC maintainer, and some of these SPI patches have been
-hanging around for a while now.  Let me know if you object to me
-pushing these changes personally instead of going through another
-maintainer.
-
-Thanks,
-g.
-
-The following changes since commit b419148e567728f6af0c3b01965c1cc141e3e13a=
-:
-  Linus Torvalds (1):
-        Linux 2.6.32-rc6
-
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6 next
-
-Albrecht Dre=DF (1):
-      powerpc: tiny memcpy_(to|from)io optimisation
-
-Grant Likely (4):
-      spi/mpc5200: Register SPI devices described in device tree
-      powerpc/5200: Add mpc5200-spi (non-PSC) device driver
-      powerpc/5200: add general purpose timer API for the MPC5200
-      mmc: fix missing module license declaration in of_mmc_spi.c
-
-John Bonesio (1):
-      powerpc/5200: add LocalPlus bus FIFO device driver
-
-John Linn (1):
-      Xilinx: SPI: Fix bits_per_word for transfers
-
-Wolfram Sang (2):
-      spi/mpc52xx-psc-spi: check for valid PSC
-      spi/mpc52xx: replace printk with dev_err
-
- arch/powerpc/include/asm/mpc52xx.h            |   46 ++
- arch/powerpc/kernel/io.c                      |    4 +-
- arch/powerpc/platforms/52xx/Kconfig           |    5 +
- arch/powerpc/platforms/52xx/Makefile          |    1 +
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c     |  133 ++++++-
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |  560 +++++++++++++++++++++=
-++++
- drivers/mmc/host/of_mmc_spi.c                 |    2 +
- drivers/spi/Kconfig                           |    8 +
- drivers/spi/Makefile                          |    1 +
- drivers/spi/mpc52xx_psc_spi.c                 |   25 +-
- drivers/spi/mpc52xx_spi.c                     |  520 +++++++++++++++++++++=
-++
- drivers/spi/xilinx_spi.c                      |    3 +-
- include/linux/spi/mpc52xx_spi.h               |   10 +
- 13 files changed, 1297 insertions(+), 21 deletions(-)
- create mode 100644 arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
- create mode 100644 drivers/spi/mpc52xx_spi.c
- create mode 100644 include/linux/spi/mpc52xx_spi.h
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/arch/powerpc/kvm/timing.h b/arch/powerpc/kvm/timing.h
+index bb13b1f..806ef67 100644
+--- a/arch/powerpc/kvm/timing.h
++++ b/arch/powerpc/kvm/timing.h
+@@ -48,7 +48,11 @@ static inline void kvmppc_set_exit_type(struct kvm_vcpu *vcpu, int type) {}
+ static inline void kvmppc_account_exit_stat(struct kvm_vcpu *vcpu, int type)
+ {
+ 	/* type has to be known at build time for optimization */
++
++	/* The BUILD_BUG_ON below breaks in funny ways, commented out
++	 * for now ... -BenH
+ 	BUILD_BUG_ON(__builtin_constant_p(type));
++	*/
+ 	switch (type) {
+ 	case EXT_INTR_EXITS:
+ 		vcpu->stat.ext_intr_exits++;
