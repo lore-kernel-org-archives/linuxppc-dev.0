@@ -1,20 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 84035B7BC3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 Nov 2009 18:07:45 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 05 Nov 2009 18:07:22 +1100
-Message-ID: <1257404842.13611.109.camel@pasglop>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <grant.likely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 00/11] More OF merge patches
+To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	benh@kernel.crashing.org, sfr@canb.auug.org.au,
+	davem@davemloft.net, sparclinux@vger.kernel.org,
+	monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au
+Date: Thu, 05 Nov 2009 00:45:09 -0700
+Message-ID: <20091105073728.10460.6061.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +19,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Round 2.  Here is my 2nd set of merging OF code between PowerPC and
+Microblaze (no SPARC changes this time).  Compile tested on ppc,
+microblaze and sparc.  Boot tested on MPC5200 powerpc platform.
 
-Here are some small bits for .32
+I've also pushed this series out to the test-devicetree branch on my
+git server if anyone cares to pull and test:
 
-The Kconfig cleanup you asked for hugetlbfs selection, a few regression
-fixes and an actual bug fix that I decided was worth putting in now
-(the RTC dates thingy)
+git://git.secretlab.ca/git/linux-2.6 test-devicetree
+
+This is based on the next-devicetree branch which contains the first
+round of patches and is being pulled into linux-next.
 
 Cheers,
-Ben. 
+g.
 
-The following changes since commit 2e2ec952350f25242f2e0539db16b1e46f9eb01b:
-  Linus Torvalds (1):
-        Merge branch 'bugfix' of git://git.kernel.org/.../jeremy/xen
+---
 
-are available in the git repository at:
+Grant Likely (11):
+      of/flattree: Merge early_init_dt_check_for_initrd()
+      of: remove special case definition of of_read_ulong()
+      of: merge prom_{add,remove,modify}_property
+      of/flattree: Merge unflatten_device_tree
+      of/flattree: Merge unflatten_dt_node
+      of/flattree: Merge of_flat_dt_is_compatible
+      of/flattree: merge of_get_flat_dt_prop
+      of/flattree: remove __init annotations from the header file
+      of/flattree: merge of_get_flat_dt_root
+      of/flattree: merge of_scan_flat_dt
+      of/flattree: merge find_flat_dt_string and initial_boot_params
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-Andre Detsch (1):
-      powerpc/pci: Fix regression in powerpc MSI-X
-
-Benjamin Herrenschmidt (4):
-      powerpc: Cleanup Kconfig selection of hugetlbfs support
-      powerpc/mm: Remove debug context clamping from nohash code
-      powerpc: Avoid giving out RTC dates below EPOCH
-      powerpc/kvm: Remove problematic BUILD_BUG_ON statement
-
- arch/powerpc/Kconfig                  |    4 ++++
- arch/powerpc/kernel/time.c            |   15 ++++++++++++++-
- arch/powerpc/kvm/timing.h             |    4 ++++
- arch/powerpc/mm/mmu_context_nohash.c  |    4 ++--
- arch/powerpc/platforms/pseries/msi.c  |    2 --
- arch/powerpc/platforms/pseries/xics.c |    9 +++++++++
- fs/Kconfig                            |    2 +-
- 7 files changed, 34 insertions(+), 6 deletions(-)
+ arch/microblaze/Kconfig            |    1 
+ arch/microblaze/include/asm/prom.h |    1 
+ arch/microblaze/kernel/prom.c      |  531 ------------------------------------
+ arch/powerpc/Kconfig               |    1 
+ arch/powerpc/kernel/prom.c         |  534 ------------------------------------
+ drivers/of/Kconfig                 |    4 
+ drivers/of/Makefile                |    1 
+ drivers/of/base.c                  |  116 ++++++++
+ drivers/of/fdt.c                   |  458 +++++++++++++++++++++++++++++++
+ include/linux/of.h                 |   10 -
+ include/linux/of_fdt.h             |   21 +
+ 11 files changed, 598 insertions(+), 1080 deletions(-)
+ create mode 100644 drivers/of/fdt.c
