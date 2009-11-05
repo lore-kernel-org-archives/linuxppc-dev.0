@@ -1,21 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id A0822B7BA8
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 01:20:29 +1100 (EST)
-Date: Thu, 5 Nov 2009 17:20:28 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH RFC] gianfar: Make polling safe with IRQs disabled
-Message-ID: <20091105142028.GB17171@oksana.dev.rtsoft.ru>
-References: <20091104225711.GA30844@oksana.dev.rtsoft.ru>
-	<E1N62ti-0003iS-K2@jdl.com>
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from exprod5og104.obsmtp.com (exprod5og104.obsmtp.com [64.18.0.178])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A987FB7BA8
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 01:26:24 +1100 (EST)
+Message-ID: <4AF2DFC4.80307@gefanuc.com>
+Date: Thu, 05 Nov 2009 14:23:00 +0000
+From: Martyn Welch <martyn.welch@gefanuc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <E1N62ti-0003iS-K2@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, Jason Wessel <jason.wessel@windriver.com>,
-	Andy Fleming <afleming@freescale.com>,
-	David Miller <davem@davemloft.net>, netdev@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 3/5] powerpc/86xx: Enable NVRAM on GE Fanuc's SBC610
+References: <20090702154928.31202.65107.stgit@ES-J7S4D2J.amer.consind.ge.com>
+	<20090702161231.31202.87763.stgit@ES-J7S4D2J.amer.consind.ge.com>
+	<DAE90CFA-DC33-4BF6-9381-35B0BC1D45C4@kernel.crashing.org>
+In-Reply-To: <DAE90CFA-DC33-4BF6-9381-35B0BC1D45C4@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 05, 2009 at 08:01:10AM -0600, Jon Loeliger wrote:
-> > When using KGDBoE, gianfar driver spits 'Interrupt problem' messages,
-> > which appears to be a legitimate warning, i.e. we may end up calling
-> > netif_receive_skb() or vlan_hwaccel_receive_skb() with IRQs disabled.
-> > 
-> > This patch reworks the RX path so that if netpoll is enabled (the
-> > only case when the driver don't know from what context the polling
-> > may be called), we check whether IRQs are disabled, and if so we
-> > fall back to safe variants of skb receiving functions.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
-> > 
-> > I'm not sure if this is suitable for mainline since it doesn't
-> > have KGDBoE support. Jason, if the patch is OK, would you like
-> > to merge it into KGDB tree?
-> 
-> It's a legitimate problem with or without KGDBoE.  I see it
-> occasionally when conn_track is enabled as well, for example.
+Kumar Gala wrote:
+>
+> On Jul 2, 2009, at 11:12 AM, Martyn Welch wrote:
+>
+>> This patch enables the NVRAM found on the GE Fanuc SBC610
+>>
+>> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+>> ---
+>>
+>> arch/powerpc/boot/dts/gef_sbc610.dts           |    6 ++++++
+>> arch/powerpc/configs/86xx/gef_sbc610_defconfig |    4 ++--
+>> arch/powerpc/platforms/86xx/Kconfig            |    1 +
+>> arch/powerpc/platforms/86xx/gef_sbc610.c       |    5 +++++
+>> 4 files changed, 14 insertions(+), 2 deletions(-)
+>
+> I assume these still work w/the updates to the other patches?
+>
+> - k
+I'm just updating your tree to ensure that the patches still apply (and 
+compile) cleanly. I'm fairly confident that they will.
 
-Hm, then I'd better remove the #ifdef CONFIG_NETPOLL.
-
-Interestingly though, why conn_track does the polling with irqs
-disabled, could be a bug in the conn_track? Because pretty much
-drivers assume that polling is called with IRQs enabled.
-
-If it's easily reproducible, could you replace the printk() with
-WARN_ON(1) and post the backtrace? Or I can try to reproduce the
-issue if you tell me how.
-
-Thanks!
+Martyn
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
