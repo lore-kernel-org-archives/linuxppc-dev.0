@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 10/11] of: remove special case definition of of_read_ulong()
+Subject: [PATCH 11/11] of/flattree: Merge early_init_dt_check_for_initrd()
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	benh@kernel.crashing.org, sfr@canb.auug.org.au,
 	davem@davemloft.net, sparclinux@vger.kernel.org,
 	monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au
-Date: Thu, 05 Nov 2009 00:47:19 -0700
-Message-ID: <20091105074710.10460.31527.stgit@angua>
+Date: Thu, 05 Nov 2009 00:47:47 -0700
+Message-ID: <20091105074724.10460.4083.stgit@angua>
 In-Reply-To: <20091105073728.10460.6061.stgit@angua>
 References: <20091105073728.10460.6061.stgit@angua>
 MIME-Version: 1.0
@@ -21,39 +21,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Special case of of_read_ulong() was defined for PPC32 to toss away
-all but the last 32 bits when a large number value was read, and the
-'normal' version for ppc64 just #defined of_read_ulong to of_read_number
-which causes compiler warnings on MicroBlaze and other 32 bit
-architectures because it returns a u64 instead of a ulong.
-
-This patch fixes the problem by defining a common implementation of
-of_read_ulong() that works everywhere.
+Merge common code between PowerPC and Microblaze
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- include/linux/of.h |    7 ++-----
- 1 files changed, 2 insertions(+), 5 deletions(-)
+ arch/microblaze/kernel/prom.c |   32 --------------------------------
+ arch/powerpc/kernel/prom.c    |   30 ------------------------------
+ drivers/of/fdt.c              |   37 +++++++++++++++++++++++++++++++++++++
+ include/linux/of_fdt.h        |    1 +
+ 4 files changed, 38 insertions(+), 62 deletions(-)
 
-diff --git a/include/linux/of.h b/include/linux/of.h
-index bec2157..d4c014a 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -113,14 +113,11 @@ static inline u64 of_read_number(const u32 *cell, int size)
+diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
+index a38e373..7959495 100644
+--- a/arch/microblaze/kernel/prom.c
++++ b/arch/microblaze/kernel/prom.c
+@@ -113,38 +113,6 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 	return 0;
  }
  
- /* Like of_read_number, but we want an unsigned long result */
--#ifdef CONFIG_PPC32
- static inline unsigned long of_read_ulong(const u32 *cell, int size)
- {
--	return cell[size-1];
-+	/* toss away upper bits if unsigned long is smaller than u64 */
-+	return of_read_number(cell, size);
- }
+-#ifdef CONFIG_BLK_DEV_INITRD
+-static void __init early_init_dt_check_for_initrd(unsigned long node)
+-{
+-	unsigned long l;
+-	u32 *prop;
+-
+-	pr_debug("Looking for initrd properties... ");
+-
+-	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
+-	if (prop) {
+-		initrd_start = (unsigned long)
+-					__va((u32)of_read_ulong(prop, l/4));
+-
+-		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
+-		if (prop) {
+-			initrd_end = (unsigned long)
+-					__va((u32)of_read_ulong(prop, 1/4));
+-			initrd_below_start_ok = 1;
+-		} else {
+-			initrd_start = 0;
+-		}
+-	}
+-
+-	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
+-					initrd_start, initrd_end);
+-}
 -#else
--#define of_read_ulong(cell, size)	of_read_number(cell, size)
--#endif
+-static inline void early_init_dt_check_for_initrd(unsigned long node)
+-{
+-}
+-#endif /* CONFIG_BLK_DEV_INITRD */
+-
+ static int __init early_init_dt_scan_chosen(unsigned long node,
+ 				const char *uname, int depth, void *data)
+ {
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 7f88566..1ecd6c6 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -373,36 +373,6 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 	return 0;
+ }
  
- #include <asm/prom.h>
+-#ifdef CONFIG_BLK_DEV_INITRD
+-static void __init early_init_dt_check_for_initrd(unsigned long node)
+-{
+-	unsigned long l;
+-	u32 *prop;
+-
+-	DBG("Looking for initrd properties... ");
+-
+-	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
+-	if (prop) {
+-		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
+-
+-		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
+-		if (prop) {
+-			initrd_end = (unsigned long)
+-					__va(of_read_ulong(prop, l/4));
+-			initrd_below_start_ok = 1;
+-		} else {
+-			initrd_start = 0;
+-		}
+-	}
+-
+-	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
+-}
+-#else
+-static inline void early_init_dt_check_for_initrd(unsigned long node)
+-{
+-}
+-#endif /* CONFIG_BLK_DEV_INITRD */
+-
+ static int __init early_init_dt_scan_chosen(unsigned long node,
+ 					    const char *uname, int depth, void *data)
+ {
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index ad3a2b6..3c58f10 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -11,6 +11,7 @@
  
+ #include <linux/kernel.h>
+ #include <linux/lmb.h>
++#include <linux/initrd.h>
+ #include <linux/of.h>
+ #include <linux/of_fdt.h>
+ 
+@@ -370,6 +371,42 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
+ 	return mem;
+ }
+ 
++#ifdef CONFIG_BLK_DEV_INITRD
++/**
++ * early_init_dt_check_for_initrd - Decode initrd location from flat tree
++ * @node: reference to node containing initrd location ('chosen')
++ */
++void __init early_init_dt_check_for_initrd(unsigned long node)
++{
++	unsigned long len;
++	u32 *prop;
++
++	pr_debug("Looking for initrd properties... ");
++
++	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &len);
++	if (prop) {
++		initrd_start = (unsigned long)
++				__va(of_read_ulong(prop, len/4));
++
++		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &len);
++		if (prop) {
++			initrd_end = (unsigned long)
++				__va(of_read_ulong(prop, len/4));
++			initrd_below_start_ok = 1;
++		} else {
++			initrd_start = 0;
++		}
++	}
++
++	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
++		 initrd_start, initrd_end);
++}
++#else
++inline void early_init_dt_check_for_initrd(unsigned long node)
++{
++}
++#endif /* CONFIG_BLK_DEV_INITRD */
++
+ /**
+  * unflatten_device_tree - create tree of device_nodes from flat blob
+  *
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index 81231e0..ec2db82 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -69,6 +69,7 @@ extern void *of_get_flat_dt_prop(unsigned long node, const char *name,
+ 				 unsigned long *size);
+ extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
+ extern unsigned long of_get_flat_dt_root(void);
++extern void early_init_dt_check_for_initrd(unsigned long node);
+ 
+ /* Other Prototypes */
+ extern void finish_device_tree(void);
