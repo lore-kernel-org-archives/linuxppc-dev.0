@@ -1,17 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D631B7BA5
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 02:22:07 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id nA5FLmJd006725
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Nov 2009 09:21:59 -0600
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/fsl-booke: Rework TLB CAM code
-Date: Thu,  5 Nov 2009 09:21:48 -0600
-Message-Id: <1257434508-14695-1-git-send-email-galak@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 40CBCB7B99
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 02:43:32 +1100 (EST)
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH RFC] gianfar: Make polling safe with IRQs disabled 
+In-reply-to: <E1N63WM-0003xK-PN@jdl.com> 
+References: <20091104225711.GA30844@oksana.dev.rtsoft.ru>
+	<E1N62ti-0003iS-K2@jdl.com>
+	<20091105142028.GB17171@oksana.dev.rtsoft.ru>
+	<E1N63WM-0003xK-PN@jdl.com>
+Date: Thu, 05 Nov 2009 09:43:18 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1N64UY-00049g-Hb@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Andy Fleming <afleming@freescale.com>, David Miller <davem@davemloft.net>,
+	Jason Wessel <jason.wessel@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,304 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Re-write the code so its more standalone and fixed some issues:
-* Bump'd # of CAM entries to 64 to support e500mc
-* Make the code handle MAS7 properly
-* Use pr_cont instead of creating a string as we go
+> > 
+> > If it's easily reproducible, could you replace the printk() with
+> > WARN_ON(1) and post the backtrace? Or I can try to reproduce the
+> > issue if you tell me how.
+> > 
+> > Thanks!
+> 
+> Yeah, I can reproduce it.  I'll try and get that for you.
+> 
+> jdl
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/kernel/asm-offsets.c    |    3 -
- arch/powerpc/kernel/head_fsl_booke.S |   22 ------
- arch/powerpc/mm/fsl_booke_mmu.c      |  132 +++++++++++++++++++---------------
- arch/powerpc/mm/mmu_decl.h           |   11 ---
- 4 files changed, 74 insertions(+), 94 deletions(-)
+This is with essentially a stock 2.6.31 kernel for an 8315.
+I've seen the problem for both task 'insmod' and 'iptables'.
+Um, conn_track is a module being loaded here.  Our brief analysis
+runs like this:
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index e2e2082..a6c2b63 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -421,9 +421,6 @@ int main(void)
- 	DEFINE(PGD_T_LOG2, PGD_T_LOG2);
- 	DEFINE(PTE_T_LOG2, PTE_T_LOG2);
- #endif
--#ifdef CONFIG_FSL_BOOKE
--	DEFINE(TLBCAM_SIZE, sizeof(struct tlbcam));
--#endif
- 
- #ifdef CONFIG_KVM_EXIT_TIMING
- 	DEFINE(VCPU_TIMING_EXIT_TBU, offsetof(struct kvm_vcpu,
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 975788c..7f4bd7f 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -944,28 +944,6 @@ _GLOBAL(__setup_e500mc_ivors)
- 	blr
- 
- /*
-- * extern void loadcam_entry(unsigned int index)
-- *
-- * Load TLBCAM[index] entry in to the L2 CAM MMU
-- */
--_GLOBAL(loadcam_entry)
--	lis	r4,TLBCAM@ha
--	addi	r4,r4,TLBCAM@l
--	mulli	r5,r3,TLBCAM_SIZE
--	add	r3,r5,r4
--	lwz	r4,0(r3)
--	mtspr	SPRN_MAS0,r4
--	lwz	r4,4(r3)
--	mtspr	SPRN_MAS1,r4
--	lwz	r4,8(r3)
--	mtspr	SPRN_MAS2,r4
--	lwz	r4,12(r3)
--	mtspr	SPRN_MAS3,r4
--	tlbwe
--	isync
--	blr
--
--/*
-  * extern void giveup_altivec(struct task_struct *prev)
-  *
-  * The e500 core does not have an AltiVec unit.
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index dc93e95..b8fac4f 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -54,26 +54,35 @@
- 
- #include "mmu_decl.h"
- 
--extern void loadcam_entry(unsigned int index);
- unsigned int tlbcam_index;
--static unsigned long cam[CONFIG_LOWMEM_CAM_NUM];
- 
--#define NUM_TLBCAMS	(16)
-+#define NUM_TLBCAMS	(64)
- 
- #if defined(CONFIG_LOWMEM_CAM_NUM_BOOL) && (CONFIG_LOWMEM_CAM_NUM >= NUM_TLBCAMS)
- #error "LOWMEM_CAM_NUM must be less than NUM_TLBCAMS"
- #endif
- 
--struct tlbcam TLBCAM[NUM_TLBCAMS];
-+struct tlbcam {
-+	u32	MAS0;
-+	u32	MAS1;
-+	unsigned long	MAS2;
-+	u32	MAS3;
-+	u32	MAS7;
-+} TLBCAM[NUM_TLBCAMS];
- 
- struct tlbcamrange {
--   	unsigned long start;
-+	unsigned long start;
- 	unsigned long limit;
- 	phys_addr_t phys;
- } tlbcam_addrs[NUM_TLBCAMS];
- 
- extern unsigned int tlbcam_index;
- 
-+unsigned long tlbcam_sz(int idx)
-+{
-+	return tlbcam_addrs[idx].limit - tlbcam_addrs[idx].start + 1;
-+}
-+
- /*
-  * Return PA for this VA if it is mapped by a CAM, or 0
-  */
-@@ -94,23 +103,36 @@ unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
- 		if (pa >= tlbcam_addrs[b].phys
--	    	    && pa < (tlbcam_addrs[b].limit-tlbcam_addrs[b].start)
-+			&& pa < (tlbcam_addrs[b].limit-tlbcam_addrs[b].start)
- 		              +tlbcam_addrs[b].phys)
- 			return tlbcam_addrs[b].start+(pa-tlbcam_addrs[b].phys);
- 	return 0;
- }
- 
-+void loadcam_entry(int idx)
-+{
-+	mtspr(SPRN_MAS0, TLBCAM[idx].MAS0);
-+	mtspr(SPRN_MAS1, TLBCAM[idx].MAS1);
-+	mtspr(SPRN_MAS2, TLBCAM[idx].MAS2);
-+	mtspr(SPRN_MAS3, TLBCAM[idx].MAS3);
-+
-+	if (cur_cpu_spec->cpu_features & MMU_FTR_BIG_PHYS)
-+		mtspr(SPRN_MAS7, TLBCAM[idx].MAS7);
-+
-+	asm volatile("isync;tlbwe;isync" : : : "memory");
-+}
-+
- /*
-  * Set up one of the I/D BAT (block address translation) register pairs.
-  * The parameters are not checked; in particular size must be a power
-  * of 4 between 4k and 256M.
-  */
--void settlbcam(int index, unsigned long virt, phys_addr_t phys,
--		unsigned int size, int flags, unsigned int pid)
-+static void settlbcam(int index, unsigned long virt, phys_addr_t phys,
-+		unsigned long size, unsigned long flags, unsigned int pid)
- {
- 	unsigned int tsize, lz;
- 
--	asm ("cntlzw %0,%1" : "=r" (lz) : "r" (size));
-+	asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r" (size));
- 	tsize = 21 - lz;
- 
- #ifdef CONFIG_SMP
-@@ -128,8 +150,10 @@ void settlbcam(int index, unsigned long virt, phys_addr_t phys,
- 	TLBCAM[index].MAS2 |= (flags & _PAGE_GUARDED) ? MAS2_G : 0;
- 	TLBCAM[index].MAS2 |= (flags & _PAGE_ENDIAN) ? MAS2_E : 0;
- 
--	TLBCAM[index].MAS3 = (phys & PAGE_MASK) | MAS3_SX | MAS3_SR;
-+	TLBCAM[index].MAS3 = (phys & MAS3_RPN) | MAS3_SX | MAS3_SR;
- 	TLBCAM[index].MAS3 |= ((flags & _PAGE_RW) ? MAS3_SW : 0);
-+	if (cur_cpu_spec->cpu_features & MMU_FTR_BIG_PHYS)
-+		TLBCAM[index].MAS7 = phys >> 32;
- 
- #ifndef CONFIG_KGDB /* want user access for breakpoints */
- 	if (flags & _PAGE_USER) {
-@@ -148,27 +172,44 @@ void settlbcam(int index, unsigned long virt, phys_addr_t phys,
- 	loadcam_entry(index);
- }
- 
--void invalidate_tlbcam_entry(int index)
--{
--	TLBCAM[index].MAS0 = MAS0_TLBSEL(1) | MAS0_ESEL(index);
--	TLBCAM[index].MAS1 = ~MAS1_VALID;
--
--	loadcam_entry(index);
--}
--
--unsigned long __init mmu_mapin_ram(void)
-+unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
- {
-+	int i;
- 	unsigned long virt = PAGE_OFFSET;
- 	phys_addr_t phys = memstart_addr;
-+	unsigned long amount_mapped = 0;
-+	unsigned long max_cam = (mfspr(SPRN_TLB1CFG) >> 16) & 0xf;
-+
-+	/* Convert (4^max) kB to (2^max) bytes */
-+	max_cam = max_cam * 2 + 10;
- 
--	while (tlbcam_index < ARRAY_SIZE(cam) && cam[tlbcam_index]) {
--		settlbcam(tlbcam_index, virt, phys, cam[tlbcam_index], PAGE_KERNEL_X, 0);
--		virt += cam[tlbcam_index];
--		phys += cam[tlbcam_index];
--		tlbcam_index++;
-+	/* Calculate CAM values */
-+	for (i = 0; ram && i < max_cam_idx; i++) {
-+		unsigned int camsize = __ilog2(ram) & ~1U;
-+		unsigned int align = __ffs(virt | phys) & ~1U;
-+		unsigned long cam_sz;
-+
-+		if (camsize > align)
-+			camsize = align;
-+		if (camsize > max_cam)
-+			camsize = max_cam;
-+
-+		cam_sz = 1UL << camsize;
-+		settlbcam(i, virt, phys, cam_sz, PAGE_KERNEL_X, 0);
-+
-+		ram -= cam_sz;
-+		amount_mapped += cam_sz;
-+		virt += cam_sz;
-+		phys += cam_sz;
- 	}
-+	tlbcam_index = i;
-+
-+	return amount_mapped;
-+}
- 
--	return virt - PAGE_OFFSET;
-+unsigned long __init mmu_mapin_ram(void)
-+{
-+	return tlbcam_addrs[tlbcam_index - 1].limit - PAGE_OFFSET + 1;
- }
- 
- /*
-@@ -179,46 +220,21 @@ void __init MMU_init_hw(void)
- 	flush_instruction_cache();
- }
- 
--void __init
--adjust_total_lowmem(void)
-+void __init adjust_total_lowmem(void)
- {
--	phys_addr_t ram;
--	unsigned int max_cam = (mfspr(SPRN_TLB1CFG) >> 16) & 0xff;
--	char buf[ARRAY_SIZE(cam) * 5 + 1], *p = buf;
-+	unsigned long ram;
- 	int i;
--	unsigned long virt = PAGE_OFFSET & 0xffffffffUL;
--	unsigned long phys = memstart_addr & 0xffffffffUL;
--
--	/* Convert (4^max) kB to (2^max) bytes */
--	max_cam = max_cam * 2 + 10;
- 
- 	/* adjust lowmem size to __max_low_memory */
- 	ram = min((phys_addr_t)__max_low_memory, (phys_addr_t)total_lowmem);
- 
--	/* Calculate CAM values */
--	__max_low_memory = 0;
--	for (i = 0; ram && i < ARRAY_SIZE(cam); i++) {
--		unsigned int camsize = __ilog2(ram) & ~1U;
--		unsigned int align = __ffs(virt | phys) & ~1U;
-+	__max_low_memory = map_mem_in_cams(ram, CONFIG_LOWMEM_CAM_NUM);
- 
--		if (camsize > align)
--			camsize = align;
--		if (camsize > max_cam)
--			camsize = max_cam;
--
--		cam[i] = 1UL << camsize;
--		ram -= cam[i];
--		__max_low_memory += cam[i];
--		virt += cam[i];
--		phys += cam[i];
--
--		p += sprintf(p, "%lu/", cam[i] >> 20);
--	}
--	for (; i < ARRAY_SIZE(cam); i++)
--		p += sprintf(p, "0/");
--	p[-1] = '\0';
--
--	pr_info("Memory CAM mapping: %s Mb, residual: %dMb\n", buf,
-+	pr_info("Memory CAM mapping: ");
-+	for (i = 0; i < tlbcam_index - 1; i++)
-+		pr_cont("%lu/", tlbcam_sz(i) >> 20);
-+	pr_cont("%lu Mb, residual: %dMb\n", tlbcam_sz(tlbcam_index - 1) >> 20,
- 	        (unsigned int)((total_lowmem - __max_low_memory) >> 20));
-+
- 	__initial_memory_limit_addr = memstart_addr + __max_low_memory;
- }
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index d2e5321..e27a990 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -98,21 +98,10 @@ extern void _tlbia(void);
- 
- #ifdef CONFIG_PPC32
- 
--struct tlbcam {
--	u32	MAS0;
--	u32	MAS1;
--	u32	MAS2;
--	u32	MAS3;
--	u32	MAS7;
--};
--
- extern void mapin_ram(void);
- extern int map_page(unsigned long va, phys_addr_t pa, int flags);
- extern void setbat(int index, unsigned long virt, phys_addr_t phys,
- 		   unsigned int size, int flags);
--extern void settlbcam(int index, unsigned long virt, phys_addr_t phys,
--		      unsigned int size, int flags, unsigned int pid);
--extern void invalidate_tlbcam_entry(int index);
- 
- extern int __map_without_bats;
- extern unsigned long ioremap_base;
--- 
-1.6.0.6
+    This is an issue with the gianfar driver.  In gfar_poll(), irqs are
+    disabled for the handling of gfar_clean_tx_ring(dev) (line 1928).
+    In this call, skbs can call skb_recycle_check, which can release
+    head state (net/core/skbuff.c@506), which can cause conntrack
+    cleanup (net/core/skbuff.c@402->include/linux/skbuff.h@1923), which
+    cannot be done with IRQs disabled...that is the badness.
+
+HTH,
+jdl
+
+
+[   34.775619] nf_conntrack version 0.5.0 (1008 buckets, 4032 max)
+[   34.963135] ------------[ cut here ]------------
+[   34.967804] Badness at kernel/softirq.c:143
+[   34.972016] NIP: c003e3c4 LR: c423a528 CTR: c003e344
+[   34.977018] REGS: c15d1ab0 TRAP: 0700   Not tainted  (2.6.31-xeno)
+[   34.983236] MSR: 00021032 <ME,CE,IR,DR>  CR: 24000284  XER: 20000000
+[   34.989689] TASK = c343a060[977] 'insmod' THREAD: c15d0000
+[   34.995032] GPR00: 00000001 c15d1b60 c343a060 00000001 000000a4 00000052 00000001 00000000 
+[   35.003501] GPR08: 00000101 c0450000 c3572d20 c003e344 24000282 100c5288 00000001 00000040 
+[   35.011971] GPR16: c2e5c2f0 00009032 c2e5c2c0 c2e5c000 00000100 00000000 c2e5c340 00000098 
+[   35.020440] GPR24: 00000260 c2428760 00000800 c153b800 00000000 c1018c98 c15d0000 c15d1b60 
+[   35.029120] NIP [c003e3c4] local_bh_enable+0x80/0xc4
+[   35.034174] LR [c423a528] destroy_conntrack+0xd4/0x13c [nf_conntrack]
+[   35.040652] Call Trace:
+[   35.043128] [c15d1b60] [c003e32c] local_bh_disable+0x1c/0x34 (unreliable)
+[   35.050001] [c15d1b70] [c423a528] destroy_conntrack+0xd4/0x13c [nf_conntrack]
+[   35.057205] [c15d1b80] [c02c6370] nf_conntrack_destroy+0x3c/0x70
+[   35.063263] --- Exception: c428168c at 0xc15d1c50
+[   35.063272]     LR = 0xc15d1c40
+[   35.071165] [c15d1ba0] [c0286f3c] skb_release_head_state+0x100/0x104 (unreliable)
+[   35.078718] [c15d1bb0] [c0288340] skb_recycle_check+0x8c/0x10c
+[   35.084611] [c15d1bc0] [c01e1688] gfar_poll+0x190/0x384
+[   35.089887] [c15d1c10] [c02935ac] net_rx_action+0xec/0x22c
+[   35.095432] [c15d1c50] [c003dd8c] __do_softirq+0xe8/0x224
+[   35.100885] [c15d1ca0] [c000624c] do_softirq+0x78/0x80
+[   35.106071] [c15d1cb0] [c003d868] irq_exit+0x60/0x78
+[   35.111082] [c15d1cc0] [c0006714] do_IRQ+0x98/0xb0
+[   35.115921] [c15d1ce0] [c0014af8] ret_from_except+0x0/0x14
+[   35.121474] --- Exception: 501 at strcmp+0xc/0x24
+[   35.121483]     LR = find_symbol_in_section+0x38/0xc0
+[   35.131285] [c15d1da0] [00000000] (null) (unreliable)
+[   35.136390] [c15d1dc0] [c0064e08] each_symbol_in_section+0x7c/0xb4
+[   35.142623] [c15d1df0] [c0065340] each_symbol+0x34/0x148
+[   35.147983] [c15d1e70] [c0065488] find_symbol+0x34/0x78
+[   35.153257] [c15d1ea0] [c00681d8] load_module+0x8e4/0x12ec
+[   35.158792] [c15d1f20] [c0068c60] sys_init_module+0x80/0x208
+[   35.164501] [c15d1f40] [c0014460] ret_from_syscall+0x0/0x38
+[   35.170124] --- Exception: c01 at 0xfea6a8c
+[   35.170132]     LR = 0x10016dcc
+[   35.177485] Instruction dump:
+[   35.180477] 70090004 40820068 81610000 800b0004 bbcbfff8 7d615b78 7c0803a6 4e800020 
+[   35.188332] 3d20c045 8009b3c0 7c000034 5400d97e <0f000000> 2f800000 419effa8 38000001 
