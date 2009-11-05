@@ -1,28 +1,15 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id D5718B7BB3
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 07:30:02 +1100 (EST)
-Date: Thu, 5 Nov 2009 23:30:01 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/3] powerpc/83xx/suspend: Clear deep_sleeping after
-	devices resume
-Message-ID: <20091105203001.GA629@oksana.dev.rtsoft.ru>
-References: <20090923190041.GA18944@oksana.dev.rtsoft.ru>
-	<20090923190113.GA19932@oksana.dev.rtsoft.ru>
-	<043A102D-9F70-4287-B34E-17FF9AE90EE1@kernel.crashing.org>
-	<4AF30406.3080101@freescale.com>
-	<2F8E2E66-8398-4ACD-9697-6C2AB6E39CD3@kernel.crashing.org>
-	<4AF32C0B.4010109@freescale.com>
-	<7A8DBFC0-69D9-406B-B1AC-3EAC8EE26C58@kernel.crashing.org>
-	<4AF32F82.8040801@freescale.com>
-	<20091105200931.GA30577@oksana.dev.rtsoft.ru>
-	<4AF334AB.1030401@freescale.com>
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+Received: from kronos.usurf.usu.edu (kronos.usurf.usu.edu [129.123.194.129])
+	by ozlabs.org (Postfix) with ESMTP id 6B0F8B7BAE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  6 Nov 2009 07:38:07 +1100 (EST)
+From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 5 Nov 2009 13:37:58 -0700
+Subject: Interrupts not Firing on PPC405EX
+Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F0331030DBB@midas.usurf.usu.edu>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4AF334AB.1030401@freescale.com>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +19,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 05, 2009 at 02:25:15PM -0600, Scott Wood wrote:
-> Anton Vorontsov wrote:
-> >On Thu, Nov 05, 2009 at 02:03:14PM -0600, Scott Wood wrote:
-> >>Kumar Gala wrote:
-> >>>On Nov 5, 2009, at 1:48 PM, Scott Wood wrote:
-> >>>>As for patch 3, Ben objected to the sleep-nexus stuff on IRC.
-> >>>Is sleep-nexus new?  I thought we've had that for a bit.
-> >>It's been around in a few dts files, but as was noted, nothing uses
-> >>this stuff yet.
-> >
-> >So I should just drop the sleep-nexus changes? I can also
-> >prepare a patch that removes sleep-nexus from 8313rdb.dts.
-> >But how should we handle the sleep = <> properties then?
-> 
-> We could still have some sort of nexus node that is off to the side
-> (pointed to with sleep-parent) and not inserting itself into the
-> hierarchy.
-> 
-> Or, we could allow multiple nodes to refer to the same sleep ID, and
-> use the ID rather than a node to tie things together.  If we do
-> that, we'll probably want a simple index rather than a set of bits
-> in the sleep property, so it can correspond to some kernel object
-> that has some bookeeping info.  Perhaps we could tie into the clock
-> bindings that were discussed on devtree-discuss in August.
+All,
 
-Yeah, reusing the clk api would be the best.
+I am having some troubles getting interrupts to fire from my kernel module.=
+  I have connected the ISR with a call to request_irq() and have configured=
+ my device to generate interrupts.   However, my ISR is called once when I =
+connect the interrupt for the first time.  After that it never is called ag=
+ain.  It seems like that interrupt is getting stuck disabled, but that does=
+ not make sense as to why.
 
-Anyway, since we don't use the sleep-nexus stuff, I'd rather
-just add the power management controller nodes.
+The device is on the PCIE0 bus and works just fine in another OS (namely Vx=
+works - that is the driver I am working on porting to Linux).
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Here is how I am connecting the ISR and the ISR itself.  Am I doing somethi=
+ng stupid?
+
+Thanks for the help!
+
+Jonathan
+
+PS - Our hardware is a custom spun PPC405EX board based on the AMCC Kilauea=
+ board and uses the kilauea.dts with no modifications.
+
+A quick note - I realize that I am not checking if I was the one to interru=
+pt the CPU.  I am not worried about that right now - especially since I kno=
+w there is nothing else that will interrupt the CPU on this IRQ right now a=
+nyway - it never fires.
+
+
+int fpga_open(struct inode *inode, struct file *filp)
+{
+	int err =3D 0;
+
+	/* Make sure we have successfully probed the device */
+	if (NULL =3D=3D fpga_drv.pcidev)
+	{
+		return -ENODEV;
+	}
+
+	/* Only one process at a time can have access to the FPGA */
+	if (0 !=3D atomic_read(&fpga_drv.openCount))
+	{
+		atomic_inc(&fpga_drv.openCount);
+		printk(KERN_WARNING "FPGA: Could not open device: already open. \n");
+		return -EBUSY;
+	}
+
+	/* If not already in use, state that we are */
+	atomic_inc(&fpga_drv.openCount);
+
+	/* Store a pointer to the PCI device structure */
+	filp->private_data =3D fpga_drv.pcidev;
+
+	/* Attach ISR to IRQ */
+	if (request_irq(fpga_drv.pcidev->irq, &fpga_isr, IRQF_SHARED,
+			FPGA_MODULE_NAME, fpga_drv.pcidev))
+	{
+		printk( KERN_ERR "FPGA: Unable to connect FPGA ISR (%d)!\n",
+				fpga_drv.pcidev->irq);
+		return -EPERM;
+	}
+
+	return 0;
+}
+
+/* Interrupt Service Routine */
+irqreturn_t fpga_isr(int irq, void *dev_id)
+{
+	uint32_t status =3D 0;
+
+	status =3D fpga_drv.cfg_ptr[FPGA_INTER_STATUS];
+	printk(KERN_NOTICE "FPGA: Interrupt fired! (%#08x)\n", status);
+	if (status & FPGA_INTERRUPT_SPI)
+	{
+		rt_sem_v(&fpga_drv.sarSem);
+	}
+
+	/* Return HANDLED */
+	return (IRQ_HANDLED);}
