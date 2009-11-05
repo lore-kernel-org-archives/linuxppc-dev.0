@@ -1,26 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0241BB7BBE
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 84035B7BC3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  5 Nov 2009 17:38:50 +1100 (EST)
-Date: Thu, 5 Nov 2009 17:38:42 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] BUILD_BUG_ON: make it handle more cases
-Message-Id: <20091105173842.c94ba501.sfr@canb.auug.org.au>
-In-Reply-To: <200911051658.36265.rusty@rustcorp.com.au>
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	<200910201415.34361.rusty@rustcorp.com.au>
-	<20091105112020.33f02552.sfr@canb.auug.org.au>
-	<200911051658.36265.rusty@rustcorp.com.au>
+	Thu,  5 Nov 2009 18:07:45 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 05 Nov 2009 18:07:22 +1100
+Message-ID: <1257404842.13611.109.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__5_Nov_2009_17_38_42_+1100_SZeMKZxOLvyDot_C"
-Cc: Hollis Blanchard <hollisb@us.ibm.com>, linux-kernel@vger.kernel.org,
-	kvm-ppc@vger.kernel.org, linux-next@vger.kernel.org,
-	Jan Beulich <JBeulich@novell.com>, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,64 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__5_Nov_2009_17_38_42_+1100_SZeMKZxOLvyDot_C
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Linus !
 
-Hi Rusty,
+Here are some small bits for .32
 
-On Thu, 5 Nov 2009 16:58:36 +1030 Rusty Russell <rusty@rustcorp.com.au> wro=
-te:
->
-> Huh?  virtio_has_feature does:
->=20
-> 	if (__builtin_constant_p(fbit))
-> 		BUILD_BUG_ON(fbit >=3D 32);
-> 	else
-> 		BUG_ON(fbit >=3D 32);
+The Kconfig cleanup you asked for hugetlbfs selection, a few regression
+fixes and an actual bug fix that I decided was worth putting in now
+(the RTC dates thingy)
 
-In Linus' tree (and linux-next) it looks like this:
-
-static inline bool virtio_has_feature(const struct virtio_device *vdev,
-				      unsigned int fbit)
-{
-	/* Did you forget to fix assumptions on max features? */
-	MAYBE_BUILD_BUG_ON(fbit >=3D 32);
-
-	if (fbit < VIRTIO_TRANSPORT_F_START)
-		virtio_check_driver_offered_feature(vdev, fbit);
-
-	return test_bit(fbit, vdev->features);
-}
-
-> So, if it's not a constant, gcc should throw away that first branch.  If =
-it
-> is, it should optimize it away (and no, these are not real bugs AFAICT).
-
-Your version above may well fix the problem.  Alternatively marking it
-__always_inline way work as well.
-
-> I did a 4.3.3 allmodconfig with this patch on 64-bit a few days back and =
-all
-> was fine.  Will try 4.4.0 now.
-
-4.4 is more problematic.
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben. 
 
---Signature=_Thu__5_Nov_2009_17_38_42_+1100_SZeMKZxOLvyDot_C
-Content-Type: application/pgp-signature
+The following changes since commit 2e2ec952350f25242f2e0539db16b1e46f9eb01b:
+  Linus Torvalds (1):
+        Merge branch 'bugfix' of git://git.kernel.org/.../jeremy/xen
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+are available in the git repository at:
 
-iEYEARECAAYFAkrycvIACgkQjjKRsyhoI8zEUQCguFj9rHXs225EZcpiT0uBdE7x
-MjgAniNI+UanGyo+xLtXFeTHIez3L0hb
-=AB2V
------END PGP SIGNATURE-----
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
---Signature=_Thu__5_Nov_2009_17_38_42_+1100_SZeMKZxOLvyDot_C--
+Andre Detsch (1):
+      powerpc/pci: Fix regression in powerpc MSI-X
+
+Benjamin Herrenschmidt (4):
+      powerpc: Cleanup Kconfig selection of hugetlbfs support
+      powerpc/mm: Remove debug context clamping from nohash code
+      powerpc: Avoid giving out RTC dates below EPOCH
+      powerpc/kvm: Remove problematic BUILD_BUG_ON statement
+
+ arch/powerpc/Kconfig                  |    4 ++++
+ arch/powerpc/kernel/time.c            |   15 ++++++++++++++-
+ arch/powerpc/kvm/timing.h             |    4 ++++
+ arch/powerpc/mm/mmu_context_nohash.c  |    4 ++--
+ arch/powerpc/platforms/pseries/msi.c  |    2 --
+ arch/powerpc/platforms/pseries/xics.c |    9 +++++++++
+ fs/Kconfig                            |    2 +-
+ 7 files changed, 34 insertions(+), 6 deletions(-)
