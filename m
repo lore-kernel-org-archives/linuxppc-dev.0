@@ -1,22 +1,22 @@
-Return-Path: <James.Bottomley@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95537B7BBC
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 03:07:22 +1100 (EST)
-Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit
-	resources.
-From: James Bottomley <James.Bottomley@suse.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20091105134330.GA30489@zod.rchland.ibm.com>
-References: <1253053555-25097-1-git-send-email-pbathija@amcc.com>
-	<20091105134330.GA30489@zod.rchland.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 05 Nov 2009 10:07:06 -0600
-Message-Id: <1257437226.2753.64.camel@mulgrave.site>
-Mime-Version: 1.0
-Cc: Eric.Moore@lsi.com, pbathija@amcc.com, linux-scsi@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CDA8DB7B9C
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 11:33:03 +1100 (EST)
+Date: Thu, 5 Nov 2009 18:33:05 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH 0/8] 8xx: Misc fixes for buggy insn
+Message-ID: <20091106003305.GA15814@loki.buserror.net>
+References: <1257341920-29277-1-git-send-email-Joakim.Tjernlund@transmode.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1257341920-29277-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,97 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-11-05 at 08:43 -0500, Josh Boyer wrote:
-> On Tue, Sep 15, 2009 at 03:25:55PM -0700, pbathija@amcc.com wrote:
-> >From: Pravin Bathija <pbathija@amcc.com>
-> >
-> >Powerpc 44x uses 36 bit real address while the real address defined
-> >in MPT Fusion driver is of type 32 bit. This causes ioremap to fail and driver
-> >fails to initialize. This fix changes the data types representing the real
-> >address from unsigned long 32-bit types to "phys_addr_t" which is 64-bit. The
-> >driver has been tested, the disks get discovered correctly and can do IO. Also,
-> >replaced phys_addr_t with resource_size_t as suggested by Ben.
-> >
-> >Signed-off-by: Pravin Bathija <pbathija@amcc.com>
-> >Acked-by: Feng Kan <fkan@amcc.com>
-> >Acked-by: Prodyut Hazarika <phazarika@amcc.com>
-> >Acked-by: Loc Ho <lho@amcc.com>
-> >Acked-by: Tirumala Reddy Marri <tmarri@amcc.com>
-> >Acked-by: Victor Gallardo <vgallardo@amcc.com>
+On Wed, Nov 04, 2009 at 02:38:32PM +0100, Joakim Tjernlund wrote:
+> Here is the latest(last?) round of this series. I
+> hope I got everything right now.
+> Scott and Rex, please test and send ACK/NACK.
 > 
-> Is this patch included in the scsi tree at all?  I can't seem to find it in
-> linux-next and I know it's not in the powerpc tree.  Are there further changes
-> needed, or has it simply been missed?
-
-What was the feedback from LSI ... I haven't seen any here?
-
-> josh
+>   Jocke
 > 
-> >
-> >---
-> > drivers/message/fusion/mptbase.c |   34 +++++++++++++++++++++++++---------
-> > drivers/message/fusion/mptbase.h |    5 +++--
-> > 2 files changed, 28 insertions(+), 11 deletions(-)
-> >
-> >diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-> >index 5d496a9..e296f2e 100644
-> >--- a/drivers/message/fusion/mptbase.c
-> >+++ b/drivers/message/fusion/mptbase.c
-> >@@ -1510,11 +1510,12 @@ static int
-> > mpt_mapresources(MPT_ADAPTER *ioc)
-> > {
-> > 	u8		__iomem *mem;
-> >+	u8		__iomem *port;
-> > 	int		 ii;
-> >-	unsigned long	 mem_phys;
-> >-	unsigned long	 port;
-> >-	u32		 msize;
-> >-	u32		 psize;
-> >+	resource_size_t	 mem_phys;
-> >+	resource_size_t	 port_phys;
-> >+	resource_size_t	 msize;
-> >+	resource_size_t	 psize;
-> > 	u8		 revision;
-> > 	int		 r = -ENODEV;
-> > 	struct pci_dev *pdev;
-> >@@ -1552,13 +1553,13 @@ mpt_mapresources(MPT_ADAPTER *ioc)
-> > 	}
-> >
-> > 	mem_phys = msize = 0;
-> >-	port = psize = 0;
-> >+	port_phys = psize = 0;
-> > 	for (ii = 0; ii < DEVICE_COUNT_RESOURCE; ii++) {
-> > 		if (pci_resource_flags(pdev, ii) & PCI_BASE_ADDRESS_SPACE_IO) {
-> > 			if (psize)
-> > 				continue;
-> > 			/* Get I/O space! */
-> >-			port = pci_resource_start(pdev, ii);
-> >+			port_phys = pci_resource_start(pdev, ii);
-> > 			psize = pci_resource_len(pdev, ii);
-> > 		} else {
-> > 			if (msize)
-> >@@ -1580,14 +1581,23 @@ mpt_mapresources(MPT_ADAPTER *ioc)
-> > 		return -EINVAL;
-> > 	}
-> > 	ioc->memmap = mem;
-> >-	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem = %p, mem_phys = %lx\n",
-> >-	    ioc->name, mem, mem_phys));
-> >+	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem = %p, mem_phys = %llx\n",
-> >+	    ioc->name, mem, (u64)mem_phys));
-> >
-> > 	ioc->mem_phys = mem_phys;
-> > 	ioc->chip = (SYSIF_REGS __iomem *)mem;
-> >
-> > 	/* Save Port IO values in case we need to do downloadboot */
-> >-	ioc->pio_mem_phys = port;
-> >+	port = ioremap(port_phys, psize);
-> >+	if (port == NULL) {
-> >+		printk(MYIOC_s_ERR_FMT " : ERROR - Unable to map adapter"
-> >+			" port !\n", ioc->name);
-> >+		return -EINVAL;
+> Joakim Tjernlund (8):
+>   8xx: invalidate non present TLBs
 
-So this looks problematic on a few platforms ... what happens to
-platforms that have no IO space?  They automatically fail here and it
-looks like the adapter never attaches.
+This works, and is an important fix -- it should be applied even if the rest
+of the patchset isn't ready.
 
-James
+>   8xx: Update TLB asm so it behaves as linux mm expects.
+>   8xx: Tag DAR with 0x00f0 to catch buggy instructions.
+
+Up through this point works.
+
+>   8xx: Fixup DAR from buggy dcbX instructions.
+
+With this, the kernel hangs after "Mount-cache hash table entries: 512".
+
+>   8xx: Add missing Guarded setting in DTLB Error.
+>   8xx: Restore _PAGE_WRITETHRU
+>   8xx: start using dcbX instructions in various copy routines
+
+Once I get up to this patch, it no longer hangs, but I get some user
+processes consistently failing with EFAULT.
+
+>   8xx: Remove DIRTY pte handling in DTLB Error.
+
+No change after this patch.
+
+-Scott
