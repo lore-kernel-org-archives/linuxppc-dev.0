@@ -1,23 +1,23 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-Received: from kronos.usurf.usu.edu (kronos.usurf.usu.edu [129.123.194.129])
-	by ozlabs.org (Postfix) with ESMTP id 58EFFB7079
+Return-Path: <alan@nishioka.com>
+Received: from elasmtp-scoter.atl.sa.earthlink.net
+	(elasmtp-scoter.atl.sa.earthlink.net [209.86.89.67])
+	by ozlabs.org (Postfix) with ESMTP id EE499B7079
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  7 Nov 2009 03:34:38 +1100 (EST)
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-To: Chris Friesen <cfriesen@nortel.com>
-Date: Fri, 6 Nov 2009 09:34:30 -0700
-Subject: RE: DMA to User-Space
-Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F0331031240@midas.usurf.usu.edu>
-References: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>
-	<4AF0E4A0.30802@windriver.com>
-	<BB99A6BA28709744BF22A68E6D7EB51F03310302E2@midas.usurf.usu.edu>
-	<BB99A6BA28709744BF22A68E6D7EB51F033103030E@midas.usurf.usu.edu>
-	<4AF3BCC4.6070702@nortel.com>
-In-Reply-To: <4AF3BCC4.6070702@nortel.com>
-Content-Type: text/plain; charset="us-ascii"
+	Sat,  7 Nov 2009 04:15:09 +1100 (EST)
+Received: from [68.122.33.217] (helo=[192.168.1.92])
+	by elasmtp-scoter.atl.sa.earthlink.net with esmtpa (Exim 4.67)
+	(envelope-from <alan@nishioka.com>) id 1N6SHc-0004aU-Al
+	for linuxppc-dev@lists.ozlabs.org; Fri, 06 Nov 2009 12:07:32 -0500
+Message-ID: <4AF457D1.2040607@nishioka.com>
+Date: Fri, 06 Nov 2009 09:07:29 -0800
+From: Alan Nishioka <alan@nishioka.com>
 MIME-Version: 1.0
-Cc: "Bo.Liu@windriver.com" <Bo.Liu@windriver.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: DMA to User-Space
+References: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>	<4AF0E4A0.30802@windriver.com>	<BB99A6BA28709744BF22A68E6D7EB51F03310302E2@midas.usurf.usu.edu>	<BB99A6BA28709744BF22A68E6D7EB51F033103030E@midas.usurf.usu.edu>	<4AF3BCC4.6070702@nortel.com>
+	<BB99A6BA28709744BF22A68E6D7EB51F0331031240@midas.usurf.usu.edu>
+In-Reply-To: <BB99A6BA28709744BF22A68E6D7EB51F0331031240@midas.usurf.usu.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +27,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > One more question about this approach: does the mmap() call
-> prevent
-> > the kernel from using this memory for other purposes?  Will the
-> > kernel be able to "move" this memory elsewhere?  I guess what I am
-> > asking is if this memory is locked for all other purposes?
->=20
-> You've allocated the memory in the kernel and mapped it to
-> userspace.
-> If the kernel uses that memory for anything else it will be visible
-> to
-> userspace.
-
-So, does that mean that the kernel could use that memory for something else=
-?  I was under the impression that locking the memory prevented the kernel =
-from swapping it out, moving it, *and* using it for other purposes.
-
-This memory that I am mapping is reserved for DMA buffers.  If anything els=
-e uses it, then that will corrupt my buffer and make it worthless.  So basi=
-cally I want user space to tell the kernel that that portion of memory is o=
-ut of bounds.  Is that possible?
-
-Thanks,
-
-Jonathan
+you can also reserve some physical memory at the top of memory and dma 
+into that.
+of course, this means you have to know how much memory you need before 
+booting the kernel.
