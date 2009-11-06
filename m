@@ -1,27 +1,23 @@
-Return-Path: <Kashyap.Desai@lsi.com>
-Received: from na3sys009aog104.obsmtp.com (na3sys009aog104.obsmtp.com
-	[74.125.149.73])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 23922B7088
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 16:18:30 +1100 (EST)
-From: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Bottomley
-	<James.Bottomley@suse.de>
-Date: Fri, 6 Nov 2009 10:29:04 +0530
+Return-Path: <pbathija@amcc.com>
+Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id EA3D3B7B65
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 17:01:33 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CA5EA5.2A4CB319"
 Subject: RE: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit
 	resources.
-Message-ID: <0D1E8821739E724A86F4D16902CE275C1C93C03CD6@inbmail01.lsi.com>
-References: <1253053555-25097-1-git-send-email-pbathija@amcc.com>
-	<20091105134330.GA30489@zod.rchland.ibm.com>
-	<1257437226.2753.64.camel@mulgrave.site>
+Date: Thu, 5 Nov 2009 21:49:41 -0800
+Message-ID: <9D1E2BDCB5C57B46B56E6D80843439EB09350F76@SDCEXCHANGE01.ad.amcc.com>
+References: <1253053555-25097-1-git-send-email-pbathija@amcc.com><20091105134330.GA30489@zod.rchland.ibm.com><1257437226.2753.64.camel@mulgrave.site>
 	<1257451218.13611.114.camel@pasglop>
-In-Reply-To: <1257451218.13611.114.camel@pasglop>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "Moore, Eric" <Eric.Moore@lsi.com>, "pbathija@amcc.com" <pbathija@amcc.com>,
-	"linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+From: "Pravin Bathija" <pbathija@amcc.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"James Bottomley" <James.Bottomley@suse.de>
+Cc: Eric.Moore@lsi.com, linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
+------_=_NextPart_001_01CA5EA5.2A4CB319
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 -----Original Message-----
-From: linux-scsi-owner@vger.kernel.org [mailto:linux-scsi-owner@vger.kernel=
-.org] On Behalf Of Benjamin Herrenschmidt
-Sent: Friday, November 06, 2009 1:30 AM
+From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
+Sent: Thu 11/5/2009 12:00 PM
 To: James Bottomley
-Cc: Josh Boyer; Moore, Eric; pbathija@amcc.com; linux-scsi@vger.kernel.org;=
- linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit re=
-sources.
-
+Cc: Josh Boyer; Eric.Moore@lsi.com; Pravin Bathija; =
+linux-scsi@vger.kernel.org; linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit =
+resources.
+=20
 On Thu, 2009-11-05 at 10:07 -0600, James Bottomley wrote:
 
 > > > 	ioc->memmap =3D mem;
-> > >-	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem =3D %p, mem_phys =3D %=
-lx\n",
+> > >-	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem =3D %p, mem_phys =
+=3D %lx\n",
 > > >-	    ioc->name, mem, mem_phys));
-> > >+	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem =3D %p, mem_phys =3D %=
-llx\n",
+> > >+	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem =3D %p, mem_phys =
+=3D %llx\n",
 > > >+	    ioc->name, mem, (u64)mem_phys));
 > > >
 > > > 	ioc->mem_phys =3D mem_phys;
@@ -68,22 +68,119 @@ llx\n",
 > platforms that have no IO space?  They automatically fail here and it
 > looks like the adapter never attaches.
 
-Yup, that part of the patch looks wrong.
+> Yup, that part of the patch looks wrong.
 
-However, a mechanical replacement of unsigned long's with
-resource_size_t to hold physical addresses should be fine despite the
-lack of feedback from LSI.
+> However, a mechanical replacement of unsigned long's with
+> resource_size_t to hold physical addresses should be fine despite the
+> lack of feedback from LSI.
 
---> I was thinking this was actual fix for the issue. Use of resource_size_=
-t is understood. Why submitter has added extra ioremap code in this patch? =
-Because of ioremap code only this patch was on hold before going for ACK.
-Pravin, Any specific reason to add above code?
+> Pravin, that ioremap definitely seems like it has nothing to do there,
+> port IO is already remapped for you by the core PCI code and should =
+work
+> "as is". Please respin without that change.
 
-Pravin, that ioremap definitely seems like it has nothing to do there,
-port IO is already remapped for you by the core PCI code and should work
-"as is". Please respin without that change.
+> Cheers,
+>Ben.
 
-Cheers,
-Ben.
+Thanks for the input. Will make the suggested changes and re-submit the =
+patch.
+
+Regards,
+Pravin
 
 
+
+
+------_=_NextPart_001_01CA5EA5.2A4CB319
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7653.38">
+<TITLE>RE: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit =
+resources.</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>-----Original Message-----<BR>
+From: Benjamin Herrenschmidt [<A =
+HREF=3D"mailto:benh@kernel.crashing.org">mailto:benh@kernel.crashing.org<=
+/A>]<BR>
+Sent: Thu 11/5/2009 12:00 PM<BR>
+To: James Bottomley<BR>
+Cc: Josh Boyer; Eric.Moore@lsi.com; Pravin Bathija; =
+linux-scsi@vger.kernel.org; linuxppc-dev@ozlabs.org<BR>
+Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit =
+resources.<BR>
+<BR>
+On Thu, 2009-11-05 at 10:07 -0600, James Bottomley wrote:<BR>
+<BR>
+&gt; &gt; &gt; &nbsp; ioc-&gt;memmap =3D mem;<BR>
+&gt; &gt; &gt;-&nbsp; dinitprintk(ioc, printk(MYIOC_s_INFO_FMT &quot;mem =
+=3D %p, mem_phys =3D %lx\n&quot;,<BR>
+&gt; &gt; &gt;-&nbsp; &nbsp;&nbsp;&nbsp; ioc-&gt;name, mem, =
+mem_phys));<BR>
+&gt; &gt; &gt;+&nbsp; dinitprintk(ioc, printk(MYIOC_s_INFO_FMT &quot;mem =
+=3D %p, mem_phys =3D %llx\n&quot;,<BR>
+&gt; &gt; &gt;+&nbsp; &nbsp;&nbsp;&nbsp; ioc-&gt;name, mem, =
+(u64)mem_phys));<BR>
+&gt; &gt; &gt;<BR>
+&gt; &gt; &gt; &nbsp; ioc-&gt;mem_phys =3D mem_phys;<BR>
+&gt; &gt; &gt; &nbsp; ioc-&gt;chip =3D (SYSIF_REGS __iomem *)mem;<BR>
+&gt; &gt; &gt;<BR>
+&gt; &gt; &gt; &nbsp; /* Save Port IO values in case we need to do =
+downloadboot */<BR>
+&gt; &gt; &gt;-&nbsp; ioc-&gt;pio_mem_phys =3D port;<BR>
+&gt; &gt; &gt;+&nbsp; port =3D ioremap(port_phys, psize);<BR>
+&gt; &gt; &gt;+&nbsp; if (port =3D=3D NULL) {<BR>
+&gt; &gt; &gt;+&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+printk(MYIOC_s_ERR_FMT &quot; : ERROR - Unable to map adapter&quot;<BR>
+&gt; &gt; &gt;+&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot; port !\n&quot;, =
+ioc-&gt;name);<BR>
+&gt; &gt; &gt;+&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return =
+-EINVAL;<BR>
+&gt;<BR>
+&gt; So this looks problematic on a few platforms ... what happens =
+to<BR>
+&gt; platforms that have no IO space?&nbsp; They automatically fail here =
+and it<BR>
+&gt; looks like the adapter never attaches.<BR>
+<BR>
+&gt; Yup, that part of the patch looks wrong.<BR>
+<BR>
+&gt; However, a mechanical replacement of unsigned long's with<BR>
+&gt; resource_size_t to hold physical addresses should be fine despite =
+the<BR>
+&gt; lack of feedback from LSI.<BR>
+<BR>
+&gt; Pravin, that ioremap definitely seems like it has nothing to do =
+there,<BR>
+&gt; port IO is already remapped for you by the core PCI code and should =
+work<BR>
+&gt; &quot;as is&quot;. Please respin without that change.<BR>
+<BR>
+&gt; Cheers,<BR>
+&gt;Ben.<BR>
+<BR>
+Thanks for the input. Will make the suggested changes and re-submit the =
+patch.<BR>
+<BR>
+Regards,<BR>
+Pravin<BR>
+<BR>
+<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01CA5EA5.2A4CB319--
