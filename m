@@ -1,20 +1,22 @@
-Return-Path: <rusty@rustcorp.com.au>
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] BUILD_BUG_ON: make it handle more cases
-Date: Fri, 6 Nov 2009 17:00:26 +1030
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	<200911051658.36265.rusty@rustcorp.com.au>
-	<20091105173842.c94ba501.sfr@canb.auug.org.au>
-In-Reply-To: <20091105173842.c94ba501.sfr@canb.auug.org.au>
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kp.nortel.com (zrtps0kp.nortel.com [47.140.192.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id B10AAB6F2B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  6 Nov 2009 17:31:22 +1100 (EST)
+Message-ID: <4AF3BCC4.6070702@nortel.com>
+Date: Fri, 06 Nov 2009 00:05:56 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Message-Id: <200911061700.27493.rusty@rustcorp.com.au>
-Cc: Hollis Blanchard <hollisb@us.ibm.com>, linux-kernel@vger.kernel.org,
-	kvm-ppc@vger.kernel.org, linux-next@vger.kernel.org,
-	Jan Beulich <JBeulich@novell.com>, akpm@linux-foundation.org,
-	linuxppc-dev@lists.ozlabs.org
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Subject: Re: DMA to User-Space
+References: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>	<4AF0E4A0.30802@windriver.com>	<BB99A6BA28709744BF22A68E6D7EB51F03310302E2@midas.usurf.usu.edu>
+	<BB99A6BA28709744BF22A68E6D7EB51F033103030E@midas.usurf.usu.edu>
+In-Reply-To: <BB99A6BA28709744BF22A68E6D7EB51F033103030E@midas.usurf.usu.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "Bo.Liu@windriver.com" <Bo.Liu@windriver.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 5 Nov 2009 05:08:42 pm Stephen Rothwell wrote:
-> Hi Rusty,
-> 
-> On Thu, 5 Nov 2009 16:58:36 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> >
-> > Huh?  virtio_has_feature does:
-> > 
-> > 	if (__builtin_constant_p(fbit))
-> > 		BUILD_BUG_ON(fbit >= 32);
-> > 	else
-> > 		BUG_ON(fbit >= 32);
-> 
-> In Linus' tree (and linux-next) it looks like this:
+On 11/04/2009 11:50 AM, Jonathan Haws wrote:
 
-Ah.  My patch series fixes that as part of removing MAYBE_BUILD_BUG_ON.
+> One more question about this approach: does the mmap() call prevent
+> the kernel from using this memory for other purposes?  Will the
+> kernel be able to "move" this memory elsewhere?  I guess what I am
+> asking is if this memory is locked for all other purposes?
 
-I've put both in for linux-next.
+You've allocated the memory in the kernel and mapped it to userspace.
+If the kernel uses that memory for anything else it will be visible to
+userspace.
 
-Cheers,
-Rusty.
+Chris
