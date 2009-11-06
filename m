@@ -1,23 +1,21 @@
-Return-Path: <pbathija@amcc.com>
-Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EA3D3B7B65
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 17:01:33 +1100 (EST)
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E2EFDB7B69
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Nov 2009 19:03:50 +1100 (EST)
+In-Reply-To: <20091106003305.GA15814@loki.buserror.net>
+References: <1257341920-29277-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20091106003305.GA15814@loki.buserror.net>
+Subject: Re: [PATCH 0/8] 8xx: Misc fixes for buggy insn
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OF2C4359C9.0EB89938-ONC1257666.00299975-C1257666.002C206F@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Fri, 6 Nov 2009 09:01:58 +0100
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CA5EA5.2A4CB319"
-Subject: RE: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit
-	resources.
-Date: Thu, 5 Nov 2009 21:49:41 -0800
-Message-ID: <9D1E2BDCB5C57B46B56E6D80843439EB09350F76@SDCEXCHANGE01.ad.amcc.com>
-References: <1253053555-25097-1-git-send-email-pbathija@amcc.com><20091105134330.GA30489@zod.rchland.ibm.com><1257437226.2753.64.camel@mulgrave.site>
-	<1257451218.13611.114.camel@pasglop>
-From: "Pravin Bathija" <pbathija@amcc.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"James Bottomley" <James.Bottomley@suse.de>
-Cc: Eric.Moore@lsi.com, linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Rex Feany <RFeany@mrv.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,160 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Scott Wood <scottwood@freescale.com> wrote on 06/11/2009 01:33:05:
+>
+> On Wed, Nov 04, 2009 at 02:38:32PM +0100, Joakim Tjernlund wrote:
+> > Here is the latest(last?) round of this series. I
+> > hope I got everything right now.
+> > Scott and Rex, please test and send ACK/NACK.
+> >
+> >   Jocke
+> >
+> > Joakim Tjernlund (8):
+> >   8xx: invalidate non present TLBs
+>
+> This works, and is an important fix -- it should be applied even if the rest
+> of the patchset isn't ready.
 
-------_=_NextPart_001_01CA5EA5.2A4CB319
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+True.
 
------Original Message-----
-From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
-Sent: Thu 11/5/2009 12:00 PM
-To: James Bottomley
-Cc: Josh Boyer; Eric.Moore@lsi.com; Pravin Bathija; =
-linux-scsi@vger.kernel.org; linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit =
-resources.
-=20
-On Thu, 2009-11-05 at 10:07 -0600, James Bottomley wrote:
+>
+> >   8xx: Update TLB asm so it behaves as linux mm expects.
 
-> > > 	ioc->memmap =3D mem;
-> > >-	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem =3D %p, mem_phys =
-=3D %lx\n",
-> > >-	    ioc->name, mem, mem_phys));
-> > >+	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem =3D %p, mem_phys =
-=3D %llx\n",
-> > >+	    ioc->name, mem, (u64)mem_phys));
-> > >
-> > > 	ioc->mem_phys =3D mem_phys;
-> > > 	ioc->chip =3D (SYSIF_REGS __iomem *)mem;
-> > >
-> > > 	/* Save Port IO values in case we need to do downloadboot */
-> > >-	ioc->pio_mem_phys =3D port;
-> > >+	port =3D ioremap(port_phys, psize);
-> > >+	if (port =3D=3D NULL) {
-> > >+		printk(MYIOC_s_ERR_FMT " : ERROR - Unable to map adapter"
-> > >+			" port !\n", ioc->name);
-> > >+		return -EINVAL;
->=20
-> So this looks problematic on a few platforms ... what happens to
-> platforms that have no IO space?  They automatically fail here and it
-> looks like the adapter never attaches.
+I think this is ready too.
 
-> Yup, that part of the patch looks wrong.
+> >   8xx: Tag DAR with 0x00f0 to catch buggy instructions.
+>
+> Up through this point works.
 
-> However, a mechanical replacement of unsigned long's with
-> resource_size_t to hold physical addresses should be fine despite the
-> lack of feedback from LSI.
+hmm, here tagging of DAR is in place, do you ever hit the
+page fault handler with address == 0x00f0? If you do,
+the kernel somehow manges to fix it instead of erroring out.
 
-> Pravin, that ioremap definitely seems like it has nothing to do there,
-> port IO is already remapped for you by the core PCI code and should =
-work
-> "as is". Please respin without that change.
+I do notice one thing, I forgot to add the CPU6 errata to
+the DAR tagging. Are you using the CPU6 errata?
 
-> Cheers,
->Ben.
+>
+> >   8xx: Fixup DAR from buggy dcbX instructions.
+>
+> With this, the kernel hangs after "Mount-cache hash table entries: 512".
 
-Thanks for the input. Will make the suggested changes and re-submit the =
-patch.
+Somewhat surprising result. I didn't expect you would even hit this
+condition now as we haven't enabled the use of dcbX insn yet.
+The only thing I can think of is the you hit the 0x00f0 due to other
+dcbX insn use and the kernel managed to fixup this in the page fault handler
+by pure luck before.
 
-Regards,
-Pravin
+The only thing I can thing of being wrong here is your suggested fix:
++       lis     r11, (swapper_pg_dir-PAGE_OFFSET)@h
++       ori     r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
++       rlwimi  r11, r10, 22, 0xffc
 
+What if you change that back to what worked for you before:
+ lis     r11, swapper_pg_dir@h
+ ori     r11, r11, swapper_pg_dir@l
+ rlwinm  r11, r11, 0, 0x3ffff000
+ rlwimi  r11, r10, 22, 0xffc
+or possibly
+ lis		 r11, swapper_pg_dir@h
+ ori		 r11, r11, swapper_pg_dir@l
+ subis	 r11, r11, PAGE_OFFSET@h
+ rlwimi	 r11, r10, 22, 0xffc
 
+hmm, some missed CPU6 errata calls in DARFixup too.
+>
+> >   8xx: Add missing Guarded setting in DTLB Error.
+> >   8xx: Restore _PAGE_WRITETHRU
+> >   8xx: start using dcbX instructions in various copy routines
+>
+> Once I get up to this patch, it no longer hangs, but I get some user
+> processes consistently failing with EFAULT.
 
+No surprise as the it seems like the DAR decoding is broken.
 
-------_=_NextPart_001_01CA5EA5.2A4CB319
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7653.38">
-<TITLE>RE: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit =
-resources.</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>-----Original Message-----<BR>
-From: Benjamin Herrenschmidt [<A =
-HREF=3D"mailto:benh@kernel.crashing.org">mailto:benh@kernel.crashing.org<=
-/A>]<BR>
-Sent: Thu 11/5/2009 12:00 PM<BR>
-To: James Bottomley<BR>
-Cc: Josh Boyer; Eric.Moore@lsi.com; Pravin Bathija; =
-linux-scsi@vger.kernel.org; linuxppc-dev@ozlabs.org<BR>
-Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit =
-resources.<BR>
-<BR>
-On Thu, 2009-11-05 at 10:07 -0600, James Bottomley wrote:<BR>
-<BR>
-&gt; &gt; &gt; &nbsp; ioc-&gt;memmap =3D mem;<BR>
-&gt; &gt; &gt;-&nbsp; dinitprintk(ioc, printk(MYIOC_s_INFO_FMT &quot;mem =
-=3D %p, mem_phys =3D %lx\n&quot;,<BR>
-&gt; &gt; &gt;-&nbsp; &nbsp;&nbsp;&nbsp; ioc-&gt;name, mem, =
-mem_phys));<BR>
-&gt; &gt; &gt;+&nbsp; dinitprintk(ioc, printk(MYIOC_s_INFO_FMT &quot;mem =
-=3D %p, mem_phys =3D %llx\n&quot;,<BR>
-&gt; &gt; &gt;+&nbsp; &nbsp;&nbsp;&nbsp; ioc-&gt;name, mem, =
-(u64)mem_phys));<BR>
-&gt; &gt; &gt;<BR>
-&gt; &gt; &gt; &nbsp; ioc-&gt;mem_phys =3D mem_phys;<BR>
-&gt; &gt; &gt; &nbsp; ioc-&gt;chip =3D (SYSIF_REGS __iomem *)mem;<BR>
-&gt; &gt; &gt;<BR>
-&gt; &gt; &gt; &nbsp; /* Save Port IO values in case we need to do =
-downloadboot */<BR>
-&gt; &gt; &gt;-&nbsp; ioc-&gt;pio_mem_phys =3D port;<BR>
-&gt; &gt; &gt;+&nbsp; port =3D ioremap(port_phys, psize);<BR>
-&gt; &gt; &gt;+&nbsp; if (port =3D=3D NULL) {<BR>
-&gt; &gt; &gt;+&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-printk(MYIOC_s_ERR_FMT &quot; : ERROR - Unable to map adapter&quot;<BR>
-&gt; &gt; &gt;+&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot; port !\n&quot;, =
-ioc-&gt;name);<BR>
-&gt; &gt; &gt;+&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return =
--EINVAL;<BR>
-&gt;<BR>
-&gt; So this looks problematic on a few platforms ... what happens =
-to<BR>
-&gt; platforms that have no IO space?&nbsp; They automatically fail here =
-and it<BR>
-&gt; looks like the adapter never attaches.<BR>
-<BR>
-&gt; Yup, that part of the patch looks wrong.<BR>
-<BR>
-&gt; However, a mechanical replacement of unsigned long's with<BR>
-&gt; resource_size_t to hold physical addresses should be fine despite =
-the<BR>
-&gt; lack of feedback from LSI.<BR>
-<BR>
-&gt; Pravin, that ioremap definitely seems like it has nothing to do =
-there,<BR>
-&gt; port IO is already remapped for you by the core PCI code and should =
-work<BR>
-&gt; &quot;as is&quot;. Please respin without that change.<BR>
-<BR>
-&gt; Cheers,<BR>
-&gt;Ben.<BR>
-<BR>
-Thanks for the input. Will make the suggested changes and re-submit the =
-patch.<BR>
-<BR>
-Regards,<BR>
-Pravin<BR>
-<BR>
-<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01CA5EA5.2A4CB319--
+>
+> >   8xx: Remove DIRTY pte handling in DTLB Error.
+>
+> No change after this patch.
+>
+> -Scott
+>
+>
