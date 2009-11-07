@@ -1,18 +1,18 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from mail-pz0-f191.google.com (mail-pz0-f191.google.com
-	[209.85.222.191]) by ozlabs.org (Postfix) with ESMTP id 7448A100835
+	[209.85.222.191]) by ozlabs.org (Postfix) with ESMTP id 828621008B0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  7 Nov 2009 19:34:08 +1100 (EST)
+	Sat,  7 Nov 2009 19:34:21 +1100 (EST)
 Received: by mail-pz0-f191.google.com with SMTP id 29so1161651pzk.17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 07 Nov 2009 00:34:08 -0800 (PST)
+	Sat, 07 Nov 2009 00:34:21 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/6] ASoC/mpc5200: get rid of the appl_ptr tracking nonsense
+Subject: [PATCH 3/6] ASoC/mpc5200: Improve printk debug output for trigger
 To: linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
 	broonie@opensource.wolfsonmicro.com
-Date: Sat, 07 Nov 2009 01:34:05 -0700
-Message-ID: <20091107083358.18908.10635.stgit@angua>
+Date: Sat, 07 Nov 2009 01:34:18 -0700
+Message-ID: <20091107083410.18908.86509.stgit@angua>
 In-Reply-To: <20091107081631.18908.82921.stgit@angua>
 References: <20091107081631.18908.82921.stgit@angua>
 MIME-Version: 1.0
@@ -27,116 +27,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sound drivers PCM DMA is supposed to free-run until told to stop
-by the trigger callback.  The current code tries to track appl_ptr,
-to avoid stale buffer data getting played out at the end of the
-data stream.  Unfortunately it also results in race conditions
-which can cause the audio to stall.
-
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- sound/soc/fsl/mpc5200_dma.c |   52 +++++++------------------------------------
- sound/soc/fsl/mpc5200_dma.h |    2 --
- 2 files changed, 8 insertions(+), 46 deletions(-)
+ sound/soc/fsl/mpc5200_dma.c |   15 ++++++++++-----
+ sound/soc/fsl/mpc5200_dma.h |    1 +
+ 2 files changed, 11 insertions(+), 5 deletions(-)
 
 diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
-index 986d3c8..4e47586 100644
+index 4e47586..658e3fa 100644
 --- a/sound/soc/fsl/mpc5200_dma.c
 +++ b/sound/soc/fsl/mpc5200_dma.c
-@@ -65,36 +65,6 @@ static void psc_dma_bcom_enqueue_next_buffer(struct psc_dma_stream *s)
- 	s->period_next = (s->period_next + 1) % s->runtime->periods;
- }
- 
--static void psc_dma_bcom_enqueue_tx(struct psc_dma_stream *s)
--{
--	if (s->appl_ptr > s->runtime->control->appl_ptr) {
--		/*
--		 * In this case s->runtime->control->appl_ptr has wrapped around.
--		 * Play the data to the end of the boundary, then wrap our own
--		 * appl_ptr back around.
--		 */
--		while (s->appl_ptr < s->runtime->boundary) {
--			if (bcom_queue_full(s->bcom_task))
--				return;
--
--			s->appl_ptr += s->runtime->period_size;
--
--			psc_dma_bcom_enqueue_next_buffer(s);
--		}
--		s->appl_ptr -= s->runtime->boundary;
--	}
--
--	while (s->appl_ptr < s->runtime->control->appl_ptr) {
--
--		if (bcom_queue_full(s->bcom_task))
--			return;
--
--		s->appl_ptr += s->runtime->period_size;
--
--		psc_dma_bcom_enqueue_next_buffer(s);
--	}
--}
--
- /* Bestcomm DMA irq handler */
- static irqreturn_t psc_dma_bcom_irq_tx(int irq, void *_psc_dma_stream)
- {
-@@ -107,8 +77,9 @@ static irqreturn_t psc_dma_bcom_irq_tx(int irq, void *_psc_dma_stream)
+@@ -77,6 +77,7 @@ static irqreturn_t psc_dma_bcom_irq_tx(int irq, void *_psc_dma_stream)
  		bcom_retrieve_buffer(s->bcom_task, NULL, NULL);
  
  		s->period_current = (s->period_current+1) % s->runtime->periods;
-+
-+		psc_dma_bcom_enqueue_next_buffer(s);
- 	}
--	psc_dma_bcom_enqueue_tx(s);
- 	spin_unlock(&s->psc_dma->lock);
++		s->period_count++;
  
- 	/* If the stream is active, then also inform the PCM middle layer
-@@ -182,28 +153,21 @@ static int psc_dma_trigger(struct snd_pcm_substream *substream, int cmd)
+ 		psc_dma_bcom_enqueue_next_buffer(s);
+ 	}
+@@ -101,6 +102,7 @@ static irqreturn_t psc_dma_bcom_irq_rx(int irq, void *_psc_dma_stream)
+ 		bcom_retrieve_buffer(s->bcom_task, NULL, NULL);
+ 
+ 		s->period_current = (s->period_current+1) % s->runtime->periods;
++		s->period_count++;
+ 
+ 		psc_dma_bcom_enqueue_next_buffer(s);
+ 	}
+@@ -142,17 +144,17 @@ static int psc_dma_trigger(struct snd_pcm_substream *substream, int cmd)
+ 	else
+ 		s = &psc_dma->playback;
+ 
+-	dev_dbg(psc_dma->dev, "psc_dma_trigger(substream=%p, cmd=%i)"
+-		" stream_id=%i\n",
+-		substream, cmd, substream->pstr->stream);
+-
+ 	switch (cmd) {
+ 	case SNDRV_PCM_TRIGGER_START:
++		dev_dbg(psc_dma->dev, "START: stream=%i fbits=%u ps=%u #p=%u\n",
++			substream->pstr->stream, runtime->frame_bits,
++			(int)runtime->period_size, runtime->periods);
+ 		s->period_bytes = frames_to_bytes(runtime,
+ 						  runtime->period_size);
  		s->period_next = 0;
  		s->period_current = 0;
  		s->active = 1;
--
--		/* track appl_ptr so that we have a better chance of detecting
--		 * end of stream and not over running it.
--		 */
++		s->period_count = 0;
  		s->runtime = runtime;
--		s->appl_ptr = s->runtime->control->appl_ptr -
--				(runtime->period_size * runtime->periods);
  
  		/* Fill up the bestcomm bd queue and enable DMA.
- 		 * This will begin filling the PSC's fifo.
- 		 */
+@@ -177,6 +179,8 @@ static int psc_dma_trigger(struct snd_pcm_substream *substream, int cmd)
+ 		break;
+ 
+ 	case SNDRV_PCM_TRIGGER_STOP:
++		dev_dbg(psc_dma->dev, "STOP: stream=%i periods_count=%i\n",
++			substream->pstr->stream, s->period_count);
+ 		s->active = 0;
+ 
  		spin_lock_irqsave(&psc_dma->lock, flags);
+@@ -190,7 +194,8 @@ static int psc_dma_trigger(struct snd_pcm_substream *substream, int cmd)
+ 		break;
  
--		if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE) {
-+		if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
- 			bcom_gen_bd_rx_reset(s->bcom_task);
--			for (i = 0; i < runtime->periods; i++)
--				if (!bcom_queue_full(s->bcom_task))
--					psc_dma_bcom_enqueue_next_buffer(s);
--		} else {
-+		else
- 			bcom_gen_bd_tx_reset(s->bcom_task);
--			psc_dma_bcom_enqueue_tx(s);
--		}
-+
-+		for (i = 0; i < runtime->periods; i++)
-+			if (!bcom_queue_full(s->bcom_task))
-+				psc_dma_bcom_enqueue_next_buffer(s);
+ 	default:
+-		dev_dbg(psc_dma->dev, "invalid command\n");
++		dev_dbg(psc_dma->dev, "unhandled trigger: stream=%i cmd=%i\n",
++			substream->pstr->stream, cmd);
+ 		return -EINVAL;
+ 	}
  
- 		bcom_enable(s->bcom_task);
- 		spin_unlock_irqrestore(&psc_dma->lock, flags);
 diff --git a/sound/soc/fsl/mpc5200_dma.h b/sound/soc/fsl/mpc5200_dma.h
-index 529f7a0..d9c741b 100644
+index d9c741b..c6f29e4 100644
 --- a/sound/soc/fsl/mpc5200_dma.h
 +++ b/sound/soc/fsl/mpc5200_dma.h
-@@ -19,8 +19,6 @@
-  */
- struct psc_dma_stream {
- 	struct snd_pcm_runtime *runtime;
--	snd_pcm_uframes_t appl_ptr;
--
- 	int active;
- 	struct psc_dma *psc_dma;
- 	struct bcom_task *bcom_task;
+@@ -27,6 +27,7 @@ struct psc_dma_stream {
+ 	int period_next;
+ 	int period_current;
+ 	int period_bytes;
++	int period_count;
+ };
+ 
+ /**
