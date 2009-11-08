@@ -1,25 +1,23 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 258ECB7B69
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  8 Nov 2009 07:12:41 +1100 (EST)
-Date: Sat, 7 Nov 2009 20:12:33 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Message-ID: <20091107201233.GC31789@sirena.org.uk>
-References: <20091107081631.18908.82921.stgit@angua>
-	<20091107083358.18908.10635.stgit@angua>
-	<9e4733910911070451y28073dbeke6ced6246f5a5c24@mail.gmail.com>
-	<fa686aa40911071051y3cf63e55ibe7fbc65c30bd15e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40911071051y3cf63e55ibe7fbc65c30bd15e@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH 2/6] ASoC/mpc5200: get rid of the appl_ptr
-	tracking nonsense
-Cc: John Bonesio <bones@secretlab.ca>, alsa-devel@alsa-project.org,
-	linuxppc-dev@lists.ozlabs.org, lrg@slimlogic.co.uk
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 8226DB7067
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Nov 2009 18:55:45 +1100 (EST)
+Date: Sun, 8 Nov 2009 18:55:39 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 09/16] powerpc: Replace old style lock initializer
+Message-Id: <20091108185539.8d09017e.sfr@canb.auug.org.au>
+In-Reply-To: <1257548144.13611.267.camel@pasglop>
+References: <20091106223547.784916750@linutronix.de>
+	<20091106223806.762624109@linutronix.de>
+	<1257548144.13611.267.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__8_Nov_2009_18_55_39_+1100_PvVKoR9/uoxSce0J"
+Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Nov 07, 2009 at 11:51:16AM -0700, Grant Likely wrote:
-> On Sat, Nov 7, 2009 at 5:51 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
+--Signature=_Sun__8_Nov_2009_18_55_39_+1100_PvVKoR9/uoxSce0J
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> current period.  My understanding of ALSA is that the application is
-> supposed to make sure there is enough silence in the buffer to handle
-> the lag between notification that the last period with valid data has
-> been played out and the stop trigger.
+Hi Ben,
 
-This is certainly the most robust approach for applications.  For a
-large proportion of hardware it won't matter too much since they're able
-to shut down the audio very quickly but that can't be entirely relied
-upon, especially at higher rates on slower machines.
+On Sat, 07 Nov 2009 09:55:44 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> Looks reasonable. But iseries can be a bitch, so we do need to test it
+> on monday.
 
-> occur.  That says to me that the real problem is an unbounded latency
-> caused by another part of the kernel (the tty console in this case).
+It should be safe as the spinlocks cannot be access until after the
+following ppc_md pointer initialisations are done (and all this happens
+before the secondary CPUs are started).
 
-That's certainly not going to help anything here - if a delay is
-introduced in telling the hardware to shut down the DMA then that
-increases the chance for the DMA controller to start pushing valid audio
-data from the buffer to the audio interface.
+But, you are right that there is nothing like actually testing with
+iSeries. :-)
 
-> > A much cleaner solution would be for ALSA to provide a field that
-> > indicates the last valid address in the ring buffer system. Then in
-> > the driver's buffer complete callback I could get that value and
-> > reprogram the DMA engine not to run off the end of valid data. As each
-> > buffer completes I would reread the value and update the DMA stop
-> > address. You also need the last valid address field when DMA is first
-> > started.
+> >  void __init hpte_init_iSeries(void)
+> >  {
+> > +	int i;
+> > +
+> > +	for (i =3D 0; i < ARRAY_SIZE(iSeries_hlocks); i++)
+> > +		spin_lock_init(&iSeries_hlocks[i]);
+> > +
+> >  	ppc_md.hpte_invalidate	=3D iSeries_hpte_invalidate;
+> >  	ppc_md.hpte_updatepp	=3D iSeries_hpte_updatepp;
+> >  	ppc_md.hpte_updateboltedpp =3D iSeries_hpte_updateboltedpp;
 
-> ... assuming that audio needs to stop exactly at the end of valid
-> data.  But if the last few periods are silence, then this assumption
-> isn't true.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Indeed, it makes the whole thing much more reliable.
+--Signature=_Sun__8_Nov_2009_18_55_39_+1100_PvVKoR9/uoxSce0J
+Content-Type: application/pgp-signature
 
-Providing a final valid data point to the driver would possibly even
-make things worse since if it were used then you'd have the equivalent
-race where the application has initialised some data but not yet managed
-to update the driver to tell it it's being handed over; if the driver
-just carries on running through the data there's a reasonable chance
-nobody will notice that case.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkr2eXsACgkQjjKRsyhoI8yplQCePqhkhwE9kOsv222YOeuSMTT+
+v6QAn0aivxcGS4awyXn6SI2G1PYtfuZt
+=kxrY
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__8_Nov_2009_18_55_39_+1100_PvVKoR9/uoxSce0J--
