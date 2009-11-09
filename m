@@ -1,13 +1,13 @@
 Return-Path: <Jonathan.Haws@sdl.usu.edu>
 Received: from kronos.usurf.usu.edu (kronos.usurf.usu.edu [129.123.194.129])
-	by ozlabs.org (Postfix) with ESMTP id 1FDF0B7C1A
+	by ozlabs.org (Postfix) with ESMTP id D50C0B7C3D
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Tue, 10 Nov 2009 10:56:15 +1100 (EST)
 From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
 To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 9 Nov 2009 16:21:10 -0700
-Subject: Disable Caching for mmap() address
-Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F03310B03B4@midas.usurf.usu.edu>
+Date: Mon, 9 Nov 2009 11:10:42 -0700
+Subject: Invalidate Data Cache from User Space
+Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F03310AFEC3@midas.usurf.usu.edu>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,24 +21,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 All,
 
-I would like to disable caching for an address that was returned from a cal=
-l to mmap().  I am using this address for DMA operations in user space and =
-want to make sure that the data cache is turned off for that buffer.
+I have a routine to invalidate the data cache from user space (since I do n=
+ot believe there is a standard routine I can use outside of kernel space??)=
+.
 
-The way this works is the driver simply takes an address I provide and begi=
-ns a DMA operation to that location in RAM (I have ensured that this is a p=
-hysical address I am passing already).  When the DMA is complete, an interr=
-upt fires and the ISR gives a semaphore that the user space application is =
-pending on (RT_SEM from Xenomai).  I have tried simply calling a cache inva=
-lidate routine in the ISR before I give the semaphore, but the kernel crash=
-es when I try to call that routine - my guess it because the kernel does no=
-t have direct access to that location in memory (only my application does, =
-according to the MMU).
+Here is the code:
 
-Anyway, all I want to do is make sure that the buffer is never stored in th=
-e cache and that I always fetch it from RAM.  How can I specify that using =
-mmap() on the /dev/mem device, or is there a better way to accomplish this?
+	.text;
+	.globl cacheInvalidate405;
+cacheInvalidate405:
 
-Thanks,
+      /*
+       *   r3 =3D Data cache
+       *   r4 =3D address
+       *   r5 =3D number of bytes
+       */
+
+        cmpwi   r5,0                /* make sure number of bytes is > 0 */
+        beq     invalDone
+        add     r6,r4,r5
+        addi    r6,r6,31
+        rlwinm  r6,r6,0,0,26        /* end addr to start of next cache line=
+ */
+        rlwinm  r7,r4,0,0,26        /* start address back to start of line =
+ */
+        sub     r6,r6,r7
+        srawi   r6,r6,5             /* divide by 32 to get number of lines =
+ */
+        mtctr   r6
+invalLoop:
+        dcbi    r0,r4			/* THIS INSTRUCTION FAILS! */
+        addi    r4,r4,32
+        bdnz    invalLoop
+        sync
+invalDone:
+        blr
+.size	cacheInvalidate405, . - cacheInvalidate405
+
+What is happening is the dcbi instruction will fail.  I get an Illegal Inst=
+ruction message on the console and my program exits.
+
+Is there a reason I cannot call dbci from a user space application, or is t=
+here something wrong in my code?  Even better, is there a working and teste=
+d function that I can call from user space to invalidate a portion of the d=
+ata cache?
+
+Thanks!
 
 Jonathan
