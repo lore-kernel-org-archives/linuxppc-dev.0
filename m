@@ -1,24 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 946F3B70B3
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Nov 2009 19:55:12 +1100 (EST)
-Subject: Re: [patch 09/16] powerpc: Replace old style lock initializer
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20091109161502.ab064092.sfr@canb.auug.org.au>
-References: <20091106223547.784916750@linutronix.de>
-	<20091106223806.762624109@linutronix.de>
-	<1257548144.13611.267.camel@pasglop>
-	<20091109161502.ab064092.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 09 Nov 2009 19:53:25 +1100
-Message-ID: <1257756805.13611.296.camel@pasglop>
-Mime-Version: 1.0
-Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Return-Path: <michal.simek@petalogix.com>
+Message-ID: <4AF7F066.9070202@petalogix.com>
+Date: Mon, 09 Nov 2009 11:35:18 +0100
+From: Michal Simek <michal.simek@petalogix.com>
+MIME-Version: 1.0
+To: microblaze-uclinux@itee.uq.edu.au
+Subject: Re: [microblaze-uclinux] [PATCH 00/11] More OF merge patches
+References: <20091105073728.10460.6061.stgit@angua>
+In-Reply-To: <20091105073728.10460.6061.stgit@angua>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
+	sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	davem@davemloft.net
+Reply-To: michal.simek@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-11-09 at 16:15 +1100, Stephen Rothwell wrote:
-> Hi Thomas,
-> 
-> On Sat, 07 Nov 2009 09:55:44 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > On Fri, 2009-11-06 at 22:41 +0000, Thomas Gleixner wrote:
-> > > plain text document attachment
-> > > (power-replace-old-style-lock-init.patch)
-> > > SPIN_LOCK_UNLOCKED is deprecated. Init the lock array at runtime
-> > > instead.
-> > > 
-> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > Cc: linuxppc-dev@ozlabs.org
-> > > ---
-> > 
-> > Looks reasonable. But iseries can be a bitch, so we do need to test it
-> > on monday.
-> 
-> Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Hi Grant,
 
-Thanks Stephen !
+Grant Likely wrote:
+> Round 2.  Here is my 2nd set of merging OF code between PowerPC and
+> Microblaze (no SPARC changes this time).  Compile tested on ppc,
+> microblaze and sparc.  Boot tested on MPC5200 powerpc platform.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I tested your test-device-tree branch - boot tested on ml505 for MMU and 
+noMMU kernels.
+I expect that you will add these patches to next branch. I test it every 
+day - if is any problem with Microblaze, I will let you know.
+
+Tested-by: Michal Simek <monstr@monstr.eu>
+
+Thanks for this work,
+Michal
+
+> 
+> I've also pushed this series out to the test-devicetree branch on my
+> git server if anyone cares to pull and test:
+> 
+> git://git.secretlab.ca/git/linux-2.6 test-devicetree
+> 
+> This is based on the next-devicetree branch which contains the first
+> round of patches and is being pulled into linux-next.
+> 
+> Cheers,
+> g.
+> 
+> ---
+> 
+> Grant Likely (11):
+>       of/flattree: Merge early_init_dt_check_for_initrd()
+>       of: remove special case definition of of_read_ulong()
+>       of: merge prom_{add,remove,modify}_property
+>       of/flattree: Merge unflatten_device_tree
+>       of/flattree: Merge unflatten_dt_node
+>       of/flattree: Merge of_flat_dt_is_compatible
+>       of/flattree: merge of_get_flat_dt_prop
+>       of/flattree: remove __init annotations from the header file
+>       of/flattree: merge of_get_flat_dt_root
+>       of/flattree: merge of_scan_flat_dt
+>       of/flattree: merge find_flat_dt_string and initial_boot_params
+> 
+> 
+>  arch/microblaze/Kconfig            |    1 
+>  arch/microblaze/include/asm/prom.h |    1 
+>  arch/microblaze/kernel/prom.c      |  531 ------------------------------------
+>  arch/powerpc/Kconfig               |    1 
+>  arch/powerpc/kernel/prom.c         |  534 ------------------------------------
+>  drivers/of/Kconfig                 |    4 
+>  drivers/of/Makefile                |    1 
+>  drivers/of/base.c                  |  116 ++++++++
+>  drivers/of/fdt.c                   |  458 +++++++++++++++++++++++++++++++
+>  include/linux/of.h                 |   10 -
+>  include/linux/of_fdt.h             |   21 +
+>  11 files changed, 598 insertions(+), 1080 deletions(-)
+>  create mode 100644 drivers/of/fdt.c
+> 
+> ___________________________
+> microblaze-uclinux mailing list
+> microblaze-uclinux@itee.uq.edu.au
+> Project Home Page : http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux
+> Mailing List Archive : http://www.itee.uq.edu.au/~listarch/microblaze-uclinux/
+> 
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
