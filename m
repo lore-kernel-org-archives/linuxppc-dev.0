@@ -1,33 +1,15 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id ED29EB7B8F
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+Received: from kronos.usurf.usu.edu (kronos.usurf.usu.edu [129.123.194.129])
+	by ozlabs.org (Postfix) with ESMTP id 1FDF0B7C1A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 10 Nov 2009 10:54:07 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nA9IblAe011525
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2009 11:37:47 -0700
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	nA9IcoNB238010
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2009 11:38:51 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nA9IcncL014247
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2009 11:38:49 -0700
-Subject: Re: [PATCH] powerpc/kvm: Fix non-modular build
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1257401928.13611.105.camel@pasglop>
-References: <1257401928.13611.105.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 09 Nov 2009 10:38:46 -0800
-Message-Id: <1257791926.21390.49.camel@conventional>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	kvmppc <kvm-ppc@vger.kernel.org>
+	Tue, 10 Nov 2009 10:56:15 +1100 (EST)
+From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 9 Nov 2009 16:21:10 -0700
+Subject: Disable Caching for mmap() address
+Message-ID: <BB99A6BA28709744BF22A68E6D7EB51F03310B03B4@midas.usurf.usu.edu>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,31 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-11-05 at 17:18 +1100, Benjamin Herrenschmidt wrote:
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  arch/powerpc/kvm/timing.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/timing.c b/arch/powerpc/kvm/timing.c
-> index 2aa371e..7037855 100644
-> --- a/arch/powerpc/kvm/timing.c
-> +++ b/arch/powerpc/kvm/timing.c
-> @@ -23,6 +23,7 @@
->  #include <linux/seq_file.h>
->  #include <linux/debugfs.h>
->  #include <linux/uaccess.h>
-> +#include <linux/module.h>
-> 
->  #include <asm/time.h>
->  #include <asm-generic/div64.h>
+All,
 
-FYI, Olof submitted this patch already, but Avi didn't take it or
-comment. Feel free to batch it in the agraf bundle (it is required to
-make that build, after all).
+I would like to disable caching for an address that was returned from a cal=
+l to mmap().  I am using this address for DMA operations in user space and =
+want to make sure that the data cache is turned off for that buffer.
 
-Acked-by: Hollis Blanchard <hollisb@us.ibm.com>
+The way this works is the driver simply takes an address I provide and begi=
+ns a DMA operation to that location in RAM (I have ensured that this is a p=
+hysical address I am passing already).  When the DMA is complete, an interr=
+upt fires and the ISR gives a semaphore that the user space application is =
+pending on (RT_SEM from Xenomai).  I have tried simply calling a cache inva=
+lidate routine in the ISR before I give the semaphore, but the kernel crash=
+es when I try to call that routine - my guess it because the kernel does no=
+t have direct access to that location in memory (only my application does, =
+according to the MMU).
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+Anyway, all I want to do is make sure that the buffer is never stored in th=
+e cache and that I always fetch it from RAM.  How can I specify that using =
+mmap() on the /dev/mem device, or is there a better way to accomplish this?
+
+Thanks,
+
+Jonathan
