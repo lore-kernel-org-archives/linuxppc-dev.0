@@ -1,22 +1,12 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 86EFEB7088
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Nov 2009 20:35:31 +1100 (EST)
-Date: Sun, 8 Nov 2009 10:35:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [GIT PULL] perf_event/tracing/powerpc patches from Anton Blanchard
-Message-ID: <20091108093518.GD21267@elte.hu>
-References: <19176.59441.523075.445864@drongo.ozlabs.ibm.com>
-	<20091029065501.GB12874@elte.hu> <1256882649.6372.65.camel@pasglop>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 9 Nov 2009 13:07:46 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Allow overriding of CC in powerpc kernel build
+Message-ID: <20091109020746.GC3370@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1256882649.6372.65.camel@pasglop>
-Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +17,68 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+arch/powerpc/Makefile uses make 'override' directives to add -m32 or
+-m64 depending on config to the CC variable, and matching options to
+the AS, LD and AR variables to correctly use a biarch compiler.
 
-> On Thu, 2009-10-29 at 07:55 +0100, Ingo Molnar wrote:
-> > * Paul Mackerras <paulus@samba.org> wrote:
-> > 
-> > > Here is a series of patches from Anton Blanchard that implement some 
-> > > nice tracing and perf_event features on powerpc.  One of them is 
-> > > generic perf_event stuff (adding software events for alignment faults 
-> > > and instruction emulation faults).
-> > > 
-> > > Since this touches the perf_event and tracing subsystems as well as 
-> > > the powerpc architecture code, I think the best way forward is for 
-> > > both Ingo and Ben to pull it into their trees.  I have based it on the 
-> > > most recent point in Linus' tree that Ingo had pulled into his perf 
-> > > branches (as of yesterday or so).
-> > 
-> > The generic perf bits look good to me - can pull it if Ben OKs the 
-> > PowerPC bits.
-> 
-> Yup. Just went through all of them, they look fine. I also test built on
-> a number of default configs and it seems to pass.
+Unfortunately this doesn't work as intended if you actually attempt to
+set CC from the make command line.  They correctly augment the given
+CC variable in the top-level make instance, but at least some of the
+second-level make invocations don't include arch/powerpc/Makefile, so
+the command line override is used directly, and we attempt to compile
+without the correct -m64 or similar option.
 
-Pulled into tip:perf/powerpc (will keep it in a separate branch for a 
-few days then it can go into perf/core), thanks guys!
+This patch alters the way we set up the biarch flags so that CC can be
+overriden from the command line as expected (this is useful when using
+ccontrol as a compiler wrapper).  The approach is based roughly on the
+way x86 handles the analagous problem for i386/x86_64 biarch
+compilers, with some additional hacks to make the VDSO compilation
+work.
 
-	Ingo
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: linux-a2/arch/powerpc/Makefile
+===================================================================
+--- linux-a2.orig/arch/powerpc/Makefile	2009-11-06 14:17:15.000000000 +1100
++++ linux-a2/arch/powerpc/Makefile	2009-11-06 15:36:05.000000000 +1100
+@@ -57,10 +57,10 @@ endif
+ UTS_MACHINE := $(OLDARCH)
+ 
+ ifeq ($(HAS_BIARCH),y)
+-override AS	+= -a$(CONFIG_WORD_SIZE)
+-override LD	+= -m elf$(CONFIG_WORD_SIZE)ppc
+-override CC	+= -m$(CONFIG_WORD_SIZE)
+-override AR	:= GNUTARGET=elf$(CONFIG_WORD_SIZE)-powerpc $(AR)
++	KBUILD_AFLAGS += -m$(CONFIG_WORD_SIZE)
++	KBUILD_CFLAGS += -m$(CONFIG_WORD_SIZE)
++	LDFLAGS := -m elf$(CONFIG_WORD_SIZE)ppc
++	override AR	:= GNUTARGET=elf$(CONFIG_WORD_SIZE)-powerpc $(AR)
+ endif
+ 
+ LDFLAGS_vmlinux-yy := -Bstatic
+Index: linux-a2/arch/powerpc/kernel/vdso32/Makefile
+===================================================================
+--- linux-a2.orig/arch/powerpc/kernel/vdso32/Makefile	2009-11-06 15:45:36.000000000 +1100
++++ linux-a2/arch/powerpc/kernel/vdso32/Makefile	2009-11-06 15:47:03.000000000 +1100
+@@ -40,10 +40,13 @@ $(obj-vdso32): %.o: %.S
+ 	$(call if_changed_dep,vdso32as)
+ 
+ # actual build commands
++biarch	:= $(call cc-option, -m32)
++c_flags_32 = $(filter-out -m64,$(c_flags)) $(biarch)
++a_flags_32 = $(filter-out -m64,$(a_flags)) $(biarch)
+ quiet_cmd_vdso32ld = VDSO32L $@
+-      cmd_vdso32ld = $(CROSS32CC) $(c_flags) -Wl,-T $^ -o $@
++      cmd_vdso32ld = $(CROSS32CC) $(c_flags_32) -Wl,-T $^ -o $@
+ quiet_cmd_vdso32as = VDSO32A $@
+-      cmd_vdso32as = $(CROSS32CC) $(a_flags) -c -o $@ $<
++      cmd_vdso32as = $(CROSS32CC) $(a_flags_32) -c -o $@ $<
+ 
+ # install commands for the unstripped file
+ quiet_cmd_vdso_install = INSTALL $@
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
