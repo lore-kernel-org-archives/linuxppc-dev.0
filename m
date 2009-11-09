@@ -1,21 +1,21 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-px0-f177.google.com (mail-px0-f177.google.com
-	[209.85.216.177]) by ozlabs.org (Postfix) with ESMTP id D9813B70B3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 10 Nov 2009 03:40:13 +1100 (EST)
-Received: by pxi7 with SMTP id 7so2233785pxi.17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 09 Nov 2009 08:40:11 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] ASoC/mpc5200: remove duplicate identical IRQ handler
-To: linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
-	broonie@opensource.wolfsonmicro.com
-Date: Mon, 09 Nov 2009 09:40:09 -0700
-Message-ID: <20091109163936.29231.482.stgit@angua>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
+	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id EBAE5B7088
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 04:06:50 +1100 (EST)
+Received: by ywh37 with SMTP id 37so3136708ywh.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 09 Nov 2009 09:06:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: lrg@slimlogic.co.uk
+Sender: glikely@secretlab.ca
+In-Reply-To: <1257358349.2489.0@antares>
+References: <4AF084C6.3020602@nortel.com> <1257358349.2489.0@antares>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 9 Nov 2009 10:06:29 -0700
+Message-ID: <fa686aa40911090906pb586592g497de2de50001b5b@mail.gmail.com>
+Subject: Re: Fwd: [PATCH] arch/powerpc: Improve _memcpy
+To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Dirk Eibach <eibach@gdsys.de>, Linux kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,65 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The TX and RX irq handlers are identical.  Merge them
+On Wed, Nov 4, 2009 at 11:12 AM, Albrecht Dre=DF <albrecht.dress@arcor.de> =
+wrote:
+> See <http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-May/072582.html>=
+.
+> =A0Any chance to get this one into the tree? =A0Grant?
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Even though it is generic ppc code, I picked it up into my 5200 -next
+tree because it's such a simple patch.  I expect Ben will pull it into
+his any day now.
 
-Hi Mark.  Here's one more cleanup patch.
+Cheers,
+g.
 
- sound/soc/fsl/mpc5200_dma.c |   33 +++------------------------------
- 1 files changed, 3 insertions(+), 30 deletions(-)
-
-diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
-index ee5a606..440b749 100644
---- a/sound/soc/fsl/mpc5200_dma.c
-+++ b/sound/soc/fsl/mpc5200_dma.c
-@@ -66,32 +66,7 @@ static void psc_dma_bcom_enqueue_next_buffer(struct psc_dma_stream *s)
- }
- 
- /* Bestcomm DMA irq handler */
--static irqreturn_t psc_dma_bcom_irq_tx(int irq, void *_psc_dma_stream)
--{
--	struct psc_dma_stream *s = _psc_dma_stream;
--
--	spin_lock(&s->psc_dma->lock);
--	/* For each finished period, dequeue the completed period buffer
--	 * and enqueue a new one in it's place. */
--	while (bcom_buffer_done(s->bcom_task)) {
--		bcom_retrieve_buffer(s->bcom_task, NULL, NULL);
--
--		s->period_current = (s->period_current+1) % s->runtime->periods;
--		s->period_count++;
--
--		psc_dma_bcom_enqueue_next_buffer(s);
--	}
--	spin_unlock(&s->psc_dma->lock);
--
--	/* If the stream is active, then also inform the PCM middle layer
--	 * of the period finished event. */
--	if (s->active)
--		snd_pcm_period_elapsed(s->stream);
--
--	return IRQ_HANDLED;
--}
--
--static irqreturn_t psc_dma_bcom_irq_rx(int irq, void *_psc_dma_stream)
-+static irqreturn_t psc_dma_bcom_irq(int irq, void *_psc_dma_stream)
- {
- 	struct psc_dma_stream *s = _psc_dma_stream;
- 
-@@ -486,11 +461,9 @@ int mpc5200_audio_dma_create(struct of_device *op)
- 
- 	rc = request_irq(psc_dma->irq, &psc_dma_status_irq, IRQF_SHARED,
- 			 "psc-dma-status", psc_dma);
--	rc |= request_irq(psc_dma->capture.irq,
--			  &psc_dma_bcom_irq_rx, IRQF_SHARED,
-+	rc |= request_irq(psc_dma->capture.irq, &psc_dma_bcom_irq, IRQF_SHARED,
- 			  "psc-dma-capture", &psc_dma->capture);
--	rc |= request_irq(psc_dma->playback.irq,
--			  &psc_dma_bcom_irq_tx, IRQF_SHARED,
-+	rc |= request_irq(psc_dma->playback.irq, &psc_dma_bcom_irq, IRQF_SHARED,
- 			  "psc-dma-playback", &psc_dma->playback);
- 	if (rc) {
- 		ret = -ENODEV;
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
