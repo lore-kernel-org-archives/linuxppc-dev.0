@@ -1,17 +1,20 @@
-Return-Path: <michal.simek@petalogix.com>
-Message-ID: <4AF7F066.9070202@petalogix.com>
-Date: Mon, 09 Nov 2009 11:35:18 +0100
-From: Michal Simek <michal.simek@petalogix.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 1F325B70B3
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 00:32:35 +1100 (EST)
+Date: Mon, 9 Nov 2009 16:32:31 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH RFC] gianfar: Make polling safe with IRQs disabled
+Message-ID: <20091109133231.GA26965@oksana.dev.rtsoft.ru>
+References: <20091104225711.GA30844@oksana.dev.rtsoft.ru>
+	<20091108.010533.212571001.davem@davemloft.net>
 MIME-Version: 1.0
-To: microblaze-uclinux@itee.uq.edu.au
-Subject: Re: [microblaze-uclinux] [PATCH 00/11] More OF merge patches
-References: <20091105073728.10460.6061.stgit@angua>
-In-Reply-To: <20091105073728.10460.6061.stgit@angua>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
-	sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	davem@davemloft.net
-Reply-To: michal.simek@petalogix.com
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20091108.010533.212571001.davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, afleming@freescale.com,
+	jason.wessel@windriver.com
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,74 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant,
+On Sun, Nov 08, 2009 at 01:05:33AM -0800, David Miller wrote:
+...
+> > When using KGDBoE, gianfar driver spits 'Interrupt problem' messages,
+> > which appears to be a legitimate warning, i.e. we may end up calling
+> > netif_receive_skb() or vlan_hwaccel_receive_skb() with IRQs disabled.
+> > 
+> > This patch reworks the RX path so that if netpoll is enabled (the
+> > only case when the driver don't know from what context the polling
+> > may be called), we check whether IRQs are disabled, and if so we
+> > fall back to safe variants of skb receiving functions.
+> 
+> This is bogus, I'll tell you why.
+> 
+> When you go into netif_receive_skb() we have a special check,
+> "if (netpoll_receive_skb(..." that takes care of all of the
+> details concerning doing a ->poll() from IRQ disabled context
+> via netpoll.
+> 
+> So this code you're adding should not be necessary.
+> 
+> Or, explain to me why no other driver needs special logic in their
+> ->poll() handler like this and does not run into any kinds of netpoll
+> problems :-)
 
-Grant Likely wrote:
-> Round 2.  Here is my 2nd set of merging OF code between PowerPC and
-> Microblaze (no SPARC changes this time).  Compile tested on ppc,
-> microblaze and sparc.  Boot tested on MPC5200 powerpc platform.
+Hm, I was confused by the following note:
 
-I tested your test-device-tree branch - boot tested on ml505 for MMU and 
-noMMU kernels.
-I expect that you will add these patches to next branch. I test it every 
-day - if is any problem with Microblaze, I will let you know.
+/**
+ *      netif_receive_skb - process receive buffer from network
+ *      @skb: buffer to process
+...
+ *      This function may only be called from softirq context and interrupts
+ *      should be enabled.
 
-Tested-by: Michal Simek <monstr@monstr.eu>
 
-Thanks for this work,
-Michal
+Looking into the code though, I can indeed see that there
+are netpoll checks, and __netpoll_rx() is actually called with
+irqs disabled. So, in the end it appears that we should just
+remove the 'Interrupt problem' message.
 
-> 
-> I've also pushed this series out to the test-devicetree branch on my
-> git server if anyone cares to pull and test:
-> 
-> git://git.secretlab.ca/git/linux-2.6 test-devicetree
-> 
-> This is based on the next-devicetree branch which contains the first
-> round of patches and is being pulled into linux-next.
-> 
-> Cheers,
-> g.
-> 
-> ---
-> 
-> Grant Likely (11):
->       of/flattree: Merge early_init_dt_check_for_initrd()
->       of: remove special case definition of of_read_ulong()
->       of: merge prom_{add,remove,modify}_property
->       of/flattree: Merge unflatten_device_tree
->       of/flattree: Merge unflatten_dt_node
->       of/flattree: Merge of_flat_dt_is_compatible
->       of/flattree: merge of_get_flat_dt_prop
->       of/flattree: remove __init annotations from the header file
->       of/flattree: merge of_get_flat_dt_root
->       of/flattree: merge of_scan_flat_dt
->       of/flattree: merge find_flat_dt_string and initial_boot_params
-> 
-> 
->  arch/microblaze/Kconfig            |    1 
->  arch/microblaze/include/asm/prom.h |    1 
->  arch/microblaze/kernel/prom.c      |  531 ------------------------------------
->  arch/powerpc/Kconfig               |    1 
->  arch/powerpc/kernel/prom.c         |  534 ------------------------------------
->  drivers/of/Kconfig                 |    4 
->  drivers/of/Makefile                |    1 
->  drivers/of/base.c                  |  116 ++++++++
->  drivers/of/fdt.c                   |  458 +++++++++++++++++++++++++++++++
->  include/linux/of.h                 |   10 -
->  include/linux/of_fdt.h             |   21 +
->  11 files changed, 598 insertions(+), 1080 deletions(-)
->  create mode 100644 drivers/of/fdt.c
-> 
-> ___________________________
-> microblaze-uclinux mailing list
-> microblaze-uclinux@itee.uq.edu.au
-> Project Home Page : http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux
-> Mailing List Archive : http://www.itee.uq.edu.au/~listarch/microblaze-uclinux/
-> 
 
+Thanks!
 
 -- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
