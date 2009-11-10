@@ -1,25 +1,36 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
-	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id 0509BB7D52
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 03:44:52 +1100 (EST)
-Received: by ywh37 with SMTP id 37so192595ywh.17
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 08:44:50 -0800 (PST)
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3CB86B7D39
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 03:36:24 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nAAGa5qN001898
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 09:36:16 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nAAGdpXM002855
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 10:39:51 -0600 (CST)
+Message-ID: <4AF99695.800@freescale.com>
+Date: Tue, 10 Nov 2009 10:36:37 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4AF99298.9020207@mocean-labs.com>
-References: <4AC0C699.2070506@mocean-labs.com>
-	<fa686aa40911091321w187fe85fl4e6d9f36f5966f34@mail.gmail.com>
-	<4AF99298.9020207@mocean-labs.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 10 Nov 2009 09:44:30 -0700
-Message-ID: <fa686aa40911100844q19789297h8e6713e915185a7@mail.gmail.com>
-Subject: Re: [spi-devel-general] [PATCH v4] xilinx_spi: Splitted into generic,
-	of and platform driver, added support for DS570
-To: =?ISO-8859-1?Q?Richard_R=F6jfors?= <richard.rojfors@mocean-labs.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>, dbrownell@users.sourceforge.net,
-	John Linn <John.Linn@xilinx.com>, linuxppc-dev@ozlabs.org
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH 0/8] 8xx: Misc fixes for buggy insn
+References: <1257341920-29277-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20091106003305.GA15814@loki.buserror.net>
+	<OF2C4359C9.0EB89938-ONC1257666.00299975-C1257666.002C206F@transmode.se>
+	<OFBF62CE94.BC53D847-ONC1257666.0033CF65-C1257666.0034293A@transmode.se>
+	<20091109215321.GA4351@loki.buserror.net>
+	<20091109230004.GA24671@loki.buserror.net>
+	<OF0C254AE9.CCCFDCCC-ONC125766A.002D331C-C125766A.002E7C69@transmode.se>
+In-Reply-To: <OF0C254AE9.CCCFDCCC-ONC125766A.002D331C-C125766A.002E7C69@transmode.se>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,72 +40,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 10, 2009 at 9:19 AM, Richard R=F6jfors
-<richard.rojfors@mocean-labs.com> wrote:
-> Grant Likely wrote:
->> Oops, I replied to the original version, but missed the subsequent
->> versions. =A0Looks like some of my comments still apply though.
->> Overall, the patch changes too many things all at once. =A0You should
->> look at splitting it up. =A0At the very least the io accessor changes
->> should be done in a separate patch.
+Joakim Tjernlund wrote:
+> Scott Wood <scottwood@freescale.com> wrote on 10/11/2009 00:00:04:
+>> syscall_exit_cont, SRR0/SRR1 were being loaded immediately prior to a page
+>> boundary, with the rfi after the page boundary.  On crossing the boundary,
+>> we take an ITLB miss (which goes from possibility to certainty with the
+>> CPU15 workaround), and SRR0/SRR1 get clobbered.
+> 
+> I am not familiar with CPU15 since we never had that problem.
+> The patch series is OK then, but one need to add some CPU15 love?
 
-Hi Richard.  Please do another spin of this patch.  I don't have any
-particular problem with the changes, but it needs to be in a more
-granular form so I can review it properly.
+It's not CPU15 itself that is causing the problem, but rather the 
+workaround for CPU15 takes something that has a possibility of happening 
+and makes it certain to happen.
 
->>> +struct xilinx_spi {
->>> + =A0 =A0 =A0 /* bitbang has to be first */
->>> + =A0 =A0 =A0 struct spi_bitbang bitbang;
->>> + =A0 =A0 =A0 struct completion done;
->>> + =A0 =A0 =A0 struct resource mem; /* phys mem */
->>> + =A0 =A0 =A0 void __iomem =A0 =A0*regs; =A0/* virt. address of the con=
-trol registers */
->>> + =A0 =A0 =A0 u32 irq;
->>> + =A0 =A0 =A0 u8 *rx_ptr; =A0 =A0 =A0 =A0 =A0 =A0 /* pointer in the Tx =
-buffer */
->>> + =A0 =A0 =A0 const u8 *tx_ptr; =A0 =A0 =A0 /* pointer in the Rx buffer=
- */
->>> + =A0 =A0 =A0 int remaining_bytes; =A0 =A0/* the number of bytes left t=
-o transfer */
->>> + =A0 =A0 =A0 /* offset to the XSPI regs, these might vary... */
->>> + =A0 =A0 =A0 u8 bits_per_word;
->>> + =A0 =A0 =A0 bool big_endian; =A0 =A0 =A0 =A0/* The device could be ac=
-cessed big or little
->>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* endi=
-an
->>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
->>> +};
->>> +
->>
->> Why is the definition of xilinx_spi moved?
->
-> I liked the idea of heaving the struct defined in the top of the file.
+>> Either that, or require that the kernel text be pinned, though that does not
+>> interact well with CPU15.
+> 
+> Why does not pinning interact well with CPU15? If pinned, you never get
+> a TLB miss for kernel text so that should mitigate the CPU15 problem.
 
-... which is completely unrelated to the patch purpose, and is not
-mentioned in the patch header.  If you really want to move it then put
-it in a completely separate patch and describe the change properly.
-As it is right now it is just noise that makes the stated purpose of
-the patch hard to review.
+The nature of the workaround for CPU15 is that we can't keep it pinned 
+-- we have to take an ITLB miss on every page boundary crossing.  If you 
+try to pin, it'll just be invalidated by the workaround.
 
->> Ah, you changed these to functions instead of macros. =A0I like.
->> However, as you suggested elsewhere in this thread, you could change
->> these to callbacks and then eliminate the if/else statements. =A0I think
->> that is the approach you should use. =A0I don't think you need to worry
->> about it being slower. =A0Any extra cycles for jumping to a callback
->> will be far dwarfed by the number of cycles it takes to complete an
->> SPI transfer.
->
-> Sure that can be updated. I prefer to do that in an incremental patch, wo=
-uld be great to get this
-> big one merged first.
+There is an alternate workaround, but it requires compiler changes.
 
-As already commented on, this patch is too big and does too many
-unrelated things.  Please split into discrete changes so it can be
-reviewed properly.
-
-Thanks,
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Scott
