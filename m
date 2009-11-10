@@ -1,27 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CB874B7C65
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 09:47:48 +1100 (EST)
-In-Reply-To: <4AF99B00.6080504@freescale.com>
-References: <1257341920-29277-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091106003305.GA15814@loki.buserror.net>
-	<OF2C4359C9.0EB89938-ONC1257666.00299975-C1257666.002C206F@transmode.se>
-	<OFBF62CE94.BC53D847-ONC1257666.0033CF65-C1257666.0034293A@transmode.se>
-	<20091109215321.GA4351@loki.buserror.net>
-	<20091109230004.GA24671@loki.buserror.net>
-	<OF0C254AE9.CCCFDCCC-ONC125766A.002D331C-C125766A.002E7C69@transmode.se>
-	<4AF99695.800@freescale.com> <4AF99B00.6080504@freescale.com>
-Subject: Re: [PATCH 0/8] 8xx: Misc fixes for buggy insn
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OFDB4F927C.98657449-ONC125766A.006874A4-C125766A.00692F0B@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 10 Nov 2009 20:08:53 +0100
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by ozlabs.org (Postfix) with ESMTP id 9B950B6EDF
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 09:55:18 +1100 (EST)
+Date: Tue, 10 Nov 2009 21:26:17 +0100
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: [PATCH 3/3] mpc52xx/wdt: WDT uses GPT api
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40911101159y7bef3f9bte74e9aeb5c6e864b@mail.gmail.com>
+	(from grant.likely@secretlab.ca on Tue Nov 10 20:59:22 2009)
+Message-Id: <1257884778.14374.5@antares>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-81ycxAhqMXOMnZPelWux"
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss@lists.ozlabs.org, Wim Van Sebroeck <wim@iguana.be>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 10/11/2009 17:55:28:
->
-> Scott Wood wrote:
-> > Joakim Tjernlund wrote:
-> >> Why does not pinning interact well with CPU15? If pinned, you never get
-> >> a TLB miss for kernel text so that should mitigate the CPU15 problem.
+--=-81ycxAhqMXOMnZPelWux
+Content-Type: text/plain; charset=ISO-8859-1; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Grant:
+
+Am 10.11.09 20:59 schrieb(en) Grant Likely:
+> On Tue, Nov 10, 2009 at 12:43 PM, Albrecht Dre=DF <albrecht.dress@arcor.d=
+e> wrote:
+> > Use the MPC5200 GPT api for the WDT which drastically simplifies this f=
+ile.
 > >
-> > The nature of the workaround for CPU15 is that we can't keep it pinned
-> > -- we have to take an ITLB miss on every page boundary crossing.  If you
-> > try to pin, it'll just be invalidated by the workaround.
->
-> Except that the invalidation only happens when you take an ITLB miss on
-> an adjacent page, which means we'd likely never get CPU15 protection for
-> kernel code if pinning is enabled. :-(
+> > Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
+> > ---
+> >
+> > =A0drivers/watchdog/mpc5200_wdt.c | =A0246 +++++++++++-----------------=
+------------
+> > =A01 files changed, 65 insertions(+), 181 deletions(-)
+>=20
+>=20
+> Can the WDT functionality just be merged entirely into
+> arch/powerpc/platforms/52xx/mpc52xx_gpt.c, eliminating the need for
+> this file entirely?  I think I'd rather have all the GPT "built in"
+> behaviour handled by a single driver.
 
-So tlbie invalidates pinned TLBs too?
-It is likely that you won't get ITLB Misses for normal kernel
-space but for modules you will. Also, since the pinned D&I TLBs overlap,
-how do you make sure that invalidating a kernel DTLB won't
-spill over to the pinned ITLB?
+I also thought about it, as it has IMHO the cleaner code, and it would have=
+ the extra benefit that the gpt-wdt api doesn't need to be public.
 
-Does pinned TLBs work for you?
-Rex, how does it look in your end?
+However, the reasons I hesitated to do so are:
+- I don't want to remove a file someone else wrote (even it doesn't work);
+- WDT code is shifted from drivers/watchdog to arch/powerpc/platforms/52xx =
+which might not be the "logical" place from the directory layout's pov;
+- a file living in arch/powerpc/platforms/52xx depends upon config options =
+set from drivers/watchdog/Kconfig which may be confusing.
 
- Jocke
+You see these are more political/cosmetical questions, so I would prefer to=
+ leave the decision to the maintainers (i.e. you and Wim).  Preparing a ful=
+ly merged driver is actually a matter of minutes!
+
+Thanks,
+Albrecht.
+
+--=-81ycxAhqMXOMnZPelWux
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iD8DBQBK+cxqn/9unNAn/9ERAh3hAJ9eY3bJ7UukLvDlPOAk/qg9efPeswCgkc/H
+sNcK29CrszMC7TgEmv13lRs=
+=Z2ji
+-----END PGP SIGNATURE-----
+
+--=-81ycxAhqMXOMnZPelWux--
