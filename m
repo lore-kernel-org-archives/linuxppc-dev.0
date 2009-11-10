@@ -1,23 +1,22 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+Return-Path: <broonie@opensource.wolfsonmicro.com>
+Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
+	[80.75.67.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 6B9B6B6F2B
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 93E47B7088
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 10 Nov 2009 23:47:41 +1100 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 671A5C5053
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 10 Nov 2009 13:47:34 +0100 (CET)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: MPC5200B FEC_IEVENT_RFIFO_ERROR leading to Link is Down
+	Wed, 11 Nov 2009 00:12:06 +1100 (EST)
+Date: Tue, 10 Nov 2009 13:03:43 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] ASoC/mpc5200: remove duplicate identical IRQ handler
+Message-ID: <20091110130343.GD16200@rakim.wolfsonmicro.main>
+References: <20091109163936.29231.482.stgit@angua>
 MIME-Version: 1.0
-Message-ID: <200911101347.33837.roman.fietze@telemotive.de>
-Date: Tue, 10 Nov 2009 13:47:33 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091109163936.29231.482.stgit@angua>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+	lrg@slimlogic.co.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +26,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Mon, Nov 09, 2009 at 09:40:09AM -0700, Grant Likely wrote:
+> The TX and RX irq handlers are identical.  Merge them
 
-When having high traffic on the MPC5200B ATA (MWDMA2), FEC (100MBit)
-and LPC (MTD FLASH read) I will get the typical
-=46EC_IEVENT_RFIFO_ERROR's.
-
-Without the FLASH reads, that we use to stress the probably existing
-LPC arbiter or MPC5200B silicon bug when running UDMA2+LPC, and which
-should not happen using MWDMA2+LPC, I could not yet reproduce the
-=46EC_IEVENT_RFIFO_ERROR.
-
-Now comes the problem: since the PHY driver rework followed by John
-Bonesio's fix (rev 37ccd92f55c6c6) to avoid accessing the DIO bus at
-interrupt context, this now sometimes causes an irrecoverable link
-down (PHY: f0003000:00 - Link is Down). This patch is of course
-necessary to avoid a panic.
-
-I can reproduce that on the current DENX/master using an own board
-very close to the Lite5200B. This board runs fine under the old
-2.4.25, of course also sometimes showing the FEC FIFO error.
-
-Any ideas?
-
-
-Roman
-
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+Applied, thanks.
