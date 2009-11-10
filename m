@@ -1,25 +1,34 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <borntraeger@de.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E437BB7067
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 19:30:57 +1100 (EST)
-In-Reply-To: <20091109230004.GA24671@loki.buserror.net>
-References: <1257341920-29277-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091106003305.GA15814@loki.buserror.net>
-	<OF2C4359C9.0EB89938-ONC1257666.00299975-C1257666.002C206F@transmode.se>
-	<OFBF62CE94.BC53D847-ONC1257666.0033CF65-C1257666.0034293A@transmode.se>
-	<20091109215321.GA4351@loki.buserror.net>
-	<20091109230004.GA24671@loki.buserror.net>
-Subject: Re: [PATCH 0/8] 8xx: Misc fixes for buggy insn
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OF0C254AE9.CCCFDCCC-ONC125766A.002D331C-C125766A.002E7C69@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 10 Nov 2009 09:27:45 +0100
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5FFC4B7B65
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 19:57:23 +1100 (EST)
+Received: from d06nrmr1806.portsmouth.uk.ibm.com
+	(d06nrmr1806.portsmouth.uk.ibm.com [9.149.39.193])
+	by mtagate3.uk.ibm.com (8.14.3/8.13.8) with ESMTP id nAA8uvhC277570
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 08:57:02 GMT
+Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
+	[9.149.37.213])
+	by d06nrmr1806.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id nAA8ulqR2072690
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 08:56:47 GMT
+Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id nAA8ukVU006953
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 08:56:46 GMT
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 3/8] hvc_console: make the ops pointer const.
+Date: Tue, 10 Nov 2009 09:56:45 +0100
+References: <1257834450..rusty@rustcorp.com.au>
+In-Reply-To: <1257834450..rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Message-Id: <200911100956.45668.borntraeger@de.ibm.com>
+Cc: Amit Shah <amit.shah@redhat.com>, linuxppc-dev@ozlabs.org,
+	virtualization@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 10/11/2009 00:00:04:
->
-> On Mon, Nov 09, 2009 at 03:53:21PM -0600, Scott Wood wrote:
-> > On Fri, Nov 06, 2009 at 10:29:44AM +0100, Joakim Tjernlund wrote:
-> > > > > With this, the kernel hangs after "Mount-cache hash table entries: 512".
-> > > >
-> > > > Somewhat surprising result. I didn't expect you would even hit this
-> > > > condition now as we haven't enabled the use of dcbX insn yet.
-> > > > The only thing I can think of is the you hit the 0x00f0 due to other
-> > > > dcbX insn use and the kernel managed to fixup this in the page fault handler
-> > > > by pure luck before.
-> >
-> > It's bizarre -- it still happens even if I revert the branch to FixupDAR.
-> > However, if I comment out the final "b 151b", it stops happening.  It also
-> > stops happening sometimes depending on where I stick printk()s to debug
-> > this.
-> >
-> > So it may be an unrelated issue that just got perturbed somehow.
->
-> OK, figured it out.  The fixup code pushed things around so that in
+Am Dienstag 10 November 2009 07:27:30 schrieb Rusty Russell:
+> This is nicer for modern R/O protection.  And noone needs it non-const, so
+> constify the callers as well.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> To: Christian Borntraeger <borntraeger@de.ibm.com>
+> Cc: linuxppc-dev@ozlabs.org
+> ---
+>  drivers/char/hvc_beat.c       |    2 +-
+>  drivers/char/hvc_console.c    |    7 ++++---
+>  drivers/char/hvc_console.h    |    7 ++++---
+>  drivers/char/hvc_iseries.c    |    2 +-
+>  drivers/char/hvc_iucv.c       |    2 +-
+>  drivers/char/hvc_rtas.c       |    2 +-
+>  drivers/char/hvc_udbg.c       |    2 +-
+>  drivers/char/hvc_vio.c        |    2 +-
+>  drivers/char/hvc_xen.c        |    2 +-
+>  drivers/char/virtio_console.c |    2 +-
+>  10 files changed, 16 insertions(+), 14 deletions(-)
 
-Cool!
+Ok, I started with patches 1-3. I like the result.
 
-> syscall_exit_cont, SRR0/SRR1 were being loaded immediately prior to a page
-> boundary, with the rfi after the page boundary.  On crossing the boundary,
-> we take an ITLB miss (which goes from possibility to certainty with the
-> CPU15 workaround), and SRR0/SRR1 get clobbered.
+So for the first 3 patches you can add
+Tested-by: Christian Borntraeger <borntraeger@de.ibm.com> (on s390)
+Reviewed-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
-I am not familiar with CPU15 since we never had that problem.
-The patch series is OK then, but one need to add some CPU15 love?
+I have not yet looked at the other ones, but I will try to find some time to 
+look at them.
 
->
-> I suppose we'll need to find all places where we do rfi with the MMU
-> enabled, and ensure acceptable alignment. :-(
-
-Ouch, but it can't be that many places though.
-
->
-> Either that, or require that the kernel text be pinned, though that does not
-> interact well with CPU15.
-
-Why does not pinning interact well with CPU15? If pinned, you never get
-a TLB miss for kernel text so that should mitigate the CPU15 problem.
-
-      Jocke
+Christian
