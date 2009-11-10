@@ -1,34 +1,19 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
+Return-Path: <joakim.tjernlund@transmode.com>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5FFC4B7B65
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 19:57:23 +1100 (EST)
-Received: from d06nrmr1806.portsmouth.uk.ibm.com
-	(d06nrmr1806.portsmouth.uk.ibm.com [9.149.39.193])
-	by mtagate3.uk.ibm.com (8.14.3/8.13.8) with ESMTP id nAA8uvhC277570
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 08:57:02 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1806.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id nAA8ulqR2072690
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 08:56:47 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id nAA8ukVU006953
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 08:56:46 GMT
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 3/8] hvc_console: make the ops pointer const.
-Date: Tue, 10 Nov 2009 09:56:45 +0100
-References: <1257834450..rusty@rustcorp.com.au>
-In-Reply-To: <1257834450..rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Message-Id: <200911100956.45668.borntraeger@de.ibm.com>
-Cc: Amit Shah <amit.shah@redhat.com>, linuxppc-dev@ozlabs.org,
-	virtualization@linux-foundation.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0F692B7B68
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 20:00:48 +1100 (EST)
+Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
+	by gw1.transmode.se (Postfix) with ESMTP id B173F650002
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 10:00:44 +0100 (CET)
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] zlib: Optimize inffast when copying direct from output
+Date: Tue, 10 Nov 2009 10:00:44 +0100
+Message-Id: <1257843644-8496-1-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <Received>
+References: <Received>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,33 +23,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Dienstag 10 November 2009 07:27:30 schrieb Rusty Russell:
-> This is nicer for modern R/O protection.  And noone needs it non-const, so
-> constify the callers as well.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> To: Christian Borntraeger <borntraeger@de.ibm.com>
-> Cc: linuxppc-dev@ozlabs.org
-> ---
->  drivers/char/hvc_beat.c       |    2 +-
->  drivers/char/hvc_console.c    |    7 ++++---
->  drivers/char/hvc_console.h    |    7 ++++---
->  drivers/char/hvc_iseries.c    |    2 +-
->  drivers/char/hvc_iucv.c       |    2 +-
->  drivers/char/hvc_rtas.c       |    2 +-
->  drivers/char/hvc_udbg.c       |    2 +-
->  drivers/char/hvc_vio.c        |    2 +-
->  drivers/char/hvc_xen.c        |    2 +-
->  drivers/char/virtio_console.c |    2 +-
->  10 files changed, 16 insertions(+), 14 deletions(-)
+JFFS2 uses lesser compression ratio and inflate always
+ends up in "copy direct from output" case.
+This patch tries to optimize the direct copy procedure.
+Uses get_unaligned() but only in one place.
+The copy loop just above this one can also use this
+optimization, but I havn't done so as I have not tested if it
+is a win there too.
+On my MPC8321 this is about 17% faster on my JFFS2 root FS
+than the original.
+---
 
-Ok, I started with patches 1-3. I like the result.
+ Would like some testing of the PowerPC boot wrapper and
+ a LE target before sending it upstream.
 
-So for the first 3 patches you can add
-Tested-by: Christian Borntraeger <borntraeger@de.ibm.com> (on s390)
-Reviewed-by: Christian Borntraeger <borntraeger@de.ibm.com>
+ arch/powerpc/boot/Makefile |    4 ++-
+ lib/zlib_inflate/inffast.c |   48 +++++++++++++++++++++++++++++++++----------
+ 2 files changed, 40 insertions(+), 12 deletions(-)
 
-I have not yet looked at the other ones, but I will try to find some time to 
-look at them.
-
-Christian
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 9ae7b7e..98e4c4f 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -20,7 +20,7 @@
+ all: $(obj)/zImage
+ 
+ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+-		 -fno-strict-aliasing -Os -msoft-float -pipe \
++		 -fno-strict-aliasing -Os -msoft-float -pipe -D__KERNEL__\
+ 		 -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
+ 		 -isystem $(shell $(CROSS32CC) -print-file-name=include)
+ BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
+@@ -34,6 +34,8 @@ BOOTCFLAGS	+= -fno-stack-protector
+ endif
+ 
+ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
++BOOTCFLAGS	+= -include include/linux/autoconf.h -Iarch/powerpc/include
++BOOTCFLAGS	+= -Iinclude
+ 
+ DTS_FLAGS	?= -p 1024
+ 
+diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib_inflate/inffast.c
+index 8550b0c..0c7fa3d 100644
+--- a/lib/zlib_inflate/inffast.c
++++ b/lib/zlib_inflate/inffast.c
+@@ -4,6 +4,7 @@
+  */
+ 
+ #include <linux/zutil.h>
++#include <asm/unaligned.h>
+ #include "inftrees.h"
+ #include "inflate.h"
+ #include "inffast.h"
+@@ -24,9 +25,11 @@
+ #ifdef POSTINC
+ #  define OFF 0
+ #  define PUP(a) *(a)++
++#  define UP_UNALIGNED(a) get_unaligned((a)++)
+ #else
+ #  define OFF 1
+ #  define PUP(a) *++(a)
++#  define UP_UNALIGNED(a) get_unaligned(++(a))
+ #endif
+ 
+ /*
+@@ -239,18 +242,41 @@ void inflate_fast(z_streamp strm, unsigned start)
+                     }
+                 }
+                 else {
++		    unsigned short *sout;
++		    unsigned long loops;
++
+                     from = out - dist;          /* copy direct from output */
+-                    do {                        /* minimum length is three */
+-                        PUP(out) = PUP(from);
+-                        PUP(out) = PUP(from);
+-                        PUP(out) = PUP(from);
+-                        len -= 3;
+-                    } while (len > 2);
+-                    if (len) {
+-                        PUP(out) = PUP(from);
+-                        if (len > 1)
+-                            PUP(out) = PUP(from);
+-                    }
++                    /* minimum length is three */
++		    /* Align out addr */
++		    if (!((long)(out - 1 + OFF)) & 1) {
++			PUP(out) = PUP(from);
++			len--;
++		    }
++		    sout = (unsigned short *)(out - OFF);
++		    if (dist > 2 ) {
++			unsigned short *sfrom;
++
++			sfrom = (unsigned short *)(from - OFF);
++			loops = len >> 1;
++			do
++			    PUP(sout) = UP_UNALIGNED(sfrom);
++			while (--loops);
++			out = (unsigned char *)sout + OFF;
++			from = (unsigned char *)sfrom + OFF;
++		    } else { /* dist == 1 or dist == 2 */
++			unsigned short pat16;
++
++			pat16 = *(sout-2+2*OFF);
++			if (dist == 1)
++			    pat16 = (pat16 & 0xff) | ((pat16 & 0xff ) << 8);
++			loops = len >> 1;
++			do
++			    PUP(sout) = pat16;
++			while (--loops);
++			out = (unsigned char *)sout + OFF;
++		    }
++		    if (len & 1)
++			PUP(out) = PUP(from);
+                 }
+             }
+             else if ((op & 64) == 0) {          /* 2nd level distance code */
+-- 
+1.6.4.4
