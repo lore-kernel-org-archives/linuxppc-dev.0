@@ -1,14 +1,14 @@
 Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp5.netcologne.de (smtp5.netcologne.de [194.8.194.25])
-	by ozlabs.org (Postfix) with ESMTP id 50422B7C0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 09:09:50 +1100 (EST)
-Date: Tue, 10 Nov 2009 20:41:58 +0100
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by ozlabs.org (Postfix) with ESMTP id 87BCAB831B
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 09:10:19 +1100 (EST)
+Date: Tue, 10 Nov 2009 20:43:00 +0100
 From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: [PATCH 2/3] mpc52xx/wdt: merge WDT code into the GPT
+Subject: [PATCH 3/3] mpc52xx/wdt: WDT uses GPT api
 To: Linux PPC Development <linuxppc-dev@ozlabs.org>, Grant Likely
 	<grant.likely@secretlab.ca>, devicetree-discuss@lists.ozlabs.org,
 	Wim Van Sebroeck <wim@iguana.be>
-Message-Id: <1257882118.14374.2@antares>
+Message-Id: <1257882180.14374.3@antares>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,432 +20,367 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge the WDT code into the GPT interface.
+Use the MPC5200 GPT api for the WDT which drastically simplifies this file.
 
 Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
 ---
 
-Notes:
+ drivers/watchdog/mpc5200_wdt.c |  246 +++++++++++-------------------------=
+----
+ 1 files changed, 65 insertions(+), 181 deletions(-)
 
-The maximum timeout for a 5200 GPT @ 33 MHz clock is ~130 seconds.  As this
-exceeds the range of an int, some api's had to be changed to u64.
-
-The WDT api is exported as to keep the WDT driver separated from the GPT
-driver.
-
-If GPT0 is used as WDT, this prevents the use of any GPT0 GPT function (i.e=
-.
-they will fail with -EBUSY).  IOW, the safety function always has precedenc=
-e
-over the GPT function.  If the kernel has been compiled with
-CONFIG_WATCHDOG_NOWAYOUT, this means that GPT0 is locked in WDT mode until
-the next reboot - this may be a requirement in safety applications.
-
- arch/powerpc/include/asm/mpc52xx.h        |   18 ++-
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c |  281 +++++++++++++++++++++++++=
-+---
- 2 files changed, 270 insertions(+), 29 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mpc52xx.h b/arch/powerpc/include/asm/=
-mpc52xx.h
-index 707ab75..0ece07f 100644
---- a/arch/powerpc/include/asm/mpc52xx.h
-+++ b/arch/powerpc/include/asm/mpc52xx.h
-@@ -279,9 +279,21 @@ extern void mpc52xx_restart(char *cmd);
- /* mpc52xx_gpt.c */
- struct mpc52xx_gpt_priv;
- extern struct mpc52xx_gpt_priv *mpc52xx_gpt_from_irq(int irq);
--extern int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, int perio=
-d,
--                            int continuous);
--extern void mpc52xx_gpt_stop_timer(struct mpc52xx_gpt_priv *gpt);
-+extern int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, u64 perio=
-d,
-+				   int continuous);
-+extern int mpc52xx_gpt_stop_timer(struct mpc52xx_gpt_priv *gpt);
-+extern u64 mpc52xx_gpt_timer_period(struct mpc52xx_gpt_priv *gpt);
-+#if (defined(CONFIG_MPC5200_WDT)) || (defined(CONFIG_MPC5200_WDT_MODULE))
-+extern struct mpc52xx_gpt_priv *mpc52xx_gpt_wdt_probe(void);
-+extern int mpc52xx_gpt_wdt_start(struct mpc52xx_gpt_priv *gpt_wdt,
-+				 int wdt_timeout);
-+extern int mpc52xx_gpt_wdt_ping(struct mpc52xx_gpt_priv *gpt_wdt);
-+extern int mpc52xx_gpt_wdt_release(struct mpc52xx_gpt_priv *gpt_wdt);
-+#if !defined(CONFIG_WATCHDOG_NOWAYOUT)
-+extern int mpc52xx_gpt_wdt_stop(struct mpc52xx_gpt_priv *gpt_wdt);
-+#endif  /*  CONFIG_WATCHDOG_NOWAYOUT  */
-+#endif  /*  CONFIG_MPC5200_WDT  */
-+
-=20
- /* mpc52xx_lpbfifo.c */
- #define MPC52XX_LPBFIFO_FLAG_READ		(0)
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platf=
-orms/52xx/mpc52xx_gpt.c
-index 2c3fa13..8274ebb 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -60,9 +60,13 @@
+diff --git a/drivers/watchdog/mpc5200_wdt.c b/drivers/watchdog/mpc5200_wdt.=
+c
+index fa9c47c..5bb553c 100644
+--- a/drivers/watchdog/mpc5200_wdt.c
++++ b/drivers/watchdog/mpc5200_wdt.c
+@@ -2,25 +2,16 @@
+ #include <linux/module.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+-#include <linux/io.h>
+-#include <linux/spinlock.h>
+ #include <linux/of_platform.h>
+ #include <linux/uaccess.h>
  #include <asm/mpc52xx.h>
 =20
- MODULE_DESCRIPTION("Freescale MPC52xx gpt driver");
--MODULE_AUTHOR("Sascha Hauer, Grant Likely");
-+MODULE_AUTHOR("Sascha Hauer, Grant Likely, Albrecht Dre=DF");
- MODULE_LICENSE("GPL");
 =20
-+#if (defined(CONFIG_MPC5200_WDT)) || (defined(CONFIG_MPC5200_WDT_MODULE))
-+#define HAVE_MPC5200_WDT
-+#endif
-+
- /**
-  * struct mpc52xx_gpt - Private data structure for MPC52xx GPT driver
-  * @dev: pointer to device structure
-@@ -70,6 +74,8 @@ MODULE_LICENSE("GPL");
-  * @lock: spinlock to coordinate between different functions.
-  * @of_gc: of_gpio_chip instance structure; used when GPIO is enabled
-  * @irqhost: Pointer to irq_host instance; used when IRQ mode is supported
-+ * @wdt_mode: only used for gpt 0: 0 gpt-only timer, 1 can be used as a
-+ *            wdt, 2 currently used as wdt, cannot be used as gpt
-  */
- struct mpc52xx_gpt_priv {
- 	struct list_head list;		/* List of all GPT devices */
-@@ -78,6 +84,9 @@ struct mpc52xx_gpt_priv {
- 	spinlock_t lock;
- 	struct irq_host *irqhost;
- 	u32 ipb_freq;
-+#if defined(HAVE_MPC5200_WDT)
-+	u8 wdt_mode;
-+#endif
-=20
- #if defined(CONFIG_GPIOLIB)
- 	struct of_gpio_chip of_gc;
-@@ -101,14 +110,23 @@ DEFINE_MUTEX(mpc52xx_gpt_list_mutex);
- #define MPC52xx_GPT_MODE_CONTINUOUS	(0x0400)
- #define MPC52xx_GPT_MODE_OPEN_DRAIN	(0x0200)
- #define MPC52xx_GPT_MODE_IRQ_EN		(0x0100)
-+#define MPC52xx_GPT_MODE_WDT_EN		(0x8000)
-=20
- #define MPC52xx_GPT_MODE_ICT_MASK	(0x030000)
- #define MPC52xx_GPT_MODE_ICT_RISING	(0x010000)
- #define MPC52xx_GPT_MODE_ICT_FALLING	(0x020000)
- #define MPC52xx_GPT_MODE_ICT_TOGGLE	(0x030000)
-=20
-+#define MPC52xx_GPT_MODE_WDT_PING	(0xa5)
-+
- #define MPC52xx_GPT_STATUS_IRQMASK	(0x000f)
-=20
-+#define NS_PER_SEC			1000000000LL
-+
-+#define MPC52xx_GPT_CAN_WDT		(1 << 0)
-+#define MPC52xx_GPT_IS_WDT		(1 << 1)
-+
-+
- /* ---------------------------------------------------------------------
-  * Cascaded interrupt controller hooks
-  */
-@@ -375,36 +393,22 @@ struct mpc52xx_gpt_priv *mpc52xx_gpt_from_irq(int irq=
-)
- }
- EXPORT_SYMBOL(mpc52xx_gpt_from_irq);
-=20
--/**
-- * mpc52xx_gpt_start_timer - Set and enable the GPT timer
-- * @gpt: Pointer to gpt private data structure
-- * @period: period of timer
-- * @continuous: set to 1 to make timer continuous free running
-- *
-- * An interrupt will be generated every time the timer fires
-- */
--int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, int period,
--                            int continuous)
-+/* Calculate the timer counter input register MBAR + 0x6n4 from the
-+ * period in ns.  The maximum period for 33 MHz IPB clock is ~130s. */
-+static int mpc52xx_gpt_calc_counter_input(u64 period, u64 ipb_freq,
-+					  u32 *reg_val)
- {
--	u32 clear, set;
- 	u64 clocks;
- 	u32 prescale;
--	unsigned long flags;
+-#define GPT_MODE_WDT		(1 << 15)
+-#define GPT_MODE_CE		(1 << 12)
+-#define GPT_MODE_MS_TIMER	(0x4)
 -
--	clear =3D MPC52xx_GPT_MODE_MS_MASK | MPC52xx_GPT_MODE_CONTINUOUS;
--	set =3D MPC52xx_GPT_MODE_MS_GPIO | MPC52xx_GPT_MODE_COUNTER_ENABLE;
--	if (continuous)
--		set |=3D MPC52xx_GPT_MODE_CONTINUOUS;
++#define WDT_IDENTITY        "mpc5200 watchdog on GPT0"
 =20
- 	/* Determine the number of clocks in the requested period.  64 bit
- 	 * arithmatic is done here to preserve the precision until the value
--	 * is scaled back down into the u32 range.  Period is in 'ns', bus
--	 * frequency is in Hz. */
--	clocks =3D (u64)period * (u64)gpt->ipb_freq;
--	do_div(clocks, 1000000000); /* Scale it down to ns range */
-+	 * is scaled back down into the u32 range. */
-+	clocks =3D period * ipb_freq;
-+	do_div(clocks, NS_PER_SEC);         /* Scale it down to ns range */
+ struct mpc5200_wdt {
+-	unsigned count;	/* timer ticks before watchdog kicks in */
+-	long ipb_freq;
+-	struct miscdevice miscdev;
+-	struct resource mem;
+-	struct mpc52xx_gpt __iomem *regs;
+-	spinlock_t io_lock;
++	int timeout;
++	struct mpc52xx_gpt_priv *timer;
+ };
 =20
--	/* This device cannot handle a clock count greater than 32 bits */
--	if (clocks > 0xffffffff)
-+	/* the maximum count is 0x10000 pre-scaler * 0xffff count */
-+	if (clocks > 0xffff0000)
- 		return -EINVAL;
+ /* is_active stores wether or not the /dev/watchdog device is opened */
+@@ -32,80 +23,33 @@ static unsigned long is_active;
+ static struct mpc5200_wdt *wdt_global;
 =20
- 	/* Calculate the prescaler and count values from the clocks value.
-@@ -427,9 +431,47 @@ int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *g=
-pt, int period,
- 		return -EINVAL;
- 	}
 =20
-+	*reg_val =3D (prescale & 0xffff) << 16 | clocks;
-+	return 0;
-+}
-+
-+/**
-+ * mpc52xx_gpt_start_timer - Set and enable the GPT timer
-+ * @gpt: Pointer to gpt private data structure
-+ * @period: period of timer in ns
-+ * @continuous: set to 1 to make timer continuous free running
-+ *
-+ * An interrupt will be generated every time the timer fires
-+ */
-+int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, u64 period,
-+			    int continuous)
-+{
-+	u32 clear, set;
-+	u32 counter_reg;
-+	unsigned long flags;
-+
-+#if defined(HAVE_MPC5200_WDT)
-+	/* reject the operation if the timer is used as watchdog (gpt 0 only) */
-+	spin_lock_irqsave(&gpt->lock, flags);
-+	if ((gpt->wdt_mode & MPC52xx_GPT_IS_WDT)) {
-+		spin_unlock_irqrestore(&gpt->lock, flags);
-+		return -EBUSY;
-+	}
-+	spin_unlock_irqrestore(&gpt->lock, flags);
-+#endif
-+
-+	clear =3D MPC52xx_GPT_MODE_MS_MASK | MPC52xx_GPT_MODE_CONTINUOUS;
-+	set =3D MPC52xx_GPT_MODE_MS_GPIO | MPC52xx_GPT_MODE_COUNTER_ENABLE;
-+	if (continuous)
-+		set |=3D MPC52xx_GPT_MODE_CONTINUOUS;
-+
-+	if (mpc52xx_gpt_calc_counter_input(period, (u64)gpt->ipb_freq,
-+					   &counter_reg) !=3D 0)
-+		return -EINVAL;
-+
- 	/* Set and enable the timer */
- 	spin_lock_irqsave(&gpt->lock, flags);
--	out_be32(&gpt->regs->count, prescale << 16 | clocks);
-+	out_be32(&gpt->regs->count, counter_reg);
- 	clrsetbits_be32(&gpt->regs->mode, clear, set);
- 	spin_unlock_irqrestore(&gpt->lock, flags);
-=20
-@@ -437,12 +479,175 @@ int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv =
-*gpt, int period,
- }
- EXPORT_SYMBOL(mpc52xx_gpt_start_timer);
-=20
--void mpc52xx_gpt_stop_timer(struct mpc52xx_gpt_priv *gpt)
-+/**
-+ * mpc52xx_gpt_timer_period - Return the timer period in nanoseconds
-+ * Note: reads the timer config directly from the hardware
-+ */
-+u64 mpc52xx_gpt_timer_period(struct mpc52xx_gpt_priv *gpt)
-+{
-+	u64 period;
-+	u32 prescale;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gpt->lock, flags);
-+	period =3D in_be32(&gpt->regs->count);
-+	spin_unlock_irqrestore(&gpt->lock, flags);
-+
-+	prescale =3D period >> 16;
-+	period &=3D 0xffff;
-+	if (prescale =3D=3D 0)
-+		prescale =3D 0x10000;
-+	period =3D period * (u64) prescale * NS_PER_SEC;
-+	do_div(period, (u64)gpt->ipb_freq);
-+	return period;
-+}
-+EXPORT_SYMBOL(mpc52xx_gpt_timer_period);
-+
-+int mpc52xx_gpt_stop_timer(struct mpc52xx_gpt_priv *gpt)
+-/* helper to calculate timeout in timer counts */
+-static void mpc5200_wdt_set_timeout(struct mpc5200_wdt *wdt, int timeout)
+-{
+-	/* use biggest prescaler of 64k */
+-	wdt->count =3D (wdt->ipb_freq + 0xffff) / 0x10000 * timeout;
+-
+-	if (wdt->count > 0xffff)
+-		wdt->count =3D 0xffff;
+-}
+-/* return timeout in seconds (calculated from timer count) */
+-static int mpc5200_wdt_get_timeout(struct mpc5200_wdt *wdt)
+-{
+-	return wdt->count * 0x10000 / wdt->ipb_freq;
+-}
+-
+-
+-/* watchdog operations */
+-static int mpc5200_wdt_start(struct mpc5200_wdt *wdt)
+-{
+-	spin_lock(&wdt->io_lock);
+-	/* disable */
+-	out_be32(&wdt->regs->mode, 0);
+-	/* set timeout, with maximum prescaler */
+-	out_be32(&wdt->regs->count, 0x0 | wdt->count);
+-	/* enable watchdog */
+-	out_be32(&wdt->regs->mode, GPT_MODE_CE | GPT_MODE_WDT |
+-						GPT_MODE_MS_TIMER);
+-	spin_unlock(&wdt->io_lock);
+-
+-	return 0;
+-}
+-static int mpc5200_wdt_ping(struct mpc5200_wdt *wdt)
+-{
+-	spin_lock(&wdt->io_lock);
+-	/* writing A5 to OCPW resets the watchdog */
+-	out_be32(&wdt->regs->mode, 0xA5000000 |
+-				(0xffffff & in_be32(&wdt->regs->mode)));
+-	spin_unlock(&wdt->io_lock);
+-	return 0;
+-}
+-static int mpc5200_wdt_stop(struct mpc5200_wdt *wdt)
+-{
+-	spin_lock(&wdt->io_lock);
+-	/* disable */
+-	out_be32(&wdt->regs->mode, 0);
+-	spin_unlock(&wdt->io_lock);
+-	return 0;
+-}
+-
+-
+ /* file operations */
+ static ssize_t mpc5200_wdt_write(struct file *file, const char __user *dat=
+a,
+-		size_t len, loff_t *ppos)
++				 size_t len, loff_t *ppos)
  {
-+	unsigned long flags;
-+
-+	/* reject the operation if the timer is used as watchdog (gpt 0 only) */
-+	spin_lock_irqsave(&gpt->lock, flags);
-+#if defined(HAVE_MPC5200_WDT)
-+	if ((gpt->wdt_mode & MPC52xx_GPT_IS_WDT)) {
-+		spin_unlock_irqrestore(&gpt->lock, flags);
-+		return -EBUSY;
-+	}
-+#endif
-+
- 	clrbits32(&gpt->regs->mode, MPC52xx_GPT_MODE_COUNTER_ENABLE);
-+	spin_unlock_irqrestore(&gpt->lock, flags);
-+	return 0;
+ 	struct mpc5200_wdt *wdt =3D file->private_data;
+-	mpc5200_wdt_ping(wdt);
++	mpc52xx_gpt_wdt_ping(wdt->timer);
+ 	return 0;
  }
- EXPORT_SYMBOL(mpc52xx_gpt_stop_timer);
++
+ static struct watchdog_info mpc5200_wdt_info =3D {
+ 	.options	=3D WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING,
+-	.identity	=3D "mpc5200 watchdog on GPT0",
++	.identity	=3D WDT_IDENTITY,
+ };
++
+ static long mpc5200_wdt_ioctl(struct file *file, unsigned int cmd,
+-							unsigned long arg)
++			      unsigned long arg)
+ {
+ 	struct mpc5200_wdt *wdt =3D file->private_data;
+ 	int __user *data =3D (int __user *)arg;
+ 	int timeout;
++	u64 real_timeout;
+ 	int ret =3D 0;
 =20
-+#if defined(HAVE_MPC5200_WDT)
-+/**
-+ * mpc52xx_gpt_wdt_probe - Find the wdt devide in the gpt list
-+ */
-+struct mpc52xx_gpt_priv *mpc52xx_gpt_wdt_probe(void)
-+{
-+	struct list_head *pos;
-+	struct mpc52xx_gpt_priv *this_gpt =3D NULL;
-+
-+	/* find the wdt device in our list */
-+	mutex_lock(&mpc52xx_gpt_list_mutex);
-+	list_for_each(pos, &mpc52xx_gpt_list) {
-+		this_gpt =3D container_of(pos, struct mpc52xx_gpt_priv, list);
-+		if ((this_gpt->wdt_mode & MPC52xx_GPT_CAN_WDT)) {
-+			mutex_unlock(&mpc52xx_gpt_list_mutex);
-+			return this_gpt;
-+		}
-+	}
-+	mutex_unlock(&mpc52xx_gpt_list_mutex);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(mpc52xx_gpt_wdt_probe);
-+
-+/**
-+ * mpc52xx_gpt_wdt_start - Start the passed timer as watchdog
-+ * @gpt_wdt: the watchdog gpt
-+ * @wdt_timeout: watchdog timeout in seconds
-+ *
-+ * Note: the function does not protect itself form being called without a
-+ * timer or with a timer which cannot function as wdt.
-+ */
-+int mpc52xx_gpt_wdt_start(struct mpc52xx_gpt_priv *gpt_wdt, int wdt_timeou=
-t)
-+{
-+	u32 clear, set;
-+	u32 counter_reg;
-+	unsigned long flags;
-+
-+	/* calculate register settings */
-+	if (mpc52xx_gpt_calc_counter_input((u64) wdt_timeout * NS_PER_SEC,
-+					   (u64)gpt_wdt->ipb_freq,
-+					   &counter_reg) !=3D 0) {
-+		dev_info(gpt_wdt->dev, "bad timeout value %d\n", wdt_timeout);
-+		return -EINVAL;
-+	}
-+
-+	clear =3D MPC52xx_GPT_MODE_MS_MASK | MPC52xx_GPT_MODE_CONTINUOUS |
-+		MPC52xx_GPT_MODE_IRQ_EN;
-+	set =3D MPC52xx_GPT_MODE_MS_GPIO | MPC52xx_GPT_MODE_COUNTER_ENABLE |
-+		MPC52xx_GPT_MODE_WDT_EN;
-+
-+	/* set the time-out and launch as wdt */
-+	spin_lock_irqsave(&gpt_wdt->lock, flags);
-+	out_be32(&gpt_wdt->regs->count, counter_reg);
-+	clrsetbits_be32(&gpt_wdt->regs->mode, clear, set);
-+	gpt_wdt->wdt_mode |=3D MPC52xx_GPT_IS_WDT;
-+	spin_unlock_irqrestore(&gpt_wdt->lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(mpc52xx_gpt_wdt_start);
-+
-+/**
-+ * mpc52xx_gpt_wdt_ping - Toggle the keep-alive signal of the watchdog
-+ * @gpt_wdt: the watchdog gpt
-+ *
-+ * Note: the function does not protect itself form being called without a
-+ * timer or with a timer which cannot function as wdt.
-+ */
-+int mpc52xx_gpt_wdt_ping(struct mpc52xx_gpt_priv *gpt_wdt)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gpt_wdt->lock, flags);
-+	out_8((u8 *) &gpt_wdt->regs->mode, MPC52xx_GPT_MODE_WDT_PING);
-+	spin_unlock_irqrestore(&gpt_wdt->lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(mpc52xx_gpt_wdt_ping);
-+
-+/**
-+ * mpc52xx_gpt_wdt_release - Release the watchdog so it can be used as gpt
-+ * @gpt_wdt: the watchdog gpt
-+ *
-+ * Note: Stops the watchdog if CONFIG_WATCHDOG_NOWAYOUT is not defined.
-+ * the function does not protect itself form being called without a
-+ * timer or with a timer which cannot function as wdt.
-+ */
-+int mpc52xx_gpt_wdt_release(struct mpc52xx_gpt_priv *gpt_wdt)
-+{
-+#if !defined(CONFIG_WATCHDOG_NOWAYOUT)
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gpt_wdt->lock, flags);
-+	clrbits32(&gpt_wdt->regs->mode,
-+		  MPC52xx_GPT_MODE_COUNTER_ENABLE | MPC52xx_GPT_MODE_WDT_EN);
-+	gpt_wdt->wdt_mode &=3D ~MPC52xx_GPT_IS_WDT;
-+	spin_unlock_irqrestore(&gpt_wdt->lock, flags);
-+#endif
-+	return 0;
-+}
-+EXPORT_SYMBOL(mpc52xx_gpt_wdt_release);
-+
-+#if !defined(CONFIG_WATCHDOG_NOWAYOUT)
-+/**
-+ * mpc52xx_gpt_wdt_stop - Stop the watchdog
-+ * @gpt_wdt: the watchdog gpt
-+ *
-+ * Note: the function does not protect itself form being called without a
-+ * timer or with a timer which cannot function as wdt.
-+ */
-+int mpc52xx_gpt_wdt_stop(struct mpc52xx_gpt_priv *gpt_wdt)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gpt_wdt->lock, flags);
-+	clrbits32(&gpt_wdt->regs->mode,
-+		  MPC52xx_GPT_MODE_COUNTER_ENABLE | MPC52xx_GPT_MODE_WDT_EN);
-+	gpt_wdt->wdt_mode &=3D ~MPC52xx_GPT_IS_WDT;
-+	spin_unlock_irqrestore(&gpt_wdt->lock, flags);
-+	return 0;
-+}
-+EXPORT_SYMBOL(mpc52xx_gpt_wdt_stop);
-+#endif  /*  CONFIG_WATCHDOG_NOWAYOUT  */
-+#endif  /*  HAVE_MPC5200_WDT  */
-+
- /* ---------------------------------------------------------------------
-  * of_platform bus binding code
-  */
-@@ -473,6 +678,30 @@ static int __devinit mpc52xx_gpt_probe(struct of_devic=
-e *ofdev,
- 	list_add(&gpt->list, &mpc52xx_gpt_list);
- 	mutex_unlock(&mpc52xx_gpt_list_mutex);
+ 	switch (cmd) {
+ 	case WDIOC_GETSUPPORT:
+ 		ret =3D copy_to_user(data, &mpc5200_wdt_info,
+-						sizeof(mpc5200_wdt_info));
++				   sizeof(mpc5200_wdt_info));
+ 		if (ret)
+ 			ret =3D -EFAULT;
+ 		break;
+@@ -116,19 +60,23 @@ static long mpc5200_wdt_ioctl(struct file *file, unsig=
+ned int cmd,
+ 		break;
 =20
-+#if defined(HAVE_MPC5200_WDT)
-+	/* check if this device could be a watchdog */
-+	if (of_get_property(ofdev->node, "fsl,has-wdt", NULL) ||
-+	    of_get_property(ofdev->node, "has-wdt", NULL)) {
-+		const u32 *on_boot_wdt;
+ 	case WDIOC_KEEPALIVE:
+-		mpc5200_wdt_ping(wdt);
++		mpc52xx_gpt_wdt_ping(wdt->timer);
+ 		break;
+=20
+ 	case WDIOC_SETTIMEOUT:
+ 		ret =3D get_user(timeout, data);
+ 		if (ret)
+ 			break;
+-		mpc5200_wdt_set_timeout(wdt, timeout);
+-		mpc5200_wdt_start(wdt);
++		ret =3D mpc52xx_gpt_wdt_start(wdt->timer, timeout);
++		if (ret)
++			break;
++		wdt->timeout =3D timeout;
+ 		/* fall through and return the timeout */
+=20
+ 	case WDIOC_GETTIMEOUT:
+-		timeout =3D mpc5200_wdt_get_timeout(wdt);
++		real_timeout =3D mpc52xx_gpt_timer_period(wdt->timer);
++		do_div(real_timeout, 1000000000);
++		timeout =3D (int) real_timeout;
+ 		ret =3D put_user(timeout, data);
+ 		break;
+=20
+@@ -140,154 +88,90 @@ static long mpc5200_wdt_ioctl(struct file *file, unsi=
+gned int cmd,
+=20
+ static int mpc5200_wdt_open(struct inode *inode, struct file *file)
+ {
++	int ret;
 +
-+		gpt->wdt_mode =3D MPC52xx_GPT_CAN_WDT;
-+
-+		/* check if the device shall be used as on-boot watchdog */
-+		on_boot_wdt =3D of_get_property(ofdev->node, "wdt,on-boot", NULL);
-+		if (on_boot_wdt) {
-+			gpt->wdt_mode |=3D MPC52xx_GPT_IS_WDT;
-+			if (*on_boot_wdt > 0 &&
-+			    mpc52xx_gpt_wdt_start(gpt, *on_boot_wdt) =3D=3D 0)
-+				dev_info(gpt->dev,
-+					 "running as wdt, timeout %us\n",
-+					 *on_boot_wdt);
-+			else
-+				dev_info(gpt->dev, "reserved as wdt\n");
-+		} else
-+			dev_info(gpt->dev, "can function as wdt\n");
+ 	/* /dev/watchdog can only be opened once */
+ 	if (test_and_set_bit(0, &is_active))
+ 		return -EBUSY;
+=20
+ 	/* Set and activate the watchdog */
+-	mpc5200_wdt_set_timeout(wdt_global, 30);
+-	mpc5200_wdt_start(wdt_global);
++	ret =3D mpc52xx_gpt_wdt_start(wdt_global->timer, 30);
++	if (ret) {
++		clear_bit(0, &is_active);
++		return ret;
 +	}
-+#endif
++	wdt_global->timeout =3D 30;
 +
+ 	file->private_data =3D wdt_global;
+ 	return nonseekable_open(inode, file);
+ }
++
+ static int mpc5200_wdt_release(struct inode *inode, struct file *file)
+ {
+-#if WATCHDOG_NOWAYOUT =3D=3D 0
++#if !defined(CONFIG_WATCHDOG_NOWAYOUT)
+ 	struct mpc5200_wdt *wdt =3D file->private_data;
+-	mpc5200_wdt_stop(wdt);
+-	wdt->count =3D 0;		/* =3D=3D disabled */
++	mpc52xx_gpt_wdt_stop(wdt->timer);
++	wdt->timeout =3D 0;		/* =3D=3D disabled */
+ #endif
+ 	clear_bit(0, &is_active);
  	return 0;
  }
 =20
+ static const struct file_operations mpc5200_wdt_fops =3D {
+-	.owner	=3D THIS_MODULE,
+-	.write	=3D mpc5200_wdt_write,
++	.owner		=3D THIS_MODULE,
++	.llseek		=3D no_llseek,
++	.write		=3D mpc5200_wdt_write,
+ 	.unlocked_ioctl	=3D mpc5200_wdt_ioctl,
+-	.open	=3D mpc5200_wdt_open,
+-	.release =3D mpc5200_wdt_release,
++	.open		=3D mpc5200_wdt_open,
++	.release	=3D mpc5200_wdt_release,
++};
++
++static struct miscdevice mpc5200_wdt_miscdev =3D {
++	.minor		=3D WATCHDOG_MINOR,
++	.name		=3D "watchdog",
++	.fops		=3D &mpc5200_wdt_fops,
+ };
+=20
+ /* module operations */
+-static int mpc5200_wdt_probe(struct of_device *op,
+-					const struct of_device_id *match)
++static int __init mpc5200_wdt_init(void)
+ {
+-	struct mpc5200_wdt *wdt;
+ 	int err;
+-	const void *has_wdt;
+-	int size;
++	struct mpc52xx_gpt_priv *timer;
+=20
+-	has_wdt =3D of_get_property(op->node, "has-wdt", NULL);
+-	if (!has_wdt)
+-		has_wdt =3D of_get_property(op->node, "fsl,has-wdt", NULL);
+-	if (!has_wdt)
++	/* grab the watchdog-capable gpt */
++	timer =3D mpc52xx_gpt_wdt_probe();
++	if (!timer) {
++		pr_err(WDT_IDENTITY ": probing failed\n");
+ 		return -ENODEV;
++	}
+=20
+-	wdt =3D kzalloc(sizeof(*wdt), GFP_KERNEL);
+-	if (!wdt)
++	wdt_global =3D kzalloc(sizeof(struct mpc5200_wdt), GFP_KERNEL);
++	if (!wdt_global) {
++		mpc52xx_gpt_wdt_release(timer);
+ 		return -ENOMEM;
+-
+-	wdt->ipb_freq =3D mpc5xxx_get_bus_frequency(op->node);
+-
+-	err =3D of_address_to_resource(op->node, 0, &wdt->mem);
+-	if (err)
+-		goto out_free;
+-	size =3D wdt->mem.end - wdt->mem.start + 1;
+-	if (!request_mem_region(wdt->mem.start, size, "mpc5200_wdt")) {
+-		err =3D -ENODEV;
+-		goto out_free;
+-	}
+-	wdt->regs =3D ioremap(wdt->mem.start, size);
+-	if (!wdt->regs) {
+-		err =3D -ENODEV;
+-		goto out_release;
+ 	}
+-
+-	dev_set_drvdata(&op->dev, wdt);
+-	spin_lock_init(&wdt->io_lock);
+-
+-	wdt->miscdev =3D (struct miscdevice) {
+-		.minor	=3D WATCHDOG_MINOR,
+-		.name	=3D "watchdog",
+-		.fops	=3D &mpc5200_wdt_fops,
+-		.parent =3D &op->dev,
+-	};
+-	wdt_global =3D wdt;
+-	err =3D misc_register(&wdt->miscdev);
++	wdt_global->timer =3D timer;
++	err =3D misc_register(&mpc5200_wdt_miscdev);
+ 	if (!err)
+-		return 0;
+-
+-	iounmap(wdt->regs);
+-out_release:
+-	release_mem_region(wdt->mem.start, size);
+-out_free:
+-	kfree(wdt);
++		pr_info(WDT_IDENTITY ": registered\n");
++	else {
++		mpc52xx_gpt_wdt_release(timer);
++		kfree(wdt_global);
++	}
+ 	return err;
+ }
+=20
+-static int mpc5200_wdt_remove(struct of_device *op)
+-{
+-	struct mpc5200_wdt *wdt =3D dev_get_drvdata(&op->dev);
+-
+-	mpc5200_wdt_stop(wdt);
+-	misc_deregister(&wdt->miscdev);
+-	iounmap(wdt->regs);
+-	release_mem_region(wdt->mem.start, wdt->mem.end - wdt->mem.start + 1);
+-	kfree(wdt);
+-
+-	return 0;
+-}
+-static int mpc5200_wdt_suspend(struct of_device *op, pm_message_t state)
+-{
+-	struct mpc5200_wdt *wdt =3D dev_get_drvdata(&op->dev);
+-	mpc5200_wdt_stop(wdt);
+-	return 0;
+-}
+-static int mpc5200_wdt_resume(struct of_device *op)
+-{
+-	struct mpc5200_wdt *wdt =3D dev_get_drvdata(&op->dev);
+-	if (wdt->count)
+-		mpc5200_wdt_start(wdt);
+-	return 0;
+-}
+-static int mpc5200_wdt_shutdown(struct of_device *op)
+-{
+-	struct mpc5200_wdt *wdt =3D dev_get_drvdata(&op->dev);
+-	mpc5200_wdt_stop(wdt);
+-	return 0;
+-}
+-
+-static struct of_device_id mpc5200_wdt_match[] =3D {
+-	{ .compatible =3D "mpc5200-gpt", },
+-	{ .compatible =3D "fsl,mpc5200-gpt", },
+-	{},
+-};
+-static struct of_platform_driver mpc5200_wdt_driver =3D {
+-	.owner		=3D THIS_MODULE,
+-	.name		=3D "mpc5200-gpt-wdt",
+-	.match_table	=3D mpc5200_wdt_match,
+-	.probe		=3D mpc5200_wdt_probe,
+-	.remove		=3D mpc5200_wdt_remove,
+-	.suspend	=3D mpc5200_wdt_suspend,
+-	.resume		=3D mpc5200_wdt_resume,
+-	.shutdown	=3D mpc5200_wdt_shutdown,
+-};
+-
+-
+-static int __init mpc5200_wdt_init(void)
+-{
+-	return of_register_platform_driver(&mpc5200_wdt_driver);
+-}
+-
+ static void __exit mpc5200_wdt_exit(void)
+ {
+-	of_unregister_platform_driver(&mpc5200_wdt_driver);
++	mpc52xx_gpt_wdt_release(wdt_global->timer);
++	misc_deregister(&mpc5200_wdt_miscdev);
++	kfree(wdt_global);
+ }
+=20
+ module_init(mpc5200_wdt_init);
+ module_exit(mpc5200_wdt_exit);
+=20
+-MODULE_AUTHOR("Domen Puncer <domen.puncer@telargo.com>");
++MODULE_AUTHOR("Domen Puncer <domen.puncer@telargo.com>, "
++	      "Albrecht Dre=DF <albrecht.dress@arcor.de>");
+ MODULE_LICENSE("Dual BSD/GPL");
+ MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
