@@ -1,31 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5D2A0B7B69
+Return-Path: <Ravi.Shekhar@Lntemsys.com>
+Received: from mail171.messagelabs.com (mail171.messagelabs.com
+	[216.82.253.243]) by ozlabs.org (Postfix) with SMTP id 0580AB7B68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 10 Nov 2009 12:15:53 +1100 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e3.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAA17QQL019876
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2009 20:07:26 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nAA1Fo3E116610
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2009 20:15:50 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nAA1Fnlu003632
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Nov 2009 20:15:49 -0500
-Date: Mon, 9 Nov 2009 20:15:47 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Subject: Re: Invalidate Data Cache from User Space
-Message-ID: <20091110011547.GD30489@zod.rchland.ibm.com>
-References: <BB99A6BA28709744BF22A68E6D7EB51F03310AFEC3@midas.usurf.usu.edu>
+	Tue, 10 Nov 2009 14:37:56 +1100 (EST)
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Fw: Help with SPI node
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BB99A6BA28709744BF22A68E6D7EB51F03310AFEC3@midas.usurf.usu.edu>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Message-ID: <OF627E4B93.73CDD8FE-ON6525766A.0013CA01-6525766A.0013C6E5@lntemsys.com>
+From: Ravi Shekhar <Ravi.Shekhar@Lntemsys.com>
+Date: Tue, 10 Nov 2009 09:06:32 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 0013C6C66525766A_="
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,13 +20,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 09, 2009 at 11:10:42AM -0700, Jonathan Haws wrote:
->All,
->What is happening is the dcbi instruction will fail.  I get an Illegal Instruction message on the console and my program exits.
->
->Is there a reason I cannot call dbci from a user space application, or is there something wrong in my code?  Even better, is there a working and tested function that I can call from user space to invalidate a portion of the data cache?
+This is a multipart message in MIME format.
+--=_alternative 0013C6C66525766A_=
+Content-Type: text/plain; charset="US-ASCII"
 
-dcbi is a priviledged instruction on 4xx.  You can only execute it from
-supervisor mode (kernel).
+ I'm attempting to get SPI to work on my embedded design
+ that is based on the mpc8313erbd reference board wiht a
+ 2.6.27 kernel.  I cannot open the SPI device.
+ Tracing through the kernel code, it looks like the device is
+ not being found in the DTB file.  However there is a
+ SPI node in there already described.  Our boards is a
+ SPI master, and the device we will attach is a SPI
+ slave.  Could someone elaborate on what is needed in
+ the DTS file to have our SPI driver work and respond to an
+ open() call?
 
-josh
+
+Thanks 
+  -Ravi
+--=_alternative 0013C6C66525766A_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br>
+<br><font size=2><tt>&nbsp;I'm attempting to get SPI to work on my embedded
+design<br>
+&nbsp;that is based on the mpc8313erbd reference board wiht a<br>
+&nbsp;2.6.27 kernel. &nbsp;I cannot open the SPI device.<br>
+&nbsp;Tracing through the kernel code, it looks like the device is<br>
+&nbsp;not being found in the DTB file. &nbsp;However there is a<br>
+&nbsp;SPI node in there already described. &nbsp;Our boards is a<br>
+ SPI master, and the device we will attach is a SPI<br>
+&nbsp;slave. &nbsp;Could someone elaborate on what is needed in<br>
+&nbsp;the DTS file to have our SPI driver work and respond to an<br>
+&nbsp;open() call?<br>
+</tt></font>
+<br>
+<br><font size=2><tt>Thanks </tt></font>
+<br><font size=2><tt>&nbsp; -Ravi</tt></font>
+--=_alternative 0013C6C66525766A_=--
