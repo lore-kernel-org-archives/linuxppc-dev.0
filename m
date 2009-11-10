@@ -1,22 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
-	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id A8D97B83FA
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 09:03:05 +1100 (EST)
-Received: by ywh37 with SMTP id 37so479425ywh.17
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Nov 2009 14:03:03 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1257884778.14374.5@antares>
-References: <fa686aa40911101159y7bef3f9bte74e9aeb5c6e864b@mail.gmail.com>
-	<1257884778.14374.5@antares>
+In-Reply-To: <4AF9CE2F.7080502@austin.ibm.com>
+References: <20091105073728.10460.6061.stgit@angua>
+	<20091105074656.10460.29333.stgit@angua>
+	<4AF9CE2F.7080502@austin.ibm.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 10 Nov 2009 14:07:17 -0700
-Message-ID: <fa686aa40911101307p12bba31s491ef1d8812ca033@mail.gmail.com>
-Subject: Re: [PATCH 3/3] mpc52xx/wdt: WDT uses GPT api
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Date: Tue, 10 Nov 2009 14:41:47 -0700
+Message-ID: <fa686aa40911101341n3096fe62rc4919f9142a3a19a@mail.gmail.com>
+Subject: Re: [PATCH 09/11] of: merge prom_{add,remove,modify}_property
+To: Nathan Fontenot <nfont@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss@lists.ozlabs.org, Wim Van Sebroeck <wim@iguana.be>
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,65 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 10, 2009 at 1:26 PM, Albrecht Dre=DF <albrecht.dress@arcor.de> =
-wrote:
-> Hi Grant:
->
-> Am 10.11.09 20:59 schrieb(en) Grant Likely:
+On Tue, Nov 10, 2009 at 1:33 PM, Nathan Fontenot <nfont@austin.ibm.com> wro=
+te:
+> Grant Likely wrote:
 >>
->> On Tue, Nov 10, 2009 at 12:43 PM, Albrecht Dre=DF <albrecht.dress@arcor.=
-de>
->> wrote:
->> > Use the MPC5200 GPT api for the WDT which drastically simplifies this
->> > file.
->> >
->> > Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
->> > ---
->> >
->> > =A0drivers/watchdog/mpc5200_wdt.c | =A0246
->> > +++++++++++-----------------------------
->> > =A01 files changed, 65 insertions(+), 181 deletions(-)
+>> Merge common code between PowerPC and MicroBlaze
 >>
+>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>> ---
 >>
->> Can the WDT functionality just be merged entirely into
->> arch/powerpc/platforms/52xx/mpc52xx_gpt.c, eliminating the need for
->> this file entirely? =A0I think I'd rather have all the GPT "built in"
->> behaviour handled by a single driver.
+>> =A0arch/microblaze/kernel/prom.c | =A0113
+>> ----------------------------------------
+>> =A0arch/powerpc/kernel/prom.c =A0 =A0| =A0114
+>> ----------------------------------------
+>> =A0drivers/of/base.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0116
+>> +++++++++++++++++++++++++++++++++++++++++
+>> =A03 files changed, 116 insertions(+), 227 deletions(-)
+>>
 >
-> I also thought about it, as it has IMHO the cleaner code, and it would ha=
-ve
-> the extra benefit that the gpt-wdt api doesn't need to be public.
->
-> However, the reasons I hesitated to do so are:
-> - I don't want to remove a file someone else wrote (even it doesn't work)=
-;
+> Should the prom_{add,remove,update}_property routines belong in base.c or
+> of_dynamic.c (patches coming soon for of_dynamic.c)?
+> My original patch set put these routines in of_dynamic.c and renamed
+> them to of_{add,remove,update}_property since they are part of the of
+> code.
 
-Shouldn't be a problem, and I'll handle the fallout if it is.
+First stage for me is to go through the rather mechanical process of
+merging common code.  As much as possible I'm not changing any APIs,
+and I don't have enough background on the of_dynamic stuff to make a
+call about where it should ultimately live.  The goal of the first
+stage is simply to eliminate duplicated code.  Rename of functions to
+of_ is potentially risky, so I'm deferring those changes until after
+all the code is merged.
 
-> - WDT code is shifted from drivers/watchdog to arch/powerpc/platforms/52x=
-x
-> which might not be the "logical" place from the directory layout's pov;
+Feel free to make changes on top of what I'm doing.  Keep each one
+small to reduce the risk of conflict.  I'll pick up the ones that make
+sense.
 
-There is precedence of this in the past, particularly on arch or
-platform specific hardware drivers and multifunction devices.  (Heck,
-that's almost entirely what arch/powerpc/sysdev is).  I'm not
-concerned.
-
-> - a file living in arch/powerpc/platforms/52xx depends upon config option=
-s
-> set from drivers/watchdog/Kconfig which may be confusing.
-
-I'm not concerned about this either.
-
-> You see these are more political/cosmetical questions, so I would prefer =
-to
-> leave the decision to the maintainers (i.e. you and Wim). =A0Preparing a =
-fully
-> merged driver is actually a matter of minutes!
-
-Do it.  I'll champion getting it in.  Wim, do you have any issues with this=
-?
-
+Cheers,
 g.
 
 --=20
