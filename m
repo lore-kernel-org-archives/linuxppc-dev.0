@@ -1,12 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 72CB3B7E69
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 11:11:08 +1100 (EST)
-Date: Wed, 11 Nov 2009 03:11:07 +0300
+	by ozlabs.org (Postfix) with ESMTP id 31588B7FCB
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 11:11:10 +1100 (EST)
+Date: Wed, 11 Nov 2009 03:11:08 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Miller <davem@davemloft.net>
-Subject: [PATCH 4/6] gianfar: Fix thinko in gfar_set_rx_stash_index()
-Message-ID: <20091111001107.GD8817@oksana.dev.rtsoft.ru>
+Subject: [PATCH 5/6] gianfar: Fix race between gfar_error() and
+	gfar_start_xmit()
+Message-ID: <20091111001108.GE8817@oksana.dev.rtsoft.ru>
 References: <20091111001036.GA28576@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -25,26 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We obviously want to write a modified 'temp' value back to the
-register, not the saved IRQ flags.
+gfar_error() can arrive at the middle of gfar_start_xmit() processing,
+and so it can trigger transfers of BDs that we don't yet expect to
+be transmitted.
+
+Fix this by locking the tx queues in gfar_error().
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/net/gianfar_sysfs.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/net/gianfar.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/gianfar_sysfs.c b/drivers/net/gianfar_sysfs.c
-index 3724835..b31c9c8 100644
---- a/drivers/net/gianfar_sysfs.c
-+++ b/drivers/net/gianfar_sysfs.c
-@@ -186,7 +186,7 @@ static ssize_t gfar_set_rx_stash_index(struct device *dev,
- 	temp = gfar_read(&regs->attreli);
- 	temp &= ~ATTRELI_EI_MASK;
- 	temp |= ATTRELI_EI(index);
--	gfar_write(&regs->attreli, flags);
-+	gfar_write(&regs->attreli, temp);
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index a5b0038..fde430a 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -2943,14 +2943,22 @@ static irqreturn_t gfar_error(int irq, void *grp_id)
+ 		if (events & IEVENT_CRL)
+ 			dev->stats.tx_aborted_errors++;
+ 		if (events & IEVENT_XFUN) {
++			unsigned long flags;
++
+ 			if (netif_msg_tx_err(priv))
+ 				printk(KERN_DEBUG "%s: TX FIFO underrun, "
+ 				       "packet dropped.\n", dev->name);
+ 			dev->stats.tx_dropped++;
+ 			priv->extra_stats.tx_underrun++;
  
- out:
- 	unlock_rx_qs(priv);
++			local_irq_save(flags);
++			lock_tx_qs(priv);
++
+ 			/* Reactivate the Tx Queues */
+ 			gfar_write(&regs->tstat, gfargrp->tstat);
++
++			unlock_tx_qs(priv);
++			local_irq_restore(flags);
+ 		}
+ 		if (netif_msg_tx_err(priv))
+ 			printk(KERN_DEBUG "%s: Transmit Error\n", dev->name);
 -- 
 1.6.3.3
