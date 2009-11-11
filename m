@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id B8D92B7B3E
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 11:11:04 +1100 (EST)
-Date: Wed, 11 Nov 2009 03:11:03 +0300
+	by ozlabs.org (Postfix) with ESMTP id 8AF8DB7D06
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 11:11:06 +1100 (EST)
+Date: Wed, 11 Nov 2009 03:11:05 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Miller <davem@davemloft.net>
-Subject: [PATCH 2/6] gianfar: Remove 'Interrupt problem!' warning
-Message-ID: <20091111001103.GB8817@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/6] gianfar: Fix build with CONFIG_PM=y
+Message-ID: <20091111001105.GC8817@oksana.dev.rtsoft.ru>
 References: <20091111001036.GA28576@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -25,25 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It is OK to poll with disabled IRQs, so remove the warning.
+commit fba4ed030cfae7efdb6b79a57b0c5a9d72c9 ("gianfar: Add Multiple
+Queue Support") introduced the following build failure:
+
+  CC      gianfar.o
+gianfar.c: In function 'gfar_restore':
+gianfar.c:1249: error: request for member 'napi' in something not a structure or union
+
+This patch fixes the issue.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/net/gianfar.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/net/gianfar.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 197b358..79c28f5 100644
+index 79c28f5..a5b0038 100644
 --- a/drivers/net/gianfar.c
 +++ b/drivers/net/gianfar.c
-@@ -2504,8 +2504,6 @@ int gfar_clean_rx_ring(struct gfar_priv_rx_q *rx_queue, int rx_work_limit)
- 				skb_put(skb, pkt_len);
- 				dev->stats.rx_bytes += pkt_len;
+@@ -1246,7 +1246,7 @@ static int gfar_restore(struct device *dev)
+ 		phy_start(priv->phydev);
  
--				if (in_irq() || irqs_disabled())
--					printk("Interrupt problem!\n");
- 				gfar_process_frame(dev, skb, amount_pull);
+ 	netif_device_attach(ndev);
+-	napi_enable(&priv->gfargrp.napi);
++	enable_napi(priv);
  
- 			} else {
+ 	return 0;
+ }
 -- 
 1.6.3.3
