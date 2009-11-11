@@ -1,16 +1,28 @@
-Return-Path: <richard.rojfors@mocean-labs.com>
-Received: from av8-2-sn3.vrr.skanova.net (av8-2-sn3.vrr.skanova.net
-	[81.228.9.184]) by ozlabs.org (Postfix) with ESMTP id C36ACB7BC2
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 03:38:10 +1100 (EST)
-Message-ID: <4AFAE870.7080308@mocean-labs.com>
-Date: Wed, 11 Nov 2009 17:38:08 +0100
-From: =?ISO-8859-1?Q?Richard_R=F6jfors?= <richard.rojfors@mocean-labs.com>
+Return-Path: <broonie@opensource.wolfsonmicro.com>
+Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
+	[80.75.67.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B9BFCB6F2B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 Nov 2009 05:37:59 +1100 (EST)
+Date: Wed, 11 Nov 2009 18:37:53 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [alsa-devel] [PATCH 2/6] ASoC/mpc5200: get rid of the appl_ptr
+	tracking nonsense
+Message-ID: <20091111183753.GA31815@rakim.wolfsonmicro.main>
+References: <20091107081631.18908.82921.stgit@angua>
+	<20091107083358.18908.10635.stgit@angua>
+	<9e4733910911070451y28073dbeke6ced6246f5a5c24@mail.gmail.com>
+	<fa686aa40911071051y3cf63e55ibe7fbc65c30bd15e@mail.gmail.com>
+	<20091107201233.GC31789@sirena.org.uk>
+	<9e4733910911110838w6010cf3atcfcd30c85f0764a1@mail.gmail.com>
 MIME-Version: 1.0
-To: spi-devel-general@lists.sourceforge.net
-Subject: [PATCH v2] xilinx_spi: Add the platform driver to the Kconfig
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	dbrownell@users.sourceforge.net, John Linn <John.Linn@xilinx.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910911110838w6010cf3atcfcd30c85f0764a1@mail.gmail.com>
+Cc: John Bonesio <bones@secretlab.ca>, alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org, lrg@slimlogic.co.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,39 +32,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the xilinx_spi_pltfm to the SPI Kconfig and Makefile.
+On Wed, Nov 11, 2009 at 11:38:06AM -0500, Jon Smirl wrote:
 
-The xilinx_spi_pltfm was added in a previous patchset.
+> There are two solutions:
+> 1) tell me where the end of the valid data is. That allows me to
+> program the hardware to not enqueue the invalid data.
+> 2) For batched hardware, pad an extra period with silence after the
+> end of the stream. (that what zeroing the buffer before handing it
+> back to ALSA
 
-Signed-off-by: Richard Röjfors <richard.rojfors@mocean-labs.com>
----
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index b956284..d1f8ee3 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -252,6 +252,13 @@ config SPI_XILINX_OF
- 	help
- 	  This is the OF driver for the SPI controller IP from the Xilinx EDK.
+You've also got the option of lying about where the hardware is in some
+form in order to give you more headroom.
 
-+config SPI_XILINX_PLTFM
-+	tristate "Xilinx SPI controller platform device"
-+	depends on SPI_XILINX
-+	help
-+	  This is the platform driver for the SPI controller IP
-+	  from the Xilinx EDK.
-+
- #
- # Add new SPI master controllers in alphabetical order above this line
- #
-diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
-index 97dee8f..d8b0e4c 100644
---- a/drivers/spi/Makefile
-+++ b/drivers/spi/Makefile
-@@ -32,6 +32,7 @@ obj-$(CONFIG_SPI_S3C24XX)		+= spi_s3c24xx.o
- obj-$(CONFIG_SPI_TXX9)			+= spi_txx9.o
- obj-$(CONFIG_SPI_XILINX)		+= xilinx_spi.o
- obj-$(CONFIG_SPI_XILINX_OF)		+= xilinx_spi_of.o
-+obj-$(CONFIG_SPI_XILINX_PLTFM)		+= xilinx_spi_pltfm.o
- obj-$(CONFIG_SPI_SH_SCI)		+= spi_sh_sci.o
- obj-$(CONFIG_SPI_STMP3XXX)		+= spi_stmp.o
- # 	... add above this line ...
+I'm not sure what you mean by "batched hardware" here.
+
+> I believe this race is present in all ALSA drivers.  It's just a lot
+> harder to hit on different hardware. For example to hit it on Intel
+> HDA which is non-batched hardware, the song would need to end right at
+> the end of a period. Then the interrupt latency would need to be bad
+> enough that some invalid data got played. But x86 CPUs are very fast
+> so it is rare for the interrupt latency to be bad enough that the
+> stream doesn't get stopped in time.
+
+The potential is there for this to happen on any hardware, yes.   On the
+other hand, it's not been a pressing issue elswhere - including on
+things like older ARM systems which aren't exactly noted for their
+snappy performance.  It really does sound like there's something special
+going on with these systems that's at least somewhat unique to them.
+
+> > Providing a final valid data point to the driver would possibly even
+> > make things worse since if it were used then you'd have the equivalent
+> > race where the application has initialized some data but not yet managed
+> > to update the driver to tell it it's being handed over; if the driver
+
+> That's an under run condition.
+
+Yes, of course - the issue is that this approach encourages them, making
+the system less robust if things are on the edge.  The mpc5200 seems to
+be not just on the edge but comfortably beyond it for some reason.
