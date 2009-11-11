@@ -1,23 +1,36 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id A66B9B7093
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 21:50:58 +1100 (EST)
-Date: Wed, 11 Nov 2009 11:50:38 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Luotao Fu <l.fu@pengutronix.de>
-Subject: Re: [spi-devel-general] [PATCH 3/3] mpc52xx_spi: add gpio chipselect
-Message-ID: <20091111105038.GC4234@pengutronix.de>
-References: <1257844329-20687-1-git-send-email-l.fu@pengutronix.de>
-	<1257844329-20687-2-git-send-email-l.fu@pengutronix.de>
-	<1257844329-20687-3-git-send-email-l.fu@pengutronix.de>
-	<1257844329-20687-4-git-send-email-l.fu@pengutronix.de>
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 732C3B7067
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 11 Nov 2009 23:01:47 +1100 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id nABC1l6I004018
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2009 23:01:47 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nABBwXJJ831682
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2009 22:58:33 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nABC1jNd024069
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2009 23:01:46 +1100
+Date: Wed, 11 Nov 2009 17:31:40 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nathan Fontenot <nfont@austin.ibm.com>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [PATCH v5 0/4] pseries: Add cede support for cpu-offline
+Message-ID: <20091111120140.GA11317@in.ibm.com>
+References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2/5bycvrmDh4d1IB"
-In-Reply-To: <1257844329-20687-4-git-send-email-l.fu@pengutronix.de>
-Cc: spi-devel-general@lists.sourceforge.net,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Reply-To: ego@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,202 +40,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Oct 30, 2009 at 10:52:43AM +0530, Gautham R Shenoy wrote:
+> Hi,
 
---2/5bycvrmDh4d1IB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Peter,
 
-On Tue, Nov 10, 2009 at 10:12:09AM +0100, Luotao Fu wrote:
-> This one enables the mpc52xx_spi driver for usage of user defined gpio li=
-nes
-> as chipselect. This way we can control some more spi devices than only one
->=20
-> Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
+Did you get a chance to look at this new design ?
+
+> 
+> This is version 5 of patch series that provides a framework to choose the
+> state a pseries CPU must be put to when it is offlined.
+> 
+> Previous versions can be found here:
+> Version 4: http://lkml.org/lkml/2009/10/9/59
+> Version 3: http://lkml.org/lkml/2009/9/15/164
+> Version 2: http://lkml.org/lkml/2009/8/28/102
+> Version 1: http://lkml.org/lkml/2009/8/6/236
+> 
+> Changes from the previous version include:
+> - Rebased against Nathan Fontenot's latest "pseries kernel handling of dynamic
+>   logical paritioning v4" patches found here:
+>   http://lkml.org/lkml/2009/10/21/98
+> 
+> - Added boot-time option to disable putting the offlined vcpus into an
+>   extended H_CEDE state.
+> 
+> - Addressed Ben's comments regarding the if-else sequencing in
+>   pseries_mach_cpu_die().
+> 
+> - Addition of comments for pseries_cpu_die() to distinguish it from
+>   pseries_mach_cpu_die()
+> 
+> Also,
+> 
+> - This approach addresses Peter Z's objections regarding layering
+>   violations. The user simply offlines the cpu and doesn't worry about what
+>   state the CPU should be put into. That part is automatically handled by the
+>   kernel.
+> 
+> - It does not add any additional sysfs interface instead uses the existing
+>   sysfs interface to offline CPUs.
+> 
+> - On platforms which do not have support for ceding the vcpu with a
+>   latency specifier value, the offlining mechanism defaults to the current
+>   method of calling rtas_stop_self().
+> 
+> The patchset has been tested on the available pseries platforms and it works
+> as per the expectations. I believe that the patch set is ready for inclusion.
 > ---
->  drivers/spi/mpc52xx_spi.c |   57 +++++++++++++++++++++++++++++++++++++++=
-++---
->  1 files changed, 53 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/spi/mpc52xx_spi.c b/drivers/spi/mpc52xx_spi.c
-> index 79ba678..58c2ce5 100644
-> --- a/drivers/spi/mpc52xx_spi.c
-> +++ b/drivers/spi/mpc52xx_spi.c
-> @@ -21,6 +21,7 @@
->  #include <linux/spi/mpc52xx_spi.h>
->  #include <linux/of_spi.h>
->  #include <linux/io.h>
-> +#include <linux/of_gpio.h>
->  #include <asm/time.h>
->  #include <asm/mpc52xx.h>
-> =20
-> @@ -79,7 +80,6 @@ struct mpc52xx_spi {
->  	spinlock_t lock;
->  	struct work_struct work;
-> =20
-> -
->  	/* Details of current transfer (length, and buffer pointers) */
->  	struct spi_message *message;	/* current message */
->  	struct spi_transfer *transfer;	/* current transfer */
-> @@ -89,6 +89,8 @@ struct mpc52xx_spi {
->  	u8 *rx_buf;
->  	const u8 *tx_buf;
->  	int cs_change;
-> +	int gpio_cs_count;
-> +	unsigned int *gpio_cs;
->  };
-> =20
->  /*
-> @@ -96,7 +98,13 @@ struct mpc52xx_spi {
->   */
->  static void mpc52xx_spi_chipsel(struct mpc52xx_spi *ms, int value)
->  {
-> -	out_8(ms->regs + SPI_PORTDATA, value ? 0 : 0x08);
-> +	int cs;
-> +
-> +	if (ms->gpio_cs_count > 0) {
-> +		cs =3D ms->message->spi->chip_select;
-> +		gpio_direction_output(ms->gpio_cs[cs], value);
+> 
+> Gautham R Shenoy (4):
+>       pseries: Serialize cpu hotplug operations during deactivate Vs deallocate
+>       pseries: Add code to online/offline CPUs of a DLPAR node.
+>       pSeries: Add hooks to put the CPU into an appropriate offline state
+>       pSeries: extended_cede_processor() helper function.
+> 
+> 
+>  Documentation/cpu-hotplug.txt                   |    6 +
+>  arch/powerpc/include/asm/lppaca.h               |    9 +
+>  arch/powerpc/platforms/pseries/dlpar.c          |  129 ++++++++++++++++
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c    |  182 ++++++++++++++++++++++-
+>  arch/powerpc/platforms/pseries/offline_states.h |   18 ++
+>  arch/powerpc/platforms/pseries/plpar_wrappers.h |   22 +++
+>  arch/powerpc/platforms/pseries/smp.c            |   19 ++
+>  arch/powerpc/xmon/xmon.c                        |    3 
+>  drivers/base/cpu.c                              |    2 
+>  include/linux/cpu.h                             |   13 ++
+>  10 files changed, 387 insertions(+), 16 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/pseries/offline_states.h
+> 
+> -- 
+> Thanks and Regards
+> gautham.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Use gpio_set_value() in combination with...
-
-> +	} else
-> +		out_8(ms->regs + SPI_PORTDATA, value ? 0 : 0x08);
->  }
-> =20
->  /*
-> @@ -390,8 +398,9 @@ static int __devinit mpc52xx_spi_probe(struct of_devi=
-ce *op,
->  	struct spi_master *master;
->  	struct mpc52xx_spi *ms;
->  	void __iomem *regs;
-> -	int rc;
->  	int ctrl1;
-> +	int rc, i =3D 0;
-> +	int gpio_cs;
-> =20
->  	/* MMIO registers */
->  	dev_dbg(&op->dev, "probing mpc5200 SPI device\n");
-> @@ -426,8 +435,8 @@ static int __devinit mpc52xx_spi_probe(struct of_devi=
-ce *op,
->  		rc =3D -ENOMEM;
->  		goto err_alloc;
->  	}
-> +
->  	master->bus_num =3D -1;
-> -	master->num_chipselect =3D 1;
->  	master->setup =3D mpc52xx_spi_setup;
->  	master->transfer =3D mpc52xx_spi_transfer;
->  	master->mode_bits =3D SPI_CPOL | SPI_CPHA | SPI_CS_HIGH | SPI_LSB_FIRST;
-> @@ -441,6 +450,39 @@ static int __devinit mpc52xx_spi_probe(struct of_dev=
-ice *op,
->  	ms->irq1 =3D irq_of_parse_and_map(op->node, 1);
->  	ms->state =3D mpc52xx_spi_fsmstate_idle;
->  	ms->ipb_freq =3D mpc5xxx_get_bus_frequency(op->node);
-> +	ms->gpio_cs_count =3D of_gpio_count(op->node);
-> +	if (ms->gpio_cs_count > 0) {
-> +		master->num_chipselect =3D ms->gpio_cs_count;
-> +		ms->gpio_cs =3D kmalloc(ms->gpio_cs_count * sizeof(unsigned int),
-> +				GFP_KERNEL);
-> +		if (!ms->gpio_cs) {
-> +			rc =3D -ENOMEM;
-> +			goto err_alloc;
-> +		}
-> +
-> +		for (i =3D 0; i < ms->gpio_cs_count; i++) {
-> +			gpio_cs =3D of_get_gpio(op->node, i);
-
-=2E.. with of_get_gpio_flags() to avoid initialisation jitter?
-
-> +			if (gpio_cs < 0) {
-> +				dev_err(&op->dev,
-> +					"could not parse the gpio field "
-> +					"in oftree\n");
-> +				rc =3D -ENODEV;
-> +				goto err_alloc;
-
-That should go to err_gpio and unregister the previous allocated ones.
-
-> +			}
-> +
-> +			ms->gpio_cs[i] =3D gpio_cs;
-> +			rc =3D gpio_request(ms->gpio_cs[i], dev_name(&op->dev));
-> +			if (rc) {
-> +				dev_err(&op->dev,
-> +					"can't request spi cs gpio #%d "
-> +					"on gpio line %d\n",
-> +					i, gpio_cs);
-
-Last two lines could become one.
-
-> +				goto err_gpio;
-> +			}
-> +		}
-> +	} else
-> +		master->num_chipselect =3D 1;
-> +
->  	spin_lock_init(&ms->lock);
->  	INIT_LIST_HEAD(&ms->queue);
->  	INIT_WORK(&ms->work, mpc52xx_spi_wq);
-> @@ -477,6 +519,9 @@ static int __devinit mpc52xx_spi_probe(struct of_devi=
-ce *op,
->   err_register:
->  	dev_err(&ms->master->dev, "initialization failed\n");
->  	spi_master_put(master);
-> + err_gpio:
-> +	while (i-- > 0)
-> +		gpio_free(ms->gpio_cs[i]);
->   err_alloc:
->   err_init:
->  	iounmap(regs);
-> @@ -487,10 +532,14 @@ static int __devexit mpc52xx_spi_remove(struct of_d=
-evice *op)
->  {
->  	struct spi_master *master =3D dev_get_drvdata(&op->dev);
->  	struct mpc52xx_spi *ms =3D spi_master_get_devdata(master);
-> +	int i;
-> =20
->  	free_irq(ms->irq0, ms);
->  	free_irq(ms->irq1, ms);
-> =20
-> +	for (i =3D 0; i < ms->gpio_cs_count; i++)
-> +		gpio_free(ms->gpio_cs[i]);
-> +
->  	spi_unregister_master(master);
->  	spi_master_put(master);
->  	iounmap(ms->regs);
-> --=20
-> 1.6.5.2
->=20
->=20
-> -------------------------------------------------------------------------=
------
-> Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-D=
-ay=20
-> trial. Simplify your report design, integration and deployment - and focu=
-s on=20
-> what you do best, core application coding. Discover what's new with
-> Crystal Reports now.  http://p.sf.net/sfu/bobj-july
-> _______________________________________________
-> spi-devel-general mailing list
-> spi-devel-general@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/spi-devel-general
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---2/5bycvrmDh4d1IB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkr6lv4ACgkQD27XaX1/VRvx+ACghBuRjou+tqT+RkS9WDevZYQc
-+1IAoLJJk8WpsaUyZpRGrrgfXrtmi4IX
-=UWDP
------END PGP SIGNATURE-----
-
---2/5bycvrmDh4d1IB--
+-- 
+Thanks and Regards
+gautham
