@@ -1,37 +1,20 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D9C5BB6F1E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 Nov 2009 07:03:22 +1100 (EST)
-References: <20091107081631.18908.82921.stgit@angua>
-	<20091107083358.18908.10635.stgit@angua>
-	<9e4733910911070451y28073dbeke6ced6246f5a5c24@mail.gmail.com>
-	<fa686aa40911071051y3cf63e55ibe7fbc65c30bd15e@mail.gmail.com>
-	<20091107201233.GC31789@sirena.org.uk>
-	<9e4733910911110838w6010cf3atcfcd30c85f0764a1@mail.gmail.com>
-	<20091111183753.GA31815@rakim.wolfsonmicro.main>
-	<fa686aa40911111124i12b72196xdba7000b13b3bdc@mail.gmail.com>
-	(sfid-20091111_192512_321401_1F7ED21B)
-Message-Id: <6FB97780-074F-41B7-AF78-5F4817E7DE3A@opensource.wolfsonmicro.com>
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40911111124i12b72196xdba7000b13b3bdc@mail.gmail.com>
-	(sfid-20091111_192512_321401_1F7ED21B)
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Mime-Version: 1.0 (iPhone Mail 7D11)
-Subject: Re: [alsa-devel] [PATCH 2/6] ASoC/mpc5200: get rid of the appl_ptr
-	tracking nonsense
-Date: Wed, 11 Nov 2009 20:03:22 +0000
-Cc: John Bonesio <bones@secretlab.ca>,
-	"alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
+	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 1DB69B7B60
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 07:11:37 +1100 (EST)
+Received: by yxe8 with SMTP id 8so1439658yxe.17
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 12:11:36 -0800 (PST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1980629.1257928058732.JavaMail.ngmail@webmail19.ha2.local>
+References: <1980629.1257928058732.JavaMail.ngmail@webmail19.ha2.local>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 11 Nov 2009 13:11:15 -0700
+Message-ID: <fa686aa40911111211m41197cddl451165bebed6edd8@mail.gmail.com>
+Subject: Re: [PATCH 2/3] mpc52xx/wdt: merge WDT code into the GPT
+To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org, wim@iguana.be
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,35 +24,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11 Nov 2009, at 19:24, Grant Likely <grant.likely@secretlab.ca>  
+On Wed, Nov 11, 2009 at 1:27 AM, Albrecht Dre=DF <albrecht.dress@arcor.de> =
 wrote:
-
-> On Wed, Nov 11, 2009 at 11:37 AM, Mark Brown
-> <broonie@opensource.wolfsonmicro.com> wrote:
->> On Wed, Nov 11, 2009 at 11:38:06AM -0500, Jon Smirl wrote:
->>>> Providing a final valid data point to the driver would possibly  
->>>> even
->>>> make things worse since if it were used then you'd have the  
->>>> equivalent
->>>> race where the application has initialized some data but not yet  
->>>> managed
->>>> to update the driver to tell it it's being handed over; if the  
->>>> driver
->>
->>> That's an under run condition.
->>
->> Yes, of course - the issue is that this approach encourages them,  
->> making
->> the system less robust if things are on the edge.  The mpc5200  
->> seems to
->> be not just on the edge but comfortably beyond it for some reason.
+> Hi Grant:
 >
-> I can't reproduce the issue at all as long at the dev_dbg() statement
-> in the trigger stop path is disabled.  With it enabled, I hear the
-> problem every time.  The 5200 may not be a speedy beast, but it is
-> plenty fast enough to shut down the audio stream before stale data
-> starts getting played out.
+> Thanks a lot for your comments!
+>
+>> On Tue, Nov 10, 2009 at 12:41 PM, Albrecht Dre=DF <albrecht.dress@arcor.=
+de>
+>> > +#if defined(HAVE_MPC5200_WDT)
+>> > + =A0 =A0 =A0 /* check if this device could be a watchdog */
+>> > + =A0 =A0 =A0 if (of_get_property(ofdev->node, "fsl,has-wdt", NULL) ||
+>> > + =A0 =A0 =A0 =A0 =A0 of_get_property(ofdev->node, "has-wdt", NULL)) {
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 const u32 *on_boot_wdt;
+>> > +
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpt->wdt_mode =3D MPC52xx_GPT_CAN_WDT;
+>> > +
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* check if the device shall be used as =
+on-boot watchdog
+>> */
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 on_boot_wdt =3D of_get_property(ofdev->n=
+ode, "wdt,on-boot",
+>> NULL);
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (on_boot_wdt) {
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpt->wdt_mode |=3D MPC52=
+xx_GPT_IS_WDT;
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (*on_boot_wdt > 0 &&
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc52xx_gpt_wdt_=
+start(gpt, *on_boot_wdt) =3D=3D
+>> 0)
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_info=
+(gpt->dev,
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0"running as wdt, timeout %us\n",
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0*on_boot_wdt);
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_info=
+(gpt->dev, "reserved as wdt\n");
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 } else
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_info(gpt->dev, "can =
+function as wdt\n");
+>> > + =A0 =A0 =A0 }
+>> > +#endif
+>>
+>> Ditto on the #if/endif
+>
+> I don't think it can be removed here. =A0Think about the following:
+> - user has a dtb with fsl,has-wdt and fsl,wdt-on-boot properties and
+> - disables 5200 WDT in the kernel config.
+>
+> Now the system refuses to use GPT0 as GPT, although the WDT functionality=
+ has been disabled. =A0Of course, the dts doesn't fit the kernel config now=
+, but I think we should catch this case.
 
-Yes, that does sound entirely consistent with the problem being a  
-latency issue if you're sending the dev_dbg() output to the serial  
-port. I'd be surprised if it were anything else to be honest.
+I think the behaviour should be consistent regardless of what support
+is compiled into the kernel.  If the wdt-on-boot property is set, the
+it does make sense for the kernel to never use it as a GPT.  Otherwise
+the kernel behaviour becomes subtly different in ways non-obvious to
+the user.
+
+> Actually I tried to implement your requirements from <http://lists.ozlabs=
+.org/pipermail/linuxppc-dev/2009-August/074595.html>:
+> - fsl,has-wdt indicates that the GPT can serve as WDT;
+> - any access through the wdt api to a wdt-capable gpt actually reserves i=
+t as wdt;
+> - the new of property forces reserving the wdt before any gpt api functio=
+n has chance to grab it as gpt.
+>
+> Or did I get something wrong here?
+
+No, you got it right...  Well, I can't even remember what I said
+yesterday, but this list of requirements looks sane.  :-)
+
+Cheers,
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
