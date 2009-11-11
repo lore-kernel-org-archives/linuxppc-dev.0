@@ -1,21 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 37B2DB8038
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Nov 2009 11:11:12 +1100 (EST)
-Date: Wed, 11 Nov 2009 03:11:10 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH 6/6] gianfar: Revive SKB recycling
-Message-ID: <20091111001110.GF8817@oksana.dev.rtsoft.ru>
-References: <20091111001036.GA28576@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20091111001036.GA28576@oksana.dev.rtsoft.ru>
-Cc: Jon Loeliger <jdl@jdl.com>, Kumar Gopalpet-B05799 <B05799@freescale.com>,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andy Fleming <afleming@freescale.com>,
-	Stephen Hemminger <shemminger@vyatta.com>,
-	Lennert Buytenhek <buytenh@wantstofly.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BD400B70BA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 11 Nov 2009 12:13:25 +1100 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id nAB1DFAN032195
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2009 19:13:16 -0600
+Subject: [Fwd: [PATCH] powerpc: _exception: kill the obsolete code under
+	is_global_init()]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/mixed; boundary="=-eXxL8RwtJek+BPeOlPgS"
+Date: Wed, 11 Nov 2009 12:13:15 +1100
+Message-ID: <1257901995.2140.12.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,105 +25,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Before calling gfar_clean_tx_ring() the driver grabs an irqsave
-spinlock, and then tries to recycle skbs. But since
-skb_recycle_check() returns 0 with IRQs disabled, we'll never
-recycle any skbs.
 
-It appears that gfar_clean_tx_ring() and gfar_start_xmit() are
-mostly idependent and can work in parallel, except when they
-modify num_txbdfree.
+--=-eXxL8RwtJek+BPeOlPgS
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-So we can drop the lock from most sections and thus fix the skb
-recycling.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+
+--=-eXxL8RwtJek+BPeOlPgS
+Content-Disposition: inline
+Content-Description: Forwarded message - [PATCH] powerpc: _exception: kill
+ the obsolete code under is_global_init()
+Content-Type: message/rfc822
+
+Return-Path: <linux-kernel-owner+benh=40kernel.crashing.org-S1755992AbZKJAaw@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.1.9 (2007-02-13) on gate.crashing.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=AWL,BAYES_00
+ autolearn=unavailable version=3.1.9
+Received: from vger.kernel.org (vger.kernel.org [209.132.176.167]) by
+ gate.crashing.org (8.14.1/8.13.8) with ESMTP id nAA0Vrxg004548 for
+ <benh@kernel.crashing.org>; Mon, 9 Nov 2009 18:31:55 -0600
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id
+ S1755992AbZKJAaw (ORCPT <rfc822;benh@kernel.crashing.org>); Mon, 9 Nov 2009
+ 19:30:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id
+ S1755970AbZKJAau (ORCPT <rfc822;linux-kernel-outgoing>); Mon, 9 Nov 2009
+ 19:30:50 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62511 "EHLO mx1.redhat.com"
+ rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP id S1755828AbZKJAas
+ (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Mon, 9 Nov 2009 19:30:48
+ -0500
+Received: from int-mx05.intmail.prod.int.phx2.redhat.com
+ (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.18]) by mx1.redhat.com
+ (8.13.8/8.13.8) with ESMTP id nAA0UfgD002472 (version=TLSv1/SSLv3
+ cipher=DHE-RSA-AES256-SHA bits=256 verify=OK); Mon, 9 Nov 2009 19:30:41
+ -0500
+Received: from tranklukator.englab.brq.redhat.com
+ (tranklukator.englab.brq.redhat.com [10.34.32.241]) by
+ int-mx05.intmail.prod.int.phx2.redhat.com (8.13.8/8.13.8) with SMTP id
+ nAA0Ubce017260; Mon, 9 Nov 2009 19:30:38 -0500
+Received: by tranklukator.englab.brq.redhat.com (nbSMTP-1.00) for uid 500
+ onestero@redhat.com; Tue, 10 Nov 2009 01:25:44 +0100 (CET)
+Date: Tue, 10 Nov 2009 01:25:42 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Kumar Gala <galak@kernel.crashing.org>, Liu Yu <yu.liu@freescale.com>, Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: _exception: kill the obsolete code under
+ is_global_init()
+Message-ID: <20091110002542.GA1312@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Scanned-By: MIMEDefang 2.67 on 10.5.11.18
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+
+The code under "if (is_global_init())" is bogus, and is_global_init()
+itself is not right in mt case.
+
+Contrary to what the comment says, nowadays force_sig_info() does kill
+init even if the handler is SIG_DFL. Note that force_sig_info() clears
+SIGNAL_UNKILLABLE exactly for this case.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 ---
- drivers/net/gianfar.c |   31 +++++++++++++++++++------------
- 1 files changed, 19 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index fde430a..16def13 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -1928,14 +1928,11 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	/* total number of fragments in the SKB */
- 	nr_frags = skb_shinfo(skb)->nr_frags;
- 
--	spin_lock_irqsave(&tx_queue->txlock, flags);
+ arch/powerpc/kernel/traps.c |   22 ----------------------
+ 1 file changed, 22 deletions(-)
+
+--- TH/arch/powerpc/kernel/traps.c~PPC_EXCEPTION_DONT_CK_INIT	2009-11-10 01:03:23.000000000 +0100
++++ TH/arch/powerpc/kernel/traps.c	2009-11-10 01:06:41.000000000 +0100
+@@ -198,28 +198,6 @@ void _exception(int signr, struct pt_reg
+ 	info.si_code = code;
+ 	info.si_addr = (void __user *) addr;
+ 	force_sig_info(signr, &info, current);
 -
- 	/* check if there is space to queue this packet */
- 	if ((nr_frags+1) > tx_queue->num_txbdfree) {
- 		/* no space, stop the queue */
- 		netif_tx_stop_queue(txq);
- 		dev->stats.tx_fifo_errors++;
--		spin_unlock_irqrestore(&tx_queue->txlock, flags);
- 		return NETDEV_TX_BUSY;
- 	}
- 
-@@ -1999,6 +1996,20 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	lstatus |= BD_LFLAG(TXBD_CRC | TXBD_READY) | skb_headlen(skb);
- 
- 	/*
-+	 * We can work in parallel with gfar_clean_tx_ring(), except
-+	 * when modifying num_txbdfree. Note that we didn't grab the lock
-+	 * when we were reading the num_txbdfree and checking for available
-+	 * space, that's because outside of this function it can only grow,
-+	 * and once we've got needed space, it cannot suddenly disappear.
-+	 *
-+	 * The lock also protects us from gfar_error(), which can modify
-+	 * regs->tstat and thus retrigger the transfers, which is why we
-+	 * also must grab the lock before setting ready bit for the first
-+	 * to be transmitted BD.
-+	 */
-+	spin_lock_irqsave(&tx_queue->txlock, flags);
-+
-+	/*
- 	 * The powerpc-specific eieio() is used, as wmb() has too strong
- 	 * semantics (it requires synchronization between cacheable and
- 	 * uncacheable mappings, which eieio doesn't provide and which we
-@@ -2225,6 +2236,8 @@ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
- 	skb_dirtytx = tx_queue->skb_dirtytx;
- 
- 	while ((skb = tx_queue->tx_skbuff[skb_dirtytx])) {
-+		unsigned long flags;
-+
- 		frags = skb_shinfo(skb)->nr_frags;
- 		lbdp = skip_txbd(bdp, frags, base, tx_ring_size);
- 
-@@ -2269,7 +2282,9 @@ static int gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
- 			TX_RING_MOD_MASK(tx_ring_size);
- 
- 		howmany++;
-+		spin_lock_irqsave(&tx_queue->txlock, flags);
- 		tx_queue->num_txbdfree += frags + 1;
-+		spin_unlock_irqrestore(&tx_queue->txlock, flags);
- 	}
- 
- 	/* If we freed a buffer, we can restart transmission, if necessary */
-@@ -2548,7 +2563,6 @@ static int gfar_poll(struct napi_struct *napi, int budget)
- 	int tx_cleaned = 0, i, left_over_budget = budget;
- 	unsigned long serviced_queues = 0;
- 	int num_queues = 0;
--	unsigned long flags;
- 
- 	num_queues = gfargrp->num_rx_queues;
- 	budget_per_queue = budget/num_queues;
-@@ -2568,14 +2582,7 @@ static int gfar_poll(struct napi_struct *napi, int budget)
- 			rx_queue = priv->rx_queue[i];
- 			tx_queue = priv->tx_queue[rx_queue->qindex];
- 
--			/* If we fail to get the lock,
--			 * don't bother with the TX BDs */
--			if (spin_trylock_irqsave(&tx_queue->txlock, flags)) {
--				tx_cleaned += gfar_clean_tx_ring(tx_queue);
--				spin_unlock_irqrestore(&tx_queue->txlock,
--							flags);
--			}
+-	/*
+-	 * Init gets no signals that it doesn't have a handler for.
+-	 * That's all very well, but if it has caused a synchronous
+-	 * exception and we ignore the resulting signal, it will just
+-	 * generate the same exception over and over again and we get
+-	 * nowhere.  Better to kill it and let the kernel panic.
+-	 */
+-	if (is_global_init(current)) {
+-		__sighandler_t handler;
 -
-+			tx_cleaned += gfar_clean_tx_ring(tx_queue);
- 			rx_cleaned_per_queue = gfar_clean_rx_ring(rx_queue,
- 							budget_per_queue);
- 			rx_cleaned += rx_cleaned_per_queue;
--- 
-1.6.3.3
+-		spin_lock_irq(&current->sighand->siglock);
+-		handler = current->sighand->action[signr-1].sa.sa_handler;
+-		spin_unlock_irq(&current->sighand->siglock);
+-		if (handler == SIG_DFL) {
+-			/* init has generated a synchronous exception
+-			   and it doesn't have a handler for the signal */
+-			printk(KERN_CRIT "init has generated signal %d "
+-			       "but has no handler for it\n", signr);
+-			do_exit(signr);
+-		}
+-	}
+ }
+ 
+ #ifdef CONFIG_PPC64
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+--=-eXxL8RwtJek+BPeOlPgS--
