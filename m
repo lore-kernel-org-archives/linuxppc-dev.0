@@ -1,24 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 117D5B6F2B
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 02:17:24 +1100 (EST)
-Subject: Re: [PATCH 0/6] gianfar: Some fixes
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20091111001036.GA28576@oksana.dev.rtsoft.ru>
-Date: Wed, 11 Nov 2009 09:16:41 -0600
-Message-Id: <BEE5C957-99C1-4399-AB5D-BCF5BC05A73C@kernel.crashing.org>
-References: <20091111001036.GA28576@oksana.dev.rtsoft.ru>
-To: avorontsov@ru.mvista.com
-Cc: Jon Loeliger <jdl@jdl.com>, Kumar Gopalpet-B05799 <B05799@freescale.com>,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andy Fleming <afleming@freescale.com>,
-	Stephen Hemminger <shemminger@vyatta.com>,
-	David Miller <davem@davemloft.net>,
-	Lennert Buytenhek <buytenh@wantstofly.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 511B2B6F1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 02:26:33 +1100 (EST)
+Date: Wed, 11 Nov 2009 09:26:53 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH 0/8] 8xx: Misc fixes for buggy insn
+Message-ID: <20091111152653.GA688@loki.buserror.net>
+References: <4AF99695.800@freescale.com> <4AF99B00.6080504@freescale.com>
+	<OFDB4F927C.98657449-ONC125766A.006874A4-C125766A.00692F0B@transmode.se>
+	<4AF9CC99.1030500@freescale.com>
+	<OFDF13AF8E.1B38CEA9-ONC125766A.0073E59F-C125766A.0075ABE6@transmode.se>
+	<4AF9DCE0.4030805@freescale.com>
+	<OF15D21C1C.B7A920F0-ONC125766A.0076C36E-C125766A.0077B321@transmode.se>
+	<4AF9E2E2.7030100@freescale.com> <4AF9F56E.9080104@freescale.com>
+	<OF2843D474.207958C1-ONC125766A.00828F87-C125766B.00009091@transmode.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF2843D474.207958C1-ONC125766A.00828F87-C125766B.00009091@transmode.se>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Nov 11, 2009 at 01:06:10AM +0100, Joakim Tjernlund wrote:
+> Scott Wood <scottwood@freescale.com> wrote on 11/11/2009 00:21:18:
+> > Where would you put the dcbi?  How do you regain control after that
+> > cache line has been refilled, but before code flows back to the bad branch?
+> 
+> The dcbi would replace the current CPU15 tlbie.
 
-On Nov 10, 2009, at 6:10 PM, Anton Vorontsov wrote:
+But that only works if you take an ITLB miss at the right time.
 
-> Hi all,
->
-> Here are some fixes for the gianfar driver, patches on the way.
->
-> Thanks,
-
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
-
-
-- k
+-Scott
