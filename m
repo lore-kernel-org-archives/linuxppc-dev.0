@@ -1,20 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
-	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 49B6FB7B65
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 08:15:30 +1100 (EST)
-Received: by yxe8 with SMTP id 8so2604853yxe.17
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 13:15:29 -0800 (PST)
+Return-Path: <joakim.tjernlund@transmode.com>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BC3CBB7BA4
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 08:19:04 +1100 (EST)
+In-Reply-To: <4AFC65F7.4050600@freescale.com>
+References: <4AF99695.800@freescale.com> <4AF99B00.6080504@freescale.com>
+	<OFDB4F927C.98657449-ONC125766A.006874A4-C125766A.00692F0B@transmode.se>
+	<4AF9CC99.1030500@freescale.com>
+	<OFDF13AF8E.1B38CEA9-ONC125766A.0073E59F-C125766A.0075ABE6@transmode.se>
+	<4AF9DCE0.4030805@freescale.com>
+	<OF15D21C1C.B7A920F0-ONC125766A.0076C36E-C125766A.0077B321@transmode.se>
+	<4AF9E2E2.7030100@freescale.com> <4AF9F56E.9080104@freescale.com>
+	<OF2843D474.207958C1-ONC125766A.00828F87-C125766B.00009091@transmode.se>
+	<20091111152653.GA688@loki.buserror.net>
+	<OFE47A9BB7.59140781-ONC125766C.00322B87-C125766C.003266AD@transmode.se>
+	<4AFC65F7.4050600@freescale.com>
+Subject: Re: [PATCH 0/8] 8xx: Misc fixes for buggy insn
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OFF2FA2BCA.A6C0CAA9-ONC125766C.0074494F-C125766C.0074AF53@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.com>
+Date: Thu, 12 Nov 2009 22:14:30 +0100
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <18304285.1257929369240.JavaMail.ngmail@webmail19.ha2.local>
-References: <18304285.1257929369240.JavaMail.ngmail@webmail19.ha2.local>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 12 Nov 2009 14:15:09 -0700
-Message-ID: <fa686aa40911121315h4374711ftf07314cc4d9e7aff@mail.gmail.com>
-Subject: Re: [PATCH] mpc5200/gpt: tiny fix for gpt period limitation
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,88 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 11, 2009 at 1:49 AM, Albrecht Dre=DF <albrecht.dress@arcor.de> =
-wrote:
-> This patch fixes a limitation of the 5200's period.
+Scott Wood <scottwood@freescale.com> wrote on 12/11/2009 20:45:59:
 >
-> Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
+> Joakim Tjernlund wrote:
+> > Scott Wood <scottwood@freescale.com> wrote on 11/11/2009 16:26:53:
+> >> On Wed, Nov 11, 2009 at 01:06:10AM +0100, Joakim Tjernlund wrote:
+> >>> Scott Wood <scottwood@freescale.com> wrote on 11/11/2009 00:21:18:
+> >>>> Where would you put the dcbi?  How do you regain control after that
+> >>>> cache line has been refilled, but before code flows back to the bad branch?
+> >>> The dcbi would replace the current CPU15 tlbie.
+> >> But that only works if you take an ITLB miss at the right time.
+> >
+> > Yeah, I misread the CPU15 errata so my ideas will not work.
+> >
+> > Anyhow, will you send a patch that make TLB pinning mandatory?
+> > After that my series can go in.
+>
+> One other concern with pinning on 8xx -- could it cause problems with
+> uncached DMA mappings?  What happens if a speculative load pulls in a
+> cache line in an area that's supposed to be uncached?
 
-Okay, I've applied this and patches 1 & 2 from your series.  I'm
-waiting for a reply from Wim to know whether or not I should also pick
-up patch 3.  BUT, you're on my shit list.  Patch 2 in your series
-conflicts with this patch.  I had to fix it up by hand.  This patch
-should have been part of the series, or at least base the series on
-this patch.  Take a look in my -test branch and make sure I fixed it
-right.
+hmm, why should this be a problem? Pinning has been around as a config option
+for a long time so any problems should have surfaced by now.
 
-g.
+Secondly, I was thinking that we could just make the ITLB pinning
+mandatory and let the DTLB pinning be as is, configurable.
 
-> ---
->
-> =A0arch/powerpc/include/asm/mpc52xx.h =A0 =A0 =A0 =A0| =A0 =A02 +-
-> =A0arch/powerpc/platforms/52xx/mpc52xx_gpt.c | =A0 =A06 +++---
-> =A02 files changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/mpc52xx.h b/arch/powerpc/include/as=
-m/mpc52xx.h
-> index 707ab75..933fb8f 100644
-> --- a/arch/powerpc/include/asm/mpc52xx.h
-> +++ b/arch/powerpc/include/asm/mpc52xx.h
-> @@ -279,7 +279,7 @@ extern void mpc52xx_restart(char *cmd);
-> =A0/* mpc52xx_gpt.c */
-> =A0struct mpc52xx_gpt_priv;
-> =A0extern struct mpc52xx_gpt_priv *mpc52xx_gpt_from_irq(int irq);
-> -extern int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, int per=
-iod,
-> +extern int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, u64 per=
-iod,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 int continuous);
-> =A0extern void mpc52xx_gpt_stop_timer(struct mpc52xx_gpt_priv *gpt);
->
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/pla=
-tforms/52xx/mpc52xx_gpt.c
-> index 2c3fa13..77572ab 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> @@ -378,12 +378,12 @@ EXPORT_SYMBOL(mpc52xx_gpt_from_irq);
-> =A0/**
-> =A0* mpc52xx_gpt_start_timer - Set and enable the GPT timer
-> =A0* @gpt: Pointer to gpt private data structure
-> - * @period: period of timer
-> + * @period: period of timer in ns; max. ~130s @ 33MHz IPB clock
-> =A0* @continuous: set to 1 to make timer continuous free running
-> =A0*
-> =A0* An interrupt will be generated every time the timer fires
-> =A0*/
-> -int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, int period,
-> +int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, u64 period,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 int continuous)
-> =A0{
-> =A0 =A0 =A0 =A0u32 clear, set;
-> @@ -400,7 +400,7 @@ int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *=
-gpt, int period,
-> =A0 =A0 =A0 =A0 * arithmatic is done here to preserve the precision until=
- the value
-> =A0 =A0 =A0 =A0 * is scaled back down into the u32 range. =A0Period is in=
- 'ns', bus
-> =A0 =A0 =A0 =A0 * frequency is in Hz. */
-> - =A0 =A0 =A0 clocks =3D (u64)period * (u64)gpt->ipb_freq;
-> + =A0 =A0 =A0 clocks =3D period * (u64)gpt->ipb_freq;
-> =A0 =A0 =A0 =A0do_div(clocks, 1000000000); /* Scale it down to ns range *=
-/
->
-> =A0 =A0 =A0 =A0/* This device cannot handle a clock count greater than 32=
- bits */
->
->
-> Jetzt NEU: Do it youself E-Cards bei Arcor.de!
-> Stellen Sie Ihr eigenes Unikat zusammen und machen Sie dem Empf=E4nger ei=
-ne ganz pers=F6nliche Freude!
-> E-Card Marke Eigenbau: HIER KLICKEN: http://www.arcor.de/rd/footer.ecard
->
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+ Jocke
