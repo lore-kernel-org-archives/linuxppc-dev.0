@@ -1,20 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <thirumalai.p@datapatterns.co.in>
+Received: from ns0.datapatterns.co.in (mx0.datapatterns.co.in [121.242.18.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D241EB6F1E
+	by ozlabs.org (Postfix) with ESMTPS id 298F7B7B7C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 Nov 2009 20:32:49 +1100 (EST)
-Subject: Re: Disable Caching for mmap() address
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-In-Reply-To: <BB99A6BA28709744BF22A68E6D7EB51F03310B03B4@midas.usurf.usu.edu>
-References: <BB99A6BA28709744BF22A68E6D7EB51F03310B03B4@midas.usurf.usu.edu>
+	Thu, 12 Nov 2009 21:18:00 +1100 (EST)
+MIME-Version: 1.0
+Date: Thu, 12 Nov 2009 15:45:07 +0530
+From: "thirumalai.p" <thirumalai.p@datapatterns.co.in>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Linuxppc dev <linuxppc-dev@lists.ozlabs.org>
+Subject: MTD subsystem Initialization
+Message-ID: <91206860dfd46581feee6d42ed900cc5@datapatterns.co.in>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 12 Nov 2009 20:32:43 +1100
-Message-ID: <1258018363.2140.333.camel@pasglop>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-11-09 at 16:21 -0700, Jonathan Haws wrote:
-> All,
-> 
-> I would like to disable caching for an address that was returned from a call to mmap().  I am using this address for DMA operations in user space and want to make sure that the data cache is turned off for that buffer.
-> 
-> The way this works is the driver simply takes an address I provide and begins a DMA operation to that location in RAM (I have ensured that this is a physical address I am passing already).  When the DMA is complete, an interrupt fires and the ISR gives a semaphore that the user space application is pending on (RT_SEM from Xenomai).  I have tried simply calling a cache invalidate routine in the ISR before I give the semaphore, but the kernel crashes when I try to call that routine - my guess it because the kernel does not have direct access to that location in memory (only my application does, according to the MMU).
-> 
-> Anyway, all I want to do is make sure that the buffer is never stored in the cache and that I always fetch it from RAM.  How can I specify that using mmap() on the /dev/mem device, or is there a better way to accomplish this?
+Hi Ben,
+      When i try to boot my MPC8640D based target on 2.6.30 kernel. My
+target is having 1GB of RAM and 256 MB of Flash memory. I am passing the
+partition information using OF Tree. During MTD subsystem initialization,
+the following error message is displayed. "vmap allocation for size
+268435456 failed". i found that this is due to ioremap failure which is
+happening during the time of MTD initializtion.
 
-There is no "proper" way to do this, in large part because it's not
-always legal to map memory non-cached for various reasons I don't
-have time to explain right now...
+Even thoogh HIGH_MEM support was enabled on the kernel, this is failing. 
 
-You may be able to get it working though but using a specific driver
-with an mmap function that tweaks the attributes or using mmap
-of /dev/mem after opening it with O_SYNC (off the top of my mind)
+Any configurations that need to be modified for this. 
 
-But it's a bit fishy as the kernel has a cacheable mapping of most
-of memory and so you may end up with cache aliases...
+I am using ELDK-4.0 for compilation.
 
-Cheers,
-Ben.
+Thank you
+T.
+
+**************** CAUTION - Disclaimer *****************This email may contain confidential and privileged material for the
+sole use of the intended recipient(s). Any review, use, retention, distribution or disclosure by others is strictly prohibited. If you are not the intended recipient (or authorized to receive for the recipient), please contact the sender by reply email and delete all copies of this message. Also, email is susceptible to data corruption, interception, tampering, unauthorized amendment and viruses. We only send and receive emails on the basis that we are not liable for any such corruption, interception, tampering, amendment or viruses or any consequence thereof. 
+*********** End of Disclaimer ***********DataPatterns ITS Group**********
