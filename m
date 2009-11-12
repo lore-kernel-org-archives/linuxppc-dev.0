@@ -1,19 +1,20 @@
-Return-Path: <wim@iguana.be>
-Received: from mailrelay011.isp.belgacom.be (mailrelay011.isp.belgacom.be
-	[195.238.6.178]) by ozlabs.org (Postfix) with ESMTP id 6F909B6F2B
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 08:36:33 +1100 (EST)
-Date: Thu, 12 Nov 2009 22:36:30 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Albrecht =?iso-8859-1?Q?Dre=DF?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH 3/3] mpc52xx/wdt: WDT uses GPT api
-Message-ID: <20091112213630.GE19336@infomag.iguana.be>
-References: <fa686aa40911101159y7bef3f9bte74e9aeb5c6e864b@mail.gmail.com>
-	<1257884778.14374.5@antares>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 793A5B7BB0
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 08:44:30 +1100 (EST)
+Date: Thu, 12 Nov 2009 22:44:25 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] mpc5200/gpt: tiny fix for gpt period limitation
+Message-ID: <20091112214425.GD13350@pengutronix.de>
+References: <18304285.1257929369240.JavaMail.ngmail@webmail19.ha2.local>
+	<fa686aa40911121315h4374711ftf07314cc4d9e7aff@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1257884778.14374.5@antares>
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss@lists.ozlabs.org, Wim Van Sebroeck <wim@iguana.be>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="d9ADC0YsG2v16Js0"
+In-Reply-To: <fa686aa40911121315h4374711ftf07314cc4d9e7aff@mail.gmail.com>
+Cc: Albrecht =?iso-8859-15?Q?Dre=DF?= <albrecht.dress@arcor.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
 
->> Can the WDT functionality just be merged entirely into
->> arch/powerpc/platforms/52xx/mpc52xx_gpt.c, eliminating the need for
->> this file entirely?  I think I'd rather have all the GPT "built in"
->> behaviour handled by a single driver.
->
-> I also thought about it, as it has IMHO the cleaner code, and it would have the extra benefit that the gpt-wdt api doesn't need to be public.
->
-> However, the reasons I hesitated to do so are:
-> - I don't want to remove a file someone else wrote (even it doesn't work);
-> - WDT code is shifted from drivers/watchdog to arch/powerpc/platforms/52xx which might not be the "logical" place from the directory layout's pov;
-> - a file living in arch/powerpc/platforms/52xx depends upon config options set from drivers/watchdog/Kconfig which may be confusing.
->
-> You see these are more political/cosmetical questions, so I would prefer to leave the decision to the maintainers (i.e. you and Wim).  Preparing a fully merged driver is actually a matter of minutes!
+--d9ADC0YsG2v16Js0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-My opinion: it is harder to maintain the watchdog code if it is being moved away from drivers/watchdog.
-I need to check the code before I comment any further on this, but my first thought is: why don't you do it with platform resources like other devices are doing? This way you can keep the platform code under arch and the watchdog itself under drivers/watchdog/. You can look at the following drivers as an example: adx_wdt.c ar7_wdt.c at32ap700x_wdt.c coh901327_wdt.c davinci_wdt.c mpcore_wdt.c mv64x60_wdt.c nuc900_wdt.c omap_wdt.c pnx4008_wdt.c rc32434_wdt.c s3c2410_wdt.c txx9wdt.c .
+> up patch 3.  BUT, you're on my shit list.  Patch 2 in your series
 
-Kind regards,
-Wim.
+Huh, are you in a bad mood today? IMHO he addressed some valid issues; and =
+we
+all had to start somewhere regarding the workflow. I know that manually
+adapting patches is annoying, but this wording sounds quite strong...
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--d9ADC0YsG2v16Js0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkr8gbkACgkQD27XaX1/VRsFggCbBeuRa7xfA132EmuFNc31xfvo
+6wIAoJJ/dNqbfF3dnVR7v/mEq/cfOtpA
+=jYFT
+-----END PGP SIGNATURE-----
+
+--d9ADC0YsG2v16Js0--
