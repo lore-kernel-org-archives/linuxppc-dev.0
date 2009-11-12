@@ -1,18 +1,28 @@
-Return-Path: <thirumalai.p@datapatterns.co.in>
-Received: from ns0.datapatterns.co.in (mx0.datapatterns.co.in [121.242.18.2])
+Return-Path: <joakim.tjernlund@transmode.com>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 298F7B7B7C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 Nov 2009 21:18:00 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 14458B7B7C
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 20:12:56 +1100 (EST)
+In-Reply-To: <20091111152653.GA688@loki.buserror.net>
+References: <4AF99695.800@freescale.com> <4AF99B00.6080504@freescale.com>
+	<OFDB4F927C.98657449-ONC125766A.006874A4-C125766A.00692F0B@transmode.se>
+	<4AF9CC99.1030500@freescale.com>
+	<OFDF13AF8E.1B38CEA9-ONC125766A.0073E59F-C125766A.0075ABE6@transmode.se>
+	<4AF9DCE0.4030805@freescale.com>
+	<OF15D21C1C.B7A920F0-ONC125766A.0076C36E-C125766A.0077B321@transmode.se>
+	<4AF9E2E2.7030100@freescale.com> <4AF9F56E.9080104@freescale.com>
+	<OF2843D474.207958C1-ONC125766A.00828F87-C125766B.00009091@transmode.se>
+	<20091111152653.GA688@loki.buserror.net>
+Subject: Re: [PATCH 0/8] 8xx: Misc fixes for buggy insn
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OFE47A9BB7.59140781-ONC125766C.00322B87-C125766C.003266AD@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.com>
+Date: Thu, 12 Nov 2009 10:10:30 +0100
 MIME-Version: 1.0
-Date: Thu, 12 Nov 2009 15:45:07 +0530
-From: "thirumalai.p" <thirumalai.p@datapatterns.co.in>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Linuxppc dev <linuxppc-dev@lists.ozlabs.org>
-Subject: MTD subsystem Initialization
-Message-ID: <91206860dfd46581feee6d42ed900cc5@datapatterns.co.in>
-Content-Type: text/plain; charset="UTF-8"
+Content-type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
-      When i try to boot my MPC8640D based target on 2.6.30 kernel. My
-target is having 1GB of RAM and 256 MB of Flash memory. I am passing the
-partition information using OF Tree. During MTD subsystem initialization,
-the following error message is displayed. "vmap allocation for size
-268435456 failed". i found that this is due to ioremap failure which is
-happening during the time of MTD initializtion.
+Scott Wood <scottwood@freescale.com> wrote on 11/11/2009 16:26:53:
+>
+> On Wed, Nov 11, 2009 at 01:06:10AM +0100, Joakim Tjernlund wrote:
+> > Scott Wood <scottwood@freescale.com> wrote on 11/11/2009 00:21:18:
+> > > Where would you put the dcbi?  How do you regain control after that
+> > > cache line has been refilled, but before code flows back to the bad branch?
+> >
+> > The dcbi would replace the current CPU15 tlbie.
+>
+> But that only works if you take an ITLB miss at the right time.
 
-Even thoogh HIGH_MEM support was enabled on the kernel, this is failing. 
+Yeah, I misread the CPU15 errata so my ideas will not work.
 
-Any configurations that need to be modified for this. 
+Anyhow, will you send a patch that make TLB pinning mandatory?
+After that my series can go in.
 
-I am using ELDK-4.0 for compilation.
-
-Thank you
-T.
-
-**************** CAUTION - Disclaimer *****************This email may contain confidential and privileged material for the
-sole use of the intended recipient(s). Any review, use, retention, distribution or disclosure by others is strictly prohibited. If you are not the intended recipient (or authorized to receive for the recipient), please contact the sender by reply email and delete all copies of this message. Also, email is susceptible to data corruption, interception, tampering, unauthorized amendment and viruses. We only send and receive emails on the basis that we are not liable for any such corruption, interception, tampering, amendment or viruses or any consequence thereof. 
-*********** End of Disclaimer ***********DataPatterns ITS Group**********
+        Jocke
