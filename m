@@ -2,20 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 20614B6F1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 20:02:12 +1100 (EST)
-Subject: Re: linux-next: rr tree build failure
+	by ozlabs.org (Postfix) with ESMTPS id D241EB6F1E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 Nov 2009 20:32:49 +1100 (EST)
+Subject: Re: Disable Caching for mmap() address
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20091112190308.443d97a3.sfr@canb.auug.org.au>
-References: <20091112190308.443d97a3.sfr@canb.auug.org.au>
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+In-Reply-To: <BB99A6BA28709744BF22A68E6D7EB51F03310B03B4@midas.usurf.usu.edu>
+References: <BB99A6BA28709744BF22A68E6D7EB51F03310B03B4@midas.usurf.usu.edu>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 12 Nov 2009 20:02:00 +1100
-Message-ID: <1258016520.2140.329.camel@pasglop>
+Date: Thu, 12 Nov 2009 20:32:43 +1100
+Message-ID: <1258018363.2140.333.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
-	Paul Mackerras <paulus@samba.org>, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-11-12 at 19:03 +1100, Stephen Rothwell wrote:
-> Hi Rusty,
+On Mon, 2009-11-09 at 16:21 -0700, Jonathan Haws wrote:
+> All,
 > 
-> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
+> I would like to disable caching for an address that was returned from a call to mmap().  I am using this address for DMA operations in user space and want to make sure that the data cache is turned off for that buffer.
 > 
-> .tmp_exports-asm.o: In function `__ksymtab_pci_alloc_consistent':
-> (__ksymtab_sorted+0x2a30): undefined reference to `pci_alloc_consistent'
-> .tmp_exports-asm.o: In function `__ksymtab_pci_free_consistent':
-> (__ksymtab_sorted+0x2b70): undefined reference to `pci_free_consistent'
+> The way this works is the driver simply takes an address I provide and begins a DMA operation to that location in RAM (I have ensured that this is a physical address I am passing already).  When the DMA is complete, an interrupt fires and the ISR gives a semaphore that the user space application is pending on (RT_SEM from Xenomai).  I have tried simply calling a cache invalidate routine in the ISR before I give the semaphore, but the kernel crashes when I try to call that routine - my guess it because the kernel does not have direct access to that location in memory (only my application does, according to the MMU).
 > 
-> Caused by the powerpc architecture EXPORTing static inlines (for 32 bit
-> builds) interacting with changes in the rr tree.
-> 
-> I have applied this patch for today:
+> Anyway, all I want to do is make sure that the buffer is never stored in the cache and that I always fetch it from RAM.  How can I specify that using mmap() on the /dev/mem device, or is there a better way to accomplish this?
 
-Thanks. Our EXPORTs are bogus (probably leftovers) it seems. I'll dbl
-check tomorrow but that looks like a patch I should pickup in powerpc
--next anyways.
+There is no "proper" way to do this, in large part because it's not
+always legal to map memory non-cached for various reasons I don't
+have time to explain right now...
+
+You may be able to get it working though but using a specific driver
+with an mmap function that tweaks the attributes or using mmap
+of /dev/mem after opening it with O_SYNC (off the top of my mind)
+
+But it's a bit fishy as the kernel has a cacheable mapping of most
+of memory and so you may end up with cache aliases...
 
 Cheers,
 Ben.
-
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Thu, 12 Nov 2009 18:54:13 +1100
-> Subject: [PATCH] powerpc: do not export pci_alloc/free_consistent
-> 
-> Since they are static inline functions.
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/kernel/ppc_ksyms.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-> index 07115d6..4254514 100644
-> --- a/arch/powerpc/kernel/ppc_ksyms.c
-> +++ b/arch/powerpc/kernel/ppc_ksyms.c
-> @@ -96,8 +96,6 @@ EXPORT_SYMBOL(copy_4K_page);
->  EXPORT_SYMBOL(isa_io_base);
->  EXPORT_SYMBOL(isa_mem_base);
->  EXPORT_SYMBOL(pci_dram_offset);
-> -EXPORT_SYMBOL(pci_alloc_consistent);
-> -EXPORT_SYMBOL(pci_free_consistent);
->  #endif /* CONFIG_PCI */
->  
->  EXPORT_SYMBOL(start_thread);
-> -- 
-> 1.6.5.2
-> 
