@@ -1,24 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f201.google.com (mail-yw0-f201.google.com
-	[209.85.211.201]) by ozlabs.org (Postfix) with ESMTP id 8E4DAB7088
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 Nov 2009 18:03:53 +1100 (EST)
-Received: by ywh39 with SMTP id 39so2045561ywh.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 11 Nov 2009 23:03:51 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <200911120733.58112.roman.fietze@telemotive.de>
-References: <mailman.1198.1256674402.12812.linuxppc-dev@lists.ozlabs.org>
-	<200910281420.n9SEKI2R005094@nti1.com>
-	<200911120733.58112.roman.fietze@telemotive.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 12 Nov 2009 00:03:31 -0700
-Message-ID: <fa686aa40911112303k1528a3c9yef3573454c75a2a4@mail.gmail.com>
-Subject: Re: Micrel PHY KSZ8001 on MPC5200B FEC
-To: Roman Fietze <roman.fietze@telemotive.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A7A61B7B63
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 19:03:09 +1100 (EST)
+Date: Thu, 12 Nov 2009 19:03:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: linux-next: rr tree build failure
+Message-Id: <20091112190308.443d97a3.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,21 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 11, 2009 at 11:33 PM, Roman Fietze
-<roman.fietze@telemotive.de> wrote:
-> As Grant mentioned as well, the key was and is a correct DTS. (At
-> least) one statement was missing:
->
-> =A0interrupt-parent =3D <&mpc5200_pic>;
->
-> This statement seemed to move all the way up from the devices to the
-> root of the tree, and somehow we missed that move.
+Hi Rusty,
 
-Yes, nodes inherit the interrupt-parent property from their parent.  I
-took advantage of that to tidy up all the mpc5200 device trees.
+Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
 
-g.
+.tmp_exports-asm.o: In function `__ksymtab_pci_alloc_consistent':
+(__ksymtab_sorted+0x2a30): undefined reference to `pci_alloc_consistent'
+.tmp_exports-asm.o: In function `__ksymtab_pci_free_consistent':
+(__ksymtab_sorted+0x2b70): undefined reference to `pci_free_consistent'
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Caused by the powerpc architecture EXPORTing static inlines (for 32 bit
+builds) interacting with changes in the rr tree.
+
+I have applied this patch for today:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 12 Nov 2009 18:54:13 +1100
+Subject: [PATCH] powerpc: do not export pci_alloc/free_consistent
+
+Since they are static inline functions.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/ppc_ksyms.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 07115d6..4254514 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -96,8 +96,6 @@ EXPORT_SYMBOL(copy_4K_page);
+ EXPORT_SYMBOL(isa_io_base);
+ EXPORT_SYMBOL(isa_mem_base);
+ EXPORT_SYMBOL(pci_dram_offset);
+-EXPORT_SYMBOL(pci_alloc_consistent);
+-EXPORT_SYMBOL(pci_free_consistent);
+ #endif /* CONFIG_PCI */
+ 
+ EXPORT_SYMBOL(start_thread);
+-- 
+1.6.5.2
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
