@@ -1,25 +1,16 @@
-Return-Path: <richard.rojfors@mocean-labs.com>
-Received: from proxy3.bredband.net (proxy3.bredband.net [195.54.101.73])
-	by ozlabs.org (Postfix) with ESMTP id BB275B7B8F
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 04:43:10 +1100 (EST)
-Received: from ipb1.telenor.se (195.54.127.164) by proxy3.bredband.net
-	(7.3.140.3) id 4AD3E1BA00CCCE67 for linuxppc-dev@ozlabs.org;
-	Thu, 12 Nov 2009 18:22:40 +0100
-Message-ID: <4AFC4460.9050508@mocean-labs.com>
-Date: Thu, 12 Nov 2009 18:22:40 +0100
-From: =?ISO-8859-1?Q?Richard_R=F6jfors?=
- <richard.rojfors@mocean-labs.com>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp5.netcologne.de (smtp5.netcologne.de [194.8.194.25])
+	by ozlabs.org (Postfix) with ESMTP id 1C5FAB7B6C
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 05:39:30 +1100 (EST)
+Date: Thu, 12 Nov 2009 19:39:26 +0100
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: [PATCHv2 0/3] mpc52xx/wdt: re-enable the MPC5200 WDT
+To: "Likely, Grant" <grant.likely@secretlab.ca>, Linux PPC Development
+	<linuxppc-dev@ozlabs.org>, Devicetree Discussions
+	<devicetree-discuss@lists.ozlabs.org>, Wim Van Sebroeck <wim@iguana.be>
+Message-Id: <1258051166.2280.0@antares>
 MIME-Version: 1.0
-To: John Linn <John.Linn@xilinx.com>
-Subject: Re: [PATCH v2 1/4] xilinx_spi: Split into of driver and generic part.
-References: <4AFC1B1E.60304@mocean-labs.com>
-	<fa686aa40911120656x3b94b9c7tfabd6e7956ed41fb@mail.gmail.com>
-	<38eacaec-f0d3-436c-b461-40b5d795cdd9@VA3EHSMHS009.ehs.local>
-In-Reply-To: <38eacaec-f0d3-436c-b461-40b5d795cdd9@VA3EHSMHS009.ehs.local>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>,
-	dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,13 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/12/09 6:17 PM, John Linn wrote:
->> Have you compile tested this?  platform_data is a void*, the
->> dereference will not work.  I know you don't have hardware; but
->> getting the needed cross compiler is easy.
-> 
-> Here's the fixes I did to make it compile. On to testing :)
+This set of patches merges the MPC5200 WDT into the GPT code, making it
+functional again - currently, the MPC5200 GPT code blocks using the WDT.
 
-Great! I tested this against a max7301 GPIO expander.
+Additionally, it defines a new OF property as to reserve and/or enable the
+WDT during the boot process which may be a requirement for safety-related
+(e.g. ISO/EN 61508) applications.
 
---Richard
+Note that all patches are against Grant Likely's "next" tree.
+
+Compared to the first version of the patch, the basic change is a full merg=
+e
+of the WDT code into the GPT implementation in arch/powerpc/platforms/52xx.
+It makes the old WDT implementation file obsolete.  As a side effect, it is
+not possible any more to build the 52xx WDT support as module which shouldn=
+'t
+be a big issue, though.
+
+Cheers, Albrecht.
+
+---
+
+ Documentation/powerpc/dts-bindings/fsl/mpc5200.txt |   17 +-
+ arch/powerpc/include/asm/mpc52xx.h                 |    5 +-
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c          |  328 ++++++++++++++++=
+++--
+ drivers/watchdog/Kconfig                           |    4 +-
+ drivers/watchdog/Makefile                          |    1 -
+ 5 files changed, 331 insertions(+), 24 deletions(-)
