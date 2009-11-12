@@ -1,33 +1,32 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <broonie@opensource.wolfsonmicro.com>
+Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
+	[80.75.67.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 80938B7B65
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 22:16:48 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp09.au.ibm.com (8.14.3/8.13.1) with ESMTP id nACBGlUx005781
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 22:16:47 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nACBDXe91204252
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 22:13:33 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nACBGkLD010441
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 22:16:47 +1100
-Message-ID: <4AFBEE98.2070208@in.ibm.com>
-Date: Thu, 12 Nov 2009 16:46:40 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 84987B7BAD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 Nov 2009 23:10:40 +1100 (EST)
+Date: Thu, 12 Nov 2009 12:10:34 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [alsa-devel] [PATCH 2/6] ASoC/mpc5200: get rid of the appl_ptr
+	tracking nonsense
+Message-ID: <20091112121034.GA16661@rakim.wolfsonmicro.main>
+References: <20091107083358.18908.10635.stgit@angua>
+	<9e4733910911070451y28073dbeke6ced6246f5a5c24@mail.gmail.com>
+	<fa686aa40911071051y3cf63e55ibe7fbc65c30bd15e@mail.gmail.com>
+	<20091107201233.GC31789@sirena.org.uk>
+	<9e4733910911110838w6010cf3atcfcd30c85f0764a1@mail.gmail.com>
+	<20091111183753.GA31815@rakim.wolfsonmicro.main>
+	<fa686aa40911111124i12b72196xdba7000b13b3bdc@mail.gmail.com>
+	<9e4733910911111334o24f3114as6baaef82d7b17a05@mail.gmail.com>
+	<fa686aa40911111357q22f57728va1b4bc8b5bc0425f@mail.gmail.com>
+	<9e4733910911111513w5423333cp6cf08ceec9a94ac3@mail.gmail.com>
 MIME-Version: 1.0
-To: dwg@au1.ibm.com
-Subject: Re: [powerpc] Next tree Nov 2 : kernel BUG at mm/mmap.c:2135!
-References: <20091102173845.210d1c57.sfr@canb.auug.org.au>
-	<4AEEA279.4040106@in.ibm.com> <4AF175D4.7030507@in.ibm.com>
-	<20091105001650.GD3613@yookeroo.seuss>
-In-Reply-To: <20091105001650.GD3613@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910911111513w5423333cp6cf08ceec9a94ac3@mail.gmail.com>
+Cc: John Bonesio <bones@secretlab.ca>, alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org, lrg@slimlogic.co.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,89 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Wed, Nov 04, 2009 at 06:08:44PM +0530, Sachin Sant wrote:
->   
->> Sachin Sant wrote:
->>     
->>> Today's next tree failed to boot on a POWER 6 box with :
->>>
->>> ------------[ cut here ]------------
->>> kernel BUG at mm/mmap.c:2135!
->>> Oops: Exception in kernel mode, sig: 5 [#2]
->>> SMP NR_CPUS=1024 NUMA pSeries
->>>       
->> Problem exists with today's next as well.
->>
->> Likely cause for this problem seems to the following commit.
->> If i revert this patch the machine boots fine.
->>
->> commit a0668cdc154e54bf0c85182e0535eea237d53146
->> powerpc/mm: Cleanup management of kmem_caches for pagetables
->>     
->
-> Ugh.  Ok, it's not at all obvious how my patch could cause this bug.
-> Can you send your .config?
->
->   
-Still present in today's next. 
+On Wed, Nov 11, 2009 at 06:13:25PM -0500, Jon Smirl wrote:
 
-Thanks
--Sachin
+> I don't think it is that much more work for ALSA to provide an
+> accessible field indicating the end of valid data. It's already
+> tracking appl_ptr. Appl_ptr just needs to be translated into a
+> physical DMA buffer address and we've been making mistakes doing that
+> translation.
 
->>> Modules linked in: ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
->>> NIP: c00000000014e30c LR: c00000000014e2f8 CTR: c00000000014db88
->>> REGS: c0000000db703620 TRAP: 0700   Tainted: G      D
->>> (2.6.32-rc5-autotest-next-20091102)
->>> MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24022442  XER: 2000000c
->>> TASK = c0000000db7f6fe0[76] 'init' THREAD: c0000000db700000 CPU: 1
->>> GPR00: 0000000000000001 c0000000db7038a0 c000000000b19900
->>> 0000000000000000
->>> GPR04: c0000000db406a40 000000000000000c c0000000fe10c370
->>> c000000000bb2800
->>> GPR08: 000000000000db40 0000000000000000 c0000000dfdc0e00
->>> 000000000000000c
->>> GPR12: 0000000044022442 c000000000bb2800 00000000ffffffff
->>> ffffffffffffffff
->>> GPR16: 0000000008430000 00000000003c0000 c0000000db703ea0
->>> c0000000db569108
->>> GPR20: c0000000db568908 0000000000000000 c0000000db703d60
->>> 0000000000000000
->>> GPR24: 0000000000000001 0000000000040100 c0000000fe503580
->>> c0000000db1ac180
->>> GPR28: 0000000000000000 c000000000f812d0 c000000000a84f00
->>> 0000000000000000
->>> NIP [c00000000014e30c] .exit_mmap+0x190/0x1b8
->>> LR [c00000000014e2f8] .exit_mmap+0x17c/0x1b8
->>> Call Trace:
->>> [c0000000db7038a0] [c00000000014e2f8] .exit_mmap+0x17c/0x1b8 (unreliable)
->>> [c0000000db703950] [c0000000000916cc] .mmput+0x54/0x164
->>> [c0000000db7039e0] [c0000000000968d8] .exit_mm+0x17c/0x1a0
->>> [c0000000db703a90] [c000000000098cb8] .do_exit+0x248/0x784
->>> [c0000000db703b70] [c0000000000992a8] .do_group_exit+0xb4/0xe8
->>> [c0000000db703c00] [c0000000000aca2c] .get_signal_to_deliver+0x3ec/0x478
->>> [c0000000db703cf0] [c0000000000134ac] .do_signal+0x6c/0x31c
->>> [c0000000db703e30] [c000000000008b7c] do_work+0x24/0x28
->>> Instruction dump:
->>> 7c8407b4 387d0018 4800ab11 60000000 939d0008 7fe3fb78 4bfffdbd 7c7f1b79
->>> 4082fff4 e81b00e8 3120ffff 7c090110 <0b000000> 382100b0 e8010010 eb61ffd8
->>> ---[ end trace ec052ac77a8e7cb4 ]---
->>> Fixing recursive fault but reboot is needed!
->>>
->>> mm/mmap.c:2135 corresponds to :
->>>
->>> BUG_ON(mm->nr_ptes > (FIRST_USER_ADDRESS+PMD_SIZE-1)>>PMD_SHIFT);
->>>
->>>       
->
->   
+I'm sure if you provide reasonable patches they'll get applied; it
+doesn't seem likely that anyone else will work on this.
 
+> On Wed, Nov 11, 2009 at 4:57 PM, Grant Likely <grant.likely@secretlab.ca> wrote
 
--- 
+> > But it still wouldn't help a bit when the same latency occurs in the
+> > middle of playback.
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+> The deterministic solution of tracking the end of valid data ensures
+> that under run will be silent instead of playing invalid data.
+
+In the middle of playback a sudden silence period is very noticable -
+applications that expect data loss generally have some means to try to
+cover it up since sudden silence is so noticable to the human ear.  Mid
+playback there's a bit more chance that random data from earlier in the
+playback will be acceptable, and if the application has actually updated
+the data but not got round to telling the driver about that yet then
+even better.
+
+I think you're getting too focused on the fact that there is a race
+condition here since the consequences of race conditions are usually so
+severe.  There's always going to be some hardware for which there's a
+degree of racyness (free running hardware has its own set of issues
+here) so the system design takes this into account.
