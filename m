@@ -1,18 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id DCA7CB6F1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 20:01:38 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1N8VI5-0001f2-ML
-	for linuxppc-dev@ozlabs.org; Thu, 12 Nov 2009 00:44:29 -0800
-Message-ID: <26315068.post@talk.nabble.com>
-Date: Thu, 12 Nov 2009 00:44:29 -0800 (PST)
-From: Jan Husak <jan.husak@siemens.com>
-To: linuxppc-dev@ozlabs.org
-Subject: High traffic from eth to cf-ata blocks other eth traffic
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 20614B6F1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 20:02:12 +1100 (EST)
+Subject: Re: linux-next: rr tree build failure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20091112190308.443d97a3.sfr@canb.auug.org.au>
+References: <20091112190308.443d97a3.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 12 Nov 2009 20:02:00 +1100
+Message-ID: <1258016520.2140.329.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
+	Paul Mackerras <paulus@samba.org>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,61 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2009-11-12 at 19:03 +1100, Stephen Rothwell wrote:
+> Hi Rusty,
+> 
+> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
+> 
+> .tmp_exports-asm.o: In function `__ksymtab_pci_alloc_consistent':
+> (__ksymtab_sorted+0x2a30): undefined reference to `pci_alloc_consistent'
+> .tmp_exports-asm.o: In function `__ksymtab_pci_free_consistent':
+> (__ksymtab_sorted+0x2b70): undefined reference to `pci_free_consistent'
+> 
+> Caused by the powerpc architecture EXPORTing static inlines (for 32 bit
+> builds) interacting with changes in the rr tree.
+> 
+> I have applied this patch for today:
 
-I have ppc system with compactflash card connected by ata. On this system is
-running process using raw socket to send and receive cyclic data each 4ms.
-When I start another iptraffic - sshftp - to write to compact flash, after
-certain time the IRQ-135 (mpc52xx_ata) of ata driver locks task irqs from
-network card for cca 300ms. And my cyclic data transfer is broken. Any idea
-how to solve this problem?
+Thanks. Our EXPORTs are bogus (probably leftovers) it seems. I'll dbl
+check tomorrow but that looks like a patch I should pickup in powerpc
+-next anyways.
 
-Thanks a lot for hint. Jan
+Cheers,
+Ben.
 
-Output from sched_switch trace here:
-
-pniodhld-2516 [000] 1305.162746: 2516: 33:T ==> [000] 6: 33:R sirq-net-rx/0
-
-sirq-net-rx/0-6 [000] 1305.162755: 6: 33:R + [000] 2516: 33:T pniodhld
-
-sirq-net-rx/0-6 [000] 1305.162766: 6: 49:R ==> [000] 2516: 33:S pniodhld
-
-pniodhld-2516 [000] 1305.162835: 2516: 33:D ==> [000] 6: 49:R sirq-net-rx/0
-
-sirq-net-rx/0-6 [000] 1305.162923: 6: 49:D ==> [000] 99:115:R ata/0
-
-ata/0-99 [000] 1305.163050: 99:115:D ==> [000] 2409:120:R sftp-server
-
-sftp-server-2409 [000] 1305.163100: 2409:120:R + [000] 710: 49:D IRQ-135
-
-sftp-server-2409 [000] 1305.163119: 2409:120:R ==> [000] 710: 49:R IRQ-135
-
-IRQ-135-710 [000] 1305.163227: 710: 49:D + [000] 710: 49:D IRQ-135
-
-IRQ-135-710 [000] 1305.163324: 710: 49:D ==> [000] 2409:120:R sftp-server
-
-sftp-server-2409 [000] 1305.163344: 2409:120:R + [000] 710: 49:D IRQ-135
-
-sftp-server-2409 [000] 1305.163355: 2409:120:R ==> [000] 710: 49:R IRQ-135
-
-IRQ-135-710 [000] 1305.163448: 710: 49:D + [000] 710: 49:D IRQ-135
-
-IRQ-135-710 [000] 1305.163543: 710: 49:D ==> [000] 2409:120:R sftp-server
-
-sftp-server-2409 [000] 1305.163562: 2409:120:R + [000] 710: 49:D IRQ-135
-
-sftp-server-2409 [000] 1305.163574: 2409:120:R ==> [000] 710: 49:R IRQ-135
-
-IRQ-135-710 [000] 1305.163634: 710: 49:R + [000] 4: 49:D sirq-timer/0
-
-IRQ-135-710 [000] 1305.163768: 710: 49:D + [000] 710: 49:D IRQ-135
-
-IRQ-135-710 [000] 1305.163870: 710: 49:D ==> [000] 4: 49:R sirq-timer/0
-
-sirq-timer/0-4 [000] 1305.163894: 4: 49:R + [000] 710: 49:D IRQ-135
-
-sirq-timer/0-4 [000] 1305.163918: 4: 49:D ==> [000] 710: 49:R IRQ-135 
-
-and another 500 similar lines till new net_rx irq task is scheduled
--- 
-View this message in context: http://old.nabble.com/High-traffic-from-eth-to-cf-ata-blocks-other-eth-traffic-tp26315068p26315068.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Thu, 12 Nov 2009 18:54:13 +1100
+> Subject: [PATCH] powerpc: do not export pci_alloc/free_consistent
+> 
+> Since they are static inline functions.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/kernel/ppc_ksyms.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+> index 07115d6..4254514 100644
+> --- a/arch/powerpc/kernel/ppc_ksyms.c
+> +++ b/arch/powerpc/kernel/ppc_ksyms.c
+> @@ -96,8 +96,6 @@ EXPORT_SYMBOL(copy_4K_page);
+>  EXPORT_SYMBOL(isa_io_base);
+>  EXPORT_SYMBOL(isa_mem_base);
+>  EXPORT_SYMBOL(pci_dram_offset);
+> -EXPORT_SYMBOL(pci_alloc_consistent);
+> -EXPORT_SYMBOL(pci_free_consistent);
+>  #endif /* CONFIG_PCI */
+>  
+>  EXPORT_SYMBOL(start_thread);
+> -- 
+> 1.6.5.2
+> 
