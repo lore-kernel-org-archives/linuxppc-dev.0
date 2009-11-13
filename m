@@ -1,17 +1,20 @@
 Return-Path: <l.fu@pengutronix.de>
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id DE1641007D4
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 21:42:28 +1100 (EST)
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 67DA91007D4
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 21:42:29 +1100 (EST)
 From: Luotao Fu <l.fu@pengutronix.de>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: [V2] Patches for mpc52xx_spi
-Date: Fri, 13 Nov 2009 11:41:14 +0100
-Message-Id: <1258108877-25435-1-git-send-email-l.fu@pengutronix.de>
-In-Reply-To: <1257844329-20687-1-git-send-email-l.fu@pengutronix.de>
+Subject: [PATCH 2/3] [V2] mpc52xx_spi: add missing mode_bits definition
+Date: Fri, 13 Nov 2009 11:41:16 +0100
+Message-Id: <1258108877-25435-3-git-send-email-l.fu@pengutronix.de>
+In-Reply-To: <1258108877-25435-2-git-send-email-l.fu@pengutronix.de>
 References: <1257844329-20687-1-git-send-email-l.fu@pengutronix.de>
+	<1258108877-25435-1-git-send-email-l.fu@pengutronix.de>
+	<1258108877-25435-2-git-send-email-l.fu@pengutronix.de>
 Cc: spi-devel-general@lists.sourceforge.net,
 	David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+	linux-kernel@vger.kernel.org, Luotao Fu <l.fu@pengutronix.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,13 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+V2 changes:
+* remove CS_HIGH mode
 
-Hi Grand,
+Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
+---
+ drivers/spi/mpc52xx_spi.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-here are the V2 of my patchset for mpc52xx_spi. Besides Wolframs suggestions I
-also added some more fixes. Details of changes can be checked in the patch
-header. Please do consider to apply the patches. The patch 1/2 e.g. fix bugs,
-which prevent the driver to work in some cases, as seen on my board.
-
-cheers
-Luotao Fu
+diff --git a/drivers/spi/mpc52xx_spi.c b/drivers/spi/mpc52xx_spi.c
+index 2322250..64862cf 100644
+--- a/drivers/spi/mpc52xx_spi.c
++++ b/drivers/spi/mpc52xx_spi.c
+@@ -430,6 +430,8 @@ static int __devinit mpc52xx_spi_probe(struct of_device *op,
+ 	master->num_chipselect = 1;
+ 	master->setup = mpc52xx_spi_setup;
+ 	master->transfer = mpc52xx_spi_transfer;
++	master->mode_bits = SPI_CPOL | SPI_CPHA | SPI_LSB_FIRST;
++
+ 	dev_set_drvdata(&op->dev, master);
+ 
+ 	ms = spi_master_get_devdata(master);
+-- 
+1.6.5.2
