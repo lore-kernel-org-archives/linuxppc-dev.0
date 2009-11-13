@@ -1,17 +1,17 @@
-Return-Path: <richard.rojfors@mocean-labs.com>
-Received: from av8-2-sn3.vrr.skanova.net (av8-2-sn3.vrr.skanova.net
-	[81.228.9.184]) by ozlabs.org (Postfix) with ESMTP id 4BA20B7DD9
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 23:29:02 +1100 (EST)
-Message-ID: <4AFD510C.7080407@mocean-labs.com>
-Date: Fri, 13 Nov 2009 13:29:00 +0100
-From: =?ISO-8859-1?Q?Richard_R=F6jfors?= <richard.rojfors@mocean-labs.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E8AFFB6F2B
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Nov 2009 00:40:37 +1100 (EST)
+Date: Fri, 13 Nov 2009 07:40:30 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: pull request for next
+Message-ID: <Pine.LNX.4.64.0911130740080.840@localhost.localdomain>
 MIME-Version: 1.0
-To: spi-devel-general@lists.sourceforge.net
-Subject: [PATCH v2 4/4] xilinx_spi: add a platform driver using the xilinx_spi
-	common module.
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	dbrownell@users.sourceforge.net, John Linn <John.Linn@xilinx.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,146 +21,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds in a platform device driver using the xilinx_spi common module.
+The following changes since commit 0526484aa345adbf790d1201a6f5d09be0a648a3:
+  Benjamin Herrenschmidt (1):
+        Merge commit 'origin/master' into next
 
-Tested-by: John Linn <John.Linn@xilinx.com>
-Signed-off-by: Richard Röjfors <richard.rojfors@mocean-labs.com>
----
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 35fb1e2..b0cfc98 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -253,6 +253,13 @@ config SPI_XILINX_OF
- 	help
- 	  This is the OF driver for the SPI controller IP from the Xilinx EDK.
+are available in the git repository at:
 
-+config SPI_XILINX_PLTFM
-+	tristate "Xilinx SPI controller platform device"
-+	depends on SPI_XILINX
-+	help
-+	  This is the platform driver for the SPI controller IP
-+	  from the Xilinx EDK.
-+
- #
- # Add new SPI master controllers in alphabetical order above this line
- #
-diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
-index 97dee8f..d8b0e4c 100644
---- a/drivers/spi/Makefile
-+++ b/drivers/spi/Makefile
-@@ -32,6 +32,7 @@ obj-$(CONFIG_SPI_S3C24XX)		+= spi_s3c24xx.o
- obj-$(CONFIG_SPI_TXX9)			+= spi_txx9.o
- obj-$(CONFIG_SPI_XILINX)		+= xilinx_spi.o
- obj-$(CONFIG_SPI_XILINX_OF)		+= xilinx_spi_of.o
-+obj-$(CONFIG_SPI_XILINX_PLTFM)		+= xilinx_spi_pltfm.o
- obj-$(CONFIG_SPI_SH_SCI)		+= spi_sh_sci.o
- obj-$(CONFIG_SPI_STMP3XXX)		+= spi_stmp.o
- # 	... add above this line ...
-diff --git a/drivers/spi/xilinx_spi_pltfm.c b/drivers/spi/xilinx_spi_pltfm.c
-new file mode 100644
-index 0000000..24debac
---- /dev/null
-+++ b/drivers/spi/xilinx_spi_pltfm.c
-@@ -0,0 +1,102 @@
-+/*
-+ * Support for Xilinx SPI platform devices
-+ * Copyright (c) 2009 Intel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+/* Supports:
-+ * Xilinx SPI devices as platform devices
-+ *
-+ * Inspired by xilinx_spi.c, 2002-2007 (c) MontaVista Software, Inc.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/platform_device.h>
-+
-+#include <linux/spi/spi.h>
-+#include <linux/spi/spi_bitbang.h>
-+#include <linux/spi/xilinx_spi.h>
-+
-+#include "xilinx_spi.h"
-+
-+static int __devinit xilinx_spi_probe(struct platform_device *dev)
-+{
-+	struct xspi_platform_data *pdata;
-+	struct resource *r;
-+	int irq;
-+	struct spi_master *master;
-+	u8 i;
-+
-+	pdata = dev->dev.platform_data;
-+	if (!pdata)
-+		return -ENODEV;
-+
-+	r = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+	if (!r)
-+		return -ENODEV;
-+
-+	irq = platform_get_irq(dev, 0);
-+	if (irq < 0)
-+		return -ENXIO;
-+
-+	master = xilinx_spi_init(&dev->dev, r, irq, dev->id);
-+	if (!master)
-+		return -ENODEV;
-+
-+	for (i = 0; i < pdata->num_devices; i++)
-+		spi_new_device(master, pdata->devices + i);
-+
-+	platform_set_drvdata(dev, master);
-+	return 0;
-+}
-+
-+static int __devexit xilinx_spi_remove(struct platform_device *dev)
-+{
-+	xilinx_spi_deinit(platform_get_drvdata(dev));
-+	platform_set_drvdata(dev, 0);
-+
-+	return 0;
-+}
-+
-+/* work with hotplug and coldplug */
-+MODULE_ALIAS("platform:" XILINX_SPI_NAME);
-+
-+static struct platform_driver xilinx_spi_driver = {
-+	.probe	= xilinx_spi_probe,
-+	.remove	= __devexit_p(xilinx_spi_remove),
-+	.driver = {
-+		.name = XILINX_SPI_NAME,
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+static int __init xilinx_spi_pltfm_init(void)
-+{
-+	return platform_driver_register(&xilinx_spi_driver);
-+}
-+module_init(xilinx_spi_pltfm_init);
-+
-+static void __exit xilinx_spi_pltfm_exit(void)
-+{
-+	platform_driver_unregister(&xilinx_spi_driver);
-+}
-+module_exit(xilinx_spi_pltfm_exit);
-+
-+MODULE_AUTHOR("Mocean Laboratories <info@mocean-labs.com>");
-+MODULE_DESCRIPTION("Xilinx SPI platform driver");
-+MODULE_LICENSE("GPL v2");
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
+
+Anton Vorontsov (18):
+      powerpc/qe: Increase MAX_QE_RISC to 4
+      powerpc/qe: Add qe_upload_firmware() stub for non-QE builds
+      powerpc/qe: Make qe_reset() code path safe for repeated invocation
+      powerpc/qe: QE also shuts down on MPC8568
+      powerpc/cpm: Remove SPI defines and spi structs
+      powerpc/qe&cpm2: Avoid redefinitions in CPM2 and QE headers
+      powerpc/cpm: Move CPMFCR_* defines into cpm.h
+      powerpc/qe&cpm: Implement static inline stubs for non-QE/CPM builds
+      spi_mpc8xxx: Fix uninitialized variable
+      spi_mpc8xxx: Factor out SPI mode change steps into a call
+      spi_mpc8xxx: Turn qe_mode into flags
+      spi_mpc8xxx: Add support for QE DMA mode and CPM1/CPM2 chips
+      powerpc/qe: Implement QE driver for handling resume on MPC85xx
+      powerpc/85xx/86xx: Add suspend/resume support
+      powerpc/85xx: Add power management support for MPC85xxMDS boards
+      powerpc/86xx: Add power management support for MPC8610HPCD boards
+      powerpc/83xx: Add power management support for MPC83xx QE boards
+      powerpc/fsl: Make fsl_deep_sleep() usable w/ modules and non-83xx builds
+
+Kumar Gala (3):
+      powerpc/85xx: Kconfig cleanup
+      powerpc/fsl-booke: Rework TLB CAM code
+      powerpc/fsl: Add PCI device ids for new QoirQ chips
+
+Martyn Welch (3):
+      powerpc/86xx: Enable NVRAM on GE Fanuc's SBC610
+      powerpc/86xx: Support for NVRAM on GE Fanuc's SBC310
+      powerpc/86xx: Support for NVRAM on GE Fanuc's PPC9A
+
+Poonam Aggrwal (2):
+      powerpc/85xx: Create dts for each core in CAMP mode for P2020RDB
+      powerpc/85xx: Added P1020RDB Platform support.
+
+ Documentation/powerpc/dts-bindings/fsl/board.txt |    4 +
+ arch/powerpc/Kconfig                             |   11 +-
+ arch/powerpc/boot/dts/gef_ppc9a.dts              |    6 +
+ arch/powerpc/boot/dts/gef_sbc310.dts             |    6 +
+ arch/powerpc/boot/dts/gef_sbc610.dts             |    6 +
+ arch/powerpc/boot/dts/kmeter1.dts                |    7 +
+ arch/powerpc/boot/dts/mpc832x_mds.dts            |    9 +
+ arch/powerpc/boot/dts/mpc832x_rdb.dts            |    9 +
+ arch/powerpc/boot/dts/mpc836x_mds.dts            |    9 +
+ arch/powerpc/boot/dts/mpc836x_rdk.dts            |    9 +
+ arch/powerpc/boot/dts/mpc8568mds.dts             |  119 +++--
+ arch/powerpc/boot/dts/mpc8569mds.dts             |  111 +++--
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts           |   26 +
+ arch/powerpc/boot/dts/p1020rdb.dts               |  477 +++++++++++++++++
+ arch/powerpc/boot/dts/p2020rdb_camp_core0.dts    |  363 +++++++++++++
+ arch/powerpc/boot/dts/p2020rdb_camp_core1.dts    |  184 +++++++
+ arch/powerpc/configs/86xx/gef_ppc9a_defconfig    |    2 +-
+ arch/powerpc/configs/86xx/gef_sbc310_defconfig   |    2 +-
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig   |    4 +-
+ arch/powerpc/include/asm/cpm.h                   |   82 +++
+ arch/powerpc/include/asm/cpm1.h                  |   45 --
+ arch/powerpc/include/asm/cpm2.h                  |   47 --
+ arch/powerpc/include/asm/immap_cpm2.h            |    2 +-
+ arch/powerpc/include/asm/immap_qe.h              |    8 +-
+ arch/powerpc/include/asm/qe.h                    |   43 ++-
+ arch/powerpc/kernel/asm-offsets.c                |    3 -
+ arch/powerpc/kernel/head_fsl_booke.S             |   22 -
+ arch/powerpc/mm/fsl_booke_mmu.c                  |  132 +++--
+ arch/powerpc/mm/mmu_decl.h                       |   11 -
+ arch/powerpc/platforms/83xx/suspend.c            |    1 +
+ arch/powerpc/platforms/85xx/Kconfig              |   11 +-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c        |    1 +
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c        |   34 ++-
+ arch/powerpc/platforms/86xx/Kconfig              |    3 +
+ arch/powerpc/platforms/86xx/gef_ppc9a.c          |    5 +
+ arch/powerpc/platforms/86xx/gef_sbc310.c         |    5 +
+ arch/powerpc/platforms/86xx/gef_sbc610.c         |    5 +
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c       |   48 ++-
+ arch/powerpc/platforms/Kconfig                   |    2 +-
+ arch/powerpc/platforms/Kconfig.cputype           |   17 +-
+ arch/powerpc/platforms/Makefile                  |    2 +-
+ arch/powerpc/sysdev/Makefile                     |    1 +
+ arch/powerpc/sysdev/cpm_common.c                 |    5 +-
+ arch/powerpc/sysdev/fsl_pci.c                    |   18 +-
+ arch/powerpc/sysdev/fsl_pmc.c                    |   88 +++
+ arch/powerpc/sysdev/fsl_soc.c                    |    2 +-
+ arch/powerpc/sysdev/qe_lib/qe.c                  |   61 ++-
+ drivers/spi/Kconfig                              |    3 -
+ drivers/spi/spi_mpc8xxx.c                        |  623 +++++++++++++++++++---
+ drivers/usb/gadget/fsl_qe_udc.h                  |   15 -
+ include/linux/fsl_devices.h                      |    6 +-
+ include/linux/pci_ids.h                          |   14 +
+ 52 files changed, 2308 insertions(+), 421 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/p1020rdb.dts
+ create mode 100644 arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
+ create mode 100644 arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
+ create mode 100644 arch/powerpc/sysdev/fsl_pmc.c
