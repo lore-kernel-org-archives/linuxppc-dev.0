@@ -1,16 +1,23 @@
-Return-Path: <wilbur512@gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
+	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id 58F31B7BCA
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 11:22:24 +1100 (EST)
+Received: by ywh37 with SMTP id 37so2795801ywh.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 16:22:22 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <b77025b40911121542q2d318870i627b3cc4d8bb444b@mail.gmail.com>
-References: <b77025b40911121508l350e629bt7adaa9da936788d5@mail.gmail.com>
-	<20091112233148.GF5699@hansolo.jdub.homelinux.org>
-	<b77025b40911121542q2d318870i627b3cc4d8bb444b@mail.gmail.com>
-Date: Fri, 13 Nov 2009 07:55:38 +0800
-Message-ID: <e997b7420911121555m55c0ce31ua0b3e34569418561@mail.gmail.com>
-Subject: Re: kexec for powerpc
-From: "wilbur.chan" <wilbur512@gmail.com>
-To: James Black <jblack547@gmail.com>
-Content-Type: multipart/alternative; boundary=00163628386cbd617604783547fd
-Cc: Linuxppc-dev@lists.ozlabs.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <20091112214425.GD13350@pengutronix.de>
+References: <18304285.1257929369240.JavaMail.ngmail@webmail19.ha2.local>
+	<fa686aa40911121315h4374711ftf07314cc4d9e7aff@mail.gmail.com>
+	<20091112214425.GD13350@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 12 Nov 2009 17:21:03 -0700
+Message-ID: <fa686aa40911121621qd84130ds4df75bdce849bca4@mail.gmail.com>
+Subject: Re: [PATCH] mpc5200/gpt: tiny fix for gpt period limitation
+To: Wolfram Sang <w.sang@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---00163628386cbd617604783547fd
-Content-Type: text/plain; charset=ISO-8859-1
-
-2009/11/13 James Black <jblack547@gmail.com>
-
-> powerpc32 for processors like the freescale 82xx, 83xx machines.
+On Thu, Nov 12, 2009 at 2:44 PM, Wolfram Sang <w.sang@pengutronix.de> wrote=
+:
+>> up patch 3. =A0BUT, you're on my shit list. =A0Patch 2 in your series
 >
-> Thanks,
-> JB
->
->
+> Huh, are you in a bad mood today? IMHO he addressed some valid issues; an=
+d we
+> all had to start somewhere regarding the workflow. I know that manually
+> adapting patches is annoying, but this wording sounds quite strong...
 
-maybe 83xx kexec needs to add some dtb support
+Albrecht has been around for a bit now.  He does good work, responds
+to comments, and in general shows good taste.  This particular case
+was just a bit sloppy.  The patch was damaged on the mailing list and
+it conflicted with his other patches.  I know he knows better.
 
---00163628386cbd617604783547fd
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Albrecht, I'm not actually mad at you, and I'm sorry for the harsh
+working.  The patch series is good work.  I wouldn't have picked it up
+if it was otherwise.  I'm just a little annoyed about something I know
+you can handle better.  I don't bear any ill will.
 
-<br><br>
-<div class=3D"gmail_quote">2009/11/13 James Black <span dir=3D"ltr">&lt;<a =
-href=3D"mailto:jblack547@gmail.com">jblack547@gmail.com</a>&gt;</span><br>
-<blockquote class=3D"gmail_quote" style=3D"PADDING-LEFT: 1ex; MARGIN: 0px 0=
-px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">powerpc32 for processors like th=
-e freescale 82xx, 83xx machines.<br><br>Thanks,<br>JB<br>
-<div class=3D"im">=A0</div></blockquote></div><br>maybe 83xx kexec needs to=
- add some dtb support
+Cheers,
+g.
 
---00163628386cbd617604783547fd--
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
