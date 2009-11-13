@@ -1,21 +1,34 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-px0-f181.google.com (mail-px0-f181.google.com
-	[209.85.216.181]) by ozlabs.org (Postfix) with ESMTP id 5230BB7BC1
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 12:37:00 +1100 (EST)
-Received: by pxi11 with SMTP id 11so917382pxi.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Nov 2009 17:36:58 -0800 (PST)
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 17C34B7BC2
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 12:37:35 +1100 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id nAD1Ycwc031306
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 12:34:38 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nAD1YMEI1568884
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 12:34:22 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nAD1bXVs018536
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Nov 2009 12:37:33 +1100
+Date: Fri, 13 Nov 2009 12:37:29 +1100
+From: David Gibson <dwg@au1.ibm.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: [powerpc] Next tree Nov 2 : kernel BUG at mm/mmap.c:2135!
+Message-ID: <20091113013729.GB18848@yookeroo.seuss>
+References: <20091102173845.210d1c57.sfr@canb.auug.org.au>
+	<4AEEA279.4040106@in.ibm.com> <4AF175D4.7030507@in.ibm.com>
+	<20091105001650.GD3613@yookeroo.seuss>
+	<4AFBEE98.2070208@in.ibm.com>
 MIME-Version: 1.0
-Sender: dan.j.williams@gmail.com
-In-Reply-To: <389deec70911100344j5969e834nc80a9fd330935ef3@mail.gmail.com>
-References: <389deec70911100344j5969e834nc80a9fd330935ef3@mail.gmail.com>
-Date: Thu, 12 Nov 2009 18:36:58 -0700
-Message-ID: <e9c3a7c20911121736ma9f8d72waa377c4b61b2f480@mail.gmail.com>
-Subject: Re: OOPS on MPC8548 board when writing RAID5 array
-From: Dan Williams <dan.j.williams@intel.com>
-To: hank peng <pengxihan@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-raid <linux-raid@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Suresh Vishnu <Vishnu@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4AFBEE98.2070208@in.ibm.com>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,60 +38,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Hank,
+On Thu, Nov 12, 2009 at 04:46:40PM +0530, Sachin Sant wrote:
+> David Gibson wrote:
+> >On Wed, Nov 04, 2009 at 06:08:44PM +0530, Sachin Sant wrote:
+> >>Sachin Sant wrote:
+> >>>Today's next tree failed to boot on a POWER 6 box with :
+> >>>
+> >>>------------[ cut here ]------------
+> >>>kernel BUG at mm/mmap.c:2135!
+> >>>Oops: Exception in kernel mode, sig: 5 [#2]
+> >>>SMP NR_CPUS=1024 NUMA pSeries
+> >>Problem exists with today's next as well.
+> >>
+> >>Likely cause for this problem seems to the following commit.
+> >>If i revert this patch the machine boots fine.
+> >>
+> >>commit a0668cdc154e54bf0c85182e0535eea237d53146
+> >>powerpc/mm: Cleanup management of kmem_caches for pagetables
+> >
+> >Ugh.  Ok, it's not at all obvious how my patch could cause this bug.
+> >Can you send your .config?
+> >
+> Still present in today's next.
 
-Thanks for testing.
+Sorry, I've been sidetracked by other issues and have only managed to
+look into this today.  My initial attempts to reproduce the bug with
+your config on both POWER6 and POWER5+ have failed though.
 
-On Tue, Nov 10, 2009 at 4:44 AM, hank peng <pengxihan@gmail.com> wrote:
-> CPU is MPC8548, kernel version is 2.6.31.5,CONFIG_FSL_DMA and
-> CONFIG_ASYNC_TX_DMA options are all enabled.
-> #mdadm -C /dev/md0 --assume-clean -l5 -n3 /dev/sd{a,b,c}
-> #dd if=3D/dev/zero of=3D/dev/md0 bs=3D1M count=3D1000
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> MPC85xx CDS
-> Modules linked in:
-> NIP: c01c45d8 LR: c01c4d48 CTR: 00000000
-> REGS: c2dd5c80 TRAP: 0700 =A0 Not tainted =A0(2.6.31.5)
-> MSR: 00029000 <EE,ME,CE> =A0CR: 22004028 =A0XER: 00000000
-> TASK =3D e820a580[3804] 'md0_raid5' THREAD: c2dd4000
-> GPR00: 00000001 c2dd5d30 e820a580 c2fb1088 00000001 00000000 00000002 000=
-01000
-> GPR08: 00000001 c0485a20 00000000 ef8092f8 22002024 55555555 c2d67870 c02=
-82d2c
-> GPR16: 00001000 e8355c00 c2eff964 00000000 00000000 00000019 01000040 c2d=
-d5e00
-> GPR24: c2dd5dfc 00000001 c2dd5dc0 c099c420 00000000 c2d67838 00000002 c2d=
-d5d58
-> NIP [c01c45d8] async_tx_quiesce+0x28/0x74
-[..]
-> I checked the kernel source code, and find that this OOPS was caused
-> by the following BUG_ON code:
-> It is in crypto/async_tx/async_tx.c:
-> void async_tx_quiesce(struct dma_async_tx_descriptor **tx)
-> {
-> =A0 =A0 =A0 =A0if (*tx) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* if ack is already set then we cannot be=
- sure
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 * we are referring to the correct operati=
-on
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 */
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0BUG_ON(async_tx_test_ack(*tx));
-> =A0 /* OOPS occured */
+Is it possible to get the complete boot log from this system - not
+just the [cut here] section around the BUG()?  This should help to
+determine exactly when during boot the bug is being triggered.
 
-Yes, this looks like a manifestation of the issue I brought up in my
-review of the driver [1].  The talitos_prep_dma_xor routine is always
-acknowledging its descriptors, which it should not because that is the
-responsibility of the client of the api.  When the raid code tries to
-attach a memcpy that depends on the xor it sees that it needs to
-switch to from talitos to fsldma (or software if fsldma is turned
-off).  Since talitos does not have the DMA_INTERRUPT capability to
-trigger the channel switch we need to perform a synchronous wait for
-the xor to complete before submitting the memcpy.  When the ack bit is
-not set the xor descriptor might be recycled by the dma device driver
-while we are waiting for it, hence the BUG_ON().
-
---
-Dan
-
-See the final comment:
-[1]: http://marc.info/?l=3Dlinux-raid&m=3D125685641412112&w=3D2
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
