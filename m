@@ -1,20 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 01AE1B7088
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 Nov 2009 05:00:09 +1100 (EST)
-Date: Mon, 16 Nov 2009 21:00:08 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Torsten Fleischer <to-fleischer@t-online.de>
-Subject: Re: spi_mpc8xxx.c: chip select polarity problem
-Message-ID: <20091116180008.GA6748@oksana.dev.rtsoft.ru>
-References: <200911161742.46663.to-fleischer@t-online.de>
-	<20091116171037.GA26163@oksana.dev.rtsoft.ru>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id B6315B7093
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 05:44:23 +1100 (EST)
+Date: Mon, 16 Nov 2009 19:44:16 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] net/can: add driver for mscan family & mpc52xx_mscan
+Message-ID: <20091116184416.GA21491@pengutronix.de>
+References: <1258128892-28800-1-git-send-email-w.sang@pengutronix.de>
+	<fa686aa40911130939x54ac53f9x173a875a5a4435d3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20091116171037.GA26163@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7JfCtLOvnd9MIVvH"
+In-Reply-To: <fa686aa40911130939x54ac53f9x173a875a5a4435d3@mail.gmail.com>
+Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,48 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 16, 2009 at 08:10:37PM +0300, Anton Vorontsov wrote:
-[...]
-> > I also tried to set alow_flags[x] = 0 for active low. In this case the 
-> > transfer works, but the initial value for the CS is wrong (Low instead of 
-> > High).
-> 
-> So it might be better to fix up initial value in the platform code?
 
-Oh, we actually cannot, because the driver calls
-gpio_direction_output().
+--7JfCtLOvnd9MIVvH
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-And since we don't know the mode prior to SPI device's driver
-probe() finished, we'll have to set up an initial state in the
-first SPI transfer. I.e. something like this:
+Hi Grant,
 
-diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
-index 0fd0ec4..3b95382 100644
---- a/drivers/spi/spi_mpc8xxx.c
-+++ b/drivers/spi/spi_mpc8xxx.c
-@@ -114,6 +114,7 @@ struct spi_mpc8xxx_cs {
- 	u32 rx_shift;		/* RX data reg shift when in qe mode */
- 	u32 tx_shift;		/* TX data reg shift when in qe mode */
- 	u32 hw_mode;		/* Holds HW mode register settings */
-+	int initialized;
- };
- 
- static inline void mpc8xxx_spi_write_reg(__be32 __iomem *reg, u32 val)
-@@ -507,11 +508,17 @@ static int mpc8xxx_spi_transfer(struct spi_device *spi,
- 				struct spi_message *m)
- {
- 	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
-+	struct spi_mpc8xxx_cs *cs = spi->controller_state;
- 	unsigned long flags;
- 
- 	m->actual_length = 0;
- 	m->status = -EINPROGRESS;
- 
-+	if (cs && !cs->initialized) {
-+		mpc8xxx_spi_chipselect(spi, BITBANG_CS_INACTIVE);
-+		cs->initialized = 1;
-+	}
-+
- 	spin_lock_irqsave(&mpc8xxx_spi->lock, flags);
- 	list_add_tail(&m->queue, &mpc8xxx_spi->queue);
- 	queue_work(mpc8xxx_spi->workqueue, &mpc8xxx_spi->work);
+Wolfgang commented on some points already, I will pick up the other remarks,
+just one question:
+
+> > + =A0 =A0 =A0 clk_src =3D of_get_property(np, "fsl,mscan-clk-src", NULL=
+);
+> > + =A0 =A0 =A0 if (clk_src && strcmp(clk_src, "ip") =3D=3D 0)
+>=20
+> Should protect against non-null.  strncmp() maybe?
+
+"ip" is null-terminated, or what do you mean?
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--7JfCtLOvnd9MIVvH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAksBnYAACgkQD27XaX1/VRsMsACeM/nHKEPAcSgJm1Sf8GJCBJNH
+ZfsAoI4nFj8M+aEq6Ge5oedSn+YlBMBt
+=mI3e
+-----END PGP SIGNATURE-----
+
+--7JfCtLOvnd9MIVvH--
