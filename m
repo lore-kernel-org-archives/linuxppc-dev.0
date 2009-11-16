@@ -1,39 +1,25 @@
-Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7037BB7B78
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 16 Nov 2009 21:36:58 +1100 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp01.in.ibm.com (8.14.3/8.13.1) with ESMTP id nAGAasdC018604
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2009 16:06:54 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nAGAasfO1351854
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2009 16:06:54 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nAGAaq9B030254
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2009 21:36:54 +1100
-Date: Mon, 16 Nov 2009 16:06:49 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-	Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>, Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v9 PATCH 0/9]: cpuidle: Cleanup cpuidle/ Introduce cpuidle to
-	POWER.
-Message-ID: <20091116103649.GA23142@linux.vnet.ibm.com>
-References: <20091016093850.GB27350@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20091016093850.GB27350@linux.vnet.ibm.com>
-Cc: linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: arun@linux.vnet.ibm.com
+Return-Path: <hch@lst.de>
+Received: from verein.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3FED5B7BEE
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Nov 2009 22:05:37 +1100 (EST)
+Date: Mon, 16 Nov 2009 11:54:27 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
+Message-ID: <20091116105427.GA17411@lst.de>
+References: <20091010153314.827301943@linutronix.de>
+	<alpine.LFD.2.00.0910212350210.3526@localhost.localdomain>
+	<20091021221619.GF4880@nowhere> <200911021651.53331.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200911021651.53331.arnd@arndb.de>
+Cc: Arnd Bergmann <arndbergmann@googlemail.com>,
+	Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	John Kacur <jkacur@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,55 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-16 15:08:50]:
+On Mon, Nov 02, 2009 at 04:51:52PM +0100, Arnd Bergmann wrote:
+> I looked at what places in the code manipulate file->f_pos directly
+> and found that almost all the uses in driver code are broken because
+> they don't take any locks. Most of them are in driver specific
+> lseek operations. Others are in read/write methods and are even
+> more broken because the change gets immediately overwritten by
+> vfs_read/vfs_write when the driver method returns.
+> 
+> IMHO, we should complete the pushdown into all ioctl methods
+> that John and Thomas have started working on, fixing the lseek
+> methods in those files we touch.
+> 
+> When that is done, all interaction between default_llseek and
+> driver locking has to be with explicit calls to lock_kernel
+> in those drivers, so we can reasonably well script the search
+> for drivers needing the BKL in llseek: everyhing that
+>  a) defines file_operations without an llseek function,
+>  b) touches f_pos somewhere, and
+>  c) calls lock_kernel() somewhere
+> That should only be a small number and when they are fixed,
+> we can remove default_llseek and instead call generic_file_llseek
+> for any file operation without a separate llseek method.
 
-> Hi,
-> 
-> This patchset introduces cpuidle infrastructure to POWER, prototyping
-> for pSeries, and also does a major refactoring of current x86 idle
-> power management and a cleanup of cpuidle infrastructure.
-> 
-> This patch series has been in discussion for quite a while now and
-> below are the links to the previous discussions.
-> 
-> Hopefully, this is ready to be included in the -tip tree.
-> 
-> v8 --> http://lkml.org/lkml/2009/10/8/82
-> v7 --> http://lkml.org/lkml/2009/10/6/278
-> v6 --> http://lkml.org/lkml/2009/9/22/180
-> v5 --> http://lkml.org/lkml/2009/9/22/26
-> v4 --> http://lkml.org/lkml/2009/9/1/133
-> v3 --> http://lkml.org/lkml/2009/8/27/124
-> v2 --> http://lkml.org/lkml/2009/8/26/233
-> v1 --> http://lkml.org/lkml/2009/8/19/150
-> 
-> 
-> Changes in this version:
-> ----------------------------------------
->         *Added documentation for the new design regarding registration
->         of idle routines in Documentation/cpuidle/core.txt
-> 
->         *Platforms which do not want the code bloat of cpuidle can
->         disable CONFIG_CPU_IDLE. Alternate definition of
->         cpuidle_idle_call is provided which would call the appropriate
->         idle routine provided by the arch without the overhead of
->         registration and governors.
->         (Thanks to Andi for raising this isuue)
-> 
->         *I had missed a cpuidle_kick_cpus() in
->         cpuidle_pause_and_lock() which is called from the hotplug
->         path. So added that and tested this patchset by subjecting it
->         to cpuhotplug torture.
->         (Thanks to Balbir for noticing this)
-> 
-> 
-
-Hi Peter,
-
-Did you get time to look at this series?
-Please let me know if we need any changes to this version to get it
-merged.
-
-thanks
-> --arun
-> 
+As mentioned before making generic_file_llseek the new default is
+probably a bad idea.  The majority of our file_operations instances
+don't actually support seeking, so no_llseek should become the new
+default if you spend some effort on converting things.  Anything that
+wants to allow seeking will have to set a llseek method.  This also
+mirrors what we do for other file operations.  None of the major ones
+has a non-trivial default, it's either silently succeeding for a
+selected few like open or release or returning an error for operatings
+that actually do something like read and write.
