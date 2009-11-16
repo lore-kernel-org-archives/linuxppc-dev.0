@@ -1,14 +1,14 @@
 Return-Path: <dbaryshkov@gmail.com>
-Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.24])
-	by ozlabs.org (Postfix) with ESMTP id B3FDBB7B97
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 00:59:05 +1100 (EST)
-Received: by ey-out-2122.google.com with SMTP id 4so1611785eyf.33
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Nov 2009 05:59:05 -0800 (PST)
+Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
+	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id 6EE461007F9
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 00:59:06 +1100 (EST)
+Received: by ywh37 with SMTP id 37so5344740ywh.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Nov 2009 05:59:04 -0800 (PST)
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 3/4] mpc8349emitx: add OF descriptions of LocalBus devices
-Date: Mon, 16 Nov 2009 16:58:53 +0300
-Message-Id: <1258379934-32352-4-git-send-email-dbaryshkov@gmail.com>
+Subject: [PATCH 2/4] mpc8349emitx: populate I2C busses
+Date: Mon, 16 Nov 2009 16:58:52 +0300
+Message-Id: <1258379934-32352-3-git-send-email-dbaryshkov@gmail.com>
 In-Reply-To: <1258379934-32352-1-git-send-email-dbaryshkov@gmail.com>
 References: <1258379934-32352-1-git-send-email-dbaryshkov@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
@@ -21,45 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Describe all LocalBus chipselects on MPC8349E-MITX board. Also add flash
-bindings.
+Add OF descriptions of EEPROM, two GPIO extenders and SPD hanging on I2C
+on this board.
 
 Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- arch/powerpc/boot/dts/mpc8349emitx.dts |   21 ++++++++++++++++++++-
- 1 files changed, 20 insertions(+), 1 deletions(-)
+ arch/powerpc/boot/dts/mpc8349emitx.dts |   25 +++++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-index 0fb78b2..097950c 100644
+index 16872c9..0fb78b2 100644
 --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
 +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -374,7 +374,26 @@
- 		compatible = "fsl,mpc8349e-localbus",
- 			     "fsl,pq2pro-localbus";
- 		reg = <0xe0005000 0xd8>;
--		ranges = <0x3 0x0 0xf0000000 0x210>;
-+		ranges = <0x0 0x0 0xfe000000 0x1000000	/* flash */
-+			  0x1 0x0 0xf8000000 0x20000	/* VSC 7385 */
-+			  0x2 0x0 0xf9000000 0x200000	/* exp slot */
-+			  0x3 0x0 0xf0000000 0x210>;	/* CF slot */
+@@ -90,6 +90,12 @@
+ 			interrupts = <14 0x8>;
+ 			interrupt-parent = <&ipic>;
+ 			dfsrr;
 +
-+		flash@0,0 {
-+			compatible = "cfi-flash";
-+			reg = <0x0      0x0 0x800000>;
-+			bank-width = <2>;
-+			device-width = <1>;
-+		};
++			eeprom: at24@50 {
++				compatible = "st-micro,24c256";
++				reg = <0x50>;
++			};
 +
-+		flash@0,1 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x800000 0x800000>;
-+			bank-width = <2>;
-+			device-width = <1>;
-+		};
+ 		};
  
- 		pata@3,0 {
- 			compatible = "fsl,mpc8349emitx-pata", "ata-generic";
+ 		i2c@3100 {
+@@ -109,6 +115,25 @@
+ 				interrupt-parent = <&ipic>;
+ 			};
+ 
++			pcf1: iexp@38 {
++				#gpio-cells = <2>;
++				compatible = "ti,pcf8574a";
++				reg = <0x38>;
++				gpio-controller;
++			};
++
++			pcf2: iexp@39 {
++				#gpio-cells = <2>;
++				compatible = "ti,pcf8574a";
++				reg = <0x39>;
++				gpio-controller;
++			};
++
++			spd: at24@51 {
++				compatible = "at24,spd";
++				reg = <0x51>;
++			};
++
+ 			mcu_pio: mcu@a {
+ 				#gpio-cells = <2>;
+ 				compatible = "fsl,mc9s08qg8-mpc8349emitx",
 -- 
 1.6.5
