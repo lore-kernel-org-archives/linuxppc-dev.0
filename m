@@ -1,27 +1,20 @@
-Return-Path: <grundler@google.com>
-Received: from smtp-out.google.com (smtp-out.google.com [216.239.33.17])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C0F06B6F29
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 04:48:14 +1100 (EST)
-Received: from zps78.corp.google.com (zps78.corp.google.com [172.25.146.78])
-	by smtp-out.google.com with ESMTP id nAGHbdOS021443
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Nov 2009 17:37:40 GMT
-Received: from gv-out-0910.google.com (gveo2.prod.google.com [10.16.166.2])
-	by zps78.corp.google.com with ESMTP id nAGHbYCx003518
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Nov 2009 09:37:35 -0800
-Received: by gv-out-0910.google.com with SMTP id o2so697965gve.31
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Nov 2009 09:37:34 -0800 (PST)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 01AE1B7088
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 17 Nov 2009 05:00:09 +1100 (EST)
+Date: Mon, 16 Nov 2009 21:00:08 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Torsten Fleischer <to-fleischer@t-online.de>
+Subject: Re: spi_mpc8xxx.c: chip select polarity problem
+Message-ID: <20091116180008.GA6748@oksana.dev.rtsoft.ru>
+References: <200911161742.46663.to-fleischer@t-online.de>
+	<20091116171037.GA26163@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-In-Reply-To: <1258352362-11231-1-git-send-email-vivek.mahajan@freescale.com>
-References: <1258352362-11231-1-git-send-email-vivek.mahajan@freescale.com>
-Date: Mon, 16 Nov 2009 09:37:34 -0800
-Message-ID: <da824cf30911160937l38651a44sc25a3315efd24aea@mail.gmail.com>
-Subject: Re: [PATCH 1/1] ata/sata_sil24: MSI support, disabled by default
-From: Grant Grundler <grundler@google.com>
-To: Vivek Mahajan <vivek.mahajan@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20091116171037.GA26163@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,88 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Nov 15, 2009 at 10:19 PM, Vivek Mahajan
-<vivek.mahajan@freescale.com> wrote:
-> The following patch adds MSI support. Some platforms
-> may have broken MSI, so those are defaulted to use
-> legacy PCI interrupts.
->
-> Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
-> ---
-> =C2=A0drivers/ata/sata_sil24.c | =C2=A0 =C2=A09 +++++++++
-> =C2=A01 files changed, 9 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/ata/sata_sil24.c b/drivers/ata/sata_sil24.c
-> index e6946fc..1370df6 100644
-> --- a/drivers/ata/sata_sil24.c
-> +++ b/drivers/ata/sata_sil24.c
-> @@ -417,6 +417,10 @@ static struct ata_port_operations sil24_ops =3D {
-> =C2=A0#endif
-> =C2=A0};
->
-> +static int sata_sil24_msi; =C2=A0 =C2=A0/* Disable MSI */
-> +module_param_named(msi, sata_sil24_msi, bool, S_IRUGO);
-> +MODULE_PARM_DESC(msi, "Enable MSI (Default: false)");
+On Mon, Nov 16, 2009 at 08:10:37PM +0300, Anton Vorontsov wrote:
+[...]
+> > I also tried to set alow_flags[x] = 0 for active low. In this case the 
+> > transfer works, but the initial value for the CS is wrong (Low instead of 
+> > High).
+> 
+> So it might be better to fix up initial value in the platform code?
 
-Vivek,
-Do we even still need the parameter? I'm thinking either MSI works
-with a chipset
-or it doesn't. The kernel has globals to "know" which state is true.
+Oh, we actually cannot, because the driver calls
+gpio_direction_output().
 
-If the parameter is needed, when this driver is compiled into the kernel, h=
-ow
-is "msi" parameter specified?
-I think the parameter needs to be documented and fit in with other
-"msi" parameters.
-See "nomsi" in Documentation/kernel-parameters.txt.
+And since we don't know the mode prior to SPI device's driver
+probe() finished, we'll have to set up an initial state in the
+first SPI transfer. I.e. something like this:
 
-If you want to keep this module parameter, can I suggest calling the
-exported parameter "sata_sil24_msi"?
-
-I'm not able to test this since the chipset I have sata_sil24 devices
-plugged into don't support MSI (older AMD/Nvidia chipset). :(
-
-
-> +
-> =C2=A0/*
-> =C2=A0* Use bits 30-31 of port_flags to encode available port numbers.
-> =C2=A0* Current maxium is 4.
-> @@ -1340,6 +1344,11 @@ static int sil24_init_one(struct pci_dev *pdev, co=
-nst struct pci_device_id *ent)
->
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0sil24_init_controller(host);
->
-> + =C2=A0 =C2=A0 =C2=A0 if (sata_sil24_msi && !!pci_msi_enable(pdev)) {
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_printk(KERN_INFO, =
-&pdev->dev, "Using MSI\n");
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 pci_intx(pdev, 0);
-
-pci_intx() isn't documented in MSI-HOWTO.txt  - because it's already called=
-:
-    pci_msi_enable() -> pci_msi_enable_block() -> msi_capability_init()
-       -> pci_intx_for_msi(dev, 0) -> pci_intx(pdev, 0);
-
-(thanks to willy (Mathew Wilcox) for pointing me at
-msi_capability_init() - I overlooked it)
-
-Please add "Reviewed-by: Grant Grundler <grundler@google.com>" once the
-variable name is changed and the pci_intx() call is removed.
-
-cheers,
-grant
-
-> + =C2=A0 =C2=A0 =C2=A0 }
-> +
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0pci_set_master(pdev);
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0return ata_host_activate(host, pdev->irq, sil2=
-4_interrupt, IRQF_SHARED,
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &sil24_sht);
-> --
-> 1.5.6.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =C2=A0http://vger.kernel.org/majordomo-info.html
->
+diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
+index 0fd0ec4..3b95382 100644
+--- a/drivers/spi/spi_mpc8xxx.c
++++ b/drivers/spi/spi_mpc8xxx.c
+@@ -114,6 +114,7 @@ struct spi_mpc8xxx_cs {
+ 	u32 rx_shift;		/* RX data reg shift when in qe mode */
+ 	u32 tx_shift;		/* TX data reg shift when in qe mode */
+ 	u32 hw_mode;		/* Holds HW mode register settings */
++	int initialized;
+ };
+ 
+ static inline void mpc8xxx_spi_write_reg(__be32 __iomem *reg, u32 val)
+@@ -507,11 +508,17 @@ static int mpc8xxx_spi_transfer(struct spi_device *spi,
+ 				struct spi_message *m)
+ {
+ 	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
++	struct spi_mpc8xxx_cs *cs = spi->controller_state;
+ 	unsigned long flags;
+ 
+ 	m->actual_length = 0;
+ 	m->status = -EINPROGRESS;
+ 
++	if (cs && !cs->initialized) {
++		mpc8xxx_spi_chipselect(spi, BITBANG_CS_INACTIVE);
++		cs->initialized = 1;
++	}
++
+ 	spin_lock_irqsave(&mpc8xxx_spi->lock, flags);
+ 	list_add_tail(&m->queue, &mpc8xxx_spi->queue);
+ 	queue_work(mpc8xxx_spi->workqueue, &mpc8xxx_spi->work);
