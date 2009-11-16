@@ -1,22 +1,14 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 80E5EB7088
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 09:55:25 +1100 (EST)
-In-Reply-To: <20091116212741.GA10968@loki.buserror.net>
-References: <1258304977-11760-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091116210009.GA5113@loki.buserror.net>
-	<20091116212741.GA10968@loki.buserror.net>
-Subject: Re: [PATCH 00/10] Fix 8xx MMU/TLB
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OF8A8D1539.83855DA3-ONC1257670.007D4AD1-C1257670.007DC74A@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 16 Nov 2009 23:53:50 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 8E394B7B91
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 09:58:15 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: netdev@vger.kernel.org
+Date: Mon, 16 Nov 2009 23:57:43 +0100
+Message-Id: <1258412274-14686-1-git-send-email-w.sang@pengutronix.de>
+Subject: updates to the mscan-driver in net-next
+Cc: socketcan-core@lists.berlios.de, linuxppc-dev@ozlabs.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +18,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 16/11/2009 22:27:41:
->
-> On Mon, Nov 16, 2009 at 03:00:09PM -0600, Scott Wood wrote:
-> > On Sun, Nov 15, 2009 at 06:09:27PM +0100, Joakim Tjernlund wrote:
-> > > [I used the wrong branch, this will hopefully not conflict]
-> > >
-> > > This is hopfully the last iteration of the series.
-> > > Rex & Scott, please test and signoff.
-> > > Changes since last version:
-> > >  - Added mandatory pinning of iTLB
-> > >  - Added "DTLB Miss cleanup"
-> >
-> > I still get the EFAULTs.
+Hello,
 
-umm, this worked before this series with your own
-version, right?
+here are the patches which fix the issues for the mscan & mpc52xx_can drivers
+raised by Wolfgang Grandegger and Grant Likely. They are based on the initial
+version of the drivers I sent a few days ago. Devicetree-discuss has been added
+for the property changes. I will also update my branch on pengutronix.de
+tomorrow, I seem to have issues when trying that from home :(^
 
-Did I screw up with the  "DTLB Miss cleanup"?
+Regards,
 
-Does the self modifying code version work any better?
+   Wolfram
 
->
-> This snippet of strace is particularly interesting:
->
-> mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) =
-> 0x30020000
-> read(0, 0x30020000, 1024)               = -1 EFAULT (Bad address)
 
-I remember Rex saw something similar?
+Wolfram Sang (11):
+      net/can/mscan: move defines into .h file
+      net/can/mscan: trivial fixes
+      net/can/mscan: drop support for CAN_MODE_{SLEEP|STOP}
+      net/can/mscan: use {clr|set}bits8 macros
+      net/can/mscan: fix function annotations
+      net/can/mscan: drop assignment in while-construct
+      net/can/mpc52xx_can: refactor clock-get routine
+      net/can/mpc52xx_can: improve properties and their description
+      net/can/mscan: replace hardcoded values with defines
+      net/can/mscan: add error path to mscan_open()
+      net/can/mscan: improve build
 
->
-> Or this:
->
-> brk(0x10036000)                         = 0x10036000
-> fstat64(1, {st_mode=S_IFCHR|0660, st_rdev=makedev(5, 1), ...}) = 0
-> open("/etc/mtab", O_RDONLY|O_LARGEFILE) = 3
-> fstat64(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
-> read(3, 0x10016000, 4096)               = -1 EFAULT (Bad address)
->
-> It seems that the failures are related to reading from /proc (/etc/mtab is
-> linked to /proc/mounts), though some /proc reads work
-> (/proc/self/oom_score).  I also see the uname syscall failing in some apps
-> (but not in the uname app itself, oddly), especially /proc-related apps such
-> as ps and top, though they're not actually accessing /proc with this call:
->
-> uname(0xffef7d0)                        = -1 EFAULT (Bad address)
->
-> -Scott
->
->
+ Documentation/powerpc/dts-bindings/fsl/mpc5200.txt |    9 +-
+ drivers/net/can/Kconfig                            |   19 +---
+ drivers/net/can/mscan/Kconfig                      |   23 ++++
+ drivers/net/can/mscan/Makefile                     |    4 +-
+ .../net/can/mscan/{mpc52xx_can.c => mpc5xxx_can.c} |   64 ++++-------
+ drivers/net/can/mscan/mscan.c                      |  121 +++++++------------
+ drivers/net/can/mscan/mscan.h                      |   36 ++++++-
+ 7 files changed, 133 insertions(+), 143 deletions(-)
+ create mode 100644 drivers/net/can/mscan/Kconfig
+ rename drivers/net/can/mscan/{mpc52xx_can.c => mpc5xxx_can.c} (90%)
