@@ -1,19 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
-	by ozlabs.org (Postfix) with ESMTP id E293DB70CF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 16 Nov 2009 19:14:20 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Bug in drivers/serial/of_serial.c?
-Date: Mon, 16 Nov 2009 09:09:08 +0100
-References: <8B957E110B62714A84290A01A597805F05CA0AA0@Exchange.discretix.com>
-In-Reply-To: <8B957E110B62714A84290A01A597805F05CA0AA0@Exchange.discretix.com>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 7C677B7B70
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Nov 2009 19:41:15 +1100 (EST)
+Message-ID: <4B011001.807@grandegger.com>
+Date: Mon, 16 Nov 2009 09:40:33 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Message-Id: <200911160909.08433.arnd@arndb.de>
-Cc: Alon Ziv <alonz@discretix.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] net/can: add driver for mscan family & mpc52xx_mscan
+References: <1258128892-28800-1-git-send-email-w.sang@pengutronix.de>
+	<fa686aa40911130939x54ac53f9x173a875a5a4435d3@mail.gmail.com>
+In-Reply-To: <fa686aa40911130939x54ac53f9x173a875a5a4435d3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,14 +23,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sunday 15 November 2009, Alon Ziv wrote:
-> *)PORT_16450, },
-> -       { .type = "serial", .compatible = "ns16550",  .data = (void *)PORT_16550, },
-> +       { .type = "serial", .compatible = "ns16550",  .data = (void *)PORT_16550A, },
+Grant Likely wrote:
+> On Fri, Nov 13, 2009 at 9:14 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
+>> Taken from socketcan-svn, fixed remaining todos, cleaned up, tested with a
+>> phyCORE-MPC5200B-IO and a custom board.
+>>
+>> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+>> Cc: Wolfgang Grandegger <wg@grandegger.com>
+>> Cc: Grant Likely <grant.likely@secretlab.ca>
+>> Cc: David Miller <davem@davemloft.net>
+> 
+> I don't see any locking in this driver.  What keeps the mscan_isr or
+> other routines from conflicting with each other?  What is the
+> concurrency model for CAN devices?
 
-Does not seem logical. If the device claims compatibility with ns16550, we should
-not automatically assume it's an ns16550a. Why not add another line for 
+There is concurrency between the mscan_start_xmit() and mscan_irq()
+routine, which is handled by disabling/enabling the TX interrupt source.
+CAN configuration (bit-timing) can only be changed when the device is
+stopped (down) and bus-off recovery requires that interrupts are
+disabled or the hadrware does not send/receive messages after the
+bus-off occurred.
 
-{ .type = "serial", .compatible = "ns16550a",  .data = (void *)PORT_16550A, },
+> More comments below.  I don't have the background to delve into the
+> CAN details, but I can make some comments on the general structure of
+> the driver.
 
-	Arnd <><
+[snip]
+>> +static unsigned int  __devinit mpc52xx_can_clock_freq(struct of_device *of,
+>> +                                                     int clock_src)
+>> +{
+>> +       unsigned int pvr;
+>> +
+>> +       pvr = mfspr(SPRN_PVR);
+>> +
+>> +       if (clock_src == MSCAN_CLKSRC_BUS || pvr == 0x80822011)
+>> +               return mpc5xxx_get_bus_frequency(of->node);
+>> +
+>> +       return mpc52xx_can_xtal_freq(of);
+>> +}
+> 
+> mpc52xx_can_xtal_freq() is only used by this function.  Do they need
+> to be separate?
+
+Not really, and it would save some lines of code.
+
+[snip]
+>> +static int mscan_set_mode(struct net_device *dev, u8 mode)
+>> +{
+>> +       struct mscan_priv *priv = netdev_priv(dev);
+>> +       struct mscan_regs *regs = (struct mscan_regs *)priv->reg_base;
+>> +       int ret = 0;
+>> +       int i;
+>> +       u8 canctl1;
+>> +
+>> +       if (mode != MSCAN_NORMAL_MODE) {
+>> +
+>> +               if (priv->tx_active) {
+>> +                       /* Abort transfers before going to sleep */#
+>> +                       out_8(&regs->cantarq, priv->tx_active);
+>> +                       /* Suppress TX done interrupts */
+>> +                       out_8(&regs->cantier, 0);
+>> +               }
+>> +
+>> +               canctl1 = in_8(&regs->canctl1);
+>> +               if ((mode & MSCAN_SLPRQ) && (canctl1 & MSCAN_SLPAK) == 0) {
+>> +                       out_8(&regs->canctl0,
+>> +                             in_8(&regs->canctl0) | MSCAN_SLPRQ);
+>> +                       for (i = 0; i < MSCAN_SET_MODE_RETRIES; i++) {
+>> +                               if (in_8(&regs->canctl1) & MSCAN_SLPAK)
+>> +                                       break;
+>> +                               udelay(100);
+> 
+> Ugh.  Can you sleep instead?  This burns a lot of CPU cycles to no purpose.
+
+A real sleep for 100us? The usual jiffy based sleep would take 1..10 ms,
+at least. I think we should check how much time/cycles it usually takes.
+
+[snip]
+>> +static int mscan_do_set_mode(struct net_device *dev, enum can_mode mode)
+>> +{
+>> +
+>> +       struct mscan_priv *priv = netdev_priv(dev);
+>> +       int ret = 0;
+>> +
+>> +       if (!priv->open_time)
+>> +               return -EINVAL;
+>> +
+>> +       switch (mode) {
+>> +       case CAN_MODE_SLEEP:
+>> +       case CAN_MODE_STOP:
+>> +               netif_stop_queue(dev);
+>> +               mscan_set_mode(dev,
+>> +                              (mode ==
+>> +                               CAN_MODE_STOP) ? MSCAN_INIT_MODE :
+>> +                              MSCAN_SLEEP_MODE);
+> 
+> A little hard on the eyes.  Can you rework to not spill over 4 lines?
+> (ie. calc mode flag on the line above?)
+
+These cases can safely be removed as currently only CAN_MODE_START is
+supported by the upper layer.
+
+Wolfgang.
