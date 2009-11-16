@@ -1,16 +1,17 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id C8318104A3B
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 10:00:48 +1100 (EST)
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: netdev@vger.kernel.org
-Date: Mon, 16 Nov 2009 23:57:54 +0100
-Message-Id: <1258412274-14686-12-git-send-email-w.sang@pengutronix.de>
-In-Reply-To: <1258412274-14686-1-git-send-email-w.sang@pengutronix.de>
-References: <1258412274-14686-1-git-send-email-w.sang@pengutronix.de>
-Subject: [PATCH 11/11] net/can/mscan: improve build
-Cc: socketcan-core@lists.berlios.de, linuxppc-dev@ozlabs.org,
-	David Miller <davem@davemloft.net>
+Return-Path: <CWald@WatchGuardVideo.com>
+Received: from wgv4.watchguardvideo.com (mail.watchguardvideo.com
+	[69.198.24.138]) by ozlabs.org (Postfix) with ESMTP id DA9C5B6F29
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 04:46:31 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: [PATCH] POWERPC 4xx: Fix PCI in AMCC 440EP Yosemite DTS
+Date: Mon, 16 Nov 2009 11:36:40 -0600
+Message-ID: <13F6A75BE29CE44F801B912901C3EF27022A3993@wgv4.watchguardvideo.local>
+From: "Curtis Wald" <CWald@WatchGuardVideo.com>
+To: <jwboyer@linux.vnet.ibm.com>,
+	<mporter@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,621 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-- move Kconfig entries to the subdirectory
-- do remaining renames of mpc52xx to mpc5xxx
+Yosemite.dts stanza for PCI was copied from Bamboo which has four PCI
+slots; Yosemite only has one PCI slot which is mapped to
+IDSEL 12, ADDR 22, IRQ2 Vector 25, INTA.
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Signed-off-by: Curtis Wald <cwald@watchguardvideo.com>
 ---
- drivers/net/can/Kconfig             |   19 +---
- drivers/net/can/mscan/Kconfig       |   23 +++
- drivers/net/can/mscan/Makefile      |    4 +-
- drivers/net/can/mscan/mpc52xx_can.c |  259 -----------------------------------
- drivers/net/can/mscan/mpc5xxx_can.c |  259 +++++++++++++++++++++++++++++++++++
- 5 files changed, 285 insertions(+), 279 deletions(-)
- create mode 100644 drivers/net/can/mscan/Kconfig
- delete mode 100644 drivers/net/can/mscan/mpc52xx_can.c
- create mode 100644 drivers/net/can/mscan/mpc5xxx_can.c
+ arch/powerpc/boot/dts/yosemite.dts |   17 +++++------------
+ 1 files changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/can/Kconfig b/drivers/net/can/Kconfig
-index c16e6ff..c1cfe2e 100644
---- a/drivers/net/can/Kconfig
-+++ b/drivers/net/can/Kconfig
-@@ -108,24 +108,7 @@ config CAN_MCP251X
- 	---help---
- 	  Driver for the Microchip MCP251x SPI CAN controllers.
- 
--config CAN_MSCAN
--	depends on CAN_DEV && (PPC || M68K || M68KNOMMU)
--	tristate "Support for Freescale MSCAN based chips"
--	---help---
--	  The Motorola Scalable Controller Area Network (MSCAN) definition
--	  is based on the MSCAN12 definition which is the specific
--	  implementation of the Motorola Scalable CAN concept targeted for
--	  the Motorola MC68HC12 Microcontroller Family.
+diff --git a/arch/powerpc/boot/dts/yosemite.dts
+b/arch/powerpc/boot/dts/yosemite.dts
+index 1fa3cb4..8328be5 100644
+--- a/arch/powerpc/boot/dts/yosemite.dts
++++ b/arch/powerpc/boot/dts/yosemite.dts
+@@ -276,26 +276,19 @@
+                         * later cannot be changed. Chip supports a
+second
+                         * IO range but we don't use it for now
+                         */
++
++                        /*       u32              u64
+u64                     u64  */
++                        /*       pci_space        pci_addr
+cpu_addr                size */
+                        ranges =3D <0x02000000 0x00000000 0xa0000000
+0x00000000 0xa0000000 0x00000000 0x20000000
+                                  0x01000000 0x00000000 0x00000000
+0x00000000 0xe8000000 0x00000000 0x00010000>;
+=20
+                        /* Inbound 2GB range starting at 0 */
+                        dma-ranges =3D <0x42000000 0x0 0x0 0x0 0x0 0x0
+0x80000000>;
+=20
+-                       /* Bamboo has all 4 IRQ pins tied together per
+slot */
+                        interrupt-map-mask =3D <0xf800 0x0 0x0 0x0>;
+                        interrupt-map =3D <
+-                               /* IDSEL 1 */
+-                               0x800 0x0 0x0 0x0 &UIC0 0x1c 0x8
 -
--config CAN_MPC52XX
--	tristate "Freescale MPC5xxx onboard CAN controller"
--	depends on CAN_MSCAN && PPC_MPC52xx
--	---help---
--	  If you say yes here you get support for Freescale's MPC52xx
--	  onboard dualCAN controller.
+-                               /* IDSEL 2 */
+-                               0x1000 0x0 0x0 0x0 &UIC0 0x1b 0x8
 -
--	  This driver can also be built as a module.  If so, the module
--	  will be called mpc5xxx_can.
-+source "drivers/net/can/mscan/Kconfig"
- 
- config CAN_DEBUG_DEVICES
- 	bool "CAN devices debugging messages"
-diff --git a/drivers/net/can/mscan/Kconfig b/drivers/net/can/mscan/Kconfig
-new file mode 100644
-index 0000000..cd0f2d6
---- /dev/null
-+++ b/drivers/net/can/mscan/Kconfig
-@@ -0,0 +1,23 @@
-+config CAN_MSCAN
-+	depends on CAN_DEV && (PPC || M68K || M68KNOMMU)
-+	tristate "Support for Freescale MSCAN based chips"
-+	---help---
-+	  The Motorola Scalable Controller Area Network (MSCAN) definition
-+	  is based on the MSCAN12 definition which is the specific
-+	  implementation of the Motorola Scalable CAN concept targeted for
-+	  the Motorola MC68HC12 Microcontroller Family.
-+
-+if CAN_MSCAN
-+
-+config CAN_MPC5XXX
-+	tristate "Freescale MPC5xxx onboard CAN controller"
-+	depends on PPC_MPC52xx
-+	---help---
-+	  If you say yes here you get support for Freescale's MPC5xxx
-+	  onboard CAN controller.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called mscan-mpc5xxx.ko.
-+
-+endif
-+
-diff --git a/drivers/net/can/mscan/Makefile b/drivers/net/can/mscan/Makefile
-index 2bd9f04..c9fab17 100644
---- a/drivers/net/can/mscan/Makefile
-+++ b/drivers/net/can/mscan/Makefile
-@@ -1,5 +1,5 @@
- 
--obj-$(CONFIG_CAN_MPC52XX)	+= mscan-mpc52xx.o
--mscan-mpc52xx-objs		:= mscan.o mpc52xx_can.o
-+obj-$(CONFIG_CAN_MPC5XXX)	+= mscan-mpc5xxx.o
-+mscan-mpc5xxx-objs		:= mscan.o mpc5xxx_can.o
- 
- ccflags-$(CONFIG_CAN_DEBUG_DEVICES) := -DDEBUG
-diff --git a/drivers/net/can/mscan/mpc52xx_can.c b/drivers/net/can/mscan/mpc52xx_can.c
-deleted file mode 100644
-index 1de6f63..0000000
---- a/drivers/net/can/mscan/mpc52xx_can.c
-+++ /dev/null
-@@ -1,259 +0,0 @@
--/*
-- * CAN bus driver for the Freescale MPC5xxx embedded CPU.
-- *
-- * Copyright (C) 2004-2005 Andrey Volkov <avolkov@varma-el.com>,
-- *                         Varma Electronics Oy
-- * Copyright (C) 2008-2009 Wolfgang Grandegger <wg@grandegger.com>
-- * Copyright (C) 2009 Wolfram Sang, Pengutronix <w.sang@pengutronix.de>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the version 2 of the GNU General Public License
-- * as published by the Free Software Foundation
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-- */
+-                               /* IDSEL 3 */
+-                               0x1800 0x0 0x0 0x0 &UIC0 0x1a 0x8
 -
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/interrupt.h>
--#include <linux/platform_device.h>
--#include <linux/netdevice.h>
--#include <linux/can.h>
--#include <linux/can/dev.h>
--#include <linux/of_platform.h>
--#include <sysdev/fsl_soc.h>
--#include <linux/io.h>
--#include <asm/mpc52xx.h>
--
--#include "mscan.h"
--
--#define DRV_NAME "mpc5xxx_can"
--
--static struct of_device_id mpc52xx_cdm_ids[] __devinitdata = {
--	{ .compatible = "fsl,mpc5200-cdm", },
--	{}
--};
--
--/*
-- * Get frequency of the MSCAN clock source
-- *
-- * Either the oscillator clock (SYS_XTAL_IN) or the IP bus clock (IP_CLK)
-- * can be selected. According to the MPC5200 user's manual, the oscillator
-- * clock is the better choice as it has less jitter but due to a hardware
-- * bug, it can not be selected for the old MPC5200 Rev. A chips.
-- */
--
--static unsigned int  __devinit mpc52xx_can_clock_freq(struct of_device *of,
--						      int clock_src)
--{
--	unsigned int pvr;
--	struct mpc52xx_cdm  __iomem *cdm;
--	struct device_node *np_cdm;
--	unsigned int freq;
--	u32 val;
--
--	pvr = mfspr(SPRN_PVR);
--
--	freq = mpc5xxx_get_bus_frequency(of->node);
--	if (!freq)
--		return 0;
--
--	if (clock_src == MSCAN_CLKSRC_BUS || pvr == 0x80822011)
--		return freq;
--
--	/* Determine SYS_XTAL_IN frequency from the clock domain settings */
--	np_cdm = of_find_matching_node(NULL, mpc52xx_cdm_ids);
--	if (!np_cdm) {
--		dev_err(&of->dev, "can't get clock node!\n");
--		return 0;
--	}
--	cdm = of_iomap(np_cdm, 0);
--	of_node_put(np_cdm);
--
--	if (in_8(&cdm->ipb_clk_sel) & 0x1)
--		freq *= 2;
--	val = in_be32(&cdm->rstcfg);
--
--	freq *= (val & (1 << 5)) ? 8 : 4;
--	freq /= (val & (1 << 6)) ? 12 : 16;
--
--	iounmap(cdm);
--
--	return freq;
--}
--
--static int __devinit mpc5xxx_can_probe(struct of_device *ofdev,
--				       const struct of_device_id *id)
--{
--	struct device_node *np = ofdev->node;
--	struct net_device *dev;
--	struct mscan_priv *priv;
--	void __iomem *base;
--	const char *clk_src;
--	int err, irq, clock_src;
--
--	base = of_iomap(ofdev->node, 0);
--	if (!base) {
--		dev_err(&ofdev->dev, "couldn't ioremap\n");
--		err = -ENOMEM;
--		goto exit_release_mem;
--	}
--
--	irq = irq_of_parse_and_map(np, 0);
--	if (!irq) {
--		dev_err(&ofdev->dev, "no irq found\n");
--		err = -ENODEV;
--		goto exit_unmap_mem;
--	}
--
--	dev = alloc_mscandev();
--	if (!dev) {
--		err = -ENOMEM;
--		goto exit_dispose_irq;
--	}
--
--	priv = netdev_priv(dev);
--	priv->reg_base = base;
--	dev->irq = irq;
--
--	/*
--	 * Either the oscillator clock (SYS_XTAL_IN) or the IP bus clock
--	 * (IP_CLK) can be selected as MSCAN clock source. According to
--	 * the MPC5200 user's manual, the oscillator clock is the better
--	 * choice as it has less jitter. For this reason, it is selected
--	 * by default.
--	 */
--	clk_src = of_get_property(np, "fsl,mscan-clock-source", NULL);
--	if (clk_src && strcmp(clk_src, "ip") == 0)
--		clock_src = MSCAN_CLKSRC_BUS;
--	else
--		clock_src = MSCAN_CLKSRC_XTAL;
--	priv->can.clock.freq = mpc52xx_can_clock_freq(ofdev, clock_src);
--	if (!priv->can.clock.freq) {
--		dev_err(&ofdev->dev, "couldn't get MSCAN clock frequency\n");
--		err = -ENODEV;
--		goto exit_free_mscan;
--	}
--
--	SET_NETDEV_DEV(dev, &ofdev->dev);
--
--	err = register_mscandev(dev, clock_src);
--	if (err) {
--		dev_err(&ofdev->dev, "registering %s failed (err=%d)\n",
--			DRV_NAME, err);
--		goto exit_free_mscan;
--	}
--
--	dev_set_drvdata(&ofdev->dev, dev);
--
--	dev_info(&ofdev->dev, "MSCAN at 0x%p, irq %d, clock %d Hz\n",
--		 priv->reg_base, dev->irq, priv->can.clock.freq);
--
--	return 0;
--
--exit_free_mscan:
--	free_candev(dev);
--exit_dispose_irq:
--	irq_dispose_mapping(irq);
--exit_unmap_mem:
--	iounmap(base);
--exit_release_mem:
--	return err;
--}
--
--static int __devexit mpc5xxx_can_remove(struct of_device *ofdev)
--{
--	struct net_device *dev = dev_get_drvdata(&ofdev->dev);
--	struct mscan_priv *priv = netdev_priv(dev);
--
--	dev_set_drvdata(&ofdev->dev, NULL);
--
--	unregister_mscandev(dev);
--	iounmap(priv->reg_base);
--	irq_dispose_mapping(dev->irq);
--	free_candev(dev);
--
--	return 0;
--}
--
--#ifdef CONFIG_PM
--static struct mscan_regs saved_regs;
--static int mpc5xxx_can_suspend(struct of_device *ofdev, pm_message_t state)
--{
--	struct net_device *dev = dev_get_drvdata(&ofdev->dev);
--	struct mscan_priv *priv = netdev_priv(dev);
--	struct mscan_regs *regs = (struct mscan_regs *)priv->reg_base;
--
--	_memcpy_fromio(&saved_regs, regs, sizeof(*regs));
--
--	return 0;
--}
--
--static int mpc5xxx_can_resume(struct of_device *ofdev)
--{
--	struct net_device *dev = dev_get_drvdata(&ofdev->dev);
--	struct mscan_priv *priv = netdev_priv(dev);
--	struct mscan_regs *regs = (struct mscan_regs *)priv->reg_base;
--
--	regs->canctl0 |= MSCAN_INITRQ;
--	while (!(regs->canctl1 & MSCAN_INITAK))
--		udelay(10);
--
--	regs->canctl1 = saved_regs.canctl1;
--	regs->canbtr0 = saved_regs.canbtr0;
--	regs->canbtr1 = saved_regs.canbtr1;
--	regs->canidac = saved_regs.canidac;
--
--	/* restore masks, buffers etc. */
--	_memcpy_toio(&regs->canidar1_0, (void *)&saved_regs.canidar1_0,
--		     sizeof(*regs) - offsetof(struct mscan_regs, canidar1_0));
--
--	regs->canctl0 &= ~MSCAN_INITRQ;
--	regs->cantbsel = saved_regs.cantbsel;
--	regs->canrier = saved_regs.canrier;
--	regs->cantier = saved_regs.cantier;
--	regs->canctl0 = saved_regs.canctl0;
--
--	return 0;
--}
--#endif
--
--static struct of_device_id __devinitdata mpc5xxx_can_table[] = {
--	{.compatible = "fsl,mpc5200-mscan"},
--	{},
--};
--
--static struct of_platform_driver mpc5xxx_can_driver = {
--	.owner = THIS_MODULE,
--	.name = "mpc5xxx_can",
--	.probe = mpc5xxx_can_probe,
--	.remove = __devexit_p(mpc5xxx_can_remove),
--#ifdef CONFIG_PM
--	.suspend = mpc5xxx_can_suspend,
--	.resume = mpc5xxx_can_resume,
--#endif
--	.match_table = mpc5xxx_can_table,
--};
--
--static int __init mpc5xxx_can_init(void)
--{
--	return of_register_platform_driver(&mpc5xxx_can_driver);
--}
--module_init(mpc5xxx_can_init);
--
--static void __exit mpc5xxx_can_exit(void)
--{
--	return of_unregister_platform_driver(&mpc5xxx_can_driver);
--};
--module_exit(mpc5xxx_can_exit);
--
--MODULE_AUTHOR("Wolfgang Grandegger <wg@grandegger.com>");
--MODULE_DESCRIPTION("Freescale MPC5200 CAN driver");
--MODULE_LICENSE("GPL v2");
-diff --git a/drivers/net/can/mscan/mpc5xxx_can.c b/drivers/net/can/mscan/mpc5xxx_can.c
-new file mode 100644
-index 0000000..1de6f63
---- /dev/null
-+++ b/drivers/net/can/mscan/mpc5xxx_can.c
-@@ -0,0 +1,259 @@
-+/*
-+ * CAN bus driver for the Freescale MPC5xxx embedded CPU.
-+ *
-+ * Copyright (C) 2004-2005 Andrey Volkov <avolkov@varma-el.com>,
-+ *                         Varma Electronics Oy
-+ * Copyright (C) 2008-2009 Wolfgang Grandegger <wg@grandegger.com>
-+ * Copyright (C) 2009 Wolfram Sang, Pengutronix <w.sang@pengutronix.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/platform_device.h>
-+#include <linux/netdevice.h>
-+#include <linux/can.h>
-+#include <linux/can/dev.h>
-+#include <linux/of_platform.h>
-+#include <sysdev/fsl_soc.h>
-+#include <linux/io.h>
-+#include <asm/mpc52xx.h>
-+
-+#include "mscan.h"
-+
-+#define DRV_NAME "mpc5xxx_can"
-+
-+static struct of_device_id mpc52xx_cdm_ids[] __devinitdata = {
-+	{ .compatible = "fsl,mpc5200-cdm", },
-+	{}
-+};
-+
-+/*
-+ * Get frequency of the MSCAN clock source
-+ *
-+ * Either the oscillator clock (SYS_XTAL_IN) or the IP bus clock (IP_CLK)
-+ * can be selected. According to the MPC5200 user's manual, the oscillator
-+ * clock is the better choice as it has less jitter but due to a hardware
-+ * bug, it can not be selected for the old MPC5200 Rev. A chips.
-+ */
-+
-+static unsigned int  __devinit mpc52xx_can_clock_freq(struct of_device *of,
-+						      int clock_src)
-+{
-+	unsigned int pvr;
-+	struct mpc52xx_cdm  __iomem *cdm;
-+	struct device_node *np_cdm;
-+	unsigned int freq;
-+	u32 val;
-+
-+	pvr = mfspr(SPRN_PVR);
-+
-+	freq = mpc5xxx_get_bus_frequency(of->node);
-+	if (!freq)
-+		return 0;
-+
-+	if (clock_src == MSCAN_CLKSRC_BUS || pvr == 0x80822011)
-+		return freq;
-+
-+	/* Determine SYS_XTAL_IN frequency from the clock domain settings */
-+	np_cdm = of_find_matching_node(NULL, mpc52xx_cdm_ids);
-+	if (!np_cdm) {
-+		dev_err(&of->dev, "can't get clock node!\n");
-+		return 0;
-+	}
-+	cdm = of_iomap(np_cdm, 0);
-+	of_node_put(np_cdm);
-+
-+	if (in_8(&cdm->ipb_clk_sel) & 0x1)
-+		freq *= 2;
-+	val = in_be32(&cdm->rstcfg);
-+
-+	freq *= (val & (1 << 5)) ? 8 : 4;
-+	freq /= (val & (1 << 6)) ? 12 : 16;
-+
-+	iounmap(cdm);
-+
-+	return freq;
-+}
-+
-+static int __devinit mpc5xxx_can_probe(struct of_device *ofdev,
-+				       const struct of_device_id *id)
-+{
-+	struct device_node *np = ofdev->node;
-+	struct net_device *dev;
-+	struct mscan_priv *priv;
-+	void __iomem *base;
-+	const char *clk_src;
-+	int err, irq, clock_src;
-+
-+	base = of_iomap(ofdev->node, 0);
-+	if (!base) {
-+		dev_err(&ofdev->dev, "couldn't ioremap\n");
-+		err = -ENOMEM;
-+		goto exit_release_mem;
-+	}
-+
-+	irq = irq_of_parse_and_map(np, 0);
-+	if (!irq) {
-+		dev_err(&ofdev->dev, "no irq found\n");
-+		err = -ENODEV;
-+		goto exit_unmap_mem;
-+	}
-+
-+	dev = alloc_mscandev();
-+	if (!dev) {
-+		err = -ENOMEM;
-+		goto exit_dispose_irq;
-+	}
-+
-+	priv = netdev_priv(dev);
-+	priv->reg_base = base;
-+	dev->irq = irq;
-+
-+	/*
-+	 * Either the oscillator clock (SYS_XTAL_IN) or the IP bus clock
-+	 * (IP_CLK) can be selected as MSCAN clock source. According to
-+	 * the MPC5200 user's manual, the oscillator clock is the better
-+	 * choice as it has less jitter. For this reason, it is selected
-+	 * by default.
-+	 */
-+	clk_src = of_get_property(np, "fsl,mscan-clock-source", NULL);
-+	if (clk_src && strcmp(clk_src, "ip") == 0)
-+		clock_src = MSCAN_CLKSRC_BUS;
-+	else
-+		clock_src = MSCAN_CLKSRC_XTAL;
-+	priv->can.clock.freq = mpc52xx_can_clock_freq(ofdev, clock_src);
-+	if (!priv->can.clock.freq) {
-+		dev_err(&ofdev->dev, "couldn't get MSCAN clock frequency\n");
-+		err = -ENODEV;
-+		goto exit_free_mscan;
-+	}
-+
-+	SET_NETDEV_DEV(dev, &ofdev->dev);
-+
-+	err = register_mscandev(dev, clock_src);
-+	if (err) {
-+		dev_err(&ofdev->dev, "registering %s failed (err=%d)\n",
-+			DRV_NAME, err);
-+		goto exit_free_mscan;
-+	}
-+
-+	dev_set_drvdata(&ofdev->dev, dev);
-+
-+	dev_info(&ofdev->dev, "MSCAN at 0x%p, irq %d, clock %d Hz\n",
-+		 priv->reg_base, dev->irq, priv->can.clock.freq);
-+
-+	return 0;
-+
-+exit_free_mscan:
-+	free_candev(dev);
-+exit_dispose_irq:
-+	irq_dispose_mapping(irq);
-+exit_unmap_mem:
-+	iounmap(base);
-+exit_release_mem:
-+	return err;
-+}
-+
-+static int __devexit mpc5xxx_can_remove(struct of_device *ofdev)
-+{
-+	struct net_device *dev = dev_get_drvdata(&ofdev->dev);
-+	struct mscan_priv *priv = netdev_priv(dev);
-+
-+	dev_set_drvdata(&ofdev->dev, NULL);
-+
-+	unregister_mscandev(dev);
-+	iounmap(priv->reg_base);
-+	irq_dispose_mapping(dev->irq);
-+	free_candev(dev);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static struct mscan_regs saved_regs;
-+static int mpc5xxx_can_suspend(struct of_device *ofdev, pm_message_t state)
-+{
-+	struct net_device *dev = dev_get_drvdata(&ofdev->dev);
-+	struct mscan_priv *priv = netdev_priv(dev);
-+	struct mscan_regs *regs = (struct mscan_regs *)priv->reg_base;
-+
-+	_memcpy_fromio(&saved_regs, regs, sizeof(*regs));
-+
-+	return 0;
-+}
-+
-+static int mpc5xxx_can_resume(struct of_device *ofdev)
-+{
-+	struct net_device *dev = dev_get_drvdata(&ofdev->dev);
-+	struct mscan_priv *priv = netdev_priv(dev);
-+	struct mscan_regs *regs = (struct mscan_regs *)priv->reg_base;
-+
-+	regs->canctl0 |= MSCAN_INITRQ;
-+	while (!(regs->canctl1 & MSCAN_INITAK))
-+		udelay(10);
-+
-+	regs->canctl1 = saved_regs.canctl1;
-+	regs->canbtr0 = saved_regs.canbtr0;
-+	regs->canbtr1 = saved_regs.canbtr1;
-+	regs->canidac = saved_regs.canidac;
-+
-+	/* restore masks, buffers etc. */
-+	_memcpy_toio(&regs->canidar1_0, (void *)&saved_regs.canidar1_0,
-+		     sizeof(*regs) - offsetof(struct mscan_regs, canidar1_0));
-+
-+	regs->canctl0 &= ~MSCAN_INITRQ;
-+	regs->cantbsel = saved_regs.cantbsel;
-+	regs->canrier = saved_regs.canrier;
-+	regs->cantier = saved_regs.cantier;
-+	regs->canctl0 = saved_regs.canctl0;
-+
-+	return 0;
-+}
-+#endif
-+
-+static struct of_device_id __devinitdata mpc5xxx_can_table[] = {
-+	{.compatible = "fsl,mpc5200-mscan"},
-+	{},
-+};
-+
-+static struct of_platform_driver mpc5xxx_can_driver = {
-+	.owner = THIS_MODULE,
-+	.name = "mpc5xxx_can",
-+	.probe = mpc5xxx_can_probe,
-+	.remove = __devexit_p(mpc5xxx_can_remove),
-+#ifdef CONFIG_PM
-+	.suspend = mpc5xxx_can_suspend,
-+	.resume = mpc5xxx_can_resume,
-+#endif
-+	.match_table = mpc5xxx_can_table,
-+};
-+
-+static int __init mpc5xxx_can_init(void)
-+{
-+	return of_register_platform_driver(&mpc5xxx_can_driver);
-+}
-+module_init(mpc5xxx_can_init);
-+
-+static void __exit mpc5xxx_can_exit(void)
-+{
-+	return of_unregister_platform_driver(&mpc5xxx_can_driver);
-+};
-+module_exit(mpc5xxx_can_exit);
-+
-+MODULE_AUTHOR("Wolfgang Grandegger <wg@grandegger.com>");
-+MODULE_DESCRIPTION("Freescale MPC5200 CAN driver");
-+MODULE_LICENSE("GPL v2");
--- 
-1.6.3.3
+-                               /* IDSEL 4 */
+-                               0x2000 0x0 0x0 0x0 &UIC0 0x19 0x8
++                               /* IDSEL 12, ADDR 22, INTA, IRQ2 =3D
+Vector 25, 0x19 */
++                               0x6000 0x0 0x0 0x0 &UIC0 0x19 0x8
+                        >;
+                };
+        };
