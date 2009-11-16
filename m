@@ -1,19 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 42F4BB7088
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 Nov 2009 04:10:39 +1100 (EST)
-Date: Mon, 16 Nov 2009 20:10:37 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Torsten Fleischer <to-fleischer@t-online.de>
-Subject: Re: spi_mpc8xxx.c: chip select polarity problem
-Message-ID: <20091116171037.GA26163@oksana.dev.rtsoft.ru>
-References: <200911161742.46663.to-fleischer@t-online.de>
+Return-Path: <grundler@google.com>
+Received: from smtp-out.google.com (smtp-out.google.com [216.239.33.17])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C0F06B6F29
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 04:48:14 +1100 (EST)
+Received: from zps78.corp.google.com (zps78.corp.google.com [172.25.146.78])
+	by smtp-out.google.com with ESMTP id nAGHbdOS021443
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Nov 2009 17:37:40 GMT
+Received: from gv-out-0910.google.com (gveo2.prod.google.com [10.16.166.2])
+	by zps78.corp.google.com with ESMTP id nAGHbYCx003518
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Nov 2009 09:37:35 -0800
+Received: by gv-out-0910.google.com with SMTP id o2so697965gve.31
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Nov 2009 09:37:34 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200911161742.46663.to-fleischer@t-online.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+In-Reply-To: <1258352362-11231-1-git-send-email-vivek.mahajan@freescale.com>
+References: <1258352362-11231-1-git-send-email-vivek.mahajan@freescale.com>
+Date: Mon, 16 Nov 2009 09:37:34 -0800
+Message-ID: <da824cf30911160937l38651a44sc25a3315efd24aea@mail.gmail.com>
+Subject: Re: [PATCH 1/1] ata/sata_sil24: MSI support, disabled by default
+From: Grant Grundler <grundler@google.com>
+To: Vivek Mahajan <vivek.mahajan@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,70 +31,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 16, 2009 at 05:42:46PM +0100, Torsten Fleischer wrote:
-> Hi all,
-> 
-> I have 3 devices connected to the SPI bus of the MPC8313. For the Chip Select 
-> (CS) signals 3 GPIOs of the controller are used. But the driver uses the 
-> inverse polarity of the CS either during the initialization or at the transfer 
-> - depending on the setup of the flattened device tree.
-> 
-> Here is what I discovered:
-> The driver uses a polarity flag for each CS signal (the alow_flags array). 
-> These flags are set according to the 'gpios' property of the SPI node of the 
-> flattened device tree.
-> Is it correct that alow_flags[x] = 1 means CSx is active low?
+On Sun, Nov 15, 2009 at 10:19 PM, Vivek Mahajan
+<vivek.mahajan@freescale.com> wrote:
+> The following patch adds MSI support. Some platforms
+> may have broken MSI, so those are defaulted to use
+> legacy PCI interrupts.
+>
+> Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
+> ---
+> =C2=A0drivers/ata/sata_sil24.c | =C2=A0 =C2=A09 +++++++++
+> =C2=A01 files changed, 9 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/ata/sata_sil24.c b/drivers/ata/sata_sil24.c
+> index e6946fc..1370df6 100644
+> --- a/drivers/ata/sata_sil24.c
+> +++ b/drivers/ata/sata_sil24.c
+> @@ -417,6 +417,10 @@ static struct ata_port_operations sil24_ops =3D {
+> =C2=A0#endif
+> =C2=A0};
+>
+> +static int sata_sil24_msi; =C2=A0 =C2=A0/* Disable MSI */
+> +module_param_named(msi, sata_sil24_msi, bool, S_IRUGO);
+> +MODULE_PARM_DESC(msi, "Enable MSI (Default: false)");
 
-Either way should work. Though, now I tend to I think that
-'spi-cs-high' is actually already encoded in the compatible
-name. E.g. for device X we always know that the device assumes
-CS to be active low, so it has no spi-cs-high.
+Vivek,
+Do we even still need the parameter? I'm thinking either MSI works
+with a chipset
+or it doesn't. The kernel has globals to "know" which state is true.
 
-How chip selects are wired to a device is another matter.
+If the parameter is needed, when this driver is compiled into the kernel, h=
+ow
+is "msi" parameter specified?
+I think the parameter needs to be documented and fit in with other
+"msi" parameters.
+See "nomsi" in Documentation/kernel-parameters.txt.
 
-> During the initialization the driver sets the CS to the value of 
-> alow_flags[x]. I.e. CSx is High if alow_flags[x] = 1 and otherwise Low.
-> 
-> The flags are used in the function mpc8xxx_spi_cs_control() to take care about 
-> the polarity when setting the appropriate GPIO pin. But the function 
-> mpc8xxx_spi_chipselect() that calls the mpc8xxx_spi_cs_control() takes also 
-> care about the polarity of the CS (bool pol = spi->mode & SPI_CS_HIGH).
-> 
-> Lets assume alow_flags[x] = 1 and the property 'spi-cs-high' is not set for 
-> the SPI device. During initialization the driver sets the chip select signal 
-> 'x' to High (see of_mpc8xxx_spi_get_chipselects()). This is OK if the chip 
-> select is active low, because this disables the device on start-up. But during 
-> the transfer the chip select signal is High and after the transfer is 
-> completed the signal is set to Low. This is not the intended behavior for an 
-> active low chip select.
-> 
-> I also tried to set alow_flags[x] = 0 for active low. In this case the 
-> transfer works, but the initial value for the CS is wrong (Low instead of 
-> High).
+If you want to keep this module parameter, can I suggest calling the
+exported parameter "sata_sil24_msi"?
 
-So it might be better to fix up initial value in the platform code?
+I'm not able to test this since the chipset I have sata_sil24 devices
+plugged into don't support MSI (older AMD/Nvidia chipset). :(
 
-> The problem seems to be that the polarity is taken into account twice (as 
-> described above).
 
-Yep. So, today I'd suggest to not use spe-cs-high, even though
-I was OK with it before.
+> +
+> =C2=A0/*
+> =C2=A0* Use bits 30-31 of port_flags to encode available port numbers.
+> =C2=A0* Current maxium is 4.
+> @@ -1340,6 +1344,11 @@ static int sil24_init_one(struct pci_dev *pdev, co=
+nst struct pci_device_id *ent)
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0sil24_init_controller(host);
+>
+> + =C2=A0 =C2=A0 =C2=A0 if (sata_sil24_msi && !!pci_msi_enable(pdev)) {
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_printk(KERN_INFO, =
+&pdev->dev, "Using MSI\n");
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 pci_intx(pdev, 0);
 
-> So what would be the better solution: removing the usage of the alow_flags in 
-> mpc8xxx_spi_cs_control() or the variable 'pol' in mpc8xxx_spi_chipselect()?
+pci_intx() isn't documented in MSI-HOWTO.txt  - because it's already called=
+:
+    pci_msi_enable() -> pci_msi_enable_block() -> msi_capability_init()
+       -> pci_intx_for_msi(dev, 0) -> pci_intx(pdev, 0);
 
-Neither. 'pol' is still needed. Don't mix device wiring and the
-chip select type. Driver may play active-low/high games with
-a device, some drivers pass or clear SPI_CS_HIGH flags by themselves
-(e.g. mmc_spi.c), so device-tree don't have to have spi-cs-high
-flag specified.
+(thanks to willy (Mathew Wilcox) for pointing me at
+msi_capability_init() - I overlooked it)
 
-But the wire from a GPIO controller to a SPI device can be inverted,
-so you'll have to account that too!
+Please add "Reviewed-by: Grant Grundler <grundler@google.com>" once the
+variable name is changed and the pci_intx() call is removed.
 
-Thanks,
+cheers,
+grant
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> + =C2=A0 =C2=A0 =C2=A0 }
+> +
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0pci_set_master(pdev);
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0return ata_host_activate(host, pdev->irq, sil2=
+4_interrupt, IRQF_SHARED,
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &sil24_sht);
+> --
+> 1.5.6.5
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =C2=A0http://vger.kernel.org/majordomo-info.html
+>
