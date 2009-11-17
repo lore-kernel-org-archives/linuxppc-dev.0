@@ -1,19 +1,19 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44E16B6F2B
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 15:22:11 +1100 (EST)
-Message-ID: <4B021650.6050708@garzik.org>
-Date: Mon, 16 Nov 2009 22:19:44 -0500
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from mail.telegraphics.com.au (www.telegraphics.com.au
+	[204.15.192.19]) by ozlabs.org (Postfix) with ESMTP id 74BBEB7093
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 15:58:39 +1100 (EST)
+Date: Tue, 17 Nov 2009 15:58:33 +1100 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/13] pmac-zilog: cleanup
+In-Reply-To: <1258423668.2140.557.camel@pasglop>
+Message-ID: <alpine.OSX.2.00.0911171521240.371@silk.local>
+References: <alpine.OSX.2.00.0911031441280.483@silk.local>
+	<1258423668.2140.557.camel@pasglop>
 MIME-Version: 1.0
-To: Vivek Mahajan <vivek.mahajan@freescale.com>
-Subject: Re: [PATCH 1/1] ata/sata_sil24: MSI support, disabled by default
-References: <1258352362-11231-1-git-send-email-vivek.mahajan@freescale.com>
-In-Reply-To: <1258352362-11231-1-git-send-email-vivek.mahajan@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
+	Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,14 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/16/2009 01:19 AM, Vivek Mahajan wrote:
-> The following patch adds MSI support. Some platforms
-> may have broken MSI, so those are defaulted to use
-> legacy PCI interrupts.
->
-> Signed-off-by: Vivek Mahajan<vivek.mahajan@freescale.com>
-> ---
->   drivers/ata/sata_sil24.c |    9 +++++++++
->   1 files changed, 9 insertions(+), 0 deletions(-)
+Hi Ben,
 
-applied
+On Tue, 17 Nov 2009, Benjamin Herrenschmidt wrote:
+
+> On Wed, 2009-11-04 at 00:40 +1100, Finn Thain wrote:
+> > Whitespace cleanups and comment typo fix.
+> > 
+> > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> Hi Finn. Do you want me to carry and merge those patches via the powerpc 
+> tree ?
+
+The CUDA changes are probably detrimental without the macfb changes. The 
+m68k side of the pmac-zilog patch won't apply without a patch earlier in 
+the series, and the pmac-zilog changes as a whole are no use without that.
+So I think it is best if Geert merges them with your acked-by, once they 
+pass review.
+
+Finn
+
+> 
+> Cheers,
+> Ben.
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-m68k" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
