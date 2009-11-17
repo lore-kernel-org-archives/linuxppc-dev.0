@@ -1,25 +1,23 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-bw0-f212.google.com (mail-bw0-f212.google.com
-	[209.85.218.212]) by ozlabs.org (Postfix) with ESMTP id 36BD210083D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 18 Nov 2009 10:11:38 +1100 (EST)
-Received: by bwz4 with SMTP id 4so631607bwz.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 17 Nov 2009 15:11:36 -0800 (PST)
-Date: Tue, 17 Nov 2009 23:22:11 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Torsten Fleischer <to-fleischer@t-online.de>
-Subject: Re: spi_mpc8xxx.c: chip select polarity problem
-Message-ID: <20091117202211.GB27574@oksana.dev.rtsoft.ru>
-References: <200911161742.46663.to-fleischer@t-online.de>
-	<20091116171037.GA26163@oksana.dev.rtsoft.ru>
-	<20091116180008.GA6748@oksana.dev.rtsoft.ru>
-	<200911172109.28841.to-fleischer@t-online.de>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 8DEFEB6EE9
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 10:23:14 +1100 (EST)
+Date: Tue, 17 Nov 2009 21:08:21 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: Re: [RFC PATCH 1/5] Rework OpenFirmware GPIO handling
+Message-ID: <20091117200821.GA3154@pengutronix.de>
+References: <1258472546-31343-1-git-send-email-dbaryshkov@gmail.com>
+	<1258472546-31343-2-git-send-email-dbaryshkov@gmail.com>
+	<20091117161244.GA6849@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200911172109.28841.to-fleischer@t-online.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
+In-Reply-To: <20091117161244.GA6849@oksana.dev.rtsoft.ru>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linuxppc-dev@ozlabs.org,
+	devicetree-discuss@lists.ozlabs.org,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,28 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 17, 2009 at 09:09:28PM +0100, Torsten Fleischer wrote:
-> On Mon, Nov 16, 2009 at 19:00PM, Anton Vorontsov wrote:
-> [...]
-> > > So it might be better to fix up initial value in the platform code?
-> > 
-> > Oh, we actually cannot, because the driver calls
-> > gpio_direction_output().
-> > 
-> > And since we don't know the mode prior to SPI device's driver
-> > probe() finished, we'll have to set up an initial state in the
-> > first SPI transfer. I.e. something like this:
-> 
-> In most cases the device drivers perform SPI transfers already in their 
-> probe() function. How can it be ensured that the CS of all other devices are 
-> inactive even if they are not initialized at that time?
 
-Good question. Oh, well... then we have to use spi-cs-high,
-no matter that it is a duplication of the 'compatible' property.
-SPI bus drivers don't know all the devices and their CS level,
-and so spi-cs-high is the only way to tell that information. :-(
+--bp/iNruPH9dso1Pn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> And it turned out that the only sane solution is to write
+> OF-pdata-hooks for the each driver (that we do for many drivers
+> already):
+
+Or to support Grant in getting rid of of_platform :)
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--bp/iNruPH9dso1Pn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAksDArUACgkQD27XaX1/VRs90wCfVIES3k6ZlQ/3+ckFfNFBFxUp
++0EAoMDs0GZPCFBf2gkOlO41dE67cCGn
+=6ozf
+-----END PGP SIGNATURE-----
+
+--bp/iNruPH9dso1Pn--
