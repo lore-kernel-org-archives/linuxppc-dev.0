@@ -1,26 +1,19 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-fx0-f215.google.com (mail-fx0-f215.google.com
-	[209.85.220.215]) by ozlabs.org (Postfix) with ESMTP id C1EC8B6EF1
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 11:00:42 +1100 (EST)
-Received: by fxm7 with SMTP id 7so615316fxm.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 16:00:40 -0800 (PST)
-Date: Tue, 17 Nov 2009 23:18:51 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [RFC PATCH 1/5] Rework OpenFirmware GPIO handling
-Message-ID: <20091117201851.GA27574@oksana.dev.rtsoft.ru>
-References: <1258472546-31343-1-git-send-email-dbaryshkov@gmail.com>
-	<1258472546-31343-2-git-send-email-dbaryshkov@gmail.com>
-	<20091117161244.GA6849@oksana.dev.rtsoft.ru>
-	<20091117200821.GA3154@pengutronix.de>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id B73F91007D1
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 11:10:20 +1100 (EST)
+Message-ID: <4B02F6E3.6000503@grandegger.com>
+Date: Tue, 17 Nov 2009 20:17:55 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20091117200821.GA3154@pengutronix.de>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
-Reply-To: avorontsov@ru.mvista.com
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH] net/can: add driver for mscan family & mpc52xx_mscan
+References: <1258128892-28800-1-git-send-email-w.sang@pengutronix.de>	<fa686aa40911130939x54ac53f9x173a875a5a4435d3@mail.gmail.com>	<20091116184416.GA21491@pengutronix.de>
+	<4B02EABA.3060905@grandegger.com>
+In-Reply-To: <4B02EABA.3060905@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 17, 2009 at 09:08:21PM +0100, Wolfram Sang wrote:
-> > And it turned out that the only sane solution is to write
-> > OF-pdata-hooks for the each driver (that we do for many drivers
-> > already):
+Wolfgang Grandegger wrote:
+> Wolfram Sang wrote:
+>> Hi Grant,
+>>
+>> Wolfgang commented on some points already, I will pick up the other remarks,
+>> just one question:
+>>
+>>>> +       clk_src = of_get_property(np, "fsl,mscan-clk-src", NULL);
+>>>> +       if (clk_src && strcmp(clk_src, "ip") == 0)
+>>> Should protect against non-null.  strncmp() maybe?
+>> "ip" is null-terminated, or what do you mean?
 > 
-> Or to support Grant in getting rid of of_platform :)
+> Imagine somebody defines:
+> 
+>   fsl,mscan-clk-src = <0xbaeee>;
 
-No, of_platform is completely other stuff. This won't help I2C/SPI
-drivers.
+Forget my comment. I will not harm in the above case. I was just worried
+about non-null-teminated strings.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Wolfgang.
