@@ -1,20 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 0/4] powerpc: Fix minor build issues on 2.6.32-rc7
-	without CONFIG_XICS set
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <1258461544.24093.72.camel@concordia>
-References: <1258459659-11770-1-git-send-email-mel@csn.ul.ie>
-	<1258461544.24093.72.camel@concordia>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-BMaeNH7yeliJffYihnrk"
-Date: Tue, 17 Nov 2009 23:52:38 +1100
-Message-ID: <1258462358.24093.83.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 7FE30B7B91
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 00:07:53 +1100 (EST)
+Date: Tue, 17 Nov 2009 14:07:44 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: netdev@vger.kernel.org
+Subject: Re: updates to the mscan-driver in net-next
+Message-ID: <20091117130744.GC15339@pengutronix.de>
+References: <1258412274-14686-1-git-send-email-w.sang@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="JgQwtEuHJzHdouWu"
+In-Reply-To: <1258412274-14686-1-git-send-email-w.sang@pengutronix.de>
+Cc: socketcan-core@lists.berlios.de, linuxppc-dev@ozlabs.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,61 +24,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-BMaeNH7yeliJffYihnrk
-Content-Type: text/plain; charset="UTF-8"
+--JgQwtEuHJzHdouWu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2009-11-17 at 23:39 +1100, Michael Ellerman wrote:
-> On Tue, 2009-11-17 at 12:07 +0000, Mel Gorman wrote:
-> > KConfig doesn't require CONFIG_XICS to be set with CONFIG_PSERIES but i=
-f
-> > it's not set, there are numerous small build errors. This is a small se=
-ries
-> > of patches to allow CONFIG_XICS to be unset in the config.
-> >=20
-> > XICS appears to be some sort of interrupt controller but I'm not sure h=
-ow
-> > common it is on systems that require CONFIG_PSERIES. If CONFIG_PSERIES
-> > universally requires CONFIG_XICS, the better path might be to force it =
-to
-> > be set.
->=20
-> It is indeed 'some sort of interrupt controller' :)
->=20
-> All the virtualised PSERIES systems have, or appear to have, a XICS. So
-> it's pretty common.
->=20
-> I think the only time you see an MPIC is on older machines, and even
-> then maybe only if you're running bare metal.
->=20
-> So it is pretty much required for a PSERIES kernel, but perhaps there
-> are cases where the BML guys want to be able to turn it off.
+> I will also update my branch on pengutronix.de tomorrow,
 
-In fact this series makes me wonder whether we can drop support for a
-single kernel image with pseries XICS & MPIC support.
+Done.
 
-If we could drop that requirement we could have a single set of names,
-ie. API, for the irq routines and build either the XICS or MPIC
-versions.
+=3D=3D=3D
 
-That would avoid all the code that needs a setup_foo_xics() and
-setup_foo_mpic() - it'd just be setup_foo(), implemented by either the
-XICS or MPIC code.
+The following changes since commit a0a9020c1725cd5c9a13a7aab65831f3c85ea9ca:
+  Wolfram Sang (1):
+        net/can/mscan: final checkpatch cleanups
 
-cheers
+are available in the git repository at:
 
+  git://git.pengutronix.de/git/wsa/linux-2.6.git net-next-52xx-can
 
+Wolfram Sang (11):
+      net/can/mscan: move defines into .h file
+      net/can/mscan: trivial fixes
+      net/can/mscan: drop support for CAN_MODE_{SLEEP|STOP}
+      net/can/mscan: use {clr|set}bits8 macros
+      net/can/mscan: fix function annotations
+      net/can/mscan: drop assignment in while-construct
+      net/can/mpc52xx_can: refactor clock-get routine
+      net/can/mpc52xx_can: improve properties and their description
+      net/can/mscan: replace hardcoded values with defines
+      net/can/mscan: add error path to mscan_open()
+      net/can/mscan: improve build
 
---=-BMaeNH7yeliJffYihnrk
+ Documentation/powerpc/dts-bindings/fsl/mpc5200.txt |    9 +-
+ drivers/net/can/Kconfig                            |   19 +---
+ drivers/net/can/mscan/Kconfig                      |   23 ++++
+ drivers/net/can/mscan/Makefile                     |    4 +-
+ .../net/can/mscan/{mpc52xx_can.c =3D> mpc5xxx_can.c} |   64 ++++-------
+ drivers/net/can/mscan/mscan.c                      |  121 +++++++---------=
+---
+ drivers/net/can/mscan/mscan.h                      |   36 ++++++-
+ 7 files changed, 133 insertions(+), 143 deletions(-)
+ create mode 100644 drivers/net/can/mscan/Kconfig
+ rename drivers/net/can/mscan/{mpc52xx_can.c =3D> mpc5xxx_can.c} (90%)
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--JgQwtEuHJzHdouWu
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAksCnJYACgkQdSjSd0sB4dLlTACgyOQzAgYGj6l+DZblroA00YGi
-ARkAn33WbyMtc8NO2zv1V/blPTosRG2U
-=T2C3
+iEYEARECAAYFAksCoCAACgkQD27XaX1/VRunpgCfcFxc4RffYl9oWppE2Ug4tyL9
+ICYAn3/8HxEZU2NxZ0JNDJ3327+0s7IQ
+=wVrr
 -----END PGP SIGNATURE-----
 
---=-BMaeNH7yeliJffYihnrk--
+--JgQwtEuHJzHdouWu--
