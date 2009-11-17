@@ -1,28 +1,25 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 79E00B7B9C
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 10:09:29 +1100 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e3.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAHKtWnq004461
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 15:55:32 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nAHL46VP111894
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 16:04:06 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nAHL448W004732
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 16:04:06 -0500
-Message-ID: <4B030FC2.9070401@austin.ibm.com>
-Date: Tue, 17 Nov 2009 15:04:02 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-bw0-f212.google.com (mail-bw0-f212.google.com
+	[209.85.218.212]) by ozlabs.org (Postfix) with ESMTP id 36BD210083D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 18 Nov 2009 10:11:38 +1100 (EST)
+Received: by bwz4 with SMTP id 4so631607bwz.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 17 Nov 2009 15:11:36 -0800 (PST)
+Date: Tue, 17 Nov 2009 23:22:11 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Torsten Fleischer <to-fleischer@t-online.de>
+Subject: Re: spi_mpc8xxx.c: chip select polarity problem
+Message-ID: <20091117202211.GB27574@oksana.dev.rtsoft.ru>
+References: <200911161742.46663.to-fleischer@t-online.de>
+	<20091116171037.GA26163@oksana.dev.rtsoft.ru>
+	<20091116180008.GA6748@oksana.dev.rtsoft.ru>
+	<200911172109.28841.to-fleischer@t-online.de>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 0/4] Merge OF dynamic patches
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200911172109.28841.to-fleischer@t-online.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,16 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This set of patches merges the common dynamic device tree
-updating routines of_attach_node() and of_detach_node() to
-drivers/of/of_dynamic.c.
+On Tue, Nov 17, 2009 at 09:09:28PM +0100, Torsten Fleischer wrote:
+> On Mon, Nov 16, 2009 at 19:00PM, Anton Vorontsov wrote:
+> [...]
+> > > So it might be better to fix up initial value in the platform code?
+> > 
+> > Oh, we actually cannot, because the driver calls
+> > gpio_direction_output().
+> > 
+> > And since we don't know the mode prior to SPI device's driver
+> > probe() finished, we'll have to set up an initial state in the
+> > first SPI transfer. I.e. something like this:
+> 
+> In most cases the device drivers perform SPI transfers already in their 
+> probe() function. How can it be ensured that the CS of all other devices are 
+> inactive even if they are not initialized at that time?
 
-Built and tested on powerpc, I have no access to build/test
-this on microblaze.
+Good question. Oh, well... then we have to use spi-cs-high,
+no matter that it is a duplication of the 'compatible' property.
+SPI bus drivers don't know all the devices and their CS level,
+and so spi-cs-high is the only way to tell that information. :-(
 
--Nathan Fontenot
-
-1/4 - Merge of_attach_node
-2/4 - Merge of_detach_node
-3/4 - Makefile/Kconfig updates
-4/4 - Move declarations to linux/of.h
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
