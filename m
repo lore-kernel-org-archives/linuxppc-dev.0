@@ -1,22 +1,24 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B3C0BB7B65
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 18:42:16 +1100 (EST)
-Message-ID: <4B0253CF.3090506@garzik.org>
-Date: Tue, 17 Nov 2009 02:42:07 -0500
-From: Jeff Garzik <jeff@garzik.org>
+	by ozlabs.org (Postfix) with ESMTPS id F2D82B7B7C
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 19:04:51 +1100 (EST)
+In-Reply-To: <4B01F0EB.70707@freescale.com>
+References: <1258304977-11760-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20091116210009.GA5113@loki.buserror.net>
+	<20091116212741.GA10968@loki.buserror.net>
+	<OF8A8D1539.83855DA3-ONC1257670.007D4AD1-C1257670.007DC74A@transmode.se>
+	<4B01F0EB.70707@freescale.com>
+Subject: Re: [PATCH 00/10] Fix 8xx MMU/TLB
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OF735CB2F5.65B4E3F3-ONC1257671.002BB41C-C1257671.002C5E4F@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Tue, 17 Nov 2009 09:04:37 +0100
 MIME-Version: 1.0
-To: Mahajan Vivek-B08308 <B08308@freescale.com>
-Subject: Re: [PATCH 1/1] ata/sata_sil24: MSI support, disabled by default
-References: <1258352362-11231-1-git-send-email-vivek.mahajan@freescale.com>
-	<da824cf30911160937l38651a44sc25a3315efd24aea@mail.gmail.com>
-	<F2F605B667B24B489C904986E0D60A08012220A2@zin33exm23.fsl.freescale.net>
-In-Reply-To: <F2F605B667B24B489C904986E0D60A08012220A2@zin33exm23.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ide@vger.kernel.org, Grant Grundler <grundler@google.com>,
-	linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +28,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/17/2009 01:59 AM, Mahajan Vivek-B08308 wrote:
->> From: Grant Grundler [mailto:grundler@google.com]
->> Sent: Monday, November 16, 2009 11:08 PM
->>> +static int sata_sil24_msi;    /* Disable MSI */
->>> +module_param_named(msi, sata_sil24_msi, bool, S_IRUGO);
->>> +MODULE_PARM_DESC(msi, "Enable MSI (Default: false)");
->>
->> Vivek,
->> Do we even still need the parameter? I'm thinking either MSI
->> works with a chipset or it doesn't. The kernel has globals to
->> "know" which state is true.
->
-> Sometimes even in a platform, some PCIe endpoints do very
-> well with MSI while others may have to resort to legacy ints.
-> Should we let the endpoints make the final call.
->
->>
->> If the parameter is needed, when this driver is compiled into
->> the kernel, how is "msi" parameter specified?
->> I think the parameter needs to be documented and fit in with
->> other "msi" parameters.
->> See "nomsi" in Documentation/kernel-parameters.txt.
->
-> In this case "msi" is supposed to be passed via insmod and
-> not via kernel cmdline. If the driver is built-in the kernel,
-> then force sata_sil24_msi = 1 in the driver to enable it.
 
-First, the original patch was just fine, and it was applied.  You should 
-have received email confirmation of this already.
 
-Second, all module options are available on the kernel command line, 
-when a module is built into the kernel.  You supply a module name prefix 
-to each module option, on the kernel command line.
+Scott Wood <scottwood@freescale.com> wrote on 17/11/2009 01:40:11:
 
-	Jeff
+> From:
+>
+> Scott Wood <scottwood@freescale.com>
+>
+> To:
+>
+> Joakim Tjernlund <joakim.tjernlund@transmode.se>
+>
+> Cc:
+>
+> "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Rex Feany <RFeany@mrv.com>
+>
+> Date:
+>
+> 17/11/2009 01:40
+>
+> Subject:
+>
+> Re: [PATCH 00/10] Fix 8xx MMU/TLB
+>
+> Joakim Tjernlund wrote:
+> > Scott Wood <scottwood@freescale.com> wrote on 16/11/2009 22:27:41:
+> >> On Mon, Nov 16, 2009 at 03:00:09PM -0600, Scott Wood wrote:
+> >>> On Sun, Nov 15, 2009 at 06:09:27PM +0100, Joakim Tjernlund wrote:
+> >>>> [I used the wrong branch, this will hopefully not conflict]
+> >>>>
+> >>>> This is hopfully the last iteration of the series.
+> >>>> Rex & Scott, please test and signoff.
+> >>>> Changes since last version:
+> >>>>  - Added mandatory pinning of iTLB
+> >>>>  - Added "DTLB Miss cleanup"
+> >>> I still get the EFAULTs.
+> >
+> > umm, this worked before this series with your own
+> > version, right?
+>
+> No...  I only meant that the ITLB pinning got rid of the boot hang.
+>
+> When I mentioned the EFAULTs before you said, "No surprise as the it
+> seems like the DAR decoding is broken."  I thought you meant you'd found
+> a bug and fixed it in this respin.
+
+Oh, there seems to be a misunderstanding here :)
+Lets go back a bit, you said some time ago:
+/Quote
+> > +3:   lwz   r11, 0(r11)		 /* Get the level 1 entry */
+> >       DO_8xx_CPU6(0x3b80, r3)
+> >       mtspr SPRN_MD_TWC, r11		 /* Load pte table base address */
+> >       mfspr r11, SPRN_MD_TWC		 /* ....and get the pte address */
+> >       lwz   r11, 0(r11)		 /* Get the pte */
+> >       /* concat physical page address(r11) and page offset(r10) */
+> >       rlwimi      r11, r10, 0, 20, 31
+>
+> But r10 here contains SRR0 from above, and this is a data TLB error.
+
+Never mind that last one, forgot that you'd be wanting to load the
+instruction. :-P
+
+But the rlwimi is what's causing the machine checks.  I replaced it with:
+rlwinm		 r11, r11, 0, 0x3ffff000
+rlwimi		 r11, r10, 22, 0xffc
+
+and things seem to work.  You could probably replace the rlwinm by
+subtracting PAGE_OFFSET from swapper_pg_dir instead.
+/End Quote
+
+I read this as now everything is working, but I guess I misunderstood?
+You still have EFAULT here?
