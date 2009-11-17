@@ -1,24 +1,17 @@
-Return-Path: <R58472@freescale.com>
+Return-Path: <vivek.mahajan@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4C09BB70CF
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 18:16:49 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nAH7GkX9008368
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 00:16:46 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nAH7KGkB009805
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 01:20:16 -0600 (CST)
-From: Li Yang <leoli@freescale.com>
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
-Subject: [RFC] powerpc/mm: honor O_SYNC flag for memory map
-Date: Tue, 17 Nov 2009 15:10:32 +0800
-Message-Id: <1258441832-20133-1-git-send-email-leoli@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id EE365B70CF
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 18:31:29 +1100 (EST)
+From: Vivek Mahajan <vivek.mahajan@freescale.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 1/1] sata_sil24: MSI support cleanup
+Date: Tue, 17 Nov 2009 13:01:23 +0530
+Message-Id: <1258443083-6203-1-git-send-email-vivek.mahajan@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Vivek Mahajan <vivek.mahajan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rather than the original intelligent way, we grant user more freedom.
-This enables user to map cacheable memory not managed by Linux.
+Grant Grundler suggested the following cleanup:
 
-Signed-off-by: Li Yang <leoli@freescale.com>
+* Rename module param 'msi' to 'sata_sil24_msi'
+* Remove pci_intx() as pci_enable_msi() internally
+  takes care of it.
+
+Reviewed-by: Grant Grundler <grundler@google.com>
+Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
 ---
-The only direct users of this function is fb_mmap() and /dev/mem mmap.
-Although I'm not sure if anything is depending on the intelligent setting of
-cacheability.
+ drivers/ata/sata_sil24.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
- arch/powerpc/mm/mem.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 579382c..0fd267e 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -101,7 +101,7 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
- 	if (ppc_md.phys_mem_access_prot)
- 		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
+diff --git a/drivers/ata/sata_sil24.c b/drivers/ata/sata_sil24.c
+index 1370df6..783d8c7 100644
+--- a/drivers/ata/sata_sil24.c
++++ b/drivers/ata/sata_sil24.c
+@@ -417,9 +417,9 @@ static struct ata_port_operations sil24_ops = {
+ #endif
+ };
  
--	if (!page_is_ram(pfn))
-+	if (file->f_flags & O_SYNC)
- 		vma_prot = pgprot_noncached(vma_prot);
+-static int sata_sil24_msi;    /* Disable MSI */
+-module_param_named(msi, sata_sil24_msi, bool, S_IRUGO);
+-MODULE_PARM_DESC(msi, "Enable MSI (Default: false)");
++static int modparam_sata_sil24_msi;    /* Disable MSI */
++module_param_named(sata_sil24_msi, modparam_sata_sil24_msi, bool, S_IRUGO);
++MODULE_PARM_DESC(sata_sil24_msi, "Enable MSI (default: false)");
  
- 	return vma_prot;
+ /*
+  * Use bits 30-31 of port_flags to encode available port numbers.
+@@ -1344,10 +1344,8 @@ static int sil24_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	sil24_init_controller(host);
+ 
+-	if (sata_sil24_msi && !pci_enable_msi(pdev)) {
++	if (modparam_sata_sil24_msi && !pci_enable_msi(pdev))
+ 		dev_printk(KERN_INFO, &pdev->dev, "Using MSI\n");
+-		pci_intx(pdev, 0);
+-	}
+ 
+ 	pci_set_master(pdev);
+ 	return ata_host_activate(host, pdev->irq, sil24_interrupt, IRQF_SHARED,
 -- 
-1.6.4
+1.5.6.5
