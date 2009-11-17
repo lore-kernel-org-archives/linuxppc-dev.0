@@ -1,19 +1,19 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
-	by ozlabs.org (Postfix) with ESMTP id C97E7B7D9C
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 02:42:45 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so1587822fga.3
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 07:42:44 -0800 (PST)
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: devicetree-discuss@lists.ozlabs.org,
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 8543CB7BAB
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 02:54:00 +1100 (EST)
+Message-ID: <4B02C6ED.5050004@grandegger.com>
+Date: Tue, 17 Nov 2009 16:53:17 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Subject: Re: updates to the mscan-driver in net-next
+References: <1258412274-14686-1-git-send-email-w.sang@pengutronix.de>
+	<20091117.035416.250564986.davem@davemloft.net>
+In-Reply-To: <20091117.035416.250564986.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 5/5] qe_gpio: port to new of gpio interface
-Date: Tue, 17 Nov 2009 18:42:26 +0300
-Message-Id: <1258472546-31343-6-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1258472546-31343-1-git-send-email-dbaryshkov@gmail.com>
-References: <1258472546-31343-1-git-send-email-dbaryshkov@gmail.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- arch/powerpc/sysdev/qe_lib/gpio.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+David Miller wrote:
+> From: Wolfram Sang <w.sang@pengutronix.de>
+> Date: Mon, 16 Nov 2009 23:57:43 +0100
+> 
+>> here are the patches which fix the issues for the mscan & mpc52xx_can drivers
+>> raised by Wolfgang Grandegger and Grant Likely. They are based on the initial
+>> version of the drivers I sent a few days ago. Devicetree-discuss has been added
+>> for the property changes. I will also update my branch on pengutronix.de
+>> tomorrow, I seem to have issues when trying that from home :(^
+> 
+> All applied to net-next-2.6, thank you.
 
-diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
-index 8e7a776..b85eab8 100644
---- a/arch/powerpc/sysdev/qe_lib/gpio.c
-+++ b/arch/powerpc/sysdev/qe_lib/gpio.c
-@@ -187,7 +187,7 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
- 	if (err < 0)
- 		goto err1;
- 
--	mm_gc = to_of_mm_gpio_chip(&of_gc->gc);
-+	mm_gc = to_of_mm_of_chip(of_gc);
- 	qe_gc = to_qe_gpio_chip(mm_gc);
- 
- 	spin_lock_irqsave(&qe_gc->lock, flags);
-@@ -319,7 +319,7 @@ static int __init qe_add_gpiochips(void)
- 
- 		mm_gc = &qe_gc->mm_gc;
- 		of_gc = &mm_gc->of_gc;
--		gc = &of_gc->gc;
-+		gc = &mm_gc->gc;
- 
- 		mm_gc->save_regs = qe_gpio_save_regs;
- 		of_gc->gpio_cells = 2;
--- 
-1.6.5
+Puh, I'm again too late for commenting, testing and adding my
+signed-off-by line. Nevertheless, the driver looks good and works fine now.
+
+Thanks,
+
+Wolfgang.
