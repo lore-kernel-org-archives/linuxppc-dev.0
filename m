@@ -1,19 +1,23 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 8543CB7BAB
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 02:54:00 +1100 (EST)
-Message-ID: <4B02C6ED.5050004@grandegger.com>
-Date: Tue, 17 Nov 2009 16:53:17 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-bw0-f223.google.com (mail-bw0-f223.google.com
+	[209.85.218.223]) by ozlabs.org (Postfix) with ESMTP id 708B9B7B93
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 03:12:50 +1100 (EST)
+Received: by bwz23 with SMTP id 23so152243bwz.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 08:12:48 -0800 (PST)
+Date: Tue, 17 Nov 2009 19:12:44 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [RFC PATCH 1/5] Rework OpenFirmware GPIO handling
+Message-ID: <20091117161244.GA6849@oksana.dev.rtsoft.ru>
+References: <1258472546-31343-1-git-send-email-dbaryshkov@gmail.com>
+	<1258472546-31343-2-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: updates to the mscan-driver in net-next
-References: <1258412274-14686-1-git-send-email-w.sang@pengutronix.de>
-	<20091117.035416.250564986.davem@davemloft.net>
-In-Reply-To: <20091117.035416.250564986.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: socketcan-core@lists.berlios.de, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1258472546-31343-2-git-send-email-dbaryshkov@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	Paul Mackerras <paulus@samba.org>
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,21 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Miller wrote:
-> From: Wolfram Sang <w.sang@pengutronix.de>
-> Date: Mon, 16 Nov 2009 23:57:43 +0100
+On Tue, Nov 17, 2009 at 06:42:22PM +0300, Dmitry Eremin-Solenikov wrote:
+> This patch improves OF GPIO bindings so, that most non-OF-specific gpio
+> controllers don't need to call any of OF binding function:
 > 
->> here are the patches which fix the issues for the mscan & mpc52xx_can drivers
->> raised by Wolfgang Grandegger and Grant Likely. They are based on the initial
->> version of the drivers I sent a few days ago. Devicetree-discuss has been added
->> for the property changes. I will also update my branch on pengutronix.de
->> tomorrow, I seem to have issues when trying that from home :(^
-> 
-> All applied to net-next-2.6, thank you.
+> 0) Move of_gpio_chip into main gpio_chip structure.
+> 1) Call of_gpio_init/destroy from gpiochip_add/remove.
+> 2) By default supply reasonable defaults for gpio_cells/xlate
 
-Puh, I'm again too late for commenting, testing and adding my
-signed-off-by line. Nevertheless, the driver looks good and works fine now.
+Heh.. you didn't google before writing the code, did you? ;-)
+
+I don't really think that David will like this approach, just as
+he didn't like the previous one (which was even less intrusive,
+but still wrong):
+
+http://lkml.org/lkml/2008/10/16/248 (a huge thread, but worth reading)
+
+Both of the approaches do not solve the pdata issue.
+
+There are some of David's [absolutely legitimate] comments:
+http://lkml.org/lkml/2008/10/20/43
+
+Some more thoughts:
+http://lkml.org/lkml/2008/10/20/182
+
+And it turned out that the only sane solution is to write
+OF-pdata-hooks for the each driver (that we do for many drivers
+already):
+
+http://lkml.org/lkml/2008/10/22/471
+
+And for this, you'll need the patches that I sent to you
+yesterday.
 
 Thanks,
 
-Wolfgang.
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
