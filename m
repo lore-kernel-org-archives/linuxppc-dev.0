@@ -1,31 +1,37 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 173541007DD
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 13:57:37 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e34.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAI2qP0d006737
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 19:52:25 -0700
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nAI2vVLK161424
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 19:57:31 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nAI2vVWv012485
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 19:57:31 -0700
-Message-ID: <4B03629A.9050503@austin.ibm.com>
-Date: Tue, 17 Nov 2009 20:57:30 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D40EB1007D1
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 14:32:33 +1100 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id nAI3WWph019584
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 14:32:32 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nAI3TEjl1073368
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 14:29:14 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nAI3WWmS025889
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 14:32:32 +1100
+Date: Wed, 18 Nov 2009 13:36:27 +1100
+From: David Gibson <dwg@au1.ibm.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: [powerpc] Next tree Nov 2 : kernel BUG at mm/mmap.c:2135!
+Message-ID: <20091118023627.GC11991@yookeroo>
+References: <20091102173845.210d1c57.sfr@canb.auug.org.au>
+	<4AEEA279.4040106@in.ibm.com> <4AF175D4.7030507@in.ibm.com>
+	<20091105001650.GD3613@yookeroo.seuss>
+	<4AFBEE98.2070208@in.ibm.com>
+	<20091113013729.GB18848@yookeroo.seuss>
+	<20091113021048.GA4865@yookeroo.seuss>
+	<4AFD2865.5090503@in.ibm.com> <20091117052542.GB2576@yookeroo>
+	<4B02529F.1060801@in.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 4/4] Move of_node[attach,detach] declarations to linux/of.h
-References: <4B030FC2.9070401@austin.ibm.com>
-In-Reply-To: <4B030FC2.9070401@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4B02529F.1060801@in.ibm.com>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,69 +41,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge the declarations of of_attach_node and of_detach_node from the asm/prom.h
-headers of powerpc and microblaze into linux/of.h.
+On Tue, Nov 17, 2009 at 01:07:03PM +0530, Sachin Sant wrote:
+> David Gibson wrote:
+> >Hrm.  Ok.  I am truly baffled.  Well, below is a revised debug patch
+> >which I hope will shed some sort of light on things.  I do also notice
+> Thanks for the debug patch. I have attached the collected information.
+> 
+> >from your full log that it looks like the bug is happening shortly
+> >after we start userspace.  So it may be differences in my userspace
+> >set up that meant I haven't been able to reproduce it.  I'll have
+> >another look at that when I get a chance.
+> Let me know if you need access to the system on which i can recreate the
+> bug. I can make that system available for you to debug this issue.
 
-This update also requires adding linux/of.h to the include list for
-powerpc/platforms/pseries/reconfig.h.
+That's probably a good idea.  I'm still pretty baffled by this, so it
+will probably take several more rounds of debug patches to start
+getting a handle on it.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
 
-Index: test-devicetree/arch/microblaze/include/asm/prom.h
-===================================================================
---- test-devicetree.orig/arch/microblaze/include/asm/prom.h	2009-11-17 14:17:03.000000000 -0600
-+++ test-devicetree/arch/microblaze/include/asm/prom.h	2009-11-17 14:18:25.000000000 -0600
-@@ -139,10 +139,6 @@
- 		of_flat_dt_is_compatible(unsigned long node, const char *name);
- extern unsigned long __init of_get_flat_dt_root(void);
- 
--/* For updating the device tree at runtime */
--extern void of_attach_node(struct device_node *);
--extern void of_detach_node(struct device_node *);
--
- /* Other Prototypes */
- extern void finish_device_tree(void);
- extern void unflatten_device_tree(void);
-Index: test-devicetree/arch/powerpc/include/asm/prom.h
-===================================================================
---- test-devicetree.orig/arch/powerpc/include/asm/prom.h	2009-11-17 14:17:03.000000000 -0600
-+++ test-devicetree/arch/powerpc/include/asm/prom.h	2009-11-17 14:18:25.000000000 -0600
-@@ -137,10 +137,6 @@
- extern int __init of_flat_dt_is_compatible(unsigned long node, const char *name);
- extern unsigned long __init of_get_flat_dt_root(void);
- 
--/* For updating the device tree at runtime */
--extern void of_attach_node(struct device_node *);
--extern void of_detach_node(struct device_node *);
--
- /* Other Prototypes */
- extern void finish_device_tree(void);
- extern void unflatten_device_tree(void);
-Index: test-devicetree/arch/powerpc/platforms/pseries/reconfig.c
-===================================================================
---- test-devicetree.orig/arch/powerpc/platforms/pseries/reconfig.c	2009-11-17 14:17:03.000000000 -0600
-+++ test-devicetree/arch/powerpc/platforms/pseries/reconfig.c	2009-11-17 14:18:25.000000000 -0600
-@@ -15,6 +15,7 @@
- #include <linux/kref.h>
- #include <linux/notifier.h>
- #include <linux/proc_fs.h>
-+#include <linux/of.h>
- 
- #include <asm/prom.h>
- #include <asm/machdep.h>
-Index: test-devicetree/include/linux/of.h
-===================================================================
---- test-devicetree.orig/include/linux/of.h	2009-11-17 14:17:03.000000000 -0600
-+++ test-devicetree/include/linux/of.h	2009-11-17 14:18:25.000000000 -0600
-@@ -84,4 +84,10 @@
- 	const char *list_name, const char *cells_name, int index,
- 	struct device_node **out_node, const void **out_args);
- 
-+#ifdef CONFIG_OF_DYNAMIC
-+/* For updating the device tree at runtime */
-+extern void of_attach_node(struct device_node *);
-+extern void of_detach_node(struct device_node *);
-+#endif
-+
- #endif /* _LINUX_OF_H */
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
