@@ -1,19 +1,16 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 985E8B6F11
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 11:35:19 +1100 (EST)
-Message-ID: <4B02EABA.3060905@grandegger.com>
-Date: Tue, 17 Nov 2009 19:26:02 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH] net/can: add driver for mscan family & mpc52xx_mscan
-References: <1258128892-28800-1-git-send-email-w.sang@pengutronix.de>	<fa686aa40911130939x54ac53f9x173a875a5a4435d3@mail.gmail.com>
-	<20091116184416.GA21491@pengutronix.de>
-In-Reply-To: <20091116184416.GA21491@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: socketcan-core@lists.berlios.de, David Miller <davem@davemloft.net>,
-	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Return-Path: <dmitch71@gmail.com>
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id CE313B6EF5
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 11:57:36 +1100 (EST)
+Received: by gxk28 with SMTP id 28so619414gxk.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 16:57:34 -0800 (PST)
+Sender: David Mitchell <dmitch71@gmail.com>
+From: Dave Mitchell <dmitchell@appliedmicro.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH] ibm_newemac: Fix EMACx_TRTR[TRT] bit shifts
+Date: Tue, 17 Nov 2009 18:56:55 -0600
+Message-Id: <1258505815-31261-1-git-send-email-dmitchell@appliedmicro.com>
+Cc: linuxppc-dev@ozlabs.org, dmitchell@appliedmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wolfram Sang wrote:
-> Hi Grant,
-> 
-> Wolfgang commented on some points already, I will pick up the other remarks,
-> just one question:
-> 
->>> +       clk_src = of_get_property(np, "fsl,mscan-clk-src", NULL);
->>> +       if (clk_src && strcmp(clk_src, "ip") == 0)
->> Should protect against non-null.  strncmp() maybe?
-> 
-> "ip" is null-terminated, or what do you mean?
+The TRT bit shifts were reversed for EMAC4 and non-EMAC4 during the 
+port from ibm_emac to ibm_newemac. This patch corrects that error.
 
-Imagine somebody defines:
+Signed-off-by: Dave Mitchell <dmitchell@appliedmicro.com>
+Acked-by: Feng Kan <fkan@appliedmicro.com>
+Acked-by: Prodyut Hazarika <phazarika@appliedmicro.com>
+---
+ For those curious, these bits control the TX threshold.
+ 
+ drivers/net/ibm_newemac/emac.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-  fsl,mscan-clk-src = <0xbaeee>;
-
-Wolfgang.
+diff --git a/drivers/net/ibm_newemac/emac.h b/drivers/net/ibm_newemac/emac.h
+index d34adf9..f2751cb 100644
+--- a/drivers/net/ibm_newemac/emac.h
++++ b/drivers/net/ibm_newemac/emac.h
+@@ -263,8 +263,8 @@ struct emac_regs {
+ 
+ 
+ /* EMACx_TRTR */
+-#define EMAC_TRTR_SHIFT_EMAC4		27
+-#define EMAC_TRTR_SHIFT			24
++#define EMAC_TRTR_SHIFT_EMAC4		24
++#define EMAC_TRTR_SHIFT		27
+ 
+ /* EMAC specific TX descriptor control fields (write access) */
+ #define EMAC_TX_CTRL_GFCS		0x0200
+-- 
+1.6.3.2
