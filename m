@@ -1,19 +1,29 @@
-Return-Path: <ptyser@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7C2DFB6F14
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 08:51:26 +1100 (EST)
-Subject: Re: [PATCH 0/3] powerpc: Add support for FIT uImages
-From: Peter Tyser <ptyser@xes-inc.com>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1258577834-26006-1-git-send-email-ptyser@xes-inc.com>
-References: <1258577834-26006-1-git-send-email-ptyser@xes-inc.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 18 Nov 2009 15:51:21 -0600
-Message-ID: <1258581081.8365.5996.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-kbuild@vger.kernel.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A9C99B6F16
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 08:58:31 +1100 (EST)
+Message-ID: <4B046E02.9030606@freescale.com>
+Date: Wed, 18 Nov 2009 15:58:26 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH 00/10] Fix 8xx MMU/TLB
+References: <1258304977-11760-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20091116210009.GA5113@loki.buserror.net>
+	<20091116212741.GA10968@loki.buserror.net>
+	<OF8A8D1539.83855DA3-ONC1257670.007D4AD1-C1257670.007DC74A@transmode.se>
+	<4B01F0EB.70707@freescale.com>
+	<OF735CB2F5.65B4E3F3-ONC1257671.002BB41C-C1257671.002C5E4F@transmode.se>
+	<4B046248.7060101@freescale.com>
+	<OFD94AE350.813F1695-ONC1257672.007719B8-C1257672.00778BD4@transmode.se>
+In-Reply-To: <OFD94AE350.813F1695-ONC1257672.007719B8-C1257672.00778BD4@transmode.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-11-18 at 14:57 -0600, Peter Tyser wrote:
-> These patches add support for creating the "new" FIT uImage type
-> that U-Boot can use.  Additional info about FIT images can be
-> found in the doc/uImage.FIT/ directory of the U-Boot source.
-> Here's a link to a howto which gives an overview of the format:
-> http://git.denx.de/cgi-bin/gitweb.cgi?p=u-boot.git;a=blob;f=doc/uImage.FIT/howto.txt;h=8065e9e1d8d4d65a9b5fe0fce08d3709183d0ee4;hb=HEAD
-> 
-> I've only added support for PowerPC, but the arm, avr32, blackfin,
-> and sh arches could use the same framework in theory.  The change
-> is especially useful on PowerPC since it creates 1 FIT uImage that
-> combines the functionality of an "old" uImage format, a device
-> tree blob, and possibly a ramdisk.
-> 
-> Peter Tyser (3):
->   powerpc: Use scripts/mkuboot.sh instead of 'mkimage'
->   powerpc: Add support for creating FIT uImages
->   powerpc: Add support for ram filesystems in FIT uImages
-> 
->  arch/powerpc/Makefile        |    4 +-
->  arch/powerpc/boot/.gitignore |    1 +
->  arch/powerpc/boot/Makefile   |    8 ++-
->  arch/powerpc/boot/wrapper    |   39 ++++++++++--
->  scripts/mkits.sh             |  144 ++++++++++++++++++++++++++++++++++++++++++
->  5 files changed, 189 insertions(+), 7 deletions(-)
->  create mode 100755 scripts/mkits.sh
+Joakim Tjernlund wrote:
+> Yeah, those are the ones that will trigger a dcbX TLB fault,
+> copy_tofrom_user would be my guess. Perhaps I missed something
+> in the conversions? That is, maybe some of these routines are plain wrong now for
+> 8xx due to some other bug?
+> A small test program in user space doing some dcbX insn could shed some light?
 
-Just realized I missed /Documentation/powerpc/bootwrapper.txt in this
-series.  I'll wait for feedback and roll the documentation update and
-any other requested changes into v2.
+Sorry, it looks like the rlwimi instruction I gave you was bad.
 
-Sorry for the noise,
-Peter
+It should be:
+rlwimi  r11, r10, 12, 0xffc
+instead of:
+rlwimi  r11, r10, 22, 0xffc
+
+-Scott
