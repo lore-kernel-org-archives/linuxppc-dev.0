@@ -1,28 +1,28 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C1C861007D3
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 13:56:32 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e32.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAI2p9RM023943
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 19:51:09 -0700
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nAI2uPUF166224
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 19:56:25 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nAI2uPlU021224
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 19:56:25 -0700
-Message-ID: <4B036256.9060809@austin.ibm.com>
-Date: Tue, 17 Nov 2009 20:56:22 -0600
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 173541007DD
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 13:57:37 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e34.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAI2qP0d006737
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 19:52:25 -0700
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nAI2vVLK161424
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 19:57:31 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id nAI2vVWv012485
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 19:57:31 -0700
+Message-ID: <4B03629A.9050503@austin.ibm.com>
+Date: Tue, 17 Nov 2009 20:57:30 -0600
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 3/4] Makefile and Kconfig updates for of_dynamci
+Subject: [PATCH 4/4] Move of_node[attach,detach] declarations to linux/of.h
 References: <4B030FC2.9070401@austin.ibm.com>
 In-Reply-To: <4B030FC2.9070401@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -35,55 +35,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the Kconfig and Makefile files for drivers/of, powerpc and microblaze
-to properly configure for CONFIG_OF_DYNAMIC to build the of_dynamic code.
+Merge the declarations of of_attach_node and of_detach_node from the asm/prom.h
+headers of powerpc and microblaze into linux/of.h.
+
+This update also requires adding linux/of.h to the include list for
+powerpc/platforms/pseries/reconfig.h.
 
 Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 ---
 
-Index: test-devicetree/arch/microblaze/Kconfig
+Index: test-devicetree/arch/microblaze/include/asm/prom.h
 ===================================================================
---- test-devicetree.orig/arch/microblaze/Kconfig	2009-11-17 13:52:45.000000000 -0600
-+++ test-devicetree/arch/microblaze/Kconfig	2009-11-17 14:01:06.000000000 -0600
-@@ -111,6 +111,7 @@
+--- test-devicetree.orig/arch/microblaze/include/asm/prom.h	2009-11-17 14:17:03.000000000 -0600
++++ test-devicetree/arch/microblaze/include/asm/prom.h	2009-11-17 14:18:25.000000000 -0600
+@@ -139,10 +139,6 @@
+ 		of_flat_dt_is_compatible(unsigned long node, const char *name);
+ extern unsigned long __init of_get_flat_dt_root(void);
  
- config OF
- 	def_bool y
-+	select OF_DYNAMIC
- 
- config PROC_DEVICETREE
- 	bool "Support for device tree in /proc"
-Index: test-devicetree/arch/powerpc/Kconfig
+-/* For updating the device tree at runtime */
+-extern void of_attach_node(struct device_node *);
+-extern void of_detach_node(struct device_node *);
+-
+ /* Other Prototypes */
+ extern void finish_device_tree(void);
+ extern void unflatten_device_tree(void);
+Index: test-devicetree/arch/powerpc/include/asm/prom.h
 ===================================================================
---- test-devicetree.orig/arch/powerpc/Kconfig	2009-11-17 13:52:45.000000000 -0600
-+++ test-devicetree/arch/powerpc/Kconfig	2009-11-17 14:01:06.000000000 -0600
-@@ -163,6 +163,7 @@
+--- test-devicetree.orig/arch/powerpc/include/asm/prom.h	2009-11-17 14:17:03.000000000 -0600
++++ test-devicetree/arch/powerpc/include/asm/prom.h	2009-11-17 14:18:25.000000000 -0600
+@@ -137,10 +137,6 @@
+ extern int __init of_flat_dt_is_compatible(unsigned long node, const char *name);
+ extern unsigned long __init of_get_flat_dt_root(void);
  
- config OF
- 	def_bool y
-+	select OF_DYNAMIC
- 
- config PPC_UDBG_16550
- 	bool
-Index: test-devicetree/drivers/of/Kconfig
+-/* For updating the device tree at runtime */
+-extern void of_attach_node(struct device_node *);
+-extern void of_detach_node(struct device_node *);
+-
+ /* Other Prototypes */
+ extern void finish_device_tree(void);
+ extern void unflatten_device_tree(void);
+Index: test-devicetree/arch/powerpc/platforms/pseries/reconfig.c
 ===================================================================
---- test-devicetree.orig/drivers/of/Kconfig	2009-11-17 13:52:48.000000000 -0600
-+++ test-devicetree/drivers/of/Kconfig	2009-11-17 14:01:06.000000000 -0600
-@@ -1,3 +1,7 @@
-+config OF_DYNAMIC
-+	bool
-+	depends on OF
+--- test-devicetree.orig/arch/powerpc/platforms/pseries/reconfig.c	2009-11-17 14:17:03.000000000 -0600
++++ test-devicetree/arch/powerpc/platforms/pseries/reconfig.c	2009-11-17 14:18:25.000000000 -0600
+@@ -15,6 +15,7 @@
+ #include <linux/kref.h>
+ #include <linux/notifier.h>
+ #include <linux/proc_fs.h>
++#include <linux/of.h>
+ 
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+Index: test-devicetree/include/linux/of.h
+===================================================================
+--- test-devicetree.orig/include/linux/of.h	2009-11-17 14:17:03.000000000 -0600
++++ test-devicetree/include/linux/of.h	2009-11-17 14:18:25.000000000 -0600
+@@ -84,4 +84,10 @@
+ 	const char *list_name, const char *cells_name, int index,
+ 	struct device_node **out_node, const void **out_args);
+ 
++#ifdef CONFIG_OF_DYNAMIC
++/* For updating the device tree at runtime */
++extern void of_attach_node(struct device_node *);
++extern void of_detach_node(struct device_node *);
++#endif
 +
- config OF_DEVICE
- 	def_bool y
- 	depends on OF && (SPARC || PPC_OF || MICROBLAZE)
-Index: test-devicetree/drivers/of/Makefile
-===================================================================
---- test-devicetree.orig/drivers/of/Makefile	2009-11-17 13:52:48.000000000 -0600
-+++ test-devicetree/drivers/of/Makefile	2009-11-17 14:01:06.000000000 -0600
-@@ -1,4 +1,5 @@
- obj-y = base.o
-+obj-$(CONFIG_OF_DYNAMIC) += of_dynamic.o
- obj-$(CONFIG_OF_DEVICE) += device.o platform.o
- obj-$(CONFIG_OF_GPIO)   += gpio.o
- obj-$(CONFIG_OF_I2C)	+= of_i2c.o
+ #endif /* _LINUX_OF_H */
