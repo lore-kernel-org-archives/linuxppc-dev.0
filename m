@@ -1,21 +1,22 @@
-Return-Path: <to-fleischer@t-online.de>
-Received: from mailout07.t-online.de (mailout07.t-online.de [194.25.134.83])
-	by ozlabs.org (Postfix) with ESMTP id 8F3C0B7B9C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 Nov 2009 03:36:45 +1100 (EST)
-From: Torsten Fleischer <to-fleischer@t-online.de>
-To: avorontsov@ru.mvista.com
-Subject: Re: spi_mpc8xxx.c: chip select polarity problem
-Date: Wed, 18 Nov 2009 17:20:06 +0100
-References: <200911161742.46663.to-fleischer@t-online.de>
-	<20091117202211.GB27574@oksana.dev.rtsoft.ru>
-	<20091117232823.GA19058@oksana.dev.rtsoft.ru>
-In-Reply-To: <20091117232823.GA19058@oksana.dev.rtsoft.ru>
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0BEFCB7B9F
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 04:05:18 +1100 (EST)
+Date: Wed, 18 Nov 2009 17:05:10 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/4] powerpc: Fix minor build issues on 2.6.32-rc7
+	without CONFIG_XICS set
+Message-ID: <20091118170510.GA1119@csn.ul.ie>
+References: <1258459659-11770-1-git-send-email-mel@csn.ul.ie>
+	<1258524332.2140.663.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <200911181720.06390.to-fleischer@t-online.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1258524332.2140.663.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,110 +26,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wen, Nov 18, 2009 00:28:23 Anton Vorontsov wrote:
-[...]
-> > > > > So it might be better to fix up initial value in the platform code?
-> > > >
-> > > > Oh, we actually cannot, because the driver calls
-> > > > gpio_direction_output().
-> > > >
-> > > > And since we don't know the mode prior to SPI device's driver
-> > > > probe() finished, we'll have to set up an initial state in the
-> > > > first SPI transfer. I.e. something like this:
-> > >
-> > > In most cases the device drivers perform SPI transfers already in their
-> > > probe() function. How can it be ensured that the CS of all other
-> > > devices are inactive even if they are not initialized at that time?
-> >
-> > Good question. Oh, well... then we have to use spi-cs-high,
-> > no matter that it is a duplication of the 'compatible' property.
-> > SPI bus drivers don't know all the devices and their CS level,
-> > and so spi-cs-high is the only way to tell that information. :-(
+On Wed, Nov 18, 2009 at 05:05:32PM +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2009-11-17 at 12:07 +0000, Mel Gorman wrote:
+> > KConfig doesn't require CONFIG_XICS to be set with CONFIG_PSERIES but if
+> > it's not set, there are numerous small build errors. This is a small series
+> > of patches to allow CONFIG_XICS to be unset in the config.
+> > 
+> > XICS appears to be some sort of interrupt controller but I'm not sure how
+> > common it is on systems that require CONFIG_PSERIES. If CONFIG_PSERIES
+> > universally requires CONFIG_XICS, the better path might be to force it to
+> > be set.
+> > 
+> > Testing was building with make oldconfig a configuration from 2.6.31 on
+> > a PPC970.
 > 
-> Oh. On the other hand, we can postpone the gpio_direction_output()
-> call, and still require that the platform code (or firmware)
-> should be responsible for setting a sane default values on the
-> chip selects.
+> CONFIG_XICS should be made invisible and selected by PSERIES.
 > 
 
-How about that?
+Like so?
 
+==== CUT HERE ====
 
-diff -u -r -N linux-2.6.31.6_orig//drivers/spi/spi_mpc8xxx.c linux-2.6.31.6/drivers/spi/spi_mpc8xxx.c
---- linux-2.6.31.6_orig//drivers/spi/spi_mpc8xxx.c	2009-11-10 01:32:31.000000000 +0100
-+++ linux-2.6.31.6/drivers/spi/spi_mpc8xxx.c	2009-11-18 10:47:06.000000000 +0100
-@@ -114,6 +114,7 @@
- 	u32 rx_shift;		/* RX data reg shift when in qe mode */
- 	u32 tx_shift;		/* TX data reg shift when in qe mode */
- 	u32 hw_mode;		/* Holds HW mode register settings */
-+	int initialized;
- };
+powerpc: Add Kconfig dependency on PCI_MSI for XICS and select for PSERIES
+
+It's possible to set CONFIG_XICS without CONFIG_PCI_MSI. When that
+happens, the kernel fails to build with
+
+arch/powerpc/platforms/built-in.o: In function `.xics_startup':
+xics.c:(.text+0x12f60): undefined reference to `.unmask_msi_irq'
+make: *** [.tmp_vmlinux1] Error 1
+
+Furthermore, as noted by Benjamin Herrenschmidt, "CONFIG_XICS should be
+made invisible and selected by PSERIES."
+
+This patch adds the dependency in KConfig for XICS on PCI_MSI. When
+PSERIES support is being configured, both options are silently selected.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ arch/powerpc/platforms/Kconfig         |    4 ++--
+ arch/powerpc/platforms/pseries/Kconfig |    2 ++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 04a8061..a82c470 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -52,9 +52,9 @@ config PPC_UDBG_BEAT
+ 	default n
  
- static inline void mpc8xxx_spi_write_reg(__be32 __iomem *reg, u32 val)
-@@ -437,6 +438,7 @@
- 		cs = kzalloc(sizeof *cs, GFP_KERNEL);
- 		if (!cs)
- 			return -ENOMEM;
-+		cs->initialized = 0;
- 		spi->controller_state = cs;
- 	}
- 	mpc8xxx_spi = spi_master_get_devdata(spi->master);
-@@ -503,15 +505,25 @@
+ config XICS
+-	depends on PPC_PSERIES
++	depends on PCI_MSI
+ 	bool
+-	default y
++	default n
  
- 	return ret;
- }
-+
-+static void mpc8xxx_spi_cs_init(struct spi_device *spi);
-+
-+
- static int mpc8xxx_spi_transfer(struct spi_device *spi,
- 				struct spi_message *m)
- {
- 	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
-+	struct spi_mpc8xxx_cs *cs = spi->controller_state;
- 	unsigned long flags;
- 
- 	m->actual_length = 0;
- 	m->status = -EINPROGRESS;
- 
-+	if (cs && !cs->initialized) {
-+		mpc8xxx_spi_cs_init(spi);
-+		cs->initialized = 1;
-+	}
-+
- 	spin_lock_irqsave(&mpc8xxx_spi->lock, flags);
- 	list_add_tail(&m->queue, &mpc8xxx_spi->queue);
- 	queue_work(mpc8xxx_spi->workqueue, &mpc8xxx_spi->work);
-@@ -671,6 +683,17 @@
- 	gpio_set_value(gpio, on ^ alow);
- }
- 
-+static void mpc8xxx_spi_cs_init(struct spi_device *spi)
-+{
-+	struct device *dev = spi->dev.parent;
-+	struct mpc8xxx_spi_probe_info *pinfo = to_of_pinfo(dev->platform_data);
-+	u16 cs = spi->chip_select;
-+	int gpio = pinfo->gpios[cs];
-+	bool on = (pinfo->alow_flags[cs] ^ !(spi->mode & SPI_CS_HIGH));
-+
-+	gpio_direction_output(gpio, on);
-+}
-+
- static int of_mpc8xxx_spi_get_chipselects(struct device *dev)
- {
- 	struct device_node *np = dev_archdata_get_node(&dev->archdata);
-@@ -720,14 +743,6 @@
- 
- 		pinfo->gpios[i] = gpio;
- 		pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
--
--		ret = gpio_direction_output(pinfo->gpios[i],
--					    pinfo->alow_flags[i]);
--		if (ret) {
--			dev_err(dev, "can't set output direction for gpio "
--				"#%d: %d\n", i, ret);
--			goto err_loop;
--		}
- 	}
- 
- 	pdata->max_chipselect = ngpios;
+ config IPIC
+ 	bool
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index f0e6f28..81c2289 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -5,6 +5,8 @@ config PPC_PSERIES
+ 	select PPC_I8259
+ 	select PPC_RTAS
+ 	select RTAS_ERROR_LOGGING
++	select PCI_MSI
++	select XICS
+ 	select PPC_UDBG_16550
+ 	select PPC_NATIVE
+ 	select PPC_PCI_CHOICE if EMBEDDED
