@@ -1,22 +1,15 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+Return-Path: <ptyser@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.218])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2A156B6EFE
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 07:41:36 +1100 (EST)
-Date: Wed, 18 Nov 2009 21:41:21 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [patch 06/13] powerpc: Fixup last users of irq_chip->typename
-In-Reply-To: <20091118175523.GA12857@b07421-ec1.am.freescale.net>
-Message-ID: <alpine.LFD.2.00.0911182141060.24119@localhost.localdomain>
-References: <20091117224852.846805939@linutronix.de>
-	<20091117224916.566205413@linutronix.de>
-	<20091118175523.GA12857@b07421-ec1.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	LKML <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTPS id 43BADB7B3E
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 08:06:37 +1100 (EST)
+From: Peter Tyser <ptyser@xes-inc.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/3] powerpc: Add support for FIT uImages
+Date: Wed, 18 Nov 2009 14:57:11 -0600
+Message-Id: <1258577834-26006-1-git-send-email-ptyser@xes-inc.com>
+Cc: Peter Tyser <ptyser@xes-inc.com>, linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 18 Nov 2009, Scott Wood wrote:
-> On Tue, Nov 17, 2009 at 10:50:53PM +0000, Thomas Gleixner wrote:
-> > Index: linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-> > ===================================================================
-> > --- linux-2.6.orig/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-> > +++ linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-> > @@ -69,7 +69,7 @@ static void pq2ads_pci_unmask_irq(unsign
-> >  }
-> >  
-> >  static struct irq_chip pq2ads_pci_ic = {
-> > -	.typename = "PQ2 ADS PCI",
-> > +	.name = "PQ2 ADS PCI",
-> >  	.name = "PQ2 ADS PCI",
-> >  	.end = pq2ads_pci_unmask_irq,
-> >  	.mask = pq2ads_pci_mask_irq,
-> 
-> Duplicate ".name"...
+These patches add support for creating the "new" FIT uImage type
+that U-Boot can use.  Additional info about FIT images can be
+found in the doc/uImage.FIT/ directory of the U-Boot source.
+Here's a link to a howto which gives an overview of the format:
+http://git.denx.de/cgi-bin/gitweb.cgi?p=u-boot.git;a=blob;f=doc/uImage.FIT/howto.txt;h=8065e9e1d8d4d65a9b5fe0fce08d3709183d0ee4;hb=HEAD
 
-Darn.
+I've only added support for PowerPC, but the arm, avr32, blackfin,
+and sh arches could use the same framework in theory.  The change
+is especially useful on PowerPC since it creates 1 FIT uImage that
+combines the functionality of an "old" uImage format, a device
+tree blob, and possibly a ramdisk.
+
+Peter Tyser (3):
+  powerpc: Use scripts/mkuboot.sh instead of 'mkimage'
+  powerpc: Add support for creating FIT uImages
+  powerpc: Add support for ram filesystems in FIT uImages
+
+ arch/powerpc/Makefile        |    4 +-
+ arch/powerpc/boot/.gitignore |    1 +
+ arch/powerpc/boot/Makefile   |    8 ++-
+ arch/powerpc/boot/wrapper    |   39 ++++++++++--
+ scripts/mkits.sh             |  144 ++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 189 insertions(+), 7 deletions(-)
+ create mode 100755 scripts/mkits.sh
