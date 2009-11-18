@@ -1,19 +1,21 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 7201B1007D4
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 20:58:36 +1100 (EST)
-Date: Wed, 18 Nov 2009 10:58:28 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Luotao Fu <l.fu@pengutronix.de>
-Subject: Re: [PATCH] spi/mpc52xx-spi: cleanups
-Message-ID: <20091118095828.GA5166@pengutronix.de>
-References: <1258468268-9911-1-git-send-email-w.sang@pengutronix.de>
-	<20091117144300.GB4850@pengutronix.de>
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.180])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 634B31007D4
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 21:08:01 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] ibm_newemac: Fix EMACx_TRTR[TRT] bit shifts
+Date: Wed, 18 Nov 2009 11:07:51 +0100
+References: <1258505815-31261-1-git-send-email-dmitchell@appliedmicro.com>
+In-Reply-To: <1258505815-31261-1-git-send-email-dmitchell@appliedmicro.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ZGiS0Q5IWpPtfppv"
-In-Reply-To: <20091117144300.GB4850@pengutronix.de>
-Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <200911181107.51661.sr@denx.de>
+Cc: netdev@vger.kernel.org, Dave Mitchell <dmitchell@appliedmicro.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,41 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wednesday 18 November 2009 01:56:55 Dave Mitchell wrote:
+> The TRT bit shifts were reversed for EMAC4 and non-EMAC4 during the
+> port from ibm_emac to ibm_newemac. This patch corrects that error.
+> 
+> Signed-off-by: Dave Mitchell <dmitchell@appliedmicro.com>
+> Acked-by: Feng Kan <fkan@appliedmicro.com>
+> Acked-by: Prodyut Hazarika <phazarika@appliedmicro.com>
 
---ZGiS0Q5IWpPtfppv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Stefan Roese <sr@denx.de>
 
-> > -		rc |=3D request_irq(ms->irq1, mpc52xx_spi_irq, IRQF_SAMPLE_RANDOM,
-> > +		rc |=3D request_irq(ms->irq1, mpc52xx_spi_irq, 0,
-> >  				  "mpc5200-spi-spiF", ms);
->=20
-> The "spiF" here is probably also a typo.
+Would be great if this could go into 2.6.32. Thanks.
 
-Ack. Grant, if you think it is worth you may modify my patch to avoid a res=
-end.
-If it is easier for you, I will do the resend, of course.
-
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---ZGiS0Q5IWpPtfppv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAksDxUQACgkQD27XaX1/VRsTigCgrkUG9+1oz/8cC7ECpaKl9Rny
-6HQAniy4zbAJVxqn2tyQSTUAu52NWnJt
-=YdQy
------END PGP SIGNATURE-----
-
---ZGiS0Q5IWpPtfppv--
+Cheers,
+Stefan
