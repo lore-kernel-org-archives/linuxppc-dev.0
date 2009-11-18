@@ -1,22 +1,15 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 0B7351007D1
+Return-Path: <mlei@Brocade.COM>
+Received: from hq-exedge.brocade.com (hq-exedge.brocade.com [66.243.153.83])
+	by ozlabs.org (Postfix) with ESMTP id 9C4741007D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 19 Nov 2009 10:29:25 +1100 (EST)
-Date: Thu, 19 Nov 2009 02:29:20 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Torsten Fleischer <to-fleischer@t-online.de>
-Subject: Re: spi_mpc8xxx.c: chip select polarity problem
-Message-ID: <20091118232920.GA24307@oksana.dev.rtsoft.ru>
-References: <200911161742.46663.to-fleischer@t-online.de>
-	<20091117202211.GB27574@oksana.dev.rtsoft.ru>
-	<20091117232823.GA19058@oksana.dev.rtsoft.ru>
-	<200911181720.06390.to-fleischer@t-online.de>
+	Thu, 19 Nov 2009 10:59:02 +1100 (EST)
+From: Ming Lei <mlei@Brocade.COM>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 18 Nov 2009 15:53:27 -0800
+Subject: watchdog exception on 8548CDS during cpu_idle
+Message-ID: <7301F255FCB62048851F165FFAAF9BD106E9B3F0E5@HQ-EXCH-7.corp.brocade.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200911181720.06390.to-fleischer@t-online.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,109 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 18, 2009 at 05:20:06PM +0100, Torsten Fleischer wrote:
-[...]
-> > Oh. On the other hand, we can postpone the gpio_direction_output()
-> > call, and still require that the platform code (or firmware)
-> > should be responsible for setting a sane default values on the
-> > chip selects.
-> > 
-> 
-> How about that?
 
-Looks great, thanks!
+I used the vanilla linux 2.6.30 and compiled with mpc85xx_defconfig(enable =
+CONFIG_BOOK_WDT) and then ran on 8548CDS and soon after I saw the prompt I =
+hit this watchdog.
+=20
+bash-2.04# PowerPC Book-E Watchdog Exception
+NIP: c000b740 LR: c00088dc CTR: c000b6b0
+REGS: cfffbf10 TRAP: 3202   Not tainted  (2.6.30)
+MSR: 00029000 <EE,ME,CE>  CR: 28028048  XER: 20000000
+TASK =3D c04f4458[0] 'swapper' THREAD: c052c000
+GPR00: c000b6b0 c052df90 c04f4458 00800000 80804080 0000001d c053af48 00069=
+000=20
+GPR08: ffffffff 00000000 08954400 00000000 002167ee 7f652f31 0ffad800 0fff0=
+000=20
+GPR16: 00000000 00000000 00000000 00000000 00000000 f30a620b 0ff50450 00000=
+000=20
+GPR24: 00000000 00000000 c053506c c0534fa0 c0534fa0 c052c034 00000008 c052c=
+000=20
+NIP [c000b740] e500_idle+0x90/0x94
+LR [c00088dc] cpu_idle+0x98/0xec
+Call Trace:
+[c052df90] [c000889c] cpu_idle+0x58/0xec (unreliable)
+[c052dfb0] [c00023ec] rest_init+0x5c/0x70
+[c052dfc0] [c04c16f4] start_kernel+0x22c/0x290
+[c052dff0] [c0000398] skpinv+0x2b0/0x2ec
+Instruction dump:
+7c90faa6 548402ce 7c841b78 4c00012c 7c90fba6 4c00012c 7ce000a6 64e70004=20
+60e78000 7c0004ac 7ce00124 4c00012c <48000000> 812b00a0 912b0090 39600000=20
 
-Few minor issues below.
+Have anyone seen this before? Why the EE bit is on in the stack trace? I pu=
+t show_regs in watchdog exception handler in traps.c. I verified that EE is=
+ off when entering the watchdog exception handler. Can I trust this stack t=
+race?
 
-> diff -u -r -N linux-2.6.31.6_orig//drivers/spi/spi_mpc8xxx.c linux-2.6.31.6/drivers/spi/spi_mpc8xxx.c
-> --- linux-2.6.31.6_orig//drivers/spi/spi_mpc8xxx.c	2009-11-10 01:32:31.000000000 +0100
-> +++ linux-2.6.31.6/drivers/spi/spi_mpc8xxx.c	2009-11-18 10:47:06.000000000 +0100
-> @@ -114,6 +114,7 @@
->  	u32 rx_shift;		/* RX data reg shift when in qe mode */
->  	u32 tx_shift;		/* TX data reg shift when in qe mode */
->  	u32 hw_mode;		/* Holds HW mode register settings */
-> +	int initialized;
->  };
->  
->  static inline void mpc8xxx_spi_write_reg(__be32 __iomem *reg, u32 val)
-> @@ -437,6 +438,7 @@
->  		cs = kzalloc(sizeof *cs, GFP_KERNEL);
->  		if (!cs)
->  			return -ENOMEM;
-> +		cs->initialized = 0;
-
-No need for this, we allocated cs with kzalloc, which zeroes
-the memory anyway.
-
->  		spi->controller_state = cs;
->  	}
->  	mpc8xxx_spi = spi_master_get_devdata(spi->master);
-> @@ -503,15 +505,25 @@
->  
->  	return ret;
->  }
-> +
-> +static void mpc8xxx_spi_cs_init(struct spi_device *spi);
-> +
-> +
-
-Whenever possible, please avoid forward declarations.
-
->  static int mpc8xxx_spi_transfer(struct spi_device *spi,
->  				struct spi_message *m)
->  {
->  	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
-> +	struct spi_mpc8xxx_cs *cs = spi->controller_state;
->  	unsigned long flags;
->  
->  	m->actual_length = 0;
->  	m->status = -EINPROGRESS;
->  
-> +	if (cs && !cs->initialized) {
-> +		mpc8xxx_spi_cs_init(spi);
-> +		cs->initialized = 1;
-> +	}
-> +
->  	spin_lock_irqsave(&mpc8xxx_spi->lock, flags);
->  	list_add_tail(&m->queue, &mpc8xxx_spi->queue);
->  	queue_work(mpc8xxx_spi->workqueue, &mpc8xxx_spi->work);
-> @@ -671,6 +683,17 @@
->  	gpio_set_value(gpio, on ^ alow);
->  }
->  
-> +static void mpc8xxx_spi_cs_init(struct spi_device *spi)
-> +{
-> +	struct device *dev = spi->dev.parent;
-> +	struct mpc8xxx_spi_probe_info *pinfo = to_of_pinfo(dev->platform_data);
-> +	u16 cs = spi->chip_select;
-> +	int gpio = pinfo->gpios[cs];
-> +	bool on = (pinfo->alow_flags[cs] ^ !(spi->mode & SPI_CS_HIGH));
-
-The outermost parenthesis aren't needed.
-
-> +
-> +	gpio_direction_output(gpio, on);
-
-gpio_direction_output() may fail, so spi_cs_init too.
-
-I'd write it as 'return gpio_direction_outpit(..)', and in
-mpc8xxx_spi_transfer something like this:
-
-	if (cs && !cs->initialized) {
-		int ret;
-
-		ret = mpc8xxx_spi_cs_init(spi);
-		if (ret) {
-			dev_dbg(&spi->dev, "cs_init failed: %d\n", ret);
-			return ret;
-		}
-		cs->initialized = 1;
-	}
-
-
-Thanks!
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Thanks
+Ming
