@@ -1,28 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9BFEFB6F0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 10:10:06 +1100 (EST)
-In-Reply-To: <4B046E02.9030606@freescale.com>
-References: <1258304977-11760-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<20091116210009.GA5113@loki.buserror.net>
-	<20091116212741.GA10968@loki.buserror.net>
-	<OF8A8D1539.83855DA3-ONC1257670.007D4AD1-C1257670.007DC74A@transmode.se>
-	<4B01F0EB.70707@freescale.com>
-	<OF735CB2F5.65B4E3F3-ONC1257671.002BB41C-C1257671.002C5E4F@transmode.se>
-	<4B046248.7060101@freescale.com>
-	<OFD94AE350.813F1695-ONC1257672.007719B8-C1257672.00778BD4@transmode.se>
-	<4B046E02.9030606@freescale.com>
-Subject: Re: [PATCH 00/10] Fix 8xx MMU/TLB
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OFAFE1DE56.4C34F334-ONC1257672.007E8F4C-C1257672.007ED46B@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 19 Nov 2009 00:05:19 +0100
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 0B7351007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 19 Nov 2009 10:29:25 +1100 (EST)
+Date: Thu, 19 Nov 2009 02:29:20 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Torsten Fleischer <to-fleischer@t-online.de>
+Subject: Re: spi_mpc8xxx.c: chip select polarity problem
+Message-ID: <20091118232920.GA24307@oksana.dev.rtsoft.ru>
+References: <200911161742.46663.to-fleischer@t-online.de>
+	<20091117202211.GB27574@oksana.dev.rtsoft.ru>
+	<20091117232823.GA19058@oksana.dev.rtsoft.ru>
+	<200911181720.06390.to-fleischer@t-online.de>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200911181720.06390.to-fleischer@t-online.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +26,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 18/11/2009 22:58:26:
->
-> Joakim Tjernlund wrote:
-> > Yeah, those are the ones that will trigger a dcbX TLB fault,
-> > copy_tofrom_user would be my guess. Perhaps I missed something
-> > in the conversions? That is, maybe some of these routines are plain wrong now for
-> > 8xx due to some other bug?
-> > A small test program in user space doing some dcbX insn could shed some light?
->
-> Sorry, it looks like the rlwimi instruction I gave you was bad.
->
-> It should be:
-> rlwimi  r11, r10, 12, 0xffc
-> instead of:
-> rlwimi  r11, r10, 22, 0xffc
+On Wed, Nov 18, 2009 at 05:20:06PM +0100, Torsten Fleischer wrote:
+[...]
+> > Oh. On the other hand, we can postpone the gpio_direction_output()
+> > call, and still require that the platform code (or firmware)
+> > should be responsible for setting a sane default values on the
+> > chip selects.
+> > 
+> 
+> How about that?
 
-ah, great. You have no issues now?
+Looks great, thanks!
 
-I will fix and resubmit in a day or so.
+Few minor issues below.
 
-Rex, were did you go? I have not heard from you for quite some time.
+> diff -u -r -N linux-2.6.31.6_orig//drivers/spi/spi_mpc8xxx.c linux-2.6.31.6/drivers/spi/spi_mpc8xxx.c
+> --- linux-2.6.31.6_orig//drivers/spi/spi_mpc8xxx.c	2009-11-10 01:32:31.000000000 +0100
+> +++ linux-2.6.31.6/drivers/spi/spi_mpc8xxx.c	2009-11-18 10:47:06.000000000 +0100
+> @@ -114,6 +114,7 @@
+>  	u32 rx_shift;		/* RX data reg shift when in qe mode */
+>  	u32 tx_shift;		/* TX data reg shift when in qe mode */
+>  	u32 hw_mode;		/* Holds HW mode register settings */
+> +	int initialized;
+>  };
+>  
+>  static inline void mpc8xxx_spi_write_reg(__be32 __iomem *reg, u32 val)
+> @@ -437,6 +438,7 @@
+>  		cs = kzalloc(sizeof *cs, GFP_KERNEL);
+>  		if (!cs)
+>  			return -ENOMEM;
+> +		cs->initialized = 0;
 
- Jocke
+No need for this, we allocated cs with kzalloc, which zeroes
+the memory anyway.
+
+>  		spi->controller_state = cs;
+>  	}
+>  	mpc8xxx_spi = spi_master_get_devdata(spi->master);
+> @@ -503,15 +505,25 @@
+>  
+>  	return ret;
+>  }
+> +
+> +static void mpc8xxx_spi_cs_init(struct spi_device *spi);
+> +
+> +
+
+Whenever possible, please avoid forward declarations.
+
+>  static int mpc8xxx_spi_transfer(struct spi_device *spi,
+>  				struct spi_message *m)
+>  {
+>  	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
+> +	struct spi_mpc8xxx_cs *cs = spi->controller_state;
+>  	unsigned long flags;
+>  
+>  	m->actual_length = 0;
+>  	m->status = -EINPROGRESS;
+>  
+> +	if (cs && !cs->initialized) {
+> +		mpc8xxx_spi_cs_init(spi);
+> +		cs->initialized = 1;
+> +	}
+> +
+>  	spin_lock_irqsave(&mpc8xxx_spi->lock, flags);
+>  	list_add_tail(&m->queue, &mpc8xxx_spi->queue);
+>  	queue_work(mpc8xxx_spi->workqueue, &mpc8xxx_spi->work);
+> @@ -671,6 +683,17 @@
+>  	gpio_set_value(gpio, on ^ alow);
+>  }
+>  
+> +static void mpc8xxx_spi_cs_init(struct spi_device *spi)
+> +{
+> +	struct device *dev = spi->dev.parent;
+> +	struct mpc8xxx_spi_probe_info *pinfo = to_of_pinfo(dev->platform_data);
+> +	u16 cs = spi->chip_select;
+> +	int gpio = pinfo->gpios[cs];
+> +	bool on = (pinfo->alow_flags[cs] ^ !(spi->mode & SPI_CS_HIGH));
+
+The outermost parenthesis aren't needed.
+
+> +
+> +	gpio_direction_output(gpio, on);
+
+gpio_direction_output() may fail, so spi_cs_init too.
+
+I'd write it as 'return gpio_direction_outpit(..)', and in
+mpc8xxx_spi_transfer something like this:
+
+	if (cs && !cs->initialized) {
+		int ret;
+
+		ret = mpc8xxx_spi_cs_init(spi);
+		if (ret) {
+			dev_dbg(&spi->dev, "cs_init failed: %d\n", ret);
+			return ret;
+		}
+		cs->initialized = 1;
+	}
+
+
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
