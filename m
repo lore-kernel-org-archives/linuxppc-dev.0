@@ -1,21 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C6A021007D3
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 17:06:07 +1100 (EST)
-Subject: Re: [PATCH 0/4] powerpc: Fix minor build issues on 2.6.32-rc7
-	without CONFIG_XICS set
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <1258459659-11770-1-git-send-email-mel@csn.ul.ie>
-References: <1258459659-11770-1-git-send-email-mel@csn.ul.ie>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 18 Nov 2009 17:05:32 +1100
-Message-ID: <1258524332.2140.663.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Return-Path: <mihir124@yahoo.com>
+Received: from web51701.mail.re2.yahoo.com (web51701.mail.re2.yahoo.com
+	[206.190.38.219]) by ozlabs.org (Postfix) with SMTP id B0FEA1007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 18 Nov 2009 17:13:11 +1100 (EST)
+Message-ID: <848341.27696.qm@web51701.mail.re2.yahoo.com>
+Date: Tue, 17 Nov 2009 22:13:09 -0800 (PST)
+From: Mihir Punjabi <mihir124@yahoo.com>
+Subject: Value of .bootpg and TEXT_BASE for ppc440 in U-Boot
+To: u-boot@lists.denx.de, linuxppc-dev@lists.ozlabs.org,
+	Linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: mihir124@yahoo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-11-17 at 12:07 +0000, Mel Gorman wrote:
-> KConfig doesn't require CONFIG_XICS to be set with CONFIG_PSERIES but if
-> it's not set, there are numerous small build errors. This is a small series
-> of patches to allow CONFIG_XICS to be unset in the config.
-> 
-> XICS appears to be some sort of interrupt controller but I'm not sure how
-> common it is on systems that require CONFIG_PSERIES. If CONFIG_PSERIES
-> universally requires CONFIG_XICS, the better path might be to force it to
-> be set.
-> 
-> Testing was building with make oldconfig a configuration from 2.6.31 on
-> a PPC970.
+Hi,
 
-CONFIG_XICS should be made invisible and selected by PSERIES.
+I am currently trying to port U-Boot onto a board with PPC440x5. My board has 16MB of flash whose base address is 0xFC000000.
 
-Cheers,
-Ben.
+I have set ".bootpg" in u-boot.lds to 0xFCFFF000 (End of Flash - 4 KB) and "TEXT_BASE" in config.mk to 0xFCF80000 (End of Flash - 512 KB). I obtained an error saying "Not enough room for program headers (allocated 3, need 4)"
+
+I get the above error even if I set ".bootpg" to 0xFCF80000 (End of Flash - 512 KB) & "TEXT_BASE" to 0xFCF00000 (End of Flash - 1 MB) - I know these are high values, but just wanted to ensure that enough space is available.
+But, I still got the same error.
+
+Can someone tell me what the problem here is? Is my understanding that ".bootpg" should be at a value (End of Flash - 4 KB) wrong?
+
+Further, I harcoded the "SIZEOF_HEADERS" in u-boot.lds to 1024, reverted ".bootpg" to 0xFCFFF000 & "TEXT_BASE" to 0xFCF80000.
+
+I obtained the following error:
+cpu/ppc4xx/resetvec.o:(.resetvec+0x0): relocation truncated to fit: R_PPC_REL24 against symbol `_start_440' defined in .bootpg section in cpu/ppc4xx/start.o
+
+Please let me know what exactly should .bootpg & TEXT_BASE be set to?
+
+I am suspecting these 2 values because my code compiles successfully if I:
+1) Set TEXT_BASE to 0xFFFC0000
+2) Remove the hardcoding of "SIZEOF_HEADERS" & 
+3) Set .bootpg to 0xFFFFF000 (set by all ppc440 boards)
+
+Thanks and Regards,
+Mihir Punjabi
+
+
+
+      
