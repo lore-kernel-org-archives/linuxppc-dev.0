@@ -1,16 +1,31 @@
-Return-Path: <pbathija@amcc.com>
-Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id AE8F31007D3
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 11:19:51 +1100 (EST)
-From: pbathija@amcc.com
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [PPC4xx] Fix device tree dts file for katmai board.
-Date: Tue, 17 Nov 2009 16:19:48 -0800
-Message-Id: <1258503588-7844-1-git-send-email-pbathija@amcc.com>
-Cc: Pravin Bathija <pbathija@amcc.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CB083B6EF6
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Nov 2009 11:25:13 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAI0MqWq015486
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 17:22:52 -0700
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	nAI0P6oe249886
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 17:25:06 -0700
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av06.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id nAI0Qk3r018202
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Nov 2009 17:26:47 -0700
+Date: Tue, 17 Nov 2009 19:25:02 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: pbathija@amcc.com
+Subject: Re: [PATCH] [PPC4xx] Fix device tree dts file for katmai board.
+Message-ID: <20091118002502.GO30489@zod.rchland.ibm.com>
+References: <1258503588-7844-1-git-send-email-pbathija@amcc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1258503588-7844-1-git-send-email-pbathija@amcc.com>
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,87 +35,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Pravin Bathija <pbathija@amcc.com>
+On Tue, Nov 17, 2009 at 04:19:48PM -0800, pbathija@amcc.com wrote:
+>From: Pravin Bathija <pbathija@amcc.com>
+>
+>   Set size cell value to 2 for 4GB memory support in katmai. Also set PCI-E
+>   node inbound DMA ranges size to 4GB for correct boot up of katmai.
+>Content-Type: text/plain; charset=utf-8
+>
+>Signed-off-by: Pravin Bathija <pbathija@amcc.com>
+>Acked-by: Feng Kan <fkan@amcc.com>
+>Acked-by: Prodyut Hazarika <phazarika@amcc.com>
+>Acked-by: Loc Ho <lho@amcc.com>
+>Acked-by: Tirumala Reddy Marri <tmarri@amcc.com>
+>Acked-by: Victor Gallardo <vgallardo@amcc.com>
 
-   Set size cell value to 2 for 4GB memory support in katmai. Also set PCI-E
-   node inbound DMA ranges size to 4GB for correct boot up of katmai.
-Content-Type: text/plain; charset=utf-8
+This conflicts with one I already have queued up in my next branch.  It also
+seems to lack some of the changes that patch has.
 
-Signed-off-by: Pravin Bathija <pbathija@amcc.com>
-Acked-by: Feng Kan <fkan@amcc.com>
-Acked-by: Prodyut Hazarika <phazarika@amcc.com>
-Acked-by: Loc Ho <lho@amcc.com>
-Acked-by: Tirumala Reddy Marri <tmarri@amcc.com>
-Acked-by: Victor Gallardo <vgallardo@amcc.com>
----
- arch/powerpc/boot/dts/katmai.dts |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+Stefan, can you look this over and work out with Pravin what to do?
 
-diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
-index 077819b..8b40fd8 100644
---- a/arch/powerpc/boot/dts/katmai.dts
-+++ b/arch/powerpc/boot/dts/katmai.dts
-@@ -16,7 +16,7 @@
- 
- / {
- 	#address-cells = <2>;
--	#size-cells = <1>;
-+	#size-cells = <2>;
- 	model = "amcc,katmai";
- 	compatible = "amcc,katmai";
- 	dcr-parent = <&{/cpus/cpu@0}>;
-@@ -49,7 +49,7 @@
- 
- 	memory {
- 		device_type = "memory";
--		reg = <0x00000000 0x00000000 0x00000000>; /* Filled in by zImage */
-+		reg = < 0x0 0x00000000 0x0 0x00000000>; /* Filled in by zImage */
- 	};
- 
- 	UIC0: interrupt-controller0 {
-@@ -245,8 +245,8 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000d 0x80000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000c 0x08000000 0x00000000 0x00010000>;
- 
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
- 
- 			/* This drives busses 0 to 0xf */
- 			bus-range = <0x0 0xf>;
-@@ -289,8 +289,8 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000e 0x00000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80000000 0x00000000 0x00010000>;
- 
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
- 
- 			/* This drives busses 10 to 0x1f */
- 			bus-range = <0x10 0x1f>;
-@@ -330,8 +330,8 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000e 0x80000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80010000 0x00000000 0x00010000>;
- 
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
- 
- 			/* This drives busses 10 to 0x1f */
- 			bus-range = <0x20 0x2f>;
-@@ -371,8 +371,8 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000f 0x00000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80020000 0x00000000 0x00010000>;
- 
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
- 
- 			/* This drives busses 10 to 0x1f */
- 			bus-range = <0x30 0x3f>;
--- 
-1.5.5
+josh
