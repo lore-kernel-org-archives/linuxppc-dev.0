@@ -1,24 +1,19 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id AE8F81007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 Nov 2009 03:03:31 +1100 (EST)
-Date: Thu, 19 Nov 2009 08:03:24 -0800
-From: Greg KH <greg@kroah.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Bug in drivers/serial/of_serial.c?
-Message-ID: <20091119160324.GA7492@kroah.com>
-References: <8B957E110B62714A84290A01A597805F05CA0AA0@Exchange.discretix.com>
-	<200911191441.27581.arnd@arndb.de>
-	<8B957E110B62714A84290A01A597805F05D2AE47@Exchange.discretix.com>
-	<200911191509.31270.arnd@arndb.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A90C1B7B9E
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 03:08:37 +1100 (EST)
+Message-ID: <4B056D85.5010904@embedded-sol.com>
+Date: Thu, 19 Nov 2009 18:08:37 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200911191509.31270.arnd@arndb.de>
-Cc: Alon Ziv <alonz@discretix.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-serial@vger.kernel.org
+To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: tg3: link is permanently down after ifdown and ifup
+References: <4B056158.5060104@embedded-sol.com>
+In-Reply-To: <4B056158.5060104@embedded-sol.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 19, 2009 at 03:09:31PM +0100, Arnd Bergmann wrote:
-> On Thursday 19 November 2009, Alon Ziv wrote:
-> > On Thursday, November 19, 2009, Arnd Bergmann wrote:
-> > > I'd still add support for the compatible="ns16550a" property
-> > > so that we do the right thing for future systems.
-> > > 
-> > 
-> > OK...
-> > ---
-> > Xilinx 16550 UART is actually 16550A-compatible
-> > 
-> > Signed-off-by: Alon Ziv <alonz@discretix.com>
-> 
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> 
-> Does this go through the powerpc or the tty tree?
-> I'd be happy if either Ben or Greg could pick this up.
-> 
-> I'm happy to keep maintaining the driver itself but it
-> would be nice to know a definite subsystem maintainer
-> responsible for it.
-> 
-> Greg, if you want to take patches for of_serial.c generally,
-> I'll start forwarding them to you as they come in and make
-> sure they apply to your tree.
+Hi,
 
-Sure, I would be glad to do so, send them on.
+The problem goes away if I remove the call to
 
-thanks,
+tg3_set_power_state(tp, PCI_D3hot);
 
-greg k-h
+from tg3_close().
+
+Some relevant stuff from dmesg:
+
+pci 0002:05:00.0: PME# supported from D3hot D3cold
+pci 0002:05:00.0: PME# disabled
+tg3.c:v3.102 (September 1, 2009)
+tg3 0002:05:00.0: enabling device (0000 -> 0002)
+tg3 0002:05:00.0: PME# disabled
+tg3 mdio bus: probed
+eth2: Tigon3 [partno(BCM57760) rev 57780001] (PCI Express) MAC address 
+00:10:18:00:00:00
+eth2: attached PHY driver [Broadcom BCM57780] (mii_bus:phy_addr=500:01)
+eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
+eth2: dma_rwctrl[76180000] dma_mask[64-bit]
+
+Is my problem related to hardware or it's a tg3 driver bug ?
+
+Thanks a lot.
+
+Felix.
+
+Felix Radensky wrote:
+> Hi,
+>
+> I have a problem with tg3 driver on a custom MPC8536 based board
+> running linux-2.6.31, with tg3 and Broadcom phy drivers taken from
+> linux-2.6.32-rc7. Broadcom NIC is BCM57760, phy is BCM57780.
+>
+> The problem I'm seeing is that the downing and interface leads to
+> permanent link loss, even after interface is upped again. E.g, to
+> reproduce the problem it is sufficient to run:
+>
+> modprobe tg3
+> ifconfig eth2 up
+> ifconfig eth2 down
+> ifconfig eth2 up
+>
+> After ifdown PHY LEDs also go down and do not come back
+> after ifup. Ethtool reports that no link is detected. After reloading
+> the driver the link comes back.
+>
+> Am I the only one seeing this problem  ?
+> Any help on fixing this is appreciated.
+>
+> Thanks a lot.
+>
+> Felix.
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
