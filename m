@@ -2,18 +2,23 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 38825B7B75
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 00:55:32 +1100 (EST)
-Subject: Re: [RFC] powerpc/mm: honor O_SYNC flag for memory map
+	by ozlabs.org (Postfix) with ESMTPS id 108861007D1
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 00:57:31 +1100 (EST)
+Subject: Re: [PATCH] sata_fsl: Split hard and soft reset
 Mime-Version: 1.0 (Apple Message framework v1076)
 Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1258441832-20133-1-git-send-email-leoli@freescale.com>
-Date: Thu, 19 Nov 2009 07:55:22 -0600
-Message-Id: <8543954E-619A-4A78-A934-CDC326027FD2@kernel.crashing.org>
-References: <1258441832-20133-1-git-send-email-leoli@freescale.com>
-To: Li Yang <leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <FF648E22-3953-4121-9DCE-862BAC5995B9@kernel.crashing.org>
+Date: Thu, 19 Nov 2009 07:57:16 -0600
+Message-Id: <81E10EFE-C57C-4678-8FF8-0646EFCFB485@kernel.crashing.org>
+References: <20091016164436.GA12897@oksana.dev.rtsoft.ru>
+	<795A2621-9D6C-4D1F-B07B-24E15C55B03F@kernel.crashing.org>
+	<FF648E22-3953-4121-9DCE-862BAC5995B9@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>,
+	linux-ide <linux-ide@vger.kernel.org>,
+	Ashish Kalra <Ashish.Kalra@freescale.com>, Jeff Garzik <jeff@garzik.org>,
+	Jiang Yutang <b14898@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +29,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Nov 17, 2009, at 1:10 AM, Li Yang wrote:
+On Nov 19, 2009, at 7:51 AM, Kumar Gala wrote:
 
-> Rather than the original intelligent way, we grant user more freedom.
-> This enables user to map cacheable memory not managed by Linux.
 >
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> The only direct users of this function is fb_mmap() and /dev/mem mmap.
-> Although I'm not sure if anything is depending on the intelligent  
-> setting of
-> cacheability.
+> On Nov 5, 2009, at 9:02 AM, Kumar Gala wrote:
+>
+>>
+>> On Oct 16, 2009, at 11:44 AM, Anton Vorontsov wrote:
+>>
+>>> From: Jiang Yutang <b14898@freescale.com>
+>>>
+>>> Split sata_fsl_softreset() into hard and soft resets to make
+>>> error-handling more efficient & device and PMP detection more
+>>> reliable.
+>>>
+>>> Also includes fix for PMP support, driver tested with Sil3726,
+>>> Sil4726 & Exar PMP controllers.
+>>>
+>>> [AV: Also fixes resuming from deep sleep on MPC8315 CPUs]
+>>>
+>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
+>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> ---
+>>> drivers/ata/sata_fsl.c |   84 ++++++++++++++++++++++++ 
+>>> +-----------------------
+>>> 1 files changed, 44 insertions(+), 40 deletions(-)
+>>
+>> Jeff,
+>>
+>> any update on this going in for .32?
+>
+> Jeff?
 
-is there some reason to change this?
+slightly ignore me, for some reason I didn't see your reply.
 
 - k
-
->
-> arch/powerpc/mm/mem.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 579382c..0fd267e 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -101,7 +101,7 @@ pgprot_t phys_mem_access_prot(struct file *file,  
-> unsigned long pfn,
-> 	if (ppc_md.phys_mem_access_prot)
-> 		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
->
-> -	if (!page_is_ram(pfn))
-> +	if (file->f_flags & O_SYNC)
-> 		vma_prot = pgprot_noncached(vma_prot);
->
-> 	return vma_prot;
-> -- 
-> 1.6.4
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
