@@ -1,24 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nhorman@tuxdriver.com>
+Received: from smtp.tuxdriver.com (charlotte.tuxdriver.com [70.61.120.58])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 13E75B6F0E
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 05:51:47 +1100 (EST)
-Subject: Re: [PATCH v3 3/3] powerpc/fsl: 85xx: add cache-sram support
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20091119174546.GB6845@b07421-ec1.am.freescale.net>
-Date: Thu, 19 Nov 2009 12:51:38 -0600
-Message-Id: <D88B1DB0-B4ED-4695-B81A-1A7C77B11A86@kernel.crashing.org>
-References: <1256129459-10685-1-git-send-email-vivek.mahajan@freescale.com>
-	<1256129459-10685-2-git-send-email-vivek.mahajan@freescale.com>
-	<1256129459-10685-3-git-send-email-vivek.mahajan@freescale.com>
-	<181208B7-AC0B-4634-A04E-46468D376719@freescale.com>
-	<2B43D645-7977-4C24-A3EF-C55A392228B4@kernel.crashing.org>
-	<20091119174546.GB6845@b07421-ec1.am.freescale.net>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Vivek Mahajan <vivek.mahajan@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 3E837B6F09
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 07:48:58 +1100 (EST)
+Date: Thu, 19 Nov 2009 14:52:16 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc64: re-enable kexec to allow module loads with
+	CONFIG_MODVERSIONS and CONFIG_RELOCATABLE turned on
+Message-ID: <20091119195216.GC11414@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org, nhorman@tuxdriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +22,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hey there-
+	Before anyone flames me for what a oddball solution this is, let me just
+say I'm trying to get the ball rolling here.  I think there may be better
+solutions that can be impemented in reloc_64.S, but I've yet to make any of the
+ones I've tried work successfully.  I'm open to suggestions, but this solution
+is the only one so far that I've been able to get to work. thanks :)
 
-On Nov 19, 2009, at 11:45 AM, Scott Wood wrote:
 
-> On Thu, Nov 19, 2009 at 08:29:19AM -0600, Kumar Gala wrote:
->>>> +config FSL_85XX_CACHE_SRAM_BASE
->>>> +	hex
->>>> +	depends on FSL_85XX_CACHE_SRAM
->>>> +	default "0xfff00000"
->>>> +
->>>
->>> I really don't like setting the physical address this way, can we
->>> not do this via the device tree?
->>
->> At a high level I think we should add something like the following in
->> the .dts:
->>
->> sram@fff00000 {
->> 	fsl,sram-ctrl-handle = <&L2>;
->> 	reg = <0xfff00000 0xNNNN>;
->> 	compatible = "fsl,mpc85xx-l2-sram";
->> }
->>
->> the NNNN can be the size the sram is configured as.
->
-> I don't see why this needs to go in the device tree, if it's the  
-> kernel
-> that is setting it up.  The kernel can pick any address and size it
-> wants.
+Adjust crcs in __kcrctab_* sections if relocs are used with CONFIG_RELOCATABLE
 
-It can, we just don't normally do physical address allocation in the  
-kernel.  I just dont want it as a compile time thing.  Either .dts or  
-make it runtime allocated by the kernel.
+When CONFIG_MODVERSIONS and CONFIG_RELOCATABLE are enabled on powerpc platforms,
+kdump has been failing in a rather odd way.  specifically modules will not
+install.  This is because when validating the crcs of symbols that the module
+needs, the crc of the module never matches the crc that is stored in the kernel.
 
-- k
+The underlying cause of this is how CONFIG_MODVERSIONS is implemented, and how
+CONFIG_RELOCATABLE are implemented.  with CONFIG_MODVERSIONS enabled, for every
+exported symbol in the kernel we emit 2 symbols, __crc_#sym which is declared
+extern and __kcrctab_##sym, which is placed in the __kcrctab section of the
+binary.  The latter has its value set equal to the address of the former
+(recalling it is declared extern).  After the object file is built, genksyms is
+run on the processed source, and crcs are computed for each exported symbol.
+genksyms then emits a linker script which defines each of the needed __crc_##sym
+symbols, and sets their addresses euqal to their respective crcs.  This script
+is then used in a secondary link to the previously build object file, so that
+the crcs of the missing symbol can be validated on module insert.
+
+The problem here is that because __kcrctab_sym is set equal to &__crc_##sym, a
+relocation entry is emitted by the compiler for the __kcrctab__##sym.  Normally
+this is not a problem, since relocation on other arches is done without the aid
+of .rel.dyn sections.  PPC however uses these relocations when
+CONFIG_RELOCATABLE is enabled.  nominally, since addressing starts at 0 for ppc,
+its irrelevant, but if we start at a non-zero address (like we do when booting
+via kexec from reserved crashkernel memory), the ppc boot code iterates over the
+relocation entries, and winds up adding that relocation offset to all symbols,
+including the symbols that are actually the aforementioned crc values in the
+__kcrctab_* sections.  This effectively corrupts the crcs and prevents any
+module loads from happening during a kdump.
+
+My solution is to 'undo' these relocations prior to boot up.  If
+ARCH_USES_RELOC_ENTRIES is defined, we add a symbol at address zero to the
+linker script for that arch (I call it reloc_start, so that &reloc_start = 0).
+This symbol will then indicate the relocation offset for any given boot.  We
+also add an initcall to the module code that, during boot, scans the __kcrctab_*
+sections and subtracts &reloc_start from every entry in those sections,
+restoring the appropriate crc value.
+
+I've verified that this allows kexec to work properly on ppc64 systems myself.
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+
+
+ arch/powerpc/include/asm/local.h  |    6 ++++++
+ arch/powerpc/kernel/vmlinux.lds.S |    4 ++++
+ kernel/module.c                   |   30 ++++++++++++++++++++++++++++++
+ 3 files changed, 40 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
+index 84b457a..9cc49e5 100644
+--- a/arch/powerpc/include/asm/local.h
++++ b/arch/powerpc/include/asm/local.h
+@@ -4,6 +4,12 @@
+ #include <linux/percpu.h>
+ #include <asm/atomic.h>
+ 
++#ifdef CONFIG_MODVERSIONS
++#define ARCH_USES_RELOC_ENTRIES
++
++extern unsigned long reloc_start;
++#endif
++
+ typedef struct
+ {
+ 	atomic_long_t a;
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 27735a7..2b9fb2e 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -38,6 +38,10 @@ jiffies = jiffies_64 + 4;
+ #endif
+ SECTIONS
+ {
++	. = 0;
++	reloc_start = .;
++	. = 0;
++
+ 	. = KERNELBASE;
+ 
+ /*
+diff --git a/kernel/module.c b/kernel/module.c
+index 8b7d880..87a4928 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -181,8 +181,11 @@ extern const struct kernel_symbol __stop___ksymtab_gpl_future[];
+ extern const struct kernel_symbol __start___ksymtab_gpl_future[];
+ extern const struct kernel_symbol __stop___ksymtab_gpl_future[];
+ extern const unsigned long __start___kcrctab[];
++extern const unsigned long __stop___kcrctab[];
+ extern const unsigned long __start___kcrctab_gpl[];
++extern const unsigned long __stop___kcrctab_gpl[];
+ extern const unsigned long __start___kcrctab_gpl_future[];
++extern const unsigned long __stop___kcrctab_gpl_future[];
+ #ifdef CONFIG_UNUSED_SYMBOLS
+ extern const struct kernel_symbol __start___ksymtab_unused[];
+ extern const struct kernel_symbol __stop___ksymtab_unused[];
+@@ -3144,3 +3147,30 @@ int module_get_iter_tracepoints(struct tracepoint_iter *iter)
+ 	return found;
+ }
+ #endif
++
++#ifdef ARCH_USES_RELOC_ENTRIES
++static __init int adjust_kcrctab(void)
++{
++	int i;
++	int count;
++	unsigned long  *crc ;
++
++	count = __stop___kcrctab - __start___kcrctab;
++	crc = (unsigned long *)__start___kcrctab;
++	for (i = 0; i < count; i++) {
++		crc[i] -= (unsigned long)&reloc_start;
++	}
++	count = __stop___kcrctab_gpl - __start___kcrctab_gpl;
++	crc = (unsigned long *)__start___kcrctab_gpl;
++	for (i = 0; i < count; i++) {
++		crc[i] -= (unsigned long)&reloc_start;
++	}
++	count = __stop___kcrctab_gpl_future - __start___kcrctab_gpl_future;
++	crc = (unsigned long *)__start___kcrctab_gpl_future;
++	for (i = 0; i< count; i++) {
++                crc[i] -= (unsigned long)&reloc_start;
++	}
++	return 0;
++}
++early_initcall(adjust_kcrctab);
++#endif
