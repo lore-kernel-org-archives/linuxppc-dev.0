@@ -1,22 +1,27 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 364DD1007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 Nov 2009 01:10:10 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Alon Ziv" <alonz@discretix.com>
-Subject: Re: Bug in drivers/serial/of_serial.c?
-Date: Thu, 19 Nov 2009 15:09:31 +0100
-References: <8B957E110B62714A84290A01A597805F05CA0AA0@Exchange.discretix.com>
-	<200911191441.27581.arnd@arndb.de>
-	<8B957E110B62714A84290A01A597805F05D2AE47@Exchange.discretix.com>
-In-Reply-To: <8B957E110B62714A84290A01A597805F05D2AE47@Exchange.discretix.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200911191509.31270.arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
-	Greg KH <greg@kroah.com>
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9E606B6EED
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 01:21:13 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nAJEL9dn021232
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 07:21:09 -0700 (MST)
+Subject: Re: [PATCH v3 3/3] powerpc/fsl: 85xx: add cache-sram support
+Mime-Version: 1.0 (Apple Message framework v1076)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1256129459-10685-3-git-send-email-vivek.mahajan@freescale.com>
+Date: Thu, 19 Nov 2009 08:21:05 -0600
+Message-Id: <181208B7-AC0B-4634-A04E-46468D376719@freescale.com>
+References: <1256129459-10685-1-git-send-email-vivek.mahajan@freescale.com>
+	<1256129459-10685-2-git-send-email-vivek.mahajan@freescale.com>
+	<1256129459-10685-3-git-send-email-vivek.mahajan@freescale.com>
+To: Vivek Mahajan <vivek.mahajan@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,52 +31,609 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 19 November 2009, Alon Ziv wrote:
-> On Thursday, November 19, 2009, Arnd Bergmann wrote:
-> > I'd still add support for the compatible="ns16550a" property
-> > so that we do the right thing for future systems.
-> > 
-> 
-> OK...
+
+On Oct 21, 2009, at 7:50 AM, Vivek Mahajan wrote:
+
+> This adds QorIQ based Cache-SRAM support as under:-
+>
+> * A small abstraction over powerpc's remote heap allocator
+> * Exports mpc85xx_cache_sram_alloc()/free() APIs
+> * Supports only one contiguous SRAM window
+> * Defines FSL_85XX_CACHE_SRAM and its base address
+>
+> Signed-off-by: Vivek Mahajan <vivek.mahajan@freescale.com>
 > ---
-> Xilinx 16550 UART is actually 16550A-compatible
-> 
-> Signed-off-by: Alon Ziv <alonz@discretix.com>
+> v2: mbar(1) -> eieio() as per Kumar G.
+> v3: Fixed cache-sram ways computation
+>
+> arch/powerpc/include/asm/fsl_85xx_cache_sram.h |   48 ++++++
+> arch/powerpc/platforms/85xx/Kconfig            |    9 ++
+> arch/powerpc/sysdev/Makefile                   |    1 +
+> arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h      |   95 ++++++++++++
+> arch/powerpc/sysdev/fsl_85xx_cache_sram.c      |  141 +++++++++++++++ 
+> +++
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c          |  184 +++++++++++++++ 
+> +++++++++
+> 6 files changed, 478 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/include/asm/fsl_85xx_cache_sram.h
+> create mode 100644 arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+> create mode 100644 arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+> create mode 100644 arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+>
+> diff --git a/arch/powerpc/include/asm/fsl_85xx_cache_sram.h b/arch/ 
+> powerpc/include/asm/fsl_85xx_cache_sram.h
+> new file mode 100644
+> index 0000000..2af2bdc
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/fsl_85xx_cache_sram.h
+> @@ -0,0 +1,48 @@
+> +/*
+> + * Copyright 2009 Freescale Semiconductor, Inc.
+> + *
+> + * Cache SRAM handling for QorIQ platform
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+should say PQ3 & some QorIQ platforms
 
-Does this go through the powerpc or the tty tree?
-I'd be happy if either Ben or Greg could pick this up.
+> + *
+> + * Author: Vivek Mahajan <vivek.mahajan@freescale.com>
+> +
+> + * This file is derived from the original work done
+> + * by Sylvain Munaut for the Bestcomm SRAM allocator.
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +#ifndef __ASM_POWERPC_FSL_85XX_CACHE_SRAM_H__
+> +#define __ASM_POWERPC_FSL_85XX_CACHE_SRAM_H__
+> +
+> +#include <asm/rheap.h>
+> +#include <linux/spinlock.h>
+> +
+> +/*
+> + * Cache-SRAM
+> + */
+> +
+> +struct mpc85xx_cache_sram {
+> +	phys_addr_t base_phys;
+> +	void *base_virt;
+> +	unsigned int size;
+> +	rh_info_t *rh;
+> +	spinlock_t lock;
+> +};
+> +
+> +extern void mpc85xx_cache_sram_free(void *ptr);
+> +extern void *mpc85xx_cache_sram_alloc(unsigned int size,
+> +				  phys_addr_t *phys, unsigned int align);
+> +
+> +#endif /* __AMS_POWERPC_FSL_85XX_CACHE_SRAM_H__ */
+> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/ 
+> platforms/85xx/Kconfig
+> index d3a975e..b6f23c3 100644
+> --- a/arch/powerpc/platforms/85xx/Kconfig
+> +++ b/arch/powerpc/platforms/85xx/Kconfig
+> @@ -144,6 +144,15 @@ config SBC8560
+> 	help
+> 	  This option enables support for the Wind River SBC8560 board
+>
+> +config FSL_85XX_CACHE_SRAM
+> +	bool
+> +	select PPC_LIB_RHEAP
+> +
+> +config FSL_85XX_CACHE_SRAM_BASE
+> +	hex
+> +	depends on FSL_85XX_CACHE_SRAM
+> +	default "0xfff00000"
+> +
 
-I'm happy to keep maintaining the driver itself but it
-would be nice to know a definite subsystem maintainer
-responsible for it.
+I really don't like setting the physical address this way, can we not  
+do this via the device tree?
 
-Greg, if you want to take patches for of_serial.c generally,
-I'll start forwarding them to you as they come in and make
-sure they apply to your tree.
+> endif # MPC85xx
+>
+> config TQM85xx
+> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/ 
+> Makefile
+> index 9d4b174..745994c 100644
+> --- a/arch/powerpc/sysdev/Makefile
+> +++ b/arch/powerpc/sysdev/Makefile
+> @@ -19,6 +19,7 @@ obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
+> obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
+> obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
+> obj-$(CONFIG_MPC8xxx_GPIO)	+= mpc8xxx_gpio.o
+> +obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o  
+> fsl_85xx_cache_sram.o
+> obj-$(CONFIG_SIMPLE_GPIO)	+= simple_gpio.o
+> obj-$(CONFIG_RAPIDIO)		+= fsl_rio.o
+> obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+> diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h b/arch/ 
+> powerpc/sysdev/fsl_85xx_cache_ctlr.h
+> new file mode 100644
+> index 0000000..8c4a4ac
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+> @@ -0,0 +1,95 @@
+> +/*
+> + * Copyright 2009 Freescale Semiconductor, Inc
+> + *
+> + * QorIQ based Cache Controller Memory Mapped Registers
 
-	Arnd <><
+PQ3 or some QorIQ
 
-> diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-> index 02406ba..241be77 100644
-> --- a/drivers/serial/of_serial.c
-> +++ b/drivers/serial/of_serial.c
-> @@ -161,7 +161,9 @@ static int of_platform_serial_remove(struct
-> of_device *ofdev)
->  static struct of_device_id __devinitdata of_platform_serial_table[] = {
->  	{ .type = "serial", .compatible = "ns8250",   .data = (void
-> *)PORT_8250, },
->  	{ .type = "serial", .compatible = "ns16450",  .data = (void
-> *)PORT_16450, },
-> +	{ .type = "serial", .compatible = "xlnx,xps-uart16550-2.00.b",
-> .data = (void *)PORT_16550A, },
->  	{ .type = "serial", .compatible = "ns16550",  .data = (void
-> *)PORT_16550, },
-> +	{ .type = "serial", .compatible = "ns16550a", .data = (void
-> *)PORT_16550A, },
->  	{ .type = "serial", .compatible = "ns16750",  .data = (void
-> *)PORT_16750, },
->  	{ .type = "serial", .compatible = "ns16850",  .data = (void
-> *)PORT_16850, },
->  #ifdef CONFIG_SERIAL_OF_PLATFORM_NWPSERIAL
+> + *
+> + * Author: Vivek Mahajan <vivek.mahajan@freescale.com>
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +#ifndef __FSL_85XX_CACHE_CTLR_H__
+> +#define __FSL_85XX_CACHE_CTLR_H__
+> +
+> +#define L2CR_L2FI		0x40000000	/* L2 flash invalidate */
+> +#define L2CR_L2IO		0x00200000	/* L2 instruction only */
+> +#define L2CR_SRAM_ZERO		0x00000000	/* L2SRAM zero size */
+> +#define L2CR_SRAM_FULL		0x00010000	/* L2SRAM full size */
+> +#define L2CR_SRAM_HALF		0x00020000	/* L2SRAM half size */
+> +#define L2CR_SRAM_TWO_HALFS	0x00030000	/* L2SRAM two half sizes */
+> +#define L2CR_SRAM_QUART		0x00040000	/* L2SRAM one quarter size */
+> +#define L2CR_SRAM_TWO_QUARTS	0x00050000	/* L2SRAM two quarter size */
+> +#define L2CR_SRAM_EIGHTH	0x00060000	/* L2SRAM one eighth size */
+> +#define L2CR_SRAM_TWO_EIGHTH	0x00070000	/* L2SRAM two eighth size */
+> +
+> +#define L2SRAM_OPTIMAL_SZ_SHIFT	0x00000003	/* Optimum size for  
+> L2SRAM */
+> +
+> +#define L2SRAM_BAR_MSK_LO18	0xFFFFC000	/* Lower 18 bits */
+> +#define L2SRAM_BARE_MSK_HI4	0x0000000F	/* Upper 4 bits */
+> +
+> +enum cache_sram_lock_ways {
+> +	LOCK_WAYS_ZERO,
+> +	LOCK_WAYS_EIGHTH,
+> +	LOCK_WAYS_TWO_EIGHTH,
+> +	LOCK_WAYS_HALF = 4,
+> +	LOCK_WAYS_FULL = 8,
+> +};
+> +
+> +struct mpc85xx_l2ctlr {
+> +	u32	ctl;		/* 0x000 - L2 control */
+> +	u8	res1[0xC];
+> +	u32	ewar0;		/* 0x010 - External write address 0 */
+> +	u32	ewarea0;	/* 0x014 - External write address extended 0 */
+> +	u32	ewcr0;		/* 0x018 - External write ctrl */
+> +	u8	res2[4];
+> +	u32	ewar1;		/* 0x020 - External write address 1 */
+> +	u32	ewarea1;	/* 0x024 - External write address extended 1 */
+> +	u32	ewcr1;		/* 0x028 - External write ctrl 1 */
+> +	u8	res3[4];
+> +	u32	ewar2;		/* 0x030 - External write address 2 */
+> +	u32	ewarea2;	/* 0x034 - External write address extended 2 */
+> +	u32	ewcr2;		/* 0x038 - External write ctrl 2 */
+> +	u8	res4[4];
+> +	u32	ewar3;		/* 0x040 - External write address 3 */
+> +	u32	ewarea3;	/* 0x044 - External write address extended 3 */
+> +	u32	ewcr3;		/* 0x048 - External write ctrl 3 */
+> +	u8	res5[0xB4];
+> +	u32	srbar0;		/* 0x100 - SRAM base address 0 */
+> +	u32	srbarea0;	/* 0x104 - SRAM base addr reg ext address 0 */
+> +	u32	srbar1;		/* 0x108 - SRAM base address 1 */
+> +	u32	srbarea1;	/* 0x10C - SRAM base addr reg ext address 1 */
+> +	u8	res6[0xCF0];
+> +	u32	errinjhi;	/* 0xE00 - Error injection mask high */
+> +	u32	errinjlo;	/* 0xE04 - Error injection mask low */
+> +	u32	errinjctl;	/* 0xE08 - Error injection tag/ecc control */
+> +	u8	res7[0x14];
+> +	u32	captdatahi;	/* 0xE20 - Error data high capture */
+> +	u32	captdatalo;	/* 0xE24 - Error data low capture */
+> +	u32	captecc;	/* 0xE28 - Error syndrome */
+> +	u8	res8[0x14];
+> +	u32	errdet;		/* 0xE40 - Error detect */
+> +	u32	errdis;		/* 0xE44 - Error disable */
+> +	u32	errinten;	/* 0xE48 - Error interrupt enable */
+> +	u32	errattr;	/* 0xE4c - Error attribute capture */
+> +	u32	erradrrl;	/* 0xE50 - Error address capture low */
+> +	u32	erradrrh;	/* 0xE54 - Error address capture high */
+> +	u32	errctl;		/* 0xE58 - Error control */
+> +	u8	res9[0x1A4];
+> +};
+> +
+> +extern int instantiate_cache_sram(struct of_device *dev, unsigned  
+> int size);
+> +extern void remove_cache_sram(struct of_device *dev);
+> +
+> +#endif /* __FSL_85XX_CACHE_CTLR_H__ */
+> diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c b/arch/ 
+> powerpc/sysdev/fsl_85xx_cache_sram.c
+> new file mode 100644
+> index 0000000..6744083
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+> @@ -0,0 +1,141 @@
+> +/*
+> + * Copyright 2009 Freescale Semiconductor, Inc.
+> + *
+> + * Simple memory allocator abstraction for QorIQ (P1/P2) based  
+> Cache-SRAM
+
+PQ3 or some QorIQ
+
+
+> + *
+> + * Author: Vivek Mahajan <vivek.mahajan@freescale.com>
+> + *
+> + * This file is derived from the original work done
+> + * by Sylvain Munaut for the Bestcomm SRAM allocator.
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/of_platform.h>
+> +#include <asm/pgtable.h>
+> +#include <asm/fsl_85xx_cache_sram.h>
+> +
+> +struct mpc85xx_cache_sram *cache_sram;
+> +
+> +void *mpc85xx_cache_sram_alloc(unsigned int size,
+> +			   phys_addr_t *phys, unsigned int align)
+> +{
+> +	unsigned long offset;
+> +	unsigned long flags;
+> +
+> +	if (!size || (size > cache_sram->size) || (align > cache_sram- 
+> >size)) {
+> +		pr_err("%s(): size(=%x) or align(=%x) zero or too big\n",
+> +			__func__, size, align);
+> +		return NULL;
+> +	}
+> +
+> +	if ((align &  (align - 1)) || align <= 1) {
+> +		pr_err("%s(): align(=%x) must be power of two and >1\n",
+> +			__func__, align);
+> +		return NULL;
+> +	}
+> +
+> +	spin_lock_irqsave(&cache_sram->lock, flags);
+> +	offset = rh_alloc_align(cache_sram->rh, size, align, NULL);
+> +	spin_unlock_irqrestore(&cache_sram->lock, flags);
+> +
+> +	if (IS_ERR_VALUE(offset))
+> +		return NULL;
+> +
+> +	*phys = cache_sram->base_phys + offset;
+> +
+> +	return (unsigned char *)cache_sram->base_virt + offset;
+> +}
+> +EXPORT_SYMBOL(mpc85xx_cache_sram_alloc);
+> +
+> +void mpc85xx_cache_sram_free(void *ptr)
+> +{
+> +	unsigned long flags;
+> +	BUG_ON(!ptr);
+> +
+> +	spin_lock_irqsave(&cache_sram->lock, flags);
+> +	rh_free(cache_sram->rh, ptr - cache_sram->base_virt);
+> +	spin_unlock_irqrestore(&cache_sram->lock, flags);
+> +}
+> +EXPORT_SYMBOL(mpc85xx_cache_sram_free);
+> +
+> +int __init instantiate_cache_sram(struct of_device *dev, unsigned  
+> int size)
+> +{
+> +	if (cache_sram) {
+> +		dev_err(&dev->dev, "Already initialized cache-sram\n");
+> +		return -EBUSY;
+> +	}
+> +
+> +	cache_sram = kzalloc(sizeof(struct mpc85xx_cache_sram), GFP_KERNEL);
+> +	if (!cache_sram) {
+> +		dev_err(&dev->dev, "Out of memory for cache_sram structure\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	cache_sram->base_phys = CONFIG_FSL_85XX_CACHE_SRAM_BASE;
+> +	cache_sram->size = size;
+> +
+> +	if (!request_mem_region(cache_sram->base_phys, cache_sram->size,
+> +						"fsl_85xx_cache_sram")) {
+> +		dev_err(&dev->dev, "%s: request memory failed\n",
+> +				dev->node->full_name);
+> +		kfree(cache_sram);
+> +		return -ENXIO;
+> +	}
+> +
+> +	cache_sram->base_virt = ioremap_flags(cache_sram->base_phys,
+> +				cache_sram->size, _PAGE_COHERENT | PAGE_KERNEL);
+> +	if (!cache_sram->base_virt) {
+> +		dev_err(&dev->dev, "%s: ioremap_flags failed\n",
+> +				dev->node->full_name);
+> +		release_mem_region(cache_sram->base_phys, cache_sram->size);
+> +		kfree(cache_sram);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	cache_sram->rh = rh_create(sizeof(unsigned int));
+> +	if (IS_ERR(cache_sram->rh)) {
+> +		dev_err(&dev->dev, "%s: Unable to create remote heap\n",
+> +				dev->node->full_name);
+> +		iounmap(cache_sram->base_virt);
+> +		release_mem_region(cache_sram->base_phys, cache_sram->size);
+> +		kfree(cache_sram);
+> +		return PTR_ERR(cache_sram->rh);
+> +	}
+> +
+> +	rh_attach_region(cache_sram->rh, 0, cache_sram->size);
+> +	spin_lock_init(&cache_sram->lock);
+> +
+> +	dev_info(&dev->dev, "[base:0x%x, size:0x%x] configured and loaded 
+> \n",
+> +		cache_sram->base_phys, cache_sram->size);
+> +	return 0;
+> +}
+> +
+> +void remove_cache_sram(struct of_device *dev)
+> +{
+> +	BUG_ON(!cache_sram);
+> +
+> +	rh_detach_region(cache_sram->rh, 0, cache_sram->size);
+> +	rh_destroy(cache_sram->rh);
+> +
+> +	iounmap(cache_sram->base_virt);
+> +	release_mem_region(cache_sram->base_phys, cache_sram->size);
+> +
+> +	kfree(cache_sram);
+> +	cache_sram = NULL;
+> +
+> +	dev_info(&dev->dev, "MPC85xx Cache-SRAM driver unloaded\n");
+> +}
+> diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/ 
+> sysdev/fsl_85xx_l2ctlr.c
+> new file mode 100644
+> index 0000000..c851547
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+> @@ -0,0 +1,184 @@
+> +/*
+> + * Copyright 2009 Freescale Semiconductor, Inc.
+> + *
+> + * QorIQ (P1/P2) L2 controller init for Cache-SRAM instantiation
+> + *
+> + * Author: Vivek Mahajan <vivek.mahajan@freescale.com>
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/of_platform.h>
+> +#include <asm/io.h>
+> +
+> +#include "fsl_85xx_cache_ctlr.h"
+> +
+> +static char *param;
+> +struct mpc85xx_l2ctlr __iomem *l2ctlr;
+> +
+> +static long get_cache_sram_size(void)
+> +{
+> +	unsigned long val;
+> +
+> +	if (!param || (strict_strtoul(param, 0, &val) < 0))
+> +		return -EINVAL;
+> +
+
+we should use memparse()
+
+> +	return val;
+> +}
+> +
+> +static int __init get_cmdline_param(char *str)
+> +{
+> +	if (!str)
+> +		return 0;
+> +
+> +	param = str;
+> +	return 1;
+> +}
+> +
+> +__setup("cache-sram-size=", get_cmdline_param);
+> +
+> +static int __devinit mpc85xx_l2ctlr_of_probe(struct of_device *dev,
+> +					  const struct of_device_id *match)
+> +{
+> +	long rval;
+> +	unsigned int rem;
+> +	unsigned char ways;
+> +	const unsigned int *prop;
+> +	unsigned int l2cache_size;
+> +	unsigned int sram_size;
+> +
+> +	if (!dev->node) {
+> +		dev_err(&dev->dev, "Device's OF-node is NULL\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	prop = of_get_property(dev->node, "cache-size", NULL);
+> +	if (!prop) {
+> +		dev_err(&dev->dev, "Missing L2 cache-size\n");
+> +		return -EINVAL;
+> +	}
+> +	l2cache_size = *prop;
+
+
+> +
+> +	rval = get_cache_sram_size();
+> +	if (rval <= 0) {
+> +		dev_err(&dev->dev,
+> +			"Entire L2 as cache, Aborting Cache-SRAM stuff\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	rem = l2cache_size % (unsigned int)rval;
+> +	ways = LOCK_WAYS_FULL * (unsigned int)rval / l2cache_size;
+> +	if (rem || (ways & (ways - 1))) {
+> +		dev_err(&dev->dev, "Illegal cache-sram-size in command line\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	sram_size = (unsigned int)rval;
+> +
+> +	l2ctlr = of_iomap(dev->node, 0);
+> +	if (!l2ctlr) {
+> +		dev_err(&dev->dev, "Can't map L2 controller\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	/*
+> +	 * Write bits[0-17] to srbar0
+> +	 */
+> +	out_be32(&l2ctlr->srbar0,
+> +		CONFIG_FSL_85XX_CACHE_SRAM_BASE & L2SRAM_BAR_MSK_LO18);
+> +
+> +	/*
+> +	 * Write bits[18-21] to srbare0
+> +	 */
+> +	out_be32(&l2ctlr->srbarea0,
+> +		(CONFIG_FSL_85XX_CACHE_SRAM_BASE >> 10) & L2SRAM_BARE_MSK_HI4);
+> +
+> +	clrsetbits_be32(&l2ctlr->ctl, L2CR_L2E, L2CR_L2FI);
+> +
+> +	switch (ways) {
+> +	case LOCK_WAYS_EIGHTH:
+> +		setbits32(&l2ctlr->ctl,
+> +			L2CR_L2E | L2CR_L2FI | L2CR_SRAM_EIGHTH);
+> +		break;
+> +
+> +	case LOCK_WAYS_TWO_EIGHTH:
+> +		setbits32(&l2ctlr->ctl,
+> +			L2CR_L2E | L2CR_L2FI | L2CR_SRAM_QUART);
+> +		break;
+> +
+> +	case LOCK_WAYS_HALF:
+> +		setbits32(&l2ctlr->ctl,
+> +			L2CR_L2E | L2CR_L2FI | L2CR_SRAM_HALF);
+> +		break;
+> +
+> +	case LOCK_WAYS_FULL:
+> +	default:
+> +		setbits32(&l2ctlr->ctl,
+> +			L2CR_L2E | L2CR_L2FI | L2CR_SRAM_FULL);
+> +		break;
+> +	}
+> +	eieio();
+> +
+> +	rval = instantiate_cache_sram(dev, sram_size);
+> +	if (rval < 0) {
+> +		dev_err(&dev->dev, "Can't instantiate Cache-SRAM\n");
+> +		iounmap(l2ctlr);
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int __devexit mpc85xx_l2ctlr_of_remove(struct of_device *dev)
+> +{
+> +	BUG_ON(!l2ctlr);
+> +
+> +	iounmap(l2ctlr);
+> +	remove_cache_sram(dev);
+> +	dev_info(&dev->dev, "MPC85xx L2 controller unloaded\n");
+> +
+> +	return 0;
+> +}
+> +
+> +static struct of_device_id mpc85xx_l2ctlr_of_match[] = {
+> +	{
+> +		.compatible = "fsl,p2020-l2-cache-controller",
+> +	},
+> +	{},
+> +};
+> +
+> +static struct of_platform_driver mpc85xx_l2ctlr_of_platform_driver  
+> = {
+> +	.name		= "fsl-l2ctlr",
+> +	.match_table	= mpc85xx_l2ctlr_of_match,
+> +	.probe		= mpc85xx_l2ctlr_of_probe,
+> +	.remove		= __devexit_p(mpc85xx_l2ctlr_of_remove),
+> +};
+> +
+> +static __init int mpc85xx_l2ctlr_of_init(void)
+> +{
+> +	return of_register_platform_driver 
+> (&mpc85xx_l2ctlr_of_platform_driver);
+> +}
+> +
+> +static void __exit mpc85xx_l2ctlr_of_exit(void)
+> +{
+> +	of_unregister_platform_driver(&mpc85xx_l2ctlr_of_platform_driver);
+> +}
+> +
+> +subsys_initcall(mpc85xx_l2ctlr_of_init);
+> +module_exit(mpc85xx_l2ctlr_of_exit);
+> +
+> +MODULE_DESCRIPTION("Freescale MPC85xx L2 controller init");
+> +MODULE_LICENSE("GPL v2");
+> -- 
+> 1.5.6.5
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
