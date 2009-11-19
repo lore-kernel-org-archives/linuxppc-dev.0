@@ -1,19 +1,20 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A90C1B7B9E
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 03:08:37 +1100 (EST)
-Message-ID: <4B056D85.5010904@embedded-sol.com>
-Date: Thu, 19 Nov 2009 18:08:37 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from VA3EHSOBE004.bigfish.com (va3ehsobe004.messaging.microsoft.com
+	[216.32.180.14]) by ozlabs.org (Postfix) with ESMTP id 8798D1007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 20 Nov 2009 04:21:37 +1100 (EST)
 MIME-Version: 1.0
-To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: tg3: link is permanently down after ifdown and ifup
-References: <4B056158.5060104@embedded-sol.com>
-In-Reply-To: <4B056158.5060104@embedded-sol.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: Bug in drivers/serial/of_serial.c?
+Date: Thu, 19 Nov 2009 09:20:22 -0800
+In-Reply-To: <8B957E110B62714A84290A01A597805F05D2AE31@Exchange.discretix.com>
+References: <8B957E110B62714A84290A01A597805F05CA0AA0@Exchange.discretix.com><200911160909.08433.arnd@arndb.de>
+	<8B957E110B62714A84290A01A597805F05D2AE31@Exchange.discretix.com>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: "Alon Ziv" <alonz@discretix.com>, "Arnd Bergmann" <arnd@arndb.de>,
+	<linuxppc-dev@lists.ozlabs.org>
+Message-ID: <4a8514db-7d09-4c5c-83c4-2877939fe1f6@VA3EHSMHS025.ehs.local>
+Cc: John Linn <linnj@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,62 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-The problem goes away if I remove the call to
 
-tg3_set_power_state(tp, PCI_D3hot);
+> -----Original Message-----
+> From: linuxppc-dev-bounces+stephen=3Dneuendorffer.name@lists.ozlabs.org
+[mailto:linuxppc-dev-
+> bounces+stephen=3Dneuendorffer.name@lists.ozlabs.org] On Behalf Of Alon
+Ziv
+> Sent: Thursday, November 19, 2009 4:47 AM
+> To: Arnd Bergmann; linuxppc-dev@lists.ozlabs.org
+> Subject: RE: Bug in drivers/serial/of_serial.c?
+> =
 
-from tg3_close().
-
-Some relevant stuff from dmesg:
-
-pci 0002:05:00.0: PME# supported from D3hot D3cold
-pci 0002:05:00.0: PME# disabled
-tg3.c:v3.102 (September 1, 2009)
-tg3 0002:05:00.0: enabling device (0000 -> 0002)
-tg3 0002:05:00.0: PME# disabled
-tg3 mdio bus: probed
-eth2: Tigon3 [partno(BCM57760) rev 57780001] (PCI Express) MAC address 
-00:10:18:00:00:00
-eth2: attached PHY driver [Broadcom BCM57780] (mii_bus:phy_addr=500:01)
-eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
-eth2: dma_rwctrl[76180000] dma_mask[64-bit]
-
-Is my problem related to hardware or it's a tg3 driver bug ?
-
-Thanks a lot.
-
-Felix.
-
-Felix Radensky wrote:
 > Hi,
->
-> I have a problem with tg3 driver on a custom MPC8536 based board
-> running linux-2.6.31, with tg3 and Broadcom phy drivers taken from
-> linux-2.6.32-rc7. Broadcom NIC is BCM57760, phy is BCM57780.
->
-> The problem I'm seeing is that the downing and interface leads to
-> permanent link loss, even after interface is upped again. E.g, to
-> reproduce the problem it is sufficient to run:
->
-> modprobe tg3
-> ifconfig eth2 up
-> ifconfig eth2 down
-> ifconfig eth2 up
->
-> After ifdown PHY LEDs also go down and do not come back
-> after ifup. Ethtool reports that no link is detected. After reloading
-> the driver the link comes back.
->
-> Am I the only one seeing this problem  ?
-> Any help on fixing this is appreciated.
->
-> Thanks a lot.
->
-> Felix.
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> =
+
+> On Monday, November 16, 2009, Arnd wrote:
+> > > -       { .type =3D "serial", .compatible =3D "ns16550",  .data =3D
+(void
+> *)PORT_16550, },
+> > > +       { .type =3D "serial", .compatible =3D "ns16550",  .data =3D
+(void
+> *)PORT_16550A, },
+> >
+> > Does not seem logical. If the device claims compatibility with
+> ns16550, we should
+> > not automatically assume it's an ns16550a. Why not add another line
+> for
+> >
+> =
+
+> Unfortunately, there is no way to change what the device claims--it's
+> encoded into the OpenFirmware tree by the EDK tools.
+> And, in any case, the device is actually not lying: it _is_ compatible
+> with NS16550--just with a non-buggy one.  Unfortunately the kernel
+> driver for 8250-class UARTs makes the conservative choice to assume
+any
+> 16550 is one of the (early, buggy) revisions where the FIFO was
+> non-functional; any 16550 with working UART is classed as a 16550A.
+
+Definitely changing what is generated by EDK seems to make sense here...
+
+Steve
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
