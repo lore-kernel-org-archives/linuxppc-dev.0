@@ -1,24 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 108861007D1
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 00:57:31 +1100 (EST)
-Subject: Re: [PATCH] sata_fsl: Split hard and soft reset
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <FF648E22-3953-4121-9DCE-862BAC5995B9@kernel.crashing.org>
-Date: Thu, 19 Nov 2009 07:57:16 -0600
-Message-Id: <81E10EFE-C57C-4678-8FF8-0646EFCFB485@kernel.crashing.org>
-References: <20091016164436.GA12897@oksana.dev.rtsoft.ru>
-	<795A2621-9D6C-4D1F-B07B-24E15C55B03F@kernel.crashing.org>
-	<FF648E22-3953-4121-9DCE-862BAC5995B9@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>,
-	linux-ide <linux-ide@vger.kernel.org>,
-	Ashish Kalra <Ashish.Kalra@freescale.com>, Jeff Garzik <jeff@garzik.org>,
-	Jiang Yutang <b14898@freescale.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 364DD1007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 20 Nov 2009 01:10:10 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Alon Ziv" <alonz@discretix.com>
+Subject: Re: Bug in drivers/serial/of_serial.c?
+Date: Thu, 19 Nov 2009 15:09:31 +0100
+References: <8B957E110B62714A84290A01A597805F05CA0AA0@Exchange.discretix.com>
+	<200911191441.27581.arnd@arndb.de>
+	<8B957E110B62714A84290A01A597805F05D2AE47@Exchange.discretix.com>
+In-Reply-To: <8B957E110B62714A84290A01A597805F05D2AE47@Exchange.discretix.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200911191509.31270.arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
+	Greg KH <greg@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thursday 19 November 2009, Alon Ziv wrote:
+> On Thursday, November 19, 2009, Arnd Bergmann wrote:
+> > I'd still add support for the compatible="ns16550a" property
+> > so that we do the right thing for future systems.
+> > 
+> 
+> OK...
+> ---
+> Xilinx 16550 UART is actually 16550A-compatible
+> 
+> Signed-off-by: Alon Ziv <alonz@discretix.com>
 
-On Nov 19, 2009, at 7:51 AM, Kumar Gala wrote:
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
->
-> On Nov 5, 2009, at 9:02 AM, Kumar Gala wrote:
->
->>
->> On Oct 16, 2009, at 11:44 AM, Anton Vorontsov wrote:
->>
->>> From: Jiang Yutang <b14898@freescale.com>
->>>
->>> Split sata_fsl_softreset() into hard and soft resets to make
->>> error-handling more efficient & device and PMP detection more
->>> reliable.
->>>
->>> Also includes fix for PMP support, driver tested with Sil3726,
->>> Sil4726 & Exar PMP controllers.
->>>
->>> [AV: Also fixes resuming from deep sleep on MPC8315 CPUs]
->>>
->>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
->>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>> ---
->>> drivers/ata/sata_fsl.c |   84 ++++++++++++++++++++++++ 
->>> +-----------------------
->>> 1 files changed, 44 insertions(+), 40 deletions(-)
->>
->> Jeff,
->>
->> any update on this going in for .32?
->
-> Jeff?
+Does this go through the powerpc or the tty tree?
+I'd be happy if either Ben or Greg could pick this up.
 
-slightly ignore me, for some reason I didn't see your reply.
+I'm happy to keep maintaining the driver itself but it
+would be nice to know a definite subsystem maintainer
+responsible for it.
 
-- k
+Greg, if you want to take patches for of_serial.c generally,
+I'll start forwarding them to you as they come in and make
+sure they apply to your tree.
+
+	Arnd <><
+
+> diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
+> index 02406ba..241be77 100644
+> --- a/drivers/serial/of_serial.c
+> +++ b/drivers/serial/of_serial.c
+> @@ -161,7 +161,9 @@ static int of_platform_serial_remove(struct
+> of_device *ofdev)
+>  static struct of_device_id __devinitdata of_platform_serial_table[] = {
+>  	{ .type = "serial", .compatible = "ns8250",   .data = (void
+> *)PORT_8250, },
+>  	{ .type = "serial", .compatible = "ns16450",  .data = (void
+> *)PORT_16450, },
+> +	{ .type = "serial", .compatible = "xlnx,xps-uart16550-2.00.b",
+> .data = (void *)PORT_16550A, },
+>  	{ .type = "serial", .compatible = "ns16550",  .data = (void
+> *)PORT_16550, },
+> +	{ .type = "serial", .compatible = "ns16550a", .data = (void
+> *)PORT_16550A, },
+>  	{ .type = "serial", .compatible = "ns16750",  .data = (void
+> *)PORT_16750, },
+>  	{ .type = "serial", .compatible = "ns16850",  .data = (void
+> *)PORT_16850, },
+>  #ifdef CONFIG_SERIAL_OF_PLATFORM_NWPSERIAL
