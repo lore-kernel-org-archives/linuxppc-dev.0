@@ -1,20 +1,34 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from SG2EHSOBE005.bigfish.com (sg2ehsobe005.messaging.microsoft.com
-	[207.46.51.79]) by ozlabs.org (Postfix) with ESMTP id B5AFCB6F04
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 Nov 2009 04:43:51 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Bug in drivers/serial/of_serial.c?
-Date: Thu, 19 Nov 2009 09:42:41 -0800
-In-Reply-To: <200911191833.08254.arnd@arndb.de>
-References: <8B957E110B62714A84290A01A597805F05CA0AA0@Exchange.discretix.com><8B957E110B62714A84290A01A597805F05D2AE47@Exchange.discretix.com><c2bc536b-3765-4ead-b942-88bb25253ad3@VA3EHSMHS013.ehs.local>
-	<200911191833.08254.arnd@arndb.de>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: "Arnd Bergmann" <arnd@arndb.de>
-Message-ID: <a1cde516-ea22-4411-bae1-74878f6bee43@SG2EHSMHS002.ehs.local>
-Cc: John Linn <linnj@xilinx.com>, Alon Ziv <alonz@discretix.com>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1E8D7B6F04
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 04:45:49 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nAJHjlm4027872
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 10:45:47 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id nAJHjmsd013696
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 11:45:48 -0600 (CST)
+Date: Thu, 19 Nov 2009 11:45:46 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3 3/3] powerpc/fsl: 85xx: add cache-sram support
+Message-ID: <20091119174546.GB6845@b07421-ec1.am.freescale.net>
+References: <1256129459-10685-1-git-send-email-vivek.mahajan@freescale.com>
+	<1256129459-10685-2-git-send-email-vivek.mahajan@freescale.com>
+	<1256129459-10685-3-git-send-email-vivek.mahajan@freescale.com>
+	<181208B7-AC0B-4634-A04E-46468D376719@freescale.com>
+	<2B43D645-7977-4C24-A3EF-C55A392228B4@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2B43D645-7977-4C24-A3EF-C55A392228B4@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>,
+	Vivek Mahajan <vivek.mahajan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,46 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Nov 19, 2009 at 08:29:19AM -0600, Kumar Gala wrote:
+> >>+config FSL_85XX_CACHE_SRAM_BASE
+> >>+	hex
+> >>+	depends on FSL_85XX_CACHE_SRAM
+> >>+	default "0xfff00000"
+> >>+
+> >
+> >I really don't like setting the physical address this way, can we  
+> >not do this via the device tree?
+> 
+> At a high level I think we should add something like the following in  
+> the .dts:
+> 
+> sram@fff00000 {
+> 	fsl,sram-ctrl-handle = <&L2>;
+> 	reg = <0xfff00000 0xNNNN>;
+> 	compatible = "fsl,mpc85xx-l2-sram";
+> }
+> 
+> the NNNN can be the size the sram is configured as.
 
+I don't see why this needs to go in the device tree, if it's the kernel
+that is setting it up.  The kernel can pick any address and size it
+wants.
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+stephen=3Dneuendorffer.name@lists.ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+stephen=3Dneuendorffer.name@lists.ozlabs.org] On Behalf Of Arnd
-Bergmann
-> Sent: Thursday, November 19, 2009 9:33 AM
-> To: Stephen Neuendorffer
-> Cc: John Linn; Alon Ziv; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: Bug in drivers/serial/of_serial.c?
-> =
-
-> On Thursday 19 November 2009, Stephen Neuendorffer wrote:
-> > If the problem is in the device trees that are being generated, we
-> > should fix the issue there.
-> > We've been trying to avoid putting the fully specified IP versions
-in
-> > the kernel like this, since
-> > the IP changes so often.
-> =
-
-> No, the problem that Alon has is that the firmware currently has no
-> way whatsoever to give a correct device tree, because of-serial.c
-> does not even know about ns16550a.
-> =
-
-> The patch adds both a special-case for the specific uart he
-> is using so that one is grandfathered in and a new compatible
-> value so future boards can specify both ns16550a and ns16550.
-
-That's true...  The 16550a line still needs to get added, but not the
-xlnx-
-specific line.
-
-Steve
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+-Scott
