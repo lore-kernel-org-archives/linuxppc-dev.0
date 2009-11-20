@@ -1,27 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8C5611007D1
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Nov 2009 04:38:55 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nAKHcpj1021655
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 10:38:52 -0700 (MST)
-Date: Fri, 20 Nov 2009 11:38:59 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Mahajan Vivek-B08308 <B08308@freescale.com>
-Subject: Re: [PATCH v3 3/3] powerpc/fsl: 85xx: add cache-sram support
-Message-ID: <20091120173859.GC18967@loki.buserror.net>
-References: <181208B7-AC0B-4634-A04E-46468D376719@freescale.com>
-	<F2F605B667B24B489C904986E0D60A08012221DF@zin33exm23.fsl.freescale.net>
+Return-Path: <RFeany@mrv.com>
+Received: from bos-spam.mrv.com (mx5.mrv.com [140.179.254.12])
+	by ozlabs.org (Postfix) with ESMTP id 25268B6F00
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Nov 2009 07:28:43 +1100 (EST)
+Date: Fri, 20 Nov 2009 12:28:38 -0800
+From: Rex Feany <RFeany@mrv.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH 00/10 v6]  Fix 8xx MMU/TLB
+Message-ID: <20091120202838.GA25843@compile2.chatsunix.int.mrv.com>
+References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F2F605B667B24B489C904986E0D60A08012221DF@zin33exm23.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <B11780@freescale.com>,
-	Wood Scott-B07421 <B07421@freescale.com>
+In-Reply-To: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,18 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 19, 2009 at 11:45:32PM -0700, Mahajan Vivek-B08308 wrote:
-> > I really don't like setting the physical address this way, 
-> > can we not do this via the device tree?
-> 
-> Cache-sram does not have any device tree entry since it is not a 
-> hardware as such. Putting it under chosen can be another option.
-> I think, Scott (cc'ed) was of the opinion that since 32b base 
-> address support is missing; so there is no point in moving this 
-> address to the command line and .config should be okay for now 
-> for it.
+Thus spake Joakim Tjernlund (Joakim.Tjernlund@transmode.se):
 
-I don't know what you mean by "32b base address support is missing".  I have
-no objection to putting it on the command line.
+> Yet again an iteration of the series.
+> Rex & Scott, please test and signoff.
+> Changes since last version:
+>  - Fix rlwimi insn(from Scott)
 
--Scott
+Hi Joakim,
+
+Things look much better with this patch set, I see none
+of the random crashes that I had with the earlier patches.
+I'll leave it running on a few boards here over the weekend and
+see if anything bad happens. 
+
+Since patch #1 fixes a regression in the current kernel
+is there any way you can get that into .32? I know it is late,
+but without that patch .32 doesn't work for 8xx boards.
+
+On another note, how does your patch set affect performance?
+Have you been able to do any testing?  What is the advantage
+of using dcbX in the kernel, besides keeping the code
+similar to other ppc platforms?  Maybe it is good to
+catch/fixup userspace uses of dcbX, but why change the
+kernel? How does it affect performance?
+
+thanks!
+/rex.
