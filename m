@@ -1,26 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f201.google.com (mail-yw0-f201.google.com
-	[209.85.211.201]) by ozlabs.org (Postfix) with ESMTP id C88661007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 Nov 2009 04:25:33 +1100 (EST)
-Received: by ywh39 with SMTP id 39so3464875ywh.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 Nov 2009 09:25:30 -0800 (PST)
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8C5611007D1
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Nov 2009 04:38:55 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nAKHcpj1021655
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 10:38:52 -0700 (MST)
+Date: Fri, 20 Nov 2009 11:38:59 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Mahajan Vivek-B08308 <B08308@freescale.com>
+Subject: Re: [PATCH v3 3/3] powerpc/fsl: 85xx: add cache-sram support
+Message-ID: <20091120173859.GC18967@loki.buserror.net>
+References: <181208B7-AC0B-4634-A04E-46468D376719@freescale.com>
+	<F2F605B667B24B489C904986E0D60A08012221DF@zin33exm23.fsl.freescale.net>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <2ed32732-d2a2-42d3-89ef-80c5a25025ba@SG2EHSMHS007.ehs.local>
-References: <8B957E110B62714A84290A01A597805F05CA0AA1@Exchange.discretix.com>
-	<56a3f016-525a-4eb2-9a0f-1477ea2eee91@VA3EHSMHS019.ehs.local>
-	<8B957E110B62714A84290A01A597805F05D2AE38@Exchange.discretix.com>
-	<2ed32732-d2a2-42d3-89ef-80c5a25025ba@SG2EHSMHS007.ehs.local>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 20 Nov 2009 10:25:08 -0700
-Message-ID: <fa686aa40911200925g45f12e48w42eff098720164c6@mail.gmail.com>
-Subject: Re: [PATCH/RFC] Booting Xilinx ML510 board using SystemACE
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: John Linn <linnj@xilinx.com>, Alon Ziv <alonz@discretix.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F2F605B667B24B489C904986E0D60A08012221DF@zin33exm23.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <B11780@freescale.com>,
+	Wood Scott-B07421 <B07421@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,67 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 19, 2009 at 10:32 AM, Stephen Neuendorffer
-<stephen.neuendorffer@xilinx.com> wrote:
->> Of course, one obvious thing that must be done is move this code out
-> of
->> arch/powerpc/platforms/44x/virtex.c and into (e.g.)
->> arch/powerpc/kernel/setup-common.c, and add some
->> "set_machine_restart_function" wrapper to access it more cleanly (also
->> defining this function as a null function when inapplicable). =A0If this
->> satisfies your standards, I can easily post an updated patch :)
->
-> The driver isn't even powerpc specific, it could also be used on the
-> microblaze,
-> and I think you'll find alot of resistance to adding that kind of hook
-> to an architecture
-> that has just spent a bunch of time getting rid of alot of direct
-> binding between
-> platform code and drivers. =A0Grant, do you have a comment here?
+On Thu, Nov 19, 2009 at 11:45:32PM -0700, Mahajan Vivek-B08308 wrote:
+> > I really don't like setting the physical address this way, 
+> > can we not do this via the device tree?
+> 
+> Cache-sram does not have any device tree entry since it is not a 
+> hardware as such. Putting it under chosen can be another option.
+> I think, Scott (cc'ed) was of the opinion that since 32b base 
+> address support is missing; so there is no point in moving this 
+> address to the command line and .config should be okay for now 
+> for it.
 
-Sorry for the delay, I was at a conference and got behind on email.
-Yes, I've got comments.
+I don't know what you mean by "32b base address support is missing".  I have
+no objection to putting it on the command line.
 
-First, the practical matter is that this is only applicable as a reset
-mechanism for Xilinx PowerPC (440 or 405) and Microblaze platforms,
-but the sysace device also appears on other boards, and is used to
-reconfigure FPGA's that don't reset the whole system.  One of the AMCC
-boards for example.
-
-So, you want the ability to have the driver reset the system, but you
-cannot break other platforms.  You also cannot call out to the driver
-from platform code because the xsysace driver may get loaded as a
-module.
-
-The cleanest solution would be to call out to the xsysace driver from
-platform code; but as already stated that isn't possible because the
-xsysace driver may be loaded as a module.  The only way I can think of
-to do that cleanly would be to register a bus notifier from platform
-code to wait for an xsysace device to get probed.  But still not
-exactly pretty.
-
-For the time being, I don't think there is a good way to avoid
-architecture specific hooks into the driver itself.  I recommend
-adding a new pair of functions to the driver (protected by #if
-defined(CONFIG_PPC)) that looks for a 'xlnx,can-reset-system'
-property.  It the property is present, then simply replace the
-ppc_md.restart hook in the machine definition.  Make sure to also
-restore it again when the driver is removed.  Similar code would be
-needed for Microblaze too, but someone else can write that.
-
-It is important to trigger the behaviour on whether or not a property
-like 'xlnx,can-restart-system' is present so that it can be chosen at
-runtime whether or not the sysace should actually be used for restart
-so that it doesn't break things for multiplatform.
-
-Also, you need to add documentation about the new property to
-Documentation/powerpc/dts-bindings/ before I will merge the change.
-The documentation change can appear in the same patch.
-
-It may not be the prettiest thing in the world, but in the absence of
-a cross-architecture machine restart infrastructure I think it is the
-best option.  At the very least it contains the changes to the driver
-itself.
-
-Cheers,
-g.
+-Scott
