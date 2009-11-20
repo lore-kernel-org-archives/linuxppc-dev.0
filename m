@@ -1,11 +1,11 @@
 Return-Path: <nfont@austin.ibm.com>
-Message-ID: <4B06B091.3030506@austin.ibm.com>
-Date: Fri, 20 Nov 2009 09:06:57 -0600
+Message-ID: <4B06B0D5.8080909@austin.ibm.com>
+Date: Fri, 20 Nov 2009 09:08:05 -0600
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
 	microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 2/4 v2] Merge of_detach_node
+Subject: [PATCH 3/4 v2] Makefile and Kconfig updates
 References: <4B06AF33.1000400@austin.ibm.com>
 In-Reply-To: <4B06AF33.1000400@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -18,216 +18,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge the common of_detach_node() from powerpc and microblaze into the common
-drivers/of/of_dynamic.c
+Update the Kconfig and Makefile files for drivers/of, powerpc and microblaze
+to properly configure for CONFIG_OF_DYNAMIC to build the of_dynamic code.
 
 Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
-
 ---
- arch/microblaze/include/asm/prom.h |    3 --
- arch/microblaze/kernel/prom.c      |   44 -------------------------------------
- arch/powerpc/include/asm/prom.h    |    3 --
- arch/powerpc/kernel/prom.c         |   44 -------------------------------------
- drivers/of/of_dynamic.c            |   43 ++++++++++++++++++++++++++++++++++++
- include/linux/of_dynamic.h         |    1 
- 6 files changed, 44 insertions(+), 94 deletions(-)
 
-Index: test-devicetree/arch/microblaze/kernel/prom.c
+ arch/microblaze/Kconfig |    1 +
+ arch/powerpc/Kconfig    |    1 +
+ drivers/of/Kconfig      |    4 ++++
+ drivers/of/Makefile     |    1 +
+ 4 files changed, 7 insertions(+)
+
+Index: test-devicetree/arch/microblaze/Kconfig
 ===================================================================
---- test-devicetree.orig/arch/microblaze/kernel/prom.c	2009-11-20 11:59:03.000000000 -0600
-+++ test-devicetree/arch/microblaze/kernel/prom.c	2009-11-20 12:28:33.000000000 -0600
-@@ -482,50 +482,6 @@
- }
- EXPORT_SYMBOL(of_node_put);
+--- test-devicetree.orig/arch/microblaze/Kconfig	2009-11-20 11:59:01.000000000 -0600
++++ test-devicetree/arch/microblaze/Kconfig	2009-11-20 12:35:41.000000000 -0600
+@@ -112,6 +112,7 @@
+ config OF
+ 	def_bool y
+ 	select OF_FLATTREE
++	select OF_DYNAMIC
  
--/*
-- * "Unplug" a node from the device tree.  The caller must hold
-- * a reference to the node.  The memory associated with the node
-- * is not freed until its refcount goes to zero.
-- */
--void of_detach_node(struct device_node *np)
--{
--	struct device_node *parent;
--	unsigned long flags;
--
--	write_lock_irqsave(&devtree_lock, flags);
--
--	parent = np->parent;
--	if (!parent)
--		goto out_unlock;
--
--	if (allnodes == np)
--		allnodes = np->allnext;
--	else {
--		struct device_node *prev;
--		for (prev = allnodes;
--		     prev->allnext != np;
--		     prev = prev->allnext)
--			;
--		prev->allnext = np->allnext;
--	}
--
--	if (parent->child == np)
--		parent->child = np->sibling;
--	else {
--		struct device_node *prevsib;
--		for (prevsib = np->parent->child;
--		     prevsib->sibling != np;
--		     prevsib = prevsib->sibling)
--			;
--		prevsib->sibling = np->sibling;
--	}
--
--	of_node_set_flag(np, OF_DETACHED);
--
--out_unlock:
--	write_unlock_irqrestore(&devtree_lock, flags);
--}
--
- #if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
- static struct debugfs_blob_wrapper flat_dt_blob;
- 
-Index: test-devicetree/arch/powerpc/kernel/prom.c
+ config PROC_DEVICETREE
+ 	bool "Support for device tree in /proc"
+Index: test-devicetree/arch/powerpc/Kconfig
 ===================================================================
---- test-devicetree.orig/arch/powerpc/kernel/prom.c	2009-11-20 11:59:03.000000000 -0600
-+++ test-devicetree/arch/powerpc/kernel/prom.c	2009-11-20 12:28:33.000000000 -0600
-@@ -935,50 +935,6 @@
- }
- EXPORT_SYMBOL(of_node_put);
+--- test-devicetree.orig/arch/powerpc/Kconfig	2009-11-20 11:59:01.000000000 -0600
++++ test-devicetree/arch/powerpc/Kconfig	2009-11-20 12:35:41.000000000 -0600
+@@ -164,6 +164,7 @@
+ config OF
+ 	def_bool y
+ 	select OF_FLATTREE
++	select OF_DYNAMIC
  
--/*
-- * "Unplug" a node from the device tree.  The caller must hold
-- * a reference to the node.  The memory associated with the node
-- * is not freed until its refcount goes to zero.
-- */
--void of_detach_node(struct device_node *np)
--{
--	struct device_node *parent;
--	unsigned long flags;
--
--	write_lock_irqsave(&devtree_lock, flags);
--
--	parent = np->parent;
--	if (!parent)
--		goto out_unlock;
--
--	if (allnodes == np)
--		allnodes = np->allnext;
--	else {
--		struct device_node *prev;
--		for (prev = allnodes;
--		     prev->allnext != np;
--		     prev = prev->allnext)
--			;
--		prev->allnext = np->allnext;
--	}
--
--	if (parent->child == np)
--		parent->child = np->sibling;
--	else {
--		struct device_node *prevsib;
--		for (prevsib = np->parent->child;
--		     prevsib->sibling != np;
--		     prevsib = prevsib->sibling)
--			;
--		prevsib->sibling = np->sibling;
--	}
--
--	of_node_set_flag(np, OF_DETACHED);
--
--out_unlock:
--	write_unlock_irqrestore(&devtree_lock, flags);
--}
--
- #ifdef CONFIG_PPC_PSERIES
- /*
-  * Fix up the uninitialized fields in a new device node:
-Index: test-devicetree/drivers/of/of_dynamic.c
+ config PPC_UDBG_16550
+ 	bool
+Index: test-devicetree/drivers/of/Kconfig
 ===================================================================
---- test-devicetree.orig/drivers/of/of_dynamic.c	2009-11-20 12:27:24.000000000 -0600
-+++ test-devicetree/drivers/of/of_dynamic.c	2009-11-20 12:28:33.000000000 -0600
-@@ -30,3 +30,46 @@
- 	write_unlock_irqrestore(&devtree_lock, flags);
- }
+--- test-devicetree.orig/drivers/of/Kconfig	2009-11-20 11:59:01.000000000 -0600
++++ test-devicetree/drivers/of/Kconfig	2009-11-20 12:35:41.000000000 -0600
+@@ -2,6 +2,10 @@
+ 	bool
+ 	depends on OF
  
-+/*
-+ * "Unplug" a node from the device tree.  The caller must hold
-+ * a reference to the node.  The memory associated with the node
-+ * is not freed until its refcount goes to zero.
-+ */
-+void of_detach_node(struct device_node *np)
-+{
-+	struct device_node *parent;
-+	unsigned long flags;
++config OF_DYNAMIC
++	bool
++	depends on OF
 +
-+	write_lock_irqsave(&devtree_lock, flags);
-+
-+	parent = np->parent;
-+	if (!parent)
-+		goto out_unlock;
-+
-+	if (allnodes == np)
-+		allnodes = np->allnext;
-+	else {
-+		struct device_node *prev;
-+		for (prev = allnodes;
-+		     prev->allnext != np;
-+		     prev = prev->allnext)
-+			;
-+		prev->allnext = np->allnext;
-+	}
-+
-+	if (parent->child == np)
-+		parent->child = np->sibling;
-+	else {
-+		struct device_node *prevsib;
-+		for (prevsib = np->parent->child;
-+		     prevsib->sibling != np;
-+		     prevsib = prevsib->sibling)
-+			;
-+		prevsib->sibling = np->sibling;
-+	}
-+
-+	of_node_set_flag(np, OF_DETACHED);
-+
-+out_unlock:
-+	write_unlock_irqrestore(&devtree_lock, flags);
-+}
-Index: test-devicetree/arch/microblaze/include/asm/prom.h
+ config OF_DEVICE
+ 	def_bool y
+ 	depends on OF && (SPARC || PPC_OF || MICROBLAZE)
+Index: test-devicetree/drivers/of/Makefile
 ===================================================================
---- test-devicetree.orig/arch/microblaze/include/asm/prom.h	2009-11-20 12:24:47.000000000 -0600
-+++ test-devicetree/arch/microblaze/include/asm/prom.h	2009-11-20 12:30:33.000000000 -0600
-@@ -39,9 +39,6 @@
- 
- extern rwlock_t devtree_lock;	/* temporary while merging */
- 
--/* For updating the device tree at runtime */
--extern void of_detach_node(struct device_node *);
--
- /* Other Prototypes */
- extern int early_uartlite_console(void);
- 
-Index: test-devicetree/arch/powerpc/include/asm/prom.h
-===================================================================
---- test-devicetree.orig/arch/powerpc/include/asm/prom.h	2009-11-20 12:24:07.000000000 -0600
-+++ test-devicetree/arch/powerpc/include/asm/prom.h	2009-11-20 12:30:41.000000000 -0600
-@@ -34,9 +34,6 @@
- 
- #define HAVE_ARCH_DEVTREE_FIXUPS
- 
--/* For updating the device tree at runtime */
--extern void of_detach_node(struct device_node *);
--
- #ifdef CONFIG_PPC32
- /*
-  * PCI <-> OF matching functions
-Index: test-devicetree/include/linux/of_dynamic.h
-===================================================================
---- test-devicetree.orig/include/linux/of_dynamic.h	2009-11-20 12:27:09.000000000 -0600
-+++ test-devicetree/include/linux/of_dynamic.h	2009-11-20 12:30:22.000000000 -0600
-@@ -23,4 +23,5 @@
- extern rwlock_t devtree_lock;
- 
- extern void of_attach_node(struct device_node *);
-+extern void of_detach_node(struct device_node *);
- #endif
+--- test-devicetree.orig/drivers/of/Makefile	2009-11-20 11:59:01.000000000 -0600
++++ test-devicetree/drivers/of/Makefile	2009-11-20 12:35:41.000000000 -0600
+@@ -1,5 +1,6 @@
+ obj-y = base.o
+ obj-$(CONFIG_OF_FLATTREE) += fdt.o
++obj-$(CONFIG_OF_DYNAMIC) += of_dynamic.o
+ obj-$(CONFIG_OF_DEVICE) += device.o platform.o
+ obj-$(CONFIG_OF_GPIO)   += gpio.o
+ obj-$(CONFIG_OF_I2C)	+= of_i2c.o
