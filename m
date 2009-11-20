@@ -1,24 +1,18 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <ptyser@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.218])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C62751007D1
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 11:14:58 +1100 (EST)
-Date: Thu, 19 Nov 2009 16:14:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robert Jennings <rcj@linux.vnet.ibm.com>
-Subject: Re: [patch 3/3] [v2] powerpc: make the CMM memory hotplug aware
-Message-Id: <20091119161403.93bd5756.akpm@linux-foundation.org>
-In-Reply-To: <20091118185907.GA30950@austin.ibm.com>
-References: <200911172240.nAHMeHgE021202@imap1.linux-foundation.org>
-	<20091118185907.GA30950@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: mel@csn.ul.ie, geralds@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, brking@linux.vnet.ibm.com, mingo@elte.hu,
-	schwidefsky@de.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B3B731007D2
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 11:42:55 +1100 (EST)
+From: Peter Tyser <ptyser@xes-inc.com>
+To: bluesmoke-devel@lists.sourceforge.net
+Subject: [PATCH 3/4] edac: Mask mpc85xx ECC syndrome appropriately
+Date: Thu, 19 Nov 2009 18:42:28 -0600
+Message-Id: <1258677749-15968-3-git-send-email-ptyser@xes-inc.com>
+In-Reply-To: <1258677749-15968-1-git-send-email-ptyser@xes-inc.com>
+References: <1258677749-15968-1-git-send-email-ptyser@xes-inc.com>
+Cc: Peter Tyser <ptyser@xes-inc.com>, linuxppc-dev@ozlabs.org,
+	djiang@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,128 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 18 Nov 2009 12:59:08 -0600
-Robert Jennings <rcj@linux.vnet.ibm.com> wrote:
+With a 64-bit wide data bus only the lowest 8-bits of the ECC syndrome
+are relevant.  With a 32-bit wide data bus only the lowest 16-bits are
+relevant on most architectures.
 
-> The Collaborative Memory Manager (CMM) module allocates individual pages
-> over time that are not migratable.  On a long running system this can
-> severely impact the ability to find enough pages to support a hotplug
-> memory remove operation.
-> 
-> This patch adds a memory isolation notifier and a memory hotplug notifier.
-> The memory isolation notifier will return the number of pages found
-> in the range specified.  This is used to determine if all of the used
-> pages in a pageblock are owned by the balloon (or other entities in
-> the notifier chain).  The hotplug notifier will free pages in the range
-> which is to be removed.  The priority of this hotplug notifier is low
-> so that it will be called near last, this helps avoids removing loaned
-> pages in operations that fail due to other handlers.
-> 
-> CMM activity will be halted when hotplug remove operations are active
-> and resume activity after a delay period to allow the hypervisor time
-> to adjust.
-> 
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Brian King <brking@linux.vnet.ibm.com>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Cc: Gerald Schaefer <geralds@linux.vnet.ibm.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> 
-> ---
-> The pages used to track loaned pages should not be marked as MOVABLE, so
-> they need to be handled during a memory offline event.
-> 
-> Changes:
->  * The structures for recording loaned pages are not allocated as MOVABLE
->  * The structures for recording loaned pages are removed from sections
->    being taken offline by moving their contents to a newly allocated page.
-> 
->  arch/powerpc/platforms/pseries/cmm.c |  254 ++++++++++++++++++++++++++++++++++-
->  1 file changed, 248 insertions(+), 6 deletions(-)
+Without this change, the ECC syndrome displayed can be mildly confusing,
+eg:
 
-Incremental patch is:
+  EDAC MPC85xx MC1: syndrome: 0x25252525
 
-: --- a/arch/powerpc/platforms/pseries/cmm.c~powerpc-make-the-cmm-memory-hotplug-aware-update
-: +++ a/arch/powerpc/platforms/pseries/cmm.c
-: @@ -148,8 +148,7 @@ static long cmm_alloc_pages(long nr)
-:  			spin_unlock(&cmm_lock);
-:  			npa = (struct cmm_page_array *)__get_free_page(
-:  					GFP_NOIO | __GFP_NOWARN |
-: -					__GFP_NORETRY | __GFP_NOMEMALLOC |
-: -					__GFP_MOVABLE);
-: +					__GFP_NORETRY | __GFP_NOMEMALLOC);
-:  			if (!npa) {
-:  				pr_info("%s: Can not allocate new page list\n", __func__);
-:  				free_page(addr);
-: @@ -480,6 +479,8 @@ static unsigned long cmm_count_pages(voi
-:  	spin_lock(&cmm_lock);
-:  	pa = cmm_page_list;
-:  	while (pa) {
-: +		if ((unsigned long)pa >= start && (unsigned long)pa < end)
-: +			marg->pages_found++;
-:  		for (idx = 0; idx < pa->index; idx++)
-:  			if (pa->page[idx] >= start && pa->page[idx] < end)
-:  				marg->pages_found++;
-: @@ -531,7 +532,7 @@ static int cmm_mem_going_offline(void *a
-:  	struct memory_notify *marg = arg;
-:  	unsigned long start_page = (unsigned long)pfn_to_kaddr(marg->start_pfn);
-:  	unsigned long end_page = start_page + (marg->nr_pages << PAGE_SHIFT);
-: -	struct cmm_page_array *pa_curr, *pa_last;
-: +	struct cmm_page_array *pa_curr, *pa_last, *npa;
-:  	unsigned long idx;
-:  	unsigned long freed = 0;
-:  
-: @@ -539,6 +540,7 @@ static int cmm_mem_going_offline(void *a
-:  			start_page, marg->nr_pages);
-:  	spin_lock(&cmm_lock);
-:  
-: +	/* Search the page list for pages in the range to be offlined */
-:  	pa_last = pa_curr = cmm_page_list;
-:  	while (pa_curr) {
-:  		for (idx = (pa_curr->index - 1); (idx + 1) > 0; idx--) {
-: @@ -563,6 +565,37 @@ static int cmm_mem_going_offline(void *a
-:  		}
-:  		pa_curr = pa_curr->next;
-:  	}
-: +
-: +	/* Search for page list structures in the range to be offlined */
-: +	pa_last = NULL;
-: +	pa_curr = cmm_page_list;
-: +	while (pa_curr) {
-: +		if (((unsigned long)pa_curr >= start_page) &&
-: +				((unsigned long)pa_curr < end_page)) {
-: +			npa = (struct cmm_page_array *)__get_free_page(
-: +					GFP_NOIO | __GFP_NOWARN |
-: +					__GFP_NORETRY | __GFP_NOMEMALLOC);
-: +			if (!npa) {
-: +				spin_unlock(&cmm_lock);
-: +				cmm_dbg("Failed to allocate memory for list "
-: +						"management. Memory hotplug "
-: +						"failed.\n");
-: +				return ENOMEM;
-: +			}
-: +			memcpy(npa, pa_curr, PAGE_SIZE);
-: +			if (pa_curr == cmm_page_list)
-: +				cmm_page_list = npa;
-: +			if (pa_last)
-: +				pa_last->next = npa;
-: +			free_page((unsigned long) pa_curr);
-: +			freed++;
-: +			pa_curr = npa;
-: +		}
-: +
-: +		pa_last = pa_curr;
-: +		pa_curr = pa_curr->next;
-: +	}
-: +
-:  	spin_unlock(&cmm_lock);
-:  	cmm_dbg("Released %ld pages in the search range.\n", freed);
-:  
+When in reality the ECC syndrome is 0x25.
 
-I'm wondering what is the maximum hold time of cmm_lock.  Rounded to
-the nearest fortnight :)
+Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
+---
+A variety of Freescale manual's say a variety of different things about
+how to decode the CAPTURE_ECC (syndrome) register.  I don't have a
+system with a 32-bit bus to test on, but I believe the change is
+correct.  It'd be good to get an ACK from someone at Freescale
+about this change though.
+
+ drivers/edac/mpc85xx_edac.c |   12 +++++++++++-
+ drivers/edac/mpc85xx_edac.h |    3 +++
+ 2 files changed, 14 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index ecd5928..6d0114a 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -672,6 +672,7 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
+ {
+ 	struct mpc85xx_mc_pdata *pdata = mci->pvt_info;
+ 	struct csrow_info *csrow;
++	u32 bus_width;
+ 	u32 err_detect;
+ 	u32 syndrome;
+ 	u32 err_addr;
+@@ -692,6 +693,15 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
+ 	}
+ 
+ 	syndrome = in_be32(pdata->mc_vbase + MPC85XX_MC_CAPTURE_ECC);
++
++	/* Mask off appropriate bits of syndrome based on bus width */
++	bus_width = (in_be32(pdata->mc_vbase + MPC85XX_MC_DDR_SDRAM_CFG) &
++			DSC_DBW_MASK) ? 32 : 64;
++	if (bus_width == 64)
++		syndrome &= 0xff;
++	else
++		syndrome &= 0xffff;
++
+ 	err_addr = in_be32(pdata->mc_vbase + MPC85XX_MC_CAPTURE_ADDRESS);
+ 	pfn = err_addr >> PAGE_SHIFT;
+ 
+@@ -707,7 +717,7 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
+ 	mpc85xx_mc_printk(mci, KERN_ERR, "Capture Data Low: %#8.8x\n",
+ 			  in_be32(pdata->mc_vbase +
+ 				  MPC85XX_MC_CAPTURE_DATA_LO));
+-	mpc85xx_mc_printk(mci, KERN_ERR, "syndrome: %#8.8x\n", syndrome);
++	mpc85xx_mc_printk(mci, KERN_ERR, "syndrome: %#2.2x\n", syndrome);
+ 	mpc85xx_mc_printk(mci, KERN_ERR, "err addr: %#8.8x\n", err_addr);
+ 	mpc85xx_mc_printk(mci, KERN_ERR, "PFN: %#8.8x\n", pfn);
+ 
+diff --git a/drivers/edac/mpc85xx_edac.h b/drivers/edac/mpc85xx_edac.h
+index 52432ee..cb24df8 100644
+--- a/drivers/edac/mpc85xx_edac.h
++++ b/drivers/edac/mpc85xx_edac.h
+@@ -48,6 +48,9 @@
+ #define DSC_MEM_EN	0x80000000
+ #define DSC_ECC_EN	0x20000000
+ #define DSC_RD_EN	0x10000000
++#define DSC_DBW_MASK	0x00180000
++#define DSC_DBW_32	0x00080000
++#define DSC_DBW_64	0x00000000
+ 
+ #define DSC_SDTYPE_MASK		0x07000000
+ 
+-- 
+1.6.2.1
