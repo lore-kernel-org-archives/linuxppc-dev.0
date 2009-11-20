@@ -2,21 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3A5181007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 Nov 2009 19:53:37 +1100 (EST)
-Subject: Re: Please pull 'next' branch of 4xx tree
+	by ozlabs.org (Postfix) with ESMTPS id E26ECB6EFE
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 20:04:01 +1100 (EST)
+Subject: RE: [RFC] powerpc/mm: honor O_SYNC flag for memory map
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CE7478C7-9642-4E23-BE19-00F6C53527EE@kernel.crashing.org>
-References: <20091104185519.GI31934@zod.rchland.ibm.com>
-	<20091119144558.GQ30489@zod.rchland.ibm.com>
-	<CE7478C7-9642-4E23-BE19-00F6C53527EE@kernel.crashing.org>
+To: Li Yang-R58472 <r58472@freescale.com>
+In-Reply-To: <3A45394FD742FA419B760BB8D398F9EDCBC1F2@zch01exm26.fsl.freescale.net>
+References: <1258441832-20133-1-git-send-email-leoli@freescale.com>
+	<8543954E-619A-4A78-A934-CDC326027FD2@kernel.crashing.org>
+	<3A45394FD742FA419B760BB8D398F9EDCBC1F2@zch01exm26.fsl.freescale.net>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 20 Nov 2009 19:53:28 +1100
-Message-ID: <1258707208.2140.864.camel@pasglop>
+Date: Fri, 20 Nov 2009 20:03:53 +1100
+Message-ID: <1258707833.2140.865.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-11-19 at 08:49 -0600, Kumar Gala wrote:
-> On Nov 19, 2009, at 8:45 AM, Josh Boyer wrote:
-> 
-> > On Wed, Nov 04, 2009 at 01:55:19PM -0500, Josh Boyer wrote:
-> >> Hi Ben,
-> >>
-> >> Please pull the next branch of the 4xx tree to get the following  
-> >> commits.
-> >>
-> >> I have some other things in the middle of being worked that may or  
-> >> may not
-> >> make it in time for the next release, so I wanted to get these  
-> >> commits into
-> >> your tree now rather than wait.
-> >
-> > Erm... ping?  I see you've updated your next branch but not pulled  
-> > this
-> > still...
-> 
-> Also my next branch.
+On Fri, 2009-11-20 at 11:00 +0800, Li Yang-R58472 wrote:
+> Because there is no way to set mapped memory as cacheable if the
+> memory
+> is not managed by Linux kernel.  While, it's not rare in real system
+> to
+> allocate some dedicated memory to a certain application which is not
+> managed by kernel and then mmap'ed the memory to the application.  The
+> memory should be cacheable but we can't map it to be cacheable due to
+> this intelligent setting.  And it is a big hit to the performance.
+> Moreover, the standard O_SYNC flag suggest that user has the control
+> over cacheablity, but actually we had not.
 
-As soon as I'm out of critsit hell...
+You need to be a bit more careful tho. You must not allow RAM managed by
+the kernel to be mapped non-cachable.
 
 Cheers,
 Ben.
