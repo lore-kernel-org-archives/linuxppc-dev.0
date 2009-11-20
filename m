@@ -1,16 +1,31 @@
-Return-Path: <ptyser@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+Return-Path: <R58472@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85D55100946
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 11:43:02 +1100 (EST)
-From: Peter Tyser <ptyser@xes-inc.com>
-To: bluesmoke-devel@lists.sourceforge.net
-Subject: [PATCH 1/4] edac: Remove unused mpc85xx debug code
-Date: Thu, 19 Nov 2009 18:42:26 -0600
-Message-Id: <1258677749-15968-1-git-send-email-ptyser@xes-inc.com>
-Cc: Peter Tyser <ptyser@xes-inc.com>, linuxppc-dev@ozlabs.org,
-	djiang@mvista.com
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9BA36B6EEC
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 14:00:26 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nAK30N6S002334
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 20:00:23 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nAK34SA5000935
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Nov 2009 21:04:28 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [RFC] powerpc/mm: honor O_SYNC flag for memory map
+Date: Fri, 20 Nov 2009 11:00:20 +0800
+Message-ID: <3A45394FD742FA419B760BB8D398F9EDCBC1F2@zch01exm26.fsl.freescale.net>
+In-Reply-To: <8543954E-619A-4A78-A934-CDC326027FD2@kernel.crashing.org>
+References: <1258441832-20133-1-git-send-email-leoli@freescale.com>
+	<8543954E-619A-4A78-A934-CDC326027FD2@kernel.crashing.org>
+From: "Li Yang-R58472" <r58472@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,34 +35,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some unused, unsupported debug code existed in the mpc85xx EDAC driver
-that resulted in a build failure when CONFIG_EDAC_DEBUG was defined:
+=20
 
-  drivers/edac/mpc85xx_edac.c: In function 'mpc85xx_mc_err_probe':
-  drivers/edac/mpc85xx_edac.c:1031: error: implicit declaration of function 'edac_mc_register_mcidev_debug'
-  drivers/edac/mpc85xx_edac.c:1031: error: 'debug_attr' undeclared (first use in this function)
-  drivers/edac/mpc85xx_edac.c:1031: error: (Each undeclared identifier is reported only once
-  drivers/edac/mpc85xx_edac.c:1031: error: for each function it appears in.)
+>-----Original Message-----
+>From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+>
+>On Nov 17, 2009, at 1:10 AM, Li Yang wrote:
+>
+>> Rather than the original intelligent way, we grant user more freedom.
+>> This enables user to map cacheable memory not managed by Linux.
+>>
+>> Signed-off-by: Li Yang <leoli@freescale.com>
+>> ---
+>> The only direct users of this function is fb_mmap() and=20
+>/dev/mem mmap.
+>> Although I'm not sure if anything is depending on the intelligent=20
+>> setting of cacheability.
+>
+>is there some reason to change this?
 
-Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
----
- drivers/edac/mpc85xx_edac.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+Because there is no way to set mapped memory as cacheable if the memory
+is not managed by Linux kernel.  While, it's not rare in real system to
+allocate some dedicated memory to a certain application which is not
+managed by kernel and then mmap'ed the memory to the application.  The
+memory should be cacheable but we can't map it to be cacheable due to
+this intelligent setting.  And it is a big hit to the performance.
+Moreover, the standard O_SYNC flag suggest that user has the control
+over cacheablity, but actually we had not.
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index cf27402..28d3211 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -892,10 +892,6 @@ static int __devinit mpc85xx_mc_err_probe(struct of_device *op,
- 
- 	mpc85xx_init_csrows(mci);
- 
--#ifdef CONFIG_EDAC_DEBUG
--	edac_mc_register_mcidev_debug((struct attribute **)debug_attr);
--#endif
--
- 	/* store the original error disable bits */
- 	orig_ddr_err_disable =
- 	    in_be32(pdata->mc_vbase + MPC85XX_MC_ERR_DISABLE);
--- 
-1.6.2.1
+- Leo
+
+>
+>- k
+>
+>>
+>> arch/powerpc/mm/mem.c |    2 +-
+>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c index=20
+>> 579382c..0fd267e 100644
+>> --- a/arch/powerpc/mm/mem.c
+>> +++ b/arch/powerpc/mm/mem.c
+>> @@ -101,7 +101,7 @@ pgprot_t phys_mem_access_prot(struct file *file,=20
+>> unsigned long pfn,
+>> 	if (ppc_md.phys_mem_access_prot)
+>> 		return ppc_md.phys_mem_access_prot(file, pfn,=20
+>size, vma_prot);
+>>
+>> -	if (!page_is_ram(pfn))
+>> +	if (file->f_flags & O_SYNC)
+>> 		vma_prot =3D pgprot_noncached(vma_prot);
+>>
+>> 	return vma_prot;
+>> --
+>> 1.6.4
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>
+>
