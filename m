@@ -1,35 +1,26 @@
-Return-Path: <rcjenn@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 44649B6ED0
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Nov 2009 03:11:10 +1100 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e36.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAKG8lBX020717
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 09:08:47 -0700
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nAKGAj2T100112
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 09:10:46 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nAKGAgKP020594
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 09:10:44 -0700
-Date: Fri, 20 Nov 2009 10:10:42 -0600
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 3/3] [v2] powerpc: make the CMM memory hotplug aware
-Message-ID: <20091120161041.GB18138@austin.ibm.com>
-References: <200911172240.nAHMeHgE021202@imap1.linux-foundation.org>
-	<20091118185907.GA30950@austin.ibm.com>
-	<20091119161403.93bd5756.akpm@linux-foundation.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f201.google.com (mail-yw0-f201.google.com
+	[209.85.211.201]) by ozlabs.org (Postfix) with ESMTP id C88661007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 21 Nov 2009 04:25:33 +1100 (EST)
+Received: by ywh39 with SMTP id 39so3464875ywh.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 20 Nov 2009 09:25:30 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091119161403.93bd5756.akpm@linux-foundation.org>
-Cc: mel@csn.ul.ie, geralds@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, brking@linux.vnet.ibm.com, mingo@elte.hu,
-	schwidefsky@de.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
+Sender: glikely@secretlab.ca
+In-Reply-To: <2ed32732-d2a2-42d3-89ef-80c5a25025ba@SG2EHSMHS007.ehs.local>
+References: <8B957E110B62714A84290A01A597805F05CA0AA1@Exchange.discretix.com>
+	<56a3f016-525a-4eb2-9a0f-1477ea2eee91@VA3EHSMHS019.ehs.local>
+	<8B957E110B62714A84290A01A597805F05D2AE38@Exchange.discretix.com>
+	<2ed32732-d2a2-42d3-89ef-80c5a25025ba@SG2EHSMHS007.ehs.local>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 20 Nov 2009 10:25:08 -0700
+Message-ID: <fa686aa40911200925g45f12e48w42eff098720164c6@mail.gmail.com>
+Subject: Re: [PATCH/RFC] Booting Xilinx ML510 board using SystemACE
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: John Linn <linnj@xilinx.com>, Alon Ziv <alonz@discretix.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,73 +30,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Wed, 18 Nov 2009 12:59:08 -0600
-> Robert Jennings <rcj@linux.vnet.ibm.com> wrote:
-> 
-> > The Collaborative Memory Manager (CMM) module allocates individual pages
-> > over time that are not migratable.  On a long running system this can
-> > severely impact the ability to find enough pages to support a hotplug
-> > memory remove operation.
-> > 
-> > This patch adds a memory isolation notifier and a memory hotplug notifier.
-<snip>
-> : @@ -563,6 +565,37 @@ static int cmm_mem_going_offline(void *a
-> :  		}
-> :  		pa_curr = pa_curr->next;
-> :  	}
-> : +
-> : +	/* Search for page list structures in the range to be offlined */
-> : +	pa_last = NULL;
-> : +	pa_curr = cmm_page_list;
-> : +	while (pa_curr) {
-> : +		if (((unsigned long)pa_curr >= start_page) &&
-> : +				((unsigned long)pa_curr < end_page)) {
-> : +			npa = (struct cmm_page_array *)__get_free_page(
-> : +					GFP_NOIO | __GFP_NOWARN |
-> : +					__GFP_NORETRY | __GFP_NOMEMALLOC);
-> : +			if (!npa) {
-> : +				spin_unlock(&cmm_lock);
-> : +				cmm_dbg("Failed to allocate memory for list "
-> : +						"management. Memory hotplug "
-> : +						"failed.\n");
-> : +				return ENOMEM;
-> : +			}
-> : +			memcpy(npa, pa_curr, PAGE_SIZE);
-> : +			if (pa_curr == cmm_page_list)
-> : +				cmm_page_list = npa;
-> : +			if (pa_last)
-> : +				pa_last->next = npa;
-> : +			free_page((unsigned long) pa_curr);
-> : +			freed++;
-> : +			pa_curr = npa;
-> : +		}
-> : +
-> : +		pa_last = pa_curr;
-> : +		pa_curr = pa_curr->next;
-> : +	}
-> : +
-> :  	spin_unlock(&cmm_lock);
-> :  	cmm_dbg("Released %ld pages in the search range.\n", freed);
-> :  
-> 
-> I'm wondering what is the maximum hold time of cmm_lock.  Rounded to
-> the nearest fortnight :)
+On Thu, Nov 19, 2009 at 10:32 AM, Stephen Neuendorffer
+<stephen.neuendorffer@xilinx.com> wrote:
+>> Of course, one obvious thing that must be done is move this code out
+> of
+>> arch/powerpc/platforms/44x/virtex.c and into (e.g.)
+>> arch/powerpc/kernel/setup-common.c, and add some
+>> "set_machine_restart_function" wrapper to access it more cleanly (also
+>> defining this function as a null function when inapplicable). =A0If this
+>> satisfies your standards, I can easily post an updated patch :)
+>
+> The driver isn't even powerpc specific, it could also be used on the
+> microblaze,
+> and I think you'll find alot of resistance to adding that kind of hook
+> to an architecture
+> that has just spent a bunch of time getting rid of alot of direct
+> binding between
+> platform code and drivers. =A0Grant, do you have a comment here?
 
-I've optimized this for sub-fortnight performance, but the maximum
-hold time is a function of the number of pages in the balloon and in the
-infreqent case that we try to migrate a page array page it will attempt
-a page allocation.  I'm calling __get_free_pages with __GFP_NORETRY and
-the offline fails quickly if we don't get the page.  Additionally, the
-cmm_lock could be held by either the balloon allocation or deallocation
-functions when the hotplug handler is called; I've addressed this as well.
+Sorry for the delay, I was at a conference and got behind on email.
+Yes, I've got comments.
 
-For the allocation path the locking granularity is quite good and
-a hotplug event will cause the allocation function to exit early to
-minimize memory pressure.
+First, the practical matter is that this is only applicable as a reset
+mechanism for Xilinx PowerPC (440 or 405) and Microblaze platforms,
+but the sysace device also appears on other boards, and is used to
+reconfigure FPGA's that don't reset the whole system.  One of the AMCC
+boards for example.
 
-The balloon deallocation path was not altered, it will hold the lock
-and free all of the pages it was attempting to free before releasing the
-lock.  The thought here is that by allowing it to complete we reduce
-memory pressure and reduce the number of list entries we'll need to
-search for each memory segment being offlined.
+So, you want the ability to have the driver reset the system, but you
+cannot break other platforms.  You also cannot call out to the driver
+from platform code because the xsysace driver may get loaded as a
+module.
+
+The cleanest solution would be to call out to the xsysace driver from
+platform code; but as already stated that isn't possible because the
+xsysace driver may be loaded as a module.  The only way I can think of
+to do that cleanly would be to register a bus notifier from platform
+code to wait for an xsysace device to get probed.  But still not
+exactly pretty.
+
+For the time being, I don't think there is a good way to avoid
+architecture specific hooks into the driver itself.  I recommend
+adding a new pair of functions to the driver (protected by #if
+defined(CONFIG_PPC)) that looks for a 'xlnx,can-reset-system'
+property.  It the property is present, then simply replace the
+ppc_md.restart hook in the machine definition.  Make sure to also
+restore it again when the driver is removed.  Similar code would be
+needed for Microblaze too, but someone else can write that.
+
+It is important to trigger the behaviour on whether or not a property
+like 'xlnx,can-restart-system' is present so that it can be chosen at
+runtime whether or not the sysace should actually be used for restart
+so that it doesn't break things for multiplatform.
+
+Also, you need to add documentation about the new property to
+Documentation/powerpc/dts-bindings/ before I will merge the change.
+The documentation change can appear in the same patch.
+
+It may not be the prettiest thing in the world, but in the absence of
+a cross-architecture machine restart infrastructure I think it is the
+best option.  At the very least it contains the changes to the driver
+itself.
+
+Cheers,
+g.
