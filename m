@@ -1,18 +1,23 @@
-Return-Path: <RFeany@mrv.com>
-Received: from bos-spam.mrv.com (mx5.mrv.com [140.179.254.12])
-	by ozlabs.org (Postfix) with ESMTP id 25268B6F00
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Nov 2009 07:28:43 +1100 (EST)
-Date: Fri, 20 Nov 2009 12:28:38 -0800
-From: Rex Feany <RFeany@mrv.com>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 00/10 v6]  Fix 8xx MMU/TLB
-Message-ID: <20091120202838.GA25843@compile2.chatsunix.int.mrv.com>
-References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f199.google.com (mail-yw0-f199.google.com
+	[209.85.211.199]) by ozlabs.org (Postfix) with ESMTP id ED429B6F16
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Nov 2009 07:37:40 +1100 (EST)
+Received: by ywh37 with SMTP id 37so3570035ywh.17
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Nov 2009 12:37:38 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <1258472546-31343-2-git-send-email-dbaryshkov@gmail.com>
+References: <1258472546-31343-1-git-send-email-dbaryshkov@gmail.com>
+	<1258472546-31343-2-git-send-email-dbaryshkov@gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 20 Nov 2009 13:37:18 -0700
+Message-ID: <fa686aa40911201237y4a41dd63wee3fb4e0a5858e87@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/5] Rework OpenFirmware GPIO handling
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	David Brownell <dbrownell@users.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thus spake Joakim Tjernlund (Joakim.Tjernlund@transmode.se):
+On Tue, Nov 17, 2009 at 8:42 AM, Dmitry Eremin-Solenikov
+<dbaryshkov@gmail.com> wrote:
+> This patch improves OF GPIO bindings so, that most non-OF-specific gpio
+> controllers don't need to call any of OF binding function:
+>
+> 0) Move of_gpio_chip into main gpio_chip structure.
+> 1) Call of_gpio_init/destroy from gpiochip_add/remove.
+> 2) By default supply reasonable defaults for gpio_cells/xlate
 
-> Yet again an iteration of the series.
-> Rex & Scott, please test and signoff.
-> Changes since last version:
->  - Fix rlwimi insn(from Scott)
+I think this change approaches the problem from the wrong way around.
+It is not appropriate to try and build OF hooks into gpiolib. gpiolib
+should be completely agnostic to any layers around them used to get
+data about how they are configured up.  If anything, OF helpers should
+wrap around the gpiolib functions so that drivers can use them if it
+is useful to do so.
 
-Hi Joakim,
-
-Things look much better with this patch set, I see none
-of the random crashes that I had with the earlier patches.
-I'll leave it running on a few boards here over the weekend and
-see if anything bad happens. 
-
-Since patch #1 fixes a regression in the current kernel
-is there any way you can get that into .32? I know it is late,
-but without that patch .32 doesn't work for 8xx boards.
-
-On another note, how does your patch set affect performance?
-Have you been able to do any testing?  What is the advantage
-of using dcbX in the kernel, besides keeping the code
-similar to other ppc platforms?  Maybe it is good to
-catch/fixup userspace uses of dcbX, but why change the
-kernel? How does it affect performance?
-
-thanks!
-/rex.
+g.
