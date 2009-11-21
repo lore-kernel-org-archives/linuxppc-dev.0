@@ -1,26 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f187.google.com (mail-yw0-f187.google.com
-	[209.85.211.187]) by ozlabs.org (Postfix) with ESMTP id 39ED9B6EF0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 Nov 2009 19:46:13 +1100 (EST)
-Received: by ywh17 with SMTP id 17so3643892ywh.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 Nov 2009 00:46:10 -0800 (PST)
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BAD8BB6EF2
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Nov 2009 21:31:17 +1100 (EST)
+In-Reply-To: <20091120202838.GA25843@compile2.chatsunix.int.mrv.com>
+References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20091120202838.GA25843@compile2.chatsunix.int.mrv.com>
+Subject: Re: [PATCH 00/10 v6]  Fix 8xx MMU/TLB
+To: Rex Feany <RFeany@mrv.com>
+Message-ID: <OF074C7D1E.26CB4818-ONC1257675.0035EDC0-C1257675.003979F2@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Sat, 21 Nov 2009 11:27:47 +0100
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20091118232920.GA24307@oksana.dev.rtsoft.ru>
-References: <200911161742.46663.to-fleischer@t-online.de>
-	<20091117202211.GB27574@oksana.dev.rtsoft.ru>
-	<20091117232823.GA19058@oksana.dev.rtsoft.ru>
-	<200911181720.06390.to-fleischer@t-online.de>
-	<20091118232920.GA24307@oksana.dev.rtsoft.ru>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 21 Nov 2009 01:45:50 -0700
-Message-ID: <fa686aa40911210045v4be84e8dg8ef490472e06017b@mail.gmail.com>
-Subject: Re: spi_mpc8xxx.c: chip select polarity problem
-To: avorontsov@ru.mvista.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Torsten Fleischer <to-fleischer@t-online.de>, linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 18, 2009 at 4:29 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Wed, Nov 18, 2009 at 05:20:06PM +0100, Torsten Fleischer wrote:
-> [...]
->> > Oh. On the other hand, we can postpone the gpio_direction_output()
->> > call, and still require that the platform code (or firmware)
->> > should be responsible for setting a sane default values on the
->> > chip selects.
->> >
->>
->> How about that?
+
+
+Rex Feany <RFeany@mrv.com> wrote on 20/11/2009 21:28:38:
 >
-> Looks great, thanks!
+> Thus spake Joakim Tjernlund (Joakim.Tjernlund@transmode.se):
 >
-> Few minor issues below.
+> > Yet again an iteration of the series.
+> > Rex & Scott, please test and signoff.
+> > Changes since last version:
+> >  - Fix rlwimi insn(from Scott)
+>
+> Hi Joakim,
+>
+> Things look much better with this patch set, I see none
+> of the random crashes that I had with the earlier patches.
+> I'll leave it running on a few boards here over the weekend and
+> see if anything bad happens.
 
-Hey Torsten,  do you have an updated version of this change to address
-the comments?  I'm collecting the last few things for some linux-next
-exposure now.
+Good to hear that.
 
-g.
+>
+> Since patch #1 fixes a regression in the current kernel
+> is there any way you can get that into .32? I know it is late,
+> but without that patch .32 doesn't work for 8xx boards.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+You need to convince Ben of that. I guess the best you can do
+is to reply(include Ben too) with your s-o-b and explain that this
+fixes a regression for you.
+
+>
+> On another note, how does your patch set affect performance?
+> Have you been able to do any testing?  What is the advantage
+> of using dcbX in the kernel, besides keeping the code
+> similar to other ppc platforms?
+
+I consider this a big plus, not having to pay special attention
+to 8xx anymore. There aren't many 8xx people around
+to fix problems that are specific for 8xx.
+
+> Maybe it is good to
+> catch/fixup userspace uses of dcbX, but why change the
+> kernel? How does it affect performance?
+
+when I originally did the dcbX path many years ago I did
+some perf testing and it was a win. Perhaps you could
+run a some tests?
+
+Consider that the dcbx workaround is only triggered by a DTLB errors
+and the kernel never gets into DTLB errors for normal activity.
+
+TLB errors are the slow path anyway with lots of mm code
+so a few more insn won't matter.
+
+There is also the case of dcbst setting the store bit wrongly
+and this could generate a SEGV if it hits a RO page.
+
+The kernel isn't free of dcbX insn anyway so if it ever hit
+a DTLB error, it is possible that could bring down the kernel.
+
+The only perf regression I can think of is the
+  8xx: Remove DIRTY pte handling in DTLB Error.
+which will make dirty handling much slower.
+I am happy to leave that one out, but Ben requested
+this.
+
+ Jocke
+
+PS.
+    You should consider fixing glibc's mem* functions to make
+    use of dcbX for 8xx once the kernel has this patchset.
