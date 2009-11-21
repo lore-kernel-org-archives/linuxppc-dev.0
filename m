@@ -1,22 +1,24 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f223.google.com (mail-gx0-f223.google.com
-	[209.85.217.223]) by ozlabs.org (Postfix) with ESMTP id 9400FB6F1C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 21 Nov 2009 18:57:33 +1100 (EST)
-Received: by gxk23 with SMTP id 23so4475518gxk.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 20 Nov 2009 23:57:31 -0800 (PST)
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id 497EEB6F2B
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Nov 2009 19:02:03 +1100 (EST)
+Received: by gxk28 with SMTP id 28so3651372gxk.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Nov 2009 00:02:01 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <OF627E4B93.73CDD8FE-ON6525766A.0013CA01-6525766A.0013C6E5@lntemsys.com>
-References: <OF627E4B93.73CDD8FE-ON6525766A.0013CA01-6525766A.0013C6E5@lntemsys.com>
+In-Reply-To: <alpine.LFD.2.00.0911182141060.24119@localhost.localdomain>
+References: <20091117224852.846805939@linutronix.de>
+	<20091117224916.566205413@linutronix.de>
+	<20091118175523.GA12857@b07421-ec1.am.freescale.net>
+	<alpine.LFD.2.00.0911182141060.24119@localhost.localdomain>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 21 Nov 2009 00:57:11 -0700
-Message-ID: <fa686aa40911202357x206c1631xbfd8c098254ccf7f@mail.gmail.com>
-Subject: Re: Fw: Help with SPI node
-To: Ravi Shekhar <Ravi.Shekhar@lntemsys.com>
+Date: Sat, 21 Nov 2009 01:01:41 -0700
+Message-ID: <fa686aa40911210001u699031a0h2b3818b68c212d69@mail.gmail.com>
+Subject: Re: [patch 06/13] powerpc: Fixup last users of irq_chip->typename
+To: Thomas Gleixner <tglx@linutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 9, 2009 at 8:36 PM, Ravi Shekhar <Ravi.Shekhar@lntemsys.com> wr=
-ote:
+On Wed, Nov 18, 2009 at 1:41 PM, Thomas Gleixner <tglx@linutronix.de> wrote=
+:
+> On Wed, 18 Nov 2009, Scott Wood wrote:
+>> On Tue, Nov 17, 2009 at 10:50:53PM +0000, Thomas Gleixner wrote:
+>> > Index: linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+>> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>> > --- linux-2.6.orig/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+>> > +++ linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+>> > @@ -69,7 +69,7 @@ static void pq2ads_pci_unmask_irq(unsign
+>> > =A0}
+>> >
+>> > =A0static struct irq_chip pq2ads_pci_ic =3D {
+>> > - =A0 .typename =3D "PQ2 ADS PCI",
+>> > + =A0 .name =3D "PQ2 ADS PCI",
+>> > =A0 =A0 .name =3D "PQ2 ADS PCI",
+>> > =A0 =A0 .end =3D pq2ads_pci_unmask_irq,
+>> > =A0 =A0 .mask =3D pq2ads_pci_mask_irq,
+>>
+>> Duplicate ".name"...
 >
->
-> =A0I'm attempting to get SPI to work on my embedded design
-> =A0that is based on the mpc8313erbd reference board wiht a
-> =A02.6.27 kernel.
+> Darn.
 
-Are you able to use a more recent kernel?  A lot of work has gone into
-SPI drivers in the last 5 releases.
+Other than that, looks good to me.
 
-> =A0I cannot open the SPI device.
-> =A0Tracing through the kernel code, it looks like the device is
-> =A0not being found in the DTB file. =A0However there is a
-> =A0SPI node in there already described. =A0Our boards is a
-> SPI master, and the device we will attach is a SPI
-> =A0slave. =A0Could someone elaborate on what is needed in
-> =A0the DTS file to have our SPI driver work and respond to an
-> =A0open() call?
-
-Look in Documentation/powerpc/dts-bindings/spi-bus.txt.  However, the
-2.6.27 kernel may not have support for that binding on the mpc8313 SPI
-bus driver (I'm not sure though, I haven't looked).
-
-g.
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
 --=20
 Grant Likely, B.Sc., P.Eng.
