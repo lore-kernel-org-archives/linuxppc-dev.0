@@ -1,22 +1,26 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
-	by ozlabs.org (Postfix) with ESMTP id 041AA1007EA
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f187.google.com (mail-yw0-f187.google.com
+	[209.85.211.187]) by ozlabs.org (Postfix) with ESMTP id 27BAD1007D7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Nov 2009 09:27:41 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 10/19] powerpc: gamecube/wii: early debugging using
-	usbgecko
-Date: Sun, 22 Nov 2009 23:27:37 +0100
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-In-Reply-To: <1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
+	Mon, 23 Nov 2009 09:42:46 +1100 (EST)
+Received: by ywh17 with SMTP id 17so4623219ywh.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 22 Nov 2009 14:42:44 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200911222327.37949.arnd@arndb.de>
-Cc: Albert Herranz <albert_herranz@yahoo.es>
+Sender: glikely@secretlab.ca
+In-Reply-To: <200911212045.42767.arnd@arndb.de>
+References: <8B957E110B62714A84290A01A597805F05CA0AA0@Exchange.discretix.com>
+	<e846a32c-5f37-4531-b23d-17c60d8b6449@SG2EHSMHS010.ehs.local>
+	<fa686aa40911202351s4436a8a6r59abfe2cf130ca59@mail.gmail.com>
+	<200911212045.42767.arnd@arndb.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sun, 22 Nov 2009 15:42:24 -0700
+Message-ID: <fa686aa40911221442t4526dd65v5a0f9659e8767e47@mail.gmail.com>
+Subject: Re: Bug in drivers/serial/of_serial.c?
+To: Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Neuendorffer <stephenn@xilinx.com>, Alon Ziv <alonz@discretix.com>,
+	linuxppc-dev@lists.ozlabs.org, John Linn <John.Linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sunday 22 November 2009, Albert Herranz wrote:
-> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-> +setup_usbgecko_bat:
-> +	/* prepare a BAT for early io */
-> +	lis	r8, 0x0c00
-> +	ori	r8, r8, 0x002a	/* uncached, guarded ,rw */
-> +	lis	r11, 0xcc00
-> +	ori	r11, r11, 0x3	/* 128K */
-> +#ifdef CONFIG_WII
-> +	oris	r8, r8, 0x0100
-> +	oris	r11, r11, 0x0100
-> +#endif
-> +	mtspr	SPRN_DBAT1L, r8
-> +	mtspr	SPRN_DBAT1U, r11
-> +	sync
-> +	isync
-> +	blr
-> +#endif
+On Sat, Nov 21, 2009 at 12:45 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Saturday 21 November 2009, Grant Likely wrote:
+>> BTW, while looking at that file... Arnd, does the .type = "serial"
+>> stuff really need to be there?
+>
+> Well, serial is one of the few that actually has some preexisting
+> binding with a well defined device-type, so I guess we should use
+> it.
 
-This will probably break other platforms if CONFIG_PPC_EARLY_DEBUG_USBGECKO
-is set. In general, we try hard to make it possible to build generic
-kernels for multiple systems, so it would be better to also add a runtime
-check here.
+But device-type describes a OpenFirmware API, not a device register
+interface.  Once we're in the kernel and talking to the hardware
+directly, device-type has no real meaning because we're not using the
+OpenFirmware interface to talk to serial devices in a generic manner.
 
-> --- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-> +++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-> @@ -27,4 +27,10 @@ static inline void __init ug_udbg_init(void)
->  
->  #endif /* CONFIG_USBGECKO_UDBG */
->  
-> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-> +
-> +void __init udbg_init_usbgecko(void);
-> +
-> +#endif /* CONFIG_PPC_EARLY_DEBUG_USBGECKO */
-> +
+g.
 
-No need to enclose a declaration in #ifdef, better leave it there
-unconditionally, unless you have an alternative version, like
-
-#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-void __init udbg_init_usbgecko(void);
-#else /* !CONFIG_PPC_EARLY_DEBUG_USBGECKO */
-static inline void udbg_init_usbgecko(void)
-{
-}
-#endif /* CONFIG_PPC_EARLY_DEBUG_USBGECKO */
-
-That style is now more common than having additional #ifdefs
-in the code using the function.
-
-	Arnd <><
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
