@@ -1,15 +1,14 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp106.mail.ukl.yahoo.com (smtp106.mail.ukl.yahoo.com
-	[77.238.184.38]) by ozlabs.org (Postfix) with SMTP id E6DA41008C5
+	[77.238.184.38]) by ozlabs.org (Postfix) with SMTP id B44331008D9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Nov 2009 09:02:14 +1100 (EST)
+	Mon, 23 Nov 2009 09:02:15 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 14/19] powerpc: allow ioremap within reserved fake ram
-	regions
-Date: Sun, 22 Nov 2009 23:01:45 +0100
-Message-Id: <1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
-In-Reply-To: <1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>
+Subject: [RFC PATCH 15/19] powerpc: broadway processor support
+Date: Sun, 22 Nov 2009 23:01:46 +0100
+Message-Id: <1258927311-4340-16-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
@@ -24,6 +23,7 @@ References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,61 +34,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Nintendo Wii has two discontiguous RAM memory areas called
-MEM1 and MEM2.
-MEM1 starts at 0x00000000 and contains 24MB of 1T-SRAM.
-MEM2 starts at 0x10000000 and contains 64MB of DDR2 RAM.
-Between both memory address ranges there is an address space
-where memory-mapped I/O registers are found.
+This patch extends the cputable entry of the 750CL to also match
+the 750CL-based "Broadway" cpu found on the Nintendo Wii.
 
-Currently, Linux 32-bit PowerPC does not support RAM in
-discontiguous memory address spaces. Thus, in order to use
-both RAM areas, we declare as RAM the range from the start of
-MEM1 to the end of useable MEM2 and exclude the needed parts
-with /memreserve/ statements, at the expense of wasting a bit
-of memory.
-
-As a side effect, we need to allow ioremapping RAM areas
-because the I/O address space sits within the memreserve'd part
-of the declared RAM region.
-Note that this is not safe if the region ioremapped is covered
-by an existing BAT mapping used to map RAM, so this is
-specifically banned here.
+As of this patch, the following "Broadway" design revision levels have
+been seen in the wild:
+- DD1.2 (87102)
+- DD2.0 (87200)
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- arch/powerpc/mm/pgtable_32.c |   19 ++++++++++++++++---
- 1 files changed, 16 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/cputable.c |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index cb96cb2..ba00cb1 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -191,9 +191,22 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
- 	 * Don't allow anybody to remap normal RAM that we're using.
- 	 * mem_init() sets high_memory so only do the check after that.
- 	 */
--	if (mem_init_done && (p < virt_to_phys(high_memory))) {
--		printk("__ioremap(): phys addr 0x%llx is RAM lr %p\n",
--		       (unsigned long long)p, __builtin_return_address(0));
-+	if (mem_init_done && (p < virt_to_phys(high_memory))
-+#ifdef CONFIG_WII
-+		/*
-+		 * On some systems, though, we may want to remap an area
-+		 * declared as normal RAM that we have memreserve'd at the
-+		 * device tree. See wii.dts.
-+		 * But we can't do that safely if we are using BATs to map
-+		 * part of that area.
-+		 */
-+	    && !__map_without_bats
-+#endif
-+	    ) {
-+		printk(KERN_WARNING
-+		       "__ioremap(): phys addr 0x%llx is RAM lr %p\n",
-+		       (unsigned long long)p,
-+			 __builtin_return_address(0));
- 		return NULL;
- 	}
- #endif
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 03c862b..85841e8 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -697,13 +697,13 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_generic,
+ 		.platform		= "ppc750",
+ 	},
+-	{	/* 750CL */
+-		.pvr_mask		= 0xfffff0f0,
+-		.pvr_value		= 0x00087010,
+-		.cpu_name		= "750CL",
+-		.cpu_features		= CPU_FTRS_750CL,
++	{	/* 745/755 */
++		.pvr_mask		= 0xfffff000,
++		.pvr_value		= 0x00083000,
++		.cpu_name		= "745/755",
++		.cpu_features		= CPU_FTRS_750,
+ 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_USE_HIGH_BATS,
++		.mmu_features		= MMU_FTR_HPTE_TABLE,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 		.num_pmcs		= 4,
+@@ -711,16 +711,14 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_setup		= __setup_cpu_750,
+ 		.machine_check		= machine_check_generic,
+ 		.platform		= "ppc750",
+-		.oprofile_cpu_type      = "ppc/750",
+-		.oprofile_type		= PPC_OPROFILE_G4,
+ 	},
+-	{	/* 745/755 */
+-		.pvr_mask		= 0xfffff000,
+-		.pvr_value		= 0x00083000,
+-		.cpu_name		= "745/755",
+-		.cpu_features		= CPU_FTRS_750,
++	{	/* 750CL (and "Broadway") */
++		.pvr_mask		= 0xfffff0e0,
++		.pvr_value		= 0x00087000,
++		.cpu_name		= "750CL",
++		.cpu_features		= CPU_FTRS_750CL,
+ 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE,
++		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_USE_HIGH_BATS,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 		.num_pmcs		= 4,
+@@ -728,6 +726,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_setup		= __setup_cpu_750,
+ 		.machine_check		= machine_check_generic,
+ 		.platform		= "ppc750",
++		.oprofile_cpu_type      = "ppc/750",
++		.oprofile_type		= PPC_OPROFILE_G4,
+ 	},
+ 	{	/* 750FX rev 1.x */
+ 		.pvr_mask		= 0xffffff00,
 -- 
 1.6.3.3
