@@ -1,27 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f187.google.com (mail-yw0-f187.google.com
-	[209.85.211.187]) by ozlabs.org (Postfix) with ESMTP id 589F11007E2
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 810751007F3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Nov 2009 09:43:48 +1100 (EST)
-Received: by ywh17 with SMTP id 17so4623713ywh.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 22 Nov 2009 14:43:46 -0800 (PST)
+	Mon, 23 Nov 2009 09:48:28 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 17/19] powerpc: wii: bootmii starlet 'mini' firmware
+	support
+Date: Sun, 22 Nov 2009 23:48:20 +0100
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-17-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-18-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1258927311-4340-18-git-send-email-albert_herranz@yahoo.es>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <fa686aa40911221442t4526dd65v5a0f9659e8767e47@mail.gmail.com>
-References: <8B957E110B62714A84290A01A597805F05CA0AA0@Exchange.discretix.com>
-	<e846a32c-5f37-4531-b23d-17c60d8b6449@SG2EHSMHS010.ehs.local>
-	<fa686aa40911202351s4436a8a6r59abfe2cf130ca59@mail.gmail.com>
-	<200911212045.42767.arnd@arndb.de>
-	<fa686aa40911221442t4526dd65v5a0f9659e8767e47@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 22 Nov 2009 15:43:26 -0700
-Message-ID: <fa686aa40911221443p6e6f5e4dt5ef2e90b1c2624e0@mail.gmail.com>
-Subject: Re: Bug in drivers/serial/of_serial.c?
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Neuendorffer <stephenn@xilinx.com>, Alon Ziv <alonz@discretix.com>,
-	linuxppc-dev@lists.ozlabs.org, John Linn <John.Linn@xilinx.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200911222348.20652.arnd@arndb.de>
+Cc: Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Nov 22, 2009 at 3:42 PM, Grant Likely <grant.likely@secretlab.ca> w=
-rote:
-> On Sat, Nov 21, 2009 at 12:45 PM, Arnd Bergmann <arnd@arndb.de> wrote:
->> On Saturday 21 November 2009, Grant Likely wrote:
->>> BTW, while looking at that file... Arnd, does the .type =3D "serial"
->>> stuff really need to be there?
->>
->> Well, serial is one of the few that actually has some preexisting
->> binding with a well defined device-type, so I guess we should use
->> it.
->
-> But device-type describes a OpenFirmware API, not a device register
-> interface. =A0Once we're in the kernel and talking to the hardware
-> directly, device-type has no real meaning because we're not using the
-> OpenFirmware interface to talk to serial devices in a generic manner.
+On Sunday 22 November 2009, Albert Herranz wrote:
+> + *
+> + */
+> +struct mipc_device {
+> +	void __iomem *io_base;
+> +	int irq;
+> +
+> +	struct device *dev;
+> +
+> +	spinlock_t call_lock;	/* serialize firmware calls */
+> +	spinlock_t io_lock;	/* serialize access to io registers */
+> +
+> +	struct mipc_infohdr *hdr;
+> +
+> +	struct mipc_req *in_ring;
+> +	size_t in_ring_size;
+> +	volatile u16 intail_idx;
+> +
+> +	struct mipc_req *out_ring;
+> +	size_t out_ring_size;
+> +	volatile u16 outhead_idx;
+> +
+> +	u32 tag;
+> +};
 
-And looking for it in the driver forces us to put meaningless
-"device_type" properties in the flat trees, where they make no sense
-whatsoever.
+The 'volatile' here seems out of place. What are you trying to protect
+against?
 
-g.
+The rest of the patch seems to be made up of layers of wrappers. They
+are all well coded, but I got a feeling that the same could be achieved
+with less of it.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+	Arnd <>< 
