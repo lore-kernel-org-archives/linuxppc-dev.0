@@ -1,22 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from mail-gx0-f223.google.com (mail-gx0-f223.google.com
-	[209.85.217.223]) by ozlabs.org (Postfix) with ESMTP id 082AAB7CA3
+	[209.85.217.223]) by ozlabs.org (Postfix) with ESMTP id AB522B6F10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Nov 2009 10:12:05 +1100 (EST)
-Received: by gxk23 with SMTP id 23so5457882gxk.2
+	Mon, 23 Nov 2009 10:18:28 +1100 (EST)
+Received: by gxk23 with SMTP id 23so5460593gxk.2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 22 Nov 2009 15:12:03 -0800 (PST)
+	Sun, 22 Nov 2009 15:18:26 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 22 Nov 2009 16:11:43 -0700
-Message-ID: <fa686aa40911221511q5979d04p97d1a430803443d1@mail.gmail.com>
-Subject: Re: [RFC PATCH 03/19] powerpc: gamecube: bootwrapper bits
+Date: Sun, 22 Nov 2009 16:18:06 -0700
+Message-ID: <fa686aa40911221518s5d82d5b4i8402a297d52a46d1@mail.gmail.com>
+Subject: Re: [RFC PATCH 04/19] powerpc: wii: device tree
 To: Albert Herranz <albert_herranz@yahoo.es>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -31,68 +32,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Sun, Nov 22, 2009 at 3:01 PM, Albert Herranz <albert_herranz@yahoo.es> w=
 rote:
-> Add support for the Nintendo GameCube video game console to the powerpc
-> bootwrapper.
->
-> dtbImage.gamecube is a wrapped image that contains a flat device tree,
-> an entry point compatible with SDload, and an optional initrd.
+> Add a device tree source file for the Nintendo Wii video game console.
 >
 > Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Same comments apply here as for the gamecube.dts file, plus a few more belo=
+w.
+
+Cheers,
+g.
 
 > ---
-> =A0arch/powerpc/boot/Makefile =A0 | =A0 =A04 ++-
-> =A0arch/powerpc/boot/gamecube.c | =A0 78 ++++++++++++++++++++++++++++++++=
+> =A0arch/powerpc/boot/dts/wii.dts | =A0244 +++++++++++++++++++++++++++++++=
 ++++++++++
-> =A02 files changed, 81 insertions(+), 1 deletions(-)
-> =A0create mode 100644 arch/powerpc/boot/gamecube.c
+> =A01 files changed, 244 insertions(+), 0 deletions(-)
+> =A0create mode 100644 arch/powerpc/boot/dts/wii.dts
 >
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 44bce21..b2f06b0 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -76,7 +76,8 @@ src-plat :=3D of.c cuboot-52xx.c cuboot-824x.c cuboot-8=
-3xx.c cuboot-85xx.c holly.c
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cuboot-katmai.c cuboot-rainier.c redboot-8=
-xx.c ep8248e.c \
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yo=
-semite.c simpleboot.c \
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0virtex405-head.S virtex.c redboot-83xx.c c=
-uboot-sam440ep.c \
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cuboot-acadia.c cuboot-amigaone.c cuboot-ki=
-lauea.c
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 cuboot-acadia.c cuboot-amigaone.c cuboot-ki=
-lauea.c \
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gamecube.c
-> =A0src-boot :=3D $(src-wlib) $(src-plat) empty.c
->
-> =A0src-boot :=3D $(addprefix $(obj)/, $(src-boot))
-> @@ -254,6 +255,7 @@ image-$(CONFIG_KSI8560) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 +=3D cuImage.ksi8560
-> =A0image-$(CONFIG_STORCENTER) =A0 =A0 =A0 =A0 =A0 =A0 +=3D cuImage.storce=
-nter
-> =A0image-$(CONFIG_MPC7448HPC2) =A0 =A0 =A0 =A0 =A0 =A0+=3D cuImage.mpc744=
-8hpc2
-> =A0image-$(CONFIG_PPC_C2K) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0+=3D cuImage.c2k
-> +image-$(CONFIG_GAMECUBE) =A0 =A0 =A0 =A0 =A0 =A0 =A0 +=3D dtbImage.gamec=
-ube
->
-> =A0# Board port in arch/powerpc/platform/amigaone/Kconfig
-> =A0image-$(CONFIG_AMIGAONE) =A0 =A0 =A0 =A0 =A0 =A0 =A0 +=3D cuImage.amig=
-aone
-> diff --git a/arch/powerpc/boot/gamecube.c b/arch/powerpc/boot/gamecube.c
+> diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dt=
+s
 > new file mode 100644
-> index 0000000..0d6c517
+> index 0000000..a30a804
 > --- /dev/null
-> +++ b/arch/powerpc/boot/gamecube.c
-> @@ -0,0 +1,78 @@
+> +++ b/arch/powerpc/boot/dts/wii.dts
+> @@ -0,0 +1,244 @@
 > +/*
-> + * arch/powerpc/boot/gamecube.c
+> + * arch/powerpc/boot/dts/wii.dts
 > + *
-> + * Nintendo GameCube bootwrapper support
-> + * Copyright (C) 2004-2009 The GameCube Linux Team
+> + * Nintendo Wii platform device tree source
+> + * Copyright (C) 2008-2009 The GameCube Linux Team
 > + * Copyright (C) 2008,2009 Albert Herranz
 > + *
 > + * This program is free software; you can redistribute it and/or
@@ -102,70 +69,94 @@ aone
 > + *
 > + */
 > +
-> +#include <stddef.h>
-> +#include "stdio.h"
-> +#include "types.h"
-> +#include "io.h"
-> +#include "ops.h"
+> +/dts-v1/;
 > +
-> +#include "ugecon.h"
+> +/memreserve/ 0x01800000 0xe800000; =A0 =A0 /* memory hole (includes I/O =
+area) */
+> +/memreserve/ 0x10000000 0x0004000; =A0 =A0 /* DSP RAM */
+
+This bothers me... see below.
+
 > +
-> +BSS_STACK(8192);
+> +/ {
+> + =A0 =A0 =A0 model =3D "NintendoWii";
+> + =A0 =A0 =A0 compatible =3D "nintendo,wii";
+> + =A0 =A0 =A0 #address-cells =3D <1>;
+> + =A0 =A0 =A0 #size-cells =3D <1>;
 > +
-> +/*
-> + * We enter with the cache enabled, the MMU enabled and some known legac=
-y
-> + * memory mappings active. xBAT3 is unused.
-> + *
-> + * We leave the MMU enabled, but we switch to an identity mapped memory
-> + * scheme as expected by the start code.
-> + *
-> + */
-> +asm ("\n\
-> +.text\n\
-> +.globl _zimage_start\n\
-> +_zimage_start:\n\
-> +\n\
-> + =A0 =A0 =A0 isync\n\
-> + =A0 =A0 =A0 /* IBAT3,DBAT3 for first 16Mbytes */\n\
-> + =A0 =A0 =A0 li =A0 =A0 =A08, 0x01ff =A0 =A0 =A0 /* 16MB */\n\
-> + =A0 =A0 =A0 li =A0 =A0 =A09, 0x0002 =A0 =A0 =A0 /* rw */\n\
-> + =A0 =A0 =A0 mtspr =A0 0x216, 8 =A0 =A0 =A0 =A0/* IBAT3U */\n\
-> + =A0 =A0 =A0 mtspr =A0 0x217, 9 =A0 =A0 =A0 =A0/* IBAT3L */\n\
-> + =A0 =A0 =A0 mtspr =A0 0x21e, 8 =A0 =A0 =A0 =A0/* DBAT3U */\n\
-> + =A0 =A0 =A0 mtspr =A0 0x21f, 9 =A0 =A0 =A0 =A0/* DBAT3L */\n\
-> +\n\
-> + =A0 =A0 =A0 sync\n\
-> + =A0 =A0 =A0 isync\n\
-> +\n\
-> + =A0 =A0 =A0 li =A0 =A0 =A03, 0\n\
-> + =A0 =A0 =A0 li =A0 =A0 =A04, 0\n\
-> + =A0 =A0 =A0 li =A0 =A0 =A05, 0\n\
-> +\n\
-> + =A0 =A0 =A0 bcl- =A0 =A020,4*cr7+so,1f\n\
-> +1:\n\
-> + =A0 =A0 =A0 mflr =A0 =A08\n\
-> + =A0 =A0 =A0 clrlwi =A08, 8, 3\n\
-> + =A0 =A0 =A0 addi =A0 =A08, 8, 2f - 1b\n\
-> + =A0 =A0 =A0 mtlr =A0 =A08\n\
-> + =A0 =A0 =A0 blr\n\
-> +2:\n\
-> + =A0 =A0 =A0 b _zimage_start_lib\n\
-> +");
+> + =A0 =A0 =A0 chosen {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* root filesystem on 2nd partition of SD c=
+ard */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 bootargs =3D "nobats root=3D/dev/mmcblk0p2 =
+rootwait udbg-immortal";
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 linux,stdout-path =3D &USBGECKO0;
+> + =A0 =A0 =A0 };
 > +
-> +/*
-> + *
-> + */
-> +void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
-> +{
-> + =A0 =A0 =A0 u32 heapsize =3D 16*1024*1024 - (u32)_end;
+> + =A0 =A0 =A0 aliases {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ugecon =3D &USBGECKO0;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 hw_gpio =3D &gpio1;
+> + =A0 =A0 =A0 };
 > +
-> + =A0 =A0 =A0 simple_alloc_init(_end, heapsize, 32, 64);
-> + =A0 =A0 =A0 fdt_init(_dtb_start);
+> + =A0 =A0 =A0 /*
+> + =A0 =A0 =A0 =A0* The Nintendo Wii has two discontiguous RAM memory area=
+s called
+> + =A0 =A0 =A0 =A0* MEM1 and MEM2.
+> + =A0 =A0 =A0 =A0* MEM1 starts at 0x00000000 and contains 24MB of 1T-SRAM=
+.
+> + =A0 =A0 =A0 =A0* MEM2 starts at 0x10000000 and contains 64MB of DDR2 RA=
+M.
+> + =A0 =A0 =A0 =A0* Between both memory address ranges there is an address=
+ space
+> + =A0 =A0 =A0 =A0* where memory-mapped I/O registers are found.
+> + =A0 =A0 =A0 =A0*
+> + =A0 =A0 =A0 =A0* Currently, Linux 32-bit PowerPC does not support RAM i=
+n
+> + =A0 =A0 =A0 =A0* discontiguous memory address spaces. Thus, in order to=
+ use
+> + =A0 =A0 =A0 =A0* both RAM areas, we declare as RAM the range from the s=
+tart of
+> + =A0 =A0 =A0 =A0* MEM1 to the end of useable MEM2 and exclude the needed=
+ parts
+> + =A0 =A0 =A0 =A0* with /memreserve/ statements, at the expense of wastin=
+g a bit
+> + =A0 =A0 =A0 =A0* of memory.
+
+Hmmm.  It's not great practice to lie about hardware in the device
+tree.  Better to describe the memory correctly here, and if you have
+to work around Linux deficiencies, then do so in the platform support
+code (arch/platforms/*).  I won't NAK the patch over it (feel free to
+add my Acked-by line) because it doesn't impact other platforms, but
+it should be fixed.
+
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 i2c-video {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <0>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "virtual,i2c=
+-gpio";
+
+There isn't a documented binding for this.  Is there a driver for it?
+
 > +
-> + =A0 =A0 =A0 if (!ug_grab_io_base() && ug_is_adapter_present())
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 console_ops.write =3D ug_console_write;
-> +}
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpios =3D <&gpio0 =A016 0 /=
+* 31-15 */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0&gpio0 =
+=A017 0 /* 31-14 */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 >;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 sda-is-open-drain =3D <1>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 sda-enforce-dir =3D <1>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 scl-is-open-drain =3D <1>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 scl-is-output-only =3D <1>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay =3D <2>;
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 audio-video-encoder {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =
+=3D "nintendo,wii-ave-rvl";
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x=
+70>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
+> + =A0 =A0 =A0 };
+> +};
 > +
 > --
 > 1.6.3.3
