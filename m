@@ -1,22 +1,22 @@
 Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.8])
-	by ozlabs.org (Postfix) with ESMTP id 47C141007D5
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
+	by ozlabs.org (Postfix) with ESMTP id 48A4C1007D8
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Mon, 23 Nov 2009 09:21:03 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Bug in drivers/serial/of_serial.c?
-Date: Sat, 21 Nov 2009 20:45:42 +0100
-References: <8B957E110B62714A84290A01A597805F05CA0AA0@Exchange.discretix.com>
-	<e846a32c-5f37-4531-b23d-17c60d8b6449@SG2EHSMHS010.ehs.local>
-	<fa686aa40911202351s4436a8a6r59abfe2cf130ca59@mail.gmail.com>
-In-Reply-To: <fa686aa40911202351s4436a8a6r59abfe2cf130ca59@mail.gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 07/19] powerpc: gamecube/wii: declare as non-coherent
+	platforms
+Date: Sun, 22 Nov 2009 23:20:56 +0100
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
-Message-Id: <200911212045.42767.arnd@arndb.de>
-Cc: Stephen Neuendorffer <stephenn@xilinx.com>, Alon Ziv <alonz@discretix.com>,
-	linuxppc-dev@lists.ozlabs.org, John Linn <John.Linn@xilinx.com>
+Message-Id: <200911222320.56871.arnd@arndb.de>
+Cc: Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,12 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday 21 November 2009, Grant Likely wrote:
-> BTW, while looking at that file... Arnd, does the .type = "serial"
-> stuff really need to be there?
+On Sunday 22 November 2009, Albert Herranz wrote:
+>  config NOT_COHERENT_CACHE
+>         bool
+> -       depends on 4xx || 8xx || E200 || PPC_MPC512x
+> +       depends on 4xx || 8xx || E200 || PPC_MPC512x || GAMECUBE_COMMON
+>         default y
+>  
+>  config CHECK_CACHE_COHERENCY
+> diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
+> index 97a2dbc..31487e4 100644
+> --- a/arch/powerpc/platforms/embedded6xx/Kconfig
+> +++ b/arch/powerpc/platforms/embedded6xx/Kconfig
+> @@ -93,4 +93,5 @@ config MPC10X_STORE_GATHERING
+>  
+>  config GAMECUBE_COMMON
+>         bool
+> +       select NOT_COHERENT_CACHE
 
-Well, serial is one of the few that actually has some preexisting
-binding with a well defined device-type, so I guess we should use
-it.
+One of the two (depends and select) is enough. I'd just drop the 'select'
+line here.
 
 	Arnd <><
