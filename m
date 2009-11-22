@@ -1,21 +1,21 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
-	by ozlabs.org (Postfix) with ESMTP id 48A4C1007D8
+	by ozlabs.org (Postfix) with ESMTP id 041AA1007EA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Nov 2009 09:21:03 +1100 (EST)
+	Mon, 23 Nov 2009 09:27:41 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 07/19] powerpc: gamecube/wii: declare as non-coherent
-	platforms
-Date: Sun, 22 Nov 2009 23:20:56 +0100
+Subject: Re: [RFC PATCH 10/19] powerpc: gamecube/wii: early debugging using
+	usbgecko
+Date: Sun, 22 Nov 2009 23:27:37 +0100
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-In-Reply-To: <1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
-Message-Id: <200911222320.56871.arnd@arndb.de>
+Message-Id: <200911222327.37949.arnd@arndb.de>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,24 +27,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Sunday 22 November 2009, Albert Herranz wrote:
->  config NOT_COHERENT_CACHE
->         bool
-> -       depends on 4xx || 8xx || E200 || PPC_MPC512x
-> +       depends on 4xx || 8xx || E200 || PPC_MPC512x || GAMECUBE_COMMON
->         default y
->  
->  config CHECK_CACHE_COHERENCY
-> diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
-> index 97a2dbc..31487e4 100644
-> --- a/arch/powerpc/platforms/embedded6xx/Kconfig
-> +++ b/arch/powerpc/platforms/embedded6xx/Kconfig
-> @@ -93,4 +93,5 @@ config MPC10X_STORE_GATHERING
->  
->  config GAMECUBE_COMMON
->         bool
-> +       select NOT_COHERENT_CACHE
+> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
+> +setup_usbgecko_bat:
+> +	/* prepare a BAT for early io */
+> +	lis	r8, 0x0c00
+> +	ori	r8, r8, 0x002a	/* uncached, guarded ,rw */
+> +	lis	r11, 0xcc00
+> +	ori	r11, r11, 0x3	/* 128K */
+> +#ifdef CONFIG_WII
+> +	oris	r8, r8, 0x0100
+> +	oris	r11, r11, 0x0100
+> +#endif
+> +	mtspr	SPRN_DBAT1L, r8
+> +	mtspr	SPRN_DBAT1U, r11
+> +	sync
+> +	isync
+> +	blr
+> +#endif
 
-One of the two (depends and select) is enough. I'd just drop the 'select'
-line here.
+This will probably break other platforms if CONFIG_PPC_EARLY_DEBUG_USBGECKO
+is set. In general, we try hard to make it possible to build generic
+kernels for multiple systems, so it would be better to also add a runtime
+check here.
+
+> --- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
+> +++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
+> @@ -27,4 +27,10 @@ static inline void __init ug_udbg_init(void)
+>  
+>  #endif /* CONFIG_USBGECKO_UDBG */
+>  
+> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
+> +
+> +void __init udbg_init_usbgecko(void);
+> +
+> +#endif /* CONFIG_PPC_EARLY_DEBUG_USBGECKO */
+> +
+
+No need to enclose a declaration in #ifdef, better leave it there
+unconditionally, unless you have an alternative version, like
+
+#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
+void __init udbg_init_usbgecko(void);
+#else /* !CONFIG_PPC_EARLY_DEBUG_USBGECKO */
+static inline void udbg_init_usbgecko(void)
+{
+}
+#endif /* CONFIG_PPC_EARLY_DEBUG_USBGECKO */
+
+That style is now more common than having additional #ifdefs
+in the code using the function.
 
 	Arnd <><
