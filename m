@@ -1,15 +1,15 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp106.mail.ukl.yahoo.com (smtp106.mail.ukl.yahoo.com
-	[77.238.184.38]) by ozlabs.org (Postfix) with SMTP id C47401007F4
+	[77.238.184.38]) by ozlabs.org (Postfix) with SMTP id B35C41007FD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Nov 2009 09:02:10 +1100 (EST)
+	Mon, 23 Nov 2009 09:02:11 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 10/19] powerpc: gamecube/wii: early debugging using
-	usbgecko
-Date: Sun, 22 Nov 2009 23:01:41 +0100
-Message-Id: <1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-In-Reply-To: <1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
+Subject: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt controller
+	support
+Date: Sun, 22 Nov 2009 23:01:42 +0100
+Message-Id: <1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
@@ -20,6 +20,7 @@ References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,166 +31,334 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for using the USB Gecko adapter as an early debugging
-console on the Nintendo GameCube and Wii video game consoles.
-The USB Gecko is a 3rd party memory card interface adapter that provides
-a EXI (External Interface) to USB serial converter.
+Add support for the interrupt controller included in the "Flipper"
+chipset of the Nintendo GameCube video game console.
+The same interrupt controller is also present in the "Hollywood" chipset
+of the Nintendo Wii.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- arch/powerpc/Kconfig.debug                         |    8 +++++
- arch/powerpc/include/asm/udbg.h                    |    1 +
- arch/powerpc/kernel/head_32.S                      |   21 ++++++++++++
- arch/powerpc/kernel/udbg.c                         |    2 +
- arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |   33 ++++++++++++++++++++
- arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h |    6 +++
- 6 files changed, 71 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/embedded6xx/Kconfig       |    6 +
+ arch/powerpc/platforms/embedded6xx/Makefile      |    1 +
+ arch/powerpc/platforms/embedded6xx/flipper-pic.c |  247 ++++++++++++++++++++++
+ arch/powerpc/platforms/embedded6xx/flipper-pic.h |   25 +++
+ 4 files changed, 279 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/embedded6xx/flipper-pic.c
+ create mode 100644 arch/powerpc/platforms/embedded6xx/flipper-pic.h
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 3b10051..11e385b 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -254,6 +254,14 @@ config PPC_EARLY_DEBUG_CPM
- 	  using a CPM-based serial port.  This assumes that the bootwrapper
- 	  has run, and set up the CPM in a particular way.
+diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
+index bfd88be..29a98c6 100644
+--- a/arch/powerpc/platforms/embedded6xx/Kconfig
++++ b/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -94,6 +94,7 @@ config MPC10X_STORE_GATHERING
+ config GAMECUBE_COMMON
+ 	bool
+ 	select NOT_COHERENT_CACHE
++	select FLIPPER_PIC
  
-+config PPC_EARLY_DEBUG_USBGECKO
-+	bool "Early debugging through the USB Gecko adapter"
+ config USBGECKO_UDBG
+ 	bool "USB Gecko udbg console for the Nintendo GameCube/Wii"
+@@ -108,3 +109,8 @@ config USBGECKO_UDBG
+ 
+ 	  If in doubt, say N here.
+ 
++config FLIPPER_PIC
++	bool
 +	depends on GAMECUBE_COMMON
-+	select USBGECKO_UDBG
-+	help
-+	  Select this to enable early debugging for Nintendo GameCube/Wii
-+	  consoles via an external USB Gecko adapter.
++	default y
 +
- endchoice
- 
- config PPC_EARLY_DEBUG_44x_PHYSLOW
-diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
-index cd21e5e..11ae699 100644
---- a/arch/powerpc/include/asm/udbg.h
-+++ b/arch/powerpc/include/asm/udbg.h
-@@ -51,6 +51,7 @@ extern void __init udbg_init_btext(void);
- extern void __init udbg_init_44x_as1(void);
- extern void __init udbg_init_40x_realmode(void);
- extern void __init udbg_init_cpm(void);
-+extern void __init udbg_init_usbgecko(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 829c3fe..83a0b79 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -164,6 +164,9 @@ __after_mmu_off:
- #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
- 	bl	setup_cpm_bat
- #endif
-+#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-+	bl	setup_usbgecko_bat
-+#endif
- 
- /*
-  * Call setup_cpu for CPU 0 and initialize 6xx Idle
-@@ -1203,6 +1206,24 @@ setup_cpm_bat:
- 	blr
- #endif
- 
-+#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-+setup_usbgecko_bat:
-+	/* prepare a BAT for early io */
-+	lis	r8, 0x0c00
-+	ori	r8, r8, 0x002a	/* uncached, guarded ,rw */
-+	lis	r11, 0xcc00
-+	ori	r11, r11, 0x3	/* 128K */
-+#ifdef CONFIG_WII
-+	oris	r8, r8, 0x0100
-+	oris	r11, r11, 0x0100
-+#endif
-+	mtspr	SPRN_DBAT1L, r8
-+	mtspr	SPRN_DBAT1U, r11
-+	sync
-+	isync
-+	blr
-+#endif
-+
- #ifdef CONFIG_8260
- /* Jump into the system reset for the rom.
-  * We first disable the MMU, and then jump to the ROM reset address.
-diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
-index fc9af47..e39cad8 100644
---- a/arch/powerpc/kernel/udbg.c
-+++ b/arch/powerpc/kernel/udbg.c
-@@ -60,6 +60,8 @@ void __init udbg_early_init(void)
- 	udbg_init_40x_realmode();
- #elif defined(CONFIG_PPC_EARLY_DEBUG_CPM)
- 	udbg_init_cpm();
-+#elif defined(CONFIG_PPC_EARLY_DEBUG_USBGECKO)
-+	udbg_init_usbgecko();
- #endif
- 
- #ifdef CONFIG_PPC_EARLY_DEBUG
-diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-index 49f86e8..9f5e7ed 100644
---- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-+++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-@@ -234,6 +234,9 @@ void __init ug_udbg_init(void)
- 	struct device_node *stdout;
- 	const char *path;
- 
-+	if (ug_io_base)
-+		udbg_printf("%s: early -> final\n", __func__);
-+
- 	if (!of_chosen) {
- 		udbg_printf("%s: missing of_chosen\n", __func__);
- 		goto done;
-@@ -283,3 +286,33 @@ done:
- 		of_node_put(np);
- 	return;
- }
-+
-+#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-+
+diff --git a/arch/powerpc/platforms/embedded6xx/Makefile b/arch/powerpc/platforms/embedded6xx/Makefile
+index 0ab7492..35258fd 100644
+--- a/arch/powerpc/platforms/embedded6xx/Makefile
++++ b/arch/powerpc/platforms/embedded6xx/Makefile
+@@ -8,3 +8,4 @@ obj-$(CONFIG_PPC_HOLLY)		+= holly.o
+ obj-$(CONFIG_PPC_PRPMC2800)	+= prpmc2800.o
+ obj-$(CONFIG_PPC_C2K)		+= c2k.o
+ obj-$(CONFIG_USBGECKO_UDBG)	+= usbgecko_udbg.o
++obj-$(CONFIG_FLIPPER_PIC)	+= flipper-pic.o
+diff --git a/arch/powerpc/platforms/embedded6xx/flipper-pic.c b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
+new file mode 100644
+index 0000000..98c2e9f
+--- /dev/null
++++ b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
+@@ -0,0 +1,247 @@
 +/*
-+ * USB Gecko early debug support initialization for udbg.
++ * arch/powerpc/platforms/embedded6xx/flipper-pic.c
++ *
++ * Nintendo GameCube/Wii "Flipper" interrupt controller support.
++ * Copyright (C) 2004-2009 The GameCube Linux Team
++ * Copyright (C) 2007,2008,2009 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
 + *
 + */
-+void __init udbg_init_usbgecko(void)
++#define DRV_MODULE_NAME "flipper-pic"
++#define pr_fmt(fmt) DRV_MODULE_NAME ": " fmt
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/of.h>
++#include <asm/io.h>
++
++#include "flipper-pic.h"
++
++#define FLIPPER_NR_IRQS		32
++
++/*
++ * Each interrupt has a corresponding bit in both
++ * the Interrupt Cause (ICR) and Interrupt Mask (IMR) registers.
++ *
++ * Enabling/disabling an interrupt line involves asserting/clearing
++ * the corresponding bit in IMR. ACK'ing a request simply involves
++ * asserting the corresponding bit in ICR.
++ */
++#define FLIPPER_ICR		0x00
++#define FLIPPER_ICR_RSS		(1<<16) /* reset switch state */
++
++#define FLIPPER_IMR		0x04
++
++#define FLIPPER_RESET		0x24
++
++
++/*
++ * IRQ chip hooks.
++ *
++ */
++
++static void flipper_pic_mask_and_ack(unsigned int virq)
 +{
-+	unsigned long vaddr, paddr;
++	int irq = virq_to_hw(virq);
++	void __iomem *io_base = get_irq_chip_data(virq);
 +
-+#if defined(CONFIG_GAMECUBE)
-+	paddr = 0x0c000000;
-+#elif defined(CONFIG_WII)
-+	paddr = 0x0d000000;
-+#else
-+#error Invalid platform for USB Gecko based early debugging.
-+#endif
-+
-+	vaddr = 0xc0000000 | paddr;
-+	setbat(1, vaddr, paddr, 128*1024, PAGE_KERNEL_NCG);
-+
-+	ug_io_base = (void __iomem *)(vaddr | 0x6814);
-+
-+	udbg_putc = ug_udbg_putc;
-+	udbg_getc = ug_udbg_getc;
-+	udbg_getc_poll = ug_udbg_getc_poll;
++	clear_bit(irq, io_base + FLIPPER_IMR);
++	set_bit(irq, io_base + FLIPPER_ICR);
 +}
 +
-+#endif /* CONFIG_PPC_EARLY_DEBUG_USBGECKO */
-diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-index 3929de3..98034ee 100644
---- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-+++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-@@ -27,4 +27,10 @@ static inline void __init ug_udbg_init(void)
- 
- #endif /* CONFIG_USBGECKO_UDBG */
- 
-+#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
++static void flipper_pic_ack(unsigned int virq)
++{
++	int irq = virq_to_hw(virq);
++	void __iomem *io_base = get_irq_chip_data(virq);
 +
-+void __init udbg_init_usbgecko(void);
++	set_bit(irq, io_base + FLIPPER_ICR);
++}
 +
-+#endif /* CONFIG_PPC_EARLY_DEBUG_USBGECKO */
++static void flipper_pic_mask(unsigned int virq)
++{
++	int irq = virq_to_hw(virq);
++	void __iomem *io_base = get_irq_chip_data(virq);
 +
- #endif /* __USBGECKO_UDBG_H */
++	clear_bit(irq, io_base + FLIPPER_IMR);
++}
++
++static void flipper_pic_unmask(unsigned int virq)
++{
++	int irq = virq_to_hw(virq);
++	void __iomem *io_base = get_irq_chip_data(virq);
++
++	set_bit(irq, io_base + FLIPPER_IMR);
++}
++
++
++static struct irq_chip flipper_pic = {
++	.typename	= "flipper-pic",
++	.ack		= flipper_pic_ack,
++	.mask_ack	= flipper_pic_mask_and_ack,
++	.mask		= flipper_pic_mask,
++	.unmask		= flipper_pic_unmask,
++};
++
++/*
++ * IRQ host hooks.
++ *
++ */
++
++static struct irq_host *flipper_irq_host;
++
++static int flipper_pic_map(struct irq_host *h, unsigned int virq,
++			   irq_hw_number_t hwirq)
++{
++	set_irq_chip_data(virq, h->host_data);
++	get_irq_desc(virq)->status |= IRQ_LEVEL;
++	set_irq_chip_and_handler(virq, &flipper_pic, handle_level_irq);
++	return 0;
++}
++
++static void flipper_pic_unmap(struct irq_host *h, unsigned int irq)
++{
++	set_irq_chip_data(irq, NULL);
++	set_irq_chip(irq, NULL);
++}
++
++static int flipper_pic_match(struct irq_host *h, struct device_node *np)
++{
++	return 1;
++}
++
++
++static struct irq_host_ops flipper_irq_host_ops = {
++	.map = flipper_pic_map,
++	.unmap = flipper_pic_unmap,
++	.match = flipper_pic_match,
++};
++
++/*
++ * Platform hooks.
++ *
++ */
++
++static void __flipper_quiesce(void __iomem *io_base)
++{
++	/* mask and ack all IRQs */
++	out_be32(io_base + FLIPPER_IMR, 0x00000000);
++	out_be32(io_base + FLIPPER_ICR, 0xffffffff);
++}
++
++struct irq_host * __init flipper_pic_init(struct device_node *np)
++{
++	struct irq_host *irq_host;
++	struct resource res;
++	void __iomem *io_base;
++	int retval;
++
++	retval = of_address_to_resource(np, 0, &res);
++	if (retval) {
++		pr_err("no io memory range found\n");
++		return NULL;
++	}
++	io_base = ioremap(res.start, res.end - res.start + 1);
++
++	pr_info("controller at 0x%08x mapped to 0x%p\n", res.start, io_base);
++
++	__flipper_quiesce(io_base);
++
++	irq_host = irq_alloc_host(np, IRQ_HOST_MAP_LINEAR, FLIPPER_NR_IRQS,
++				  &flipper_irq_host_ops, -1);
++	if (!irq_host) {
++		pr_err("failed to allocate irq_host\n");
++		return NULL;
++	}
++
++	irq_host->host_data = io_base;
++
++	return irq_host;
++}
++
++unsigned int flipper_pic_get_irq(void)
++{
++	void __iomem *io_base = flipper_irq_host->host_data;
++	int irq;
++	u32 irq_status;
++
++	irq_status = in_be32(io_base + FLIPPER_ICR) &
++		     in_be32(io_base + FLIPPER_IMR);
++	if (irq_status == 0)
++		return -1;	/* no more IRQs pending */
++
++	__asm__ __volatile__("cntlzw %0,%1" : "=r"(irq) : "r"(irq_status));
++	return irq_linear_revmap(flipper_irq_host, 31 - irq);
++}
++
++/*
++ * Probe function.
++ *
++ */
++
++void __init flipper_pic_probe(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "nintendo,flipper-pic");
++	BUG_ON(!np);
++
++	flipper_irq_host = flipper_pic_init(np);
++	BUG_ON(!flipper_irq_host);
++
++	irq_set_default_host(flipper_irq_host);
++
++	of_node_put(np);
++}
++
++/*
++ * Misc functions related to the flipper chipset.
++ *
++ */
++
++/**
++ * flipper_quiesce() - quiesce flipper irq controller
++ *
++ * Mask and ack all interrupt sources.
++ *
++ */
++void flipper_quiesce(void)
++{
++	void __iomem *io_base = flipper_irq_host->host_data;
++
++	__flipper_quiesce(io_base);
++}
++
++/*
++ * Resets the platform.
++ */
++void flipper_platform_reset(void)
++{
++	void __iomem *io_base;
++
++	if (flipper_irq_host && flipper_irq_host->host_data) {
++		io_base = flipper_irq_host->host_data;
++		out_8(io_base + FLIPPER_RESET, 0x00);
++	}
++}
++
++/*
++ * Returns non-zero if the reset button is pressed.
++ */
++int flipper_is_reset_button_pressed(void)
++{
++	void __iomem *io_base;
++	u32 icr;
++
++	if (flipper_irq_host && flipper_irq_host->host_data) {
++		io_base = flipper_irq_host->host_data;
++		icr = in_be32(io_base + FLIPPER_ICR);
++		return !(icr & FLIPPER_ICR_RSS);
++	}
++	return 0;
++}
++
+diff --git a/arch/powerpc/platforms/embedded6xx/flipper-pic.h b/arch/powerpc/platforms/embedded6xx/flipper-pic.h
+new file mode 100644
+index 0000000..e339186
+--- /dev/null
++++ b/arch/powerpc/platforms/embedded6xx/flipper-pic.h
+@@ -0,0 +1,25 @@
++/*
++ * arch/powerpc/platforms/embedded6xx/flipper-pic.h
++ *
++ * Nintendo GameCube/Wii "Flipper" interrupt controller support.
++ * Copyright (C) 2004-2009 The GameCube Linux Team
++ * Copyright (C) 2007,2008,2009 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ */
++
++#ifndef __FLIPPER_PIC_H
++#define __FLIPPER_PIC_H
++
++unsigned int flipper_pic_get_irq(void);
++void __init flipper_pic_probe(void);
++
++void flipper_quiesce(void);
++void flipper_platform_reset(void);
++int flipper_is_reset_button_pressed(void);
++
++#endif
 -- 
 1.6.3.3
