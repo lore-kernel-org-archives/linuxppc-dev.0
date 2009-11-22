@@ -1,17 +1,15 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f187.google.com (mail-yw0-f187.google.com
-	[209.85.211.187]) by ozlabs.org (Postfix) with ESMTP id 428691007DA
+Received: from mail-gx0-f223.google.com (mail-gx0-f223.google.com
+	[209.85.217.223]) by ozlabs.org (Postfix) with ESMTP id D44A0100801
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Nov 2009 10:40:51 +1100 (EST)
-Received: by ywh17 with SMTP id 17so4650487ywh.2
+	Mon, 23 Nov 2009 10:46:05 +1100 (EST)
+Received: by gxk23 with SMTP id 23so5472310gxk.2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 22 Nov 2009 15:40:49 -0800 (PST)
+	Sun, 22 Nov 2009 15:46:03 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1258927311-4340-17-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1258927311-4340-19-git-send-email-albert_herranz@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
@@ -19,11 +17,12 @@ References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-16-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-17-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-18-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-19-git-send-email-albert_herranz@yahoo.es>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 22 Nov 2009 16:40:28 -0700
-Message-ID: <fa686aa40911221540j3b2308bbse446b5b523fcfc98@mail.gmail.com>
-Subject: Re: [RFC PATCH 16/19] powerpc: wii: hollywood interrupt controller
-	support
+Date: Sun, 22 Nov 2009 16:45:43 -0700
+Message-ID: <fa686aa40911221545x6590b92gab4a1a9a48e9d920@mail.gmail.com>
+Subject: Re: [RFC PATCH 18/19] powerpc: wii: platform support
 To: Albert Herranz <albert_herranz@yahoo.es>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -38,328 +37,257 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Sun, Nov 22, 2009 at 3:01 PM, Albert Herranz <albert_herranz@yahoo.es> w=
 rote:
-> Add support for the dual interrupt controller included in the "Hollywood"
-> chipset of the Nintendo Wii video game console.
-> This interrupt controller serves both the Broadway processor (as a cascad=
-e)
-> and the Starlet processor, and is used to manage interrupts for the
-> non-classic hardware.
+> Add platform support for the Nintendo Wii video game console.
 >
 > Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
-
-On brief glance...
-
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
 > ---
-> =A0arch/powerpc/platforms/embedded6xx/Kconfig =A0 =A0| =A0 =A05 +
-> =A0arch/powerpc/platforms/embedded6xx/Makefile =A0 | =A0 =A01 +
-> =A0arch/powerpc/platforms/embedded6xx/hlwd-pic.c | =A0238 +++++++++++++++=
-++++++++++
-> =A0arch/powerpc/platforms/embedded6xx/hlwd-pic.h | =A0 22 +++
-> =A04 files changed, 266 insertions(+), 0 deletions(-)
-> =A0create mode 100644 arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-> =A0create mode 100644 arch/powerpc/platforms/embedded6xx/hlwd-pic.h
->
-> diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/pl=
-atforms/embedded6xx/Kconfig
-> index efb2ea1..490f89e 100644
-> --- a/arch/powerpc/platforms/embedded6xx/Kconfig
-> +++ b/arch/powerpc/platforms/embedded6xx/Kconfig
-> @@ -122,3 +122,8 @@ config GAMECUBE
-> =A0 =A0 =A0 =A0 =A0Select GAMECUBE if configuring for the Nintendo GameCu=
-be.
-> =A0 =A0 =A0 =A0 =A0More information at: <http://gc-linux.sourceforge.net/=
->
->
-> +config HLWD_PIC
-> + =A0 =A0 =A0 bool
-> + =A0 =A0 =A0 depends on STARLET_MINI
-> + =A0 =A0 =A0 default y
-> +
-> diff --git a/arch/powerpc/platforms/embedded6xx/Makefile b/arch/powerpc/p=
-latforms/embedded6xx/Makefile
-> index b0324ed..c1dcc54 100644
-> --- a/arch/powerpc/platforms/embedded6xx/Makefile
-> +++ b/arch/powerpc/platforms/embedded6xx/Makefile
-> @@ -10,3 +10,4 @@ obj-$(CONFIG_PPC_C2K) =A0 =A0 =A0 =A0 +=3D c2k.o
-> =A0obj-$(CONFIG_USBGECKO_UDBG) =A0 =A0+=3D usbgecko_udbg.o
-> =A0obj-$(CONFIG_FLIPPER_PIC) =A0 =A0 =A0+=3D flipper-pic.o
-> =A0obj-$(CONFIG_GAMECUBE) =A0 =A0 =A0 =A0 +=3D gamecube.o gamecube_dev.o
-> +obj-$(CONFIG_HLWD_PIC) =A0 =A0 =A0 =A0 +=3D hlwd-pic.o
-> diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc=
-/platforms/embedded6xx/hlwd-pic.c
-> new file mode 100644
-> index 0000000..b024800
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-> @@ -0,0 +1,238 @@
-> +/*
-> + * arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-> + *
-> + * Nintendo Wii "Hollywood" interrupt controller support.
-> + * Copyright (C) 2009 The GameCube Linux Team
-> + * Copyright (C) 2009 Albert Herranz
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version 2
-> + * of the License, or (at your option) any later version.
-> + *
-> + */
-> +#define DRV_MODULE_NAME "hlwd-pic"
-> +#define pr_fmt(fmt) DRV_MODULE_NAME ": " fmt
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/irq.h>
-> +#include <linux/of.h>
-> +#include <asm/io.h>
-> +
-> +#include "hlwd-pic.h"
-> +
-> +#define HLWD_NR_IRQS =A0 32
-> +
-> +/*
-> + * Each interrupt has a corresponding bit in both
-> + * the Interrupt Cause (ICR) and Interrupt Mask (IMR) registers.
-> + *
-> + * Enabling/disabling an interrupt line involves asserting/clearing
-> + * the corresponding bit in IMR. ACK'ing a request simply involves
-> + * asserting the corresponding bit in ICR.
-> + */
-> +#define HW_BROADWAY_ICR =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x00
-> +#define HW_BROADWAY_IMR =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x04
-> +
-> +
-> +/*
-> + * IRQ chip hooks.
-> + *
-> + */
-> +
-> +static void hlwd_pic_mask_and_ack(unsigned int virq)
+> +static int wii_setup_hw_resets(void)
 > +{
-> + =A0 =A0 =A0 int irq =3D virq_to_hw(virq);
-> + =A0 =A0 =A0 void __iomem *io_base =3D get_irq_chip_data(virq);
+> + =A0 =A0 =A0 struct device_node *np;
+> + =A0 =A0 =A0 struct resource res;
+> + =A0 =A0 =A0 int error =3D -ENODEV;
 > +
-> + =A0 =A0 =A0 clear_bit(irq, io_base + HW_BROADWAY_IMR);
-> + =A0 =A0 =A0 set_bit(irq, io_base + HW_BROADWAY_ICR);
+> + =A0 =A0 =A0 np =3D of_find_compatible_node(NULL, NULL, HW_RESETS_OF_COM=
+PATIBLE);
+> + =A0 =A0 =A0 if (!np) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("no compatible node found for %s\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0HW_RESETS_OF_COMPATIBLE);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
+> + =A0 =A0 =A0 }
+> + =A0 =A0 =A0 error =3D of_address_to_resource(np, 0, &res);
+> + =A0 =A0 =A0 if (error) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("no valid reg found for %s\n", np->n=
+ame);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out_put;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 hw_resets =3D ioremap(res.start, res.end - res.start + 1);
+
+Or you could use of_iomap() to cut out some code.
+
+> + =A0 =A0 =A0 if (hw_resets) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_info("hw_resets at 0x%08x mapped to 0x%p=
+\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 res.start, hw_resets);
+> + =A0 =A0 =A0 }
+> +
+> +out_put:
+> + =A0 =A0 =A0 of_node_put(np);
+> +out:
+> + =A0 =A0 =A0 return error;
 > +}
 > +
-> +static void hlwd_pic_ack(unsigned int virq)
+> +static int wii_setup_hw_gpio(void)
 > +{
-> + =A0 =A0 =A0 int irq =3D virq_to_hw(virq);
-> + =A0 =A0 =A0 void __iomem *io_base =3D get_irq_chip_data(virq);
+> + =A0 =A0 =A0 struct device_node *np;
+> + =A0 =A0 =A0 struct resource res;
+> + =A0 =A0 =A0 const char *path;
+> + =A0 =A0 =A0 int error =3D -ENODEV;
 > +
-> + =A0 =A0 =A0 set_bit(irq, io_base + HW_BROADWAY_ICR);
-> +}
+> + =A0 =A0 =A0 np =3D of_find_node_by_name(NULL, "aliases");
+> + =A0 =A0 =A0 if (!np) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("unable to find node %s\n", "aliases=
+");
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
+> + =A0 =A0 =A0 }
 > +
-> +static void hlwd_pic_mask(unsigned int virq)
-> +{
-> + =A0 =A0 =A0 int irq =3D virq_to_hw(virq);
-> + =A0 =A0 =A0 void __iomem *io_base =3D get_irq_chip_data(virq);
-> +
-> + =A0 =A0 =A0 clear_bit(irq, io_base + HW_BROADWAY_IMR);
-> +}
-> +
-> +static void hlwd_pic_unmask(unsigned int virq)
-> +{
-> + =A0 =A0 =A0 int irq =3D virq_to_hw(virq);
-> + =A0 =A0 =A0 void __iomem *io_base =3D get_irq_chip_data(virq);
-> +
-> + =A0 =A0 =A0 set_bit(irq, io_base + HW_BROADWAY_IMR);
-> +}
-> +
-> +
-> +static struct irq_chip hlwd_pic =3D {
-> + =A0 =A0 =A0 .typename =A0 =A0 =A0 =3D "hlwd-pic",
-> + =A0 =A0 =A0 .ack =A0 =A0 =A0 =A0 =A0 =A0=3D hlwd_pic_ack,
-> + =A0 =A0 =A0 .mask_ack =A0 =A0 =A0 =3D hlwd_pic_mask_and_ack,
-> + =A0 =A0 =A0 .mask =A0 =A0 =A0 =A0 =A0 =3D hlwd_pic_mask,
-> + =A0 =A0 =A0 .unmask =A0 =A0 =A0 =A0 =3D hlwd_pic_unmask,
-> +};
-> +
-> +/*
-> + * IRQ host hooks.
-> + *
-> + */
-> +
-> +static struct irq_host *hlwd_irq_host;
-> +
-> +static int hlwd_pic_map(struct irq_host *h, unsigned int virq,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0irq_hw_number_t hwir=
-q)
-> +{
-> + =A0 =A0 =A0 set_irq_chip_data(virq, h->host_data);
-> + =A0 =A0 =A0 get_irq_desc(virq)->status |=3D IRQ_LEVEL;
-> + =A0 =A0 =A0 set_irq_chip_and_handler(virq, &hlwd_pic, handle_level_irq)=
+> + =A0 =A0 =A0 path =3D of_get_property(np, HW_GPIO_ALIAS, NULL);
+> + =A0 =A0 =A0 of_node_put(np);
+> + =A0 =A0 =A0 if (!path) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("alias %s unknown\n", HW_GPIO_ALIAS)=
 ;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 np =3D of_find_node_by_path(path);
+> + =A0 =A0 =A0 if (!np) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("node for alias %s unknown\n", HW_GP=
+IO_ALIAS);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
+> + =A0 =A0 =A0 }
+> + =A0 =A0 =A0 error =3D of_address_to_resource(np, 0, &res);
+> + =A0 =A0 =A0 if (error) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("no valid reg found for %s\n", np->n=
+ame);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out_put;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 hw_gpio =3D ioremap(res.start, res.end - res.start + 1);
+> + =A0 =A0 =A0 if (hw_gpio) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_info("hw_gpio at 0x%08x mapped to 0x%p\n=
+",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 res.start, hw_gpio);
+> + =A0 =A0 =A0 }
+> +
+> +out_put:
+> + =A0 =A0 =A0 of_node_put(np);
+> +out:
+> + =A0 =A0 =A0 return error;
+> +}
+> +
+> +static void wii_setup(void)
+> +{
+> + =A0 =A0 =A0 wii_setup_hw_resets();
+> + =A0 =A0 =A0 wii_setup_hw_gpio();
+> +}
+> +
+> +static void wii_restart(char *cmd)
+> +{
+> + =A0 =A0 =A0 local_irq_disable();
+> +
+> + =A0 =A0 =A0 if (hw_resets) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* clear the system reset pin to cause a re=
+set */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 clear_bit(0, hw_resets);
+> + =A0 =A0 =A0 }
+> + =A0 =A0 =A0 wii_spin();
+> +}
+> +
+> +static void wii_power_off(void)
+> +{
+> + =A0 =A0 =A0 local_irq_disable();
+> +
+> + =A0 =A0 =A0 if (hw_gpio) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* make sure that the poweroff GPIO is conf=
+igured as output */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(hw_gpio + HW_GPIO_DIR,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in_be32(hw_gpio + HW_GPI=
+O_DIR) | HW_GPIO_SHUTDOWN);
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* drive the poweroff GPIO high */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(hw_gpio + HW_GPIO_OUT,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in_be32(hw_gpio + HW_GPI=
+O_OUT) | HW_GPIO_SHUTDOWN);
+> + =A0 =A0 =A0 }
+> + =A0 =A0 =A0 wii_spin();
+> +}
+> +
+> +#else
+> +
+> +static void wii_setup(void)
+> +{
+> +}
+> +
+> +static void wii_restart(char *cmd)
+> +{
+> + =A0 =A0 =A0 wii_spin();
+> +}
+> +
+> +static void wii_power_off(void)
+> +{
+> + =A0 =A0 =A0 wii_spin();
+> +}
+> +
+> +#endif /* CONFIG_STARLET_MINI */
+> +
+> +static void wii_halt(void)
+> +{
+> + =A0 =A0 =A0 if (ppc_md.restart)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ppc_md.restart(NULL);
+> + =A0 =A0 =A0 wii_spin();
+> +}
+> +
+> +static void wii_show_cpuinfo(struct seq_file *m)
+> +{
+> + =A0 =A0 =A0 seq_printf(m, "vendor\t\t: IBM\n");
+> + =A0 =A0 =A0 seq_printf(m, "machine\t\t: Nintendo Wii\n");
+> +}
+
+Drop show_cpuinfo() hook.
+
+> +static int wii_discover_ipc_flavour(void)
+> +{
+> + =A0 =A0 =A0 struct mipc_infohdr *hdrp;
+> + =A0 =A0 =A0 int error;
+> +
+> + =A0 =A0 =A0 error =3D mipc_infohdr_get(&hdrp);
+> + =A0 =A0 =A0 if (!error) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mipc_infohdr_put(hdrp);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 starlet_ipc_flavour =3D STARLET_IPC_MINI;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 wii_setup();
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ppc_md.restart =3D wii_restart;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ppc_md.power_off =3D wii_power_off;
+> + =A0 =A0 =A0 }
+> +
 > + =A0 =A0 =A0 return 0;
 > +}
 > +
-> +static void hlwd_pic_unmap(struct irq_host *h, unsigned int irq)
+> +static void __init wii_setup_arch(void)
 > +{
-> + =A0 =A0 =A0 set_irq_chip_data(irq, NULL);
-> + =A0 =A0 =A0 set_irq_chip(irq, NULL);
+> + =A0 =A0 =A0 ug_udbg_init();
+> + =A0 =A0 =A0 wii_discover_ipc_flavour();
 > +}
 > +
-> +static struct irq_host_ops hlwd_irq_host_ops =3D {
-> + =A0 =A0 =A0 .map =3D hlwd_pic_map,
-> + =A0 =A0 =A0 .unmap =3D hlwd_pic_unmap,
+> +static void __init wii_init_early(void)
+> +{
+> +}
+> +
+> +static int __init wii_probe(void)
+> +{
+> + =A0 =A0 =A0 unsigned long dt_root;
+> +
+> + =A0 =A0 =A0 dt_root =3D of_get_flat_dt_root();
+> + =A0 =A0 =A0 if (!of_flat_dt_is_compatible(dt_root, "nintendo,wii"))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 return 1;
+> +}
+> +
+> +static void wii_shutdown(void)
+> +{
+> + =A0 =A0 =A0 flipper_quiesce();
+> +}
+> +
+> +#ifdef CONFIG_KEXEC
+> +static int wii_machine_kexec_prepare(struct kimage *image)
+> +{
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +static void wii_machine_kexec(struct kimage *image)
+> +{
+> + =A0 =A0 =A0 default_machine_kexec(image);
+> +}
+
+Drop unnecessary hooks.  If no kexec hook it offered, then
+default_machine_kexec() gets called anyway.
+
+> +#endif /* CONFIG_KEXEC */
+
+> +
+> +define_machine(wii) {
+> + =A0 =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D "wii",
+> + =A0 =A0 =A0 .probe =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D wii_probe,
+> + =A0 =A0 =A0 .setup_arch =A0 =A0 =A0 =A0 =A0 =A0 =3D wii_setup_arch,
+> + =A0 =A0 =A0 .init_early =A0 =A0 =A0 =A0 =A0 =A0 =3D wii_init_early,
+> + =A0 =A0 =A0 .show_cpuinfo =A0 =A0 =A0 =A0 =A0 =3D wii_show_cpuinfo,
+> + =A0 =A0 =A0 .halt =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D wii_halt,
+> + =A0 =A0 =A0 .init_IRQ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D flipper_pic_probe=
+,
+> + =A0 =A0 =A0 .get_irq =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D flipper_pic_get=
+_irq,
+> + =A0 =A0 =A0 .calibrate_decr =A0 =A0 =A0 =A0 =3D generic_calibrate_decr,
+> + =A0 =A0 =A0 .progress =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D udbg_progress,
+> + =A0 =A0 =A0 .machine_shutdown =A0 =A0 =A0 =3D wii_shutdown,
+> +#ifdef CONFIG_KEXEC
+> + =A0 =A0 =A0 .machine_kexec_prepare =A0=3D wii_machine_kexec_prepare,
+> + =A0 =A0 =A0 .machine_kexec =A0 =A0 =A0 =A0 =A0=3D wii_machine_kexec,
+> +#endif
 > +};
 > +
-> +static unsigned int __hlwd_pic_get_irq(struct irq_host *h)
-> +{
-> + =A0 =A0 =A0 void __iomem *io_base =3D h->host_data;
-> + =A0 =A0 =A0 int irq;
-> + =A0 =A0 =A0 u32 irq_status;
-> +
-> + =A0 =A0 =A0 irq_status =3D in_be32(io_base + HW_BROADWAY_ICR) &
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0in_be32(io_base + HW_BROADWAY_IM=
-R);
-> + =A0 =A0 =A0 if (irq_status =3D=3D 0)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NO_IRQ_IGNORE; =A0 /* no more IRQs p=
-ending */
-> +
-> + =A0 =A0 =A0 __asm__ __volatile__("cntlzw %0,%1" : "=3Dr"(irq) : "r"(irq=
-_status));
-> + =A0 =A0 =A0 return irq_linear_revmap(h, 31 - irq);
-> +}
-> +
-> +static void hlwd_pic_irq_cascade(unsigned int cascade_virq,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- struct irq_desc *desc)
-> +{
-> + =A0 =A0 =A0 struct irq_host *irq_host =3D get_irq_data(cascade_virq);
-> + =A0 =A0 =A0 unsigned int virq;
-> +
-> + =A0 =A0 =A0 spin_lock(&desc->lock);
-> + =A0 =A0 =A0 desc->chip->mask(cascade_virq); /* IRQ_LEVEL */
-> + =A0 =A0 =A0 spin_unlock(&desc->lock);
-> +
-> + =A0 =A0 =A0 virq =3D __hlwd_pic_get_irq(irq_host);
-> + =A0 =A0 =A0 if (virq !=3D NO_IRQ_IGNORE)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 generic_handle_irq(virq);
-> + =A0 =A0 =A0 else
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("spurious interrupt!\n");
-> +
-> + =A0 =A0 =A0 spin_lock(&desc->lock);
-> + =A0 =A0 =A0 desc->chip->ack(cascade_virq); /* IRQ_LEVEL */
-> + =A0 =A0 =A0 if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 desc->chip->unmask(cascade_virq);
-> + =A0 =A0 =A0 spin_unlock(&desc->lock);
-> +}
-> +
-> +/*
-> + * Platform hooks.
-> + *
-> + */
-> +
-> +static void __hlwd_quiesce(void __iomem *io_base)
-> +{
-> + =A0 =A0 =A0 /* mask and ack all IRQs */
-> + =A0 =A0 =A0 out_be32(io_base + HW_BROADWAY_IMR, 0);
-> + =A0 =A0 =A0 out_be32(io_base + HW_BROADWAY_ICR, ~0);
-> +}
-> +
-> +struct irq_host *hlwd_pic_init(struct device_node *np)
-> +{
-> + =A0 =A0 =A0 struct irq_host *irq_host;
-> + =A0 =A0 =A0 struct resource res;
-> + =A0 =A0 =A0 void __iomem *io_base;
-> + =A0 =A0 =A0 int retval;
-> +
-> + =A0 =A0 =A0 retval =3D of_address_to_resource(np, 0, &res);
-> + =A0 =A0 =A0 if (retval) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("no io memory range found\n");
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NULL;
-> + =A0 =A0 =A0 }
-> + =A0 =A0 =A0 io_base =3D ioremap(res.start, resource_size(&res));
-> + =A0 =A0 =A0 if (!io_base) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("ioremap failed\n");
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NULL;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 pr_info("controller at 0x%08x mapped to 0x%p\n", res.start,=
- io_base);
-> +
-> + =A0 =A0 =A0 __hlwd_quiesce(io_base);
-> +
-> + =A0 =A0 =A0 irq_host =3D irq_alloc_host(np, IRQ_HOST_MAP_LINEAR, HLWD_N=
-R_IRQS,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 &hlwd_i=
-rq_host_ops, NO_IRQ_IGNORE);
-> + =A0 =A0 =A0 if (!irq_host) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("failed to allocate irq_host\n");
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NULL;
-> + =A0 =A0 =A0 }
-> + =A0 =A0 =A0 irq_host->host_data =3D io_base;
-> +
-> + =A0 =A0 =A0 return irq_host;
-> +}
-> +
-> +unsigned int hlwd_pic_get_irq(void)
-> +{
-> + =A0 =A0 =A0 return __hlwd_pic_get_irq(hlwd_irq_host);
-> +}
-> +
-> +/*
-> + * Probe function.
-> + *
-> + */
-> +
-> +void hlwd_pic_probe(void)
-> +{
-> + =A0 =A0 =A0 struct irq_host *host;
-> + =A0 =A0 =A0 struct device_node *np;
-> + =A0 =A0 =A0 const u32 *interrupts;
-> + =A0 =A0 =A0 int cascade_virq;
-> +
-> + =A0 =A0 =A0 for_each_compatible_node(np, NULL, "nintendo,hollywood-pic"=
-) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 interrupts =3D of_get_property(np, "interru=
-pts", NULL);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (interrupts) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 host =3D hlwd_pic_init(np);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 BUG_ON(!host);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cascade_virq =3D irq_of_par=
-se_and_map(np, 0);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 set_irq_data(cascade_virq, =
-host);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 set_irq_chained_handler(cas=
-cade_virq,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 hlwd_pic_irq_cascade);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> + =A0 =A0 =A0 }
-> +}
-> +
-> +/**
-> + * hlwd_quiesce() - quiesce hollywood irq controller
-> + *
-> + * Mask and ack all interrupt sources.
-> + *
-> + */
-> +void hlwd_quiesce(void)
-> +{
-> + =A0 =A0 =A0 void __iomem *io_base =3D hlwd_irq_host->host_data;
-> +
-> + =A0 =A0 =A0 __hlwd_quiesce(io_base);
-> +}
-> +
-> diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.h b/arch/powerpc=
-/platforms/embedded6xx/hlwd-pic.h
+> diff --git a/arch/powerpc/platforms/embedded6xx/wii_dev.c b/arch/powerpc/=
+platforms/embedded6xx/wii_dev.c
 > new file mode 100644
-> index 0000000..d2e5a09
+> index 0000000..903063e
 > --- /dev/null
-> +++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.h
-> @@ -0,0 +1,22 @@
+> +++ b/arch/powerpc/platforms/embedded6xx/wii_dev.c
+> @@ -0,0 +1,47 @@
 > +/*
-> + * arch/powerpc/platforms/embedded6xx/hlwd-pic.h
+> + * arch/powerpc/platforms/embedded6xx/wii_dev.c
 > + *
-> + * Nintendo Wii "Hollywood" interrupt controller support.
-> + * Copyright (C) 2009 The GameCube Linux Team
-> + * Copyright (C) 2009 Albert Herranz
+> + * Nintendo Wii platform device setup.
+> + * Copyright (C) 2008-2009 The GameCube Linux Team
+> + * Copyright (C) 2008,2009 Albert Herranz
 > + *
 > + * This program is free software; you can redistribute it and/or
 > + * modify it under the terms of the GNU General Public License
@@ -368,24 +296,45 @@ cade_virq,
 > + *
 > + */
 > +
-> +#ifndef __HLWD_PIC_H
-> +#define __HLWD_PIC_H
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/of_platform.h>
 > +
-> +extern unsigned int hlwd_pic_get_irq(void);
-> +extern void hlwd_pic_probe(void);
-> +extern void hlwd_quiesce(void);
+> +#include <asm/machdep.h>
 > +
+> +static struct of_device_id wii_of_bus[] =3D {
+> + =A0 =A0 =A0 { .compatible =3D "nintendo,hollywood", },
+> +#ifdef CONFIG_STARLET_MINI
+> + =A0 =A0 =A0 { .compatible =3D "twiizers,starlet-mini-ipc", },
 > +#endif
-> --
-> 1.6.3.3
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+> + =A0 =A0 =A0 { },
+> +};
+> +
+> +static int __init wii_device_probe(void)
+> +{
+> + =A0 =A0 =A0 struct device_node *np;
+> +
+> + =A0 =A0 =A0 if (!machine_is(wii))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> + =A0 =A0 =A0 of_platform_bus_probe(NULL, wii_of_bus, NULL);
+> +
+> + =A0 =A0 =A0 np =3D of_find_compatible_node(NULL, NULL, "nintendo,hollyw=
+ood-mem2");
+> + =A0 =A0 =A0 if (np) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_platform_device_create(np, NULL, NULL);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_node_put(np);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return 0;
+> +}
+> +device_initcall(wii_device_probe);
 
+Why is this split into a separate file?  (Same comment goes for the
+Gamecube version).  Just roll all the platform support into a single
+file since there is no shared code.
 
+g.
 
 --=20
 Grant Likely, B.Sc., P.Eng.
