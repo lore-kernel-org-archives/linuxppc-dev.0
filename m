@@ -1,17 +1,18 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp106.mail.ukl.yahoo.com (smtp106.mail.ukl.yahoo.com
-	[77.238.184.38]) by ozlabs.org (Postfix) with SMTP id 6884F1007D5
+	[77.238.184.38]) by ozlabs.org (Postfix) with SMTP id 43C65B6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Mon, 23 Nov 2009 09:02:05 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 03/19] powerpc: gamecube: bootwrapper bits
-Date: Sun, 22 Nov 2009 23:01:34 +0100
-Message-Id: <1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-In-Reply-To: <1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+Subject: [RFC PATCH 04/19] powerpc: wii: device tree
+Date: Sun, 22 Nov 2009 23:01:35 +0100
+Message-Id: <1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,52 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for the Nintendo GameCube video game console to the powerpc
-bootwrapper.
-
-dtbImage.gamecube is a wrapped image that contains a flat device tree,
-an entry point compatible with SDload, and an optional initrd.
+Add a device tree source file for the Nintendo Wii video game console.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- arch/powerpc/boot/Makefile   |    4 ++-
- arch/powerpc/boot/gamecube.c |   78 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 81 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/gamecube.c
+ arch/powerpc/boot/dts/wii.dts |  244 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 244 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/wii.dts
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 44bce21..b2f06b0 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -76,7 +76,8 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
- 		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
- 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
- 		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
--		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c
-+		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c \
-+		gamecube.c
- src-boot := $(src-wlib) $(src-plat) empty.c
- 
- src-boot := $(addprefix $(obj)/, $(src-boot))
-@@ -254,6 +255,7 @@ image-$(CONFIG_KSI8560)			+= cuImage.ksi8560
- image-$(CONFIG_STORCENTER)		+= cuImage.storcenter
- image-$(CONFIG_MPC7448HPC2)		+= cuImage.mpc7448hpc2
- image-$(CONFIG_PPC_C2K)			+= cuImage.c2k
-+image-$(CONFIG_GAMECUBE)		+= dtbImage.gamecube
- 
- # Board port in arch/powerpc/platform/amigaone/Kconfig
- image-$(CONFIG_AMIGAONE)		+= cuImage.amigaone
-diff --git a/arch/powerpc/boot/gamecube.c b/arch/powerpc/boot/gamecube.c
+diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dts
 new file mode 100644
-index 0000000..0d6c517
+index 0000000..a30a804
 --- /dev/null
-+++ b/arch/powerpc/boot/gamecube.c
-@@ -0,0 +1,78 @@
++++ b/arch/powerpc/boot/dts/wii.dts
+@@ -0,0 +1,244 @@
 +/*
-+ * arch/powerpc/boot/gamecube.c
++ * arch/powerpc/boot/dts/wii.dts
 + *
-+ * Nintendo GameCube bootwrapper support
-+ * Copyright (C) 2004-2009 The GameCube Linux Team
++ * Nintendo Wii platform device tree source
++ * Copyright (C) 2008-2009 The GameCube Linux Team
 + * Copyright (C) 2008,2009 Albert Herranz
 + *
 + * This program is free software; you can redistribute it and/or
@@ -77,69 +51,235 @@ index 0000000..0d6c517
 + *
 + */
 +
-+#include <stddef.h>
-+#include "stdio.h"
-+#include "types.h"
-+#include "io.h"
-+#include "ops.h"
++/dts-v1/;
 +
-+#include "ugecon.h"
++/memreserve/ 0x01800000 0xe800000;	/* memory hole (includes I/O area) */
++/memreserve/ 0x10000000 0x0004000;	/* DSP RAM */
 +
-+BSS_STACK(8192);
++/ {
++	model = "NintendoWii";
++	compatible = "nintendo,wii";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+/*
-+ * We enter with the cache enabled, the MMU enabled and some known legacy
-+ * memory mappings active. xBAT3 is unused.
-+ *
-+ * We leave the MMU enabled, but we switch to an identity mapped memory
-+ * scheme as expected by the start code.
-+ *
-+ */
-+asm ("\n\
-+.text\n\
-+.globl _zimage_start\n\
-+_zimage_start:\n\
-+\n\
-+	isync\n\
-+	/* IBAT3,DBAT3 for first 16Mbytes */\n\
-+	li	8, 0x01ff	/* 16MB */\n\
-+	li      9, 0x0002	/* rw */\n\
-+	mtspr   0x216, 8	/* IBAT3U */\n\
-+	mtspr   0x217, 9	/* IBAT3L */\n\
-+	mtspr   0x21e, 8	/* DBAT3U */\n\
-+	mtspr   0x21f, 9	/* DBAT3L */\n\
-+\n\
-+	sync\n\
-+	isync\n\
-+\n\
-+	li	3, 0\n\
-+	li	4, 0\n\
-+	li	5, 0\n\
-+\n\
-+	bcl-    20,4*cr7+so,1f\n\
-+1:\n\
-+	mflr    8\n\
-+	clrlwi  8, 8, 3\n\
-+	addi    8, 8, 2f - 1b\n\
-+	mtlr    8\n\
-+	blr\n\
-+2:\n\
-+	b _zimage_start_lib\n\
-+");
++	chosen {
++		/* root filesystem on 2nd partition of SD card */
++		bootargs = "nobats root=/dev/mmcblk0p2 rootwait udbg-immortal";
++		linux,stdout-path = &USBGECKO0;
++	};
 +
-+/*
-+ *
-+ */
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
-+{
-+	u32 heapsize = 16*1024*1024 - (u32)_end;
++	aliases {
++		ugecon = &USBGECKO0;
++		hw_gpio = &gpio1;
++	};
 +
-+	simple_alloc_init(_end, heapsize, 32, 64);
-+	fdt_init(_dtb_start);
++	/*
++	 * The Nintendo Wii has two discontiguous RAM memory areas called
++	 * MEM1 and MEM2.
++	 * MEM1 starts at 0x00000000 and contains 24MB of 1T-SRAM.
++	 * MEM2 starts at 0x10000000 and contains 64MB of DDR2 RAM.
++	 * Between both memory address ranges there is an address space
++	 * where memory-mapped I/O registers are found.
++	 *
++	 * Currently, Linux 32-bit PowerPC does not support RAM in
++	 * discontiguous memory address spaces. Thus, in order to use
++	 * both RAM areas, we declare as RAM the range from the start of
++	 * MEM1 to the end of useable MEM2 and exclude the needed parts
++	 * with /memreserve/ statements, at the expense of wasting a bit
++	 * of memory.
++	 */
++	memory {
++		device_type = "memory";
++		/* MEM1 + memory hole + MEM2 - firmware/buffers area */
++		reg = <0x00000000 0x133e0000>;
++	};
 +
-+	if (!ug_grab_io_base() && ug_is_adapter_present())
-+		console_ops.write = ug_console_write;
-+}
++	cpus {
++		#cpus = <1>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,broadway@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <729000000>; /* 729MHz */
++			bus-frequency = <243000000>; /* 243MHz core-to-bus 3x */
++			timebase-frequency = <60750000>; /* 243MHz / 4 */
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <32768>;
++			d-cache-size = <32768>;
++		};
++	};
++
++	/* devices contained in the hollywood chipset */
++	soc {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <1>;
++		model = "hollywood";
++		compatible = "nintendo,hollywood";
++		clock-frequency = <243000000>; /* 243MHz */
++		ranges = <0x0c000000 0x0c000000 0x00010000
++			  0x0d000000 0x0d000000 0x00010000
++			  0x0d040000 0x0d040000 0x00050000
++			  0x0d800000 0x0d800000 0x00001000
++			  0x133e0000 0x133e0000 0x00c20000>;
++
++		video@0c002000 {
++			compatible = "nintendo,hollywood-video";
++			reg = <0x0c002000 0x100>;
++			interrupts = <8>;
++			interrupt-parent = <&PIC0>;
++		};
++
++		PIC0: pic0@0c003000 {
++			#interrupt-cells = <1>;
++			compatible = "nintendo,flipper-pic";
++			reg = <0x0c003000 0x8>;
++			interrupt-controller;
++		};
++
++		resetswitch@0c003000 {
++			compatible = "nintendo,hollywood-resetswitch";
++			reg = <0x0c003000 0x4>;
++			interrupts = <1>;
++			interrupt-parent = <&PIC0>;
++		};
++
++		audio@0c005000 {
++			compatible = "nintendo,hollywood-audio";
++			reg = <0x0c005000 0x200		/* DSP */
++			       0x0d006c00 0x20>;	/* AI */
++			interrupts = <6>;
++			interrupt-parent = <&PIC0>;
++		};
++
++		/* Team Twiizers' 'mini' firmware IPC */
++		mini@0d000000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			#interrupt-cells = <1>;
++			compatible = "twiizers,starlet-mini-ipc";
++			reg = <0x0d000000 0x40	/* IPC */
++			       0x13fffffc 0x4>;	/* mini header pointer */
++		};
++
++		serial@0d006400 {
++			compatible = "nintendo,hollywood-serial";
++			reg = <0x0d006400 0x100>;
++			interrupts = <3>;
++			interrupt-parent = <&PIC0>;
++		};
++
++		/* External Interface bus */
++		exi@0d006800 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "nintendo,hollywood-exi";
++			reg = <0x0d006800 0x40>;
++			interrupts = <4>;
++			interrupt-parent = <&PIC0>;
++
++			USBGECKO0: usbgecko@0d006814 {
++				compatible = "usbgecko,usbgecko";
++				reg = <0x0d006814 0x14>;
++				virtual-reg = <0xcd006814>;
++			};
++		};
++
++		ehci@0d040000 {
++			compatible = "nintendo,hollywood-ehci";
++			reg = <0x0d040000 0x100
++			       0x133e0000 0x80000>; /* 512 KB */
++			interrupts = <4>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		ohci0@0d050000 {
++			compatible = "nintendo,hollywood-ohci";
++			reg = <0x0d050000 0x100
++			       0x13460000 0x80000>; /* 512 KB */
++			interrupts = <5>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		ohci1@0d060000 {
++			compatible = "nintendo,hollywood-ohci";
++			reg = <0x0d060000 0x100
++			       0x134e0000 0x80000>; /* 512 KB */
++			interrupts = <6>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		sdhc0@0d070000 {
++			compatible = "nintendo,hollywood-sdhci";
++			reg = <0x0d070000 0x200>;
++			interrupts = <7>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		sdhc1@0d080000 {
++			compatible = "nintendo,hollywood-sdhci";
++			reg = <0x0d080000 0x200>;
++			interrupts = <8>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		PIC1: pic1@0d800030 {
++			#interrupt-cells = <1>;
++			compatible = "nintendo,hollywood-pic";
++			reg = <0x0d800030 0x8>;
++			interrupt-controller;
++			interrupts = <14>;
++			interrupt-parent = <&PIC0>;
++		};
++
++		hollywood-ahbprot@0d800064 {
++			compatible = "nintendo,hollywood-ahbprot";
++			reg = <0x0d800064 0x4>;
++		};
++
++		gpio0: hollywood-gpio@0d8000c0 {
++			compatible = "nintendo,hollywood-gpio";
++			reg = <0x0d8000c0 0x20>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpio1: hollywood-gpio@0d8000e0 {
++			compatible = "nintendo,hollywood-gpio";
++			reg = <0x0d8000e0 0x20>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		hollywood-resets@0d800194 {
++			compatible = "nintendo,hollywood-resets";
++			reg = <0x0d800194 0x4>;
++		};
++
++		i2c-video {
++			#address-cells = <1>;
++			#size-cells = <0>;
++		        compatible = "virtual,i2c-gpio";
++
++		        gpios = <&gpio0  16 0 /* 31-15 */
++		                 &gpio0  17 0 /* 31-14 */
++				>;
++		        sda-is-open-drain = <1>;
++		        sda-enforce-dir = <1>;
++		        scl-is-open-drain = <1>;
++		        scl-is-output-only = <1>;
++		        udelay = <2>;
++
++		        audio-video-encoder {
++		                compatible = "nintendo,wii-ave-rvl";
++		                reg = <0x70>;
++		        };
++		};
++	};
++};
 +
 -- 
 1.6.3.3
