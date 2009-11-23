@@ -1,16 +1,16 @@
 Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp146.mail.ukl.yahoo.com (smtp146.mail.ukl.yahoo.com
-	[77.238.184.77]) by ozlabs.org (Postfix) with SMTP id B7703B7B60
+Received: from smtp111.mail.ukl.yahoo.com (smtp111.mail.ukl.yahoo.com
+	[77.238.184.49]) by ozlabs.org (Postfix) with SMTP id 52272B7B64
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 Nov 2009 07:16:56 +1100 (EST)
-Message-ID: <4B0AEDB6.6040406@yahoo.es>
-Date: Mon, 23 Nov 2009 21:16:54 +0100
+	Tue, 24 Nov 2009 07:18:53 +1100 (EST)
+Message-ID: <4B0AEE2B.1000109@yahoo.es>
+Date: Mon, 23 Nov 2009 21:18:51 +0100
 From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 15/19] powerpc: broadway processor support
+Subject: Re: [RFC PATCH 16/19] powerpc: wii: hollywood interrupt controller
+	support
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
@@ -19,8 +19,9 @@ References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-16-git-send-email-albert_herranz@yahoo.es>
-	<fa686aa40911221538s46a81acal9b451bf48873b6be@mail.gmail.com>
-In-Reply-To: <fa686aa40911221538s46a81acal9b451bf48873b6be@mail.gmail.com>
+	<1258927311-4340-17-git-send-email-albert_herranz@yahoo.es>
+	<fa686aa40911221540j3b2308bbse446b5b523fcfc98@mail.gmail.com>
+In-Reply-To: <fa686aa40911221540j3b2308bbse446b5b523fcfc98@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,21 +35,335 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Grant Likely wrote:
 > On Sun, Nov 22, 2009 at 3:01 PM, Albert Herranz <albert_herranz@yahoo.es> wrote:
->> This patch extends the cputable entry of the 750CL to also match
->> the 750CL-based "Broadway" cpu found on the Nintendo Wii.
+>> Add support for the dual interrupt controller included in the "Hollywood"
+>> chipset of the Nintendo Wii video game console.
+>> This interrupt controller serves both the Broadway processor (as a cascade)
+>> and the Starlet processor, and is used to manage interrupts for the
+>> non-classic hardware.
 >>
->> As of this patch, the following "Broadway" design revision levels have
->> been seen in the wild:
->> - DD1.2 (87102)
->> - DD2.0 (87200)
+>> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 > 
-> Please respin without the reordering of CPU table entries.  If you
-> want to reorder, then do it in a separate patch.
+> On brief glance...
 > 
-> g.
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 > 
 
-Ok. I'll look into that too. Thanks.
+Uhmmm... I think I should use .name instead of .typename in struct irq_chip, no?
+
+>> ---
+>>  arch/powerpc/platforms/embedded6xx/Kconfig    |    5 +
+>>  arch/powerpc/platforms/embedded6xx/Makefile   |    1 +
+>>  arch/powerpc/platforms/embedded6xx/hlwd-pic.c |  238 +++++++++++++++++++++++++
+>>  arch/powerpc/platforms/embedded6xx/hlwd-pic.h |   22 +++
+>>  4 files changed, 266 insertions(+), 0 deletions(-)
+>>  create mode 100644 arch/powerpc/platforms/embedded6xx/hlwd-pic.c
+>>  create mode 100644 arch/powerpc/platforms/embedded6xx/hlwd-pic.h
+>>
+>> diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
+>> index efb2ea1..490f89e 100644
+>> --- a/arch/powerpc/platforms/embedded6xx/Kconfig
+>> +++ b/arch/powerpc/platforms/embedded6xx/Kconfig
+>> @@ -122,3 +122,8 @@ config GAMECUBE
+>>          Select GAMECUBE if configuring for the Nintendo GameCube.
+>>          More information at: <http://gc-linux.sourceforge.net/>
+>>
+>> +config HLWD_PIC
+>> +       bool
+>> +       depends on STARLET_MINI
+>> +       default y
+>> +
+>> diff --git a/arch/powerpc/platforms/embedded6xx/Makefile b/arch/powerpc/platforms/embedded6xx/Makefile
+>> index b0324ed..c1dcc54 100644
+>> --- a/arch/powerpc/platforms/embedded6xx/Makefile
+>> +++ b/arch/powerpc/platforms/embedded6xx/Makefile
+>> @@ -10,3 +10,4 @@ obj-$(CONFIG_PPC_C2K)         += c2k.o
+>>  obj-$(CONFIG_USBGECKO_UDBG)    += usbgecko_udbg.o
+>>  obj-$(CONFIG_FLIPPER_PIC)      += flipper-pic.o
+>>  obj-$(CONFIG_GAMECUBE)         += gamecube.o gamecube_dev.o
+>> +obj-$(CONFIG_HLWD_PIC)         += hlwd-pic.o
+>> diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
+>> new file mode 100644
+>> index 0000000..b024800
+>> --- /dev/null
+>> +++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
+>> @@ -0,0 +1,238 @@
+>> +/*
+>> + * arch/powerpc/platforms/embedded6xx/hlwd-pic.c
+>> + *
+>> + * Nintendo Wii "Hollywood" interrupt controller support.
+>> + * Copyright (C) 2009 The GameCube Linux Team
+>> + * Copyright (C) 2009 Albert Herranz
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * as published by the Free Software Foundation; either version 2
+>> + * of the License, or (at your option) any later version.
+>> + *
+>> + */
+>> +#define DRV_MODULE_NAME "hlwd-pic"
+>> +#define pr_fmt(fmt) DRV_MODULE_NAME ": " fmt
+>> +
+>> +#include <linux/kernel.h>
+>> +#include <linux/init.h>
+>> +#include <linux/irq.h>
+>> +#include <linux/of.h>
+>> +#include <asm/io.h>
+>> +
+>> +#include "hlwd-pic.h"
+>> +
+>> +#define HLWD_NR_IRQS   32
+>> +
+>> +/*
+>> + * Each interrupt has a corresponding bit in both
+>> + * the Interrupt Cause (ICR) and Interrupt Mask (IMR) registers.
+>> + *
+>> + * Enabling/disabling an interrupt line involves asserting/clearing
+>> + * the corresponding bit in IMR. ACK'ing a request simply involves
+>> + * asserting the corresponding bit in ICR.
+>> + */
+>> +#define HW_BROADWAY_ICR                0x00
+>> +#define HW_BROADWAY_IMR                0x04
+>> +
+>> +
+>> +/*
+>> + * IRQ chip hooks.
+>> + *
+>> + */
+>> +
+>> +static void hlwd_pic_mask_and_ack(unsigned int virq)
+>> +{
+>> +       int irq = virq_to_hw(virq);
+>> +       void __iomem *io_base = get_irq_chip_data(virq);
+>> +
+>> +       clear_bit(irq, io_base + HW_BROADWAY_IMR);
+>> +       set_bit(irq, io_base + HW_BROADWAY_ICR);
+>> +}
+>> +
+>> +static void hlwd_pic_ack(unsigned int virq)
+>> +{
+>> +       int irq = virq_to_hw(virq);
+>> +       void __iomem *io_base = get_irq_chip_data(virq);
+>> +
+>> +       set_bit(irq, io_base + HW_BROADWAY_ICR);
+>> +}
+>> +
+>> +static void hlwd_pic_mask(unsigned int virq)
+>> +{
+>> +       int irq = virq_to_hw(virq);
+>> +       void __iomem *io_base = get_irq_chip_data(virq);
+>> +
+>> +       clear_bit(irq, io_base + HW_BROADWAY_IMR);
+>> +}
+>> +
+>> +static void hlwd_pic_unmask(unsigned int virq)
+>> +{
+>> +       int irq = virq_to_hw(virq);
+>> +       void __iomem *io_base = get_irq_chip_data(virq);
+>> +
+>> +       set_bit(irq, io_base + HW_BROADWAY_IMR);
+>> +}
+>> +
+>> +
+>> +static struct irq_chip hlwd_pic = {
+>> +       .typename       = "hlwd-pic",
+>> +       .ack            = hlwd_pic_ack,
+>> +       .mask_ack       = hlwd_pic_mask_and_ack,
+>> +       .mask           = hlwd_pic_mask,
+>> +       .unmask         = hlwd_pic_unmask,
+>> +};
+>> +
+>> +/*
+>> + * IRQ host hooks.
+>> + *
+>> + */
+>> +
+>> +static struct irq_host *hlwd_irq_host;
+>> +
+>> +static int hlwd_pic_map(struct irq_host *h, unsigned int virq,
+>> +                          irq_hw_number_t hwirq)
+>> +{
+>> +       set_irq_chip_data(virq, h->host_data);
+>> +       get_irq_desc(virq)->status |= IRQ_LEVEL;
+>> +       set_irq_chip_and_handler(virq, &hlwd_pic, handle_level_irq);
+>> +       return 0;
+>> +}
+>> +
+>> +static void hlwd_pic_unmap(struct irq_host *h, unsigned int irq)
+>> +{
+>> +       set_irq_chip_data(irq, NULL);
+>> +       set_irq_chip(irq, NULL);
+>> +}
+>> +
+>> +static struct irq_host_ops hlwd_irq_host_ops = {
+>> +       .map = hlwd_pic_map,
+>> +       .unmap = hlwd_pic_unmap,
+>> +};
+>> +
+>> +static unsigned int __hlwd_pic_get_irq(struct irq_host *h)
+>> +{
+>> +       void __iomem *io_base = h->host_data;
+>> +       int irq;
+>> +       u32 irq_status;
+>> +
+>> +       irq_status = in_be32(io_base + HW_BROADWAY_ICR) &
+>> +                    in_be32(io_base + HW_BROADWAY_IMR);
+>> +       if (irq_status == 0)
+>> +               return NO_IRQ_IGNORE;   /* no more IRQs pending */
+>> +
+>> +       __asm__ __volatile__("cntlzw %0,%1" : "=r"(irq) : "r"(irq_status));
+>> +       return irq_linear_revmap(h, 31 - irq);
+>> +}
+>> +
+>> +static void hlwd_pic_irq_cascade(unsigned int cascade_virq,
+>> +                                     struct irq_desc *desc)
+>> +{
+>> +       struct irq_host *irq_host = get_irq_data(cascade_virq);
+>> +       unsigned int virq;
+>> +
+>> +       spin_lock(&desc->lock);
+>> +       desc->chip->mask(cascade_virq); /* IRQ_LEVEL */
+>> +       spin_unlock(&desc->lock);
+>> +
+>> +       virq = __hlwd_pic_get_irq(irq_host);
+>> +       if (virq != NO_IRQ_IGNORE)
+>> +               generic_handle_irq(virq);
+>> +       else
+>> +               pr_err("spurious interrupt!\n");
+>> +
+>> +       spin_lock(&desc->lock);
+>> +       desc->chip->ack(cascade_virq); /* IRQ_LEVEL */
+>> +       if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
+>> +               desc->chip->unmask(cascade_virq);
+>> +       spin_unlock(&desc->lock);
+>> +}
+>> +
+>> +/*
+>> + * Platform hooks.
+>> + *
+>> + */
+>> +
+>> +static void __hlwd_quiesce(void __iomem *io_base)
+>> +{
+>> +       /* mask and ack all IRQs */
+>> +       out_be32(io_base + HW_BROADWAY_IMR, 0);
+>> +       out_be32(io_base + HW_BROADWAY_ICR, ~0);
+>> +}
+>> +
+>> +struct irq_host *hlwd_pic_init(struct device_node *np)
+>> +{
+>> +       struct irq_host *irq_host;
+>> +       struct resource res;
+>> +       void __iomem *io_base;
+>> +       int retval;
+>> +
+>> +       retval = of_address_to_resource(np, 0, &res);
+>> +       if (retval) {
+>> +               pr_err("no io memory range found\n");
+>> +               return NULL;
+>> +       }
+>> +       io_base = ioremap(res.start, resource_size(&res));
+>> +       if (!io_base) {
+>> +               pr_err("ioremap failed\n");
+>> +               return NULL;
+>> +       }
+>> +
+>> +       pr_info("controller at 0x%08x mapped to 0x%p\n", res.start, io_base);
+>> +
+>> +       __hlwd_quiesce(io_base);
+>> +
+>> +       irq_host = irq_alloc_host(np, IRQ_HOST_MAP_LINEAR, HLWD_NR_IRQS,
+>> +                                 &hlwd_irq_host_ops, NO_IRQ_IGNORE);
+>> +       if (!irq_host) {
+>> +               pr_err("failed to allocate irq_host\n");
+>> +               return NULL;
+>> +       }
+>> +       irq_host->host_data = io_base;
+>> +
+>> +       return irq_host;
+>> +}
+>> +
+>> +unsigned int hlwd_pic_get_irq(void)
+>> +{
+>> +       return __hlwd_pic_get_irq(hlwd_irq_host);
+>> +}
+>> +
+>> +/*
+>> + * Probe function.
+>> + *
+>> + */
+>> +
+>> +void hlwd_pic_probe(void)
+>> +{
+>> +       struct irq_host *host;
+>> +       struct device_node *np;
+>> +       const u32 *interrupts;
+>> +       int cascade_virq;
+>> +
+>> +       for_each_compatible_node(np, NULL, "nintendo,hollywood-pic") {
+>> +               interrupts = of_get_property(np, "interrupts", NULL);
+>> +               if (interrupts) {
+>> +                       host = hlwd_pic_init(np);
+>> +                       BUG_ON(!host);
+>> +                       cascade_virq = irq_of_parse_and_map(np, 0);
+>> +                       set_irq_data(cascade_virq, host);
+>> +                       set_irq_chained_handler(cascade_virq,
+>> +                                               hlwd_pic_irq_cascade);
+>> +               }
+>> +       }
+>> +}
+>> +
+>> +/**
+>> + * hlwd_quiesce() - quiesce hollywood irq controller
+>> + *
+>> + * Mask and ack all interrupt sources.
+>> + *
+>> + */
+>> +void hlwd_quiesce(void)
+>> +{
+>> +       void __iomem *io_base = hlwd_irq_host->host_data;
+>> +
+>> +       __hlwd_quiesce(io_base);
+>> +}
+>> +
+>> diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.h b/arch/powerpc/platforms/embedded6xx/hlwd-pic.h
+>> new file mode 100644
+>> index 0000000..d2e5a09
+>> --- /dev/null
+>> +++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.h
+>> @@ -0,0 +1,22 @@
+>> +/*
+>> + * arch/powerpc/platforms/embedded6xx/hlwd-pic.h
+>> + *
+>> + * Nintendo Wii "Hollywood" interrupt controller support.
+>> + * Copyright (C) 2009 The GameCube Linux Team
+>> + * Copyright (C) 2009 Albert Herranz
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * as published by the Free Software Foundation; either version 2
+>> + * of the License, or (at your option) any later version.
+>> + *
+>> + */
+>> +
+>> +#ifndef __HLWD_PIC_H
+>> +#define __HLWD_PIC_H
+>> +
+>> +extern unsigned int hlwd_pic_get_irq(void);
+>> +extern void hlwd_pic_probe(void);
+>> +extern void hlwd_quiesce(void);
+>> +
+>> +#endif
+>> --
+>> 1.6.3.3
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>
+> 
+> 
+> 
 
 Cheers,
 Albert
