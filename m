@@ -1,25 +1,21 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp106.mail.ukl.yahoo.com (smtp106.mail.ukl.yahoo.com
-	[77.238.184.38]) by ozlabs.org (Postfix) with SMTP id 55A0BB7B3E
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 8B876B7B93
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 Nov 2009 08:55:58 +1100 (EST)
-Message-ID: <4B0B04ED.9080307@yahoo.es>
-Date: Mon, 23 Nov 2009 22:55:57 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 04/19] powerpc: wii: device tree
+	Tue, 24 Nov 2009 09:13:58 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 10/19] powerpc: gamecube/wii: early debugging using
+	usbgecko
+Date: Mon, 23 Nov 2009 22:13:44 +0000
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<fa686aa40911221518s5d82d5b4i8402a297d52a46d1@mail.gmail.com>
-	<4B0AE865.4030502@yahoo.es>
-	<fa686aa40911231236i2d49d21me1853d681077a9d1@mail.gmail.com>
-In-Reply-To: <fa686aa40911231236i2d49d21me1853d681077a9d1@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+	<200911222327.37949.arnd@arndb.de> <4B0ADE3F.1070604@yahoo.es>
+In-Reply-To: <4B0ADE3F.1070604@yahoo.es>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200911232213.45068.arnd@arndb.de>
+Cc: Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> This looks pretty good to me.  The documentation format isn't strict,
-> just follow the pattern seen in other bindings.  Make sure you post
-> new bindings to devicetree-discuss@lists.ozlabs.org for review.  A
-> couple of comments below.
+On Monday 23 November 2009 19:10:55 Albert Herranz wrote:
+> 
+> Arnd Bergmann wrote:
+> > On Sunday 22 November 2009, Albert Herranz wrote:
+> >> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
+> >> +setup_usbgecko_bat:
+> >> +    /* prepare a BAT for early io */
+> >> +    lis     r8, 0x0c00
+> >> +    ori     r8, r8, 0x002a  /* uncached, guarded ,rw */
+> >> +    lis     r11, 0xcc00
+> >> +    ori     r11, r11, 0x3   /* 128K */
+> >> +#ifdef CONFIG_WII
+> >> +    oris    r8, r8, 0x0100
+> >> +    oris    r11, r11, 0x0100
+> >> +#endif
+> >> +    mtspr   SPRN_DBAT1L, r8
+> >> +    mtspr   SPRN_DBAT1U, r11
+> >> +    sync
+> >> +    isync
+> >> +    blr
+> >> +#endif
+> > 
+> > This will probably break other platforms if CONFIG_PPC_EARLY_DEBUG_USBGECKO
+> > is set. In general, we try hard to make it possible to build generic
+> > kernels for multiple systems, so it would be better to also add a runtime
+> > check here.
+> > 
+> 
+> Ok, I see the point.
+> But, what makes CONFIG_PPC_EARLY_DEBUG_USBGECKO case different from CONFIG_PPC_EARLY_DEBUG_CPM case here?
 > 
 
-Ok. I know it now for the next time :)
+I looked again, and the help text for PPC_EARLY_DEBUG makes it very clear that
+are never usable on a production kernel. Just leave your code the way it is here,
+but if there are other places that prevent portable kernels, those should be fixed.
+I'm not aware of any of those right now.
 
->> Documentation/powerpc/dts-bindings/gpio/i2c.txt
->>
->> GPIO-based I2C
->>
->> Required properties:
->> - compatible : should be "virtual,i2c-gpio".
->> - gpios : should specify GPIOs used for SDA and SCL lines, in that order.
->> - sda-is-open-drain : should be non-zero if SDA gpio is open-drain.
->> - sda-enforce-dir : should be non-zero if SDA gpio must be configured for
->>                    input before reading and for output before writing.
->> - scl-is-open-drain : should be non-zero if SCL gpio is open-drain.
->> - scl-is-output-only : should be non-zero if SCL is an output gpio only.
-> 
-> Instead of looking for a value in these properties, just make them
-> empty properties and change behaviour based on whether or not the
-> property is present.
-> 
-
-It seems reasonable. Thanks.
-
-> Why is the scl-is-output-only property needed?
-> 
-
-It is needed to specify that the I2C master can't honour clock stretching done by I2C slave devices, as it cannot read back SCL.
-
->> - udelay : signal toggle delay. SCL frequency is (500 / udelay) kHz
-> 
-> You should follow the lead of
-> Documentation/powerpc/dts-bindings/fsl/i2c.txt here and specify a
-> clock-frequency property.
-> 
-
-Ok.
-
->> - timeout : clock stretching timeout in milliseconds.
-> 
-> I don't understand what this property means.
-> 
-
-It is the maximum time that the I2C master should wait for SCL to go high when a I2C slave is "clock-stretching".
-
-Cheers,
-Albert
+	Arnd <><
