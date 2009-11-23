@@ -1,20 +1,20 @@
 Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp134.mail.ukl.yahoo.com (smtp134.mail.ukl.yahoo.com
-	[77.238.184.65]) by ozlabs.org (Postfix) with SMTP id 87138B7063
+Received: from smtp129.mail.ukl.yahoo.com (smtp129.mail.ukl.yahoo.com
+	[77.238.184.60]) by ozlabs.org (Postfix) with SMTP id 1CD49B7B3E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 Nov 2009 06:10:58 +1100 (EST)
-Message-ID: <4B0ADE3F.1070604@yahoo.es>
-Date: Mon, 23 Nov 2009 20:10:55 +0100
+	Tue, 24 Nov 2009 06:21:09 +1100 (EST)
+Message-ID: <4B0AE0A3.8040104@yahoo.es>
+Date: Mon, 23 Nov 2009 20:21:07 +0100
 From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
 To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC PATCH 10/19] powerpc: gamecube/wii: early debugging using
-	usbgecko
+Subject: Re: [RFC PATCH 17/19] powerpc: wii: bootmii starlet 'mini' firmware
+	support
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<200911222327.37949.arnd@arndb.de>
-In-Reply-To: <200911222327.37949.arnd@arndb.de>
+	<1258927311-4340-17-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-18-git-send-email-albert_herranz@yahoo.es>
+	<200911222348.20652.arnd@arndb.de>
+In-Reply-To: <200911222348.20652.arnd@arndb.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,61 +28,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Arnd Bergmann wrote:
 > On Sunday 22 November 2009, Albert Herranz wrote:
->> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
->> +setup_usbgecko_bat:
->> +	/* prepare a BAT for early io */
->> +	lis	r8, 0x0c00
->> +	ori	r8, r8, 0x002a	/* uncached, guarded ,rw */
->> +	lis	r11, 0xcc00
->> +	ori	r11, r11, 0x3	/* 128K */
->> +#ifdef CONFIG_WII
->> +	oris	r8, r8, 0x0100
->> +	oris	r11, r11, 0x0100
->> +#endif
->> +	mtspr	SPRN_DBAT1L, r8
->> +	mtspr	SPRN_DBAT1U, r11
->> +	sync
->> +	isync
->> +	blr
->> +#endif
-> 
-> This will probably break other platforms if CONFIG_PPC_EARLY_DEBUG_USBGECKO
-> is set. In general, we try hard to make it possible to build generic
-> kernels for multiple systems, so it would be better to also add a runtime
-> check here.
-> 
-
-Ok, I see the point.
-But, what makes CONFIG_PPC_EARLY_DEBUG_USBGECKO case different from CONFIG_PPC_EARLY_DEBUG_CPM case here?
-
->> --- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
->> +++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
->> @@ -27,4 +27,10 @@ static inline void __init ug_udbg_init(void)
->>  
->>  #endif /* CONFIG_USBGECKO_UDBG */
->>  
->> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
+>> + *
+>> + */
+>> +struct mipc_device {
+>> +	void __iomem *io_base;
+>> +	int irq;
 >> +
->> +void __init udbg_init_usbgecko(void);
+>> +	struct device *dev;
 >> +
->> +#endif /* CONFIG_PPC_EARLY_DEBUG_USBGECKO */
+>> +	spinlock_t call_lock;	/* serialize firmware calls */
+>> +	spinlock_t io_lock;	/* serialize access to io registers */
 >> +
+>> +	struct mipc_infohdr *hdr;
+>> +
+>> +	struct mipc_req *in_ring;
+>> +	size_t in_ring_size;
+>> +	volatile u16 intail_idx;
+>> +
+>> +	struct mipc_req *out_ring;
+>> +	size_t out_ring_size;
+>> +	volatile u16 outhead_idx;
+>> +
+>> +	u32 tag;
+>> +};
 > 
-> No need to enclose a declaration in #ifdef, better leave it there
-> unconditionally, unless you have an alternative version, like
-> 
-> #ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-> void __init udbg_init_usbgecko(void);
-> #else /* !CONFIG_PPC_EARLY_DEBUG_USBGECKO */
-> static inline void udbg_init_usbgecko(void)
-> {
-> }
-> #endif /* CONFIG_PPC_EARLY_DEBUG_USBGECKO */
-> 
-> That style is now more common than having additional #ifdefs
-> in the code using the function.
+> The 'volatile' here seems out of place. What are you trying to protect
+> against?
 
-I'll fix that too. Thanks.
+Nothing. I'll get rid of it.
+It slipped through from ancient versions of the patch.
+
+> The rest of the patch seems to be made up of layers of wrappers. They
+> are all well coded, but I got a feeling that the same could be achieved
+> with less of it.
+
+The code provides a complete emulation layer of hardware accessors via ipc calls to the firmware.
+This was a requirement to access part of the hardware until a "magic" register was found allowing direct hardware access from the PowerPC side.
+
+I can get rid of the currently unused infrastructure and leave the strictly needed code (i.e. code to make sure that the firmware SDHC driver is shutdown and that the ahbprot register is properly setup).
+
+I'll look into that. Thanks.
 
 Cheers,
 Albert
