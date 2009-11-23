@@ -1,21 +1,19 @@
-Return-Path: <vinayak.kale@gmail.com>
-Received: from mail-vw0-f230.google.com (mail-vw0-f230.google.com
-	[209.85.212.230]) by ozlabs.org (Postfix) with ESMTP id E224F1007D3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Nov 2009 18:29:38 +1100 (EST)
-Received: by vws19 with SMTP id 19so105812vws.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 22 Nov 2009 23:29:35 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <001636832accdcc8a40479024c96@google.com>
-Message-ID: <0016e646923c937a80047904c936@google.com>
-Date: Mon, 23 Nov 2009 07:29:35 +0000
-Subject: Re: Fwd: Re: DTS for PowerPC 440 based board
-From: vinayak.kale@gmail.com
-To: david@gibson.dropbear.id.au, grant.likely@secretlab.ca,
-	Vinayak Kale <vinayak.kale@gmail.com>
-Content-Type: multipart/alternative; boundary=0016e646923c937a6f047904c933
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id D7C3BB6F10
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Nov 2009 21:23:34 +1100 (EST)
+Date: Mon, 23 Nov 2009 11:23:01 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ppc440spe-adma: adds updated ppc440spe adma driver
+Message-ID: <20091123112301.011dea3b@wker>
+In-Reply-To: <20091120130026.GS30489@zod.rchland.ibm.com>
+References: <1258467425-13968-1-git-send-email-agust@denx.de>
+	<20091120130026.GS30489@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	dan.j.williams@intel.com, wd@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,191 +23,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e646923c937a6f047904c933
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+On Fri, 20 Nov 2009 08:00:26 -0500
+Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-Hi,
+> On Tue, Nov 17, 2009 at 03:17:05PM +0100, Anatolij Gustschin wrote:
+> >This patch adds new version of the PPC440SPe ADMA driver.
+> >
+> >Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> 
+> The driver author is listed as Yuri Tikhonov <yur@emcraft.com>.  Shouldn't
+> this include a sign-off from Yuri, or perhaps even a From?
 
-David, Grant thank you for providing the info.
- From your reply and the other sources what I gather is as below. Please  
-confirm whether I am on the right track.
+Yuri is the author of the previous driver version but he didn't
+have time to rework the driver and prepare it for submission.
+I will CC him and ask for his sign-off when submitting next
+patch version.
 
-1) Bootloader passing BDInfo:
-Here, I have to create a .dts file inside /arch/powerpc/boot/dts directory.  
-dtc compiles the .dts file and creates a dtb. The kernel, dtb and  
-boot-wrapper are then embedded in a cuImage.* file after make. We need to  
-write the platform-specific fix-ups in the cuboot-*.c file. The bootloader  
-will pass BDInfo struct to kernel. The kernel will also receive the dtb.
-The only kernel changes we need to do here are fixups in cuboot-*.c and  
-creation of .dts file.
+> >Before applying this patch the following patch to katmai.dts
+> >should be applied first: http://patchwork.ozlabs.org/patch/36768/
+> 
+> For the linux-raid people's benefit, I have that patch queued up in my next
+> branch.
 
-2) Bootloader passing DT:
-Here, the booloader will directly pass the DT instead of BDInfo. The  
-platform-specific code in simpleboot.c will get excuted. We don't have to  
-do any fixups inside kernel here.
-I have queries with this approach -
-a) In this case, who creates DT? Do we need to use any tools to create a  
-DT? or it can be created the same way by compiling the .dts file using dtc?
-b) From previous implementaions of other boards, I didn't see any platform  
-specific fix-ups inside kernel being done? Why is so that in case of BDInfo  
-we need fix-ups and here we don't?
+Thanks!
 
+> > arch/powerpc/include/asm/async_tx.h                |   47 +
+> > arch/powerpc/include/asm/ppc440spe_adma.h          |  195 +
+> > arch/powerpc/include/asm/ppc440spe_dma.h           |  224 +
+> > arch/powerpc/include/asm/ppc440spe_xor.h           |  110 +
+> 
+> Why are these header files in the asm directory?  They seem to be only used
+> by your new driver, so why not have them under the drivers/dma or if you want
+> to be neat, drivers/dma/ppc440spe/ dirs?  I really don't think they should
+> be in asm at all.
 
-Please confirm my understanding of above to approaches. Also please suggest  
-which way is better.
+async_tx layer expects async_tx.h to be in the asm directory if
+the architecture provides async_tx_find_channel(). I will move
+other header files and the driver file to drivers/dma/ppc440spe/
+directory.
 
-Regards,
-Vinayak
+> >diff --git a/arch/powerpc/include/asm/dcr-regs.h b/arch/powerpc/include/asm/dcr-regs.h
+> >index 828e3aa..67d4069 100644
+> >--- a/arch/powerpc/include/asm/dcr-regs.h
+> >+++ b/arch/powerpc/include/asm/dcr-regs.h
+> >@@ -157,4 +157,30 @@
+> > #define  L2C_SNP_SSR_32G	0x0000f000
+> > #define  L2C_SNP_ESR		0x00000800
+> >
+> >+#define DCRN_SDR_CONFIG_ADDR	0xe
+> >+#define DCRN_SDR_CONFIG_DATA	0xf
+> 
+> These #defines already exist as DCRN_SDR0_CONFIG_{ADDR,DATA}.  We don't need
+> them defined again.
 
-----------------------------------------------------------------------------------------------------
-From: David Gibson <david@gibson.dropbear.id.au>
-Date: Sun, Nov 22, 2009 at 2:50 AM
-Subject: Re: DTS for PowerPC 440 based board
-To: Vinayak Kale <vinayak.kale@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+OK, I'll remove them.
 
+<snip>
+> >+ * Common initialisation for RAID engines; allocate memory for
+> >+ * DMAx FIFOs, perform configuration common for all DMA engines.
+> >+ * Further DMA engine specific configuration is done at probe time.
+> >+ */
+> >+static int ppc440spe_configure_raid_devices(void)
+> >+{
+> >+	struct device_node *np;
+> >+	struct resource i2o_res;
+> >+	i2o_regs_t __iomem *i2o_reg;
+> >+	const u32 *dcrreg;
+> >+	u32 dcrbase_i2o;
+> >+	int i, len, ret;
+> >+
+> >+	np = of_find_compatible_node(NULL, NULL, "ibm,i2o-440spe");
+> >+	if (!np) {
+> >+		pr_err("%s: can't find I2O device tree node\n",
+> >+			__func__);
+> >+		return -ENODEV;
+> >+	}
+> >+
+> >+	if (of_address_to_resource(np, 0, &i2o_res)) {
+> >+		of_node_put(np);
+> >+		return -EINVAL;
+> >+	}
+> >+
+> >+	i2o_reg = of_iomap(np, 0);
+> >+	if (!i2o_reg) {
+> >+		pr_err("%s: failed to map I2O registers\n", __func__);
+> >+		of_node_put(np);
+> >+		return -EINVAL;
+> >+	}
+> >+
+> >+	/* Get I2O DCRs base */
+> >+	dcrreg = of_get_property(np, "dcr-reg", &len);
+> >+	if (!dcrreg || (len != 2 * sizeof(u32))) {
+> >+		pr_err("%s: can't get DCR register base!\n",
+> >+			np->full_name);
+> >+		of_node_put(np);
+> >+		iounmap(i2o_reg);
+> >+		return -ENODEV;
+> >+	}
+> >+	of_node_put(np);
+> >+	dcrbase_i2o = dcrreg[0];
+> >+
+> >+	/* Provide memory regions for DMA's FIFOs: I2O, DMA0 and DMA1 share
+> >+	 * the base address of FIFO memory space.
+> >+	 * Actually we need twice more physical memory than programmed in the
+> >+	 * <fsiz> register (because there are two FIFOs for each DMA: CP and CS)
+> >+	 */
+> >+	ppc440spe_dma_fifo_buf = kmalloc((DMA0_FIFO_SIZE + DMA1_FIFO_SIZE) << 1,
+> >+					 GFP_KERNEL);
+> >+	if (!ppc440spe_dma_fifo_buf) {
+> >+		pr_err("%s: DMA FIFO buffer allocation failed.\n", __func__);
+> >+		iounmap(i2o_reg);
+> >+		return -ENOMEM;
+> >+	}
+> >+v
+> >+	/*
+> >+	 * Configure h/w
+> >+	 */
+> >+	/* Reset I2O/DMA */
+> >+	mtdcri(SDR, DCRN_SDR0_SRST, DCRN_SDR0_SRST_I2ODMA);
+> >+	mtdcri(SDR, DCRN_SDR0_SRST, 0);
+> >+
+> >+	/* Setup the base address of mmaped registers */
+> >+	mtdcr(dcrbase_i2o + DCRN_I2O0_IBAH, (u32)(i2o_res.start >> 32));
+> >+	mtdcr(dcrbase_i2o + DCRN_I2O0_IBAL, (u32)(i2o_res.start) |
+> >+					    I2O_REG_ENABLE);
+> 
+> It would be cleaner if you used the dcr_read/dcr_write functions instead
+> of the open coded mtdcr/mfdcr.  I don't think it's required though.
+> 
+> >+
+> >+	/* Setup FIFO memory space base address */
+> >+	out_le32(&i2o_reg->ifbah, 0);
+> >+	out_le32(&i2o_reg->ifbal, ((u32)__pa(ppc440spe_dma_fifo_buf)));
+> 
+> Similarly ioread32/iowrite32 instead of {out,in}_.
 
+OK, I'll fix this.
 
-On Sun, Nov 22, 2009 at 12:16:59AM +0530, Vinayak Kale wrote:
-> Hi,
-> I am porting 2.6.31 for a PowerPC 440 core based board. I have couple of
-> queries. I would really appreciate if someone could answer since i  
-> couldn't
-> find info from other places.
+Thanks!
 
-> 1) Is it mandatory to create a DTS file?
-
-
-Roughly speaking, yes. You have to supply a device tree to the
-kernel somehow, so if the firmware doesn't supply one itself, you will
-need to create a DTS.
-
-
-> 2) If uboot passes BDInfo struct to kernel instead of DT blob, then in  
-> this
-> case does kernel creates FDT at run time?
-
-
-Not exactly. In this case the bootwrapper will be built with an FDT
-(compiled from a dts) built in. It will however tweak the FDT with
-information from the BDInfo before booting the kernel proper.
-
-
-> 3) I believe in case of DTS, the kernel picks up the h/w info from DTS  
-> blob
-> so we need not hardcode any register addresses etc inside kernel other  
-> than
-> in dts file. What happens in case of uboot passing just BDInfo struct. How
-> do we specify the register addresses etc?
-
-
-There's always a device tree which specifies register addresses. If
-the firmware only supplies a BDInfo, then the kernel wrapper must have
-a device tree built in. In practice that will always be built from a
-dts, though it doesn't have to be in theory.
-
---
-David Gibson | I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au | minimalist, thank you. NOT _the_ _other_
-| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---0016e646923c937a6f047904c933
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-<br />
-<br />David, Grant thank you for providing the info.
-<br />From your reply and the other sources what I gather is as below. Plea=
-se confirm whether I am on the right track.
-<br />
-<br />1) Bootloader passing BDInfo: =20
-<br />Here, I have to create a .dts file inside /arch/powerpc/boot/dts dire=
-ctory. dtc compiles the .dts file and creates a dtb. The kernel, dtb and bo=
-ot-wrapper are then embedded in a cuImage.* file after make. We need to wri=
-te the platform-specific fix-ups in the cuboot-*.c file. The bootloader wil=
-l pass BDInfo struct to kernel. The kernel will also receive the dtb.
-<br />The only kernel changes we need to do here are fixups in cuboot-*.c a=
-nd creation of .dts file.=20
-<br />
-<br />2) Bootloader passing DT:
-<br />Here, the booloader will directly pass the DT instead of BDInfo. The =
-platform-specific code in simpleboot.c will get excuted. We don&#39;t have =
-to do any fixups inside kernel here.=20
-<br />I have queries with this approach -
-<br />a) In this case, who creates DT? Do we need to use any tools to creat=
-e a DT? or it can be created the same way by compiling the .dts file using =
-dtc?=20
-<br />b) From previous implementaions of other boards, I didn&#39;t see any=
- platform specific fix-ups inside kernel being done? Why is so that in case=
- of BDInfo we need fix-ups and here we don&#39;t?
-<br />
-<br />
-<br />Please confirm my understanding of above to approaches. Also please s=
-uggest which way is better.
-<br />
-<br />Regards,
-<br />Vinayak
-<br />=20
-<br />---------------------------------------------------------------------=
--------------------------------
-<br />From: David Gibson &lt;david@gibson.dropbear.id.au&gt;
-<br />Date: Sun, Nov 22, 2009 at 2:50 AM
-<br />Subject: Re: DTS for PowerPC 440 based board
-<br />To: Vinayak Kale &lt;vinayak.kale@gmail.com&gt;
-<br />Cc: linuxppc-dev@lists.ozlabs.org
-<br />
-<br />
-<br />
-<br />On Sun, Nov 22, 2009 at 12:16:59AM +0530, Vinayak Kale wrote:
-<br />&gt; Hi,
-<br />&gt; I am porting 2.6.31 for a PowerPC 440 core based board. I have c=
-ouple of
-<br />&gt; queries. I would really appreciate if someone could answer since=
- i couldn&#39;t
-<br />&gt; find info from other places.
-<br />&gt;
-<br />&gt; 1) Is it mandatory to create a DTS file?
-<br />
-<br />
-<br />Roughly speaking, yes.  You have to supply a device tree to the
-<br />kernel somehow, so if the firmware doesn&#39;t supply one itself, you=
- will
-<br />need to create a DTS.
-<br />
-<br />
-<br />&gt; 2) If uboot passes BDInfo struct to kernel instead of DT blob, t=
-hen in this
-<br />&gt; case does kernel creates FDT at run time?
-<br />
-<br />
-<br />Not exactly.  In this case the bootwrapper will be built with an FDT
-<br />(compiled from a dts) built in.  It will however tweak the FDT with
-<br />information from the BDInfo before booting the kernel proper.
-<br />
-<br />
-<br />&gt; 3) I believe in case of DTS, the kernel picks up the h/w info fr=
-om DTS blob
-<br />&gt; so we need not hardcode any register addresses etc inside kernel=
- other than
-<br />&gt; in dts file. What happens in case of uboot passing just BDInfo s=
-truct. How
-<br />&gt; do we specify the register addresses etc?
-<br />
-<br />
-<br />There&#39;s always a device tree which specifies register addresses. =
- If
-<br />the firmware only supplies a BDInfo, then the kernel wrapper must hav=
-e
-<br />a device tree built in.  In practice that will always be built from a
-<br />dts, though it doesn&#39;t have to be in theory.
-<br />
-<br />--
-<br />David Gibson                    | I&#39;ll have my music baroque, and=
- my code
-<br />david AT gibson.dropbear.id.au  | minimalist, thank you.  NOT _the_ _=
-other_
-<br />                               | _way_ _around_!
-<br />http://www.ozlabs.org/~dgibson
---0016e646923c937a6f047904c933--
+Anatolij
