@@ -1,27 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.8])
-	by ozlabs.org (Postfix) with ESMTP id A7E3FB6F04
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp137.mail.ukl.yahoo.com (smtp137.mail.ukl.yahoo.com
+	[77.238.184.68]) by ozlabs.org (Postfix) with SMTP id 97A42B7067
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 Nov 2009 06:04:21 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: RFC: Put printk buffer in video ram
-Date: Mon, 23 Nov 2009 20:03:31 +0100
-References: <1258855506.3153.1.camel@maxim-laptop>
-	<20091123183220.GB24482@elte.hu> <4B0ADA84.5050300@nortel.com>
-In-Reply-To: <4B0ADA84.5050300@nortel.com>
+	Tue, 24 Nov 2009 06:07:00 +1100 (EST)
+Message-ID: <4B0ADD4D.2010000@yahoo.es>
+Date: Mon, 23 Nov 2009 20:06:53 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200911232003.31482.arnd@arndb.de>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Arjan van de Ven <arjan@infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC PATCH 07/19] powerpc: gamecube/wii: declare as non-coherent
+	platforms
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
+	<200911222320.56871.arnd@arndb.de>
+In-Reply-To: <200911222320.56871.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 23 November 2009, Chris Friesen wrote:
-> We've had a mechanism sort of like this for quite a while.  Hasn't been
-> pushed to mainline because it used board-specific hardware and we're
-> usually multiple kernel versions behind mainline.
+Arnd Bergmann wrote:
+> On Sunday 22 November 2009, Albert Herranz wrote:
+>>  config NOT_COHERENT_CACHE
+>>         bool
+>> -       depends on 4xx || 8xx || E200 || PPC_MPC512x
+>> +       depends on 4xx || 8xx || E200 || PPC_MPC512x || GAMECUBE_COMMON
+>>         default y
+>>  
+>>  config CHECK_CACHE_COHERENCY
+>> diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
+>> index 97a2dbc..31487e4 100644
+>> --- a/arch/powerpc/platforms/embedded6xx/Kconfig
+>> +++ b/arch/powerpc/platforms/embedded6xx/Kconfig
+>> @@ -93,4 +93,5 @@ config MPC10X_STORE_GATHERING
+>>  
+>>  config GAMECUBE_COMMON
+>>         bool
+>> +       select NOT_COHERENT_CACHE
 > 
-> Anyways, a couple things that we've found to be useful are:
-> 1) The ability to allocate a chunk of this persistent memory area for a
-> special purpose.  This allows things like memory-mapped circular buffers
-> for per-cpu binary data.
-> 2) An API to log just to this persistent area and bypass the normal
-> console completely.  This can be useful when debugging issues where the
-> normal logging paths result in a hang.
+> One of the two (depends and select) is enough. I'd just drop the 'select'
+> line here.
+> 
+> 	Arnd <><
+> 
 
-Some powerpc machines have a memory-mapped nvram, in which the kernel
-can install persistant 'partitions'. Not all of them are memory mapped,
-but for those that are (e.g. IBM QS22), your approach sounds perfect.
+Thanks, I'll fix that.
 
-	Arnd <><
+Cheers,
+Albert
