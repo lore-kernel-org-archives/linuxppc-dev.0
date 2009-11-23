@@ -1,26 +1,23 @@
-Return-Path: <temerkhanov@yandex.ru>
-Received: from forward3.mail.yandex.net (forward3.mail.yandex.net [77.88.46.8])
-	by ozlabs.org (Postfix) with ESMTP id 2661CB6EF3
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id C4CD3B6F12
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 Nov 2009 04:17:54 +1100 (EST)
-Received: from smtp3.mail.yandex.net (smtp3.mail.yandex.net [77.88.46.103])
-	by forward3.mail.yandex.net (Yandex) with ESMTP id A1C021190906
+	Tue, 24 Nov 2009 05:11:36 +1100 (EST)
+Received: by yxe9 with SMTP id 9so5611228yxe.26
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Nov 2009 20:09:42 +0300 (MSK)
-Received: from satanklaus.localnet (cifronik.21th.com [62.16.86.116])
-	by smtp3.mail.yandex.net (Yandex) with ESMTPSA id 41D7B8B8138
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 23 Nov 2009 20:09:41 +0300 (MSK)
-From: Sergey Temerkhanov <temerkhanov@yandex.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: DMA to User-Space
-Date: Mon, 23 Nov 2009 20:11:09 +0300
-References: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>
-In-Reply-To: <BB99A6BA28709744BF22A68E6D7EB51F0330F9DC29@midas.usurf.usu.edu>
+	Mon, 23 Nov 2009 10:11:34 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200911232011.09654.temerkhanov@yandex.ru>
+Sender: glikely@secretlab.ca
+In-Reply-To: <0016e646923c937a80047904c936@google.com>
+References: <001636832accdcc8a40479024c96@google.com>
+	<0016e646923c937a80047904c936@google.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 23 Nov 2009 11:11:14 -0700
+Message-ID: <fa686aa40911231011wc51f942xde7e06d33d755b12@mail.gmail.com>
+Subject: Re: Fwd: Re: DTS for PowerPC 440 based board
+To: vinayak.kale@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +27,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 04 November 2009 02:37:38 Jonathan Haws wrote:
-> All,
-> 
-> I have what may be an unconventional question:
-> 
-> Our application consists of data being captured by an FPGA, processed, and
->  transferred to SDRAM.  I simply give the FPGA an address of where I want
->  it stored in SDRAM and it simply DMAs the data over and interrupts me when
->  finished.  I then take that data and store it to disk.
-> 
-> I have code in user space that handles all of the writing to disk nicely
->  and fast enough for my application (I am capturing data at about 35-40
->  Mbytes/sec).
-> 
-> My question is this:  is it possible to give a user-space pointer to the
->  FPGA to DMA to?  It seems like I would have problems with alignment,
->  address manipulation, and a whole slew of other issues.
+On Mon, Nov 23, 2009 at 12:29 AM,  <vinayak.kale@gmail.com> wrote:
+> Hi,
+>
+> David, Grant thank you for providing the info.
+> From your reply and the other sources what I gather is as below. Please
+> confirm whether I am on the right track.
+>
+> 1) Bootloader passing BDInfo:
+> Here, I have to create a .dts file inside /arch/powerpc/boot/dts directory.
+> dtc compiles the .dts file and creates a dtb. The kernel, dtb and
+> boot-wrapper are then embedded in a cuImage.* file after make. We need to
+> write the platform-specific fix-ups in the cuboot-*.c file. The bootloader
+> will pass BDInfo struct to kernel.
 
-Well, it's possible: you'll have to use zero-copy I/O. Here's an article on 
-this subject: http://lwn.net/Articles/28548/.
-Have a look at drivers/scsi/st.c at sgl_get_user_pages() or 
-drivers/infiniband/hw/ipath/ipath_user_pages.c for example of how to use that.
+The bootloader will pass bdinfo to the bootwrapper (the cuImage)
 
-Regards, Sergey Temerkhanov.
+> The kernel will also receive the dtb.
+
+The bootwrapper will pass the dtb to the kernel proper.  bootloader
+knows nothing about the dtb, and the kernel knows nothing about
+bdinfo.
+
+> The only kernel changes we need to do here are fixups in cuboot-*.c and
+> creation of .dts file.
+
+Correct.  But if you're doing a new board and have control over your
+bootloader, then don't choose this option.  bdinfo structures
+
+> 2) Bootloader passing DT:
+> Here, the booloader will directly pass the DT instead of BDInfo. The
+> platform-specific code in simpleboot.c will get excuted. We don't have to do
+> any fixups inside kernel here.
+
+simpleboot.c doesn't get run at all.  In fact, the bootwrapper doesn't
+get used at all in this case.  The uImage is just the raw compressed
+kernel image (vmlinux) with a uImage header on it.
+
+> I have queries with this approach -
+> a) In this case, who creates DT? Do we need to use any tools to create a DT?
+
+The .dts file still lives in the kernel tree, and the kernel build
+process still compiles it into a .dtb
+
+> or it can be created the same way by compiling the .dts file using dtc?
+
+yes
+
+> b) From previous implementaions of other boards, I didn't see any platform
+> specific fix-ups inside kernel being done? Why is so that in case of BDInfo
+> we need fix-ups and here we don't?
+
+because bdinfo is a horribly method of passing data to the kernel.  So
+the bdinfo data needs to be translated into a form the kernel can use
+(the device tree).  Fixups aren't needed with this approach because
+the device tree passed by the bootloader already has all the correct
+data in it.  U-Boot has the ability to modify the .dtb blob at boot
+time to update things like the kernel parameters line and the memory
+size if it needs to.
+
+> Please confirm my understanding of above to approaches. Also please suggest
+> which way is better.
+
+Pass the device tree from the bootloader.  the bootwrapper method is
+only to support firmware that cannot pass a device tree image, and
+passing bdinfo is non-portable and can cause problems.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
