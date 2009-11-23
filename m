@@ -1,16 +1,29 @@
-Return-Path: <pbathija@amcc.com>
-Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id BE741B6F0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Nov 2009 10:06:17 +1100 (EST)
-From: Pravin Bathija <pbathija@amcc.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH]  [PPC4xx] Fix device tree dts file for katmai board.
-Date: Mon, 23 Nov 2009 15:06:13 -0800
-Message-Id: <1259017573-27985-1-git-send-email-pbathija@amcc.com>
-Cc: sr@denx.de, Pravin Bathija <pbathija@amcc.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC PATCH 14/19] powerpc: allow ioremap within reserved fake
+	ram 	regions
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Albert Herranz <albert_herranz@yahoo.es>
+In-Reply-To: <4B0AED90.6050600@yahoo.es>
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
+	<fa686aa40911221536pf558b1fte36dc88bdf58e883@mail.gmail.com>
+	<4B0AED90.6050600@yahoo.es>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-yaXlj1FrHkr+6mTscI/6"
+Date: Tue, 24 Nov 2009 10:45:09 +1100
+Message-ID: <1259019909.31172.63.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,76 +33,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- Description: Set PCI-E node inbound DMA ranges size to 4GB for correct
- boot up of katmai. Including only changes for PCI-E DMA ranges as
- suggested by Stefan.
 
-Signed-off-by: Pravin Bathija <pbathija@amcc.com>
-Acked-by: Feng Kan <fkan@amcc.com>
-Acked-by: Prodyut Hazarika <phazarika@amcc.com>
-Acked-by: Loc Ho <lho@amcc.com>
-Acked-by: Tirumala Reddy Marri <tmarri@amcc.com>
-Acked-by: Victor Gallardo <vgallardo@amcc.com>
----
- arch/powerpc/boot/dts/katmai.dts |   22 +++++++++++-----------
- 1 files changed, 11 insertions(+), 11 deletions(-)
+--=-yaXlj1FrHkr+6mTscI/6
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
-index 077819b..d2595b2 100644
---- a/arch/powerpc/boot/dts/katmai.dts
-+++ b/arch/powerpc/boot/dts/katmai.dts
-@@ -245,8 +245,8 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000d 0x80000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000c 0x08000000 0x00000000 0x00010000>;
- 
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
- 
- 			/* This drives busses 0 to 0xf */
- 			bus-range = <0x0 0xf>;
-@@ -289,10 +289,10 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000e 0x00000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80000000 0x00000000 0x00010000>;
- 
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
- 
--			/* This drives busses 10 to 0x1f */
-+			/* This drives busses 0x10 to 0x1f */
- 			bus-range = <0x10 0x1f>;
- 
- 			/* Legacy interrupts (note the weird polarity, the bridge seems
-@@ -330,10 +330,10 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000e 0x80000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80010000 0x00000000 0x00010000>;
- 
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
- 
--			/* This drives busses 10 to 0x1f */
-+			/* This drives busses 0x20 to 0x2f */
- 			bus-range = <0x20 0x2f>;
- 
- 			/* Legacy interrupts (note the weird polarity, the bridge seems
-@@ -371,10 +371,10 @@
- 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000f 0x00000000 0x00000000 0x80000000
- 				  0x01000000 0x00000000 0x00000000 0x0000000f 0x80020000 0x00000000 0x00010000>;
- 
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-+			/* Inbound 4GB range starting at 0 */
-+			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x1 0x00000000>;
- 
--			/* This drives busses 10 to 0x1f */
-+			/* This drives busses 0x30 to 0x3f */
- 			bus-range = <0x30 0x3f>;
- 
- 			/* Legacy interrupts (note the weird polarity, the bridge seems
--- 
-1.5.5
+On Mon, 2009-11-23 at 21:16 +0100, Albert Herranz wrote:
+> >>  arch/powerpc/mm/pgtable_32.c |   19 ++++++++++++++++---
+> >>  1 files changed, 16 insertions(+), 3 deletions(-)
+> >>
+> >> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32=
+.c
+> >> index cb96cb2..ba00cb1 100644
+> >> --- a/arch/powerpc/mm/pgtable_32.c
+> >> +++ b/arch/powerpc/mm/pgtable_32.c
+> >> @@ -191,9 +191,22 @@ __ioremap_caller(phys_addr_t addr, unsigned long =
+size, unsigned long flags,
+> >>         * Don't allow anybody to remap normal RAM that we're using.
+> >>         * mem_init() sets high_memory so only do the check after that.
+> >>         */
+> >> -       if (mem_init_done && (p < virt_to_phys(high_memory))) {
+> >> -               printk("__ioremap(): phys addr 0x%llx is RAM lr %p\n",
+> >> -                      (unsigned long long)p, __builtin_return_address=
+(0));
+> >> +       if (mem_init_done && (p < virt_to_phys(high_memory))
+> >> +#ifdef CONFIG_WII
+> >> +               /*
+> >> +                * On some systems, though, we may want to remap an ar=
+ea
+> >> +                * declared as normal RAM that we have memreserve'd at=
+ the
+> >> +                * device tree. See wii.dts.
+> >> +                * But we can't do that safely if we are using BATs to=
+ map
+> >> +                * part of that area.
+> >> +                */
+> >> +           && !__map_without_bats
+> >> +#endif
+> >> +           ) {
+> >> +               printk(KERN_WARNING
+> >> +                      "__ioremap(): phys addr 0x%llx is RAM lr %p\n",
+> >> +                      (unsigned long long)p,
+> >> +                        __builtin_return_address(0));
+> >=20
+> > This could adversely affect multiplatform kernels.  I'd rather get the
+> > RAM problem fixed and not hack up common code to work around the hack.
+> >=20
+> > g.
+> >=20
+>=20
+> Would it be acceptable to create a global var __allow_ioremap_normal_ram =
+that by default would have a value of 0 and would be set _only_ for those p=
+latforms needing it?
+>=20
+> The other solutions I see is:
+> - add support for discontiguous memory to powerpc 32-bits (which is not s=
+omething that I can look into now)
+> - don't use the precious second 64MB area (which is a waste)
+
+- Implement your own ppc_md.ioremap(), see iseries & cell for example.
+
+Currently that's only called on 64-bit, but you could change that.
+
+If I'm reading your patch right, you should be able to do that check in
+your platform's ioremap() and then call the generic implementation to do
+the actual work.
+
+cheers
+
+--=-yaXlj1FrHkr+6mTscI/6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAksLHoUACgkQdSjSd0sB4dKUpgCdHejes07cfynbhew/1SWwnWsi
+9moAnRFerOoNbYUphVz5NsEVmwsss8mr
+=lZUL
+-----END PGP SIGNATURE-----
+
+--=-yaXlj1FrHkr+6mTscI/6--
