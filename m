@@ -1,21 +1,26 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp107.mail.ukl.yahoo.com (smtp107.mail.ukl.yahoo.com
-	[77.238.184.39]) by ozlabs.org (Postfix) with SMTP id 395351007D1
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 917CFB7BBA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 Nov 2009 07:25:24 +1100 (EST)
-Message-ID: <4B0AEFB3.7090801@yahoo.es>
-Date: Mon, 23 Nov 2009 21:25:23 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
+	Tue, 24 Nov 2009 07:36:25 +1100 (EST)
+Received: by yxe9 with SMTP id 9so5761543yxe.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 23 Nov 2009 12:36:23 -0800 (PST)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 02/19] powerpc: gamecube: device tree
+Sender: glikely@secretlab.ca
+In-Reply-To: <4B0AE865.4030502@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<fa686aa40911221502g2de254d2o4341d9abed0cdf41@mail.gmail.com>
-	<4B0AE603.9050208@yahoo.es>
-	<fa686aa40911231219k3a52b9fdn66b8cffb735e5c2f@mail.gmail.com>
-In-Reply-To: <fa686aa40911231219k3a52b9fdn66b8cffb735e5c2f@mail.gmail.com>
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
+	<fa686aa40911221518s5d82d5b4i8402a297d52a46d1@mail.gmail.com>
+	<4B0AE865.4030502@yahoo.es>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 23 Nov 2009 13:36:03 -0700
+Message-ID: <fa686aa40911231236i2d49d21me1853d681077a9d1@mail.gmail.com>
+Subject: Re: [RFC PATCH 04/19] powerpc: wii: device tree
+To: Albert Herranz <albert_herranz@yahoo.es>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,29 +32,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Mon, Nov 23, 2009 at 12:44 PM, Albert Herranz
->> Can you please elaborate more on this or point me to documentation?
->> The soc node here tries to represent the big multi-function chip that integrates most of the devices of the video game consoles ("Flipper" on the Nintendo GameCube and "Hollywood" on the Wii).
-> 
-> Right.  Much like many other SoCs.  However, the SoC has all these
-> devices + the cpu core + the memory controller, and probably some
-> other stuff.  Whereas this particular node only encapsulates the
-> integrated peripherals on an internal bus, so the node really is
-> describing the internal bus, not the entire SoC.  On some chips it is
-> documented as the "internally memory mapped registers", or IMMR.  So,
-> it is better to name this node in a way that reflects what it is (an
-> internal bus) instead of as the whole chip.
-> 
-> Similarly, it is better to use a compatible value of something like:
-> compatible = "nintendo,flipper-immr"; (instead of "nintendo,flipper")
-> because your describing just the internal bus, not the entire chip.
-> 
-> g.
-> 
+On Mon, Nov 23, 2009 at 12:54 PM, Albert Herranz
+<albert_herranz@yahoo.es> wrote:
+> Grant Likely wrote:
+>> On Sun, Nov 22, 2009 at 3:01 PM, Albert Herranz <albert_herranz@yahoo.es=
+> wrote:
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 i2c-video {
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <0>;
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "virtual,i=
+2c-gpio";
+>>
+>> There isn't a documented binding for this. =A0Is there a driver for it?
+>>
+>
+> I have a driver for it. But it isn't yet published.
+>
+> This is the documentation I wrote so far for the bindings.
+> Is there a standard for this?
 
-Thanks for the clarification.
-I'll see what I can do :)
+This looks pretty good to me.  The documentation format isn't strict,
+just follow the pattern seen in other bindings.  Make sure you post
+new bindings to devicetree-discuss@lists.ozlabs.org for review.  A
+couple of comments below.
 
-Cheers,
-Albert
+> Documentation/powerpc/dts-bindings/gpio/i2c.txt
+>
+> GPIO-based I2C
+>
+> Required properties:
+> - compatible : should be "virtual,i2c-gpio".
+> - gpios : should specify GPIOs used for SDA and SCL lines, in that order.
+> - sda-is-open-drain : should be non-zero if SDA gpio is open-drain.
+> - sda-enforce-dir : should be non-zero if SDA gpio must be configured for
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0input before reading and for outpu=
+t before writing.
+> - scl-is-open-drain : should be non-zero if SCL gpio is open-drain.
+> - scl-is-output-only : should be non-zero if SCL is an output gpio only.
+
+Instead of looking for a value in these properties, just make them
+empty properties and change behaviour based on whether or not the
+property is present.
+
+Why is the scl-is-output-only property needed?
+
+> - udelay : signal toggle delay. SCL frequency is (500 / udelay) kHz
+
+You should follow the lead of
+Documentation/powerpc/dts-bindings/fsl/i2c.txt here and specify a
+clock-frequency property.
+
+> - timeout : clock stretching timeout in milliseconds.
+
+I don't understand what this property means.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
