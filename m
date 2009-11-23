@@ -1,21 +1,16 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mgw-mx03.nokia.com (smtp.nokia.com [192.100.122.230])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.nokia.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EC74DB6F01
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Nov 2009 01:59:26 +1100 (EST)
-Subject: Re: [PATCH 1/3] eLBC NAND: increase bus timeout to maximum
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20091113201216.GA8313@loki.buserror.net>
-References: <20091113201216.GA8313@loki.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 23 Nov 2009 16:36:31 +0200
-Message-Id: <1258986991.18407.14.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Reply-To: dedekind1@gmail.com
+Return-Path: <nfont@austin.ibm.com>
+Message-ID: <4B0AAC6B.3030400@austin.ibm.com>
+Date: Mon, 23 Nov 2009 09:38:19 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 0/4 v2] Merge OF dynamic patches
+References: <4B06AF33.1000400@austin.ibm.com>
+	<fa686aa40911201340i77bc4098ud866d103acaefd30@mail.gmail.com>
+In-Reply-To: <fa686aa40911201340i77bc4098ud866d103acaefd30@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-11-13 at 14:12 -0600, Scott Wood wrote:
-> When a NAND operation is in progress, all other localbus operations
-> (including NOR flash) will have to wait for access to the bus.  However, the
-> NAND operation may take longer to complete than the default timeout.  Thus,
-> if NOR is accessed while a NAND operation is in progress, the NAND operation
-> will fail.
+Grant Likely wrote:
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> But I'm really close to posting my 3rd series, so it may be better to
+> wait until that is published and build a patch on top of that to move
+> them into of_dynamic.c
+> 
 
-Taken the patches to my l2-mtd-2.6 tree.
+Works for me.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+-Nathan Fontenot
