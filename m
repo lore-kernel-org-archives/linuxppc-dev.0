@@ -1,29 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [RFC PATCH 14/19] powerpc: allow ioremap within reserved fake
-	ram 	regions
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Albert Herranz <albert_herranz@yahoo.es>
-In-Reply-To: <4B0AED90.6050600@yahoo.es>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1FC911007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 24 Nov 2009 11:01:37 +1100 (EST)
+In-Reply-To: <1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
-	<fa686aa40911221536pf558b1fte36dc88bdf58e883@mail.gmail.com>
-	<4B0AED90.6050600@yahoo.es>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-yaXlj1FrHkr+6mTscI/6"
-Date: Tue, 24 Nov 2009 10:45:09 +1100
-Message-ID: <1259019909.31172.63.camel@concordia>
-Mime-Version: 1.0
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CE435D2F-8C67-4045-942D-4AA08BF784D0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 03/19] powerpc: gamecube: bootwrapper bits
+Date: Tue, 24 Nov 2009 01:08:14 +0100
+To: Albert Herranz <albert_herranz@yahoo.es>
 Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,84 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Albert,
 
---=-yaXlj1FrHkr+6mTscI/6
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> +asm ("\n\
 
-On Mon, 2009-11-23 at 21:16 +0100, Albert Herranz wrote:
-> >>  arch/powerpc/mm/pgtable_32.c |   19 ++++++++++++++++---
-> >>  1 files changed, 16 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32=
-.c
-> >> index cb96cb2..ba00cb1 100644
-> >> --- a/arch/powerpc/mm/pgtable_32.c
-> >> +++ b/arch/powerpc/mm/pgtable_32.c
-> >> @@ -191,9 +191,22 @@ __ioremap_caller(phys_addr_t addr, unsigned long =
-size, unsigned long flags,
-> >>         * Don't allow anybody to remap normal RAM that we're using.
-> >>         * mem_init() sets high_memory so only do the check after that.
-> >>         */
-> >> -       if (mem_init_done && (p < virt_to_phys(high_memory))) {
-> >> -               printk("__ioremap(): phys addr 0x%llx is RAM lr %p\n",
-> >> -                      (unsigned long long)p, __builtin_return_address=
-(0));
-> >> +       if (mem_init_done && (p < virt_to_phys(high_memory))
-> >> +#ifdef CONFIG_WII
-> >> +               /*
-> >> +                * On some systems, though, we may want to remap an ar=
-ea
-> >> +                * declared as normal RAM that we have memreserve'd at=
- the
-> >> +                * device tree. See wii.dts.
-> >> +                * But we can't do that safely if we are using BATs to=
- map
-> >> +                * part of that area.
-> >> +                */
-> >> +           && !__map_without_bats
-> >> +#endif
-> >> +           ) {
-> >> +               printk(KERN_WARNING
-> >> +                      "__ioremap(): phys addr 0x%llx is RAM lr %p\n",
-> >> +                      (unsigned long long)p,
-> >> +                        __builtin_return_address(0));
-> >=20
-> > This could adversely affect multiplatform kernels.  I'd rather get the
-> > RAM problem fixed and not hack up common code to work around the hack.
-> >=20
-> > g.
-> >=20
->=20
-> Would it be acceptable to create a global var __allow_ioremap_normal_ram =
-that by default would have a value of 0 and would be set _only_ for those p=
-latforms needing it?
->=20
-> The other solutions I see is:
-> - add support for discontiguous memory to powerpc 32-bits (which is not s=
-omething that I can look into now)
-> - don't use the precious second 64MB area (which is a waste)
 
-- Implement your own ppc_md.ioremap(), see iseries & cell for example.
+A file scope asm?!  Please don't.
 
-Currently that's only called on 64-bit, but you could change that.
+> + * We enter with the cache enabled, the MMU enabled and some known  
+> legacy
+> + * memory mappings active. xBAT3 is unused
 
-If I'm reading your patch right, you should be able to do that check in
-your platform's ioremap() and then call the generic implementation to do
-the actual work.
+It would be good if you could depend as little as possible on these  
+things;
+that makes writing another bootloader a lot easier.
 
-cheers
+> +	/* IBAT3,DBAT3 for first 16Mbytes */\n\
+> +	li	8, 0x01ff	/* 16MB */\n\
+> +	li      9, 0x0002	/* rw */\n\
+> +	mtspr   0x216, 8	/* IBAT3U */\n\
+> +	mtspr   0x217, 9	/* IBAT3L */\n\
+> +	mtspr   0x21e, 8	/* DBAT3U */\n\
+> +	mtspr   0x21f, 9	/* DBAT3L */\n\
 
---=-yaXlj1FrHkr+6mTscI/6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+WIMG=0000, are you sure?  Not M=1?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> +	bcl-    20,4*cr7+so,1f\n\
 
-iEYEABECAAYFAksLHoUACgkQdSjSd0sB4dKUpgCdHejes07cfynbhew/1SWwnWsi
-9moAnRFerOoNbYUphVz5NsEVmwsss8mr
-=lZUL
------END PGP SIGNATURE-----
+Just write  bcl 20,31,1f .
 
---=-yaXlj1FrHkr+6mTscI/6--
+
+Segher
