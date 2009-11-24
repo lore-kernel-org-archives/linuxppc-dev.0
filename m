@@ -1,15 +1,15 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C6BD4B6F07
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Nov 2009 18:50:08 +1100 (EST)
-From: Alexander Graf <agraf@suse.de>
-To: kvm@vger.kernel.org
-Subject: [PATCH] PPC: Sync guest visible MMU state
-Date: Tue, 24 Nov 2009 08:50:03 +0100
-Message-Id: <1259049003-8028-1-git-send-email-agraf@suse.de>
-Cc: kvm-ppc <kvm-ppc@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Return-Path: <grant.likely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 00/11] Yet another series of OF merge patches.
+To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	sparclinux@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
+	benh@kernel.crashing.org, sfr@canb.auug.org.au,
+	davem@davemloft.net, monstr@monstr.eu
+Date: Tue, 24 Nov 2009 01:17:41 -0700
+Message-ID: <20091124081316.6216.66310.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,262 +19,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently userspace has no chance to find out which virtual address space we're
-in and resolve addresses. While that is a big problem for migration, it's also
-unpleasent when debugging, as gdb and the monitor don't work on virtual
-addresses.
+Nothing much to say here other than mostly mechanical merging of OF
+support code.  Some of it remains a little ugly, but I'm taking the
+approach of merging the code first, and refactoring it second.
 
-This patch exports enough of the MMU segment state to userspace to make
-debugging work and thus also includes the groundwork for migration.
+I've pushed this series out to my test-devicetree branch on my git
+server if anyone wants to test.  That branch also includes the
+previous 2 patch series that I've sent out.
 
-Signed-off-by: Alexander Graf <agraf@suse.de>
+git://git.secretlab.ca/git/linux-2.6 test-devicetree
+
+Compile tested on: ppc64, ppc32, microblaze, sparc64, sparc32.
+Boot tested on mpc5200 (ppc32) platform.
+
 ---
- arch/powerpc/include/asm/kvm.h        |   20 ++++++++++++-
- arch/powerpc/include/asm/kvm_asm.h    |    1 +
- arch/powerpc/include/asm/kvm_book3s.h |    3 ++
- arch/powerpc/kvm/book3s.c             |   47 +++++++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_64_emulate.c  |   38 ++++++++++++++++----------
- arch/powerpc/kvm/book3s_64_mmu.c      |    2 +
- arch/powerpc/kvm/powerpc.c            |    3 ++
- include/linux/kvm.h                   |    1 +
- 8 files changed, 98 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm.h b/arch/powerpc/include/asm/kvm.h
-index c9ca97f..bc0aeba 100644
---- a/arch/powerpc/include/asm/kvm.h
-+++ b/arch/powerpc/include/asm/kvm.h
-@@ -46,8 +46,24 @@ struct kvm_regs {
- };
- 
- struct kvm_sregs {
--	__u32 pvr;
--	char pad[1020];
-+	union {
-+		struct {
-+			__u32 pvr;
-+			__u64 sdr1;
-+			struct {
-+				struct {
-+					__u64 slbe;
-+					__u64 slbv;
-+				} slb[64];
-+			} ppc64;
-+			struct {
-+				__u32 sr[16];
-+				__u64 ibat[8]; 
-+				__u64 dbat[8]; 
-+			} ppc32;
-+		};
-+		__u8 pad[1024];
-+	};
- };
- 
- struct kvm_fpu {
-diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
-index 19ddb35..af2abe7 100644
---- a/arch/powerpc/include/asm/kvm_asm.h
-+++ b/arch/powerpc/include/asm/kvm_asm.h
-@@ -87,6 +87,7 @@
- #define BOOK3S_IRQPRIO_MAX			16
- 
- #define BOOK3S_HFLAG_DCBZ32			0x1
-+#define BOOK3S_HFLAG_SLB			0x2
- 
- #define RESUME_FLAG_NV          (1<<0)  /* Reload guest nonvolatile state? */
- #define RESUME_FLAG_HOST        (1<<1)  /* Resume host? */
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index c601133..74b7369 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -46,6 +46,7 @@ struct kvmppc_sr {
- };
- 
- struct kvmppc_bat {
-+	u64 raw;
- 	u32 bepi;
- 	u32 bepi_mask;
- 	bool vs;
-@@ -113,6 +114,8 @@ extern struct kvmppc_pte *kvmppc_mmu_find_pte(struct kvm_vcpu *vcpu, u64 ea, boo
- extern int kvmppc_ld(struct kvm_vcpu *vcpu, ulong eaddr, int size, void *ptr, bool data);
- extern int kvmppc_st(struct kvm_vcpu *vcpu, ulong eaddr, int size, void *ptr);
- extern void kvmppc_book3s_queue_irqprio(struct kvm_vcpu *vcpu, unsigned int vec);
-+extern void kvmppc_set_bat(struct kvm_vcpu *vcpu, struct kvmppc_bat *bat,
-+			   bool upper, u32 val);
- 
- extern u32 kvmppc_trampoline_lowmem;
- extern u32 kvmppc_trampoline_enter;
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 42037d4..650ebf8 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -281,6 +281,7 @@ void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
- 
- void kvmppc_set_pvr(struct kvm_vcpu *vcpu, u32 pvr)
- {
-+	vcpu->arch.hflags &= ~BOOK3S_HFLAG_SLB;
- 	vcpu->arch.pvr = pvr;
- 	if ((pvr >= 0x330000) && (pvr < 0x70330000)) {
- 		kvmppc_mmu_book3s_64_init(vcpu);
-@@ -762,14 +763,60 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- int kvm_arch_vcpu_ioctl_get_sregs(struct kvm_vcpu *vcpu,
-                                   struct kvm_sregs *sregs)
- {
-+	int i;
-+
- 	sregs->pvr = vcpu->arch.pvr;
-+
-+	sregs->sdr1 = to_book3s(vcpu)->sdr1;
-+	if (vcpu->arch.hflags & BOOK3S_HFLAG_SLB) {
-+		for (i = 0; i < 64; i++) {
-+			sregs->ppc64.slb[i].slbe = to_book3s(vcpu)->slb[i].orige | i;
-+			sregs->ppc64.slb[i].slbv = to_book3s(vcpu)->slb[i].origv;
-+		}
-+	} else {
-+		for (i = 0; i < 16; i++) {
-+			sregs->ppc32.sr[i] = to_book3s(vcpu)->sr[i].raw;
-+			sregs->ppc32.sr[i] = to_book3s(vcpu)->sr[i].raw;
-+		}
-+		for (i = 0; i < 8; i++) {
-+			sregs->ppc32.ibat[i] = to_book3s(vcpu)->ibat[i].raw;
-+			sregs->ppc32.dbat[i] = to_book3s(vcpu)->dbat[i].raw;
-+		}
-+	}
- 	return 0;
- }
- 
- int kvm_arch_vcpu_ioctl_set_sregs(struct kvm_vcpu *vcpu,
-                                   struct kvm_sregs *sregs)
- {
-+	int i;
-+
- 	kvmppc_set_pvr(vcpu, sregs->pvr);
-+
-+	to_book3s(vcpu)->sdr1 = sregs->sdr1;
-+	if (vcpu->arch.hflags & BOOK3S_HFLAG_SLB) {
-+		for (i = 0; i < 64; i++) {
-+			vcpu->arch.mmu.slbmte(vcpu, sregs->ppc64.slb[i].slbv,
-+						    sregs->ppc64.slb[i].slbe);
-+		}
-+	} else {
-+		for (i = 0; i < 16; i++) {
-+			vcpu->arch.mmu.mtsrin(vcpu, i, sregs->ppc32.sr[i]);
-+		}
-+		for (i = 0; i < 8; i++) {
-+			kvmppc_set_bat(vcpu, &(to_book3s(vcpu)->ibat[i]), false,
-+				       (u32)sregs->ppc32.ibat[i]);
-+			kvmppc_set_bat(vcpu, &(to_book3s(vcpu)->ibat[i]), true,
-+				       (u32)(sregs->ppc32.ibat[i] >> 32));
-+			kvmppc_set_bat(vcpu, &(to_book3s(vcpu)->dbat[i]), false,
-+				       (u32)sregs->ppc32.dbat[i]);
-+			kvmppc_set_bat(vcpu, &(to_book3s(vcpu)->dbat[i]), true,
-+				       (u32)(sregs->ppc32.dbat[i] >> 32));
-+		}
-+	}
-+
-+	/* Flush the MMU after messing with the segments */
-+	kvmppc_mmu_pte_flush(vcpu, 0, 0);
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/kvm/book3s_64_emulate.c b/arch/powerpc/kvm/book3s_64_emulate.c
-index c343e67..1027eac 100644
---- a/arch/powerpc/kvm/book3s_64_emulate.c
-+++ b/arch/powerpc/kvm/book3s_64_emulate.c
-@@ -185,7 +185,27 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	return emulated;
- }
- 
--static void kvmppc_write_bat(struct kvm_vcpu *vcpu, int sprn, u64 val)
-+void kvmppc_set_bat(struct kvm_vcpu *vcpu, struct kvmppc_bat *bat, bool upper,
-+                    u32 val)
-+{
-+	if (upper) {
-+		/* Upper BAT */
-+		u32 bl = (val >> 2) & 0x7ff;
-+		bat->bepi_mask = (~bl << 17);
-+		bat->bepi = val & 0xfffe0000;
-+		bat->vs = (val & 2) ? 1 : 0;
-+		bat->vp = (val & 1) ? 1 : 0;
-+		bat->raw = (bat->raw & 0xffffffff00000000ULL) | val;
-+	} else {
-+		/* Lower BAT */
-+		bat->brpn = val & 0xfffe0000;
-+		bat->wimg = (val >> 3) & 0xf;
-+		bat->pp = val & 3;
-+		bat->raw = (bat->raw & 0x00000000ffffffffULL) | ((u64)val << 32);
-+	}
-+}
-+
-+static void kvmppc_write_bat(struct kvm_vcpu *vcpu, int sprn, u32 val)
- {
- 	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
- 	struct kvmppc_bat *bat;
-@@ -207,19 +227,7 @@ static void kvmppc_write_bat(struct kvm_vcpu *vcpu, int sprn, u64 val)
- 		BUG();
- 	}
- 
--	if (!(sprn % 2)) {
--		/* Upper BAT */
--		u32 bl = (val >> 2) & 0x7ff;
--		bat->bepi_mask = (~bl << 17);
--		bat->bepi = val & 0xfffe0000;
--		bat->vs = (val & 2) ? 1 : 0;
--		bat->vp = (val & 1) ? 1 : 0;
--	} else {
--		/* Lower BAT */
--		bat->brpn = val & 0xfffe0000;
--		bat->wimg = (val >> 3) & 0xf;
--		bat->pp = val & 3;
--	}
-+	kvmppc_set_bat(vcpu, bat, !(sprn % 2), val);
- }
- 
- int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
-@@ -243,7 +251,7 @@ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
- 	case SPRN_IBAT4U ... SPRN_IBAT7L:
- 	case SPRN_DBAT0U ... SPRN_DBAT3L:
- 	case SPRN_DBAT4U ... SPRN_DBAT7L:
--		kvmppc_write_bat(vcpu, sprn, vcpu->arch.gpr[rs]);
-+		kvmppc_write_bat(vcpu, sprn, (u32)vcpu->arch.gpr[rs]);
- 		/* BAT writes happen so rarely that we're ok to flush
- 		 * everything here */
- 		kvmppc_mmu_pte_flush(vcpu, 0, 0);
-diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
-index a31f9c6..5598f88 100644
---- a/arch/powerpc/kvm/book3s_64_mmu.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu.c
-@@ -473,4 +473,6 @@ void kvmppc_mmu_book3s_64_init(struct kvm_vcpu *vcpu)
- 	mmu->esid_to_vsid = kvmppc_mmu_book3s_64_esid_to_vsid;
- 	mmu->ea_to_vp = kvmppc_mmu_book3s_64_ea_to_vp;
- 	mmu->is_dcbz32 = kvmppc_mmu_book3s_64_is_dcbz32;
-+
-+	vcpu->arch.hflags |= BOOK3S_HFLAG_SLB;
- }
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 4c582ed..f06cf93 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -145,6 +145,9 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	int r;
- 
- 	switch (ext) {
-+	case KVM_CAP_PPC_SEGSTATE:
-+		r = 1;
-+		break;
- 	case KVM_CAP_COALESCED_MMIO:
- 		r = KVM_COALESCED_MMIO_PAGE_OFFSET;
- 		break;
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 92045a9..1240fcb 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -492,6 +492,7 @@ struct kvm_ioeventfd {
- #ifdef __KVM_HAVE_VCPU_EVENTS
- #define KVM_CAP_VCPU_EVENTS 41
- #endif
-+#define KVM_CAP_PPC_SEGSTATE 42
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
+Grant Likely (11):
+      of: unify phandle name in struct device_node
+      microblaze: gut implementation of early_init_dt_scan_cpus()
+      of: merge of_attach_node() & of_detach_node()
+      of: Merge of_node_get() and of_node_put()
+      of: merge machine_is_compatible()
+      of/flattree: merge early_init_devtree() and early_init_move_devtree()
+      of/flattree: merge early_init_dt_scan_chosen()
+      of/flattree: eliminate cell_t typedef
+      of/flattree: merge dt_mem_next_cell
+      of/flattree: Merge earlyinit_dt_scan_root()
+      of/flattree: Merge early_init_dt_check_for_initrd()
+
+
+ arch/microblaze/include/asm/prom.h           |    4 
+ arch/microblaze/kernel/prom.c                |  375 +-------------------------
+ arch/powerpc/include/asm/prom.h              |    4 
+ arch/powerpc/kernel/prom.c                   |  366 ++-----------------------
+ arch/powerpc/platforms/powermac/pfunc_core.c |    2 
+ arch/sparc/kernel/devices.c                  |    2 
+ arch/sparc/kernel/of_device_32.c             |    2 
+ arch/sparc/kernel/of_device_64.c             |    2 
+ arch/sparc/kernel/prom_common.c              |    8 -
+ arch/sparc/kernel/smp_64.c                   |    2 
+ drivers/of/base.c                            |  153 +++++++++++
+ drivers/of/fdt.c                             |  204 ++++++++++++++
+ drivers/sbus/char/openprom.c                 |   10 -
+ drivers/video/aty/atyfb_base.c               |    2 
+ include/linux/of.h                           |    7 
+ include/linux/of_fdt.h                       |   18 +
+ 16 files changed, 430 insertions(+), 731 deletions(-)
+
 -- 
-1.6.0.2
+Signature
