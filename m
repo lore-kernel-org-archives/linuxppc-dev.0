@@ -1,15 +1,36 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6EE58B6F09
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 24 Nov 2009 16:25:55 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id nAOGPsDU004133
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2009 03:25:54 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nAO5Psu11081356
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2009 16:25:54 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nAO5Prgk002484
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2009 16:25:54 +1100
+Date: Tue, 24 Nov 2009 10:55:43 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v5 0/4] pseries: Add cede support for cpu-offline
+Message-ID: <20091124052543.GA28097@dirshya.in.ibm.com>
+References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
+	<1259033709.16367.110.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <19211.23455.350726.6524@cargo.ozlabs.ibm.com>
-Date: Tue, 24 Nov 2009 15:05:51 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH] ppc64: re-enable kexec to allow module loads with
-	CONFIG_MODVERSIONS and CONFIG_RELOCATABLE turned on
-In-Reply-To: <20091119195216.GC11414@hmsreliant.think-freely.org>
-References: <20091119195216.GC11414@hmsreliant.think-freely.org>
-Cc: linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1259033709.16367.110.camel@pasglop>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
+	linux-kernel@vger.kernel.org, Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,154 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Neil Horman writes:
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> [2009-11-24 14:35:09]:
 
-> 	Before anyone flames me for what a oddball solution this is, let me just
-> say I'm trying to get the ball rolling here.  I think there may be better
-> solutions that can be impemented in reloc_64.S, but I've yet to make any of the
-> ones I've tried work successfully.  I'm open to suggestions, but this solution
-> is the only one so far that I've been able to get to work. thanks :)
+> On Fri, 2009-10-30 at 10:52 +0530, Gautham R Shenoy wrote:
+> > Hi,
+> > 
+> > This is version 5 of patch series that provides a framework to choose the
+> > state a pseries CPU must be put to when it is offlined.
+> > 
+> > Previous versions can be found here:
+> > Version 4: http://lkml.org/lkml/2009/10/9/59
+> > Version 3: http://lkml.org/lkml/2009/9/15/164
+> > Version 2: http://lkml.org/lkml/2009/8/28/102
+> > Version 1: http://lkml.org/lkml/2009/8/6/236
+> > 
+> > Changes from the previous version include:
+> > - Rebased against Nathan Fontenot's latest "pseries kernel handling of dynamic
+> >   logical paritioning v4" patches found here:
+> >   http://lkml.org/lkml/2009/10/21/98
+> 
+> I can't merge them right now because afaik, Nathan patches are still not
+> quite ready. So we need to either get a final version of Nathan patches
+> something like tomorrow or you need to rebase your series on current
+> -next by the end of the week, or I'm afraid it's going to miss the next
+> merge window.
 
-I had thought that the CRCs would be the only things with reloc
-addends less than 4G, but it turns out that the toolchain folds
-expressions like __pa(&sym) into just a load from a doubleword (in the
-TOC) containing the physical address of sym.  That needs to be
-relocated and its reloc addend will be less than 4GB.  Hence the
-crashes early in boot that you were seeing with my proposed patch to
-reloc_64.S.
+Hi Ben,
 
-Given that, your solution seems as reasonable as any.  Should this go
-via the modules maintainer, Rusty Russell, perhaps?
+I had checked with Nathan earlier and he mentioned that he is working
+on an update.  We can post a rebase to -next tomorrow, but this series
+depends on Nathan's patch, hence will work with him. This feature is
+important for the next merge window.
 
-In any case,
-
-Acked-by: Paul Mackerras <paulus@samba.org>
-
-> Adjust crcs in __kcrctab_* sections if relocs are used with CONFIG_RELOCATABLE
-> 
-> When CONFIG_MODVERSIONS and CONFIG_RELOCATABLE are enabled on powerpc platforms,
-> kdump has been failing in a rather odd way.  specifically modules will not
-> install.  This is because when validating the crcs of symbols that the module
-> needs, the crc of the module never matches the crc that is stored in the kernel.
-> 
-> The underlying cause of this is how CONFIG_MODVERSIONS is implemented, and how
-> CONFIG_RELOCATABLE are implemented.  with CONFIG_MODVERSIONS enabled, for every
-> exported symbol in the kernel we emit 2 symbols, __crc_#sym which is declared
-> extern and __kcrctab_##sym, which is placed in the __kcrctab section of the
-> binary.  The latter has its value set equal to the address of the former
-> (recalling it is declared extern).  After the object file is built, genksyms is
-> run on the processed source, and crcs are computed for each exported symbol.
-> genksyms then emits a linker script which defines each of the needed __crc_##sym
-> symbols, and sets their addresses euqal to their respective crcs.  This script
-> is then used in a secondary link to the previously build object file, so that
-> the crcs of the missing symbol can be validated on module insert.
-> 
-> The problem here is that because __kcrctab_sym is set equal to &__crc_##sym, a
-> relocation entry is emitted by the compiler for the __kcrctab__##sym.  Normally
-> this is not a problem, since relocation on other arches is done without the aid
-> of .rel.dyn sections.  PPC however uses these relocations when
-> CONFIG_RELOCATABLE is enabled.  nominally, since addressing starts at 0 for ppc,
-> its irrelevant, but if we start at a non-zero address (like we do when booting
-> via kexec from reserved crashkernel memory), the ppc boot code iterates over the
-> relocation entries, and winds up adding that relocation offset to all symbols,
-> including the symbols that are actually the aforementioned crc values in the
-> __kcrctab_* sections.  This effectively corrupts the crcs and prevents any
-> module loads from happening during a kdump.
-> 
-> My solution is to 'undo' these relocations prior to boot up.  If
-> ARCH_USES_RELOC_ENTRIES is defined, we add a symbol at address zero to the
-> linker script for that arch (I call it reloc_start, so that &reloc_start = 0).
-> This symbol will then indicate the relocation offset for any given boot.  We
-> also add an initcall to the module code that, during boot, scans the __kcrctab_*
-> sections and subtracts &reloc_start from every entry in those sections,
-> restoring the appropriate crc value.
-> 
-> I've verified that this allows kexec to work properly on ppc64 systems myself.
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> 
-> 
->  arch/powerpc/include/asm/local.h  |    6 ++++++
->  arch/powerpc/kernel/vmlinux.lds.S |    4 ++++
->  kernel/module.c                   |   30 ++++++++++++++++++++++++++++++
->  3 files changed, 40 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
-> index 84b457a..9cc49e5 100644
-> --- a/arch/powerpc/include/asm/local.h
-> +++ b/arch/powerpc/include/asm/local.h
-> @@ -4,6 +4,12 @@
->  #include <linux/percpu.h>
->  #include <asm/atomic.h>
->  
-> +#ifdef CONFIG_MODVERSIONS
-> +#define ARCH_USES_RELOC_ENTRIES
-> +
-> +extern unsigned long reloc_start;
-> +#endif
-> +
->  typedef struct
->  {
->  	atomic_long_t a;
-> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-> index 27735a7..2b9fb2e 100644
-> --- a/arch/powerpc/kernel/vmlinux.lds.S
-> +++ b/arch/powerpc/kernel/vmlinux.lds.S
-> @@ -38,6 +38,10 @@ jiffies = jiffies_64 + 4;
->  #endif
->  SECTIONS
->  {
-> +	. = 0;
-> +	reloc_start = .;
-> +	. = 0;
-> +
->  	. = KERNELBASE;
->  
->  /*
-> diff --git a/kernel/module.c b/kernel/module.c
-> index 8b7d880..87a4928 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -181,8 +181,11 @@ extern const struct kernel_symbol __stop___ksymtab_gpl_future[];
->  extern const struct kernel_symbol __start___ksymtab_gpl_future[];
->  extern const struct kernel_symbol __stop___ksymtab_gpl_future[];
->  extern const unsigned long __start___kcrctab[];
-> +extern const unsigned long __stop___kcrctab[];
->  extern const unsigned long __start___kcrctab_gpl[];
-> +extern const unsigned long __stop___kcrctab_gpl[];
->  extern const unsigned long __start___kcrctab_gpl_future[];
-> +extern const unsigned long __stop___kcrctab_gpl_future[];
->  #ifdef CONFIG_UNUSED_SYMBOLS
->  extern const struct kernel_symbol __start___ksymtab_unused[];
->  extern const struct kernel_symbol __stop___ksymtab_unused[];
-> @@ -3144,3 +3147,30 @@ int module_get_iter_tracepoints(struct tracepoint_iter *iter)
->  	return found;
->  }
->  #endif
-> +
-> +#ifdef ARCH_USES_RELOC_ENTRIES
-> +static __init int adjust_kcrctab(void)
-> +{
-> +	int i;
-> +	int count;
-> +	unsigned long  *crc ;
-> +
-> +	count = __stop___kcrctab - __start___kcrctab;
-> +	crc = (unsigned long *)__start___kcrctab;
-> +	for (i = 0; i < count; i++) {
-> +		crc[i] -= (unsigned long)&reloc_start;
-> +	}
-> +	count = __stop___kcrctab_gpl - __start___kcrctab_gpl;
-> +	crc = (unsigned long *)__start___kcrctab_gpl;
-> +	for (i = 0; i < count; i++) {
-> +		crc[i] -= (unsigned long)&reloc_start;
-> +	}
-> +	count = __stop___kcrctab_gpl_future - __start___kcrctab_gpl_future;
-> +	crc = (unsigned long *)__start___kcrctab_gpl_future;
-> +	for (i = 0; i< count; i++) {
-> +                crc[i] -= (unsigned long)&reloc_start;
-> +	}
-> +	return 0;
-> +}
-> +early_initcall(adjust_kcrctab);
-> +#endif
+Thanks,
+Vaidy
