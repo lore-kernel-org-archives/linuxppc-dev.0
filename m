@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 03/11] of/flattree: merge dt_mem_next_cell
+Subject: [PATCH 04/11] of/flattree: eliminate cell_t typedef
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	sparclinux@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
 	benh@kernel.crashing.org, sfr@canb.auug.org.au,
 	davem@davemloft.net, monstr@monstr.eu
-Date: Tue, 24 Nov 2009 01:18:21 -0700
-Message-ID: <20091124081814.6216.97169.stgit@angua>
+Date: Tue, 24 Nov 2009 01:18:35 -0700
+Message-ID: <20091124081827.6216.1896.stgit@angua>
 In-Reply-To: <20091124081316.6216.66310.stgit@angua>
 References: <20091124081316.6216.66310.stgit@angua>
 MIME-Version: 1.0
@@ -21,83 +21,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between PowerPC and Microblaze
+A cell is firmly established as a u32.  No need to do an ugly typedef
+to redefine it to cell_t.  Eliminate the unnecessary typedef so that
+it doesn't have to be added to the of_fdt header file
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/kernel/prom.c |    8 --------
- arch/powerpc/kernel/prom.c    |    8 --------
- drivers/of/fdt.c              |    8 ++++++++
- include/linux/of_fdt.h        |    1 +
- 4 files changed, 9 insertions(+), 16 deletions(-)
+ arch/microblaze/kernel/prom.c |   10 ++++------
+ arch/powerpc/kernel/prom.c    |   14 ++++++--------
+ 2 files changed, 10 insertions(+), 14 deletions(-)
 
 diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index 189179a..e0f4c34 100644
+index e0f4c34..7760186 100644
 --- a/arch/microblaze/kernel/prom.c
 +++ b/arch/microblaze/kernel/prom.c
-@@ -155,14 +155,6 @@ static int __init early_init_dt_scan_chosen(unsigned long node,
- 	return 1;
- }
+@@ -42,8 +42,6 @@
+ #include <asm/sections.h>
+ #include <asm/pci-bridge.h>
  
--static u64 __init dt_mem_next_cell(int s, cell_t **cellp)
--{
--	cell_t *p = *cellp;
+-typedef u32 cell_t;
 -
--	*cellp = p + s;
--	return of_read_number(p, s);
--}
--
- static int __init early_init_dt_scan_memory(unsigned long node,
+ /* export that to outside world */
+ struct device_node *of_chosen;
+ 
+@@ -159,7 +157,7 @@ static int __init early_init_dt_scan_memory(unsigned long node,
  				const char *uname, int depth, void *data)
  {
+ 	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+-	cell_t *reg, *endp;
++	u32 *reg, *endp;
+ 	unsigned long l;
+ 
+ 	/* Look for the ibm,dynamic-reconfiguration-memory node */
+@@ -178,13 +176,13 @@ static int __init early_init_dt_scan_memory(unsigned long node,
+ 	} else if (strcmp(type, "memory") != 0)
+ 		return 0;
+ 
+-	reg = (cell_t *)of_get_flat_dt_prop(node, "linux,usable-memory", &l);
++	reg = (u32 *)of_get_flat_dt_prop(node, "linux,usable-memory", &l);
+ 	if (reg == NULL)
+-		reg = (cell_t *)of_get_flat_dt_prop(node, "reg", &l);
++		reg = (u32 *)of_get_flat_dt_prop(node, "reg", &l);
+ 	if (reg == NULL)
+ 		return 0;
+ 
+-	endp = reg + (l / sizeof(cell_t));
++	endp = reg + (l / sizeof(u32));
+ 
+ 	pr_debug("memory scan node %s, reg size %ld, data: %x %x %x %x,\n",
+ 		uname, l, reg[0], reg[1], reg[2], reg[3]);
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 78f65a4..048e3a3 100644
+index 048e3a3..43cdba2 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
-@@ -432,14 +432,6 @@ static int __init early_init_dt_scan_chosen(unsigned long node,
- 	return 1;
- }
+@@ -67,8 +67,6 @@ int __initdata iommu_force_on;
+ unsigned long tce_alloc_start, tce_alloc_end;
+ #endif
  
--static u64 __init dt_mem_next_cell(int s, cell_t **cellp)
--{
--	cell_t *p = *cellp;
+-typedef u32 cell_t;
 -
--	*cellp = p + s;
--	return of_read_number(p, s);
--}
--
- #ifdef CONFIG_PPC_PSERIES
- /*
-  * Interpret the ibm,dynamic-memory property in the
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index be200be..ebce509 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -432,6 +432,14 @@ int __init early_init_dt_scan_root(unsigned long node, const char *uname,
- 	return 1;
- }
+ extern rwlock_t devtree_lock;	/* temporary while merging */
  
-+u64 __init dt_mem_next_cell(int s, u32 **cellp)
-+{
-+	u32 *p = *cellp;
-+
-+	*cellp = p + s;
-+	return of_read_number(p, s);
-+}
-+
- /**
-  * unflatten_device_tree - create tree of device_nodes from flat blob
-  *
-diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index 828c3cd..d1a37e5 100644
---- a/include/linux/of_fdt.h
-+++ b/include/linux/of_fdt.h
-@@ -72,6 +72,7 @@ extern void *of_get_flat_dt_prop(unsigned long node, const char *name,
- extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
- extern unsigned long of_get_flat_dt_root(void);
- extern void early_init_dt_check_for_initrd(unsigned long node);
-+extern u64 dt_mem_next_cell(int s, u32 **cellp);
+ /* export that to outside world */
+@@ -441,22 +439,22 @@ static int __init early_init_dt_scan_chosen(unsigned long node,
+  */
+ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+ {
+-	cell_t *dm, *ls, *usm;
++	u32 *dm, *ls, *usm;
+ 	unsigned long l, n, flags;
+ 	u64 base, size, lmb_size;
+ 	unsigned int is_kexec_kdump = 0, rngs;
  
- /* Early flat tree scan hooks */
- extern int early_init_dt_scan_root(unsigned long node, const char *uname,
+ 	ls = of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
+-	if (ls == NULL || l < dt_root_size_cells * sizeof(cell_t))
++	if (ls == NULL || l < dt_root_size_cells * sizeof(u32))
+ 		return 0;
+ 	lmb_size = dt_mem_next_cell(dt_root_size_cells, &ls);
+ 
+ 	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory", &l);
+-	if (dm == NULL || l < sizeof(cell_t))
++	if (dm == NULL || l < sizeof(u32))
+ 		return 0;
+ 
+ 	n = *dm++;	/* number of entries */
+-	if (l < (n * (dt_root_addr_cells + 4) + 1) * sizeof(cell_t))
++	if (l < (n * (dt_root_addr_cells + 4) + 1) * sizeof(u32))
+ 		return 0;
+ 
+ 	/* check if this is a kexec/kdump kernel. */
+@@ -515,7 +513,7 @@ static int __init early_init_dt_scan_memory(unsigned long node,
+ 					    const char *uname, int depth, void *data)
+ {
+ 	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+-	cell_t *reg, *endp;
++	u32 *reg, *endp;
+ 	unsigned long l;
+ 
+ 	/* Look for the ibm,dynamic-reconfiguration-memory node */
+@@ -540,7 +538,7 @@ static int __init early_init_dt_scan_memory(unsigned long node,
+ 	if (reg == NULL)
+ 		return 0;
+ 
+-	endp = reg + (l / sizeof(cell_t));
++	endp = reg + (l / sizeof(u32));
+ 
+ 	DBG("memory scan node %s, reg size %ld, data: %x %x %x %x,\n",
+ 	    uname, l, reg[0], reg[1], reg[2], reg[3]);
