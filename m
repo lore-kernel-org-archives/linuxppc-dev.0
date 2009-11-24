@@ -1,30 +1,19 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp124.mail.ukl.yahoo.com (smtp124.mail.ukl.yahoo.com
-	[77.238.184.55]) by ozlabs.org (Postfix) with SMTP id 31469B6ED0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 Nov 2009 05:19:53 +1100 (EST)
-Message-ID: <4B0C23C8.7040905@yahoo.es>
-Date: Tue, 24 Nov 2009 19:19:52 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 10/19] powerpc: gamecube/wii: early debugging using
-	usbgecko
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<A07AD196-D33F-477C-B53C-AB05BA236FEC@kernel.crashing.org>
-In-Reply-To: <A07AD196-D33F-477C-B53C-AB05BA236FEC@kernel.crashing.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <20091124.093732.203692950.davem@davemloft.net>
+References: <20091124081316.6216.66310.stgit@angua>
+	<20091124081957.6216.74456.stgit@angua>
+	<20091124.093732.203692950.davem@davemloft.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 24 Nov 2009 13:33:22 -0700
+Message-ID: <fa686aa40911241233k7c6d428g8f70f00abdd754e8@mail.gmail.com>
+Subject: Re: [PATCH 11/11] of: unify phandle name in struct device_node
+To: David Miller <davem@davemloft.net>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,57 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
-> You set up DBAT1 here...
-> 
->> +setup_usbgecko_bat:
->> +    /* prepare a BAT for early io */
->> +    lis    r8, 0x0c00
->> +    ori    r8, r8, 0x002a    /* uncached, guarded ,rw */
->> +    lis    r11, 0xcc00
->> +    ori    r11, r11, 0x3    /* 128K */
->> +#ifdef CONFIG_WII
->> +    oris    r8, r8, 0x0100
->> +    oris    r11, r11, 0x0100
->> +#endif
->> +    mtspr    SPRN_DBAT1L, r8
->> +    mtspr    SPRN_DBAT1U, r11
->> +    sync
->> +    isync
->> +    blr
-> 
-> ... and again here:
-> 
->> +void __init udbg_init_usbgecko(void)
->> +{
->> +    unsigned long vaddr, paddr;
->> +
->> +#if defined(CONFIG_GAMECUBE)
->> +    paddr = 0x0c000000;
->> +#elif defined(CONFIG_WII)
->> +    paddr = 0x0d000000;
->> +#else
->> +#error Invalid platform for USB Gecko based early debugging.
->> +#endif
->> +
->> +    vaddr = 0xc0000000 | paddr;
->> +    setbat(1, vaddr, paddr, 128*1024, PAGE_KERNEL_NCG);
-> 
-> Do you need to do it twice?
-> 
+On Tue, Nov 24, 2009 at 10:37 AM, David Miller <davem@davemloft.net> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Date: Tue, 24 Nov 2009 01:20:05 -0700
+>
+>> In struct device_node, the phandle is named 'linux_phandle' for PowerPC
+>> and MicroBlaze, and 'node' for SPARC. =A0There is no good reason for the
+>> difference, it is just an artifact of the code diverging over a couple
+>> of years. =A0This patch renames .node to .linux_phandle for SPARC.
+>
+> I know it's just a name, but there is no reason to put "linux" in the
+> member name. =A0It's the real device phandle value from OpenFirmware not
+> something invented by Linux's OF layer.
 
-Uhmm... I need to re-check it.
-IIRC the BATs were re-initialized in between. But I'm not sure now :)
+I agree, and I also considered renaming it to simply 'phandle' or to
+change the powerpc code back to using .node everywhere (more on .node
+usage in powerpc below).  I didn't want to use .node because .node is
+pretty generic, and is used in other places for different things.
+Basically I wanted to avoid confusion.  In particular, .node points to
+a device_node, not a phandle, in struct of_device.  Changing all
+references to simply 'phandle' seems to be the best, but it does
+require changes to more locations in the code.  In the end I decided
+on some constructive lazyness by settling for the already-used
+.linux_phandle so that I would need to touch as many files, but still
+retain a unique name that is easy to find.  If you prefer, I can
+change it all to simply '.phandle'.
 
->> +    ug_io_base = (void __iomem *)(vaddr | 0x6814);
-> 
-> Oh, hardcoded slot2, now i'm confused which one should be it :-)
-> 
+> PowerPC uses this for something different, it records the information
+> here using the special "linux,phandle" and "ibm,phandle" properties.
 
-early udbg  : hardcoded to mem2 slot
-normal udbg : as specified in device tree
+Agreed, the phandle isn't a real phandle when using the flat tree.
+However, though the source of the phandle value is different, the use
+case is identical, so it make sense to stuff it into the same member.
+Merging them lets me unify more code.  For example,
+of_find_node_by_phandle().
 
-Clearer now ? ;)
+> See unflatten_dt_node() in arch/powerpc/kernel/prom.c before your
+> changes.
 
-Thanks for the review!
-Albert
+Yup, I looked at this.  The unflatten code stuffs both linux,phandle
+and ibm,phandle into .linux_phandle, and linux,phandle also gets
+stuffed into .node.  But all the users except one use the
+.linux_phandle, not .node, and that remaining user *I think* can
+safely use .linux_phandle too.
+
+Thanks for the review,
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
