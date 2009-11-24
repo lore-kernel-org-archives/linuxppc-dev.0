@@ -1,32 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 219AE1007D3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 Nov 2009 08:32:21 +1100 (EST)
-In-Reply-To: <1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <F5450BB0-FBBB-48D5-A054-CB147FD43EAA@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 12/19] powerpc: gamecube: platform support
-Date: Tue, 24 Nov 2009 22:39:05 +0100
-To: Albert Herranz <albert_herranz@yahoo.es>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1259096815.16367.133.camel@pasglop>
+References: <20091124081316.6216.66310.stgit@angua>
+	<20091124081957.6216.74456.stgit@angua>
+	<20091124.093732.203692950.davem@davemloft.net>
+	<1259096815.16367.133.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 24 Nov 2009 14:39:16 -0700
+Message-ID: <fa686aa40911241339h5b48e6a2i28efec0cfaa1faab@mail.gmail.com>
+Subject: Re: [PATCH 11/11] of: unify phandle name in struct device_node
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,21 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> +static struct of_device_id gamecube_of_bus[] = {
-> +	{ .compatible = "nintendo,flipper", },
-> +	{ },
-> +};
-> +
-> +static int __init gamecube_device_probe(void)
-> +{
-> +	if (!machine_is(gamecube))
-> +		return 0;
-> +
-> +	of_platform_bus_probe(NULL, gamecube_of_bus, NULL);
-> +	return 0;
-> +}
+On Tue, Nov 24, 2009 at 2:06 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2009-11-24 at 09:37 -0800, David Miller wrote:
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>> Date: Tue, 24 Nov 2009 01:20:05 -0700
+>>
+>> > In struct device_node, the phandle is named 'linux_phandle' for PowerP=
+C
+>> > and MicroBlaze, and 'node' for SPARC. =A0There is no good reason for t=
+he
+>> > difference, it is just an artifact of the code diverging over a couple
+>> > of years. =A0This patch renames .node to .linux_phandle for SPARC.
+>>
+>> I know it's just a name, but there is no reason to put "linux" in the
+>> member name. =A0It's the real device phandle value from OpenFirmware not
+>> something invented by Linux's OF layer.
+>>
+>> PowerPC uses this for something different, it records the information
+>> here using the special "linux,phandle" and "ibm,phandle" properties.
+>>
+>> See unflatten_dt_node() in arch/powerpc/kernel/prom.c before your
+>> changes.
+>
+> Right, this comes from a subtle problem with our firmwares on pSeries.
+>
+> We have a phandle from OF. But some devices, especially virtual devices,
+> also have an "ibm,phandle" which may or may not be the same afaik.
+>
+> In addition, when the hypervisor hotplugs some devices, it sends us some
+> new device-tree bits to add. Those don't have a phandle in the formal
+> sense afaik, but -do- have an ibm,phandle property.
+>
+> I think we can always just use ibm,phandle instead of the OF one when
+> the former is present, they should be non overlapping, but of course,
+> any chance in that area will require plenty of testing on some of those
+> machines.
 
-You really do not need a platform bus as far as I can see?
+If pseries is the troublesome platform, not powermac, then I'm pretty
+confident this change is okay.  I cannot find any other users of .node
+other than arch/powerpc/platforms/powermac/pfunc_core.c, but I'll
+double check with an allmodconfig and an allyesconfig.  This patch
+shouldn't change the behaviour of linux_phandle at all.
 
+g.
 
-Segher
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
