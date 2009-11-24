@@ -1,28 +1,20 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp130.mail.ukl.yahoo.com (smtp130.mail.ukl.yahoo.com
-	[77.238.184.61]) by ozlabs.org (Postfix) with SMTP id 606801007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 Nov 2009 05:08:22 +1100 (EST)
-Message-ID: <4B0C2115.3010006@yahoo.es>
-Date: Tue, 24 Nov 2009 19:08:21 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
+Return-Path: <nhorman@tuxdriver.com>
+Received: from smtp.tuxdriver.com (charlotte.tuxdriver.com [70.61.120.58])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7D20D1007E8
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 05:11:26 +1100 (EST)
+Date: Tue, 24 Nov 2009 13:11:18 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ppc64: re-enable kexec to allow module loads with
+	CONFIG_MODVERSIONS and CONFIG_RELOCATABLE turned on
+Message-ID: <20091124181118.GA3496@hmsreliant.think-freely.org>
+References: <20091119195216.GC11414@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 09/19] powerpc: gamecube/wii: udbg support for usbgecko
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<E6251558-8B55-4A7C-952C-4989D876C69A@kernel.crashing.org>
-In-Reply-To: <E6251558-8B55-4A7C-952C-4989D876C69A@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091119195216.GC11414@hmsreliant.think-freely.org>
+Cc: rusty@rustcorp.com.au, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,58 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> +      If you say yes to this option, support will be included for the
->> +      USB Gecko adapter as an udbg console.
->> +      The USB Gecko is a EXI to USB Serial converter that can be plugged
->> +      into a memcard slot in the Nintendo GameCube/Wii.
-> 
-> Not "a" memcard slot, only the first one, you have it hardcoded.
-> 
+Neil Horman writes:
 
-No. It's not hardcoded in the code. It's specified in the device tree source.
-The hardcoded one is just the early udbg, not the "normal" udbg.
+> 	Before anyone flames me for what a oddball solution this is, let me just
+> say I'm trying to get the ball rolling here.  I think there may be better
+> solutions that can be impemented in reloc_64.S, but I've yet to make any of
+the
+> ones I've tried work successfully.  I'm open to suggestions, but this solution
+> is the only one so far that I've been able to get to work. thanks :)
 
->> +#if 0
->> +/*
->> + * Trasmits a null terminated character string.
->> + */
->> +static void ug_puts(char *s)
->> +{
->> +    while (*s)
->> +        ug_putc(*s++);
->> +}
->> +#endif
-> 
-> Remove?
-> 
+I had thought that the CRCs would be the only things with reloc
+addends less than 4G, but it turns out that the toolchain folds
+expressions like __pa(&sym) into just a load from a doubleword (in the
+TOC) containing the physical address of sym.  That needs to be
+relocated and its reloc addend will be less than 4GB.  Hence the
+crashes early in boot that you were seeing with my proposed patch to
+reloc_64.S.
 
-Ok :)
+Given that, your solution seems as reasonable as any.  Should this go
+via the modules maintainer, Rusty Russell, perhaps?
 
->> +    stdout = of_find_node_by_path(path);
->> +    if (!stdout) {
->> +        udbg_printf("%s: missing path %s", __func__, path);
->> +        goto done;
->> +    }
->> +
->> +    for (np = NULL;
->> +        (np = of_find_compatible_node(np, NULL, "usbgecko,usbgecko"));)
->> +        if (np == stdout)
->> +            break;
->> +
->> +    of_node_put(stdout);
->> +    if (!np) {
->> +        udbg_printf("%s: stdout is not an usbgecko", __func__);
->> +        goto done;
->> +    }
-> 
-> Surely there is something called something like of_node_is_compatible()
-> you can use here?  You already have the node pointer, there is no need
-> to look at all other nodes.
-> 
+In any case,
 
-I see the point.
-I didn't find of_node_is_compatible() but I'll look what's available here.
+Acked-by: Paul Mackerras <paulus at samba.org>
 
-Thanks,
-Albert
+
+I'm not 100% sure, it does kind of split the middle in regards to what tree is
+should come through.
+
+Rusy, given the previous entries in this thread, do you have any thoughts on the
+patch, or which tree it should go through?  I kind of think that the ppc tree is
+just fine here since its currently the only user of this code, but I'll defer to
+other opinions on the subject.
+
+Thanks & Regards
+Neil
