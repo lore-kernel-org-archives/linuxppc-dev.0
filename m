@@ -1,14 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 10/11] microblaze: gut implementation of
-	early_init_dt_scan_cpus()
+Subject: [PATCH 11/11] of: unify phandle name in struct device_node
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	sparclinux@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
 	benh@kernel.crashing.org, sfr@canb.auug.org.au,
 	davem@davemloft.net, monstr@monstr.eu
-Date: Tue, 24 Nov 2009 01:19:52 -0700
-Message-ID: <20091124081944.6216.41834.stgit@angua>
+Date: Tue, 24 Nov 2009 01:20:05 -0700
+Message-ID: <20091124081957.6216.74456.stgit@angua>
 In-Reply-To: <20091124081316.6216.66310.stgit@angua>
 References: <20091124081316.6216.66310.stgit@angua>
 MIME-Version: 1.0
@@ -22,77 +21,229 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Microblaze only has one CPU, it isn't SMP at all.  This function is
-effectively just a no-op, so remove it.
+In struct device_node, the phandle is named 'linux_phandle' for PowerPC
+and MicroBlaze, and 'node' for SPARC.  There is no good reason for the
+difference, it is just an artifact of the code diverging over a couple
+of years.  This patch renames .node to .linux_phandle for SPARC.
+
+Note: the .node also existed in PowerPC/MicroBlaze, but the only user
+seems to be arch/powerpc/platforms/powermac/pfunc_core.c.  It doesn't
+look like the assignment between .linux_phandle and .node is
+significantly different enough to warrant the separate code paths
+unless ibm,phandle properties actually appear in Apple device trees.
+
+I think it is safe to eliminate the old .node property and use
+linux_phandle everywhere.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/kernel/prom.c |   54 -----------------------------------------
- 1 files changed, 0 insertions(+), 54 deletions(-)
+ arch/powerpc/platforms/powermac/pfunc_core.c |    2 +-
+ arch/sparc/kernel/devices.c                  |    2 +-
+ arch/sparc/kernel/of_device_32.c             |    2 +-
+ arch/sparc/kernel/of_device_64.c             |    2 +-
+ arch/sparc/kernel/prom_common.c              |    8 ++++----
+ arch/sparc/kernel/smp_64.c                   |    2 +-
+ drivers/of/fdt.c                             |    3 +--
+ drivers/sbus/char/openprom.c                 |   10 +++++-----
+ drivers/video/aty/atyfb_base.c               |    2 +-
+ include/linux/of.h                           |    3 ---
+ 10 files changed, 16 insertions(+), 20 deletions(-)
 
-diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index 8c00457..1f79e4d 100644
---- a/arch/microblaze/kernel/prom.c
-+++ b/arch/microblaze/kernel/prom.c
-@@ -50,60 +50,6 @@ struct device_node *of_chosen;
- int __init early_init_dt_scan_cpus(unsigned long node, const char *uname,
- 				   int depth, void *data)
- {
--	static int logical_cpuid;
--	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
--	const u32 *intserv;
--	int i, nthreads;
--	int found = 0;
--
--	/* We are scanning "cpu" nodes only */
--	if (type == NULL || strcmp(type, "cpu") != 0)
--		return 0;
--
--	/* Get physical cpuid */
--	intserv = of_get_flat_dt_prop(node, "reg", NULL);
--	nthreads = 1;
--
--	/*
--	 * Now see if any of these threads match our boot cpu.
--	 * NOTE: This must match the parsing done in smp_setup_cpu_maps.
--	 */
--	for (i = 0; i < nthreads; i++) {
--		/*
--		 * version 2 of the kexec param format adds the phys cpuid of
--		 * booted proc.
--		 */
--		if (initial_boot_params && initial_boot_params->version >= 2) {
--			if (intserv[i] ==
--					initial_boot_params->boot_cpuid_phys) {
--				found = 1;
--				break;
--			}
--		} else {
--			/*
--			 * Check if it's the boot-cpu, set it's hw index now,
--			 * unfortunately this format did not support booting
--			 * off secondary threads.
--			 */
--			if (of_get_flat_dt_prop(node,
--					"linux,boot-cpu", NULL) != NULL) {
--				found = 1;
--				break;
--			}
--		}
--
--#ifdef CONFIG_SMP
--		/* logical cpu id is always 0 on UP kernels */
--		logical_cpuid++;
--#endif
--	}
--
--	if (found) {
--		pr_debug("boot cpu: logical %d physical %d\n", logical_cpuid,
--			intserv[i]);
--		boot_cpuid = logical_cpuid;
--	}
--
- 	return 0;
- }
+diff --git a/arch/powerpc/platforms/powermac/pfunc_core.c b/arch/powerpc/platforms/powermac/pfunc_core.c
+index 96d5ce5..2004b19 100644
+--- a/arch/powerpc/platforms/powermac/pfunc_core.c
++++ b/arch/powerpc/platforms/powermac/pfunc_core.c
+@@ -842,7 +842,7 @@ struct pmf_function *__pmf_find_function(struct device_node *target,
+ 	list_for_each_entry(func, &dev->functions, link) {
+ 		if (name && strcmp(name, func->name))
+ 			continue;
+-		if (func->phandle && target->node != func->phandle)
++		if (func->phandle && target->linux_phandle != func->phandle)
+ 			continue;
+ 		if ((func->flags & flags) == 0)
+ 			continue;
+diff --git a/arch/sparc/kernel/devices.c b/arch/sparc/kernel/devices.c
+index b171ae8..2196e71 100644
+--- a/arch/sparc/kernel/devices.c
++++ b/arch/sparc/kernel/devices.c
+@@ -59,7 +59,7 @@ static int __cpu_find_by(int (*compare)(int, int, void *), void *compare_arg,
  
+ 	cur_inst = 0;
+ 	for_each_node_by_type(dp, "cpu") {
+-		int err = check_cpu_node(dp->node, &cur_inst,
++		int err = check_cpu_node(dp->linux_phandle, &cur_inst,
+ 					 compare, compare_arg,
+ 					 prom_node, mid);
+ 		if (!err) {
+diff --git a/arch/sparc/kernel/of_device_32.c b/arch/sparc/kernel/of_device_32.c
+index 4c26eb5..27f4c2e 100644
+--- a/arch/sparc/kernel/of_device_32.c
++++ b/arch/sparc/kernel/of_device_32.c
+@@ -433,7 +433,7 @@ build_resources:
+ 	if (!parent)
+ 		dev_set_name(&op->dev, "root");
+ 	else
+-		dev_set_name(&op->dev, "%08x", dp->node);
++		dev_set_name(&op->dev, "%08x", dp->linux_phandle);
+ 
+ 	if (of_device_register(op)) {
+ 		printk("%s: Could not register of device.\n",
+diff --git a/arch/sparc/kernel/of_device_64.c b/arch/sparc/kernel/of_device_64.c
+index 881947e..9a6245d 100644
+--- a/arch/sparc/kernel/of_device_64.c
++++ b/arch/sparc/kernel/of_device_64.c
+@@ -666,7 +666,7 @@ static struct of_device * __init scan_one_device(struct device_node *dp,
+ 	if (!parent)
+ 		dev_set_name(&op->dev, "root");
+ 	else
+-		dev_set_name(&op->dev, "%08x", dp->node);
++		dev_set_name(&op->dev, "%08x", dp->linux_phandle);
+ 
+ 	if (of_device_register(op)) {
+ 		printk("%s: Could not register of device.\n",
+diff --git a/arch/sparc/kernel/prom_common.c b/arch/sparc/kernel/prom_common.c
+index d80a65d..2a3e302 100644
+--- a/arch/sparc/kernel/prom_common.c
++++ b/arch/sparc/kernel/prom_common.c
+@@ -42,7 +42,7 @@ struct device_node *of_find_node_by_phandle(phandle handle)
+ 	struct device_node *np;
+ 
+ 	for (np = allnodes; np; np = np->allnext)
+-		if (np->node == handle)
++		if (np->linux_phandle == handle)
+ 			break;
+ 
+ 	return np;
+@@ -89,7 +89,7 @@ int of_set_property(struct device_node *dp, const char *name, void *val, int len
+ 			void *old_val = prop->value;
+ 			int ret;
+ 
+-			ret = prom_setprop(dp->node, name, val, len);
++			ret = prom_setprop(dp->linux_phandle, name, val, len);
+ 
+ 			err = -EINVAL;
+ 			if (ret >= 0) {
+@@ -236,7 +236,7 @@ static struct device_node * __init prom_create_node(phandle node,
+ 
+ 	dp->name = get_one_property(node, "name");
+ 	dp->type = get_one_property(node, "device_type");
+-	dp->node = node;
++	dp->linux_phandle = node;
+ 
+ 	dp->properties = build_prop_list(node);
+ 
+@@ -313,7 +313,7 @@ void __init prom_build_devicetree(void)
+ 
+ 	nextp = &allnodes->allnext;
+ 	allnodes->child = prom_build_tree(allnodes,
+-					  prom_getchild(allnodes->node),
++					  prom_getchild(allnodes->linux_phandle),
+ 					  &nextp);
+ 	of_console_init();
+ 
+diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
+index aa36223..9222700 100644
+--- a/arch/sparc/kernel/smp_64.c
++++ b/arch/sparc/kernel/smp_64.c
+@@ -370,7 +370,7 @@ static int __cpuinit smp_boot_one_cpu(unsigned int cpu)
+ 	} else {
+ 		struct device_node *dp = of_find_node_by_cpuid(cpu);
+ 
+-		prom_startcpu(dp->node, entry, cookie);
++		prom_startcpu(dp->linux_phandle, entry, cookie);
+ 	}
+ 
+ 	for (timeout = 0; timeout < 50000; timeout++) {
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 6164781..07ae161 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -315,9 +315,8 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
+ 					__alignof__(struct property));
+ 		if (allnextpp) {
+ 			if (strcmp(pname, "linux,phandle") == 0) {
+-				np->node = *((u32 *)*p);
+ 				if (np->linux_phandle == 0)
+-					np->linux_phandle = np->node;
++					np->linux_phandle = *((u32 *)*p);
+ 			}
+ 			if (strcmp(pname, "ibm,phandle") == 0)
+ 				np->linux_phandle = *((u32 *)*p);
+diff --git a/drivers/sbus/char/openprom.c b/drivers/sbus/char/openprom.c
+index 75ac19b..a776e65 100644
+--- a/drivers/sbus/char/openprom.c
++++ b/drivers/sbus/char/openprom.c
+@@ -233,7 +233,7 @@ static int opromnext(void __user *argp, unsigned int cmd, struct device_node *dp
+ 
+ 	ph = 0;
+ 	if (dp)
+-		ph = dp->node;
++		ph = dp->linux_phandle;
+ 
+ 	data->current_node = dp;
+ 	*((int *) op->oprom_array) = ph;
+@@ -256,7 +256,7 @@ static int oprompci2node(void __user *argp, struct device_node *dp, struct openp
+ 
+ 		dp = pci_device_to_OF_node(pdev);
+ 		data->current_node = dp;
+-		*((int *)op->oprom_array) = dp->node;
++		*((int *)op->oprom_array) = dp->linux_phandle;
+ 		op->oprom_size = sizeof(int);
+ 		err = copyout(argp, op, bufsize + sizeof(int));
+ 
+@@ -273,7 +273,7 @@ static int oprompath2node(void __user *argp, struct device_node *dp, struct open
+ 
+ 	dp = of_find_node_by_path(op->oprom_array);
+ 	if (dp)
+-		ph = dp->node;
++		ph = dp->linux_phandle;
+ 	data->current_node = dp;
+ 	*((int *)op->oprom_array) = ph;
+ 	op->oprom_size = sizeof(int);
+@@ -540,7 +540,7 @@ static int opiocgetnext(unsigned int cmd, void __user *argp)
+ 		}
+ 	}
+ 	if (dp)
+-		nd = dp->node;
++		nd = dp->linux_phandle;
+ 	if (copy_to_user(argp, &nd, sizeof(phandle)))
+ 		return -EFAULT;
+ 
+@@ -570,7 +570,7 @@ static int openprom_bsd_ioctl(struct inode * inode, struct file * file,
+ 	case OPIOCGETOPTNODE:
+ 		BUILD_BUG_ON(sizeof(phandle) != sizeof(int));
+ 
+-		if (copy_to_user(argp, &options_node->node, sizeof(phandle)))
++		if (copy_to_user(argp, &options_node->linux_phandle, sizeof(phandle)))
+ 			return -EFAULT;
+ 
+ 		return 0;
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index 913b4a4..8357927 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -3104,7 +3104,7 @@ static int __devinit atyfb_setup_sparc(struct pci_dev *pdev,
+ 	}
+ 
+ 	dp = pci_device_to_OF_node(pdev);
+-	if (node == dp->node) {
++	if (node == dp->linux_phandle) {
+ 		struct fb_var_screeninfo *var = &default_var;
+ 		unsigned int N, P, Q, M, T, R;
+ 		u32 v_total, h_total;
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 0a51742..0ddd985 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -39,10 +39,7 @@ struct of_irq_controller;
+ struct device_node {
+ 	const char *name;
+ 	const char *type;
+-	phandle	node;
+-#if !defined(CONFIG_SPARC)
+ 	phandle linux_phandle;
+-#endif
+ 	char	*full_name;
+ 
+ 	struct	property *properties;
