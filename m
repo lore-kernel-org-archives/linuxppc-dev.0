@@ -1,27 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CF44D1007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 Nov 2009 08:06:26 +1100 (EST)
-In-Reply-To: <4B0C1E61.6010101@yahoo.es>
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
-	<90646C9F-F27D-47AD-9985-83DB7381D6BF@kernel.crashing.org>
-	<4B0C1E61.6010101@yahoo.es>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AD8F343B-C6F3-403C-B26F-C522775DF8E5@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 05/19] powerpc: wii: bootwrapper bits
-Date: Tue, 24 Nov 2009 22:13:09 +0100
-To: Albert Herranz <albert_herranz@yahoo.es>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 11/11] of: unify phandle name in struct device_node
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20091124.093732.203692950.davem@davemloft.net>
+References: <20091124081316.6216.66310.stgit@angua>
+	<20091124081957.6216.74456.stgit@angua>
+	<20091124.093732.203692950.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 25 Nov 2009 08:06:55 +1100
+Message-ID: <1259096815.16367.133.camel@pasglop>
+Mime-Version: 1.0
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,118 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> + * We enter with an unknown cache, high BATs and MMU status.
->>
->> What does this mean?  You know the low four BATs on entry and
->> nothing else?
->>
->
-> That means that we do not make assumptions regarding:
-> - the state of the cache (enabled vs disabled)
-> - if the high BATs are enabled or not
-> - if the MMU is enabled or not
->
-> Is this clearer?
+On Tue, 2009-11-24 at 09:37 -0800, David Miller wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Date: Tue, 24 Nov 2009 01:20:05 -0700
+> 
+> > In struct device_node, the phandle is named 'linux_phandle' for PowerPC
+> > and MicroBlaze, and 'node' for SPARC.  There is no good reason for the
+> > difference, it is just an artifact of the code diverging over a couple
+> > of years.  This patch renames .node to .linux_phandle for SPARC.
+> 
+> I know it's just a name, but there is no reason to put "linux" in the
+> member name.  It's the real device phandle value from OpenFirmware not
+> something invented by Linux's OF layer.
+> 
+> PowerPC uses this for something different, it records the information
+> here using the special "linux,phandle" and "ibm,phandle" properties.
+> 
+> See unflatten_dt_node() in arch/powerpc/kernel/prom.c before your
+> changes.
 
-Yeah it is.
+Right, this comes from a subtle problem with our firmwares on pSeries.
 
->>> +    mfmsr    9\n\
->>> +    andi.    0, 9, (1<<4)|(1<<5) /* MSR_DR|MSR_IR */\n\
->>
->>> +    andc    9, 9, 0\n\
->>
->> mfmsr 9 ; rlwinm 9,9,0,~0x30 ?
->>
->
-> Yes. Maybe
->
-> mfmsr 9 ; rlwinm 9,9,0,~((1<<4)|(1<<5)) /* MSR_DR|MSR_IR */
+We have a phandle from OF. But some devices, especially virtual devices,
+also have an "ibm,phandle" which may or may not be the same afaik.
 
-Sure, or ~0x30 with that comment.  You can save an insn and make
-the code clearer at the same time, how exactly you write it, I don't
-care :-)
+In addition, when the hypervisor hotplugs some devices, it sends us some
+new device-tree bits to add. Those don't have a phandle in the formal
+sense afaik, but -do- have an ibm,phandle property.
 
->>> +    mtspr    0x210, 8    /* IBAT0U */\n\
->>> +    mtspr    0x211, 8    /* IBAT0L */\n\
->>
->> You only need to set the upper BAT to zero, saves some code.
->
-> Great. Is this documented somewhere?
+I think we can always just use ibm,phandle instead of the OF one when
+the former is present, they should be non overlapping, but of course,
+any chance in that area will require plenty of testing on some of those
+machines.
 
-Sure, it's all in the PEM.
-
->>> +    isync\n\
->>
->> isync here is cargo cult
->
-> I'll offer a dead chicken to compensate for this.
-
-Thanks, I needed some more of those :-)
-
->> Also, you should normally write the lower BAT first.  Doesn't matter
->> here because IR=DR=0 of course.
->
-> I can change that too if it's the general way to go.
-
-Please do.
-
->>> +    lis    8, 0xcc00    /* I/O mem */\n\
->>> +    ori    8, 8, 0x3ff    /* 32MiB */\n\
->>> +    lis    9, 0x0c00\n\
->>> +    ori    9, 9, 0x002a    /* uncached, guarded, rw */\n\
->>> +    mtspr    0x21a, 8    /* DBAT1U */\n\
->>> +    mtspr    0x21b, 9    /* DBAT1L */\n\
->>
->> Is there any real reason you don't identity map this?
-
-> No. There's a bit of nostalgia there.
-> (On the other hand there's no real reason to identity map it).
-
-It's a tiny bit cleaner and stops people from wondering why :-)
-
->>> +    /* enable high BATs */\n\
->>> +    lis    8, 0x8200\n\
->>> +    mtspr    0x3f3, 8    /* HID4 */\n\
->>
->> You need to use read-modify-write here.  Also, shouldn't you
->> enable the extra BATs before setting them?
->>
->
-> No. You should first set them up and then enable them.
-> The content of the HIGH BATs is undefined on boot, AFAIK.
-
-All BATs are undefined at boot; you need to clear them / set them
-before enabling them (DR=1 or IR=1), so there is nothing special
-about the high BATs.
-
-What I am getting at is if the mfspr/mtspr to the high BATs does
-work when the HID bit for them is off.
-
-Please address the RMW thing (don't clear bits in HID4).
-
->>> +    /* enable caches */\n\
->>> +    mfspr    8, 0x3f0\n\
->>> +    ori    8, 8, 0xc000\n\
->>> +    mtspr    0x3f0, 8    /* HID0 */\n\
->>> +    isync\n\
->>
->> You need to invalidate the L1 caches at the same time as you enable
->> them.
->>
->
-> Ok. I'll check if the caches are enabled. If they aren't I'll  
-> invalidate and enable them.
-
-Yeah, good point.
-
-> If the "!" is ugly I can use the following idiom, introducing an  
-> error variable.
->
->   error = ug_grab_io_base();
->   if (!error && ug_is_adapter_present())
->      /* blah */
-
-Much clearer, thanks.
-
-
-Segher
+Cheers,
+Ben.
