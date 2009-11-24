@@ -1,19 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20091124.093732.203692950.davem@davemloft.net>
-References: <20091124081316.6216.66310.stgit@angua>
-	<20091124081957.6216.74456.stgit@angua>
-	<20091124.093732.203692950.davem@davemloft.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 24 Nov 2009 13:33:22 -0700
-Message-ID: <fa686aa40911241233k7c6d428g8f70f00abdd754e8@mail.gmail.com>
-Subject: Re: [PATCH 11/11] of: unify phandle name in struct device_node
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F20C4B6EE9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 25 Nov 2009 07:53:26 +1100 (EST)
+In-Reply-To: <4B0C1A25.8030401@yahoo.es>
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<CE435D2F-8C67-4045-942D-4AA08BF784D0@kernel.crashing.org>
+	<4B0C1A25.8030401@yahoo.es>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CC1D5EB1-27C2-47A1-96D8-D007D86C4881@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 03/19] powerpc: gamecube: bootwrapper bits
+Date: Tue, 24 Nov 2009 22:00:08 +0100
+To: Albert Herranz <albert_herranz@yahoo.es>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 24, 2009 at 10:37 AM, David Miller <davem@davemloft.net> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> Date: Tue, 24 Nov 2009 01:20:05 -0700
+>>> +asm ("\n\
+>>
+>>
+>> A file scope asm?!  Please don't.
+>>
+> So what's your proposal then? Placing it within a fake func?
+> That asm snippet is the entry point. I took as an example how  
+> prpmc2800.c deals with that, providing an own version of the (weak)  
+> _zImage_start.
+
+Use an assembler source file.  You'll get much nicer syntax as well
+(none of that \n stuff).
+
+>>> +    /* IBAT3,DBAT3 for first 16Mbytes */\n\
+>>> +    li    8, 0x01ff    /* 16MB */\n\
+>>> +    li      9, 0x0002    /* rw */\n\
+>>> +    mtspr   0x216, 8    /* IBAT3U */\n\
+>>> +    mtspr   0x217, 9    /* IBAT3L */\n\
+>>> +    mtspr   0x21e, 8    /* DBAT3U */\n\
+>>> +    mtspr   0x21f, 9    /* DBAT3L */\n\
+>>
+>> WIMG=0000, are you sure?  Not M=1?
 >
->> In struct device_node, the phandle is named 'linux_phandle' for PowerPC
->> and MicroBlaze, and 'node' for SPARC. =A0There is no good reason for the
->> difference, it is just an artifact of the code diverging over a couple
->> of years. =A0This patch renames .node to .linux_phandle for SPARC.
->
-> I know it's just a name, but there is no reason to put "linux" in the
-> member name. =A0It's the real device phandle value from OpenFirmware not
-> something invented by Linux's OF layer.
+> To be honest, I don't recall the details now.
+> But it was tested in the very early days, the result was not the  
+> expected one and, in the end, manual cache coherency management was  
+> still needed.
 
-I agree, and I also considered renaming it to simply 'phandle' or to
-change the powerpc code back to using .node everywhere (more on .node
-usage in powerpc below).  I didn't want to use .node because .node is
-pretty generic, and is used in other places for different things.
-Basically I wanted to avoid confusion.  In particular, .node points to
-a device_node, not a phandle, in struct of_device.  Changing all
-references to simply 'phandle' seems to be the best, but it does
-require changes to more locations in the code.  In the end I decided
-on some constructive lazyness by settling for the already-used
-.linux_phandle so that I would need to touch as many files, but still
-retain a unique name that is easy to find.  If you prefer, I can
-change it all to simply '.phandle'.
+Sure, the memory controllers don't do coherency.  I'm slightly worried
+about two things:
+1) Will the generic code use M=0 as well?  Is it a problem if it  
+doesn't?
+2) Do lwarx. etc. work in M=0?
 
-> PowerPC uses this for something different, it records the information
-> here using the special "linux,phandle" and "ibm,phandle" properties.
+And a question: does M=0 actually give better performance (lower bus
+utilisation, and maybe saves a few cycles)?
 
-Agreed, the phandle isn't a real phandle when using the flat tree.
-However, though the source of the phandle value is different, the use
-case is identical, so it make sense to stuff it into the same member.
-Merging them lets me unify more code.  For example,
-of_find_node_by_phandle().
 
-> See unflatten_dt_node() in arch/powerpc/kernel/prom.c before your
-> changes.
-
-Yup, I looked at this.  The unflatten code stuffs both linux,phandle
-and ibm,phandle into .linux_phandle, and linux,phandle also gets
-stuffed into .node.  But all the users except one use the
-.linux_phandle, not .node, and that remaining user *I think* can
-safely use .linux_phandle too.
-
-Thanks for the review,
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Segher
