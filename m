@@ -1,13 +1,14 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 09/11] of: merge of_attach_node() & of_detach_node()
+Subject: [PATCH 10/11] microblaze: gut implementation of
+	early_init_dt_scan_cpus()
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	sparclinux@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
 	benh@kernel.crashing.org, sfr@canb.auug.org.au,
 	davem@davemloft.net, monstr@monstr.eu
-Date: Tue, 24 Nov 2009 01:19:39 -0700
-Message-ID: <20091124081931.6216.27102.stgit@angua>
+Date: Tue, 24 Nov 2009 01:19:52 -0700
+Message-ID: <20091124081944.6216.41834.stgit@angua>
 In-Reply-To: <20091124081316.6216.66310.stgit@angua>
 References: <20091124081316.6216.66310.stgit@angua>
 MIME-Version: 1.0
@@ -21,272 +22,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between PowerPC and Microblaze
+Microblaze only has one CPU, it isn't SMP at all.  This function is
+effectively just a no-op, so remove it.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/include/asm/prom.h |    4 --
- arch/microblaze/kernel/prom.c      |   59 -----------------------------------
- arch/powerpc/include/asm/prom.h    |    4 --
- arch/powerpc/kernel/prom.c         |   59 -----------------------------------
- drivers/of/base.c                  |   60 ++++++++++++++++++++++++++++++++++++
- include/linux/of.h                 |    4 ++
- 6 files changed, 64 insertions(+), 126 deletions(-)
+ arch/microblaze/kernel/prom.c |   54 -----------------------------------------
+ 1 files changed, 0 insertions(+), 54 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
-index 07d1063..6c6b386 100644
---- a/arch/microblaze/include/asm/prom.h
-+++ b/arch/microblaze/include/asm/prom.h
-@@ -39,10 +39,6 @@ extern struct device_node *of_chosen;
- 
- extern rwlock_t devtree_lock;	/* temporary while merging */
- 
--/* For updating the device tree at runtime */
--extern void of_attach_node(struct device_node *);
--extern void of_detach_node(struct device_node *);
--
- /* Other Prototypes */
- extern int early_uartlite_console(void);
- 
 diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index c0d53b7..8c00457 100644
+index 8c00457..1f79e4d 100644
 --- a/arch/microblaze/kernel/prom.c
 +++ b/arch/microblaze/kernel/prom.c
-@@ -313,65 +313,6 @@ struct device_node *of_find_node_by_phandle(phandle handle)
- }
- EXPORT_SYMBOL(of_find_node_by_phandle);
- 
--/*
-- * Plug a device node into the tree and global list.
-- */
--void of_attach_node(struct device_node *np)
--{
--	unsigned long flags;
+@@ -50,60 +50,6 @@ struct device_node *of_chosen;
+ int __init early_init_dt_scan_cpus(unsigned long node, const char *uname,
+ 				   int depth, void *data)
+ {
+-	static int logical_cpuid;
+-	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+-	const u32 *intserv;
+-	int i, nthreads;
+-	int found = 0;
 -
--	write_lock_irqsave(&devtree_lock, flags);
--	np->sibling = np->parent->child;
--	np->allnext = allnodes;
--	np->parent->child = np;
--	allnodes = np;
--	write_unlock_irqrestore(&devtree_lock, flags);
--}
+-	/* We are scanning "cpu" nodes only */
+-	if (type == NULL || strcmp(type, "cpu") != 0)
+-		return 0;
 -
--/*
-- * "Unplug" a node from the device tree.  The caller must hold
-- * a reference to the node.  The memory associated with the node
-- * is not freed until its refcount goes to zero.
-- */
--void of_detach_node(struct device_node *np)
--{
--	struct device_node *parent;
--	unsigned long flags;
+-	/* Get physical cpuid */
+-	intserv = of_get_flat_dt_prop(node, "reg", NULL);
+-	nthreads = 1;
 -
--	write_lock_irqsave(&devtree_lock, flags);
+-	/*
+-	 * Now see if any of these threads match our boot cpu.
+-	 * NOTE: This must match the parsing done in smp_setup_cpu_maps.
+-	 */
+-	for (i = 0; i < nthreads; i++) {
+-		/*
+-		 * version 2 of the kexec param format adds the phys cpuid of
+-		 * booted proc.
+-		 */
+-		if (initial_boot_params && initial_boot_params->version >= 2) {
+-			if (intserv[i] ==
+-					initial_boot_params->boot_cpuid_phys) {
+-				found = 1;
+-				break;
+-			}
+-		} else {
+-			/*
+-			 * Check if it's the boot-cpu, set it's hw index now,
+-			 * unfortunately this format did not support booting
+-			 * off secondary threads.
+-			 */
+-			if (of_get_flat_dt_prop(node,
+-					"linux,boot-cpu", NULL) != NULL) {
+-				found = 1;
+-				break;
+-			}
+-		}
 -
--	parent = np->parent;
--	if (!parent)
--		goto out_unlock;
--
--	if (allnodes == np)
--		allnodes = np->allnext;
--	else {
--		struct device_node *prev;
--		for (prev = allnodes;
--		     prev->allnext != np;
--		     prev = prev->allnext)
--			;
--		prev->allnext = np->allnext;
+-#ifdef CONFIG_SMP
+-		/* logical cpu id is always 0 on UP kernels */
+-		logical_cpuid++;
+-#endif
 -	}
 -
--	if (parent->child == np)
--		parent->child = np->sibling;
--	else {
--		struct device_node *prevsib;
--		for (prevsib = np->parent->child;
--		     prevsib->sibling != np;
--		     prevsib = prevsib->sibling)
--			;
--		prevsib->sibling = np->sibling;
+-	if (found) {
+-		pr_debug("boot cpu: logical %d physical %d\n", logical_cpuid,
+-			intserv[i]);
+-		boot_cpuid = logical_cpuid;
 -	}
 -
--	of_node_set_flag(np, OF_DETACHED);
--
--out_unlock:
--	write_unlock_irqrestore(&devtree_lock, flags);
--}
--
- #if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
- static struct debugfs_blob_wrapper flat_dt_blob;
- 
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 2ab9cbd..f384db8 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -34,10 +34,6 @@ extern struct device_node *of_chosen;
- 
- #define HAVE_ARCH_DEVTREE_FIXUPS
- 
--/* For updating the device tree at runtime */
--extern void of_attach_node(struct device_node *);
--extern void of_detach_node(struct device_node *);
--
- #ifdef CONFIG_PPC32
- /*
-  * PCI <-> OF matching functions
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 6873db9..7d0beeb 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -740,65 +740,6 @@ struct device_node *of_find_next_cache_node(struct device_node *np)
- 	return NULL;
+ 	return 0;
  }
  
--/*
-- * Plug a device node into the tree and global list.
-- */
--void of_attach_node(struct device_node *np)
--{
--	unsigned long flags;
--
--	write_lock_irqsave(&devtree_lock, flags);
--	np->sibling = np->parent->child;
--	np->allnext = allnodes;
--	np->parent->child = np;
--	allnodes = np;
--	write_unlock_irqrestore(&devtree_lock, flags);
--}
--
--/*
-- * "Unplug" a node from the device tree.  The caller must hold
-- * a reference to the node.  The memory associated with the node
-- * is not freed until its refcount goes to zero.
-- */
--void of_detach_node(struct device_node *np)
--{
--	struct device_node *parent;
--	unsigned long flags;
--
--	write_lock_irqsave(&devtree_lock, flags);
--
--	parent = np->parent;
--	if (!parent)
--		goto out_unlock;
--
--	if (allnodes == np)
--		allnodes = np->allnext;
--	else {
--		struct device_node *prev;
--		for (prev = allnodes;
--		     prev->allnext != np;
--		     prev = prev->allnext)
--			;
--		prev->allnext = np->allnext;
--	}
--
--	if (parent->child == np)
--		parent->child = np->sibling;
--	else {
--		struct device_node *prevsib;
--		for (prevsib = np->parent->child;
--		     prevsib->sibling != np;
--		     prevsib = prevsib->sibling)
--			;
--		prevsib->sibling = np->sibling;
--	}
--
--	of_node_set_flag(np, OF_DETACHED);
--
--out_unlock:
--	write_unlock_irqrestore(&devtree_lock, flags);
--}
--
- #ifdef CONFIG_PPC_PSERIES
- /*
-  * Fix up the uninitialized fields in a new device node:
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 4b10c89..9212b87 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -60,6 +60,66 @@ int of_n_size_cells(struct device_node *np)
- }
- EXPORT_SYMBOL(of_n_size_cells);
- 
-+/**
-+ * of_attach_node - Plug a device node into the tree and global list.
-+ */
-+void of_attach_node(struct device_node *np)
-+{
-+	unsigned long flags;
-+
-+	write_lock_irqsave(&devtree_lock, flags);
-+	np->sibling = np->parent->child;
-+	np->allnext = allnodes;
-+	np->parent->child = np;
-+	allnodes = np;
-+	write_unlock_irqrestore(&devtree_lock, flags);
-+}
-+
-+/**
-+ * of_detach_node - "Unplug" a node from the device tree.
-+ *
-+ * The caller must hold a reference to the node.  The memory associated with
-+ * the node is not freed until its refcount goes to zero.
-+ */
-+void of_detach_node(struct device_node *np)
-+{
-+	struct device_node *parent;
-+	unsigned long flags;
-+
-+	write_lock_irqsave(&devtree_lock, flags);
-+
-+	parent = np->parent;
-+	if (!parent)
-+		goto out_unlock;
-+
-+	if (allnodes == np)
-+		allnodes = np->allnext;
-+	else {
-+		struct device_node *prev;
-+		for (prev = allnodes;
-+		     prev->allnext != np;
-+		     prev = prev->allnext)
-+			;
-+		prev->allnext = np->allnext;
-+	}
-+
-+	if (parent->child == np)
-+		parent->child = np->sibling;
-+	else {
-+		struct device_node *prevsib;
-+		for (prevsib = np->parent->child;
-+		     prevsib->sibling != np;
-+		     prevsib = prevsib->sibling)
-+			;
-+		prevsib->sibling = np->sibling;
-+	}
-+
-+	of_node_set_flag(np, OF_DETACHED);
-+
-+out_unlock:
-+	write_unlock_irqrestore(&devtree_lock, flags);
-+}
-+
- #if !defined(CONFIG_SPARC)   /* SPARC doesn't do ref counting (yet) */
- /**
-  *	of_node_get - Increment refcount of a node
-diff --git a/include/linux/of.h b/include/linux/of.h
-index d4c014a..0a51742 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -130,6 +130,10 @@ static inline unsigned long of_read_ulong(const u32 *cell, int size)
- 
- #define OF_BAD_ADDR	((u64)-1)
- 
-+/* For updating the device tree at runtime */
-+extern void of_attach_node(struct device_node *);
-+extern void of_detach_node(struct device_node *);
-+
- extern struct device_node *of_find_node_by_name(struct device_node *from,
- 	const char *name);
- #define for_each_node_by_name(dn, name) \
