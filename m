@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 08/11] of: Merge of_node_get() and of_node_put()
+Subject: [PATCH 09/11] of: merge of_attach_node() & of_detach_node()
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	sparclinux@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
 	benh@kernel.crashing.org, sfr@canb.auug.org.au,
 	davem@davemloft.net, monstr@monstr.eu
-Date: Tue, 24 Nov 2009 01:19:26 -0700
-Message-ID: <20091124081918.6216.77775.stgit@angua>
+Date: Tue, 24 Nov 2009 01:19:39 -0700
+Message-ID: <20091124081931.6216.27102.stgit@angua>
 In-Reply-To: <20091124081316.6216.66310.stgit@angua>
 References: <20091124081316.6216.66310.stgit@angua>
 MIME-Version: 1.0
@@ -21,268 +21,272 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between PowerPC and MicroBlaze
+Merge common code between PowerPC and Microblaze
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/kernel/prom.c |   74 ----------------------------------------
- arch/powerpc/kernel/prom.c    |   73 ----------------------------------------
- drivers/of/base.c             |   75 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 75 insertions(+), 147 deletions(-)
+ arch/microblaze/include/asm/prom.h |    4 --
+ arch/microblaze/kernel/prom.c      |   59 -----------------------------------
+ arch/powerpc/include/asm/prom.h    |    4 --
+ arch/powerpc/kernel/prom.c         |   59 -----------------------------------
+ drivers/of/base.c                  |   60 ++++++++++++++++++++++++++++++++++++
+ include/linux/of.h                 |    4 ++
+ 6 files changed, 64 insertions(+), 126 deletions(-)
 
+diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
+index 07d1063..6c6b386 100644
+--- a/arch/microblaze/include/asm/prom.h
++++ b/arch/microblaze/include/asm/prom.h
+@@ -39,10 +39,6 @@ extern struct device_node *of_chosen;
+ 
+ extern rwlock_t devtree_lock;	/* temporary while merging */
+ 
+-/* For updating the device tree at runtime */
+-extern void of_attach_node(struct device_node *);
+-extern void of_detach_node(struct device_node *);
+-
+ /* Other Prototypes */
+ extern int early_uartlite_console(void);
+ 
 diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index c97192d..c0d53b7 100644
+index c0d53b7..8c00457 100644
 --- a/arch/microblaze/kernel/prom.c
 +++ b/arch/microblaze/kernel/prom.c
-@@ -313,80 +313,6 @@ struct device_node *of_find_node_by_phandle(phandle handle)
+@@ -313,65 +313,6 @@ struct device_node *of_find_node_by_phandle(phandle handle)
  }
  EXPORT_SYMBOL(of_find_node_by_phandle);
  
--/**
-- *	of_node_get - Increment refcount of a node
-- *	@node:	Node to inc refcount, NULL is supported to
-- *		simplify writing of callers
-- *
-- *	Returns node.
+-/*
+- * Plug a device node into the tree and global list.
 - */
--struct device_node *of_node_get(struct device_node *node)
+-void of_attach_node(struct device_node *np)
 -{
--	if (node)
--		kref_get(&node->kref);
--	return node;
--}
--EXPORT_SYMBOL(of_node_get);
+-	unsigned long flags;
 -
--static inline struct device_node *kref_to_device_node(struct kref *kref)
--{
--	return container_of(kref, struct device_node, kref);
+-	write_lock_irqsave(&devtree_lock, flags);
+-	np->sibling = np->parent->child;
+-	np->allnext = allnodes;
+-	np->parent->child = np;
+-	allnodes = np;
+-	write_unlock_irqrestore(&devtree_lock, flags);
 -}
 -
--/**
-- *	of_node_release - release a dynamically allocated node
-- *	@kref:  kref element of the node to be released
-- *
-- *	In of_node_put() this function is passed to kref_put()
-- *	as the destructor.
+-/*
+- * "Unplug" a node from the device tree.  The caller must hold
+- * a reference to the node.  The memory associated with the node
+- * is not freed until its refcount goes to zero.
 - */
--static void of_node_release(struct kref *kref)
+-void of_detach_node(struct device_node *np)
 -{
--	struct device_node *node = kref_to_device_node(kref);
--	struct property *prop = node->properties;
+-	struct device_node *parent;
+-	unsigned long flags;
 -
--	/* We should never be releasing nodes that haven't been detached. */
--	if (!of_node_check_flag(node, OF_DETACHED)) {
--		printk(KERN_INFO "WARNING: Bad of_node_put() on %s\n",
--			node->full_name);
--		dump_stack();
--		kref_init(&node->kref);
--		return;
+-	write_lock_irqsave(&devtree_lock, flags);
+-
+-	parent = np->parent;
+-	if (!parent)
+-		goto out_unlock;
+-
+-	if (allnodes == np)
+-		allnodes = np->allnext;
+-	else {
+-		struct device_node *prev;
+-		for (prev = allnodes;
+-		     prev->allnext != np;
+-		     prev = prev->allnext)
+-			;
+-		prev->allnext = np->allnext;
 -	}
 -
--	if (!of_node_check_flag(node, OF_DYNAMIC))
--		return;
--
--	while (prop) {
--		struct property *next = prop->next;
--		kfree(prop->name);
--		kfree(prop->value);
--		kfree(prop);
--		prop = next;
--
--		if (!prop) {
--			prop = node->deadprops;
--			node->deadprops = NULL;
--		}
+-	if (parent->child == np)
+-		parent->child = np->sibling;
+-	else {
+-		struct device_node *prevsib;
+-		for (prevsib = np->parent->child;
+-		     prevsib->sibling != np;
+-		     prevsib = prevsib->sibling)
+-			;
+-		prevsib->sibling = np->sibling;
 -	}
--	kfree(node->full_name);
--	kfree(node->data);
--	kfree(node);
+-
+-	of_node_set_flag(np, OF_DETACHED);
+-
+-out_unlock:
+-	write_unlock_irqrestore(&devtree_lock, flags);
 -}
 -
--/**
-- *	of_node_put - Decrement refcount of a node
-- *	@node:	Node to dec refcount, NULL is supported to
-- *		simplify writing of callers
-- *
-- */
--void of_node_put(struct device_node *node)
--{
--	if (node)
--		kref_put(&node->kref, of_node_release);
--}
--EXPORT_SYMBOL(of_node_put);
+ #if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
+ static struct debugfs_blob_wrapper flat_dt_blob;
+ 
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 2ab9cbd..f384db8 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -34,10 +34,6 @@ extern struct device_node *of_chosen;
+ 
+ #define HAVE_ARCH_DEVTREE_FIXUPS
+ 
+-/* For updating the device tree at runtime */
+-extern void of_attach_node(struct device_node *);
+-extern void of_detach_node(struct device_node *);
 -
+ #ifdef CONFIG_PPC32
  /*
-  * Plug a device node into the tree and global list.
-  */
+  * PCI <-> OF matching functions
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 65de093..6873db9 100644
+index 6873db9..7d0beeb 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
-@@ -740,79 +740,6 @@ struct device_node *of_find_next_cache_node(struct device_node *np)
+@@ -740,65 +740,6 @@ struct device_node *of_find_next_cache_node(struct device_node *np)
  	return NULL;
  }
  
--/**
-- *	of_node_get - Increment refcount of a node
-- *	@node:	Node to inc refcount, NULL is supported to
-- *		simplify writing of callers
-- *
-- *	Returns node.
+-/*
+- * Plug a device node into the tree and global list.
 - */
--struct device_node *of_node_get(struct device_node *node)
+-void of_attach_node(struct device_node *np)
 -{
--	if (node)
--		kref_get(&node->kref);
--	return node;
--}
--EXPORT_SYMBOL(of_node_get);
+-	unsigned long flags;
 -
--static inline struct device_node * kref_to_device_node(struct kref *kref)
--{
--	return container_of(kref, struct device_node, kref);
+-	write_lock_irqsave(&devtree_lock, flags);
+-	np->sibling = np->parent->child;
+-	np->allnext = allnodes;
+-	np->parent->child = np;
+-	allnodes = np;
+-	write_unlock_irqrestore(&devtree_lock, flags);
 -}
 -
--/**
-- *	of_node_release - release a dynamically allocated node
-- *	@kref:  kref element of the node to be released
-- *
-- *	In of_node_put() this function is passed to kref_put()
-- *	as the destructor.
+-/*
+- * "Unplug" a node from the device tree.  The caller must hold
+- * a reference to the node.  The memory associated with the node
+- * is not freed until its refcount goes to zero.
 - */
--static void of_node_release(struct kref *kref)
+-void of_detach_node(struct device_node *np)
 -{
--	struct device_node *node = kref_to_device_node(kref);
--	struct property *prop = node->properties;
+-	struct device_node *parent;
+-	unsigned long flags;
 -
--	/* We should never be releasing nodes that haven't been detached. */
--	if (!of_node_check_flag(node, OF_DETACHED)) {
--		printk("WARNING: Bad of_node_put() on %s\n", node->full_name);
--		dump_stack();
--		kref_init(&node->kref);
--		return;
+-	write_lock_irqsave(&devtree_lock, flags);
+-
+-	parent = np->parent;
+-	if (!parent)
+-		goto out_unlock;
+-
+-	if (allnodes == np)
+-		allnodes = np->allnext;
+-	else {
+-		struct device_node *prev;
+-		for (prev = allnodes;
+-		     prev->allnext != np;
+-		     prev = prev->allnext)
+-			;
+-		prev->allnext = np->allnext;
 -	}
 -
--	if (!of_node_check_flag(node, OF_DYNAMIC))
--		return;
--
--	while (prop) {
--		struct property *next = prop->next;
--		kfree(prop->name);
--		kfree(prop->value);
--		kfree(prop);
--		prop = next;
--
--		if (!prop) {
--			prop = node->deadprops;
--			node->deadprops = NULL;
--		}
+-	if (parent->child == np)
+-		parent->child = np->sibling;
+-	else {
+-		struct device_node *prevsib;
+-		for (prevsib = np->parent->child;
+-		     prevsib->sibling != np;
+-		     prevsib = prevsib->sibling)
+-			;
+-		prevsib->sibling = np->sibling;
 -	}
--	kfree(node->full_name);
--	kfree(node->data);
--	kfree(node);
+-
+-	of_node_set_flag(np, OF_DETACHED);
+-
+-out_unlock:
+-	write_unlock_irqrestore(&devtree_lock, flags);
 -}
 -
--/**
-- *	of_node_put - Decrement refcount of a node
-- *	@node:	Node to dec refcount, NULL is supported to
-- *		simplify writing of callers
-- *
-- */
--void of_node_put(struct device_node *node)
--{
--	if (node)
--		kref_put(&node->kref, of_node_release);
--}
--EXPORT_SYMBOL(of_node_put);
--
+ #ifdef CONFIG_PPC_PSERIES
  /*
-  * Plug a device node into the tree and global list.
-  */
+  * Fix up the uninitialized fields in a new device node:
 diff --git a/drivers/of/base.c b/drivers/of/base.c
-index e81558f..4b10c89 100644
+index 4b10c89..9212b87 100644
 --- a/drivers/of/base.c
 +++ b/drivers/of/base.c
-@@ -60,6 +60,81 @@ int of_n_size_cells(struct device_node *np)
+@@ -60,6 +60,66 @@ int of_n_size_cells(struct device_node *np)
  }
  EXPORT_SYMBOL(of_n_size_cells);
  
-+#if !defined(CONFIG_SPARC)   /* SPARC doesn't do ref counting (yet) */
 +/**
-+ *	of_node_get - Increment refcount of a node
-+ *	@node:	Node to inc refcount, NULL is supported to
-+ *		simplify writing of callers
-+ *
-+ *	Returns node.
++ * of_attach_node - Plug a device node into the tree and global list.
 + */
-+struct device_node *of_node_get(struct device_node *node)
++void of_attach_node(struct device_node *np)
 +{
-+	if (node)
-+		kref_get(&node->kref);
-+	return node;
-+}
-+EXPORT_SYMBOL(of_node_get);
++	unsigned long flags;
 +
-+static inline struct device_node *kref_to_device_node(struct kref *kref)
-+{
-+	return container_of(kref, struct device_node, kref);
++	write_lock_irqsave(&devtree_lock, flags);
++	np->sibling = np->parent->child;
++	np->allnext = allnodes;
++	np->parent->child = np;
++	allnodes = np;
++	write_unlock_irqrestore(&devtree_lock, flags);
 +}
 +
 +/**
-+ *	of_node_release - release a dynamically allocated node
-+ *	@kref:  kref element of the node to be released
++ * of_detach_node - "Unplug" a node from the device tree.
 + *
-+ *	In of_node_put() this function is passed to kref_put()
-+ *	as the destructor.
++ * The caller must hold a reference to the node.  The memory associated with
++ * the node is not freed until its refcount goes to zero.
 + */
-+static void of_node_release(struct kref *kref)
++void of_detach_node(struct device_node *np)
 +{
-+	struct device_node *node = kref_to_device_node(kref);
-+	struct property *prop = node->properties;
++	struct device_node *parent;
++	unsigned long flags;
 +
-+	/* We should never be releasing nodes that haven't been detached. */
-+	if (!of_node_check_flag(node, OF_DETACHED)) {
-+		pr_err("ERROR: Bad of_node_put() on %s\n", node->full_name);
-+		dump_stack();
-+		kref_init(&node->kref);
-+		return;
++	write_lock_irqsave(&devtree_lock, flags);
++
++	parent = np->parent;
++	if (!parent)
++		goto out_unlock;
++
++	if (allnodes == np)
++		allnodes = np->allnext;
++	else {
++		struct device_node *prev;
++		for (prev = allnodes;
++		     prev->allnext != np;
++		     prev = prev->allnext)
++			;
++		prev->allnext = np->allnext;
 +	}
 +
-+	if (!of_node_check_flag(node, OF_DYNAMIC))
-+		return;
-+
-+	while (prop) {
-+		struct property *next = prop->next;
-+		kfree(prop->name);
-+		kfree(prop->value);
-+		kfree(prop);
-+		prop = next;
-+
-+		if (!prop) {
-+			prop = node->deadprops;
-+			node->deadprops = NULL;
-+		}
++	if (parent->child == np)
++		parent->child = np->sibling;
++	else {
++		struct device_node *prevsib;
++		for (prevsib = np->parent->child;
++		     prevsib->sibling != np;
++		     prevsib = prevsib->sibling)
++			;
++		prevsib->sibling = np->sibling;
 +	}
-+	kfree(node->full_name);
-+	kfree(node->data);
-+	kfree(node);
++
++	of_node_set_flag(np, OF_DETACHED);
++
++out_unlock:
++	write_unlock_irqrestore(&devtree_lock, flags);
 +}
 +
-+/**
-+ *	of_node_put - Decrement refcount of a node
-+ *	@node:	Node to dec refcount, NULL is supported to
-+ *		simplify writing of callers
-+ *
-+ */
-+void of_node_put(struct device_node *node)
-+{
-+	if (node)
-+		kref_put(&node->kref, of_node_release);
-+}
-+EXPORT_SYMBOL(of_node_put);
-+#endif /* !CONFIG_SPARC */
+ #if !defined(CONFIG_SPARC)   /* SPARC doesn't do ref counting (yet) */
+ /**
+  *	of_node_get - Increment refcount of a node
+diff --git a/include/linux/of.h b/include/linux/of.h
+index d4c014a..0a51742 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -130,6 +130,10 @@ static inline unsigned long of_read_ulong(const u32 *cell, int size)
+ 
+ #define OF_BAD_ADDR	((u64)-1)
+ 
++/* For updating the device tree at runtime */
++extern void of_attach_node(struct device_node *);
++extern void of_detach_node(struct device_node *);
 +
- struct property *of_find_property(const struct device_node *np,
- 				  const char *name,
- 				  int *lenp)
+ extern struct device_node *of_find_node_by_name(struct device_node *from,
+ 	const char *name);
+ #define for_each_node_by_name(dn, name) \
