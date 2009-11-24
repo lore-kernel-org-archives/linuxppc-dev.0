@@ -1,18 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 11/11] of: unify phandle name in struct device_node
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20091124.093732.203692950.davem@davemloft.net>
-References: <20091124081316.6216.66310.stgit@angua>
-	<20091124081957.6216.74456.stgit@angua>
-	<20091124.093732.203692950.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 08:06:55 +1100
-Message-ID: <1259096815.16367.133.camel@pasglop>
-Mime-Version: 1.0
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C6C9DB6EEC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 25 Nov 2009 08:08:31 +1100 (EST)
+In-Reply-To: <4B0C2002.4050704@yahoo.es>
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
+	<3D2BF5CA-C4BE-4250-8EC9-7A8E767572E2@kernel.crashing.org>
+	<4B0C2002.4050704@yahoo.es>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7129FD29-82CE-4731-90F2-0EA6775EF861@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 06/19] powerpc: gamecube/wii: introduce GAMECUBE_COMMON
+Date: Tue, 24 Nov 2009 22:15:14 +0100
+To: Albert Herranz <albert_herranz@yahoo.es>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-11-24 at 09:37 -0800, David Miller wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> Date: Tue, 24 Nov 2009 01:20:05 -0700
-> 
-> > In struct device_node, the phandle is named 'linux_phandle' for PowerPC
-> > and MicroBlaze, and 'node' for SPARC.  There is no good reason for the
-> > difference, it is just an artifact of the code diverging over a couple
-> > of years.  This patch renames .node to .linux_phandle for SPARC.
-> 
-> I know it's just a name, but there is no reason to put "linux" in the
-> member name.  It's the real device phandle value from OpenFirmware not
-> something invented by Linux's OF layer.
-> 
-> PowerPC uses this for something different, it records the information
-> here using the special "linux,phandle" and "ibm,phandle" properties.
-> 
-> See unflatten_dt_node() in arch/powerpc/kernel/prom.c before your
-> changes.
+>>> Add a config option GAMECUBE_COMMON to be used as a dependency  
+>>> for all
+>>> options common to the Nintendo GameCube and Wii video game consoles.
+>>
+>> Maybe something like GAMECUBE_OR_WII instead?  "COMMON" is so
+>> common it's meaningless.
+>>
+>
+> I don't like either GAMECUBE_OR_WII.
+> It looks as if it can be used to match options for the GAMECUBE  
+> _or_ WII. But that's not the meaning of it.
+>
+> This option should be used only for options applicable to both the  
+> GAMECUBE and WII, i.e. basically those options in the WII which  
+> where "inherited" from the GAMECUBE to make it retro-compatible.
+>
+> If GAMECUBE_COMMON is unacceptable, maybe GAMECUBE_LEGACY or  
+> GAMECUBE_COMPAT?
 
-Right, this comes from a subtle problem with our firmwares on pSeries.
+Maybe it's best to write GAMECUBE || WII in the places that use it,  
+then?
 
-We have a phandle from OF. But some devices, especially virtual devices,
-also have an "ibm,phandle" which may or may not be the same afaik.
 
-In addition, when the hypervisor hotplugs some devices, it sends us some
-new device-tree bits to add. Those don't have a phandle in the formal
-sense afaik, but -do- have an ibm,phandle property.
-
-I think we can always just use ibm,phandle instead of the OF one when
-the former is present, they should be non overlapping, but of course,
-any chance in that area will require plenty of testing on some of those
-machines.
-
-Cheers,
-Ben.
+Segher
