@@ -1,30 +1,17 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp106.mail.ukl.yahoo.com (smtp106.mail.ukl.yahoo.com
-	[77.238.184.38]) by ozlabs.org (Postfix) with SMTP id 3EBD1B6F1B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 Nov 2009 04:09:17 +1100 (EST)
-Message-ID: <4B0C1337.6070309@yahoo.es>
-Date: Tue, 24 Nov 2009 18:09:11 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [RFC PATCH 14/19] powerpc: allow ioremap within reserved fake
-	ram 	regions
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>	
-	<fa686aa40911221536pf558b1fte36dc88bdf58e883@mail.gmail.com>	
-	<4B0AED90.6050600@yahoo.es> <1259019909.31172.63.camel@concordia>
-In-Reply-To: <1259019909.31172.63.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <davem@davemloft.net>
+Date: Tue, 24 Nov 2009 09:37:32 -0800 (PST)
+Message-Id: <20091124.093732.203692950.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Subject: Re: [PATCH 11/11] of: unify phandle name in struct device_node
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091124081957.6216.74456.stgit@angua>
+References: <20091124081316.6216.66310.stgit@angua>
+	<20091124081957.6216.74456.stgit@angua>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
->> Would it be acceptable to create a global var __allow_ioremap_normal_ram that by default would have a value of 0 and would be set _only_ for those platforms needing it?
->>
->> The other solutions I see is:
->> - add support for discontiguous memory to powerpc 32-bits (which is not something that I can look into now)
->> - don't use the precious second 64MB area (which is a waste)
-> 
-> - Implement your own ppc_md.ioremap(), see iseries & cell for example.
-> 
-> Currently that's only called on 64-bit, but you could change that.
-> 
-> If I'm reading your patch right, you should be able to do that check in
-> your platform's ioremap() and then call the generic implementation to do
-> the actual work.
-> 
-> cheers
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 24 Nov 2009 01:20:05 -0700
 
-I could use ppc_md.ioremap to duplicate ioremap except for the ioremap ram check.
-But calling the stock ioremap without modifying it is not possible because it checks and bails out when ioremapping a region marked as ram (even if it's not real ram and it's memreserved).
+> In struct device_node, the phandle is named 'linux_phandle' for PowerPC
+> and MicroBlaze, and 'node' for SPARC.  There is no good reason for the
+> difference, it is just an artifact of the code diverging over a couple
+> of years.  This patch renames .node to .linux_phandle for SPARC.
 
-Is the list of memreserved areas preserved once the kernel is running?
-If it is preserved another option would be to unban ioremapping ram if memreserved.
+I know it's just a name, but there is no reason to put "linux" in the
+member name.  It's the real device phandle value from OpenFirmware not
+something invented by Linux's OF layer.
 
-Thanks for your input,
-Albert
+PowerPC uses this for something different, it records the information
+here using the special "linux,phandle" and "ibm,phandle" properties.
+
+See unflatten_dt_node() in arch/powerpc/kernel/prom.c before your
+changes.
