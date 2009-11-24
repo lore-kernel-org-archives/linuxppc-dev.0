@@ -1,20 +1,18 @@
-Return-Path: <nhorman@tuxdriver.com>
-Received: from smtp.tuxdriver.com (charlotte.tuxdriver.com [70.61.120.58])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BDB69B7B6A
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 01:43:48 +1100 (EST)
-Date: Tue, 24 Nov 2009 09:43:41 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc64: re-enable kexec to allow module loads with
-	CONFIG_MODVERSIONS and CONFIG_RELOCATABLE turned on
-Message-ID: <20091124144341.GA32099@hmsreliant.think-freely.org>
-References: <20091119195216.GC11414@hmsreliant.think-freely.org>
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 4563A1007D1
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 02:02:47 +1100 (EST)
+Message-ID: <4B0BF592.9020802@redhat.com>
+Date: Tue, 24 Nov 2009 17:02:42 +0200
+From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091119195216.GC11414@hmsreliant.think-freely.org>
-Cc: paulus@samba.org, nhorman@tuxdriver.com
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] PPC: Sync guest visible MMU state
+References: <1259049003-8028-1-git-send-email-agraf@suse.de>
+In-Reply-To: <1259049003-8028-1-git-send-email-agraf@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: kvm-ppc <kvm-ppc@vger.kernel.org>, kvm@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,65 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 19, 2009 at 02:52:16PM -0500, Neil Horman wrote:
-> Hey there-
-> 	Before anyone flames me for what a oddball solution this is, let me just
-> say I'm trying to get the ball rolling here.  I think there may be better
-> solutions that can be impemented in reloc_64.S, but I've yet to make any of the
-> ones I've tried work successfully.  I'm open to suggestions, but this solution
-> is the only one so far that I've been able to get to work. thanks :)
-> 
-> 
-> Adjust crcs in __kcrctab_* sections if relocs are used with CONFIG_RELOCATABLE
-> 
-> When CONFIG_MODVERSIONS and CONFIG_RELOCATABLE are enabled on powerpc platforms,
-> kdump has been failing in a rather odd way.  specifically modules will not
-> install.  This is because when validating the crcs of symbols that the module
-> needs, the crc of the module never matches the crc that is stored in the kernel.
-> 
-> The underlying cause of this is how CONFIG_MODVERSIONS is implemented, and how
-> CONFIG_RELOCATABLE are implemented.  with CONFIG_MODVERSIONS enabled, for every
-> exported symbol in the kernel we emit 2 symbols, __crc_#sym which is declared
-> extern and __kcrctab_##sym, which is placed in the __kcrctab section of the
-> binary.  The latter has its value set equal to the address of the former
-> (recalling it is declared extern).  After the object file is built, genksyms is
-> run on the processed source, and crcs are computed for each exported symbol.
-> genksyms then emits a linker script which defines each of the needed __crc_##sym
-> symbols, and sets their addresses euqal to their respective crcs.  This script
-> is then used in a secondary link to the previously build object file, so that
-> the crcs of the missing symbol can be validated on module insert.
-> 
-> The problem here is that because __kcrctab_sym is set equal to &__crc_##sym, a
-> relocation entry is emitted by the compiler for the __kcrctab__##sym.  Normally
-> this is not a problem, since relocation on other arches is done without the aid
-> of .rel.dyn sections.  PPC however uses these relocations when
-> CONFIG_RELOCATABLE is enabled.  nominally, since addressing starts at 0 for ppc,
-> its irrelevant, but if we start at a non-zero address (like we do when booting
-> via kexec from reserved crashkernel memory), the ppc boot code iterates over the
-> relocation entries, and winds up adding that relocation offset to all symbols,
-> including the symbols that are actually the aforementioned crc values in the
-> __kcrctab_* sections.  This effectively corrupts the crcs and prevents any
-> module loads from happening during a kdump.
-> 
-> My solution is to 'undo' these relocations prior to boot up.  If
-> ARCH_USES_RELOC_ENTRIES is defined, we add a symbol at address zero to the
-> linker script for that arch (I call it reloc_start, so that &reloc_start = 0).
-> This symbol will then indicate the relocation offset for any given boot.  We
-> also add an initcall to the module code that, during boot, scans the __kcrctab_*
-> sections and subtracts &reloc_start from every entry in those sections,
-> restoring the appropriate crc value.
-> 
-> I've verified that this allows kexec to work properly on ppc64 systems myself.
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> 
-Ping, any thoughts here?  As I've been mulling this over, I'm beginning to like
-this solution better than a completely arch-specific section, as this approach
-makes common the bits that any arch is going to need if they implement
-CONFIG_RELOCATABLE with a .rel[a].* section set.  The alternative is of course
-to simply skip the appropriate relocations, but thats something that every arch
-will need to discover on their own.  This makes it a bit more clear whats
-happening I think.
+On 11/24/2009 09:50 AM, Alexander Graf wrote:
+> Currently userspace has no chance to find out which virtual address space we're
+> in and resolve addresses. While that is a big problem for migration, it's also
+> unpleasent when debugging, as gdb and the monitor don't work on virtual
+> addresses.
+>    
 
-Regards
-Neil
+> index 92045a9..1240fcb 100644
+> --- a/include/linux/kvm.h
+> +++ b/include/linux/kvm.h
+> @@ -492,6 +492,7 @@ struct kvm_ioeventfd {
+>   #ifdef __KVM_HAVE_VCPU_EVENTS
+>   #define KVM_CAP_VCPU_EVENTS 41
+>   #endif
+> +#define KVM_CAP_PPC_SEGSTATE 42
+>
+>    
+
+42 is already taken (s390 psw and D. Adams), please use 43.
+
+-- 
+error compiling committee.c: too many arguments to function
