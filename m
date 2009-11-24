@@ -1,13 +1,14 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 05/11] of/flattree: merge early_init_dt_scan_chosen()
+Subject: [PATCH 06/11] of/flattree: merge early_init_devtree() and
+	early_init_move_devtree()
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	sparclinux@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
 	benh@kernel.crashing.org, sfr@canb.auug.org.au,
 	davem@davemloft.net, monstr@monstr.eu
-Date: Tue, 24 Nov 2009 01:18:48 -0700
-Message-ID: <20091124081840.6216.49419.stgit@angua>
+Date: Tue, 24 Nov 2009 01:19:01 -0700
+Message-ID: <20091124081853.6216.68105.stgit@angua>
 In-Reply-To: <20091124081316.6216.66310.stgit@angua>
 References: <20091124081316.6216.66310.stgit@angua>
 MIME-Version: 1.0
@@ -21,217 +22,390 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between PowerPC and Microblaze.  This patch
-splits the arch-specific stuff out into a new function,
-early_init_dt_scan_chosen_arch().
+Merge common code between Microblaze and PowerPC
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/kernel/prom.c |   44 ++-------------------------------------
- arch/powerpc/kernel/prom.c    |   46 +++++++++--------------------------------
- drivers/of/fdt.c              |   38 ++++++++++++++++++++++++++++++++++
- include/linux/of_fdt.h        |    3 +++
- 4 files changed, 53 insertions(+), 78 deletions(-)
+ arch/microblaze/kernel/prom.c |   53 +++--------------------
+ arch/powerpc/kernel/prom.c    |   94 +++--------------------------------------
+ drivers/of/fdt.c              |   92 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/of_fdt.h        |    7 +++
+ 4 files changed, 115 insertions(+), 131 deletions(-)
 
 diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index 7760186..7ee021f 100644
+index 7ee021f..543465a 100644
 --- a/arch/microblaze/kernel/prom.c
 +++ b/arch/microblaze/kernel/prom.c
-@@ -108,49 +108,9 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	return 0;
+@@ -47,9 +47,8 @@ struct device_node *of_chosen;
+ 
+ #define early_init_dt_scan_drconf_memory(node) 0
+ 
+-static int __init early_init_dt_scan_cpus(unsigned long node,
+-					  const char *uname, int depth,
+-					  void *data)
++int __init early_init_dt_scan_cpus(unsigned long node, const char *uname,
++				   int depth, void *data)
+ {
+ 	static int logical_cpuid;
+ 	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+@@ -113,8 +112,8 @@ void __init early_init_dt_scan_chosen_arch(unsigned long node)
+ 	/* No Microblaze specific code here */
  }
  
--static int __init early_init_dt_scan_chosen(unsigned long node,
+-static int __init early_init_dt_scan_memory(unsigned long node,
 -				const char *uname, int depth, void *data)
-+void __init early_init_dt_scan_chosen_arch(unsigned long node)
++int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
++				     int depth, void *data)
  {
--	unsigned long l;
--	char *p;
+ 	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+ 	u32 *reg, *endp;
+@@ -201,7 +200,7 @@ static inline unsigned long phyp_dump_calculate_reserve_size(void)
+  * without reserving anything. The memory in case of dump being
+  * active is freed when the dump is collected (by userland tools).
+  */
+-static void __init phyp_dump_reserve_mem(void)
++void __init phyp_dump_reserve_mem(void)
+ {
+ 	unsigned long base, size;
+ 	unsigned long variable_reserve_size;
+@@ -240,7 +239,7 @@ static void __init phyp_dump_reserve_mem(void)
+ 	}
+ }
+ #else
+-static inline void __init phyp_dump_reserve_mem(void) {}
++inline void __init phyp_dump_reserve_mem(void) {}
+ #endif /* CONFIG_PHYP_DUMP  && CONFIG_PPC_RTAS */
+ 
+ #ifdef CONFIG_EARLY_PRINTK
+@@ -277,45 +276,9 @@ int __init early_uartlite_console(void)
+ }
+ #endif
+ 
+-void __init early_init_devtree(void *params)
++void __init early_init_devtree_arch(void)
+ {
+-	pr_debug(" -> early_init_devtree(%p)\n", params);
 -
--	pr_debug("search \"chosen\", depth: %d, uname: %s\n", depth, uname);
+-	/* Setup flat device-tree pointer */
+-	initial_boot_params = params;
 -
--	if (depth != 1 ||
--		(strcmp(uname, "chosen") != 0 &&
--				strcmp(uname, "chosen@0") != 0))
--		return 0;
--
--#ifdef CONFIG_KEXEC
--	lprop = (u64 *)of_get_flat_dt_prop(node,
--				"linux,crashkernel-base", NULL);
--	if (lprop)
--		crashk_res.start = *lprop;
--
--	lprop = (u64 *)of_get_flat_dt_prop(node,
--				"linux,crashkernel-size", NULL);
--	if (lprop)
--		crashk_res.end = crashk_res.start + *lprop - 1;
+-#ifdef CONFIG_PHYP_DUMP
+-	/* scan tree to see if dump occured during last boot */
+-	of_scan_flat_dt(early_init_dt_scan_phyp_dump, NULL);
 -#endif
 -
--	early_init_dt_check_for_initrd(node);
+-	/* Retrieve various informations from the /chosen node of the
+-	 * device-tree, including the platform type, initrd location and
+-	 * size, TCE reserve, and more ...
+-	 */
+-	of_scan_flat_dt(early_init_dt_scan_chosen, NULL);
 -
--	/* Retreive command line */
--	p = of_get_flat_dt_prop(node, "bootargs", &l);
--	if (p != NULL && l > 0)
--		strlcpy(cmd_line, p, min((int)l, COMMAND_LINE_SIZE));
+-	/* Scan memory nodes and rebuild LMBs */
+-	lmb_init();
+-	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+-	of_scan_flat_dt(early_init_dt_scan_memory, NULL);
 -
--#ifdef CONFIG_CMDLINE
--#ifndef CONFIG_CMDLINE_FORCE
--	if (p == NULL || l == 0 || (l == 1 && (*p) == 0))
--#endif
--		strlcpy(cmd_line, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
--#endif /* CONFIG_CMDLINE */
+-	/* Save command line for /proc/cmdline and then parse parameters */
+-	strlcpy(boot_command_line, cmd_line, COMMAND_LINE_SIZE);
+-	parse_early_param();
 -
--	pr_debug("Command line is: %s\n", cmd_line);
+-	lmb_analyze();
 -
--	/* break now */
--	return 1;
+-	pr_debug("Phys. mem: %lx\n", (unsigned long) lmb_phys_mem_size());
+-
+-	pr_debug("Scanning CPUs ...\n");
+-
+-	/* Retreive CPU related informations from the flat tree
+-	 * (altivec support, boot CPU ID, ...)
+-	 */
+-	of_scan_flat_dt(early_init_dt_scan_cpus, NULL);
+-
+-	pr_debug(" <- early_init_devtree()\n");
 +	/* No Microblaze specific code here */
  }
  
- static int __init early_init_dt_scan_memory(unsigned long node,
+ /**
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 43cdba2..2c7d4a3 100644
+index 2c7d4a3..a5b3b9d 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
-@@ -367,18 +367,9 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+@@ -84,33 +84,6 @@ static int __init early_parse_mem(char *p)
+ }
+ early_param("mem", early_parse_mem);
+ 
+-/**
+- * move_device_tree - move tree to an unused area, if needed.
+- *
+- * The device tree may be allocated beyond our memory limit, or inside the
+- * crash kernel region for kdump. If so, move it out of the way.
+- */
+-static void __init move_device_tree(void)
+-{
+-	unsigned long start, size;
+-	void *p;
+-
+-	DBG("-> move_device_tree\n");
+-
+-	start = __pa(initial_boot_params);
+-	size = initial_boot_params->totalsize;
+-
+-	if ((memory_limit && (start + size) > memory_limit) ||
+-			overlaps_crashkernel(start, size)) {
+-		p = __va(lmb_alloc_base(size, PAGE_SIZE, lmb.rmo_size));
+-		memcpy(p, initial_boot_params, size);
+-		initial_boot_params = (struct boot_param_header *)p;
+-		DBG("Moved device tree to 0x%p\n", p);
+-	}
+-
+-	DBG("<- move_device_tree\n");
+-}
+-
+ /*
+  * ibm,pa-features is a per-cpu property that contains a string of
+  * attribute descriptors, each of which has a 2 byte header plus up
+@@ -267,9 +240,8 @@ static void __init check_cpu_feature_properties(unsigned long node)
+ 	}
+ }
+ 
+-static int __init early_init_dt_scan_cpus(unsigned long node,
+-					  const char *uname, int depth,
+-					  void *data)
++int __init early_init_dt_scan_cpus(unsigned long node, const char *uname,
++				   int depth, void *data)
+ {
+ 	static int logical_cpuid = 0;
+ 	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+@@ -483,8 +455,8 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+ #define early_init_dt_scan_drconf_memory(node)	0
+ #endif /* CONFIG_PPC_PSERIES */
+ 
+-static int __init early_init_dt_scan_memory(unsigned long node,
+-					    const char *uname, int depth, void *data)
++int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
++				     int depth, void *data)
+ {
+ 	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+ 	u32 *reg, *endp;
+@@ -543,7 +515,7 @@ static int __init early_init_dt_scan_memory(unsigned long node,
  	return 0;
  }
  
--static int __init early_init_dt_scan_chosen(unsigned long node,
--					    const char *uname, int depth, void *data)
-+void __init early_init_dt_scan_chosen_arch(unsigned long node)
+-static void __init early_reserve_mem(void)
++void __init early_reserve_mem(void)
  {
- 	unsigned long *lprop;
--	unsigned long l;
--	char *p;
--
--	DBG("search \"chosen\", depth: %d, uname: %s\n", depth, uname);
--
--	if (depth != 1 ||
--	    (strcmp(uname, "chosen") != 0 && strcmp(uname, "chosen@0") != 0))
--		return 0;
+ 	u64 base, size;
+ 	u64 *reserve_map;
+@@ -635,7 +607,7 @@ static inline unsigned long phyp_dump_calculate_reserve_size(void)
+  * without reserving anything. The memory in case of dump being
+  * active is freed when the dump is collected (by userland tools).
+  */
+-static void __init phyp_dump_reserve_mem(void)
++void __init phyp_dump_reserve_mem(void)
+ {
+ 	unsigned long base, size;
+ 	unsigned long variable_reserve_size;
+@@ -674,44 +646,13 @@ static void __init phyp_dump_reserve_mem(void)
+ 	}
+ }
+ #else
+-static inline void __init phyp_dump_reserve_mem(void) {}
++inline void __init phyp_dump_reserve_mem(void) {}
+ #endif /* CONFIG_PHYP_DUMP  && CONFIG_PPC_RTAS */
  
- #ifdef CONFIG_PPC64
- 	/* check if iommu is forced on or off */
-@@ -389,17 +380,17 @@ static int __init early_init_dt_scan_chosen(unsigned long node,
- #endif
+-
+-void __init early_init_devtree(void *params)
++void __init early_init_devtree_arch(void)
+ {
+ 	phys_addr_t limit;
  
- 	/* mem=x on the command line is the preferred mechanism */
-- 	lprop = of_get_flat_dt_prop(node, "linux,memory-limit", NULL);
-- 	if (lprop)
-- 		memory_limit = *lprop;
-+	lprop = of_get_flat_dt_prop(node, "linux,memory-limit", NULL);
-+	if (lprop)
-+		memory_limit = *lprop;
- 
- #ifdef CONFIG_PPC64
-- 	lprop = of_get_flat_dt_prop(node, "linux,tce-alloc-start", NULL);
-- 	if (lprop)
-- 		tce_alloc_start = *lprop;
-- 	lprop = of_get_flat_dt_prop(node, "linux,tce-alloc-end", NULL);
-- 	if (lprop)
-- 		tce_alloc_end = *lprop;
-+	lprop = of_get_flat_dt_prop(node, "linux,tce-alloc-start", NULL);
-+	if (lprop)
-+		tce_alloc_start = *lprop;
-+	lprop = of_get_flat_dt_prop(node, "linux,tce-alloc-end", NULL);
-+	if (lprop)
-+		tce_alloc_end = *lprop;
- #endif
- 
- #ifdef CONFIG_KEXEC
-@@ -411,23 +402,6 @@ static int __init early_init_dt_scan_chosen(unsigned long node,
- 	if (lprop)
- 		crashk_res.end = crashk_res.start + *lprop - 1;
- #endif
+-	DBG(" -> early_init_devtree(%p)\n", params);
 -
--	early_init_dt_check_for_initrd(node);
+-	/* Setup flat device-tree pointer */
+-	initial_boot_params = params;
 -
--	/* Retreive command line */
-- 	p = of_get_flat_dt_prop(node, "bootargs", &l);
--	if (p != NULL && l > 0)
--		strlcpy(cmd_line, p, min((int)l, COMMAND_LINE_SIZE));
+-#ifdef CONFIG_PPC_RTAS
+-	/* Some machines might need RTAS info for debugging, grab it now. */
+-	of_scan_flat_dt(early_init_dt_scan_rtas, NULL);
+-#endif
 -
--#ifdef CONFIG_CMDLINE
--	if (p == NULL || l == 0 || (l == 1 && (*p) == 0))
--		strlcpy(cmd_line, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
--#endif /* CONFIG_CMDLINE */
+-#ifdef CONFIG_PHYP_DUMP
+-	/* scan tree to see if dump occured during last boot */
+-	of_scan_flat_dt(early_init_dt_scan_phyp_dump, NULL);
+-#endif
 -
--	DBG("Command line is: %s\n", cmd_line);
+-	/* Retrieve various informations from the /chosen node of the
+-	 * device-tree, including the platform type, initrd location and
+-	 * size, TCE reserve, and more ...
+-	 */
+-	of_scan_flat_dt(early_init_dt_scan_chosen, NULL);
 -
--	/* break now */
--	return 1;
+-	/* Scan memory nodes and rebuild LMBs */
+-	lmb_init();
+-	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+-	of_scan_flat_dt(early_init_dt_scan_memory, NULL);
+-
+-	/* Save command line for /proc/cmdline and then parse parameters */
+-	strlcpy(boot_command_line, cmd_line, COMMAND_LINE_SIZE);
+-	parse_early_param();
+-
+ 	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
+ 	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
+ 	/* If relocatable, reserve first 32k for interrupt vectors etc. */
+@@ -734,27 +675,8 @@ void __init early_init_devtree(void *params)
+ 			limit = memsize & PAGE_MASK;
+ 	}
+ 	lmb_enforce_memory_limit(limit);
+-
+-	lmb_analyze();
+-	lmb_dump_all();
+-
+-	DBG("Phys. mem: %llx\n", lmb_phys_mem_size());
+-
+-	/* We may need to relocate the flat tree, do it now.
+-	 * FIXME .. and the initrd too? */
+-	move_device_tree();
+-
+-	DBG("Scanning CPUs ...\n");
+-
+-	/* Retreive CPU related informations from the flat tree
+-	 * (altivec support, boot CPU ID, ...)
+-	 */
+-	of_scan_flat_dt(early_init_dt_scan_cpus, NULL);
+-
+-	DBG(" <- early_init_devtree()\n");
  }
  
- #ifdef CONFIG_PPC_PSERIES
+-
+ /**
+  * Indicates whether the root node has a given value in its
+  * compatible property.
 diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index ebce509..616a476 100644
+index 616a476..6164781 100644
 --- a/drivers/of/fdt.c
 +++ b/drivers/of/fdt.c
-@@ -15,6 +15,10 @@
- #include <linux/of.h>
+@@ -16,7 +16,12 @@
  #include <linux/of_fdt.h>
  
-+#ifdef CONFIG_PPC
-+#include <asm/machdep.h>
-+#endif /* CONFIG_PPC */
+ #ifdef CONFIG_PPC
++#include <asm/kexec.h>
+ #include <asm/machdep.h>
 +
- int __initdata dt_root_addr_cells;
- int __initdata dt_root_size_cells;
++#ifdef CONFIG_PPC_RTAS
++#include <asm/rtas.h>
++#endif
+ #endif /* CONFIG_PPC */
  
-@@ -440,6 +444,40 @@ u64 __init dt_mem_next_cell(int s, u32 **cellp)
- 	return of_read_number(p, s);
+ int __initdata dt_root_addr_cells;
+@@ -479,6 +484,93 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
  }
  
-+int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
-+				     int depth, void *data)
+ /**
++ * early_init_move_devtree - move tree to an unused area, if needed.
++ *
++ * The device tree may be allocated beyond our memory limit, or inside the
++ * crash kernel region for kdump. If so, move it out of the way.
++ */
++#if defined(CONFIG_PPC)
++static void __init early_init_move_devtree(void)
 +{
-+	unsigned long l;
-+	char *p;
++	unsigned long start, size;
++	void *p;
 +
-+	pr_debug("search \"chosen\", depth: %d, uname: %s\n", depth, uname);
++	pr_debug("-> %s()\n", __func__);
 +
-+	if (depth != 1 ||
-+	    (strcmp(uname, "chosen") != 0 && strcmp(uname, "chosen@0") != 0))
-+		return 0;
++	start = __pa(initial_boot_params);
++	size = initial_boot_params->totalsize;
 +
-+	early_init_dt_check_for_initrd(node);
++	if ((memory_limit && (start + size) > memory_limit) ||
++			overlaps_crashkernel(start, size)) {
++		p = __va(lmb_alloc_base(size, PAGE_SIZE, lmb.rmo_size));
++		memcpy(p, initial_boot_params, size);
++		initial_boot_params = (struct boot_param_header *)p;
++		pr_debug("Moved device tree to 0x%p\n", p);
++	}
 +
-+	/* Retreive command line */
-+	p = of_get_flat_dt_prop(node, "bootargs", &l);
-+	if (p != NULL && l > 0)
-+		strlcpy(cmd_line, p, min((int)l, COMMAND_LINE_SIZE));
-+
-+#ifdef CONFIG_CMDLINE
-+#ifndef CONFIG_CMDLINE_FORCE
-+	if (p == NULL || l == 0 || (l == 1 && (*p) == 0))
++	pr_debug("<- %s()\n", __func__);
++}
++#else
++static void __init early_init_move_devtree(void) {}
 +#endif
-+		strlcpy(cmd_line, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
-+#endif /* CONFIG_CMDLINE */
 +
-+	early_init_dt_scan_chosen_arch(node);
++void __init early_init_devtree(void *params)
++{
++	pr_debug(" -> early_init_devtree(%p)\n", params);
 +
-+	pr_debug("Command line is: %s\n", cmd_line);
++	/* Setup flat device-tree pointer */
++	initial_boot_params = params;
 +
-+	/* break now */
-+	return 1;
++#ifdef CONFIG_PPC_RTAS
++	/* Some machines might need RTAS info for debugging, grab it now. */
++	of_scan_flat_dt(early_init_dt_scan_rtas, NULL);
++#endif
++
++#ifdef CONFIG_PHYP_DUMP
++	/* scan tree to see if dump occured during last boot */
++	of_scan_flat_dt(early_init_dt_scan_phyp_dump, NULL);
++#endif
++
++	/* Retrieve various informations from the /chosen node of the
++	 * device-tree, including the platform type, initrd location and
++	 * size, TCE reserve, and more ...
++	 */
++	of_scan_flat_dt(early_init_dt_scan_chosen, NULL);
++
++	/* Scan memory nodes and rebuild LMBs */
++	lmb_init();
++	of_scan_flat_dt(early_init_dt_scan_root, NULL);
++	of_scan_flat_dt(early_init_dt_scan_memory, NULL);
++
++	/* Save command line for /proc/cmdline and then parse parameters */
++	strlcpy(boot_command_line, cmd_line, COMMAND_LINE_SIZE);
++	parse_early_param();
++
++	/* This is in an arbitrary spot, but it is temporary.  After all
++	 * the common code is merged, the structure of the early init
++	 * code will be reevaluated and refactored */
++	early_init_devtree_arch();
++
++	lmb_analyze();
++	lmb_dump_all();
++
++	pr_debug("Phys. mem: %llx\n", lmb_phys_mem_size());
++
++	/* We may need to relocate the flat tree, do it now.
++	 * FIXME .. and the initrd too? */
++	early_init_move_devtree();
++
++	pr_debug("Scanning CPUs ...\n");
++
++	/* Retreive CPU related informations from the flat tree
++	 * (altivec support, boot CPU ID, ...)
++	 */
++	of_scan_flat_dt(early_init_dt_scan_cpus, NULL);
++
++	pr_debug(" <- early_init_devtree()\n");
 +}
 +
- /**
++/**
   * unflatten_device_tree - create tree of device_nodes from flat blob
   *
+  * unflattens the device-tree passed by the firmware, creating the
 diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index d1a37e5..8118d45 100644
+index 8118d45..d1b1571 100644
 --- a/include/linux/of_fdt.h
 +++ b/include/linux/of_fdt.h
-@@ -71,6 +71,9 @@ extern void *of_get_flat_dt_prop(unsigned long node, const char *name,
- 				 unsigned long *size);
- extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
- extern unsigned long of_get_flat_dt_root(void);
-+extern void early_init_dt_scan_chosen_arch(unsigned long node);
-+extern int early_init_dt_scan_chosen(unsigned long node, const char *uname,
-+				     int depth, void *data);
+@@ -75,6 +75,13 @@ extern void early_init_dt_scan_chosen_arch(unsigned long node);
+ extern int early_init_dt_scan_chosen(unsigned long node, const char *uname,
+ 				     int depth, void *data);
  extern void early_init_dt_check_for_initrd(unsigned long node);
++extern int early_init_dt_scan_cpus(unsigned long node, const char *uname,
++				   int depth, void *data);
++extern int early_init_dt_scan_memory(unsigned long node, const char *uname,
++				     int depth, void *data);
++extern void early_reserve_mem(void);
++extern void early_init_devtree_arch(void);
++extern void phyp_dump_reserve_mem(void);
  extern u64 dt_mem_next_cell(int s, u32 **cellp);
  
+ /* Early flat tree scan hooks */
