@@ -1,21 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 5DDD0B7B68
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E64EBB6EF2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 Nov 2009 09:33:36 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 06/19] powerpc: gamecube/wii: introduce GAMECUBE_COMMON
-Date: Tue, 24 Nov 2009 23:33:27 +0100
+	Wed, 25 Nov 2009 09:46:55 +1100 (EST)
+In-Reply-To: <fa686aa40911231219k3a52b9fdn66b8cffb735e5c2f@mail.gmail.com>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<4B0C2002.4050704@yahoo.es>
-	<7129FD29-82CE-4731-90F2-0EA6775EF861@kernel.crashing.org>
-In-Reply-To: <7129FD29-82CE-4731-90F2-0EA6775EF861@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200911242333.27485.arnd@arndb.de>
-Cc: Albert Herranz <albert_herranz@yahoo.es>
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<fa686aa40911221502g2de254d2o4341d9abed0cdf41@mail.gmail.com>
+	<4B0AE603.9050208@yahoo.es>
+	<fa686aa40911231219k3a52b9fdn66b8cffb735e5c2f@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <096E3BA2-9648-42FD-8BAC-3758454840F5@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 02/19] powerpc: gamecube: device tree
+Date: Tue, 24 Nov 2009 23:53:39 +0100
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,18 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 24 November 2009, Segher Boessenkool wrote:
-> > This option should be used only for options applicable to both the  
-> > GAMECUBE and WII, i.e. basically those options in the WII which  
-> > where "inherited" from the GAMECUBE to make it retro-compatible.
-> >
-> > If GAMECUBE_COMMON is unacceptable, maybe GAMECUBE_LEGACY or  
-> > GAMECUBE_COMPAT?
-> 
-> Maybe it's best to write GAMECUBE || WII in the places that use it,  
-> then?
+>> The soc node here tries to represent the big multi-function chip  
+>> that integrates most of the devices of the video game consoles  
+>> ("Flipper" on the Nintendo GameCube and "Hollywood" on the Wii).
+>
+> Right.  Much like many other SoCs.
 
-Or just use CONFIG_NINTENDO? If we ever want to port to a future
-Nintendo system that is not compatible, we can still change it.
+It isn't a SoC, it's really just a memory bridge / I/O bridge
+like e.g. MPC10x.
 
-	Arnd <><
+All the device addresses are fixed on the chip, there is no IMMR
+or similar.
+
+You can either group all devices under a "flipper" node, or just
+put the devices directly in the root node, and have a separate
+node for the generic control regs.  Both are a good description
+of both the physical and logical structure, so it just comes down
+to taste.
+
+Good drivers can handle either structure btw, they should normally
+only look at "compatible" to find their devices, so it doesn't
+matter much anyway.
+
+
+Segher
