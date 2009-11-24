@@ -1,16 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 24 Nov 2009 14:22:42 -0800 (PST)
-Message-Id: <20091124.142242.46843869.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH v2 11/11] of: unify phandle name in struct device_node
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091124215908.559.23998.stgit@angua>
-References: <20091124215908.559.23998.stgit@angua>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 94E60B6EE8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 25 Nov 2009 09:30:03 +1100 (EST)
+In-Reply-To: <fa686aa40911221502g2de254d2o4341d9abed0cdf41@mail.gmail.com>
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<fa686aa40911221502g2de254d2o4341d9abed0cdf41@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0AE26D40-D051-4CDE-878C-64CC8EF33E07@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 02/19] powerpc: gamecube: device tree
+Date: Tue, 24 Nov 2009 23:36:46 +0100
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,23 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 24 Nov 2009 15:01:14 -0700
+>> +       model = "NintendoGameCube";
+>> +       compatible = "nintendo,gamecube";
+>
+> To date, we've been using the same form for both the model and
+> compatible properties.  Specifically the <vendor>,<model> form to
+> maintain the namespace.
 
-> In struct device_node, the phandle is named 'linux_phandle' for PowerPC
-> and MicroBlaze, and 'node' for SPARC.  There is no good reason for the
-> difference, it is just an artifact of the code diverging over a couple
-> of years.  This patch renames both to simply .phandle.
-> 
-> Note: the .node also existed in PowerPC/MicroBlaze, but the only user
-> seems to be arch/powerpc/platforms/powermac/pfunc_core.c.  It doesn't
-> look like the assignment between .linux_phandle and .node is
-> significantly different enough to warrant the separate code paths
-> unless ibm,phandle properties actually appear in Apple device trees.
-> 
-> I think it is safe to eliminate the old .node property and use
-> linux_phandle everywhere.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+That, however, is a) useless; and b) not totally correct.
+The "model" property should show an exact model number if available.
+You should use the "vendor," thing indeed.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+If you don't have any better model # to use, using the same thing
+as "compatible" is okay I suppose.  But it's not the _best_ thing
+to put here if you have the choice.  Maybe you should say  
+"nintendo,RVL-001"
+(well, that's Wii, you want the similar thing for NGC, but you get
+the point I hope).
+
+>> +               compatible = "nintendo,flipper";
+>> +               clock-frequency = <162000000>; /* 162MHz */
+>> +               ranges = <0x0c000000 0x0c000000 0x00010000>;
+>
+> Since you're only doing 1:1 mappings; you could replace this with an
+> empty "ranges;" property instead.
+
+You could, but being explicit about the supported ranges isn't
+bad either.
+
+> Hint:  If you move the interrupt-parent property up to the root node,
+> then you don't need to specify it in every single device node; it will
+> just inherit from the parent.
+
+If you have only one interrupt controller, like here, you don't
+need to refer to it _at all_ :-)
+
+
+Segher
