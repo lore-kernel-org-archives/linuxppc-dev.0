@@ -1,25 +1,24 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E64EBB6EF2
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp107.mail.ukl.yahoo.com (smtp107.mail.ukl.yahoo.com
+	[77.238.184.39]) by ozlabs.org (Postfix) with SMTP id 128ABB6F07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 Nov 2009 09:46:55 +1100 (EST)
-In-Reply-To: <fa686aa40911231219k3a52b9fdn66b8cffb735e5c2f@mail.gmail.com>
+	Wed, 25 Nov 2009 10:45:42 +1100 (EST)
+Message-ID: <4B0C701F.1040101@yahoo.es>
+Date: Wed, 25 Nov 2009 00:45:35 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 03/19] powerpc: gamecube: bootwrapper bits
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<fa686aa40911221502g2de254d2o4341d9abed0cdf41@mail.gmail.com>
-	<4B0AE603.9050208@yahoo.es>
-	<fa686aa40911231219k3a52b9fdn66b8cffb735e5c2f@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <096E3BA2-9648-42FD-8BAC-3758454840F5@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 02/19] powerpc: gamecube: device tree
-Date: Tue, 24 Nov 2009 23:53:39 +0100
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<CE435D2F-8C67-4045-942D-4AA08BF784D0@kernel.crashing.org>
+	<4B0C1A25.8030401@yahoo.es>
+	<CC1D5EB1-27C2-47A1-96D8-D007D86C4881@kernel.crashing.org>
+In-Reply-To: <CC1D5EB1-27C2-47A1-96D8-D007D86C4881@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,27 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> The soc node here tries to represent the big multi-function chip  
->> that integrates most of the devices of the video game consoles  
->> ("Flipper" on the Nintendo GameCube and "Hollywood" on the Wii).
->
-> Right.  Much like many other SoCs.
+Segher Boessenkool wrote:
+>> So what's your proposal then? Placing it within a fake func?
+>> That asm snippet is the entry point. I took as an example how
+>> prpmc2800.c deals with that, providing an own version of the (weak)
+>> _zImage_start.
+> 
+> Use an assembler source file.  You'll get much nicer syntax as well
+> (none of that \n stuff).
+> 
 
-It isn't a SoC, it's really just a memory bridge / I/O bridge
-like e.g. MPC10x.
+I found it cleaner to embed the entry point code in the .c file and avoid touching the wrapper script.
+But I'm fine with that if it is the way to go (and I already finally touched the wrapper to increase the link address...).
 
-All the device addresses are fixed on the chip, there is no IMMR
-or similar.
+>>> WIMG=0000, are you sure?  Not M=1?
+>>
+>> To be honest, I don't recall the details now.
+>> But it was tested in the very early days, the result was not the
+>> expected one and, in the end, manual cache coherency management was
+>> still needed.
+> 
+> Sure, the memory controllers don't do coherency.  I'm slightly worried
+> about two things:
+> 1) Will the generic code use M=0 as well?  Is it a problem if it doesn't?
+> 2) Do lwarx. etc. work in M=0?
+> 
+> And a question: does M=0 actually give better performance (lower bus
+> utilisation, and maybe saves a few cycles)?
+> 
 
-You can either group all devices under a "flipper" node, or just
-put the devices directly in the root node, and have a separate
-node for the generic control regs.  Both are a good description
-of both the physical and logical structure, so it just comes down
-to taste.
+I think that the generic code uses M=0 _except_ for SMP and some platforms (see comment in cputable.h).
+And yes, the generic code works with these processors :)
 
-Good drivers can handle either structure btw, they should normally
-only look at "compatible" to find their devices, so it doesn't
-matter much anyway.
+M=0 should have a lower bus utilization, yes.
+Also M=0 is a requirement if you use some Gekko/Broadway features like the locked (half-)cache.
 
-
-Segher
+Thanks,
+Albert
