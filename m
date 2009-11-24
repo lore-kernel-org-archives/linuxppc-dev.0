@@ -1,19 +1,30 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6E60B1007D3
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Nov 2009 17:25:48 +1100 (EST)
-Date: Tue, 24 Nov 2009 17:25:42 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: Fix bug in gup_hugepd()
-Message-Id: <20091124172542.1eece8ac.sfr@canb.auug.org.au>
-In-Reply-To: <20091124060340.GE2737@yookeroo>
-References: <20091124060340.GE2737@yookeroo>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__24_Nov_2009_17_25_42_+1100_MMRNPWt8qQLyFnhY"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sachinp@in.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2F99BB6EEC
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Nov 2009 17:58:36 +1100 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp07.in.ibm.com (8.14.3/8.13.1) with ESMTP id nAO6wYUF010373
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Nov 2009 12:28:34 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nAO6wYZb3739766
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Nov 2009 12:28:34 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nAO6wXVE023659
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Nov 2009 17:58:33 +1100
+Message-ID: <4B0B8418.4040808@in.ibm.com>
+Date: Tue, 24 Nov 2009 12:28:32 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: Fix bug in pagetable cache cleanup with CONFIG_PPC_SUBPAGE_PROT
+References: <20091124053114.GD2737@yookeroo>
+In-Reply-To: <20091124053114.GD2737@yookeroo>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__24_Nov_2009_17_25_42_+1100_MMRNPWt8qQLyFnhY
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi David,
-
-On Tue, 24 Nov 2009 17:03:40 +1100 David Gibson <david@gibson.dropbear.id.a=
-u> wrote:
+David Gibson wrote:
+> Commit a0668cdc154e54bf0c85182e0535eea237d53146 cleans up the handling
+> of kmem_caches for allocating various levels of pagetables.
+> Unfortunately, it conflicts badly with CONFIG_PPC_SUBPAGE_PROT, due to
+> the latter's cleverly hidden technique of adding some extra allocation
+> space to the top level page directory to store the extra information
+> it needs.
 >
-> Commit a4fe3ce7699bfe1bd88f816b55d42d8fe1dac655 introduced a new
+> Since that extra allocation really doesn't fit into the cleaned up
+> page directory allocating scheme, this patch alters
+> CONFIG_PPC_SUBPAGE_PROT to instead allocate its struct
+> subpage_prot_table as part of the mm_context_t.
+>
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Thanks David for the patch. With this patch on top of next-20091123
+my test machine boots fine. 
 
-When you quote a SHA1, please also quote the summary line for the commit
-so those without git access may find it.
+Regards
+-Sachin
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
 
---Signature=_Tue__24_Nov_2009_17_25_42_+1100_MMRNPWt8qQLyFnhY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksLfGYACgkQjjKRsyhoI8yYYwCgjxcpBO5BmBws9av6bl65yXXH
-P60An0sdjRveSwq0a3lOjdiOyRxcFHv4
-=hLB9
------END PGP SIGNATURE-----
-
---Signature=_Tue__24_Nov_2009_17_25_42_+1100_MMRNPWt8qQLyFnhY--
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
