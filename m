@@ -1,13 +1,15 @@
 Return-Path: <grant.likely@secretlab.ca>
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 00/11] Yet another series of OF merge patches.
+Subject: [PATCH 01/11] of/flattree: Merge early_init_dt_check_for_initrd()
 To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
 	sparclinux@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
 	benh@kernel.crashing.org, sfr@canb.auug.org.au,
 	davem@davemloft.net, monstr@monstr.eu
-Date: Tue, 24 Nov 2009 01:17:41 -0700
-Message-ID: <20091124081316.6216.66310.stgit@angua>
+Date: Tue, 24 Nov 2009 01:17:55 -0700
+Message-ID: <20091124081747.6216.88376.stgit@angua>
+In-Reply-To: <20091124081316.6216.66310.stgit@angua>
+References: <20091124081316.6216.66310.stgit@angua>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,52 +21,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nothing much to say here other than mostly mechanical merging of OF
-support code.  Some of it remains a little ugly, but I'm taking the
-approach of merging the code first, and refactoring it second.
+Merge common code between PowerPC and Microblaze
 
-I've pushed this series out to my test-devicetree branch on my git
-server if anyone wants to test.  That branch also includes the
-previous 2 patch series that I've sent out.
-
-git://git.secretlab.ca/git/linux-2.6 test-devicetree
-
-Compile tested on: ppc64, ppc32, microblaze, sparc64, sparc32.
-Boot tested on mpc5200 (ppc32) platform.
-
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
+Tested-by: Michal Simek <monstr@monstr.eu>
 ---
 
-Grant Likely (11):
-      of: unify phandle name in struct device_node
-      microblaze: gut implementation of early_init_dt_scan_cpus()
-      of: merge of_attach_node() & of_detach_node()
-      of: Merge of_node_get() and of_node_put()
-      of: merge machine_is_compatible()
-      of/flattree: merge early_init_devtree() and early_init_move_devtree()
-      of/flattree: merge early_init_dt_scan_chosen()
-      of/flattree: eliminate cell_t typedef
-      of/flattree: merge dt_mem_next_cell
-      of/flattree: Merge earlyinit_dt_scan_root()
-      of/flattree: Merge early_init_dt_check_for_initrd()
+ arch/microblaze/kernel/prom.c |   32 --------------------------------
+ arch/powerpc/kernel/prom.c    |   30 ------------------------------
+ drivers/of/fdt.c              |   37 +++++++++++++++++++++++++++++++++++++
+ include/linux/of_fdt.h        |    1 +
+ 4 files changed, 38 insertions(+), 62 deletions(-)
 
-
- arch/microblaze/include/asm/prom.h           |    4 
- arch/microblaze/kernel/prom.c                |  375 +-------------------------
- arch/powerpc/include/asm/prom.h              |    4 
- arch/powerpc/kernel/prom.c                   |  366 ++-----------------------
- arch/powerpc/platforms/powermac/pfunc_core.c |    2 
- arch/sparc/kernel/devices.c                  |    2 
- arch/sparc/kernel/of_device_32.c             |    2 
- arch/sparc/kernel/of_device_64.c             |    2 
- arch/sparc/kernel/prom_common.c              |    8 -
- arch/sparc/kernel/smp_64.c                   |    2 
- drivers/of/base.c                            |  153 +++++++++++
- drivers/of/fdt.c                             |  204 ++++++++++++++
- drivers/sbus/char/openprom.c                 |   10 -
- drivers/video/aty/atyfb_base.c               |    2 
- include/linux/of.h                           |    7 
- include/linux/of_fdt.h                       |   18 +
- 16 files changed, 430 insertions(+), 731 deletions(-)
-
--- 
-Signature
+diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
+index a38e373..7959495 100644
+--- a/arch/microblaze/kernel/prom.c
++++ b/arch/microblaze/kernel/prom.c
+@@ -113,38 +113,6 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-static void __init early_init_dt_check_for_initrd(unsigned long node)
+-{
+-	unsigned long l;
+-	u32 *prop;
+-
+-	pr_debug("Looking for initrd properties... ");
+-
+-	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
+-	if (prop) {
+-		initrd_start = (unsigned long)
+-					__va((u32)of_read_ulong(prop, l/4));
+-
+-		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
+-		if (prop) {
+-			initrd_end = (unsigned long)
+-					__va((u32)of_read_ulong(prop, 1/4));
+-			initrd_below_start_ok = 1;
+-		} else {
+-			initrd_start = 0;
+-		}
+-	}
+-
+-	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
+-					initrd_start, initrd_end);
+-}
+-#else
+-static inline void early_init_dt_check_for_initrd(unsigned long node)
+-{
+-}
+-#endif /* CONFIG_BLK_DEV_INITRD */
+-
+ static int __init early_init_dt_scan_chosen(unsigned long node,
+ 				const char *uname, int depth, void *data)
+ {
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 7f88566..1ecd6c6 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -373,36 +373,6 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-static void __init early_init_dt_check_for_initrd(unsigned long node)
+-{
+-	unsigned long l;
+-	u32 *prop;
+-
+-	DBG("Looking for initrd properties... ");
+-
+-	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
+-	if (prop) {
+-		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
+-
+-		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
+-		if (prop) {
+-			initrd_end = (unsigned long)
+-					__va(of_read_ulong(prop, l/4));
+-			initrd_below_start_ok = 1;
+-		} else {
+-			initrd_start = 0;
+-		}
+-	}
+-
+-	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
+-}
+-#else
+-static inline void early_init_dt_check_for_initrd(unsigned long node)
+-{
+-}
+-#endif /* CONFIG_BLK_DEV_INITRD */
+-
+ static int __init early_init_dt_scan_chosen(unsigned long node,
+ 					    const char *uname, int depth, void *data)
+ {
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 43d236c..6ad98e8 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/lmb.h>
++#include <linux/initrd.h>
+ #include <linux/of.h>
+ #include <linux/of_fdt.h>
+ 
+@@ -369,6 +370,42 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
+ 	return mem;
+ }
+ 
++#ifdef CONFIG_BLK_DEV_INITRD
++/**
++ * early_init_dt_check_for_initrd - Decode initrd location from flat tree
++ * @node: reference to node containing initrd location ('chosen')
++ */
++void __init early_init_dt_check_for_initrd(unsigned long node)
++{
++	unsigned long len;
++	u32 *prop;
++
++	pr_debug("Looking for initrd properties... ");
++
++	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &len);
++	if (prop) {
++		initrd_start = (unsigned long)
++				__va(of_read_ulong(prop, len/4));
++
++		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &len);
++		if (prop) {
++			initrd_end = (unsigned long)
++				__va(of_read_ulong(prop, len/4));
++			initrd_below_start_ok = 1;
++		} else {
++			initrd_start = 0;
++		}
++	}
++
++	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
++		 initrd_start, initrd_end);
++}
++#else
++inline void early_init_dt_check_for_initrd(unsigned long node)
++{
++}
++#endif /* CONFIG_BLK_DEV_INITRD */
++
+ /**
+  * unflatten_device_tree - create tree of device_nodes from flat blob
+  *
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index 81231e0..ec2db82 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -69,6 +69,7 @@ extern void *of_get_flat_dt_prop(unsigned long node, const char *name,
+ 				 unsigned long *size);
+ extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
+ extern unsigned long of_get_flat_dt_root(void);
++extern void early_init_dt_check_for_initrd(unsigned long node);
+ 
+ /* Other Prototypes */
+ extern void finish_device_tree(void);
