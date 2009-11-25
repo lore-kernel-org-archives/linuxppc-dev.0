@@ -1,29 +1,33 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A8B10B7BBE
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 00:17:59 +1100 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id nAPDHuvV008452
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 18:47:56 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nAPDHuZt3313690
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 18:47:56 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nAPDHtHZ006069
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 18:47:56 +0530
-Date: Wed, 25 Nov 2009 18:47:47 +0530
-From: "M. Mohan Kumar" <mohan@in.ibm.com>
-To: benh@kernel.crashing.org, ppcdev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] Reserve memory for kdump kernel within RMO region
-Message-ID: <20091125131747.GA28857@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: kexec@lists.infradead.org
-Reply-To: mohan@in.ibm.com
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 718A3B7B63
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 03:12:24 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAPG6rpB013981
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 09:06:53 -0700
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	nAPGCCBR068906
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 09:12:14 -0700
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id nAPGCBkK015135
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 09:12:11 -0700
+Subject: hypervisor call tracepoints  hcall_stats touchup.
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>, mingo@redhat.com,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 25 Nov 2009 10:12:09 -0600
+Message-ID: <1259165529.16349.191.camel@lexx>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	will_schmidt <will_schmidt@vnet.ibm.com>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,52 +37,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reserve memory for kdump kernel within RMO region
 
-When the kernel size exceeds 32MB(observed with some distros), memory
-for kdump kernel can not be reserved as kdump kernel base is assumed to
-be 32MB always. When the kernel has CONFIG_RELOCATABLE option enabled,
-provide the feature to reserve the memory for kdump kernel anywhere in
-the RMO region.
+The tb_total and purr_total values reported via the hcall_stats code
+should be cumulative, rather than being replaced by the latest delta tb
+or purr value. 
 
-Signed-off-by: M. Mohan Kumar <mohan@in.ibm.com>
+Tested-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+
 ---
- arch/powerpc/kernel/machine_kexec.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+[ This is a touch-up to the "[3/6] powerpc: tracing: Add hypervisor call
+tracepoints" patch submitted by Anton a few weeks back, so I've copied
+folks Anton had on CC for his original patch, this fix is rather ppc
+specific, so can probably go in via the ppc tree, but I've no real
+preference. ]
 
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index baf1af0..99b2f9f 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -140,10 +140,29 @@ void __init reserve_crashkernel(void)
+diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
+index 2f58c71..1fefae7 100644
+--- a/arch/powerpc/platforms/pseries/hvCall_inst.c
++++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
+@@ -124,8 +124,8 @@ static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
  
- 	/* The crash region must not overlap the current kernel */
- 	if (overlaps_crashkernel(__pa(_stext), _end - _stext)) {
-+#ifdef CONFIG_RELOCATABLE
-+		do {
-+			/* Align kdump kernel to 16MB (size of large page) */
-+			crashk_res.start = ALIGN(crashk_res.start +
-+						(16 * 1024 * 1024), 0x1000000);
-+			if (crashk_res.start + (_stext - _end) > lmb.rmo_size) {
-+				printk(KERN_WARNING
-+					"Not enough memory for crash kernel\n");
-+				crashk_res.start = crashk_res.end = 0;
-+				return;
-+			}
-+		} while (overlaps_crashkernel(__pa(_stext), _end - _stext));
-+
-+		crashk_res.end = crashk_res.start + crash_size - 1;
-+		printk(KERN_INFO
-+			"crash kernel memory overlaps with kernel memory\n"
-+			"Moving it to %lx\n", (unsigned long)crashk_res.start);
-+#else
- 		printk(KERN_WARNING
- 			"Crash kernel can not overlap current kernel\n");
- 		crashk_res.start = crashk_res.end = 0;
- 		return;
-+#endif
- 	}
+ 	h = &__get_cpu_var(hcall_stats)[opcode / 4];
+ 	h->num_calls++;
+-	h->tb_total = mftb() - h->tb_start;
+-	h->purr_total = mfspr(SPRN_PURR) - h->purr_start;
++	h->tb_total += mftb() - h->tb_start;
++	h->purr_total += mfspr(SPRN_PURR) - h->purr_start;
  
- 	/* Crash kernel trumps memory limit */
--- 
-1.5.4
+ 	put_cpu_var(hcall_stats);
+ }
