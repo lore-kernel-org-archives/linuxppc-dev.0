@@ -1,17 +1,21 @@
-Return-Path: <bernhard@bwalle.de>
-Received: from smtprelay03.ispgateway.de (smtprelay03.ispgateway.de
-	[80.67.18.15]) by ozlabs.org (Postfix) with ESMTP id B6DA9B6EF4
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 06:02:56 +1100 (EST)
-Message-ID: <4B0D7CF4.8040402@bwalle.de>
-Date: Wed, 25 Nov 2009 19:52:36 +0100
-From: Bernhard Walle <bernhard@bwalle.de>
+Return-Path: <to-fleischer@t-online.de>
+Received: from mailout01.t-online.de (mailout01.t-online.de [194.25.134.80])
+	by ozlabs.org (Postfix) with ESMTP id 8E7D7B6F1C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 26 Nov 2009 08:21:06 +1100 (EST)
+From: Torsten Fleischer <to-fleischer@t-online.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: spi_mpc8xxx.c: chip select polarity problem
+Date: Wed, 25 Nov 2009 21:41:59 +0100
+References: <200911161742.46663.to-fleischer@t-online.de>
+	<200911211708.47253.to-fleischer@t-online.de>
+	<fa686aa40911241633q38dc0cf8x8b23038fe2fdf10d@mail.gmail.com>
+In-Reply-To: <fa686aa40911241633q38dc0cf8x8b23038fe2fdf10d@mail.gmail.com>
 MIME-Version: 1.0
-To: mohan@in.ibm.com
-Subject: Re: [PATCH] Reserve memory for kdump kernel within RMO region
-References: <20091125131747.GA28857@in.ibm.com>
-In-Reply-To: <20091125131747.GA28857@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: kexec@lists.infradead.org, ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200911252141.59549.to-fleischer@t-online.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +25,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-M. Mohan Kumar schrieb:
-> Reserve memory for kdump kernel within RMO region
+On Wen, Nov 25, 2009 at 01:33:57 Grant Likely wrote:
+> Thanks.  However, there needs to be a proper description of what this
+> patch does to go in the commit header.  Can you please write one?
 > 
-> When the kernel size exceeds 32MB(observed with some distros), memory
-> for kdump kernel can not be reserved as kdump kernel base is assumed to
-> be 32MB always. When the kernel has CONFIG_RELOCATABLE option enabled,
-> provide the feature to reserve the memory for kdump kernel anywhere in
-> the RMO region.
+> Thanks,
+> g.
+> 
+[...]
 
-Correct me if I'm wrong, but: CONFIG_RELOCATABLE is for the kernel that
-gets loaded as crashkernel, not for the kernel that loads the
-crashkernel. So it would be perfectly fine that a kernel that has not
-CONFIG_RELOCATABLE set would load another kernel that has
-CONFIG_RELOCATABLE set on an address != 32 M.
+The initialization of the chip selects is removed from the probe() function of 
+the spi_mpc8xxx driver, because the driver doesn't know the polarity of the 
+chip selects of the SPI devices at the time of its initialization.
 
-So it would be part of the command line to determine whether a fixed or
-a variable address is used. The system configuration (or the admin)
-knows both: if the kernel that should be loaded is relocatable (can be
-detected with the x86 bzImage header or with the ELF type for vmlinux)
-and it can also influence the boot command line.
-
-To sum it up: I'm not against reserving it anywhere, I'm only against
-making it dependent on CONFIG_RELOCATABLE which has another function.
+For this reason the initialization of the several chip selects is postponed 
+to the point of time when the very first SPI transfer to the associated device
+occurs.
 
 
+Signed-off-by: Torsten Fleischer <to-fleischer@t-online.de>
+---
 
-Regards,
-Bernhard
+diff -u -r -N linux-2.6.31.6_orig//drivers/spi/spi_mpc8xxx.c linux-2.6.31.6/drivers/spi/spi_mpc8xxx.c
+--- linux-2.6.31.6_orig//drivers/spi/spi_mpc8xxx.c	2009-11-10 01:32:31.000000000 +0100
++++ linux-2.6.31.6/drivers/spi/spi_mpc8xxx.c	2009-11-19 08:15:33.000000000 +0100
+@@ -114,6 +114,7 @@
+ 	u32 rx_shift;		/* RX data reg shift when in qe mode */
+ 	u32 tx_shift;		/* TX data reg shift when in qe mode */
+ 	u32 hw_mode;		/* Holds HW mode register settings */
++	int initialized;
+ };
+ 
+ static inline void mpc8xxx_spi_write_reg(__be32 __iomem *reg, u32 val)
+@@ -503,15 +504,52 @@
+ 
+ 	return ret;
+ }
++
++
++struct mpc8xxx_spi_probe_info {
++	struct fsl_spi_platform_data pdata;
++	int *gpios;
++	bool *alow_flags;
++};
++
++static struct mpc8xxx_spi_probe_info *
++to_of_pinfo(struct fsl_spi_platform_data *pdata)
++{
++	return container_of(pdata, struct mpc8xxx_spi_probe_info, pdata);
++}
++
++static int mpc8xxx_spi_cs_init(struct spi_device *spi)
++{
++	struct device *dev = spi->dev.parent;
++	struct mpc8xxx_spi_probe_info *pinfo = to_of_pinfo(dev->platform_data);
++	u16 cs = spi->chip_select;
++	int gpio = pinfo->gpios[cs];
++	bool on = pinfo->alow_flags[cs] ^ !(spi->mode & SPI_CS_HIGH);
++
++	return gpio_direction_output(gpio, on);
++}
++
+ static int mpc8xxx_spi_transfer(struct spi_device *spi,
+ 				struct spi_message *m)
+ {
+ 	struct mpc8xxx_spi *mpc8xxx_spi = spi_master_get_devdata(spi->master);
++	struct spi_mpc8xxx_cs *cs = spi->controller_state;
+ 	unsigned long flags;
+ 
+ 	m->actual_length = 0;
+ 	m->status = -EINPROGRESS;
+ 
++	if (cs && !cs->initialized) {
++		int ret;
++
++		ret = mpc8xxx_spi_cs_init(spi);
++		if (ret) {
++			dev_dbg(&spi->dev, "cs_init failed: %d\n", ret);
++			return ret;
++		}
++		cs->initialized = 1;
++	}
++
+ 	spin_lock_irqsave(&mpc8xxx_spi->lock, flags);
+ 	list_add_tail(&m->queue, &mpc8xxx_spi->queue);
+ 	queue_work(mpc8xxx_spi->workqueue, &mpc8xxx_spi->work);
+@@ -648,18 +686,6 @@
+ 	return 0;
+ }
+ 
+-struct mpc8xxx_spi_probe_info {
+-	struct fsl_spi_platform_data pdata;
+-	int *gpios;
+-	bool *alow_flags;
+-};
+-
+-static struct mpc8xxx_spi_probe_info *
+-to_of_pinfo(struct fsl_spi_platform_data *pdata)
+-{
+-	return container_of(pdata, struct mpc8xxx_spi_probe_info, pdata);
+-}
+-
+ static void mpc8xxx_spi_cs_control(struct spi_device *spi, bool on)
+ {
+ 	struct device *dev = spi->dev.parent;
+@@ -720,14 +746,6 @@
+ 
+ 		pinfo->gpios[i] = gpio;
+ 		pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
+-
+-		ret = gpio_direction_output(pinfo->gpios[i],
+-					    pinfo->alow_flags[i]);
+-		if (ret) {
+-			dev_err(dev, "can't set output direction for gpio "
+-				"#%d: %d\n", i, ret);
+-			goto err_loop;
+-		}
+ 	}
+ 
+ 	pdata->max_chipselect = ngpios;
