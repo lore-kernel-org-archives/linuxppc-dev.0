@@ -1,14 +1,15 @@
 Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp126.mail.ukl.yahoo.com (smtp126.mail.ukl.yahoo.com
-	[77.238.184.57]) by ozlabs.org (Postfix) with SMTP id 9AA20B7BCA
+Received: from smtp130.mail.ukl.yahoo.com (smtp130.mail.ukl.yahoo.com
+	[77.238.184.61]) by ozlabs.org (Postfix) with SMTP id 301DB1007E4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Nov 2009 04:07:29 +1100 (EST)
-Message-ID: <4B0D644E.3070103@yahoo.es>
-Date: Wed, 25 Nov 2009 18:07:26 +0100
+	Thu, 26 Nov 2009 04:13:46 +1100 (EST)
+Message-ID: <4B0D65C5.8090304@yahoo.es>
+Date: Wed, 25 Nov 2009 18:13:41 +0100
 From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 09/19] powerpc: gamecube/wii: udbg support for usbgecko
+Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
+	controller support
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
@@ -19,10 +20,10 @@ References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<E6251558-8B55-4A7C-952C-4989D876C69A@kernel.crashing.org>
-	<4B0C2115.3010006@yahoo.es>
-	<73FCDEB3-3C1D-41F8-9CC3-D28D404E560B@kernel.crashing.org>
-In-Reply-To: <73FCDEB3-3C1D-41F8-9CC3-D28D404E560B@kernel.crashing.org>
+	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
+	<8E6E11A2-25F1-4AB8-B42E-58C269018CD2@kernel.crashing.org>
+In-Reply-To: <8E6E11A2-25F1-4AB8-B42E-58C269018CD2@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,20 +36,68 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Segher Boessenkool wrote:
->>> Surely there is something called something like of_node_is_compatible()
->>> you can use here?  You already have the node pointer, there is no need
->>> to look at all other nodes.
->>>
->>
->> I see the point.
->> I didn't find of_node_is_compatible() but I'll look what's available
->> here.
+>>  config GAMECUBE_COMMON
+>>      bool
+>>      select NOT_COHERENT_CACHE
+>> +    select FLIPPER_PIC
 > 
-> int of_device_is_compatible(const struct device_node *device,
->                 const char *compat)
+> Maybe using FLIPPER (or GAMECUBE_FLIPPER) instead of GAMECUBE_COMMON
+> is a good name?
 > 
 
-Thanks. I'll pick that.
+I'd prefer to not use a name that implies a specific hardware to describe two (mostly) similar but different hardwares.
+
+>> +#define pr_fmt(fmt) DRV_MODULE_NAME ": " fmt
+> 
+> Unused
+> 
+
+Nope. It is used via the pr_{err,info,...} macros.
+
+>> +/*
+>> + * Each interrupt has a corresponding bit in both
+>> + * the Interrupt Cause (ICR) and Interrupt Mask (IMR) registers.
+>> + *
+>> + * Enabling/disabling an interrupt line involves asserting/clearing
+>> + * the corresponding bit in IMR. ACK'ing a request simply involves
+>> + * asserting the corresponding bit in ICR.
+>> + */
+> 
+>> +static void flipper_pic_ack(unsigned int virq)
+>> +{
+>> +    int irq = virq_to_hw(virq);
+>> +    void __iomem *io_base = get_irq_chip_data(virq);
+>> +
+>> +    set_bit(irq, io_base + FLIPPER_ICR);
+>> +}
+> 
+> So it should be a simple write instead of an RMW here, right?
+> As it is you are ACKing _all_ IRQs as far as I can see.
+> 
+
+No, it acks just a single IRQ.
+But the simple write idea may work. I need to check if writing 0s causes no harm (which IIRC is true).
+
+>> +unsigned int flipper_pic_get_irq(void)
+>> +{
+>> +    void __iomem *io_base = flipper_irq_host->host_data;
+>> +    int irq;
+>> +    u32 irq_status;
+>> +
+>> +    irq_status = in_be32(io_base + FLIPPER_ICR) &
+>> +             in_be32(io_base + FLIPPER_IMR);
+>> +    if (irq_status == 0)
+>> +        return -1;    /* no more IRQs pending */
+>> +
+>> +    __asm__ __volatile__("cntlzw %0,%1" : "=r"(irq) : "r"(irq_status));
+>> +    return irq_linear_revmap(flipper_irq_host, 31 - irq);
+>> +}
+> 
+> There are generic macros for this kind of thing, no need for asm.  ffs()
+> or something.
+> 
+
+__ffs() matches exactly that. Thanks.
 
 Cheers,
 Albert
