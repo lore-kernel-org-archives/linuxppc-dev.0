@@ -1,31 +1,25 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8EA6E1007EE
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 18:13:43 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e32.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAP78FTx015891
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 00:08:15 -0700
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nAP7DaPo184748
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 00:13:36 -0700
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nAP7FJ1s001141
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 00:15:19 -0700
-Message-ID: <4B0CD91C.1090704@austin.ibm.com>
-Date: Wed, 25 Nov 2009 01:13:32 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-pw0-f50.google.com (mail-pw0-f50.google.com
+	[209.85.160.50]) by ozlabs.org (Postfix) with ESMTP id 67FD4B6F0A
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 19:07:47 +1100 (EST)
+Received: by pwi6 with SMTP id 6so4840974pwi.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 00:07:46 -0800 (PST)
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 3/3]CPU DLPAR handling
-References: <4B0CD70F.6090600@austin.ibm.com>
-In-Reply-To: <4B0CD70F.6090600@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: gregkh@suse.de, paul Mackerras <paulus@samba.org>
+Sender: pku.leo@gmail.com
+In-Reply-To: <DFC7BA62-6CF0-4A08-8DD1-11825A638262@kernel.crashing.org>
+References: <1258441832-20133-1-git-send-email-leoli@freescale.com>
+	<8543954E-619A-4A78-A934-CDC326027FD2@kernel.crashing.org>
+	<3A45394FD742FA419B760BB8D398F9EDCBC1F2@zch01exm26.fsl.freescale.net>
+	<1258707833.2140.865.camel@pasglop>
+	<2a27d3730911200123i23fa6dd1td9e19944d1737e73@mail.gmail.com>
+	<DFC7BA62-6CF0-4A08-8DD1-11825A638262@kernel.crashing.org>
+Date: Wed, 25 Nov 2009 16:07:46 +0800
+Message-ID: <2a27d3730911250007s62f31673p3358631996e8a451@mail.gmail.com>
+Subject: Re: [RFC] powerpc/mm: honor O_SYNC flag for memory map
+From: Li Yang <leoli@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,109 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the specific routines to probe and release (add and remove)
-cpu resource for the powerpc pseries platform and registers these handlers
-with the ppc_md callout structure.
+On Sun, Nov 22, 2009 at 4:01 AM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+>>> You need to be a bit more careful tho. You must not allow RAM managed b=
+y
+>>> the kernel to be mapped non-cachable.
+>>
+>> Even if the user explicitly sets the O_SYNC flag? =C2=A0IMHO, it's a bug=
+ of
+>> the application if it uses O_SYNC on main memory to be mmap'ed later.
+>> And we don't need to cover up the bug.
+>
+> Is that "embedded thinking"? =C2=A0Conflicts like this cause machine chec=
+ks or
+> checkstops on many PowerPC implementations, we do not normally allow such
+> to be caused by userland.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
- arch/powerpc/platforms/pseries/dlpar.c |   88 +++++++++++++++++++++++++++++++++
- 1 file changed, 88 insertions(+)
+So what you are saying is that if the kernel has mapped a physical
+page as cacheable while user application is trying to map it as
+non-cacheable, there will be machine checks and checkstops rather than
+just performance drop?  This is new to me.  Could you elaborate a bit?
+ Thanks.
 
-Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
-===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-11-25 04:54:13.000000000 -0600
-+++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-11-25 04:55:00.000000000 -0600
-@@ -341,4 +341,92 @@
- 	return 0;
- }
- 
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
- 
-+static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
-+{
-+	struct device_node *dn;
-+	unsigned long drc_index;
-+	char *cpu_name;
-+	int rc;
-+
-+	rc = strict_strtoul(buf, 0, &drc_index);
-+	if (rc)
-+		return -EINVAL;
-+
-+	dn = dlpar_configure_connector(drc_index);
-+	if (!dn)
-+		return -EINVAL;
-+
-+	/* configure-connector reports cpus as living in the base
-+	 * directory of the device tree.  CPUs actually live in the
-+	 * cpus directory so we need to fixup the full_name.
-+	 */
-+	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus") + 1,
-+			   GFP_KERNEL);
-+	if (!cpu_name) {
-+		dlpar_free_cc_nodes(dn);
-+		return -ENOMEM;
-+	}
-+
-+	sprintf(cpu_name, "/cpus%s", dn->full_name);
-+	kfree(dn->full_name);
-+	dn->full_name = cpu_name;
-+
-+	rc = dlpar_acquire_drc(drc_index);
-+	if (rc) {
-+		dlpar_free_cc_nodes(dn);
-+		return -EINVAL;
-+	}
-+
-+	rc = dlpar_attach_node(dn);
-+	if (rc) {
-+		dlpar_release_drc(drc_index);
-+		dlpar_free_cc_nodes(dn);
-+	}
-+
-+	return rc ? rc : count;
-+}
-+
-+static ssize_t dlpar_cpu_release(const char *buf, size_t count)
-+{
-+	struct device_node *dn;
-+	const u32 *drc_index;
-+	int rc;
-+
-+	dn = of_find_node_by_path(buf);
-+	if (!dn)
-+		return -EINVAL;
-+
-+	drc_index = of_get_property(dn, "ibm,my-drc-index", NULL);
-+	if (!drc_index) {
-+		of_node_put(dn);
-+		return -EINVAL;
-+	}
-+
-+	rc = dlpar_release_drc(*drc_index);
-+	if (rc) {
-+		of_node_put(dn);
-+		return -EINVAL;
-+	}
-+
-+	rc = dlpar_detach_node(dn);
-+	if (rc) {
-+		dlpar_acquire_drc(*drc_index);
-+		return rc;
-+	}
-+
-+	of_node_put(dn);
-+	return count;
-+}
-+
-+static int __init pseries_dlpar_init(void)
-+{
-+	ppc_md.cpu_probe = dlpar_cpu_probe;
-+	ppc_md.cpu_release = dlpar_cpu_release;
-+
-+	return 0;
-+}
-+machine_device_initcall(pseries, pseries_dlpar_init);
-+
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+- Leo
