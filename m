@@ -1,14 +1,29 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8110AB6F15
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 18:05:00 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e39.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAP6wWJJ022080
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Nov 2009 23:58:32 -0700
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nAP74raC163654
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 00:04:53 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id nAP74qaj013860
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 00:04:53 -0700
+Message-ID: <4B0CD70F.6090600@austin.ibm.com>
+Date: Wed, 25 Nov 2009 01:04:47 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <19212.41571.997709.92207@cargo.ozlabs.ibm.com>
-Date: Wed, 25 Nov 2009 14:20:03 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 2/3] sysfs cpu probe/release files
-In-Reply-To: <4B0C8D46.1030206@austin.ibm.com>
-References: <4B0C8B45.6080804@austin.ibm.com> <4B0C8D46.1030206@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/3] Kernel handling of Dynamic Logical Partitioning
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: gregkh@suse.de, paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,39 +33,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nathan Fontenot writes:
+version 2 of the patch set with updates from comments.
 
-> Create new probe and release sysfs files to facilitate adding and removing
-> cpus from the system.  This also creates the powerpc specific stubs to handle
-> the arch callouts from writes to the sysfs files.
-> 
-> The creation and use of these files is regulated by the 
-> CONFIG_ARCH_CPU_PROBE_RELEASE option so that only architectures that need the
-> capability will have the files created.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
-> ---
->  arch/powerpc/Kconfig               |    4 ++++
->  arch/powerpc/include/asm/machdep.h |    5 +++++
->  arch/powerpc/kernel/sysfs.c        |   19 +++++++++++++++++++
->  drivers/base/cpu.c                 |   32 ++++++++++++++++++++++++++++++++
+The Dynamic Logical Partitioning (DLPAR) capabilities of the powerpc pseries
+platform allows for the addition and removal of resources (i.e. cpus,
+memory, pci devices) from a partition. The removal of a resource involves
+removing the resource's node from the device tree and then returning the
+resource to firmware via the rtas set-indicator call.  To add a resource, it
+is first obtained from firmware via the rtas set-indicator call and then a
+new device tree node is created using the ibm,configure-coinnector rtas call
+and added to the device tree.
 
-Since this touches drivers/base/cpu.c, you should cc Greg KH on this
-patch and get an ack from him, assuming these patches are going in
-through the powerpc tree.
+The following set of patches implements the needed infrastructure to have the
+kernel handle the DLPAR addition and removal of cpus (other DLPAR'able items to 
+follow in future patches).  The framework for this is to create a set of probe/release 
+sysfs files that will facilitate arch-specific call-outs to handle addition and 
+removal of cpus to the system.
 
-> --- powerpc.orig/include/linux/cpu.h	2009-11-23 18:19:23.000000000 -0600
-> +++ powerpc/include/linux/cpu.h	2009-11-24 14:30:07.000000000 -0600
-> @@ -43,6 +43,10 @@
->  
->  #ifdef CONFIG_HOTPLUG_CPU
->  extern void unregister_cpu(struct cpu *cpu);
-> +#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-> +extern ssize_t arch_cpu_probe(const char *, size_t);
-> +extern ssize_t arch_cpu_release(const char *, size_t);
-> +#endif
+-Nathan Fontenot
 
-Since these are just declarations, they don't need the #ifdef around
-them.
+1/3 - powerpc/pseries kernel DLPAR infrastructure
+2/3 - Create probe/release sysfs files and the powerpc handlers
+3/3 - powerpc/pseries CPU DLPAR handling 
 
-Paul.
+ arch/powerpc/Kconfig                        |    4 
+ arch/powerpc/include/asm/machdep.h          |    5 
+ arch/powerpc/include/asm/pSeries_reconfig.h |    1 
+ arch/powerpc/kernel/smp.c                   |   17 
+ arch/powerpc/kernel/sysfs.c                 |   19 +
+ arch/powerpc/platforms/pseries/Makefile     |    2 
+ arch/powerpc/platforms/pseries/dlpar.c      |  500 +++++++++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/reconfig.c   |    2 
+ drivers/base/cpu.c                          |   33 +
+ include/linux/cpu.h                         |    4
+ 10 files changed, 581 insertions(+), 6 deletions(-)
