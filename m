@@ -1,13 +1,15 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20091124215908.559.23998.stgit@angua>
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <AE8D50AE-03EE-45FC-80EF-376F0836B5CB@kernel.crashing.org>
 References: <20091124215908.559.23998.stgit@angua>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AE8D50AE-03EE-45FC-80EF-376F0836B5CB@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
+	<AE8D50AE-03EE-45FC-80EF-376F0836B5CB@kernel.crashing.org>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 24 Nov 2009 18:33:33 -0700
+Message-ID: <fa686aa40911241733s4588c6fag4ed56153842dcd83@mail.gmail.com>
 Subject: Re: [PATCH v2 11/11] of: unify phandle name in struct device_node
-Date: Wed, 25 Nov 2009 02:30:45 +0100
-To: Grant Likely <grant.likely@secretlab.ca>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
@@ -20,23 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> In struct device_node, the phandle is named 'linux_phandle' for  
-> PowerPC
-> and MicroBlaze, and 'node' for SPARC.  There is no good reason for the
-> difference, it is just an artifact of the code diverging over a couple
-> of years.  This patch renames both to simply .phandle.
+On Tue, Nov 24, 2009 at 6:30 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+>> In struct device_node, the phandle is named 'linux_phandle' for PowerPC
+>> and MicroBlaze, and 'node' for SPARC. =A0There is no good reason for the
+>> difference, it is just an artifact of the code diverging over a couple
+>> of years. =A0This patch renames both to simply .phandle.
+>>
+>> Note: the .node also existed in PowerPC/MicroBlaze, but the only user
+>> seems to be arch/powerpc/platforms/powermac/pfunc_core.c. =A0It doesn't
+>> look like the assignment between .linux_phandle and .node is
+>> significantly different enough to warrant the separate code paths
+>> unless ibm,phandle properties actually appear in Apple device trees.
+>>
+>> I think it is safe to eliminate the old .node property and use
+>> linux_phandle everywhere.
 >
-> Note: the .node also existed in PowerPC/MicroBlaze, but the only user
-> seems to be arch/powerpc/platforms/powermac/pfunc_core.c.  It doesn't
-> look like the assignment between .linux_phandle and .node is
-> significantly different enough to warrant the separate code paths
-> unless ibm,phandle properties actually appear in Apple device trees.
->
-> I think it is safe to eliminate the old .node property and use
-> linux_phandle everywhere.
+> =A0^^^^^^^^^^^^ =A0You forgot to update one :-)
 
-   ^^^^^^^^^^^^  You forgot to update one :-)
+Heeheehee.  oops.
 
+g.
 
->
-Segher
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
