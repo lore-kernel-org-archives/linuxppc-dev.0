@@ -1,25 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id AB0CBB6EE9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 25 Nov 2009 11:34:19 +1100 (EST)
-Received: by yxe9 with SMTP id 9so7013599yxe.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 24 Nov 2009 16:34:17 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <200911211708.47253.to-fleischer@t-online.de>
-References: <200911161742.46663.to-fleischer@t-online.de>
-	<20091118232920.GA24307@oksana.dev.rtsoft.ru>
-	<fa686aa40911210045v4be84e8dg8ef490472e06017b@mail.gmail.com>
-	<200911211708.47253.to-fleischer@t-online.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 24 Nov 2009 17:33:57 -0700
-Message-ID: <fa686aa40911241633q38dc0cf8x8b23038fe2fdf10d@mail.gmail.com>
-Subject: Re: spi_mpc8xxx.c: chip select polarity problem
-To: Torsten Fleischer <to-fleischer@t-online.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC PATCH 14/19] powerpc: allow ioremap within reserved fake
+	ram 	regions
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Albert Herranz <albert_herranz@yahoo.es>
+In-Reply-To: <4B0C1337.6070309@yahoo.es>
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
+	<fa686aa40911221536pf558b1fte36dc88bdf58e883@mail.gmail.com>
+	<4B0AED90.6050600@yahoo.es> <1259019909.31172.63.camel@concordia>
+	<4B0C1337.6070309@yahoo.es>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-KYAPW1mjtSMvLkBUWoWu"
+Date: Wed, 25 Nov 2009 11:38:39 +1100
+Message-ID: <1259109519.4017.8.camel@concordia>
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,152 +34,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks.  However, there needs to be a proper description of what this
-patch does to go in the commit header.  Can you please write one?
 
-Thanks,
-g.
+--=-KYAPW1mjtSMvLkBUWoWu
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, Nov 21, 2009 at 9:08 AM, Torsten Fleischer
-<to-fleischer@t-online.de> wrote:
-> On Sat, Nov 21, 2009 at 09:45:50 Grant Likely wrote:
-> [...]
->> Hey Torsten, =A0do you have an updated version of this change to address
->> the comments? =A0I'm collecting the last few things for some linux-next
->> exposure now.
->
-> Hey Grant,
->
-> here is the updated version of the patch containing the recommended
-> changes.
->
-> Best Regards
-> Torsten
->
->
-> Signed-off-by: Torsten Fleischer <to-fleischer@t-online.de>
-> ---
->
-> diff -u -r -N linux-2.6.31.6_orig//drivers/spi/spi_mpc8xxx.c linux-2.6.31=
-.6/drivers/spi/spi_mpc8xxx.c
-> --- linux-2.6.31.6_orig//drivers/spi/spi_mpc8xxx.c =A0 =A0 =A02009-11-10 =
-01:32:31.000000000 +0100
-> +++ linux-2.6.31.6/drivers/spi/spi_mpc8xxx.c =A0 =A02009-11-19 08:15:33.0=
-00000000 +0100
-> @@ -114,6 +114,7 @@
-> =A0 =A0 =A0 =A0u32 rx_shift; =A0 =A0 =A0 =A0 =A0 /* RX data reg shift whe=
-n in qe mode */
-> =A0 =A0 =A0 =A0u32 tx_shift; =A0 =A0 =A0 =A0 =A0 /* TX data reg shift whe=
-n in qe mode */
-> =A0 =A0 =A0 =A0u32 hw_mode; =A0 =A0 =A0 =A0 =A0 =A0/* Holds HW mode regis=
-ter settings */
-> + =A0 =A0 =A0 int initialized;
-> =A0};
->
-> =A0static inline void mpc8xxx_spi_write_reg(__be32 __iomem *reg, u32 val)
-> @@ -503,15 +504,52 @@
->
-> =A0 =A0 =A0 =A0return ret;
-> =A0}
-> +
-> +
-> +struct mpc8xxx_spi_probe_info {
-> + =A0 =A0 =A0 struct fsl_spi_platform_data pdata;
-> + =A0 =A0 =A0 int *gpios;
-> + =A0 =A0 =A0 bool *alow_flags;
-> +};
-> +
-> +static struct mpc8xxx_spi_probe_info *
-> +to_of_pinfo(struct fsl_spi_platform_data *pdata)
-> +{
-> + =A0 =A0 =A0 return container_of(pdata, struct mpc8xxx_spi_probe_info, p=
-data);
-> +}
-> +
-> +static int mpc8xxx_spi_cs_init(struct spi_device *spi)
-> +{
-> + =A0 =A0 =A0 struct device *dev =3D spi->dev.parent;
-> + =A0 =A0 =A0 struct mpc8xxx_spi_probe_info *pinfo =3D to_of_pinfo(dev->p=
-latform_data);
-> + =A0 =A0 =A0 u16 cs =3D spi->chip_select;
-> + =A0 =A0 =A0 int gpio =3D pinfo->gpios[cs];
-> + =A0 =A0 =A0 bool on =3D pinfo->alow_flags[cs] ^ !(spi->mode & SPI_CS_HI=
-GH);
-> +
-> + =A0 =A0 =A0 return gpio_direction_output(gpio, on);
-> +}
-> +
-> =A0static int mpc8xxx_spi_transfer(struct spi_device *spi,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct spi=
-_message *m)
-> =A0{
-> =A0 =A0 =A0 =A0struct mpc8xxx_spi *mpc8xxx_spi =3D spi_master_get_devdata=
-(spi->master);
-> + =A0 =A0 =A0 struct spi_mpc8xxx_cs *cs =3D spi->controller_state;
-> =A0 =A0 =A0 =A0unsigned long flags;
->
-> =A0 =A0 =A0 =A0m->actual_length =3D 0;
-> =A0 =A0 =A0 =A0m->status =3D -EINPROGRESS;
->
-> + =A0 =A0 =A0 if (cs && !cs->initialized) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 int ret;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D mpc8xxx_spi_cs_init(spi);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (ret) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_dbg(&spi->dev, "cs_init=
- failed: %d\n", ret);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return ret;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 cs->initialized =3D 1;
-> + =A0 =A0 =A0 }
-> +
-> =A0 =A0 =A0 =A0spin_lock_irqsave(&mpc8xxx_spi->lock, flags);
-> =A0 =A0 =A0 =A0list_add_tail(&m->queue, &mpc8xxx_spi->queue);
-> =A0 =A0 =A0 =A0queue_work(mpc8xxx_spi->workqueue, &mpc8xxx_spi->work);
-> @@ -648,18 +686,6 @@
-> =A0 =A0 =A0 =A0return 0;
-> =A0}
->
-> -struct mpc8xxx_spi_probe_info {
-> - =A0 =A0 =A0 struct fsl_spi_platform_data pdata;
-> - =A0 =A0 =A0 int *gpios;
-> - =A0 =A0 =A0 bool *alow_flags;
-> -};
-> -
-> -static struct mpc8xxx_spi_probe_info *
-> -to_of_pinfo(struct fsl_spi_platform_data *pdata)
-> -{
-> - =A0 =A0 =A0 return container_of(pdata, struct mpc8xxx_spi_probe_info, p=
-data);
-> -}
-> -
-> =A0static void mpc8xxx_spi_cs_control(struct spi_device *spi, bool on)
-> =A0{
-> =A0 =A0 =A0 =A0struct device *dev =3D spi->dev.parent;
-> @@ -720,14 +746,6 @@
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pinfo->gpios[i] =3D gpio;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pinfo->alow_flags[i] =3D flags & OF_GPIO_A=
-CTIVE_LOW;
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D gpio_direction_output(pinfo->gpios[=
-i],
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 pinfo->alow_flags[i]);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (ret) {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(dev, "can't set out=
-put direction for gpio "
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "#%d: %d\n"=
-, i, ret);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_loop;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> =A0 =A0 =A0 =A0}
->
-> =A0 =A0 =A0 =A0pdata->max_chipselect =3D ngpios;
->
+On Tue, 2009-11-24 at 18:09 +0100, Albert Herranz wrote:
+> Michael Ellerman wrote:
+> >> Would it be acceptable to create a global var __allow_ioremap_normal_r=
+am that by default would have a value of 0 and would be set _only_ for thos=
+e platforms needing it?
+> >>
+> >> The other solutions I see is:
+> >> - add support for discontiguous memory to powerpc 32-bits (which is no=
+t something that I can look into now)
+> >> - don't use the precious second 64MB area (which is a waste)
+> >=20
+> > - Implement your own ppc_md.ioremap(), see iseries & cell for example.
+> >=20
+> > Currently that's only called on 64-bit, but you could change that.
+> >=20
+> > If I'm reading your patch right, you should be able to do that check in
+> > your platform's ioremap() and then call the generic implementation to d=
+o
+> > the actual work.
+> >=20
+> > cheers
+>=20
+> I could use ppc_md.ioremap to duplicate ioremap except for the ioremap ra=
+m check.
+> But calling the stock ioremap without modifying it is not possible
+> because it checks and bails out when ioremapping a region marked as
+> ram (even if it's not real ram and it's memreserved).
 
+OK, that wasn't clear in your patch. It looks like you're adding a check
+(!__map_without_bats) - but whatever.
 
+> Is the list of memreserved areas preserved once the kernel is running?
+> If it is preserved another option would be to unban ioremapping ram if me=
+mreserved.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Yeah it is, so that might work, though it's still a bit of a hack :)
+But if that's just a stop-gap until sparse mem gets going on 32-bit
+maybe that's OK.
+
+cheers
+
+--=-KYAPW1mjtSMvLkBUWoWu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAksMfI8ACgkQdSjSd0sB4dJhEACgq50Du0+QimGHuA1quzuWeBZ8
+qFQAoLVbYW6uGIjMEqnKh9mCvT3ABQcV
+=HxuL
+-----END PGP SIGNATURE-----
+
+--=-KYAPW1mjtSMvLkBUWoWu--
