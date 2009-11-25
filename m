@@ -1,30 +1,16 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [RFC PATCH 14/19] powerpc: allow ioremap within reserved fake
-	ram 	regions
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Albert Herranz <albert_herranz@yahoo.es>
-In-Reply-To: <4B0C1337.6070309@yahoo.es>
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
-	<fa686aa40911221536pf558b1fte36dc88bdf58e883@mail.gmail.com>
-	<4B0AED90.6050600@yahoo.es> <1259019909.31172.63.camel@concordia>
-	<4B0C1337.6070309@yahoo.es>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-KYAPW1mjtSMvLkBUWoWu"
-Date: Wed, 25 Nov 2009 11:38:39 +1100
-Message-ID: <1259109519.4017.8.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20091124215908.559.23998.stgit@angua>
+References: <20091124215908.559.23998.stgit@angua>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <AE8D50AE-03EE-45FC-80EF-376F0836B5CB@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2 11/11] of: unify phandle name in struct device_node
+Date: Wed, 25 Nov 2009 02:30:45 +0100
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,62 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> In struct device_node, the phandle is named 'linux_phandle' for  
+> PowerPC
+> and MicroBlaze, and 'node' for SPARC.  There is no good reason for the
+> difference, it is just an artifact of the code diverging over a couple
+> of years.  This patch renames both to simply .phandle.
+>
+> Note: the .node also existed in PowerPC/MicroBlaze, but the only user
+> seems to be arch/powerpc/platforms/powermac/pfunc_core.c.  It doesn't
+> look like the assignment between .linux_phandle and .node is
+> significantly different enough to warrant the separate code paths
+> unless ibm,phandle properties actually appear in Apple device trees.
+>
+> I think it is safe to eliminate the old .node property and use
+> linux_phandle everywhere.
 
---=-KYAPW1mjtSMvLkBUWoWu
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+   ^^^^^^^^^^^^  You forgot to update one :-)
 
-On Tue, 2009-11-24 at 18:09 +0100, Albert Herranz wrote:
-> Michael Ellerman wrote:
-> >> Would it be acceptable to create a global var __allow_ioremap_normal_r=
-am that by default would have a value of 0 and would be set _only_ for thos=
-e platforms needing it?
-> >>
-> >> The other solutions I see is:
-> >> - add support for discontiguous memory to powerpc 32-bits (which is no=
-t something that I can look into now)
-> >> - don't use the precious second 64MB area (which is a waste)
-> >=20
-> > - Implement your own ppc_md.ioremap(), see iseries & cell for example.
-> >=20
-> > Currently that's only called on 64-bit, but you could change that.
-> >=20
-> > If I'm reading your patch right, you should be able to do that check in
-> > your platform's ioremap() and then call the generic implementation to d=
-o
-> > the actual work.
-> >=20
-> > cheers
->=20
-> I could use ppc_md.ioremap to duplicate ioremap except for the ioremap ra=
-m check.
-> But calling the stock ioremap without modifying it is not possible
-> because it checks and bails out when ioremapping a region marked as
-> ram (even if it's not real ram and it's memreserved).
 
-OK, that wasn't clear in your patch. It looks like you're adding a check
-(!__map_without_bats) - but whatever.
-
-> Is the list of memreserved areas preserved once the kernel is running?
-> If it is preserved another option would be to unban ioremapping ram if me=
-mreserved.
-
-Yeah it is, so that might work, though it's still a bit of a hack :)
-But if that's just a stop-gap until sparse mem gets going on 32-bit
-maybe that's OK.
-
-cheers
-
---=-KYAPW1mjtSMvLkBUWoWu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAksMfI8ACgkQdSjSd0sB4dJhEACgq50Du0+QimGHuA1quzuWeBZ8
-qFQAoLVbYW6uGIjMEqnKh9mCvT3ABQcV
-=HxuL
------END PGP SIGNATURE-----
-
---=-KYAPW1mjtSMvLkBUWoWu--
+>
+Segher
