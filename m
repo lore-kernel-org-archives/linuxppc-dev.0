@@ -1,13 +1,13 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <19212.41387.37749.652776@cargo.ozlabs.ibm.com>
-Date: Wed, 25 Nov 2009 14:16:59 +1100
+Message-ID: <19212.41731.446119.833036@cargo.ozlabs.ibm.com>
+Date: Wed, 25 Nov 2009 14:22:43 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 1/3] Kernel DLPAR infrastructure
-In-Reply-To: <4B0C8CE3.4010207@austin.ibm.com>
-References: <4B0C8B45.6080804@austin.ibm.com> <4B0C8CE3.4010207@austin.ibm.com>
+Subject: Re: [PATCH 3/3] CPU DLPAR  handling
+In-Reply-To: <4B0C8E31.9040608@austin.ibm.com>
+References: <4B0C8B45.6080804@austin.ibm.com> <4B0C8E31.9040608@austin.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,36 +20,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Nathan Fontenot writes:
 
-> This patch provides the kernel DLPAR infrastructure in a new filed named
-> dlpar.c.  The functionality provided is for acquiring and releasing a resource
-> from firmware and the parsing of information returned from the
-> ibm,configure-connector rtas call.  Additionally this exports the pSeries
-> reconfiguration notifier chain so that it can be invoked when device tree 
-> updates are made.
+> Register the pseries specific handlers for the powerpc architecture handlers
+> for the cpu probe and release files.  This also implements the cpu DLPAR
+> addition and removal of CPUS from the system.
 
-Mostly looks great.
+...
 
-> +static struct device_node *derive_parent(const char *path)
-> +{
-> +	struct device_node *parent;
-> +	char parent_path[128];
-> +	int parent_path_len;
+> +	/* configure-connector reports cpus as living in the base
+> +	 * directory of the device tree.  CPUs actually live in the
+> +	 * cpus directory so we need to fixup the full_name.
+> +	 */
+> +	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus/") + 1,
+> +			   GFP_KERNEL);
+> +	if (!cpu_name) {
+> +		dlpar_free_cc_nodes(dn);
+> +		return -ENOMEM;
+> +	}
 > +
-> +	parent_path_len = strrchr(path, '/') - path + 1;
-> +	strlcpy(parent_path, path, parent_path_len);
+> +	sprintf(cpu_name, "/cpus/%s", dn->full_name);
 
-This looks a bit fragile if path could possibly not contain any '/' or
-if the '/' is more than 128 characters from the start of path.  Please
-fix this to check if strrchr returns NULL and to cope in some
-reasonable fashion if the path happens to be very long.
+I would have expected dn->full_name to start with a '/' already, in
+which case this will end up with two consecutive slashes after
+'cpus'.  I think that will probably cause problems.
 
-> +#ifdef CONFIG_PROC_DEVICETREE
-> +	ent = proc_mkdir(strrchr(dn->full_name, '/') + 1, dn->parent->pde);
-> +	if (ent)
-> +		proc_device_tree_add_node(dn, ent);
-
-Also assumes that dn->full_name contains a '/'.  If for some reason it
-couldn't possibly not contain a '/', put in a comment explaining that.
-
-Thanks,
 Paul.
