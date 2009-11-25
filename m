@@ -1,16 +1,17 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from localhost.localdomain (unknown [93.100.122.208])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D7E5CB6F0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 09:22:30 +1100 (EST)
-Date: Thu, 26 Nov 2009 00:48:52 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: stop_this_cpu: remove the cpu from the online map.
-Message-ID: <20091125214852.GA7912@ru.mvista.com>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id 660CC1007D1
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 10:02:03 +1100 (EST)
+Date: Thu, 26 Nov 2009 09:33:27 +1100
+From: Simon Horman <horms@verge.net.au>
+To: "M. Mohan Kumar" <mohan@in.ibm.com>
+Subject: Re: [PATCH] Write to HVC terminal from purgatory cod
+Message-ID: <20091125223327.GJ4794@verge.net.au>
+References: <20091016062602.GC4995@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091016062602.GC4995@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,24 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the CPU from the online map to prevent smp_call_function
-from sending messages to a stopped CPU.
+On Fri, Oct 16, 2009 at 11:56:02AM +0530, M. Mohan Kumar wrote:
+> [PATCH] Write to HVC terminal from purgatory code
+> 
+> Current x86/x86-64 kexec-tools print the message "I'm in purgatory" to serial
+> console/VGA while executing the purgatory code.  Implement this feature for
+> POWERPC pseries platform by using the H_PUT_TERM_CHAR hypervisor call by
+> printng to hvc console.
+> 
+> Includes the changes suggested by Michael Ellerman
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/kernel/smp.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-diff -pruN linux-2.6.orig/arch/powerpc/kernel/smp.c linux-2.6/arch/powerpc/kernel/smp.c
---- linux-2.6.orig/arch/powerpc/kernel/smp.c	2009-11-26 00:22:15.000000000 +0300
-+++ linux-2.6/arch/powerpc/kernel/smp.c	2009-11-26 00:26:48.000000000 +0300
-@@ -218,6 +218,9 @@ void crash_send_ipi(void (*crash_ipi_cal
- 
- static void stop_this_cpu(void *dummy)
- {
-+	/* Remove this CPU */
-+	set_cpu_online(smp_processor_id(), false);
-+
- 	local_irq_disable();
- 	while (1)
- 		;
+Sorry for the long delay, applied.
