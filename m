@@ -1,15 +1,14 @@
 Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp130.mail.ukl.yahoo.com (smtp130.mail.ukl.yahoo.com
-	[77.238.184.61]) by ozlabs.org (Postfix) with SMTP id 301DB1007E4
+Received: from smtp144.mail.ukl.yahoo.com (smtp144.mail.ukl.yahoo.com
+	[77.238.184.75]) by ozlabs.org (Postfix) with SMTP id F289F100814
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Nov 2009 04:13:46 +1100 (EST)
-Message-ID: <4B0D65C5.8090304@yahoo.es>
-Date: Wed, 25 Nov 2009 18:13:41 +0100
+	Thu, 26 Nov 2009 04:24:09 +1100 (EST)
+Message-ID: <4B0D6837.4020407@yahoo.es>
+Date: Wed, 25 Nov 2009 18:24:07 +0100
 From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
-	controller support
+Subject: Re: [RFC PATCH 12/19] powerpc: gamecube: platform support
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
@@ -22,8 +21,9 @@ References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<8E6E11A2-25F1-4AB8-B42E-58C269018CD2@kernel.crashing.org>
-In-Reply-To: <8E6E11A2-25F1-4AB8-B42E-58C269018CD2@kernel.crashing.org>
+	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
+	<F5450BB0-FBBB-48D5-A054-CB147FD43EAA@kernel.crashing.org>
+In-Reply-To: <F5450BB0-FBBB-48D5-A054-CB147FD43EAA@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,68 +36,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Segher Boessenkool wrote:
->>  config GAMECUBE_COMMON
->>      bool
->>      select NOT_COHERENT_CACHE
->> +    select FLIPPER_PIC
-> 
-> Maybe using FLIPPER (or GAMECUBE_FLIPPER) instead of GAMECUBE_COMMON
-> is a good name?
-> 
-
-I'd prefer to not use a name that implies a specific hardware to describe two (mostly) similar but different hardwares.
-
->> +#define pr_fmt(fmt) DRV_MODULE_NAME ": " fmt
-> 
-> Unused
-> 
-
-Nope. It is used via the pr_{err,info,...} macros.
-
->> +/*
->> + * Each interrupt has a corresponding bit in both
->> + * the Interrupt Cause (ICR) and Interrupt Mask (IMR) registers.
->> + *
->> + * Enabling/disabling an interrupt line involves asserting/clearing
->> + * the corresponding bit in IMR. ACK'ing a request simply involves
->> + * asserting the corresponding bit in ICR.
->> + */
-> 
->> +static void flipper_pic_ack(unsigned int virq)
->> +{
->> +    int irq = virq_to_hw(virq);
->> +    void __iomem *io_base = get_irq_chip_data(virq);
+>> +static struct of_device_id gamecube_of_bus[] = {
+>> +    { .compatible = "nintendo,flipper", },
+>> +    { },
+>> +};
 >> +
->> +    set_bit(irq, io_base + FLIPPER_ICR);
+>> +static int __init gamecube_device_probe(void)
+>> +{
+>> +    if (!machine_is(gamecube))
+>> +        return 0;
+>> +
+>> +    of_platform_bus_probe(NULL, gamecube_of_bus, NULL);
+>> +    return 0;
 >> +}
 > 
-> So it should be a simple write instead of an RMW here, right?
-> As it is you are ACKing _all_ IRQs as far as I can see.
+> You really do not need a platform bus as far as I can see?
 > 
 
-No, it acks just a single IRQ.
-But the simple write idea may work. I need to check if writing 0s causes no harm (which IIRC is true).
+We need it as it currently doesn't match with the default bus ids.
 
->> +unsigned int flipper_pic_get_irq(void)
->> +{
->> +    void __iomem *io_base = flipper_irq_host->host_data;
->> +    int irq;
->> +    u32 irq_status;
->> +
->> +    irq_status = in_be32(io_base + FLIPPER_ICR) &
->> +             in_be32(io_base + FLIPPER_IMR);
->> +    if (irq_status == 0)
->> +        return -1;    /* no more IRQs pending */
->> +
->> +    __asm__ __volatile__("cntlzw %0,%1" : "=r"(irq) : "r"(irq_status));
->> +    return irq_linear_revmap(flipper_irq_host, 31 - irq);
->> +}
-> 
-> There are generic macros for this kind of thing, no need for asm.  ffs()
-> or something.
-> 
+const struct of_device_id of_default_bus_ids[] = {
+        { .type = "soc", },
+        { .compatible = "soc", },
+        { .type = "plb5", },
+        { .type = "plb4", },
+        { .type = "opb", },
+        { .type = "simple", },
+        {},
+};
 
-__ffs() matches exactly that. Thanks.
+Should I introduce a .type property matching any of those above in the soc node, and get rid of the explicit bus probe?
 
-Cheers,
+Thanks,
 Albert
