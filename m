@@ -1,33 +1,22 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp123.mail.ukl.yahoo.com (smtp123.mail.ukl.yahoo.com
-	[77.238.184.54]) by ozlabs.org (Postfix) with SMTP id 2D09BB6F14
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9FCD41007D9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Nov 2009 04:58:34 +1100 (EST)
-Message-ID: <4B0D7047.3000803@yahoo.es>
-Date: Wed, 25 Nov 2009 18:58:31 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 18/19] powerpc: wii: platform support
+	Thu, 26 Nov 2009 05:01:02 +1100 (EST)
+Message-ID: <49443.84.105.60.153.1259172058.squirrel@gate.crashing.org>
+In-Reply-To: <1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-16-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-17-git-se! nd-email-albert_herranz@yahoo.es>
-	<1258927311-4340-18-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-19-git-send-email-albert_herranz@yahoo.es>
-	<89DF2875-BF4F-4DE1-AB18-C09DFFABCA00@kernel.crashing.org>
-In-Reply-To: <89DF2875-BF4F-4DE1-AB18-C09DFFABCA00@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+Date: Wed, 25 Nov 2009 19:00:58 +0100 (CET)
+Subject: Re: [RFC PATCH 02/19] powerpc: gamecube: device tree
+From: "Segher Boessenkool" <segher@kernel.crashing.org>
+To: "Albert Herranz" <albert_herranz@yahoo.es>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,83 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> diff --git a/arch/powerpc/platforms/embedded6xx/wii.c
->> b/arch/powerpc/platforms/embedded6xx/wii.c
-> 
->> +#define DRV_MODULE_NAME "rvl"
-> 
-> Should this be "wii"?
-> 
+> +	memory {
+> +		device_type = "memory";
+> +		/* 24M minus framebuffer memory area (640*576*2*2) */
+> +		reg = <0x00000000 0x01698000>;
 
-Ok. I'm fine with both.
+Put the whole 24MB here, probe the framebuffer address and size
+in the platform code?
 
->> +static enum starlet_ipc_flavour starlet_ipc_flavour;
->> +
->> +enum starlet_ipc_flavour starlet_get_ipc_flavour(void)
->> +{
->> +    return starlet_ipc_flavour;
->> +}
-> 
-> This can go I think, unless you plan on supporting something else than
-> mini?
-> 
+> +	soc {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		#interrupt-cells = <1>;
 
-See comment in previous message.
-Irrespective of supporting other firmwares, we need to know the one we are running under.
+This isn't an interrupt controller, don't put #interrupt-cells
+here.
 
->> +#ifdef CONFIG_STARLET_MINI
->> +
->> +#define HW_RESETS_OF_COMPATIBLE    "nintendo,hollywood-resets"
->> +#define HW_GPIO_ALIAS        "hw_gpio
-> 
-> This should be unconditional now I think?  You access the hardware
-> directly.
-> 
+> +		video@0c002000 {
+> +			compatible = "nintendo,flipper-video";
+> +			reg = <0x0c002000 0x100>;
+> +			interrupts = <8>;
+> +			interrupt-parent = <&pic>;
+> +			/* XFB is the eXternal FrameBuffer */
+> +			xfb-start = <0x01698000>; /* end-of-ram - xfb-size */
+> +			xfb-size = <0x168000>;
 
-Yes, at this stage direct hardware should be possible, but only if 'mini' support is compiled-in (which will be the default option at this stage).
-We can either leave the conditionals as is now, or remove them and add them later if we support more than one firmware flavour.
+XFB address isn't fixed on the hardware, and the kernel might
+want to move it, and you can easily probe for it anyway.  Remove
+these last two properties please.
 
-I'm fine with both options.
 
->> +    np = of_find_node_by_name(NULL, "aliases");
->> +    if (!np) {
->> +        pr_err("unable to find node %s\n", "aliases");
->> +        goto out;
->> +    }
->> +
->> +    path = of_get_property(np, HW_GPIO_ALIAS, NULL);
->> +    of_node_put(np);
->> +    if (!path) {
->> +        pr_err("alias %s unknown\n", HW_GPIO_ALIAS);
->> +        goto out;
->> +    }
-> 
-> Don't use an alias here, search for e.g. a matching "compatible" instead.
-> 
+> +		auxram@0c005000 {
+> +			compatible = "nintendo,flipper-auxram";
+> +			reg = <0x0c005000 0x200>;	/* DSP */
+> +			interrupts = <6>;
+> +			interrupt-parent = <&pic>;
+> +		};
+> +
+> +		audio@0c005000 {
+> +			compatible = "nintendo,flipper-audio";
+> +			reg = <0x0c005000 0x200		/* DSP */
+> +			       0x0c006c00 0x20>;	/* AI */
+> +			interrupts = <6>;
+> +			interrupt-parent = <&pic>;
+> +		};
 
-I used an alias because I wanted explicitly the second GPIO word.
+These two have the same address, not good.  Just remove the
+auxram node?
 
-Is there another way to select a specific instance of repeated identical hardware?
-We have two instances of gpios here, matching the same "compatible".
+> +		disk@0c006000 {
+> +			compatible = "nintendo,flipper-disk";
 
->> +static struct of_device_id wii_of_bus[] = {
->> +    { .compatible = "nintendo,hollywood", },
-> 
-> Like with Flipper, why a platform bus?
-> 
+I always thought optical discs are spelled with a "c", but
+people disagree a lot on this :-)
 
-See previous message.
+...and all the applicable things I mentioned in my Wii dev tree
+reply, of course.
 
->> +#ifdef CONFIG_STARLET_MINI
->> +    { .compatible = "twiizers,starlet-mini-ipc", },
->> +#endif
-> 
-> This one should go completely, I will have more to say about it when I get
-> to review the device trees (saving those for last :-) ).
-> 
+Wow, it wasn't as bad as I expected actually.  But you cheated,
+you omitted most devices from the device trees :-)
 
-Yes, this is not needed. I'll get rid of it.
 
-Thanks a lot!
-Albert
+Segher
