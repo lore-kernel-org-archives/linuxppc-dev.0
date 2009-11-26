@@ -1,28 +1,25 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 694BEB7BC3
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp105.mail.ukl.yahoo.com (smtp105.mail.ukl.yahoo.com
+	[77.238.184.37]) by ozlabs.org (Postfix) with SMTP id 159EAB7BDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 09:59:30 +1100 (EST)
-In-Reply-To: <20091126081724.GA6538@iram.es>
+	Fri, 27 Nov 2009 10:02:21 +1100 (EST)
+Message-ID: <4B0F08FA.10709@yahoo.es>
+Date: Fri, 27 Nov 2009 00:02:18 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 04/19] powerpc: wii: device tree
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<CE435D2F-8C67-4045-942D-4AA08BF784D0@kernel.crashing.org>
-	<4B0C1A25.8030401@yahoo.es>
-	<CC1D5EB1-27C2-47A1-96D8-D007D86C4881@kernel.crashing.org>
-	<1259210216.16367.249.camel@pasglop>
-	<20091126081724.GA6538@iram.es>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9D0F5136-B8A5-4519-BF32-70E881A57F49@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 03/19] powerpc: gamecube: bootwrapper bits
-Date: Fri, 27 Nov 2009 00:06:22 +0100
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
+	<49436.84.105.60.153.1259171377.squirrel@gate.crashing.org>
+	<1259211061.16367.260.camel@pasglop>
+	<927C3343-380D-40F7-A52E-8F842A5F4C3E@kernel.crashing.org>
+In-Reply-To: <927C3343-380D-40F7-A52E-8F842A5F4C3E@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,32 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> Sure, the memory controllers don't do coherency.  I'm slightly  
->>> worried
->>> about two things:
->>> 1) Will the generic code use M=0 as well?  Is it a problem if it
->>> doesn't?
+Segher Boessenkool wrote:
+>> So what is at d0000000 ?
+> 
+> 0c000000 is the flipper-compatible stuff
+> 0d000000 is the hollywood new devices
+> 0d800000 is the same as part of 0d000000, but with some extra bits
+> sometimes.
+> 
+
+Also, when in Wii native mode, stuff like EXI, SI and AI (which is flipper-compatible stuff too) is available at 0d000000 only.
+
+>>>> +        serial@0d006400 {
+>>>> +            compatible = "nintendo,hollywood-serial";
+>>>
+>>> You might want to pick a more descriptive name for this,
+>>> "serial" is usually understaood to mean "RS232".  Which
+>>> this isn't.
 >>
->> We can make it not do it.
->>
->>> 2) Do lwarx. etc. work in M=0?
->>
->> They should hopefully... as long as you don't rely on the reservation
->> blowing as a result of a DMA write.
->
-> Hmm, this really depends on whether the DMA transfers generate bus  
-> cycles
-> that require coherency or not.
+>> What is it then ? You definitely want some other name if it's not
+>> classic rs232 style serial.
+> 
+> It's SPI I think, with some extra signals.  It's the gamepads mostly.
+> 
 
-They do not; device DMA never goes to the 6xx bus with this bridge.
+EXI is SPI.
+But SI is a different thingy.
 
-> Not the other way around. M=1 only forces
-> bus cycles to be snooped by other processors (asserting the GBL signal
-> on 603/604/750 busses).
+See http://www.int03.co.uk/crema/hardware/gamecube/gc-control.htm .
 
-Right, it enables sending probes, not receiving them.  On this CPU  
-anyway.
-The architecture specification is quite silent on this all.
+> 
+> Segher
+> 
+> 
 
-
-Segher
+Cheers,
+Albert
