@@ -1,18 +1,16 @@
 Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp140.mail.ukl.yahoo.com (smtp140.mail.ukl.yahoo.com
-	[77.238.184.71]) by ozlabs.org (Postfix) with SMTP id B3B741007D8
+Received: from smtp103.mail.ukl.yahoo.com (smtp103.mail.ukl.yahoo.com
+	[77.238.184.35]) by ozlabs.org (Postfix) with SMTP id C2F251007DE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 02:30:27 +1100 (EST)
-Message-ID: <4B0E9F11.5000605@yahoo.es>
-Date: Thu, 26 Nov 2009 16:30:25 +0100
+	Fri, 27 Nov 2009 02:33:19 +1100 (EST)
+Message-ID: <4B0E9FBC.1090900@yahoo.es>
+Date: Thu, 26 Nov 2009 16:33:16 +0100
 From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
 	controller support
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>	
 	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>	
 	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>	
 	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>	
@@ -21,9 +19,10 @@ References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>	
 	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>	
 	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<1259212694.16367.270.camel@pasglop>
-In-Reply-To: <1259212694.16367.270.camel@pasglop>
+	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>	
+	<fa686aa40911221528y1980a95bw1dc8aa75a86c061e@mail.gmail.com>
+	<1259212736.16367.271.camel@pasglop>
+In-Reply-To: <1259212736.16367.271.camel@pasglop>
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,30 +35,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Benjamin Herrenschmidt wrote:
-> On Sun, 2009-11-22 at 23:01 +0100, Albert Herranz wrote:
+> On Sun, 2009-11-22 at 16:28 -0700, Grant Likely wrote:
+>>> +unsigned int flipper_pic_get_irq(void)
+>>> +{
+>>> +       void __iomem *io_base = flipper_irq_host->host_data;
+>>> +       int irq;
+>>> +       u32 irq_status;
+>>> +
+>>> +       irq_status = in_be32(io_base + FLIPPER_ICR) &
+>>> +                    in_be32(io_base + FLIPPER_IMR);
+>>> +       if (irq_status == 0)
+>>> +               return -1;      /* no more IRQs pending */
+>> NO_IRQ_IGNORE 
 > 
->> +static void flipper_pic_mask_and_ack(unsigned int virq)
->> +{
->> +	int irq = virq_to_hw(virq);
->> +	void __iomem *io_base = get_irq_chip_data(virq);
->> +
->> +	clear_bit(irq, io_base + FLIPPER_IMR);
->> +	set_bit(irq, io_base + FLIPPER_ICR);
->> +}
-> 
-> Do not use clear_bit and set_bit on IOs. They will do lwarx/stwcx. which
-> is really not what you want. You can use __clear_bit and __set_bit but
-> it's still fishy. Those operate on unsigned long, so the size vary
-> between 32 and 64 bit etc... not something you care that much about, but
-> it's still the wrong tool for the job.
-> 
-> Do those guys have more than 32 interrupts ? If not, just hand
-> code the msak & shifts. If they do, then maybe stick with __clear_bit()
-> and __set_bit() which are the non atomic variants.
+> Why no just 0 ? (aka NO_IRQ)
 > 
 
-There can be only 32 interrupt sources per pic.
-I'll build a mask and check if just a simple write works too (it should IMHO), instead of a RWM.
+I didn't know about 0 (I thought that was another valid interrupt).
+I was used to -1 to tell that no IRQs were pending (at least from the ARCH=ppc days) :)
+
+> Or do you know you are getting lots of spurrious that you don't want to
+> account ?
+> 
+
+No, this is not the case here.
 
 > Cheers,
 > Ben.
