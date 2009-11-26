@@ -1,19 +1,17 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5362BB7BCA
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 23:46:58 +1100 (EST)
-Message-ID: <4B0E78BC.5050901@suse.de>
-Date: Thu, 26 Nov 2009 13:46:52 +0100
-From: Alexander Graf <agraf@suse.de>
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 62999B7BCB
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 23:50:41 +1100 (EST)
+Message-ID: <4B0E799C.80209@redhat.com>
+Date: Thu, 26 Nov 2009 14:50:36 +0200
+From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
+To: Alexander Graf <agraf@suse.de>
 Subject: Re: [PATCH] PPC: Sync guest visible MMU state
 References: <1259234174-1104-1-git-send-email-agraf@suse.de>
-	<4B0E7738.5030506@redhat.com>
-In-Reply-To: <4B0E7738.5030506@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<4B0E7738.5030506@redhat.com> <4B0E78BC.5050901@suse.de>
+In-Reply-To: <4B0E78BC.5050901@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: kvm-ppc <kvm-ppc@vger.kernel.org>, kvm@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,50 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Avi Kivity wrote:
-> On 11/26/2009 01:16 PM, Alexander Graf wrote:
->> Currently userspace has no chance to find out which virtual address
->> space we're
->> in and resolve addresses. While that is a big problem for migration,
->> it's also
->> unpleasent when debugging, as gdb and the monitor don't work on virtual
->> addresses.
->>
->> This patch exports enough of the MMU segment state to userspace to make
->> debugging work and thus also includes the groundwork for migration.
->>
->>
->>   struct kvm_sregs {
->> -    __u32 pvr;
->> -    char pad[1020];
->> +    union {
->> +        struct {
->> +            __u32 pvr;
->> +            __u64 sdr1;
->> +            struct {
->> +                struct {
->> +                    __u64 slbe;
->> +                    __u64 slbv;
->> +                } slb[64];
->> +            } ppc64;
->> +            struct {
->> +                __u32 sr[16];
->> +                __u64 ibat[8];
->> +                __u64 dbat[8];
->> +            } ppc32;
->> +        };
->> +        __u8 pad[1024];
->> +    };
->>   };
->>    
+On 11/26/2009 02:46 PM, Alexander Graf wrote:
 >
-> Please avoid unnamed unions in user-visible headers - they're a gcc
-> extension.
->
-> Yes, we have them elsewhere, but let's not add to the pile.
+>> Please avoid unnamed unions in user-visible headers - they're a gcc
+>> extension.
+>>
+>> Yes, we have them elsewhere, but let's not add to the pile.
+>>      
+> I'm open to scalable suggestions that don't break existing userspace code.
+> If I name the union now, existing qemu code will break. If I align the
+> pad array manually I'll definitely mess up something.
+>    
 
-I'm open to scalable suggestions that don't break existing userspace code.
-If I name the union now, existing qemu code will break. If I align the
-pad array manually I'll definitely mess up something.
+You can keep pvr out of the (named) union.
 
-Alex
+-- 
+error compiling committee.c: too many arguments to function
