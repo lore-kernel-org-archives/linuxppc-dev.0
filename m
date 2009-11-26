@@ -1,20 +1,14 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 35C07B7BBB
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 00:20:13 +1100 (EST)
-Message-ID: <4B0E8089.9030403@redhat.com>
-Date: Thu, 26 Nov 2009 15:20:09 +0200
-From: Avi Kivity <avi@redhat.com>
+Return-Path: <Kari.Davidsson@marel.com>
+Received: from mail.marel.is (mail.marel.is [213.167.134.96])
+	by ozlabs.org (Postfix) with ESMTP id 569B51007D1
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 01:48:43 +1100 (EST)
+Message-ID: <4B0E9203.7040208@marel.com>
+Date: Thu, 26 Nov 2009 14:34:43 +0000
+From: =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] PPC: Sync guest visible MMU state
-References: <1259234174-1104-1-git-send-email-agraf@suse.de>
-	<4B0E7738.5030506@redhat.com> <4B0E78BC.5050901@suse.de>
-	<4B0E799C.80209@redhat.com> <4B0E7FC0.3000803@suse.de>
-In-Reply-To: <4B0E7FC0.3000803@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: kvm-ppc <kvm-ppc@vger.kernel.org>, kvm@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: fsl diu, edid info and i2c platform data
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +18,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/26/2009 03:16 PM, Alexander Graf wrote:
->
->> You can keep pvr out of the (named) union.
->>      
->
-> So we'd have
->
-> sregs.padded.ppc64.slb?
->
->    
+Hi,
 
-or sregs.u.ppc64.slb.
+I am messing about with the fsl-diu-fb.c which handles the display on mpc512x platforms.
+The display panels we are using provide EDID information and I would like to use that to setup
+the display modes etc. The current fsl-diu-fb.c is hard coding display modes into the driver.
 
-> I don't see how that is an improvement.
->    
+I have started this and it is working more or less but I appreciate all input from more knowledgeable people
+about how to do this "correctly" with the aim that others could benefit.
+I have the feeling I am not approaching this correctly.
 
-Buildability takes precedence.
+One option I was looking into was to use platform data for the i2c edid driver, e.g. for the platform to provide
+default fb_mode. But I have a big problem on how to attach the platform data to the i2cedid driver.
+I tried few options and while I think using code like :
 
-(an alternative is to drop the union, and add a BUILD_BUG_ON(sizeof...)).
+     np = of_find_compatible_node( NULL, NULL, "vesa,edid" );
+     if( np )
+     {
+         struct i2c_client * tsc2007 = NULL;
 
--- 
-error compiling committee.c: too many arguments to function
+         //        tsc2007 = of_find_i2c_device_by_node( np );
+         if( tsc2007 )
+         {
+             tsc2007->dev.platform_data = &v39_edid_data;
+             put_device( &tsc2007->dev );
+         }
+         of_node_put( np );
+     }
+
+is the correct way to do it. The function of_find_i2c_device_by_node() hangs the kernel.
+
+Attached is the patch as I have it now. It compiles and works on our custom mpc5121 board for two different LCD panels.
+
+rg
+kd
