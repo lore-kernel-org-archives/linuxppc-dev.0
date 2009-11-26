@@ -1,37 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9280A1007D6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Nov 2009 16:23:48 +1100 (EST)
-Subject: Re: [RFC PATCH 16/19] powerpc: wii: hollywood interrupt controller
-	support
+Subject: Re: [PATCH 04/11] of/flattree: eliminate cell_t typedef
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Albert Herranz <albert_herranz@yahoo.es>
-In-Reply-To: <1258927311-4340-17-git-send-email-albert_herranz@yahoo.es>
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-16-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-17-git-send-email-albert_herranz@yahoo.es>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40911252005o2db85dfk3d9acc61c12ca5e5@mail.gmail.com>
+References: <20091124081316.6216.66310.stgit@angua>
+	<20091124081827.6216.1896.stgit@angua>
+	<1259207974.16367.226.camel@pasglop>
+	<fa686aa40911252005o2db85dfk3d9acc61c12ca5e5@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 16:23:42 +1100
-Message-ID: <1259213022.16367.273.camel@pasglop>
+Date: Thu, 26 Nov 2009 16:27:46 +1100
+Message-ID: <1259213266.16367.274.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,19 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2009-11-22 at 23:01 +0100, Albert Herranz wrote:
+On Wed, 2009-11-25 at 21:05 -0700, Grant Likely wrote:
+> 
+> You're right, it's not, but makes merging less complex, and then I can
+> refactor properly. 
 
-> +static void hlwd_pic_mask_and_ack(unsigned int virq)
-> +{
-> +	int irq = virq_to_hw(virq);
-> +	void __iomem *io_base = get_irq_chip_data(virq);
-> +
-> +	clear_bit(irq, io_base + HW_BROADWAY_IMR);
-> +	set_bit(irq, io_base + HW_BROADWAY_ICR);
-> +}
-
-Same comment as with flipper. BTW. It looks really similar, can't you
-use the same driver ?
+Still, make them __be32 at least
 
 Cheers,
 Ben.
