@@ -1,14 +1,23 @@
-Return-Path: <Kari.Davidsson@marel.com>
-Received: from mail.marel.is (mail.marel.is [213.167.134.96])
-	by ozlabs.org (Postfix) with ESMTP id 569B51007D1
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 01:48:43 +1100 (EST)
-Message-ID: <4B0E9203.7040208@marel.com>
-Date: Thu, 26 Nov 2009 14:34:43 +0000
-From: =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= <kari.davidsson@marel.com>
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp138.mail.ukl.yahoo.com (smtp138.mail.ukl.yahoo.com
+	[77.238.184.69]) by ozlabs.org (Postfix) with SMTP id CB84C1007D4
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 27 Nov 2009 02:09:21 +1100 (EST)
+Message-ID: <4B0E9A0F.9010203@yahoo.es>
+Date: Thu, 26 Nov 2009 16:09:03 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: fsl diu, edid info and i2c platform data
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH 04/19] powerpc: wii: device tree
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
+	<1259210722.16367.256.camel@pasglop>
+In-Reply-To: <1259210722.16367.256.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,37 +27,307 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Benjamin Herrenschmidt wrote:
+> On Sun, 2009-11-22 at 23:01 +0100, Albert Herranz wrote:
+> 
+>> +/memreserve/ 0x01800000 0xe800000;	/* memory hole (includes I/O area) */
+>> +/memreserve/ 0x10000000 0x0004000;	/* DSP RAM */
+> 
+> Weird layout... nothing you can do about I suppose.
+> 
+> Out of curiosity, what is that DSP RAM ? Some actual DSP core somewhere
+> in the IO chip setup to use memory from up there ?
+> 
 
-I am messing about with the fsl-diu-fb.c which handles the display on mpc512x platforms.
-The display panels we are using provide EDID information and I would like to use that to setup
-the display modes etc. The current fsl-diu-fb.c is hard coding display modes into the driver.
+Yes, there's a DSP used normally for audio purposes.
 
-I have started this and it is working more or less but I appreciate all input from more knowledgeable people
-about how to do this "correctly" with the aim that others could benefit.
-I have the feeling I am not approaching this correctly.
+> I'll skip on some things that I'm sure others will have commented
+> about :-)
+> 
 
-One option I was looking into was to use platform data for the i2c edid driver, e.g. for the platform to provide
-default fb_mode. But I have a big problem on how to attach the platform data to the i2cedid driver.
-I tried few options and while I think using code like :
+Ok :)
 
-     np = of_find_compatible_node( NULL, NULL, "vesa,edid" );
-     if( np )
-     {
-         struct i2c_client * tsc2007 = NULL;
+>> +	/*
+>> +	 * The Nintendo Wii has two discontiguous RAM memory areas called
+>> +	 * MEM1 and MEM2.
+>> +	 * MEM1 starts at 0x00000000 and contains 24MB of 1T-SRAM.
+>> +	 * MEM2 starts at 0x10000000 and contains 64MB of DDR2 RAM.
+>> +	 * Between both memory address ranges there is an address space
+>> +	 * where memory-mapped I/O registers are found.
+>> +	 *
+>> +	 * Currently, Linux 32-bit PowerPC does not support RAM in
+>> +	 * discontiguous memory address spaces. Thus, in order to use
+>> +	 * both RAM areas, we declare as RAM the range from the start of
+>> +	 * MEM1 to the end of useable MEM2 and exclude the needed parts
+>> +	 * with /memreserve/ statements, at the expense of wasting a bit
+>> +	 * of memory.
+>> +	 */
+>> +	memory {
+>> +		device_type = "memory";
+>> +		/* MEM1 + memory hole + MEM2 - firmware/buffers area */
+>> +		reg = <0x00000000 0x133e0000>;
+>> +	};
+> 
+> So we do have a nasty hole here in the middle. How bad it is if you try
+> to just have two ranges in there (ie as if it was discontiguous) ? We
+> shouldn't be far from being able to do discontig mem actually, should be
+> easy enough to fix. Tho I don't have (yet) the HW :-) (I'm tempted...)
+> 
 
-         //        tsc2007 = of_find_i2c_device_by_node( np );
-         if( tsc2007 )
-         {
-             tsc2007->dev.platform_data = &v39_edid_data;
-             put_device( &tsc2007->dev );
-         }
-         of_node_put( np );
-     }
+My plan is to just put the two ranges on the device tree (to reflect the actual hardware) and coalesce them in the fixup function of the bootwrapper.
+Then add the needed reservations and hacks to make that work (mmu_mapin_ram / ioremap).
 
-is the correct way to do it. The function of_find_i2c_device_by_node() hangs the kernel.
+> Same comment as other discussions about the framebuffer here.
+> 
 
-Attached is the patch as I have it now. It compiles and works on our custom mpc5121 board for two different LCD panels.
+Ok.
 
-rg
-kd
+>> +	cpus {
+>> +		#cpus = <1>;
+>> +		#address-cells = <1>;
+>> +		#size-cells = <0>;
+>> +
+>> +		PowerPC,broadway@0 {
+>> +			device_type = "cpu";
+>> +			reg = <0>;
+>> +			clock-frequency = <729000000>; /* 729MHz */
+>> +			bus-frequency = <243000000>; /* 243MHz core-to-bus 3x */
+>> +			timebase-frequency = <60750000>; /* 243MHz / 4 */
+>> +			i-cache-line-size = <32>;
+>> +			d-cache-line-size = <32>;
+>> +			i-cache-size = <32768>;
+>> +			d-cache-size = <32768>;
+>> +		};
+>> +	};
+>> +
+>> +	/* devices contained in the hollywood chipset */
+>> +	soc {
+> 
+> Call it "hollywood"
+> 
+
+I like that too. Simple and effective.
+
+>> +		#address-cells = <1>;
+>> +		#size-cells = <1>;
+>> +		#interrupt-cells = <1>;
+>> +		model = "hollywood";
+>> +		compatible = "nintendo,hollywood";
+>> +		clock-frequency = <243000000>; /* 243MHz */
+>> +		ranges = <0x0c000000 0x0c000000 0x00010000
+>> +			  0x0d000000 0x0d000000 0x00010000
+>> +			  0x0d040000 0x0d040000 0x00050000
+>> +			  0x0d800000 0x0d800000 0x00001000
+>> +			  0x133e0000 0x133e0000 0x00c20000>;
+>> +
+>> +		video@0c002000 {
+>> +			compatible = "nintendo,hollywood-video";
+>> +			reg = <0x0c002000 0x100>;
+>> +			interrupts = <8>;
+>> +			interrupt-parent = <&PIC0>;
+>> +		};
+>> +
+>> +		PIC0: pic0@0c003000 {
+>> +			#interrupt-cells = <1>;
+>> +			compatible = "nintendo,flipper-pic";
+>> +			reg = <0x0c003000 0x8>;
+>> +			interrupt-controller;
+>> +		};
+>> +
+>> +		resetswitch@0c003000 {
+>> +			compatible = "nintendo,hollywood-resetswitch";
+>> +			reg = <0x0c003000 0x4>;
+>> +			interrupts = <1>;
+>> +			interrupt-parent = <&PIC0>;
+>> +		};
+>> +
+>> +		audio@0c005000 {
+>> +			compatible = "nintendo,hollywood-audio";
+>> +			reg = <0x0c005000 0x200		/* DSP */
+>> +			       0x0d006c00 0x20>;	/* AI */
+>> +			interrupts = <6>;
+>> +			interrupt-parent = <&PIC0>;
+>> +		};
+>> +
+>> +		/* Team Twiizers' 'mini' firmware IPC */
+> 
+> Out of curiosity, what are these ? :-)
+> 
+
+Those are the guys behind most Wii hacking efforts.
+
+>> +		mini@0d000000 {
+>> +			#address-cells = <1>;
+>> +			#size-cells = <1>;
+>> +			#interrupt-cells = <1>;
+>> +			compatible = "twiizers,starlet-mini-ipc";
+>> +			reg = <0x0d000000 0x40	/* IPC */
+>> +			       0x13fffffc 0x4>;	/* mini header pointer */
+>> +		};
+>> +
+>> +		serial@0d006400 {
+>> +			compatible = "nintendo,hollywood-serial";
+>> +			reg = <0x0d006400 0x100>;
+>> +			interrupts = <3>;
+>> +			interrupt-parent = <&PIC0>;
+>> +		};
+>> +
+>> +		/* External Interface bus */
+>> +		exi@0d006800 {
+>> +			#address-cells = <1>;
+>> +			#size-cells = <1>;
+>> +			compatible = "nintendo,hollywood-exi";
+>> +			reg = <0x0d006800 0x40>;
+>> +			interrupts = <4>;
+>> +			interrupt-parent = <&PIC0>;
+>> +
+>> +			USBGECKO0: usbgecko@0d006814 {
+>> +				compatible = "usbgecko,usbgecko";
+>> +				reg = <0x0d006814 0x14>;
+>> +				virtual-reg = <0xcd006814>;
+>> +			};
+>> +		};
+> 
+> Similar comment as before, could the above be dynamically probed ? If
+> you are not a hacker you may not need that at all to use some linux
+> based piece of SW on the wii right ?
+> 
+
+Yes, the usbgecko is more of a developer gadget.
+
+>> +		ehci@0d040000 {
+>> +			compatible = "nintendo,hollywood-ehci";
+>> +			reg = <0x0d040000 0x100
+>> +			       0x133e0000 0x80000>; /* 512 KB */
+>> +			interrupts = <4>;
+>> +			interrupt-parent = <&PIC1>;
+>> +		};
+>> +
+>> +		ohci0@0d050000 {
+>> +			compatible = "nintendo,hollywood-ohci";
+>> +			reg = <0x0d050000 0x100
+>> +			       0x13460000 0x80000>; /* 512 KB */
+>> +			interrupts = <5>;
+>> +			interrupt-parent = <&PIC1>;
+>> +		};
+>> +
+>> +		ohci1@0d060000 {
+> 
+> Why the "1" ?
+> 
+
+I thought that names should be unique, but I see they don't need to.
+I'll use just "ohci".
+
+>> +			compatible = "nintendo,hollywood-ohci";
+>> +			reg = <0x0d060000 0x100
+>> +			       0x134e0000 0x80000>; /* 512 KB */
+>> +			interrupts = <6>;
+>> +			interrupt-parent = <&PIC1>;
+>> +		};
+> 
+> Are the above OHCI and EHCI "special" ? If not, there's an existing
+> binding for that sort of thing, which btw requires properties to
+> indicate the endianness of the registers and in-memory data structures
+> etc...
+> 
+
+They are a bit special because registers are in reverse little endian format, must be written in 32-bit chunks, and (all things point to) they have hardware bugs.
+
+>> +		sdhc0@0d070000 {
+>> +			compatible = "nintendo,hollywood-sdhci";
+>> +			reg = <0x0d070000 0x200>;
+>> +			interrupts = <7>;
+>> +			interrupt-parent = <&PIC1>;
+>> +		};
+>> +
+>> +		sdhc1@0d080000 {
+>> +			compatible = "nintendo,hollywood-sdhci";
+>> +			reg = <0x0d080000 0x200>;
+>> +			interrupts = <8>;
+>> +			interrupt-parent = <&PIC1>;
+>> +		};
+> 
+> Again, no need for a "1" in there. Names don't have to be unique if the
+> unit address is different.
+> 
+
+I'll fix this too.
+
+>> +		PIC1: pic1@0d800030 {
+>> +			#interrupt-cells = <1>;
+>> +			compatible = "nintendo,hollywood-pic";
+>> +			reg = <0x0d800030 0x8>;
+>> +			interrupt-controller;
+>> +			interrupts = <14>;
+>> +			interrupt-parent = <&PIC0>;
+>> +		};
+> 
+> Ah, a cascaded PIC, fun fun fun
+> 
+
+It works fine :)
+
+>> +		hollywood-ahbprot@0d800064 {
+>> +			compatible = "nintendo,hollywood-ahbprot";
+>> +			reg = <0x0d800064 0x4>;
+>> +		};
+> 
+> What is this ?
+> 
+
+A register that controls if the PowerPC side can directly access part of the hardware or not.
+
+>> +		gpio0: hollywood-gpio@0d8000c0 {
+>> +			compatible = "nintendo,hollywood-gpio";
+>> +			reg = <0x0d8000c0 0x20>;
+>> +			gpio-controller;
+>> +			#gpio-cells = <2>;
+>> +		};
+>> +
+>> +		gpio1: hollywood-gpio@0d8000e0 {
+>> +			compatible = "nintendo,hollywood-gpio";
+>> +			reg = <0x0d8000e0 0x20>;
+>> +			gpio-controller;
+>> +			#gpio-cells = <2>;
+>> +		};
+> 
+> Same comment about the "1"
+> 
+
+Yup.
+
+>> +		hollywood-resets@0d800194 {
+>> +			compatible = "nintendo,hollywood-resets";
+>> +			reg = <0x0d800194 0x4>;
+>> +		};
+>> +
+>> +		i2c-video {
+>> +			#address-cells = <1>;
+>> +			#size-cells = <0>;
+>> +		        compatible = "virtual,i2c-gpio";
+>> +
+>> +		        gpios = <&gpio0  16 0 /* 31-15 */
+>> +		                 &gpio0  17 0 /* 31-14 */
+>> +				>;
+>> +		        sda-is-open-drain = <1>;
+>> +		        sda-enforce-dir = <1>;
+>> +		        scl-is-open-drain = <1>;
+>> +		        scl-is-output-only = <1>;
+>> +		        udelay = <2>;
+>> +
+>> +		        audio-video-encoder {
+>> +		                compatible = "nintendo,wii-ave-rvl";
+>> +		                reg = <0x70>;
+>> +		        };
+>> +		};
+>> +	};
+>> +};
+>> +
+> 
+> Cheers,
+> Ben.
+> 
+
+Thanks,
+Albert
