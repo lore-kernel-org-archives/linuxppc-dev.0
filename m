@@ -1,31 +1,16 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 657F6B7B3E
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 14:23:36 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e36.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAQ3LC1p006798
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 20:21:12 -0700
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nAQ3NTiM186638
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 20:23:29 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nAQ3NSUb023578
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 20:23:28 -0700
-Message-ID: <4B0DF4AD.5090306@austin.ibm.com>
-Date: Wed, 25 Nov 2009 21:23:25 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <anton@ozlabs.org>
+Date: Thu, 26 Nov 2009 14:28:22 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: Re: hypervisor call tracepoints  hcall_stats touchup.
+Message-ID: <20091126032822.GS32182@kryten>
+References: <1259165529.16349.191.camel@lexx>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 2/3] sysfs cpu probe/release files
-References: <4B0CD70F.6090600@austin.ibm.com> <4B0CD8D5.8050803@austin.ibm.com>
-In-Reply-To: <4B0CD8D5.8050803@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: gregkh@suse.de, paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1259165529.16349.191.camel@lexx>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>, mingo@redhat.com,
+	Steven Rostedt <rostedt@goodmis.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,174 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Version 3 of this patch is updated with documentation added to
-Documentation/ABI.  There are no changes to any of the C code from v2
-of the patch.
 
-In order to support kernel DLPAR of CPU resources we need to provide an
-interface to add (probe) and remove (release) the resource from the system.
-This patch Creates new generic probe and release sysfs files to facilitate
-cpu probe/release.  The probe/release interface provides for allowing each
-arch to supply their own routines for implementing the backend of adding
-and removing cpus to/from the system.
+Hi Will,
 
-This also creates the powerpc specific stubs to handle the arch callouts 
-from writes to the sysfs files.
+> The tb_total and purr_total values reported via the hcall_stats code
+> should be cumulative, rather than being replaced by the latest delta tb
+> or purr value. 
+> 
+> Tested-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+> Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
 
-The creation and use of these files is regulated by the 
-CONFIG_ARCH_CPU_PROBE_RELEASE option so that only architectures that need the
-capability will have the files created.
+Ouch! Nice catch.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com> 
----
- Documentation/ABI/testing/sysfs-devices-system-cpu |   15 +++++++++
- arch/powerpc/Kconfig                               |    4 ++
- arch/powerpc/include/asm/machdep.h                 |    5 +++
- arch/powerpc/kernel/sysfs.c                        |   19 ++++++++++++
- drivers/base/cpu.c                                 |   32 +++++++++++++++++++++
- include/linux/cpu.h                                |    2 +
- 6 files changed, 77 insertions(+)
+Acked-by: Anton Blanchard <anton@samba.org>
 
-Index: powerpc/drivers/base/cpu.c
-===================================================================
---- powerpc.orig/drivers/base/cpu.c	2009-11-25 04:52:37.000000000 -0600
-+++ powerpc/drivers/base/cpu.c	2009-11-25 04:54:25.000000000 -0600
-@@ -72,6 +72,38 @@
- 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
- 	return;
- }
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+static ssize_t cpu_probe_store(struct class *class, const char *buf,
-+			       size_t count)
-+{
-+	return arch_cpu_probe(buf, count);
-+}
-+
-+static ssize_t cpu_release_store(struct class *class, const char *buf,
-+				 size_t count)
-+{
-+	return arch_cpu_release(buf, count);
-+}
-+
-+static CLASS_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
-+static CLASS_ATTR(release, S_IWUSR, NULL, cpu_release_store);
-+
-+int __init cpu_probe_release_init(void)
-+{
-+	int rc;
-+
-+	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+			       &class_attr_probe.attr);
-+	if (!rc)
-+		rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+				       &class_attr_release.attr);
-+
-+	return rc;
-+}
-+device_initcall(cpu_probe_release_init);
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-+
- #else /* ... !CONFIG_HOTPLUG_CPU */
- static inline void register_cpu_control(struct cpu *cpu)
- {
-Index: powerpc/arch/powerpc/include/asm/machdep.h
-===================================================================
---- powerpc.orig/arch/powerpc/include/asm/machdep.h	2009-11-25 04:52:37.000000000 -0600
-+++ powerpc/arch/powerpc/include/asm/machdep.h	2009-11-25 04:54:25.000000000 -0600
-@@ -266,6 +266,11 @@
- 	void (*suspend_disable_irqs)(void);
- 	void (*suspend_enable_irqs)(void);
- #endif
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+	ssize_t (*cpu_probe)(const char *, size_t);
-+	ssize_t (*cpu_release)(const char *, size_t);
-+#endif
- };
- 
- extern void e500_idle(void);
-Index: powerpc/arch/powerpc/kernel/sysfs.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/sysfs.c	2009-11-25 04:52:37.000000000 -0600
-+++ powerpc/arch/powerpc/kernel/sysfs.c	2009-11-25 04:54:25.000000000 -0600
-@@ -461,6 +461,25 @@
- 
- 	cacheinfo_cpu_offline(cpu);
- }
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+ssize_t arch_cpu_probe(const char *buf, size_t count)
-+{
-+	if (ppc_md.cpu_probe)
-+		return ppc_md.cpu_probe(buf, count);
-+
-+	return -EINVAL;
-+}
-+
-+ssize_t arch_cpu_release(const char *buf, size_t count)
-+{
-+	if (ppc_md.cpu_release)
-+		return ppc_md.cpu_release(buf, count);
-+
-+	return -EINVAL;
-+}
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-+
- #endif /* CONFIG_HOTPLUG_CPU */
- 
- static int __cpuinit sysfs_cpu_notify(struct notifier_block *self,
-Index: powerpc/arch/powerpc/Kconfig
-===================================================================
---- powerpc.orig/arch/powerpc/Kconfig	2009-11-25 04:52:37.000000000 -0600
-+++ powerpc/arch/powerpc/Kconfig	2009-11-25 04:54:25.000000000 -0600
-@@ -320,6 +320,10 @@
- 
- 	  Say N if you are unsure.
- 
-+config ARCH_CPU_PROBE_RELEASE
-+	def_bool y
-+	depends on HOTPLUG_CPU
-+
- config ARCH_ENABLE_MEMORY_HOTPLUG
- 	def_bool y
- 
-Index: powerpc/include/linux/cpu.h
-===================================================================
---- powerpc.orig/include/linux/cpu.h	2009-11-25 04:52:37.000000000 -0600
-+++ powerpc/include/linux/cpu.h	2009-11-25 04:54:25.000000000 -0600
-@@ -43,6 +43,8 @@
- 
- #ifdef CONFIG_HOTPLUG_CPU
- extern void unregister_cpu(struct cpu *cpu);
-+extern ssize_t arch_cpu_probe(const char *, size_t);
-+extern ssize_t arch_cpu_release(const char *, size_t);
- #endif
- struct notifier_block;
- 
-Index: powerpc/Documentation/ABI/testing/sysfs-devices-system-cpu
-===================================================================
---- powerpc.orig/Documentation/ABI/testing/sysfs-devices-system-cpu	2009-11-20 17:53:51.000000000 -0600
-+++ powerpc/Documentation/ABI/testing/sysfs-devices-system-cpu	2009-11-26 01:29:25.000000000 -0600
-@@ -62,6 +62,21 @@
- 		See Documentation/cputopology.txt for more information.
- 
- 
-+What:		/sys/devices/system/cpu/probe
-+		/sys/devices/system/cpu/release
-+Date:		November 2009
-+Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+Description:	Dynamic addition and removal of CPU's.  This is not hotplug
-+		removal, this is meant complete removal/addition of the CPU
-+		from the system.
-+
-+		probe: writes to this file will dynamically add a CPU to the
-+		system.  Information written to the file to add CPU's is
-+		architecture specific.
-+
-+		release: writes to this file dynamically remove a CPU from
-+		the system.  Information writtento the file to remove CPU's
-+		is architecture specific.
- 
- What:		/sys/devices/system/cpu/cpu#/node
- Date:		October 2009
+Anton
+
+> [ This is a touch-up to the "[3/6] powerpc: tracing: Add hypervisor call
+> tracepoints" patch submitted by Anton a few weeks back, so I've copied
+> folks Anton had on CC for his original patch, this fix is rather ppc
+> specific, so can probably go in via the ppc tree, but I've no real
+> preference. ]
+> 
+> diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
+> index 2f58c71..1fefae7 100644
+> --- a/arch/powerpc/platforms/pseries/hvCall_inst.c
+> +++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
+> @@ -124,8 +124,8 @@ static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
+>  
+>  	h = &__get_cpu_var(hcall_stats)[opcode / 4];
+>  	h->num_calls++;
+> -	h->tb_total = mftb() - h->tb_start;
+> -	h->purr_total = mfspr(SPRN_PURR) - h->purr_start;
+> +	h->tb_total += mftb() - h->tb_start;
+> +	h->purr_total += mfspr(SPRN_PURR) - h->purr_start;
+>  
+>  	put_cpu_var(hcall_stats);
+>  }
+> 
