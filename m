@@ -1,25 +1,21 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 28E9C1007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Nov 2009 19:17:38 +1100 (EST)
-Date: Thu, 26 Nov 2009 09:17:24 +0100
-From: Gabriel Paubert <paubert@iram.es>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E8F111007D1
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 19:30:38 +1100 (EST)
+In-Reply-To: <1259032363.16367.108.camel@pasglop>
+References: <Received>	
+	<1257843644-8496-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1259032363.16367.108.camel@pasglop>
+Subject: Re: [PATCH] zlib: Optimize inffast when copying direct from output
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH 03/19] powerpc: gamecube: bootwrapper bits
-Message-ID: <20091126081724.GA6538@iram.es>
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<CE435D2F-8C67-4045-942D-4AA08BF784D0@kernel.crashing.org>
-	<4B0C1A25.8030401@yahoo.es>
-	<CC1D5EB1-27C2-47A1-96D8-D007D86C4881@kernel.crashing.org>
-	<1259210216.16367.249.camel@pasglop>
+Message-ID: <OF23DC26B5.C444DA5A-ONC125767A.002E6FF8-C125767A.002EB4D0@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 26 Nov 2009 09:30:09 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1259210216.16367.249.camel@pasglop>
-Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Nov 26, 2009 at 03:36:56PM +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2009-11-24 at 22:00 +0100, Segher Boessenkool wrote:
-> > 
-> > Sure, the memory controllers don't do coherency.  I'm slightly worried
-> > about two things:
-> > 1) Will the generic code use M=0 as well?  Is it a problem if it  
-> > doesn't?
-> 
-> We can make it not do it.
-> 
-> > 2) Do lwarx. etc. work in M=0? 
-> 
-> They should hopefully... as long as you don't rely on the reservation
-> blowing as a result of a DMA write.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 24/11/2009 04:12:43:
+>
+> On Tue, 2009-11-10 at 10:00 +0100, Joakim Tjernlund wrote:
+> > JFFS2 uses lesser compression ratio and inflate always
+> > ends up in "copy direct from output" case.
+> > This patch tries to optimize the direct copy procedure.
+> > Uses get_unaligned() but only in one place.
+> > The copy loop just above this one can also use this
+> > optimization, but I havn't done so as I have not tested if it
+> > is a win there too.
+> > On my MPC8321 this is about 17% faster on my JFFS2 root FS
+> > than the original.
+> > ---
+> >
+> >  Would like some testing of the PowerPC boot wrapper and
+> >  a LE target before sending it upstream.
+>
+> Well, you should probably submit that patch to lkml then :-)
 
-Hmm, this really depends on whether the DMA transfers generate bus cycles
-that require coherency or not. Not the other way around. M=1 only forces
-bus cycles to be snooped by other processors (asserting the GBL signal
-on 603/604/750 busses).
+I have(with LE fixes), Andrew Morton has it.
 
-The host bridge is free to systematically snoop processor accesses (to make 
-sure that data queued in the bridge and not yet written to memory is seen
-in the coherent memory domain even if, for example, interrupts propagate 
-so fast that DMA target addresses are accessed before it is written to RAM).
+>
+> I'm not sure its going to work to use get_unaligned() like that on all
+> archs .. it might be definitely something to discuss on some more
+> appropriate mailing list.
 
-On memory coherent systems, the host bridge has to assert the GBL signal,
-to force data to be written to memory (for most DMA accesses), or to  
-invalidate caches (for full line writes from devices).
+Oh, why not? Is that because I am using it wrongly or because xx_unaligned
+is impl. incorrectly on some archs?
 
-	Gabriel
+      Jocke
