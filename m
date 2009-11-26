@@ -1,18 +1,24 @@
-Return-Path: <wmb@firmworks.com>
-Message-ID: <4B0E33C3.1020803@firmworks.com>
-Date: Wed, 25 Nov 2009 21:52:35 -1000
-From: Mitch Bradley <wmb@firmworks.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 04/11] of/flattree: eliminate cell_t typedef
-References: <20091124081827.6216.1896.stgit@angua>	<1259207974.16367.226.camel@pasglop>	<fa686aa40911252005o2db85dfk3d9acc61c12ca5e5@mail.gmail.com>	<20091125.232818.-1350498258.imp@bsdimp.com>
-	<1259219171.16367.331.camel@pasglop>
-In-Reply-To: <1259219171.16367.331.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: sfr@canb.auug.org.au, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
-	"M. Warner Losh" <imp@bsdimp.com>
+Return-Path: <R58472@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 564DAB6F14
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 19:09:20 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nAQ89G3x025806
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 01:09:17 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nAQ8DXKX001115
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 02:13:34 -0600 (CST)
+From: Li Yang <leoli@freescale.com>
+To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/mm: honor O_SYNC flag for memory mapping
+Date: Thu, 26 Nov 2009 16:02:09 +0800
+Message-Id: <1259222529-27645-1-git-send-email-leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->
-> Right, that's the only sane way to do it, I just didn't remember off
-> hand what was said in the OF spec  :-) 
+There was no way to set mapped memory as cacheable if the memory
+is not managed by Linux kernel.  It's not rare in real system to
+allocate some dedicated memory to a certain application which is not
+managed by kernel and then mmap'ed the memory to the application.
+The memory should be cacheable but we can't map it to be cacheable
+due to the intelligent setting of cacheability.
 
+The patch makes the cacheability depend on O_SYNC flag of the file
+mapped for non-kernel managed memory.  Also prints a deprecation
+warning for mmap users without using O_SYNC.
 
-3.2.2.1.2 Property values
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/mm/mem.c |   13 +++++++++++--
+ 1 files changed, 11 insertions(+), 2 deletions(-)
 
-The property-encoding format is independent of hardware byte order and 
-alignment characteristics.  The encoded byte order is well-defined (in 
-particular, it is big endian). ...
-
-...
-
--- 32-bit integer.  A 32-bit integer is encoded into a property value 
-byte array by storing the most significant byte at the next available 
-address, followed (at address+1) by the high middle byte, the low middle 
-byte, and (at address+3) the least significant byte.
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 579382c..b9ef77a 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -101,8 +101,17 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 	if (ppc_md.phys_mem_access_prot)
+ 		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
+ 
+-	if (!page_is_ram(pfn))
+-		vma_prot = pgprot_noncached(vma_prot);
++	/* kernel managed memory is always cacheable, otherwise is controlled
++	 * by O_SYNC flag of open() */
++	if (!page_is_ram(pfn)) {
++		if (file->f_flags & O_SYNC)
++			vma_prot = pgprot_noncached(vma_prot);
++		else
++			printk(KERN_WARNING
++				"Warning: mmap on file without O_SYNC will be "
++				"mapped as cacheable.  Make sure it is desired."
++				"\n");
++	}
+ 
+ 	return vma_prot;
+ }
+-- 
+1.6.4
