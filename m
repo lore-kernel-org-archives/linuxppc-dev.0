@@ -1,24 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 61E0CB7B64
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Nov 2009 16:14:38 +1100 (EST)
-Subject: Re: [RFC PATCH 10/19] powerpc: gamecube/wii: early debugging using
-	usbgecko
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200911222327.37949.arnd@arndb.de>
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<200911222327.37949.arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 16:14:28 +1100
-Message-ID: <1259212468.16367.267.camel@pasglop>
-Mime-Version: 1.0
-Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 26 Nov 2009 16:16:42 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Make the kernel accept ePAPR style phandle information
+Message-ID: <20091126051641.GB27334@yookeroo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +16,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2009-11-22 at 23:27 +0100, Arnd Bergmann wrote:
-> 
-> This will probably break other platforms if
-> CONFIG_PPC_EARLY_DEBUG_USBGECKO
-> is set. In general, we try hard to make it possible to build generic
-> kernels for multiple systems, so it would be better to also add a
-> runtime check here.
+Grant, this is based on your test-devicetree branch, if it could be
+merged via there would be great.
 
-No Arnd. The whole point of EARLY_DEBUG is that it is -known- to break
-other platforms :-) So that we can use it before we even get to probe
-anything.
+Currently when processing flattened device trees, the kernel expects
+the phandle in a property called "linux,phandle".  The ePAPR spec -
+not being Linux specific - instead requires phandles to be encoded in
+a property named simply "phandle".  This patch makes the kernel accept
+either form when unflattening the device tree.
 
-I am still tempted, one day, to change the kernel early init to setup a
-stack in .bss and go straight to C to do that sort of stuff by parsing
-the flat DT, this could be done using pretty much completely generic
-code :-) But not right now.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Cheers,
-Ben.
+Index: working-2.6/drivers/of/fdt.c
+===================================================================
+--- working-2.6.orig/drivers/of/fdt.c	2009-11-26 09:58:06.052792325 +1100
++++ working-2.6/drivers/of/fdt.c	2009-11-26 10:00:08.309570256 +1100
+@@ -314,10 +314,19 @@ unsigned long __init unflatten_dt_node(u
+ 		pp = unflatten_dt_alloc(&mem, sizeof(struct property),
+ 					__alignof__(struct property));
+ 		if (allnextpp) {
+-			if (strcmp(pname, "linux,phandle") == 0) {
++			/* We accept flattened tree phandles either in
++			 * ePAPR-style "phandle" properties, or the
++			 * legacy "linux,phandle" properties.  If both
++			 * appear and have different values, things
++			 * will get weird.  Don't do that. */
++			if ((strcmp(pname, "phandle") == 0)
++			    || (strcmp(pname, "linux,phandle") == 0)) {
+ 				if (np->phandle == 0)
+ 					np->phandle = *((u32 *)*p);
+ 			}
++			/* And we process the "ibm,phandle" property
++			 * used in pSeries dynamic device tree
++			 * stuff */
+ 			if (strcmp(pname, "ibm,phandle") == 0)
+ 				np->phandle = *((u32 *)*p);
+ 			pp->name = pname;
+
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
