@@ -1,27 +1,18 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-pw0-f50.google.com (mail-pw0-f50.google.com
-	[209.85.160.50]) by ozlabs.org (Postfix) with ESMTP id AF3361007D1
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 18:43:17 +1100 (EST)
-Received: by pwi6 with SMTP id 6so353631pwi.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Nov 2009 23:43:15 -0800 (PST)
+Return-Path: <wmb@firmworks.com>
+Message-ID: <4B0E33C3.1020803@firmworks.com>
+Date: Wed, 25 Nov 2009 21:52:35 -1000
+From: Mitch Bradley <wmb@firmworks.com>
 MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <20091125113023.GC12738@iram.es>
-References: <1258441832-20133-1-git-send-email-leoli@freescale.com>
-	<8543954E-619A-4A78-A934-CDC326027FD2@kernel.crashing.org>
-	<3A45394FD742FA419B760BB8D398F9EDCBC1F2@zch01exm26.fsl.freescale.net>
-	<1258707833.2140.865.camel@pasglop>
-	<2a27d3730911200123i23fa6dd1td9e19944d1737e73@mail.gmail.com>
-	<DFC7BA62-6CF0-4A08-8DD1-11825A638262@kernel.crashing.org>
-	<2a27d3730911250007s62f31673p3358631996e8a451@mail.gmail.com>
-	<20091125113023.GC12738@iram.es>
-Date: Thu, 26 Nov 2009 15:43:15 +0800
-Message-ID: <2a27d3730911252343j6a938d99n7152b7cc8d01c0bf@mail.gmail.com>
-Subject: Re: [RFC] powerpc/mm: honor O_SYNC flag for memory map
-From: Li Yang <leoli@freescale.com>
-To: Gabriel Paubert <paubert@iram.es>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Li Yang-R58472 <r58472@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 04/11] of/flattree: eliminate cell_t typedef
+References: <20091124081827.6216.1896.stgit@angua>	<1259207974.16367.226.camel@pasglop>	<fa686aa40911252005o2db85dfk3d9acc61c12ca5e5@mail.gmail.com>	<20091125.232818.-1350498258.imp@bsdimp.com>
+	<1259219171.16367.331.camel@pasglop>
+In-Reply-To: <1259219171.16367.331.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: sfr@canb.auug.org.au, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+	"M. Warner Losh" <imp@bsdimp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 25, 2009 at 7:30 PM, Gabriel Paubert <paubert@iram.es> wrote:
-> On Wed, Nov 25, 2009 at 04:07:46PM +0800, Li Yang wrote:
->> On Sun, Nov 22, 2009 at 4:01 AM, Segher Boessenkool
->> <segher@kernel.crashing.org> wrote:
->> >>> You need to be a bit more careful tho. You must not allow RAM manage=
-d by
->> >>> the kernel to be mapped non-cachable.
->> >>
->> >> Even if the user explicitly sets the O_SYNC flag? =C2=A0IMHO, it's a =
-bug of
->> >> the application if it uses O_SYNC on main memory to be mmap'ed later.
->> >> And we don't need to cover up the bug.
->> >
->> > Is that "embedded thinking"? =C2=A0Conflicts like this cause machine c=
-hecks or
->> > checkstops on many PowerPC implementations, we do not normally allow s=
-uch
->> > to be caused by userland.
->>
->> So what you are saying is that if the kernel has mapped a physical
->> page as cacheable while user application is trying to map it as
->> non-cacheable, there will be machine checks and checkstops rather than
->> just performance drop? =C2=A0This is new to me. =C2=A0Could you elaborat=
-e a bit?
 >
-> That's called cache paradoxes. And yes they may be a problem.
+> Right, that's the only sane way to do it, I just didn't remember off
+> hand what was said in the OF spec  :-) 
 
-Thanks.  I will prevent this from happening.
 
->
-> Besides that, existing =C2=A0application may have used mmap without O_SYN=
-C on
-> I/O devices, knowing that the kernel would map them uncached. Your
-> patch would break them by using cached accesses (and it can cause
-> really hard to debug lockups, I've seen this, probably caused by
-> infinite retries on the PCI bus).
+3.2.2.1.2 Property values
 
-That's my concern too.  But after all mmap without O_SYNC on I/O
-devices should be deprecated.  A warning message in deprecation period
-could reduce potential problem caused by this change.
+The property-encoding format is independent of hardware byte order and 
+alignment characteristics.  The encoded byte order is well-defined (in 
+particular, it is big endian). ...
 
-- Leo
+...
+
+-- 32-bit integer.  A 32-bit integer is encoded into a property value 
+byte array by storing the most significant byte at the next available 
+address, followed (at address+1) by the high middle byte, the low middle 
+byte, and (at address+3) the least significant byte.
