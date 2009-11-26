@@ -1,13 +1,13 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 01/11] of/flattree: Merge early_init_dt_check_for_initrd()
+Subject: Re: [PATCH 02/11] of/flattree: Merge earlyinit_dt_scan_root()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20091124081747.6216.88376.stgit@angua>
+In-Reply-To: <20091124081800.6216.27311.stgit@angua>
 References: <20091124081316.6216.66310.stgit@angua>
-	<20091124081747.6216.88376.stgit@angua>
+	<20091124081800.6216.27311.stgit@angua>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 14:51:18 +1100
-Message-ID: <1259207478.16367.218.camel@pasglop>
+Date: Thu, 26 Nov 2009 14:54:15 +1100
+Message-ID: <1259207655.16367.220.camel@pasglop>
 Mime-Version: 1.0
 Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
@@ -21,176 +21,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-11-24 at 01:17 -0700, Grant Likely wrote:
+On Tue, 2009-11-24 at 01:18 -0700, Grant Likely wrote:
 > Merge common code between PowerPC and Microblaze
 > 
 > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
-> Tested-by: Michal Simek <monstr@monstr.eu>
+> ---
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Ok with that, like the precendent, however you are making global some
+symbols that were previously static which sucks a bit... But then they
+can be made static again I suppose once more has been merged.
 
-Remind me how you want to merge that ? via my tree ?
-
-Cheers,
 Ben.
 
-> ---
-> 
->  arch/microblaze/kernel/prom.c |   32 --------------------------------
->  arch/powerpc/kernel/prom.c    |   30 ------------------------------
->  drivers/of/fdt.c              |   37 +++++++++++++++++++++++++++++++++++++
->  include/linux/of_fdt.h        |    1 +
->  4 files changed, 38 insertions(+), 62 deletions(-)
+>  arch/microblaze/kernel/prom.c |   23 -----------------------
+>  arch/powerpc/kernel/prom.c    |   24 ------------------------
+>  drivers/of/fdt.c              |   26 ++++++++++++++++++++++++++
+>  include/linux/of_fdt.h        |    6 ++++++
+>  4 files changed, 32 insertions(+), 47 deletions(-)
 > 
 > diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-> index a38e373..7959495 100644
+> index 7959495..189179a 100644
 > --- a/arch/microblaze/kernel/prom.c
 > +++ b/arch/microblaze/kernel/prom.c
-> @@ -113,38 +113,6 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
->  	return 0;
+> @@ -42,9 +42,6 @@
+>  #include <asm/sections.h>
+>  #include <asm/pci-bridge.h>
+>  
+> -static int __initdata dt_root_addr_cells;
+> -static int __initdata dt_root_size_cells;
+> -
+>  typedef u32 cell_t;
+>  
+>  /* export that to outside world */
+> @@ -158,26 +155,6 @@ static int __init early_init_dt_scan_chosen(unsigned long node,
+>  	return 1;
 >  }
 >  
-> -#ifdef CONFIG_BLK_DEV_INITRD
-> -static void __init early_init_dt_check_for_initrd(unsigned long node)
+> -static int __init early_init_dt_scan_root(unsigned long node,
+> -				const char *uname, int depth, void *data)
 > -{
-> -	unsigned long l;
 > -	u32 *prop;
 > -
-> -	pr_debug("Looking for initrd properties... ");
+> -	if (depth != 0)
+> -		return 0;
 > -
-> -	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
-> -	if (prop) {
-> -		initrd_start = (unsigned long)
-> -					__va((u32)of_read_ulong(prop, l/4));
+> -	prop = of_get_flat_dt_prop(node, "#size-cells", NULL);
+> -	dt_root_size_cells = (prop == NULL) ? 1 : *prop;
+> -	pr_debug("dt_root_size_cells = %x\n", dt_root_size_cells);
 > -
-> -		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
-> -		if (prop) {
-> -			initrd_end = (unsigned long)
-> -					__va((u32)of_read_ulong(prop, 1/4));
-> -			initrd_below_start_ok = 1;
-> -		} else {
-> -			initrd_start = 0;
-> -		}
-> -	}
+> -	prop = of_get_flat_dt_prop(node, "#address-cells", NULL);
+> -	dt_root_addr_cells = (prop == NULL) ? 2 : *prop;
+> -	pr_debug("dt_root_addr_cells = %x\n", dt_root_addr_cells);
 > -
-> -	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
-> -					initrd_start, initrd_end);
+> -	/* break now */
+> -	return 1;
 > -}
-> -#else
-> -static inline void early_init_dt_check_for_initrd(unsigned long node)
-> -{
-> -}
-> -#endif /* CONFIG_BLK_DEV_INITRD */
 > -
->  static int __init early_init_dt_scan_chosen(unsigned long node,
->  				const char *uname, int depth, void *data)
+>  static u64 __init dt_mem_next_cell(int s, cell_t **cellp)
 >  {
+>  	cell_t *p = *cellp;
 > diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 7f88566..1ecd6c6 100644
+> index 1ecd6c6..78f65a4 100644
 > --- a/arch/powerpc/kernel/prom.c
 > +++ b/arch/powerpc/kernel/prom.c
-> @@ -373,36 +373,6 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
->  	return 0;
+> @@ -61,10 +61,6 @@
+>  #define DBG(fmt...)
+>  #endif
+>  
+> -
+> -static int __initdata dt_root_addr_cells;
+> -static int __initdata dt_root_size_cells;
+> -
+>  #ifdef CONFIG_PPC64
+>  int __initdata iommu_is_off;
+>  int __initdata iommu_force_on;
+> @@ -436,26 +432,6 @@ static int __init early_init_dt_scan_chosen(unsigned long node,
+>  	return 1;
 >  }
 >  
-> -#ifdef CONFIG_BLK_DEV_INITRD
-> -static void __init early_init_dt_check_for_initrd(unsigned long node)
+> -static int __init early_init_dt_scan_root(unsigned long node,
+> -					  const char *uname, int depth, void *data)
 > -{
-> -	unsigned long l;
 > -	u32 *prop;
 > -
-> -	DBG("Looking for initrd properties... ");
+> -	if (depth != 0)
+> -		return 0;
 > -
-> -	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
-> -	if (prop) {
-> -		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
+> -	prop = of_get_flat_dt_prop(node, "#size-cells", NULL);
+> -	dt_root_size_cells = (prop == NULL) ? 1 : *prop;
+> -	DBG("dt_root_size_cells = %x\n", dt_root_size_cells);
 > -
-> -		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
-> -		if (prop) {
-> -			initrd_end = (unsigned long)
-> -					__va(of_read_ulong(prop, l/4));
-> -			initrd_below_start_ok = 1;
-> -		} else {
-> -			initrd_start = 0;
-> -		}
-> -	}
-> -
-> -	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
+> -	prop = of_get_flat_dt_prop(node, "#address-cells", NULL);
+> -	dt_root_addr_cells = (prop == NULL) ? 2 : *prop;
+> -	DBG("dt_root_addr_cells = %x\n", dt_root_addr_cells);
+> -	
+> -	/* break now */
+> -	return 1;
 > -}
-> -#else
-> -static inline void early_init_dt_check_for_initrd(unsigned long node)
-> -{
-> -}
-> -#endif /* CONFIG_BLK_DEV_INITRD */
 > -
->  static int __init early_init_dt_scan_chosen(unsigned long node,
->  					    const char *uname, int depth, void *data)
+>  static u64 __init dt_mem_next_cell(int s, cell_t **cellp)
 >  {
+>  	cell_t *p = *cellp;
 > diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-> index 43d236c..6ad98e8 100644
+> index 6ad98e8..be200be 100644
 > --- a/drivers/of/fdt.c
 > +++ b/drivers/of/fdt.c
-> @@ -11,6 +11,7 @@
->  
->  #include <linux/kernel.h>
->  #include <linux/lmb.h>
-> +#include <linux/initrd.h>
+> @@ -15,6 +15,9 @@
 >  #include <linux/of.h>
 >  #include <linux/of_fdt.h>
 >  
-> @@ -369,6 +370,42 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
->  	return mem;
->  }
+> +int __initdata dt_root_addr_cells;
+> +int __initdata dt_root_size_cells;
+> +
+>  struct boot_param_header *initial_boot_params;
 >  
-> +#ifdef CONFIG_BLK_DEV_INITRD
-> +/**
-> + * early_init_dt_check_for_initrd - Decode initrd location from flat tree
-> + * @node: reference to node containing initrd location ('chosen')
+>  char *find_flat_dt_string(u32 offset)
+> @@ -407,6 +410,29 @@ inline void early_init_dt_check_for_initrd(unsigned long node)
+>  #endif /* CONFIG_BLK_DEV_INITRD */
+>  
+>  /**
+> + * early_init_dt_scan_root - fetch the top level address and size cells
 > + */
-> +void __init early_init_dt_check_for_initrd(unsigned long node)
+> +int __init early_init_dt_scan_root(unsigned long node, const char *uname,
+> +				   int depth, void *data)
 > +{
-> +	unsigned long len;
 > +	u32 *prop;
 > +
-> +	pr_debug("Looking for initrd properties... ");
+> +	if (depth != 0)
+> +		return 0;
 > +
-> +	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &len);
-> +	if (prop) {
-> +		initrd_start = (unsigned long)
-> +				__va(of_read_ulong(prop, len/4));
+> +	prop = of_get_flat_dt_prop(node, "#size-cells", NULL);
+> +	dt_root_size_cells = (prop == NULL) ? 1 : *prop;
+> +	pr_debug("dt_root_size_cells = %x\n", dt_root_size_cells);
 > +
-> +		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &len);
-> +		if (prop) {
-> +			initrd_end = (unsigned long)
-> +				__va(of_read_ulong(prop, len/4));
-> +			initrd_below_start_ok = 1;
-> +		} else {
-> +			initrd_start = 0;
-> +		}
-> +	}
+> +	prop = of_get_flat_dt_prop(node, "#address-cells", NULL);
+> +	dt_root_addr_cells = (prop == NULL) ? 2 : *prop;
+> +	pr_debug("dt_root_addr_cells = %x\n", dt_root_addr_cells);
 > +
-> +	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
-> +		 initrd_start, initrd_end);
+> +	/* break now */
+> +	return 1;
 > +}
-> +#else
-> +inline void early_init_dt_check_for_initrd(unsigned long node)
-> +{
-> +}
-> +#endif /* CONFIG_BLK_DEV_INITRD */
 > +
->  /**
+> +/**
 >   * unflatten_device_tree - create tree of device_nodes from flat blob
 >   *
+>   * unflattens the device-tree passed by the firmware, creating the
 > diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-> index 81231e0..ec2db82 100644
+> index ec2db82..828c3cd 100644
 > --- a/include/linux/of_fdt.h
 > +++ b/include/linux/of_fdt.h
-> @@ -69,6 +69,7 @@ extern void *of_get_flat_dt_prop(unsigned long node, const char *name,
->  				 unsigned long *size);
->  extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
->  extern unsigned long of_get_flat_dt_root(void);
-> +extern void early_init_dt_check_for_initrd(unsigned long node);
+> @@ -58,6 +58,8 @@ struct boot_param_header {
+>  };
 >  
+>  /* TBD: Temporary export of fdt globals - remove when code fully merged */
+> +extern int __initdata dt_root_addr_cells;
+> +extern int __initdata dt_root_size_cells;
+>  extern struct boot_param_header *initial_boot_params;
+>  
+>  /* For scanning the flat device-tree at boot time */
+> @@ -71,6 +73,10 @@ extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
+>  extern unsigned long of_get_flat_dt_root(void);
+>  extern void early_init_dt_check_for_initrd(unsigned long node);
+>  
+> +/* Early flat tree scan hooks */
+> +extern int early_init_dt_scan_root(unsigned long node, const char *uname,
+> +				   int depth, void *data);
+> +
 >  /* Other Prototypes */
 >  extern void finish_device_tree(void);
+>  extern void unflatten_device_tree(void);
