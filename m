@@ -1,37 +1,24 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6CAE5B6F07
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 08:53:51 +1100 (EST)
-In-Reply-To: <4B0D6DA3.9060906@yahoo.es>
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-14-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-15-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-16-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-17-git-se! nd-email-albert_herranz@yahoo.es>
-	<1258927311-4340-18-git-send-email-albert_herranz@yahoo.es>
-	<BEFB28A5-8BA2-43F8-B917-0C838246B962@kernel.crashing.org>
-	<4B0D6DA3.9060906@yaho! o.es>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <77B73EBA-CC84-4978-993E-57DC28A74280@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 17/19] powerpc: wii: bootmii starlet 'mini' firmware
-	support
-Date: Thu, 26 Nov 2009 23:00:45 +0100
-To: Albert Herranz <albert_herranz@yahoo.es>
-Cc: linuxppc-dev@lists.ozlabs.org
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 68ACD1007D3
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 08:56:15 +1100 (EST)
+References: <1259249056-3953-1-git-send-email-agraf@suse.de>
+Message-Id: <37C1770E-4657-413A-9A40-A0C04FE2D055@suse.de>
+From: Alexander Graf <agraf@suse.de>
+To: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1259249056-3953-1-git-send-email-agraf@suse.de>
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
+Mime-Version: 1.0 (iPhone Mail 7A341)
+Subject: Re: [PATCH] PPC: Sync guest visible MMU state
+Date: Thu, 26 Nov 2009 22:56:11 +0100
+Cc: kvm-ppc <kvm-ppc@vger.kernel.org>,
+	"kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,70 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> Add support for the BootMii 'mini' firmware replacement for the
->>> Starlet processor.
->>>
->>> 'mini' is an open source IOS replacement written from scratch by
->>> Team Twiizers.
->>
->> It's not a replacement, it doesn't have any of the same  
->> functionality.
+
+Am 26.11.2009 um 16:24 schrieb Alexander Graf <agraf@suse.de>:
+
+> Currently userspace has no chance to find out which virtual address  
+> space we're
+> in and resolve addresses. While that is a big problem for migration,  
+> it's also
+> unpleasent when debugging, as gdb and the monitor don't work on  
+> virtual
+> addresses.
 >
-> I didn't know 'replacement' had that semantics.
-
-It's ambiguous.
-
-> My intention was to say that 'mini' firmware is an alternative to  
-> the stock IOS firmware, not trying to imply that it behaves like it  
-> or it is compatible with it.
-> Point taken.
+> This patch exports enough of the MMU segment state to userspace to  
+> make
+> debugging work and thus also includes the groundwork for migration.
 >
-> I'll use 'mini' alternate firmware if that's ok.
-
-"Alternative firmware" is fine.
-
->>> +enum starlet_ipc_flavour {
->>> +    STARLET_IPC_IOS,
->>> +    STARLET_IPC_MINI,
->>> +};
->>
->> I thought you don't support IOS at all anymore?
->>
+> Signed-off-by: Alexander Graf <agraf@suse.de>
 >
-> I don't plan to mainline IOS support.
-> But to make runtime decisions I need to know if we are running  
-> along the 'mini' firmware or the default IOS firmware.
-> That's the intention of that enum.
-
->> Modern mini will always have AHBPROT set up to give you full access,
->> so this isn't needed either.
->>
+> ---
 >
-> So we have two options here:
-> - assume that whatever firmware is running properly sets AHBPROT  
-> and hope it works
-> - or try to use the existing firmware interfaces to check and make  
-> sure that AHBPROT is indeed properly set
+> Ben, please take this patch in your tree.
 >
-> I chose the second option here.
-
-It is much much simpler to simply require a new enough mini :-)
-
->> Do you need this driver to boot?  If not, it might be best to  
->> leave it
->> out for now.
+> v2 -> v3:
 >
-> Strictly speaking, we don't need the driver to boot if we asume  
-> that AHBPROT is properly set.
-> But we'll need it later to shutdown 'mini' drivers, unless 'mini'  
-> is changed to boot PowerPC code with all hardware already  
-> relinquished.
+>  - don't use anonymous unions/structs
+> ---
+> arch/powerpc/include/asm/kvm.h        |   20 +++++++++++-
+> arch/powerpc/include/asm/kvm_asm.h |    1 +
+> arch/powerpc/include/asm/kvm_book3s.h |    3 ++
+> arch/powerpc/kvm/book3s.c             |   53 ++++++++++++++++++++++++ 
+> +++++++-
+> arch/powerpc/kvm/book3s_64_emulate.c  |   38 ++++++++++++++---------
+> arch/powerpc/kvm/book3s_64_mmu.c |    2 +
+> arch/powerpc/kvm/powerpc.c            |    3 ++
+> include/linux/kvm.h                   |    3 ++
+> 8 files changed, 104 insertions(+), 19 deletions(-)
 >
-> That is not true for the last available version of 'mini' firmware.  
-> That version still boots PowerPC code with at least the SDHCI  
-> controller driven by 'mini'.
+> diff --git a/arch/powerpc/include/asm/kvm.h b/arch/powerpc/include/ 
+> asm/kvm.h
+> index c9ca97f..cb6ad08 100644
+> --- a/arch/powerpc/include/asm/kvm.h
+> +++ b/arch/powerpc/include/asm/kvm.h
+> @@ -46,8 +46,24 @@ struct kvm_regs {
+> };
+>
+> struct kvm_sregs {
+> -    __u32 pvr;
+> -    char pad[1020];
+> +    union {
+> +        struct {
+> +            __u32 pvr;
 
-I'll fix this.
-
-
-Segher
+Meh this breaks old userspace. Better patch following tomorrow.
