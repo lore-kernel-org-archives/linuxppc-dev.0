@@ -1,25 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EEC911007D3
+	by ozlabs.org (Postfix) with ESMTPS id 3B811B7BC3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 09:38:56 +1100 (EST)
-Subject: Re: [RFC PATCH 02/19] powerpc: gamecube: device tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <807D3910-3357-4DBF-A1C7-9C07A7C80A39@kernel.crashing.org>
+	Fri, 27 Nov 2009 09:43:58 +1100 (EST)
+In-Reply-To: <1259211061.16367.260.camel@pasglop>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<fa686aa40911221502g2de254d2o4341d9abed0cdf41@mail.gmail.com>
-	<0AE26D40-D051-4CDE-878C-64CC8EF33E07@kernel.crashing.org>
-	<1259209436.16367.243.camel@pasglop>
-	<807D3910-3357-4DBF-A1C7-9C07A7C80A39@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 27 Nov 2009 09:38:50 +1100
-Message-ID: <1259275130.2659.4.camel@pasglop>
-Mime-Version: 1.0
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
+	<49436.84.105.60.153.1259171377.squirrel@gate.crashing.org>
+	<1259211061.16367.260.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <927C3343-380D-40F7-A52E-8F842A5F4C3E@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 04/19] powerpc: wii: device tree
+Date: Thu, 26 Nov 2009 23:50:53 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,23 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-11-26 at 23:15 +0100, Segher Boessenkool wrote:
-> >> If you have only one interrupt controller, like here, you don't
-> >> need to refer to it _at all_ :-)
-> >
-> > I think Linux requires that you do though. It might be a mistake on  
-> > our
-> > part but heh ...
-> 
-> Linux doesn't require it; (old) Macs are like this, for example,
-> and that works fine.  Oh and all Maple firmwares are like that as
-> well I think.  Etc.
+> BTW. If we want to play with clocks, maybe you should look at
+> my proposed binding for clocks and implementing the clk API :-)
 
-It works fine on old macs thanks to a quirk we enable in the mac code
-iirc and old maple works thanks to mere luck with the fallback code we
-have which reads things of PCI config space :-)
+There are no clocks that are configurable from the PowerPC side
+(well, maybe things like the USB clocks, but we do not know how).
 
-Don't rely on that.
+>>> +		/* Team Twiizers' 'mini' firmware IPC */
+>>> +		mini@0d000000 {
+>>
+>> Although mini is awesome, it isn't hardware, and doesn't
+>> belong in the device tree.
+>
+> So what is at d0000000 ?
 
-Cheers,
-Ben.
+0c000000 is the flipper-compatible stuff
+0d000000 is the hollywood new devices
+0d800000 is the same as part of 0d000000, but with some extra bits
+sometimes.
+
+>>> +		serial@0d006400 {
+>>> +			compatible = "nintendo,hollywood-serial";
+>>
+>> You might want to pick a more descriptive name for this,
+>> "serial" is usually understaood to mean "RS232".  Which
+>> this isn't.
+>
+> What is it then ? You definitely want some other name if it's not
+> classic rs232 style serial.
+
+It's SPI I think, with some extra signals.  It's the gamepads mostly.
+
+
+Segher
