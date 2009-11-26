@@ -1,26 +1,15 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp121.mail.ukl.yahoo.com (smtp121.mail.ukl.yahoo.com
-	[77.238.184.52]) by ozlabs.org (Postfix) with SMTP id 0358C1007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 02:22:42 +1100 (EST)
-Message-ID: <4B0E9D40.2090103@yahoo.es>
-Date: Thu, 26 Nov 2009 16:22:40 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH 06/19] powerpc: gamecube/wii: introduce GAMECUBE_COMMON
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>	
-	<3D2BF5CA-C4BE-4250-8EC9-7A8E767572E2@kernel.crashing.org>	
-	<4B0C2002.4050704@yahoo.es> <1259212129.16367.262.camel@pasglop>
-In-Reply-To: <1259212129.16367.262.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6D9721007D4
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 02:24:21 +1100 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: kvm@vger.kernel.org
+Subject: [PATCH] PPC: Sync guest visible MMU state
+Date: Thu, 26 Nov 2009 16:24:16 +0100
+Message-Id: <1259249056-3953-1-git-send-email-agraf@suse.de>
+Cc: kvm-ppc <kvm-ppc@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +19,276 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Tue, 2009-11-24 at 19:03 +0100, Albert Herranz wrote:
->> Segher Boessenkool wrote:
->>>> Add a config option GAMECUBE_COMMON to be used as a dependency for all
->>>> options common to the Nintendo GameCube and Wii video game consoles.
->>> Maybe something like GAMECUBE_OR_WII instead?  "COMMON" is so
->>> common it's meaningless.
->>>
->> I don't like either GAMECUBE_OR_WII.
->> It looks as if it can be used to match options for the GAMECUBE _or_ WII. But that's not the meaning of it.
->>
->> This option should be used only for options applicable to both the GAMECUBE and WII, i.e. basically those options in the WII which where "inherited" from the GAMECUBE to make it retro-compatible.
->>
->> If GAMECUBE_COMMON is unacceptable, maybe GAMECUBE_LEGACY or GAMECUBE_COMPAT?
-> 
-> I don't have any strong opinion. Maybe NINTENDO_COMMON ?
-> 
+Currently userspace has no chance to find out which virtual address space we're
+in and resolve addresses. While that is a big problem for migration, it's also
+unpleasent when debugging, as gdb and the monitor don't work on virtual
+addresses.
 
-We should avoid using NINTENDO just to refer to the Nintendo GameCube or Wii. They have other consoles too :)
-There's even a port of Linux to the Nintendo DS...
+This patch exports enough of the MMU segment state to userspace to make
+debugging work and thus also includes the groundwork for migration.
 
-I'd stick to GAMECUBE_COMMON or GAMECUBE_COMPAT.
+Signed-off-by: Alexander Graf <agraf@suse.de>
 
-> Cheers,
-> Ben.
-> 
+---
 
-Thanks,
-Albert
+Ben, please take this patch in your tree.
+
+v2 -> v3:
+
+  - don't use anonymous unions/structs
+---
+ arch/powerpc/include/asm/kvm.h        |   20 +++++++++++-
+ arch/powerpc/include/asm/kvm_asm.h    |    1 +
+ arch/powerpc/include/asm/kvm_book3s.h |    3 ++
+ arch/powerpc/kvm/book3s.c             |   53 +++++++++++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_emulate.c  |   38 ++++++++++++++---------
+ arch/powerpc/kvm/book3s_64_mmu.c      |    2 +
+ arch/powerpc/kvm/powerpc.c            |    3 ++
+ include/linux/kvm.h                   |    3 ++
+ 8 files changed, 104 insertions(+), 19 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm.h b/arch/powerpc/include/asm/kvm.h
+index c9ca97f..cb6ad08 100644
+--- a/arch/powerpc/include/asm/kvm.h
++++ b/arch/powerpc/include/asm/kvm.h
+@@ -46,8 +46,24 @@ struct kvm_regs {
+ };
+ 
+ struct kvm_sregs {
+-	__u32 pvr;
+-	char pad[1020];
++	union {
++		struct {
++			__u32 pvr;
++			__u64 sdr1;
++			struct {
++				struct {
++					__u64 slbe;
++					__u64 slbv;
++				} slb[64];
++			} ppc64;
++			struct {
++				__u32 sr[16];
++				__u64 ibat[8]; 
++				__u64 dbat[8]; 
++			} ppc32;
++		} s;
++		__u8 pad[1024];
++	} u;
+ };
+ 
+ struct kvm_fpu {
+diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
+index 19ddb35..af2abe7 100644
+--- a/arch/powerpc/include/asm/kvm_asm.h
++++ b/arch/powerpc/include/asm/kvm_asm.h
+@@ -87,6 +87,7 @@
+ #define BOOK3S_IRQPRIO_MAX			16
+ 
+ #define BOOK3S_HFLAG_DCBZ32			0x1
++#define BOOK3S_HFLAG_SLB			0x2
+ 
+ #define RESUME_FLAG_NV          (1<<0)  /* Reload guest nonvolatile state? */
+ #define RESUME_FLAG_HOST        (1<<1)  /* Resume host? */
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index c601133..74b7369 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -46,6 +46,7 @@ struct kvmppc_sr {
+ };
+ 
+ struct kvmppc_bat {
++	u64 raw;
+ 	u32 bepi;
+ 	u32 bepi_mask;
+ 	bool vs;
+@@ -113,6 +114,8 @@ extern struct kvmppc_pte *kvmppc_mmu_find_pte(struct kvm_vcpu *vcpu, u64 ea, boo
+ extern int kvmppc_ld(struct kvm_vcpu *vcpu, ulong eaddr, int size, void *ptr, bool data);
+ extern int kvmppc_st(struct kvm_vcpu *vcpu, ulong eaddr, int size, void *ptr);
+ extern void kvmppc_book3s_queue_irqprio(struct kvm_vcpu *vcpu, unsigned int vec);
++extern void kvmppc_set_bat(struct kvm_vcpu *vcpu, struct kvmppc_bat *bat,
++			   bool upper, u32 val);
+ 
+ extern u32 kvmppc_trampoline_lowmem;
+ extern u32 kvmppc_trampoline_enter;
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 42037d4..6666583 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -281,6 +281,7 @@ void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
+ 
+ void kvmppc_set_pvr(struct kvm_vcpu *vcpu, u32 pvr)
+ {
++	vcpu->arch.hflags &= ~BOOK3S_HFLAG_SLB;
+ 	vcpu->arch.pvr = pvr;
+ 	if ((pvr >= 0x330000) && (pvr < 0x70330000)) {
+ 		kvmppc_mmu_book3s_64_init(vcpu);
+@@ -762,14 +763,62 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+ int kvm_arch_vcpu_ioctl_get_sregs(struct kvm_vcpu *vcpu,
+                                   struct kvm_sregs *sregs)
+ {
+-	sregs->pvr = vcpu->arch.pvr;
++	struct kvmppc_vcpu_book3s *vcpu3s = to_book3s(vcpu);
++	int i;
++
++	sregs->u.s.pvr = vcpu->arch.pvr;
++
++	sregs->u.s.sdr1 = to_book3s(vcpu)->sdr1;
++	if (vcpu->arch.hflags & BOOK3S_HFLAG_SLB) {
++		for (i = 0; i < 64; i++) {
++			sregs->u.s.ppc64.slb[i].slbe = vcpu3s->slb[i].orige | i;
++			sregs->u.s.ppc64.slb[i].slbv = vcpu3s->slb[i].origv;
++		}
++	} else {
++		for (i = 0; i < 16; i++) {
++			sregs->u.s.ppc32.sr[i] = vcpu3s->sr[i].raw;
++			sregs->u.s.ppc32.sr[i] = vcpu3s->sr[i].raw;
++		}
++		for (i = 0; i < 8; i++) {
++			sregs->u.s.ppc32.ibat[i] = vcpu3s->ibat[i].raw;
++			sregs->u.s.ppc32.dbat[i] = vcpu3s->dbat[i].raw;
++		}
++	}
+ 	return 0;
+ }
+ 
+ int kvm_arch_vcpu_ioctl_set_sregs(struct kvm_vcpu *vcpu,
+                                   struct kvm_sregs *sregs)
+ {
+-	kvmppc_set_pvr(vcpu, sregs->pvr);
++	struct kvmppc_vcpu_book3s *vcpu3s = to_book3s(vcpu);
++	int i;
++
++	kvmppc_set_pvr(vcpu, sregs->u.s.pvr);
++
++	vcpu3s->sdr1 = sregs->u.s.sdr1;
++	if (vcpu->arch.hflags & BOOK3S_HFLAG_SLB) {
++		for (i = 0; i < 64; i++) {
++			vcpu->arch.mmu.slbmte(vcpu, sregs->u.s.ppc64.slb[i].slbv,
++						    sregs->u.s.ppc64.slb[i].slbe);
++		}
++	} else {
++		for (i = 0; i < 16; i++) {
++			vcpu->arch.mmu.mtsrin(vcpu, i, sregs->u.s.ppc32.sr[i]);
++		}
++		for (i = 0; i < 8; i++) {
++			kvmppc_set_bat(vcpu, &(vcpu3s->ibat[i]), false,
++				       (u32)sregs->u.s.ppc32.ibat[i]);
++			kvmppc_set_bat(vcpu, &(vcpu3s->ibat[i]), true,
++				       (u32)(sregs->u.s.ppc32.ibat[i] >> 32));
++			kvmppc_set_bat(vcpu, &(vcpu3s->dbat[i]), false,
++				       (u32)sregs->u.s.ppc32.dbat[i]);
++			kvmppc_set_bat(vcpu, &(vcpu3s->dbat[i]), true,
++				       (u32)(sregs->u.s.ppc32.dbat[i] >> 32));
++		}
++	}
++
++	/* Flush the MMU after messing with the segments */
++	kvmppc_mmu_pte_flush(vcpu, 0, 0);
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/kvm/book3s_64_emulate.c b/arch/powerpc/kvm/book3s_64_emulate.c
+index c343e67..1027eac 100644
+--- a/arch/powerpc/kvm/book3s_64_emulate.c
++++ b/arch/powerpc/kvm/book3s_64_emulate.c
+@@ -185,7 +185,27 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	return emulated;
+ }
+ 
+-static void kvmppc_write_bat(struct kvm_vcpu *vcpu, int sprn, u64 val)
++void kvmppc_set_bat(struct kvm_vcpu *vcpu, struct kvmppc_bat *bat, bool upper,
++                    u32 val)
++{
++	if (upper) {
++		/* Upper BAT */
++		u32 bl = (val >> 2) & 0x7ff;
++		bat->bepi_mask = (~bl << 17);
++		bat->bepi = val & 0xfffe0000;
++		bat->vs = (val & 2) ? 1 : 0;
++		bat->vp = (val & 1) ? 1 : 0;
++		bat->raw = (bat->raw & 0xffffffff00000000ULL) | val;
++	} else {
++		/* Lower BAT */
++		bat->brpn = val & 0xfffe0000;
++		bat->wimg = (val >> 3) & 0xf;
++		bat->pp = val & 3;
++		bat->raw = (bat->raw & 0x00000000ffffffffULL) | ((u64)val << 32);
++	}
++}
++
++static void kvmppc_write_bat(struct kvm_vcpu *vcpu, int sprn, u32 val)
+ {
+ 	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
+ 	struct kvmppc_bat *bat;
+@@ -207,19 +227,7 @@ static void kvmppc_write_bat(struct kvm_vcpu *vcpu, int sprn, u64 val)
+ 		BUG();
+ 	}
+ 
+-	if (!(sprn % 2)) {
+-		/* Upper BAT */
+-		u32 bl = (val >> 2) & 0x7ff;
+-		bat->bepi_mask = (~bl << 17);
+-		bat->bepi = val & 0xfffe0000;
+-		bat->vs = (val & 2) ? 1 : 0;
+-		bat->vp = (val & 1) ? 1 : 0;
+-	} else {
+-		/* Lower BAT */
+-		bat->brpn = val & 0xfffe0000;
+-		bat->wimg = (val >> 3) & 0xf;
+-		bat->pp = val & 3;
+-	}
++	kvmppc_set_bat(vcpu, bat, !(sprn % 2), val);
+ }
+ 
+ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
+@@ -243,7 +251,7 @@ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
+ 	case SPRN_IBAT4U ... SPRN_IBAT7L:
+ 	case SPRN_DBAT0U ... SPRN_DBAT3L:
+ 	case SPRN_DBAT4U ... SPRN_DBAT7L:
+-		kvmppc_write_bat(vcpu, sprn, vcpu->arch.gpr[rs]);
++		kvmppc_write_bat(vcpu, sprn, (u32)vcpu->arch.gpr[rs]);
+ 		/* BAT writes happen so rarely that we're ok to flush
+ 		 * everything here */
+ 		kvmppc_mmu_pte_flush(vcpu, 0, 0);
+diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
+index a31f9c6..5598f88 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu.c
++++ b/arch/powerpc/kvm/book3s_64_mmu.c
+@@ -473,4 +473,6 @@ void kvmppc_mmu_book3s_64_init(struct kvm_vcpu *vcpu)
+ 	mmu->esid_to_vsid = kvmppc_mmu_book3s_64_esid_to_vsid;
+ 	mmu->ea_to_vp = kvmppc_mmu_book3s_64_ea_to_vp;
+ 	mmu->is_dcbz32 = kvmppc_mmu_book3s_64_is_dcbz32;
++
++	vcpu->arch.hflags |= BOOK3S_HFLAG_SLB;
+ }
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 692c370..d82551e 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -144,6 +144,9 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	int r;
+ 
+ 	switch (ext) {
++	case KVM_CAP_PPC_SEGSTATE:
++		r = 1;
++		break;
+ 	case KVM_CAP_COALESCED_MMIO:
+ 		r = KVM_COALESCED_MMIO_PAGE_OFFSET;
+ 		break;
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index f8f8900..caf6173 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -436,6 +436,9 @@ struct kvm_ioeventfd {
+ #endif
+ #define KVM_CAP_IOEVENTFD 36
+ #define KVM_CAP_SET_IDENTITY_MAP_ADDR 37
++/* KVM upstream has more features, but we synched this number.
++   Linux, please remove this comment on rebase. */
++#define KVM_CAP_PPC_SEGSTATE 43
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+-- 
+1.6.0.2
