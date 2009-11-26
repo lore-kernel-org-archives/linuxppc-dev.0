@@ -2,22 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8C25D1007DE
+	by ozlabs.org (Postfix) with ESMTPS id DFB511007D7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Nov 2009 15:27:19 +1100 (EST)
-Subject: Re: [RFC PATCH 02/19] powerpc: gamecube: device tree
+	Thu, 26 Nov 2009 15:35:50 +1100 (EST)
+Subject: Re: [RFC PATCH 03/19] powerpc: gamecube: bootwrapper bits
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <49443.84.105.60.153.1259172058.squirrel@gate.crashing.org>
+To: Albert Herranz <albert_herranz@yahoo.es>
+In-Reply-To: <4B0C1A25.8030401@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<49443.84.105.60.153.1259172058.squirrel@gate.crashing.org>
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<CE435D2F-8C67-4045-942D-4AA08BF784D0@kernel.crashing.org>
+	<4B0C1A25.8030401@yahoo.es>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 15:27:12 +1100
-Message-ID: <1259209632.16367.246.camel@pasglop>
+Date: Thu, 26 Nov 2009 15:35:42 +1100
+Message-ID: <1259210142.16367.248.camel@pasglop>
 Mime-Version: 1.0
-Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +29,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-11-25 at 19:00 +0100, Segher Boessenkool wrote:
-> > +	memory {
-> > +		device_type = "memory";
-> > +		/* 24M minus framebuffer memory area (640*576*2*2) */
-> > +		reg = <0x00000000 0x01698000>;
+On Tue, 2009-11-24 at 18:38 +0100, Albert Herranz wrote:
+> Segher Boessenkool wrote:
+> > Hi Albert,
+> > 
+> >> +asm ("\n\
+> > 
+> > 
+> > A file scope asm?!  Please don't.
+> > 
 > 
-> Put the whole 24MB here, probe the framebuffer address and size
-> in the platform code?
+> So what's your proposal then? Placing it within a fake func?
 
-Agreed. That's what I was proposing. Though you need to be careful about
-early boot code that will try to allocate the hash table etc... or even
-the DT itself. So you need to probe and reserve the fb really early,
-for example in the platform probe() routine itself. Or you can stick it
-in the reserve map too I suppose.
+Just do a .S file :-)
 
-> > +		video@0c002000 {
-> > +			compatible = "nintendo,flipper-video";
-> > +			reg = <0x0c002000 0x100>;
-> > +			interrupts = <8>;
-> > +			interrupt-parent = <&pic>;
-> > +			/* XFB is the eXternal FrameBuffer */
-> > +			xfb-start = <0x01698000>; /* end-of-ram - xfb-size */
-> > +			xfb-size = <0x168000>;
+> That asm snippet is the entry point. I took as an example how prpmc2800.c
+> deals with that, providing an own version of the (weak) _zImage_start.
+
+Right but I agree with Segher here, it would be nicer as a .S file.
+
+> >> + * We enter with the cache enabled, the MMU enabled and some known
+> >> legacy
+> >> + * memory mappings active. xBAT3 is unused
+> > 
+> > It would be good if you could depend as little as possible on these things;
+> > that makes writing another bootloader a lot easier.
+> > 
 > 
-> XFB address isn't fixed on the hardware, and the kernel might
-> want to move it, and you can easily probe for it anyway.  Remove
-> these last two properties please.
-
-Ok but you need to know what it was setup to by the FW no ? To avoid
-having a temporary display "glitch" while booting... Also on a 24M
-config,it might get tough for the driver to allocate 2M contiguous like
-that if it's done late in the boot process.
+> Ok. I'll do a similar approach as done on the wii bootwrapper.
 > 
-> > +		auxram@0c005000 {
-> > +			compatible = "nintendo,flipper-auxram";
-> > +			reg = <0x0c005000 0x200>;	/* DSP */
-> > +			interrupts = <6>;
-> > +			interrupt-parent = <&pic>;
-> > +		};
-> > +
-> > +		audio@0c005000 {
-> > +			compatible = "nintendo,flipper-audio";
-> > +			reg = <0x0c005000 0x200		/* DSP */
-> > +			       0x0c006c00 0x20>;	/* AI */
-> > +			interrupts = <6>;
-> > +			interrupt-parent = <&pic>;
-> > +		};
+> >> +    /* IBAT3,DBAT3 for first 16Mbytes */\n\
+> >> +    li    8, 0x01ff    /* 16MB */\n\
+> >> +    li      9, 0x0002    /* rw */\n\
+> >> +    mtspr   0x216, 8    /* IBAT3U */\n\
+> >> +    mtspr   0x217, 9    /* IBAT3L */\n\
+> >> +    mtspr   0x21e, 8    /* DBAT3U */\n\
+> >> +    mtspr   0x21f, 9    /* DBAT3L */\n\
+> > 
+> > WIMG=0000, are you sure?  Not M=1?
+> > 
 > 
-> These two have the same address, not good.  Just remove the
-> auxram node?
+> To be honest, I don't recall the details now.
+> But it was tested in the very early days, the result was not the expected one and,
+> in the end, manual cache coherency management was still needed.
 
-Or make it a child of audio ? :-)
+Ouch. I wouldn't be surprised if those guys don't do cache coherency
+in the bridge anyways.
+
+> So everything is designed and working assuming M=0.
+> This can be re-checked again later if needed.
+
+Agreed.
+
+> >> +    bcl-    20,4*cr7+so,1f\n\
+> > 
+> > Just write  bcl 20,31,1f .
+> 
+> Ok, I used two variants for this and I know which one you like now ;).
 
 Cheers,
 Ben.
+
+> > 
+> > 
+> > Segher
+> > 
+> > 
+> 
+> Thanks,
+> Albert
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
