@@ -1,16 +1,17 @@
-Return-Path: <anton@ozlabs.org>
-Date: Thu, 26 Nov 2009 14:28:22 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: hypervisor call tracepoints  hcall_stats touchup.
-Message-ID: <20091126032822.GS32182@kryten>
-References: <1259165529.16349.191.camel@lexx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1259165529.16349.191.camel@lexx>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>, mingo@redhat.com,
-	Steven Rostedt <rostedt@goodmis.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 01/11] of/flattree: Merge early_init_dt_check_for_initrd()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20091124081747.6216.88376.stgit@angua>
+References: <20091124081316.6216.66310.stgit@angua>
+	<20091124081747.6216.88376.stgit@angua>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 14:51:18 +1100
+Message-ID: <1259207478.16367.218.camel@pasglop>
+Mime-Version: 1.0
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,41 +21,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Hi Will,
-
-> The tb_total and purr_total values reported via the hcall_stats code
-> should be cumulative, rather than being replaced by the latest delta tb
-> or purr value. 
+On Tue, 2009-11-24 at 01:17 -0700, Grant Likely wrote:
+> Merge common code between PowerPC and Microblaze
 > 
-> Tested-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-> Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
+> Tested-by: Michal Simek <monstr@monstr.eu>
 
-Ouch! Nice catch.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Acked-by: Anton Blanchard <anton@samba.org>
+Remind me how you want to merge that ? via my tree ?
 
-Anton
+Cheers,
+Ben.
 
-> [ This is a touch-up to the "[3/6] powerpc: tracing: Add hypervisor call
-> tracepoints" patch submitted by Anton a few weeks back, so I've copied
-> folks Anton had on CC for his original patch, this fix is rather ppc
-> specific, so can probably go in via the ppc tree, but I've no real
-> preference. ]
+> ---
 > 
-> diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
-> index 2f58c71..1fefae7 100644
-> --- a/arch/powerpc/platforms/pseries/hvCall_inst.c
-> +++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
-> @@ -124,8 +124,8 @@ static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
->  
->  	h = &__get_cpu_var(hcall_stats)[opcode / 4];
->  	h->num_calls++;
-> -	h->tb_total = mftb() - h->tb_start;
-> -	h->purr_total = mfspr(SPRN_PURR) - h->purr_start;
-> +	h->tb_total += mftb() - h->tb_start;
-> +	h->purr_total += mfspr(SPRN_PURR) - h->purr_start;
->  
->  	put_cpu_var(hcall_stats);
+>  arch/microblaze/kernel/prom.c |   32 --------------------------------
+>  arch/powerpc/kernel/prom.c    |   30 ------------------------------
+>  drivers/of/fdt.c              |   37 +++++++++++++++++++++++++++++++++++++
+>  include/linux/of_fdt.h        |    1 +
+>  4 files changed, 38 insertions(+), 62 deletions(-)
+> 
+> diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
+> index a38e373..7959495 100644
+> --- a/arch/microblaze/kernel/prom.c
+> +++ b/arch/microblaze/kernel/prom.c
+> @@ -113,38 +113,6 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+>  	return 0;
 >  }
-> 
+>  
+> -#ifdef CONFIG_BLK_DEV_INITRD
+> -static void __init early_init_dt_check_for_initrd(unsigned long node)
+> -{
+> -	unsigned long l;
+> -	u32 *prop;
+> -
+> -	pr_debug("Looking for initrd properties... ");
+> -
+> -	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
+> -	if (prop) {
+> -		initrd_start = (unsigned long)
+> -					__va((u32)of_read_ulong(prop, l/4));
+> -
+> -		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
+> -		if (prop) {
+> -			initrd_end = (unsigned long)
+> -					__va((u32)of_read_ulong(prop, 1/4));
+> -			initrd_below_start_ok = 1;
+> -		} else {
+> -			initrd_start = 0;
+> -		}
+> -	}
+> -
+> -	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
+> -					initrd_start, initrd_end);
+> -}
+> -#else
+> -static inline void early_init_dt_check_for_initrd(unsigned long node)
+> -{
+> -}
+> -#endif /* CONFIG_BLK_DEV_INITRD */
+> -
+>  static int __init early_init_dt_scan_chosen(unsigned long node,
+>  				const char *uname, int depth, void *data)
+>  {
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 7f88566..1ecd6c6 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -373,36 +373,6 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+>  	return 0;
+>  }
+>  
+> -#ifdef CONFIG_BLK_DEV_INITRD
+> -static void __init early_init_dt_check_for_initrd(unsigned long node)
+> -{
+> -	unsigned long l;
+> -	u32 *prop;
+> -
+> -	DBG("Looking for initrd properties... ");
+> -
+> -	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
+> -	if (prop) {
+> -		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
+> -
+> -		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
+> -		if (prop) {
+> -			initrd_end = (unsigned long)
+> -					__va(of_read_ulong(prop, l/4));
+> -			initrd_below_start_ok = 1;
+> -		} else {
+> -			initrd_start = 0;
+> -		}
+> -	}
+> -
+> -	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
+> -}
+> -#else
+> -static inline void early_init_dt_check_for_initrd(unsigned long node)
+> -{
+> -}
+> -#endif /* CONFIG_BLK_DEV_INITRD */
+> -
+>  static int __init early_init_dt_scan_chosen(unsigned long node,
+>  					    const char *uname, int depth, void *data)
+>  {
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index 43d236c..6ad98e8 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -11,6 +11,7 @@
+>  
+>  #include <linux/kernel.h>
+>  #include <linux/lmb.h>
+> +#include <linux/initrd.h>
+>  #include <linux/of.h>
+>  #include <linux/of_fdt.h>
+>  
+> @@ -369,6 +370,42 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
+>  	return mem;
+>  }
+>  
+> +#ifdef CONFIG_BLK_DEV_INITRD
+> +/**
+> + * early_init_dt_check_for_initrd - Decode initrd location from flat tree
+> + * @node: reference to node containing initrd location ('chosen')
+> + */
+> +void __init early_init_dt_check_for_initrd(unsigned long node)
+> +{
+> +	unsigned long len;
+> +	u32 *prop;
+> +
+> +	pr_debug("Looking for initrd properties... ");
+> +
+> +	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &len);
+> +	if (prop) {
+> +		initrd_start = (unsigned long)
+> +				__va(of_read_ulong(prop, len/4));
+> +
+> +		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &len);
+> +		if (prop) {
+> +			initrd_end = (unsigned long)
+> +				__va(of_read_ulong(prop, len/4));
+> +			initrd_below_start_ok = 1;
+> +		} else {
+> +			initrd_start = 0;
+> +		}
+> +	}
+> +
+> +	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
+> +		 initrd_start, initrd_end);
+> +}
+> +#else
+> +inline void early_init_dt_check_for_initrd(unsigned long node)
+> +{
+> +}
+> +#endif /* CONFIG_BLK_DEV_INITRD */
+> +
+>  /**
+>   * unflatten_device_tree - create tree of device_nodes from flat blob
+>   *
+> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+> index 81231e0..ec2db82 100644
+> --- a/include/linux/of_fdt.h
+> +++ b/include/linux/of_fdt.h
+> @@ -69,6 +69,7 @@ extern void *of_get_flat_dt_prop(unsigned long node, const char *name,
+>  				 unsigned long *size);
+>  extern int of_flat_dt_is_compatible(unsigned long node, const char *name);
+>  extern unsigned long of_get_flat_dt_root(void);
+> +extern void early_init_dt_check_for_initrd(unsigned long node);
+>  
+>  /* Other Prototypes */
+>  extern void finish_device_tree(void);
