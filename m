@@ -1,14 +1,13 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 06/11] of/flattree: merge early_init_devtree() and
-	early_init_move_devtree()
+Subject: Re: [PATCH 07/11] of: merge machine_is_compatible()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20091124081853.6216.68105.stgit@angua>
+In-Reply-To: <20091124081906.6216.67035.stgit@angua>
 References: <20091124081316.6216.66310.stgit@angua>
-	<20091124081853.6216.68105.stgit@angua>
+	<20091124081906.6216.67035.stgit@angua>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 15:04:08 +1100
-Message-ID: <1259208248.16367.230.camel@pasglop>
+Date: Thu, 26 Nov 2009 15:05:10 +1100
+Message-ID: <1259208310.16367.231.camel@pasglop>
 Mime-Version: 1.0
 Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
@@ -23,71 +22,108 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tue, 2009-11-24 at 01:19 -0700, Grant Likely wrote:
+> Merge common code between PowerPC and Microblaze
 
->  
-> -static int __init early_init_dt_scan_cpus(unsigned long node,
-> -					  const char *uname, int depth,
-> -					  void *data)
-> +int __init early_init_dt_scan_cpus(unsigned long node, const char *uname,
-> +				   int depth, void *data)
->  {
-
-So now you make this one non-static as well with little hope of making
-it static ever again
-
->  	static int logical_cpuid;
->  	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-> @@ -113,8 +112,8 @@ void __init early_init_dt_scan_chosen_arch(unsigned long node)
->  	/* No Microblaze specific code here */
->  }
->  
-> -static int __init early_init_dt_scan_memory(unsigned long node,
-> -				const char *uname, int depth, void *data)
-> +int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
-> +				     int depth, void *data)
->  {
-
-And this one
-
->  	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
->  	u32 *reg, *endp;
-> @@ -201,7 +200,7 @@ static inline unsigned long phyp_dump_calculate_reserve_size(void)
->   * without reserving anything. The memory in case of dump being
->   * active is freed when the dump is collected (by userland tools).
->   */
-> -static void __init phyp_dump_reserve_mem(void)
-> +void __init phyp_dump_reserve_mem(void)
->  {
-
-And this one...
-
->  /**
-> + * early_init_move_devtree - move tree to an unused area, if needed.
-> + *
-> + * The device tree may be allocated beyond our memory limit, or inside the
-> + * crash kernel region for kdump. If so, move it out of the way.
-> + */
-> +#if defined(CONFIG_PPC)
-> +static void __init early_init_move_devtree(void)
-
-And you still end up with an ifdef mess in the common code ...
-
-Would it be possible instead to have one common early_init_devtree()
-that calls into the "common" ones (which you can then make static again,
-inside the common code) and then calls one arch_early_init_devtree()
-which regroups the arch specific ones ?
-
-Or there's too many ordering issues ?
-
-Another option then is to call from that early_init_devtree() something
-like:
-
-	arch_early_init_dt_mem()
-	arch_early_init_dt_cpu()
-	arch_early_init_move_devtree()
-
-etc... in the right spots in the common code and have the archs who
-don't do anything there just have them as empty inlines.
+I don't like moving this one to common code without the of_ prefix. I
+think you should move it with the of_ prefix, and then add a alias in
+powerpc and microblaze without of_ in a header until we fix all call
+sites (which you can put on your to-do list :-)
 
 Cheers,
 Ben.
+
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> 
+>  arch/microblaze/kernel/prom.c |   18 ------------------
+>  arch/powerpc/kernel/prom.c    |   18 ------------------
+>  drivers/of/base.c             |   18 ++++++++++++++++++
+>  3 files changed, 18 insertions(+), 36 deletions(-)
+> 
+> diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
+> index 543465a..c97192d 100644
+> --- a/arch/microblaze/kernel/prom.c
+> +++ b/arch/microblaze/kernel/prom.c
+> @@ -281,24 +281,6 @@ void __init early_init_devtree_arch(void)
+>  	/* No Microblaze specific code here */
+>  }
+>  
+> -/**
+> - * Indicates whether the root node has a given value in its
+> - * compatible property.
+> - */
+> -int machine_is_compatible(const char *compat)
+> -{
+> -	struct device_node *root;
+> -	int rc = 0;
+> -
+> -	root = of_find_node_by_path("/");
+> -	if (root) {
+> -		rc = of_device_is_compatible(root, compat);
+> -		of_node_put(root);
+> -	}
+> -	return rc;
+> -}
+> -EXPORT_SYMBOL(machine_is_compatible);
+> -
+>  /*******
+>   *
+>   * New implementation of the OF "find" APIs, return a refcounted
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index a5b3b9d..65de093 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -677,24 +677,6 @@ void __init early_init_devtree_arch(void)
+>  	lmb_enforce_memory_limit(limit);
+>  }
+>  
+> -/**
+> - * Indicates whether the root node has a given value in its
+> - * compatible property.
+> - */
+> -int machine_is_compatible(const char *compat)
+> -{
+> -	struct device_node *root;
+> -	int rc = 0;
+> -
+> -	root = of_find_node_by_path("/");
+> -	if (root) {
+> -		rc = of_device_is_compatible(root, compat);
+> -		of_node_put(root);
+> -	}
+> -	return rc;
+> -}
+> -EXPORT_SYMBOL(machine_is_compatible);
+> -
+>  /*******
+>   *
+>   * New implementation of the OF "find" APIs, return a refcounted
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index ec56739..e81558f 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -144,6 +144,24 @@ int of_device_is_compatible(const struct device_node *device,
+>  EXPORT_SYMBOL(of_device_is_compatible);
+>  
+>  /**
+> + * Indicates whether the root node has a given value in its
+> + * compatible property.
+> + */
+> +int machine_is_compatible(const char *compat)
+> +{
+> +	struct device_node *root;
+> +	int rc = 0;
+> +
+> +	root = of_find_node_by_path("/");
+> +	if (root) {
+> +		rc = of_device_is_compatible(root, compat);
+> +		of_node_put(root);
+> +	}
+> +	return rc;
+> +}
+> +EXPORT_SYMBOL(machine_is_compatible);
+> +
+> +/**
+>   *  of_device_is_available - check if a device is available for use
+>   *
+>   *  @device: Node to check for availability
