@@ -1,15 +1,28 @@
 Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f187.google.com (mail-yw0-f187.google.com
+	[209.85.211.187]) by ozlabs.org (Postfix) with ESMTP id 0F52C1007DC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 26 Nov 2009 16:51:42 +1100 (EST)
+Received: by ywh17 with SMTP id 17so439466ywh.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 25 Nov 2009 21:51:41 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <20091126051641.GB27334@yookeroo>
-References: <20091126051641.GB27334@yookeroo>
+In-Reply-To: <1259213345.16367.275.camel@pasglop>
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<fa686aa40911221502g2de254d2o4341d9abed0cdf41@mail.gmail.com>
+	<1259209283.16367.241.camel@pasglop>
+	<fa686aa40911252038y37da8c72y54314a6cc337fc66@mail.gmail.com>
+	<1259213345.16367.275.camel@pasglop>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 25 Nov 2009 22:46:29 -0700
-Message-ID: <fa686aa40911252146u73a9f9d3y9fb287bfc051503d@mail.gmail.com>
-Subject: Re: Make the kernel accept ePAPR style phandle information
-To: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	devicetree-discuss@ozlabs.org
+Date: Wed, 25 Nov 2009 22:51:21 -0700
+Message-ID: <fa686aa40911252151v7b21b44eha5660d06eeda5e5f@mail.gmail.com>
+Subject: Re: [RFC PATCH 02/19] powerpc: gamecube: device tree
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,82 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 25, 2009 at 10:16 PM, David Gibson
-<david@gibson.dropbear.id.au> wrote:
-> Grant, this is based on your test-devicetree branch, if it could be
-> merged via there would be great.
+On Wed, Nov 25, 2009 at 10:29 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Wed, 2009-11-25 at 21:38 -0700, Grant Likely wrote:
+>>
+>> But this isn't real OF. =A0Real OF can generate its own valid tree.
+>> This is a flat tree, and it is valid according to all users of the
+>> flat tree. =A0Besides, the last time we talked about this, you told me
+>> that moving it to the root was a good idea, and I happily changed all
+>> the 5200 .dts files. =A0:-)
+>>
+>> http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-January/067046.html
 >
-> Currently when processing flattened device trees, the kernel expects
-> the phandle in a property called "linux,phandle". =A0The ePAPR spec -
-> not being Linux specific - instead requires phandles to be encoded in
-> a property named simply "phandle". =A0This patch makes the kernel accept
-> either form when unflattening the device tree.
+> Oh sure. I wasn't sure what the situation vs. real OF was. I just know
+> Segher is doing one and it would be nice to have the closest tree :-)
 >
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> But no big deal, I'm happy with it at the root. I prefer not ommiting it
+> completely tho.
 
-Looks okay to me.
+agreed.
 
 g.
-
->
-> Index: working-2.6/drivers/of/fdt.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- working-2.6.orig/drivers/of/fdt.c =A0 2009-11-26 09:58:06.052792325 +=
-1100
-> +++ working-2.6/drivers/of/fdt.c =A0 =A0 =A0 =A02009-11-26 10:00:08.30957=
-0256 +1100
-> @@ -314,10 +314,19 @@ unsigned long __init unflatten_dt_node(u
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pp =3D unflatten_dt_alloc(&mem, sizeof(str=
-uct property),
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0__alignof__(struct property));
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (allnextpp) {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (strcmp(pname, "linux,ph=
-andle") =3D=3D 0) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* We accept flattened tree=
- phandles either in
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* ePAPR-style "phandle" =
-properties, or the
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* legacy "linux,phandle"=
- properties. =A0If both
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* appear and have differ=
-ent values, things
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* will get weird. =A0Don=
-'t do that. */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if ((strcmp(pname, "phandle=
-") =3D=3D 0)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 || (strcmp(pname, "=
-linux,phandle") =3D=3D 0)) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (np->ph=
-andle =3D=3D 0)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0np->phandle =3D *((u32 *)*p);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* And we process the "ibm,=
-phandle" property
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* used in pSeries dynami=
-c device tree
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* stuff */
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (strcmp(pname, "ibm,pha=
-ndle") =3D=3D 0)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0np->phandl=
-e =3D *((u32 *)*p);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pp->name =3D pname;
->
->
-> --
-> David Gibson =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| I'll have my music =
-baroque, and my code
-> david AT gibson.dropbear.id.au =A0| minimalist, thank you. =A0NOT _the_ _=
-other_
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| _way_ _a=
-round_!
-> http://www.ozlabs.org/~dgibson
->
-
-
 
 --=20
 Grant Likely, B.Sc., P.Eng.
