@@ -1,12 +1,32 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 26 Nov 2009 16:16:42 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Make the kernel accept ePAPR style phandle information
-Message-ID: <20091126051641.GB27334@yookeroo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 11F4B1007D7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 26 Nov 2009 16:18:19 +1100 (EST)
+Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
+	controller support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Albert Herranz <albert_herranz@yahoo.es>
+In-Reply-To: <1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 16:18:14 +1100
+Message-ID: <1259212694.16367.270.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,46 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant, this is based on your test-devicetree branch, if it could be
-merged via there would be great.
+On Sun, 2009-11-22 at 23:01 +0100, Albert Herranz wrote:
 
-Currently when processing flattened device trees, the kernel expects
-the phandle in a property called "linux,phandle".  The ePAPR spec -
-not being Linux specific - instead requires phandles to be encoded in
-a property named simply "phandle".  This patch makes the kernel accept
-either form when unflattening the device tree.
+> +static void flipper_pic_mask_and_ack(unsigned int virq)
+> +{
+> +	int irq = virq_to_hw(virq);
+> +	void __iomem *io_base = get_irq_chip_data(virq);
+> +
+> +	clear_bit(irq, io_base + FLIPPER_IMR);
+> +	set_bit(irq, io_base + FLIPPER_ICR);
+> +}
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Do not use clear_bit and set_bit on IOs. They will do lwarx/stwcx. which
+is really not what you want. You can use __clear_bit and __set_bit but
+it's still fishy. Those operate on unsigned long, so the size vary
+between 32 and 64 bit etc... not something you care that much about, but
+it's still the wrong tool for the job.
 
-Index: working-2.6/drivers/of/fdt.c
-===================================================================
---- working-2.6.orig/drivers/of/fdt.c	2009-11-26 09:58:06.052792325 +1100
-+++ working-2.6/drivers/of/fdt.c	2009-11-26 10:00:08.309570256 +1100
-@@ -314,10 +314,19 @@ unsigned long __init unflatten_dt_node(u
- 		pp = unflatten_dt_alloc(&mem, sizeof(struct property),
- 					__alignof__(struct property));
- 		if (allnextpp) {
--			if (strcmp(pname, "linux,phandle") == 0) {
-+			/* We accept flattened tree phandles either in
-+			 * ePAPR-style "phandle" properties, or the
-+			 * legacy "linux,phandle" properties.  If both
-+			 * appear and have different values, things
-+			 * will get weird.  Don't do that. */
-+			if ((strcmp(pname, "phandle") == 0)
-+			    || (strcmp(pname, "linux,phandle") == 0)) {
- 				if (np->phandle == 0)
- 					np->phandle = *((u32 *)*p);
- 			}
-+			/* And we process the "ibm,phandle" property
-+			 * used in pSeries dynamic device tree
-+			 * stuff */
- 			if (strcmp(pname, "ibm,phandle") == 0)
- 				np->phandle = *((u32 *)*p);
- 			pp->name = pname;
+Do those guys have more than 32 interrupts ? If not, just hand
+code the msak & shifts. If they do, then maybe stick with __clear_bit()
+and __set_bit() which are the non atomic variants.
 
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+Ben.
