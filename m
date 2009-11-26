@@ -1,24 +1,29 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp105.mail.ukl.yahoo.com (smtp105.mail.ukl.yahoo.com
-	[77.238.184.37]) by ozlabs.org (Postfix) with SMTP id 159EAB7BDF
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8320B1007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 10:02:21 +1100 (EST)
-Message-ID: <4B0F08FA.10709@yahoo.es>
-Date: Fri, 27 Nov 2009 00:02:18 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 04/19] powerpc: wii: device tree
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<49436.84.105.60.153.1259171377.squirrel@gate.crashing.org>
-	<1259211061.16367.260.camel@pasglop>
-	<927C3343-380D-40F7-A52E-8F842A5F4C3E@kernel.crashing.org>
-In-Reply-To: <927C3343-380D-40F7-A52E-8F842A5F4C3E@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 27 Nov 2009 10:05:09 +1100 (EST)
+In-Reply-To: <4B0E9E84.4060400@yahoo.es>
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
+	<1259212354.16367.265.camel@pasglop> <4B0E9E84.4060400@yahoo.es>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <EAE17D04-D785-4652-9024-063980F494A4@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 09/19] powerpc: gamecube/wii: udbg support for usbgecko
+Date: Fri, 27 Nov 2009 00:12:05 +0100
+To: Albert Herranz <albert_herranz@yahoo.es>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,39 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> So what is at d0000000 ?
-> 
-> 0c000000 is the flipper-compatible stuff
-> 0d000000 is the hollywood new devices
-> 0d800000 is the same as part of 0d000000, but with some extra bits
-> sometimes.
-> 
+> The usbgecko is hotplugable and hotswappable.
+> But as this is mostly a developer feature, not normaly used by end  
+> users, I think that we can just let it be as it is: autodetect it  
+> on boot (now probing for it instead of using information from the  
+> device tree).
+> If you unplug it later it causes no errors, you just miss whatever  
+> data is sent to it.
 
-Also, when in Wii native mode, stuff like EXI, SI and AI (which is flipper-compatible stuff too) is available at 0d000000 only.
+You can get interrupts when an EXI device is plugged or unplugged; the
+"normal" driver should use that.  But you haven't posted that yet.
 
->>>> +        serial@0d006400 {
->>>> +            compatible = "nintendo,hollywood-serial";
->>>
->>> You might want to pick a more descriptive name for this,
->>> "serial" is usually understaood to mean "RS232".  Which
->>> this isn't.
->>
->> What is it then ? You definitely want some other name if it's not
->> classic rs232 style serial.
-> 
-> It's SPI I think, with some extra signals.  It's the gamepads mostly.
-> 
+The "early debug" driver can just assume the user doesn't like to hurt
+himself, and provide pain when the user does, there's no problem with
+that :-)
 
-EXI is SPI.
-But SI is a different thingy.
 
-See http://www.int03.co.uk/crema/hardware/gamecube/gc-control.htm .
-
-> 
-> Segher
-> 
-> 
-
-Cheers,
-Albert
+Segher
