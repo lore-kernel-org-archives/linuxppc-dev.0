@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 04/11] of/flattree: eliminate cell_t typedef
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "M. Warner Losh" <imp@bsdimp.com>
-In-Reply-To: <20091125.232818.-1350498258.imp@bsdimp.com>
-References: <20091124081827.6216.1896.stgit@angua>
-	<1259207974.16367.226.camel@pasglop>
-	<fa686aa40911252005o2db85dfk3d9acc61c12ca5e5@mail.gmail.com>
-	<20091125.232818.-1350498258.imp@bsdimp.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 18:06:11 +1100
-Message-ID: <1259219171.16367.331.camel@pasglop>
-Mime-Version: 1.0
-Cc: sfr@canb.auug.org.au, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8371BB6F1A
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 18:23:18 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Pravin Bathija <pbathija@amcc.com>
+Subject: Re: [PATCH]  [PPC4xx] Fix device tree dts file for katmai board.
+Date: Thu, 26 Nov 2009 08:22:56 +0100
+References: <1259017573-27985-1-git-send-email-pbathija@amcc.com>
+In-Reply-To: <1259017573-27985-1-git-send-email-pbathija@amcc.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <200911260822.56977.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-11-25 at 23:28 -0700, M. Warner Losh wrote:
-> In message:
-> <fa686aa40911252005o2db85dfk3d9acc61c12ca5e5@mail.gmail.com>
->             Grant Likely <grant.likely@secretlab.ca> writes:
-> : Word from Mitch is the device tree is network byte order.  period.
+On Tuesday 24 November 2009 00:06:13 Pravin Bathija wrote:
+>  Description: Set PCI-E node inbound DMA ranges size to 4GB for correct
+>  boot up of katmai. Including only changes for PCI-E DMA ranges as
+>  suggested by Stefan.
 > 
-> OpenFirmware defines the order to be big endian always, even on little
-> endian processors.
+> Signed-off-by: Pravin Bathija <pbathija@amcc.com>
+> Acked-by: Feng Kan <fkan@amcc.com>
+> Acked-by: Prodyut Hazarika <phazarika@amcc.com>
+> Acked-by: Loc Ho <lho@amcc.com>
+> Acked-by: Tirumala Reddy Marri <tmarri@amcc.com>
+> Acked-by: Victor Gallardo <vgallardo@amcc.com>
 
-Right, that's the only sane way to do it, I just didn't remember off
-hand what was said in the OF spec :-)
+Acked-by: Stefan Roese <sr@denx.de>
 
 Cheers,
-Ben.
+Stefan
