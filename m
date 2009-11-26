@@ -2,23 +2,25 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C93A51007D1
+	by ozlabs.org (Postfix) with ESMTPS id 1282D1007DB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Nov 2009 15:58:31 +1100 (EST)
-Subject: Re: [RFC PATCH 04/19] powerpc: wii: device tree
+	Thu, 26 Nov 2009 16:09:12 +1100 (EST)
+Subject: Re: [RFC PATCH 06/19] powerpc: gamecube/wii: introduce GAMECUBE_COMMON
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Albert Herranz <albert_herranz@yahoo.es>
-In-Reply-To: <4B0D78B0.502@yahoo.es>
+In-Reply-To: <4B0C2002.4050704@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<49436.84.105.60.153.1259171377.squirrel@gate.crashing.org>
-	<4B0D78B0.502@yahoo.es>
+	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
+	<3D2BF5CA-C4BE-4250-8EC9-7A8E767572E2@kernel.crashing.org>
+	<4B0C2002.4050704@yahoo.es>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 15:58:25 +1100
-Message-ID: <1259211505.16367.261.camel@pasglop>
+Date: Thu, 26 Nov 2009 16:08:49 +1100
+Message-ID: <1259212129.16367.262.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,12 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-11-25 at 19:34 +0100, Albert Herranz wrote:
+On Tue, 2009-11-24 at 19:03 +0100, Albert Herranz wrote:
+> Segher Boessenkool wrote:
+> >> Add a config option GAMECUBE_COMMON to be used as a dependency for all
+> >> options common to the Nintendo GameCube and Wii video game consoles.
+> > 
+> > Maybe something like GAMECUBE_OR_WII instead?  "COMMON" is so
+> > common it's meaningless.
+> > 
 > 
-> We need nobats (or a hack in the mmu_mapin_ram() code) because of the
-> discontiguous ram problem.
+> I don't like either GAMECUBE_OR_WII.
+> It looks as if it can be used to match options for the GAMECUBE _or_ WII. But that's not the meaning of it.
+> 
+> This option should be used only for options applicable to both the GAMECUBE and WII, i.e. basically those options in the WII which where "inherited" from the GAMECUBE to make it retro-compatible.
+> 
+> If GAMECUBE_COMMON is unacceptable, maybe GAMECUBE_LEGACY or GAMECUBE_COMPAT?
 
-I would vote for a hack in mmu_mapin_ram() for now.
+I don't have any strong opinion. Maybe NINTENDO_COMMON ?
 
 Cheers,
 Ben.
