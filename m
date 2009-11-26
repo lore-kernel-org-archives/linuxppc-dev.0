@@ -1,26 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4C84C1007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 10:27:16 +1100 (EST)
-Subject: Re: [RFC PATCH 10/19] powerpc: gamecube/wii: early debugging using
-	usbgecko
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <0E5CD213-9ADE-4C49-9BD1-1DE96830F65E@kernel.crashing.org>
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<200911222327.37949.arnd@arndb.de> <1259212468.16367.267.camel@pasglop>
-	<0E5CD213-9ADE-4C49-9BD1-1DE96830F65E@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 27 Nov 2009 10:27:07 +1100
-Message-ID: <1259278027.2659.5.camel@pasglop>
+Return-Path: <davem@davemloft.net>
+Date: Thu, 26 Nov 2009 15:32:12 -0800 (PST)
+Message-Id: <20091126.153212.142866981.davem@davemloft.net>
+To: segher@kernel.crashing.org
+Subject: Re: [PATCH 04/11] of/flattree: eliminate cell_t typedef
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <F307E7FB-0819-47E8-9CF4-CA1433C18DA6@kernel.crashing.org>
+References: <fa686aa40911252005o2db85dfk3d9acc61c12ca5e5@mail.gmail.com>
+	<1259213266.16367.274.camel@pasglop>
+	<F307E7FB-0819-47E8-9CF4-CA1433C18DA6@kernel.crashing.org>
 Mime-Version: 1.0
-Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, devicetree-discuss@lists.ozlabs.org,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,13 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-11-26 at 23:54 +0100, Segher Boessenkool wrote:
-> No Ben.  The whole point of EARLY_DEBUG is that it _always works_,  
-> because
-> it is such trivial code.  Don't break that please, or we'll be forced to
-> add a "REALLY_EARLY_DEBUG" instead :-) 
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Thu, 26 Nov 2009 22:36:41 +0100
 
-I do tend to agree but heh... temptation to do more cute hacks ... :-)
+>>> You're right, it's not, but makes merging less complex, and then I can
+>>> refactor properly.
+>>
+>> Still, make them __be32 at least
+> 
+> There is no alignment guarantee at all either, better make it all u8
+> and use accessor functions everywhere.
 
-Cheers,
-Ben.
+I think that might be overkill.
