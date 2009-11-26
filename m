@@ -1,14 +1,15 @@
 Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp134.mail.ukl.yahoo.com (smtp134.mail.ukl.yahoo.com
-	[77.238.184.65]) by ozlabs.org (Postfix) with SMTP id BCE261007D7
+Received: from smtp140.mail.ukl.yahoo.com (smtp140.mail.ukl.yahoo.com
+	[77.238.184.71]) by ozlabs.org (Postfix) with SMTP id B3B741007D8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 02:28:06 +1100 (EST)
-Message-ID: <4B0E9E84.4060400@yahoo.es>
-Date: Thu, 26 Nov 2009 16:28:04 +0100
+	Fri, 27 Nov 2009 02:30:27 +1100 (EST)
+Message-ID: <4B0E9F11.5000605@yahoo.es>
+Date: Thu, 26 Nov 2009 16:30:25 +0100
 From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH 09/19] powerpc: gamecube/wii: udbg support for usbgecko
+Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
+	controller support
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>	
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>	
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>	
@@ -18,9 +19,11 @@ References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>	
 	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>	
 	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>	
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1259212354.16367.265.camel@pasglop>
-In-Reply-To: <1259212354.16367.265.camel@pasglop>
+	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>	
+	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
+	<1259212694.16367.270.camel@pasglop>
+In-Reply-To: <1259212694.16367.270.camel@pasglop>
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,21 +37,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Benjamin Herrenschmidt wrote:
 > On Sun, 2009-11-22 at 23:01 +0100, Albert Herranz wrote:
->> Add support for using the USB Gecko adapter via the udbg facility on
->> the Nintendo GameCube and Wii video game consoles.
->> The USB Gecko is a 3rd party memory card interface adapter that provides
->> a EXI (External Interface) to USB serial converter.
 > 
-> The main issue here is that the gecko is supposed to be something you
-> can plug or unplug no ? Is it hotswap or only at boot ? In the later
-> case, maybe the node should be created by the boot wrapper when
-> detecting the presence of the device. If it's hotplug, then we need
-> something smarter...
+>> +static void flipper_pic_mask_and_ack(unsigned int virq)
+>> +{
+>> +	int irq = virq_to_hw(virq);
+>> +	void __iomem *io_base = get_irq_chip_data(virq);
+>> +
+>> +	clear_bit(irq, io_base + FLIPPER_IMR);
+>> +	set_bit(irq, io_base + FLIPPER_ICR);
+>> +}
+> 
+> Do not use clear_bit and set_bit on IOs. They will do lwarx/stwcx. which
+> is really not what you want. You can use __clear_bit and __set_bit but
+> it's still fishy. Those operate on unsigned long, so the size vary
+> between 32 and 64 bit etc... not something you care that much about, but
+> it's still the wrong tool for the job.
+> 
+> Do those guys have more than 32 interrupts ? If not, just hand
+> code the msak & shifts. If they do, then maybe stick with __clear_bit()
+> and __set_bit() which are the non atomic variants.
 > 
 
-The usbgecko is hotplugable and hotswappable.
-But as this is mostly a developer feature, not normaly used by end users, I think that we can just let it be as it is: autodetect it on boot (now probing for it instead of using information from the device tree).
-If you unplug it later it causes no errors, you just miss whatever data is sent to it.
+There can be only 32 interrupt sources per pic.
+I'll build a mask and check if just a simple write works too (it should IMHO), instead of a RWM.
 
 > Cheers,
 > Ben.
