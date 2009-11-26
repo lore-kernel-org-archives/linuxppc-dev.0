@@ -1,23 +1,30 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <mohan@in.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 70E961007D3
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 20:06:05 +1100 (EST)
-In-Reply-To: <1259225218.16367.333.camel@pasglop>
-References: <Received>	
-	<1257843644-8496-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1259032363.16367.108.camel@pasglop>	
-	<OF23DC26B5.C444DA5A-ONC125767A.002E6FF8-C125767A.002EB4D0@transmode.se>
-	<1259225218.16367.333.camel@pasglop>
-Subject: Re: [PATCH] zlib: Optimize inffast when copying direct from output
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OFA086DC04.0AA63CCF-ONC125767A.00315861-C125767A.0031A337@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 26 Nov 2009 10:02:10 +0100
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BCB461007D1
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 22:12:14 +1100 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id nAQBCAbO023830
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 22:12:10 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nAQB8jw61683528
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 22:08:46 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nAQBCDjU008825
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Nov 2009 22:12:13 +1100
+Message-ID: <4B0E628A.9070009@in.ibm.com>
+Date: Thu, 26 Nov 2009 16:42:10 +0530
+From: "M. Mohan Kumar" <mohan@in.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Bernhard Walle <bernhard@bwalle.de>
+Subject: Re: [PATCH] Reserve memory for kdump kernel within RMO region
+References: <20091125131747.GA28857@in.ibm.com> <4B0D7CF4.8040402@bwalle.de>
+In-Reply-To: <4B0D7CF4.8040402@bwalle.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: kexec@lists.infradead.org, ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 26/11/2009 09:46:58:
+On 11/26/2009 12:22 AM, Bernhard Walle wrote:
+> M. Mohan Kumar schrieb:
+>> Reserve memory for kdump kernel within RMO region
+>>
+>> When the kernel size exceeds 32MB(observed with some distros), memory
+>> for kdump kernel can not be reserved as kdump kernel base is assumed to
+>> be 32MB always. When the kernel has CONFIG_RELOCATABLE option enabled,
+>> provide the feature to reserve the memory for kdump kernel anywhere in
+>> the RMO region.
 >
-> On Thu, 2009-11-26 at 09:30 +0100, Joakim Tjernlund wrote:
-> > > I'm not sure its going to work to use get_unaligned() like that on all
-> > > archs .. it might be definitely something to discuss on some more
-> > > appropriate mailing list.
-> >
-> > Oh, why not? Is that because I am using it wrongly or because xx_unaligned
-> > is impl. incorrectly on some archs?
+
+Hi Bernhard,
+
+> Correct me if I'm wrong, but: CONFIG_RELOCATABLE is for the kernel that
+> gets loaded as crashkernel, not for the kernel that loads the
+> crashkernel. So it would be perfectly fine that a kernel that has not
+> CONFIG_RELOCATABLE set would load another kernel that has
+> CONFIG_RELOCATABLE set on an address != 32 M.
+
+No, with relocatable option, the same kernel is used as both production 
+and kdump kernel. If the kernel is not relocatable, kdump kernel can be 
+loaded *only at* 32MB. So if a kernel has RELOCATABLE option enabled and 
+by chance if the production kernel size is beyond 32MB, current code 
+will not load the kdump kernel at 32MB as current kernel overlaps with 
+kdump kernel region. So if the kernel has RELOCATABLE option, we could 
+reserve memory for kdump kernel within RMO region.
+
 >
-> I'm just not sure it works in boot wrappers in case archs ... I suppose
-> it does but I haven't actually checked :-)
-
-I am not aware of other boot wrappers than PowerPC and I believe ppc
-should handle it as unaligned accesses aren't a problem there.
-
-      Jocke
+> So it would be part of the command line to determine whether a fixed or
+> a variable address is used. The system configuration (or the admin)
+> knows both: if the kernel that should be loaded is relocatable (can be
+> detected with the x86 bzImage header or with the ELF type for vmlinux)
+> and it can also influence the boot command line.
+>
+> To sum it up: I'm not against reserving it anywhere, I'm only against
+> making it dependent on CONFIG_RELOCATABLE which has another function.
+>
+>
+>
+> Regards,
+> Bernhard
+>
+>
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
