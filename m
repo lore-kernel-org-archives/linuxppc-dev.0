@@ -1,16 +1,14 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1259207974.16367.226.camel@pasglop>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 08/11] of: Merge of_node_get() and of_node_put()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20091124081918.6216.77775.stgit@angua>
 References: <20091124081316.6216.66310.stgit@angua>
-	<20091124081827.6216.1896.stgit@angua>
-	<1259207974.16367.226.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 25 Nov 2009 21:05:59 -0700
-Message-ID: <fa686aa40911252005o2db85dfk3d9acc61c12ca5e5@mail.gmail.com>
-Subject: Re: [PATCH 04/11] of/flattree: eliminate cell_t typedef
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	<20091124081918.6216.77775.stgit@angua>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 15:06:47 +1100
+Message-ID: <1259208407.16367.233.camel@pasglop>
+Mime-Version: 1.0
 Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
@@ -23,51 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 25, 2009 at 8:59 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2009-11-24 at 01:18 -0700, Grant Likely wrote:
->> A cell is firmly established as a u32. =A0No need to do an ugly typedef
->> to redefine it to cell_t. =A0Eliminate the unnecessary typedef so that
->> it doesn't have to be added to the of_fdt header file
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->> ---
->
-> I'm not sure about that one. Yes, we do use u32 a lot and cell_t rarely,
-> so it would seem logical to switch.... On the other hand, we have that
-> pesky endianness issue we have never fully solved. So we need accessors
-> to sort that out, which means directly tapping things as u32 * is not a
-> good idea if we're going to enforce the use of such accessors.
->
-> I believe we should probably just enforce that properties are big endian
-> for flat device-trees. In which case we could just use __be32 or on of
-> thoes sparse-friendly types. I know x86 people won't like that much and
-> to be honest I don't know what 1295 specifies for real OFs but there
-> aren't enough real OFs around on LE machines for us to care much about
-> it, is there ?
+On Tue, 2009-11-24 at 01:19 -0700, Grant Likely wrote:
 
-Word from Mitch is the device tree is network byte order.  period.
+>  
+> +#if !defined(CONFIG_SPARC)   /* SPARC doesn't do ref counting (yet) */
+> +/**
 
-> The reason I prefer a fixed endianness is that allowing "LE" trees
-> becomes really nasty when a number is expressed using multiple cells.
-> That brings the question as to whether the two cells need to be flipped
-> as well or only the bytes within each cell. And that's the easy bit
-> (probably flip the whole thing). What about something like a PCI "reg"
-> property which is made of 3 cells, two of them forming a 64-bit address
-> and one containing additional data & attributes ? What is flipped and
-> where ?
+Make this a Kconfig symbol, something like CONFIG_OF_DYNAMIC. You need
+refcounting when you can add/remove nodes dynamically. Some embedded
+archs might want the option to not enable that and save space.
 
-exactly.
-
-> So yes, cell_t might not be the right approach and by far to generic a
-> name, but u32 isn't the answer neither.
-
-You're right, it's not, but makes merging less complex, and then I can
-refactor properly.
-
-g.
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Cheers,
+Ben.
