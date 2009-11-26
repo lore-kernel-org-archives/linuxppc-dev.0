@@ -1,24 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id DDD26B6F10
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id D11041007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 26 Nov 2009 23:12:07 +1100 (EST)
-Date: Thu, 26 Nov 2009 15:12:04 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+	Thu, 26 Nov 2009 23:29:14 +1100 (EST)
+Date: Thu, 26 Nov 2009 13:28:42 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: spi_mpc8xxx.c: chip select polarity problem
-Message-ID: <20091126121204.GA3558@oksana.dev.rtsoft.ru>
-References: <200911161742.46663.to-fleischer@t-online.de>
-	<200911211708.47253.to-fleischer@t-online.de>
-	<fa686aa40911241633q38dc0cf8x8b23038fe2fdf10d@mail.gmail.com>
-	<200911252141.59549.to-fleischer@t-online.de>
-	<fa686aa40911251411t13dd0131od6b497399641ce3d@mail.gmail.com>
+Subject: Re: [PATCH 00/11] Yet another series of OF merge patches.
+Message-ID: <20091126122842.GC4846@pengutronix.de>
+References: <20091124081316.6216.66310.stgit@angua>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <fa686aa40911251411t13dd0131od6b497399641ce3d@mail.gmail.com>
-Cc: Torsten Fleischer <to-fleischer@t-online.de>,
-	spi-devel-general@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="JgQwtEuHJzHdouWu"
+In-Reply-To: <20091124081316.6216.66310.stgit@angua>
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,53 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 25, 2009 at 03:11:57PM -0700, Grant Likely wrote:
-> On Wed, Nov 25, 2009 at 1:41 PM, Torsten Fleischer
-> <to-fleischer@t-online.de> wrote:
-> > On Wen, Nov 25, 2009 at 01:33:57 Grant Likely wrote:
-> >> Thanks.  However, there needs to be a proper description of what this
-> >> patch does to go in the commit header.  Can you please write one?
-> >>
-> >> Thanks,
-> >> g.
-> >>
-> > [...]
-> >
-> > The initialization of the chip selects is removed from the probe() function of
-> > the spi_mpc8xxx driver, because the driver doesn't know the polarity of the
-> > chip selects of the SPI devices at the time of its initialization.
-> >
-> > For this reason the initialization of the several chip selects is postponed
-> > to the point of time when the very first SPI transfer to the associated device
-> > occurs.
-> >
-> >
-> > Signed-off-by: Torsten Fleischer <to-fleischer@t-online.de>
-> 
-> Ah.  I understand what you're doing now.   Hmmm.  This approach
-> concerns me because it relies on firmware or platform code to get CS
-> gpios set up properly before the driver is probed.
 
-Yes, that was said at the very beginning of this thread.
+--JgQwtEuHJzHdouWu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->  Firmware doesn't
-> always get it right, and I prefer to avoid platform specific setups as
-> much as possible.  Why can't the CS polarity be encoded into the
-> device tree so the driver *does* have the polarity data at probe time?
+On Tue, Nov 24, 2009 at 01:17:41AM -0700, Grant Likely wrote:
+> Nothing much to say here other than mostly mechanical merging of OF
+> support code.  Some of it remains a little ugly, but I'm taking the
+> approach of merging the code first, and refactoring it second.
+>=20
+> I've pushed this series out to my test-devicetree branch on my git
+> server if anyone wants to test.  That branch also includes the
+> previous 2 patch series that I've sent out.
+>=20
+> git://git.secretlab.ca/git/linux-2.6 test-devicetree
+>=20
+> Compile tested on: ppc64, ppc32, microblaze, sparc64, sparc32.
+> Boot tested on mpc5200 (ppc32) platform.
 
-We have the spi-cs-high property, but it duplicates compatible
-property. 'compatible' is enough to tell whether some device has
-cs-high or cs-low (device's driver knows that already).
+test-devicetree as of today also works fine on my phyCORE-MPC5200B-IO.
 
-The problem is that SPI bus master doesn't know all the devices,
-so it can't extract that information from the compatible string.
-To workaround that we can use 'spi-cs-high', but that's ugly
-workaround.
+Tested-by: Wolfram Sang <w.sang@pengutronix.de>
 
-SPI modes (0,1,2,3) is another matter, some devices can work in
-several modes, so 'spi-cpol' and 'spi-cpha' are actually useful.
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+--JgQwtEuHJzHdouWu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAksOdHkACgkQD27XaX1/VRsPLgCgv0ZKmj3Ea/43SgVMA6CJ/tB0
+zy0AoLrdXihljb6X17/9LaL0mQa7ugeS
+=eVCc
+-----END PGP SIGNATURE-----
+
+--JgQwtEuHJzHdouWu--
