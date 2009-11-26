@@ -2,23 +2,24 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 67EB31007D1
+	by ozlabs.org (Postfix) with ESMTPS id B2580B6F1A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 10:10:07 +1100 (EST)
-In-Reply-To: <1259268528.18084.2.camel@pasglop>
+	Fri, 27 Nov 2009 10:18:54 +1100 (EST)
+In-Reply-To: <1259269265.18084.14.camel@pasglop>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<1259210722.16367.256.camel@pasglop>
-	<4B0E9A0F.9010203@yahoo.es> <1259268528.18084.2.camel@pasglop>
+	<49436.84.105.60.153.1259171377.squirrel@gate.crashing.org>
+	<1259211061.16367.260.camel@pasglop> <4B0E9C5F.50304@yahoo.es>
+	<1259269265.18084.14.camel@pasglop>
 Mime-Version: 1.0 (Apple Message framework v753.1)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A43EF6FD-0906-4723-B007-C9622FE8266D@kernel.crashing.org>
+Message-Id: <A31276B2-3BAC-4F03-9DB1-2A383A2E4E5B@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [RFC PATCH 04/19] powerpc: wii: device tree
-Date: Fri, 27 Nov 2009 00:17:02 +0100
+Date: Fri, 27 Nov 2009 00:25:49 +0100
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,24 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> They are a bit special because registers are in reverse little  
->> endian format,
->> must be written in 32-bit chunks, and (all things point to) they  
->> have hardware bugs.
+>> There you can find the hardware interface that supports the IPC  
+>> mechanism.
+>> It is made up of a pair of registers to pass data between the  
+>> processors and a
+>> pair of control/flags registers.
+>> The hardware can interrupt the PowerPC side when there is data  
+>> available for it.
 >
-> Well.. first what is "reverse little endian" ? :-) Big endian ?
+> Ok. So the right way to do that would be to have a node purely
+> representing the HW IPC, unrelated to whatever is running on the
+> secondary processor.
 
-Nah.  Little-endian, with a 32-bit bus swizzle.  This is not the
-same thing as big-endian when not all your registers are 32 bits.
+Or you can keep it implicit in the Hollywood control registers.
+It is one 512-byte block with lots of things thrown together (and
+then mixed up real good).
 
-Also, you can only write 32 bits, they don't use byte enables.
+> However, it's ok to have -below- that node, a set of device nodes or a
+> node with properties or whatever representing the FW in there and the
+> function it exposes.
 
-> As for HW bugs, well, as long as we know them we can define a quirk  
-> bit
-> and add the necessary workarounds to the driver :-)
+That's not really useful though, it's easy to probe for.
 
-The question is if the device is close enough to OHCI to declare it
-as that in the device tree.  I would say "yes".
+> What might do however is to have a way for that FW itself to  
+> provide you
+> with the nodes and properties for the functions it provides :-)
+
+You get a pointer at the very last word of memory.  It point to an
+info header that has everything you need to know (most importantly,
+a version identifier).
+
+> Of course that wouldn't work with FW we don't have control on. Can  
+> Linux
+> run on the wii with the original N. FW on the aux. processor ?
+
+It _can_, but there are no advantages to doing that, and lots and  
+lots of
+disadvantages, so the plan is to not add support for that in mainline.
+
+> Can we
+> detect what is running there ? Do we care ?
+
+You can detect this for anything that uses a mini-compatible interface.
+You shouldn't care for anything else ;-)
 
 
 Segher
