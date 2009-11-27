@@ -2,15 +2,15 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7E7A31007D2
+	by ozlabs.org (Postfix) with ESMTPS id 2D8031007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 28 Nov 2009 08:34:55 +1100 (EST)
-Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
-	controller support
+	Sat, 28 Nov 2009 08:35:26 +1100 (EST)
+Subject: Re: [RFC PATCH 12/19] powerpc: gamecube: platform support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Albert Herranz <albert_herranz@yahoo.es>
-In-Reply-To: <4B100BF4.5080209@yahoo.es>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <BBB65A84-B871-474F-8666-90CCD10D90B6@kernel.crashing.org>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
@@ -21,18 +21,17 @@ References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<8E6E11A2-25F1-4AB8-B42E-58C269018CD2@kernel.crashing.org>
-	<4B0D65C5.8090304@yahoo.es>
-	<7556BF73-5D6D-4817-A02F-3DFA05E9AC58@kernel.crashing.org>
-	<4B0EFBB2.9090206@yahoo.es>
-	<9741644C-BED3-45D9-B405-4C4FC2184DC7@kernel.crashing.org>
-	<786BBFA3-39AF-4100-8406-6B32258D3174@kernel.crashing.org>
-	<4B100BF4.5080209@yahoo.es>
+	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
+	<F5450BB0-FBBB-48D5-A054-CB147FD43EAA@kernel.crashing.org>
+	<4B0D6837.4020407@yahoo.es>
+	<76CF44C1-3CC1-43B5-958D-E1A7984A44A9@kernel.crashing.org>
+	<4B0EFC1D.5030806@yahoo.es>
+	<BBB65A84-B871-474F-8666-90CCD10D90B6@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 28 Nov 2009 08:34:33 +1100
-Message-ID: <1259357673.2076.6.camel@pasglop>
+Date: Sat, 28 Nov 2009 08:35:18 +1100
+Message-ID: <1259357718.2076.7.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,22 +41,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-11-27 at 18:27 +0100, Albert Herranz wrote:
+On Fri, 2009-11-27 at 01:09 +0100, Segher Boessenkool wrote:
+> >>> We need it as it currently doesn't match with the default bus ids.
+> >>
+> >>> Should I introduce a .type property matching any of those above  
+> >>> in the
+> >>> soc node, and get rid of the explicit bus probe?
+> >>
+> >> You don't need any fake bus as far as I can see, just probe the  
+> >> devices
+> >> you want.
+> >
+> > But it's way easier to let the bus probe do it for us. I don't see  
+> > the win here.
 > 
-> I checked it too on the Nintendo GameCube making the ack a no-op.
-> 
-> It turns out that we _need_ to ack the RSW (Reset Switch) interrupt.
-> The other interrupt sources checked (EXI, VI, DI, AI, DSP/ARAM) need
-> no explicit ack.
+> As long as this doesn't leak into the device tree in any way, I don't
+> care.  How's that? :-)
 
-That would probably mean that the reset switch interrupt is an edge
-interrupt. Which means that you also use the wrong flow handler btw :-)
-No biggie here tho, if it's acked before the handler is called, which
-should be the case, and if masking it doesn't prevent the edge detector
-from latching, then it should be allright.
-
-But you may want to make sure you don't have another edge irq somewhere
-in there...
+I still like having the node that encloses all the devices. Not sure
+why, but I like it :-)
 
 Cheers,
 Ben.
