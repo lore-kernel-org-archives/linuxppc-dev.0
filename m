@@ -2,36 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2D8031007D1
+	by ozlabs.org (Postfix) with ESMTPS id 29C0A1007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 28 Nov 2009 08:35:26 +1100 (EST)
-Subject: Re: [RFC PATCH 12/19] powerpc: gamecube: platform support
+	Sat, 28 Nov 2009 08:36:27 +1100 (EST)
+Subject: Re: [PATCH 2.6.31] windfarm: add detection for second cpu pump
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <BBB65A84-B871-474F-8666-90CCD10D90B6@kernel.crashing.org>
-References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
-	<F5450BB0-FBBB-48D5-A054-CB147FD43EAA@kernel.crashing.org>
-	<4B0D6837.4020407@yahoo.es>
-	<76CF44C1-3CC1-43B5-958D-E1A7984A44A9@kernel.crashing.org>
-	<4B0EFC1D.5030806@yahoo.es>
-	<BBB65A84-B871-474F-8666-90CCD10D90B6@kernel.crashing.org>
+To: bmaass@math.uni-bremen.de
+In-Reply-To: <20091127164433.0b5087de.krautilein@gmx.de>
+References: <20091127164433.0b5087de.krautilein@gmx.de>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 28 Nov 2009 08:35:18 +1100
-Message-ID: <1259357718.2076.7.camel@pasglop>
+Date: Sat, 28 Nov 2009 08:36:21 +1100
+Message-ID: <1259357781.2076.8.camel@pasglop>
 Mime-Version: 1.0
-Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,25 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-11-27 at 01:09 +0100, Segher Boessenkool wrote:
-> >>> We need it as it currently doesn't match with the default bus ids.
-> >>
-> >>> Should I introduce a .type property matching any of those above  
-> >>> in the
-> >>> soc node, and get rid of the explicit bus probe?
-> >>
-> >> You don't need any fake bus as far as I can see, just probe the  
-> >> devices
-> >> you want.
-> >
-> > But it's way easier to let the bus probe do it for us. I don't see  
-> > the win here.
+On Fri, 2009-11-27 at 16:44 +0100, Bolko Maass wrote:
+> Windfarm SMU control is explicitly missing support for a second CPU pump in G5 PowerMacs. 
+> Such machines actually exist  (specifically Quads with a second pump), so this patch adds detection for it.
 > 
-> As long as this doesn't leak into the device tree in any way, I don't
-> care.  How's that? :-)
 
-I still like having the node that encloses all the devices. Not sure
-why, but I like it :-)
+Thanks.
+
+BTW. The Signed-off-by: line normally goes -before- the patch :-) (And
+after the description).
+
+I'll get that upstream asap.
 
 Cheers,
 Ben.
+
+> 
+> diff -uprN a/drivers/macintosh/windfarm_smu_controls.c b/drivers/macintosh/windfarm_smu_controls.c
+> --- a/drivers/macintosh/windfarm_smu_controls.c 2009-11-27 16:24:55.000000000 +0100
+> +++ b/drivers/macintosh/windfarm_smu_controls.c 2009-11-16 18:22:33.000000000 +0100
+> @@ -202,6 +202,8 @@ static struct smu_fan_control *smu_fan_c
+>                 fct->ctrl.name = "cpu-front-fan-1";
+>         else if (!strcmp(l, "CPU A PUMP"))
+>                 fct->ctrl.name = "cpu-pump-0";
+> +       else if (!strcmp(l, "CPU B PUMP"))
+> +               fct->ctrl.name = "cpu-pump-1";
+>         else if (!strcmp(l, "Slots Fan") || !strcmp(l, "Slots fan") ||
+>                  !strcmp(l, "EXPANSION SLOTS INTAKE"))
+>                 fct->ctrl.name = "slots-fan";
+> 
+> 
+> 
+> Signed-off by: Bolko Maass <bmaass@math.uni-bremen.de>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
