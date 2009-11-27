@@ -1,17 +1,19 @@
-Return-Path: <stefani@seibold.net>
-Received: from www84.your-server.de (www84.your-server.de [213.133.104.84])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 61BA31007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 20:28:33 +1100 (EST)
-Subject: [PATCH] fix PPC floating point debug
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Fri, 27 Nov 2009 09:59:00 +0100
-Message-ID: <1259312340.9648.6.camel@wall-e>
-Mime-Version: 1.0
+Return-Path: <nvbolhuis@aimvalley.nl>
+Received: from smtp-vbr5.xs4all.nl (smtp-vbr5.xs4all.nl [194.109.24.25])
+	by ozlabs.org (Postfix) with ESMTP id C6097B6F1A
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 21:11:32 +1100 (EST)
+Received: from mail3.aimsys.nl (a80-127-156-242.adsl.xs4all.nl
+	[80.127.156.242])
+	by smtp-vbr5.xs4all.nl (8.13.8/8.13.8) with ESMTP id nARA2fiw026845
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 11:02:41 +0100 (CET)
+	(envelope-from nvbolhuis@aimvalley.nl)
+Date: Fri, 27 Nov 2009 11:02:40 +0100
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+Message-Id: <200911271002.nARA2ekI017140@linpc062.aimsys.nl>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/ipic: support external edge triggered IRQ0
+Cc: nvbolhuis@aimvalley.nl
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,43 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PPC architecture is unable to debug applications using hardware
-floating point, because it would not save the floating point registers.
 
-After returning from the debugger, the contents of register was
-modified. This patch fix this bug.
+Currently an external edge triggered IRQ0 gives 2 problems.
+It gives a sense error ("edge sense not supported on internal interrupts")
+and it isn't acked.
+This patch takes into account IRQ0 can be internal or external and fixes
+both issues.
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
+Signed-off-by: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
 ---
- traps.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/sysdev/ipic.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
---- linux-2.6.32-rc5/arch/powerpc/kernel/traps.c.orig	2009-11-27 09:47:37.989943124 +0100
-+++ linux-2.6.32-rc5/arch/powerpc/kernel/traps.c	2009-11-27 09:47:41.088330825 +0100
-@@ -559,6 +559,8 @@ void instruction_breakpoint_exception(st
- 		return;
- 	if (debugger_iabr_match(regs))
- 		return;
-+	if (regs->msr & MSR_FP)
-+		giveup_fpu(current);
- 	_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
- }
- 
-@@ -577,6 +579,8 @@ void __kprobes single_step_exception(str
- 	if (debugger_sstep(regs))
- 		return;
- 
-+	if (regs->msr & MSR_FP)
-+		giveup_fpu(current);
- 	_exception(SIGTRAP, regs, TRAP_TRACE, regs->nip);
- }
- 
-@@ -834,6 +838,8 @@ void __kprobes program_check_exception(s
- 			regs->nip += 4;
- 			return;
- 		}
-+		if (regs->msr & MSR_FP)
-+			giveup_fpu(current);
- 		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
- 		return;
+diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
+index cb7689c..3201db1 100644
+--- a/arch/powerpc/sysdev/ipic.c
++++ b/arch/powerpc/sysdev/ipic.c
+@@ -316,6 +316,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 7,
+ 	},
+ 	[48] = {
++		.ack	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SEFCR,
+@@ -619,7 +620,9 @@ static int ipic_set_irq_type(unsigned int virq, unsigned int flow_type)
+ 		return -EINVAL;
  	}
+ 	/* ipic supports only edge mode on external interrupts */
+-	if ((flow_type & IRQ_TYPE_EDGE_FALLING) && !ipic_info[src].ack) {
++	if ((flow_type & IRQ_TYPE_EDGE_FALLING) &&
++	    ((src != IPIC_IRQ_EXT0 && !ipic_info[src].ack) ||
++	     (src == IPIC_IRQ_EXT0 && (ipic_read(ipic->regs, IPIC_SEMSR) & SEMSR_SIRQ0)))) {
+ 		printk(KERN_ERR "ipic: edge sense not supported on internal "
+ 				"interrupts\n");
+ 		return -EINVAL;
+-- 
+1.5.2.2
