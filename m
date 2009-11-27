@@ -1,20 +1,24 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
-	by ozlabs.org (Postfix) with ESMTP id A555BB7B6C
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 22:52:00 +1100 (EST)
-Date: Fri, 27 Nov 2009 22:51:59 +1100
-From: Simon Horman <horms@verge.net.au>
-To: "M. Mohan Kumar" <mohan@in.ibm.com>
-Subject: Re: [PATCH] Reserve memory for kdump kernel within RMO region
-Message-ID: <20091127115155.GA19070@verge.net.au>
-References: <20091125131747.GA28857@in.ibm.com> <4B0D7CF4.8040402@bwalle.de>
-	<4B0E628A.9070009@in.ibm.com> <4B0ED674.6050501@bwalle.de>
-	<4B0F8F62.3050000@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4B0F8F62.3050000@in.ibm.com>
-Cc: Bernhard Walle <bernhard@bwalle.de>, kexec@lists.infradead.org,
-	ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3E0FA1007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 27 Nov 2009 23:00:13 +1100 (EST)
+In-Reply-To: <4B0D7AD0.5030605@yahoo.es>
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<49443.84.105.60.153.1259172058.squirrel@gate.crashing.org>
+	<4B0D7AD0.5030605@yahoo.es>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <220C04A0-4502-4CDE-B3B5-DFAA6EBCB902@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 02/19] powerpc: gamecube: device tree
+Date: Fri, 27 Nov 2009 13:07:11 +0100
+To: Albert Herranz <albert_herranz@yahoo.es>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,78 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 27, 2009 at 02:05:46PM +0530, M. Mohan Kumar wrote:
-> On 11/27/2009 12:56 AM, Bernhard Walle wrote:
-> >M. Mohan Kumar schrieb:
-> >>On 11/26/2009 12:22 AM, Bernhard Walle wrote:
-> >>>M. Mohan Kumar schrieb:
-> >>>>Reserve memory for kdump kernel within RMO region
-> >>>>
-> >>>>When the kernel size exceeds 32MB(observed with some distros), memory
-> >>>>for kdump kernel can not be reserved as kdump kernel base is assumed to
-> >>>>be 32MB always. When the kernel has CONFIG_RELOCATABLE option enabled,
-> >>>>provide the feature to reserve the memory for kdump kernel anywhere in
-> >>>>the RMO region.
-> >>
-> >>Hi Bernhard,
-> >>
-> >>>Correct me if I'm wrong, but: CONFIG_RELOCATABLE is for the kernel that
-> >>>gets loaded as crashkernel, not for the kernel that loads the
-> >>>crashkernel. So it would be perfectly fine that a kernel that has not
-> >>>CONFIG_RELOCATABLE set would load another kernel that has
-> >>>CONFIG_RELOCATABLE set on an address != 32 M.
-> >>
-> >>No, with relocatable option, the same kernel is used as both production
-> >>and kdump kernel.
-> >
-> >Can be, but it's not strictly necessary. It depends what userland does.
-> >Especially it's possible that a non-relocatable, self-compiled kernel
-> >loads a relocatable distribution kernel as capture kernel.
-> >
-> 
-> I don't understand why a non-relocatable kernel will use relocatable
-> kernel for capturing kdump kernel. The idea for relocatable kernel
-> is to avoid using two different kernels to capture kernel dump.
+>>> +	soc {
+>>> +		#address-cells = <1>;
+>>> +		#size-cells = <1>;
+>>> +		#interrupt-cells = <1>;
+>>
+>> This isn't an interrupt controller, don't put #interrupt-cells
+>> here.
+>
+> Isn't this needed to define what is to be expected in the  
+> "interrupts" properties of the child nodes?
 
-True, but that doesn't necessarily mean that using a relocatable
-kdump kernel is required. Well, hopefully not.
+Nope.  Only interrupt controllers have a #interrupt-cells.  When
+interpreting the "interrupts" property of some node, you walk the
+interrupt tree (which can be the same as the device tree, or fully
+separate, or share some things; and doesn't have to be a tree either)
+up to the next interrupt controller, and use the #interrupt-cells
+from that.  (This is simplified a little bit).
 
-> >Also, it would make sense to make the behaviour symmetric across
-> >platforms. Currently we have:
-> >
-> >  - x86 and ia64: Without offset on command line, use any offset
-> >                  With offset on command line, use that offset and fail
-> >                  if no memory is available at that offset.
-> >  - ppc64: Always use 32M and ignore the offset.
-> >
-> >If your patch gets applied, we have:
-> >
-> >  - ppc64: With CONFIG_RELOCATABLE, use any offset
-> >           With offset on command
-> >
-> >I don't see why the behaviour on ppc64 should be completely different.
-> >
-> >Having maintained kdump for SUSE for x86, ia64 and partly ppc64 in the
-> >past, I always felt that ppc64 is more different from x86 than ia64 is
-> >from x86. That's one more step into that direction without a technical
-> >reason.
-> 
-> Also with the crashkernel=auto parameter (patches are not yet
-> merged), the crashkernel base (offset) by default would be 32MB. In
-> this case if a kernel passed with crashkernel=auto and if the first
-> kernel size exceeds 32MB, memory for kdump kernel will always fail.
-> 
-> >
-> >Having that all said: If your patch gets in mainline kernel, than we
-> >should change the behaviour also for x86 and ia64.
-> >
-> >
-> >
-> >Regards,
-> >Bernhard
-> 
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+>>> +		auxram@0c005000 {
+>>> +			compatible = "nintendo,flipper-auxram";
+>>> +			reg = <0x0c005000 0x200>;	/* DSP */
+>>> +			interrupts = <6>;
+>>> +			interrupt-parent = <&pic>;
+>>> +		};
+>>> +
+>>> +		audio@0c005000 {
+>>> +			compatible = "nintendo,flipper-audio";
+>>> +			reg = <0x0c005000 0x200		/* DSP */
+>>> +			       0x0c006c00 0x20>;	/* AI */
+>>> +			interrupts = <6>;
+>>> +			interrupt-parent = <&pic>;
+>>> +		};
+>>
+>> These two have the same address, not good.  Just remove the
+>> auxram node?
+>
+> The DSP and the ARAM control/status bits share some registers in  
+> the same block.
+>
+> How should I match the aram block driver if I remove the auxram node?
+
+You can make aram a child node of dsp, which allows you to show
+its size as well.  I.e. you do #a-cells=1 #s-cells=1 in the dsp
+node, and reg=<0 01000000> in the aram node.
+
+Or you can do a simple property in the dsp node saying how big
+the aram is, and assume the driver(s) that match know(s) how to
+drive it.  You have to assume this anyway, you're not putting
+e.g. bytecode drivers in the device tree ;-)
+
+>> ...and all the applicable things I mentioned in my Wii dev tree
+>> reply, of course.
+>>
+>> Wow, it wasn't as bad as I expected actually.  But you cheated,
+>> you omitted most devices from the device trees :-)
+>
+> You're welcome to add them too if you have information about them :)
+
+I'll do that later, yes.  It's not so big a problem if the device
+tree doesn't describe devices you do not support at all.
+
+
+Segher
