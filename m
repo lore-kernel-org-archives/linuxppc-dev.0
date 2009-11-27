@@ -1,23 +1,35 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8A74D1007D1
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 03:34:07 +1100 (EST)
-Date: Fri, 27 Nov 2009 16:33:58 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Add Kconfig dependency on PCI_MSI for XICS and
-	select for PSERIES
-Message-ID: <20091127163358.GP13095@csn.ul.ie>
-References: <1258459659-11770-1-git-send-email-mel@csn.ul.ie>
-	<1258524332.2140.663.camel@pasglop>
-	<20091118170510.GA1119@csn.ul.ie> <1259289626.2076.1.camel@pasglop>
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp137.mail.ukl.yahoo.com (smtp137.mail.ukl.yahoo.com
+	[77.238.184.68]) by ozlabs.org (Postfix) with SMTP id 1F1051007D5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 28 Nov 2009 04:27:22 +1100 (EST)
+Message-ID: <4B100BF4.5080209@yahoo.es>
+Date: Fri, 27 Nov 2009 18:27:16 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1259289626.2076.1.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
+	controller support
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
+	<8E6E11A2-25F1-4AB8-B42E-58C269018CD2@kernel.crashing.org>
+	<4B0D65C5.8090304@yahoo.es>
+	<7556BF73-5D6D-4817-A02F-3DFA05E9AC58@kernel.crashing.org>
+	<4B0EFBB2.9090206@yahoo.es>
+	<9741644C-BED3-45D9-B405-4C4FC2184DC7@kernel.crashing.org>
+	<786BBFA3-39AF-4100-8406-6B32258D3174@kernel.crashing.org>
+In-Reply-To: <786BBFA3-39AF-4100-8406-6B32258D3174@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,85 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 27, 2009 at 01:40:26PM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-11-18 at 17:05 +0000, Mel Gorman wrote:
+Segher Boessenkool wrote:
+>>>>>>> +/*
+>>>>>>> + * Each interrupt has a corresponding bit in both
+>>>>>>> + * the Interrupt Cause (ICR) and Interrupt Mask (IMR) registers.
+>>>>>>> + *
+>>>>>>> + * Enabling/disabling an interrupt line involves asserting/clearing
+>>>>>>> + * the corresponding bit in IMR. ACK'ing a request simply involves
+>>>>>>> + * asserting the corresponding bit in ICR.
+>>>>>>> + */
+>>>>
+>>>> I looked it up in YAGCD; it says that _reading_ the ICR reg already
+>>>> acks all interrupts (and clears the bits), you never write this reg!
+>>>
+>>> YAGCD is not always right. You should not take it as _the truth_.
+>>
+>> Oh I know.  But I have no better source of information.  Well I could
+>> actually test it, that's very easy using OF :-)  Let's do that.
 > 
-> > 
-> > diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-> > index 04a8061..a82c470 100644
-> > --- a/arch/powerpc/platforms/Kconfig
-> > +++ b/arch/powerpc/platforms/Kconfig
-> > @@ -52,9 +52,9 @@ config PPC_UDBG_BEAT
-> >  	default n
-> >  
-> >  config XICS
-> > -	depends on PPC_PSERIES
-> > +	depends on PCI_MSI
-> >  	bool
-> > -	default y
-> > +	default n
-> 
-> Why the above ? XICS only exist on PSERIES and select bypass depends in
-> nasty ways anyways.
-> 
-
-You're right. When I made that change, I assumed that a "select foo"
-would also resolve the dependencies. It doesn't but I failed to back
-this out as being unnecessary.
-
-> >  config IPIC
-> >  	bool
-> > diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-> > index f0e6f28..81c2289 100644
-> > --- a/arch/powerpc/platforms/pseries/Kconfig
-> > +++ b/arch/powerpc/platforms/pseries/Kconfig
-> > @@ -5,6 +5,8 @@ config PPC_PSERIES
-> >  	select PPC_I8259
-> >  	select PPC_RTAS
-> >  	select RTAS_ERROR_LOGGING
-> > +	select PCI_MSI
-> > +	select XICS
-> >  	select PPC_UDBG_16550
-> >  	select PPC_NATIVE
-> >  	select PPC_PCI_CHOICE if EMBEDDED
-> 
-> The above bits look plenty enough. Can you also stick it next to the
-> MPIC one ?
+> I tested it.  It turns out that neither reading or writing this register
+> does anything; the bits are automatically cleared when the source
+> deasserts.
 > 
 
-They are. I can.
+I checked it too on the Nintendo GameCube making the ack a no-op.
 
-==== CUT HERE ====
-powerpc: Add Kconfig dependency on PCI_MSI for XICS and select for PSERIES
+It turns out that we _need_ to ack the RSW (Reset Switch) interrupt.
+The other interrupt sources checked (EXI, VI, DI, AI, DSP/ARAM) need no explicit ack.
 
-It's possible to set CONFIG_XICS without CONFIG_PCI_MSI. When that happens,
-the kernel fails to build with
+> I didn't test all interrupts, some are harder to generate "on demand" than
+> others.
+> 
 
-arch/powerpc/platforms/built-in.o: In function `.xics_startup':
-xics.c:(.text+0x12f60): undefined reference to `.unmask_msi_irq' make: ***
-[.tmp_vmlinux1] Error 1
-
-Furthermore, as noted by Benjamin Herrenschmidt, "CONFIG_XICS should be
-made invisible and selected by PSERIES."
-
-This patch adds the dependency in KConfig for XICS on PCI_MSI. When PSERIES
-support is being configured, both options are silently selected.
-
-Signed-off-by: Mel Gorman <mel[at]csn.ul.ie>
----
- arch/powerpc/platforms/pseries/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index f0e6f28..60d53ed 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -2,6 +2,8 @@ config PPC_PSERIES
- 	depends on PPC64 && PPC_BOOK3S
- 	bool "IBM pSeries & new (POWER5-based) iSeries"
- 	select MPIC
-+	select PCI_MSI
-+	select XICS
- 	select PPC_I8259
- 	select PPC_RTAS
- 	select RTAS_ERROR_LOGGING
+Thanks,
+Albert
