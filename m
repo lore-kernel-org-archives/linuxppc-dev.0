@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 5D5C5100A3D
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 09:33:47 +1100 (EST)
-Date: Sat, 28 Nov 2009 01:33:45 +0300
+	by ozlabs.org (Postfix) with ESMTP id F1D2F100AD6
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 09:33:48 +1100 (EST)
+Date: Sat, 28 Nov 2009 01:33:47 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: systemtap@sourceware.org
-Subject: [PATCH 5/8] Share ppc64 and ppc32 code where possible
-Message-ID: <20091127223345.GE21805@oksana.dev.rtsoft.ru>
+Subject: [PATCH 6/8] Use proper types for do_div
+Message-ID: <20091127223347.GF21805@oksana.dev.rtsoft.ru>
 References: <20091127223251.GA17065@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -21,94 +21,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* runtime/copy.c: Can use ppc64's code.
-* runtime/regs.h: Ditto.
-* runtime/string.h: Ditto.
-* tapset/context.stp: Ditto.
-* tapset/errno.stp: Ditto.
+do_div accepts unsigned 64-bit integer type for dividend, signed types
+would cause do_div's typecheck fail:
+
+stat-common.c: In function 'needed_space':
+stat-common.c:50: error: comparison of distinct pointer types lacks a cast
+...same errors in time.c and tapset-timers.cxx's generated code...
+
+A fix for time.c is special, on ppc32 cycles_t is 32-bit, so technically
+we don't need do_div, but since the whole _stp_gettimeofday_ns() operates
+on 64-bit types we'd better be safe and use uint64_t for the math.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- runtime/copy.c     |    2 +-
- runtime/regs.h     |    2 +-
- runtime/string.h   |    6 +++---
- tapset/context.stp |    2 +-
- tapset/errno.stp   |    2 +-
- 5 files changed, 7 insertions(+), 7 deletions(-)
+ runtime/stat-common.c |    8 ++++----
+ runtime/time.c        |    3 ++-
+ tapset-timers.cxx     |    2 +-
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/runtime/copy.c b/runtime/copy.c
-index 4fb8725..40f1511 100644
---- a/runtime/copy.c
-+++ b/runtime/copy.c
-@@ -105,7 +105,7 @@ do {									   \
- 		: "i"(-EFAULT), "0"(count), "1"(count), "3"(src), "4"(dst) \
- 		: "memory");						   \
- } while (0)
--#elif defined (__powerpc64__) || defined (__ia64__) || defined (__arm__)
-+#elif defined (__powerpc__) || defined (__ia64__) || defined (__arm__)
- #define __stp_strncpy_from_user(dst,src,count,res) \
- 	do { res = __strncpy_from_user(dst, src, count); } while(0)
+diff --git a/runtime/stat-common.c b/runtime/stat-common.c
+index 7123dc8..f970304 100644
+--- a/runtime/stat-common.c
++++ b/runtime/stat-common.c
+@@ -34,7 +34,7 @@ static int _stp_stat_calc_buckets(int stop, int start, int interval)
+ 	return buckets;
+ }
  
-diff --git a/runtime/regs.h b/runtime/regs.h
-index dc6b50a..08449aa 100644
---- a/runtime/regs.h
-+++ b/runtime/regs.h
-@@ -36,7 +36,7 @@
-   (((regs)->cr_iip = (x) & ~3UL), (ia64_psr(regs)->ri = (x) & 3UL))
+-static int needed_space(int64_t v)
++static int needed_space(uint64_t v)
+ {
+ 	int space = 0;
  
+@@ -134,7 +134,7 @@ static void _stp_stat_print_histogram_buf(char *buf, size_t size, Hist st, stat
+ {
+ 	int scale, i, j, val_space, cnt_space;
+ 	int low_bucket = -1, high_bucket = 0, over = 0, under = 0;
+-	int64_t val, v, valmax = 0;
++	uint64_t val, v, valmax = 0;
+ 	int eliding = 0;
+ 	char *cur_buf = buf, *fake = buf;
+ 	char **bufptr = (buf == NULL ? &fake : &cur_buf);
+@@ -186,7 +186,7 @@ static void _stp_stat_print_histogram_buf(char *buf, size_t size, Hist st, stat
+ 	if (valmax <= HIST_WIDTH)
+ 		scale = 1;
+ 	else {
+-		int64_t tmp = valmax;
++		uint64_t tmp = valmax;
+ 		int rem = do_div(tmp, HIST_WIDTH);
+ 		scale = tmp;
+ 		if (rem) scale++;
+@@ -282,7 +282,7 @@ static void _stp_stat_print_histogram(Hist st, stat *sd)
+ 	_stp_print_flush();
+ }
  
--#elif defined (__powerpc64__)
-+#elif defined (__powerpc__)
- 
- #define REG_IP(regs) regs->nip
- #define REG_SP(regs) regs->gpr[1]
-diff --git a/runtime/string.h b/runtime/string.h
-index f4d4cc0..b08304e 100644
---- a/runtime/string.h
-+++ b/runtime/string.h
-@@ -19,14 +19,14 @@ static void _stp_text_str(char *out, char *in, int len, int quoted, int user);
-  * is provided without the paranoid check. Use it if available, fall back
-  * to __get_user() if not. Other archs can use __get_user() as is
-  */
--#ifdef __powerpc64__
-+#if defined(__powerpc__)
- #ifdef __get_user_inatomic
- #define __stp_get_user(x, ptr) __get_user_inatomic(x, ptr)
- #else /* __get_user_inatomic */
- #define __stp_get_user(x, ptr) __get_user(x, ptr)
- #endif /* __get_user_inatomic */
--#else /* __powerpc64__ */
-+#else /* defined(__powerpc__) */
- #define __stp_get_user(x, ptr) __get_user(x, ptr)
--#endif /* __powerpc64__ */
-+#endif /* defined(__powerpc__) */
- 
- #endif /* _STRING_H_ */
-diff --git a/tapset/context.stp b/tapset/context.stp
-index 36701e6..b30f7dc 100644
---- a/tapset/context.stp
-+++ b/tapset/context.stp
-@@ -15,7 +15,7 @@
- %{
- #include <asm/processor.h>
- 
--#if defined(__powerpc64__)
-+#if defined(__powerpc__)
- #if !defined(task_pt_regs)
- #define task_pt_regs(tsk)       ((struct pt_regs *)(tsk)->thread.regs)
- #endif
-diff --git a/tapset/errno.stp b/tapset/errno.stp
-index 011ff7e..d4d571b 100644
---- a/tapset/errno.stp
-+++ b/tapset/errno.stp
-@@ -369,7 +369,7 @@ static long _stp_returnval(struct pt_regs *regs) {
- #elif defined (__x86_64__)
- 		// TODO: Handle -m32 apps.
- 		return regs->rax;
--#elif defined (__powerpc64__)
-+#elif defined (__powerpc__)
- 		return regs->gpr[3];
- #elif defined (__ia64__)
- 		return regs->r8;
+-static void __stp_stat_add (Hist st, stat *sd, int64_t val)
++static void __stp_stat_add (Hist st, stat *sd, uint64_t val)
+ {
+ 	int n;
+ 	if (sd->count == 0) {
+diff --git a/runtime/time.c b/runtime/time.c
+index 58c23e5..d588370 100644
+--- a/runtime/time.c
++++ b/runtime/time.c
+@@ -275,7 +275,8 @@ static int64_t
+ _stp_gettimeofday_ns(void)
+ {
+     int64_t base;
+-    cycles_t last, delta;
++    cycles_t last;
++    uint64_t delta;
+     unsigned int freq;
+     unsigned int seq;
+     stp_time_t *time;
+diff --git a/tapset-timers.cxx b/tapset-timers.cxx
+index 6574626..7195cfa 100644
+--- a/tapset-timers.cxx
++++ b/tapset-timers.cxx
+@@ -241,7 +241,7 @@ hrtimer_derived_probe_group::emit_interval (translator_output* o)
+ {
+   o->line() << "({";
+   o->newline(1) << "unsigned long nsecs;";
+-  o->newline() << "int64_t i = stp->intrv;";
++  o->newline() << "uint64_t i = stp->intrv;";
+   o->newline() << "if (stp->rnd != 0) {";
+   // XXX: why not use stp_random_pm instead of this?
+   o->newline(1) << "int64_t r;";
 -- 
 1.6.3.3
