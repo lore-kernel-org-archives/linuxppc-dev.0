@@ -1,20 +1,20 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8A2591007D2
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 22:00:25 +1100 (EST)
-In-Reply-To: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 00/10 v6]  Fix 8xx MMU/TLB
-Message-ID: <OF44DA1806.2D9916D9-ONC125767B.003BE84B-C125767B.003C3CD7@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Fri, 27 Nov 2009 11:57:57 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+	by ozlabs.org (Postfix) with ESMTPS id 8E6201007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 27 Nov 2009 22:02:03 +1100 (EST)
+Subject: Re: [PATCH] fix PPC floating point debug
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefani Seibold <stefani@seibold.net>
+In-Reply-To: <1259312340.9648.6.camel@wall-e>
+References: <1259312340.9648.6.camel@wall-e>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 27 Nov 2009 22:01:56 +1100
+Message-ID: <1259319716.2076.3.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott and Rex, I think we need you s-o-b to make it into the kernel proper.
+On Fri, 2009-11-27 at 09:59 +0100, Stefani Seibold wrote:
+> The PPC architecture is unable to debug applications using hardware
+> floating point, because it would not save the floating point registers.
+> 
+> After returning from the debugger, the contents of register was
+> modified. This patch fix this bug.
 
-Marcelo and Vitaly, I noticed you guys are listed as 8xx maintainers.
-Have you seen this? What do you think?
+I'm not sure what problem you are trying to fix... debugging FP apps
+works just fine afaik. You don't need to flush the FP state into the
+thread when delivering the SIGTRAP. If you have a signal handler, that
+will be done for you by the signal code before laying out the signal
+frame. If you are using ptrace, you should be using the appropriate
+ptrace calls to retrieve the FP state and they should do the right thing
+to.
 
-        Jocke
+Do you have a precise example that doesn't work and which is fixed by
+your patch ?
 
-Joakim Tjernlund <Joakim.Tjernlund@transmode.se> wrote on 20/11/2009 11:21:01:
->
-> Yet again an iteration of the series.
-> Rex & Scott, please test and signoff.
-> Changes since last version:
->  - Fix rlwimi insn(from Scott)
->
-> Joakim Tjernlund (10):
->   8xx: invalidate non present TLBs
->   8xx: Update TLB asm so it behaves as linux mm expects.
->   8xx: Tag DAR with 0x00f0 to catch buggy instructions.
->   8xx: Always pin kernel instruction TLB
->   8xx: Fixup DAR from buggy dcbX instructions.
->   8xx: Add missing Guarded setting in DTLB Error.
->   8xx: Restore _PAGE_WRITETHRU
->   8xx: start using dcbX instructions in various copy routines
->   8xx: Remove DIRTY pte handling in DTLB Error.
->   8xx: DTLB Miss cleanup
->
->  arch/powerpc/include/asm/pte-8xx.h |   14 +-
->  arch/powerpc/kernel/head_8xx.S     |  315 ++++++++++++++++++++++--------------
->  arch/powerpc/kernel/misc_32.S      |   18 --
->  arch/powerpc/lib/copy_32.S         |   24 ---
->  arch/powerpc/mm/fault.c            |    8 +-
->  5 files changed, 211 insertions(+), 168 deletions(-)
->
+Cheers,
+Ben.
+
+> Signed-off-by: Stefani Seibold <stefani@seibold.net>
+> ---
+>  traps.c |    6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> --- linux-2.6.32-rc5/arch/powerpc/kernel/traps.c.orig	2009-11-27 09:47:37.989943124 +0100
+> +++ linux-2.6.32-rc5/arch/powerpc/kernel/traps.c	2009-11-27 09:47:41.088330825 +0100
+> @@ -559,6 +559,8 @@ void instruction_breakpoint_exception(st
+>  		return;
+>  	if (debugger_iabr_match(regs))
+>  		return;
+> +	if (regs->msr & MSR_FP)
+> +		giveup_fpu(current);
+>  	_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
+>  }
+>  
+> @@ -577,6 +579,8 @@ void __kprobes single_step_exception(str
+>  	if (debugger_sstep(regs))
+>  		return;
+>  
+> +	if (regs->msr & MSR_FP)
+> +		giveup_fpu(current);
+>  	_exception(SIGTRAP, regs, TRAP_TRACE, regs->nip);
+>  }
+>  
+> @@ -834,6 +838,8 @@ void __kprobes program_check_exception(s
+>  			regs->nip += 4;
+>  			return;
+>  		}
+> +		if (regs->msr & MSR_FP)
+> +			giveup_fpu(current);
+>  		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
+>  		return;
+>  	}
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
