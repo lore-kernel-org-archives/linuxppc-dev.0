@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id F1D2F100AD6
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 09:33:48 +1100 (EST)
-Date: Sat, 28 Nov 2009 01:33:47 +0300
+	by ozlabs.org (Postfix) with ESMTP id C31C3100977
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 09:33:50 +1100 (EST)
+Date: Sat, 28 Nov 2009 01:33:49 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: systemtap@sourceware.org
-Subject: [PATCH 6/8] Use proper types for do_div
-Message-ID: <20091127223347.GF21805@oksana.dev.rtsoft.ru>
+Subject: [PATCH 7/8] Implement _div64 and _mod64 for ppc32
+Message-ID: <20091127223349.GG21805@oksana.dev.rtsoft.ru>
 References: <20091127223251.GA17065@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -21,90 +21,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-do_div accepts unsigned 64-bit integer type for dividend, signed types
-would cause do_div's typecheck fail:
-
-stat-common.c: In function 'needed_space':
-stat-common.c:50: error: comparison of distinct pointer types lacks a cast
-...same errors in time.c and tapset-timers.cxx's generated code...
-
-A fix for time.c is special, on ppc32 cycles_t is 32-bit, so technically
-we don't need do_div, but since the whole _stp_gettimeofday_ns() operates
-on 64-bit types we'd better be safe and use uint64_t for the math.
+_div64 and _mod64 arch-specific details were taken from gcc/longlong.h,
+just as it was done for i386.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- runtime/stat-common.c |    8 ++++----
- runtime/time.c        |    3 ++-
- tapset-timers.cxx     |    2 +-
- 3 files changed, 7 insertions(+), 6 deletions(-)
+ runtime/arith.c |   42 +++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 39 insertions(+), 3 deletions(-)
 
-diff --git a/runtime/stat-common.c b/runtime/stat-common.c
-index 7123dc8..f970304 100644
---- a/runtime/stat-common.c
-+++ b/runtime/stat-common.c
-@@ -34,7 +34,7 @@ static int _stp_stat_calc_buckets(int stop, int start, int interval)
- 	return buckets;
+diff --git a/runtime/arith.c b/runtime/arith.c
+index 4c818a7..a032e9c 100644
+--- a/runtime/arith.c
++++ b/runtime/arith.c
+@@ -20,7 +20,8 @@
+ /* 64-bit division for 64-bit cpus and i386 */
+ /* Other 32-bit cpus will need to modify this file. */
+ 
+-#if defined (__i386__) || defined(__arm__)
++#if defined (__i386__) || defined(__arm__) || \
++	(defined(__powerpc__) && !defined(__powerpc64__))
+ static long long _div64 (long long u, long long v);
+ static long long _mod64 (long long u, long long v);
+ #endif
+@@ -114,7 +115,8 @@ static int _stp_random_pm (unsigned n)
+ 
+ 
+ 
+-#if defined (__i386__) || defined (__arm__)
++#if defined (__i386__) || defined (__arm__) || \
++	(defined(__powerpc__) && !defined(__powerpc64__))
+ 
+ /* 64-bit division functions extracted from libgcc */
+ typedef long long DWtype;
+@@ -181,6 +183,40 @@ typedef union
+ 		(count) = __cbtmp ^ 31;					\
+ 	} while (0)
+ 
++#elif defined (__powerpc__)
++/* these are the ppc versions of these macros from gcc/longlong.h */
++
++#define sub_ddmmss(sh, sl, ah, al, bh, bl) \
++  do {									\
++    if (__builtin_constant_p (ah) && (ah) == 0)				\
++      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{sfze|subfze} %0,%2"	\
++	       : "=r" (sh), "=&r" (sl) : "r" (bh), "rI" (al), "r" (bl));\
++    else if (__builtin_constant_p (ah) && (ah) == ~(USItype) 0)		\
++      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{sfme|subfme} %0,%2"	\
++	       : "=r" (sh), "=&r" (sl) : "r" (bh), "rI" (al), "r" (bl));\
++    else if (__builtin_constant_p (bh) && (bh) == 0)			\
++      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{ame|addme} %0,%2"		\
++	       : "=r" (sh), "=&r" (sl) : "r" (ah), "rI" (al), "r" (bl));\
++    else if (__builtin_constant_p (bh) && (bh) == ~(USItype) 0)		\
++      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{aze|addze} %0,%2"		\
++	       : "=r" (sh), "=&r" (sl) : "r" (ah), "rI" (al), "r" (bl));\
++    else								\
++      __asm__ ("{sf%I4|subf%I4c} %1,%5,%4\n\t{sfe|subfe} %0,%3,%2"	\
++	       : "=r" (sh), "=&r" (sl)					\
++	       : "r" (ah), "r" (bh), "rI" (al), "r" (bl));		\
++  } while (0)
++
++#define count_leading_zeros(count, x) \
++  __asm__ ("{cntlz|cntlzw} %0,%1" : "=r" (count) : "r" (x))
++#define COUNT_LEADING_ZEROS_0 32
++
++#define umul_ppmm(ph, pl, m0, m1) \
++  do {									\
++    USItype __m0 = (m0), __m1 = (m1);					\
++    __asm__ ("mulhwu %0,%1,%2" : "=r" (ph) : "%r" (m0), "r" (m1));	\
++    (pl) = __m0 * __m1;							\
++  } while (0)
++
+ #elif defined (__arm__)
+ 
+ #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
+@@ -548,6 +584,6 @@ static long long _mod64 (long long u, long long v)
+ 	return w;
  }
  
--static int needed_space(int64_t v)
-+static int needed_space(uint64_t v)
- {
- 	int space = 0;
+-#endif /* __i386__ || __arm__ */
++#endif /* __i386__ || __arm__ || (__powerpc__ && !__powerpc64__) */
  
-@@ -134,7 +134,7 @@ static void _stp_stat_print_histogram_buf(char *buf, size_t size, Hist st, stat
- {
- 	int scale, i, j, val_space, cnt_space;
- 	int low_bucket = -1, high_bucket = 0, over = 0, under = 0;
--	int64_t val, v, valmax = 0;
-+	uint64_t val, v, valmax = 0;
- 	int eliding = 0;
- 	char *cur_buf = buf, *fake = buf;
- 	char **bufptr = (buf == NULL ? &fake : &cur_buf);
-@@ -186,7 +186,7 @@ static void _stp_stat_print_histogram_buf(char *buf, size_t size, Hist st, stat
- 	if (valmax <= HIST_WIDTH)
- 		scale = 1;
- 	else {
--		int64_t tmp = valmax;
-+		uint64_t tmp = valmax;
- 		int rem = do_div(tmp, HIST_WIDTH);
- 		scale = tmp;
- 		if (rem) scale++;
-@@ -282,7 +282,7 @@ static void _stp_stat_print_histogram(Hist st, stat *sd)
- 	_stp_print_flush();
- }
- 
--static void __stp_stat_add (Hist st, stat *sd, int64_t val)
-+static void __stp_stat_add (Hist st, stat *sd, uint64_t val)
- {
- 	int n;
- 	if (sd->count == 0) {
-diff --git a/runtime/time.c b/runtime/time.c
-index 58c23e5..d588370 100644
---- a/runtime/time.c
-+++ b/runtime/time.c
-@@ -275,7 +275,8 @@ static int64_t
- _stp_gettimeofday_ns(void)
- {
-     int64_t base;
--    cycles_t last, delta;
-+    cycles_t last;
-+    uint64_t delta;
-     unsigned int freq;
-     unsigned int seq;
-     stp_time_t *time;
-diff --git a/tapset-timers.cxx b/tapset-timers.cxx
-index 6574626..7195cfa 100644
---- a/tapset-timers.cxx
-+++ b/tapset-timers.cxx
-@@ -241,7 +241,7 @@ hrtimer_derived_probe_group::emit_interval (translator_output* o)
- {
-   o->line() << "({";
-   o->newline(1) << "unsigned long nsecs;";
--  o->newline() << "int64_t i = stp->intrv;";
-+  o->newline() << "uint64_t i = stp->intrv;";
-   o->newline() << "if (stp->rnd != 0) {";
-   // XXX: why not use stp_random_pm instead of this?
-   o->newline(1) << "int64_t r;";
+ #endif /* _ARITH_C_ */
 -- 
 1.6.3.3
