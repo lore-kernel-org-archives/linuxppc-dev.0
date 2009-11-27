@@ -1,16 +1,23 @@
-Return-Path: <krautilein@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 5821D1007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 28 Nov 2009 02:44:44 +1100 (EST)
-Date: Fri, 27 Nov 2009 16:44:33 +0100
-From: Bolko Maass <krautilein@gmx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2.6.31] windfarm: add detection for second cpu pump
-Message-Id: <20091127164433.0b5087de.krautilein@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: bmaass@math.uni-bremen.de
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8A74D1007D1
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 03:34:07 +1100 (EST)
+Date: Fri, 27 Nov 2009 16:33:58 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: Add Kconfig dependency on PCI_MSI for XICS and
+	select for PSERIES
+Message-ID: <20091127163358.GP13095@csn.ul.ie>
+References: <1258459659-11770-1-git-send-email-mel@csn.ul.ie>
+	<1258524332.2140.663.camel@pasglop>
+	<20091118170510.GA1119@csn.ul.ie> <1259289626.2076.1.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1259289626.2076.1.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,23 +27,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Windfarm SMU control is explicitly missing support for a second CPU pump in G5 PowerMacs. Such machines actually exist  (specifically Quads with a second pump), so this patch adds detection for it.
+On Fri, Nov 27, 2009 at 01:40:26PM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2009-11-18 at 17:05 +0000, Mel Gorman wrote:
+> 
+> > 
+> > diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+> > index 04a8061..a82c470 100644
+> > --- a/arch/powerpc/platforms/Kconfig
+> > +++ b/arch/powerpc/platforms/Kconfig
+> > @@ -52,9 +52,9 @@ config PPC_UDBG_BEAT
+> >  	default n
+> >  
+> >  config XICS
+> > -	depends on PPC_PSERIES
+> > +	depends on PCI_MSI
+> >  	bool
+> > -	default y
+> > +	default n
+> 
+> Why the above ? XICS only exist on PSERIES and select bypass depends in
+> nasty ways anyways.
+> 
 
+You're right. When I made that change, I assumed that a "select foo"
+would also resolve the dependencies. It doesn't but I failed to back
+this out as being unnecessary.
 
+> >  config IPIC
+> >  	bool
+> > diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+> > index f0e6f28..81c2289 100644
+> > --- a/arch/powerpc/platforms/pseries/Kconfig
+> > +++ b/arch/powerpc/platforms/pseries/Kconfig
+> > @@ -5,6 +5,8 @@ config PPC_PSERIES
+> >  	select PPC_I8259
+> >  	select PPC_RTAS
+> >  	select RTAS_ERROR_LOGGING
+> > +	select PCI_MSI
+> > +	select XICS
+> >  	select PPC_UDBG_16550
+> >  	select PPC_NATIVE
+> >  	select PPC_PCI_CHOICE if EMBEDDED
+> 
+> The above bits look plenty enough. Can you also stick it next to the
+> MPIC one ?
+> 
 
-diff -uprN a/drivers/macintosh/windfarm_smu_controls.c b/drivers/macintosh/windfarm_smu_controls.c
---- a/drivers/macintosh/windfarm_smu_controls.c 2009-11-27 16:24:55.000000000 +0100
-+++ b/drivers/macintosh/windfarm_smu_controls.c 2009-11-16 18:22:33.000000000 +0100
-@@ -202,6 +202,8 @@ static struct smu_fan_control *smu_fan_c
-                fct->ctrl.name = "cpu-front-fan-1";
-        else if (!strcmp(l, "CPU A PUMP"))
-                fct->ctrl.name = "cpu-pump-0";
-+       else if (!strcmp(l, "CPU B PUMP"))
-+               fct->ctrl.name = "cpu-pump-1";
-        else if (!strcmp(l, "Slots Fan") || !strcmp(l, "Slots fan") ||
-                 !strcmp(l, "EXPANSION SLOTS INTAKE"))
-                fct->ctrl.name = "slots-fan";
+They are. I can.
 
+==== CUT HERE ====
+powerpc: Add Kconfig dependency on PCI_MSI for XICS and select for PSERIES
 
+It's possible to set CONFIG_XICS without CONFIG_PCI_MSI. When that happens,
+the kernel fails to build with
 
-Signed-off by: Bolko Maass <bmaass@math.uni-bremen.de>
+arch/powerpc/platforms/built-in.o: In function `.xics_startup':
+xics.c:(.text+0x12f60): undefined reference to `.unmask_msi_irq' make: ***
+[.tmp_vmlinux1] Error 1
+
+Furthermore, as noted by Benjamin Herrenschmidt, "CONFIG_XICS should be
+made invisible and selected by PSERIES."
+
+This patch adds the dependency in KConfig for XICS on PCI_MSI. When PSERIES
+support is being configured, both options are silently selected.
+
+Signed-off-by: Mel Gorman <mel[at]csn.ul.ie>
+---
+ arch/powerpc/platforms/pseries/Kconfig |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index f0e6f28..60d53ed 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -2,6 +2,8 @@ config PPC_PSERIES
+ 	depends on PPC64 && PPC_BOOK3S
+ 	bool "IBM pSeries & new (POWER5-based) iSeries"
+ 	select MPIC
++	select PCI_MSI
++	select XICS
+ 	select PPC_I8259
+ 	select PPC_RTAS
+ 	select RTAS_ERROR_LOGGING
