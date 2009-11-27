@@ -1,26 +1,28 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 35C041007D1
+	by ozlabs.org (Postfix) with ESMTPS id AC3471007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 11:11:30 +1100 (EST)
-In-Reply-To: <1259275130.2659.4.camel@pasglop>
+	Fri, 27 Nov 2009 11:15:34 +1100 (EST)
+Subject: Re: [RFC PATCH 04/19] powerpc: wii: device tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <4AE0F44D-CAD9-457C-9E5D-0279F28D70AF@kernel.crashing.org>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<fa686aa40911221502g2de254d2o4341d9abed0cdf41@mail.gmail.com>
-	<0AE26D40-D051-4CDE-878C-64CC8EF33E07@kernel.crashing.org>
-	<1259209436.16367.243.camel@pasglop>
-	<807D3910-3357-4DBF-A1C7-9C07A7C80A39@kernel.crashing.org>
-	<1259275130.2659.4.camel@pasglop>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3371FB1F-72B7-4AF4-B243-1C09092D2AAC@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH 02/19] powerpc: gamecube: device tree
-Date: Fri, 27 Nov 2009 01:18:26 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
+	<49436.84.105.60.153.1259171377.squirrel@gate.crashing.org>
+	<1259211061.16367.260.camel@pasglop>  <4B0E9C5F.50304@yahoo.es>
+	<1259269265.18084.14.camel@pasglop>  <4B0EF54C.6020101@yahoo.es>
+	<1259275057.2659.3.camel@pasglop>
+	<4AE0F44D-CAD9-457C-9E5D-0279F28D70AF@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 27 Nov 2009 11:15:27 +1100
+Message-ID: <1259280927.2659.11.camel@pasglop>
+Mime-Version: 1.0
 Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,29 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>> If you have only one interrupt controller, like here, you don't
->>>> need to refer to it _at all_ :-)
->>>
->>> I think Linux requires that you do though. It might be a mistake on
->>> our
->>> part but heh ...
->>
->> Linux doesn't require it; (old) Macs are like this, for example,
->> and that works fine.  Oh and all Maple firmwares are like that as
->> well I think.  Etc.
->
-> It works fine on old macs thanks to a quirk we enable in the mac code
-> iirc and old maple works thanks to mere luck with the fallback code we
-> have which reads things of PCI config space :-)
->
-> Don't rely on that.
+On Fri, 2009-11-27 at 01:16 +0100, Segher Boessenkool wrote:
+> 
+> In all code I have done for the XFB, I map it like any other RAM and
+> dcbst it after writing to it.  Maybe that is slower though, WIMG=0100
+> might be better.  Dunno. 
 
-It is standard OF.  Let's fix the Linux code if that is needed (and I  
-don't
-think it is, anyway).
+Well, it depends also what you want to do with it. If you want to expose
+it as a standard linux fbdev, it might break apps to expect them to use
+dcbst... but it will make rmw cycles a lot faster and avoid wasting
+memory with shadowfb.
 
-OTOH, it's nice to use the interrupt mapping stuff in all new device  
-trees.
+It's going to mostly depend on what kind of HW accel we can get out of
+it, if we get good enough accel we can probably got for I=1 like a
+standard fb
 
-
-Segher
+Ben.
