@@ -1,19 +1,38 @@
-Return-Path: <bernhard@bwalle.de>
-Received: from smtprelay02.ispgateway.de (smtprelay02.ispgateway.de
-	[80.67.18.14]) by ozlabs.org (Postfix) with ESMTP id 610861007D1
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 05:39:16 +1100 (EST)
-Message-ID: <4B101CCD.8030909@bwalle.de>
-Date: Fri, 27 Nov 2009 19:39:09 +0100
-From: Bernhard Walle <bernhard@bwalle.de>
-MIME-Version: 1.0
-To: "M. Mohan Kumar" <mohan@in.ibm.com>
-Subject: Re: [PATCH] Reserve memory for kdump kernel within RMO region
-References: <20091125131747.GA28857@in.ibm.com>
-	<4B0D7CF4.8040402@bwalle.de>	<4B0E628A.9070009@in.ibm.com>
-	<4B0ED674.6050501@bwalle.de> <4B0FCC0C.8060103@in.ibm.com>
-In-Reply-To: <4B0FCC0C.8060103@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: kexec@lists.infradead.org, ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7E7A31007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 28 Nov 2009 08:34:55 +1100 (EST)
+Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
+	controller support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Albert Herranz <albert_herranz@yahoo.es>
+In-Reply-To: <4B100BF4.5080209@yahoo.es>
+References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
+	<8E6E11A2-25F1-4AB8-B42E-58C269018CD2@kernel.crashing.org>
+	<4B0D65C5.8090304@yahoo.es>
+	<7556BF73-5D6D-4817-A02F-3DFA05E9AC58@kernel.crashing.org>
+	<4B0EFBB2.9090206@yahoo.es>
+	<9741644C-BED3-45D9-B405-4C4FC2184DC7@kernel.crashing.org>
+	<786BBFA3-39AF-4100-8406-6B32258D3174@kernel.crashing.org>
+	<4B100BF4.5080209@yahoo.es>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 28 Nov 2009 08:34:33 +1100
+Message-ID: <1259357673.2076.6.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,29 +42,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-M. Mohan Kumar schrieb:
-> Hi,
+On Fri, 2009-11-27 at 18:27 +0100, Albert Herranz wrote:
 > 
-> As of now the kdump kernel base is fixed to be 32MB. The intention of 
-> this patch is to modify that behaviour (for relocatable kernels)
+> I checked it too on the Nintendo GameCube making the ack a no-op.
 > 
-> * Regular kernel size may exceed 32MB, in this case we can't have kdump 
-> kernelbase as 32MB.
-> 
-> * crashkernel=auto also assumes that kdump kernelbase as 32MB, and it 
-> may also fail in reserving memory for kdump kernel.
+> It turns out that we _need_ to ack the RSW (Reset Switch) interrupt.
+> The other interrupt sources checked (EXI, VI, DI, AI, DSP/ARAM) need
+> no explicit ack.
 
-I'm not opposed to remove the 32MB restriction, but I would like to make
-the behaviour independent of CONFIG_RELOCATABLE like it's on x86:
+That would probably mean that the reset switch interrupt is an edge
+interrupt. Which means that you also use the wrong flow handler btw :-)
+No biggie here tho, if it's acked before the handler is called, which
+should be the case, and if masking it doesn't prevent the edge detector
+from latching, then it should be allright.
 
- - Use 32M if one specifies xxx@32M
- - Use preferrably 32M, but fall back to another address if one
-   specifies xxx or xxx@0M.
+But you may want to make sure you don't have another edge irq somewhere
+in there...
 
-I don't see any problem with that. But it would make behaviour equal
-accross platforms.
-
-
-
-Regards,
-Bernhard
+Cheers,
+Ben.
