@@ -1,20 +1,20 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 6CD171007D1
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 21:26:50 +1100 (EST)
-Date: Fri, 27 Nov 2009 11:26:41 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: "Tirumala Reddy Marri" <tmarri@amcc.com>
-Subject: Re: [PATCH v2] ppc440spe-adma: adds updated ppc440spe adma driver
-Message-ID: <20091127112641.5bcb9009@wker>
-In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C08642A43@SDCEXCHANGE01.ad.amcc.com>
-References: <1259186722-15012-1-git-send-email-agust@denx.de>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C08642A43@SDCEXCHANGE01.ad.amcc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: wd@denx.de, dzu@denx.de, Yuri
-	Tikhonov <yur@emcraft.com>, linux-raid@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, dan.j.williams@intel.com
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8A2591007D2
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Nov 2009 22:00:25 +1100 (EST)
+In-Reply-To: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
+References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH 00/10 v6]  Fix 8xx MMU/TLB
+Message-ID: <OF44DA1806.2D9916D9-ONC125767B.003BE84B-C125767B.003C3CD7@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Fri, 27 Nov 2009 11:57:57 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Tirumala Reddy Marri" <tmarri@amcc.com> wrote:
+Scott and Rex, I think we need you s-o-b to make it into the kernel proper.
 
-> Why are we having separate directory for 440spe. Can this be generalized
-> arch/dma/ppc4xx/ppc4xx_dma.c ?
+Marcelo and Vitaly, I noticed you guys are listed as 8xx maintainers.
+Have you seen this? What do you think?
 
-currently there is only tested support for 440spe. If the driver
-will be extended to support other CPUs, then the renaming can be
-done while adding support for other CPUs. 'arch/' is not correct,
-it should be 'driver/'.
+        Jocke
 
-Best regards,
-Anatolij
-
---
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+Joakim Tjernlund <Joakim.Tjernlund@transmode.se> wrote on 20/11/2009 11:21:01:
+>
+> Yet again an iteration of the series.
+> Rex & Scott, please test and signoff.
+> Changes since last version:
+>  - Fix rlwimi insn(from Scott)
+>
+> Joakim Tjernlund (10):
+>   8xx: invalidate non present TLBs
+>   8xx: Update TLB asm so it behaves as linux mm expects.
+>   8xx: Tag DAR with 0x00f0 to catch buggy instructions.
+>   8xx: Always pin kernel instruction TLB
+>   8xx: Fixup DAR from buggy dcbX instructions.
+>   8xx: Add missing Guarded setting in DTLB Error.
+>   8xx: Restore _PAGE_WRITETHRU
+>   8xx: start using dcbX instructions in various copy routines
+>   8xx: Remove DIRTY pte handling in DTLB Error.
+>   8xx: DTLB Miss cleanup
+>
+>  arch/powerpc/include/asm/pte-8xx.h |   14 +-
+>  arch/powerpc/kernel/head_8xx.S     |  315 ++++++++++++++++++++++--------------
+>  arch/powerpc/kernel/misc_32.S      |   18 --
+>  arch/powerpc/lib/copy_32.S         |   24 ---
+>  arch/powerpc/mm/fault.c            |    8 +-
+>  5 files changed, 211 insertions(+), 168 deletions(-)
+>
