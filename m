@@ -1,16 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 65C7DB6F14
+	by ozlabs.org (Postfix) with ESMTPS id DB2151007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 27 Nov 2009 10:38:20 +1100 (EST)
-Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
-	controller support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <8DD300BC-A3F3-4569-9BFC-62366F59BDA0@kernel.crashing.org>
+	Fri, 27 Nov 2009 10:59:57 +1100 (EST)
+In-Reply-To: <4B0EFBB2.9090206@yahoo.es>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-2-git-send-email-albert_herranz@yahoo.es>
+	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
@@ -20,14 +18,19 @@ References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<fa686aa40911221528y1980a95bw1dc8aa75a86c061e@mail.gmail.com>
-	<1259212736.16367.271.camel@pasglop>
-	<8DD300BC-A3F3-4569-9BFC-62366F59BDA0@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 27 Nov 2009 10:38:13 +1100
-Message-ID: <1259278693.2659.7.camel@pasglop>
-Mime-Version: 1.0
-Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
+	<8E6E11A2-25F1-4AB8-B42E-58C269018CD2@kernel.crashing.org>
+	<4B0D65C5.8090304@yahoo.es>
+	<7556BF73-5D6D-4817-A02F-3DFA05E9AC58@kernel.crashing.org>
+	<4B0EFBB2.9090206@yahoo.es>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9741644C-BED3-45D9-B405-4C4FC2184DC7@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
+	controller support
+Date: Fri, 27 Nov 2009 01:06:51 +0100
+To: Albert Herranz <albert_herranz@yahoo.es>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,41 +40,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-11-27 at 00:00 +0100, Segher Boessenkool wrote:
-> >>> +unsigned int flipper_pic_get_irq(void)
-> >>> +{
-> >>> +       void __iomem *io_base = flipper_irq_host->host_data;
-> >>> +       int irq;
-> >>> +       u32 irq_status;
-> >>> +
-> >>> +       irq_status = in_be32(io_base + FLIPPER_ICR) &
-> >>> +                    in_be32(io_base + FLIPPER_IMR);
-> >>> +       if (irq_status == 0)
-> >>> +               return -1;      /* no more IRQs pending */
-> >>
-> >> NO_IRQ_IGNORE
-> >
-> > Why no just 0 ? (aka NO_IRQ)
-> >
-> > Or do you know you are getting lots of spurrious that you don't  
-> > want to
-> > account ?
-> 
-> IRQ #0 is a valid IRQ here (graphics error IIRC), it should be
-> remapped I suppose?
+>>>> Maybe using FLIPPER (or GAMECUBE_FLIPPER) instead of  
+>>>> GAMECUBE_COMMON
+>>>> is a good name?
+>>>
+>>> I'd prefer to not use a name that implies a specific hardware to
+>>> describe two (mostly) similar but different hardwares.
+>>
+>> Hollywood is 100% compatible to Flipper though.
+>
+> No. There's no ARAM for example :)
 
-All interrupts are remapped. _get_irq() should call the appropriate
-revmap function to remap the HW number into a linux number. 0 is never a
-valid linux number and means "no interrupt".
+ARAM is an external device.
 
-In the above case, it would seem to me that what he gets is a bitfield
-so 0 means no interrupt. Hence the code should be:
+>>>>> +/*
+>>>>> + * Each interrupt has a corresponding bit in both
+>>>>> + * the Interrupt Cause (ICR) and Interrupt Mask (IMR) registers.
+>>>>> + *
+>>>>> + * Enabling/disabling an interrupt line involves asserting/ 
+>>>>> clearing
+>>>>> + * the corresponding bit in IMR. ACK'ing a request simply  
+>>>>> involves
+>>>>> + * asserting the corresponding bit in ICR.
+>>>>> + */
+>>
+>> I looked it up in YAGCD; it says that _reading_ the ICR reg already
+>> acks all interrupts (and clears the bits), you never write this reg!
+>
+> YAGCD is not always right. You should not take it as _the truth_.
 
-	if (irq_status == 0)
-		return 0;
-	
-Then, find first bit and return the linear revmap... Just look at what
-the old pmac_pic does, same stuff basically.
+Oh I know.  But I have no better source of information.  Well I could
+actually test it, that's very easy using OF :-)  Let's do that.
 
-Cheers,
-Ben.
+>>> No, it acks just a single IRQ.
+>>
+>> No it doesn't.  Say IRQs 1 and 3 are asserted, so the reg contains  
+>> 0x0a.
+>> Now you want to ack IRQ1; set_bit() will write 0x0a | 0x02, not  
+>> just 0x02.
+>
+> Let me rephrase it. No it should just ack a single IRQ :)
+>
+> So then this is working by accident.
+> If that's the case, I guess it works because the interrupt is not  
+> cleared at the source and the ICR is set again immediately for any  
+> pending interrupt?
+
+Probably, yes.  Also, you will not often have more than one interrupt
+pending anyway (on the legacy PIC).
+
+
+Segher
