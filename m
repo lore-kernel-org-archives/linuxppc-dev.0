@@ -1,41 +1,28 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 2466B1007D5
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 17:53:00 +1100 (EST)
-From: Amit Shah <amit.shah@redhat.com>
-To: rusty@rustcorp.com.au
-Subject: [PATCH 26/28] hvc_console: Export (GPL'ed) hvc_remove
-Date: Sat, 28 Nov 2009 12:20:49 +0530
-Message-Id: <1259391051-7752-27-git-send-email-amit.shah@redhat.com>
-In-Reply-To: <1259391051-7752-26-git-send-email-amit.shah@redhat.com>
-References: <1259391051-7752-1-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-2-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-3-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-4-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-5-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-6-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-7-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-8-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-9-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-10-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-11-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-12-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-13-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-14-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-15-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-16-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-17-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-18-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-19-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-20-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-21-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-22-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-23-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-24-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-25-git-send-email-amit.shah@redhat.com>
-	<1259391051-7752-26-git-send-email-amit.shah@redhat.com>
-Cc: Amit Shah <amit.shah@redhat.com>, linuxppc-dev@ozlabs.org,
-	virtualization@lists.linux-foundation.org
+Return-Path: <jirislaby@gmail.com>
+Received: from mail-bw0-f223.google.com (mail-bw0-f223.google.com
+	[209.85.218.223]) by ozlabs.org (Postfix) with ESMTP id B952C1007D2
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 19:47:07 +1100 (EST)
+Received: by bwz23 with SMTP id 23so1542051bwz.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 00:47:04 -0800 (PST)
+Message-ID: <4B10E385.1030900@gmail.com>
+Date: Sat, 28 Nov 2009 09:47:01 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v3 16/27] PPC: use helpers for rlimits
+References: <1259363167-9347-1-git-send-email-jslaby@suse.cz>	
+	<1259363167-9347-16-git-send-email-jslaby@suse.cz>
+	<1259367557.2076.11.camel@pasglop>
+In-Reply-To: <1259367557.2076.11.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: sfr@canb.auug.org.au, nhorman@tuxdriver.com,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	linux-kernel@vger.kernel.org, oleg@redhat.com,
+	linuxppc-dev@ozlabs.org, mingo@redhat.com, tglx@linutronix.de,
+	marcin.slusarz@gmail.com, hpa@zytor.com,
+	Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org,
+	James Morris <jmorris@namei.org>, torvalds@linux-foundation.org,
+	mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,27 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The virtio console, which uses hvc, will get the ability to hot-unplug
-ports. Export hvc_remove so that virtio_console can disassociate with
-hvc.
+On 11/28/2009 01:19 AM, Benjamin Herrenschmidt wrote:
+> On Sat, 2009-11-28 at 00:05 +0100, Jiri Slaby wrote:
+>> Make sure compiler won't do weird things with limits. E.g. fetching
+>> them twice may return 2 different values after writable limits are
+>> implemented.
+>>
+>> I.e. either use newly added rlimit helpers or ACCESS_ONCE if not
+>> applicable.
+> 
+> Thanks. I have that already queued up.
 
-Signed-off-by: Amit Shah <amit.shah@redhat.com>
-Cc: linuxppc-dev@ozlabs.org
----
- drivers/char/hvc_console.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Are you sure? The previous version with ACCESS_ONCE was generally
+NACKed. This one uses a newly added helper which is much more cleaner
+way to do it.
 
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index 299772f..d8dac58 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -833,6 +833,7 @@ int hvc_remove(struct hvc_struct *hp)
- 		tty_hangup(tty);
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(hvc_remove);
- 
- /* Driver initialization: called as soon as someone uses hvc_alloc(). */
- static int hvc_init(void)
+thanks,
 -- 
-1.6.2.5
+js
