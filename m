@@ -1,13 +1,13 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp141.mail.ukl.yahoo.com (smtp141.mail.ukl.yahoo.com
-	[77.238.184.72]) by ozlabs.org (Postfix) with SMTP id 39A9BB6F1C
+	[77.238.184.72]) by ozlabs.org (Postfix) with SMTP id 16A76B6F1B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 29 Nov 2009 07:44:08 +1100 (EST)
+	Sun, 29 Nov 2009 07:44:09 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v2 02/11] powerpc: gamecube: device tree
-Date: Sat, 28 Nov 2009 21:43:48 +0100
-Message-Id: <1259441037-15725-3-git-send-email-albert_herranz@yahoo.es>
+Subject: [RFC PATCH v2 03/11] powerpc: gamecube: bootwrapper bits
+Date: Sat, 28 Nov 2009 21:43:49 +0100
+Message-Id: <1259441037-15725-4-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1259441037-15725-1-git-send-email-albert_herranz@yahoo.es>
 References: <1259441037-15725-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
@@ -20,166 +20,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a device tree source file for the Nintendo GameCube video game console.
+Add support for the Nintendo GameCube video game console to the powerpc
+bootwrapper.
+
+dtbImage.gamecube is a wrapped image that contains a flat device tree,
+an entry point compatible with SDload, and an optional initrd.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
 v1 -> v2
-- Document new bindings in Documentation/powerpc/dts-bindings.
-  Suggestion by Grant Likely.
-- Use same form for model property and compatible properties on the root
-  node.  Suggestion by Grant Likely.
-- Drop the model property in the soc node.  Suggestion by Grant Likely.
-- Move interrupt-parent to the soc node instead of explicitly adding it to
-  each child node.  Suggestion by Grant Likely.
-- Declare all available memory and deal with the fb area in the platform
-  code. Suggestion by Segher Boessenkool.
-- Transform the "auxram" node into the "dsp" node, create an "auxram" node
-  within the "dsp" node. Suggestion by Segher Boessenkool.
-- Rename the "soc" node to "flipper". Suggestion by Benjamin Herrenschmidt.
-- Remove the usbgecko node from the device tree and autodetect it in
-  platform code. Suggestion by Segher Boessenkool.
-- Remove clock-frequency property from the soc node.
+- Use a separate asm file for the entry point code.
+  Suggestion by Segher Boessenkool and Benjamin Herrenschmidt.
+- Do not make assumptions about the state of the cache and MMU on
+  entry, eliminating dependencies on a particular bootloader.
   Suggestion by Segher Boessenkool.
-- Create a flipper-processor-interface node and place flipper-pic into it.
+- Use consistently the same (easier to read) form of bcl to load the
+  next instruction address in LR. Suggestion by Segher Boessenkool.
+- Identity map I/O memory too to avoid confusions.
   Suggestion by Segher Boessenkool.
-- Remove #interrupt-cells from the flipper node.
-  Suggestion by Segher Boessenkool.
-- Massive cleanups. Suggestions by Segher Boessenkool.
+- Probe dinamically for usbgecko. Suggestion by Segher Boessenkool.
 
- .../powerpc/dts-bindings/nintendo/gamecube.txt     |  109 +++++++++++++++++++
- arch/powerpc/boot/dts/gamecube.dts                 |  114 ++++++++++++++++++++
- 2 files changed, 223 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/nintendo/gamecube.txt
- create mode 100644 arch/powerpc/boot/dts/gamecube.dts
+ arch/powerpc/boot/Makefile        |    4 +-
+ arch/powerpc/boot/gamecube-head.S |  111 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/gamecube.c      |   35 ++++++++++++
+ arch/powerpc/boot/wrapper         |    4 +
+ 4 files changed, 153 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/gamecube-head.S
+ create mode 100644 arch/powerpc/boot/gamecube.c
 
-diff --git a/Documentation/powerpc/dts-bindings/nintendo/gamecube.txt b/Documentation/powerpc/dts-bindings/nintendo/gamecube.txt
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 44bce21..3e70aab 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -76,7 +76,8 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
+ 		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
+ 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
+ 		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
+-		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c
++		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c \
++		gamecube-head.S gamecube.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
+ 
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+@@ -254,6 +255,7 @@ image-$(CONFIG_KSI8560)			+= cuImage.ksi8560
+ image-$(CONFIG_STORCENTER)		+= cuImage.storcenter
+ image-$(CONFIG_MPC7448HPC2)		+= cuImage.mpc7448hpc2
+ image-$(CONFIG_PPC_C2K)			+= cuImage.c2k
++image-$(CONFIG_GAMECUBE)		+= dtbImage.gamecube
+ 
+ # Board port in arch/powerpc/platform/amigaone/Kconfig
+ image-$(CONFIG_AMIGAONE)		+= cuImage.amigaone
+diff --git a/arch/powerpc/boot/gamecube-head.S b/arch/powerpc/boot/gamecube-head.S
 new file mode 100644
-index 0000000..b558585
+index 0000000..65a9b2a
 --- /dev/null
-+++ b/Documentation/powerpc/dts-bindings/nintendo/gamecube.txt
-@@ -0,0 +1,109 @@
-+
-+Nintendo GameCube device tree
-+=============================
-+
-+1) The "flipper" node
-+
-+  This node represents the multi-function "Flipper" chip, which packages
-+  many of the devices found in the Nintendo GameCube.
-+
-+  Required properties:
-+
-+   - compatible : Should be "nintendo,flipper"
-+
-+1.a) The Video Interface (VI) node
-+
-+  Represents the interface between the graphics processor and a external
-+  video encoder.
-+
-+  Required properties:
-+
-+   - compatible : should be "nintendo,flipper-vi"
-+   - reg : should contain the VI registers location and length
-+   - interrupts : should contain the VI interrupt
-+
-+1.b) The Processor Interface (PI) node
-+
-+  Represents the data and control interface between the main processor
-+  and graphics and audio processor.
-+
-+  Required properties:
-+
-+  - compatible : should be "nintendo,flipper-pi"
-+  - reg : should contain the PI registers location and length
-+
-+1.b.i) The "Flipper" interrupt controller node
-+
-+  Represents the interrupt controller within the "Flipper" chip.
-+  The node for the "Flipper" interrupt controller must be placed under
-+  the PI node.
-+
-+  Required properties:
-+
-+  - compatible : should be "nintendo,flipper-pic"
-+
-+1.c) The Digital Signal Procesor (DSP) node
-+
-+  Represents the digital signal processor interface, designed to offload
-+  audio related tasks.
-+
-+  Required properties:
-+
-+   - compatible : should be "nintendo,flipper-dsp"
-+   - reg : should contain the DSP registers location and length
-+   - interrupts : should contain the DSP interrupt
-+
-+1.c.i) The Auxiliary RAM (ARAM) node
-+
-+  Represents the non cpu-addressable ram designed mainly to store audio
-+  related information.
-+  The ARAM node must be placed under the DSP node.
-+
-+  Required properties:
-+
-+   - compatible : should be "nintendo,flipper-aram"
-+   - reg : should contain the ARAM start (zero-based) and length
-+
-+1.d) The Disk Interface (DI) node
-+
-+  Represents the interface used to communicate with mass storage devices.
-+
-+  Required properties:
-+
-+   - compatible : should be "nintendo,flipper-di"
-+   - reg : should contain the DI registers location and length
-+   - interrupts : should contain the DI interrupt
-+
-+1.e) The Audio Interface (AI) node
-+
-+  Represents the interface to the external 16-bit stereo digital-to-analog
-+  converter.
-+
-+  Required properties:
-+
-+   - compatible : should be "nintendo,flipper-ai"
-+   - reg : should contain the AI registers location and length
-+   - interrupts : should contain the AI interrupt
-+
-+1.f) The Serial Interface (SI) node
-+
-+  Represents the interface to the four single bit serial interfaces.
-+  The SI is a proprietary serial interface used normally to control gamepads.
-+  It's NOT a RS232-type interface.
-+
-+  Required properties:
-+
-+   - compatible : should be "nintendo,flipper-si"
-+   - reg : should contain the SI registers location and length
-+   - interrupts : should contain the SI interrupt
-+
-+1.g) The External Interface (EXI) node
-+
-+  Represents the multi-channel SPI-like interface.
-+
-+  Required properties:
-+
-+   - compatible : should be "nintendo,flipper-exi"
-+   - reg : should contain the EXI registers location and length
-+   - interrupts : should contain the EXI interrupt
-+
-diff --git a/arch/powerpc/boot/dts/gamecube.dts b/arch/powerpc/boot/dts/gamecube.dts
-new file mode 100644
-index 0000000..ef3be0e
---- /dev/null
-+++ b/arch/powerpc/boot/dts/gamecube.dts
-@@ -0,0 +1,114 @@
++++ b/arch/powerpc/boot/gamecube-head.S
+@@ -0,0 +1,111 @@
 +/*
-+ * arch/powerpc/boot/dts/gamecube.dts
++ * arch/powerpc/boot/gamecube-head.S
 + *
-+ * Nintendo GameCube platform device tree source
-+ * Copyright (C) 2007-2009 The GameCube Linux Team
-+ * Copyright (C) 2007,2008,2009 Albert Herranz
++ * Nintendo GameCube bootwrapper entry.
++ * Copyright (C) 2004-2009 The GameCube Linux Team
++ * Copyright (C) 2008,2009 Albert Herranz
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License
@@ -188,105 +90,158 @@ index 0000000..ef3be0e
 + *
 + */
 +
-+/dts-v1/;
++#include "ppc_asm.h"
 +
-+/ {
-+	model = "nintendo,gamecube";
-+	compatible = "nintendo,gamecube";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
++/*
++ * The entry code does no assumptions regarding:
++ * - if the data and instruction caches are enabled or not
++ * - if the MMU is enabled or not
++ *
++ * We enable the caches if not already enabled, enable the MMU with an
++ * identity mapping scheme and jump to the start code.
++ */
 +
-+	chosen {
-+		bootargs = "root=/dev/gcnsda2 rootwait udbg-immortal";
-+	};
++	.text
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x01800000>;
-+	};
++	.globl _zimage_start
++_zimage_start:
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++	/* turn the MMU off */
++	mfmsr	9
++	rlwinm	9, 9, 0, ~((1<<4)|(1<<5)) /* MSR_DR|MSR_IR */
++	bcl	20, 31, 1f
++1:
++	mflr	8
++	clrlwi	8, 8, 3		/* convert to a real address */
++	addi	8, 8, _mmu_off - 1b
++	mtsrr0	8
++	mtsrr1	9
++	rfi
++_mmu_off:
++	/* MMU disabled */
 +
-+		PowerPC,gekko@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			clock-frequency = <486000000>; /* 486MHz */
-+			bus-frequency = <162000000>; /* 162MHz core-to-bus 3x */
-+			timebase-frequency = <40500000>; /* 162MHz / 4 */
-+			i-cache-line-size = <32>;
-+			d-cache-line-size = <32>;
-+			i-cache-size = <32768>;
-+			d-cache-size = <32768>;
-+		};
-+	};
++	/* setup BATs */
++	isync
++	li      8, 0
++	mtspr	0x210, 8	/* IBAT0U */
++	mtspr	0x212, 8	/* IBAT1U */
++	mtspr	0x214, 8	/* IBAT2U */
++	mtspr	0x216, 8	/* IBAT3U */
++	mtspr	0x218, 8	/* DBAT0U */
++	mtspr	0x21a, 8	/* DBAT1U */
++	mtspr	0x21c, 8	/* DBAT2U */
++	mtspr	0x21e, 8	/* DBAT3U */
 +
-+	/* devices contained int the flipper chipset */
-+	flipper {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "nintendo,flipper";
-+		ranges = <0x0c000000 0x0c000000 0x00010000>;
-+		interrupt-parent = <&PIC>;
++	li	8, 0x01ff	/* first 16MiB */
++	li	9, 0x0002	/* rw */
++	mtspr	0x211, 9	/* IBAT0L */
++	mtspr	0x210, 8	/* IBAT0U */
++	mtspr	0x219, 9	/* DBAT0L */
++	mtspr	0x218, 8	/* DBAT0U */
 +
-+		video@0c002000 {
-+			compatible = "nintendo,flipper-vi";
-+			reg = <0x0c002000 0x100>;
-+			interrupts = <8>;
-+		};
++	lis	8, 0x0c00	/* I/O mem */
++	ori	8, 8, 0x3ff	/* 32MiB */
++	lis	9, 0x0c00
++	ori	9, 9, 0x002a	/* uncached, guarded, rw */
++	mtspr	0x21b, 9	/* DBAT1L */
++	mtspr	0x21a, 8	/* DBAT1U */
 +
-+		processor-interface@0c003000 {
-+			compatible = "nintendo,flipper-pi";
-+			reg = <0x0c003000 0x100>;
++	lis	8, 0x0100	/* next 8MiB */
++	ori	8, 8, 0x00ff	/* 8MiB */
++	lis	9, 0x0100
++	ori	9, 9, 0x0002	/* rw */
++	mtspr	0x215, 9	/* IBAT2L */
++	mtspr	0x214, 8	/* IBAT2U */
++	mtspr	0x21d, 9	/* DBAT2L */
++	mtspr	0x21c, 8	/* DBAT2U */
 +
-+			PIC: pic {
-+				#interrupt-cells = <1>;
-+				compatible = "nintendo,flipper-pic";
-+				interrupt-controller;
-+			};
-+		};
++	/* enable and invalidate the caches if not already enabled */
++	mfspr	8, 0x3f0	/* HID0 */
++	andi.	0, 8, (1<<15)		/* HID0_ICE */
++	bne	1f
++	ori	8, 8, (1<<15)|(1<<11)	/* HID0_ICE|HID0_ICFI*/
++1:
++	andi.	0, 8, (1<<14)		/* HID0_DCE */
++	bne	1f
++	ori	8, 8, (1<<14)|(1<<10)	/* HID0_DCE|HID0_DCFI*/
++1:
++	mtspr	0x3f0, 8	/* HID0 */
++	isync
 +
-+		dsp@0c005000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "nintendo,flipper-dsp";
-+			reg = <0x0c005000 0x200>;
-+			interrupts = <6>;
++	/* initialize arguments */
++	li	3, 0
++	li	4, 0
++	li	5, 0
 +
-+			memory@0 {
-+				compatible = "nintendo,flipper-aram";
-+				reg = <0 0x1000000>;	/* 16MB */
-+			};
-+		};
++	/* turn the MMU on */
++	bcl	20, 31, 1f
++1:
++	mflr	8
++	addi	8, 8, _mmu_on - 1b
++	mfmsr	9
++	ori	9, 9, (1<<4)|(1<<5) /* MSR_DR|MSR_IR */
++	mtsrr0	8
++	mtsrr1	9
++	sync
++	rfi
++_mmu_on:
++	b _zimage_start_lib
 +
-+		disk@0c006000 {
-+			compatible = "nintendo,flipper-di";
-+			reg = <0x0c006000 0x40>;
-+			interrupts = <2>;
-+		};
+diff --git a/arch/powerpc/boot/gamecube.c b/arch/powerpc/boot/gamecube.c
+new file mode 100644
+index 0000000..28ae705
+--- /dev/null
++++ b/arch/powerpc/boot/gamecube.c
+@@ -0,0 +1,35 @@
++/*
++ * arch/powerpc/boot/gamecube.c
++ *
++ * Nintendo GameCube bootwrapper support
++ * Copyright (C) 2004-2009 The GameCube Linux Team
++ * Copyright (C) 2008,2009 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ */
 +
-+		audio@0c006c00 {
-+			compatible = "nintendo,flipper-ai";
-+			reg = <0x0c006c00 0x20>;
-+			interrupts = <6>;
-+		};
++#include <stddef.h>
++#include "stdio.h"
++#include "types.h"
++#include "io.h"
++#include "ops.h"
 +
-+		gamepad-controller@0c006400 {
-+			compatible = "nintendo,flipper-si";
-+			reg = <0x0c006400 0x100>;
-+			interrupts = <3>;
-+		};
++#include "ugecon.h"
 +
-+		/* External Interface bus */
-+		exi@0c006800 {
-+			compatible = "nintendo,flipper-exi";
-+			reg = <0x0c006800 0x40>;
-+			virtual-reg = <0x0c006800>;
-+			interrupts = <4>;
-+		};
-+        };
-+};
++BSS_STACK(8192);
 +
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
++{
++	u32 heapsize = 16*1024*1024 - (u32)_end;
++
++	simple_alloc_init(_end, heapsize, 32, 64);
++	fdt_init(_dtb_start);
++
++	if (ug_probe())
++		console_ops.write = ug_console_write;
++}
++
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index ac9e9a5..5b9206f 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -230,6 +230,10 @@ xpedite52*)
+     link_address='0x1400000'
+     platformo=$object/cuboot-85xx.o
+     ;;
++gamecube)
++    link_address='0x600000'
++    platformo="$object/$platform-head.o $object/$platform.o"
++    ;;
+ esac
+ 
+ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
 -- 
 1.6.3.3
