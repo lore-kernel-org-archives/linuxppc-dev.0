@@ -1,28 +1,24 @@
-Return-Path: <jirislaby@gmail.com>
-Received: from mail-bw0-f223.google.com (mail-bw0-f223.google.com
-	[209.85.218.223]) by ozlabs.org (Postfix) with ESMTP id B952C1007D2
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 19:47:07 +1100 (EST)
-Received: by bwz23 with SMTP id 23so1542051bwz.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Nov 2009 00:47:04 -0800 (PST)
-Message-ID: <4B10E385.1030900@gmail.com>
-Date: Sat, 28 Nov 2009 09:47:01 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
+Return-Path: <rinder@automationtechnology.de>
+Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.161])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A8D1B1007D3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 29 Nov 2009 04:14:00 +1100 (EST)
+Received: from Thomas (e177112046.adsl.alicedsl.de [85.177.112.46])
+	by post.strato.de (klopstock mo41) (RZmta 22.5)
+	with ESMTP id i01733lASFpTNn for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 28 Nov 2009 18:02:23 +0100 (MET)
+From: "Thomas Rinder" <rinder@automationtechnology.de>
+To: <linuxppc-dev@lists.ozlabs.org>
+References: <d15e5cf90911271526t24437a90l95ece440bf89c599@mail.gmail.com>
+In-Reply-To: <d15e5cf90911271526t24437a90l95ece440bf89c599@mail.gmail.com>
+Subject: unsubscribe
+Date: Sat, 28 Nov 2009 18:02:21 +0100
+Message-ID: <004601ca704c$8e03f590$aa0be0b0$@de>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v3 16/27] PPC: use helpers for rlimits
-References: <1259363167-9347-1-git-send-email-jslaby@suse.cz>	
-	<1259363167-9347-16-git-send-email-jslaby@suse.cz>
-	<1259367557.2076.11.camel@pasglop>
-In-Reply-To: <1259367557.2076.11.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, nhorman@tuxdriver.com,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	linux-kernel@vger.kernel.org, oleg@redhat.com,
-	linuxppc-dev@ozlabs.org, mingo@redhat.com, tglx@linutronix.de,
-	marcin.slusarz@gmail.com, hpa@zytor.com,
-	Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org,
-	James Morris <jmorris@namei.org>, torvalds@linux-foundation.org,
-	mingo@elte.hu
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,21 +28,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/28/2009 01:19 AM, Benjamin Herrenschmidt wrote:
-> On Sat, 2009-11-28 at 00:05 +0100, Jiri Slaby wrote:
->> Make sure compiler won't do weird things with limits. E.g. fetching
->> them twice may return 2 different values after writable limits are
->> implemented.
->>
->> I.e. either use newly added rlimit helpers or ACCESS_ONCE if not
->> applicable.
-> 
-> Thanks. I have that already queued up.
-
-Are you sure? The previous version with ACCESS_ONCE was generally
-NACKed. This one uses a newly added helper which is much more cleaner
-way to do it.
-
-thanks,
--- 
-js
+unsubscribe 
