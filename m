@@ -1,14 +1,13 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp141.mail.ukl.yahoo.com (smtp141.mail.ukl.yahoo.com
-	[77.238.184.72]) by ozlabs.org (Postfix) with SMTP id D267CB6EFE
+	[77.238.184.72]) by ozlabs.org (Postfix) with SMTP id 39A9BB6F1C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 29 Nov 2009 07:44:07 +1100 (EST)
+	Sun, 29 Nov 2009 07:44:08 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v2 01/11] powerpc: gamecube/wii: usbgecko bootwrapper
-	console support
-Date: Sat, 28 Nov 2009 21:43:47 +0100
-Message-Id: <1259441037-15725-2-git-send-email-albert_herranz@yahoo.es>
+Subject: [RFC PATCH v2 02/11] powerpc: gamecube: device tree
+Date: Sat, 28 Nov 2009 21:43:48 +0100
+Message-Id: <1259441037-15725-3-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1259441037-15725-1-git-send-email-albert_herranz@yahoo.es>
 References: <1259441037-15725-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
@@ -21,49 +20,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for using the USB Gecko adapter as a bootwrapper console on
-the Nintendo GameCube and Wii video game consoles.
-The USB Gecko is a 3rd party memory card interface adapter that provides
-a EXI (External Interface) to USB serial converter.
+Add a device tree source file for the Nintendo GameCube video game console.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
 v1 -> v2
-- Probe dinamically for usbgecko. Suggestion by Segher Boessenkool.
-- Adapt to updated device tree.
+- Document new bindings in Documentation/powerpc/dts-bindings.
+  Suggestion by Grant Likely.
+- Use same form for model property and compatible properties on the root
+  node.  Suggestion by Grant Likely.
+- Drop the model property in the soc node.  Suggestion by Grant Likely.
+- Move interrupt-parent to the soc node instead of explicitly adding it to
+  each child node.  Suggestion by Grant Likely.
+- Declare all available memory and deal with the fb area in the platform
+  code. Suggestion by Segher Boessenkool.
+- Transform the "auxram" node into the "dsp" node, create an "auxram" node
+  within the "dsp" node. Suggestion by Segher Boessenkool.
+- Rename the "soc" node to "flipper". Suggestion by Benjamin Herrenschmidt.
+- Remove the usbgecko node from the device tree and autodetect it in
+  platform code. Suggestion by Segher Boessenkool.
+- Remove clock-frequency property from the soc node.
+  Suggestion by Segher Boessenkool.
+- Create a flipper-processor-interface node and place flipper-pic into it.
+  Suggestion by Segher Boessenkool.
+- Remove #interrupt-cells from the flipper node.
+  Suggestion by Segher Boessenkool.
+- Massive cleanups. Suggestions by Segher Boessenkool.
 
- arch/powerpc/boot/Makefile |    2 +-
- arch/powerpc/boot/ugecon.c |  147 ++++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/ugecon.h |   24 +++++++
- 3 files changed, 172 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/ugecon.c
- create mode 100644 arch/powerpc/boot/ugecon.h
+ .../powerpc/dts-bindings/nintendo/gamecube.txt     |  109 +++++++++++++++++++
+ arch/powerpc/boot/dts/gamecube.dts                 |  114 ++++++++++++++++++++
+ 2 files changed, 223 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/nintendo/gamecube.txt
+ create mode 100644 arch/powerpc/boot/dts/gamecube.dts
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 7bfc8ad..44bce21 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -66,7 +66,7 @@ src-wlib := string.S crt0.S crtsavres.S stdio.c main.c \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
- 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
- 		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
--		fsl-soc.c mpc8xx.c pq2.c
-+		fsl-soc.c mpc8xx.c pq2.c ugecon.c
- src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c \
- 		cuboot-ebony.c cuboot-hotfoot.c treeboot-ebony.c prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
-diff --git a/arch/powerpc/boot/ugecon.c b/arch/powerpc/boot/ugecon.c
+diff --git a/Documentation/powerpc/dts-bindings/nintendo/gamecube.txt b/Documentation/powerpc/dts-bindings/nintendo/gamecube.txt
 new file mode 100644
-index 0000000..50609ea
+index 0000000..b558585
 --- /dev/null
-+++ b/arch/powerpc/boot/ugecon.c
-@@ -0,0 +1,147 @@
++++ b/Documentation/powerpc/dts-bindings/nintendo/gamecube.txt
+@@ -0,0 +1,109 @@
++
++Nintendo GameCube device tree
++=============================
++
++1) The "flipper" node
++
++  This node represents the multi-function "Flipper" chip, which packages
++  many of the devices found in the Nintendo GameCube.
++
++  Required properties:
++
++   - compatible : Should be "nintendo,flipper"
++
++1.a) The Video Interface (VI) node
++
++  Represents the interface between the graphics processor and a external
++  video encoder.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-vi"
++   - reg : should contain the VI registers location and length
++   - interrupts : should contain the VI interrupt
++
++1.b) The Processor Interface (PI) node
++
++  Represents the data and control interface between the main processor
++  and graphics and audio processor.
++
++  Required properties:
++
++  - compatible : should be "nintendo,flipper-pi"
++  - reg : should contain the PI registers location and length
++
++1.b.i) The "Flipper" interrupt controller node
++
++  Represents the interrupt controller within the "Flipper" chip.
++  The node for the "Flipper" interrupt controller must be placed under
++  the PI node.
++
++  Required properties:
++
++  - compatible : should be "nintendo,flipper-pic"
++
++1.c) The Digital Signal Procesor (DSP) node
++
++  Represents the digital signal processor interface, designed to offload
++  audio related tasks.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-dsp"
++   - reg : should contain the DSP registers location and length
++   - interrupts : should contain the DSP interrupt
++
++1.c.i) The Auxiliary RAM (ARAM) node
++
++  Represents the non cpu-addressable ram designed mainly to store audio
++  related information.
++  The ARAM node must be placed under the DSP node.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-aram"
++   - reg : should contain the ARAM start (zero-based) and length
++
++1.d) The Disk Interface (DI) node
++
++  Represents the interface used to communicate with mass storage devices.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-di"
++   - reg : should contain the DI registers location and length
++   - interrupts : should contain the DI interrupt
++
++1.e) The Audio Interface (AI) node
++
++  Represents the interface to the external 16-bit stereo digital-to-analog
++  converter.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-ai"
++   - reg : should contain the AI registers location and length
++   - interrupts : should contain the AI interrupt
++
++1.f) The Serial Interface (SI) node
++
++  Represents the interface to the four single bit serial interfaces.
++  The SI is a proprietary serial interface used normally to control gamepads.
++  It's NOT a RS232-type interface.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-si"
++   - reg : should contain the SI registers location and length
++   - interrupts : should contain the SI interrupt
++
++1.g) The External Interface (EXI) node
++
++  Represents the multi-channel SPI-like interface.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-exi"
++   - reg : should contain the EXI registers location and length
++   - interrupts : should contain the EXI interrupt
++
+diff --git a/arch/powerpc/boot/dts/gamecube.dts b/arch/powerpc/boot/dts/gamecube.dts
+new file mode 100644
+index 0000000..ef3be0e
+--- /dev/null
++++ b/arch/powerpc/boot/dts/gamecube.dts
+@@ -0,0 +1,114 @@
 +/*
-+ * arch/powerpc/boot/ugecon.c
++ * arch/powerpc/boot/dts/gamecube.dts
 + *
-+ * USB Gecko bootwrapper console.
-+ * Copyright (C) 2008-2009 The GameCube Linux Team
-+ * Copyright (C) 2008,2009 Albert Herranz
++ * Nintendo GameCube platform device tree source
++ * Copyright (C) 2007-2009 The GameCube Linux Team
++ * Copyright (C) 2007,2008,2009 Albert Herranz
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License
@@ -72,168 +188,105 @@ index 0000000..50609ea
 + *
 + */
 +
-+#include <stddef.h>
-+#include "stdio.h"
-+#include "types.h"
-+#include "io.h"
-+#include "ops.h"
++/dts-v1/;
 +
++/ {
++	model = "nintendo,gamecube";
++	compatible = "nintendo,gamecube";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+#define EXI_CLK_32MHZ           5
++	chosen {
++		bootargs = "root=/dev/gcnsda2 rootwait udbg-immortal";
++	};
 +
-+#define EXI_CSR                 0x00
-+#define   EXI_CSR_CLKMASK       (0x7<<4)
-+#define     EXI_CSR_CLK_32MHZ   (EXI_CLK_32MHZ<<4)
-+#define   EXI_CSR_CSMASK        (0x7<<7)
-+#define     EXI_CSR_CS_0        (0x1<<7)  /* Chip Select 001 */
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x01800000>;
++	};
 +
-+#define EXI_CR                  0x0c
-+#define   EXI_CR_TSTART         (1<<0)
-+#define   EXI_CR_WRITE		(1<<2)
-+#define   EXI_CR_READ_WRITE     (2<<2)
-+#define   EXI_CR_TLEN(len)      (((len)-1)<<4)
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+#define EXI_DATA                0x10
++		PowerPC,gekko@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <486000000>; /* 486MHz */
++			bus-frequency = <162000000>; /* 162MHz core-to-bus 3x */
++			timebase-frequency = <40500000>; /* 162MHz / 4 */
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <32768>;
++			d-cache-size = <32768>;
++		};
++	};
 +
++	/* devices contained int the flipper chipset */
++	flipper {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "nintendo,flipper";
++		ranges = <0x0c000000 0x0c000000 0x00010000>;
++		interrupt-parent = <&PIC>;
 +
-+/* virtual address base for input/output, retrieved from device tree */
-+static void *ug_io_base;
++		video@0c002000 {
++			compatible = "nintendo,flipper-vi";
++			reg = <0x0c002000 0x100>;
++			interrupts = <8>;
++		};
 +
++		processor-interface@0c003000 {
++			compatible = "nintendo,flipper-pi";
++			reg = <0x0c003000 0x100>;
 +
-+static u32 ug_io_transaction(u32 in)
-+{
-+	u32 *csr_reg = ug_io_base + EXI_CSR;
-+	u32 *data_reg = ug_io_base + EXI_DATA;
-+	u32 *cr_reg = ug_io_base + EXI_CR;
-+	u32 csr, data, cr;
++			PIC: pic {
++				#interrupt-cells = <1>;
++				compatible = "nintendo,flipper-pic";
++				interrupt-controller;
++			};
++		};
 +
-+	/* select */
-+	csr = EXI_CSR_CLK_32MHZ | EXI_CSR_CS_0;
-+	out_be32(csr_reg, csr);
++		dsp@0c005000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "nintendo,flipper-dsp";
++			reg = <0x0c005000 0x200>;
++			interrupts = <6>;
 +
-+	/* read/write */
-+	data = in;
-+	out_be32(data_reg, data);
-+	cr = EXI_CR_TLEN(2) | EXI_CR_READ_WRITE | EXI_CR_TSTART;
-+	out_be32(cr_reg, cr);
++			memory@0 {
++				compatible = "nintendo,flipper-aram";
++				reg = <0 0x1000000>;	/* 16MB */
++			};
++		};
 +
-+	while (in_be32(cr_reg) & EXI_CR_TSTART)
-+		barrier();
++		disk@0c006000 {
++			compatible = "nintendo,flipper-di";
++			reg = <0x0c006000 0x40>;
++			interrupts = <2>;
++		};
 +
-+	/* deselect */
-+	out_be32(csr_reg, 0);
++		audio@0c006c00 {
++			compatible = "nintendo,flipper-ai";
++			reg = <0x0c006c00 0x20>;
++			interrupts = <6>;
++		};
 +
-+	data = in_be32(data_reg);
-+	return data;
-+}
++		gamepad-controller@0c006400 {
++			compatible = "nintendo,flipper-si";
++			reg = <0x0c006400 0x100>;
++			interrupts = <3>;
++		};
 +
-+static int ug_is_txfifo_ready(void)
-+{
-+	return ug_io_transaction(0xc0000000) & 0x04000000;
-+}
-+
-+static void ug_raw_putc(char ch)
-+{
-+	ug_io_transaction(0xb0000000 | (ch << 20));
-+}
-+
-+static void ug_putc(char ch)
-+{
-+	int count = 16;
-+
-+	if (!ug_io_base)
-+		return;
-+
-+	while (!ug_is_txfifo_ready() && count--)
-+		barrier();
-+	if (count)
-+		ug_raw_putc(ch);
-+}
-+
-+void ug_console_write(const char *buf, int len)
-+{
-+	char *b = (char *)buf;
-+
-+	while (len--) {
-+		if (*b == '\n')
-+			ug_putc('\r');
-+		ug_putc(*b++);
-+	}
-+}
-+
-+static int ug_is_adapter_present(void)
-+{
-+	if (!ug_io_base)
-+		return 0;
-+	return ug_io_transaction(0x90000000) == 0x04700000;
-+}
-+
-+static void *ug_grab_exi_io_base(void)
-+{
-+	u32 v;
-+	void *devp;
-+
-+	devp = find_node_by_compatible(NULL, "nintendo,flipper-exi");
-+	if (devp == NULL)
-+		goto err_out;
-+	if (getprop(devp, "virtual-reg", &v, sizeof(v)) != sizeof(v))
-+		goto err_out;
-+
-+	return (void *)v;
-+
-+err_out:
-+	return NULL;
-+}
-+
-+void *ug_probe(void)
-+{
-+	void *exi_io_base;
-+	int i;
-+
-+	exi_io_base = ug_grab_exi_io_base();
-+	if (!exi_io_base)
-+		return NULL;
-+
-+	/* look for a usbgecko on memcard slots A and B */
-+	for (i = 0; i < 2; i++) {
-+		ug_io_base = exi_io_base + 0x14 * i;
-+		if (ug_is_adapter_present())
-+			break;
-+	}
-+	if (i == 2)
-+		ug_io_base = NULL;
-+	return ug_io_base;
-+}
-+
-diff --git a/arch/powerpc/boot/ugecon.h b/arch/powerpc/boot/ugecon.h
-new file mode 100644
-index 0000000..4373753
---- /dev/null
-+++ b/arch/powerpc/boot/ugecon.h
-@@ -0,0 +1,24 @@
-+/*
-+ * arch/powerpc/boot/ugecon.h
-+ *
-+ * USB Gecko early bootwrapper console.
-+ * Copyright (C) 2008-2009 The GameCube Linux Team
-+ * Copyright (C) 2008,2009 Albert Herranz
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ *
-+ */
-+
-+#ifndef __UGECON_H
-+#define __UGECON_H
-+
-+extern void *ug_probe(void);
-+
-+extern void ug_putc(char ch);
-+extern void ug_console_write(const char *buf, int len);
-+
-+#endif /* __UGECON_H */
++		/* External Interface bus */
++		exi@0c006800 {
++			compatible = "nintendo,flipper-exi";
++			reg = <0x0c006800 0x40>;
++			virtual-reg = <0x0c006800>;
++			interrupts = <4>;
++		};
++        };
++};
 +
 -- 
 1.6.3.3
