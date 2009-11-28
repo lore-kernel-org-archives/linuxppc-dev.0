@@ -1,13 +1,14 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp141.mail.ukl.yahoo.com (smtp141.mail.ukl.yahoo.com
-	[77.238.184.72]) by ozlabs.org (Postfix) with SMTP id 26585B7C52
+	[77.238.184.72]) by ozlabs.org (Postfix) with SMTP id 1FFECB7CB9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 29 Nov 2009 07:44:12 +1100 (EST)
+	Sun, 29 Nov 2009 07:44:13 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v2 07/11] powerpc: gamecube/wii: udbg support for usbgecko
-Date: Sat, 28 Nov 2009 21:43:53 +0100
-Message-Id: <1259441037-15725-8-git-send-email-albert_herranz@yahoo.es>
+Subject: [RFC PATCH v2 08/11] powerpc: gamecube/wii: early debugging using
+	usbgecko
+Date: Sat, 28 Nov 2009 21:43:54 +0100
+Message-Id: <1259441037-15725-9-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1259441037-15725-1-git-send-email-albert_herranz@yahoo.es>
 References: <1259441037-15725-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
@@ -20,369 +21,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for using the USB Gecko adapter via the udbg facility on
-the Nintendo GameCube and Wii video game consoles.
+Add support for using the USB Gecko adapter as an early debugging
+console on the Nintendo GameCube and Wii video game consoles.
 The USB Gecko is a 3rd party memory card interface adapter that provides
 a EXI (External Interface) to USB serial converter.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
 v1 -> v2
-- Get rid of 0-#ifdef'ed code. Suggestion by Segher Boessenkool.
-- Probe dinamically for usbgecko. Suggestion by Segher Boessenkool.
-- Adapt to updated device tree.
+- Do not enclose declaration within #ifdef's. Suggestion by Arnd Bergmann.
+- Document apparent double setting of BATs.
+- Isolate hardcoded settings into functions.
+- Prevent compilation if not targeted for the GameCube or Wii.
 
- arch/powerpc/platforms/embedded6xx/Kconfig         |   13 +
- arch/powerpc/platforms/embedded6xx/Makefile        |    1 +
- arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |  272 ++++++++++++++++++++
- arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h |   30 +++
- 4 files changed, 316 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
- create mode 100644 arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
+ arch/powerpc/Kconfig.debug                         |    8 +++
+ arch/powerpc/include/asm/udbg.h                    |    1 +
+ arch/powerpc/kernel/head_32.S                      |   21 ++++++++
+ arch/powerpc/kernel/udbg.c                         |    2 +
+ arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |   53 ++++++++++++++++++++
+ arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h |    2 +
+ 6 files changed, 87 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
-index 97a2dbc..464e414 100644
---- a/arch/powerpc/platforms/embedded6xx/Kconfig
-+++ b/arch/powerpc/platforms/embedded6xx/Kconfig
-@@ -94,3 +94,16 @@ config MPC10X_STORE_GATHERING
- config GAMECUBE_COMMON
- 	bool
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 3b10051..11e385b 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -254,6 +254,14 @@ config PPC_EARLY_DEBUG_CPM
+ 	  using a CPM-based serial port.  This assumes that the bootwrapper
+ 	  has run, and set up the CPM in a particular way.
  
-+config USBGECKO_UDBG
-+	bool "USB Gecko udbg console for the Nintendo GameCube/Wii"
++config PPC_EARLY_DEBUG_USBGECKO
++	bool "Early debugging through the USB Gecko adapter"
 +	depends on GAMECUBE_COMMON
++	select USBGECKO_UDBG
 +	help
-+	  If you say yes to this option, support will be included for the
-+	  USB Gecko adapter as an udbg console.
-+	  The USB Gecko is a EXI to USB Serial converter that can be plugged
-+	  into a memcard slot in the Nintendo GameCube/Wii.
++	  Select this to enable early debugging for Nintendo GameCube/Wii
++	  consoles via an external USB Gecko adapter.
 +
-+	  This driver bypasses the EXI layer completely.
+ endchoice
+ 
+ config PPC_EARLY_DEBUG_44x_PHYSLOW
+diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
+index cd21e5e..11ae699 100644
+--- a/arch/powerpc/include/asm/udbg.h
++++ b/arch/powerpc/include/asm/udbg.h
+@@ -51,6 +51,7 @@ extern void __init udbg_init_btext(void);
+ extern void __init udbg_init_44x_as1(void);
+ extern void __init udbg_init_40x_realmode(void);
+ extern void __init udbg_init_cpm(void);
++extern void __init udbg_init_usbgecko(void);
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_UDBG_H */
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 829c3fe..c3f3737 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -164,6 +164,9 @@ __after_mmu_off:
+ #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
+ 	bl	setup_cpm_bat
+ #endif
++#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
++	bl	setup_usbgecko_bat
++#endif
+ 
+ /*
+  * Call setup_cpu for CPU 0 and initialize 6xx Idle
+@@ -1203,6 +1206,24 @@ setup_cpm_bat:
+ 	blr
+ #endif
+ 
++#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
++setup_usbgecko_bat:
++	/* prepare a BAT for early io */
++#if defined(CONFIG_GAMECUBE)
++	lis	r8, 0x0c00
++#elif defined(CONFIG_WII)
++	lis	r8, 0x0d00
++#else
++#error Invalid platform for USB Gecko based early debugging.
++#endif
++	mr	r11, r8
++	ori	r8, r8, 0x002a	/* uncached, guarded ,rw */
++	ori	r11, r11, 0x3	/* 128K */
++	mtspr	SPRN_DBAT1L, r8
++	mtspr	SPRN_DBAT1U, r11
++	blr
++#endif
 +
-+	  If in doubt, say N here.
-+
-diff --git a/arch/powerpc/platforms/embedded6xx/Makefile b/arch/powerpc/platforms/embedded6xx/Makefile
-index 0773c08..0ab7492 100644
---- a/arch/powerpc/platforms/embedded6xx/Makefile
-+++ b/arch/powerpc/platforms/embedded6xx/Makefile
-@@ -7,3 +7,4 @@ obj-$(CONFIG_STORCENTER)	+= storcenter.o
- obj-$(CONFIG_PPC_HOLLY)		+= holly.o
- obj-$(CONFIG_PPC_PRPMC2800)	+= prpmc2800.o
- obj-$(CONFIG_PPC_C2K)		+= c2k.o
-+obj-$(CONFIG_USBGECKO_UDBG)	+= usbgecko_udbg.o
+ #ifdef CONFIG_8260
+ /* Jump into the system reset for the rom.
+  * We first disable the MMU, and then jump to the ROM reset address.
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index fc9af47..e39cad8 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -60,6 +60,8 @@ void __init udbg_early_init(void)
+ 	udbg_init_40x_realmode();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_CPM)
+ 	udbg_init_cpm();
++#elif defined(CONFIG_PPC_EARLY_DEBUG_USBGECKO)
++	udbg_init_usbgecko();
+ #endif
+ 
+ #ifdef CONFIG_PPC_EARLY_DEBUG
 diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-new file mode 100644
-index 0000000..581ce61
---- /dev/null
+index 581ce61..f9d7991 100644
+--- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
 +++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-@@ -0,0 +1,272 @@
-+/*
-+ * arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-+ *
-+ * udbg serial input/output routines for the USB Gecko adapter.
-+ * Copyright (C) 2008-2009 The GameCube Linux Team
-+ * Copyright (C) 2008,2009 Albert Herranz
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ *
-+ */
+@@ -270,3 +270,56 @@ done:
+ 		of_node_put(np);
+ 	return;
+ }
 +
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
++#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
 +
-+#include <mm/mmu_decl.h>
-+
-+#include "usbgecko_udbg.h"
-+
-+
-+#define EXI_CLK_32MHZ           5
-+
-+#define EXI_CSR                 0x00
-+#define   EXI_CSR_CLKMASK       (0x7<<4)
-+#define     EXI_CSR_CLK_32MHZ   (EXI_CLK_32MHZ<<4)
-+#define   EXI_CSR_CSMASK        (0x7<<7)
-+#define     EXI_CSR_CS_0        (0x1<<7)  /* Chip Select 001 */
-+
-+#define EXI_CR                  0x0c
-+#define   EXI_CR_TSTART         (1<<0)
-+#define   EXI_CR_WRITE		(1<<2)
-+#define   EXI_CR_READ_WRITE     (2<<2)
-+#define   EXI_CR_TLEN(len)      (((len)-1)<<4)
-+
-+#define EXI_DATA                0x10
-+
-+#define UG_READ_ATTEMPTS	100
-+#define UG_WRITE_ATTEMPTS	100
-+
-+
-+static void __iomem *ug_io_base;
-+
-+/*
-+ * Performs one input/output transaction between the exi host and the usbgecko.
-+ */
-+static u32 ug_io_transaction(u32 in)
++static void __iomem * __init udbg_early_grab_exi_io_base(void)
 +{
-+	u32 __iomem *csr_reg = ug_io_base + EXI_CSR;
-+	u32 __iomem *data_reg = ug_io_base + EXI_DATA;
-+	u32 __iomem *cr_reg = ug_io_base + EXI_CR;
-+	u32 csr, data, cr;
-+
-+	/* select */
-+	csr = EXI_CSR_CLK_32MHZ | EXI_CSR_CS_0;
-+	out_be32(csr_reg, csr);
-+
-+	/* read/write */
-+	data = in;
-+	out_be32(data_reg, data);
-+	cr = EXI_CR_TLEN(2) | EXI_CR_READ_WRITE | EXI_CR_TSTART;
-+	out_be32(cr_reg, cr);
-+
-+	while (in_be32(cr_reg) & EXI_CR_TSTART)
-+		barrier();
-+
-+	/* deselect */
-+	out_be32(csr_reg, 0);
-+
-+	/* result */
-+	data = in_be32(data_reg);
-+
-+	return data;
++#if defined(CONFIG_GAMECUBE)
++	return (void __iomem *)0x0c006800;
++#elif defined(CONFIG_WII)
++	return (void __iomem *)0x0d006800;
++#else
++#error Invalid platform for USB Gecko based early debugging.
++#endif
 +}
 +
 +/*
-+ * Returns true if an usbgecko adapter is found.
++ * USB Gecko early debug support initialization for udbg.
 + */
-+static int ug_is_adapter_present(void)
++void __init udbg_init_usbgecko(void)
 +{
-+	if (!ug_io_base)
-+		return 0;
++	void __iomem *exi_io_base;
++	unsigned long addr;
 +
-+	return ug_io_transaction(0x90000000) == 0x04700000;
-+}
++	/*
++	 * At this point we have a BAT already setup that enables I/O
++	 * to the EXI hardware.
++	 */
 +
-+/*
-+ * Returns true if the TX fifo is ready for transmission.
-+ */
-+static int ug_is_txfifo_ready(void)
-+{
-+	return ug_io_transaction(0xc0000000) & 0x04000000;
-+}
-+
-+/*
-+ * Tries to transmit a character.
-+ * If the TX fifo is not ready the result is undefined.
-+ */
-+static void ug_raw_putc(char ch)
-+{
-+	ug_io_transaction(0xb0000000 | (ch << 20));
-+}
-+
-+/*
-+ * Transmits a character.
-+ * It silently fails if the TX fifo is not ready after a number of retries.
-+ */
-+static void ug_putc(char ch)
-+{
-+	int count = UG_WRITE_ATTEMPTS;
-+
-+	if (!ug_io_base)
++	exi_io_base = udbg_early_grab_exi_io_base();
++	if (!exi_io_base)
 +		return;
 +
-+	if (ch == '\n')
-+		ug_putc('\r');
++	/* try to detect a USB Gecko */
++	if (!ug_udbg_probe(exi_io_base))
++		return;
 +
-+	while (!ug_is_txfifo_ready() && count--)
-+		barrier();
-+	if (count)
-+		ug_raw_putc(ch);
++	/* we found a USB Gecko, load udbg hooks */
++	udbg_putc = ug_udbg_putc;
++	udbg_getc = ug_udbg_getc;
++	udbg_getc_poll = ug_udbg_getc_poll;
++
++	/*
++	 * Prepare again the same BAT for MMU_init.
++	 * This allows udbg I/O to continue working after the MMU is
++	 * turned on for real.
++	 *
++	 * We are assuming here that exi_io_base is identity mapped.
++	 */
++	addr = ((unsigned long)exi_io_base) & 0xffff0000;
++	setbat(1, addr, addr, 128*1024, PAGE_KERNEL_NCG);
 +}
 +
-+/*
-+ * Returns true if the RX fifo is ready for transmission.
-+ */
-+static int ug_is_rxfifo_ready(void)
-+{
-+	return ug_io_transaction(0xd0000000) & 0x04000000;
-+}
++#endif /* CONFIG_PPC_EARLY_DEBUG_USBGECKO */
 +
-+/*
-+ * Tries to receive a character.
-+ * If a character is unavailable the function returns -1.
-+ */
-+static int ug_raw_getc(void)
-+{
-+	u32 data = ug_io_transaction(0xa0000000);
-+	if (data & 0x08000000)
-+		return (data >> 16) & 0xff;
-+	else
-+		return -1;
-+}
-+
-+/*
-+ * Receives a character.
-+ * It fails if the RX fifo is not ready after a number of retries.
-+ */
-+static int ug_getc(void)
-+{
-+	int count = UG_READ_ATTEMPTS;
-+
-+	if (!ug_io_base)
-+		return -1;
-+
-+	while (!ug_is_rxfifo_ready() && count--)
-+		barrier();
-+	return ug_raw_getc();
-+}
-+
-+/*
-+ * udbg functions.
-+ *
-+ */
-+
-+/*
-+ * Transmits a character.
-+ */
-+void ug_udbg_putc(char ch)
-+{
-+	ug_putc(ch);
-+}
-+
-+/*
-+ * Receives a character. Waits until a character is available.
-+ */
-+static int ug_udbg_getc(void)
-+{
-+	int ch;
-+
-+	while ((ch = ug_getc()) == -1)
-+		barrier();
-+	return ch;
-+}
-+
-+/*
-+ * Receives a character. If a character is not available, returns -1.
-+ */
-+static int ug_udbg_getc_poll(void)
-+{
-+	if (!ug_is_rxfifo_ready())
-+		return -1;
-+	return ug_getc();
-+}
-+
-+/*
-+ * Retrieves and prepares the virtual address needed to access the hardware.
-+ */
-+static void __iomem *ug_udbg_setup_exi_io_base(struct device_node *np)
-+{
-+	void __iomem *exi_io_base = NULL;
-+	phys_addr_t paddr;
-+	const unsigned int *reg;
-+
-+	reg = of_get_property(np, "reg", NULL);
-+	if (reg) {
-+		paddr = of_translate_address(np, reg);
-+		if (paddr)
-+			exi_io_base = ioremap(paddr, reg[1]);
-+	}
-+	return exi_io_base;
-+}
-+
-+/*
-+ * Checks if a USB Gecko adapter is inserted in any memory card slot.
-+ */
-+static void __iomem *ug_udbg_probe(void __iomem *exi_io_base)
-+{
-+	int i;
-+
-+	/* look for a usbgecko on memcard slots A and B */
-+	for (i = 0; i < 2; i++) {
-+		ug_io_base = exi_io_base + 0x14 * i;
-+		if (ug_is_adapter_present())
-+			break;
-+	}
-+	if (i == 2)
-+		ug_io_base = NULL;
-+	return ug_io_base;
-+
-+}
-+
-+/*
-+ * USB Gecko udbg support initialization.
-+ */
-+void __init ug_udbg_init(void)
-+{
-+	struct device_node *np;
-+	void __iomem *exi_io_base;
-+
-+	if (ug_io_base)
-+		udbg_printf("%s: early -> final\n", __func__);
-+
-+	np = of_find_compatible_node(NULL, NULL, "nintendo,flipper-exi");
-+	if (!np) {
-+		udbg_printf("%s: EXI node not found\n", __func__);
-+		goto done;
-+	}
-+
-+	exi_io_base = ug_udbg_setup_exi_io_base(np);
-+	if (!exi_io_base) {
-+		udbg_printf("%s: failed to setup EXI io base\n", __func__);
-+		goto done;
-+	}
-+
-+	if (!ug_udbg_probe(exi_io_base)) {
-+		udbg_printf("usbgecko_udbg: not found\n");
-+		iounmap(exi_io_base);
-+	} else {
-+		udbg_putc = ug_udbg_putc;
-+		udbg_getc = ug_udbg_getc;
-+		udbg_getc_poll = ug_udbg_getc_poll;
-+		udbg_printf("usbgecko_udbg: ready\n");
-+	}
-+
-+done:
-+	if (np)
-+		of_node_put(np);
-+	return;
-+}
 diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-new file mode 100644
-index 0000000..3929de3
---- /dev/null
+index 3929de3..bb6cde4 100644
+--- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
 +++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-@@ -0,0 +1,30 @@
-+/*
-+ * arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-+ *
-+ * udbg serial input/output routines for the USB Gecko adapter.
-+ * Copyright (C) 2008-2009 The GameCube Linux Team
-+ * Copyright (C) 2008,2009 Albert Herranz
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ *
-+ */
+@@ -27,4 +27,6 @@ static inline void __init ug_udbg_init(void)
+ 
+ #endif /* CONFIG_USBGECKO_UDBG */
+ 
++void __init udbg_init_usbgecko(void);
 +
-+#ifndef __USBGECKO_UDBG_H
-+#define __USBGECKO_UDBG_H
-+
-+#ifdef CONFIG_USBGECKO_UDBG
-+
-+extern void __init ug_udbg_init(void);
-+
-+#else
-+
-+static inline void __init ug_udbg_init(void)
-+{
-+}
-+
-+#endif /* CONFIG_USBGECKO_UDBG */
-+
-+#endif /* __USBGECKO_UDBG_H */
+ #endif /* __USBGECKO_UDBG_H */
 -- 
 1.6.3.3
