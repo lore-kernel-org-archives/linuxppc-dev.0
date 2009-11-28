@@ -1,38 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 379A41007D1
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f187.google.com (mail-yw0-f187.google.com
+	[209.85.211.187]) by ozlabs.org (Postfix) with ESMTP id 4E3291007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 28 Nov 2009 13:26:55 +1100 (EST)
-Subject: Re: [RFC PATCH 11/19] powerpc: gamecube/wii: flipper interrupt
-	controller support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <99B59D17-B6C7-42F7-9DF2-E803578651E9@kernel.crashing.org>
+	Sat, 28 Nov 2009 14:56:40 +1100 (EST)
+Received: by ywh17 with SMTP id 17so1991575ywh.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 27 Nov 2009 19:56:38 -0800 (PST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1259357718.2076.7.camel@pasglop>
 References: <1258927311-4340-1-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-3-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-4-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-5-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-6-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-7-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-8-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-9-git-send-email-albert_herranz@yahoo.es>
-	<1258927311-4340-10-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-11-git-send-email-albert_herranz@yahoo.es>
 	<1258927311-4340-12-git-send-email-albert_herranz@yahoo.es>
-	<8E6E11A2-25F1-4AB8-B42E-58C269018CD2@kernel.crashing.org>
-	<4B0D65C5.8090304@yahoo.es>
-	<7556BF73-5D6D-4817-A02F-3DFA05E9AC58@kernel.crashing.org>
-	<4B0EFBB2.9090206@yahoo.es>
-	<9741644C-BED3-45D9-B405-4C4FC2184DC7@kernel.crashing.org>
-	<786BBFA3-39AF-4100-8406-6B32258D3174@kernel.crashing.org>
-	<4B100BF4.5080209@yahoo.es> <1259357673.2076.6.camel@pasglop>
-	<99B59D17-B6C7-42F7-9DF2-E803578651E9@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 28 Nov 2009 13:26:49 +1100
-Message-ID: <1259375209.2076.12.camel@pasglop>
-Mime-Version: 1.0
+	<1258927311-4340-13-git-send-email-albert_herranz@yahoo.es>
+	<F5450BB0-FBBB-48D5-A054-CB147FD43EAA@kernel.crashing.org>
+	<4B0D6837.4020407@yahoo.es>
+	<76CF44C1-3CC1-43B5-958D-E1A7984A44A9@kernel.crashing.org>
+	<4B0EFC1D.5030806@yahoo.es>
+	<BBB65A84-B871-474F-8666-90CCD10D90B6@kernel.crashing.org>
+	<1259357718.2076.7.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 27 Nov 2009 20:56:18 -0700
+Message-ID: <fa686aa40911271956j2d409c5ak4198964e523d8dee@mail.gmail.com>
+Subject: Re: [RFC PATCH 12/19] powerpc: gamecube: platform support
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -43,20 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2009-11-28 at 03:04 +0100, Segher Boessenkool wrote:
-> >> It turns out that we _need_ to ack the RSW (Reset Switch)
-> interrupt.
-> >> The other interrupt sources checked (EXI, VI, DI, AI, DSP/ARAM)
-> need
-> >> no explicit ack.
-> >
-> > That would probably mean that the reset switch interrupt is an edge
-> > interrupt.
-> 
-> Nah, it means that the RSW is a flip-flop.
+On Fri, Nov 27, 2009 at 2:35 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Fri, 2009-11-27 at 01:09 +0100, Segher Boessenkool wrote:
+>> >>> We need it as it currently doesn't match with the default bus ids.
+>> >>
+>> >>> Should I introduce a .type property matching any of those above
+>> >>> in the
+>> >>> soc node, and get rid of the explicit bus probe?
+>> >>
+>> >> You don't need any fake bus as far as I can see, just probe the
+>> >> devices
+>> >> you want.
+>> >
+>> > But it's way easier to let the bus probe do it for us. I don't see
+>> > the win here.
+>>
+>> As long as this doesn't leak into the device tree in any way, I don't
+>> care. =A0How's that? :-)
+>
+> I still like having the node that encloses all the devices. Not sure
+> why, but I like it :-)
 
-Controlled by the PIC's ISR ? That would be weird. But heh, it's custom
-(aka crap) HW so ... :-)
+I do to.  It documents that all these things are enclosed in a single
+package and provides grouping device nodes with nodes describing
+shared registers and the like.
 
-Cheers,
-Ben.
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
