@@ -1,18 +1,30 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 0DF7EB7082
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 00:15:42 +1100 (EST)
-Message-ID: <4B13C576.5020405@redhat.com>
-Date: Mon, 30 Nov 2009 15:15:34 +0200
-From: Avi Kivity <avi@redhat.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 63FF1B6EDF
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 00:41:53 +1100 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e8.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAU9bJ8E031122
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 04:37:19 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nAUDfmv3140322
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 08:41:49 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nAUDfm1J016633
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 08:41:48 -0500
+Date: Mon, 30 Nov 2009 08:41:45 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Curtis Wald <CWald@WatchGuardVideo.com>
+Subject: Re: [PATCH] POWERPC 4xx: Fix PCI in AMCC 440EP Yosemite DTS
+Message-ID: <20091130134145.GA2937@zod.rchland.ibm.com>
+References: <13F6A75BE29CE44F801B912901C3EF27022A3993@wgv4.watchguardvideo.local>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] PPC: Sync guest visible MMU state
-References: <1259586122-19155-1-git-send-email-agraf@suse.de>
-In-Reply-To: <1259586122-19155-1-git-send-email-agraf@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: kvm-ppc <kvm-ppc@vger.kernel.org>, kvm@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <13F6A75BE29CE44F801B912901C3EF27022A3993@wgv4.watchguardvideo.local>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,17 +34,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/30/2009 03:02 PM, Alexander Graf wrote:
-> Currently userspace has no chance to find out which virtual address space we're
-> in and resolve addresses. While that is a big problem for migration, it's also
-> unpleasent when debugging, as gdb and the monitor don't work on virtual
-> addresses.
+On Mon, Nov 16, 2009 at 11:36:40AM -0600, Curtis Wald wrote:
+>Yosemite.dts stanza for PCI was copied from Bamboo which has four PCI
+>slots; Yosemite only has one PCI slot which is mapped to
+>IDSEL 12, ADDR 22, IRQ2 Vector 25, INTA.
 >
-> This patch exports enough of the MMU segment state to userspace to make
-> debugging work and thus also includes the groundwork for migration.
->    
+>Signed-off-by: Curtis Wald <cwald@watchguardvideo.com>
 
-Looks good.  Ben, please carry this in your tree.
+Your patch looks correct (I think), but is very badly word wrapped and
+whitespace damaged.  Could you resend?
 
--- 
-error compiling committee.c: too many arguments to function
+josh
