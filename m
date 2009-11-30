@@ -1,34 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
-	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id B69271007D2
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 02:59:30 +1100 (EST)
-Received: by yxe8 with SMTP id 8so2903668yxe.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 07:59:28 -0800 (PST)
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C9AEA1007D3
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 04:58:04 +1100 (EST)
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e7.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAUHrQU0004276
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 12:53:26 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nAUHw0FN1908804
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 12:58:00 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nAUHvxoO005126
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 12:58:00 -0500
+Date: Mon, 30 Nov 2009 12:57:50 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] powerpc: Fix DEBUG_HIGHMEM build break from d4515646699
+Message-ID: <20091130175750.GD2937@zod.rchland.ibm.com>
+References: <1259015333-23485-1-git-send-email-beckyb@kernel.crashing.org>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com>
-References: <d1f76ba30911300038w272578dfx9adb116bde493e00@mail.gmail.com>
-	<d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 30 Nov 2009 08:59:08 -0700
-Message-ID: <fa686aa40911300759h153b3300uc54b5d1871bfc839@mail.gmail.com>
-Subject: Re: Ethernet issues with lite5200 board from linux-2.6.31
-To: Yogesh Chaudhari <mr.yogesh@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Robin Gareus <robin@gareus.org>, rt-users <linux-rt-users@vger.kernel.org>,
-	Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Frank Rowand <frank.rowand@am.sony.com>,
-	Philippe Reynes <philippe.reynes@isismpp.fr>,
-	Mark Knecht <markknecht@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Sven-Thorsten Dietrich <sdietrich@novell.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Clark Williams <williams@redhat.com>, Darren Hart <dvhltc@us.ibm.com>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Jon Masters <jcm@redhat.com>, John Kacur <jkacur@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>, Jan Blunck <jblunck@suse.de>,
-	Gregory Haskins <ghaskins@novell.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1259015333-23485-1-git-send-email-beckyb@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,44 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 30, 2009 at 2:50 AM, Yogesh Chaudhari <mr.yogesh@gmail.com> wro=
-te:
-> Hello,
-> =A0 =A0 =A0 =A0 I am running linux kernel with rt patch on embedded board
-> based on lite5200 eval board. From linux-2.6.31 release, in which the
-> mdio patch has gone inside, =A0the fec ethernet does not come up on this
-> board. I get the following message at startup:
-> mpc52xx MII bus: probed
-> mdio_bus f0003000: error probing PHY at address 1
+On Mon, Nov 23, 2009 at 04:28:53PM -0600, Becky Bruce wrote:
+>Code was added to mm/higmem.c that depends on several
+>kmap types that powerpc does not support.  We add dummy
+>invalid definitions for KM_NMI, KM_NM_PTE, and KM_IRQ_PTE.
 >
+>According to list discussion, this fix should not be needed
+>anymore starting with 2.6.33.  The code is commented to this
+>effect so hopefully we will remember to remove this.
 >
-> After the bootup if I try to do a ifconfig I get the message:
-> net eth2: of_phy_connect failed
->
->
-> If I change the value of reg in dts file (lite5200.dts) to 0 then this
-> ethernet comes up. However upto this kernel version, this was not
-> required.
->
-> Ethernet does not come up on board with original lite5200.dts file
+>Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
 
-Is your board based on the Lite5200 or the Lite5200B?  The phys are at
-different addresses on those two revisions of the board.  There is a
-different .dts file for each board.
+Ben, I see you have this queued up in you 'next' branch, but this seems to be
+impacting 2.6.32 and according to the comments won't be needed in 2.6.33.
+Right now, 2.6.32 doesn't build for a general Fedora ppc32 kernel because of
+this bug.  Should this be sent to Linus for .32?
 
-> phy0: ethernet-phy@1 {
-> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D=
- <1>;
-> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->
-> Ethernet comes up on board with this change
-> phy0: ethernet-phy@1 {
-> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D=
- <0>;
-> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+( http://ppc.koji.fedoraproject.org/koji/getfile?taskID=31439&name=build.log
+for the curious among you that want to look at the build log)
 
-Some PHYs treat address 0 as the 'broadcast' address.  You need to
-fill in this field (and modify the ethernet-phy@<address> node name)
-to reflect the address that your phy is actually at.
-
-g.
+josh
