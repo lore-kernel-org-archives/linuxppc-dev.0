@@ -1,34 +1,19 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 91A02B6F15
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 02:18:19 +1100 (EST)
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
-	by e5.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nAUF7BQO016944
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 10:07:11 -0500
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nAUFIFVn136482
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 10:18:15 -0500
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nAUFHr6Y005993
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 08:17:53 -0700
-Subject: Re: hypervisor call tracepoints  hcall_stats touchup.
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: rostedt@goodmis.org
-In-Reply-To: <1259183974.21397.73.camel@gandalf.stny.rr.com>
-References: <1259165529.16349.191.camel@lexx>
-	<1259183974.21397.73.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 30 Nov 2009 09:17:52 -0600
-Message-ID: <1259594272.16349.393.camel@lexx>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>, mingo@redhat.com,
-	Anton Blanchard <anton@samba.org>
-Reply-To: will_schmidt@vnet.ibm.com
+Return-Path: <CWald@WatchGuardVideo.com>
+Received: from wgv4.watchguardvideo.com (mail.watchguardvideo.com
+	[69.198.24.138]) by ozlabs.org (Postfix) with ESMTP id A68791007D3
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 02:24:10 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] POWERPC 4xx: Fix PCI in AMCC 440EP Yosemite DTS
+Date: Mon, 30 Nov 2009 09:25:51 -0600
+Message-ID: <13F6A75BE29CE44F801B912901C3EF270233B6A4@wgv4.watchguardvideo.local>
+In-Reply-To: <20091130134145.GA2937@zod.rchland.ibm.com>
+References: <13F6A75BE29CE44F801B912901C3EF27022A3993@wgv4.watchguardvideo.local>
+	<20091130134145.GA2937@zod.rchland.ibm.com>
+From: "Curtis Wald" <CWald@WatchGuardVideo.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,20 +23,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-11-25 at 16:19 -0500, Steven Rostedt wrote:
-> On Wed, 2009-11-25 at 10:12 -0600, Will Schmidt wrote:
-> 
-> > Tested-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-> > Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-> 
-> Isn't it assumed that the one that made the patch also tested it? Well I
-> would hope that is the norm.
+Josh,
+Here is a resend of the Yosemite.dts patch, deleting tabs and spaces in
+the IDSEL section that should look better when viewing as 80 column.=20
 
-I like to make that assumption, but wanted to be clear on the point for
-anyone with doubts. :-)
+The comments added before the ranges declaration provides info on the
+array element as processed by the kernel - there is no runtime
+difference for this change, but adds some background. Since the ranges
+declaration is beyond 80 columns the comments added are lined up with
+the entries and when viewed as 80 column will wrap. If you have
+suggestions on correcting this I will implement.=20
+Thanks,
+-Curtis
 
 
-> 
-> -- Steve
-> 
-> 
+
+
+The stanza for PCI was copied from Bamboo which has four PCI
+slots; Yosemite only has one PCI slot which is mapped to
+IDSEL 12, ADDR 22, IRQ2 Vector 25, INTA.
+
+Signed-off-by: Curtis Wald <cwald@watchguardvideo.com>
+---
+ arch/powerpc/boot/dts/yosemite.dts |   17 +++++------------
+ 1 files changed, 5 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/yosemite.dts
+b/arch/powerpc/boot/dts/yosemite.dts
+index 1fa3cb4..8328be5 100644
+--- a/arch/powerpc/boot/dts/yosemite.dts
++++ b/arch/powerpc/boot/dts/yosemite.dts
+@@ -276,27 +276,19 @@
+ 	 * later cannot be changed. Chip supports a second
+ 	 * IO range but we don't use it for now
+ 	 */
++
++ /*       u32              u64                   u64
+u64  */
++ /*       pci_space        pci_addr              cpu_addr
+size */
+ ranges =3D <0x02000000 0x00000000 0xa0000000 0x00000000 0xa0000000
+0x00000000 0x20000000
+ 	     0x01000000 0x00000000 0x00000000 0x00000000 0xe8000000
+0x00000000 0x00010000>;
+=20
+ 	/* Inbound 2GB range starting at 0 */
+ 	dma-ranges =3D <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
+=20
+-	/* Bamboo has all 4 IRQ pins tied together per slot */
+ 	interrupt-map-mask =3D <0xf800 0x0 0x0 0x0>;
+ 	interrupt-map =3D <
+-		/* IDSEL 1 */
+-		0x800 0x0 0x0 0x0 &UIC0 0x1c 0x8
+-
+-		/* IDSEL 2 */
+-		0x1000 0x0 0x0 0x0 &UIC0 0x1b 0x8
+-
+-		/* IDSEL 3 */
+-		0x1800 0x0 0x0 0x0 &UIC0 0x1a 0x8
+-
+-		/* IDSEL 4 */
+-		0x2000 0x0 0x0 0x0 &UIC0 0x19 0x8
++		/* IDSEL 12, ADDR 22, INTA, IRQ2 =3D Vector 25, 0x19 */
++		0x6000 0x0 0x0 0x0 &UIC0 0x19 0x8
+ 	>;
+ };
+};
+--=20
+1.5.5.6
+
+
+> -----Original Message-----
+> From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com]
+> Sent: Monday, November 30, 2009 7:42 AM
+> To: Curtis Wald
+> Cc: mporter@kernel.crashing.org; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH] POWERPC 4xx: Fix PCI in AMCC 440EP Yosemite DTS
+>=20
+> On Mon, Nov 16, 2009 at 11:36:40AM -0600, Curtis Wald wrote:
+> >Yosemite.dts stanza for PCI was copied from Bamboo which has four PCI
+> >slots; Yosemite only has one PCI slot which is mapped to
+> >IDSEL 12, ADDR 22, IRQ2 Vector 25, INTA.
+> >
+> >Signed-off-by: Curtis Wald <cwald@watchguardvideo.com>
+>=20
+> Your patch looks correct (I think), but is very badly word wrapped and
+> whitespace damaged.  Could you resend?
+>=20
+> josh
