@@ -1,21 +1,23 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp133.mail.ukl.yahoo.com (smtp133.mail.ukl.yahoo.com
-	[77.238.184.64]) by ozlabs.org (Postfix) with SMTP id 204CD1007D2
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A4CEB1007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 Nov 2009 17:28:56 +1100 (EST)
-Message-ID: <4B136624.4030505@yahoo.es>
-Date: Mon, 30 Nov 2009 07:28:52 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH v2 08/11] powerpc: gamecube/wii: early debugging using
-	usbgecko
-References: <1259441037-15725-1-git-send-email-albert_herranz@yahoo.es>	
-	<1259441037-15725-9-git-send-email-albert_herranz@yahoo.es>	
-	<1259536695.2076.40.camel@pasglop> <4B135D3D.9030006@yahoo.es>
-	<1259561692.2076.78.camel@pasglop>
-In-Reply-To: <1259561692.2076.78.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 30 Nov 2009 17:43:03 +1100 (EST)
+Subject: Re: [RFC PATCH v2 08/11] powerpc: gamecube/wii: early debugging
+	using usbgecko
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Albert Herranz <albert_herranz@yahoo.es>
+In-Reply-To: <4B136624.4030505@yahoo.es>
+References: <1259441037-15725-1-git-send-email-albert_herranz@yahoo.es>
+	<1259441037-15725-9-git-send-email-albert_herranz@yahoo.es>
+	<1259536695.2076.40.camel@pasglop>  <4B135D3D.9030006@yahoo.es>
+	<1259561692.2076.78.camel@pasglop>  <4B136624.4030505@yahoo.es>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Nov 2009 17:42:57 +1100
+Message-ID: <1259563377.2076.84.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,75 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2009-11-30 at 06:50 +0100, Albert Herranz wrote:
->> Benjamin Herrenschmidt wrote:
->>> On Sat, 2009-11-28 at 21:43 +0100, Albert Herranz wrote:
->>>> +        * Prepare again the same BAT for MMU_init.
->>>> +        * This allows udbg I/O to continue working after the MMU is
->>>> +        * turned on for real.
->>>> +        *
->>>> +        * We are assuming here that exi_io_base is identity mapped.
->>>> +        */
->>>> +       addr = ((unsigned long)exi_io_base) & 0xffff0000;
->>>> +       setbat(1, addr, addr, 128*1024, PAGE_KERNEL_NCG); 
->>> How do you prevent that from overlapping otherwise valid kernel
->>> mappings ?
->>>
->> ug_udbg_init() is called from ppc_md.init_early.
->> It doesn't overlap any valid kernel mappings because exi_io_base is
->> hardcoded to an i/o region not used yet by the kernel.
+On Mon, 2009-11-30 at 07:28 +0100, Albert Herranz wrote:
 > 
-> But that doesn't allocate virtual space does it ?
 > 
+> Heh, I was told to identity map it :)
 
-No.
+Hah ? By whome ? :-)
 
->> See udbg_early_grab_exi_io_base().
-> 
-> Yeah, I see that:
-> 
-> +#if defined(CONFIG_GAMECUBE)
-> +       return (void __iomem *)0x0c006800;
-> +#elif defined(CONFIG_WII)
-> +       return (void __iomem *)0x0d006800;
-> +#else
-> 
-> So you'll have BATs floating over user addresses ? That sounds fishy :-)
-> 
+> Originally it used kernel address space (
+> 0xc{c,d}006800).
 
-Heh, I was told to identity map it :)
-Originally it used kernel address space (0xc{c,d}006800).
+In any case, kernel space also needs to be reserved. There is no magic
+free spot in the kernel virtual space unless you reserve some either by
+lowering ioremap_bot early at boot or by using the fixmap (well, there
+is if you don't enable HIGHMEM but that's going away soon :-)
 
-> It should be trivial to just create a fixmap entry instead. That will
-> give you a virtual address that is known at compile time (so you can
-> use it from head_32.S as well for setting up your BAT).
-> 
-> Actually you probably need more than one entry in there since it needs
-> to be big enough to cover a BAT min size and be aligned, but it's not
-> -that- hard to do (I think x86 does similar tricks in their fixmap
-> iirc) 
-> 
+> I've never worked with fixmap entries. I'll look into it. Thanks.
 
-I've never worked with fixmap entries. I'll look into it. Thanks.
+Look at fixmap.h, basically it's an emum of reserved pages starting near
+the top of the address space and walking down from there. The kernel
+ensure that space stays reserved and it gives you things calculated at
+compile time (so via asm-offsets.h you can feed them into your asm).
 
->> The setbat just prepares again, exactly in the same way, the same BAT that we got
->> setup by setup_usbgecko_bat in head_32.S.
-> 
->  .../...
-> 
->>> You need to allocate the virtual space. For a debug thing like that, you
->>> could use the fixmap. In fact, I think we should create a fixmap entry
->>> or two always available for use by early debug.
->>>
->> Or give us back ppc_md.setup_io_mappings :)
-> 
-> Not happening :-) Or if you get one, it will allocate virtual addresses
-> and so you cannot rely on an identity mapping.
-> 
+I'm half tempted to say we should just bluntly reserve the top 128K (or
+whatever is the min size of a BAT) for that sort of debug crap though
+and be done with it :-) Always handy to have some space we know we can
+mess around with.
 
-But we can use then a known mapping scheme, and have all the i/o region covered by bats there.
-We can do that already, yes, but setup_io_mappings purpose was originally that, no?
+> But we can use then a known mapping scheme, and have all the i/o
+> region covered by bats there.
 
-Thanks,
-Albert
+We could yes. I was hoping Grant would produce something there but he
+hadn't had time yet.,
+
+> We can do that already, yes, but setup_io_mappings purpose was
+> originally that, no?
+
+Sort-of. I don't like hard coding virtual addresses, it causes all sort
+of problems (other than in the fixmap). It wouldn't be very hard to
+bring back some variant of io_block_mapping() though that works by
+moving ioremap_bot down early during boot, and allows you to setup some
+IO BATs for perfs reasons. Subsequent ioremaps would automatically pick
+up that space and benefit from it.
+
+Cheers,
+Ben.
