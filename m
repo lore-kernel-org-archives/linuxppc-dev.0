@@ -1,19 +1,34 @@
-Return-Path: <CWald@WatchGuardVideo.com>
-Received: from wgv4.watchguardvideo.com (mail.watchguardvideo.com
-	[69.198.24.138]) by ozlabs.org (Postfix) with ESMTP id A68791007D3
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 02:24:10 +1100 (EST)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
+	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id B69271007D2
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 02:59:30 +1100 (EST)
+Received: by yxe8 with SMTP id 8so2903668yxe.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 07:59:28 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] POWERPC 4xx: Fix PCI in AMCC 440EP Yosemite DTS
-Date: Mon, 30 Nov 2009 09:25:51 -0600
-Message-ID: <13F6A75BE29CE44F801B912901C3EF270233B6A4@wgv4.watchguardvideo.local>
-In-Reply-To: <20091130134145.GA2937@zod.rchland.ibm.com>
-References: <13F6A75BE29CE44F801B912901C3EF27022A3993@wgv4.watchguardvideo.local>
-	<20091130134145.GA2937@zod.rchland.ibm.com>
-From: "Curtis Wald" <CWald@WatchGuardVideo.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com>
+References: <d1f76ba30911300038w272578dfx9adb116bde493e00@mail.gmail.com>
+	<d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 30 Nov 2009 08:59:08 -0700
+Message-ID: <fa686aa40911300759h153b3300uc54b5d1871bfc839@mail.gmail.com>
+Subject: Re: Ethernet issues with lite5200 board from linux-2.6.31
+To: Yogesh Chaudhari <mr.yogesh@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Robin Gareus <robin@gareus.org>, rt-users <linux-rt-users@vger.kernel.org>,
+	Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Frank Rowand <frank.rowand@am.sony.com>,
+	Philippe Reynes <philippe.reynes@isismpp.fr>,
+	Mark Knecht <markknecht@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Sven-Thorsten Dietrich <sdietrich@novell.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Clark Williams <williams@redhat.com>, Darren Hart <dvhltc@us.ibm.com>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>,
+	Jon Masters <jcm@redhat.com>, John Kacur <jkacur@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, Jan Blunck <jblunck@suse.de>,
+	Gregory Haskins <ghaskins@novell.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,91 +38,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Josh,
-Here is a resend of the Yosemite.dts patch, deleting tabs and spaces in
-the IDSEL section that should look better when viewing as 80 column.=20
+On Mon, Nov 30, 2009 at 2:50 AM, Yogesh Chaudhari <mr.yogesh@gmail.com> wro=
+te:
+> Hello,
+> =A0 =A0 =A0 =A0 I am running linux kernel with rt patch on embedded board
+> based on lite5200 eval board. From linux-2.6.31 release, in which the
+> mdio patch has gone inside, =A0the fec ethernet does not come up on this
+> board. I get the following message at startup:
+> mpc52xx MII bus: probed
+> mdio_bus f0003000: error probing PHY at address 1
+>
+>
+> After the bootup if I try to do a ifconfig I get the message:
+> net eth2: of_phy_connect failed
+>
+>
+> If I change the value of reg in dts file (lite5200.dts) to 0 then this
+> ethernet comes up. However upto this kernel version, this was not
+> required.
+>
+> Ethernet does not come up on board with original lite5200.dts file
 
-The comments added before the ranges declaration provides info on the
-array element as processed by the kernel - there is no runtime
-difference for this change, but adds some background. Since the ranges
-declaration is beyond 80 columns the comments added are lined up with
-the entries and when viewed as 80 column will wrap. If you have
-suggestions on correcting this I will implement.=20
-Thanks,
--Curtis
+Is your board based on the Lite5200 or the Lite5200B?  The phys are at
+different addresses on those two revisions of the board.  There is a
+different .dts file for each board.
 
+> phy0: ethernet-phy@1 {
+> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D=
+ <1>;
+> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>
+> Ethernet comes up on board with this change
+> phy0: ethernet-phy@1 {
+> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D=
+ <0>;
+> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
 
+Some PHYs treat address 0 as the 'broadcast' address.  You need to
+fill in this field (and modify the ethernet-phy@<address> node name)
+to reflect the address that your phy is actually at.
 
-
-The stanza for PCI was copied from Bamboo which has four PCI
-slots; Yosemite only has one PCI slot which is mapped to
-IDSEL 12, ADDR 22, IRQ2 Vector 25, INTA.
-
-Signed-off-by: Curtis Wald <cwald@watchguardvideo.com>
----
- arch/powerpc/boot/dts/yosemite.dts |   17 +++++------------
- 1 files changed, 5 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/yosemite.dts
-b/arch/powerpc/boot/dts/yosemite.dts
-index 1fa3cb4..8328be5 100644
---- a/arch/powerpc/boot/dts/yosemite.dts
-+++ b/arch/powerpc/boot/dts/yosemite.dts
-@@ -276,27 +276,19 @@
- 	 * later cannot be changed. Chip supports a second
- 	 * IO range but we don't use it for now
- 	 */
-+
-+ /*       u32              u64                   u64
-u64  */
-+ /*       pci_space        pci_addr              cpu_addr
-size */
- ranges =3D <0x02000000 0x00000000 0xa0000000 0x00000000 0xa0000000
-0x00000000 0x20000000
- 	     0x01000000 0x00000000 0x00000000 0x00000000 0xe8000000
-0x00000000 0x00010000>;
-=20
- 	/* Inbound 2GB range starting at 0 */
- 	dma-ranges =3D <0x42000000 0x0 0x0 0x0 0x0 0x0 0x80000000>;
-=20
--	/* Bamboo has all 4 IRQ pins tied together per slot */
- 	interrupt-map-mask =3D <0xf800 0x0 0x0 0x0>;
- 	interrupt-map =3D <
--		/* IDSEL 1 */
--		0x800 0x0 0x0 0x0 &UIC0 0x1c 0x8
--
--		/* IDSEL 2 */
--		0x1000 0x0 0x0 0x0 &UIC0 0x1b 0x8
--
--		/* IDSEL 3 */
--		0x1800 0x0 0x0 0x0 &UIC0 0x1a 0x8
--
--		/* IDSEL 4 */
--		0x2000 0x0 0x0 0x0 &UIC0 0x19 0x8
-+		/* IDSEL 12, ADDR 22, INTA, IRQ2 =3D Vector 25, 0x19 */
-+		0x6000 0x0 0x0 0x0 &UIC0 0x19 0x8
- 	>;
- };
-};
---=20
-1.5.5.6
-
-
-> -----Original Message-----
-> From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com]
-> Sent: Monday, November 30, 2009 7:42 AM
-> To: Curtis Wald
-> Cc: mporter@kernel.crashing.org; linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH] POWERPC 4xx: Fix PCI in AMCC 440EP Yosemite DTS
->=20
-> On Mon, Nov 16, 2009 at 11:36:40AM -0600, Curtis Wald wrote:
-> >Yosemite.dts stanza for PCI was copied from Bamboo which has four PCI
-> >slots; Yosemite only has one PCI slot which is mapped to
-> >IDSEL 12, ADDR 22, IRQ2 Vector 25, INTA.
-> >
-> >Signed-off-by: Curtis Wald <cwald@watchguardvideo.com>
->=20
-> Your patch looks correct (I think), but is very badly word wrapped and
-> whitespace damaged.  Could you resend?
->=20
-> josh
+g.
