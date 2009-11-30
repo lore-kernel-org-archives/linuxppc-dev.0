@@ -1,24 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A4CEB1007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 Nov 2009 17:43:03 +1100 (EST)
-Subject: Re: [RFC PATCH v2 08/11] powerpc: gamecube/wii: early debugging
-	using usbgecko
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Albert Herranz <albert_herranz@yahoo.es>
-In-Reply-To: <4B136624.4030505@yahoo.es>
-References: <1259441037-15725-1-git-send-email-albert_herranz@yahoo.es>
-	<1259441037-15725-9-git-send-email-albert_herranz@yahoo.es>
-	<1259536695.2076.40.camel@pasglop>  <4B135D3D.9030006@yahoo.es>
-	<1259561692.2076.78.camel@pasglop>  <4B136624.4030505@yahoo.es>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 30 Nov 2009 17:42:57 +1100
-Message-ID: <1259563377.2076.84.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-pw0-f50.google.com (mail-pw0-f50.google.com
+	[209.85.160.50]) by ozlabs.org (Postfix) with ESMTP id AFCAF1007D4
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 21:00:25 +1100 (EST)
+Received: by pwi6 with SMTP id 6so2142518pwi.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 02:00:23 -0800 (PST)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <19215.14808.476221.223143@drongo.ozlabs.ibm.com>
+References: <1258441832-20133-1-git-send-email-leoli@freescale.com>
+	<8543954E-619A-4A78-A934-CDC326027FD2@kernel.crashing.org>
+	<3A45394FD742FA419B760BB8D398F9EDCBC1F2@zch01exm26.fsl.freescale.net>
+	<1258707833.2140.865.camel@pasglop>
+	<2a27d3730911200123i23fa6dd1td9e19944d1737e73@mail.gmail.com>
+	<DFC7BA62-6CF0-4A08-8DD1-11825A638262@kernel.crashing.org>
+	<2a27d3730911250007s62f31673p3358631996e8a451@mail.gmail.com>
+	<20091125113023.GC12738@iram.es>
+	<2a27d3730911252343j6a938d99n7152b7cc8d01c0bf@mail.gmail.com>
+	<19215.14808.476221.223143@drongo.ozlabs.ibm.com>
+Date: Mon, 30 Nov 2009 18:00:23 +0800
+Message-ID: <2a27d3730911300200t35d1d5eob152a1a9f465465b@mail.gmail.com>
+Subject: Re: [RFC] powerpc/mm: honor O_SYNC flag for memory map
+From: Li Yang <leoli@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,48 +33,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-11-30 at 07:28 +0100, Albert Herranz wrote:
-> 
-> 
-> Heh, I was told to identity map it :)
+On Fri, Nov 27, 2009 at 10:30 AM, Paul Mackerras <paulus@samba.org> wrote:
+> Li Yang writes:
+>
+>> That's my concern too. =C2=A0But after all mmap without O_SYNC on I/O
+>> devices should be deprecated.
+>
+> It should? =C2=A0Why?
+>
+> Shouldn't the onus rather be on those proposing an incompatible change
+> to the kernel ABI, such as this is, to show why the change is
+> absolutely essential?
 
-Hah ? By whome ? :-)
+In addition to the performance issue I stated earlier in this thread.
+There was also cache paradoxes problem too.  If a memory region is
+shared between two cores/OS'es and Linux can't map the region with the
+same cacheable property as the other OS had mapped, there will be a
+problem.  The best solution for this problem is to make the
+cacheablity controllable.
 
-> Originally it used kernel address space (
-> 0xc{c,d}006800).
+And it seems to be generic issue which does not only exist on powerpc
+platforms.  So it might be better dealt with the already existed
+O_SYNC flag which was meant to deal with this kind of thing.  I agree
+with your comment in another email that device tree could be used, but
+that solution is not generic enough though.
 
-In any case, kernel space also needs to be reserved. There is no magic
-free spot in the kernel virtual space unless you reserve some either by
-lowering ioremap_bot early at boot or by using the fixmap (well, there
-is if you don't enable HIGHMEM but that's going away soon :-)
-
-> I've never worked with fixmap entries. I'll look into it. Thanks.
-
-Look at fixmap.h, basically it's an emum of reserved pages starting near
-the top of the address space and walking down from there. The kernel
-ensure that space stays reserved and it gives you things calculated at
-compile time (so via asm-offsets.h you can feed them into your asm).
-
-I'm half tempted to say we should just bluntly reserve the top 128K (or
-whatever is the min size of a BAT) for that sort of debug crap though
-and be done with it :-) Always handy to have some space we know we can
-mess around with.
-
-> But we can use then a known mapping scheme, and have all the i/o
-> region covered by bats there.
-
-We could yes. I was hoping Grant would produce something there but he
-hadn't had time yet.,
-
-> We can do that already, yes, but setup_io_mappings purpose was
-> originally that, no?
-
-Sort-of. I don't like hard coding virtual addresses, it causes all sort
-of problems (other than in the fixmap). It wouldn't be very hard to
-bring back some variant of io_block_mapping() though that works by
-moving ioremap_bot down early during boot, and allows you to setup some
-IO BATs for perfs reasons. Subsequent ioremaps would automatically pick
-up that space and benefit from it.
-
-Cheers,
-Ben.
+- Leo
