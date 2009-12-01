@@ -1,31 +1,21 @@
-Return-Path: <jkenisto@us.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 90EC51007D2
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Dec 2009 06:14:16 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nB1JCs7Z025746
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Dec 2009 12:12:54 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nB1JDr9C074450
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Dec 2009 12:13:54 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nB1C4IXg031886
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Dec 2009 05:04:18 -0700
-Subject: Re: [PATCH 0/8 userland!] systemtap: Add initial support for ppc32
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: avorontsov@ru.mvista.com, ananth@in.ibm.com
-In-Reply-To: <20091127223251.GA17065@oksana.dev.rtsoft.ru>
-References: <20091127223251.GA17065@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Tue, 01 Dec 2009 11:13:48 -0800
-Message-Id: <1259694828.5184.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, systemtap@sourceware.org
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 190D91007D3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  2 Dec 2009 07:43:53 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 5/5] libata/drivers: Add pata_macio,
+	driver Apple PowerMac/PowerBook IDE controller
+References: <20091201070834.6A840B7B63@ozlabs.org>
+Date: Tue, 01 Dec 2009 21:43:47 +0100
+In-Reply-To: <20091201070834.6A840B7B63@ozlabs.org> (Benjamin Herrenschmidt's
+	message of "Tue, 01 Dec 2009 18:08:33 +1100")
+Message-ID: <m2hbsazapo.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: tj@kernel.org, linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	jeff@garzik.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,37 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2009-11-28 at 01:32 +0300, Anton Vorontsov wrote:
-> Hi all,
-> 
-> Here are some patches that add systemtap support for ppc32 machines.
-> 
-> This is all pretty straightforward, though I didn't test it much,
-> only run few 'hello world' taps and decided that it's good enough. ;-)
-> 
-> I plan to test it more thoughtfully sometime next week, and fix missing
-> things (if any). But so far I'm interested in the feedback on this
-> initial support.
-> 
-> Thanks!
-> 
-> p.s. I though it would be a good idea to cc linuxppc-dev. At least
-> kexec-tools guys tend to do it as well.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-I think one thing that got missed was completing the support for ppc32
-in tapset/powerpc/registers.stp (functions *_arg and [u_]register).  A
-lot of the 32-bit code is already in place, having been copied over from
-the x86_64 version, but the _reg_offsets[] array and
-_stp_get_register_by_offset() work only for 64-bit contexts.  A comment
-at the end of _stp_register_regs() suggests that you can get the correct
-32-bit offsets by dividing the 64-bit offsets by 2; compare pt_regs
-structs to verify.
+> This is a libata driver for the "macio" IDE controller used on most Apple
+> PowerMac and PowerBooks. It's a libata equivalent of drivers/ide/ppc/pmac.c
 
-I'm cc-ing Ananth, who did the original ppc64 work on this file.
+Tried it on my iBook G4 and I got an oops during probing, in
+pata_macio_common_init+0x378/0x614.
 
-The *_arg and [u_]register functions are described in the stapfuncs man
-page (but not in the Language Reference doc).
-testsuite/systemtap.context/num_args.tcl tests some of these functions
-(or used to, at least).
+Andreas.
 
-Jim Keniston
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
