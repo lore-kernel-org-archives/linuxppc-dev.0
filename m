@@ -1,23 +1,26 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+Return-Path: <R58472@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0C774B7B68
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Dec 2009 21:03:42 +1100 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 8119FBD743
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Dec 2009 11:03:36 +0100 (CET)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: MPC5200B XLB BSDIS question
-MIME-Version: 1.0
-Message-ID: <200912011103.35959.roman.fietze@telemotive.de>
-Date: Tue, 1 Dec 2009 11:03:35 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C17F8B6EF5
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 21:38:30 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nB1AcQZ8026303
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Dec 2009 03:38:26 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nB1AgKOe012759
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Dec 2009 04:42:21 -0600 (CST)
+From: Li Yang <leoli@freescale.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc/mm: setting mmaped page cache property through device
+	tree
+Date: Tue,  1 Dec 2009 18:30:50 +0800
+Message-Id: <1259663450-28790-1-git-send-email-leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +30,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello list,
+The patch adds the ability for powerpc architecture to set page cache
+property of mmaped area through device tree.  This is useful for two
+cases.  First, for memory shared with other OS'es to have the same cache
+property to avoid cache paradoxes.  Second, enabling application to map
+memory which is not managed by kernel as cacheable for better performance.
 
-In our old, modified 2.4.25 I had a statement that sets the bit BSDIS
-(real world bit 16, Freescale bit 15) in the XLB config register for
-the MPC5200B.
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+Although it will be better if we can come up with a generic solution
+not only for powerpc arch.  Changing the behavior of O_SYNC seems to
+draw concerns over compatibility of old applications.  Suggestions
+are welcomed.
 
-Checking the XLB config of "my" 2.6.32-rc7 doesn't show this bit set
-(XLB config reads 0x0000a006).
+ arch/powerpc/mm/mem.c          |   49 +++++++++++++++++++++++++++++++++++++--
+ arch/powerpc/platforms/Kconfig |    7 +++++
+ 2 files changed, 53 insertions(+), 3 deletions(-)
 
-But this gives me trouble when running under high (BestComm) load. I
-have a stress test programm that writes data via PATA to an ext3
-filesystem as fast as possible. At the same time I'm using the SCLPC
-together with BestComm to read data from FLASH as fast as possible in
-64KiB blocks.
-
-Without this bit set I have wrong data in the DMA receive buffer,
-almost always only in the first data word (32 bits wide).
-
-And I also have wrong data if I do not invalidate_dcache_range my DMA
-buffer before starting the BC task. Looking at dma_map_single or the
-old pci_map_single shows me, that they do the cache invalidation on
-architecture with non coherent cache, the MPC5200 should be one of
-them.
-
-See this old thread that seems to second my theory about a problem in
-the MPC5200B, which wouldn't be the first one:
-
-http://www.mail-archive.com/linuxppc-embedded@ozlabs.org/msg02842.html
-
-
-Is there a reason not to set that bit? Is it true, as I believe it,
-that the "polairity" of this bit is documented the wrong way e.g. in
-=46reescale's AN3045?
-
-
-Roman
-
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 579382c..02da2c8 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -95,16 +95,59 @@ int page_is_ram(unsigned long pfn)
+ #endif
+ }
+ 
++#ifdef CONFIG_OF_MMAP_CACHE_PROPERTY
++pgprot_t pgprot_from_dt(unsigned long pfn, pgprot_t vma_prot)
++{
++	struct device_node *np;
++	struct resource res;
++	unsigned long paddr = (pfn << PAGE_SHIFT);
++	int i;
++	const int *prop;
++
++	for_each_node_by_name(np, "mmap-region")
++		for (i = 0; of_address_to_resource(np, i, &res) == 0; i++)
++			if ((paddr >= res.start) && (paddr <= res.end)) {
++				unsigned long _prot;
++				prop = of_get_property(np, "cache-property",
++						NULL);
++
++				if (prop == NULL)
++					return vma_prot;
++
++				_prot = pgprot_val(vma_prot) & ~_PAGE_CACHE_CTL;
++
++				/* bit map of WIMG */
++				if (*prop & 0x8)
++					_prot |= _PAGE_WRITETHRU;
++				if (*prop & 0x4)
++					_prot |= _PAGE_NO_CACHE;
++				if (*prop & 0x2)
++					_prot |= _PAGE_COHERENT;
++				if (*prop & 0x1)
++					_prot |= _PAGE_GUARDED;
++
++				return __pgprot(_prot);
++			}
++
++	return vma_prot;
++}
++#endif
++
+ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 			      unsigned long size, pgprot_t vma_prot)
+ {
+ 	if (ppc_md.phys_mem_access_prot)
+ 		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
+ 
+-	if (!page_is_ram(pfn))
+-		vma_prot = pgprot_noncached(vma_prot);
++	/* kernel managed memory is always mapped as cacheable */
++	if (page_is_ram(pfn))
++		return vma_prot;
+ 
+-	return vma_prot;
++#ifdef CONFIG_OF_MMAP_CACHE_PROPERTY
++	return pgprot_from_dt(pfn, vma_prot);
++#else
++	return pgprot_noncached(vma_prot);
++#endif
+ }
+ EXPORT_SYMBOL(phys_mem_access_prot);
+ 
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 12bc2ce..de0f57c 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -333,4 +333,11 @@ config MCU_MPC8349EMITX
+ 	  also register MCU GPIOs with the generic GPIO API, so you'll able
+ 	  to use MCU pins as GPIOs.
+ 
++config OF_MMAP_CACHE_PROPERTY
++	bool "Support setting cache property of mmap through device tree"
++	default n
++	help
++	  Say Y here to support setting cache property of mmaped region via
++	  mmap-region device tree node.
++
+ endmenu
+-- 
+1.6.4
