@@ -1,15 +1,32 @@
-Return-Path: <aiyuanwang@yahoo.com>
-Received: from web52902.mail.re2.yahoo.com (web52902.mail.re2.yahoo.com
-	[206.190.49.12]) by ozlabs.org (Postfix) with SMTP id 7B09DB7B64
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Dec 2009 16:35:18 +1100 (EST)
-Message-ID: <288168.33010.qm@web52902.mail.re2.yahoo.com>
-Date: Mon, 30 Nov 2009 21:35:15 -0800 (PST)
-From: Allan Wang <aiyuanwang@yahoo.com>
-Subject: ep440xs board boot problem
-To: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B08308@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E609CB7B66
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 16:36:39 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nB15aa02007660
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 22:36:36 -0700 (MST)
+Received: from zin33exm23.fsl.freescale.net (zin33exm23.ap.freescale.net
+	[10.232.192.22])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nB15f2BJ023095
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 23:41:03 -0600 (CST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH v3 3/3] powerpc/fsl: 85xx: add cache-sram support
+Date: Tue, 1 Dec 2009 11:06:32 +0530
+Message-ID: <F2F605B667B24B489C904986E0D60A0801222492@zin33exm23.fsl.freescale.net>
+In-Reply-To: <20091120173859.GC18967@loki.buserror.net>
+References: <181208B7-AC0B-4634-A04E-46468D376719@freescale.com>
+	<F2F605B667B24B489C904986E0D60A08012221DF@zin33exm23.fsl.freescale.net>
+	<20091120173859.GC18967@loki.buserror.net>
+From: "Mahajan Vivek-B08308" <B08308@freescale.com>
+To: "Wood Scott-B07421" <B07421@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,35 +36,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, All,=0A=0AI am new to the list. I am still newbie to embedded linux.=
- I have bought an ep440xs board which is similar to sequoia board. u-boot i=
-s working. I am trying to make it run linux.  I have the following problems=
- and need your help. Thank you very much:=0A=0A=0AI am using linux kernel 2=
-.6.30.4. I encounter 2 problems:=0A1. After console_init() is called inside=
- start_kernel(), the console starts printing garbage like:=0ASerial: 8250/1=
-6550 driver, 4 ports, IRQ sharing enabled=0Aserial8250.0: ttyS0 at MMIO 0x1=
-ef600300 (irq =3D 16) is a 16550A=0A=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
-=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=
-=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
-=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
-=BF=BD=0A=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
-=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=
-=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
-=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=0A=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
-=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
-=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=
-=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
-=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=0A=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
-=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
-=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=
-=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
-=EF=BF=BD=0A=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
-=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
-=BF=BD=EF=BF=BD.=0A2. It pakics when mounting the root file system(NFS):=0A=
-(gdb) bt=0A#0  panic (fmt=3D0xc0290e94 "VFS: Unable to mount root fs on %s"=
-)=0Aat kernel/panic.c:70=0A#1  0xc02d8ce0 in mount_block_root (name=3D0xc02=
-90de4 "/dev/root", flags=3D0x8001)=0Aat init/do_mounts.c:272=0A#2  0xc02d90=
-84 in prepare_namespace () at init/do_mounts.c:415=0A#3  0xc02d81ec in kern=
-el_init (unused=3D<value optimized out>) at init/main.c:885=0A#4  0xc000de6=
-0 in kernel_thread ()=0AThere is a patch for Sequoia board to delete /chose=
-n part in sequoia.dts, is /chosen required?=0A=0AAllan=0A=0A=0A=0A      
+> From: Wood Scott-B07421=20
+> Sent: Friday, November 20, 2009 11:09 PM
+> > Cache-sram does not have any device tree entry since it is not a=20
+> > hardware as such. Putting it under chosen can be another option.
+> > I think, Scott (cc'ed) was of the opinion that since 32b=20
+> base address=20
+> > support is missing; so there is no point in moving this=20
+> address to the=20
+> > command line and .config should be okay for now for it.
+>=20
+> I don't know what you mean by "32b base address support is=20
+> missing".  I have no objection to putting it on the command line.
+
+It was a typo, it should be missing 36b address support. Since the
+kernel=20
+did not run under different environment (i.e 32b / 36b base address); so
+it=20
+was decided that .config may be okay for this.
+
+>=20
+> -Scott
+>=20
+
+Thanks,
+Vivek
