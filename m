@@ -1,21 +1,15 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp105.mail.ukl.yahoo.com (smtp105.mail.ukl.yahoo.com
-	[77.238.184.37]) by ozlabs.org (Postfix) with SMTP id 31139B6F1C
+Return-Path: <aiyuanwang@yahoo.com>
+Received: from web52902.mail.re2.yahoo.com (web52902.mail.re2.yahoo.com
+	[206.190.49.12]) by ozlabs.org (Postfix) with SMTP id 7B09DB7B64
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Dec 2009 16:23:07 +1100 (EST)
-Message-ID: <4B14A834.4070907@yahoo.es>
-Date: Tue, 01 Dec 2009 06:23:00 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
+	Tue,  1 Dec 2009 16:35:18 +1100 (EST)
+Message-ID: <288168.33010.qm@web52902.mail.re2.yahoo.com>
+Date: Mon, 30 Nov 2009 21:35:15 -0800 (PST)
+From: Allan Wang <aiyuanwang@yahoo.com>
+Subject: ep440xs board boot problem
+To: linuxppc-dev@lists.ozlabs.org
 MIME-Version: 1.0
-To: Richard Holden <aciddeath@gmail.com>
-Subject: Re: [RFC PATCH v3 3/3] powerpc: gamecube/wii: early debugging using
-	usbgecko
-References: <cover.1259609263.git.albert_herranz@yahoo.es>
-	<86935119c483c2d6e4c810c0afd079e049443b18.1259609263.git.albert_herranz@yahoo.es>
-	<4B147086.6070602@gmail.com>
-In-Reply-To: <4B147086.6070602@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,79 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Richard Holden wrote:
-> Albert Herranz wrote:
->> Add support for using the USB Gecko adapter as an early debugging
->> console on the Nintendo GameCube and Wii video game consoles.
->> The USB Gecko is a 3rd party memory card interface adapter that provides
->> a EXI (External Interface) to USB serial converter.
->>
->> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
->> ---
->>  arch/powerpc/Kconfig.debug                         |    8 +++
->>  arch/powerpc/include/asm/udbg.h                    |    1 +
->>  arch/powerpc/kernel/head_32.S                      |   21 +++++++
->>  arch/powerpc/kernel/udbg.c                         |    2 +
->>  arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |   59 ++++++++++++++++++++
->>  arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h |    2 +
->>  6 files changed, 93 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
->> index 3b10051..11e385b 100644
->> --- a/arch/powerpc/Kconfig.debug
->> +++ b/arch/powerpc/Kconfig.debug
->> @@ -254,6 +254,14 @@ config PPC_EARLY_DEBUG_CPM
->>  	  using a CPM-based serial port.  This assumes that the bootwrapper
->>  	  has run, and set up the CPM in a particular way.
->>  
->> +config PPC_EARLY_DEBUG_USBGECKO
->> +	bool "Early debugging through the USB Gecko adapter"
->> +	depends on GAMECUBE_COMMON
->> +	select USBGECKO_UDBG
->> +	help
->> +	  Select this to enable early debugging for Nintendo GameCube/Wii
->> +	  consoles via an external USB Gecko adapter.
->> +
->>  endchoice
->>  
->>  config PPC_EARLY_DEBUG_44x_PHYSLOW
-> 
-> Small nit, my preference would be for this to be in the patch 1 where it
-> is first referenced.
-> 
-
-The first patch is generic, and uses PPC_EARLY_DEBUG.
-This is the first patch where PPC_EARLY_DEBUG_USBGECKO is referenced.
-
->> diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
->> index ba4c7cc..3f125b6 100644
->> --- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
->> +++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
->> @@ -17,6 +17,7 @@
->>  #include <asm/io.h>
->>  #include <asm/prom.h>
->>  #include <asm/udbg.h>
->> +#include <asm/fixmap.h>
->>  
->>  #include "usbgecko_udbg.h"
->>  
->> @@ -270,3 +271,61 @@ done:
->>  		of_node_put(np);
->>  	return;
->>  }
->> +
->> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
->> +
->> +static void __init ug_early_remap(void)
-> 
-> you may want to rename the ug_ prefix, it took me a while looking back
-> and forth through the patch to convince myself it wasn't a typo.
-> 
-
-What's wrong with ug_ ? (ug = (u)sb(g)ecko)
-
-> -Richard Holden
-> 
-
-Thanks,
-Albert
+Hello, All,=0A=0AI am new to the list. I am still newbie to embedded linux.=
+ I have bought an ep440xs board which is similar to sequoia board. u-boot i=
+s working. I am trying to make it run linux.  I have the following problems=
+ and need your help. Thank you very much:=0A=0A=0AI am using linux kernel 2=
+.6.30.4. I encounter 2 problems:=0A1. After console_init() is called inside=
+ start_kernel(), the console starts printing garbage like:=0ASerial: 8250/1=
+6550 driver, 4 ports, IRQ sharing enabled=0Aserial8250.0: ttyS0 at MMIO 0x1=
+ef600300 (irq =3D 16) is a 16550A=0A=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
+=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=
+=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
+=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
+=BF=BD=0A=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
+=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=
+=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
+=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=0A=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
+=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
+=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=
+=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
+=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=0A=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
+=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
+=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=
+=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
+=EF=BF=BD=0A=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
+=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=
+=BF=BD=EF=BF=BD.=0A2. It pakics when mounting the root file system(NFS):=0A=
+(gdb) bt=0A#0  panic (fmt=3D0xc0290e94 "VFS: Unable to mount root fs on %s"=
+)=0Aat kernel/panic.c:70=0A#1  0xc02d8ce0 in mount_block_root (name=3D0xc02=
+90de4 "/dev/root", flags=3D0x8001)=0Aat init/do_mounts.c:272=0A#2  0xc02d90=
+84 in prepare_namespace () at init/do_mounts.c:415=0A#3  0xc02d81ec in kern=
+el_init (unused=3D<value optimized out>) at init/main.c:885=0A#4  0xc000de6=
+0 in kernel_thread ()=0AThere is a patch for Sequoia board to delete /chose=
+n part in sequoia.dts, is /chosen required?=0A=0AAllan=0A=0A=0A=0A      
