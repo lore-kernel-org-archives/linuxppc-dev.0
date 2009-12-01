@@ -1,23 +1,22 @@
-Return-Path: <tj@kernel.org>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E1103B6F05
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Dec 2009 23:48:05 +1100 (EST)
-Message-ID: <4B151087.7080606@kernel.org>
-Date: Tue, 01 Dec 2009 21:48:07 +0900
-From: Tejun Heo <tj@kernel.org>
-MIME-Version: 1.0
-To: hmacht@suse.de
-Subject: Re: [PATCH 5/5] libata/drivers: Add pata_macio,
-	driver Apple PowerMac/PowerBook IDE controller
-References: <20091201070834.6A840B7B63@ozlabs.org>
-	<4B14CD22.4020806@kernel.org> <200912011344.38656.hmacht@suse.de>
-In-Reply-To: <200912011344.38656.hmacht@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Jeff Garzik <jeff@garzik.org>,
-	linux-ide@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id A6D32B6F09
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Dec 2009 01:28:44 +1100 (EST)
+In-Reply-To: <2a27d3730912010334q24bf0e06g84839aae131475ec@mail.gmail.com>
+References: <1259663450-28790-1-git-send-email-leoli@freescale.com>
+	<1259665127.2076.363.camel@pasglop>
+	<2a27d3730912010334q24bf0e06g84839aae131475ec@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <E389CC83-307F-4A7D-B90B-CD928A1D1D1D@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mm: setting mmaped page cache property through
+	device tree
+Date: Tue, 1 Dec 2009 15:35:55 +0100
+To: Li Yang <leoli@freescale.com>
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,23 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/01/2009 09:44 PM, Holger Macht wrote:
-> I do not remember any specific reason for using ata_port_schedule_eh(). I
-> guess it's just there because the previous implementation used
-> it. ata_port_freeze()/abort() might as well work properly. However, I
-> would hesitate to change the existing code, because verifying that
-> everything works contains quite some effort. There are so many different
-> use cases this code can be accessed with and it has to be verified with
-> all kind of different hardware to make sure we get no hard
-> freezes. Testing that freeze()/abort() in this new driver would be worth a
-> try, though. Next time I have setup my test environment again I can verify
-> that it also works in the general libata-acpi code.
+> The scenario for the first case is that in a multicore system running
+> ASMP which means different OS runs on different cores.  They might
+> communicate through a shared memory region.  The region on every OS
+> need to be mapped with the same cache perperty to avoid cache paradox.
 
-Yeap, agreed.  It was pretty painful get it right the last time
-around, so changing it on a hunch would be a pretty bad idea.  If you
-have a chance to try freeze or abort, please keep me posted.
+This isn't true.  In ASMP, you cannot usually do coherency between
+the different CPUs at all.  Also, in most PowerPC implementations,
+it is fine if one CPU maps a memory range as coherent while another
+maps it as non-coherent; sure, you have to be careful or you will
+read stale data, but things won't wedge.
 
-Thanks.
+> The scenario for the second case is to pre-allocate some memory to a
+> certain application or device (probably through mem=XXX kernel
+> parameter or limit through device tree).  The memory is not known to
+> kernel, but fully managed by the application/device.  We need being
+> able to map the region cachable for better performance.
 
--- 
-tejun
+So make the memory known to the kernel, just tell the kernel not to
+use it.  If it's normal system RAM, just put it in the "memory" node
+and do a memreserve on it (or do something in your platform code); if
+it's some other memory, do a device driver for it, map it there.
+
+
+Segher
