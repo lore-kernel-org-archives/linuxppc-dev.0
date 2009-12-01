@@ -1,20 +1,23 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-	by ozlabs.org (Postfix) with ESMTP id 378F91007D3
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 11:49:02 +1100 (EST)
-Message-ID: <4B1465C1.90606@intel.com>
-Date: Mon, 30 Nov 2009 17:39:29 -0700
-From: Dan Williams <dan.j.williams@intel.com>
+Return-Path: <aciddeath@gmail.com>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 5A7481007D9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  1 Dec 2009 12:25:41 +1100 (EST)
+Received: by yxe9 with SMTP id 9so3740978yxe.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 30 Nov 2009 17:25:38 -0800 (PST)
+Message-ID: <4B147086.6070602@gmail.com>
+Date: Mon, 30 Nov 2009 18:25:26 -0700
+From: Richard Holden <aciddeath@gmail.com>
 MIME-Version: 1.0
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH v2] ppc440spe-adma: adds updated ppc440spe adma driver
-References: <1259186722-15012-1-git-send-email-agust@denx.de>
-In-Reply-To: <1259186722-15012-1-git-send-email-agust@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Yuri Tikhonov <yur@emcraft.com>, "wd@denx.de" <wd@denx.de>,
-	"dzu@denx.de" <dzu@denx.de>
+To: Albert Herranz <albert_herranz@yahoo.es>
+Subject: Re: [RFC PATCH v3 3/3] powerpc: gamecube/wii: early debugging using
+	usbgecko
+References: <cover.1259609263.git.albert_herranz@yahoo.es>
+	<86935119c483c2d6e4c810c0afd079e049443b18.1259609263.git.albert_herranz@yahoo.es>
+In-Reply-To: <86935119c483c2d6e4c810c0afd079e049443b18.1259609263.git.albert_herranz@yahoo.es>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,76 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anatolij Gustschin wrote:
-> This patch adds new version of the PPC440SPe ADMA driver.
+Albert Herranz wrote:
+> Add support for using the USB Gecko adapter as an early debugging
+> console on the Nintendo GameCube and Wii video game consoles.
+> The USB Gecko is a 3rd party memory card interface adapter that provides
+> a EXI (External Interface) to USB serial converter.
 > 
-> Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-
-[minor] Sign-offs are typically in delivery path order, so yours would 
-appear last.
-
-[..]
->  drivers/dma/ppc440spe/ppc440spe-adma.c             | 5015 ++++++++++++++++++++
->  drivers/dma/ppc440spe/ppc440spe_adma.h             |  195 +
->  drivers/dma/ppc440spe/ppc440spe_dma.h              |  223 +
->  drivers/dma/ppc440spe/ppc440spe_xor.h              |  110 +
-
-I belong to the school of thought that says something along the lines of 
-"don't duplicate the directory path in the filename".  You seem to have 
-copied the iop-adma driver's inconsistent use of '-' and '_' let's not 
-carry that forward, i.e. looking for a changelog like:
-
-   drivers/dma/ppc440spe/adma.c             | 5015 ++++++++++++++++++++
-   drivers/dma/ppc440spe/adma.h             |  195 +
-   drivers/dma/ppc440spe/dma.h              |  223 +
-   drivers/dma/ppc440spe/xor.h              |  110 +
-
-> +/**
-> + * ppc440spe_adma_prep_dma_pqzero_sum - prepare CDB group for
-> + * a PQ_ZERO_SUM operation
-> + */
-> +static struct dma_async_tx_descriptor *ppc440spe_adma_prep_dma_pqzero_sum(
-> +               struct dma_chan *chan, dma_addr_t *pq, dma_addr_t *src,
-> +               unsigned int src_cnt, const unsigned char *scf, size_t len,
-> +               enum sum_check_flags *pqres, unsigned long flags)
-> +{
-> +       struct ppc440spe_adma_chan *ppc440spe_chan;
-> +       struct ppc440spe_adma_desc_slot *sw_desc, *iter;
-> +       dma_addr_t pdest, qdest;
-> +       int slot_cnt, slots_per_op, idst, dst_cnt;
+> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+> ---
+>  arch/powerpc/Kconfig.debug                         |    8 +++
+>  arch/powerpc/include/asm/udbg.h                    |    1 +
+>  arch/powerpc/kernel/head_32.S                      |   21 +++++++
+>  arch/powerpc/kernel/udbg.c                         |    2 +
+>  arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |   59 ++++++++++++++++++++
+>  arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h |    2 +
+>  6 files changed, 93 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> index 3b10051..11e385b 100644
+> --- a/arch/powerpc/Kconfig.debug
+> +++ b/arch/powerpc/Kconfig.debug
+> @@ -254,6 +254,14 @@ config PPC_EARLY_DEBUG_CPM
+>  	  using a CPM-based serial port.  This assumes that the bootwrapper
+>  	  has run, and set up the CPM in a particular way.
+>  
+> +config PPC_EARLY_DEBUG_USBGECKO
+> +	bool "Early debugging through the USB Gecko adapter"
+> +	depends on GAMECUBE_COMMON
+> +	select USBGECKO_UDBG
+> +	help
+> +	  Select this to enable early debugging for Nintendo GameCube/Wii
+> +	  consoles via an external USB Gecko adapter.
 > +
-> +       if (unlikely(!len))
-> +               return NULL;
-> +       if (len > PAGE_SIZE)
-> +               return NULL;
+>  endchoice
+>  
+>  config PPC_EARLY_DEBUG_44x_PHYSLOW
 
-This won't work, as currently we'll end up in an infinite loop in 
-async_syndrome_val() because all descriptor allocation failures are 
-assumed to be time-limited.  The code just issues any pending operations 
-and waits for descriptor resources to become available.
+Small nit, my preference would be for this to be in the patch 1 where it
+is first referenced.
 
-What this comes down to is that ppc440spe_adma is essentially fibbing 
-about its support for the pq_val operation.  I think a more generic 
-solution would be to advertise to the async_tx api that the driver has 
-per channel temporary buffers that can be used to store intermediate pq 
-results and let the async_tx api handle the emulation using its 
-knowledge of ->max_pq.  We would also need a mechanism for the async_tx 
-api to lock out other requesters of the temporary buffer until a 
-coherent set of descriptors referencing those temporary buffers has been 
-submitted to the driver.  This would help other drivers like mv_xor 
-which has no val support and ioatdma which currently can only validate 
-up to 8 sources asynchronously.
+> diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
+> index ba4c7cc..3f125b6 100644
+> --- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
+> +++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
+> @@ -17,6 +17,7 @@
+>  #include <asm/io.h>
+>  #include <asm/prom.h>
+>  #include <asm/udbg.h>
+> +#include <asm/fixmap.h>
+>  
+>  #include "usbgecko_udbg.h"
+>  
+> @@ -270,3 +271,61 @@ done:
+>  		of_node_put(np);
+>  	return;
+>  }
+> +
+> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
+> +
+> +static void __init ug_early_remap(void)
 
-Can you clarify what ppc440spe-adma supports in this area?  It looks 
-like it has some hardware support for result checking but always needs 
-to write p and/or q somewhere?  Some devices may be able to do the final 
-comparison against the original parity values asynchronously while 
-others may need to do it synchronously in software.  These details can 
-be handled at the async_tx api level.
+you may want to rename the ug_ prefix, it took me a while looking back
+and forth through the patch to convince myself it wasn't a typo.
 
-Until this is resolved I would prefer that ppe440spe-adma use the 
-existing pq_val emulation by not setting DMA_PQ_VAL in the capability mask.
-
---
-Dan
+-Richard Holden
