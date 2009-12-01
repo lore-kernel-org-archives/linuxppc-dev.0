@@ -1,23 +1,17 @@
-Return-Path: <aciddeath@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 5A7481007D9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Dec 2009 12:25:41 +1100 (EST)
-Received: by yxe9 with SMTP id 9so3740978yxe.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 30 Nov 2009 17:25:38 -0800 (PST)
-Message-ID: <4B147086.6070602@gmail.com>
-Date: Mon, 30 Nov 2009 18:25:26 -0700
-From: Richard Holden <aciddeath@gmail.com>
+Return-Path: <rusty@rustcorp.com.au>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Subject: Re: [PATCH] ppc64: re-enable kexec to allow module loads with
+	CONFIG_MODVERSIONS and CONFIG_RELOCATABLE turned on
+Date: Tue, 1 Dec 2009 13:28:26 +1030
+References: <20091119195216.GC11414@hmsreliant.think-freely.org>
+	<20091130181600.GA11583@hmsreliant.think-freely.org>
+In-Reply-To: <20091130181600.GA11583@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-To: Albert Herranz <albert_herranz@yahoo.es>
-Subject: Re: [RFC PATCH v3 3/3] powerpc: gamecube/wii: early debugging using
-	usbgecko
-References: <cover.1259609263.git.albert_herranz@yahoo.es>
-	<86935119c483c2d6e4c810c0afd079e049443b18.1259609263.git.albert_herranz@yahoo.es>
-In-Reply-To: <86935119c483c2d6e4c810c0afd079e049443b18.1259609263.git.albert_herranz@yahoo.es>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200912011328.27043.rusty@rustcorp.com.au>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,67 +21,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Albert Herranz wrote:
-> Add support for using the USB Gecko adapter as an early debugging
-> console on the Nintendo GameCube and Wii video game consoles.
-> The USB Gecko is a 3rd party memory card interface adapter that provides
-> a EXI (External Interface) to USB serial converter.
-> 
-> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
-> ---
->  arch/powerpc/Kconfig.debug                         |    8 +++
->  arch/powerpc/include/asm/udbg.h                    |    1 +
->  arch/powerpc/kernel/head_32.S                      |   21 +++++++
->  arch/powerpc/kernel/udbg.c                         |    2 +
->  arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |   59 ++++++++++++++++++++
->  arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h |    2 +
->  6 files changed, 93 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-> index 3b10051..11e385b 100644
-> --- a/arch/powerpc/Kconfig.debug
-> +++ b/arch/powerpc/Kconfig.debug
-> @@ -254,6 +254,14 @@ config PPC_EARLY_DEBUG_CPM
->  	  using a CPM-based serial port.  This assumes that the bootwrapper
->  	  has run, and set up the CPM in a particular way.
->  
-> +config PPC_EARLY_DEBUG_USBGECKO
-> +	bool "Early debugging through the USB Gecko adapter"
-> +	depends on GAMECUBE_COMMON
-> +	select USBGECKO_UDBG
-> +	help
-> +	  Select this to enable early debugging for Nintendo GameCube/Wii
-> +	  consoles via an external USB Gecko adapter.
-> +
->  endchoice
->  
->  config PPC_EARLY_DEBUG_44x_PHYSLOW
+On Tue, 1 Dec 2009 04:46:00 am Neil Horman wrote:
+> Paul, Ben, given that Rusty hasn't come back with any opinion on this patch, do you
+> feel comfortable merging it via the ppc tree?  Currently the earlyinit routine
+> is only compiled in and used for your arch, so I think its fairly benign.
 
-Small nit, my preference would be for this to be in the patch 1 where it
-is first referenced.
+Sorry, I *did* track down the archives for linuxppc-dev, then find your post,
+then read your patch.  But I didn't actually reply.
 
-> diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-> index ba4c7cc..3f125b6 100644
-> --- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-> +++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-> @@ -17,6 +17,7 @@
->  #include <asm/io.h>
->  #include <asm/prom.h>
->  #include <asm/udbg.h>
-> +#include <asm/fixmap.h>
->  
->  #include "usbgecko_udbg.h"
->  
-> @@ -270,3 +271,61 @@ done:
->  		of_node_put(np);
->  	return;
->  }
-> +
-> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-> +
-> +static void __init ug_early_remap(void)
+Other than minor issues, there's one significant one: you shouldn't be trying
+to change rodata.  It might work on PPC today, but it's poor form at least.
 
-you may want to rename the ug_ prefix, it took me a while looking back
-and forth through the patch to convince myself it wasn't a typo.
+How's this?  Untested on ppc.
 
--Richard Holden
+Other changes:
+1) I also changed reloc_start to an array; this is a good idea for any
+   linker-defined symbols so the compiler can't make assumptions about size.
+2) local.h?  How about module.h?
+3) I don't think the extra ". = 0" is necessary.
+4) ARCH_USES_RELOC_ENTRIES isn't clear enough for me; I prefer
+   ARCH_RELOCATE_KCRCTAB.
+
+module: handle ppc64 relocating kcrctabs when CONFIG_RELOCATABLE=y
+
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-November/077972.html
+
+Inspired-by: Neil Horman <nhorman@tuxdriver.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -87,5 +87,10 @@ struct exception_table_entry;
+ void sort_ex_table(struct exception_table_entry *start,
+ 		   struct exception_table_entry *finish);
+ 
++#ifdef CONFIG_MODVERSIONS
++#define ARCH_RELOCATES_KCRCTAB
++
++extern const unsigned long reloc_start[];
++#endif
+ #endif /* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_MODULE_H */
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -38,6 +38,9 @@ jiffies = jiffies_64 + 4;
+ #endif
+ SECTIONS
+ {
++	. = 0;
++	reloc_start = .;
++
+ 	. = KERNELBASE;
+ 
+ /*
+diff --git a/kernel/module.c b/kernel/module.c
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1030,11 +1030,23 @@ static int try_to_force_load(struct modu
+ }
+ 
+ #ifdef CONFIG_MODVERSIONS
++/* If the arch applies (non-zero) relocations to kernel kcrctab, unapply it. */
++static unsigned long maybe_relocated(unsigned long crc,
++				     const struct module *crc_owner)
++{
++#ifdef ARCH_RELOCATES_KCRCTAB
++	if (crc_owner == NULL)
++		return crc - (unsigned long)reloc_start;
++#endif
++	return crc;
++}
++
+ static int check_version(Elf_Shdr *sechdrs,
+ 			 unsigned int versindex,
+ 			 const char *symname,
+ 			 struct module *mod, 
+-			 const unsigned long *crc)
++			 const unsigned long *crc,
++			 const struct module *crc_owner)
+ {
+ 	unsigned int i, num_versions;
+ 	struct modversion_info *versions;
+@@ -1055,10 +1067,10 @@ static int check_version(Elf_Shdr *sechd
+ 		if (strcmp(versions[i].name, symname) != 0)
+ 			continue;
+ 
+-		if (versions[i].crc == *crc)
++		if (versions[i].crc == maybe_relocated(*crc, crc_owner))
+ 			return 1;
+ 		DEBUGP("Found checksum %lX vs module %lX\n",
+-		       *crc, versions[i].crc);
++		       maybe_relocated(*crc, crc_owner), versions[i].crc);
+ 		goto bad_version;
+ 	}
+ 
+@@ -1081,7 +1093,8 @@ static inline int check_modstruct_versio
+ 	if (!find_symbol(MODULE_SYMBOL_PREFIX "module_layout", NULL,
+ 			 &crc, true, false))
+ 		BUG();
+-	return check_version(sechdrs, versindex, "module_layout", mod, crc);
++	return check_version(sechdrs, versindex, "module_layout", mod, crc,
++			     NULL);
+ }
+ 
+ /* First part is kernel version, which we ignore if module has crcs. */
+@@ -1099,7 +1112,8 @@ static inline int check_version(Elf_Shdr
+ 				unsigned int versindex,
+ 				const char *symname,
+ 				struct module *mod, 
+-				const unsigned long *crc)
++				const unsigned long *crc,
++				const struct module *crc_owner)
+ {
+ 	return 1;
+ }
+@@ -1134,8 +1148,8 @@ static const struct kernel_symbol *resol
+ 	/* use_module can fail due to OOM,
+ 	   or module initialization or unloading */
+ 	if (sym) {
+-		if (!check_version(sechdrs, versindex, name, mod, crc) ||
+-		    !use_module(mod, owner))
++		if (!check_version(sechdrs, versindex, name, mod, crc, owner)
++		    || !use_module(mod, owner))
+ 			sym = NULL;
+ 	}
+ 	return sym;
