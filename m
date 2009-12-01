@@ -1,20 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mikpe@it.uu.se>
+Received: from fanny.its.uu.se (fanny.its.uu.se [130.238.4.241])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EED6BB70BA
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 21:58:55 +1100 (EST)
-Subject: Re: [PATCH] powerpc/mm: setting mmaped page cache property through
-	device tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <1259663450-28790-1-git-send-email-leoli@freescale.com>
-References: <1259663450-28790-1-git-send-email-leoli@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 01 Dec 2009 21:58:47 +1100
-Message-ID: <1259665127.2076.363.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id 819C9B6F1C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  1 Dec 2009 22:17:57 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <19220.62569.492975.964154@pilspetsen.it.uu.se>
+Date: Tue, 1 Dec 2009 11:48:09 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 5/5] libata/drivers: Add pata_macio,
+	driver Apple PowerMac/PowerBook IDE controller
+In-Reply-To: <20091201070834.6A840B7B63@ozlabs.org>
+References: <20091201070834.6A840B7B63@ozlabs.org>
+Cc: tj@kernel.org, linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	jeff@garzik.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,114 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-12-01 at 18:30 +0800, Li Yang wrote:
-> The patch adds the ability for powerpc architecture to set page cache
-> property of mmaped area through device tree.  This is useful for two
-> cases.  First, for memory shared with other OS'es to have the same cache
-> property to avoid cache paradoxes.  Second, enabling application to map
-> memory which is not managed by kernel as cacheable for better performance.
+Benjamin Herrenschmidt writes:
+ > This is a libata driver for the "macio" IDE controller used on most Apple
+ > PowerMac and PowerBooks. It's a libata equivalent of drivers/ide/ppc/pmac.c
+ > 
+ > It supports all the features of its predecessor, including mediabay hotplug
+ > and suspend/resume. It should also support module load/unload.
+ > 
+ > The timing calculations have been simplified to use pre-calculated tables
+ > compared to drivers/ide/pmac.c and it uses the new mediabay interface
+ > provided by a previous patch.
+ > 
+ > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ > ---
+ > 
+ > Only lightly tested so far, this is for review, NOT for merge.
+ > 
+ > I would like to merge it eventually via the powerpc tree since there's a
+ > few dependent patches, though I would need the libata "fix" for
+ > bmdma_stop to go in first, unless I carry it as well with appropriate
+ > acks.
+ > 
+ > I have addressed some of the comments from the previous version (almost a
+ > year ago I think). I have kept the single function for the PIO and DMA
+ > timings due to the one bit overlap between the fields in the HW register
+ > on the shasta chipset. It seems to work fine.
 
-But that doesn't solve the problem of those same pages being mapped
-cachable as part of the linear mapping does it ?
+Thanks for reviving pata_macio.
 
-Can you tell us more about your precise usage scenario ? What are you
-trying to achieve here ? We can find a solution though it might involve
-a specific driver to handle that memory.
+Does the new version work with yaboot? (the previous one didn't)
 
-Cheers,
-Ben.
-
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> Although it will be better if we can come up with a generic solution
-> not only for powerpc arch.  Changing the behavior of O_SYNC seems to
-> draw concerns over compatibility of old applications.  Suggestions
-> are welcomed.
-> 
->  arch/powerpc/mm/mem.c          |   49 +++++++++++++++++++++++++++++++++++++--
->  arch/powerpc/platforms/Kconfig |    7 +++++
->  2 files changed, 53 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 579382c..02da2c8 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -95,16 +95,59 @@ int page_is_ram(unsigned long pfn)
->  #endif
->  }
->  
-> +#ifdef CONFIG_OF_MMAP_CACHE_PROPERTY
-> +pgprot_t pgprot_from_dt(unsigned long pfn, pgprot_t vma_prot)
-> +{
-> +	struct device_node *np;
-> +	struct resource res;
-> +	unsigned long paddr = (pfn << PAGE_SHIFT);
-> +	int i;
-> +	const int *prop;
-> +
-> +	for_each_node_by_name(np, "mmap-region")
-> +		for (i = 0; of_address_to_resource(np, i, &res) == 0; i++)
-> +			if ((paddr >= res.start) && (paddr <= res.end)) {
-> +				unsigned long _prot;
-> +				prop = of_get_property(np, "cache-property",
-> +						NULL);
-> +
-> +				if (prop == NULL)
-> +					return vma_prot;
-> +
-> +				_prot = pgprot_val(vma_prot) & ~_PAGE_CACHE_CTL;
-> +
-> +				/* bit map of WIMG */
-> +				if (*prop & 0x8)
-> +					_prot |= _PAGE_WRITETHRU;
-> +				if (*prop & 0x4)
-> +					_prot |= _PAGE_NO_CACHE;
-> +				if (*prop & 0x2)
-> +					_prot |= _PAGE_COHERENT;
-> +				if (*prop & 0x1)
-> +					_prot |= _PAGE_GUARDED;
-> +
-> +				return __pgprot(_prot);
-> +			}
-> +
-> +	return vma_prot;
-> +}
-> +#endif
-> +
->  pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
->  			      unsigned long size, pgprot_t vma_prot)
->  {
->  	if (ppc_md.phys_mem_access_prot)
->  		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
->  
-> -	if (!page_is_ram(pfn))
-> -		vma_prot = pgprot_noncached(vma_prot);
-> +	/* kernel managed memory is always mapped as cacheable */
-> +	if (page_is_ram(pfn))
-> +		return vma_prot;
->  
-> -	return vma_prot;
-> +#ifdef CONFIG_OF_MMAP_CACHE_PROPERTY
-> +	return pgprot_from_dt(pfn, vma_prot);
-> +#else
-> +	return pgprot_noncached(vma_prot);
-> +#endif
->  }
->  EXPORT_SYMBOL(phys_mem_access_prot);
->  
-> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-> index 12bc2ce..de0f57c 100644
-> --- a/arch/powerpc/platforms/Kconfig
-> +++ b/arch/powerpc/platforms/Kconfig
-> @@ -333,4 +333,11 @@ config MCU_MPC8349EMITX
->  	  also register MCU GPIOs with the generic GPIO API, so you'll able
->  	  to use MCU pins as GPIOs.
->  
-> +config OF_MMAP_CACHE_PROPERTY
-> +	bool "Support setting cache property of mmap through device tree"
-> +	default n
-> +	help
-> +	  Say Y here to support setting cache property of mmaped region via
-> +	  mmap-region device tree node.
-> +
->  endmenu
+/Mikael
