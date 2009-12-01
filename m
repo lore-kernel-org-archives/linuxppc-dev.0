@@ -1,19 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 46AC51007E1
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 10:23:57 +1100 (EST)
-Date: Tue, 1 Dec 2009 10:23:52 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
-	<paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Subject: linux-next: powerpc tree build failure
-Message-Id: <20091201102352.8a2d0a52.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__1_Dec_2009_10_23_52_+1100_9kD/jf7JG0Z1.H3l"
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <dan.j.williams@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	by ozlabs.org (Postfix) with ESMTP id 378F91007D3
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 11:49:02 +1100 (EST)
+Message-ID: <4B1465C1.90606@intel.com>
+Date: Mon, 30 Nov 2009 17:39:29 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+MIME-Version: 1.0
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH v2] ppc440spe-adma: adds updated ppc440spe adma driver
+References: <1259186722-15012-1-git-send-email-agust@denx.de>
+In-Reply-To: <1259186722-15012-1-git-send-email-agust@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Yuri Tikhonov <yur@emcraft.com>, "wd@denx.de" <wd@denx.de>,
+	"dzu@denx.de" <dzu@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,38 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__1_Dec_2009_10_23_52_+1100_9kD/jf7JG0Z1.H3l
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Anatolij Gustschin wrote:
+> This patch adds new version of the PPC440SPe ADMA driver.
+> 
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
 
-Hi Ben,
+[minor] Sign-offs are typically in delivery path order, so yours would 
+appear last.
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+[..]
+>  drivers/dma/ppc440spe/ppc440spe-adma.c             | 5015 ++++++++++++++++++++
+>  drivers/dma/ppc440spe/ppc440spe_adma.h             |  195 +
+>  drivers/dma/ppc440spe/ppc440spe_dma.h              |  223 +
+>  drivers/dma/ppc440spe/ppc440spe_xor.h              |  110 +
 
-arch/powerpc/mm/mmu_context_hash64.c: In function 'destroy_context':
-arch/powerpc/mm/mmu_context_hash64.c:96: error: passing argument 1 of 'subp=
-age_prot_free' from incompatible pointer type
-arch/powerpc/include/asm/mmu-hash64.h:404: note: expected 'pgd_t *' but arg=
-ument is of type 'struct mm_struct *'
+I belong to the school of thought that says something along the lines of 
+"don't duplicate the directory path in the filename".  You seem to have 
+copied the iop-adma driver's inconsistent use of '-' and '_' let's not 
+carry that forward, i.e. looking for a changelog like:
 
-Casued by commit c045256d146800ea1d741a8e9e377dada6b7e195 ("powerpc/mm:
-Fix bug in pagetable cache cleanup with CONFIG_PPC_SUBPAGE_PROT") which I
-have reverted for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+   drivers/dma/ppc440spe/adma.c             | 5015 ++++++++++++++++++++
+   drivers/dma/ppc440spe/adma.h             |  195 +
+   drivers/dma/ppc440spe/dma.h              |  223 +
+   drivers/dma/ppc440spe/xor.h              |  110 +
 
---Signature=_Tue__1_Dec_2009_10_23_52_+1100_9kD/jf7JG0Z1.H3l
-Content-Type: application/pgp-signature
+> +/**
+> + * ppc440spe_adma_prep_dma_pqzero_sum - prepare CDB group for
+> + * a PQ_ZERO_SUM operation
+> + */
+> +static struct dma_async_tx_descriptor *ppc440spe_adma_prep_dma_pqzero_sum(
+> +               struct dma_chan *chan, dma_addr_t *pq, dma_addr_t *src,
+> +               unsigned int src_cnt, const unsigned char *scf, size_t len,
+> +               enum sum_check_flags *pqres, unsigned long flags)
+> +{
+> +       struct ppc440spe_adma_chan *ppc440spe_chan;
+> +       struct ppc440spe_adma_desc_slot *sw_desc, *iter;
+> +       dma_addr_t pdest, qdest;
+> +       int slot_cnt, slots_per_op, idst, dst_cnt;
+> +
+> +       if (unlikely(!len))
+> +               return NULL;
+> +       if (len > PAGE_SIZE)
+> +               return NULL;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+This won't work, as currently we'll end up in an infinite loop in 
+async_syndrome_val() because all descriptor allocation failures are 
+assumed to be time-limited.  The code just issues any pending operations 
+and waits for descriptor resources to become available.
 
-iEYEARECAAYFAksUVAgACgkQjjKRsyhoI8zmmgCfTeShjC/JngEwzVslw/LgHG56
-29QAn0CMZ2f+t28ylqHQtbzxphS7whDb
-=GLt3
------END PGP SIGNATURE-----
+What this comes down to is that ppc440spe_adma is essentially fibbing 
+about its support for the pq_val operation.  I think a more generic 
+solution would be to advertise to the async_tx api that the driver has 
+per channel temporary buffers that can be used to store intermediate pq 
+results and let the async_tx api handle the emulation using its 
+knowledge of ->max_pq.  We would also need a mechanism for the async_tx 
+api to lock out other requesters of the temporary buffer until a 
+coherent set of descriptors referencing those temporary buffers has been 
+submitted to the driver.  This would help other drivers like mv_xor 
+which has no val support and ioatdma which currently can only validate 
+up to 8 sources asynchronously.
 
---Signature=_Tue__1_Dec_2009_10_23_52_+1100_9kD/jf7JG0Z1.H3l--
+Can you clarify what ppc440spe-adma supports in this area?  It looks 
+like it has some hardware support for result checking but always needs 
+to write p and/or q somewhere?  Some devices may be able to do the final 
+comparison against the original parity values asynchronously while 
+others may need to do it synchronously in software.  These details can 
+be handled at the async_tx api level.
+
+Until this is resolved I would prefer that ppe440spe-adma use the 
+existing pq_val emulation by not setting DMA_PQ_VAL in the capability mask.
+
+--
+Dan
