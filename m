@@ -1,18 +1,20 @@
 Return-Path: <jacmet@gmail.com>
 Received: from mail-ew0-f215.google.com (mail-ew0-f215.google.com
-	[209.85.219.215]) by ozlabs.org (Postfix) with ESMTP id AE20C1007D2
+	[209.85.219.215]) by ozlabs.org (Postfix) with ESMTP id 2A73F1007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Dec 2009 07:48:27 +1100 (EST)
-Received: by ewy7 with SMTP id 7so6199057ewy.8
+	Wed,  2 Dec 2009 07:48:28 +1100 (EST)
+Received: by ewy7 with SMTP id 7so6199112ewy.8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 01 Dec 2009 12:48:24 -0800 (PST)
+	Tue, 01 Dec 2009 12:48:26 -0800 (PST)
 Sender: Peter Korsgaard <jacmet@gmail.com>
 From: Peter Korsgaard <jacmet@sunsite.dk>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] show_interrupts: use irq_chip::name if available
-Date: Tue,  1 Dec 2009 21:48:12 +0100
-Message-Id: <1259700494-17869-1-git-send-email-jacmet@sunsite.dk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 2/3] asm/gpio.h: support gpio_to_irq()
+Date: Tue,  1 Dec 2009 21:48:13 +0100
+Message-Id: <1259700494-17869-2-git-send-email-jacmet@sunsite.dk>
+In-Reply-To: <1259700494-17869-1-git-send-email-jacmet@sunsite.dk>
+References: <1259700494-17869-1-git-send-email-jacmet@sunsite.dk>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-struct irq_chip::typename is going away (replaced by name). Use name if
-set instead of typename in show_interrupt to make ease transition.
+gpiolib returns -ENXIO if struct gpio_chip::to_irq isn't set, so it's
+safe to always call.
 
 Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 ---
- arch/powerpc/kernel/irq.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/gpio.h |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index e5d1211..33e1130 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -203,7 +203,8 @@ int show_interrupts(struct seq_file *p, void *v)
- 		seq_printf(p, "%10u ", kstat_irqs(i));
- #endif /* CONFIG_SMP */
- 		if (desc->chip)
--			seq_printf(p, " %s ", desc->chip->typename);
-+			seq_printf(p, " %s ", desc->chip->name ?
-+				   desc->chip->name : desc->chip->typename);
- 		else
- 			seq_puts(p, "  None      ");
- 		seq_printf(p, "%s", (desc->status & IRQ_LEVEL) ? "Level " : "Edge  ");
+diff --git a/arch/powerpc/include/asm/gpio.h b/arch/powerpc/include/asm/gpio.h
+index ea04632..38762ed 100644
+--- a/arch/powerpc/include/asm/gpio.h
++++ b/arch/powerpc/include/asm/gpio.h
+@@ -38,12 +38,9 @@ static inline int gpio_cansleep(unsigned int gpio)
+ 	return __gpio_cansleep(gpio);
+ }
+ 
+-/*
+- * Not implemented, yet.
+- */
+ static inline int gpio_to_irq(unsigned int gpio)
+ {
+-	return -ENOSYS;
++	return __gpio_to_irq(gpio);
+ }
+ 
+ static inline int irq_to_gpio(unsigned int irq)
 -- 
 1.6.5
