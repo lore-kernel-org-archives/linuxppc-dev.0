@@ -1,21 +1,18 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 190D91007D3
+Return-Path: <jacmet@gmail.com>
+Received: from mail-ew0-f215.google.com (mail-ew0-f215.google.com
+	[209.85.219.215]) by ozlabs.org (Postfix) with ESMTP id AE20C1007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Dec 2009 07:43:53 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
+	Wed,  2 Dec 2009 07:48:27 +1100 (EST)
+Received: by ewy7 with SMTP id 7so6199057ewy.8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 01 Dec 2009 12:48:24 -0800 (PST)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] show_interrupts: use irq_chip::name if available
+Date: Tue,  1 Dec 2009 21:48:12 +0100
+Message-Id: <1259700494-17869-1-git-send-email-jacmet@sunsite.dk>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 5/5] libata/drivers: Add pata_macio,
-	driver Apple PowerMac/PowerBook IDE controller
-References: <20091201070834.6A840B7B63@ozlabs.org>
-Date: Tue, 01 Dec 2009 21:43:47 +0100
-In-Reply-To: <20091201070834.6A840B7B63@ozlabs.org> (Benjamin Herrenschmidt's
-	message of "Tue, 01 Dec 2009 18:08:33 +1100")
-Message-ID: <m2hbsazapo.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: tj@kernel.org, linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	jeff@garzik.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+struct irq_chip::typename is going away (replaced by name). Use name if
+set instead of typename in show_interrupt to make ease transition.
 
-> This is a libata driver for the "macio" IDE controller used on most Apple
-> PowerMac and PowerBooks. It's a libata equivalent of drivers/ide/ppc/pmac.c
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+ arch/powerpc/kernel/irq.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Tried it on my iBook G4 and I got an oops during probing, in
-pata_macio_common_init+0x378/0x614.
-
-Andreas.
-
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index e5d1211..33e1130 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -203,7 +203,8 @@ int show_interrupts(struct seq_file *p, void *v)
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
+ #endif /* CONFIG_SMP */
+ 		if (desc->chip)
+-			seq_printf(p, " %s ", desc->chip->typename);
++			seq_printf(p, " %s ", desc->chip->name ?
++				   desc->chip->name : desc->chip->typename);
+ 		else
+ 			seq_puts(p, "  None      ");
+ 		seq_printf(p, "%s", (desc->status & IRQ_LEVEL) ? "Level " : "Edge  ");
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.6.5
