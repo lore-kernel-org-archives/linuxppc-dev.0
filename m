@@ -1,34 +1,22 @@
-Return-Path: <mr.yogesh@gmail.com>
-Received: from mail-iw0-f181.google.com (mail-iw0-f181.google.com
-	[209.85.223.181]) by ozlabs.org (Postfix) with ESMTP id A034CB7BCA
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 16:48:57 +1100 (EST)
-Received: by iwn11 with SMTP id 11so2802364iwn.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Nov 2009 21:48:56 -0800 (PST)
+Return-Path: <tmarri@amcc.com>
+Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BBBD5B7EE0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  1 Dec 2009 17:00:12 +1100 (EST)
 MIME-Version: 1.0
-In-Reply-To: <fa686aa40911300759h153b3300uc54b5d1871bfc839@mail.gmail.com>
-References: <d1f76ba30911300038w272578dfx9adb116bde493e00@mail.gmail.com>
-	<d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com>
-	<fa686aa40911300759h153b3300uc54b5d1871bfc839@mail.gmail.com>
-From: Yogesh Chaudhari <mr.yogesh@gmail.com>
-Date: Tue, 1 Dec 2009 11:18:36 +0530
-Message-ID: <d1f76ba30911302148q60a9aea3s421f4d40081315f7@mail.gmail.com>
-Subject: Re: Ethernet issues with lite5200 board from linux-2.6.31
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Robin Gareus <robin@gareus.org>, rt-users <linux-rt-users@vger.kernel.org>,
-	Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Frank Rowand <frank.rowand@am.sony.com>,
-	Philippe Reynes <philippe.reynes@isismpp.fr>,
-	Mark Knecht <markknecht@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Sven-Thorsten Dietrich <sdietrich@novell.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Clark Williams <williams@redhat.com>, Darren Hart <dvhltc@us.ibm.com>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Jon Masters <jcm@redhat.com>, John Kacur <jkacur@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>, Jan Blunck <jblunck@suse.de>,
-	Gregory Haskins <ghaskins@novell.com>
+Content-Type: text/plain;
+	charset="UTF-8"
+Subject: RE: ep440xs board boot problem
+Date: Mon, 30 Nov 2009 21:49:55 -0800
+Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C08642F3E@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <288168.33010.qm@web52902.mail.re2.yahoo.com>
+References: <288168.33010.qm@web52902.mail.re2.yahoo.com>
+From: "Tirumala Reddy Marri" <tmarri@amcc.com>
+To: "Allan Wang" <aiyuanwang@yahoo.com>,
+	<linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,62 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Grant,
-
-2009/11/30 Grant Likely <grant.likely@secretlab.ca>:
-> On Mon, Nov 30, 2009 at 2:50 AM, Yogesh Chaudhari <mr.yogesh@gmail.com> w=
-rote:
->> Hello,
->> =A0 =A0 =A0 =A0 I am running linux kernel with rt patch on embedded boar=
-d
->> based on lite5200 eval board. From linux-2.6.31 release, in which the
->> mdio patch has gone inside, =A0the fec ethernet does not come up on this
->> board. I get the following message at startup:
->> mpc52xx MII bus: probed
->> mdio_bus f0003000: error probing PHY at address 1
->>
->>
->> After the bootup if I try to do a ifconfig I get the message:
->> net eth2: of_phy_connect failed
->>
->>
->> If I change the value of reg in dts file (lite5200.dts) to 0 then this
->> ethernet comes up. However upto this kernel version, this was not
->> required.
->>
->> Ethernet does not come up on board with original lite5200.dts file
->
-> Is your board based on the Lite5200 or the Lite5200B? =A0The phys are at
-> different addresses on those two revisions of the board. =A0There is a
-> different .dts file for each board.
->
->> phy0: ethernet-phy@1 {
->> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =
-=3D <1>;
->> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->>
->> Ethernet comes up on board with this change
->> phy0: ethernet-phy@1 {
->> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =
-=3D <0>;
->> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->
-> Some PHYs treat address 0 as the 'broadcast' address. =A0You need to
-> fill in this field (and modify the ethernet-phy@<address> node name)
-> to reflect the address that your phy is actually at.
-
-This change in reg value was not required till 2.6.31. It is only
-after this version that the change is needed. Is there some change in
-31 that makes this change mandatory?
-
->
-> g.
->
-
-
-
---=20
-DREAM IT, CODE IT
-
-"CODITO, ERGO SUM"
-"I CODE, THEREFORE I AM"
+SXQgY291bGQgYmUgcmFtZGlzayBzaXplIGlzc3VlLiAgaWYgaXQgaXMgYmlnZ2VyIHRoYW4gNE1C
+IHlvdSBtaWdodCBoYXZlIHRvIHBhc3MgcmFtaWRpc2tfc2l6ZT0xMDAwMDAgKDEwME1CIG9yID4g
+eW91ciByYW1kaXNrIHNpemUpLg0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTog
+bGludXhwcGMtZGV2LWJvdW5jZXMrdG1hcnJpPWFtY2MuY29tQGxpc3RzLm96bGFicy5vcmcgW21h
+aWx0bzpsaW51eHBwYy1kZXYtYm91bmNlcyt0bWFycmk9YW1jYy5jb21AbGlzdHMub3psYWJzLm9y
+Z10gT24gQmVoYWxmIE9mIEFsbGFuIFdhbmcNClNlbnQ6IE1vbmRheSwgTm92ZW1iZXIgMzAsIDIw
+MDkgOTozNSBQTQ0KVG86IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQpTdWJqZWN0OiBl
+cDQ0MHhzIGJvYXJkIGJvb3QgcHJvYmxlbQ0KDQpIZWxsbywgQWxsLA0KDQpJIGFtIG5ldyB0byB0
+aGUgbGlzdC4gSSBhbSBzdGlsbCBuZXdiaWUgdG8gZW1iZWRkZWQgbGludXguIEkgaGF2ZSBib3Vn
+aHQgYW4gZXA0NDB4cyBib2FyZCB3aGljaCBpcyBzaW1pbGFyIHRvIHNlcXVvaWEgYm9hcmQuIHUt
+Ym9vdCBpcyB3b3JraW5nLiBJIGFtIHRyeWluZyB0byBtYWtlIGl0IHJ1biBsaW51eC4gIEkgaGF2
+ZSB0aGUgZm9sbG93aW5nIHByb2JsZW1zIGFuZCBuZWVkIHlvdXIgaGVscC4gVGhhbmsgeW91IHZl
+cnkgbXVjaDoNCg0KDQpJIGFtIHVzaW5nIGxpbnV4IGtlcm5lbCAyLjYuMzAuNC4gSSBlbmNvdW50
+ZXIgMiBwcm9ibGVtczoNCjEuIEFmdGVyIGNvbnNvbGVfaW5pdCgpIGlzIGNhbGxlZCBpbnNpZGUg
+c3RhcnRfa2VybmVsKCksIHRoZSBjb25zb2xlIHN0YXJ0cyBwcmludGluZyBnYXJiYWdlIGxpa2U6
+DQpTZXJpYWw6IDgyNTAvMTY1NTAgZHJpdmVyLCA0IHBvcnRzLCBJUlEgc2hhcmluZyBlbmFibGVk
+DQpzZXJpYWw4MjUwLjA6IHR0eVMwIGF0IE1NSU8gMHgxZWY2MDAzMDAgKGlycSA9IDE2KSBpcyBh
+IDE2NTUwQQ0K77+977+977+977+977+977+977+977+977+977+977+977+977+977+977+977+9
+77+977+977+977+977+977+977+977+977+977+977+977+977+977+9DQrvv73vv73vv73vv73v
+v73vv73vv73vv73vv73vv73vv73vv73vv73vv73vv73vv73vv73vv73vv73vv73vv73vv73vv73v
+v73vv73vv73vv73vv70NCu+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/
+ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/
+vQ0K77+977+977+977+977+977+977+977+977+977+977+977+977+977+977+977+977+977+9
+77+977+977+977+977+977+977+977+977+977+977+977+9DQrvv73vv73vv73vv73vv73vv73v
+v73vv73vv73vv73vv73vv73vv73vv73vv73vv73vv70uDQoyLiBJdCBwYWtpY3Mgd2hlbiBtb3Vu
+dGluZyB0aGUgcm9vdCBmaWxlIHN5c3RlbShORlMpOg0KKGdkYikgYnQNCiMwICBwYW5pYyAoZm10
+PTB4YzAyOTBlOTQgIlZGUzogVW5hYmxlIHRvIG1vdW50IHJvb3QgZnMgb24gJXMiKQ0KYXQga2Vy
+bmVsL3BhbmljLmM6NzANCiMxICAweGMwMmQ4Y2UwIGluIG1vdW50X2Jsb2NrX3Jvb3QgKG5hbWU9
+MHhjMDI5MGRlNCAiL2Rldi9yb290IiwgZmxhZ3M9MHg4MDAxKQ0KYXQgaW5pdC9kb19tb3VudHMu
+YzoyNzINCiMyICAweGMwMmQ5MDg0IGluIHByZXBhcmVfbmFtZXNwYWNlICgpIGF0IGluaXQvZG9f
+bW91bnRzLmM6NDE1DQojMyAgMHhjMDJkODFlYyBpbiBrZXJuZWxfaW5pdCAodW51c2VkPTx2YWx1
+ZSBvcHRpbWl6ZWQgb3V0PikgYXQgaW5pdC9tYWluLmM6ODg1DQojNCAgMHhjMDAwZGU2MCBpbiBr
+ZXJuZWxfdGhyZWFkICgpDQpUaGVyZSBpcyBhIHBhdGNoIGZvciBTZXF1b2lhIGJvYXJkIHRvIGRl
+bGV0ZSAvY2hvc2VuIHBhcnQgaW4gc2VxdW9pYS5kdHMsIGlzIC9jaG9zZW4gcmVxdWlyZWQ/DQoN
+CkFsbGFuDQoNCg0KDQogICAgICANCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fDQpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0DQpMaW51eHBwYy1kZXZAbGlz
+dHMub3psYWJzLm9yZw0KaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBj
+LWRldg0K
