@@ -1,26 +1,21 @@
-Return-Path: <R58472@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C17F8B6EF5
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Dec 2009 21:38:30 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nB1AcQZ8026303
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Dec 2009 03:38:26 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nB1AgKOe012759
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Dec 2009 04:42:21 -0600 (CST)
-From: Li Yang <leoli@freescale.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc/mm: setting mmaped page cache property through device
-	tree
-Date: Tue,  1 Dec 2009 18:30:50 +0800
-Message-Id: <1259663450-28790-1-git-send-email-leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3F1C0B6F16
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  1 Dec 2009 21:51:51 +1100 (EST)
+Subject: Re: [RFC PATCH v3 2/3] powerpc: udbg: add fixmap entry for early debug
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Albert Herranz <albert_herranz@yahoo.es>
+In-Reply-To: <0a6994b5a257def375c8114b132d044a7f416d11.1259609263.git.albert_herranz@yahoo.es>
+References: <cover.1259609263.git.albert_herranz@yahoo.es>
+	<0a6994b5a257def375c8114b132d044a7f416d11.1259609263.git.albert_herranz@yahoo.es>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 01 Dec 2009 21:51:44 +1100
+Message-ID: <1259664704.2076.351.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,105 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch adds the ability for powerpc architecture to set page cache
-property of mmaped area through device tree.  This is useful for two
-cases.  First, for memory shared with other OS'es to have the same cache
-property to avoid cache paradoxes.  Second, enabling application to map
-memory which is not managed by kernel as cacheable for better performance.
+On Tue, 2009-12-01 at 00:09 +0100, Albert Herranz wrote:
+> Add a new entry to the fixmap table to allow low level early udbg drivers
+> to safely reserve virtual address space and create their I/O mappings.
+> 
+> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+> ---
+>  arch/powerpc/include/asm/fixmap.h |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/fixmap.h b/arch/powerpc/include/asm/fixmap.h
+> index f1f4e23..424e5a6 100644
+> --- a/arch/powerpc/include/asm/fixmap.h
+> +++ b/arch/powerpc/include/asm/fixmap.h
+> @@ -48,6 +48,9 @@ enum fixed_addresses {
+>  	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
+>  	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
+>  #endif
+> +#ifdef CONFIG_PPC_EARLY_DEBUG
+> +	FIX_EARLY_DEBUG_BASE,
+> +#endif
+>  	/* FIX_PCIE_MCFG, */
+>  	__end_of_fixed_addresses
+>  };
 
-Signed-off-by: Li Yang <leoli@freescale.com>
----
-Although it will be better if we can come up with a generic solution
-not only for powerpc arch.  Changing the behavior of O_SYNC seems to
-draw concerns over compatibility of old applications.  Suggestions
-are welcomed.
+Rather than a hook to hop between the BAT and the later single page
+mapping, I would have just used the fixmap as a way to reserve virtual
+space for the BAT and keep it around.
 
- arch/powerpc/mm/mem.c          |   49 +++++++++++++++++++++++++++++++++++++--
- arch/powerpc/platforms/Kconfig |    7 +++++
- 2 files changed, 53 insertions(+), 3 deletions(-)
+However, that does mean having more than one entry in the fixmap, in
+fact, enough to cope with the BAT min size +/- alignment. Maybe to avoid
+the alignment problem, an option would be to always use the top of the
+fixmap for the "debug area" and make it always something nice and fat to
+fit a BAT, like 128K or whatever is the min size. No need for CONFIG_*
+there even, I won't cry for 128K of virtual space reserved there instead
+of just one page currently. And we could have good use of it for other
+early debug stuff even.
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 579382c..02da2c8 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -95,16 +95,59 @@ int page_is_ram(unsigned long pfn)
- #endif
- }
- 
-+#ifdef CONFIG_OF_MMAP_CACHE_PROPERTY
-+pgprot_t pgprot_from_dt(unsigned long pfn, pgprot_t vma_prot)
-+{
-+	struct device_node *np;
-+	struct resource res;
-+	unsigned long paddr = (pfn << PAGE_SHIFT);
-+	int i;
-+	const int *prop;
-+
-+	for_each_node_by_name(np, "mmap-region")
-+		for (i = 0; of_address_to_resource(np, i, &res) == 0; i++)
-+			if ((paddr >= res.start) && (paddr <= res.end)) {
-+				unsigned long _prot;
-+				prop = of_get_property(np, "cache-property",
-+						NULL);
-+
-+				if (prop == NULL)
-+					return vma_prot;
-+
-+				_prot = pgprot_val(vma_prot) & ~_PAGE_CACHE_CTL;
-+
-+				/* bit map of WIMG */
-+				if (*prop & 0x8)
-+					_prot |= _PAGE_WRITETHRU;
-+				if (*prop & 0x4)
-+					_prot |= _PAGE_NO_CACHE;
-+				if (*prop & 0x2)
-+					_prot |= _PAGE_COHERENT;
-+				if (*prop & 0x1)
-+					_prot |= _PAGE_GUARDED;
-+
-+				return __pgprot(_prot);
-+			}
-+
-+	return vma_prot;
-+}
-+#endif
-+
- pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
- 			      unsigned long size, pgprot_t vma_prot)
- {
- 	if (ppc_md.phys_mem_access_prot)
- 		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
- 
--	if (!page_is_ram(pfn))
--		vma_prot = pgprot_noncached(vma_prot);
-+	/* kernel managed memory is always mapped as cacheable */
-+	if (page_is_ram(pfn))
-+		return vma_prot;
- 
--	return vma_prot;
-+#ifdef CONFIG_OF_MMAP_CACHE_PROPERTY
-+	return pgprot_from_dt(pfn, vma_prot);
-+#else
-+	return pgprot_noncached(vma_prot);
-+#endif
- }
- EXPORT_SYMBOL(phys_mem_access_prot);
- 
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 12bc2ce..de0f57c 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -333,4 +333,11 @@ config MCU_MPC8349EMITX
- 	  also register MCU GPIOs with the generic GPIO API, so you'll able
- 	  to use MCU pins as GPIOs.
- 
-+config OF_MMAP_CACHE_PROPERTY
-+	bool "Support setting cache property of mmap through device tree"
-+	default n
-+	help
-+	  Say Y here to support setting cache property of mmaped region via
-+	  mmap-region device tree node.
-+
- endmenu
--- 
-1.6.4
+Cheers,
+Ben.
