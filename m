@@ -1,16 +1,17 @@
-Return-Path: <cristian.axenie@gmail.com>
-Received: from mail-fx0-f227.google.com (mail-fx0-f227.google.com
-	[209.85.220.227]) by ozlabs.org (Postfix) with ESMTP id 8DAB8B7BC6
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2009 05:04:33 +1100 (EST)
-Received: by fxm27 with SMTP id 27so539761fxm.23
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Dec 2009 10:04:31 -0800 (PST)
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 2D302B7B93
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2009 07:05:44 +1100 (EST)
+To: Cristian Axenie <cristian.axenie@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: MPC5121ADS PowerVR MBX driver on 2.6.31 kernel?
 MIME-Version: 1.0
-Date: Wed, 2 Dec 2009 20:04:30 +0200
-Message-ID: <9c789a000912021004l5dda0ee8r77a21764e035ff35@mail.gmail.com>
-Subject: MPC5121ADS PowerVR MBX driver on 2.6.31 kernel?
-From: Cristian Axenie <cristian.axenie@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=0016e6d5665fcd1bbb0479c2b4ee
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <9c789a000912021004l5dda0ee8r77a21764e035ff35@mail.gmail.com>
+References: <9c789a000912021004l5dda0ee8r77a21764e035ff35@mail.gmail.com>
+Date: Wed, 02 Dec 2009 21:05:42 +0100
+Message-Id: <20091202200542.195F54C025@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,24 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e6d5665fcd1bbb0479c2b4ee
-Content-Type: text/plain; charset=ISO-8859-1
+Dear Cristian Axenie,
 
-Hi all!
+In message <9c789a000912021004l5dda0ee8r77a21764e035ff35@mail.gmail.com> you wrote:
+>
+> I would like to know if there is someone that tested the MBX driver for the
+> PowerVR graphic chip in MPC5121 ?
+> It seems that on kernel 2.6.21 works fine but it fails on 2.6.31 !
 
-I would like to know if there is someone that tested the MBX driver for the
-PowerVR graphic chip in MPC5121 ?
-It seems that on kernel 2.6.21 works fine but it fails on 2.6.31 !
-I'm using wrlinux as the build environment !
+You probably have to rebuild it from the source code for this new
+kernel version.
 
-Any opinions are welcome !
+> I'm using wrlinux as the build environment !
 
-Best !
+Maybe you ask WRS to provide matching binaries, then? [Note that
+woever provides the binaries also has to provide the sources; the
+kernel is GPL after all...]
 
---0016e6d5665fcd1bbb0479c2b4ee
-Content-Type: text/html; charset=ISO-8859-1
+Best regards,
 
-Hi all!<br><br>I would like to know if there is someone that tested the MBX driver for the PowerVR graphic chip in MPC5121 ?<br>It seems that on kernel 2.6.21 works fine but it fails on 2.6.31 !<br>I&#39;m using wrlinux as the build environment !<br>
-<br>Any opinions are welcome !<br><br>Best !<br>
+Wolfgang Denk
 
---0016e6d5665fcd1bbb0479c2b4ee--
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+If the car industry behaved like the computer industry over the  last
+30  years, a Rolls-Royce would cost $5, get 300 miles per gallon, and
+blow up once a year killing all passengers inside.
