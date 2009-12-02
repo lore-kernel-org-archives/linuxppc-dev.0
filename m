@@ -1,22 +1,17 @@
-Return-Path: <dwalker@fifo99.com>
-Received: from fifo99.com (fifo99.com [67.223.236.141])
-	by ozlabs.org (Postfix) with ESMTP id 12F11B7B66
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Dec 2009 04:51:27 +1100 (EST)
-Subject: Re: [v10 PATCH 9/9]: POWER: Enable default_idle when power_save=off
-From: Daniel Walker <dwalker@fifo99.com>
-To: arun@linux.vnet.ibm.com
-In-Reply-To: <20091202100346.GJ27251@linux.vnet.ibm.com>
-References: <20091202095427.GA27251@linux.vnet.ibm.com>
-	<20091202100346.GJ27251@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 02 Dec 2009 09:41:38 -0800
-Message-ID: <1259775698.25622.2.camel@c-dwalke-linux.qualcomm.com>
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <aswathi.c@gmail.com>
+Received: from mail-pw0-f50.google.com (mail-pw0-f50.google.com
+	[209.85.160.50]) by ozlabs.org (Postfix) with ESMTP id 5752AB7BE2
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Dec 2009 22:13:41 +1100 (EST)
+Received: by pwi19 with SMTP id 19so51010pwi.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 02 Dec 2009 03:13:40 -0800 (PST)
+MIME-Version: 1.0
+Date: Wed, 2 Dec 2009 16:43:40 +0530
+Message-ID: <2f2a209f0912020313v5dfd34ay6ec5e59feae84dc1@mail.gmail.com>
+Subject: Can user set timeout for MPC 83x watchdog timer
+From: Aswathi C <aswathi.c@gmail.com>
+To: galak@kernel.crashing.org
+Content-Type: multipart/alternative; boundary=001636e0a8b5813ae00479bcf759
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-12-02 at 15:33 +0530, Arun R Bharadwaj wrote:
-> +int boot_option_idle_override = 0;
-> + 
+--001636e0a8b5813ae00479bcf759
+Content-Type: text/plain; charset=UTF-8
 
-Doesn't need to be set to zero AFAIK, since we do a mass initialization
-to zero during boot up. Did you notice some type of failure when you
-didn't initialize that to zero?
+Hi Kumar,
 
-(checkpatch output below..)
---
+I would like to know whether user can set timeout from user space for the
+watchdog.
+I am using MPC 8323E processor and linux-2.6.24 kernel.
+If user can set, can you tell me how will it be implemented?
 
-ERROR: do not initialise externals to 0 or NULL
-#97: FILE: arch/powerpc/kernel/idle.c:43:
-+int boot_option_idle_override = 0;
+Regards,
+Aswathi
 
-total: 1 errors, 0 warnings, 0 checks, 31 lines checked
+--001636e0a8b5813ae00479bcf759
+Content-Type: text/html; charset=UTF-8
 
-Your patch has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
+Hi Kumar,<br><br>I would like to know whether user can set timeout from user space for the watchdog. <br>I am using MPC 8323E processor and linux-2.6.24 kernel.<br>If user can set, can you tell me how will it be implemented? <br>
+<br>Regards,<br>Aswathi<br>
+
+--001636e0a8b5813ae00479bcf759--
