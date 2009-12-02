@@ -1,17 +1,20 @@
 Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 2D302B7B93
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2009 07:05:44 +1100 (EST)
-To: Cristian Axenie <cristian.axenie@gmail.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id E5A5FB7BBD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  3 Dec 2009 07:09:44 +1100 (EST)
+To: Allan Wang <aiyuanwang@yahoo.com>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: MPC5121ADS PowerVR MBX driver on 2.6.31 kernel?
+Subject: Re: EP440XS board boot problem(Note:similart to Sequoia)
 MIME-Version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <9c789a000912021004l5dda0ee8r77a21764e035ff35@mail.gmail.com>
-References: <9c789a000912021004l5dda0ee8r77a21764e035ff35@mail.gmail.com>
-Date: Wed, 02 Dec 2009 21:05:42 +0100
-Message-Id: <20091202200542.195F54C025@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+In-reply-to: <880531.39933.qm@web52905.mail.re2.yahoo.com>
+References: <401793.31718.qm@web52903.mail.re2.yahoo.com>
+	<20091201231022.AB72CE6D391@gemini.denx.de>
+	<880531.39933.qm@web52905.mail.re2.yahoo.com>
+Date: Wed, 02 Dec 2009 21:09:42 +0100
+Message-Id: <20091202200942.506BF4C025@gemini.denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,22 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Cristian Axenie,
+Dear Allan Wang,
 
-In message <9c789a000912021004l5dda0ee8r77a21764e035ff35@mail.gmail.com> you wrote:
->
-> I would like to know if there is someone that tested the MBX driver for the
-> PowerVR graphic chip in MPC5121 ?
-> It seems that on kernel 2.6.21 works fine but it fails on 2.6.31 !
+In message <880531.39933.qm@web52905.mail.re2.yahoo.com> you wrote:
+> 
+> Thank you for your help. My answer to your questions are between the lines.
+>  Attached is the dts file I use.
 
-You probably have to rebuild it from the source code for this new
-kernel version.
+No, there is no attachment.
 
-> I'm using wrlinux as the build environment !
+> Which exact version of U-Boot are you running on this board?
+> 
+> => version
+> 
+> U-Boot 1.1.6 (Oct 25 2009 - 13:26:41)
 
-Maybe you ask WRS to provide matching binaries, then? [Note that
-woever provides the binaries also has to provide the sources; the
-kernel is GPL after all...]
+Um... why don't you update? This is really historic stuff...
+
+> What is your exact boot command?
+> 
+> I tftp the cuImage to address 0x200000 and bootm to boot.
+> 
+> Which boot arguments do you pass to the kernel?
+> 
+> bootargs=$(bootargs) console=ttyS0,$(baudrate)
+
+Please provide complete answers, and not only the snippets that seem
+important to you. For example, what is the "$(bootargs)" above?
+
+Maybe you provide a full boot log right from reset/power on, including
+the output of the "printenv" command on your system.
+
+> The u-boot sets it to 115.2k. the dts file is set to 115.2k. Here is the bo
+> ot parameter:
+> baudrate=115200
+
+Arghhh.. Please provide the actual output fdrom your system, not just
+some parts you copy.
+
+> What does your device tree look like?
+> 
+> I attached my dts file.
+
+No, it's missing.
+
+> > 2. It pakics when mounting the root file system(NFS):
+> > (gdb) bt
+> > #0 panic (fmt=0xc0290e94 "VFS: Unable to mount root fs on %s")
+> 
+> So what is the "%s" argument here? Which sort of root file system are
+> you trying to mount - NFS, ramdisk, UBIFS, ... ?
+> 
+> I try to use NFS for the root file system.
+
+Then you can also run a packet sniffer (like wireshark) to see if any
+NFS requests actually get sent to the targte, resp. where it stops).
 
 Best regards,
 
@@ -46,6 +88,7 @@ Wolfgang Denk
 DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-If the car industry behaved like the computer industry over the  last
-30  years, a Rolls-Royce would cost $5, get 300 miles per gallon, and
-blow up once a year killing all passengers inside.
+Romulan women are not like Vulcan females. We are  not  dedicated  to
+pure logic and the sterility of non-emotion.
+	-- Romulan Commander, "The Enterprise Incident",
+	   stardate 5027.3
