@@ -1,19 +1,18 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (gateway-1237.mvista.com [206.112.117.35])
-	by ozlabs.org (Postfix) with SMTP id 7351DB7BEC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Dec 2009 23:37:15 +1100 (EST)
-Message-ID: <4B1658C8.5020401@ru.mvista.com>
-Date: Wed, 02 Dec 2009 15:08:40 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <thirumalai.p@datapatterns.co.in>
+Received: from ns0.datapatterns.co.in (ns0.datapatterns.co.in [121.242.18.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 41850B7BF1
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Dec 2009 23:40:14 +1100 (EST)
+Message-ID: <9A81E1C4C3C843378F526EF718CD7B07@itd210>
+From: "Thirumalai" <thirumalai.p@datapatterns.co.in>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: MPC8640D second core initialization
+Date: Wed, 2 Dec 2009 18:09:53 +0530
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/5] powerpc/macio: Rework hotplug media bay support
-References: <20091202003628.CF4321007E0@ozlabs.org>
-In-Reply-To: <20091202003628.CF4321007E0@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: tj@kernel.org, linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	jeff@garzik.org
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=response
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, u-boot@lists.denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,116 +22,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+ Hi Kumar,
+        I am using 2009-06 u-boot for MPC8640D based custom board. I just 
+want to know whether the second core of MPC8640D is kicked off automatically 
+or will it required by the user to kick[like mpc85xx/mp.c].  Also if am 
+enabling the CONFIG_MP macro and  CONFIG_NUM_CPUS as 2, then the reset 
+command of the target is not  working(means board is getting hanged). I have 
+mentioned the value of CONFIG_SYS_SCRATCH_VA as 0xf5000000.
 
-Benjamin Herrenschmidt wrote:
 
-> The hotplug mediabay has tendrils deep into drivers/ide code
-> which makes a libata port reather difficult. In addition it's
-> ugly and could be done better.
->
-> This reworks the interface between the mediabay and the rest
-> of the world so that:
->
->    - Any macio_driver can now have a mediabay_event callback
-> which will be called when that driver sits on a mediabay and
-> it's been either plugged or unplugged. The device type is
-> passed as an argument. We can now move all the IDE cruft
-> into the IDE driver itself
->
->    - A check_media_bay() function can be used to take a peek
-> at the type of device currently in the bay if any, a cleaner
-> variant of the previous function with the same name.
->
->    - A pair of lock/unlock functions are exposed to allow the
-> IDE driver to block the hotplug callbacks during the initial
-> setup and probing of the bay in order to avoid nasty race
-> conditions.
->
->    - The mediabay code no longer needs to spin on the status
-> register of the IDE interface when it detects an IDE device,
-> this is done just fine by the IDE code itself
->
-> Overall, less code, simpler, and allows for another driver
-> than our old drivers/ide based one.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->   
+Also when i try to boot linux using this configuration i was getting into 
+kernel panic.
 
-   Some grammar/style nitpicking...
+ ## Current stack ends at 0x3fa91a08
+## Booting kernel from Legacy Image at 00400000 ...
+   Image Name:   Linux-2.6.30-dpvpx0689
+   Created:      2009-12-01   4:45:09 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    2307361 Bytes =  2.2 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 04000000
+   Booting using the fdt blob at 0x4000000
+   Uncompressing Kernel Image ... OK
+   Loading Device Tree to 007fa000, end 007ff150 ... OK
+## Transferring control to Linux (at address 00000000) ...
+   Booting using OF flat tree...
+Using DPVPX0689 machine description
+Total memory = 1024MB; using 2048kB for hash table (at afe00000)
+Linux version 2.6.30-dpvpx0689 (root@localhost.localdomain) (gcc version 
+4.0.0 (DENX ELDK 4.0 4.0.0)) #70 SMP Tue Dec 1 10:14:07 IST 2009
+Found legacy serial port 0 for /soc@f6000000/serial@4500
+  mem=f6004500, taddr=f6004500, irq=0, clk=400000000, speed=0
+Found legacy serial port 1 for /soc@f6000000/serial@4600
+  mem=f6004600, taddr=f6004600, irq=0, clk=400000000, speed=0
+CPU maps initialized for 1 thread per core
+ (thread shift is 0)
+console [udbg0] enabled
+setup_arch: bootmem
+dpvpx0689_setup_arch()
+Found FSL PCI host bridge at 0x00000000f6008000. Firmware bus number: 0->15
+PCI host bridge /pcie@f6008000  ranges:
+ MEM 0x0000000080000000..0x000000009fffffff -> 0x0000000080000000
+  IO 0x00000000f8000000..0x00000000fbffffff -> 0x0000000000000000
+Single Board Computers from Data Patterns
+Ported & Developed By COTS DIVISION
+arch: exit
+Top of RAM: 0x40000000, Total RAM: 0x40000000
+Memory hole size: 0MB
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00030000
+  Normal   0x00030000 -> 0x00030000
+  HighMem  0x00030000 -> 0x00040000
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0: 0x00000000 -> 0x00040000
+On node 0 totalpages: 262144
+free_area_init_node: node 0, pgdat a047d1c0, node_mem_map a07fd000
+  DMA zone: 1536 pages used for memmap
+  DMA zone: 0 pages reserved
+  DMA zone: 195072 pages, LIFO batch:31
+  HighMem zone: 512 pages used for memmap
+  HighMem zone: 65024 pages, LIFO batch:15
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 260096
+Kernel command line: root=/dev/nfs rw nfsroot=10.5.18.3:/ppc/netfs/fc5fs/ 
+ip=10.5.18.230:10.5.18.3:10.5.18.3:255.0.0.0:DPVPX0689:eth0:off 
+console=ttyS0,115200
+NR_IRQS:512
+mpic: Setting up MPIC " MPIC     " version 1.2 at f6040000, max 2 CPUs
+mpic: ISU size: 256, shift: 8, mask: ff
+mpic: Initializing for 256 sources
+PID hash table entries: 4096 (order: 12, 16384 bytes)
+time_init: decrementer frequency = 100.000000 MHz
+time_init: processor frequency   = 800.000000 MHz
+clocksource: timebase mult[2800000] shift[22] registered
+clockevent: decrementer mult[1999] shift[16] cpu[0]
+Console: colour dummy device 80x25
+Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+High memory: 262140k
+Memory: 1031504k/1048576k available (4444k kernel code, 16252k reserved, 
+160k data, 169k bss, 200k init)
+Kernel virtual memory layout:
+  * 0xfffe0000..0xfffff000  : fixmap
+  * 0xff800000..0xffc00000  : highmem PTEs
+  * 0xfe7ed000..0xff800000  : early ioremap
+  * 0xd1000000..0xfe7ed000  : vmalloc & ioremap
+Calibrating delay loop... 199.68 BogoMIPS (lpj=99840)
+Mount-cache hash table entries: 512
+mpic: requesting IPIs ...
+Processor 1 found.
+clockevent: decrementer mult[1999] shift[16] cpu[1]
+Brought up 2 CPUs
+Unable to handle kernel paging request for data at address 0x00000004
+Faulting instruction address: 0xa0023e10
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=2 DPVPX0689
+Modules linked in:
+NIP: a0023e10 LR: a0023dd0 CTR: 00000000
+REGS: cf841e90 TRAP: 0300   Not tainted  (2.6.30-dpvpx0689)
+MSR: 00009032 <EE,ME,IR,DR>  CR: 24004028  XER: 20000000
+DAR: 00000004, DSISR: 40000000
+TASK = cf83f930[1] 'swapper' THREAD: cf840000 CPU: 0
+GPR00: 00000000 cf841f40 cf83f930 00000000 00000000 00000000 cf841f50 
+00000000
+GPR08: 00000000 00000000 00000002 a10018f4 22004082 ffffffff 3fee6c00 
+3ff94000
+GPR16: ffffffbf ffbf7bff 00000000 00000000 00000000 cf83a800 a10018e8 
+a0491224
+GPR24: a0490000 a04558f8 00000000 cf801f20 a1006070 a10018e8 a10018f8 
+00000000
+NIP [a0023e10] __build_sched_domains+0x354/0x464
+LR [a0023dd0] __build_sched_domains+0x314/0x464
+Call Trace:
+[cf841f40] [a0023b98] __build_sched_domains+0xdc/0x464 (unreliable)
+[cf841f90] [a04326ec] sched_init_smp+0x88/0x1e8
+[cf841fc0] [a0425a40] kernel_init+0x148/0x1f0
+[cf841ff0] [a00131f8] kernel_thread+0x4c/0x68
+Instruction dump:
+813e0008 2f9c0000 90090004 419e00d4 801e0034 70090100 40820010 801c0034
+70090280 408200bc 83fc0008 83be0008 <807f0004> 801d0004 7c630214 907d0004
+---[ end trace 31fd0ba7d8756001 ]---
+Kernel panic - not syncing: Attempted to kill init!
+Rebooting in 180 seconds..
+ Kindly suggest me what might be the error.
 
-> Index: linux-work/arch/powerpc/include/asm/mediabay.h
-> ===================================================================
-> --- linux-work.orig/arch/powerpc/include/asm/mediabay.h	2009-12-01 17:57:00.000000000 +1100
-> +++ linux-work/arch/powerpc/include/asm/mediabay.h	2009-12-01 18:00:28.000000000 +1100
-> @@ -17,26 +17,31 @@
->  #define MB_POWER	6	/* media bay contains a Power device (???) */
->  #define MB_NO		7	/* media bay contains nothing */
->  
-> -/* Number of bays in the machine or 0 */
-> -extern int media_bay_count;
-> +struct macio_dev;
->  
-> -#ifdef CONFIG_BLK_DEV_IDE_PMAC
-> -#include <linux/ide.h>
-> +#ifdef CONFIG_PMAC_MEDIABAY
->  
-> -int check_media_bay_by_base(unsigned long base, int what);
-> -/* called by IDE PMAC host driver to register IDE controller for media bay */
-> -int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long base,
-> -			    int irq, ide_hwif_t *hwif);
-> -
-> -int check_media_bay(struct device_node *which_bay, int what);
-> +/* Check the content type of the bay, returns MB_NO if the bay is still
-> + * transitionning
-> + */
->   
-
-   Only "transitioning".
-
->  
-> -int check_media_bay_by_base(unsigned long base, int what)
-> +int check_media_bay(struct macio_dev *baydev)
->  {
-> -	int	i;
-> +	struct media_bay_info* bay;
-> +	int id;
->  
-> -	for (i=0; i<media_bay_count; i++)
-> -		if (media_bays[i].mdev && base == (unsigned long) media_bays[i].cd_base) {
-> -			if ((what == media_bays[i].content_id) && media_bays[i].state == mb_up)
-> -				return 0;
-> -			media_bays[i].cd_index = -1;
-> -			return -EINVAL;
-> -		} 
-> +	if (baydev == NULL)
-> +		return MB_NO;
->  
-> -	return -ENODEV;
-> +	/* This returns an instant snapshot, not locking, sine
->   
-
-   Only "since".
-
-> Index: linux-work/drivers/block/swim3.c
-> ===================================================================
-> --- linux-work.orig/drivers/block/swim3.c	2009-12-01 17:57:00.000000000 +1100
-> +++ linux-work/drivers/block/swim3.c	2009-12-01 18:00:28.000000000 +1100
->   
-[...]
-> @@ -303,14 +303,13 @@ static int swim3_readbit(struct floppy_s
->  static void do_fd_request(struct request_queue * q)
->  {
->  	int i;
-> -	for(i=0;i<floppy_count;i++)
-> -	{
-> -#ifdef CONFIG_PMAC_MEDIABAY
-> -		if (floppy_states[i].media_bay &&
-> -			check_media_bay(floppy_states[i].media_bay, MB_FD))
-> +
-> +	for(i=0; i<floppy_count; i++) {
->   
-
-   You could insert spaces around operators here, while at it...
-
-MBR, Sergei
+ Thank you,
+ T.
