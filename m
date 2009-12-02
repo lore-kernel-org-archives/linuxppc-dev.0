@@ -1,18 +1,21 @@
-Return-Path: <thirumalai.p@datapatterns.co.in>
-Received: from ns0.datapatterns.co.in (ns0.datapatterns.co.in [121.242.18.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 41850B7BF1
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Dec 2009 23:40:14 +1100 (EST)
-Message-ID: <9A81E1C4C3C843378F526EF718CD7B07@itd210>
-From: "Thirumalai" <thirumalai.p@datapatterns.co.in>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: MPC8640D second core initialization
-Date: Wed, 2 Dec 2009 18:09:53 +0530
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=response
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, u-boot@lists.denx.de
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id AF234B7BDB
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2009 01:16:21 +1100 (EST)
+Date: Wed, 2 Dec 2009 15:16:12 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH v2] ppc440spe-adma: adds updated ppc440spe adma driver
+Message-ID: <20091202151612.0e903996@wker>
+In-Reply-To: <4B1465C1.90606@intel.com>
+References: <1259186722-15012-1-git-send-email-agust@denx.de>
+	<4B1465C1.90606@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Yuri Tikhonov <yur@emcraft.com>, "wd@denx.de" <wd@denx.de>,
+	"dzu@denx.de" <dzu@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,131 +25,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- Hi Kumar,
-        I am using 2009-06 u-boot for MPC8640D based custom board. I just 
-want to know whether the second core of MPC8640D is kicked off automatically 
-or will it required by the user to kick[like mpc85xx/mp.c].  Also if am 
-enabling the CONFIG_MP macro and  CONFIG_NUM_CPUS as 2, then the reset 
-command of the target is not  working(means board is getting hanged). I have 
-mentioned the value of CONFIG_SYS_SCRATCH_VA as 0xf5000000.
+Dan Williams <dan.j.williams@intel.com> wrote:
 
+> Anatolij Gustschin wrote:
+> > This patch adds new version of the PPC440SPe ADMA driver.
+> > 
+> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> > Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+> 
+> [minor] Sign-offs are typically in delivery path order, so yours would 
+> appear last.
 
-Also when i try to boot linux using this configuration i was getting into 
-kernel panic.
+Ok, I'll fix this in the next patch version.
 
- ## Current stack ends at 0x3fa91a08
-## Booting kernel from Legacy Image at 00400000 ...
-   Image Name:   Linux-2.6.30-dpvpx0689
-   Created:      2009-12-01   4:45:09 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    2307361 Bytes =  2.2 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-## Flattened Device Tree blob at 04000000
-   Booting using the fdt blob at 0x4000000
-   Uncompressing Kernel Image ... OK
-   Loading Device Tree to 007fa000, end 007ff150 ... OK
-## Transferring control to Linux (at address 00000000) ...
-   Booting using OF flat tree...
-Using DPVPX0689 machine description
-Total memory = 1024MB; using 2048kB for hash table (at afe00000)
-Linux version 2.6.30-dpvpx0689 (root@localhost.localdomain) (gcc version 
-4.0.0 (DENX ELDK 4.0 4.0.0)) #70 SMP Tue Dec 1 10:14:07 IST 2009
-Found legacy serial port 0 for /soc@f6000000/serial@4500
-  mem=f6004500, taddr=f6004500, irq=0, clk=400000000, speed=0
-Found legacy serial port 1 for /soc@f6000000/serial@4600
-  mem=f6004600, taddr=f6004600, irq=0, clk=400000000, speed=0
-CPU maps initialized for 1 thread per core
- (thread shift is 0)
-console [udbg0] enabled
-setup_arch: bootmem
-dpvpx0689_setup_arch()
-Found FSL PCI host bridge at 0x00000000f6008000. Firmware bus number: 0->15
-PCI host bridge /pcie@f6008000  ranges:
- MEM 0x0000000080000000..0x000000009fffffff -> 0x0000000080000000
-  IO 0x00000000f8000000..0x00000000fbffffff -> 0x0000000000000000
-Single Board Computers from Data Patterns
-Ported & Developed By COTS DIVISION
-arch: exit
-Top of RAM: 0x40000000, Total RAM: 0x40000000
-Memory hole size: 0MB
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00030000
-  Normal   0x00030000 -> 0x00030000
-  HighMem  0x00030000 -> 0x00040000
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0: 0x00000000 -> 0x00040000
-On node 0 totalpages: 262144
-free_area_init_node: node 0, pgdat a047d1c0, node_mem_map a07fd000
-  DMA zone: 1536 pages used for memmap
-  DMA zone: 0 pages reserved
-  DMA zone: 195072 pages, LIFO batch:31
-  HighMem zone: 512 pages used for memmap
-  HighMem zone: 65024 pages, LIFO batch:15
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 260096
-Kernel command line: root=/dev/nfs rw nfsroot=10.5.18.3:/ppc/netfs/fc5fs/ 
-ip=10.5.18.230:10.5.18.3:10.5.18.3:255.0.0.0:DPVPX0689:eth0:off 
-console=ttyS0,115200
-NR_IRQS:512
-mpic: Setting up MPIC " MPIC     " version 1.2 at f6040000, max 2 CPUs
-mpic: ISU size: 256, shift: 8, mask: ff
-mpic: Initializing for 256 sources
-PID hash table entries: 4096 (order: 12, 16384 bytes)
-time_init: decrementer frequency = 100.000000 MHz
-time_init: processor frequency   = 800.000000 MHz
-clocksource: timebase mult[2800000] shift[22] registered
-clockevent: decrementer mult[1999] shift[16] cpu[0]
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-High memory: 262140k
-Memory: 1031504k/1048576k available (4444k kernel code, 16252k reserved, 
-160k data, 169k bss, 200k init)
-Kernel virtual memory layout:
-  * 0xfffe0000..0xfffff000  : fixmap
-  * 0xff800000..0xffc00000  : highmem PTEs
-  * 0xfe7ed000..0xff800000  : early ioremap
-  * 0xd1000000..0xfe7ed000  : vmalloc & ioremap
-Calibrating delay loop... 199.68 BogoMIPS (lpj=99840)
-Mount-cache hash table entries: 512
-mpic: requesting IPIs ...
-Processor 1 found.
-clockevent: decrementer mult[1999] shift[16] cpu[1]
-Brought up 2 CPUs
-Unable to handle kernel paging request for data at address 0x00000004
-Faulting instruction address: 0xa0023e10
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=2 DPVPX0689
-Modules linked in:
-NIP: a0023e10 LR: a0023dd0 CTR: 00000000
-REGS: cf841e90 TRAP: 0300   Not tainted  (2.6.30-dpvpx0689)
-MSR: 00009032 <EE,ME,IR,DR>  CR: 24004028  XER: 20000000
-DAR: 00000004, DSISR: 40000000
-TASK = cf83f930[1] 'swapper' THREAD: cf840000 CPU: 0
-GPR00: 00000000 cf841f40 cf83f930 00000000 00000000 00000000 cf841f50 
-00000000
-GPR08: 00000000 00000000 00000002 a10018f4 22004082 ffffffff 3fee6c00 
-3ff94000
-GPR16: ffffffbf ffbf7bff 00000000 00000000 00000000 cf83a800 a10018e8 
-a0491224
-GPR24: a0490000 a04558f8 00000000 cf801f20 a1006070 a10018e8 a10018f8 
-00000000
-NIP [a0023e10] __build_sched_domains+0x354/0x464
-LR [a0023dd0] __build_sched_domains+0x314/0x464
-Call Trace:
-[cf841f40] [a0023b98] __build_sched_domains+0xdc/0x464 (unreliable)
-[cf841f90] [a04326ec] sched_init_smp+0x88/0x1e8
-[cf841fc0] [a0425a40] kernel_init+0x148/0x1f0
-[cf841ff0] [a00131f8] kernel_thread+0x4c/0x68
-Instruction dump:
-813e0008 2f9c0000 90090004 419e00d4 801e0034 70090100 40820010 801c0034
-70090280 408200bc 83fc0008 83be0008 <807f0004> 801d0004 7c630214 907d0004
----[ end trace 31fd0ba7d8756001 ]---
-Kernel panic - not syncing: Attempted to kill init!
-Rebooting in 180 seconds..
- Kindly suggest me what might be the error.
+> [..]
+> >  drivers/dma/ppc440spe/ppc440spe-adma.c             | 5015 ++++++++++++++++++++
+> >  drivers/dma/ppc440spe/ppc440spe_adma.h             |  195 +
+> >  drivers/dma/ppc440spe/ppc440spe_dma.h              |  223 +
+> >  drivers/dma/ppc440spe/ppc440spe_xor.h              |  110 +
+> 
+> I belong to the school of thought that says something along the lines of 
+> "don't duplicate the directory path in the filename".  You seem to have 
+> copied the iop-adma driver's inconsistent use of '-' and '_' let's not 
+> carry that forward, i.e. looking for a changelog like:
+> 
+>    drivers/dma/ppc440spe/adma.c             | 5015 ++++++++++++++++++++
+>    drivers/dma/ppc440spe/adma.h             |  195 +
+>    drivers/dma/ppc440spe/dma.h              |  223 +
+>    drivers/dma/ppc440spe/xor.h              |  110 +
 
- Thank you,
- T.
+Ok, it indeed looks much better. I think I should use 'ppc4xx' as driver
+directory name now as we need to extend the driver to also support 460EX
+later.
+
+> > +/**
+> > + * ppc440spe_adma_prep_dma_pqzero_sum - prepare CDB group for
+> > + * a PQ_ZERO_SUM operation
+> > + */
+> > +static struct dma_async_tx_descriptor *ppc440spe_adma_prep_dma_pqzero_sum(
+> > +               struct dma_chan *chan, dma_addr_t *pq, dma_addr_t *src,
+> > +               unsigned int src_cnt, const unsigned char *scf, size_t len,
+> > +               enum sum_check_flags *pqres, unsigned long flags)
+> > +{
+> > +       struct ppc440spe_adma_chan *ppc440spe_chan;
+> > +       struct ppc440spe_adma_desc_slot *sw_desc, *iter;
+> > +       dma_addr_t pdest, qdest;
+> > +       int slot_cnt, slots_per_op, idst, dst_cnt;
+> > +
+> > +       if (unlikely(!len))
+> > +               return NULL;
+> > +       if (len > PAGE_SIZE)
+> > +               return NULL;
+> 
+> This won't work, as currently we'll end up in an infinite loop in 
+> async_syndrome_val() because all descriptor allocation failures are 
+> assumed to be time-limited.  The code just issues any pending operations 
+> and waits for descriptor resources to become available.
+
+Yes, in the case 'len > PAGE_SIZE' this is true. I didn't look at
+async_syndrome_val() code again before making this change and while
+raid6 testing after this change I didn't notice any issues as passed
+'len' was always equal to PAGE_SIZE. I must do this 'len' check while
+looking for a suitable channel for pq_val operation so that there
+will be a fallback to synchronous path in the case passed 'len' is
+greater than PAGE_SIZE. I'll fix this.
+
+> What this comes down to is that ppc440spe_adma is essentially fibbing 
+> about its support for the pq_val operation.  I think a more generic 
+> solution would be to advertise to the async_tx api that the driver has 
+> per channel temporary buffers that can be used to store intermediate pq 
+> results and let the async_tx api handle the emulation using its 
+> knowledge of ->max_pq.  We would also need a mechanism for the async_tx 
+> api to lock out other requesters of the temporary buffer until a 
+> coherent set of descriptors referencing those temporary buffers has been 
+> submitted to the driver.  This would help other drivers like mv_xor 
+> which has no val support and ioatdma which currently can only validate 
+> up to 8 sources asynchronously.
+> 
+> Can you clarify what ppc440spe-adma supports in this area?  It looks 
+> like it has some hardware support for result checking but always needs 
+> to write p and/or q somewhere?  Some devices may be able to do the final 
+> comparison against the original parity values asynchronously while 
+> others may need to do it synchronously in software.  These details can 
+> be handled at the async_tx api level.
+
+ppc440spe-adma supports checking against the original parity values
+asynchronously using following approach:
+original parity values (as passed to async_syndrome_val()) are copied to
+channels temporary p and/or q buffer(s). Then the generation of the
+syndrome is performed using this temporary buffer(s) as destination(s).
+When DMA engine generates p and/or q parity, it always performs XOR
+operation with the destination p and/or q buffer(s) content while
+writing to this buffer(s). In the case that the syndrome is valid,
+the destination p and/or q buffer(s) will be cleared (set to zero)
+after syndrome validation. This is checked by the subsequent DMA
+DATACHECK operation which compares a buffer with a data pattern and
+stores the comparison result in the Completion Status FIFO. We queue
+a subsequent DMA DATACHECK descriptor for this check operation. The
+temporary buffers can be immediately re-used, they do not store a
+result a subsequent async_tx operation depends on. I think this is
+still much better than doing the validation synchronously in software.
+
+Best regards,
+Anatolij
