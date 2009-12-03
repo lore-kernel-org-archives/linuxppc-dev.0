@@ -1,19 +1,14 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 01E28B7BA5
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 08:38:05 +1100 (EST)
-Message-ID: <4B182FBC.7040104@ovro.caltech.edu>
-Date: Thu, 03 Dec 2009 13:38:04 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: PCI interrupt question
-References: <1259821316.12651.26.camel@qu102.quarc.com>	<4B17F14A.1060001@ovro.caltech.edu>	<1259869140.18190.52.camel@qu102.quarc.com>	<4B1816F9.1020601@ovro.caltech.edu>
-	<20091203212821.463D5E6D391@gemini.denx.de>
-In-Reply-To: <20091203212821.463D5E6D391@gemini.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Jeff Hane <jeff.hane@maxim-ic.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp136.mail.ukl.yahoo.com (smtp136.mail.ukl.yahoo.com
+	[77.238.184.67]) by ozlabs.org (Postfix) with SMTP id BA72CB7B66
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  4 Dec 2009 09:47:38 +1100 (EST)
+From: Albert Herranz <albert_herranz@yahoo.es>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH v2 0/6] powerpc: nintendo wii support
+Date: Thu,  3 Dec 2009 23:47:21 +0100
+Message-Id: <1259880447-5008-1-git-send-email-albert_herranz@yahoo.es>
+Cc: Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,82 +18,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wolfgang,
+The following patches add the base support for the Nintendo Wii
+video game console on the powerpc arch.
 
-> In message <4B1816F9.1020601@ovro.caltech.edu> you wrote:
->> Yep. It might require enabling a PCI subsystem in U-Boot.
->> I recall playing with a Yosemite board and a PCI card,
->> but I forget whether I had to do anything to enable
->> PCI configuration space setup. Post a question to the
->> U-Boot list.
-> 
-> PCI is enabled by default on the Canyonlands board, both in U-Boot and
-> Linux.
+The following is included:
+- a device tree source
+- bootwrapper support
+- recognition of the Broadway processor
+- native interrupt controller support
+- platform support
+- default configuration
 
-Great, thanks!
+With these patches the video game console can fully boot up to the
+root filesystem mount phase.
 
-So Jeff, check out whether or not you can write to the
-IRQ register in the PCI configuration space of the device
-(using setpci from your host).
+Note that at this stage the video game console will _only_ use the
+first contiguous memory range (MEM1, 24MB) as RAM.
+Changes needed to support the second memory range (MEM2, 64MB) will
+be posted separately to simplify the review and possible merging.
 
-If you cannot write to the register, then I'd check your
-FPGA core settings.
+Albert Herranz (6):
+  powerpc: wii: device tree
+  powerpc: wii: bootwrapper bits
+  powerpc: broadway processor support
+  powerpc: wii: hollywood interrupt controller support
+  powerpc: wii: platform support
+  powerpc: wii: default config
 
-Cheers,
-Dave
-
-PS. Here's the output of lspci for a couple of machines I
-have in the lab:
-
-----------------------------------------------------------------------
-PLX PCI-9054 master/target interface, with Trenton x86 host board
------------------------------------------------------------------
-
-[dwh@labslcor6 ~]$ lspci -s 03:0c.0 -v
-03:0c.0 Bridge: PLX Technology, Inc. PCI9054 32-bit 33MHz PCI <-> IOBus 
-Bridge (
-rev 0a)
-         Subsystem: PLX Technology, Inc. PCI9054 32-bit 33MHz PCI <-> 
-IOBus Bridg
-e
-         Flags: bus master, medium devsel, latency 64, IRQ 169
-         Memory at fe9ff000 (32-bit, non-prefetchable) [size=256]
-         Memory at fb000000 (32-bit, prefetchable) [size=8M]
-         Capabilities: <access denied>
-
-[dwh@labslcor6 ~]$ lspci -s 03:0c.0 -x
-03:0c.0 Bridge: PLX Technology, Inc. PCI9054 32-bit 33MHz PCI <-> IOBus 
-Bridge (
-rev 0a)
-00: b5 10 54 90 17 01 90 02 0a 00 80 06 08 40 00 00
-10: 00 f0 9f fe 08 00 00 fb 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 b5 10 54 90
-30: 00 00 00 00 40 00 00 00 00 00 00 00 0b 01 00 00
-
-
-0x3c = IRQ 11, whereas the lspci output indicates IRQ 169,
-so there is an IRQ mapping going on there.
-
-----------------------------------------------------------------------
-MPC8349EA-based board, with Force Computers x86 host CPU
---------------------------------------------------------
-
-[dwh@labslcor4 ~]$ lspci -s 01:0b.0 -v
-01:0b.0 Power PC: Freescale Semiconductor Inc MPC8349E (rev 30)
-         Flags: 66MHz, fast devsel, IRQ 9
-         Memory at f9100000 (32-bit, non-prefetchable) [size=1M]
-         Memory at f9600000 (32-bit, non-prefetchable) [size=4K]
-         Memory at f9500000 (32-bit, non-prefetchable) [size=1M]
-         Memory at f9400000 (64-bit, non-prefetchable) [size=1M]
-         Capabilities: <access denied>
-
-[dwh@labslcor4 ~]$ lspci -s 01:0b.0 -x
-01:0b.0 Power PC: Freescale Semiconductor Inc MPC8349E (rev 30)
-00: 57 19 80 00 02 01 b0 00 30 00 20 0b 08 40 00 00
-10: 00 00 10 f9 00 00 60 f9 00 00 50 f9 00 00 00 00
-20: 04 00 40 f9 00 00 00 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 48 00 00 00 00 00 00 00 09 01 00 00
-
-
-0x3c = IRQ 9, and that matches the lspci output, so there is
-no extra mapping here.
+ .../powerpc/dts-bindings/nintendo/wii.txt          |  184 +++
+ arch/powerpc/boot/Makefile                         |    3 +-
+ arch/powerpc/boot/dts/wii.dts                      |  218 +++
+ arch/powerpc/boot/wii-head.S                       |  142 ++
+ arch/powerpc/boot/wii.c                            |   46 +
+ arch/powerpc/boot/wrapper                          |    2 +-
+ arch/powerpc/configs/wii_defconfig                 | 1406 ++++++++++++++++++++
+ arch/powerpc/kernel/cputable.c                     |    6 +-
+ arch/powerpc/platforms/embedded6xx/Kconfig         |    8 +
+ arch/powerpc/platforms/embedded6xx/Makefile        |    1 +
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.c      |  241 ++++
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.h      |   22 +
+ arch/powerpc/platforms/embedded6xx/wii.c           |  195 +++
+ 13 files changed, 2469 insertions(+), 5 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/nintendo/wii.txt
+ create mode 100644 arch/powerpc/boot/dts/wii.dts
+ create mode 100644 arch/powerpc/boot/wii-head.S
+ create mode 100644 arch/powerpc/boot/wii.c
+ create mode 100644 arch/powerpc/configs/wii_defconfig
+ create mode 100644 arch/powerpc/platforms/embedded6xx/hlwd-pic.c
+ create mode 100644 arch/powerpc/platforms/embedded6xx/hlwd-pic.h
+ create mode 100644 arch/powerpc/platforms/embedded6xx/wii.c
