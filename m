@@ -1,20 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3F821B7BF7
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2009 14:00:17 +1100 (EST)
-Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit
-	resources.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pravin Bathija <pbathija@amcc.com>
-In-Reply-To: <1259805106-23636-1-git-send-email-pbathija@amcc.com>
-References: <1259805106-23636-1-git-send-email-pbathija@amcc.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 03 Dec 2009 13:59:50 +1100
-Message-ID: <1259809190.2076.1194.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Eric.Moore@lsi.com, linux-scsi@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id 2CE3FB7BFE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  3 Dec 2009 14:59:08 +1100 (EST)
+In-Reply-To: <40854686-7CD0-432D-B31C-0D5DF2DADBF9@gmail.com>
+References: <cover.1259609263.git.albert_herranz@yahoo.es>
+	<86935119c483c2d6e4c810c0afd079e049443b18.1259609263.git.albert_herranz@yahoo.es>
+	<4B147086.6070602@gmail.com> <4B14A834.4070907@yahoo.es>
+	<40854686-7CD0-432D-B31C-0D5DF2DADBF9@gmail.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7C6BCD26-7C6D-4562-AA1F-09EBE9253920@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH v3 3/3] powerpc: gamecube/wii: early debugging using
+	usbgecko
+Date: Thu, 3 Dec 2009 05:06:34 +0100
+To: Richard Holden <aciddeath@gmail.com>
+Cc: Albert Herranz <albert_herranz@yahoo.es>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-12-02 at 17:51 -0800, Pravin Bathija wrote:
-> Powerpc 44x uses 36 bit real address while the real address defined
->     in MPT Fusion driver is of type 32 bit. This causes ioremap to fail and driver
->     fails to initialize. This fix changes the data types representing the real
->     address from unsigned long 32-bit types to resource_size_t which is 64-bit. The
->     driver has been tested, the disks get discovered correctly and can do IO.
-> 
-> Signed-off-by: Pravin Bathija <pbathija@amcc.com>
+>>> you may want to rename the ug_ prefix, it took me a while looking  
+>>> back
+>>> and forth through the patch to convince myself it wasn't a typo.
+>>
+>> What's wrong with ug_ ? (ug = (u)sb(g)ecko)
+>
+> At first look I thought it was a typo of udbg_early_remap. I prefer  
+> the longer names although we could use gecko_early_remap unless the  
+> gecko prefix conflicts with anything else.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+All these names are local to this file.  Shorter names are nicer than
+longer names :-)
 
-James, this one should be good ;-)
+> If there is not going to be a non usb gecko then there is no need  
+> to have usb in the prefix.
 
-> Acked-by: Feng Kan <fkan@amcc.com>
-> Acked-by: Fushen Chen <fchen@amcc.com>
-> Acked-by: Loc Ho <lho@amcc.com>
-> Acked-by: Tirumala Reddy Marri <tmarri@amcc.com>
-> Acked-by: Victor Gallardo <vgallardo@amcc.com>
-> ---
->  drivers/message/fusion/mptbase.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-> index 5d496a9..9f14a60 100644
-> --- a/drivers/message/fusion/mptbase.c
-> +++ b/drivers/message/fusion/mptbase.c
-> @@ -1511,7 +1511,7 @@ mpt_mapresources(MPT_ADAPTER *ioc)
->  {
->  	u8		__iomem *mem;
->  	int		 ii;
-> -	unsigned long	 mem_phys;
-> +	resource_size_t	 mem_phys;
->  	unsigned long	 port;
->  	u32		 msize;
->  	u32		 psize;
+There already is a Gecko device that plugs into the memory card slot
+as well.  It is older than the USB Gecko, and much more widespread.
+
+It doesn't give you a serial connection, it's memory only.
+
+
+Segher
