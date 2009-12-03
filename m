@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 135ACB7D9E
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 10:31:56 +1100 (EST)
-Date: Fri, 4 Dec 2009 02:31:54 +0300
+	by ozlabs.org (Postfix) with ESMTP id 9C09FB7F1E
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 10:32:03 +1100 (EST)
+Date: Fri, 4 Dec 2009 02:32:02 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: systemtap@sourceware.org
-Subject: [PATCH 2/4] powerpc: Fix longlong args handling
-Message-ID: <20091203233154.GB3416@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/4] powerpc: Adjust registers.stp for ppc32
+Message-ID: <20091203233202.GC3416@oksana.dev.rtsoft.ru>
 References: <20091203233059.GA28186@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -21,39 +21,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When probing 32-bits apps on ppc64 or running native ppc32, int64
-parts are stored in the big endian order, e.g. foo(1LL, 2LL, 3LL)'s
-args turn into:
+registers.stp is missing a few small bits when running on ppc32:
 
-arg1: r3 = 0; r4 = 1
-arg2: r5 = 0; r6 = 2
-arg3: r7 = 0; r8 = 3
+* Divide register offsets by 2;
+* There is 'mq' register instead of 'softe';
+* long_arg() should sign-extend the result on ppc32.
 
-For example, to restore arg1 the current longlong_arg() will perform
-(r4 << 32) | r3, which is obviously incorrect. And to restore arg2 it
-will do (r5 << 32) | r4, which doesn't look right as well.
-
-This patch fixes the issue.
-
+Suggested-by: Jim Keniston <jkenisto@us.ibm.com>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- tapset/powerpc/registers.stp |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ tapset/powerpc/registers.stp |   29 +++++++++++++++++++++--------
+ 1 files changed, 21 insertions(+), 8 deletions(-)
 
 diff --git a/tapset/powerpc/registers.stp b/tapset/powerpc/registers.stp
-index 7f66d36..2403272 100644
+index 2403272..4e77c7a 100644
 --- a/tapset/powerpc/registers.stp
 +++ b/tapset/powerpc/registers.stp
-@@ -179,8 +179,8 @@ function ulong_arg:long (argnum:long) {
+@@ -1,5 +1,13 @@
+ /* Dwarfless register access for powerpc */
  
- function longlong_arg:long (argnum:long) {
- 	if (probing_32bit_app()) {
--		lowbits = _stp_arg(argnum, 0, 1)
--		highbits = _stp_arg(argnum+1, 0, 1)
-+		lowbits = _stp_arg(argnum * 2, 0, 1)
-+		highbits = _stp_arg(argnum * 2 - 1, 0, 1)
- 		return ((highbits << 32) | lowbits)
- 	} else
- 		return _stp_arg(argnum, 0, 0)
++function is_powerpc32() %{ /* pure */
++#ifdef __powerpc64__
++        THIS->__retvalue = 0;
++#else
++        THIS->__retvalue = 1;
++#endif
++%}
++
+ global _reg_offsets, _stp_regs_registered
+ 
+ function _stp_register_regs() {
+@@ -43,23 +51,24 @@ function _stp_register_regs() {
+ 	_reg_offsets["link"] = 288
+ 	_reg_offsets["xer"] = 296
+ 	_reg_offsets["ccr"] = 304
+-	_reg_offsets["softe"] = 312
++	if (is_powerpc32())
++		_reg_offsets["mq"] = 312
++	else
++		_reg_offsets["softe"] = 312
+ 	_reg_offsets["trap"] = 320
+ 	_reg_offsets["dar"] = 328
+ 	_reg_offsets["dsisr"] = 336
+ 	_reg_offsets["result"] = 344
+ 
+-	/*
+-	 * If we ever need to support 32bit powerpc, we can
+-	 * get to the register offsets by using just a
+-	 * reg32_offset = _reg_offsets["reg"]/2
+-	 * or somesuch
+-	 */
+ 	_stp_regs_registered = 1
+ }
+ 
+ function probing_32bit_app() %{ /* pure */
++#ifdef __powerpc64__
+         THIS->__retvalue = _stp_probing_32bit_app(CONTEXT->regs);
++#else
++        THIS->__retvalue = 1;
++#endif
+ %}
+ 
+ function _stp_get_register_by_offset:long (offset:long) %{ /* pure */
+@@ -91,7 +100,11 @@ function _stp_register:long (name:string, sign_extend:long) {
+ 	}
+ 	if (!_stp_regs_registered)
+ 		_stp_register_regs()
++
+ 	offset = _reg_offsets[name]
++	if (is_powerpc32())
++		offset /= 2
++
+ 	if (offset == 0 && !(name in _reg_offsets)) {
+ 		error("Unknown register: " . name)
+ 		return 0
+@@ -170,7 +183,7 @@ function uint_arg:long (argnum:long) {
+ }
+ 
+ function long_arg:long (argnum:long) {
+-	return _stp_arg(argnum, 1, 0)
++	return _stp_arg(argnum, 1, is_powerpc32())
+ }
+ 
+ function ulong_arg:long (argnum:long) {
 -- 
 1.6.3.3
