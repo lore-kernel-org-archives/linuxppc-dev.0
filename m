@@ -1,35 +1,25 @@
-Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 348B7B7C18
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Dec 2009 17:33:10 +1100 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp07.in.ibm.com (8.14.3/8.13.1) with ESMTP id nB36X83v030674
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2009 12:03:08 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nB36X7qo2383900
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2009 12:03:08 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
-	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nB36X7wD028133
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2009 17:33:07 +1100
-Date: Thu, 3 Dec 2009 12:03:05 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Subject: Re: [v10 PATCH 9/9]: POWER: Enable default_idle when power_save=off
-Message-ID: <20091203063305.GA30923@linux.vnet.ibm.com>
-References: <20091202095427.GA27251@linux.vnet.ibm.com>
-	<20091202100346.GJ27251@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20091202100346.GJ27251@linux.vnet.ibm.com>
-Cc: linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
+Return-Path: <jeff.hane@maxim-ic.com>
+Received: from antispam02.maxim-ic.com.maxim-ic.com (antispam02.maxim-ic.com
+	[205.153.101.183]) by ozlabs.org (Postfix) with ESMTP id 00C02B7C2D
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2009 17:33:57 +1100 (EST)
+Received: from mailhost.mobilygen.com (localhost [127.0.0.1])
+	by antispam02.maxim-ic.com.maxim-ic.com (Spam & Virus Firewall) with
+	ESMTP id 3C18A6A7D7E
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2009 00:18:35 -0600 (CST)
+Received: from mailhost.mobilygen.com ([10.32.80.116]) by
+	antispam02.maxim-ic.com.maxim-ic.com with ESMTP id
+	2HeQRTL6iuE0Vkuu for <linuxppc-dev@ozlabs.org>;
+	Thu, 03 Dec 2009 00:18:35 -0600 (CST)
+Received: from [10.32.80.202] (qu102 [10.32.80.202]) (authenticated bits=0)
+	by mailhost.mobilygen.com (8.13.8/8.13.8) with ESMTP id nB36IWIo002326
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Dec 2009 22:18:33 -0800
+Subject: PCI interrupt question
+From: Jeff Hane <jeff.hane@maxim-ic.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 02 Dec 2009 22:21:56 -0800
+Message-Id: <1259821316.12651.26.camel@qu102.quarc.com>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,8 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-12-02 15:33:46]:
+Hello, 
 
-Thanks for running checkpatch on the patch Daniel. Will fix this.
+ I'm trying to get interrupts working for my PCI device on a 460ex and
+am having problem.  My ISR never triggers.
 
-arun
+I'm new to PCI(and ppc) and LDD said that I could read the config reg
+INTURRUPT_LINE to get the interrupt assigned to my PCI device.  Well,
+this always reads zero. 
+
+After reading through the code it appears that the interrupt is being
+assigned after reading some information out of the device tree and then
+filling in the irg in the pci_dev structure.  
+
+I'm just looking for confirmation that I should be calling request_irq
+with the irq that I found in the pci_dev struct.
+
+thanks,
+jeff
