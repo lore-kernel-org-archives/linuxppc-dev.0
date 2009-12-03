@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 9C09FB7F1E
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 10:32:03 +1100 (EST)
-Date: Fri, 4 Dec 2009 02:32:02 +0300
+	by ozlabs.org (Postfix) with ESMTP id 9097BB840B
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 10:32:07 +1100 (EST)
+Date: Fri, 4 Dec 2009 02:32:06 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: systemtap@sourceware.org
-Subject: [PATCH 3/4] powerpc: Adjust registers.stp for ppc32
-Message-ID: <20091203233202.GC3416@oksana.dev.rtsoft.ru>
+Subject: [PATCH 4/4] powerpc: Improve backtrace output for ppc32
+Message-ID: <20091203233206.GD3416@oksana.dev.rtsoft.ru>
 References: <20091203233059.GA28186@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -21,88 +21,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-registers.stp is missing a few small bits when running on ppc32:
+0x%016lx format causes a lot of unnecessary zero-padding on ppc32, so
+let's use %p instead.
 
-* Divide register offsets by 2;
-* There is 'mq' register instead of 'softe';
-* long_arg() should sign-extend the result on ppc32.
+Before:
 
-Suggested-by: Jim Keniston <jkenisto@us.ibm.com>
+--- Exception: c00095c8 at 0xc02cff60 : _edata+0x1f60/0x2000 [kernel]
+    LR =0xc02aef58 : per_cpu__runqueues+0x0/0x400 [kernel]
+[0x00000000c02cfed0] [0x00000000c00113fc] 0xc00113fc : ret_from_except+0x0/0x14 [kernel] (unreliable)
+
+After:
+
+--- Exception: c00095c8 at 0xc02cff60 : _edata+0x1f60/0x2000 [kernel]
+    LR =0xc02aef58 : per_cpu__runqueues+0x0/0x400 [kernel]
+[0xc02cfed0] [0xc00113fc] 0xc00113fc : ret_from_except+0x0/0x14 [kernel] (unreliable)
+
+p.s.
+Note that the second and the third columns are dups, this is because
+_stp_symbol_print(ip) also prints ip. Though, for now I wouldn't touch
+this since I'm not sure if anybody depends on the current columns count
+or "[]" around addresses.
+
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- tapset/powerpc/registers.stp |   29 +++++++++++++++++++++--------
- 1 files changed, 21 insertions(+), 8 deletions(-)
+ runtime/stack-ppc.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/tapset/powerpc/registers.stp b/tapset/powerpc/registers.stp
-index 2403272..4e77c7a 100644
---- a/tapset/powerpc/registers.stp
-+++ b/tapset/powerpc/registers.stp
-@@ -1,5 +1,13 @@
- /* Dwarfless register access for powerpc */
+diff --git a/runtime/stack-ppc.c b/runtime/stack-ppc.c
+index df2db15..e3b3ede 100644
+--- a/runtime/stack-ppc.c
++++ b/runtime/stack-ppc.c
+@@ -24,14 +24,15 @@ static void __stp_stack_print (struct pt_regs *regs, int verbose, int levels,
+ 		ip = _sp[STACK_FRAME_LR_SAVE];
+ 		if (!firstframe || ip != lr) {
+ 			if (verbose) {
+-				_stp_printf("[0x%016lx] [0x%016lx] ", sp, ip);
++				_stp_printf("[%p] [%p] ",
++					    (int64_t)sp, (int64_t)ip);
+ 				_stp_symbol_print(ip);
+ 				if (firstframe)
+ 					_stp_print(" (unreliable)");
+ 				_stp_print_char('\n');
+ 			}
+ 			else
+-				_stp_printf("0x%016lx ", ip);
++				_stp_printf("%p ", (int64_t)ip);
+ 		}
+ 		firstframe = 0;
+ 		/*
+@@ -52,8 +53,8 @@ static void __stp_stack_print (struct pt_regs *regs, int verbose, int levels,
+ 				firstframe = 1;
+ 			}
+ 			else {
+-				_stp_printf("0x%016lx ",regs->nip);
+-				_stp_printf("0x%016lx ",regs->link);
++				_stp_printf("%p ", (int64_t)regs->nip);
++				_stp_printf("%p ", (int64_t)regs->link);
+ 			}
+ 		}
  
-+function is_powerpc32() %{ /* pure */
-+#ifdef __powerpc64__
-+        THIS->__retvalue = 0;
-+#else
-+        THIS->__retvalue = 1;
-+#endif
-+%}
-+
- global _reg_offsets, _stp_regs_registered
- 
- function _stp_register_regs() {
-@@ -43,23 +51,24 @@ function _stp_register_regs() {
- 	_reg_offsets["link"] = 288
- 	_reg_offsets["xer"] = 296
- 	_reg_offsets["ccr"] = 304
--	_reg_offsets["softe"] = 312
-+	if (is_powerpc32())
-+		_reg_offsets["mq"] = 312
-+	else
-+		_reg_offsets["softe"] = 312
- 	_reg_offsets["trap"] = 320
- 	_reg_offsets["dar"] = 328
- 	_reg_offsets["dsisr"] = 336
- 	_reg_offsets["result"] = 344
- 
--	/*
--	 * If we ever need to support 32bit powerpc, we can
--	 * get to the register offsets by using just a
--	 * reg32_offset = _reg_offsets["reg"]/2
--	 * or somesuch
--	 */
- 	_stp_regs_registered = 1
- }
- 
- function probing_32bit_app() %{ /* pure */
-+#ifdef __powerpc64__
-         THIS->__retvalue = _stp_probing_32bit_app(CONTEXT->regs);
-+#else
-+        THIS->__retvalue = 1;
-+#endif
- %}
- 
- function _stp_get_register_by_offset:long (offset:long) %{ /* pure */
-@@ -91,7 +100,11 @@ function _stp_register:long (name:string, sign_extend:long) {
- 	}
- 	if (!_stp_regs_registered)
- 		_stp_register_regs()
-+
- 	offset = _reg_offsets[name]
-+	if (is_powerpc32())
-+		offset /= 2
-+
- 	if (offset == 0 && !(name in _reg_offsets)) {
- 		error("Unknown register: " . name)
- 		return 0
-@@ -170,7 +183,7 @@ function uint_arg:long (argnum:long) {
- }
- 
- function long_arg:long (argnum:long) {
--	return _stp_arg(argnum, 1, 0)
-+	return _stp_arg(argnum, 1, is_powerpc32())
- }
- 
- function ulong_arg:long (argnum:long) {
 -- 
 1.6.3.3
