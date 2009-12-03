@@ -1,20 +1,22 @@
-Return-Path: <nhorman@tuxdriver.com>
-Received: from smtp.tuxdriver.com (charlotte.tuxdriver.com [70.61.120.58])
+Return-Path: <mikpe@it.uu.se>
+Received: from fanny.its.uu.se (fanny.its.uu.se [130.238.4.241])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 55C18B7B64
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 02:04:26 +1100 (EST)
-Date: Thu, 3 Dec 2009 10:04:17 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc64: re-enable kexec to allow module loads with
-	CONFIG_MODVERSIONS and CONFIG_RELOCATABLE turned on
-Message-ID: <20091203150417.GA17521@hmsreliant.think-freely.org>
-References: <20091119195216.GC11414@hmsreliant.think-freely.org>
+	by ozlabs.org (Postfix) with ESMTPS id D29E2B7BA5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  4 Dec 2009 02:10:53 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091119195216.GC11414@hmsreliant.think-freely.org>
-Cc: rusty@rustcorp.com.au, paulus@samba.org
+Message-ID: <19223.54514.333777.229238@pilspetsen.it.uu.se>
+Date: Thu, 3 Dec 2009 16:10:42 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 5/5] libata/drivers: Add pata_macio,
+	driver Apple PowerMac/PowerBook IDE controller
+In-Reply-To: <20091202003630.29919100851@ozlabs.org>
+References: <20091202003630.29919100851@ozlabs.org>
+Cc: tj@kernel.org, linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	jeff@garzik.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,45 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> Paul, Ben, given that Rusty hasn't come back with any opinion on this patch,
->>do you
->>> feel comfortable merging it via the ppc tree?  Currently the earlyinit
->routine
->>> is only compiled in and used for your arch, so I think its fairly benign.
->>
->>Sorry, I *did* track down the archives for linuxppc-dev, then find your post,
->>then read your patch.  But I didn't actually reply.
->>
->>Other than minor issues, there's one significant one: you shouldn't be trying
->>to change rodata.  It might work on PPC today, but it's poor form at least.
->>
->>How's this?  Untested on ppc.
->>
->I'll try grab a ppc64 system and test this soon.
->
->>Other changes:
->>1) I also changed reloc_start to an array; this is a good idea for any
->>   linker-defined symbols so the compiler can't make assumptions about size.
->Ok, I'll certainly trust your linker skill over mine :)
->
->>2) local.h?  How about module.h?
->Seems good to me
->>3) I don't think the extra ". = 0" is necessary.
->Its not, I was just trying to be clear about where reloc_start was to be placed.
->
->>4) ARCH_USES_RELOC_ENTRIES isn't clear enough for me; I prefer
->>   ARCH_RELOCATE_KCRCTAB.
->Sounds good to me.
->
->
->I'll test this as soon as I'm able
->Thanks!
->Neil
->
+Benjamin Herrenschmidt writes:
+ > This is a libata driver for the "macio" IDE controller used on most Apple
+ > PowerMac and PowerBooks. It's a libata equivalent of drivers/ide/ppc/pmac.c
+ > 
+ > It supports all the features of its predecessor, including mediabay hotplug
+ > and suspend/resume. It should also support module load/unload.
+ > 
+ > The timing calculations have been simplified to use pre-calculated tables
+ > compared to drivers/ide/pmac.c and it uses the new mediabay interface
+ > provided by a previous patch.
+ > 
+ > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ > ---
+ > 
+ > v2. Better tested now, seems to be reasonably solid.
+ > 
+ > Addressed Tejun comments and made remove more robust vs. media-bay,
+ > should also fix Andreas problem.
 
-Just finished testing your patch Rusty, it all works quite well, Thanks!
-Will this be going in via your tree, or the ppc tree?
+Tested in 2.6.32-rc8 and 2.6.32 final on a G4 eMac.
+Works fine, except for the yaboot problem:
 
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
+> /sbin/installkernel 2.6.32 vmlinux System.map 
+ofpath: Driver:  is not supported
+ybin: Unable to find OpenFirmware path for boot=/dev/sda2
+ybin: Please add ofboot=<path> where <path> is the OpenFirmware path to /dev/sda2 to /etc/yaboot.conf
+ofpath: Driver:  is not supported
+ybin: Unable to determine OpenFirmware path for macosx=/dev/sda4
+ybin: Try specifying the real OpenFirmware path for macosx=/dev/sda4 in /etc/yaboot.conf
 
-Neil
+(userspace is YDL 6.2)
+
+/Mikael
