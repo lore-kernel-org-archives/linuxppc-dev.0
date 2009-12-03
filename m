@@ -1,24 +1,33 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7C31AB7BEC
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2009 15:08:33 +1100 (EST)
-In-Reply-To: <2a27d3730912012225h3deab5dao2211bc404d247192@mail.gmail.com>
-References: <1259663450-28790-1-git-send-email-leoli@freescale.com>
-	<1259665127.2076.363.camel@pasglop>
-	<2a27d3730912010334q24bf0e06g84839aae131475ec@mail.gmail.com>
-	<E389CC83-307F-4A7D-B90B-CD928A1D1D1D@kernel.crashing.org>
-	<2a27d3730912012225h3deab5dao2211bc404d247192@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0CED0757-67E3-4EAD-A2F7-AB8553559E94@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mm: setting mmaped page cache property through
-	device tree
-Date: Thu, 3 Dec 2009 05:15:50 +0100
-To: Li Yang <leoli@freescale.com>
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <mr.yogesh@gmail.com>
+Received: from mail-iw0-f181.google.com (mail-iw0-f181.google.com
+	[209.85.223.181]) by ozlabs.org (Postfix) with ESMTP id 850D6B7C05
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2009 15:14:28 +1100 (EST)
+Received: by iwn11 with SMTP id 11so660652iwn.17
+	for <linuxppc-dev@ozlabs.org>; Wed, 02 Dec 2009 20:14:27 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <fa686aa40911300759h153b3300uc54b5d1871bfc839@mail.gmail.com>
+References: <d1f76ba30911300038w272578dfx9adb116bde493e00@mail.gmail.com>
+	<d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com>
+	<fa686aa40911300759h153b3300uc54b5d1871bfc839@mail.gmail.com>
+From: Yogesh Chaudhari <mr.yogesh@gmail.com>
+Date: Thu, 3 Dec 2009 09:44:04 +0530
+Message-ID: <d1f76ba30912022014y1f688827qe8145a7d40de5321@mail.gmail.com>
+Subject: Re: Ethernet issues with lite5200 board from linux-2.6.31
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Robin Gareus <robin@gareus.org>, rt-users <linux-rt-users@vger.kernel.org>,
+	Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Frank Rowand <frank.rowand@am.sony.com>,
+	Philippe Reynes <philippe.reynes@isismpp.fr>,
+	Mark Knecht <markknecht@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
+	Sven-Thorsten Dietrich <sdietrich@novell.com>,
+	Clark Williams <williams@redhat.com>, Darren Hart <dvhltc@us.ibm.com>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>,
+	Jon Masters <jcm@redhat.com>, John Kacur <jkacur@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, Jan Blunck <jblunck@suse.de>,
+	Gregory Haskins <ghaskins@novell.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> The scenario for the first case is that in a multicore system  
->>> running
->>> ASMP which means different OS runs on different cores.  They might
->>> communicate through a shared memory region.  The region on every OS
->>> need to be mapped with the same cache perperty to avoid cache  
->>> paradox.
+2009/11/30 Grant Likely <grant.likely@secretlab.ca>:
+> On Mon, Nov 30, 2009 at 2:50 AM, Yogesh Chaudhari <mr.yogesh@gmail.com> w=
+rote:
+>> Hello,
+>> =A0 =A0 =A0 =A0 I am running linux kernel with rt patch on embedded boar=
+d
+>> based on lite5200 eval board. From linux-2.6.31 release, in which the
+>> mdio patch has gone inside, =A0the fec ethernet does not come up on this
+>> board. I get the following message at startup:
+>> mpc52xx MII bus: probed
+>> mdio_bus f0003000: error probing PHY at address 1
 >>
->> This isn't true.  In ASMP, you cannot usually do coherency between
->> the different CPUs at all.  Also, in most PowerPC implementations,
+>>
+>> After the bootup if I try to do a ifconfig I get the message:
+>> net eth2: of_phy_connect failed
+>>
+>>
+>> If I change the value of reg in dts file (lite5200.dts) to 0 then this
+>> ethernet comes up. However upto this kernel version, this was not
+>> required.
+>>
+>> Ethernet does not come up on board with original lite5200.dts file
 >
-> Coherency can't be achieved with proper configuration and  
-> management?  Why so?
-
-Because different CPUs do not usually speak the same coherency protocol.
-
-However, it occurred to me that what you call ASMP is actually SMP where
-you run different OSes on the various cores?
-
->> it is fine if one CPU maps a memory range as coherent while another
->> maps it as non-coherent; sure, you have to be careful or you will
+> Is your board based on the Lite5200 or the Lite5200B? =A0The phys are at
+> different addresses on those two revisions of the board. =A0There is a
+> different .dts file for each board.
 >
-> But we do want the shared region to be coherent.  So mappings should
-> have the same cacheability property.
-
-No, they only need WIMG=xx1x on both sides.  Of course, IM=11 might not
-be a valid combination on your particular CPU, and it probably is better
-for performance to have the RAM cacheable anyway.
-
->> So make the memory known to the kernel, just tell the kernel not to
->> use it.  If it's normal system RAM, just put it in the "memory" node
->> and do a memreserve on it (or do something in your platform code); if
->> it's some other memory, do a device driver for it, map it there.
+>> phy0: ethernet-phy@1 {
+>> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =
+=3D <1>;
+>> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>>
+>> Ethernet comes up on board with this change
+>> phy0: ethernet-phy@1 {
+>> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =
+=3D <0>;
+>> =A0=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
 >
-> Your solution is feasible.  But the memory allocation is a software
-> configuration.  IMHO, it should be better and easier addressed by
-> changing configurations(like mem parameter) rather than the kernel
-> platform code which should address hardware configuration.
-
-Either platform code or some other boot-time code, sure.
-
-The point is, you put the RAM in the device tree, so the kernel can
-know that particular range of physical address space is RAM, even
-if it doesn't use it itself.
-
-
-Segher
+> Some PHYs treat address 0 as the 'broadcast' address. =A0You need to
+> fill in this field (and modify the ethernet-phy@<address> node name)
+> to reflect the address that your phy is actually at.
+>
+> g.
+>
+ I have tried the same with the latest kernel both with and without
+rt, but with the same end result. I have checked that the mpc52xx fec
+driver was changed from 2.6.31 version but I am not able to point
+where this error is coming up from and how changing the reg value in
+dts (which is not required till previous versions) is solving this.
