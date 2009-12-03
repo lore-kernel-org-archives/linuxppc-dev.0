@@ -2,22 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7C15CB7BBD
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 10:49:09 +1100 (EST)
-Subject: RE: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit
-	resources.
+	by ozlabs.org (Postfix) with ESMTPS id 60C9DB70B3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  4 Dec 2009 10:56:36 +1100 (EST)
+Subject: Re: [PATCH 5/5] libata/drivers: Add pata_macio, driver Apple
+	PowerMac/PowerBook IDE controller
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pravin Bathija <pbathija@amcc.com>
-In-Reply-To: <9D1E2BDCB5C57B46B56E6D80843439EB097BB063@SDCEXCHANGE01.ad.amcc.com>
-References: <1259805106-23636-1-git-send-email-pbathija@amcc.com>
-	<20091203085628.5140FE6D391@gemini.denx.de>
-	<9D1E2BDCB5C57B46B56E6D80843439EB097BB063@SDCEXCHANGE01.ad.amcc.com>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <4B1772D0.5030303@garzik.org>
+References: <20091202003630.29919100851@ozlabs.org>
+	<4B1772D0.5030303@garzik.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 10:48:38 +1100
-Message-ID: <1259884118.2076.1232.camel@pasglop>
+Date: Fri, 04 Dec 2009 10:55:41 +1100
+Message-ID: <1259884541.2076.1239.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Eric.Moore@lsi.com, Wolfgang Denk <wd@denx.de>,
-	linux-scsi@vger.kernel.org, "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+Cc: tj@kernel.org, linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-12-03 at 15:21 -0800, Pravin Bathija wrote:
-> Hi Wolfgang,
+On Thu, 2009-12-03 at 03:12 -0500, Jeff Garzik wrote:
 
- .../...
- 
-> > I'm not sure if this one-liner really covers all the related issues.
-> > We submitted a similar (but apparently more complete) patch more than
-> > a year ago. Dunno why it has never been picked up. See
-> > http://thread.gmane.org/gmane.linux.scsi/46082 for reference.
-> > 
+> Looks fine to me.  Two minor comments, which might perhaps be ignored if 
+> that is your taste:
 > 
-> I submitted a patch on similar lines several weeks ago and it wasn't
-> accepted on grounds that it was too tied to the powerpc platform. Below
-> is a link
-> 
-> http://article.gmane.org/gmane.linux.scsi/55794
+> * prefer enums to #define's, for constants
 
-I believe the simple patch is fine. But only testing can tell, so it's
-up to you guys to test it :-)
+yeah well ... I lifted those definitions from the old driver and didn't
+feel like changing them all :-) I might do a separate patch later to
+clean that up, we don't actually use a lot of those anymore since I use
+pre-calculated tables, though they are good to keep as documentation.
 
-None of the churn related to PIO that was in the previous patches is
-necessary.
+> * prefer direct function call to "ap->ops->foo_bar()", because 
+> ap->ops->foo_bar() is guaranteed to be a constant value known to the 
+> driver.  The driver is the entity responsible for the function pointer.
+>
+> Maybe saves a cycle or two.  Not terribly important, but hey, calling 
+> ap->ops->sff_exec_command() from pata_macio_bmdma_setup() is a hot path.
 
-PIO on powerpc "appears" to work just like x86, the illusion is
-maintained by the arch code. PIO resources always fit inside 32-bit,
-never need to be ioremapped etc... so as long as you use the result of
-pci_resource_start() and pass that (or an offset from that) to
-inb/outb/intw/outw... PIO should just work, no change is required to the
-driver. IE. PIO resources don't contain physical addresses. The powerpc
-PCI code puts in there an offset from _IO_BASE to an already ioremapped
-area mapping the PCI host bridge IO space. It can use funky pointer
-arithmetic so don't be surprised if the values look like negative 32-bit
-ints, but it should just work.
-
-The only problem I can see with the driver, which is fixed by the simple
-patch, is that for -MMIO-, the resources (which in the case of MMIO do
-contain physical addresses) can be >32 bit, and thus must be stored into
-a type of the right size before being passed to ioremap(). This is what
-the one-liner patch does and according to the patch author, it was
-tested and appears to work.
-
-So I'm happy with the one liner patch. If you have more concerns, please
-explain precisely what you believe will not work :-)
+Makes sense. I'm tempted to make that a separate patch tho, since I've
+already queued up the existing one and it's just a relatively minor
+performance optim. 
 
 Cheers,
 Ben.
