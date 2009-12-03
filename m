@@ -1,18 +1,35 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 6F467B7C10
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Dec 2009 17:23:59 +1100 (EST)
-To: "Chen Hongjun-R66092" <r66092@freescale.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: MPC5121ADS PowerVR MBX driver on 2.6.31 kernel?
+Return-Path: <arun@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 348B7B7C18
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  3 Dec 2009 17:33:10 +1100 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp07.in.ibm.com (8.14.3/8.13.1) with ESMTP id nB36X83v030674
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2009 12:03:08 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nB36X7qo2383900
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2009 12:03:08 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nB36X7wD028133
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2009 17:33:07 +1100
+Date: Thu, 3 Dec 2009 12:03:05 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Subject: Re: [v10 PATCH 9/9]: POWER: Enable default_idle when power_save=off
+Message-ID: <20091203063305.GA30923@linux.vnet.ibm.com>
+References: <20091202095427.GA27251@linux.vnet.ibm.com>
+	<20091202100346.GJ27251@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <3A45394FD742FA419B760BB8D398F9EDE65FFF@zch01exm26.fsl.freescale.net>
-References: <9c789a000912021004l5dda0ee8r77a21764e035ff35@mail.gmail.com>
-	<3A45394FD742FA419B760BB8D398F9EDE65FFF@zch01exm26.fsl.freescale.net>
-Date: Thu, 03 Dec 2009 07:23:56 +0100
-Message-Id: <20091203062356.70181E6D391@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, Cristian Axenie <cristian.axenie@gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20091202100346.GJ27251@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +39,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear "Chen Hongjun-R66092",
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-12-02 15:33:46]:
 
-In message <3A45394FD742FA419B760BB8D398F9EDE65FFF@zch01exm26.fsl.freescale.net> you wrote:
-> 
-> The released binary MBX driver is based on kernel 2.6.24, not on 2.6.31.
+Thanks for running checkpatch on the patch Daniel. Will fix this.
 
-It is a GPL violation that there is no source code available for it.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Save energy:  Drive a smaller shell.
+arun
