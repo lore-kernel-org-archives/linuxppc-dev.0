@@ -1,22 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 60C9DB70B3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Dec 2009 10:56:36 +1100 (EST)
-Subject: Re: [PATCH 5/5] libata/drivers: Add pata_macio, driver Apple
-	PowerMac/PowerBook IDE controller
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <4B1772D0.5030303@garzik.org>
-References: <20091202003630.29919100851@ozlabs.org>
-	<4B1772D0.5030303@garzik.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 10:55:41 +1100
-Message-ID: <1259884541.2076.1239.camel@pasglop>
-Mime-Version: 1.0
-Cc: tj@kernel.org, linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <rusty@rustcorp.com.au>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Subject: Re: [PATCH] ppc64: re-enable kexec to allow module loads with
+	CONFIG_MODVERSIONS and CONFIG_RELOCATABLE turned on
+Date: Fri, 4 Dec 2009 11:04:13 +1030
+References: <20091119195216.GC11414@hmsreliant.think-freely.org>
+	<20091203150417.GA17521@hmsreliant.think-freely.org>
+In-Reply-To: <20091203150417.GA17521@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200912041104.13408.rusty@rustcorp.com.au>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +21,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-12-03 at 03:12 -0500, Jeff Garzik wrote:
+On Fri, 4 Dec 2009 01:34:17 am Neil Horman wrote:
+> Just finished testing your patch Rusty, it all works quite well, Thanks!
+> Will this be going in via your tree, or the ppc tree?
 
-> Looks fine to me.  Two minor comments, which might perhaps be ignored if 
-> that is your taste:
-> 
-> * prefer enums to #define's, for constants
+It's in my tree now.  Since I didn't really alter the ppc parts, I kept
+Paul's ack attached too.
 
-yeah well ... I lifted those definitions from the old driver and didn't
-feel like changing them all :-) I might do a separate patch later to
-clean that up, we don't actually use a lot of those anymore since I use
-pre-calculated tables, though they are good to keep as documentation.
-
-> * prefer direct function call to "ap->ops->foo_bar()", because 
-> ap->ops->foo_bar() is guaranteed to be a constant value known to the 
-> driver.  The driver is the entity responsible for the function pointer.
->
-> Maybe saves a cycle or two.  Not terribly important, but hey, calling 
-> ap->ops->sff_exec_command() from pata_macio_bmdma_setup() is a hot path.
-
-Makes sense. I'm tempted to make that a separate patch tho, since I've
-already queued up the existing one and it's just a relatively minor
-performance optim. 
-
-Cheers,
-Ben.
+Thanks,
+Rusty.
