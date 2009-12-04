@@ -1,23 +1,29 @@
-Return-Path: <roffermanns@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [195.145.229.155])
-	by ozlabs.org (Postfix) with ESMTP id 6065AB7BE8
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 15EB9B7BF5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  5 Dec 2009 01:30:55 +1100 (EST)
-Received: from donald.sysgo.com (unknown [172.22.1.30])
-	by mail.sysgo.com (Postfix) with ESMTP id C1DAF7464E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Dec 2009 15:21:35 +0100 (CET)
-Received: from rof.sysgo.com (rof.sysgo.com [172.22.10.10])
-	by donald.sysgo.com (Postfix) with ESMTP id 2A49634479F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Dec 2009 15:23:17 +0100 (CET)
-Message-ID: <4B191B54.6030804@sysgo.com>
-Date: Fri, 04 Dec 2009 15:23:16 +0100
-From: Rolf Offermanns <roffermanns@sysgo.com>
+	Sat,  5 Dec 2009 01:39:03 +1100 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e5.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nB4ERmCl017878
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Dec 2009 09:27:48 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nB4Ed0KG124600
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Dec 2009 09:39:00 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nB44VTwq016715
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2009 23:31:30 -0500
+Date: Fri, 4 Dec 2009 09:38:56 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Please pull 'next' branch of 4xx tree
+Message-ID: <20091204143856.GJ2937@zod.rchland.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: TQM5200 + SM501 FB
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
+Hi Ben,
 
-does anyone has a working SM501 framebuffer on the STK5200 board? The 
-board itself works fine on the 2.6.32 kernel.
+A couple of DTS fixups for you.  Thanks.
 
-I got a patch from TQ which used to work around 2.6.24 but it seems with 
-the unification of the "simple mpc5200" boards the sm501 support got lost.
+josh
 
-I toyed around with the patch a bit and I got the driver to probe and 
-initialize the chip, but I don't get an output on the crt port and an 
-open() on /dev/fb0 or /dev/fb1 fails with "no device".
+The following changes since commit 5a7b4193e564d1611ecf1cd859aed60d5612d78f:
+  Benjamin Herrenschmidt (1):
+        Revert "powerpc/mm: Fix bug in pagetable cache cleanup with CONFIG_PPC_SUBPAGE_PROT"
 
-Any hints are welcome.
+are available in the git repository at:
 
-Thanks,
-Rolf.
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
+
+Curtis Wald (1):
+      powerpc/44x: Fix PCI node in Yosemite DTS
+
+pbathija@amcc.com (1):
+      powerpc/44x: Fix DMA ranges in DTS file for Katmai board.
+
+ arch/powerpc/boot/dts/katmai.dts   |   22 +++++++++++-----------
+ arch/powerpc/boot/dts/yosemite.dts |   14 ++------------
+ 2 files changed, 13 insertions(+), 23 deletions(-)
