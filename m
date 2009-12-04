@@ -1,20 +1,21 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 2FB5FB7BF8
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 03:37:15 +1100 (EST)
-Date: Fri, 4 Dec 2009 11:37:13 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: BUG: Bad page map in process
-Message-ID: <20091204113713.5b5e64a0@opus.seanm.ca>
-In-Reply-To: <1259925535.2076.1275.camel@pasglop>
-References: <20091203141853.3eafba47@lappy.seanm.ca>
-	<1259917707.2076.1271.camel@pasglop>
-	<20091204110055.GP14279@hansolo.jdub.homelinux.org>
-	<1259925535.2076.1275.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp109.mail.ukl.yahoo.com (smtp109.mail.ukl.yahoo.com
+	[77.238.184.32]) by ozlabs.org (Postfix) with SMTP id 186D1B7BEF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  5 Dec 2009 03:54:12 +1100 (EST)
+Message-ID: <4B193EAD.2040303@yahoo.es>
+Date: Fri, 04 Dec 2009 17:54:05 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH v4 2/2] powerpc: gamecube/wii: early debugging using
+	usbgecko
+References: <cover.1259871725.git.albert_herranz@yahoo.es>
+	<4f4baca1cd65f7949610ca901c9a8bcb1bb74cfd.1259871725.git.albert_herranz@yahoo.es>
+	<364F1867-9601-44FD-B140-EAA0FCC2C237@kernel.crashing.org>
+In-Reply-To: <364F1867-9601-44FD-B140-EAA0FCC2C237@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 04 Dec 2009 22:18:55 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Segher Boessenkool wrote:
+>> +#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
+>> +setup_usbgecko_bat:
+>> +    /* prepare a BAT for early io */
+>> +#if defined(CONFIG_GAMECUBE)
+>> +    lis    r8, 0x0c00
+>> +#elif defined(CONFIG_WII)
+>> +    lis    r8, 0x0d00
+>> +#else
+>> +#error Invalid platform for USB Gecko based early debugging.
+>> +#endif
+> 
+> A kernel with both CONFIG_WII and CONFIG_GAMECUBE works fine
+> on either, right?  If so, could you please switch the two #ifs?
+> A dual-platform kernel will be used on a Wii much more likely
+> than on a GC.
+> 
 
-> Ok, I'll have a look next week. In the meantime, Sean, can you give
-> me a hint of what you do to trigger it ? Boot time ? specific
-> workload ?
+Nope, a GameCube kernel currently doesn't work on a Wii and the same the other way around.
 
-It hasn't happened that often, but I have been focusing on 2.6.31.
+But I can make that particular check a runtime check.
+The idea would be to enclose that snippet in GAMECUBE_COMMON and check the PVR. If it is a Gekko (a fixed value) then we have a GameCube, otherwise we assume a Wii.
 
-So far, it has always happened well after the boot, but not hours. I
-haven't worked out a specific workload.
+>> +    /*
+>> +     * The virtual address used must match the virtual address
+>> +     * associated to the fixmap entry FIX_EARLY_DEBUG_BASE.
+>> +     */
+>> +    lis    r11, 0xfffe    /* top 128K */
+>> +    ori    r8, r8, 0x002a    /* uncached, guarded ,rw */
+>> +    ori    r11, r11, 0x3    /* 128K */
+> 
+> I think you should clear Vp since the BAT mapping can survive until
+> after user space is started; it won't hurt to remove it either way.
+> So 2 instead of 3.  And put the meaning in the comment :-)
+
+This BAT is re-setup again on MMU_init, way before starting userspace.
+But I'll make it Vs=1, Vp=0 here too :)
+
+> 
+> Looks fine otherwise.
+> 
+
+Thanks.
+
+> 
+> Segher
+> 
+> 
 
 Cheers,
-   Sean
+Albert
