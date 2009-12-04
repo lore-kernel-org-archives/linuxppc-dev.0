@@ -1,34 +1,23 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 00078B7BE0
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 15:21:52 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nB449SpK001895
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Dec 2009 21:09:28 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nB44LjQe191218
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Dec 2009 21:21:45 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nB3LBecc021077
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Dec 2009 14:11:40 -0700
-Date: Fri, 4 Dec 2009 09:51:44 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/4] powerpc: Fix thinko in _stp_arg()
-Message-ID: <20091204042144.GB22089@in.ibm.com>
-References: <20091203233059.GA28186@oksana.dev.rtsoft.ru>
-	<20091203233151.GA3416@oksana.dev.rtsoft.ru>
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 333E9B7BC6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  4 Dec 2009 15:52:41 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: PCI interrupt question
+Date: Fri, 4 Dec 2009 05:52:34 +0100
+References: <1259821316.12651.26.camel@qu102.quarc.com>
+	<4B17F14A.1060001@ovro.caltech.edu>
+	<1259869140.18190.52.camel@qu102.quarc.com>
+In-Reply-To: <1259869140.18190.52.camel@qu102.quarc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091203233151.GA3416@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Jim Keniston <jkenisto@us.ibm.com>,
-	systemtap@sourceware.org
-Reply-To: ananth@in.ibm.com
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <200912040552.34178.sr@denx.de>
+Cc: Jeff Hane <jeff.hane@maxim-ic.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,19 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 04, 2009 at 02:31:51AM +0300, Anton Vorontsov wrote:
-> _stp_arg() has an almost unnoticeable thinko in the argnum handling,
-> which causes it to always return u_register("r10"):
+On Thursday 03 December 2009 20:39:00 Jeff Hane wrote:
+> > Can you clarify:
+> >
+> > 1. 460EX is your PCI host CPU?
 > 
-> 'else (argnum == 8)' should actually be 'else if (argnum == 8)'.
-> 
-> Though, since we check for 'if (argnum < 1 || argnum > 8)' at the
-> beginning of _stp_arg(), let's make it just 'else'.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> yes.  We are using a canyonlands board with 460ex.
 
-Ugh! What was I thinking?
+PCI works on Canyonlands without any problems. I just tested latest Linux 
+release (2.6.32) with an PCI USB card:
 
-Thanks for fixing this Anton.
+-bash-3.2# uname -a
+Linux canyonlands 2.6.32 #1 Fri Dec 4 05:42:35 CET 2009 ppc ppc ppc GNU/Linux
+-bash-3.2# cat /proc/cpuinfo
+processor       : 0
+cpu             : 460EX
+clock           : 800.000010MHz
+revision        : 24.162 (pvr 1302 18a2)
+bogomips        : 1600.00
+timebase        : 800000010
+platform        : PowerPC 44x Platform
+model           : amcc,canyonlands
+Memory          : 512 MB
+-bash-3.2# cat /proc/interrupts
+           CPU0
+ 18:          0   UIC   Edge      L2C
+ 19:         22   UIC   Level     ohci_hcd:usb2, ohci_hcd:usb3
+ 20:      15220   UIC   Level     serial
+ 23:       8038   UIC   Level     MAL TX EOB
+ 24:      15510   UIC   Level     MAL RX EOB
+ 25:          0   UIC   Level     MAL SERR
+ 26:          0   UIC   Level     MAL TX DE
+ 27:          0   UIC   Level     MAL RX DE
+ 28:          0   UIC   Level     EMAC
+ 34:          1   UIC   Level     ohci_hcd:usb1
+ 35:       2926   UIC   Level     IBM IIC
+ 38:          0   UIC   Level     IBM IIC
+BAD:          0
+-bash-3.2#
 
-Ananth
+I can't see any problems with PCI interrupts here.
+
+Cheers,
+Stefan
