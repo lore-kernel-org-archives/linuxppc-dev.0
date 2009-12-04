@@ -1,21 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85215B7BF8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  5 Dec 2009 02:17:44 +1100 (EST)
-In-Reply-To: <1259880447-5008-2-git-send-email-albert_herranz@yahoo.es>
-References: <1259880447-5008-1-git-send-email-albert_herranz@yahoo.es>
-	<1259880447-5008-2-git-send-email-albert_herranz@yahoo.es>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <E340F52C-7795-4A0B-8286-C2B6028054CC@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC PATCH v2 1/6] powerpc: wii: device tree
-Date: Fri, 4 Dec 2009 16:25:25 +0100
-To: Albert Herranz <albert_herranz@yahoo.es>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 2FB5FB7BF8
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 03:37:15 +1100 (EST)
+Date: Fri, 4 Dec 2009 11:37:13 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: BUG: Bad page map in process
+Message-ID: <20091204113713.5b5e64a0@opus.seanm.ca>
+In-Reply-To: <1259925535.2076.1275.camel@pasglop>
+References: <20091203141853.3eafba47@lappy.seanm.ca>
+	<1259917707.2076.1271.camel@pasglop>
+	<20091204110055.GP14279@hansolo.jdub.homelinux.org>
+	<1259925535.2076.1275.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,10 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Add a device tree source file for the Nintendo Wii video game console.
->
-> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+On Fri, 04 Dec 2009 22:18:55 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+> Ok, I'll have a look next week. In the meantime, Sean, can you give
+> me a hint of what you do to trigger it ? Boot time ? specific
+> workload ?
 
-Great work Albert!
+It hasn't happened that often, but I have been focusing on 2.6.31.
+
+So far, it has always happened well after the boot, but not hours. I
+haven't worked out a specific workload.
+
+Cheers,
+   Sean
