@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 28D10B7BD9
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 01:09:49 +1100 (EST)
-Subject: Re: using different format for hugetlbfs
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1259917136.2076.1264.camel@pasglop>
-Date: Fri, 4 Dec 2009 08:09:32 -0600
-Message-Id: <90D0766D-30A2-4ABE-9707-C7F64A697BFE@kernel.crashing.org>
-References: <230774E3-2D94-44DA-85AC-151485996789@kernel.crashing.org>
-	<1259917136.2076.1264.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>, David Gibson <dwg@au1.ibm.com>
+Return-Path: <CWald@WatchGuardVideo.com>
+Received: from wgv4.watchguardvideo.com (mail.watchguardvideo.com
+	[69.198.24.138]) by ozlabs.org (Postfix) with ESMTP id 825A8B7BF4
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 01:16:46 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] POWERPC 4xx: Fix PCI in AMCC 440EP Yosemite DTS
+Date: Fri, 4 Dec 2009 08:19:16 -0600
+Message-ID: <13F6A75BE29CE44F801B912901C3EF27023A420C@wgv4.watchguardvideo.local>
+In-Reply-To: <20091204120744.GI2937@zod.rchland.ibm.com>
+References: <13F6A75BE29CE44F801B912901C3EF27022A3993@wgv4.watchguardvideo.local>
+	<20091130134145.GA2937@zod.rchland.ibm.com>
+	<13F6A75BE29CE44F801B912901C3EF270233B6A4@wgv4.watchguardvideo.local>
+	<20091204120744.GI2937@zod.rchland.ibm.com>
+From: "Curtis Wald" <CWald@WatchGuardVideo.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Josh,
+Yes, the patch you provided below is exactly what is needed for PCI
+functionality.
 
-On Dec 4, 2009, at 2:58 AM, Benjamin Herrenschmidt wrote:
+I've verified using a 2 port Silicon Image 3512 PCI to SATA controller
+card on Yosemite.
 
-> On Fri, 2009-12-04 at 01:18 -0600, Kumar Gala wrote:
->> Ben, David,
->>
->> If we want to support true 4G/4G split on ppc32 using the MSB of the
->> address to determine of the pgd_t is for hugetlbfs isn't going to
->> work.  Since every pointer in the pgd_t -> pud_t -> pmd_t is point to
->> at least a 4K page I would think the low order 12-bits should always
->> be 0.
->
-> On 32 bit maybe. On 64, the pg/u/md's can be smaller. I don't really
-> want to have a different encoding for both types though.
+-Curtis
 
-What do you mean they can be smaller?  We have some scenario when we  
-dont allocate a full page?  I agree having the encodings be different  
-would be bad.  I'm trying to avoid having it be different between 32  
-bit and 64 (but maybe that will be impossible).
 
->> Could we use something like:
->>
->> addr[0:51] || shift [52:59] || flags [60:63]
->>
->> with the LSB flag being 'normal pointer' vs 'hugetlbfs mangled
->> pointer'.  Seems like shift will at most be 64 so 8-bits should cover
->> it.
->
-> Cheers,
-> Ben.
->
-
-- k
+> -----Original Message-----
+> From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com]
+> Sent: Friday, December 04, 2009 6:08 AM
+> To: Curtis Wald
+> Cc: mporter@kernel.crashing.org; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH] POWERPC 4xx: Fix PCI in AMCC 440EP Yosemite DTS
+>=20
+> On Mon, Nov 30, 2009 at 09:25:51AM -0600, Curtis Wald wrote:
+> >Josh,
+> >Here is a resend of the Yosemite.dts patch, deleting tabs and spaces
+> in
+> >the IDSEL section that should look better when viewing as 80 column.
+>=20
+> Something is still eating your patches when you send them out.  They
+> get
+> corrupted to the point of being unusable as you can see here:
+>=20
+> http://patchwork.ozlabs.org/patch/39810/
+>=20
+> However, your intentions are pretty clear.  Could you look at the
+patch
+> below
+> and see if it was what you intended?  If so, I'll include it in my
+> 'next'
+> branch today.
+>=20
+> josh
+>=20
+> ---
+>=20
+> diff --git a/arch/powerpc/boot/dts/yosemite.dts
+> b/arch/powerpc/boot/dts/yosemite.dts
+> index 1fa3cb4..6492324 100644
+> --- a/arch/powerpc/boot/dts/yosemite.dts
+> +++ b/arch/powerpc/boot/dts/yosemite.dts
+> @@ -282,20 +282,10 @@
+>  			/* Inbound 2GB range starting at 0 */
+>  			dma-ranges =3D <0x42000000 0x0 0x0 0x0 0x0 0x0
+> 0x80000000>;
+>=20
+> -			/* Bamboo has all 4 IRQ pins tied together per
+slot
+> */
+>  			interrupt-map-mask =3D <0xf800 0x0 0x0 0x0>;
+>  			interrupt-map =3D <
+> -				/* IDSEL 1 */
+> -				0x800 0x0 0x0 0x0 &UIC0 0x1c 0x8
+> -
+> -				/* IDSEL 2 */
+> -				0x1000 0x0 0x0 0x0 &UIC0 0x1b 0x8
+> -
+> -				/* IDSEL 3 */
+> -				0x1800 0x0 0x0 0x0 &UIC0 0x1a 0x8
+> -
+> -				/* IDSEL 4 */
+> -				0x2000 0x0 0x0 0x0 &UIC0 0x19 0x8
+> +				/* IDSEL 12 */
+> +				0x6000 0x0 0x0 0x0 &UIC0 0x19 0x8
+>  			>;
+>  		};
+>  	};
