@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 75D36B7C24
+	by ozlabs.org (Postfix) with ESMTPS id CD558B7BF9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Dec 2009 13:47:28 +1100 (EST)
-Subject: Re: [v10 PATCH 6/9]: pSeries/cpuidle: refactor pseries idle loops
+	Fri,  4 Dec 2009 13:48:15 +1100 (EST)
+Subject: Re: [v10 PATCH 8/9]: pSeries: implement pSeries processor idle module
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: arun@linux.vnet.ibm.com
-In-Reply-To: <20091202100108.GG27251@linux.vnet.ibm.com>
+In-Reply-To: <20091202100255.GI27251@linux.vnet.ibm.com>
 References: <20091202095427.GA27251@linux.vnet.ibm.com>
-	<20091202100108.GG27251@linux.vnet.ibm.com>
+	<20091202100255.GI27251@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 13:45:05 +1100
-Message-ID: <1259894705.2076.1249.camel@pasglop>
+Date: Fri, 04 Dec 2009 13:47:38 +1100
+Message-ID: <1259894858.2076.1251.camel@pasglop>
 Mime-Version: 1.0
 Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
 	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
@@ -28,226 +28,301 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-12-02 at 15:31 +0530, Arun R Bharadwaj wrote:
+On Wed, 2009-12-02 at 15:32 +0530, Arun R Bharadwaj wrote:
 > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-12-02 15:24:27]:
 > 
-> This patch removes the routines, pseries_shared_idle_sleep and
-> pseries_dedicated_idle_sleep, since this is implemented as a part
-> of arch/powerpc/platform/pseries/processor_idle.c
-> 
-> Also, similar to x86, call cpuidle_idle_call from cpu_idle() idle
-> loop instead of ppc_md.power_save.
+> This patch creates arch/powerpc/platforms/pseries/processor_idle.c,
+> which implements the cpuidle infrastructure for pseries.
+> It implements a pseries_cpuidle_loop() which would be the main idle loop
+> called from cpu_idle(). It makes decision of entering either
+> dedicated_snooze_loop or dedicated_cede_loop for dedicated lpar and
+> shared_cede_loop for shared lpar processor based on the
+> decision taken by the cpuidle governor.
 
-Tentative NAK... you remove the code before you put a replacement in, or
-did I miss something ?
-
-IE. That patch breaks Idle on all powerpc platform it would think..
+So unless I'm mistaken, you removed our powerpc "generic" idle loop that
+calls into ppc_md.power_save(), and replaced it by some pseries specific
+idle loops... Now what about all the other powerpc platforms ? native
+970 (aka G5) ? 6xx ? Cell ? Or are you still calling ppc_md.power_save
+somewhere that I missed ?
 
 Cheers,
 Ben.
 
-> 
+
 > Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/kernel/idle.c             |   58 ++++++++++-----------
->  arch/powerpc/platforms/pseries/setup.c |   89 ---------------------------------
->  2 files changed, 30 insertions(+), 117 deletions(-)
+>  arch/powerpc/include/asm/system.h               |    6 
+>  arch/powerpc/kernel/sysfs.c                     |    2 
+>  arch/powerpc/platforms/pseries/Makefile         |    1 
+>  arch/powerpc/platforms/pseries/processor_idle.c |  196 ++++++++++++++++++++++++
+>  arch/powerpc/platforms/pseries/pseries.h        |    6 
+>  5 files changed, 211 insertions(+)
 > 
-> Index: linux.trees.git/arch/powerpc/platforms/pseries/setup.c
+> Index: linux.trees.git/arch/powerpc/platforms/pseries/Makefile
 > ===================================================================
-> --- linux.trees.git.orig/arch/powerpc/platforms/pseries/setup.c
-> +++ linux.trees.git/arch/powerpc/platforms/pseries/setup.c
-> @@ -75,9 +75,6 @@ EXPORT_SYMBOL(CMO_PageSize);
->  
->  int fwnmi_active;  /* TRUE if an FWNMI handler is present */
->  
-> -static void pseries_shared_idle_sleep(void);
-> -static void pseries_dedicated_idle_sleep(void);
-> -
->  static struct device_node *pSeries_mpic_node;
->  
->  static void pSeries_show_cpuinfo(struct seq_file *m)
-> @@ -297,18 +294,8 @@ static void __init pSeries_setup_arch(vo
->  	pSeries_nvram_init();
->  
->  	/* Choose an idle loop */
-> -	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
-> +	if (firmware_has_feature(FW_FEATURE_SPLPAR))
->  		vpa_init(boot_cpuid);
-> -		if (get_lppaca()->shared_proc) {
-> -			printk(KERN_DEBUG "Using shared processor idle loop\n");
-> -			ppc_md.power_save = pseries_shared_idle_sleep;
-> -		} else {
-> -			printk(KERN_DEBUG "Using dedicated idle loop\n");
-> -			ppc_md.power_save = pseries_dedicated_idle_sleep;
-> -		}
-> -	} else {
-> -		printk(KERN_DEBUG "Using default idle loop\n");
-> -	}
->  
->  	if (firmware_has_feature(FW_FEATURE_LPAR))
->  		ppc_md.enable_pmcs = pseries_lpar_enable_pmcs;
-> @@ -496,80 +483,6 @@ static int __init pSeries_probe(void)
->  	return 1;
->  }
->  
-> -
-> -DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
-> -
-> -static void pseries_dedicated_idle_sleep(void)
-> -{ 
-> -	unsigned int cpu = smp_processor_id();
-> -	unsigned long start_snooze;
-> -	unsigned long in_purr, out_purr;
-> -
-> -	/*
-> -	 * Indicate to the HV that we are idle. Now would be
-> -	 * a good time to find other work to dispatch.
-> -	 */
-> -	get_lppaca()->idle = 1;
-> -	get_lppaca()->donate_dedicated_cpu = 1;
-> -	in_purr = mfspr(SPRN_PURR);
-> -
-> -	/*
-> -	 * We come in with interrupts disabled, and need_resched()
-> -	 * has been checked recently.  If we should poll for a little
-> -	 * while, do so.
-> -	 */
-> -	if (__get_cpu_var(smt_snooze_delay)) {
-> -		start_snooze = get_tb() +
-> -			__get_cpu_var(smt_snooze_delay) * tb_ticks_per_usec;
-> -		local_irq_enable();
-> -		set_thread_flag(TIF_POLLING_NRFLAG);
-> -
-> -		while (get_tb() < start_snooze) {
-> -			if (need_resched() || cpu_is_offline(cpu))
-> -				goto out;
-> -			ppc64_runlatch_off();
-> -			HMT_low();
-> -			HMT_very_low();
-> -		}
-> -
-> -		HMT_medium();
-> -		clear_thread_flag(TIF_POLLING_NRFLAG);
-> -		smp_mb();
-> -		local_irq_disable();
-> -		if (need_resched() || cpu_is_offline(cpu))
-> -			goto out;
-> -	}
-> -
-> -	cede_processor();
-> -
-> -out:
-> -	HMT_medium();
-> -	out_purr = mfspr(SPRN_PURR);
-> -	get_lppaca()->wait_state_cycles += out_purr - in_purr;
-> -	get_lppaca()->donate_dedicated_cpu = 0;
-> -	get_lppaca()->idle = 0;
-> -}
-> -
-> -static void pseries_shared_idle_sleep(void)
-> -{
-> -	/*
-> -	 * Indicate to the HV that we are idle. Now would be
-> -	 * a good time to find other work to dispatch.
-> -	 */
-> -	get_lppaca()->idle = 1;
-> -
-> -	/*
-> -	 * Yield the processor to the hypervisor.  We return if
-> -	 * an external interrupt occurs (which are driven prior
-> -	 * to returning here) or if a prod occurs from another
-> -	 * processor. When returning here, external interrupts
-> -	 * are enabled.
-> -	 */
-> -	cede_processor();
-> -
-> -	get_lppaca()->idle = 0;
-> -}
-> -
->  static int pSeries_pci_probe_mode(struct pci_bus *bus)
->  {
->  	if (firmware_has_feature(FW_FEATURE_LPAR))
-> Index: linux.trees.git/arch/powerpc/kernel/idle.c
+> --- linux.trees.git.orig/arch/powerpc/platforms/pseries/Makefile
+> +++ linux.trees.git/arch/powerpc/platforms/pseries/Makefile
+> @@ -26,3 +26,4 @@ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst
+>  obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
+>  obj-$(CONFIG_CMM)		+= cmm.o
+>  obj-$(CONFIG_DTL)		+= dtl.o
+> +obj-$(CONFIG_CPU_IDLE)		+= processor_idle.o
+> Index: linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
 > ===================================================================
-> --- linux.trees.git.orig/arch/powerpc/kernel/idle.c
-> +++ linux.trees.git/arch/powerpc/kernel/idle.c
-> @@ -25,6 +25,7 @@
->  #include <linux/cpu.h>
->  #include <linux/sysctl.h>
->  #include <linux/tick.h>
+> --- linux.trees.git.orig/arch/powerpc/platforms/pseries/pseries.h
+> +++ linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
+> @@ -10,6 +10,8 @@
+>  #ifndef _PSERIES_PSERIES_H
+>  #define _PSERIES_PSERIES_H
+>  
 > +#include <linux/cpuidle.h>
+> +
+>  extern void __init fw_feature_init(const char *hypertas, unsigned long len);
 >  
->  #include <asm/system.h>
->  #include <asm/processor.h>
-> @@ -46,6 +47,14 @@ static int __init powersave_off(char *ar
->  }
->  __setup("powersave=off", powersave_off);
+>  struct pt_regs;
+> @@ -40,4 +42,8 @@ extern unsigned long rtas_poweron_auto;
 >  
-> +#ifndef CONFIG_CPU_IDLE
-> +void cpuidle_idle_call(void)
+>  extern void find_udbg_vterm(void);
+>  
+> +DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
+> +
+> +extern struct cpuidle_driver pseries_idle_driver;
+> +
+>  #endif /* _PSERIES_PSERIES_H */
+> Index: linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
+> ===================================================================
+> --- /dev/null
+> +++ linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
+> @@ -0,0 +1,196 @@
+> +/*
+> + *  processor_idle - idle state cpuidle driver.
+> + *  Adapted from drivers/acpi/processor_idle.c
+> + *
+> + *  Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+> + *
+> + *  Copyright (C) 2009 IBM Corporation.
+> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; either version 2 of the License, or (at
+> + *  your option) any later version.
+> + *
+> + *  This program is distributed in the hope that it will be useful, but
+> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + *  General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License along
+> + *  with this program; if not, write to the Free Software Foundation, Inc.,
+> + *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+> + *
+> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/moduleparam.h>
+> +#include <linux/cpuidle.h>
+> +
+> +#include <asm/paca.h>
+> +#include <asm/reg.h>
+> +#include <asm/system.h>
+> +#include <asm/machdep.h>
+> +#include <asm/firmware.h>
+> +
+> +#include "plpar_wrappers.h"
+> +#include "pseries.h"
+> +
+> +MODULE_AUTHOR("Arun R Bharadwaj");
+> +MODULE_DESCRIPTION("pSeries Idle State Driver");
+> +MODULE_LICENSE("GPL");
+> +
+> +struct cpuidle_driver pseries_idle_driver = {
+> +	.name =		"pseries_idle",
+> +	.owner =	THIS_MODULE,
+> +};
+> +
+> +DEFINE_PER_CPU(struct cpuidle_device, pseries_dev);
+> +
+> +#define IDLE_STATE_COUNT	2
+> +
+> +/* pSeries Idle state Flags */
+> +#define	PSERIES_DEDICATED_SNOOZE	(0x01)
+> +#define	PSERIES_DEDICATED_CEDE		(0x02)
+> +#define	PSERIES_SHARED_CEDE		(0x03)
+> +
+> +static int pseries_idle_init(struct cpuidle_device *dev)
+> +{
+> +	return cpuidle_register_device(dev);
+> +}
+> +
+> +static void shared_cede_loop(void)
+> +{
+> +	get_lppaca()->idle = 1;
+> +	cede_processor();
+> +	get_lppaca()->idle = 0;
+> +}
+> +
+> +static void dedicated_snooze_loop(void)
 > +{
 > +	local_irq_enable();
-> +	cpu_relax();
+> +	set_thread_flag(TIF_POLLING_NRFLAG);
+> +	while (!need_resched()) {
+> +		ppc64_runlatch_off();
+> +		HMT_low();
+> +		HMT_very_low();
+> +	}
+> +	HMT_medium();
+> +	clear_thread_flag(TIF_POLLING_NRFLAG);
+> +	smp_mb();
+> +	local_irq_disable();
 > +}
+> +
+> +static void dedicated_cede_loop(void)
+> +{
+> +	ppc64_runlatch_off();
+> +	HMT_medium();
+> +	cede_processor();
+> +}
+> +
+> +static void pseries_cpuidle_loop(struct cpuidle_device *dev,
+> +				struct cpuidle_state *st)
+> +{
+> +	unsigned long in_purr, out_purr;
+> +
+> +	get_lppaca()->idle = 1;
+> +	get_lppaca()->donate_dedicated_cpu = 1;
+> +	in_purr = mfspr(SPRN_PURR);
+> +
+> +	if (st->flags & PSERIES_SHARED_CEDE)
+> +		shared_cede_loop();
+> +	else if (st->flags & PSERIES_DEDICATED_SNOOZE)
+> +		dedicated_snooze_loop();
+> +	else
+> +		dedicated_cede_loop();
+> +
+> +	out_purr = mfspr(SPRN_PURR);
+> +	get_lppaca()->wait_state_cycles += out_purr - in_purr;
+> +	get_lppaca()->donate_dedicated_cpu = 0;
+> +	get_lppaca()->idle = 0;
+> +}
+> +
+> +static int pseries_setup_cpuidle(struct cpuidle_device *dev, int cpu)
+> +{
+> +	int i;
+> +	struct cpuidle_state *state;
+> +
+> +	dev->cpu = cpu;
+> +
+> +	if (get_lppaca()->shared_proc) {
+> +		state = &dev->states[0];
+> +		snprintf(state->name, CPUIDLE_NAME_LEN, "IDLE");
+> +		state->enter = pseries_cpuidle_loop;
+> +		strncpy(state->desc, "shared_cede", CPUIDLE_DESC_LEN);
+> +		state->flags = PSERIES_SHARED_CEDE;
+> +		state->exit_latency = 0;
+> +		state->target_residency = 0;
+> +		return 0;
+> +	}
+> +
+> +	for (i = 0; i < IDLE_STATE_COUNT; i++) {
+> +		state = &dev->states[i];
+> +
+> +		snprintf(state->name, CPUIDLE_NAME_LEN, "CEDE%d", i);
+> +		state->enter = pseries_cpuidle_loop;
+> +
+> +		switch (i) {
+> +		case 0:
+> +			strncpy(state->desc, "snooze", CPUIDLE_DESC_LEN);
+> +			state->flags = PSERIES_DEDICATED_SNOOZE;
+> +			state->exit_latency = 0;
+> +			state->target_residency = 0;
+> +			break;
+> +
+> +		case 1:
+> +			strncpy(state->desc, "cede", CPUIDLE_DESC_LEN);
+> +			state->flags = PSERIES_DEDICATED_CEDE;
+> +			state->exit_latency = 1;
+> +			state->target_residency =
+> +					__get_cpu_var(smt_snooze_delay);
+> +			break;
+> +		}
+> +	}
+> +	dev->state_count = IDLE_STATE_COUNT;
+> +
+> +	return 0;
+> +}
+> +
+> +void update_smt_snooze_delay(int snooze)
+> +{
+> +	int cpu;
+> +	for_each_online_cpu(cpu)
+> +		per_cpu(pseries_dev, cpu).states[0].target_residency = snooze;
+> +}
+> +
+> +static int __init pseries_processor_idle_init(void)
+> +{
+> +	int cpu;
+> +	int result;
+> +
+> +	result = cpuidle_register_driver(&pseries_idle_driver);
+> +
+> +	if (result < 0)
+> +		return result;
+> +
+> +	printk(KERN_DEBUG "pSeries idle driver registered\n");
+> +
+> +	if (!firmware_has_feature(FW_FEATURE_SPLPAR)) {
+> +		printk(KERN_DEBUG "Using default idle\n");
+> +		return 0;
+> +	}
+> +
+> +	for_each_online_cpu(cpu) {
+> +		pseries_setup_cpuidle(&per_cpu(pseries_dev, cpu), cpu);
+> +		pseries_idle_init(&per_cpu(pseries_dev, cpu));
+> +	}
+> +
+> +	printk(KERN_DEBUG "Using cpuidle idle loop\n");
+> +
+> +	return 0;
+> +}
+> +
+> +device_initcall(pseries_processor_idle_init);
+> Index: linux.trees.git/arch/powerpc/include/asm/system.h
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/include/asm/system.h
+> +++ linux.trees.git/arch/powerpc/include/asm/system.h
+> @@ -549,5 +549,11 @@ extern struct dentry *powerpc_debugfs_ro
+>  
+>  void cpu_idle_wait(void);
+>  
+> +#ifdef CONFIG_CPU_IDLE
+> +extern void update_smt_snooze_delay(int snooze);
+> +#else
+> +static inline void update_smt_snooze_delay(int snooze) {}
 > +#endif
 > +
->  /*
->   * The body of the idle task.
->   */
-> @@ -60,35 +69,26 @@ void cpu_idle(void)
->  		while (!need_resched() && !cpu_should_die()) {
->  			ppc64_runlatch_off();
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_POWERPC_SYSTEM_H */
+> Index: linux.trees.git/arch/powerpc/kernel/sysfs.c
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/kernel/sysfs.c
+> +++ linux.trees.git/arch/powerpc/kernel/sysfs.c
+> @@ -18,6 +18,7 @@
+>  #include <asm/machdep.h>
+>  #include <asm/smp.h>
+>  #include <asm/pmc.h>
+> +#include <asm/system.h>
 >  
-> -			if (ppc_md.power_save) {
-> -				clear_thread_flag(TIF_POLLING_NRFLAG);
-> -				/*
-> -				 * smp_mb is so clearing of TIF_POLLING_NRFLAG
-> -				 * is ordered w.r.t. need_resched() test.
-> -				 */
-> -				smp_mb();
-> -				local_irq_disable();
-> -
-> -				/* Don't trace irqs off for idle */
-> -				stop_critical_timings();
-> -
-> -				/* check again after disabling irqs */
-> -				if (!need_resched() && !cpu_should_die())
-> -					ppc_md.power_save();
-> -
-> -				start_critical_timings();
-> -
-> -				local_irq_enable();
-> -				set_thread_flag(TIF_POLLING_NRFLAG);
-> -
-> -			} else {
-> -				/*
-> -				 * Go into low thread priority and possibly
-> -				 * low power mode.
-> -				 */
-> -				HMT_low();
-> -				HMT_very_low();
-> -			}
-> +			clear_thread_flag(TIF_POLLING_NRFLAG);
-> +			/*
-> +			 * smp_mb is so clearing of TIF_POLLING_NRFLAG
-> +			 * is ordered w.r.t. need_resched() test.
-> +			 */
-> +			smp_mb();
-> +			local_irq_disable();
-> +
-> +			/* Don't trace irqs off for idle */
-> +			stop_critical_timings();
-> +
-> +			/* check again after disabling irqs */
-> +			if (!need_resched() && !cpu_should_die())
-> +				cpuidle_idle_call();
-> +
-> +			start_critical_timings();
-> +
-> +			local_irq_enable();
-> +			set_thread_flag(TIF_POLLING_NRFLAG);
-> +
->  		}
+>  #include "cacheinfo.h"
 >  
->  		HMT_medium();
+> @@ -51,6 +52,7 @@ static ssize_t store_smt_snooze_delay(st
+>  		return -EINVAL;
+>  
+>  	per_cpu(smt_snooze_delay, cpu->sysdev.id) = snooze;
+> +	update_smt_snooze_delay(snooze);
+>  
+>  	return count;
+>  }
