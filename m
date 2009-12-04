@@ -2,18 +2,25 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4CE8AB7BE7
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 20:08:32 +1100 (EST)
-Subject: Re: BUG: Bad page map in process
+	by ozlabs.org (Postfix) with ESMTPS id 8DAF7B7B65
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  4 Dec 2009 21:01:30 +1100 (EST)
+Subject: Re: [v10 PATCH 8/9]: pSeries: implement pSeries processor idle module
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-In-Reply-To: <20091203141853.3eafba47@lappy.seanm.ca>
-References: <20091203141853.3eafba47@lappy.seanm.ca>
+To: arun@linux.vnet.ibm.com
+In-Reply-To: <20091204081539.GA5883@linux.vnet.ibm.com>
+References: <20091202095427.GA27251@linux.vnet.ibm.com>
+	<20091202100255.GI27251@linux.vnet.ibm.com>
+	<1259894858.2076.1251.camel@pasglop>
+	<20091204081539.GA5883@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 20:08:27 +1100
-Message-ID: <1259917707.2076.1271.camel@pasglop>
+Date: Fri, 04 Dec 2009 21:00:52 +1100
+Message-ID: <1259920852.2076.1274.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,41 +30,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-12-03 at 14:18 -0500, Sean MacLennan wrote:
-> With 2.6.32 I sometimes get lots and lots of "Bad page map" errors as
-> shown below. I believe these started in 2.6.32-rc8 or possibly
-> 2.6.32-rc7. Pika just switched to 2.6.31 so I have been concentrating
-> on that release, and not really testing the 2.6.32 stream.
-> 
-> I wish I could give more info, but I don't really even have the time to
-> write this email :( I am hoping somebody will have a eureka moment.
+On Fri, 2009-12-04 at 13:45 +0530, Arun R Bharadwaj wrote:
 
-That's a concern. Remind me what CPU / MMU type is Pika using ?
+> 
+> Hi Ben,
+> 
+> I forgot to attach the patch which enables cpuidle for the rest of the
+> POWER platforms. Attaching it below.
+> 
+> So for these platforms, ppc_md.power_save will be called from from the
+> cpuidle_idle_call idle loop itself. Also, this cpuidle_idle_call is
+> not a pseries specific idle loop. It is a common loop for Intel and
+> PPC which use cpuidle infrastructure.
+
+Ok, so there was a missing piece in the puzzle ;-)
+
+I'll review asap.
 
 Cheers,
 Ben.
 
-> Cheers,
->    Sean
+> arun
 > 
 > 
-> [  147.410448] BUG: Bad page map in process udevd  pte:ffffffffffffffff pmd:cd883000
-> [  147.417989] addr:48003000 vm_flags:08000875 anon_vma:(null) mapping:cf4150ac index:3
-> [  147.425837] vma->vm_ops->fault: filemap_fault+0x0/0x410
-> [  147.431101] vma->vm_file->f_op->mmap: nfs_file_mmap+0x0/0x94
-> [  147.436795] Call Trace:
-> [  147.439268] [cf2dbd80] [c00065a4] show_stack+0x48/0x168 (unreliable)
-> [  147.445708] [cf2dbdb0] [c0064ac8] print_bad_pte+0x14c/0x204
-> [  147.451337] [cf2dbde0] [c0064cd4] vm_normal_page+0x90/0x98
-> [  147.456875] [cf2dbdf0] [c0064ee8] unmap_vmas+0x20c/0x638
-> [  147.462239] [cf2dbe80] [c0069194] exit_mmap+0xc8/0x170
-> [  147.467441] [cf2dbea0] [c001caa4] mmput+0x50/0xf4
-> [  147.472195] [cf2dbeb0] [c0020808] exit_mm+0x100/0x138
-> [  147.477299] [cf2dbee0] [c00211b0] do_exit+0xb0/0x580
-> [  147.482315] [cf2dbf20] [c00216c4] do_group_exit+0x44/0x9c
-> [  147.487766] [cf2dbf30] [c0021730] sys_exit_group+0x14/0x28
-> [  147.493308] [cf2dbf40] [c000dde4] ret_from_syscall+0x0/0x3c
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+> This patch enables cpuidle for the rest of the POWER platforms like
+> 44x, Cell, Pasemi etc.
+> 
+> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/system.h       |    2 ++
+>  arch/powerpc/kernel/idle.c              |   28 ++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/setup_32.c          |    8 ++++++--
+>  arch/powerpc/platforms/44x/idle.c       |    2 ++
+>  arch/powerpc/platforms/cell/pervasive.c |    2 ++
+>  arch/powerpc/platforms/pasemi/idle.c    |    2 ++
+>  arch/powerpc/platforms/ps3/setup.c      |    2 ++
+>  7 files changed, 44 insertions(+), 2 deletions(-)
+> 
+> Index: linux.trees.git/arch/powerpc/include/asm/system.h
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/include/asm/system.h
+> +++ linux.trees.git/arch/powerpc/include/asm/system.h
+> @@ -551,8 +551,10 @@ void cpu_idle_wait(void);
+>  
+>  #ifdef CONFIG_CPU_IDLE
+>  extern void update_smt_snooze_delay(int snooze);
+> +extern void setup_cpuidle_ppc(void);
+>  #else
+>  static inline void update_smt_snooze_delay(int snooze) {}
+> +static inline void setup_cpuidle_ppc(void) {}
+>  #endif
+>  
+>  #endif /* __KERNEL__ */
+> Index: linux.trees.git/arch/powerpc/kernel/idle.c
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/kernel/idle.c
+> +++ linux.trees.git/arch/powerpc/kernel/idle.c
+> @@ -129,6 +129,34 @@ void default_idle(void)
+>  	HMT_very_low();
+>  }
+>  
+> +#ifdef CONFIG_CPU_IDLE
+> +DEFINE_PER_CPU(struct cpuidle_device, ppc_idle_devices);
+> +struct cpuidle_driver cpuidle_ppc_driver = {
+> +	.name =         "cpuidle_ppc",
+> +};
+> +
+> +static void ppc_idle_loop(struct cpuidle_device *dev, struct cpuidle_state *st)
+> +{
+> +	ppc_md.power_save();
+> +}
+> +
+> +void setup_cpuidle_ppc(void)
+> +{
+> +	struct cpuidle_device *dev;
+> +	int cpu;
+> +
+> +	cpuidle_register_driver(&cpuidle_ppc_driver);
+> +
+> +	for_each_online_cpu(cpu) {
+> +		dev = &per_cpu(ppc_idle_devices, cpu);
+> +		dev->cpu = cpu;
+> +		dev->states[0].enter = ppc_idle_loop;
+> +		dev->state_count = 1;
+> +		cpuidle_register_device(dev);
+> +	}
+> +}
+> +#endif
+> +
+>  int powersave_nap;
+>  
+>  #ifdef CONFIG_SYSCTL
+> Index: linux.trees.git/arch/powerpc/kernel/setup_32.c
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/kernel/setup_32.c
+> +++ linux.trees.git/arch/powerpc/kernel/setup_32.c
+> @@ -133,14 +133,18 @@ notrace void __init machine_init(unsigne
+>  
+>  #ifdef CONFIG_6xx
+>  	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
+> -	    cpu_has_feature(CPU_FTR_CAN_NAP))
+> +	    cpu_has_feature(CPU_FTR_CAN_NAP)) {
+>  		ppc_md.power_save = ppc6xx_idle;
+> +		setup_cpuidle_ppc();
+> +	}
+>  #endif
+>  
+>  #ifdef CONFIG_E500
+>  	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
+> -	    cpu_has_feature(CPU_FTR_CAN_NAP))
+> +	    cpu_has_feature(CPU_FTR_CAN_NAP)) {
+>  		ppc_md.power_save = e500_idle;
+> +		setup_cpuidle_ppc();
+> +	}
+>  #endif
+>  	if (ppc_md.progress)
+>  		ppc_md.progress("id mach(): done", 0x200);
+> Index: linux.trees.git/arch/powerpc/platforms/44x/idle.c
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/platforms/44x/idle.c
+> +++ linux.trees.git/arch/powerpc/platforms/44x/idle.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/of.h>
+>  #include <linux/kernel.h>
+>  #include <asm/machdep.h>
+> +#include <asm/system.h>
+>  
+>  static int mode_spin;
+>  
+> @@ -46,6 +47,7 @@ int __init ppc44x_idle_init(void)
+>  		/* If we are not setting spin mode 
+>                     then we set to wait mode */
+>  		ppc_md.power_save = &ppc44x_idle;
+> +		setup_cpuidle_ppc();
+>  	}
+>  
+>  	return 0;
+> Index: linux.trees.git/arch/powerpc/platforms/cell/pervasive.c
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/platforms/cell/pervasive.c
+> +++ linux.trees.git/arch/powerpc/platforms/cell/pervasive.c
+> @@ -35,6 +35,7 @@
+>  #include <asm/pgtable.h>
+>  #include <asm/reg.h>
+>  #include <asm/cell-regs.h>
+> +#include <asm/system.h>
+>  
+>  #include "pervasive.h"
+>  
+> @@ -128,5 +129,6 @@ void __init cbe_pervasive_init(void)
+>  	}
+>  
+>  	ppc_md.power_save = cbe_power_save;
+> +	setup_cpuidle_ppc();
+>  	ppc_md.system_reset_exception = cbe_system_reset_exception;
+>  }
+> Index: linux.trees.git/arch/powerpc/platforms/pasemi/idle.c
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/platforms/pasemi/idle.c
+> +++ linux.trees.git/arch/powerpc/platforms/pasemi/idle.c
+> @@ -27,6 +27,7 @@
+>  #include <asm/machdep.h>
+>  #include <asm/reg.h>
+>  #include <asm/smp.h>
+> +#include <asm/system.h>
+>  
+>  #include "pasemi.h"
+>  
+> @@ -81,6 +82,7 @@ static int __init pasemi_idle_init(void)
+>  
+>  	ppc_md.system_reset_exception = pasemi_system_reset_exception;
+>  	ppc_md.power_save = modes[current_mode].entry;
+> +	setup_cpuidle_ppc();
+>  	printk(KERN_INFO "Using PA6T idle loop (%s)\n", modes[current_mode].name);
+>  
+>  	return 0;
+> Index: linux.trees.git/arch/powerpc/platforms/ps3/setup.c
+> ===================================================================
+> --- linux.trees.git.orig/arch/powerpc/platforms/ps3/setup.c
+> +++ linux.trees.git/arch/powerpc/platforms/ps3/setup.c
+> @@ -33,6 +33,7 @@
+>  #include <asm/prom.h>
+>  #include <asm/lv1call.h>
+>  #include <asm/ps3gpu.h>
+> +#include <asm/system.h>
+>  
+>  #include "platform.h"
+>  
+> @@ -214,6 +215,7 @@ static void __init ps3_setup_arch(void)
+>  	prealloc_ps3flash_bounce_buffer();
+>  
+>  	ppc_md.power_save = ps3_power_save;
+> +	setup_cpuidle_ppc();
+>  	ps3_os_area_init();
+>  
+>  	DBG(" <- %s:%d\n", __func__, __LINE__);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
