@@ -1,13 +1,13 @@
 Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id C0887B7C07
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 09:55:47 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 495D0B7BF5
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 09:56:27 +1100 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1NGh3w-00033Z-Bi
-	for linuxppc-dev@ozlabs.org; Fri, 04 Dec 2009 14:55:44 -0800
-Message-ID: <26645256.post@talk.nabble.com>
-Date: Fri, 4 Dec 2009 14:55:44 -0800 (PST)
+	(envelope-from <bounces@nabble.com>) id 1NGh4b-00036W-50
+	for linuxppc-dev@ozlabs.org; Fri, 04 Dec 2009 14:56:25 -0800
+Message-ID: <26645258.post@talk.nabble.com>
+Date: Fri, 4 Dec 2009 14:56:25 -0800 (PST)
 From: agnel <ajijuni@gmail.com>
 To: linuxppc-dev@ozlabs.org
 Subject: MPC8343EA Linux DTS file
@@ -40,7 +40,7 @@ My current DTS file
 /dts-v1/;
 
 / {
-        model = "Silvus-SC3000";
+        model = "MPC8343";
         compatible = "MPC8349EMDS", "MPC834xMDS", "MPC83xxMDS";
         linux,phandle = <0x100>;
         #size-cells = <0x1>;
@@ -278,5 +278,5 @@ agnel
 
 
 -- 
-View this message in context: http://old.nabble.com/MPC8343---%22unable-to-handle-paging-request-%40-0%22-tp16510741p26645256.html
+View this message in context: http://old.nabble.com/MPC8343---%22unable-to-handle-paging-request-%40-0%22-tp16510741p26645258.html
 Sent from the linuxppc-dev mailing list archive at Nabble.com.
