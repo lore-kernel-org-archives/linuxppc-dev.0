@@ -1,22 +1,37 @@
-Return-Path: <joe@perches.com>
-Received: from mail.perches.com (mail.perches.com [173.55.12.10])
-	by ozlabs.org (Postfix) with ESMTP id 22A3AB7BFA
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 04:24:08 +1100 (EST)
-Subject: [PATCH] MAINTAINERS: Add PowerPC patterns
-From: Joe Perches <joe@perches.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1259920775.2076.1273.camel@pasglop>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D4D61B7BFE
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 04:39:25 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nB4HQxnq013055
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Dec 2009 10:26:59 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nB4HdDut064702
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Dec 2009 10:39:15 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id nB4AStKw019999
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Dec 2009 03:28:57 -0700
+Date: Fri, 4 Dec 2009 12:39:02 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] MAINTAINERS: Add PowerPC patterns
+Message-ID: <20091204173902.GK2937@zod.rchland.ibm.com>
 References: <20091202091951.5ec6bb83@hyperion.delvare>
 	<1259894454.2076.1246.camel@pasglop>
 	<20091204103434.0a754925@hyperion.delvare>
 	<1259920775.2076.1273.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 09:16:59 -0800
-Message-ID: <1259947019.22783.116.camel@Joe-Laptop.home>
-Mime-Version: 1.0
+	<1259947019.22783.116.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1259947019.22783.116.camel@Joe-Laptop.home>
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
-	Colin Leroy <colin@colino.net>, Paul Mackerras <paulus@samba.org>,
-	Jean Delvare <khali@linux-fr.org>, "Darrick J. Wong" <djwong@us.ibm.com>
+	Jean Delvare <khali@linux-fr.org>, Paul Mackerras <paulus@samba.org>,
+	Colin Leroy <colin@colino.net>, "Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,92 +41,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-12-04 at 20:59 +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2009-12-04 at 10:34 +0100, Jean Delvare wrote:
-> > I've sent it to linuxppc-dev@ozlabs.org on October 14th. This is the
-> > address which is listed 22 times in MAINTAINERS. If it isn't correct,
-> > then please update MAINTAINERS.
-> No it's fine both shoul work. Your patches are there, just waiting for
-> me to pick them up, I was just firing a reminder to the rest of the CC
-> list :-) (and I do remember fwd'ing a couple of your patches to the
-> list, for some reason they didn't make it to patchwork back then, that
-> was a few month ago).
-> Anyways, I've been stretched thin with all sort of stuff lately, so bear
-> with me if I'm a bit slow at taking or testing stuff, I'm doing my best.
+On Fri, Dec 04, 2009 at 09:16:59AM -0800, Joe Perches wrote:
+> LINUX FOR POWERPC EMBEDDED PPC4XX
+> M:	Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>@@ -3221,6 +3228,8 @@ W:	http://www.penguinppc.org/
+> L:	linuxppc-dev@ozlabs.org
+> T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
+> S:	Maintained
+>+F:	arch/powerpc/platforms/40x/
+>+F:	arch/powerpc/platforms/44x/
 
-Adding patterns to the PowerPC sections of MAINTAINERS is useful.
+This is mostly complete.  There are a few files under arch/powerpc/sysdev/, and
+arch/powerpc/boot/ as well, but I don't think they're entirely necessary.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+For the 4xx parts:
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 4f96ac8..c7f8e5a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3193,6 +3193,7 @@ LINUX FOR IBM pSERIES (RS/6000)
- M:	Paul Mackerras <paulus@au.ibm.com>
- W:	http://www.ibm.com/linux/ltc/projects/ppc
- S:	Supported
-+F:	arch/powerpc/boot/rs6000.h
- 
- LINUX FOR POWERPC (32-BIT AND 64-BIT)
- M:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-@@ -3201,18 +3202,24 @@ W:	http://www.penguinppc.org/
- L:	linuxppc-dev@ozlabs.org
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
- S:	Supported
-+F:	Documentation/powerpc/
-+F:	arch/powerpc/
- 
- LINUX FOR POWER MACINTOSH
- M:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
- W:	http://www.penguinppc.org/
- L:	linuxppc-dev@ozlabs.org
- S:	Maintained
-+F:	arch/powerpc/platforms/powermac/
-+F:	drivers/macintosh/
- 
- LINUX FOR POWERPC EMBEDDED MPC5XXX
- M:	Grant Likely <grant.likely@secretlab.ca>
- L:	linuxppc-dev@ozlabs.org
- T:	git git://git.secretlab.ca/git/linux-2.6.git
- S:	Maintained
-+F:	arch/powerpc/platforms/512x/
-+F:	arch/powerpc/platforms/52xx/
- 
- LINUX FOR POWERPC EMBEDDED PPC4XX
- M:	Josh Boyer <jwboyer@linux.vnet.ibm.com>
-@@ -3221,6 +3228,8 @@ W:	http://www.penguinppc.org/
- L:	linuxppc-dev@ozlabs.org
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
- S:	Maintained
-+F:	arch/powerpc/platforms/40x/
-+F:	arch/powerpc/platforms/44x/
- 
- LINUX FOR POWERPC EMBEDDED XILINX VIRTEX
- M:	Grant Likely <grant.likely@secretlab.ca>
-@@ -3228,6 +3237,8 @@ W:	http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
- L:	linuxppc-dev@ozlabs.org
- T:	git git://git.secretlab.ca/git/linux-2.6.git
- S:	Maintained
-+F:	arch/powerpc/*/*virtex*
-+F:	arch/powerpc/*/*/*virtex*
- 
- LINUX FOR POWERPC EMBEDDED PPC8XX
- M:	Vitaly Bordug <vitb@kernel.crashing.org>
-@@ -3241,12 +3252,16 @@ M:	Kumar Gala <galak@kernel.crashing.org>
- W:	http://www.penguinppc.org/
- L:	linuxppc-dev@ozlabs.org
- S:	Maintained
-+F:	arch/powerpc/platforms/83xx/
- 
- LINUX FOR POWERPC PA SEMI PWRFICIENT
- M:	Olof Johansson <olof@lixom.net>
- W:	http://www.pasemi.com/
- L:	linuxppc-dev@ozlabs.org
- S:	Supported
-+F:	arch/powerpc/platforms/pasemi/
-+F:	drivers/*/*pasemi*
-+F:	drivers/*/*/*pasemi*
- 
- LINUX SECURITY MODULE (LSM) FRAMEWORK
- M:	Chris Wright <chrisw@sous-sol.org>
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+
+josh
