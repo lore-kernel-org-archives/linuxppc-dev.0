@@ -1,28 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 15EB9B7BF5
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 85215B7BF8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  5 Dec 2009 01:39:03 +1100 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e5.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nB4ERmCl017878
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Dec 2009 09:27:48 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nB4Ed0KG124600
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Dec 2009 09:39:00 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nB44VTwq016715
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Dec 2009 23:31:30 -0500
-Date: Fri, 4 Dec 2009 09:38:56 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Please pull 'next' branch of 4xx tree
-Message-ID: <20091204143856.GJ2937@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat,  5 Dec 2009 02:17:44 +1100 (EST)
+In-Reply-To: <1259880447-5008-2-git-send-email-albert_herranz@yahoo.es>
+References: <1259880447-5008-1-git-send-email-albert_herranz@yahoo.es>
+	<1259880447-5008-2-git-send-email-albert_herranz@yahoo.es>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <E340F52C-7795-4A0B-8286-C2B6028054CC@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH v2 1/6] powerpc: wii: device tree
+Date: Fri, 4 Dec 2009 16:25:25 +0100
+To: Albert Herranz <albert_herranz@yahoo.es>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,26 +25,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+> Add a device tree source file for the Nintendo Wii video game console.
+>
+> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 
-A couple of DTS fixups for you.  Thanks.
+Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
 
-josh
-
-The following changes since commit 5a7b4193e564d1611ecf1cd859aed60d5612d78f:
-  Benjamin Herrenschmidt (1):
-        Revert "powerpc/mm: Fix bug in pagetable cache cleanup with CONFIG_PPC_SUBPAGE_PROT"
-
-are available in the git repository at:
-
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
-
-Curtis Wald (1):
-      powerpc/44x: Fix PCI node in Yosemite DTS
-
-pbathija@amcc.com (1):
-      powerpc/44x: Fix DMA ranges in DTS file for Katmai board.
-
- arch/powerpc/boot/dts/katmai.dts   |   22 +++++++++++-----------
- arch/powerpc/boot/dts/yosemite.dts |   14 ++------------
- 2 files changed, 13 insertions(+), 23 deletions(-)
+Great work Albert!
