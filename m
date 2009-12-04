@@ -1,23 +1,22 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 333E9B7BC6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  4 Dec 2009 15:52:41 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: PCI interrupt question
-Date: Fri, 4 Dec 2009 05:52:34 +0100
-References: <1259821316.12651.26.camel@qu102.quarc.com>
-	<4B17F14A.1060001@ovro.caltech.edu>
-	<1259869140.18190.52.camel@qu102.quarc.com>
-In-Reply-To: <1259869140.18190.52.camel@qu102.quarc.com>
+Return-Path: <ml.lawnick@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id D15EEB6EF6
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 17:58:24 +1100 (EST)
+Message-ID: <4B18B30B.1080904@gmx.de>
+Date: Fri, 04 Dec 2009 07:58:19 +0100
+From: Michael Lawnick <ml.lawnick@gmx.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <200912040552.34178.sr@denx.de>
-Cc: Jeff Hane <jeff.hane@maxim-ic.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Subject: Re: [PATCH v2] i2c-mpc: generate START condition after STOP caused
+	by read i2c_msg
+References: <4A124202.4010201@doredevelopment.dk>
+	<d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
+	<20090526213351.GG23114@fluff.org.uk> <4B17D4C5.3070100@gmx.de>
+	<20091203152916.GC23152@trinity.fluff.org>
+In-Reply-To: <20091203152916.GC23152@trinity.fluff.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Esben Haabendal <eha@doredevelopment.dk>,
+	Esben Haabendal <esbenhaabendal@gmail.com>, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 03 December 2009 20:39:00 Jeff Hane wrote:
-> > Can you clarify:
-> >
-> > 1. 460EX is your PCI host CPU?
+Ben Dooks said the following:
+> On Thu, Dec 03, 2009 at 04:09:57PM +0100, Michael Lawnick wrote:
+>> Ben Dooks said the following:
+>> > On Tue, May 26, 2009 at 01:30:21PM +0200, Esben Haabendal wrote:
+>> >> On Tue, May 19, 2009 at 7:22 AM, Esben Haabendal <eha@doredevelopment.dk> wrote:
+>> >> > This fixes MAL (arbitration lost) bug caused by illegal use of
+>> >> > RSTA (repeated START) after STOP condition generated after last byte
+>> >> > of reads. With this patch, it is possible to do an i2c_transfer() with
+>> >> > additional i2c_msg's following the I2C_M_RD messages.
+>> >> >
+>> >> > It still needs to be resolved if it is possible to fix this issue
+>> >> > by removing the STOP condition after reads in a robust way.
+>> >> >
+>> >> > Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
+>> >> > ---
+>> >> > ?drivers/i2c/busses/i2c-mpc.c | ? ?9 +++++++--
+>> >> > ?1 files changed, 7 insertions(+), 2 deletions(-)
+>> >> 
+>> >> Any blockers to get this accepted?
+>> > 
+>> > It would be nice to get an ack from someone who can actually test
+>> > the driver before getting this merged.
+>> >  
+>> What is the state of this patch?
+>> Shouldn't we attack the problem on a more general way by inventing a
+>> Flag I2C_M_RESTART (or better I2C_M_NO_RESTART for backward compatibility)?
+>> This way the client driver is able to decide what it needs. If we do the
+>> choice within adapter, chance is about 50% to be wrong.
 > 
-> yes.  We are using a canyonlands board with 460ex.
+> The documentation for 'struct i2c_msg' already says the STOP should only
+> be generated for the last message of the transfer. If STOP is being
+> generated for a message that isn't the last in the transfer than this
+> is incorrect behaviour.
 
-PCI works on Canyonlands without any problems. I just tested latest Linux 
-release (2.6.32) with an PCI USB card:
+Ah, now I see, this is a mpc-only problem of implementation
+(automatically generating stop in read function).
+I couldn't find the above mentioned specification of STOP/RESTART (seems
+I need new glasses) and was worried about whether my own implementation
+for OCTEON is correct.
 
--bash-3.2# uname -a
-Linux canyonlands 2.6.32 #1 Fri Dec 4 05:42:35 CET 2009 ppc ppc ppc GNU/Linux
--bash-3.2# cat /proc/cpuinfo
-processor       : 0
-cpu             : 460EX
-clock           : 800.000010MHz
-revision        : 24.162 (pvr 1302 18a2)
-bogomips        : 1600.00
-timebase        : 800000010
-platform        : PowerPC 44x Platform
-model           : amcc,canyonlands
-Memory          : 512 MB
--bash-3.2# cat /proc/interrupts
-           CPU0
- 18:          0   UIC   Edge      L2C
- 19:         22   UIC   Level     ohci_hcd:usb2, ohci_hcd:usb3
- 20:      15220   UIC   Level     serial
- 23:       8038   UIC   Level     MAL TX EOB
- 24:      15510   UIC   Level     MAL RX EOB
- 25:          0   UIC   Level     MAL SERR
- 26:          0   UIC   Level     MAL TX DE
- 27:          0   UIC   Level     MAL RX DE
- 28:          0   UIC   Level     EMAC
- 34:          1   UIC   Level     ohci_hcd:usb1
- 35:       2926   UIC   Level     IBM IIC
- 38:          0   UIC   Level     IBM IIC
-BAD:          0
--bash-3.2#
-
-I can't see any problems with PCI interrupts here.
-
-Cheers,
-Stefan
+Thank you.
+-- 
+Michael
