@@ -1,22 +1,18 @@
-Return-Path: <ml.lawnick@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id D15EEB6EF6
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 17:58:24 +1100 (EST)
-Message-ID: <4B18B30B.1080904@gmx.de>
-Date: Fri, 04 Dec 2009 07:58:19 +0100
-From: Michael Lawnick <ml.lawnick@gmx.de>
-MIME-Version: 1.0
-To: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [PATCH v2] i2c-mpc: generate START condition after STOP caused
-	by read i2c_msg
-References: <4A124202.4010201@doredevelopment.dk>
-	<d2b9ea600905260430i72290901p9266de4cade049c1@mail.gmail.com>
-	<20090526213351.GG23114@fluff.org.uk> <4B17D4C5.3070100@gmx.de>
-	<20091203152916.GC23152@trinity.fluff.org>
-In-Reply-To: <20091203152916.GC23152@trinity.fluff.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Esben Haabendal <eha@doredevelopment.dk>,
-	Esben Haabendal <esbenhaabendal@gmail.com>, linux-i2c@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C9DA1B7BDD
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Dec 2009 18:19:01 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+Subject: using different format for hugetlbfs
+Date: Fri, 4 Dec 2009 01:18:51 -0600
+Message-Id: <230774E3-2D94-44DA-85AC-151485996789@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	David Gibson <dwg@au1.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v1076)
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben Dooks said the following:
-> On Thu, Dec 03, 2009 at 04:09:57PM +0100, Michael Lawnick wrote:
->> Ben Dooks said the following:
->> > On Tue, May 26, 2009 at 01:30:21PM +0200, Esben Haabendal wrote:
->> >> On Tue, May 19, 2009 at 7:22 AM, Esben Haabendal <eha@doredevelopment.dk> wrote:
->> >> > This fixes MAL (arbitration lost) bug caused by illegal use of
->> >> > RSTA (repeated START) after STOP condition generated after last byte
->> >> > of reads. With this patch, it is possible to do an i2c_transfer() with
->> >> > additional i2c_msg's following the I2C_M_RD messages.
->> >> >
->> >> > It still needs to be resolved if it is possible to fix this issue
->> >> > by removing the STOP condition after reads in a robust way.
->> >> >
->> >> > Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
->> >> > ---
->> >> > ?drivers/i2c/busses/i2c-mpc.c | ? ?9 +++++++--
->> >> > ?1 files changed, 7 insertions(+), 2 deletions(-)
->> >> 
->> >> Any blockers to get this accepted?
->> > 
->> > It would be nice to get an ack from someone who can actually test
->> > the driver before getting this merged.
->> >  
->> What is the state of this patch?
->> Shouldn't we attack the problem on a more general way by inventing a
->> Flag I2C_M_RESTART (or better I2C_M_NO_RESTART for backward compatibility)?
->> This way the client driver is able to decide what it needs. If we do the
->> choice within adapter, chance is about 50% to be wrong.
-> 
-> The documentation for 'struct i2c_msg' already says the STOP should only
-> be generated for the last message of the transfer. If STOP is being
-> generated for a message that isn't the last in the transfer than this
-> is incorrect behaviour.
+Ben, David,
 
-Ah, now I see, this is a mpc-only problem of implementation
-(automatically generating stop in read function).
-I couldn't find the above mentioned specification of STOP/RESTART (seems
-I need new glasses) and was worried about whether my own implementation
-for OCTEON is correct.
+If we want to support true 4G/4G split on ppc32 using the MSB of the  
+address to determine of the pgd_t is for hugetlbfs isn't going to  
+work.  Since every pointer in the pgd_t -> pud_t -> pmd_t is point to  
+at least a 4K page I would think the low order 12-bits should always  
+be 0.
 
-Thank you.
--- 
-Michael
+Could we use something like:
+
+addr[0:51] || shift [52:59] || flags [60:63]
+
+with the LSB flag being 'normal pointer' vs 'hugetlbfs mangled  
+pointer'.  Seems like shift will at most be 64 so 8-bits should cover  
+it.
+
+- k
