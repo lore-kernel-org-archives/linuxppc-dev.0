@@ -1,18 +1,19 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f191.google.com (mail-pz0-f191.google.com
-	[209.85.222.191]) by ozlabs.org (Postfix) with ESMTP id 09114B7BE9
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 15:33:25 +1100 (EST)
-Received: by pzk29 with SMTP id 29so2824856pzk.17
-	for <linuxppc-dev@ozlabs.org>; Fri, 04 Dec 2009 20:33:24 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH/REPOST] net/mpc5200: Fix locking on fec_mpc52xx driver
-To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, davem@davemloft.net
-Date: Fri, 04 Dec 2009 21:33:13 -0700
-Message-ID: <20091205043015.28041.19288.stgit@angua>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 61E0DB7BF9
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Dec 2009 04:56:16 +1100 (EST)
+Date: Sat, 5 Dec 2009 20:56:14 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Peter Tyser <ptyser@xes-inc.com>
+Subject: Re: [PATCH] powerpc: mpc8xxx_gpio: Add ability to mask off unused
+	GPIO pins
+Message-ID: <20091205175614.GA10057@oksana.dev.rtsoft.ru>
+References: <1259955820-28565-1-git-send-email-ptyser@xes-inc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Asier Llano <a.llano@ziv.es>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1259955820-28565-1-git-send-email-ptyser@xes-inc.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,272 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Asier Llano Palacios <asierllano@gmail.com>
+Hi Peter,
 
-Fix the locking scheme on the fec_mpc52xx driver.  This device can
-receive IRQs from three sources; the FEC itself, the tx DMA, and the
-rx DMA.  Mutual exclusion was handled by taking a spin_lock() in the
-critical regions, but because the handlers are run with IRQs enabled,
-spin_lock() is insufficient and the driver can end up interrupting
-a critical region anyway from another IRQ.
+On Fri, Dec 04, 2009 at 01:43:40PM -0600, Peter Tyser wrote:
+> This change resolves 2 issues:
+> - Different chips have a different number of GPIO pins per controller.
+>   For example, the MPC8347 has 32, the P2020 16, and the mpc8572 8.
+>   Previously, the mpc8xxx_gpio driver assumed every chip had 32 GPIO
+>   pins which resulted in some processors reporting an incorrect 'ngpio'
+>   field in /sys.  Additionally, users could export and "use" 32 GPIO
+>   pins, although in reality only a subset of the 32 pins had any real
+>   functionality.
+> 
+> - Some boards don't utilize all available GPIO pins.  Previously,
+>   unused GPIO pins could still be exported and "used", even though the
+>   pins had no real functionality.  This is somewhat confusing to a user
+>   and also allow a user to do something "bad", like change an unused
+>   floating output into a floating input.
 
-Asier Llano discovered that this occurs when an error IRQ is raised
-in the middle of handling rx irqs which resulted in an sk_buff memory
-leak.
+There are hundreds of other ways to screw things up.
 
-In addition, locking is spotty at best in the driver and inspection
-revealed quite a few places with insufficient locking.
+Think of /dev/mem, you still able to change the registers.
+Before changing any GPIO (whether it is a normal or reserved GPIO),
+user has to consult with schematics/docs.
 
-This patch is based on Asier's initial work, but reworks a number of
-things so that locks are held for as short a time as possible, so
-that spin_lock_irqsave() is used everywhere, and so the locks are
-dropped when calling into the network stack (because the lock only
-protects the hardware interface; not the network stack).
+> Adding a new "fsl,gpio-mask" device tree property allows a dts file to
+> accurately describe what GPIO pins are available for use on a given
+> board.
 
-Boot tested on a lite5200 with an NFS root.  Has not been performance
-tested.
+I don't see any real usage for this. If device tree specifies a wrong
+gpio in the gpios = <> property, then it's a bug in the device tree
+and should be fixed (or workarounded in the platform code).
 
-Signed-off-by: Asier Llano <a.llano@ziv.es>
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+If a user fiddles with unknown gpios via sysfs interface, then it's
+user's problem.
 
-Reposting due to messing up both subject line and davem's email addr.
+FWIW, we don't have any masks for reserved IRQs.
 
- drivers/net/fec_mpc52xx.c |  121 +++++++++++++++++++++++----------------------
- 1 files changed, 62 insertions(+), 59 deletions(-)
+Thanks,
 
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index 66dace6..4889b4d 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -85,11 +85,15 @@ MODULE_PARM_DESC(debug, "debugging messages level");
- 
- static void mpc52xx_fec_tx_timeout(struct net_device *dev)
- {
-+	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+	unsigned long flags;
-+
- 	dev_warn(&dev->dev, "transmit timed out\n");
- 
-+	spin_lock_irqsave(&priv->lock, flags);
- 	mpc52xx_fec_reset(dev);
--
- 	dev->stats.tx_errors++;
-+	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	netif_wake_queue(dev);
- }
-@@ -135,28 +139,32 @@ static void mpc52xx_fec_free_rx_buffers(struct net_device *dev, struct bcom_task
- 	}
- }
- 
-+static void
-+mpc52xx_fec_rx_submit(struct net_device *dev, struct sk_buff *rskb)
-+{
-+	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+	struct bcom_fec_bd *bd;
-+
-+	bd = (struct bcom_fec_bd *) bcom_prepare_next_buffer(priv->rx_dmatsk);
-+	bd->status = FEC_RX_BUFFER_SIZE;
-+	bd->skb_pa = dma_map_single(dev->dev.parent, rskb->data,
-+				    FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
-+	bcom_submit_next_buffer(priv->rx_dmatsk, rskb);
-+}
-+
- static int mpc52xx_fec_alloc_rx_buffers(struct net_device *dev, struct bcom_task *rxtsk)
- {
--	while (!bcom_queue_full(rxtsk)) {
--		struct sk_buff *skb;
--		struct bcom_fec_bd *bd;
-+	struct sk_buff *skb;
- 
-+	while (!bcom_queue_full(rxtsk)) {
- 		skb = dev_alloc_skb(FEC_RX_BUFFER_SIZE);
--		if (skb == NULL)
-+		if (!skb)
- 			return -EAGAIN;
- 
- 		/* zero out the initial receive buffers to aid debugging */
- 		memset(skb->data, 0, FEC_RX_BUFFER_SIZE);
--
--		bd = (struct bcom_fec_bd *)bcom_prepare_next_buffer(rxtsk);
--
--		bd->status = FEC_RX_BUFFER_SIZE;
--		bd->skb_pa = dma_map_single(dev->dev.parent, skb->data,
--				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
--
--		bcom_submit_next_buffer(rxtsk, skb);
-+		mpc52xx_fec_rx_submit(dev, skb);
- 	}
--
- 	return 0;
- }
- 
-@@ -328,13 +336,12 @@ static int mpc52xx_fec_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 				    DMA_TO_DEVICE);
- 
- 	bcom_submit_next_buffer(priv->tx_dmatsk, skb);
-+	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	if (bcom_queue_full(priv->tx_dmatsk)) {
- 		netif_stop_queue(dev);
- 	}
- 
--	spin_unlock_irqrestore(&priv->lock, flags);
--
- 	return NETDEV_TX_OK;
- }
- 
-@@ -359,9 +366,9 @@ static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
- {
- 	struct net_device *dev = dev_id;
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+	unsigned long flags;
- 
--	spin_lock(&priv->lock);
--
-+	spin_lock_irqsave(&priv->lock, flags);
- 	while (bcom_buffer_done(priv->tx_dmatsk)) {
- 		struct sk_buff *skb;
- 		struct bcom_fec_bd *bd;
-@@ -372,11 +379,10 @@ static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
- 
- 		dev_kfree_skb_irq(skb);
- 	}
-+	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	netif_wake_queue(dev);
- 
--	spin_unlock(&priv->lock);
--
- 	return IRQ_HANDLED;
- }
- 
-@@ -384,67 +390,60 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
- {
- 	struct net_device *dev = dev_id;
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+	struct sk_buff *rskb; /* received sk_buff */
-+	struct sk_buff *skb;  /* new sk_buff to enqueue in its place */
-+	struct bcom_fec_bd *bd;
-+	u32 status, physaddr;
-+	int length;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&priv->lock, flags);
- 
- 	while (bcom_buffer_done(priv->rx_dmatsk)) {
--		struct sk_buff *skb;
--		struct sk_buff *rskb;
--		struct bcom_fec_bd *bd;
--		u32 status;
- 
- 		rskb = bcom_retrieve_buffer(priv->rx_dmatsk, &status,
--				(struct bcom_bd **)&bd);
--		dma_unmap_single(dev->dev.parent, bd->skb_pa, rskb->len,
--				 DMA_FROM_DEVICE);
-+					    (struct bcom_bd **)&bd);
-+		physaddr = bd->skb_pa;
- 
- 		/* Test for errors in received frame */
- 		if (status & BCOM_FEC_RX_BD_ERRORS) {
- 			/* Drop packet and reuse the buffer */
--			bd = (struct bcom_fec_bd *)
--				bcom_prepare_next_buffer(priv->rx_dmatsk);
--
--			bd->status = FEC_RX_BUFFER_SIZE;
--			bd->skb_pa = dma_map_single(dev->dev.parent,
--					rskb->data,
--					FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
--
--			bcom_submit_next_buffer(priv->rx_dmatsk, rskb);
--
-+			mpc52xx_fec_rx_submit(dev, rskb);
- 			dev->stats.rx_dropped++;
--
- 			continue;
- 		}
- 
- 		/* skbs are allocated on open, so now we allocate a new one,
- 		 * and remove the old (with the packet) */
- 		skb = dev_alloc_skb(FEC_RX_BUFFER_SIZE);
--		if (skb) {
--			/* Process the received skb */
--			int length = status & BCOM_FEC_RX_BD_LEN_MASK;
--
--			skb_put(rskb, length - 4);	/* length without CRC32 */
--
--			rskb->dev = dev;
--			rskb->protocol = eth_type_trans(rskb, dev);
--
--			netif_rx(rskb);
--		} else {
-+		if (!skb) {
- 			/* Can't get a new one : reuse the same & drop pkt */
--			dev_notice(&dev->dev, "Memory squeeze, dropping packet.\n");
-+			dev_notice(&dev->dev, "Low memory - dropped packet.\n");
-+			mpc52xx_fec_rx_submit(dev, rskb);
- 			dev->stats.rx_dropped++;
--
--			skb = rskb;
-+			continue;
- 		}
- 
--		bd = (struct bcom_fec_bd *)
--			bcom_prepare_next_buffer(priv->rx_dmatsk);
-+		/* Enqueue the new sk_buff back on the hardware */
-+		mpc52xx_fec_rx_submit(dev, skb);
- 
--		bd->status = FEC_RX_BUFFER_SIZE;
--		bd->skb_pa = dma_map_single(dev->dev.parent, skb->data,
--				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
-+		/* Process the received skb - Drop the spin lock while
-+		 * calling into the network stack */
-+		spin_unlock_irqrestore(&priv->lock, flags);
- 
--		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
-+		dma_unmap_single(dev->dev.parent, physaddr, rskb->len,
-+				 DMA_FROM_DEVICE);
-+		length = status & BCOM_FEC_RX_BD_LEN_MASK;
-+		skb_put(rskb, length - 4);	/* length without CRC32 */
-+		rskb->dev = dev;
-+		rskb->protocol = eth_type_trans(rskb, dev);
-+		netif_rx(rskb);
-+
-+		spin_lock_irqsave(&priv->lock, flags);
- 	}
- 
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -454,6 +453,7 @@ static irqreturn_t mpc52xx_fec_interrupt(int irq, void *dev_id)
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
- 	struct mpc52xx_fec __iomem *fec = priv->fec;
- 	u32 ievent;
-+	unsigned long flags;
- 
- 	ievent = in_be32(&fec->ievent);
- 
-@@ -471,9 +471,10 @@ static irqreturn_t mpc52xx_fec_interrupt(int irq, void *dev_id)
- 		if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
- 			dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
- 
-+		spin_lock_irqsave(&priv->lock, flags);
- 		mpc52xx_fec_reset(dev);
-+		spin_unlock_irqrestore(&priv->lock, flags);
- 
--		netif_wake_queue(dev);
- 		return IRQ_HANDLED;
- 	}
- 
-@@ -768,6 +769,8 @@ static void mpc52xx_fec_reset(struct net_device *dev)
- 	bcom_enable(priv->tx_dmatsk);
- 
- 	mpc52xx_fec_start(dev);
-+
-+	netif_wake_queue(dev);
- }
- 
- 
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
