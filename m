@@ -4,23 +4,25 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8EF38B7C1A
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 10:36:27 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 72996B7B93
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 12:44:22 +1100 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nB4NaO90028852
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Dec 2009 16:36:25 -0700 (MST)
+	nB51iJpI016006
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Dec 2009 18:44:19 -0700 (MST)
 Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
 	[10.64.32.10])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id nB4NfHqW004610
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Dec 2009 17:41:17 -0600 (CST)
-Date: Fri, 4 Dec 2009 17:39:32 -0600
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id nB51nB5n007527
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Dec 2009 19:49:11 -0600 (CST)
+Date: Fri, 4 Dec 2009 19:47:27 -0600
 From: Kim Phillips <kim.phillips@freescale.com>
-To: agnel <ajijuni@gmail.com>
+To: Junita Ajith <ajijuni@gmail.com>
 Subject: Re: MPC8343EA Linux DTS file
-Message-Id: <20091204173932.031a677d.kim.phillips@freescale.com>
-In-Reply-To: <26645258.post@talk.nabble.com>
+Message-Id: <20091204194727.d0f22329.kim.phillips@freescale.com>
+In-Reply-To: <72d214170912041543g207837a5v67c9bb157e0a2c8b@mail.gmail.com>
 References: <47F73625.9040903@matrix-vision.de> <26645258.post@talk.nabble.com>
+	<20091204173932.031a677d.kim.phillips@freescale.com>
+	<72d214170912041543g207837a5v67c9bb157e0a2c8b@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -33,20 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 4 Dec 2009 14:56:25 -0800
-agnel <ajijuni@gmail.com> wrote:
+On Fri, 4 Dec 2009 15:43:18 -0800
+Junita Ajith <ajijuni@gmail.com> wrote:
 
-> We have an MPC8343EA based custom board.
-> 
-> I am not able to get Linux up and running in this. No serial output to debug
-> further.
->  U-boot shows correct 'bdinfo' & 'clocks' output.
-> 
-> I doubt the DTS file in Linux. anyone has DTS file for MPC8343??
-> 
-> My current DTS file
+please keep the list on the cc:, and don't top-post.
 
-well, for one, the dts you provide doesn't include a node for the ipic
-interrupt controller.
+> This is the entire DTS file:
+> /dts-v1/;
+> 
+> / {
+>         model = "SC3000";
+>         compatible = "MPC8349EMDS", "MPC834xMDS", "MPC83xxMDS";
+
+you don't mention the u-boot and kernel version numbers: does your
+linux kernel check for these compatibles?  If yes, then use a debugger
+to find out exactly where else the kernel could be dying.
 
 Kim
