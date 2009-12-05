@@ -1,31 +1,25 @@
-Return-Path: <R1AAHA@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 72996B7B93
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 12:44:22 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nB51iJpI016006
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Dec 2009 18:44:19 -0700 (MST)
-Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
-	[10.64.32.10])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id nB51nB5n007527
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Dec 2009 19:49:11 -0600 (CST)
-Date: Fri, 4 Dec 2009 19:47:27 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Junita Ajith <ajijuni@gmail.com>
-Subject: Re: MPC8343EA Linux DTS file
-Message-Id: <20091204194727.d0f22329.kim.phillips@freescale.com>
-In-Reply-To: <72d214170912041543g207837a5v67c9bb157e0a2c8b@mail.gmail.com>
-References: <47F73625.9040903@matrix-vision.de> <26645258.post@talk.nabble.com>
-	<20091204173932.031a677d.kim.phillips@freescale.com>
-	<72d214170912041543g207837a5v67c9bb157e0a2c8b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 25308B7BEB
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Dec 2009 14:06:47 +1100 (EST)
+Date: Fri, 4 Dec 2009 20:59:49 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] MAINTAINERS: Add PowerPC patterns
+Message-ID: <20091205025949.GA29554@lixom.net>
+References: <20091202091951.5ec6bb83@hyperion.delvare>
+	<1259894454.2076.1246.camel@pasglop>
+	<20091204103434.0a754925@hyperion.delvare>
+	<1259920775.2076.1273.camel@pasglop>
+	<1259947019.22783.116.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1259947019.22783.116.camel@Joe-Laptop.home>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
+	Jean Delvare <khali@linux-fr.org>, Paul Mackerras <paulus@samba.org>,
+	Colin Leroy <colin@colino.net>, "Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,20 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 4 Dec 2009 15:43:18 -0800
-Junita Ajith <ajijuni@gmail.com> wrote:
-
-please keep the list on the cc:, and don't top-post.
-
-> This is the entire DTS file:
-> /dts-v1/;
+On Fri, Dec 04, 2009 at 09:16:59AM -0800, Joe Perches wrote:
+> On Fri, 2009-12-04 at 20:59 +1100, Benjamin Herrenschmidt wrote:
+> > On Fri, 2009-12-04 at 10:34 +0100, Jean Delvare wrote:
+> > > I've sent it to linuxppc-dev@ozlabs.org on October 14th. This is the
+> > > address which is listed 22 times in MAINTAINERS. If it isn't correct,
+> > > then please update MAINTAINERS.
+> > No it's fine both shoul work. Your patches are there, just waiting for
+> > me to pick them up, I was just firing a reminder to the rest of the CC
+> > list :-) (and I do remember fwd'ing a couple of your patches to the
+> > list, for some reason they didn't make it to patchwork back then, that
+> > was a few month ago).
+> > Anyways, I've been stretched thin with all sort of stuff lately, so bear
+> > with me if I'm a bit slow at taking or testing stuff, I'm doing my best.
 > 
-> / {
->         model = "SC3000";
->         compatible = "MPC8349EMDS", "MPC834xMDS", "MPC83xxMDS";
+> Adding patterns to the PowerPC sections of MAINTAINERS is useful.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-you don't mention the u-boot and kernel version numbers: does your
-linux kernel check for these compatibles?  If yes, then use a debugger
-to find out exactly where else the kernel could be dying.
+Acked-by: Olof Johansson <olof@lixom.net>
 
-Kim
+There are a few other files under arch/powerpc that's not under platforms
+that belongs to the pasemi code but it's not a big deal to not include
+them. This goes most of the way.
+
+
+-Olof
