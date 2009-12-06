@@ -1,21 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id B95FAB6F1B
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Dec 2009 07:51:52 +1100 (EST)
-Date: Sat, 5 Dec 2009 23:51:49 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Peter Tyser <ptyser@xes-inc.com>
-Subject: Re: [PATCH] powerpc: mpc8xxx_gpio: Add ability to mask off unused
-	GPIO pins
-Message-ID: <20091205205149.GA26030@oksana.dev.rtsoft.ru>
-References: <1259955820-28565-1-git-send-email-ptyser@xes-inc.com>
-	<20091205175614.GA10057@oksana.dev.rtsoft.ru>
-	<1260041552.8643.33.camel@ptyser-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1260041552.8643.33.camel@ptyser-laptop>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 32B3FB7BE4
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Dec 2009 14:05:26 +1100 (EST)
+Subject: Re: using different format for hugetlbfs
+Mime-Version: 1.0 (Apple Message framework v1076)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1259961942.2076.1277.camel@pasglop>
+Date: Sat, 5 Dec 2009 21:05:01 -0600
+Message-Id: <5034AAE3-CCF9-446D-AC4B-B3F59C81D507@kernel.crashing.org>
+References: <230774E3-2D94-44DA-85AC-151485996789@kernel.crashing.org>
+	<1259917136.2076.1264.camel@pasglop>
+	<90D0766D-30A2-4ABE-9707-C7F64A697BFE@kernel.crashing.org>
+	<1259961942.2076.1277.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Dec 05, 2009 at 01:32:32PM -0600, Peter Tyser wrote:
-[...]
-> > > Adding a new "fsl,gpio-mask" device tree property allows a dts file to
-> > > accurately describe what GPIO pins are available for use on a given
-> > > board.
-> > 
-> > I don't see any real usage for this. If device tree specifies a wrong
-> > gpio in the gpios = <> property, then it's a bug in the device tree
-> > and should be fixed (or workarounded in the platform code).
-> > 
-> > If a user fiddles with unknown gpios via sysfs interface, then it's
-> > user's problem.
-> 
-> Its the sysfs case that I'm concerned about.  Primarily because:
-> 1. Users scratch their head when they see that the "ngpio" sysfs value
-> doesn't match their CPU manual or board vendor's manual, and
-> subsequently ask their board vendor's engineers (ie me:) what's up.
 
-I don't think that adding code and device tree entries just for
-documentation purposes is a good idea.
+On Dec 4, 2009, at 3:25 PM, Benjamin Herrenschmidt wrote:
 
-> 2. Improperly using GPIO pins could damage hardware for some boards.
+> On Fri, 2009-12-04 at 08:09 -0600, Kumar Gala wrote:
+>> On Dec 4, 2009, at 2:58 AM, Benjamin Herrenschmidt wrote:
+>>
+>>> On Fri, 2009-12-04 at 01:18 -0600, Kumar Gala wrote:
+>>>> Ben, David,
+>>>>
+>>>> If we want to support true 4G/4G split on ppc32 using the MSB of  
+>>>> the
+>>>> address to determine of the pgd_t is for hugetlbfs isn't going to
+>>>> work.  Since every pointer in the pgd_t -> pud_t -> pmd_t is  
+>>>> point to
+>>>> at least a 4K page I would think the low order 12-bits should  
+>>>> always
+>>>> be 0.
+>>>
+>>> On 32 bit maybe. On 64, the pg/u/md's can be smaller. I don't really
+>>> want to have a different encoding for both types though.
+>>
+>> What do you mean they can be smaller?  We have some scenario when we
+>> dont allocate a full page?  I agree having the encodings be different
+>> would be bad.  I'm trying to avoid having it be different between 32
+>> bit and 64 (but maybe that will be impossible).
+>
+> Yes. The intermediary levels are smaller on 64-bit. Also, with  
+> hugetlbfs
+> it can create special levels of various sizes depending on the
+> requirements to fit a given huge page size. And that would be true of
+> both 32 and 64-bit in fact.
 
-Well, your initial patch tried to solve a different problem: to not
-let users to request non-existent GPIOs, which is usually safe.
+Even than, does that preclude the format I suggested?  I'm assuming  
+that pgd_t/pud_t/pmd_t are always a double word so the low order 4- 
+bits should be 0 (on 64-bit), so using the lsb as the flag between  
+hugetlb and normal pointer should still work.
 
-[...]
-> #2 could be worked around by exporting GPIO pins in platform code so
-> that they are not available via sysfs.
-
-Yes, badly designed hardware deserves ugly hacks in the platform
-code. ;-) So for this problem, just request these gpios in the
-platform code.
-
-> Would it be any more acceptable to instead add
-> a "fsl,num-gpio" property so that "ngpio" actually reported an accurate
-> value and non-existent GPIO pins couldn't be used/exported?
-
-I'd think it's actually less acceptable. fsl,gpio-mask is more generic,
-since from gpio-mask you can deduce ngpio. But it's still ugly.
-
-What would be OK to do is to describe in the device tree every
-device that is using some GPIO, and then let the userspace request
-*only* gpios that are described in the device-tree. That way you
-can automatically exclude not-existent gpios.
-And if some gpios are just headers on the board, you can still
-describe them in the device tree via "gpio-header" nodes.
-
-Still, a lot of efforts for no real gain...
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
