@@ -1,19 +1,32 @@
-Return-Path: <jeremy.kerr@canonical.com>
-From: Jeremy Kerr <jeremy.kerr@canonical.com>
-To: devicetree-discuss@lists.ozlabs.org
-Subject: Re: [PATCH 06/11] of/flattree: merge early_init_devtree() and
-	early_init_move_devtree()
-Date: Mon, 7 Dec 2009 15:08:25 +0800
-References: <20091124081316.6216.66310.stgit@angua>
-	<20091124081853.6216.68105.stgit@angua>
-In-Reply-To: <20091124081853.6216.68105.stgit@angua>
+Return-Path: <R58472@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8F8CEB7088
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  7 Dec 2009 19:40:57 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nB78eskw006655 for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 7 Dec 2009 01:40:54 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id nB78etcS007381
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 7 Dec 2009 02:40:55 -0600 (CST)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200912071508.25551.jeremy.kerr@canonical.com>
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	davem@davemloft.net
+Content-Type: text/plain;
+	charset="UTF-8"
+Subject: RE: Ping does not work on my MPC8544 board, using linux2.6.23
+Date: Mon, 7 Dec 2009 16:40:53 +0800
+Message-ID: <3A45394FD742FA419B760BB8D398F9EDE66436@zch01exm26.fsl.freescale.net>
+In-Reply-To: <8148211e0912061953n59dfbe4fsea033494ad8b6fcc@mail.gmail.com>
+References: <8148211e0912061953n59dfbe4fsea033494ad8b6fcc@mail.gmail.com>
+From: "Li Yang-R58472" <r58472@freescale.com>
+To: =?UTF-8?B?5p6X5b+X5bmz?= <solyn123@gmail.com>,
+	<linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +36,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant,
-
-> +	/* Scan memory nodes and rebuild LMBs */
-> +	lmb_init();
-> +	of_scan_flat_dt(early_init_dt_scan_root, NULL);
-> +	of_scan_flat_dt(early_init_dt_scan_memory, NULL);
-> +
-> +	/* Save command line for /proc/cmdline and then parse parameters */
-> +	strlcpy(boot_command_line, cmd_line, COMMAND_LINE_SIZE);
-> +	parse_early_param();
-> +
-> +	/* This is in an arbitrary spot, but it is temporary.  After all
-> +	 * the common code is merged, the structure of the early init
-> +	 * code will be reevaluated and refactored */
-> +	early_init_devtree_arch();
-> +
-> +	lmb_analyze();
-> +	lmb_dump_all();
-
-So we're assuming that the arch has lmb support, or should we make this 
-conditional on CONFIG_HAVE_LMB?
-
-Looks like ARM has its own lmb implementation (struct membank), so for the 
-former case, I'd need to convert that to use lmb instead (which may not be a 
-bad thing overall...)
-
-Cheers,
-
-
-Jeremy 
+PlN1YmplY3Q6IFBpbmcgZG9lcyBub3Qgd29yayBvbiBteSBNUEM4NTQ0IGJvYXJkLCB1c2luZyBs
+aW51eDIuNi4yMw0KPg0KPndoeSBsaW51eC0yLjYuMzEgZG9lc25vdCBwcm92aWRlIGEgY29uZmln
+IGZpbGUgbGlrZSANCj5tcGM4NTQ0X2RzX2RlZmNvbmZpZz8NCg0KQmVjYXVzZSBpdCBpcyBjb3Zl
+cmVkIGJ5IGNvbW1vbiBkZWZjb25maWcgbXBjODV4eF9kZWZjb25maWcuDQoNCi0gTGVvDQo=
