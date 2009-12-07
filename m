@@ -1,11 +1,23 @@
-Return-Path: <risto.suominen@gmail.com>
-MIME-Version: 1.0
-Date: Mon, 7 Dec 2009 00:36:15 +0200
-Message-ID: <46e1c7760912061436l76b895ebvf27407a08d41aa45@mail.gmail.com>
-Subject: MACE DMA problem on Powermac 7300
-From: Risto Suominen <risto.suominen@gmail.com>
-To: LinuxPPC-dev <LinuxPPC-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 08078B7BBA
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Dec 2009 12:04:47 +1100 (EST)
+Subject: Re: using different format for hugetlbfs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <5034AAE3-CCF9-446D-AC4B-B3F59C81D507@kernel.crashing.org>
+References: <230774E3-2D94-44DA-85AC-151485996789@kernel.crashing.org>
+	<1259917136.2076.1264.camel@pasglop>
+	<90D0766D-30A2-4ABE-9707-C7F64A697BFE@kernel.crashing.org>
+	<1259961942.2076.1277.camel@pasglop>
+	<5034AAE3-CCF9-446D-AC4B-B3F59C81D507@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Dec 2009 12:04:37 +1100
+Message-ID: <1260147877.2076.1346.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,25 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, everybody,
 
-I post this in hope that somebody could shed some light on how should
-the DMA work in conjunction with the MACE ethernet controller. I find
-difficult to understand why it does not work in my case:
+> 
+> Even than, does that preclude the format I suggested?  I'm assuming  
+> that pgd_t/pud_t/pmd_t are always a double word so the low order 4- 
+> bits should be 0 (on 64-bit), so using the lsb as the flag between  
+> hugetlb and normal pointer should still work.
 
-What happens? First two bytes of a received frame are not what they
-should be in more than 50% of frames. This can be avoided by receiving
-the frame on a word boundary, but with the usual skb_reserve(..., 2)
-(to make the IP header land on word boundary), it won't work.
+Might do, depends if David has enough bits ...  David ?
 
-So, I can make the driver work by receiving at 0 offset, and then
-moving the data 2 bytes up, before handing it over to upper layers.
-
-This used to work with a 2.4.27 kernel, obviously the Grand Central
-DBDMA controller can receive on non-word boundaries. Now I have
-2.6.15.7.
-
-Any ideas, what could cause this kind of behaviour (and regression)?
-
-Best regards,
-Risto Suominen
+Cheers,
+Ben.
