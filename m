@@ -1,11 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Message-ID: <7675847.584551260168085277.JavaMail.nabble@isper.nabble.com>
-From: ajijuni@gmail.com
-To: Linuxppc-dev@lists.ozlabs.org
-Subject: dts file for MPC8343EA
+Return-Path: <solyn123@gmail.com>
+Received: from mail-pz0-f172.google.com (mail-pz0-f172.google.com
+	[209.85.222.172]) by ozlabs.org (Postfix) with ESMTP id ECA46B7BE2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  7 Dec 2009 14:53:24 +1100 (EST)
+Received: by pzk2 with SMTP id 2so3699653pzk.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 06 Dec 2009 19:53:23 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Sun, 06 Dec 2009 22:41:25 -0800
+Date: Mon, 7 Dec 2009 11:53:22 +0800
+Message-ID: <8148211e0912061953n59dfbe4fsea033494ad8b6fcc@mail.gmail.com>
+Subject: Ping does not work on my MPC8544 board, using linux2.6.23
+From: =?GB2312?B?wdbWvsa9?= <solyn123@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=00504502cb1b201f20047a1b6636
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,251 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi 
+--00504502cb1b201f20047a1b6636
+Content-Type: text/plain; charset=ISO-8859-1
 
-We have an MPC8343EA based custom board. 
+Hi,all:
+This is my first time to post on this maillist,I got a problem that ping can
+not work and I am wondering if it is because of my mismatch of linux kernel
+and DTC compiler version.
+I am using mpc8544ds_bsp provided by freescale.
+I used uboot2009.08 to boot my board successfully.
+At first, I using the dtc compiler in this bsp which is version 1.1.0 along
+with linux2.6.23 which is also provided by this bsp.
+But I failded to boot the linux kernel.
+And later, I tried out using dtc1.2.0 and the mpc8544ds.dts in linux-2.6.23,
+there are some systax errors like hex to dec. And I modified the
+mpc8544ds.dts to to fit dtc1.2.0.
+And I boot linux successfully, but PING doesnot work now.
+I am sure I set the ipaddr netmask ,and  default gateway correctly.
+Does dtc1.2.0 can compile dts files under linux2.6.23?
+Another question is that I found linux2.6.31 does not support
+board mpc8544ds, And I never boot linux-2.6.31 on my board, why linux-2.6.31
+doesnot provide a config file like mpc8544_ds_defconfig?
+Thanks!
 
-I am not able to get Linux up and running in this. No serial output to debug further. 
- U-boot shows correct 'bdinfo' & 'clocks' output. 
-inux hangs at machine_probe.
+--00504502cb1b201f20047a1b6636
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I doubt the DTS file in Linux. anyone has DTS file for MPC8343?? 
+<div>Hi,all:</div>
+<div>This is my first time to post on this maillist,I got a problem that pi=
+ng can not work and I am wondering if it is because of my mismatch of linux=
+ kernel and DTC compiler version.</div>
+<div>I am using mpc8544ds_bsp provided by freescale.</div>
+<div>I used uboot2009.08 to boot my board successfully.</div>
+<div>At first, I using the dtc compiler in this bsp which is version 1.1.0 =
+along with linux2.6.23 which is also provided by this bsp.</div>
+<div>But I failded to boot the linux kernel.</div>
+<div>And later, I tried out using dtc1.2.0 and the mpc8544ds.dts in linux-2=
+.6.23, there are some systax errors like hex to dec. And I modified the mpc=
+8544ds.dts to to fit dtc1.2.0.</div>
+<div>And I boot linux successfully, but PING doesnot work now.</div>
+<div>I am sure I set the ipaddr netmask ,and=A0 default gateway correctly.<=
+/div>
+<div>Does dtc1.2.0 can compile dts files under linux2.6.23?</div>
+<div>Another question is that I found linux2.6.31 does not support board=A0=
+mpc8544ds, And I never boot linux-2.6.31 on my board, why linux-2.6.31 does=
+not provide a config file like mpc8544_ds_defconfig?</div>
+<div>Thanks!</div>
 
-u-boot version - 1.3.2
-linux-2.6.27
-The board base files are drived from MPC8349Imtx-GP since we have the reference board in which we tested the linux image.
-
-My current DTS file 
-/dts-v1/; 
-
-/ { 
-        model = "MPC8343"; 
-        compatible = "MPC8349EMDS", "MPC834xMDS", "MPC83xxMDS"; 
-        linux,phandle = <0x100>; 
-        #size-cells = <0x1>; 
-        #address-cells = <0x1>; 
-
-        aliases { 
-                ethernet0 = &enet0; 
-                ethernet1 = &enet1; 
-                serial0 = &serial0; 
-                serial1 = &serial1; 
-                pci0 = &pci0; 
-                pci1 = &pci1; 
-        }; 
-         cpus { 
-                linux,phandle = <0x200>; 
-                #cpus = <0x1>; 
-                #address-cells = <1>; 
-                #size-cells = <0>; 
-
- PowerPC,8343EA@0 { 
-                        device_type = "cpu"; 
-                        reg = <0x0>; 
-                        d-cache-line-size = <20>; 
-                        i-cache-line-size = <20>; 
-                        d-cache-size = <8000>; 
-                        i-cache-size = <8000>; 
-                        timebase-frequency = <0>;       // from bootloader 
-                        bus-frequency = <0>;            // from bootloader 
-                        clock-frequency = <0>;          // from bootloader 
-                        32-bit; 
-                }; 
-        }; 
-
-
-        memory { 
-                device_type = "memory"; 
-                reg = <0x00000000 0x10000000>;  // 256MB at 0 
-        }; 
-
-        bcsr@e2400000 { 
-                device_type = "board-control"; 
-                reg = <0xe2400000 0x8000>; 
-        }; 
-        soc8343@e0000000 { 
-                bus-frequency = <0x1>; 
-                reg = <0xe0000000 0x200>; 
-                ranges = <0x0 0xe0000000 0x100000>; 
-                device_type = "soc"; 
-                #interrupt-cells = <0x2>; 
-                #size-cells = <0x1>; 
-                #address-cells = <0x1>; 
-
-                wdt@200 { 
-                        device_type = "watchdog"; 
-                        compatible = "mpc83xx_wdt"; 
-                        reg = <0x200 0x100>; 
-                }; 
-
-i2c@3000 { 
-                        #address-cells = <1>; 
-                        #size-cells = <0>; 
-                        cell-index = <0>; 
-                        compatible = "fsl-i2c"; 
-                        reg = <0x3000 0x100>; 
-                        interrupts = <14 0x8>; 
-                        interrupt-parent = <&ipic>; 
-                        dfsrr; 
-
-                        rtc@68 { 
-                                compatible = "dallas,ds1374"; 
-                                reg = <0x68>; 
-                        }; 
-                }; 
-
-                i2c@3100 { 
-                        #address-cells = <1>; 
-                        #size-cells = <0>; 
-                        cell-index = <1>; 
-                        compatible = "fsl-i2c"; 
-                        reg = <0x3100 0x100>; 
-                        interrupts = <15 0x8>; 
-                        interrupt-parent = <&ipic>; 
-                        dfsrr; 
-                }; 
-
-                spi@7000 { 
-                        cell-index = <0>; 
-                        compatible = "fsl,spi"; 
-                        reg = <0x7000 0x1000>; 
-                        interrupts = <16 0x8>; 
-                        interrupt-parent = <&ipic>; 
-                        mode = "cpu"; 
-                }; 
-
-dma@82a8 { 
-                        #address-cells = <1>; 
-                        #size-cells = <1>; 
-                        compatible = "fsl,mpc8349-dma", "fsl,elo-dma"; 
-                        reg = <0x82a8 4>; 
-                        ranges = <0 0x8100 0x1a8>; 
-                        interrupt-parent = <&ipic>; 
-                        interrupts = <71 8>; 
-                        cell-index = <0>; 
-                        dma-channel@0 { 
-                                compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel"; 
-                                reg = <0 0x80>; 
-                                interrupt-parent = <&ipic>; 
-                                interrupts = <71 8>; 
-                        }; 
-                        dma-channel@80 { 
-                                compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel"; 
-                                reg = <0x80 0x80>; 
-                                interrupt-parent = <&ipic>; 
-                                interrupts = <71 8>; 
-                        }; 
-                        dma-channel@100 { 
-                                compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel"; 
-                                reg = <0x100 0x80>; 
-                                interrupt-parent = <&ipic>; 
-                                interrupts = <71 8>; 
-                        }; 
-                        dma-channel@180 { 
-                                compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel"; 
-                                reg = <0x180 0x28>; 
-                                interrupt-parent = <&ipic>; 
-                                interrupts = <71 8>; 
-                        }; 
-                }; 
-/* phy type (ULPI or SERIAL) are only types supported for MPH */ 
-                /* port = 0 or 1 */ 
-                usb@22000 { 
-                        compatible = "fsl-usb2-mph"; 
-                        reg = <0x22000 0x1000>; 
-                        #address-cells = <1>; 
-                        #size-cells = <0>; 
-                        interrupt-parent = <&ipic>; 
-                        interrupts = <39 0x8>; 
-                        phy_type = "ulpi"; 
-                        port1; 
-                }; 
-                /* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */ 
-                usb@23000 { 
-                        compatible = "fsl-usb2-dr"; 
-                        reg = <0x23000 0x1000>; 
-                        #address-cells = <1>; 
-                        #size-cells = <0>; 
-                        interrupt-parent = <&ipic>; 
-                        interrupts = <38 0x8>; 
-                        dr_mode = "otg"; 
-                        phy_type = "ulpi"; 
-                }; 
-
-                mdio@24520 { 
-                        #address-cells = <1>; 
-                        #size-cells = <0>; 
-                        compatible = "fsl,gianfar-mdio"; 
-                        reg = <0x24520 0x20>; 
-
-                        phy0: ethernet-phy@0 { 
-                                interrupt-parent = <&ipic>; 
-                                interrupts = <17 0x8>; 
-                                reg = <0x0>; 
-                                device_type = "ethernet-phy"; 
-                        }; 
-                        phy1: ethernet-phy@1 { 
-                                interrupt-parent = <&ipic>; 
-                                interrupts = <18 0x8>; 
-                                reg = <0x1>; 
-                                device_type = "ethernet-phy"; 
-                        }; 
-enet0: ethernet@24000 { 
-                        cell-index = <0>; 
-                        device_type = "network"; 
-                        model = "TSEC"; 
-                        compatible = "gianfar"; 
-                        reg = <0x24000 0x1000>; 
-                        local-mac-address = [ 00 00 00 00 00 00 ]; 
-                        interrupts = <32 0x8 33 0x8 34 0x8>; 
-                        interrupt-parent = <&ipic>; 
-                        phy-handle = <&phy0>; 
-                        linux,network-index = <0>; 
-                }; 
-
-                enet1: ethernet@25000 { 
-                        cell-index = <1>; 
-                        device_type = "network"; 
-                        model = "TSEC"; 
-                        compatible = "gianfar"; 
-                        reg = <0x25000 0x1000>; 
-                        local-mac-address = [ 00 00 00 00 00 00 ]; 
-                        interrupts = <35 0x8 36 0x8 37 0x8>; 
-                        interrupt-parent = <&ipic>; 
-                        phy-handle = <&phy1>; 
-                        linux,network-index = <1>; 
-                }; 
-
-serial0: serial@4500 { 
-                        cell-index = <0>; 
-                        device_type = "serial"; 
-                        compatible = "ns16550"; 
-                        reg = <0x4500 0x100>; 
-                        clock-frequency = <0>; 
-                        interrupts = <9 0x8>; 
-                        interrupt-parent = <&ipic>; 
-                }; 
-
-                serial1: serial@4600 { 
-                        cell-index = <1>; 
-                        device_type = "serial"; 
-                        compatible = "ns16550"; 
-                        reg = <0x4600 0x100>; 
-                        clock-frequency = <0>; 
-                        interrupts = <10 0x8>; 
-                        interrupt-parent = <&ipic>; 
-                }; 
-
-                crypto@30000 { 
-                        compatible = "fsl,sec2.0"; 
-                        reg = <0x30000 0x10000>; 
-                        interrupts = <11 0x8>; 
-                        interrupt-parent = <&ipic>; 
-                        fsl,num-channels = <4>; 
-                        fsl,channel-fifo-len = <24>; 
-                        fsl,exec-units-mask = <0x7e>; 
-                        fsl,descriptor-types-mask = <0x01010ebf>; 
-                }; 
-
-Thanks, 
-agnel 
+--00504502cb1b201f20047a1b6636--
