@@ -1,20 +1,16 @@
-Return-Path: <tmarri@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.90])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 4817AB6F12
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Dec 2009 09:02:02 +1100 (EST)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 8421CB6F16
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2009 09:54:38 +1100 (EST)
+Date: Tue, 8 Dec 2009 01:54:35 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/fsl_pci: Fix P2P bridge handling for MPC83xx PCIe
+	controllers
+Message-ID: <20091207225435.GA18485@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CA7788.E656A8BB"
-Subject: patch status
-Date: Mon, 7 Dec 2009 14:01:58 -0800
-Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C0872CE8B@SDCEXCHANGE01.ad.amcc.com>
-From: "Tirumala Reddy Marri" <tmarri@amcc.com>
-To: <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, "B.J. Buchalter" <bj@mhlabs.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,111 +20,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+It appears that we wrongly calculate dev_base for type1 config cycles.
+The thing is: we shouldn't subtract hose->first_busno because PCI core
+sets PCI primary, secondary and subordinate bus numbers, and PCIe
+controller actually takes the registers into account. So we should use
+just bus->number.
 
-------_=_NextPart_001_01CA7788.E656A8BB
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Also, according to MPC8315 reference manual, primary bus number should
+always remain 0. We have PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS quirk
+in indirect_pci.c, but since 83xx is somewhat special, it doesn't use
+indirect_pci.c routines, so we have to implement the quirk specifically
+for 83xx PCIe controllers.
 
-Hi Ben,
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
- Did you get the chance to review the patch I sent it on Dec-1 2009
+This fixes the issue similar to http://www.pubbs.net/linuxppc/200908/22024/
+i.e. lspci reports:
 
-=20
+0000:00:00.0 Power PC: Freescale Semiconductor Inc Device 00b4 (rev 11)
+0002:02:00.0 PCI bridge: Freescale Semiconductor Inc Device 00b4 (rev 11)
+0002:03:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
+0002:04:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
+0002:04:01.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
+0002:04:02.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
+...
 
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/078436.html
+While it should be:
 
-=20
+0000:00:00.0 Power PC: Freescale Semiconductor Inc Device 00b4 (rev 11)
+0002:02:00.0 PCI bridge: Freescale Semiconductor Inc Device 00b4 (rev 11)
+0002:03:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
+0002:04:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G550 AGP (rev 01)
 
-Regards,
+ arch/powerpc/sysdev/fsl_pci.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-MArri
-
-
-------_=_NextPart_001_01CA7788.E656A8BB
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal>Hi Ben,<o:p></o:p></p>
-
-<p class=3DMsoNormal>&nbsp;Did you get the chance to review the patch I =
-sent it on
-Dec-1 2009<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal><a
-href=3D"http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/0784=
-36.html">http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/078=
-436.html</a><o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>Regards,<o:p></o:p></p>
-
-<p class=3DMsoNormal>MArri<o:p></o:p></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01CA7788.E656A8BB--
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index ae88b14..0c11aa6 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -450,8 +450,7 @@ static void __iomem *mpc83xx_pcie_remap_cfg(struct pci_bus *bus,
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	struct mpc83xx_pcie_priv *pcie = hose->dn->data;
+-	u8 bus_no = bus->number - hose->first_busno;
+-	u32 dev_base = bus_no << 24 | devfn << 16;
++	u32 dev_base = bus->number << 24 | devfn << 16;
+ 	int ret;
+ 
+ 	ret = mpc83xx_pcie_exclude_device(bus, devfn);
+@@ -501,12 +500,17 @@ static int mpc83xx_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
+ static int mpc83xx_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
+ 				     int offset, int len, u32 val)
+ {
++	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	void __iomem *cfg_addr;
+ 
+ 	cfg_addr = mpc83xx_pcie_remap_cfg(bus, devfn, offset);
+ 	if (!cfg_addr)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
++	/* PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS */
++	if (offset == PCI_PRIMARY_BUS && bus->number == hose->first_busno)
++		val &= 0xffffff00;
++
+ 	switch (len) {
+ 	case 1:
+ 		out_8(cfg_addr, val);
+-- 
+1.6.3.3
