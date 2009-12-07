@@ -1,32 +1,24 @@
-Return-Path: <R58472@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8F8CEB7088
+Return-Path: <duwe@lst.de>
+Received: from verein.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 17136B6F12
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  7 Dec 2009 19:40:57 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nB78eskw006655 for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 7 Dec 2009 01:40:54 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id nB78etcS007381
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 7 Dec 2009 02:40:55 -0600 (CST)
+	Mon,  7 Dec 2009 21:18:26 +1100 (EST)
+From: Torsten Duwe <duwe@lst.de>
+To: arun@linux.vnet.ibm.com
+Subject: Re: [v10 PATCH 2/9]: cpuidle: cleanup drivers/cpuidle/cpuidle.c
+Date: Mon, 7 Dec 2009 11:17:57 +0100
+References: <20091202095427.GA27251@linux.vnet.ibm.com>
+	<200912042320.01320.duwe@lst.de>
+	<20091206051928.GA18300@linux.vnet.ibm.com>
+In-Reply-To: <20091206051928.GA18300@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="UTF-8"
-Subject: RE: Ping does not work on my MPC8544 board, using linux2.6.23
-Date: Mon, 7 Dec 2009 16:40:53 +0800
-Message-ID: <3A45394FD742FA419B760BB8D398F9EDE66436@zch01exm26.fsl.freescale.net>
-In-Reply-To: <8148211e0912061953n59dfbe4fsea033494ad8b6fcc@mail.gmail.com>
-References: <8148211e0912061953n59dfbe4fsea033494ad8b6fcc@mail.gmail.com>
-From: "Li Yang-R58472" <r58472@freescale.com>
-To: =?UTF-8?B?5p6X5b+X5bmz?= <solyn123@gmail.com>,
-	<linuxppc-dev@lists.ozlabs.org>
+  charset="iso-8859-1"
+Message-Id: <200912071117.58163.duwe@lst.de>
+Cc: linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,7 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PlN1YmplY3Q6IFBpbmcgZG9lcyBub3Qgd29yayBvbiBteSBNUEM4NTQ0IGJvYXJkLCB1c2luZyBs
-aW51eDIuNi4yMw0KPg0KPndoeSBsaW51eC0yLjYuMzEgZG9lc25vdCBwcm92aWRlIGEgY29uZmln
-IGZpbGUgbGlrZSANCj5tcGM4NTQ0X2RzX2RlZmNvbmZpZz8NCg0KQmVjYXVzZSBpdCBpcyBjb3Zl
-cmVkIGJ5IGNvbW1vbiBkZWZjb25maWcgbXBjODV4eF9kZWZjb25maWcuDQoNCi0gTGVvDQo=
+On Sunday 06 December 2009, Arun R Bharadwaj wrote:
+
+> Peter objected to the idea of integrating this with the old pm_idle
+> because it has already caused a lot of problems on x86 and we wouldn't
+> want to be doing the same mistake on POWER. The discussion related to
+> that could be found here http://lkml.org/lkml/2009/8/26/233
+
+And BenH has sketched how it should be done on ppc, in that thread:
+http://lkml.org/lkml/2009/8/26/624 AFAIS this comment is still valid for v10.
+
+Not only I would like to understand what is the conceptual idea behind the 
+other changes. Nothing wrong with cleanups, but there's got to be a purpose 
+and benefits.
+
+	Torsten
