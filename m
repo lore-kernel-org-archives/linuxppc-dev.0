@@ -1,21 +1,17 @@
-Return-Path: <rob@landley.net>
-Received: from grelber.thyrsus.com
-	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
-	by ozlabs.org (Postfix) with ESMTP id EC2E8B7063
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Dec 2009 07:25:20 +1100 (EST)
-From: Rob Landley <rob@landley.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: ZILOG serial port broken in 2.6.32
-Date: Mon, 7 Dec 2009 14:25:15 -0600
-References: <200912060101.22515.rob@landley.net>
-	<1260148248.2076.1348.camel@pasglop>
-In-Reply-To: <1260148248.2076.1348.camel@pasglop>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 2D6BCB7093
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2009 08:57:43 +1100 (EST)
+Message-ID: <4B1D7A68.5000309@ru.mvista.com>
+Date: Tue, 08 Dec 2009 00:58:00 +0300
+From: Valentine <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-Message-Id: <200912071425.16624.rob@landley.net>
-Content-Type: Text/Plain;
-  charset="utf-8"
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: stop_this_cpu: remove the cpu from the online
+	map.
+References: <20091125214852.GA7912@ru.mvista.com>
+In-Reply-To: <20091125214852.GA7912@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sunday 06 December 2009 19:10:48 Benjamin Herrenschmidt wrote:
-> On Sun, 2009-12-06 at 01:01 -0600, Rob Landley wrote:
-> > Trying again with a few likely-looking cc's from the MAINTAINERS file:
-> >
-> > Summary:
-> >
-> > The PMACZILOG serial driver last worked in 2.6.28.  It was broken by
-> > commit f751928e0ddf54ea4fe5546f35e99efc5b5d9938 by Alan Cox making bits
-> > of the tty layer dynamically allocated.  The PMACZILOG driver wasn't
-> > properly converted, it works with interrupts disabled (for boot
-> > messages), but as soon as interrupts are enabled (PID 1 spawns) the next
-> > write to the serial console panics the kernel.
->
-> Ah looks like I missed that... I'll dig. Thanks for the report.
+Ben, is this OK?
+Other architectures do the same thing.
 
-Ooh, thanks!
+Thanks,
+Val.
 
-I've been digging into it myself this weekend, but I don't understand any of 
-this code, so it's going slowly...
-
-Rob
--- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+Valentine Barshak wrote:
+> Remove the CPU from the online map to prevent smp_call_function
+> from sending messages to a stopped CPU.
+> 
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> ---
+>  arch/powerpc/kernel/smp.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff -pruN linux-2.6.orig/arch/powerpc/kernel/smp.c linux-2.6/arch/powerpc/kernel/smp.c
+> --- linux-2.6.orig/arch/powerpc/kernel/smp.c	2009-11-26 00:22:15.000000000 +0300
+> +++ linux-2.6/arch/powerpc/kernel/smp.c	2009-11-26 00:26:48.000000000 +0300
+> @@ -218,6 +218,9 @@ void crash_send_ipi(void (*crash_ipi_cal
+>  
+>  static void stop_this_cpu(void *dummy)
+>  {
+> +	/* Remove this CPU */
+> +	set_cpu_online(smp_processor_id(), false);
+> +
+>  	local_irq_disable();
+>  	while (1)
+>  		;
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
