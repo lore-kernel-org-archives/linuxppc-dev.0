@@ -1,14 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Date: Mon, 7 Dec 2009 12:07:19 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: ajijuni@gmail.com
-Subject: Re: dts file for MPC8343EA
-Message-ID: <20091207180719.GB8914@loki.buserror.net>
-References: <7675847.584551260168085277.JavaMail.nabble@isper.nabble.com>
+Return-Path: <rob@landley.net>
+Received: from grelber.thyrsus.com
+	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
+	by ozlabs.org (Postfix) with ESMTP id EC2E8B7063
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  8 Dec 2009 07:25:20 +1100 (EST)
+From: Rob Landley <rob@landley.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: ZILOG serial port broken in 2.6.32
+Date: Mon, 7 Dec 2009 14:25:15 -0600
+References: <200912060101.22515.rob@landley.net>
+	<1260148248.2076.1348.camel@pasglop>
+In-Reply-To: <1260148248.2076.1348.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7675847.584551260168085277.JavaMail.nabble@isper.nabble.com>
-Cc: Linuxppc-dev@lists.ozlabs.org
+Message-Id: <200912071425.16624.rob@landley.net>
+Content-Type: Text/Plain;
+  charset="utf-8"
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,17 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Dec 06, 2009 at 10:41:25PM -0800, ajijuni@gmail.com wrote:
-> Hi 
-> 
-> We have an MPC8343EA based custom board. 
-> 
-> I am not able to get Linux up and running in this. No serial output to debug further. 
->  U-boot shows correct 'bdinfo' & 'clocks' output. 
-> inux hangs at machine_probe.
+On Sunday 06 December 2009 19:10:48 Benjamin Herrenschmidt wrote:
+> On Sun, 2009-12-06 at 01:01 -0600, Rob Landley wrote:
+> > Trying again with a few likely-looking cc's from the MAINTAINERS file:
+> >
+> > Summary:
+> >
+> > The PMACZILOG serial driver last worked in 2.6.28.  It was broken by
+> > commit f751928e0ddf54ea4fe5546f35e99efc5b5d9938 by Alan Cox making bits
+> > of the tty layer dynamically allocated.  The PMACZILOG driver wasn't
+> > properly converted, it works with interrupts disabled (for boot
+> > messages), but as soon as interrupts are enabled (PID 1 spawns) the next
+> > write to the serial console panics the kernel.
+>
+> Ah looks like I missed that... I'll dig. Thanks for the report.
 
-Check that the platform file you're intending to use matches the compatible
-field in the root node of the device tree -- and that said platform file is
-actually being built.
+Ooh, thanks!
 
--Scott
+I've been digging into it myself this weekend, but I don't understand any of 
+this code, so it's going slowly...
+
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
