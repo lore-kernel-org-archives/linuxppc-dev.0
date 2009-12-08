@@ -1,22 +1,17 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D923DB6F17
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2009 19:42:52 +1100 (EST)
-In-Reply-To: <4B14465A.3080804@freescale.com>
-References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<OF44DA1806.2D9916D9-ONC125767B.003BE84B-C125767B.003C3CD7@transmode.se>
-	<1259357845.2076.9.camel@pasglop> <4B14465A.3080804@freescale.com>
-Subject: Re: [PATCH 00/10 v6]  Fix 8xx MMU/TLB
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OF5D73AF7D.6635CE0F-ONC1257686.002F38E4-C1257686.002F81DE@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 8 Dec 2009 09:38:54 +0100
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 5EFE0B7BDB
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2009 19:54:03 +1100 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 1/5] powerpc: Move VMX and VSX asm code to vector.S
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Rex Feany <RFeany@mrv.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <20090603071751.AF006DDDF7@ozlabs.org>
+References: <20090603071751.AF006DDDF7@ozlabs.org>
+Date: Tue, 08 Dec 2009 09:53:58 +0100
+Message-Id: <20091208085358.6DC3219F3F@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 30/11/2009 23:25:30:
->
-> Benjamin Herrenschmidt wrote:
-> > On Fri, 2009-11-27 at 11:57 +0100, Joakim Tjernlund wrote:
-> >> Scott and Rex, I think we need you s-o-b to make it into the kernel proper.
-> >>
-> >> Marcelo and Vitaly, I noticed you guys are listed as 8xx maintainers.
-> >> Have you seen this? What do you think?
-> >
-> > I think Marcelo isn't much involved with 8xx anymore. I'd say if Scott
-> > and Vitaly are ok, then the patches are good. But I'll wait for at least
-> > Scott to give an Ack as he can at least test which I can't :-)
->
-> ACK
+Dear Benjamin Herrenschmidt,
 
-Can't see these patches in next yet, did they go somewhere else?
+In message <20090603071751.AF006DDDF7@ozlabs.org> you wrote:
+> Currently, load_up_altivec and give_up_altivec are duplicated
+> in 32-bit and 64-bit. This creates a common implementation that
+> is moved away from head_32.S, head_64.S and misc_64.S and into
+> vector.S, using the same macros we already use for our common
+> implementation of load_up_fpu.
+> 
+> I also moved the VSX code over to vector.S though in that case
+> I didn't make it build on 32-bit (yet).
+
+It seems this commit broke ALTIVEC-enablked 32 bit systems. For
+example, when trying to build 86xx/mpc8641_hpcn_defconfig I get:
+
+arch/powerpc/kernel/vector.S: Assembler messages:
+arch/powerpc/kernel/vector.S:61: Error: Unrecognized opcode: `cmpdi'
+make[1]: *** [arch/powerpc/kernel/vector.o] Error 1
+
+Segher suggests to s/cmpdi/cmplwi/ which indeed seems to work (atleast
+it allows me to build the kernel image).
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Wherever you go...There you are.                    - Buckaroo Banzai
