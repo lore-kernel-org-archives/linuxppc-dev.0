@@ -1,30 +1,24 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 00676B6F0A
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 06:49:03 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nB8Jk738010393
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Dec 2009 12:46:07 -0700
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	nB8Jmrb1226942
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Dec 2009 12:48:55 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nB8JmmE4024522
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Dec 2009 12:48:49 -0700
-Message-ID: <4B1EAD9C.8020405@austin.ibm.com>
-Date: Tue, 08 Dec 2009 13:48:44 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] pseries: Correct pseries/dlpar.c build break without
-	CONFIG_SMP
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Gautham R Shenoy <ego@in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7F1E6B6EFE
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 07:01:51 +1100 (EST)
+Subject: Re: [PATCH 00/10 v6]  Fix 8xx MMU/TLB
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+In-Reply-To: <OF5D73AF7D.6635CE0F-ONC1257686.002F38E4-C1257686.002F81DE@transmode.se>
+References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<OF44DA1806.2D9916D9-ONC125767B.003BE84B-C125767B.003C3CD7@transmode.se>
+	<1259357845.2076.9.camel@pasglop> <4B14465A.3080804@freescale.com>
+	<OF5D73AF7D.6635CE0F-ONC1257686.002F38E4-C1257686.002F81DE@transmode.se>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Dec 2009 07:01:42 +1100
+Message-ID: <1260302502.16132.3.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,248 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The recent patch to add cpu offline/online as part of the DLPAR
-process for pseries causes a build break if CONFIG_SMP is not
-defined.  Original patch here;
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-November/078299.html
+On Tue, 2009-12-08 at 09:38 +0100, Joakim Tjernlund wrote:
+> Scott Wood <scottwood@freescale.com> wrote on 30/11/2009 23:25:30:
+> >
+> > Benjamin Herrenschmidt wrote:
+> > > On Fri, 2009-11-27 at 11:57 +0100, Joakim Tjernlund wrote:
+> > >> Scott and Rex, I think we need you s-o-b to make it into the kernel proper.
+> > >>
+> > >> Marcelo and Vitaly, I noticed you guys are listed as 8xx maintainers.
+> > >> Have you seen this? What do you think?
+> > >
+> > > I think Marcelo isn't much involved with 8xx anymore. I'd say if Scott
+> > > and Vitaly are ok, then the patches are good. But I'll wait for at least
+> > > Scott to give an Ack as he can at least test which I can't :-)
+> >
+> > ACK
+> 
+> Can't see these patches in next yet, did they go somewhere else?
 
-This corrects the build break by moving the online_node_cpus
-and offline_node_cpus under the #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-portions of dlpar.c.
+No, but Scott has been to lazy to write proper Acked-by: lines and I've
+been too lazy to do it for him so they'll go in the next batch, probably
+today :-)
 
-This patch also slightly modifies the online_node_cpus and offline_node_cpus
-routines to prepend dlpar_ to the them and make them static.  These two
-routine are only used in the dlpar add/remove of cpus and these changes
-should help clarify that.
-
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
- arch/powerpc/platforms/pseries/dlpar.c |  188 ++++++++++++++++-----------------
- 1 file changed, 94 insertions(+), 94 deletions(-)
-
-Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
-===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-12-08 12:47:44.000000000 -0600
-+++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-12-08 13:14:24.000000000 -0600
-@@ -288,98 +288,6 @@
- 	return 0;
- }
- 
--int online_node_cpus(struct device_node *dn)
--{
--	int rc = 0;
--	unsigned int cpu;
--	int len, nthreads, i;
--	const u32 *intserv;
--
--	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
--	if (!intserv)
--		return -EINVAL;
--
--	nthreads = len / sizeof(u32);
--
--	cpu_maps_update_begin();
--	for (i = 0; i < nthreads; i++) {
--		for_each_present_cpu(cpu) {
--			if (get_hard_smp_processor_id(cpu) != intserv[i])
--				continue;
--			BUG_ON(get_cpu_current_state(cpu)
--					!= CPU_STATE_OFFLINE);
--			cpu_maps_update_done();
--			rc = cpu_up(cpu);
--			if (rc)
--				goto out;
--			cpu_maps_update_begin();
--
--			break;
--		}
--		if (cpu == num_possible_cpus())
--			printk(KERN_WARNING "Could not find cpu to online "
--			       "with physical id 0x%x\n", intserv[i]);
--	}
--	cpu_maps_update_done();
--
--out:
--	return rc;
--
--}
--
--int offline_node_cpus(struct device_node *dn)
--{
--	int rc = 0;
--	unsigned int cpu;
--	int len, nthreads, i;
--	const u32 *intserv;
--
--	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
--	if (!intserv)
--		return -EINVAL;
--
--	nthreads = len / sizeof(u32);
--
--	cpu_maps_update_begin();
--	for (i = 0; i < nthreads; i++) {
--		for_each_present_cpu(cpu) {
--			if (get_hard_smp_processor_id(cpu) != intserv[i])
--				continue;
--
--			if (get_cpu_current_state(cpu) == CPU_STATE_OFFLINE)
--				break;
--
--			if (get_cpu_current_state(cpu) == CPU_STATE_ONLINE) {
--				cpu_maps_update_done();
--				rc = cpu_down(cpu);
--				if (rc)
--					goto out;
--				cpu_maps_update_begin();
--				break;
--
--			}
--
--			/*
--			 * The cpu is in CPU_STATE_INACTIVE.
--			 * Upgrade it's state to CPU_STATE_OFFLINE.
--			 */
--			set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
--			BUG_ON(plpar_hcall_norets(H_PROD, intserv[i])
--								!= H_SUCCESS);
--			__cpu_die(cpu);
--			break;
--		}
--		if (cpu == num_possible_cpus())
--			printk(KERN_WARNING "Could not find cpu to offline "
--			       "with physical id 0x%x\n", intserv[i]);
--	}
--	cpu_maps_update_done();
--
--out:
--	return rc;
--
--}
--
- #define DR_ENTITY_SENSE		9003
- #define DR_ENTITY_PRESENT	1
- #define DR_ENTITY_UNUSABLE	2
-@@ -448,6 +356,45 @@
- 	mutex_unlock(&pseries_cpu_hotplug_mutex);
- }
- 
-+static int dlpar_online_cpu(struct device_node *dn)
-+{
-+	int rc = 0;
-+	unsigned int cpu;
-+	int len, nthreads, i;
-+	const u32 *intserv;
-+
-+	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
-+	if (!intserv)
-+		return -EINVAL;
-+
-+	nthreads = len / sizeof(u32);
-+
-+	cpu_maps_update_begin();
-+	for (i = 0; i < nthreads; i++) {
-+		for_each_present_cpu(cpu) {
-+			if (get_hard_smp_processor_id(cpu) != intserv[i])
-+				continue;
-+			BUG_ON(get_cpu_current_state(cpu)
-+					!= CPU_STATE_OFFLINE);
-+			cpu_maps_update_done();
-+			rc = cpu_up(cpu);
-+			if (rc)
-+				goto out;
-+			cpu_maps_update_begin();
-+
-+			break;
-+		}
-+		if (cpu == num_possible_cpus())
-+			printk(KERN_WARNING "Could not find cpu to online "
-+			       "with physical id 0x%x\n", intserv[i]);
-+	}
-+	cpu_maps_update_done();
-+
-+out:
-+	return rc;
-+
-+}
-+
- static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
- {
- 	struct device_node *dn;
-@@ -497,13 +444,66 @@
- 		dlpar_free_cc_nodes(dn);
- 	}
- 
--	rc = online_node_cpus(dn);
-+	rc = dlpar_online_cpu(dn);
- out:
- 	cpu_hotplug_driver_unlock();
- 
- 	return rc ? rc : count;
- }
- 
-+static int dlpar_offline_cpu(struct device_node *dn)
-+{
-+	int rc = 0;
-+	unsigned int cpu;
-+	int len, nthreads, i;
-+	const u32 *intserv;
-+
-+	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
-+	if (!intserv)
-+		return -EINVAL;
-+
-+	nthreads = len / sizeof(u32);
-+
-+	cpu_maps_update_begin();
-+	for (i = 0; i < nthreads; i++) {
-+		for_each_present_cpu(cpu) {
-+			if (get_hard_smp_processor_id(cpu) != intserv[i])
-+				continue;
-+
-+			if (get_cpu_current_state(cpu) == CPU_STATE_OFFLINE)
-+				break;
-+
-+			if (get_cpu_current_state(cpu) == CPU_STATE_ONLINE) {
-+				cpu_maps_update_done();
-+				rc = cpu_down(cpu);
-+				if (rc)
-+					goto out;
-+				cpu_maps_update_begin();
-+				break;
-+
-+			}
-+
-+			/*
-+			 * The cpu is in CPU_STATE_INACTIVE.
-+			 * Upgrade it's state to CPU_STATE_OFFLINE.
-+			 */
-+			set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
-+			BUG_ON(plpar_hcall_norets(H_PROD, intserv[i])
-+								!= H_SUCCESS);
-+			__cpu_die(cpu);
-+			break;
-+		}
-+		if (cpu == num_possible_cpus())
-+			printk(KERN_WARNING "Could not find cpu to offline "
-+			       "with physical id 0x%x\n", intserv[i]);
-+	}
-+	cpu_maps_update_done();
-+
-+out:
-+	return rc;
-+
-+}
-+
- static ssize_t dlpar_cpu_release(const char *buf, size_t count)
- {
- 	struct device_node *dn;
-@@ -521,7 +521,7 @@
- 	}
- 
- 	cpu_hotplug_driver_lock();
--	rc = offline_node_cpus(dn);
-+	rc = dlpar_offline_cpu(dn);
- 	if (rc) {
- 		of_node_put(dn);
- 		rc = -EINVAL;
+Cheers,
+Ben.
