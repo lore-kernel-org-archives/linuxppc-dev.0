@@ -2,17 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B0DB1B7B65
+	by ozlabs.org (Postfix) with ESMTPS id 38FC8B6F06
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Dec 2009 17:09:21 +1100 (EST)
-Subject: Build failure with fsl_msi.c
+	Tue,  8 Dec 2009 17:17:50 +1100 (EST)
+Subject: Re: [PATCH v6 0/2] pseries: Add cede support for cpu-offline
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <20091126195121.29159.66098.stgit@drishya>
+References: <20091126195121.29159.66098.stgit@drishya>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 17:09:14 +1100
-Message-ID: <1260252554.16132.1.camel@pasglop>
+Date: Tue, 08 Dec 2009 17:14:53 +1100
+Message-ID: <1260252893.16132.2.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Gautham R Shenoy <ego@in.ibm.com>,
+	linux-kernel@vger.kernel.org, Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,18 +27,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ppc64e_defconfig gives me that:
-
-No big deal since nothing currently uses Book3E HW with fsl_msi but
-probably something you should fix.
-
-cc1: warnings being treated as errors
-/home/benh/linux-powerpc-test/arch/powerpc/sysdev/fsl_msi.c: In function ‘fsl_msi_cascade’:
-/home/benh/linux-powerpc-test/arch/powerpc/sysdev/fsl_msi.c:189: error: cast from pointer to integer of different size
-  LDS     arch/powerpc/kernel/vdso32/vdso32.lds
-/home/benh/linux-powerpc-test/arch/powerpc/sysdev/fsl_msi.c: In function ‘fsl_of_msi_probe’:
-/home/benh/linux-powerpc-test/arch/powerpc/sysdev/fsl_msi.c:307: error: cast to pointer from integer of different size
-make[2]: *** [arch/powerpc/sysdev/fsl_msi.o] Error 1
+Some of these patches (Gautham or Nathan, I haven't bisected) break 
+pseries build without CONFIG_SMP. I'll apply them anyways for now
+to next and push them out today since nobody ever builds pseries without
+CONFIG_SMP but I would appreciate if you could send a fix regardless.
 
 Cheers,
 Ben.
