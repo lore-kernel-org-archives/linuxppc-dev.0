@@ -1,16 +1,32 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 8421CB6F16
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2009 09:54:38 +1100 (EST)
-Date: Tue, 8 Dec 2009 01:54:35 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/fsl_pci: Fix P2P bridge handling for MPC83xx PCIe
-	controllers
-Message-ID: <20091207225435.GA18485@oksana.dev.rtsoft.ru>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 70AF2B7B66
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  8 Dec 2009 11:53:10 +1100 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e34.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nB80ld2v011164
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2009 17:47:39 -0700
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nB80r1WF168400
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2009 17:53:01 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id nB80r0RR019634
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Dec 2009 17:53:00 -0700
+Date: Mon, 7 Dec 2009 19:52:57 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Tirumala Reddy Marri <tmarri@amcc.com>
+Subject: Re: patch status
+Message-ID: <20091208005257.GL2937@zod.rchland.ibm.com>
+References: <AC5E1C3367E37D44970B81A6ADD1DA2C0872CE8B@SDCEXCHANGE01.ad.amcc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, "B.J. Buchalter" <bj@mhlabs.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C0872CE8B@SDCEXCHANGE01.ad.amcc.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,73 +36,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It appears that we wrongly calculate dev_base for type1 config cycles.
-The thing is: we shouldn't subtract hose->first_busno because PCI core
-sets PCI primary, secondary and subordinate bus numbers, and PCIe
-controller actually takes the registers into account. So we should use
-just bus->number.
+On Mon, Dec 07, 2009 at 02:01:58PM -0800, Tirumala Reddy Marri wrote:
+>Hi Ben,
+>
+> Did you get the chance to review the patch I sent it on Dec-1 2009
+>
+> 
+>
+>http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/078436.html
 
-Also, according to MPC8315 reference manual, primary bus number should
-always remain 0. We have PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS quirk
-in indirect_pci.c, but since 83xx is somewhat special, it doesn't use
-indirect_pci.c routines, so we have to implement the quirk specifically
-for 83xx PCIe controllers.
+Ben has to review lots of patches.  Please be patient.  Also, your patch is
+tracked via patchwork here:
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+http://patchwork.ozlabs.org/patch/39865/
 
-This fixes the issue similar to http://www.pubbs.net/linuxppc/200908/22024/
-i.e. lspci reports:
+so you can see the state as it progresses.
 
-0000:00:00.0 Power PC: Freescale Semiconductor Inc Device 00b4 (rev 11)
-0002:02:00.0 PCI bridge: Freescale Semiconductor Inc Device 00b4 (rev 11)
-0002:03:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
-0002:04:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
-0002:04:01.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
-0002:04:02.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
-...
+Further, it would have been helpful to CC the maintainer of the 4xx sub-arch
+(me) since it impacts that platform and you could have gotten some review more
+quickly.  I didn't notice it until this afternoon.
 
-While it should be:
+Lastly, your patch has lots of magical values in it.  While I have no doubt
+they are correct, I can't find any documentation for 460SX on the AMCC website
+aside from some small product briefs.  Perhaps I've overlooked the CPU manual,
+but since I don't have such a board or the manual for it, it would be nice to
+know what kind of testing has been done with this patch.  A simple statement
+such as "tested on kernel <version> with a <network, raid, whatever> pci-e
+card successfully" would go a long way.
 
-0000:00:00.0 Power PC: Freescale Semiconductor Inc Device 00b4 (rev 11)
-0002:02:00.0 PCI bridge: Freescale Semiconductor Inc Device 00b4 (rev 11)
-0002:03:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
-0002:04:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G550 AGP (rev 01)
+This is not a rant or complaint about the code.  Just a reminder that the
+community doesn't always move at the pace we would all like :).  I'll try and
+look over the patch more carefully tomorrow.
 
- arch/powerpc/sysdev/fsl_pci.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index ae88b14..0c11aa6 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -450,8 +450,7 @@ static void __iomem *mpc83xx_pcie_remap_cfg(struct pci_bus *bus,
- {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
- 	struct mpc83xx_pcie_priv *pcie = hose->dn->data;
--	u8 bus_no = bus->number - hose->first_busno;
--	u32 dev_base = bus_no << 24 | devfn << 16;
-+	u32 dev_base = bus->number << 24 | devfn << 16;
- 	int ret;
- 
- 	ret = mpc83xx_pcie_exclude_device(bus, devfn);
-@@ -501,12 +500,17 @@ static int mpc83xx_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
- static int mpc83xx_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
- 				     int offset, int len, u32 val)
- {
-+	struct pci_controller *hose = pci_bus_to_host(bus);
- 	void __iomem *cfg_addr;
- 
- 	cfg_addr = mpc83xx_pcie_remap_cfg(bus, devfn, offset);
- 	if (!cfg_addr)
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
-+	/* PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS */
-+	if (offset == PCI_PRIMARY_BUS && bus->number == hose->first_busno)
-+		val &= 0xffffff00;
-+
- 	switch (len) {
- 	case 1:
- 		out_8(cfg_addr, val);
--- 
-1.6.3.3
+josh
