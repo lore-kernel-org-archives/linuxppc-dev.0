@@ -1,20 +1,19 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 14EB8B7B66
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2009 11:56:40 +1100 (EST)
-Date: Mon, 7 Dec 2009 19:56:37 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: BUG: Bad page map in process
-Message-ID: <20091207195637.7e533845@lappy.seanm.ca>
-In-Reply-To: <1259925535.2076.1275.camel@pasglop>
-References: <20091203141853.3eafba47@lappy.seanm.ca>
-	<1259917707.2076.1271.camel@pasglop>
-	<20091204110055.GP14279@hansolo.jdub.homelinux.org>
-	<1259925535.2076.1275.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/4] powerpc: Reduce differences between pseries and
+	ppc64 defconfigs
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20091207034714.GC3421@kryten>
+References: <20091207034509.GA3421@kryten> <20091207034555.GB3421@kryten>
+	<20091207034714.GC3421@kryten>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-iwfOONgY8KbtCYDknTo7"
+Date: Tue, 08 Dec 2009 12:27:21 +1100
+Message-ID: <1260235641.4668.1.camel@concordia>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,18 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 04 Dec 2009 22:18:55 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> Ok, I'll have a look next week. In the meantime, Sean, can you give
-> me a hint of what you do to trigger it ? Boot time ? specific
-> workload ?
+--=-iwfOONgY8KbtCYDknTo7
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I have not been able to reproduce the problem :( I haven't had a lot of
-time to run tests... but every once in a while I have been firing off
-test runs.
+On Mon, 2009-12-07 at 14:47 +1100, Anton Blanchard wrote:
+> The pseries and ppc64 defconfigs have drifted apart over the years. Reduc=
+e
+> some of the differences while still keeping the idea that the ppc64 defco=
+nfig
+> is cross platform but enables fewer features than pseries, eg:
+>=20
+> - NR_CPUS is lower
+> - No NUMA support
 
-Maybe writing this email will get it to crash ;)
+Hmm, most of the modern 64 bit platforms are NUMA aren't they? Just a
+thought.
 
-Cheers,
-   Sean
+cheers
+
+
+--=-iwfOONgY8KbtCYDknTo7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAksdq3UACgkQdSjSd0sB4dLL/ACfdifOCb3woZDn6Aws4szk+nU6
+FLIAoLV6ogDPKrTCCjzoIgGsgfqKH45v
+=vbZQ
+-----END PGP SIGNATURE-----
+
+--=-iwfOONgY8KbtCYDknTo7--
