@@ -1,35 +1,22 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 78EC6B6F0F
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2009 13:29:00 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id nB8DSxe8023688
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Dec 2009 00:28:59 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nB82PCRE1527836
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Dec 2009 13:25:12 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nB82SwZY026674
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Dec 2009 13:28:59 +1100
-Date: Tue, 8 Dec 2009 13:28:55 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: using different format for hugetlbfs
-Message-ID: <20091208022855.GC15612@yookeroo>
-References: <230774E3-2D94-44DA-85AC-151485996789@kernel.crashing.org>
-	<1259917136.2076.1264.camel@pasglop>
-	<90D0766D-30A2-4ABE-9707-C7F64A697BFE@kernel.crashing.org>
-	<1259961942.2076.1277.camel@pasglop>
-	<5034AAE3-CCF9-446D-AC4B-B3F59C81D507@kernel.crashing.org>
-	<1260147877.2076.1346.camel@pasglop>
+Return-Path: <solyn123@gmail.com>
+Received: from mail-pw0-f43.google.com (mail-pw0-f43.google.com
+	[209.85.160.43]) by ozlabs.org (Postfix) with ESMTP id E04C3B7BBF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  8 Dec 2009 13:25:35 +1100 (EST)
+Received: by pwi13 with SMTP id 13so282866pwi.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 07 Dec 2009 18:25:33 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1260147877.2076.1346.camel@pasglop>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20091207180511.GA8914@loki.buserror.net>
+References: <8148211e0912061953n59dfbe4fsea033494ad8b6fcc@mail.gmail.com>
+	<20091207180511.GA8914@loki.buserror.net>
+Date: Tue, 8 Dec 2009 10:25:32 +0800
+Message-ID: <8148211e0912071825t22ffa590va2fe22272f6aaf62@mail.gmail.com>
+Subject: Re: Ping does not work on my MPC8544 board, using linux2.6.23
+From: =?GB2312?B?wdbWvsa9?= <solyn123@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: multipart/alternative; boundary=001636e0a758e2fcee047a2e49d1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,33 +26,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 07, 2009 at 12:04:37PM +1100, Benjamin Herrenschmidt wrote:
-> 
-> > 
-> > Even than, does that preclude the format I suggested?  I'm assuming  
-> > that pgd_t/pud_t/pmd_t are always a double word so the low order 4- 
-> > bits should be 0 (on 64-bit),
+--001636e0a758e2fcee047a2e49d1
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: quoted-printable
 
-Double word alignment only gives us 3 low bits.
+2009/12/8 Scott Wood <scottwood@freescale.com>
 
-> so using the lsb as the flag between  
-> > hugetlb and normal pointer should still work.
-> 
-> Might do, depends if David has enough bits ...  David ?
+> On Mon, Dec 07, 2009 at 11:53:22AM +0800, =C1=D6=D6=BE=C6=BD wrote:
+> > Does dtc1.2.0 can compile dts files under linux2.6.23?
+>
+> Probably not -- 2.6.23 is very old, and I think newer dtcs only support t=
+he
+> newer dts syntax.
+>
+> > Another question is that I found linux2.6.31 does not support
+> > board mpc8544ds,
+>
+> It should.  What problems do you see?
 
-Well, the flag can go at the bottom, but that will mean grabbing more
-bits at the bottom.  At the moment to cover all the page table sizes
-that are wanted on the various setups we have, I need 5 bits, this
-would push it to 6.  At present, I just force up the minimum alignment
-of any page directory (even if it's natural alignment is smaller) so
-as to make sure I have those bits.  That's pretty easy to adjust, but
-pushing it up too high will start wasting memory, of course.
+=3D> bootm 0x1000000 0x1800000 0x800000
+## Booting kernel from Legacy Image at 01000000 ...
+   Image Name:   Linux-2.6.31
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    2185099 Bytes =3D  2.1 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 01800000 ...
+   Image Name:   Simple Embedded Linux Framework
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    1859256 Bytes =3D  1.8 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 00800000
+   Booting using the fdt blob at 0x800000
+   Uncompressing Kernel Image ... OK
+   Loading Ramdisk to 1fca7000, end 1fe6ceb8 ... OK
+booting kernel using flat tree
+It then stops and never print any more,  I use mpc85xx_defconfig, I select
+mpc85xxds in the menuconfig and deselect other options like mpc8540ads etc.
 
-If we move to a variable sized encoding, as Ben and I have discussed
-on a couple of occasions, I think we could do this though.
+>
+> > And I never boot linux-2.6.31 on my board, why linux-2.6.31 doesnot
+> > provide a config file like mpc8544_ds_defconfig?
+>
+> Does mpc85xx_defconfig not work?
+>
+Yes mcp85xx_defconfig does not work, I can see mpc8540ads in the menuconfig=
+,
+but no mpc8544ds. And when I down load the generated uImage, It does not
+work.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+> -Scott
+>
+
+--001636e0a758e2fcee047a2e49d1
+Content-Type: text/html; charset=GB2312
+Content-Transfer-Encoding: quoted-printable
+
+<br>
+<div class=3D"gmail_quote">2009/12/8 Scott Wood <span dir=3D"ltr">&lt;<a hr=
+ef=3D"mailto:scottwood@freescale.com">scottwood@freescale.com</a>&gt;</span=
+><br>
+<blockquote style=3D"BORDER-LEFT: #ccc 1px solid; MARGIN: 0px 0px 0px 0.8ex=
+; PADDING-LEFT: 1ex" class=3D"gmail_quote">
+<div class=3D"im">On Mon, Dec 07, 2009 at 11:53:22AM +0800, =C1=D6=D6=BE=C6=
+=BD wrote:<br>&gt; Does dtc1.2.0 can compile dts files under linux2.6.23?<b=
+r><br></div>Probably not -- 2.6.23 is very old, and I think newer dtcs only=
+ support the<br>
+newer dts syntax.<br>
+<div class=3D"im"><br>&gt; Another question is that I found linux2.6.31 doe=
+s not support<br>&gt; board mpc8544ds,<br><br></div>It should. &nbsp;What p=
+roblems do you see?</blockquote>
+<div>=3D&gt; bootm 0x1000000 0x1800000 0x800000<br>## Booting kernel from L=
+egacy Image at 01000000 ...<br>&nbsp;&nbsp; Image Name:&nbsp;&nbsp; Linux-2=
+.6.31<br>&nbsp;&nbsp; Image Type:&nbsp;&nbsp; PowerPC Linux Kernel Image (g=
+zip compressed)<br>&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; 2185099 Bytes =
+=3D&nbsp; 2.1 MB<br>
+&nbsp;&nbsp; Load Address: 00000000<br>&nbsp;&nbsp; Entry Point:&nbsp; 0000=
+0000<br>&nbsp;&nbsp; Verifying Checksum ... OK<br>## Loading init Ramdisk f=
+rom Legacy Image at 01800000 ...<br>&nbsp;&nbsp; Image Name:&nbsp;&nbsp; Si=
+mple Embedded Linux Framework<br>&nbsp;&nbsp; Image Type:&nbsp;&nbsp; Power=
+PC Linux RAMDisk Image (gzip compressed)<br>
+&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; 1859256 Bytes =3D&nbsp; 1.8 MB<br=
+>&nbsp;&nbsp; Load Address: 00000000<br>&nbsp;&nbsp; Entry Point:&nbsp; 000=
+00000<br>&nbsp;&nbsp; Verifying Checksum ... OK<br>## Flattened Device Tree=
+ blob at 00800000<br>&nbsp;&nbsp; Booting using the fdt blob at 0x800000<br=
+>
+&nbsp;&nbsp; Uncompressing Kernel Image ... OK<br>&nbsp;&nbsp; Loading Ramd=
+isk to 1fca7000, end 1fe6ceb8 ... OK<br>booting kernel using flat tree</div=
+>
+<div>It then stops and never print any more,&nbsp; I use mpc85xx_defconfig,=
+ I select mpc85xxds in the menuconfig and deselect other options like mpc85=
+40ads etc.<br></div>
+<blockquote style=3D"BORDER-LEFT: #ccc 1px solid; MARGIN: 0px 0px 0px 0.8ex=
+; PADDING-LEFT: 1ex" class=3D"gmail_quote">
+<div class=3D"im"><br>&gt; And I never boot linux-2.6.31 on my board, why l=
+inux-2.6.31 doesnot<br>&gt; provide a config file like mpc8544_ds_defconfig=
+?<br><br></div>Does mpc85xx_defconfig not work?<br></blockquote>
+<div>Yes mcp85xx_defconfig does not work, I can see mpc8540ads in the menuc=
+onfig, but no mpc8544ds. And when I down load the generated uImage, It does=
+ not work.</div>
+<div>&nbsp;</div>
+<blockquote style=3D"BORDER-LEFT: #ccc 1px solid; MARGIN: 0px 0px 0px 0.8ex=
+; PADDING-LEFT: 1ex" class=3D"gmail_quote"><font color=3D"#888888">-Scott<b=
+r></font></blockquote></div><br>
+
+--001636e0a758e2fcee047a2e49d1--
