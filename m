@@ -1,18 +1,16 @@
-Return-Path: <mware@elphinstone.net>
-Received: from ipmail02.adl6.internode.on.net (ipmail02.adl6.internode.on.net
-	[203.16.214.140]) by ozlabs.org (Postfix) with ESMTP id F2D13B6F15
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 10:41:07 +1100 (EST)
-Message-ID: <4B1EE410.1070404@elphinstone.net>
-Date: Wed, 09 Dec 2009 10:41:04 +1100
-From: Mark Ware <mware@elphinstone.net>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] cpm2_pic: Allow correct flow_types for port C interrupts
-References: <4B0C9342.1000807@elphinstone.net>
-	<4B1ED995.4060802@elphinstone.net> <4B1EDC97.6010301@freescale.com>
-In-Reply-To: <4B1EDC97.6010301@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E39E5B6F09
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 10:49:05 +1100 (EST)
+Date: Wed, 9 Dec 2009 10:49:04 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+	<paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+Subject: linux-next: manual merge of the powerpc tree with Linus' tree
+Message-Id: <20091209104904.427eca89.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,34 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Mark Ware wrote:
->> Mark Ware wrote:
->>> CPM2 Port C interrupts can be either falling edge, or either edge.
->>> Other external interrupts are either falling edge or active low.
-> [snip]
->>> +    /* Port C interrupts are either IRQ_TYPE_EDGE_FALLING or
->>> +     * IRQ_TYPE_EDGE_BOTH (default).  All others are
->>> IRQ_TYPE_EDGE_FALLING
->>> +     * or IRQ_TYPE_LEVEL_LOW (default)
->>> +     */
->>> +    if (src >= CPM2_IRQ_PORTC15 && src <= CPM2_IRQ_PORTC0) {
->>> +        if (flow_type == IRQ_TYPE_NONE)
->>> +            flow_type = IRQ_TYPE_EDGE_BOTH;
->>> +
->>> +        if (flow_type & ~IRQ_TYPE_EDGE_BOTH) {
->>> +            printk(KERN_ERR "CPM2 PIC: sense type 0x%x not
->>> supported\n",
->>> +                flow_type);
->>> +            return -EINVAL;
->>> +        }
-> 
-> The above code looks like it would allow rising-only, which according to
-> the changelog isn't supported.
-> 
-> -Scott
-> 
+Hi all,
 
-Thanks Scott, you're right.  I'll update and send v2 shortly.
+Today's linux-next merge of the powerpc tree got a conflict in
+include/linux/kvm.h between commit
+3cfc3092f40bc37c57ba556cfd8de4218f2135ab ("KVM: x86: Add
+KVM_GET/SET_VCPU_EVENTS") (and others) from Linus' tree and commit
+e15a113700324f7fdcee95589875daed2b98a2fe ("powerpc/kvm: Sync guest
+visible MMU state") from the powerpc tree.
 
-- Mark
+Just overlapping additions.  I fixed it up (see below) and can carry the
+fix for a while.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc include/linux/kvm.h
+index 2d241da,caf6173..0000000
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@@ -487,15 -436,9 +487,18 @@@ struct kvm_ioeventfd 
+  #endif
+  #define KVM_CAP_IOEVENTFD 36
+  #define KVM_CAP_SET_IDENTITY_MAP_ADDR 37
+ +#ifdef __KVM_HAVE_XEN_HVM
+ +#define KVM_CAP_XEN_HVM 38
+ +#endif
+ +#define KVM_CAP_ADJUST_CLOCK 39
+ +#define KVM_CAP_INTERNAL_ERROR_DATA 40
+ +#ifdef __KVM_HAVE_VCPU_EVENTS
+ +#define KVM_CAP_VCPU_EVENTS 41
+ +#endif
+ +#define KVM_CAP_S390_PSW 42
++ /* KVM upstream has more features, but we synched this number.
++    Linux, please remove this comment on rebase. */
++ #define KVM_CAP_PPC_SEGSTATE 43
+  
+  #ifdef KVM_CAP_IRQ_ROUTING
+  
