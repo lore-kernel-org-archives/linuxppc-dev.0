@@ -2,19 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3373EB6EE9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Dec 2009 15:42:51 +1100 (EST)
-Subject: Re: + iseries-convert-to-proc_fops.patch added to -mm tree
+	by ozlabs.org (Postfix) with ESMTPS id 5F9A7B7B69
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2009 15:59:20 +1100 (EST)
+Subject: Re: [PATCH] MAINTAINERS: Add PowerPC patterns
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: akpm@linux-foundation.org
-In-Reply-To: <200912012205.nB1M5Z3n025210@imap1.linux-foundation.org>
-References: <200912012205.nB1M5Z3n025210@imap1.linux-foundation.org>
+To: Joe Perches <joe@perches.com>
+In-Reply-To: <1259947019.22783.116.camel@Joe-Laptop.home>
+References: <20091202091951.5ec6bb83@hyperion.delvare>
+	<1259894454.2076.1246.camel@pasglop>
+	<20091204103434.0a754925@hyperion.delvare>
+	<1259920775.2076.1273.camel@pasglop>
+	<1259947019.22783.116.camel@Joe-Laptop.home>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 15:42:19 +1100
-Message-ID: <1260247339.10809.31.camel@pasglop>
+Date: Tue, 08 Dec 2009 15:56:37 +1100
+Message-ID: <1260248197.10809.32.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, adobriyan@gmail.com
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
+	Colin Leroy <colin@colino.net>, Paul Mackerras <paulus@samba.org>,
+	Jean Delvare <khali@linux-fr.org>, "Darrick J. Wong" <djwong@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,332 +29,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-12-01 at 14:05 -0800, akpm@linux-foundation.org wrote:
-> The patch titled
->      iseries: convert to proc_fops
-> has been added to the -mm tree.  Its filename is
->      iseries-convert-to-proc_fops.patch
+On Fri, 2009-12-04 at 09:16 -0800, Joe Perches wrote:
+> On Fri, 2009-12-04 at 20:59 +1100, Benjamin Herrenschmidt wrote:
+> > On Fri, 2009-12-04 at 10:34 +0100, Jean Delvare wrote:
+> > > I've sent it to linuxppc-dev@ozlabs.org on October 14th. This is the
+> > > address which is listed 22 times in MAINTAINERS. If it isn't correct,
+> > > then please update MAINTAINERS.
+> > No it's fine both shoul work. Your patches are there, just waiting for
+> > me to pick them up, I was just firing a reminder to the rest of the CC
+> > list :-) (and I do remember fwd'ing a couple of your patches to the
+> > list, for some reason they didn't make it to patchwork back then, that
+> > was a few month ago).
+> > Anyways, I've been stretched thin with all sort of stuff lately, so bear
+> > with me if I'm a bit slow at taking or testing stuff, I'm doing my best.
+> 
+> Adding patterns to the PowerPC sections of MAINTAINERS is useful.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-I was looking at that patch since It was in my queue, and while I
-have no firm objection, I started wondering what was the point :-)
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-IE. What does seq_file buys us here since the conversion adds more
-code than it removes and adds a hope via kmalloc that isn't necessary
-before the said conversion ?
-
-Those files are only ever one line long (and one of them is only one
-character) so the seq_file doesn't really gets us any benefit does it ?
+Are you going to submit that yourself or do you want me to carry it in
+the powerpc tree ?
 
 Cheers,
 Ben.
 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 4f96ac8..c7f8e5a 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3193,6 +3193,7 @@ LINUX FOR IBM pSERIES (RS/6000)
+>  M:	Paul Mackerras <paulus@au.ibm.com>
+>  W:	http://www.ibm.com/linux/ltc/projects/ppc
+>  S:	Supported
+> +F:	arch/powerpc/boot/rs6000.h
+>  
+>  LINUX FOR POWERPC (32-BIT AND 64-BIT)
+>  M:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> @@ -3201,18 +3202,24 @@ W:	http://www.penguinppc.org/
+>  L:	linuxppc-dev@ozlabs.org
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
+>  S:	Supported
+> +F:	Documentation/powerpc/
+> +F:	arch/powerpc/
+>  
+>  LINUX FOR POWER MACINTOSH
+>  M:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>  W:	http://www.penguinppc.org/
+>  L:	linuxppc-dev@ozlabs.org
+>  S:	Maintained
+> +F:	arch/powerpc/platforms/powermac/
+> +F:	drivers/macintosh/
+>  
+>  LINUX FOR POWERPC EMBEDDED MPC5XXX
+>  M:	Grant Likely <grant.likely@secretlab.ca>
+>  L:	linuxppc-dev@ozlabs.org
+>  T:	git git://git.secretlab.ca/git/linux-2.6.git
+>  S:	Maintained
+> +F:	arch/powerpc/platforms/512x/
+> +F:	arch/powerpc/platforms/52xx/
+>  
+>  LINUX FOR POWERPC EMBEDDED PPC4XX
+>  M:	Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> @@ -3221,6 +3228,8 @@ W:	http://www.penguinppc.org/
+>  L:	linuxppc-dev@ozlabs.org
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
+>  S:	Maintained
+> +F:	arch/powerpc/platforms/40x/
+> +F:	arch/powerpc/platforms/44x/
+>  
+>  LINUX FOR POWERPC EMBEDDED XILINX VIRTEX
+>  M:	Grant Likely <grant.likely@secretlab.ca>
+> @@ -3228,6 +3237,8 @@ W:	http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
+>  L:	linuxppc-dev@ozlabs.org
+>  T:	git git://git.secretlab.ca/git/linux-2.6.git
+>  S:	Maintained
+> +F:	arch/powerpc/*/*virtex*
+> +F:	arch/powerpc/*/*/*virtex*
+>  
+>  LINUX FOR POWERPC EMBEDDED PPC8XX
+>  M:	Vitaly Bordug <vitb@kernel.crashing.org>
+> @@ -3241,12 +3252,16 @@ M:	Kumar Gala <galak@kernel.crashing.org>
+>  W:	http://www.penguinppc.org/
+>  L:	linuxppc-dev@ozlabs.org
+>  S:	Maintained
+> +F:	arch/powerpc/platforms/83xx/
+>  
+>  LINUX FOR POWERPC PA SEMI PWRFICIENT
+>  M:	Olof Johansson <olof@lixom.net>
+>  W:	http://www.pasemi.com/
+>  L:	linuxppc-dev@ozlabs.org
+>  S:	Supported
+> +F:	arch/powerpc/platforms/pasemi/
+> +F:	drivers/*/*pasemi*
+> +F:	drivers/*/*/*pasemi*
+>  
+>  LINUX SECURITY MODULE (LSM) FRAMEWORK
+>  M:	Chris Wright <chrisw@sous-sol.org>
 > 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: iseries: convert to proc_fops
-> From: Alexey Dobriyan <adobriyan@gmail.com>
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Michael Ellerman <michael@ellerman.id.au>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/powerpc/platforms/iseries/mf.c |  147 ++++++++++++++------------
->  1 file changed, 83 insertions(+), 64 deletions(-)
-> 
-> diff -puN arch/powerpc/platforms/iseries/mf.c~iseries-convert-to-proc_fops arch/powerpc/platforms/iseries/mf.c
-> --- a/arch/powerpc/platforms/iseries/mf.c~iseries-convert-to-proc_fops
-> +++ a/arch/powerpc/platforms/iseries/mf.c
-> @@ -855,59 +855,58 @@ static int mf_get_boot_rtc(struct rtc_ti
->  }
->  
->  #ifdef CONFIG_PROC_FS
-> -
-> -static int proc_mf_dump_cmdline(char *page, char **start, off_t off,
-> -		int count, int *eof, void *data)
-> +static int mf_cmdline_proc_show(struct seq_file *m, void *v)
->  {
-> -	int len;
-> -	char *p;
-> +	char *page, *p;
->  	struct vsp_cmd_data vsp_cmd;
->  	int rc;
->  	dma_addr_t dma_addr;
->  
->  	/* The HV appears to return no more than 256 bytes of command line */
-> -	if (off >= 256)
-> -		return 0;
-> -	if ((off + count) > 256)
-> -		count = 256 - off;
-> +	page = kmalloc(256, GFP_KERNEL);
-> +	if (!page)
-> +		return -ENOMEM;
->  
-> -	dma_addr = iseries_hv_map(page, off + count, DMA_FROM_DEVICE);
-> -	if (dma_addr == DMA_ERROR_CODE)
-> +	dma_addr = iseries_hv_map(page, 256, DMA_FROM_DEVICE);
-> +	if (dma_addr == DMA_ERROR_CODE) {
-> +		kfree(page);
->  		return -ENOMEM;
-> -	memset(page, 0, off + count);
-> +	}
-> +	memset(page, 0, 256);
->  	memset(&vsp_cmd, 0, sizeof(vsp_cmd));
->  	vsp_cmd.cmd = 33;
->  	vsp_cmd.sub_data.kern.token = dma_addr;
->  	vsp_cmd.sub_data.kern.address_type = HvLpDma_AddressType_TceIndex;
-> -	vsp_cmd.sub_data.kern.side = (u64)data;
-> -	vsp_cmd.sub_data.kern.length = off + count;
-> +	vsp_cmd.sub_data.kern.side = (u64)m->private;
-> +	vsp_cmd.sub_data.kern.length = 256;
->  	mb();
->  	rc = signal_vsp_instruction(&vsp_cmd);
-> -	iseries_hv_unmap(dma_addr, off + count, DMA_FROM_DEVICE);
-> -	if (rc)
-> +	iseries_hv_unmap(dma_addr, 256, DMA_FROM_DEVICE);
-> +	if (rc) {
-> +		kfree(page);
->  		return rc;
-> -	if (vsp_cmd.result_code != 0)
-> +	}
-> +	if (vsp_cmd.result_code != 0) {
-> +		kfree(page);
->  		return -ENOMEM;
-> +	}
->  	p = page;
-> -	len = 0;
-> -	while (len < (off + count)) {
-> -		if ((*p == '\0') || (*p == '\n')) {
-> -			if (*p == '\0')
-> -				*p = '\n';
-> -			p++;
-> -			len++;
-> -			*eof = 1;
-> +	while (p - page < 256) {
-> +		if (*p == '\0' || *p == '\n') {
-> +			*p = '\n';
->  			break;
->  		}
->  		p++;
-> -		len++;
-> -	}
->  
-> -	if (len < off) {
-> -		*eof = 1;
-> -		len = 0;
->  	}
-> -	return len;
-> +	seq_write(m, page, p - page);
-> +	kfree(page);
-> +	return 0;
-> +}
-> +
-> +static int mf_cmdline_proc_open(struct inode *inode, struct file *file)
-> +{
-> +	return single_open(file, mf_cmdline_proc_show, PDE(inode)->data);
->  }
->  
->  #if 0
-> @@ -962,10 +961,8 @@ static int proc_mf_dump_vmlinux(char *pa
->  }
->  #endif
->  
-> -static int proc_mf_dump_side(char *page, char **start, off_t off,
-> -		int count, int *eof, void *data)
-> +static int mf_side_proc_show(struct seq_file *m, void *v)
->  {
-> -	int len;
->  	char mf_current_side = ' ';
->  	struct vsp_cmd_data vsp_cmd;
->  
-> @@ -989,21 +986,17 @@ static int proc_mf_dump_side(char *page,
->  		}
->  	}
->  
-> -	len = sprintf(page, "%c\n", mf_current_side);
-> +	seq_printf(m, "%c\n", mf_current_side);
-> +	return 0;
-> +}
->  
-> -	if (len <= (off + count))
-> -		*eof = 1;
-> -	*start = page + off;
-> -	len -= off;
-> -	if (len > count)
-> -		len = count;
-> -	if (len < 0)
-> -		len = 0;
-> -	return len;
-> +static int mf_side_proc_open(struct inode *inode, struct file *file)
-> +{
-> +	return single_open(file, mf_side_proc_show, NULL);
->  }
->  
-> -static int proc_mf_change_side(struct file *file, const char __user *buffer,
-> -		unsigned long count, void *data)
-> +static ssize_t mf_side_proc_write(struct file *file, const char __user *buffer,
-> +				  size_t count, loff_t *pos)
->  {
->  	char side;
->  	u64 newSide;
-> @@ -1041,6 +1034,15 @@ static int proc_mf_change_side(struct fi
->  	return count;
->  }
->  
-> +static const struct file_operations mf_side_proc_fops = {
-> +	.owner		= THIS_MODULE,
-> +	.open		= mf_side_proc_open,
-> +	.read		= seq_read,
-> +	.llseek		= seq_lseek,
-> +	.release	= single_release,
-> +	.write		= mf_side_proc_write,
-> +};
-> +
->  #if 0
->  static void mf_getSrcHistory(char *buffer, int size)
->  {
-> @@ -1087,8 +1089,7 @@ static void mf_getSrcHistory(char *buffe
->  }
->  #endif
->  
-> -static int proc_mf_dump_src(char *page, char **start, off_t off,
-> -		int count, int *eof, void *data)
-> +static int mf_src_proc_show(struct seq_file *m, void *v)
->  {
->  #if 0
->  	int len;
-> @@ -1109,8 +1110,13 @@ static int proc_mf_dump_src(char *page, 
->  #endif
->  }
->  
-> -static int proc_mf_change_src(struct file *file, const char __user *buffer,
-> -		unsigned long count, void *data)
-> +static int mf_src_proc_open(struct inode *inode, struct file *file)
-> +{
-> +	return single_open(file, mf_src_proc_show, NULL);
-> +}
-> +
-> +static ssize_t mf_src_proc_write(struct file *file, const char __user *buffer,
-> +				 size_t count, loff_t *pos)
->  {
->  	char stkbuf[10];
->  
-> @@ -1135,9 +1141,19 @@ static int proc_mf_change_src(struct fil
->  	return count;
->  }
->  
-> -static int proc_mf_change_cmdline(struct file *file, const char __user *buffer,
-> -		unsigned long count, void *data)
-> +static const struct file_operations mf_src_proc_fops = {
-> +	.owner		= THIS_MODULE,
-> +	.open		= mf_src_proc_open,
-> +	.read		= seq_read,
-> +	.llseek		= seq_lseek,
-> +	.release	= single_release,
-> +	.write		= mf_src_proc_write,
-> +};
-> +
-> +static ssize_t mf_cmdline_proc_write(struct file *file, const char __user *buffer,
-> +				     size_t count, loff_t *pos)
->  {
-> +	void *data = PDE(file->f_path.dentry->d_inode)->data;
->  	struct vsp_cmd_data vsp_cmd;
->  	dma_addr_t dma_addr;
->  	char *page;
-> @@ -1172,6 +1188,15 @@ out:
->  	return ret;
->  }
->  
-> +static const struct file_operations mf_cmdline_proc_fops = {
-> +	.owner		= THIS_MODULE,
-> +	.open		= mf_cmdline_proc_open,
-> +	.read		= seq_read,
-> +	.llseek		= seq_lseek,
-> +	.release	= single_release,
-> +	.write		= mf_cmdline_proc_write,
-> +};
-> +
->  static ssize_t proc_mf_change_vmlinux(struct file *file,
->  				      const char __user *buf,
->  				      size_t count, loff_t *ppos)
-> @@ -1246,12 +1271,10 @@ static int __init mf_proc_init(void)
->  		if (!mf)
->  			return 1;
->  
-> -		ent = create_proc_entry("cmdline", S_IFREG|S_IRUSR|S_IWUSR, mf);
-> +		ent = proc_create_data("cmdline", S_IRUSR|S_IWUSR, mf,
-> +				       &mf_cmdline_proc_fops, (void *)(long)i);
->  		if (!ent)
->  			return 1;
-> -		ent->data = (void *)(long)i;
-> -		ent->read_proc = proc_mf_dump_cmdline;
-> -		ent->write_proc = proc_mf_change_cmdline;
->  
->  		if (i == 3)	/* no vmlinux entry for 'D' */
->  			continue;
-> @@ -1263,19 +1286,15 @@ static int __init mf_proc_init(void)
->  			return 1;
->  	}
->  
-> -	ent = create_proc_entry("side", S_IFREG|S_IRUSR|S_IWUSR, mf_proc_root);
-> +	ent = proc_create("side", S_IFREG|S_IRUSR|S_IWUSR, mf_proc_root,
-> +			  &mf_side_proc_fops);
->  	if (!ent)
->  		return 1;
-> -	ent->data = (void *)0;
-> -	ent->read_proc = proc_mf_dump_side;
-> -	ent->write_proc = proc_mf_change_side;
->  
-> -	ent = create_proc_entry("src", S_IFREG|S_IRUSR|S_IWUSR, mf_proc_root);
-> +	ent = proc_create("src", S_IFREG|S_IRUSR|S_IWUSR, mf_proc_root,
-> +			  &mf_src_proc_fops);
->  	if (!ent)
->  		return 1;
-> -	ent->data = (void *)0;
-> -	ent->read_proc = proc_mf_dump_src;
-> -	ent->write_proc = proc_mf_change_src;
->  
->  	return 0;
->  }
-> _
-> 
-> Patches currently in -mm which might be from adobriyan@gmail.com are
-> 
-> linux-next.patch
-> thinkpad_acpi-convert-to-seq_file.patch
-> asus_acpi-convert-to-seq_file.patch
-> toshiba_acpi-convert-to-seq_file.patch
-> arm-convert-proc-cpu-aligment-to-seq_file.patch
-> proc_fops-convert-av7110.patch
-> proc_fops-convert-cpia.patch
-> proc_fops-convert-drivers-isdn-to-seq_file.patch
-> proc_fops-convert-drivers-isdn-to-seq_file-fix.patch
-> mpt-fusion-convert-to-seq_file.patch
-> const-constify-remaining-dev_pm_ops.patch
-> uml-irq-register-race-condition.patch
-> make-debug_bugverbose-default-to-y.patch
-> proc-rename-de_get-to-pde_get-and-inline-it.patch
-> pnpbios-convert-to-seq_file.patch
-> const-constify-remaining-pipe_buf_operations.patch
-> ufs-pass-qstr-instead-of-dentry-where-necessary-for-nfs.patch
-> ufs-nfs-support.patch
-> reiserfs-remove-proc-fs-reiserfs-version.patch
-> reiserfs-dont-compile-procfso-at-all-if-no-support.patch
-> uml-convert-to-seq_file-proc_fops.patch
-> alpha-convert-srm-code-to-seq_file.patch
-> iseries-convert-to-proc_fops.patch
-> clps711xfb-convert-to-proc_fops.patch
-> parisc-convert-proc-pdc-lcdled-to-seq_file.patch
-> via-pmu-convert-to-proc_fops-seq_file.patch
