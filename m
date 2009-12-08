@@ -1,23 +1,23 @@
-Return-Path: <tmarri@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.90])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id F158CB6F19
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Dec 2009 12:41:37 +1100 (EST)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id BF5F9B7BBF
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2009 13:16:42 +1100 (EST)
+Date: Tue, 8 Dec 2009 05:16:38 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Peter Tyser <ptyser@xes-inc.com>
+Subject: Re: [PATCH] powerpc: mpc8xxx_gpio: Add ability to mask off unused
+	GPIO pins
+Message-ID: <20091208021638.GA16115@oksana.dev.rtsoft.ru>
+References: <1259955820-28565-1-git-send-email-ptyser@xes-inc.com>
+	<20091205175614.GA10057@oksana.dev.rtsoft.ru>
+	<1260041552.8643.33.camel@ptyser-laptop>
+	<20091205205149.GA26030@oksana.dev.rtsoft.ru>
+	<1260202998.23828.13344.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: patch status
-Date: Mon, 7 Dec 2009 17:41:35 -0800
-Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C0872CF47@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <20091208005257.GL2937@zod.rchland.ibm.com>
-References: <AC5E1C3367E37D44970B81A6ADD1DA2C0872CE8B@SDCEXCHANGE01.ad.amcc.com>
-	<20091208005257.GL2937@zod.rchland.ibm.com>
-From: "Tirumala Reddy Marri" <tmarri@amcc.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1260202998.23828.13344.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,66 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Josh,
-  Sorry for my ignorance that I did not copy you first. From now on I
-will make sure you are cc'ed .  I will send you the copy of user manual
-which is available on external website.=20
+On Mon, Dec 07, 2009 at 10:23:18AM -0600, Peter Tyser wrote:
+[...]
+> > Yes, badly designed hardware deserves ugly hacks in the platform
+> > code. ;-) So for this problem, just request these gpios in the
+> > platform code.
+> 
+> I'd wager lots of boards have GPIO pins that a user shouldn't play
+> around with once Linux boots up.  Like GPIO pins used to program an
+> FPGA,
 
-  Should I send new patch with what is tested with this change or is it
-enough to write in email ?
+What if I do want to program/upgrade an FPGA, say from the userspace?
 
-Regards,
-Marri
+[...]
+> In any case, my high-level thought process is:
+> 1. Currently, the "ngpio" value is wrong for some processors and should
+> be fixed.
+> 2. Adding a new "fsl,gpio-mask" gpio solves #1, and has the benefit of
+> allowing the device tree to easily reserve GPIO pins which should not be
+> used in Linux.
 
------Original Message-----
-From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com]=20
-Sent: Monday, December 07, 2009 4:53 PM
-To: Tirumala Reddy Marri
-Cc: benh@kernel.crashing.org; linuxppc-dev@lists.ozlabs.org
-Subject: Re: patch status
+OK, if you're so eager to fix this... I'd suggest to not put this
+stuff into device tree. We have compatible property that describes
+the device.
 
-On Mon, Dec 07, 2009 at 02:01:58PM -0800, Tirumala Reddy Marri wrote:
->Hi Ben,
->
-> Did you get the chance to review the patch I sent it on Dec-1 2009
->
->=20
->
->http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/078436.htm
-l
+So, in the driver, you can just do
 
-Ben has to review lots of patches.  Please be patient.  Also, your patch
-is
-tracked via patchwork here:
+if (of_device_is_compatible("fsl,foo-gpiochip"))
+	mask = ...;
+else if (of_device_is_compatible("fsl,bar-gpiochip"))
+	mask = ...;
 
-http://patchwork.ozlabs.org/patch/39865/
+If you want to solve "dangerous" GPIOs problem, then I'd say
 
-so you can see the state as it progresses.
+chosen {
+	linux,dangerous-gpios = <&pio1 0 0 &pio1 1 0
+				 &pio2 4 0 &pio1 5 0>;
+};
 
-Further, it would have been helpful to CC the maintainer of the 4xx
-sub-arch
-(me) since it impacts that platform and you could have gotten some
-review more
-quickly.  I didn't notice it until this afternoon.
+And then you can have a generic driver that looks for
+linux,dangerous-gpios and requests them at boot.
 
-Lastly, your patch has lots of magical values in it.  While I have no
-doubt
-they are correct, I can't find any documentation for 460SX on the AMCC
-website
-aside from some small product briefs.  Perhaps I've overlooked the CPU
-manual,
-but since I don't have such a board or the manual for it, it would be
-nice to
-know what kind of testing has been done with this patch.  A simple
-statement
-such as "tested on kernel <version> with a <network, raid, whatever>
-pci-e
-card successfully" would go a long way.
+Thanks,
 
-This is not a rant or complaint about the code.  Just a reminder that
-the
-community doesn't always move at the pace we would all like :).  I'll
-try and
-look over the patch more carefully tomorrow.
-
-josh
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
