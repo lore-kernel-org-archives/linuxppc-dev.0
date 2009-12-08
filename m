@@ -1,24 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7F1E6B6EFE
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 07:01:51 +1100 (EST)
-Subject: Re: [PATCH 00/10 v6]  Fix 8xx MMU/TLB
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OF5D73AF7D.6635CE0F-ONC1257686.002F38E4-C1257686.002F81DE@transmode.se>
-References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<OF44DA1806.2D9916D9-ONC125767B.003BE84B-C125767B.003C3CD7@transmode.se>
-	<1259357845.2076.9.camel@pasglop> <4B14465A.3080804@freescale.com>
-	<OF5D73AF7D.6635CE0F-ONC1257686.002F38E4-C1257686.002F81DE@transmode.se>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 07:01:42 +1100
-Message-ID: <1260302502.16132.3.camel@pasglop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Return-Path: <wim@iguana.be>
+Received: from mailrelay011.isp.belgacom.be (mailrelay011.isp.belgacom.be
+	[195.238.6.178]) by ozlabs.org (Postfix) with ESMTP id C0130B6F10
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 07:48:56 +1100 (EST)
+Date: Tue, 8 Dec 2009 21:48:54 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 3/3] mpc52xx/wdt: WDT uses GPT api
+Message-ID: <20091208204854.GE4291@infomag.iguana.be>
+References: <fa686aa40911101159y7bef3f9bte74e9aeb5c6e864b@mail.gmail.com>
+	<1257884778.14374.5@antares>
+	<20091112213630.GE19336@infomag.iguana.be>
+	<fa686aa40911122221s24efdcc9k1daf63b600e7b429@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40911122221s24efdcc9k1daf63b600e7b429@mail.gmail.com>
+Cc: Albrecht =?iso-8859-1?Q?Dre=DF?= <albrecht.dress@arcor.de>,
+	devicetree-discuss@lists.ozlabs.org,
+	Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-12-08 at 09:38 +0100, Joakim Tjernlund wrote:
-> Scott Wood <scottwood@freescale.com> wrote on 30/11/2009 23:25:30:
-> >
-> > Benjamin Herrenschmidt wrote:
-> > > On Fri, 2009-11-27 at 11:57 +0100, Joakim Tjernlund wrote:
-> > >> Scott and Rex, I think we need you s-o-b to make it into the kernel proper.
-> > >>
-> > >> Marcelo and Vitaly, I noticed you guys are listed as 8xx maintainers.
-> > >> Have you seen this? What do you think?
-> > >
-> > > I think Marcelo isn't much involved with 8xx anymore. I'd say if Scott
-> > > and Vitaly are ok, then the patches are good. But I'll wait for at least
-> > > Scott to give an Ack as he can at least test which I can't :-)
-> >
-> > ACK
+Hi Grant,
+
+Sorry for the delay, I need to deliver a project in a weeks time...
+
+> In actual fact, it is a single device with multiple functions, some of
+> which can be used at the same time.  The driver for the device
+> determines what the device instance supports and registers the
+> appropriate interfaces.  There is a GPIO controller, a PWM controller,
+> a general purpose timer, and the watchdog.  Because of the
+> multifunction nature of the device, there are subtle interactions
+> between the functions that the driver needs to maintain.  I don't want
+> to export functions from the driver which will only be used by a
+> watchdog instance.  I also don't want the added code and complexity of
+> a secondary probe path.  It is simpler and less code to roll all the
+> behaviour up into the one driver single driver that gets probed once.
 > 
-> Can't see these patches in next yet, did they go somewhere else?
+> >From the maintenance perspective, having the main driver in
+> arch/powerpc and the watchdog bit in drivers/watchdog doesn't really
+> help much anyway because anything that changes the internal driver API
+> (between the core and watchdog bits) will require cross-maintainer
+> changes.  ie. do changes go through my tree because they touch
+> arch/powerpc, or do they go through yours because they touch
+> drivers/watchdog?  I'd much rather all the internal details be
+> contained within a single driver.
 
-No, but Scott has been to lazy to write proper Acked-by: lines and I've
-been too lazy to do it for him so they'll go in the next batch, probably
-today :-)
+Your argument about maintenance is the same one as I have: If all watchdog
+driver pieces are under drivers/watchdog then it's easier for me to maintain
+them. (Definitely if we are doing clean-up work and API changes).
 
-Cheers,
-Ben.
+> Besides, there is already precedence for very arch-specific drivers
+> living under arch/*/.  find ./arch -name *gpio*
+
+But in this case: I know where to find them and I will keep a mental note
+about this one. And yes indeed some very arch specific drivers can reside
+under arch/*/* .
+
+So please go ahead with pulling this one in a single driver.
+
+Kind regards,
+Wim.
