@@ -1,24 +1,18 @@
-Return-Path: <joe@perches.com>
-Received: from mail.perches.com (mail.perches.com [173.55.12.10])
-	by ozlabs.org (Postfix) with ESMTP id 3FE5CB7B6C
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Dec 2009 16:11:02 +1100 (EST)
-Subject: Re: [PATCH] MAINTAINERS: Add PowerPC patterns
-From: Joe Perches <joe@perches.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1260248197.10809.32.camel@pasglop>
-References: <20091202091951.5ec6bb83@hyperion.delvare>
-	<1259894454.2076.1246.camel@pasglop>
-	<20091204103434.0a754925@hyperion.delvare>
-	<1259920775.2076.1273.camel@pasglop>
-	<1259947019.22783.116.camel@Joe-Laptop.home>
-	<1260248197.10809.32.camel@pasglop>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B0DB1B7B65
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  8 Dec 2009 17:09:21 +1100 (EST)
+Subject: Build failure with fsl_msi.c
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Dec 2009 21:11:00 -0800
-Message-ID: <1260249060.3215.388.camel@Joe-Laptop.home>
+Date: Tue, 08 Dec 2009 17:09:14 +1100
+Message-ID: <1260252554.16132.1.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
-	Colin Leroy <colin@colino.net>, Paul Mackerras <paulus@samba.org>,
-	Jean Delvare <khali@linux-fr.org>, "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,14 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-12-08 at 15:56 +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2009-12-04 at 09:16 -0800, Joe Perches wrote:
-> > Adding patterns to the PowerPC sections of MAINTAINERS is useful.
-> > Signed-off-by: Joe Perches <joe@perches.com>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Are you going to submit that yourself or do you want me to carry it in
-> the powerpc tree ?
+The ppc64e_defconfig gives me that:
 
-It'd be better if you carry it.
+No big deal since nothing currently uses Book3E HW with fsl_msi but
+probably something you should fix.
 
-cheers, Joe
+cc1: warnings being treated as errors
+/home/benh/linux-powerpc-test/arch/powerpc/sysdev/fsl_msi.c: In function ‘fsl_msi_cascade’:
+/home/benh/linux-powerpc-test/arch/powerpc/sysdev/fsl_msi.c:189: error: cast from pointer to integer of different size
+  LDS     arch/powerpc/kernel/vdso32/vdso32.lds
+/home/benh/linux-powerpc-test/arch/powerpc/sysdev/fsl_msi.c: In function ‘fsl_of_msi_probe’:
+/home/benh/linux-powerpc-test/arch/powerpc/sysdev/fsl_msi.c:307: error: cast to pointer from integer of different size
+make[2]: *** [arch/powerpc/sysdev/fsl_msi.o] Error 1
+
+Cheers,
+Ben.
