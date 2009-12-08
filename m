@@ -1,25 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
-	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id 6749EB6EF4
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 09:50:58 +1100 (EST)
-Received: by ywh11 with SMTP id 11so1755843ywh.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 08 Dec 2009 14:50:57 -0800 (PST)
+Return-Path: <mware@elphinstone.net>
+Received: from ipmail02.adl6.internode.on.net (ipmail02.adl6.internode.on.net
+	[203.16.214.140]) by ozlabs.org (Postfix) with ESMTP id 55478B6F17
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 09:56:24 +1100 (EST)
+Message-ID: <4B1ED995.4060802@elphinstone.net>
+Date: Wed, 09 Dec 2009 09:56:21 +1100
+From: Mark Ware <mware@elphinstone.net>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20091208144505.af1dd7a3.akpm@linux-foundation.org>
-References: <fa686aa40911042210q5bbbca2fi82911b7245d17588@mail.gmail.com>
-	<fa686aa40912081333r53cdc5d4ldc45dcfdd2e7536f@mail.gmail.com>
-	<1260311383.16132.4.camel@pasglop>
-	<20091208144505.af1dd7a3.akpm@linux-foundation.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 8 Dec 2009 15:50:37 -0700
-Message-ID: <fa686aa40912081450i53c5af21j44fb9fb052b7d120@mail.gmail.com>
-Subject: Re: 2.6.33 -next tree
-To: Andrew Morton <akpm@linux-foundation.org>
+To: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] cpm2_pic: Allow correct flow_types for port C interrupts
+References: <4B0C9342.1000807@elphinstone.net>
+In-Reply-To: <4B0C9342.1000807@elphinstone.net>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +20,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 8, 2009 at 3:45 PM, Andrew Morton <akpm@linux-foundation.org> w=
-rote:
-> On Wed, 09 Dec 2009 09:29:43 +1100
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
->> On Tue, 2009-12-08 at 14:33 -0700, Grant Likely wrote:
->> >
->> > Are you able to pull this tree, or should I ask Linus to pull it
->> > directly?
->> >
->> > It contains mpc5200 and xilinx stuff. =A0Some of it is SPI related, bu=
-t
->> > I'm now the SPI co-maintainer, so I have no problem with it going in
->> > via your tree. =A0:-) =A0Regardless, I want to get it out to Linus ASA=
-P.
->> >
->> > This tree has also been in linux-next for a while now, so it should be
->> > a safe pull.
->>
->> I'll pull it, I'll pull it, stop nagging :-)
->>
->
-> ooh, does nagging work?
->
-> <writes that down somewhere>
+Any comments/Acks/Nacks on this patch?
 
-w00t!
+- Mark
 
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Mark Ware wrote:
+> CPM2 Port C interrupts can be either falling edge, or either edge.
+> Other external interrupts are either falling edge or active low.
+> 
+> Signed-Off-By: Mark Ware <mware@elphinstone.net>
+> ---
+>  arch/powerpc/sysdev/cpm2_pic.c |   29 ++++++++++++++++++++++-------
+>  1 files changed, 22 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
+> index 78f1f7c..179822c 100644
+> --- a/arch/powerpc/sysdev/cpm2_pic.c
+> +++ b/arch/powerpc/sysdev/cpm2_pic.c
+> @@ -141,13 +141,28 @@ static int cpm2_set_irq_type(unsigned int virq, unsigned int flow_type)
+>  	struct irq_desc *desc = get_irq_desc(virq);
+>  	unsigned int vold, vnew, edibit;
+>  
+> -	if (flow_type == IRQ_TYPE_NONE)
+> -		flow_type = IRQ_TYPE_LEVEL_LOW;
+> -
+> -	if (flow_type & IRQ_TYPE_EDGE_RISING) {
+> -		printk(KERN_ERR "CPM2 PIC: sense type 0x%x not supported\n",
+> -			flow_type);
+> -		return -EINVAL;
+> +	/* Port C interrupts are either IRQ_TYPE_EDGE_FALLING or
+> +	 * IRQ_TYPE_EDGE_BOTH (default).  All others are IRQ_TYPE_EDGE_FALLING
+> +	 * or IRQ_TYPE_LEVEL_LOW (default)
+> +	 */
+> +	if (src >= CPM2_IRQ_PORTC15 && src <= CPM2_IRQ_PORTC0) {
+> +		if (flow_type == IRQ_TYPE_NONE)
+> +			flow_type = IRQ_TYPE_EDGE_BOTH;
+> +
+> +		if (flow_type & ~IRQ_TYPE_EDGE_BOTH) {
+> +			printk(KERN_ERR "CPM2 PIC: sense type 0x%x not supported\n",
+> +				flow_type);
+> +			return -EINVAL;
+> +		}
+> +	} else {
+> +		if (flow_type == IRQ_TYPE_NONE)
+> +			flow_type = IRQ_TYPE_LEVEL_LOW;
+> +
+> +		if (flow_type & (IRQ_TYPE_EDGE_RISING | IRQ_TYPE_LEVEL_HIGH)) {
+> +			printk(KERN_ERR "CPM2 PIC: sense type 0x%x not supported\n",
+> +				flow_type);
+> +			return -EINVAL;
+> +		}
+>  	}
+>  
+>  	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
