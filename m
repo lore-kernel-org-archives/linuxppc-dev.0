@@ -1,26 +1,32 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <B05799@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 84F11B7B60
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 18:43:01 +1100 (EST)
-In-Reply-To: <1260332399.16132.7.camel@pasglop>
-References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1258712471-3104-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-3-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1258712471-3104-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-5-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1260332399.16132.7.camel@pasglop>
-Subject: Re: [PATCH 04/10] 8xx: Always pin kernel instruction TLB
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OFB03B60EA.0352DA78-ONC1257687.002955A6-C1257687.002A145F@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 9 Dec 2009 08:39:37 +0100
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0AE76B6F19
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  9 Dec 2009 19:50:15 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nB98oBsw011066 for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 9 Dec 2009 01:50:12 -0700 (MST)
+Received: from zin33exm22.fsl.freescale.net (zin33exm22.ap.freescale.net
+	[10.232.192.20])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id nB98tAQl001542
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 9 Dec 2009 02:55:11 -0600 (CST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: gianfar breaking builds
+Date: Wed, 9 Dec 2009 14:20:01 +0530
+Message-ID: <9F4C7D19E8361D4C94921B95BE08B81BA08A66@zin33exm22.fsl.freescale.net>
+In-Reply-To: <1260341804.16132.22.camel@pasglop>
+References: <1260341804.16132.22.camel@pasglop>
+From: "Kumar Gopalpet-B05799" <B05799@freescale.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,49 +36,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 09/12/2009 05:19:59:
+Hi Ben,
 
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> Cc: Scott Wood <scottwood@freescale.com>, "linuxppc-dev@ozlabs.org" <linuxppc-
-> dev@ozlabs.org>, Rex Feany <RFeany@mrv.com>
-> Date: 09/12/2009 05:20
-> Subject: Re: [PATCH 04/10] 8xx: Always pin kernel instruction TLB
->
-> On Fri, 2009-11-20 at 11:21 +0100, Joakim Tjernlund wrote:
-> > Various kernel asm modifies SRR0/SRR1 just before executing
-> > a rfi. If such code crosses a page boundary you risk a TLB miss
-> > which will clobber SRR0/SRR1. Avoid this by always pinning
-> > kernel instruction TLB space.
-> >
-> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> > ---
-> >  arch/powerpc/kernel/head_8xx.S |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-> > index a9f1ace..e70503d 100644
-> > --- a/arch/powerpc/kernel/head_8xx.S
-> > +++ b/arch/powerpc/kernel/head_8xx.S
-> > @@ -705,7 +705,7 @@ start_here:
-> >   */
-> >  initial_mmu:
-> >     tlbia         /* Invalidate all TLB entries */
-> > -#ifdef CONFIG_PIN_TLB
-> > +#if 1 /* CONFIG_PIN_TLB */
-> >     lis   r8, MI_RSV4I@h
-> >     ori   r8, r8, 0x1c00
-> >  #else
->
-> Not nice. Either remove the config option or make sure all those code
-> sequences are appropriately aligned so it doesn't happen. I recommend
-> the later :-)
+Can you point to me from where you cloned the tree.
 
-The later isn't as simple :) I believe the bulk of such code in entry_32.S.
-Anyhow, the config option is still valid as if enabled
-it will pin several DTLB's too. Scott had some concerns about removing the
-config option completely so this was the next best thing.
+Also, net-next-2.6 tree was building for me.
 
+--
+Thanks
+Sandeep
+
+>-----Original Message-----
+>From:=20
+>linuxppc-dev-bounces+sandeep.kumar=3Dfreescale.com@lists.ozlabs.o
+>rg=20
+>[mailto:linuxppc-dev-bounces+sandeep.kumar=3Dfreescale.com@lists.
+>ozlabs.org] On Behalf Of Benjamin Herrenschmidt
+>Sent: Wednesday, December 09, 2009 12:27 PM
+>To: Kumar Gala
+>Cc: linuxppc-dev
+>Subject: gianfar breaking builds
 >
-> I'll apply the other patches.
-OK, great.
+>In my next (not pushed out yet as I'm writing this but will be=20
+>by the time you read it hopefully), I get a build failure:
+>
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c: In=20
+>function 'gfar_netpoll':
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2653:=20
+>error: invalid storage class for function 'gfar_interrupt'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2652:=20
+>warning: ISO C90 forbids mixed declarations and code
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2681:=20
+>error: invalid storage class for function 'adjust_link'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2764:=20
+>error: invalid storage class for function 'gfar_set_multi'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2855:=20
+>error: invalid storage class for function 'gfar_clear_exact_match'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2877:=20
+>error: invalid storage class for function 'gfar_set_hash_for_addr'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2898:=20
+>error: invalid storage class for function 'gfar_set_mac_for_addr'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2922:=20
+>error: invalid storage class for function 'gfar_error'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3017:=20
+>warning: 'alias' attribute ignored
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3032:=20
+>error: invalid storage class for function 'gfar_init'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3037:=20
+>error: invalid storage class for function 'gfar_exit'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3041:=20
+>error: invalid storage class for function '__inittest'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3041:=20
+>warning: 'alias' attribute ignored
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042:=20
+>error: invalid storage class for function '__exittest'
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042:=20
+>warning: ISO C90 forbids mixed declarations and code
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042:=20
+>warning: 'alias' attribute ignored
+>/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042:=20
+>error: expected declaration or statement at end of input
+>make[3]: *** [drivers/net/gianfar.o] Error 1
+>
+>Stephen says that breakage has been in -next for some time...
+>
+>Can you guys sort it out ?
+>
+>Cheers,
+>Ben.
+>
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
