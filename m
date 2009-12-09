@@ -1,21 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B42C3B7CEA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Dec 2009 20:26:32 +1100 (EST)
-Subject: RE: gianfar breaking builds
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gopalpet-B05799 <B05799@freescale.com>
-In-Reply-To: <9F4C7D19E8361D4C94921B95BE08B81BA08A66@zin33exm22.fsl.freescale.net>
-References: <1260341804.16132.22.camel@pasglop>
-	<9F4C7D19E8361D4C94921B95BE08B81BA08A66@zin33exm22.fsl.freescale.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 20:26:20 +1100
-Message-ID: <1260350780.16132.40.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id 3D9E4B7B66
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 20:28:12 +1100 (EST)
+In-Reply-To: <1260348995.16132.37.camel@pasglop>
+References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1258712471-3104-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1258712471-3104-3-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1258712471-3104-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1258712471-3104-5-git-send-email-Joakim.Tjernlund@transmode.se>	
+	<1260332399.16132.7.camel@pasglop>
+	<OFB03B60EA.0352DA78-ONC1257687.002955A6-C1257687.002A145F@transmode.se>
+	<1260348995.16132.37.camel@pasglop>
+Subject: Re: [PATCH 04/10] 8xx: Always pin kernel instruction TLB
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF08658DD6.A5DC99F1-ONC1257687.00334561-C1257687.0033AE30@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Wed, 9 Dec 2009 10:24:29 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,86 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-12-09 at 14:20 +0530, Kumar Gopalpet-B05799 wrote:
-> Hi Ben,
-> 
-> Can you point to me from where you cloned the tree.
-> 
-> Also, net-next-2.6 tree was building for me.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 09/12/2009 09:56:35:
+>
+> On Wed, 2009-12-09 at 08:39 +0100, Joakim Tjernlund wrote:
+> > The later isn't as simple :) I believe the bulk of such code in
+> > entry_32.S.
+>
+> Yeah but it would be useful for hash I suppose if one really wants to
+> boot with nobats. Though at least on hash most of the time we have ways
+> to recover by mean of MSR:RI being cleared, which your TLB miss code
+> doesn't check...
 
-This is powerpc-next which contains the current Linus stuff plus the
-pending powerpc stuff. If that's fixed in net-next then we shall wait
-for Dave to merge it I suppose.
+Never looked at this so I cannot comment.
 
-Cheers,
-Ben.
+>
+> > Anyhow, the config option is still valid as if enabled
+> > it will pin several DTLB's too. Scott had some concerns about removing
+> > the config option completely so this was the next best thing.
+>
+> Well, if you want to pin at least one entry, then just remove the #if
+> completely but don't leave a #if 1 :-)
 
-> --
-> Thanks
-> Sandeep
-> 
-> >-----Original Message-----
-> >From: 
-> >linuxppc-dev-bounces+sandeep.kumar=freescale.com@lists.ozlabs.o
-> >rg 
-> >[mailto:linuxppc-dev-bounces+sandeep.kumar=freescale.com@lists.
-> >ozlabs.org] On Behalf Of Benjamin Herrenschmidt
-> >Sent: Wednesday, December 09, 2009 12:27 PM
-> >To: Kumar Gala
-> >Cc: linuxppc-dev
-> >Subject: gianfar breaking builds
-> >
-> >In my next (not pushed out yet as I'm writing this but will be 
-> >by the time you read it hopefully), I get a build failure:
-> >
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c: In 
-> >function 'gfar_netpoll':
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2653: 
-> >error: invalid storage class for function 'gfar_interrupt'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2652: 
-> >warning: ISO C90 forbids mixed declarations and code
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2681: 
-> >error: invalid storage class for function 'adjust_link'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2764: 
-> >error: invalid storage class for function 'gfar_set_multi'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2855: 
-> >error: invalid storage class for function 'gfar_clear_exact_match'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2877: 
-> >error: invalid storage class for function 'gfar_set_hash_for_addr'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2898: 
-> >error: invalid storage class for function 'gfar_set_mac_for_addr'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2922: 
-> >error: invalid storage class for function 'gfar_error'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3017: 
-> >warning: 'alias' attribute ignored
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3032: 
-> >error: invalid storage class for function 'gfar_init'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3037: 
-> >error: invalid storage class for function 'gfar_exit'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3041: 
-> >error: invalid storage class for function '__inittest'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3041: 
-> >warning: 'alias' attribute ignored
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042: 
-> >error: invalid storage class for function '__exittest'
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042: 
-> >warning: ISO C90 forbids mixed declarations and code
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042: 
-> >warning: 'alias' attribute ignored
-> >/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042: 
-> >error: expected declaration or statement at end of input
-> >make[3]: *** [drivers/net/gianfar.o] Error 1
-> >
-> >Stephen says that breakage has been in -next for some time...
-> >
-> >Can you guys sort it out ?
-> >
-> >Cheers,
-> >Ben.
-> >
-> >
-> >_______________________________________________
-> >Linuxppc-dev mailing list
-> >Linuxppc-dev@lists.ozlabs.org
-> >https://lists.ozlabs.org/listinfo/linuxppc-dev
-> >
+I could, but I wanted to have an easy way back to the old way if
+the need arises.
+Anyway, I am rather busy ATM with more pressing matters so I would
+appreciate if you could take the patch as is.
+
+ Jocke
