@@ -1,28 +1,34 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <B05799@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3D9E4B7B66
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 20:28:12 +1100 (EST)
-In-Reply-To: <1260348995.16132.37.camel@pasglop>
-References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1258712471-3104-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-3-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1258712471-3104-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-5-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1260332399.16132.7.camel@pasglop>
-	<OFB03B60EA.0352DA78-ONC1257687.002955A6-C1257687.002A145F@transmode.se>
-	<1260348995.16132.37.camel@pasglop>
-Subject: Re: [PATCH 04/10] 8xx: Always pin kernel instruction TLB
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF08658DD6.A5DC99F1-ONC1257687.00334561-C1257687.0033AE30@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 9 Dec 2009 10:24:29 +0100
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C8F7FB7B66
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  9 Dec 2009 20:32:29 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nB99WLQA007418 for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 9 Dec 2009 02:32:21 -0700 (MST)
+Received: from zin33exm22.fsl.freescale.net (zin33exm22.ap.freescale.net
+	[10.232.192.20])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nB99aTuV022074
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 9 Dec 2009 03:36:30 -0600 (CST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: gianfar breaking builds
+Date: Wed, 9 Dec 2009 15:02:14 +0530
+Message-ID: <9F4C7D19E8361D4C94921B95BE08B81BA08A6F@zin33exm22.fsl.freescale.net>
+In-Reply-To: <1260350780.16132.40.camel@pasglop>
+References: <1260341804.16132.22.camel@pasglop>
+	<9F4C7D19E8361D4C94921B95BE08B81BA08A66@zin33exm22.fsl.freescale.net>
+	<1260350780.16132.40.camel@pasglop>
+From: "Kumar Gopalpet-B05799" <B05799@freescale.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,30 +38,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 09/12/2009 09:56:35:
+=20
 >
-> On Wed, 2009-12-09 at 08:39 +0100, Joakim Tjernlund wrote:
-> > The later isn't as simple :) I believe the bulk of such code in
-> > entry_32.S.
+>This is powerpc-next which contains the current Linus stuff=20
+>plus the pending powerpc stuff. If that's fixed in net-next=20
+>then we shall wait for Dave to merge it I suppose.
 >
-> Yeah but it would be useful for hash I suppose if one really wants to
-> boot with nobats. Though at least on hash most of the time we have ways
-> to recover by mean of MSR:RI being cleared, which your TLB miss code
-> doesn't check...
 
-Never looked at this so I cannot comment.
+I din't notice that netpoll wa enabled in your compilation.
+This is also not wotking on net-next tree.
 
->
-> > Anyhow, the config option is still valid as if enabled
-> > it will pin several DTLB's too. Scott had some concerns about removing
-> > the config option completely so this was the next best thing.
->
-> Well, if you want to pin at least one entry, then just remove the #if
-> completely but don't leave a #if 1 :-)
+Will send out a patch today in some time.
 
-I could, but I wanted to have an easy way back to the old way if
-the need arises.
-Anyway, I am rather busy ATM with more pressing matters so I would
-appreciate if you could take the patch as is.
 
- Jocke
+--
+
+Thanks
+Sandeep
