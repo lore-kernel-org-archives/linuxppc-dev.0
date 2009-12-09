@@ -1,18 +1,26 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 89FAAB6F0D
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 15:28:39 +1100 (EST)
-Date: Tue, 08 Dec 2009 20:28:38 -0800 (PST)
-Message-Id: <20091208.202838.78052287.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH/REPOST] net/mpc5200: Fix locking on fec_mpc52xx driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091205043015.28041.19288.stgit@angua>
-References: <20091205043015.28041.19288.stgit@angua>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EE5B7B6EF4
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 15:29:48 +1100 (EST)
+Subject: Re: 2.6.33 -next tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20091209042514.GA7837@lixom.net>
+References: <fa686aa40911042210q5bbbca2fi82911b7245d17588@mail.gmail.com>
+	<fa686aa40912081333r53cdc5d4ldc45dcfdd2e7536f@mail.gmail.com>
+	<1260311383.16132.4.camel@pasglop>
+	<20091208144505.af1dd7a3.akpm@linux-foundation.org>
+	<20091209042514.GA7837@lixom.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Dec 2009 15:29:32 +1100
+Message-ID: <1260332972.16132.8.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: a.llano@ziv.es, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,21 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 04 Dec 2009 21:33:13 -0700
-
-> Fix the locking scheme on the fec_mpc52xx driver.  This device can
-> receive IRQs from three sources; the FEC itself, the tx DMA, and the
-> rx DMA.  Mutual exclusion was handled by taking a spin_lock() in the
-> critical regions, but because the handlers are run with IRQs enabled,
-> spin_lock() is insufficient and the driver can end up interrupting
-> a critical region anyway from another IRQ.
+On Tue, 2009-12-08 at 22:25 -0600, Olof Johansson wrote:
+> On Tue, Dec 08, 2009 at 02:45:05PM -0800, Andrew Morton wrote:
+> > On Wed, 09 Dec 2009 09:29:43 +1100
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > 
+> > > On Tue, 2009-12-08 at 14:33 -0700, Grant Likely wrote:
+> > > > This tree has also been in linux-next for a while now, so it should be
+> > > > a safe pull. 
+> > > 
+> > > I'll pull it, I'll pull it, stop nagging :-)
+> > > 
+> > 
+> > ooh, does nagging work?
+> > 
+> > <writes that down somewhere>
 > 
-> Asier Llano discovered that this occurs when an error IRQ is raised
-> in the middle of handling rx irqs which resulted in an sk_buff memory
-> leak.
+> Remains to be seen. He hasn't actually pulled it yet, has he? :)
 
-I'll apply this fix.
+Well, actually I have ... but I haven't pushed the result out yet :-)
 
-But, longer term, it's a thousand times easier and more efficient to
-move the processing of these interrupts into softirq context.
+Cheers,
+Ben.
