@@ -1,25 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 36364B6F0D
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 15:20:19 +1100 (EST)
-Subject: Re: [PATCH 04/10] 8xx: Always pin kernel instruction TLB
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1258712471-3104-5-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-5-git-send-email-Joakim.Tjernlund@transmode.se>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 15:19:59 +1100
-Message-ID: <1260332399.16132.7.camel@pasglop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+	by ozlabs.org (Postfix) with ESMTPS id 58CBAB6EF4
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 15:22:24 +1100 (EST)
+Date: Tue, 8 Dec 2009 22:25:14 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.33 -next tree
+Message-ID: <20091209042514.GA7837@lixom.net>
+References: <fa686aa40911042210q5bbbca2fi82911b7245d17588@mail.gmail.com>
+	<fa686aa40912081333r53cdc5d4ldc45dcfdd2e7536f@mail.gmail.com>
+	<1260311383.16132.4.camel@pasglop>
+	<20091208144505.af1dd7a3.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091208144505.af1dd7a3.akpm@linux-foundation.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-11-20 at 11:21 +0100, Joakim Tjernlund wrote:
-> Various kernel asm modifies SRR0/SRR1 just before executing
-> a rfi. If such code crosses a page boundary you risk a TLB miss
-> which will clobber SRR0/SRR1. Avoid this by always pinning
-> kernel instruction TLB space.
+On Tue, Dec 08, 2009 at 02:45:05PM -0800, Andrew Morton wrote:
+> On Wed, 09 Dec 2009 09:29:43 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> ---
->  arch/powerpc/kernel/head_8xx.S |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> > On Tue, 2009-12-08 at 14:33 -0700, Grant Likely wrote:
+> > > This tree has also been in linux-next for a while now, so it should be
+> > > a safe pull. 
+> > 
+> > I'll pull it, I'll pull it, stop nagging :-)
+> > 
 > 
-> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-> index a9f1ace..e70503d 100644
-> --- a/arch/powerpc/kernel/head_8xx.S
-> +++ b/arch/powerpc/kernel/head_8xx.S
-> @@ -705,7 +705,7 @@ start_here:
->   */
->  initial_mmu:
->  	tlbia			/* Invalidate all TLB entries */
-> -#ifdef CONFIG_PIN_TLB
-> +#if 1 /* CONFIG_PIN_TLB */
->  	lis	r8, MI_RSV4I@h
->  	ori	r8, r8, 0x1c00
->  #else
+> ooh, does nagging work?
+> 
+> <writes that down somewhere>
 
-Not nice. Either remove the config option or make sure all those code
-sequences are appropriately aligned so it doesn't happen. I recommend
-the later :-)
+Remains to be seen. He hasn't actually pulled it yet, has he? :)
 
-I'll apply the other patches.
 
-Cheers,
-Ben.
+-Olof
