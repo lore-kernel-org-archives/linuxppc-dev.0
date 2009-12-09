@@ -2,19 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E6008B6F0C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Dec 2009 14:18:03 +1100 (EST)
-Subject: Re: [PATCH] PowerPC: const intspec pointers
+	by ozlabs.org (Postfix) with ESMTPS id 36364B6F0D
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 15:20:19 +1100 (EST)
+Subject: Re: [PATCH 04/10] 8xx: Always pin kernel instruction TLB
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Roman Fietze <roman.fietze@telemotive.de>
-In-Reply-To: <200912081339.50722.roman.fietze@telemotive.de>
-References: <200912081339.50722.roman.fietze@telemotive.de>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1258712471-3104-5-git-send-email-Joakim.Tjernlund@transmode.se>
+References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1258712471-3104-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1258712471-3104-3-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1258712471-3104-4-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1258712471-3104-5-git-send-email-Joakim.Tjernlund@transmode.se>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 13:45:06 +1100
-Message-ID: <1260326706.16132.5.camel@pasglop>
+Date: Wed, 09 Dec 2009 15:19:59 +1100
+Message-ID: <1260332399.16132.7.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,375 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2009-12-08 at 13:39 +0100, Roman Fietze wrote:
-> Hello,
+On Fri, 2009-11-20 at 11:21 +0100, Joakim Tjernlund wrote:
+> Various kernel asm modifies SRR0/SRR1 just before executing
+> a rfi. If such code crosses a page boundary you risk a TLB miss
+> which will clobber SRR0/SRR1. Avoid this by always pinning
+> kernel instruction TLB space.
 > 
-> Writing a driver using SCLPC on the MPC5200B I detected, that the
-> intspec arrays to map irqs to Linux virq cannot be const, because the
-> mapping and xlate functions only take non const pointers. All those
-> functions do not modify the intspec, so a const pointer could be used.
+> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> ---
+>  arch/powerpc/kernel/head_8xx.S |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> I tried to compile that patch on different platforms and got no
-> compiler errors, so I'd like to ask you to review that patch, and
-> check if it's worth using it.
+> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+> index a9f1ace..e70503d 100644
+> --- a/arch/powerpc/kernel/head_8xx.S
+> +++ b/arch/powerpc/kernel/head_8xx.S
+> @@ -705,7 +705,7 @@ start_here:
+>   */
+>  initial_mmu:
+>  	tlbia			/* Invalidate all TLB entries */
+> -#ifdef CONFIG_PIN_TLB
+> +#if 1 /* CONFIG_PIN_TLB */
+>  	lis	r8, MI_RSV4I@h
+>  	ori	r8, r8, 0x1c00
+>  #else
 
-Looks good.
+Not nice. Either remove the config option or make sure all those code
+sequences are appropriately aligned so it doesn't happen. I recommend
+the later :-)
 
-I'll give it a go and if it doesn't break anything, will apply.
+I'll apply the other patches.
 
 Cheers,
 Ben.
-
-> Signed-off-by: Roman Fietze <roman.fietze@telemotive.de>
-> ---
->  arch/powerpc/include/asm/irq.h                  |    4 ++--
->  arch/powerpc/kernel/irq.c                       |    2 +-
->  arch/powerpc/platforms/52xx/media5200.c         |    2 +-
->  arch/powerpc/platforms/52xx/mpc52xx_gpt.c       |    2 +-
->  arch/powerpc/platforms/52xx/mpc52xx_pic.c       |    2 +-
->  arch/powerpc/platforms/85xx/socrates_fpga_pic.c |    2 +-
->  arch/powerpc/platforms/86xx/gef_pic.c           |    2 +-
->  arch/powerpc/platforms/cell/beat_interrupt.c    |    4 ++--
->  arch/powerpc/platforms/cell/interrupt.c         |    2 +-
->  arch/powerpc/platforms/cell/spider-pic.c        |    2 +-
->  arch/powerpc/platforms/powermac/pic.c           |    2 +-
->  arch/powerpc/platforms/pseries/xics.c           |    2 +-
->  arch/powerpc/sysdev/cpm2_pic.c                  |    2 +-
->  arch/powerpc/sysdev/i8259.c                     |    2 +-
->  arch/powerpc/sysdev/ipic.c                      |    2 +-
->  arch/powerpc/sysdev/mpc8xx_pic.c                |    2 +-
->  arch/powerpc/sysdev/mpic.c                      |    2 +-
->  arch/powerpc/sysdev/qe_lib/qe_ic.c              |    2 +-
->  arch/powerpc/sysdev/tsi108_pci.c                |    2 +-
->  arch/powerpc/sysdev/uic.c                       |    2 +-
->  arch/powerpc/sysdev/xilinx_intc.c               |    2 +-
->  21 files changed, 23 insertions(+), 23 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-> index bbcd1aa..a0bcafc 100644
-> --- a/arch/powerpc/include/asm/irq.h
-> +++ b/arch/powerpc/include/asm/irq.h
-> @@ -99,7 +99,7 @@ struct irq_host_ops {
->  	 * interrupt controller has for that line)
->  	 */
->  	int (*xlate)(struct irq_host *h, struct device_node *ctrler,
-> -		     u32 *intspec, unsigned int intsize,
-> +		     const u32 *intspec, unsigned int intsize,
->  		     irq_hw_number_t *out_hwirq, unsigned int *out_type);
->  };
->  
-> @@ -313,7 +313,7 @@ extern void irq_free_virt(unsigned int virq, unsigned int 
-> count);
->   * of the of_irq_map_*() functions.
->   */
->  extern unsigned int irq_create_of_mapping(struct device_node *controller,
-> -					  u32 *intspec, unsigned int intsize);
-> +					  const u32 *intspec, unsigned int intsize);
->  
->  /**
->   * irq_of_parse_and_map - Parse and Map an interrupt into linux virq space
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index e5d1211..6e294e0 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -699,7 +699,7 @@ unsigned int irq_create_mapping(struct irq_host *host,
->  EXPORT_SYMBOL_GPL(irq_create_mapping);
->  
->  unsigned int irq_create_of_mapping(struct device_node *controller,
-> -				   u32 *intspec, unsigned int intsize)
-> +				   const u32 *intspec, unsigned int intsize)
->  {
->  	struct irq_host *host;
->  	irq_hw_number_t hwirq;
-> diff --git a/arch/powerpc/platforms/52xx/media5200.c 
-> b/arch/powerpc/platforms/52xx/media5200.c
-> index 68e4f16..b1ec9bb 100644
-> --- a/arch/powerpc/platforms/52xx/media5200.c
-> +++ b/arch/powerpc/platforms/52xx/media5200.c
-> @@ -127,7 +127,7 @@ static int media5200_irq_map(struct irq_host *h, unsigned 
-> int virq,
->  }
->  
->  static int media5200_irq_xlate(struct irq_host *h, struct device_node *ct,
-> -				 u32 *intspec, unsigned int intsize,
-> +				 const u32 *intspec, unsigned int intsize,
->  				 irq_hw_number_t *out_hwirq,
->  				 unsigned int *out_flags)
->  {
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c 
-> b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> index bfbcd41..78f0ab6 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> @@ -182,7 +182,7 @@ static int mpc52xx_gpt_irq_map(struct irq_host *h, 
-> unsigned int virq,
->  }
->  
->  static int mpc52xx_gpt_irq_xlate(struct irq_host *h, struct device_node *ct,
-> -				 u32 *intspec, unsigned int intsize,
-> +				 const u32 *intspec, unsigned int intsize,
->  				 irq_hw_number_t *out_hwirq,
->  				 unsigned int *out_flags)
->  {
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c 
-> b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-> index 480f806..53d44f6 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-> @@ -355,7 +355,7 @@ static int mpc52xx_is_extirq(int l1, int l2)
->   * mpc52xx_irqhost_xlate - translate virq# from device tree interrupts 
-> property
->   */
->  static int mpc52xx_irqhost_xlate(struct irq_host *h, struct device_node *ct,
-> -				 u32 *intspec, unsigned int intsize,
-> +				 const u32 *intspec, unsigned int intsize,
->  				 irq_hw_number_t *out_hwirq,
->  				 unsigned int *out_flags)
->  {
-> diff --git a/arch/powerpc/platforms/85xx/socrates_fpga_pic.c 
-> b/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
-> index 60edf63..380858a 100644
-> --- a/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
-> +++ b/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
-> @@ -253,7 +253,7 @@ static int socrates_fpga_pic_host_map(struct irq_host *h, 
-> unsigned int virq,
->  }
->  
->  static int socrates_fpga_pic_host_xlate(struct irq_host *h,
-> -		struct device_node *ct,	u32 *intspec, unsigned int intsize,
-> +		struct device_node *ct,	const u32 *intspec, unsigned int intsize,
->  		irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  {
->  	struct socrates_fpga_irq_info *fpga_irq = &fpga_irqs[intspec[0]];
-> diff --git a/arch/powerpc/platforms/86xx/gef_pic.c 
-> b/arch/powerpc/platforms/86xx/gef_pic.c
-> index 50d0a2b..8d4479f 100644
-> --- a/arch/powerpc/platforms/86xx/gef_pic.c
-> +++ b/arch/powerpc/platforms/86xx/gef_pic.c
-> @@ -170,7 +170,7 @@ static int gef_pic_host_map(struct irq_host *h, unsigned 
-> int virq,
->  }
->  
->  static int gef_pic_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			    u32 *intspec, unsigned int intsize,
-> +			    const u32 *intspec, unsigned int intsize,
->  			    irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  {
->  
-> diff --git a/arch/powerpc/platforms/cell/beat_interrupt.c 
-> b/arch/powerpc/platforms/cell/beat_interrupt.c
-> index 7225484..1f2fd65 100644
-> --- a/arch/powerpc/platforms/cell/beat_interrupt.c
-> +++ b/arch/powerpc/platforms/cell/beat_interrupt.c
-> @@ -166,11 +166,11 @@ static void beatic_pic_host_remap(struct irq_host *h, 
-> unsigned int virq,
->   * Note: We have only 1 entry to translate.
->   */
->  static int beatic_pic_host_xlate(struct irq_host *h, struct device_node *ct,
-> -				 u32 *intspec, unsigned int intsize,
-> +				 const u32 *intspec, unsigned int intsize,
->  				 irq_hw_number_t *out_hwirq,
->  				 unsigned int *out_flags)
->  {
-> -	u64 *intspec2 = (u64 *)intspec;
-> +	const u64 *intspec2 = (const u64 *)intspec;
->  
->  	*out_hwirq = *intspec2;
->  	*out_flags |= IRQ_TYPE_LEVEL_LOW;
-> diff --git a/arch/powerpc/platforms/cell/interrupt.c 
-> b/arch/powerpc/platforms/cell/interrupt.c
-> index 882e470..d9d33cb 100644
-> --- a/arch/powerpc/platforms/cell/interrupt.c
-> +++ b/arch/powerpc/platforms/cell/interrupt.c
-> @@ -297,7 +297,7 @@ static int iic_host_map(struct irq_host *h, unsigned int 
-> virq,
->  }
->  
->  static int iic_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			   u32 *intspec, unsigned int intsize,
-> +			   const u32 *intspec, unsigned int intsize,
->  			   irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  
->  {
-> diff --git a/arch/powerpc/platforms/cell/spider-pic.c 
-> b/arch/powerpc/platforms/cell/spider-pic.c
-> index 4e56556..37c2e4e 100644
-> --- a/arch/powerpc/platforms/cell/spider-pic.c
-> +++ b/arch/powerpc/platforms/cell/spider-pic.c
-> @@ -187,7 +187,7 @@ static int spider_host_map(struct irq_host *h, unsigned 
-> int virq,
->  }
->  
->  static int spider_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			   u32 *intspec, unsigned int intsize,
-> +			   const u32 *intspec, unsigned int intsize,
->  			   irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  
->  {
-> diff --git a/arch/powerpc/platforms/powermac/pic.c 
-> b/arch/powerpc/platforms/powermac/pic.c
-> index d212006..da6b4b9 100644
-> --- a/arch/powerpc/platforms/powermac/pic.c
-> +++ b/arch/powerpc/platforms/powermac/pic.c
-> @@ -303,7 +303,7 @@ static int pmac_pic_host_map(struct irq_host *h, unsigned 
-> int virq,
->  }
->  
->  static int pmac_pic_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			       u32 *intspec, unsigned int intsize,
-> +			       const u32 *intspec, unsigned int intsize,
->  			       irq_hw_number_t *out_hwirq,
->  			       unsigned int *out_flags)
->  
-> diff --git a/arch/powerpc/platforms/pseries/xics.c 
-> b/arch/powerpc/platforms/pseries/xics.c
-> index b9bf0ee..1821eae 100644
-> --- a/arch/powerpc/platforms/pseries/xics.c
-> +++ b/arch/powerpc/platforms/pseries/xics.c
-> @@ -434,7 +434,7 @@ static int xics_host_map(struct irq_host *h, unsigned int 
-> virq,
->  }
->  
->  static int xics_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			   u32 *intspec, unsigned int intsize,
-> +			   const u32 *intspec, unsigned int intsize,
->  			   irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  
->  {
-> diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
-> index 78f1f7c..3d2be56 100644
-> --- a/arch/powerpc/sysdev/cpm2_pic.c
-> +++ b/arch/powerpc/sysdev/cpm2_pic.c
-> @@ -216,7 +216,7 @@ static int cpm2_pic_host_map(struct irq_host *h, unsigned 
-> int virq,
->  }
->  
->  static int cpm2_pic_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			    u32 *intspec, unsigned int intsize,
-> +			    const u32 *intspec, unsigned int intsize,
->  			    irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  {
->  	*out_hwirq = intspec[0];
-> diff --git a/arch/powerpc/sysdev/i8259.c b/arch/powerpc/sysdev/i8259.c
-> index a96584a..ccc9a3b 100644
-> --- a/arch/powerpc/sysdev/i8259.c
-> +++ b/arch/powerpc/sysdev/i8259.c
-> @@ -198,7 +198,7 @@ static void i8259_host_unmap(struct irq_host *h, unsigned 
-> int virq)
->  }
->  
->  static int i8259_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			    u32 *intspec, unsigned int intsize,
-> +			    const u32 *intspec, unsigned int intsize,
->  			    irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  {
->  	static unsigned char map_isa_senses[4] = {
-> diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-> index cb7689c..27259f4 100644
-> --- a/arch/powerpc/sysdev/ipic.c
-> +++ b/arch/powerpc/sysdev/ipic.c
-> @@ -697,7 +697,7 @@ static int ipic_host_map(struct irq_host *h, unsigned int 
-> virq,
->  }
->  
->  static int ipic_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			   u32 *intspec, unsigned int intsize,
-> +			   const u32 *intspec, unsigned int intsize,
->  			   irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  
->  {
-> diff --git a/arch/powerpc/sysdev/mpc8xx_pic.c 
-> b/arch/powerpc/sysdev/mpc8xx_pic.c
-> index 5d2d552..72544a1 100644
-> --- a/arch/powerpc/sysdev/mpc8xx_pic.c
-> +++ b/arch/powerpc/sysdev/mpc8xx_pic.c
-> @@ -130,7 +130,7 @@ static int mpc8xx_pic_host_map(struct irq_host *h, 
-> unsigned int virq,
->  
-> 
->  static int mpc8xx_pic_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			    u32 *intspec, unsigned int intsize,
-> +			    const u32 *intspec, unsigned int intsize,
->  			    irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  {
->  	static unsigned char map_pic_senses[4] = {
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 30c44e6..1452a4e 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -994,7 +994,7 @@ static int mpic_host_map(struct irq_host *h, unsigned int 
-> virq,
->  }
->  
->  static int mpic_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			   u32 *intspec, unsigned int intsize,
-> +			   const u32 *intspec, unsigned int intsize,
->  			   irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  
->  {
-> diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c 
-> b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-> index 3faa42e..8192f58 100644
-> --- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
-> +++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-> @@ -271,7 +271,7 @@ static int qe_ic_host_map(struct irq_host *h, unsigned int 
-> virq,
->  }
->  
->  static int qe_ic_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			    u32 * intspec, unsigned int intsize,
-> +			    const u32 * intspec, unsigned int intsize,
->  			    irq_hw_number_t * out_hwirq,
->  			    unsigned int *out_flags)
->  {
-> diff --git a/arch/powerpc/sysdev/tsi108_pci.c 
-> b/arch/powerpc/sysdev/tsi108_pci.c
-> index cf244a4..a23223d 100644
-> --- a/arch/powerpc/sysdev/tsi108_pci.c
-> +++ b/arch/powerpc/sysdev/tsi108_pci.c
-> @@ -384,7 +384,7 @@ static struct irq_chip tsi108_pci_irq = {
->  };
->  
->  static int pci_irq_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			    u32 *intspec, unsigned int intsize,
-> +			    const u32 *intspec, unsigned int intsize,
->  			    irq_hw_number_t *out_hwirq, unsigned int *out_flags)
->  {
->  	*out_hwirq = intspec[0];
-> diff --git a/arch/powerpc/sysdev/uic.c b/arch/powerpc/sysdev/uic.c
-> index 466ce9a..1c315d8 100644
-> --- a/arch/powerpc/sysdev/uic.c
-> +++ b/arch/powerpc/sysdev/uic.c
-> @@ -202,7 +202,7 @@ static int uic_host_map(struct irq_host *h, unsigned int 
-> virq,
->  }
->  
->  static int uic_host_xlate(struct irq_host *h, struct device_node *ct,
-> -			  u32 *intspec, unsigned int intsize,
-> +			  const u32 *intspec, unsigned int intsize,
->  			  irq_hw_number_t *out_hwirq, unsigned int *out_type)
->  
->  {
-> diff --git a/arch/powerpc/sysdev/xilinx_intc.c 
-> b/arch/powerpc/sysdev/xilinx_intc.c
-> index 40edad5..368db32 100644
-> --- a/arch/powerpc/sysdev/xilinx_intc.c
-> +++ b/arch/powerpc/sysdev/xilinx_intc.c
-> @@ -148,7 +148,7 @@ static struct irq_chip xilinx_intc_edge_irqchip = {
->   * xilinx_intc_xlate - translate virq# from device tree interrupts property
->   */
->  static int xilinx_intc_xlate(struct irq_host *h, struct device_node *ct,
-> -				u32 *intspec, unsigned int intsize,
-> +				const u32 *intspec, unsigned int intsize,
->  				irq_hw_number_t *out_hwirq,
->  				unsigned int *out_flags)
->  {
-> -- 
-> 1.6.5.3
-> 
-> 
-> Thanks a lot for your help
-> 
-> 
-> Roman
-> 
