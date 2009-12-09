@@ -1,25 +1,19 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mail-ew0-f209.google.com (mail-ew0-f209.google.com
-	[209.85.219.209]) by ozlabs.org (Postfix) with ESMTP id 92318B6F09
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Dec 2009 20:09:49 +1100 (EST)
-Received: by ewy1 with SMTP id 1so3763643ewy.8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 09 Dec 2009 01:09:45 -0800 (PST)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] show_interrupts: use irq_chip::name if available
-References: <1259700494-17869-1-git-send-email-jacmet@sunsite.dk>
-	<87y6lcmwkk.fsf@macbook.be.48ers.dk>
-	<1260349142.16132.39.camel@pasglop>
-Date: Wed, 09 Dec 2009 10:09:42 +0100
-In-Reply-To: <1260349142.16132.39.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Wed, 09 Dec 2009 19:59:02 +1100")
-Message-ID: <87ljhcms2x.fsf@macbook.be.48ers.dk>
+Return-Path: <l.fu@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D71FFB70CF
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 20:26:23 +1100 (EST)
+Message-ID: <4B1F6D3A.3030500@pengutronix.de>
+Date: Wed, 09 Dec 2009 10:26:18 +0100
+From: Luotao Fu <l.fu@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: 2.6.33 -next tree
+References: <fa686aa40911042210q5bbbca2fi82911b7245d17588@mail.gmail.com>
+In-Reply-To: <fa686aa40911042210q5bbbca2fi82911b7245d17588@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>> "Benjamin" == Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Hi Grant,
 
- Benjamin> On Wed, 2009-12-09 at 08:32 +0100, Peter Korsgaard wrote:
- >> >>>>> "Peter" == Peter Korsgaard <jacmet@sunsite.dk> writes:
- >> 
- Peter> struct irq_chip::typename is going away (replaced by name). Use name if
- Peter> set instead of typename in show_interrupt to make ease transition.
- >> 
- >> Comments?
+Grant Likely wrote:
+> Hi Ben, Stephen.
+> 
+> I just prepared my next branch for 2.6.33:
+> git://git.secretlab.ca/git/linux-2.6 next
+> 
 
- Benjamin> Hi Peter !
+Just for curiosity: I noticed that you keep so far the further patches for the
+dedicated spi controller on mpc5200 in the next-spi tree. Any plan when they
+will be merged to the -next tree? Like mentioned before, some of them are
+essential, without which the driver doesn't work (at least on my board)
 
- Benjamin> There's already a patch in my -next tree from Thomas Gleixner
- Benjamin> that fixes that up along with a few others in arch/powerpc.
+sorry for nagging. ;-)
 
-Ahh, ok - Hadn't noticed - Sorry.
+thanks
 
+cheers
+Luotao Fu
 -- 
-Bye, Peter Korsgaard
+Pengutronix e.K.                           | Dipl.-Ing. Luotao Fu        |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
