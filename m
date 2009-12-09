@@ -2,17 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9D7E8B6F1B
+	by ozlabs.org (Postfix) with ESMTPS id 6CD24B6F14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Dec 2009 17:56:55 +1100 (EST)
-Subject: gianfar breaking builds
+	Wed,  9 Dec 2009 18:08:52 +1100 (EST)
+Subject: Re: Badness at arch/powerpc/mm/pgtable.c:286
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
+To: kordex - <kordex@gmail.com>
+In-Reply-To: <8b8dd87a0912080914h3d71ea6x3052582b662d5f73@mail.gmail.com>
+References: <8b8dd87a0912080914h3d71ea6x3052582b662d5f73@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 17:56:44 +1100
-Message-ID: <1260341804.16132.22.camel@pasglop>
+Date: Wed, 09 Dec 2009 18:08:44 +1100
+Message-ID: <1260342524.16132.28.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In my next (not pushed out yet as I'm writing this but will be by the
-time you read it hopefully), I get a build failure:
+On Tue, 2009-12-08 at 19:14 +0200, kordex - wrote:
+> Hello,
+> 
+> I turned some debuging options in order to trace rcutree problems but
+> after turning debugging on it began just to loop on this:
+> 
+> http://xnet.fi/opt/pics/pgtable_badness.jpg
+> 1.5M   pgtable_badness.jpg
+> 
+> I am sorry that I could not produce full dmesg.
+> 
+> Kernel config: http://xnet.fi/opt/apps/lkml-2.6.32-vanilla.debug.config.txt
 
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c: In function ‘gfar_netpoll’:
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2653: error: invalid storage class for function ‘gfar_interrupt’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2652: warning: ISO C90 forbids mixed declarations and code
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2681: error: invalid storage class for function ‘adjust_link’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2764: error: invalid storage class for function ‘gfar_set_multi’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2855: error: invalid storage class for function ‘gfar_clear_exact_match’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2877: error: invalid storage class for function ‘gfar_set_hash_for_addr’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2898: error: invalid storage class for function ‘gfar_set_mac_for_addr’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:2922: error: invalid storage class for function ‘gfar_error’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3017: warning: ‘alias’ attribute ignored
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3032: error: invalid storage class for function ‘gfar_init’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3037: error: invalid storage class for function ‘gfar_exit’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3041: error: invalid storage class for function ‘__inittest’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3041: warning: ‘alias’ attribute ignored
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042: error: invalid storage class for function ‘__exittest’
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042: warning: ISO C90 forbids mixed declarations and code
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042: warning: ‘alias’ attribute ignored
-/home/benh/linux-powerpc-test/drivers/net/gianfar.c:3042: error: expected declaration or statement at end of input
-make[3]: *** [drivers/net/gianfar.o] Error 1
+Thanks for your report.
 
-Stephen says that breakage has been in -next for some time...
+Does that patch fixes it ?
 
-Can you guys sort it out ?
+powerpc/mm: Fix a WARN_ON() with CONFIG_DEBUG_PAGEALLOC and CONFIG_DEBUG_VM
 
-Cheers,
-Ben.
+Set need to call __set_pte_at() and not set_pte_at() from __change_page_attr()
+since the later will perform checks with CONFIG_DEBUG_VM that aren't suitable
+to the way we override an existing PTE. (More specifically, it doesn't let
+you write over a present PTE).
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+Index: linux-work/arch/powerpc/mm/pgtable_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/pgtable_32.c	2009-12-09 18:06:14.000000000 +1100
++++ linux-work/arch/powerpc/mm/pgtable_32.c	2009-12-09 18:06:16.000000000 +1100
+@@ -356,7 +356,7 @@ static int __change_page_attr(struct pag
+ 		return 0;
+ 	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
+ 		return -EINVAL;
+-	set_pte_at(&init_mm, address, kpte, mk_pte(page, prot));
++	__set_pte_at(&init_mm, address, kpte, mk_pte(page, prot));
+ 	wmb();
+ #ifdef CONFIG_PPC_STD_MMU
+ 	flush_hash_pages(0, address, pmd_val(*kpmd), 1);
