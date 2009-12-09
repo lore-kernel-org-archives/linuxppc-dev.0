@@ -2,21 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 32EA1B6F1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 07:43:27 +1100 (EST)
-Subject: Re: [PATCH v2] cpm2_pic: Allow correct flow_types for port C
-	interrupts
+	by ozlabs.org (Postfix) with ESMTPS id 76443B6F1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 07:51:16 +1100 (EST)
+Subject: Re: [PATCH] powerpc/fsl_pci: Fix P2P bridge handling for MPC83xx PCIe
+	controllers
 Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4B1EF3E9.8050005@elphinstone.net>
-Date: Wed, 9 Dec 2009 14:43:12 -0600
-Message-Id: <5210EB9D-2775-48B3-AF50-5D7ABFA992A6@kernel.crashing.org>
-References: <4B1EF3E9.8050005@elphinstone.net>
+In-Reply-To: <20091207225435.GA18485@oksana.dev.rtsoft.ru>
+Date: Wed, 9 Dec 2009 14:51:05 -0600
+Message-Id: <738EDEFC-DC2B-4E4D-AA9B-B7B620E76B8A@kernel.crashing.org>
+References: <20091207225435.GA18485@oksana.dev.rtsoft.ru>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Mark Ware <mware@elphinstone.net>
+Cc: linuxppc-dev@ozlabs.org, "B.J. Buchalter" <bj@mhlabs.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,71 +25,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Dec 8, 2009, at 6:48 PM, Mark Ware wrote:
+On Dec 7, 2009, at 4:54 PM, Anton Vorontsov wrote:
 
-> Port C interrupts can be either falling edge, or either edge.
-> Other external interrupts are either falling edge or active low.
->=20
-> Signed-Off-By: Mark Ware <mware@elphinstone.net>
+> It appears that we wrongly calculate dev_base for type1 config cycles.
+> The thing is: we shouldn't subtract hose->first_busno because PCI core
+> sets PCI primary, secondary and subordinate bus numbers, and PCIe
+> controller actually takes the registers into account. So we should use
+> just bus->number.
+> 
+> Also, according to MPC8315 reference manual, primary bus number should
+> always remain 0. We have PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS quirk
+> in indirect_pci.c, but since 83xx is somewhat special, it doesn't use
+> indirect_pci.c routines, so we have to implement the quirk specifically
+> for 83xx PCIe controllers.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> Changed in v2:
-> - Disallow rising edge only on Port C=20
->=20
-> arch/powerpc/sysdev/cpm2_pic.c |   30 +++++++++++++++++++++++-------
-> 1 files changed, 23 insertions(+), 7 deletions(-)
 
-Anton, mind taking a look at this for me.
+applied to next
 
 - k
-
->=20
-> diff --git a/arch/powerpc/sysdev/cpm2_pic.c =
-b/arch/powerpc/sysdev/cpm2_pic.c
-> index 78f1f7c..eba5f24 100644
-> --- a/arch/powerpc/sysdev/cpm2_pic.c
-> +++ b/arch/powerpc/sysdev/cpm2_pic.c
-> @@ -141,13 +141,29 @@ static int cpm2_set_irq_type(unsigned int virq, =
-unsigned int flow_type)
-> 	struct irq_desc *desc =3D get_irq_desc(virq);
-> 	unsigned int vold, vnew, edibit;
->=20
-> -	if (flow_type =3D=3D IRQ_TYPE_NONE)
-> -		flow_type =3D IRQ_TYPE_LEVEL_LOW;
-> -
-> -	if (flow_type & IRQ_TYPE_EDGE_RISING) {
-> -		printk(KERN_ERR "CPM2 PIC: sense type 0x%x not =
-supported\n",
-> -			flow_type);
-> -		return -EINVAL;
-> +	/* Port C interrupts are either IRQ_TYPE_EDGE_FALLING or
-> +	 * IRQ_TYPE_EDGE_BOTH (default).  All others are =
-IRQ_TYPE_EDGE_FALLING
-> +	 * or IRQ_TYPE_LEVEL_LOW (default)
-> +	 */
-> +	if (src >=3D CPM2_IRQ_PORTC15 && src <=3D CPM2_IRQ_PORTC0) {
-> +		if (flow_type =3D=3D IRQ_TYPE_NONE)
-> +			flow_type =3D IRQ_TYPE_EDGE_BOTH;
-> +
-> +		if ((flow_type !=3D IRQ_TYPE_EDGE_BOTH) &&=20
-> +			(flow_type !=3D IRQ_TYPE_EDGE_FALLING)) {
-> +			printk(KERN_ERR "CPM2 PIC: sense type 0x%x not =
-supported\n",
-> +				flow_type);
-> +			return -EINVAL;
-> +		}
-> +	} else {
-> +		if (flow_type =3D=3D IRQ_TYPE_NONE)
-> +			flow_type =3D IRQ_TYPE_LEVEL_LOW;
-> +
-> +		if (flow_type & (IRQ_TYPE_EDGE_RISING | =
-IRQ_TYPE_LEVEL_HIGH)) {
-> +			printk(KERN_ERR "CPM2 PIC: sense type 0x%x not =
-supported\n",
-> +				flow_type);
-> +			return -EINVAL;
-> +		}
-> 	}
->=20
-> 	desc->status &=3D ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
-> --=20
-> 1.5.6.5
