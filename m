@@ -1,34 +1,23 @@
-Return-Path: <B05799@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <roman.fietze@telemotive.de>
+Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A3687B6EF6
+	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 5A0F4B6F16
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Dec 2009 00:55:16 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.14.3/az33egw01) with ESMTP id
-	nB9Dt8Ms024599 for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 9 Dec 2009 06:55:08 -0700 (MST)
-Received: from zin33exm22.fsl.freescale.net (zin33exm22.ap.freescale.net
-	[10.232.192.20])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nB9DxHSL020721
+	Thu, 10 Dec 2009 01:29:22 +1100 (EST)
+Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
+	[192.168.5.33])
+	by alderan.mit.telemotive.de (Postfix) with ESMTP id 88935B6463
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 9 Dec 2009 07:59:18 -0600 (CST)
+	Wed,  9 Dec 2009 15:29:14 +0100 (CET)
+From: Roman Fietze <roman.fietze@telemotive.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: MPC5200B XLB Configuration Issues, FEC RFIFO Events, ATA Crashes
 MIME-Version: 1.0
+Message-ID: <200912091529.13913.roman.fietze@telemotive.de>
+Date: Wed, 9 Dec 2009 15:29:13 +0100
 Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] gianfar: Fix build with CONFIG_NET_POLL_CONTROLLER=y
-Date: Wed, 9 Dec 2009 19:25:00 +0530
-Message-ID: <9F4C7D19E8361D4C94921B95BE08B81BA08A9A@zin33exm22.fsl.freescale.net>
-In-Reply-To: <20091209.025245.152622485.davem@davemloft.net>
-References: <1260341804.16132.22.camel@pasglop><20091209104427.GA25526@oksana.dev.rtsoft.ru>
-	<20091209.025245.152622485.davem@davemloft.net>
-From: "Kumar Gopalpet-B05799" <B05799@freescale.com>
-To: <avorontsov@ru.mvista.com>
-Cc: David Miller <davem@davemloft.net>, linuxppc-dev@lists.ozlabs.org,
-	netdev@vger.kernel.org
+  charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,18 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
->From: Anton Vorontsov <avorontsov@ru.mvista.com>
->Date: Wed, 9 Dec 2009 13:44:27 +0300
->
->> commit 46ceb60ca80fa07703bc6eb8f4651f900dff5a82 ("gianfar: Add=20
->> Multiple group Support") introduced the following build error with=20
->> CONFIG_NET_POLL_CONTROLLER=3Dy:
-> ...
->> This patch fixes the issue.
->>=20
->> Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->
+Hallo,
 
-Thanks Anton !
+I had a discussion with some Freescale support people about the
+constant RFIFO Event errors or PATA hard disk crashes when stressing a
+board with (very) high loads, in my case even with some additional
+traffic from an FPGA (or just the FLASH) via the SCLPC FIFO using the
+BestComm.
+
+The latest recommendation from Freescale was to set BSDIS and PLDIS
+and to clear SE, resulting in a XLB config register value of
+0x80012006, at least for my MPC5200B PVR/SVR of
+0x80822014/0x80110022. If I am correct, the current XLB config setting
+using the current U-Boot and kernel is 0x0000a006.
+
+In order to get cache coherency I had to set
+CONFIG_NOT_COHERENT_CACHE=3Dy for the MPC5200B boards. Please correct me
+if I am wrong with this assumption.
+
+With this setup, XLB config and kernel config, I do no longer have any
+PATA crashes, I do no longer have any FEC RFIFO errors, and my SCLPC
+driver runs w/o problems, too.
+
+I would be interested in your opinion, maybe Wolfgang could make some
+comments, because he is involved in the U-Boot a lot as well.
+
+
+Here is the original text from the Freescale support person:
+
+=2D- snippety snip --
+
+Dear Roman Fietze,=20
+
+In reply to your message regarding Service Request SR 1-597437219:
+
+Disable pipelining also. Test your software using the following
+setting of the XLB arbiter: 0x80012006.
+
+We have request from a customer with similar problem. Problem
+disappeared if XLB pipelining and BestComm snooping were disabled.
+
+Should you need to contact us with regard to this message, please see
+the notes below.
+
+Best Regards,=20
+
+Pavel=20
+Technical Support
+=46reescale Semiconductor
+
+=2D- snappety snap --
+
+
+Roman
+
+=2D-=20
+Roman Fietze                Telemotive AG B=FCro M=FChlhausen
+Breitwiesen                              73347 M=FChlhausen
+Tel.: +49(0)7335/18493-45        http://www.telemotive.de
