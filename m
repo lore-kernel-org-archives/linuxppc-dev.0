@@ -1,23 +1,32 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 5A0F4B6F16
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A56C6B6F16
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Dec 2009 01:29:22 +1100 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 88935B6463
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Dec 2009 15:29:14 +0100 (CET)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: MPC5200B XLB Configuration Issues, FEC RFIFO Events, ATA Crashes
+	Thu, 10 Dec 2009 01:41:17 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nB9ESeiN016905
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Dec 2009 07:28:40 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	nB9EexJU250684
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Dec 2009 07:41:00 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id nB9Eev5N009626
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Dec 2009 07:40:57 -0700
+Date: Wed, 9 Dec 2009 09:40:55 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] powerpc: Increase warp SD buffer
+Message-ID: <20091209144055.GS2937@zod.rchland.ibm.com>
+References: <20091209000437.78794a8f@opus.seanm.ca>
 MIME-Version: 1.0
-Message-ID: <200912091529.13913.roman.fietze@telemotive.de>
-Date: Wed, 9 Dec 2009 15:29:13 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091209000437.78794a8f@opus.seanm.ca>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +36,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hallo,
+On Wed, Dec 09, 2009 at 12:04:37AM -0500, Sean MacLennan wrote:
+>Newer revs of the FPGA have a larger SD buffer.
 
-I had a discussion with some Freescale support people about the
-constant RFIFO Event errors or PATA hard disk crashes when stressing a
-board with (very) high loads, in my case even with some additional
-traffic from an FPGA (or just the FLASH) via the SCLPC FIFO using the
-BestComm.
+How does that impact the older revisions?  You're using a cuImage with Warp,
+so the device tree is bundled with that.  If you boot a new kernel with this
+change to the DTS on a older board revision, will it do bad things?
 
-The latest recommendation from Freescale was to set BSDIS and PLDIS
-and to clear SE, resulting in a XLB config register value of
-0x80012006, at least for my MPC5200B PVR/SVR of
-0x80822014/0x80110022. If I am correct, the current XLB config setting
-using the current U-Boot and kernel is 0x0000a006.
-
-In order to get cache coherency I had to set
-CONFIG_NOT_COHERENT_CACHE=3Dy for the MPC5200B boards. Please correct me
-if I am wrong with this assumption.
-
-With this setup, XLB config and kernel config, I do no longer have any
-PATA crashes, I do no longer have any FEC RFIFO errors, and my SCLPC
-driver runs w/o problems, too.
-
-I would be interested in your opinion, maybe Wolfgang could make some
-comments, because he is involved in the U-Boot a lot as well.
-
-
-Here is the original text from the Freescale support person:
-
-=2D- snippety snip --
-
-Dear Roman Fietze,=20
-
-In reply to your message regarding Service Request SR 1-597437219:
-
-Disable pipelining also. Test your software using the following
-setting of the XLB arbiter: 0x80012006.
-
-We have request from a customer with similar problem. Problem
-disappeared if XLB pipelining and BestComm snooping were disabled.
-
-Should you need to contact us with regard to this message, please see
-the notes below.
-
-Best Regards,=20
-
-Pavel=20
-Technical Support
-=46reescale Semiconductor
-
-=2D- snappety snap --
-
-
-Roman
-
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+josh
