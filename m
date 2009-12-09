@@ -2,26 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 78D7AB6F19
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 19:56:48 +1100 (EST)
-Subject: Re: [PATCH 04/10] 8xx: Always pin kernel instruction TLB
+	by ozlabs.org (Postfix) with ESMTPS id 5DE11B7B63
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  9 Dec 2009 19:59:08 +1100 (EST)
+Subject: Re: [PATCH 1/3] show_interrupts: use irq_chip::name if available
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OFB03B60EA.0352DA78-ONC1257687.002955A6-C1257687.002A145F@transmode.se>
-References: <1258712471-3104-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1258712471-3104-5-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1260332399.16132.7.camel@pasglop>
-	<OFB03B60EA.0352DA78-ONC1257687.002955A6-C1257687.002A145F@transmode.se>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+In-Reply-To: <87y6lcmwkk.fsf@macbook.be.48ers.dk>
+References: <1259700494-17869-1-git-send-email-jacmet@sunsite.dk>
+	<87y6lcmwkk.fsf@macbook.be.48ers.dk>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 19:56:35 +1100
-Message-ID: <1260348995.16132.37.camel@pasglop>
+Date: Wed, 09 Dec 2009 19:59:02 +1100
+Message-ID: <1260349142.16132.39.camel@pasglop>
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-12-09 at 08:39 +0100, Joakim Tjernlund wrote:
-> The later isn't as simple :) I believe the bulk of such code in
-> entry_32.S.
+On Wed, 2009-12-09 at 08:32 +0100, Peter Korsgaard wrote:
+> >>>>> "Peter" == Peter Korsgaard <jacmet@sunsite.dk> writes:
+> 
+>  Peter> struct irq_chip::typename is going away (replaced by name). Use name if
+>  Peter> set instead of typename in show_interrupt to make ease transition.
+> 
+> Comments?
 
-Yeah but it would be useful for hash I suppose if one really wants to
-boot with nobats. Though at least on hash most of the time we have ways
-to recover by mean of MSR:RI being cleared, which your TLB miss code
-doesn't check...
+Hi Peter !
 
-> Anyhow, the config option is still valid as if enabled
-> it will pin several DTLB's too. Scott had some concerns about removing
-> the config option completely so this was the next best thing.
-
-Well, if you want to pin at least one entry, then just remove the #if
-completely but don't leave a #if 1 :-)
+There's already a patch in my -next tree from Thomas Gleixner that fixes
+that up along with a few others in arch/powerpc.
 
 Cheers,
 Ben.
+
+>  Peter> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+>  Peter> ---
+>  Peter>  arch/powerpc/kernel/irq.c |    3 ++-
+>  Peter>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+>  Peter> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+>  Peter> index e5d1211..33e1130 100644
+>  Peter> --- a/arch/powerpc/kernel/irq.c
+>  Peter> +++ b/arch/powerpc/kernel/irq.c
+>  Peter> @@ -203,7 +203,8 @@ int show_interrupts(struct seq_file *p, void *v)
+>  Peter>  		seq_printf(p, "%10u ", kstat_irqs(i));
+>  Peter>  #endif /* CONFIG_SMP */
+>  Peter>  		if (desc->chip)
+>  Peter> -			seq_printf(p, " %s ", desc->chip->typename);
+>  Peter> +			seq_printf(p, " %s ", desc->chip->name ?
+>  Peter> +				   desc->chip->name : desc->chip->typename);
+>  Peter>  		else
+>  Peter>  			seq_puts(p, "  None      ");
+>  Peter>  		seq_printf(p, "%s", (desc->status & IRQ_LEVEL) ? "Level " : "Edge  ");
+>  Peter> -- 
+>  Peter> 1.6.5
+> 
+> 
