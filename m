@@ -1,21 +1,34 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f175.google.com (mail-yw0-f175.google.com
-	[209.85.211.175]) by ozlabs.org (Postfix) with ESMTP id B3A3CB6F15
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 00:40:38 +1100 (EST)
-Received: by ywh5 with SMTP id 5so7166613ywh.11
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Dec 2009 05:40:34 -0800 (PST)
+Return-Path: <B05799@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A3687B6EF6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Dec 2009 00:55:16 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.14.3/az33egw01) with ESMTP id
+	nB9Dt8Ms024599 for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 9 Dec 2009 06:55:08 -0700 (MST)
+Received: from zin33exm22.fsl.freescale.net (zin33exm22.ap.freescale.net
+	[10.232.192.20])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nB9DxHSL020721
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 9 Dec 2009 07:59:18 -0600 (CST)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4B1F6D3A.3030500@pengutronix.de>
-References: <fa686aa40911042210q5bbbca2fi82911b7245d17588@mail.gmail.com>
-	<4B1F6D3A.3030500@pengutronix.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 9 Dec 2009 06:40:11 -0700
-Message-ID: <fa686aa40912090540s1a06c063g10641e90501e8bc1@mail.gmail.com>
-Subject: Re: 2.6.33 -next tree
-To: Luotao Fu <l.fu@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] gianfar: Fix build with CONFIG_NET_POLL_CONTROLLER=y
+Date: Wed, 9 Dec 2009 19:25:00 +0530
+Message-ID: <9F4C7D19E8361D4C94921B95BE08B81BA08A9A@zin33exm22.fsl.freescale.net>
+In-Reply-To: <20091209.025245.152622485.davem@davemloft.net>
+References: <1260341804.16132.22.camel@pasglop><20091209104427.GA25526@oksana.dev.rtsoft.ru>
+	<20091209.025245.152622485.davem@davemloft.net>
+From: "Kumar Gopalpet-B05799" <B05799@freescale.com>
+To: <avorontsov@ru.mvista.com>
+Cc: David Miller <davem@davemloft.net>, linuxppc-dev@lists.ozlabs.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +38,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 9, 2009 at 2:26 AM, Luotao Fu <l.fu@pengutronix.de> wrote:
-> Hi Grant,
+=20
+>From: Anton Vorontsov <avorontsov@ru.mvista.com>
+>Date: Wed, 9 Dec 2009 13:44:27 +0300
 >
-> Grant Likely wrote:
->> Hi Ben, Stephen.
->>
->> I just prepared my next branch for 2.6.33:
->> git://git.secretlab.ca/git/linux-2.6 next
->>
+>> commit 46ceb60ca80fa07703bc6eb8f4651f900dff5a82 ("gianfar: Add=20
+>> Multiple group Support") introduced the following build error with=20
+>> CONFIG_NET_POLL_CONTROLLER=3Dy:
+> ...
+>> This patch fixes the issue.
+>>=20
+>> Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 >
-> Just for curiosity: I noticed that you keep so far the further patches for the
-> dedicated spi controller on mpc5200 in the next-spi tree. Any plan when they
-> will be merged to the -next tree? Like mentioned before, some of them are
-> essential, without which the driver doesn't work (at least on my board)
 
-I based the next-spi tree on my regular next tree (which was
-convenient, but lead to it looking like I had inappropriate stuff in
-my spi tree).  Once Ben asks Linus to pull his tree it will all look
-correct.  I'll ask Linux to pull my next-spi tree directly after Ben's
-tree is in.
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks Anton !
