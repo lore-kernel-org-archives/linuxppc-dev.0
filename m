@@ -2,28 +2,23 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BC871B70B3
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 07:51:35 +1100 (EST)
-Subject: Re: [RFC] doc/powerpc: try to explain why the interrupt numbers are
-	off by 16
+	by ozlabs.org (Postfix) with ESMTPS id C88D4B6F14
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 08:16:51 +1100 (EST)
+Subject: Re: [RFC PATCH 2/5] mcu_mpc8349emitx: port to new of gpio interface
 Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20091206113247.GB9937@Chamillionaire.breakpoint.cc>
-Date: Wed, 9 Dec 2009 14:51:10 -0600
-Message-Id: <B3B43F76-0971-4DFA-95E7-1A1D446A1535@kernel.crashing.org>
-References: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
-	<d970ff420909041228h3638e840r34c0c0e79f178e55@mail.gmail.com>
-	<d970ff420909041229hb3aa96dya329e06ea56dd1ac@mail.gmail.com>
-	<20090906110641.GA11350@Chamillionaire.breakpoint.cc>
-	<20090909182857.GB8215@b07421-ec1.am.freescale.net>
-	<20090910131544.GB23433@Chamillionaire.breakpoint.cc>
-	<20090910222400.GB26587@Chamillionaire.breakpoint.cc>
-	<4AA97D50.40209@freescale.com>
-	<20091206113247.GB9937@Chamillionaire.breakpoint.cc>
-To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Alemao <xcarandiru@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1258472546-31343-3-git-send-email-dbaryshkov@gmail.com>
+Date: Wed, 9 Dec 2009 15:16:37 -0600
+Message-Id: <6C061449-ACBE-4C51-9101-007DFD285F55@kernel.crashing.org>
+References: <1258472546-31343-1-git-send-email-dbaryshkov@gmail.com>
+	<1258472546-31343-3-git-send-email-dbaryshkov@gmail.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss@lists.ozlabs.org,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,15 +29,69 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Dec 6, 2009, at 5:32 AM, Sebastian Andrzej Siewior wrote:
+On Nov 17, 2009, at 9:42 AM, Dmitry Eremin-Solenikov wrote:
 
-> Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 > ---
-> Documentation/powerpc/dts-bindings/fsl/mpic.txt |   42 =
-+++++++++++++++++++++++
-> 1 files changed, 42 insertions(+), 0 deletions(-)
-> create mode 100644 Documentation/powerpc/dts-bindings/fsl/mpic.txt
+> arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |   11 +++++------
+> 1 files changed, 5 insertions(+), 6 deletions(-)
 
-applied to next
+Minding reviewing for me.
 
-- k=
+- k
+
+>=20
+> diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c =
+b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+> index 82a9bcb..4ba8b16 100644
+> --- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+> +++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+> @@ -36,7 +36,7 @@ struct mcu {
+> 	struct mutex lock;
+> 	struct device_node *np;
+> 	struct i2c_client *client;
+> -	struct of_gpio_chip of_gc;
+> +	struct gpio_chip gc;
+> 	u8 reg_ctrl;
+> };
+>=20
+> @@ -55,8 +55,7 @@ static void mcu_power_off(void)
+>=20
+> static void mcu_gpio_set(struct gpio_chip *gc, unsigned int gpio, int =
+val)
+> {
+> -	struct of_gpio_chip *of_gc =3D to_of_gpio_chip(gc);
+> -	struct mcu *mcu =3D container_of(of_gc, struct mcu, of_gc);
+> +	struct mcu *mcu =3D container_of(gc, struct mcu, gc);
+> 	u8 bit =3D 1 << (4 + gpio);
+>=20
+> 	mutex_lock(&mcu->lock);
+> @@ -78,8 +77,8 @@ static int mcu_gpio_dir_out(struct gpio_chip *gc, =
+unsigned int gpio, int val)
+> static int mcu_gpiochip_add(struct mcu *mcu)
+> {
+> 	struct device_node *np;
+> -	struct of_gpio_chip *of_gc =3D &mcu->of_gc;
+> -	struct gpio_chip *gc =3D &of_gc->gc;
+> +	struct gpio_chip *gc =3D &mcu->gc;
+> +	struct of_gpio_chip *of_gc =3D &gc->of_gc;
+> 	int ret;
+>=20
+> 	np =3D of_find_compatible_node(NULL, NULL, =
+"fsl,mcu-mpc8349emitx");
+> @@ -113,7 +112,7 @@ static int mcu_gpiochip_remove(struct mcu *mcu)
+> {
+> 	int ret;
+>=20
+> -	ret =3D gpiochip_remove(&mcu->of_gc.gc);
+> +	ret =3D gpiochip_remove(&mcu->gc);
+> 	if (ret)
+> 		return ret;
+> 	of_node_put(mcu->np);
+> --=20
+> 1.6.5
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
