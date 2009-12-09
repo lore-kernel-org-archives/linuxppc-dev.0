@@ -1,21 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f175.google.com (mail-yw0-f175.google.com
-	[209.85.211.175]) by ozlabs.org (Postfix) with ESMTP id 3F922B6F04
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Dec 2009 16:16:57 +1100 (EST)
-Received: by ywh5 with SMTP id 5so6826361ywh.11
-	for <linuxppc-dev@ozlabs.org>; Tue, 08 Dec 2009 21:16:56 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20091208.202838.78052287.davem@davemloft.net>
-References: <20091205043015.28041.19288.stgit@angua>
-	<20091208.202838.78052287.davem@davemloft.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 8 Dec 2009 22:16:36 -0700
-Message-ID: <fa686aa40912082116r7750c83cs55ccfbb4b937c095@mail.gmail.com>
-Subject: Re: [PATCH/REPOST] net/mpc5200: Fix locking on fec_mpc52xx driver
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: a.llano@ziv.es, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2DAB8B6F14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  9 Dec 2009 17:06:50 +1100 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id nB966g9B007841
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Dec 2009 00:06:43 -0600
+Subject: powerpc/pmac: Fixup regression in probe with no media bay
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Dec 2009 17:05:32 +1100
+Message-ID: <1260338732.16132.10.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 8, 2009 at 9:28 PM, David Miller <davem@davemloft.net> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> Date: Fri, 04 Dec 2009 21:33:13 -0700
->
->> Fix the locking scheme on the fec_mpc52xx driver. =A0This device can
->> receive IRQs from three sources; the FEC itself, the tx DMA, and the
->> rx DMA. =A0Mutual exclusion was handled by taking a spin_lock() in the
->> critical regions, but because the handlers are run with IRQs enabled,
->> spin_lock() is insufficient and the driver can end up interrupting
->> a critical region anyway from another IRQ.
->>
->> Asier Llano discovered that this occurs when an error IRQ is raised
->> in the middle of handling rx irqs which resulted in an sk_buff memory
->> leak.
->
-> I'll apply this fix.
+A little thinko in my media bay rework breaks the old IDE driver on machines
+with no bay. This fixes it.
 
-Thanks.
+Note: I haven't pushed my new -next out yet with my rework in, so I'll locally
+fold that patch in the rework to avoid bisection breakage and push the result
+into my -next branch
 
-> But, longer term, it's a thousand times easier and more efficient to
-> move the processing of these interrupts into softirq context.
+Ben.
 
-I agree.  Just need to find someone to do it.
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Index: linux-work/drivers/ide/pmac.c
+===================================================================
+--- linux-work.orig/drivers/ide/pmac.c	2009-12-09 16:55:59.000000000 +1100
++++ linux-work/drivers/ide/pmac.c	2009-12-09 16:56:27.000000000 +1100
+@@ -1078,7 +1078,8 @@ static int __devinit pmac_ide_setup_devi
+ 	sanitize_timings(pmif);
+ 
+ 	/* If we are on a media bay, wait for it to settle and lock it */
+-	lock_media_bay(pmif->mdev->media_bay);
++	if (pmif->mdev)
++		lock_media_bay(pmif->mdev->media_bay);
+ 
+ 	host = ide_host_alloc(&d, hws, 1);
+ 	if (host == NULL) {
+@@ -1115,7 +1116,8 @@ static int __devinit pmac_ide_setup_devi
+ 	if (rc)
+ 		pmif->hwif = NULL;
+ 
+-	unlock_media_bay(pmif->mdev->media_bay);
++	if (pmif->mdev)
++		unlock_media_bay(pmif->mdev->media_bay);
+ 
+  bail:
+ 	if (rc && host)
