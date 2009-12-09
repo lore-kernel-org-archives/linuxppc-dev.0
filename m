@@ -1,19 +1,33 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 09412B6F1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 03:20:07 +1100 (EST)
-Date: Wed, 9 Dec 2009 19:20:05 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/fsl_pci: Fix P2P bridge handling for MPC83xx
-	PCIe controllers
-Message-ID: <20091209162005.GA14253@oksana.dev.rtsoft.ru>
-References: <20091207225435.GA18485@oksana.dev.rtsoft.ru>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
+	[151.189.21.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7428AB7B5F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Dec 2009 03:28:18 +1100 (EST)
+Received: from mail-in-01-z2.arcor-online.net (mail-in-01-z2.arcor-online.net
+	[151.189.8.13]) by mx.arcor.de (Postfix) with ESMTP id 4CAEB1B375F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  9 Dec 2009 17:28:13 +0100 (CET)
+Received: from mail-in-14.arcor-online.net (mail-in-14.arcor-online.net
+	[151.189.21.54])
+	by mail-in-01-z2.arcor-online.net (Postfix) with ESMTP id 4044F2BFB6E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  9 Dec 2009 17:28:13 +0100 (CET)
+Received: from webmail18.arcor-online.net (webmail18.arcor-online.net
+	[151.189.8.76])
+	by mail-in-14.arcor-online.net (Postfix) with ESMTP id 2BAE528AD71
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  9 Dec 2009 17:28:13 +0100 (CET)
+Message-ID: <10228901.1260376093135.JavaMail.ngmail@webmail18.arcor-online.net>
+Date: Wed, 9 Dec 2009 17:28:13 +0100 (CET)
+From: "Albrecht Dreﬂ" <albrecht.dress@arcor.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Q: how to access the MPC5200B's timer gipo's?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20091207225435.GA18485@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, "B.J. Buchalter" <bj@mhlabs.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +37,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 08, 2009 at 01:54:35AM +0300, Anton Vorontsov wrote:
-> It appears that we wrongly calculate dev_base for type1 config cycles.
-> The thing is: we shouldn't subtract hose->first_busno because PCI core
-> sets PCI primary, secondary and subordinate bus numbers, and PCIe
-> controller actually takes the registers into account. So we should use
-> just bus->number.
-> 
-> Also, according to MPC8315 reference manual, primary bus number should
-> always remain 0. We have PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS quirk
-> in indirect_pci.c, but since 83xx is somewhat special, it doesn't use
-> indirect_pci.c routines, so we have to implement the quirk specifically
-> for 83xx PCIe controllers.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> 
-> This fixes the issue similar to http://www.pubbs.net/linuxppc/200908/22024/
-> i.e. lspci reports:
-> 
-> 0000:00:00.0 Power PC: Freescale Semiconductor Inc Device 00b4 (rev 11)
-> 0002:02:00.0 PCI bridge: Freescale Semiconductor Inc Device 00b4 (rev 11)
-> 0002:03:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
-> 0002:04:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
-> 0002:04:01.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
-> 0002:04:02.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
-> ...
-> 
-> While it should be:
-> 
-> 0000:00:00.0 Power PC: Freescale Semiconductor Inc Device 00b4 (rev 11)
-> 0002:02:00.0 PCI bridge: Freescale Semiconductor Inc Device 00b4 (rev 11)
-> 0002:03:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03)
-> 0002:04:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G550 AGP (rev 01)
+Hi all,
 
-Just for the reference... I found and tested a PLX bridge, and
-it works OK as well:
+I have a (probably dumb) question regarding the access to the MPC5200B's timer gpio's.  I added e.g.
 
-0002:03:00.0 PCI bridge: PLX Technology, Inc. PEX8112 x1 Lane PCI Express-to-PCI Bridge (rev aa)
-0002:04:00.0 USB Controller: NEC Corporation USB (rev 43)
-0002:04:00.1 USB Controller: NEC Corporation USB (rev 43)
-0002:04:00.2 USB Controller: NEC Corporation USB 2.0 (rev 04)
-0002:04:01.0 FireWire (IEEE 1394): NEC Corporation uPD72874 IEEE1394 OHCI 1.1 3-port PHY-Link Ctrlr (rev 01)
+timer@640 {	// General Purpose Timer 4
+	compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+	reg = <0x640 0x10>;
+	interrupts = <1 13 0>;
+	interrupt-parent = <&mpc5200_pic>;
+	gpio-controller;
+	#gpio-cells = <2>;
+};
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+in the DTS file to several timers.  Several gpiochipxxx folders are now present in /sys/class/gpio/.
+
+In my code, I grab the node by calling of_find_node_by_path("/soc5200@f0000000/timer@640"), which returns the proper node.  Then I try to get the gpio number (for a call to gpio_set_value()) by calling of_get_gpio(node, 0) with the node found above.  However, this call always dumps
+
+of_get_gpio_flags: can't parse gpios property
+of_get_gpio_flags exited with status -2
+
+What would be the proper way to determine the gpio number for a timer's gpio pin from the node name or path?
+
+Thanks for any help,
+Albrecht.
+
+Es weihnachtet sehr! Vom leckerem Backrezept bis zum leckeren Schneehasen finden Sie alles im Weihnachtsspecial von Arcor.de:
+http://www.arcor.de/rd/footer.weihnachten
+Feliz Navidad, God Yul, Merry X-Mas und ein frohes Fest!
