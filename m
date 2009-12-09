@@ -1,20 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 01E5EB8387
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 08:17:30 +1100 (EST)
-Subject: Re: [PATCH 4/4] mpc8349emitx: add leds-gpio binding
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1258379934-32352-5-git-send-email-dbaryshkov@gmail.com>
-Date: Wed, 9 Dec 2009 15:17:24 -0600
-Message-Id: <299E052F-5AAE-45D3-870F-5C92F18043DD@kernel.crashing.org>
-References: <1258379934-32352-1-git-send-email-dbaryshkov@gmail.com>
-	<1258379934-32352-5-git-send-email-dbaryshkov@gmail.com>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 2882BB6F19
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 08:32:18 +1100 (EST)
+Date: Thu, 10 Dec 2009 00:32:14 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC PATCH 2/5] mcu_mpc8349emitx: port to new of gpio interface
+Message-ID: <20091209213214.GA5766@oksana.dev.rtsoft.ru>
+References: <1258472546-31343-1-git-send-email-dbaryshkov@gmail.com>
+	<1258472546-31343-3-git-send-email-dbaryshkov@gmail.com>
+	<6C061449-ACBE-4C51-9101-007DFD285F55@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <6C061449-ACBE-4C51-9101-007DFD285F55@kernel.crashing.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss@lists.ozlabs.org,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	Paul Mackerras <paulus@samba.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Dec 09, 2009 at 03:16:37PM -0600, Kumar Gala wrote:
+> On Nov 17, 2009, at 9:42 AM, Dmitry Eremin-Solenikov wrote:
+> 
+> > Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> > ---
+> > arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |   11 +++++------
+> > 1 files changed, 5 insertions(+), 6 deletions(-)
+> 
+> Minding reviewing for me.
 
-On Nov 16, 2009, at 7:58 AM, Dmitry Eremin-Solenikov wrote:
+The whole approach was reviewed, and rejected.
 
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> ---
-> arch/powerpc/boot/dts/mpc8349emitx.dts |   18 ++++++++++++++++++
-> 1 files changed, 18 insertions(+), 0 deletions(-)
+http://lists.ozlabs.org/pipermail/devicetree-discuss/2009-November/001330.html
+and
+http://lists.ozlabs.org/pipermail/devicetree-discuss/2009-November/001328.html
 
-applied to next
+Thanks,
 
-- k
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
