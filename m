@@ -2,19 +2,28 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 76443B6F1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 07:51:16 +1100 (EST)
-Subject: Re: [PATCH] powerpc/fsl_pci: Fix P2P bridge handling for MPC83xx PCIe
-	controllers
+	by ozlabs.org (Postfix) with ESMTPS id BC871B70B3
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 07:51:35 +1100 (EST)
+Subject: Re: [RFC] doc/powerpc: try to explain why the interrupt numbers are
+	off by 16
 Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20091207225435.GA18485@oksana.dev.rtsoft.ru>
-Date: Wed, 9 Dec 2009 14:51:05 -0600
-Message-Id: <738EDEFC-DC2B-4E4D-AA9B-B7B620E76B8A@kernel.crashing.org>
-References: <20091207225435.GA18485@oksana.dev.rtsoft.ru>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, "B.J. Buchalter" <bj@mhlabs.com>
+In-Reply-To: <20091206113247.GB9937@Chamillionaire.breakpoint.cc>
+Date: Wed, 9 Dec 2009 14:51:10 -0600
+Message-Id: <B3B43F76-0971-4DFA-95E7-1A1D446A1535@kernel.crashing.org>
+References: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
+	<d970ff420909041228h3638e840r34c0c0e79f178e55@mail.gmail.com>
+	<d970ff420909041229hb3aa96dya329e06ea56dd1ac@mail.gmail.com>
+	<20090906110641.GA11350@Chamillionaire.breakpoint.cc>
+	<20090909182857.GB8215@b07421-ec1.am.freescale.net>
+	<20090910131544.GB23433@Chamillionaire.breakpoint.cc>
+	<20090910222400.GB26587@Chamillionaire.breakpoint.cc>
+	<4AA97D50.40209@freescale.com>
+	<20091206113247.GB9937@Chamillionaire.breakpoint.cc>
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Alemao <xcarandiru@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +34,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Dec 7, 2009, at 4:54 PM, Anton Vorontsov wrote:
+On Dec 6, 2009, at 5:32 AM, Sebastian Andrzej Siewior wrote:
 
-> It appears that we wrongly calculate dev_base for type1 config cycles.
-> The thing is: we shouldn't subtract hose->first_busno because PCI core
-> sets PCI primary, secondary and subordinate bus numbers, and PCIe
-> controller actually takes the registers into account. So we should use
-> just bus->number.
-> 
-> Also, according to MPC8315 reference manual, primary bus number should
-> always remain 0. We have PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS quirk
-> in indirect_pci.c, but since 83xx is somewhat special, it doesn't use
-> indirect_pci.c routines, so we have to implement the quirk specifically
-> for 83xx PCIe controllers.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
 > ---
+> Documentation/powerpc/dts-bindings/fsl/mpic.txt |   42 =
++++++++++++++++++++++++
+> 1 files changed, 42 insertions(+), 0 deletions(-)
+> create mode 100644 Documentation/powerpc/dts-bindings/fsl/mpic.txt
 
 applied to next
 
-- k
+- k=
