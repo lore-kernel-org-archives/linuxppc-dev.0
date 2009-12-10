@@ -1,20 +1,12 @@
-Return-Path: <James.Bottomley@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8D410B6EDD
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 02:43:51 +1100 (EST)
-Subject: Re: [PATCH] [SCSI] mpt fusion: Fix 32 bit platforms with 64 bit
-	resources.
-From: James Bottomley <James.Bottomley@suse.de>
-To: Pravin Bathija <pbathija@amcc.com>
-In-Reply-To: <1259805106-23636-1-git-send-email-pbathija@amcc.com>
-References: <1259805106-23636-1-git-send-email-pbathija@amcc.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 10 Dec 2009 09:43:38 -0600
-Message-Id: <1260459818.2457.77.camel@mulgrave.site>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Eric.Moore@lsi.com, linux-scsi@vger.kernel.org
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Date: Thu, 10 Dec 2009 10:57:09 -0500
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Message-Id: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
+Subject: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers through
+	extended ptrace interface
+Cc: Sergio Durigan Junior <sergiodj@br.ibm.com>, Torez Smith <torez@us.ibm.com>,
+	David Gibson <dwg@au1.ibm.com>, Thiago Jung Bauermann <bauerman@br.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,57 +16,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2009-12-02 at 17:51 -0800, Pravin Bathija wrote:
-> Powerpc 44x uses 36 bit real address while the real address defined
->     in MPT Fusion driver is of type 32 bit. This causes ioremap to fail and driver
->     fails to initialize. This fix changes the data types representing the real
->     address from unsigned long 32-bit types to resource_size_t which is 64-bit. The
->     driver has been tested, the disks get discovered correctly and can do IO.
-> 
-> Signed-off-by: Pravin Bathija <pbathija@amcc.com>
-> Acked-by: Feng Kan <fkan@amcc.com>
-> Acked-by: Fushen Chen <fchen@amcc.com>
-> Acked-by: Loc Ho <lho@amcc.com>
-> Acked-by: Tirumala Reddy Marri <tmarri@amcc.com>
-> Acked-by: Victor Gallardo <vgallardo@amcc.com>
-> ---
->  drivers/message/fusion/mptbase.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-> index 5d496a9..9f14a60 100644
-> --- a/drivers/message/fusion/mptbase.c
-> +++ b/drivers/message/fusion/mptbase.c
-> @@ -1511,7 +1511,7 @@ mpt_mapresources(MPT_ADAPTER *ioc)
->  {
->  	u8		__iomem *mem;
->  	int		 ii;
-> -	unsigned long	 mem_phys;
-> +	resource_size_t	 mem_phys;
+These patches implement an extention to the ptrace interface proposed by
+Thiago Bauermann and the the PowerPC gdb team.
 
-You never actually compiled this, did you?
+GDB intends to support the following hardware debug features of BookE
+processors:
 
-drivers/message/fusion/mptbase.c: In function 'mpt_mapresources':
-drivers/message/fusion/mptbase.c:1680: warning: format '%lx' expects type 'long unsigned int', but argument 4 has type 'resource_size_t'
+4 hardware breakpoints (IAC)
+2 hardware watchpoints (read, write and read-write) (DAC)
+2 value conditions for the hardware watchpoints (DVC)
 
-I'll just fold the fix in
+For that, we need to extend ptrace so that GDB can query and set these
+resources. Since we're extending, we're trying to create an interface
+that's extendable and that covers both BookE and server processors, so
+that GDB doesn't need to special-case each of them. We propose the
+following 3 new ptrace requests described below.
 
-James
+There have been discussions of a generic hardware debug interface for the
+kernel which would hopefully contemplate all the functionality below and
+supersede it.  But we need something that works now, and which enables GDB
+to be simpler and work with both Server and Embedded processors without
+special cases.
 
----
+1. PTRACE_PPC_GETHWDEBUGINFO
 
-diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-index 162923f..85bc6a6 100644
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -1677,8 +1677,8 @@ mpt_mapresources(MPT_ADAPTER *ioc)
- 		return -EINVAL;
- 	}
- 	ioc->memmap = mem;
--	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem = %p, mem_phys = %lx\n",
--	    ioc->name, mem, mem_phys));
-+	dinitprintk(ioc, printk(MYIOC_s_INFO_FMT "mem = %p, mem_phys = %llx\n",
-+	    ioc->name, mem, (unsigned long long)mem_phys));
- 
- 	ioc->mem_phys = mem_phys;
- 	ioc->chip = (SYSIF_REGS __iomem *)mem;
+Query for GDB to discover the hardware debug features. The main info to
+be returned here is the minimum alignment for the hardware watchpoints.
+BookE processors don't have restrictions here, but server processors have
+an 8-byte alignment restriction for hardware watchpoints. We'd like to avoid
+adding special cases to GDB based on what it sees in AUXV.
+
+Since we're at it, we added other useful info that the kernel can return to
+GDB: this query will return the number of hardware breakpoints, hardware
+watchpoints and whether it supports a range of addresses and a condition.
+The query will fill the following structure provided by the requesting process:
+
+struct ppc_debug_info {
+       unit32_t version;
+       unit32_t num_instruction_bps;
+       unit32_t num_data_bps;
+       unit32_t num_condition_regs;
+       unit32_t data_bp_alignment;
+       unit32_t sizeof_condition; /* size of the DVC register */
+       uint64_t features; /* bitmask of the individual flags */
+};
+
+features will have bits indicating whether there is support for:
+
+#define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
+#define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
+#define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
+#define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
+
+2. PTRACE_SETHWDEBUG
+
+Sets a hardware breakpoint or watchpoint, according to the provided structure:
+
+struct ppc_hw_breakpoint {
+        uint32_t version;
+#define PPC_BREAKPOINT_TRIGGER_EXECUTE  0x1
+#define PPC_BREAKPOINT_TRIGGER_READ     0x2
+#define PPC_BREAKPOINT_TRIGGER_WRITE    0x4
+        uint32_t trigger_type;       /* only some combinations allowed */
+#define PPC_BREAKPOINT_MODE_EXACT               0x0
+#define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE     0x1
+#define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE     0x2
+#define PPC_BREAKPOINT_MODE_MASK                0x3
+        uint32_t addr_mode;          /* address match mode */
+
+#define PPC_BREAKPOINT_CONDITION_NONE   0x0
+#define PPC_BREAKPOINT_CONDITION_AND    0x1
+#define PPC_BREAKPOINT_CONDITION_EXACT  0x1	/* different name for the same thing as above */
+#define PPC_BREAKPOINT_CONDITION_OR     0x2
+#define PPC_BREAKPOINT_CONDITION_AND_OR 0x3
+#define PPC_BREAKPOINT_CONDITION_BE_ALL 0x00ff0000	/* byte enable bits */
+#define PPC_BREAKPOINT_CONDITION_BE(n)  (1<<((n)+16))
+        uint32_t condition_mode;     /* break/watchpoint condition flags */
+
+        uint64_t addr;
+        uint64_t addr2;
+        uint64_t condition_value;
+};
+
+A request specifies one event, not necessarily just one register to be set.
+For instance, if the request is for a watchpoint with a condition, both the
+DAC and DVC registers will be set in the same request.
+
+With this GDB can ask for all kinds of hardware breakpoints and watchpoints
+that the BookE supports. COMEFROM breakpoints available in server processors
+are not contemplated, but that is out of the scope of this work.
+
+ptrace will return an integer (handle) uniquely identifying the breakpoint or
+watchpoint just created. This integer will be used in the PTRACE_DELHWDEBUG
+request to ask for its removal. Return -ENOSPC if the requested breakpoint
+can't be allocated on the registers.
+
+Some examples of using the structure to:
+
+- set a breakpoint in the first breakpoint register
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_EXECUTE;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
+  p.addr            = (uint64_t) address;
+  p.addr2           = 0;
+  p.condition_value = 0;
+
+- set a watchpoint which triggers on reads in the second watchpoint register
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_READ;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
+  p.addr            = (uint64_t) address;
+  p.addr2           = 0;
+  p.condition_value = 0;
+
+- set a watchpoint which triggers only with a specific value
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_READ;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_AND | PPC_BREAKPOINT_CONDITION_BE_ALL;
+  p.addr            = (uint64_t) address;
+  p.addr2           = 0;
+  p.condition_value = (uint64_t) condition;
+
+- set a ranged hardware breakpoint
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_EXECUTE;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
+  p.addr            = (uint64_t) begin_range;
+  p.addr2           = (uint64_t) end_range;
+  p.condition_value = 0;
+
+3. PTRACE_DELHWDEBUG
+
+Takes an integer which identifies an existing breakpoint or watchpoint
+(i.e., the value returned from PTRACE_SETHWDEBUG), and deletes the
+corresponding breakpoint or watchpoint..
+
+-- 
+Dave Kleikamp
+IBM Linux Technology Center
