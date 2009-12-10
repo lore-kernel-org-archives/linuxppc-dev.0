@@ -1,35 +1,27 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4A6D0B6EEE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Dec 2009 04:40:05 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nBAHe21Z023648 for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Dec 2009 10:40:02 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nBAHiEF6009750
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Dec 2009 11:44:15 -0600 (CST)
-Message-ID: <4B213247.7070204@freescale.com>
-Date: Thu, 10 Dec 2009 11:39:19 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <David.Daney@caviumnetworks.com>
+Received: from mail3.caviumnetworks.com (mail3.caviumnetworks.com
+	[12.108.191.235]) by ozlabs.org (Postfix) with ESMTP id A5656B6F06
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 04:40:42 +1100 (EST)
+Message-ID: <4B212EEC.3060808@caviumnetworks.com>
+Date: Thu, 10 Dec 2009 09:25:00 -0800
+From: David Daney <ddaney@caviumnetworks.com>
 MIME-Version: 1.0
-To: =?UTF-8?B?5p6X5b+X5bmz?= <solyn123@gmail.com>
-Subject: Re: Ping does not work on my MPC8544 board, using linux2.6.23
-References: <8148211e0912061953n59dfbe4fsea033494ad8b6fcc@mail.gmail.com>	
-	<20091207180511.GA8914@loki.buserror.net>	
-	<8148211e0912071825t22ffa590va2fe22272f6aaf62@mail.gmail.com>	
-	<4B2001A3.9010002@freescale.com>
-	<8148211e0912100505r46a813dcgc907a79e153ca8e@mail.gmail.com>
-In-Reply-To: <8148211e0912100505r46a813dcgc907a79e153ca8e@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Andrew Morton <akpm@linux-foundation.org>,
+	David Howells <dhowells@redhat.com>,
+	Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+	linux-am33-list@redhat.com, Kyle McMartin <kyle@mcmartin.ca>,
+	Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+	Richard Henderson <rth@twiddle.net>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Matt Turner <mattst88@gmail.com>,
+	linux-alpha@vger.kernel.org, Mike Frysinger <vapier@gentoo.org>,
+	uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH 0/5] More unreachable() conversions.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-arch@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,17 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-林志平 wrote:
->         Yes mcp85xx_defconfig does not work, I can see mpc8540ads in the
->         menuconfig, but no mpc8544ds.
-> 
-> 
->     mpc8544ds is supported by CONFIG_MPC85xx_DS.
->     CONFIG_MPC85XX_DS does not exist. Only mpc85xx_defconfig in
->     arch/powerpc/configs
+Back in commit 38938c879eb0c39edf85d5164aa0cffe2874304c the new macro
+unreachable() was added.  We can use it in BUG instead of a variety of
+ad hoc endless loops.
 
-I'm looking right at it, in arch/powerpc/platforms/85xx/Kconfig in 2.6.31.
+This patch set consists of the patches from the original set that were
+never Acked-by anyone.  Although they are completely untested, they
+seem plausible.
 
-mpc85xx_defconfig selects this option.
+I don't plan on pushing these things out any more, so if you
+like them please merge them via your architecture trees.
 
--Scott
+I will reply with the 5 patches.
+
+David Daney (5):
+   mn10300: Convert BUG() to use unreachable()
+   parisc: Convert BUG() to use unreachable()
+   powerpc: Convert BUG() to use unreachable()
+   alpha: Convert BUG() to use unreachable()
+   blackfin: Convert BUG() to use unreachable()
+
+  arch/alpha/include/asm/bug.h    |    3 ++-
+  arch/blackfin/include/asm/bug.h |    2 +-
+  arch/mn10300/include/asm/bug.h  |    3 ++-
+  arch/parisc/include/asm/bug.h   |    4 ++--
+  arch/powerpc/include/asm/bug.h  |    2 +-
+  5 files changed, 8 insertions(+), 6 deletions(-)
