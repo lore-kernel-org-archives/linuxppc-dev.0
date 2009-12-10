@@ -1,17 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Deprecating of_platform, the path from here...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <1260409535.16132.109.camel@pasglop>
-References: <fa686aa40912091406i2ef4e1b2u25c9f46b20786245@mail.gmail.com>
-	<20091209.161550.168794100.davem@davemloft.net>
-	<1260409535.16132.109.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 11 Dec 2009 08:30:18 +1100
-Message-ID: <1260480618.16132.299.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	paulus@samba.org, jk@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
+	by ozlabs.org (Postfix) with ESMTP id B7A7CB6F10
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 08:35:56 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Floating point in the kernel
+Date: Thu, 10 Dec 2009 22:35:47 +0100
+References: <20091210131311.78cab78c@lappy.seanm.ca>
+	<1260476379.16132.224.camel@pasglop>
+	<20091210153359.3a480488@lappy.seanm.ca>
+In-Reply-To: <20091210153359.3a480488@lappy.seanm.ca>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200912102235.47985.arnd@arndb.de>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,58 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-12-10 at 12:45 +1100, Benjamin Herrenschmidt wrote:
+On Thursday 10 December 2009, Sean MacLennan wrote:
+> To be honest, I can't find why we are scheduling :( They only way we
+> give up the CPU is with locking... and none of the locks where hit
+> during the problem. We also never get near our timeslice... the longest
+> run I saw when the problem happened was 670us. 
+> 
+> Is there a way to disable scheduling? We currently do not have preempt
+> enabled... but may in the future.
 
-> I don't agree with grant idea however that just converting the content
-> of the device node into properties is the way to go.
+If you do preempt_disable(), it should give you a nice oops with a backtrace
+at the point where an actual schedule happens.
 
-And here of course I meant " converting the content of the device node
-into into pdata" ...
+The sequence should be something like
 
-> I do prefer your proposed approach (from our IRC discussion) which is
-> instead to allocate a struct device-node, convert pdata into properties,
-> and modify the drier to use these properties.
-> 
-> The main difference thus between the two type of conversions (convert to
-> of_platform vs convert to platform) is that in the first case, you have
-> to convert the driver to use properties -and- convert all platforms in
-> all archs including gory ARM cell phone stuff you really don't want to
-> go anywhere near. In the second case, you still convert the driver to
-> use properties natively, but you keep a "wart" to turn pdata into a
-> device-node -inside the driver-, protected by a CONFIG option maybe, so
-> that those archs can be left alone until it becomes so obvious to
-> everybody what approach is better that they'll end up being converted
-> too and the wart can go.
-> 
-> I believe the second approach, while less "clean" in the absolute is a
-> more realistic path to take.
-> 
-> Now, orthogonally to that, I do believe it's still nice to provide a way
-> to statically lay out a device node in platform code, to allow archs
-> that don't otherwise have the device-tree to replace pdata with
-> something nicer and get rid of the wart quicker.
-> 
-> We could either find a way with macros to layout an actual struct
-> device_node statically along with all the properties etc... but that
-> sounds a tad hard.
-> 
-> We could have something that convert an entirely ASCII representation
-> into a struct device_node, but that would be akin of having dtc in the
-> kernel, might be a bit bloated no ? Though it could be made simpler and
-> more restrictive.
-> 
-> Or we could find an in-between .. .A different struct type that is more
-> suitable for being laid out statically (a name, a type, and an enum of
-> structs for various property "types", ie, strings, words, bytes, ...)
-> with a little helper function that conver that into a device node at
-> runtime ?
-> 
-> What do you think ?
-> 
-> Cheers,
-> Ben.
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+preempt_disable();
+enable_kernel_fp();
+/* use FP here */
+preempt_enable();
+/* may schedule again */
+
+	Arnd <><
