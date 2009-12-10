@@ -1,13 +1,25 @@
-Return-Path: <jk@ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Subject: [PATCH] of: merge of_find_node_by_phandle
-Message-Id: <1260413279.306784.161998452424.1.gpush@pororo>
-To: devicetree-discuss@lists.ozlabs.org
-From: Jeremy Kerr <jeremy.kerr@canonical.com>
-Date: Thu, 10 Dec 2009 10:47:59 +0800
-Cc: sparclinux@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C244EB7B66
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Dec 2009 14:53:28 +1100 (EST)
+Subject: Re: [PATCH] cardbus: Add a fixup hook and fix powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+In-Reply-To: <20091209213736.GA25968@comet.dominikbrodowski.net>
+References: <1260341533.16132.20.camel@pasglop>
+	<20091209213736.GA25968@comet.dominikbrodowski.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 10 Dec 2009 14:53:16 +1100
+Message-ID: <1260417196.16132.110.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-pci@vger.kernel.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>, blofeldus@yahoo.com,
+	Olof Johansson <olof@lixom.net>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,140 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common function between powerpc, sparc and microblaze. Code is
-identical for powerpc and microblaze, but adds a lock (and release) of
-the devtree_lock on sparc.
+On Wed, 2009-12-09 at 22:37 +0100, Dominik Brodowski wrote:
+> Acked-by: Dominik Brodowski <linux@dominikbrodowski.net> (for PCMCIA)
+> 
+> > Note: In the long run we might want to streamline the hooks for fixing
+> > up new devices vs. new busses and make some stuff common between cardbus
+> > and PCI hotplug which is actually a mess.
+> 
+> ... though I'd prefer such a generic approach. 
 
-Currently untested.
+Thanks. Yes that would be better. I don't have the bandwidth right now
+to look at that though, maybe early next year.
 
-Signed-off-by: Jeremy Kerr <jeremy.kerr@canonical.com>
-
----
-v2: update iterator, fix subject, post to arch lists
-
----
- arch/microblaze/kernel/prom.c   |   21 ---------------------
- arch/powerpc/kernel/prom.c      |   21 ---------------------
- arch/sparc/kernel/prom_common.c |   12 ------------
- drivers/of/base.c               |   21 +++++++++++++++++++++
- 4 files changed, 21 insertions(+), 54 deletions(-)
-
-diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index 9b4a20b..3fac1e2 100644
---- a/arch/microblaze/kernel/prom.c
-+++ b/arch/microblaze/kernel/prom.c
-@@ -238,27 +238,6 @@ void __init early_init_devtree_arch(void)
-  *
-  *******/
- 
--/**
-- *	of_find_node_by_phandle - Find a node given a phandle
-- *	@handle:	phandle of the node to find
-- *
-- *	Returns a node pointer with refcount incremented, use
-- *	of_node_put() on it when done.
-- */
--struct device_node *of_find_node_by_phandle(phandle handle)
--{
--	struct device_node *np;
--
--	read_lock(&devtree_lock);
--	for (np = allnodes; np != NULL; np = np->allnext)
--		if (np->phandle == handle)
--			break;
--	of_node_get(np);
--	read_unlock(&devtree_lock);
--	return np;
--}
--EXPORT_SYMBOL(of_find_node_by_phandle);
--
- #if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
- static struct debugfs_blob_wrapper flat_dt_blob;
- 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index d3ce311..83161d0 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -689,27 +689,6 @@ void __init early_init_devtree_arch(void)
-  *******/
- 
- /**
-- *	of_find_node_by_phandle - Find a node given a phandle
-- *	@handle:	phandle of the node to find
-- *
-- *	Returns a node pointer with refcount incremented, use
-- *	of_node_put() on it when done.
-- */
--struct device_node *of_find_node_by_phandle(phandle handle)
--{
--	struct device_node *np;
--
--	read_lock(&devtree_lock);
--	for (np = allnodes; np != 0; np = np->allnext)
--		if (np->phandle == handle)
--			break;
--	of_node_get(np);
--	read_unlock(&devtree_lock);
--	return np;
--}
--EXPORT_SYMBOL(of_find_node_by_phandle);
--
--/**
-  *	of_find_next_cache_node - Find a node's subsidiary cache
-  *	@np:	node of type "cpu" or "cache"
-  *
-diff --git a/arch/sparc/kernel/prom_common.c b/arch/sparc/kernel/prom_common.c
-index 5832e13..57ac9e2 100644
---- a/arch/sparc/kernel/prom_common.c
-+++ b/arch/sparc/kernel/prom_common.c
-@@ -37,18 +37,6 @@ EXPORT_SYMBOL(of_console_path);
- char *of_console_options;
- EXPORT_SYMBOL(of_console_options);
- 
--struct device_node *of_find_node_by_phandle(phandle handle)
--{
--	struct device_node *np;
--
--	for (np = allnodes; np; np = np->allnext)
--		if (np->phandle == handle)
--			break;
--
--	return np;
--}
--EXPORT_SYMBOL(of_find_node_by_phandle);
--
- int of_getintprop_default(struct device_node *np, const char *name, int def)
- {
- 	struct property *prop;
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 9212b87..7432011 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -672,6 +672,27 @@ int of_modalias_node(struct device_node *node, char *modalias, int len)
- EXPORT_SYMBOL_GPL(of_modalias_node);
- 
- /**
-+ * of_find_node_by_phandle - Find a node given a phandle
-+ * @handle:	phandle of the node to find
-+ *
-+ * Returns a node pointer with refcount incremented, use
-+ * of_node_put() on it when done.
-+ */
-+struct device_node *of_find_node_by_phandle(phandle handle)
-+{
-+	struct device_node *np;
-+
-+	read_lock(&devtree_lock);
-+	for (np = allnodes; np; np = np->allnext)
-+		if (np->phandle == handle)
-+			break;
-+	of_node_get(np);
-+	read_unlock(&devtree_lock);
-+	return np;
-+}
-+EXPORT_SYMBOL(of_find_node_by_phandle);
-+
-+/**
-  * of_parse_phandle - Resolve a phandle property to a device_node pointer
-  * @np: Pointer to device node holding phandle property
-  * @phandle_name: Name of property holding a phandle value
+Cheers,
+Ben.
