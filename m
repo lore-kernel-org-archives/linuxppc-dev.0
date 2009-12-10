@@ -1,21 +1,30 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC:PATCH 03/03] powerpc: Add support for BookE Debug Reg.
-	traps, exceptions and ptrace
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20091210174135.GW2937@zod.rchland.ibm.com>
-References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-	<20091210155727.6697.74672.sendpatchset@norville.austin.ibm.com>
-	<20091210172711.GV2937@zod.rchland.ibm.com>
-	<20091210174135.GW2937@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Thu, 10 Dec 2009 12:05:09 -0600
-Message-Id: <1260468309.1174.1.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
-	Sergio Durigan Junior <sergiodj@br.ibm.com>,
-	Torez Smith <torez@us.ibm.com>,
-	Thiago Jung Bauermann <bauerman@br.ibm.com>, David Gibson <dwg@au1.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B4223B7093
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 05:08:15 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nBAI8CHH001668
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 11:08:13 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id nBAIDJXm001724
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 12:13:19 -0600 (CST)
+Message-ID: <4B2138E1.5080609@freescale.com>
+Date: Thu, 10 Dec 2009 12:07:29 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH v2 0/3] powerpc/83xx: Sleep and deep sleep support for
+	MPC8315E-RDB
+References: <20091210175957.GA30682@oksana.dev.rtsoft.ru>
+In-Reply-To: <20091210175957.GA30682@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +34,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-12-10 at 12:41 -0500, Josh Boyer wrote:
-> On Thu, Dec 10, 2009 at 12:27:11PM -0500, Josh Boyer wrote:
-> >On Thu, Dec 10, 2009 at 01:57:27PM -0200, Dave Kleikamp wrote:
-> >>+static void prime_debug_regs(struct thread_struct *thread)
-> >>+{
-> >>+	mtspr(SPRN_IAC1, thread->iac1);
-> >>+	mtspr(SPRN_IAC2, thread->iac2);
-> >>+	mtspr(SPRN_IAC3, thread->iac3);
-> >>+	mtspr(SPRN_IAC4, thread->iac4);
-> >>+	mtspr(SPRN_DAC1, thread->dac1);
-> >>+	mtspr(SPRN_DAC2, thread->dac2);
-> >>+	mtspr(SPRN_DVC1, thread->dvc1);
-> >>+	mtspr(SPRN_DVC2, thread->dvc2);
-> >>+	mtspr(SPRN_DBCR0, thread->dbcr0);
-> >>+	mtspr(SPRN_DBCR1, thread->dbcr1);
-> >>+	mtspr(SPRN_DBCR2, thread->dbcr2);
-> >
-> >405 has no DBCR2, so I doubt setting it via mtspr would be good.  Does this
-> >compile for 40x and did you test it at all?
-> >
-> >Also, looking at the current kernel it seems SPRN_DBCR2 is only defined for
-> >CONFIG_PPC_BOOK3E_64 which is also inaccurate.
+Anton Vorontsov wrote:
+> Hi all,
 > 
-> I mis-read the code on this part.  SPRN_DBCR2 gets defined unconditionally,
-> so Book-E should be fine.  Still seems broken on 405 though.
+> This is quite late resend, sorry.
+> 
+> Only the third patch has changed, i.e. I got rid of sleep-nexus
+> stuff per Scott and Benjamin suggestions.
 
-Agreed.  I'll rushed through the 405 stuff a bit.  I'll scrutinize and
-test it before I post again.
+Acked-by: Scott Wood <scottwood@freescale.com>
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+-Scott
