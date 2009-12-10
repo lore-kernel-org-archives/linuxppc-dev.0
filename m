@@ -1,18 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20091209.162121.256573183.davem@davemloft.net>
-References: <fa686aa40912091406i2ef4e1b2u25c9f46b20786245@mail.gmail.com>
-	<20091209.161550.168794100.davem@davemloft.net>
-	<20091209.162121.256573183.davem@davemloft.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 10 Dec 2009 13:47:33 -0700
-Message-ID: <fa686aa40912101247k55d56783ge0163dd1da073b49@mail.gmail.com>
-Subject: Re: Deprecating of_platform, the path from here...
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, jk@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C10DCB6F0F
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 07:56:53 +1100 (EST)
+Subject: Re: Floating point in the kernel
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sean MacLennan <smaclennan@pikatech.com>
+In-Reply-To: <20091210153359.3a480488@lappy.seanm.ca>
+References: <20091210131311.78cab78c@lappy.seanm.ca>
+	<1260476379.16132.224.camel@pasglop>
+	<20091210153359.3a480488@lappy.seanm.ca>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 11 Dec 2009 07:56:48 +1100
+Message-ID: <1260478608.16132.263.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,56 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
+On Thu, 2009-12-10 at 15:33 -0500, Sean MacLennan wrote:
+> To be honest, I can't find *why* we are scheduling :( They only way we
+> give up the CPU is with locking... and none of the locks where hit
+> during the problem. We also never get near our timeslice... the
+> longest
+> run I saw when the problem happened was 670us. 
+> 
+> Is there a way to disable scheduling? We currently do not have preempt
+> enabled... but may in the future.
 
-On Wed, Dec 9, 2009 at 5:21 PM, David Miller <davem@davemloft.net> wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Wed, 09 Dec 2009 16:15:50 -0800 (PST)
->
->> From: Grant Likely <grant.likely@secretlab.ca>
->> Date: Wed, 9 Dec 2009 15:06:29 -0700
->>
->>> 1) of_platform will be deprecated in preference of the platform bus.
->>
->> What a shame, it's one of the cleanest driver probing models
->> in the tree.
->
-> And BTW, have you folks who "decided" this considered at all the fact
-> that it is much easier to describe represent platform devices using
-> of OF devices rather than the other way around?
+Well, that would be interesting to see where you schedule indeed.
 
-Yup.  I also think of_platform is a cleaner implementation than
-platform, but the fact remains that there are far more platform
-drivers than there are of_platform.  So, as nice as of_platform is, it
-still does pretty much exactly the same job as platform.  I'd rather
-see of_platform features migrated to platform than creating drivers
-with dual registrations to be used on both OF and non-OF platforms.
+Outside of preempt and an explicit lock or memory allocation I don't
+see ... Or get/put_user ?
 
-Trying to go the other way around (deprecate platform and encouraging
-of_platform instead) I don't think will gain much traction; whereas I
-think bringing of_platform features into platform will be an easier
-sell.  I'm trying to be pragmatic here.
-
-> The platform device pdata mechanism requires data structure changes
-> and is not dynamically extensible, whereas OF devices are
-> fundamentally so.
->
-> I don't like the idea to get rid of of_platform devices at all.
-
-There are no plans to actually remove of_platform.  I certainly don't
-plan to try and force SPARC to switch from of_platform to platform
-bus.  But on PowerPC (and probably Microblaze) the plan is to move
-away from of_platform for all the reasons discussed, and I'm not be
-bringing of_platform over as I work on ARM support.
-
-> OF devices are really clean, much like netlink messages, where
-> arbitrary named attributes can be added or removed without any data
-> structure changes at all.
-
-No argument here.
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Cheers,
+Ben.
