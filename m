@@ -1,30 +1,14 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B4223B7093
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 05:08:15 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nBAI8CHH001668
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 11:08:13 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id nBAIDJXm001724
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 12:13:19 -0600 (CST)
-Message-ID: <4B2138E1.5080609@freescale.com>
-Date: Thu, 10 Dec 2009 12:07:29 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2 0/3] powerpc/83xx: Sleep and deep sleep support for
-	MPC8315E-RDB
-References: <20091210175957.GA30682@oksana.dev.rtsoft.ru>
-In-Reply-To: <20091210175957.GA30682@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C4977B70B3
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 05:13:14 +1100 (EST)
+Date: Thu, 10 Dec 2009 13:13:11 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Floating point in the kernel
+Message-ID: <20091210131311.78cab78c@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,14 +18,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> Hi all,
-> 
-> This is quite late resend, sorry.
-> 
-> Only the third patch has changed, i.e. I got rid of sleep-nexus
-> stuff per Scott and Benjamin suggestions.
+One of our drivers has code that was originally running on a DSP. The
+code makes heavy use of floating point. We have isolated all the
+floating point to one kthread in the driver. Using enable_kernel_fp()
+this has worked well.
 
-Acked-by: Scott Wood <scottwood@freescale.com>
+But under a specific heavy RTP load, we started getting kernel panics.
+To make a long story short, the scheduler disables FP when you are
+context switched out. When you come back and access a FP instruction,
+you trap and call load_up_fpu() and everything is fine..... unless you
+are in the kernel. If you are in the kernel, like our kthread is, you
+get a "kernel FP unavailable exception".
 
--Scott
+Basically we got away with it for two years because the thread is at
+high priority (-20) and tries very hard to finish within 1ms. But the
+RTP high load causes us to context switch out and crash. The following
+patch fixes this:
+
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index 50504ae..3476de9 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -383,7 +383,7 @@ label:
+ #define FP_UNAVAILABLE_EXCEPTION                                             \
+        START_EXCEPTION(FloatingPointUnavailable)                             \
+        NORMAL_EXCEPTION_PROLOG;                                              \
+-       beq     1f;                                                           \
++       /* SAM beq      1f; */                                          \
+        bl      load_up_fpu;            /* if from user, just load it up */   \
+        b       fast_exception_return;                                        \
+ 1:     addi    r3,r1,STACK_FRAME_OVERHEAD;                                   \
+
+With the patch we run fine, at the expense that we lose the ability to
+catch real FP unavailable exceptions in the kernel. It is because of
+this loss that I have not submitted this patch.
+
+We also hit another problem under high RTP load... and this is the
+patch that fixes it:
+
+diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+index fc8f5b1..051a02c 100644
+--- a/arch/powerpc/kernel/fpu.S
++++ b/arch/powerpc/kernel/fpu.S
+@@ -83,6 +83,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+        stfd    fr0,THREAD_FPSCR(r4)
+        PPC_LL  r5,PT_REGS(r4)
+        toreal(r5)
++
++       /* Under heavy RTP load the hsp thread can have a NULL pt_regs. */
++       PPC_LCMPI       0,r5,0
++       beq     1f
++
+        PPC_LL  r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+        li      r10,MSR_FP|MSR_FE0|MSR_FE1
+        andc    r4,r4,r10               /* disable FP for previous task */
+
+So, if you are still reading this far, I am just looking for any
+suggestions. Are there better ways of handling this? Have I
+missed something? Anybody know why pt_regs might be NULL?
+
+Cheers,
+   Sean
