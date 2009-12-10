@@ -1,14 +1,22 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C4977B70B3
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 05:13:14 +1100 (EST)
-Date: Thu, 10 Dec 2009 13:13:11 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Floating point in the kernel
-Message-ID: <20091210131311.78cab78c@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9F455B6EF6
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 06:49:15 +1100 (EST)
+Subject: Re: [PATCH v3] cpm2_pic: Allow correct flow_types for port C
+	interrupts
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4B20D81A.7010503@elphinstone.net>
+Date: Thu, 10 Dec 2009 13:48:57 -0600
+Message-Id: <BCF9F7BB-2127-478D-B4A9-A97B10FBEC25@kernel.crashing.org>
+References: <4B20D81A.7010503@elphinstone.net>
+To: Mark Ware <mware@elphinstone.net>
+Cc: Scott Wood <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,64 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-One of our drivers has code that was originally running on a DSP. The
-code makes heavy use of floating point. We have isolated all the
-floating point to one kthread in the driver. Using enable_kernel_fp()
-this has worked well.
 
-But under a specific heavy RTP load, we started getting kernel panics.
-To make a long story short, the scheduler disables FP when you are
-context switched out. When you come back and access a FP instruction,
-you trap and call load_up_fpu() and everything is fine..... unless you
-are in the kernel. If you are in the kernel, like our kthread is, you
-get a "kernel FP unavailable exception".
+On Dec 10, 2009, at 5:14 AM, Mark Ware wrote:
 
-Basically we got away with it for two years because the thread is at
-high priority (-20) and tries very hard to finish within 1ms. But the
-RTP high load causes us to context switch out and crash. The following
-patch fixes this:
+> Port C interrupts can be either falling edge, or either edge.
+> Other external interrupts are either falling edge or active low.
+> Tested on a custom 8280 based board.
+> 
+> Signed-off-by: Mark Ware <mware@elphinstone.net>
+> ---
+> Changed in v3:
+> - Cosmetic improvements as suggested by Anton and Scott
+> - Added tested note to changelog
+> 
+> arch/powerpc/sysdev/cpm2_pic.c |   28 +++++++++++++++++++++-------
+> 1 files changed, 21 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 50504ae..3476de9 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -383,7 +383,7 @@ label:
- #define FP_UNAVAILABLE_EXCEPTION                                             \
-        START_EXCEPTION(FloatingPointUnavailable)                             \
-        NORMAL_EXCEPTION_PROLOG;                                              \
--       beq     1f;                                                           \
-+       /* SAM beq      1f; */                                          \
-        bl      load_up_fpu;            /* if from user, just load it up */   \
-        b       fast_exception_return;                                        \
- 1:     addi    r3,r1,STACK_FRAME_OVERHEAD;                                   \
+Applied to next
 
-With the patch we run fine, at the expense that we lose the ability to
-catch real FP unavailable exceptions in the kernel. It is because of
-this loss that I have not submitted this patch.
-
-We also hit another problem under high RTP load... and this is the
-patch that fixes it:
-
-diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-index fc8f5b1..051a02c 100644
---- a/arch/powerpc/kernel/fpu.S
-+++ b/arch/powerpc/kernel/fpu.S
-@@ -83,6 +83,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-        stfd    fr0,THREAD_FPSCR(r4)
-        PPC_LL  r5,PT_REGS(r4)
-        toreal(r5)
-+
-+       /* Under heavy RTP load the hsp thread can have a NULL pt_regs. */
-+       PPC_LCMPI       0,r5,0
-+       beq     1f
-+
-        PPC_LL  r4,_MSR-STACK_FRAME_OVERHEAD(r5)
-        li      r10,MSR_FP|MSR_FE0|MSR_FE1
-        andc    r4,r4,r10               /* disable FP for previous task */
-
-So, if you are still reading this far, I am just looking for any
-suggestions. Are there better ways of handling this? Have I
-missed something? Anybody know why pt_regs might be NULL?
-
-Cheers,
-   Sean
+- k
