@@ -1,18 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 115BEB7B6A
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 05:01:05 +1100 (EST)
-Date: Thu, 10 Dec 2009 21:01:03 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 3/3] powerpc/83xx: Add power management support for
-	MPC8315E-RDB boards
-Message-ID: <20091210180103.GC32482@oksana.dev.rtsoft.ru>
-References: <20091210175957.GA30682@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20091210175957.GA30682@oksana.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Subject: Re: [RFC:PATCH 03/03] powerpc: Add support for BookE Debug Reg.
+	traps, exceptions and ptrace
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20091210174135.GW2937@zod.rchland.ibm.com>
+References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
+	<20091210155727.6697.74672.sendpatchset@norville.austin.ibm.com>
+	<20091210172711.GV2937@zod.rchland.ibm.com>
+	<20091210174135.GW2937@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Thu, 10 Dec 2009 12:05:09 -0600
+Message-Id: <1260468309.1174.1.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
+	Sergio Durigan Junior <sergiodj@br.ibm.com>,
+	Torez Smith <torez@us.ibm.com>,
+	Thiago Jung Bauermann <bauerman@br.ibm.com>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,76 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-- Add nodes for PMC and GTM controllers. GTM4 can be used as a wakeup
-  source;
+On Thu, 2009-12-10 at 12:41 -0500, Josh Boyer wrote:
+> On Thu, Dec 10, 2009 at 12:27:11PM -0500, Josh Boyer wrote:
+> >On Thu, Dec 10, 2009 at 01:57:27PM -0200, Dave Kleikamp wrote:
+> >>+static void prime_debug_regs(struct thread_struct *thread)
+> >>+{
+> >>+	mtspr(SPRN_IAC1, thread->iac1);
+> >>+	mtspr(SPRN_IAC2, thread->iac2);
+> >>+	mtspr(SPRN_IAC3, thread->iac3);
+> >>+	mtspr(SPRN_IAC4, thread->iac4);
+> >>+	mtspr(SPRN_DAC1, thread->dac1);
+> >>+	mtspr(SPRN_DAC2, thread->dac2);
+> >>+	mtspr(SPRN_DVC1, thread->dvc1);
+> >>+	mtspr(SPRN_DVC2, thread->dvc2);
+> >>+	mtspr(SPRN_DBCR0, thread->dbcr0);
+> >>+	mtspr(SPRN_DBCR1, thread->dbcr1);
+> >>+	mtspr(SPRN_DBCR2, thread->dbcr2);
+> >
+> >405 has no DBCR2, so I doubt setting it via mtspr would be good.  Does this
+> >compile for 40x and did you test it at all?
+> >
+> >Also, looking at the current kernel it seems SPRN_DBCR2 is only defined for
+> >CONFIG_PPC_BOOK3E_64 which is also inaccurate.
+> 
+> I mis-read the code on this part.  SPRN_DBCR2 gets defined unconditionally,
+> so Book-E should be fine.  Still seems broken on 405 though.
 
-- Add fsl,magic-packet properties to eTSEC nodes, i.e. wake-on-lan
-  support. Unlike MPC8313 processors, MPC8315 can resume from deep
-  sleep upon magic packet reception.
+Agreed.  I'll rushed through the 405 stuff a bit.  I'll scrutinize and
+test it before I post again.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc8315erdb.dts |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-index 32e10f5..8a3a4f3 100644
---- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-@@ -204,6 +204,7 @@
- 			interrupt-parent = <&ipic>;
- 			tbi-handle = <&tbi0>;
- 			phy-handle = < &phy0 >;
-+			fsl,magic-packet;
- 
- 			mdio@520 {
- 				#address-cells = <1>;
-@@ -246,6 +247,7 @@
- 			interrupt-parent = <&ipic>;
- 			tbi-handle = <&tbi1>;
- 			phy-handle = < &phy1 >;
-+			fsl,magic-packet;
- 
- 			mdio@520 {
- 				#address-cells = <1>;
-@@ -309,6 +311,22 @@
- 			interrupt-parent = <&ipic>;
- 		};
- 
-+		gtm1: timer@500 {
-+			compatible = "fsl,mpc8315-gtm", "fsl,gtm";
-+			reg = <0x500 0x100>;
-+			interrupts = <90 8 78 8 84 8 72 8>;
-+			interrupt-parent = <&ipic>;
-+			clock-frequency = <133333333>;
-+		};
-+
-+		timer@600 {
-+			compatible = "fsl,mpc8315-gtm", "fsl,gtm";
-+			reg = <0x600 0x100>;
-+			interrupts = <91 8 79 8 85 8 73 8>;
-+			interrupt-parent = <&ipic>;
-+			clock-frequency = <133333333>;
-+		};
-+
- 		/* IPIC
- 		 * interrupts cell = <intr #, sense>
- 		 * sense values match linux IORESOURCE_IRQ_* defines:
-@@ -337,6 +355,15 @@
- 				      0x59 0x8>;
- 			interrupt-parent = < &ipic >;
- 		};
-+
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8315-pmc", "fsl,mpc8313-pmc",
-+				     "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 8>;
-+			interrupt-parent = <&ipic>;
-+			fsl,mpc8313-wakeup-timer = <&gtm1>;
-+		};
- 	};
- 
- 	pci0: pci@e0008500 {
+Thanks,
+Shaggy
 -- 
-1.6.3.3
+David Kleikamp
+IBM Linux Technology Center
