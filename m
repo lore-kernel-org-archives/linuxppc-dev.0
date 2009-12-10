@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 64667B7BE8
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 05:00:57 +1100 (EST)
-Date: Thu, 10 Dec 2009 21:00:56 +0300
+	by ozlabs.org (Postfix) with ESMTP id 115BEB7B6A
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 05:01:05 +1100 (EST)
+Date: Thu, 10 Dec 2009 21:01:03 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 2/3] powerpc/83xx/suspend: Save and restore SICRL, SICRH
-	and SCCR
-Message-ID: <20091210180056.GB32482@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/3] powerpc/83xx: Add power management support for
+	MPC8315E-RDB boards
+Message-ID: <20091210180103.GC32482@oksana.dev.rtsoft.ru>
 References: <20091210175957.GA30682@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -22,121 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to save SICRL, SICRH and SCCR registers on suspend, and restore
-them on resume. Otherwise, we lose IO and clocks setup on MPC8315E-RDB
-boards when ULPI USB PHY is used (non-POR setup).
+- Add nodes for PMC and GTM controllers. GTM4 can be used as a wakeup
+  source;
+
+- Add fsl,magic-packet properties to eTSEC nodes, i.e. wake-on-lan
+  support. Unlike MPC8313 processors, MPC8315 can resume from deep
+  sleep upon magic packet reception.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/platforms/83xx/suspend.c |   48 +++++++++++++++++++++++++++++++++
- 1 files changed, 48 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/mpc8315erdb.dts |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
-index b0c2619..4380534 100644
---- a/arch/powerpc/platforms/83xx/suspend.c
-+++ b/arch/powerpc/platforms/83xx/suspend.c
-@@ -32,6 +32,7 @@
- #define PMCCR1_NEXT_STATE       0x0C /* Next state for power management */
- #define PMCCR1_NEXT_STATE_SHIFT 2
- #define PMCCR1_CURR_STATE       0x03 /* Current state for power management*/
-+#define IMMR_SYSCR_OFFSET       0x100
- #define IMMR_RCW_OFFSET         0x900
- #define RCW_PCI_HOST            0x80000000
+diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
+index 32e10f5..8a3a4f3 100644
+--- a/arch/powerpc/boot/dts/mpc8315erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
+@@ -204,6 +204,7 @@
+ 			interrupt-parent = <&ipic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = < &phy0 >;
++			fsl,magic-packet;
  
-@@ -78,6 +79,22 @@ struct mpc83xx_clock {
- 	u32 sccr;
- };
+ 			mdio@520 {
+ 				#address-cells = <1>;
+@@ -246,6 +247,7 @@
+ 			interrupt-parent = <&ipic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = < &phy1 >;
++			fsl,magic-packet;
  
-+struct mpc83xx_syscr {
-+	__be32 sgprl;
-+	__be32 sgprh;
-+	__be32 spridr;
-+	__be32 :32;
-+	__be32 spcr;
-+	__be32 sicrl;
-+	__be32 sicrh;
-+};
+ 			mdio@520 {
+ 				#address-cells = <1>;
+@@ -309,6 +311,22 @@
+ 			interrupt-parent = <&ipic>;
+ 		};
+ 
++		gtm1: timer@500 {
++			compatible = "fsl,mpc8315-gtm", "fsl,gtm";
++			reg = <0x500 0x100>;
++			interrupts = <90 8 78 8 84 8 72 8>;
++			interrupt-parent = <&ipic>;
++			clock-frequency = <133333333>;
++		};
 +
-+struct mpc83xx_saved {
-+	u32 sicrl;
-+	u32 sicrh;
-+	u32 sccr;
-+};
++		timer@600 {
++			compatible = "fsl,mpc8315-gtm", "fsl,gtm";
++			reg = <0x600 0x100>;
++			interrupts = <91 8 79 8 85 8 73 8>;
++			interrupt-parent = <&ipic>;
++			clock-frequency = <133333333>;
++		};
 +
- struct pmc_type {
- 	int has_deep_sleep;
- };
-@@ -87,6 +104,8 @@ static int has_deep_sleep, deep_sleeping;
- static int pmc_irq;
- static struct mpc83xx_pmc __iomem *pmc_regs;
- static struct mpc83xx_clock __iomem *clock_regs;
-+static struct mpc83xx_syscr __iomem *syscr_regs;
-+static struct mpc83xx_saved saved_regs;
- static int is_pci_agent, wake_from_pci;
- static phys_addr_t immrbase;
- static int pci_pm_state;
-@@ -137,6 +156,20 @@ static irqreturn_t pmc_irq_handler(int irq, void *dev_id)
- 	return ret;
- }
- 
-+static void mpc83xx_suspend_restore_regs(void)
-+{
-+	out_be32(&syscr_regs->sicrl, saved_regs.sicrl);
-+	out_be32(&syscr_regs->sicrh, saved_regs.sicrh);
-+	out_be32(&clock_regs->sccr, saved_regs.sccr);
-+}
+ 		/* IPIC
+ 		 * interrupts cell = <intr #, sense>
+ 		 * sense values match linux IORESOURCE_IRQ_* defines:
+@@ -337,6 +355,15 @@
+ 				      0x59 0x8>;
+ 			interrupt-parent = < &ipic >;
+ 		};
 +
-+static void mpc83xx_suspend_save_regs(void)
-+{
-+	saved_regs.sicrl = in_be32(&syscr_regs->sicrl);
-+	saved_regs.sicrh = in_be32(&syscr_regs->sicrh);
-+	saved_regs.sccr = in_be32(&clock_regs->sccr);
-+}
-+
- static int mpc83xx_suspend_enter(suspend_state_t state)
- {
- 	int ret = -EAGAIN;
-@@ -166,6 +199,8 @@ static int mpc83xx_suspend_enter(suspend_state_t state)
- 	 */
++		pmc: power@b00 {
++			compatible = "fsl,mpc8315-pmc", "fsl,mpc8313-pmc",
++				     "fsl,mpc8349-pmc";
++			reg = <0xb00 0x100 0xa00 0x100>;
++			interrupts = <80 8>;
++			interrupt-parent = <&ipic>;
++			fsl,mpc8313-wakeup-timer = <&gtm1>;
++		};
+ 	};
  
- 	if (deep_sleeping) {
-+		mpc83xx_suspend_save_regs();
-+
- 		out_be32(&pmc_regs->mask, PMCER_ALL);
- 
- 		out_be32(&pmc_regs->config1,
-@@ -179,6 +214,8 @@ static int mpc83xx_suspend_enter(suspend_state_t state)
- 		         in_be32(&pmc_regs->config1) & ~PMCCR1_POWER_OFF);
- 
- 		out_be32(&pmc_regs->mask, PMCER_PMCI);
-+
-+		mpc83xx_suspend_restore_regs();
- 	} else {
- 		out_be32(&pmc_regs->mask, PMCER_PMCI);
- 
-@@ -333,12 +370,23 @@ static int pmc_probe(struct of_device *ofdev,
- 		goto out_pmc;
- 	}
- 
-+	if (has_deep_sleep) {
-+		syscr_regs = ioremap(immrbase + IMMR_SYSCR_OFFSET,
-+				     sizeof(*syscr_regs));
-+		if (!syscr_regs) {
-+			ret = -ENOMEM;
-+			goto out_syscr;
-+		}
-+	}
-+
- 	if (is_pci_agent)
- 		mpc83xx_set_agent();
- 
- 	suspend_set_ops(&mpc83xx_suspend_ops);
- 	return 0;
- 
-+out_syscr:
-+	iounmap(clock_regs);
- out_pmc:
- 	iounmap(pmc_regs);
- out:
+ 	pci0: pci@e0008500 {
 -- 
 1.6.3.3
