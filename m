@@ -1,32 +1,21 @@
-Return-Path: <ego@in.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0FAA2B6F09
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Dec 2009 22:19:42 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id nBABJfFp020776
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2009 22:19:41 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBABJfoT1851510
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2009 22:19:41 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nBABJeAj024003
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2009 22:19:41 +1100
-Subject: [PATCH 2/2] pseries: Make declarations of cpu_hotplug_driver_lock()
-	ANSI compatible.
-To: linuxppc-dev@lists.ozlabs.org
-From: Gautham R Shenoy <ego@in.ibm.com>
-Date: Thu, 10 Dec 2009 16:49:42 +0530
-Message-ID: <20091210111942.18281.33401.stgit@sofia.in.ibm.com>
-In-Reply-To: <20091210111937.18281.5146.stgit@sofia.in.ibm.com>
-References: <20091210111937.18281.5146.stgit@sofia.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Benjamin Herrenschmidt <benh@au1.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5F88AB6F01
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 01:53:23 +1100 (EST)
+Subject: Re: [PATCH v3] cpm2_pic: Allow correct flow_types for port C
+	interrupts
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4B20D81A.7010503@elphinstone.net>
+Date: Thu, 10 Dec 2009 08:52:01 -0600
+Message-Id: <9DDC31C7-6AEE-498C-BE18-C286C950BB51@kernel.crashing.org>
+References: <4B20D81A.7010503@elphinstone.net>
+To: Scott Wood <scottwood@freescale.com>, Mark Ware <mware@elphinstone.net>
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Anton Vorontsov <avorontsov@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,31 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-And add the __acquires() and __releases() annotations, while at it.
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
----
- arch/powerpc/platforms/pseries/dlpar.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+On Dec 10, 2009, at 5:14 AM, Mark Ware wrote:
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 12df9e8..67b7a10 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -346,12 +346,14 @@ int dlpar_release_drc(u32 drc_index)
- 
- static DEFINE_MUTEX(pseries_cpu_hotplug_mutex);
- 
--void cpu_hotplug_driver_lock()
-+void cpu_hotplug_driver_lock(void)
-+__acquires(pseries_cpu_hotplug_mutex)
- {
- 	mutex_lock(&pseries_cpu_hotplug_mutex);
- }
- 
--void cpu_hotplug_driver_unlock()
-+void cpu_hotplug_driver_unlock(void)
-+__releases(pseries_cpu_hotplug_mutex)
- {
- 	mutex_unlock(&pseries_cpu_hotplug_mutex);
- }
+> Port C interrupts can be either falling edge, or either edge.
+> Other external interrupts are either falling edge or active low.
+> Tested on a custom 8280 based board.
+> 
+> Signed-off-by: Mark Ware <mware@elphinstone.net>
+> ---
+> Changed in v3:
+> - Cosmetic improvements as suggested by Anton and Scott
+> - Added tested note to changelog
+> 
+> arch/powerpc/sysdev/cpm2_pic.c |   28 +++++++++++++++++++++-------
+> 1 files changed, 21 insertions(+), 7 deletions(-)
+
+Scott, Anton do you want to add an Ack to this version?
+
+- k
