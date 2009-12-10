@@ -1,18 +1,18 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id D2A53B6F0A
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 07:34:11 +1100 (EST)
-Date: Thu, 10 Dec 2009 15:33:59 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev
-	<linuxppc-dev@ozlabs.org>
-Subject: Re: Floating point in the kernel
-Message-ID: <20091210153359.3a480488@lappy.seanm.ca>
-In-Reply-To: <1260476379.16132.224.camel@pasglop>
-References: <20091210131311.78cab78c@lappy.seanm.ca>
-	<1260476379.16132.224.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20091209.162121.256573183.davem@davemloft.net>
+References: <fa686aa40912091406i2ef4e1b2u25c9f46b20786245@mail.gmail.com>
+	<20091209.161550.168794100.davem@davemloft.net>
+	<20091209.162121.256573183.davem@davemloft.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 10 Dec 2009 13:47:33 -0700
+Message-ID: <fa686aa40912101247k55d56783ge0163dd1da073b49@mail.gmail.com>
+Subject: Re: Deprecating of_platform, the path from here...
+To: David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,58 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 11 Dec 2009 07:19:39 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Hi David,
 
-> I'm not sure that will work in all cases, you are playing a bit with
-> fire :-) I suppose I could think it through after breakfast but my
-> first thought is "don't do that !". Among other things you may not
-> have a pt_regs to save the registers to.
+On Wed, Dec 9, 2009 at 5:21 PM, David Miller <davem@davemloft.net> wrote:
+> From: David Miller <davem@davemloft.net>
+> Date: Wed, 09 Dec 2009 16:15:50 -0800 (PST)
+>
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>> Date: Wed, 9 Dec 2009 15:06:29 -0700
+>>
+>>> 1) of_platform will be deprecated in preference of the platform bus.
+>>
+>> What a shame, it's one of the cleanest driver probing models
+>> in the tree.
+>
+> And BTW, have you folks who "decided" this considered at all the fact
+> that it is much easier to describe represent platform devices using
+> of OF devices rather than the other way around?
 
-Actually, we usually do have pt_regs, or we are stealing some ;)
+Yup.  I also think of_platform is a cleaner implementation than
+platform, but the fact remains that there are far more platform
+drivers than there are of_platform.  So, as nice as of_platform is, it
+still does pretty much exactly the same job as platform.  I'd rather
+see of_platform features migrated to platform than creating drivers
+with dual registrations to be used on both OF and non-OF platforms.
 
-> > We also hit another problem under high RTP load... and this is the
-> > patch that fixes it:
-> > 
-> > diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
-> > index fc8f5b1..051a02c 100644
-> > --- a/arch/powerpc/kernel/fpu.S
-> > +++ b/arch/powerpc/kernel/fpu.S
-> > @@ -83,6 +83,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
-> >         stfd    fr0,THREAD_FPSCR(r4)
-> >         PPC_LL  r5,PT_REGS(r4)
-> >         toreal(r5)
-> > +
-> > +       /* Under heavy RTP load the hsp thread can have a NULL
-> > pt_regs. */
-> > +       PPC_LCMPI       0,r5,0
-> > +       beq     1f
-> > +  
-> 
-> Right and that means you just lost the content of your FP registers.
+Trying to go the other way around (deprecate platform and encouraging
+of_platform instead) I don't think will gain much traction; whereas I
+think bringing of_platform features into platform will be an easier
+sell.  I'm trying to be pragmatic here.
 
-This only happens once in a blue moon, even under heavy RTP load. But I
-agree, this could be a real problem.
+> The platform device pdata mechanism requires data structure changes
+> and is not dynamically extensible, whereas OF devices are
+> fundamentally so.
+>
+> I don't like the idea to get rid of of_platform devices at all.
 
-> >         PPC_LL  r4,_MSR-STACK_FRAME_OVERHEAD(r5)
-> >         li      r10,MSR_FP|MSR_FE0|MSR_FE1
-> >         andc    r4,r4,r10               /* disable FP for previous
-> > task */
-> > 
-> > So, if you are still reading this far, I am just looking for any
-> > suggestions. Are there better ways of handling this? Have I
-> > missed something? Anybody know why pt_regs might be NULL?  
-> 
-> Just don't schedule when you enable_kernel_fp() or move your workload
-> to userspace :-)
+There are no plans to actually remove of_platform.  I certainly don't
+plan to try and force SPARC to switch from of_platform to platform
+bus.  But on PowerPC (and probably Microblaze) the plan is to move
+away from of_platform for all the reasons discussed, and I'm not be
+bringing of_platform over as I work on ARM support.
 
-To be honest, I can't find *why* we are scheduling :( They only way we
-give up the CPU is with locking... and none of the locks where hit
-during the problem. We also never get near our timeslice... the longest
-run I saw when the problem happened was 670us. 
+> OF devices are really clean, much like netlink messages, where
+> arbitrary named attributes can be added or removed without any data
+> structure changes at all.
 
-Is there a way to disable scheduling? We currently do not have preempt
-enabled... but may in the future.
+No argument here.
 
-Cheers,
-   Sean
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
