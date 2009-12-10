@@ -1,20 +1,32 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Thu, 10 Dec 2009 12:41:35 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC:PATCH 03/03] powerpc: Add support for BookE Debug Reg.
-	traps, exceptions and ptrace
-Message-ID: <20091210174135.GW2937@zod.rchland.ibm.com>
-References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-	<20091210155727.6697.74672.sendpatchset@norville.austin.ibm.com>
-	<20091210172711.GV2937@zod.rchland.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D23BEB80D9
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 04:42:23 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nBAHgLZB024312
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 10:42:21 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id nBAHgNSP003484
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 11:42:23 -0600 (CST)
+Message-ID: <4B2132D2.6000207@freescale.com>
+Date: Thu, 10 Dec 2009 11:41:38 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091210172711.GV2937@zod.rchland.ibm.com>
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
-	Sergio Durigan Junior <sergiodj@br.ibm.com>,
-	Torez Smith <torez@us.ibm.com>,
-	Thiago Jung Bauermann <bauerman@br.ibm.com>, David Gibson <dwg@au1.ibm.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH v3] cpm2_pic: Allow correct flow_types for port
+	C	interrupts
+References: <4B20D81A.7010503@elphinstone.net>	<9DDC31C7-6AEE-498C-BE18-C286C950BB51@kernel.crashing.org>
+	<20091210145808.GA16421@oksana.dev.rtsoft.ru>
+In-Reply-To: <20091210145808.GA16421@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Mark Ware <mware@elphinstone.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 10, 2009 at 12:27:11PM -0500, Josh Boyer wrote:
->On Thu, Dec 10, 2009 at 01:57:27PM -0200, Dave Kleikamp wrote:
->>+static void prime_debug_regs(struct thread_struct *thread)
->>+{
->>+	mtspr(SPRN_IAC1, thread->iac1);
->>+	mtspr(SPRN_IAC2, thread->iac2);
->>+	mtspr(SPRN_IAC3, thread->iac3);
->>+	mtspr(SPRN_IAC4, thread->iac4);
->>+	mtspr(SPRN_DAC1, thread->dac1);
->>+	mtspr(SPRN_DAC2, thread->dac2);
->>+	mtspr(SPRN_DVC1, thread->dvc1);
->>+	mtspr(SPRN_DVC2, thread->dvc2);
->>+	mtspr(SPRN_DBCR0, thread->dbcr0);
->>+	mtspr(SPRN_DBCR1, thread->dbcr1);
->>+	mtspr(SPRN_DBCR2, thread->dbcr2);
->
->405 has no DBCR2, so I doubt setting it via mtspr would be good.  Does this
->compile for 40x and did you test it at all?
->
->Also, looking at the current kernel it seems SPRN_DBCR2 is only defined for
->CONFIG_PPC_BOOK3E_64 which is also inaccurate.
+Anton Vorontsov wrote:
+> On Thu, Dec 10, 2009 at 08:52:01AM -0600, Kumar Gala wrote:
+>> On Dec 10, 2009, at 5:14 AM, Mark Ware wrote:
+>>
+>>> Port C interrupts can be either falling edge, or either edge.
+>>> Other external interrupts are either falling edge or active low.
+>>> Tested on a custom 8280 based board.
+>>>
+>>> Signed-off-by: Mark Ware <mware@elphinstone.net>
+>>> ---
+>>> Changed in v3:
+>>> - Cosmetic improvements as suggested by Anton and Scott
+>>> - Added tested note to changelog
+>>>
+>>> arch/powerpc/sysdev/cpm2_pic.c |   28 +++++++++++++++++++++-------
+>>> 1 files changed, 21 insertions(+), 7 deletions(-)
+>> Scott, Anton do you want to add an Ack to this version?
+> 
+> Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-I mis-read the code on this part.  SPRN_DBCR2 gets defined unconditionally,
-so Book-E should be fine.  Still seems broken on 405 though.
+Acked-by: Scott Wood <scottwood@freescale.com>
 
-josh
+-Scott
