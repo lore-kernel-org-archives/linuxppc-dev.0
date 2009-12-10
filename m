@@ -1,17 +1,20 @@
-Return-Path: <David.Daney@caviumnetworks.com>
-Received: from mail3.caviumnetworks.com (mail3.caviumnetworks.com
-	[12.108.191.235]) by ozlabs.org (Postfix) with ESMTP id AF692B6F07
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 04:40:42 +1100 (EST)
-From: David Daney <ddaney@caviumnetworks.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [PATCH 3/5] powerpc: Convert BUG() to use unreachable()
-Date: Thu, 10 Dec 2009 09:28:19 -0800
-Message-Id: <1260466101-17545-3-git-send-email-ddaney@caviumnetworks.com>
-In-Reply-To: <4B212EEC.3060808@caviumnetworks.com>
-References: <4B212EEC.3060808@caviumnetworks.com>
-Cc: David Daney <ddaney@caviumnetworks.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org,
-	torvalds@linux-foundation.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Thu, 10 Dec 2009 12:41:35 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: [RFC:PATCH 03/03] powerpc: Add support for BookE Debug Reg.
+	traps, exceptions and ptrace
+Message-ID: <20091210174135.GW2937@zod.rchland.ibm.com>
+References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
+	<20091210155727.6697.74672.sendpatchset@norville.austin.ibm.com>
+	<20091210172711.GV2937@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091210172711.GV2937@zod.rchland.ibm.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
+	Sergio Durigan Junior <sergiodj@br.ibm.com>,
+	Torez Smith <torez@us.ibm.com>,
+	Thiago Jung Bauermann <bauerman@br.ibm.com>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,28 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the new unreachable() macro instead of for(;;);
+On Thu, Dec 10, 2009 at 12:27:11PM -0500, Josh Boyer wrote:
+>On Thu, Dec 10, 2009 at 01:57:27PM -0200, Dave Kleikamp wrote:
+>>+static void prime_debug_regs(struct thread_struct *thread)
+>>+{
+>>+	mtspr(SPRN_IAC1, thread->iac1);
+>>+	mtspr(SPRN_IAC2, thread->iac2);
+>>+	mtspr(SPRN_IAC3, thread->iac3);
+>>+	mtspr(SPRN_IAC4, thread->iac4);
+>>+	mtspr(SPRN_DAC1, thread->dac1);
+>>+	mtspr(SPRN_DAC2, thread->dac2);
+>>+	mtspr(SPRN_DVC1, thread->dvc1);
+>>+	mtspr(SPRN_DVC2, thread->dvc2);
+>>+	mtspr(SPRN_DBCR0, thread->dbcr0);
+>>+	mtspr(SPRN_DBCR1, thread->dbcr1);
+>>+	mtspr(SPRN_DBCR2, thread->dbcr2);
+>
+>405 has no DBCR2, so I doubt setting it via mtspr would be good.  Does this
+>compile for 40x and did you test it at all?
+>
+>Also, looking at the current kernel it seems SPRN_DBCR2 is only defined for
+>CONFIG_PPC_BOOK3E_64 which is also inaccurate.
 
-Signed-off-by: David Daney <ddaney@caviumnetworks.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: linuxppc-dev@ozlabs.org
----
- arch/powerpc/include/asm/bug.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I mis-read the code on this part.  SPRN_DBCR2 gets defined unconditionally,
+so Book-E should be fine.  Still seems broken on 405 though.
 
-diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-index 64e1fdc..2c15212 100644
---- a/arch/powerpc/include/asm/bug.h
-+++ b/arch/powerpc/include/asm/bug.h
-@@ -68,7 +68,7 @@
- 		_EMIT_BUG_ENTRY					\
- 		: : "i" (__FILE__), "i" (__LINE__),		\
- 		    "i" (0), "i"  (sizeof(struct bug_entry)));	\
--	for(;;) ;						\
-+	unreachable();						\
- } while (0)
- 
- #define BUG_ON(x) do {						\
--- 
-1.6.2.5
+josh
