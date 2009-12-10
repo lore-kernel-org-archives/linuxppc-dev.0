@@ -1,15 +1,29 @@
-Return-Path: <mware@elphinstone.net>
-Received: from ipmail02.adl6.internode.on.net (ipmail02.adl6.internode.on.net
-	[203.16.214.140]) by ozlabs.org (Postfix) with ESMTP id 78F89B6F19
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Dec 2009 22:14:35 +1100 (EST)
-Message-ID: <4B20D81A.7010503@elphinstone.net>
-Date: Thu, 10 Dec 2009 22:14:34 +1100
-From: Mark Ware <mware@elphinstone.net>
+Return-Path: <ego@in.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0D86DB6F09
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Dec 2009 22:19:40 +1100 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp01.in.ibm.com (8.14.3/8.13.1) with ESMTP id nBABJc3Z020021
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2009 16:49:38 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nBABJctK2490590
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2009 16:49:38 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+	by d28av02.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nBABJaDr021617
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Dec 2009 22:19:38 +1100
+Subject: [PATCH 1/2] pseries: Don't panic when H_PROD fails during cpu-online.
+To: linuxppc-dev@lists.ozlabs.org
+From: Gautham R Shenoy <ego@in.ibm.com>
+Date: Thu, 10 Dec 2009 16:49:37 +0530
+Message-ID: <20091210111937.18281.5146.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
-To: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v3] cpm2_pic: Allow correct flow_types for port C interrupts
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, avorontsov@ru.mvista.com
+Content-Type: text/plain; charset="utf-8"
+Cc: Benjamin Herrenschmidt <benh@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,64 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Port C interrupts can be either falling edge, or either edge.
-Other external interrupts are either falling edge or active low.
-Tested on a custom 8280 based board.
+If an online-attempt on a CPU which has been offlined using H_CEDE
+with an appropriate cede latency hint fails, don't panic.
 
-Signed-off-by: Mark Ware <mware@elphinstone.net>
+Instead print the error message and let the __cpu_up() code notify the
+CPU Hotplug framework of the failure, which in turn can notify the
+other subsystem through CPU_UP_CANCELED.
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
-Changed in v3:
-- Cosmetic improvements as suggested by Anton and Scott
-- Added tested note to changelog
+ arch/powerpc/platforms/pseries/smp.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- arch/powerpc/sysdev/cpm2_pic.c |   28 +++++++++++++++++++++-------
- 1 files changed, 21 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
-index 78f1f7c..b1e9206 100644
---- a/arch/powerpc/sysdev/cpm2_pic.c
-+++ b/arch/powerpc/sysdev/cpm2_pic.c
-@@ -141,13 +141,23 @@ static int cpm2_set_irq_type(unsigned int virq, unsigned int flow_type)
- 	struct irq_desc *desc = get_irq_desc(virq);
- 	unsigned int vold, vnew, edibit;
- 
--	if (flow_type == IRQ_TYPE_NONE)
--		flow_type = IRQ_TYPE_LEVEL_LOW;
--
--	if (flow_type & IRQ_TYPE_EDGE_RISING) {
--		printk(KERN_ERR "CPM2 PIC: sense type 0x%x not supported\n",
--			flow_type);
--		return -EINVAL;
-+	/* Port C interrupts are either IRQ_TYPE_EDGE_FALLING or
-+	 * IRQ_TYPE_EDGE_BOTH (default).  All others are IRQ_TYPE_EDGE_FALLING
-+	 * or IRQ_TYPE_LEVEL_LOW (default)
-+	 */
-+	if (src >= CPM2_IRQ_PORTC15 && src <= CPM2_IRQ_PORTC0) {
-+		if (flow_type == IRQ_TYPE_NONE)
-+			flow_type = IRQ_TYPE_EDGE_BOTH;
-+
-+		if (flow_type != IRQ_TYPE_EDGE_BOTH &&
-+		    flow_type != IRQ_TYPE_EDGE_FALLING)
-+			goto err_sense;
-+	} else {
-+		if (flow_type == IRQ_TYPE_NONE)
-+			flow_type = IRQ_TYPE_LEVEL_LOW;
-+
-+		if (flow_type & (IRQ_TYPE_EDGE_RISING | IRQ_TYPE_LEVEL_HIGH))
-+			goto err_sense;
+diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+index 8868c01..b488663 100644
+--- a/arch/powerpc/platforms/pseries/smp.c
++++ b/arch/powerpc/platforms/pseries/smp.c
+@@ -144,8 +144,8 @@ static void __devinit smp_pSeries_kick_cpu(int nr)
+ 		hcpuid = get_hard_smp_processor_id(nr);
+ 		rc = plpar_hcall_norets(H_PROD, hcpuid);
+ 		if (rc != H_SUCCESS)
+-			panic("Error: Prod to wake up processor %d Ret= %ld\n",
+-				nr, rc);
++			printk(KERN_ERR "Error: Prod to wake up processor %d\
++						Ret= %ld\n", nr, rc);
  	}
- 
- 	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
-@@ -179,6 +189,10 @@ static int cpm2_set_irq_type(unsigned int virq, unsigned int flow_type)
- 	if (vold != vnew)
- 		out_be32(&cpm2_intctl->ic_siexr, vnew);
- 	return 0;
-+
-+err_sense:
-+	pr_err("CPM2 PIC: sense type 0x%x not supported\n", flow_type);
-+	return -EINVAL;
  }
  
- static struct irq_chip cpm2_pic = {
--- 
-1.5.6.5
