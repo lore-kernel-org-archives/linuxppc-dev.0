@@ -1,14 +1,14 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Date: Thu, 10 Dec 2009 13:57:15 -0200
+Date: Thu, 10 Dec 2009 13:57:21 -0200
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
-Message-Id: <20091210155715.6697.92627.sendpatchset@norville.austin.ibm.com>
+Message-Id: <20091210155721.6697.40863.sendpatchset@norville.austin.ibm.com>
 In-Reply-To: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
 References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-Subject: [RFC:PATCH 01/03] powerpc: Extended ptrace interface
-Cc: Sergio Durigan Junior <sergiodj@br.ibm.com>,
-	Thiago Jung Bauermann <bauerman@br.ibm.com>,
-	Torez Smith <torez@us.ibm.com>, David Gibson <dwg@au1.ibm.com>
+Subject: [RFC:PATCH 02/03] powerpc: Add definitions for Debug Registers on
+	BookE Platforms
+Cc: Sergio Durigan Junior <sergiodj@br.ibm.com>, Torez Smith <torez@us.ibm.com>,
+	David Gibson <dwg@au1.ibm.com>, Thiago Jung Bauermann <bauerman@br.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,21 +18,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc: Extended ptrace interface
+powerpc: Add definitions for Debug Registers on BookE Platforms
 
 From: Torez Smith <lnxtorez@linux.vnet.ibm.com>
 
-Add a new extended ptrace interface so that user-space has a single
-interface for powerpc, without having to know the specific layout
-of the debug registers.
+This patch adds additional definitions for BookE Debug Registers
+to the reg_booke.h header file.
 
-Implement:
-PPC_PTRACE_GETHWDEBUGINFO
-PPC_PTRACE_SETHWDEBUG
-PPC_PTRACE_DELHWDEBUG
-
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Signed-off-by: Torez Smith  <lnxtorez@linux.vnet.ibm.com>
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Thiago Jung Bauermann <bauerman@br.ibm.com>
 Cc: Sergio Durigan Junior <sergiodj@br.ibm.com>
@@ -40,208 +34,269 @@ Cc: David Gibson <dwg@au1.ibm.com>
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 ---
 
- arch/powerpc/include/asm/ptrace.h |   75 ++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/ptrace.c      |   88 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 163 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/processor.h |   30 +++++-
+ arch/powerpc/include/asm/reg_booke.h |  176 +++++++++++++++++++++++++++++-----
+ 2 files changed, 178 insertions(+), 28 deletions(-)
 
 
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index 8c34149..7ae887b 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -24,6 +24,12 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
-+#ifdef __KERNEL__
-+#include <linux/types.h>
-+#else
-+#include <stdint.h>
-+#endif
-+
- #ifndef __ASSEMBLY__
- 
- struct pt_regs {
-@@ -292,4 +298,73 @@ extern void user_disable_single_step(struct task_struct *);
- 
- #define PTRACE_SINGLEBLOCK	0x100	/* resume execution until next branch */
- 
-+#define PPC_PTRACE_GETHWDBGINFO	0x89
-+#define PPC_PTRACE_SETHWDEBUG	0x88
-+#define PPC_PTRACE_DELHWDEBUG	0x87
-+
-+#ifndef __ASSEMBLY__
-+
-+struct ppc_debug_info {
-+	uint32_t version;		/* Only version 1 exists to date */
-+	uint32_t num_instruction_bps;
-+	uint32_t num_data_bps;
-+	uint32_t num_condition_regs;
-+	uint32_t data_bp_alignment;
-+	uint32_t sizeof_condition;	/* size of the DVC register */
-+	uint64_t features;
-+};
-+
-+#endif /* __ASSEMBLY__ */
-+
-+/*
-+ * features will have bits indication whether there is support for:
-+ */
-+#define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
-+#define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
-+#define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
-+#define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
-+
-+#ifndef __ASSEMBLY__
-+
-+struct ppc_hw_breakpoint {
-+	uint32_t version;		/* currently, version must be 1 */
-+	uint32_t trigger_type;		/* only some combinations allowed */
-+	uint32_t addr_mode;		/* address match mode */
-+	uint32_t condition_mode;	/* break/watchpoint condition flags */
-+	uint64_t addr;			/* break/watchpoint address */
-+	uint64_t addr2;			/* range end or mask */
-+	uint64_t condition_value;	/* contents of the DVC register */
-+};
-+
-+#endif /* __ASSEMBLY__ */
-+
-+/*
-+ * Trigger Type
-+ */
-+#define PPC_BREAKPOINT_TRIGGER_EXECUTE	0x1
-+#define PPC_BREAKPOINT_TRIGGER_READ	0x2
-+#define PPC_BREAKPOINT_TRIGGER_WRITE	0x4
-+#define PPC_BREAKPOINT_TRIGGER_RW	0x6
-+
-+/*
-+ * Address Mode
-+ */
-+#define PPC_BREAKPOINT_MODE_EXACT		0x0
-+#define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE	0x1
-+#define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE	0x2
-+#define PPC_BREAKPOINT_MODE_MASK		0x3
-+
-+/*
-+ * Condition Mode
-+ */
-+#define PPC_BREAKPOINT_CONDITION_NONE	0x0
-+#define PPC_BREAKPOINT_CONDITION_AND	0x1
-+#define PPC_BREAKPOINT_CONDITION_EXACT	0x1
-+#define PPC_BREAKPOINT_CONDITION_OR	0x2
-+#define PPC_BREAKPOINT_CONDITION_AND_OR	0x3
-+#define PPC_BREAKPOINT_CONDITION_BE_ALL	0x00ff0000
-+#define PPC_BREAKPOINT_CONDITION_BE_SHIFT	16
-+#define PPC_BREAKPOINT_CONDITION_BE(n)	\
-+	(1<<((n)+PPC_BREAKPOINT_CONDITION_BE_SHIFT))
-+
- #endif /* _ASM_POWERPC_PTRACE_H */
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index ef14988..6be2ce0 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -839,6 +839,50 @@ void ptrace_disable(struct task_struct *child)
- 	user_disable_single_step(child);
- }
- 
-+static long ppc_set_hwdebug(struct task_struct *child,
-+		     struct ppc_hw_breakpoint *bp_info)
-+{
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 9eed29e..1393307 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -161,9 +161,35 @@ struct thread_struct {
+ #ifdef CONFIG_PPC32
+ 	void		*pgdir;		/* root of page-table tree */
+ #endif
+-#if defined(CONFIG_4xx) || defined (CONFIG_BOOKE)
+-	unsigned long	dbcr0;		/* debug control register values */
++#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
 +	/*
-+	 * We currently support one data breakpoint
++	 * The following help to manage the use of Debug Control Registers
++	 * om the BookE platforms.
 +	 */
-+	if (((bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_RW) == 0) ||
-+	    ((bp_info->trigger_type & ~PPC_BREAKPOINT_TRIGGER_RW) != 0) ||
-+	    (bp_info->trigger_type != PPC_BREAKPOINT_TRIGGER_WRITE) ||
-+	    (bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT) ||
-+	    (bp_info->condition_mode != PPC_BREAKPOINT_CONDITION_NONE))
-+		return -EINVAL;
++	unsigned long	dbcr0;
+ 	unsigned long	dbcr1;
++	unsigned long	dbcr2;
++	/*
++	 * The stored value of the DBSR register will be the value at the
++	 * last debug interrupt. This register can only be read from the
++	 * user (will never be written to) and has value while helping to
++	 * describe the reason for the last debug trap.  Torez
++	 */
++	unsigned long	dbsr;
++	/*
++	 * The following will contain addresses used by debug applications
++	 * to help trace and trap on particular address locations.
++	 * The bits in the Debug Control Registers above help define which
++	 * of the following registers will contain valid data and/or addresses.
++	 */
++	unsigned long	iac1;
++	unsigned long	iac2;
++	unsigned long	iac3;
++	unsigned long	iac4;
++	unsigned long	dac1;
++	unsigned long	dac2;
++	unsigned long	dvc1;
++	unsigned long	dvc2;
+ #endif
+ 	/* FP and VSX 0-31 register set */
+ 	double		fpr[32][TS_FPRWIDTH];
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index 3bf7835..7f8c71f 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -248,6 +248,8 @@
+ #define DBSR_RET	0x00008000	/* Return Debug Event */
+ #define DBSR_CIRPT	0x00000040	/* Critical Interrupt Taken Event */
+ #define DBSR_CRET	0x00000020	/* Critical Return Debug Event */
++#define DBSR_IAC12ATS	0x00000002	/* Instr Address Compare 1/2 Toggle */
++#define DBSR_IAC34ATS	0x00000001	/* Instr Address Compare 3/4 Toggle */
+ #endif
+ #ifdef CONFIG_40x
+ #define DBSR_IC		0x80000000	/* Instruction Completion */
+@@ -294,25 +296,68 @@
+ #define DBCR0_IC	0x08000000	/* Instruction Completion */
+ #define DBCR0_ICMP	DBCR0_IC
+ #define DBCR0_BT	0x04000000	/* Branch Taken */
+-#define DBCR0_BRT	DBCR0_BT
+ #define DBCR0_EDE	0x02000000	/* Exception Debug Event */
+ #define DBCR0_IRPT	DBCR0_EDE
+ #define DBCR0_TDE	0x01000000	/* TRAP Debug Event */
+-#define DBCR0_IA1	0x00800000	/* Instr Addr compare 1 enable */
+-#define DBCR0_IAC1	DBCR0_IA1
+-#define DBCR0_IA2	0x00400000	/* Instr Addr compare 2 enable */
+-#define DBCR0_IAC2	DBCR0_IA2
+-#define DBCR0_IA12	0x00200000	/* Instr Addr 1-2 range enable */
+-#define DBCR0_IA12X	0x00100000	/* Instr Addr 1-2 range eXclusive */
+-#define DBCR0_IA3	0x00080000	/* Instr Addr compare 3 enable */
+-#define DBCR0_IAC3	DBCR0_IA3
+-#define DBCR0_IA4	0x00040000	/* Instr Addr compare 4 enable */
+-#define DBCR0_IAC4	DBCR0_IA4
+-#define DBCR0_IA34	0x00020000	/* Instr Addr 3-4 range Enable */
+-#define DBCR0_IA34X	0x00010000	/* Instr Addr 3-4 range eXclusive */
+-#define DBCR0_IA12T	0x00008000	/* Instr Addr 1-2 range Toggle */
+-#define DBCR0_IA34T	0x00004000	/* Instr Addr 3-4 range Toggle */
++#define DBCR0_IAC1	0x00800000	/* Instr Addr compare 1 enable */
++#define DBCR0_IAC2	0x00400000	/* Instr Addr compare 2 enable */
++#define DBCR0_IAC12M	0x00300000	/* Instr Addr 1-2 range enable */
++#define DBCR0_IAC12M_R	0x00100000	/* Instr Addr 1-2 Reserved state */
++#define DBCR0_IAC12M_I	0x00200000	/* Instr Addr 1-2 range Inclusive */
++#define DBCR0_IAC12M_X	0x00300000	/* Instr Addr 1-2 range eXclusive */
++#define DBCR0_IAC3	0x00080000	/* Instr Addr compare 3 enable */
++#define DBCR0_IAC4	0x00040000	/* Instr Addr compare 4 enable */
++#define DBCR0_IAC34	0x00020000	/* Instr Addr 3-4 range Enable */
++#define DBCR0_IAC34X	0x00010000	/* Instr Addr 3-4 range eXclusive */
++#define DBCR0_IAC12T	0x00008000	/* Instr Addr 1-2 range Toggle */
++#define DBCR0_IAC34T	0x00004000	/* Instr Addr 3-4 range Toggle */
+ #define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
 +
-+	if (child->thread.dabr)
-+		return -ENOSPC;
++#define DBCR0_USER_DEBUG	(DBCR0_IDM | DBCR0_ICMP | DBCR0_IAC1 | \
++				 DBCR0_IAC2 | DBCR0_IAC3 | DBCR0_IAC4)
++#define DBCR0_BASE_REG_VALUE	0
 +
-+	if ((unsigned long)bp_info->addr >= TASK_SIZE)
-+		return -EIO;
++#define dbcr_iac_range(task)	((task)->thread.dbcr0)
++#define DBCR_IAC12M	DBCR0_IAC12M
++#define DBCR_IAC12M_I	DBCR0_IAC12M_I
++#define DBCR_IAC12M_X	DBCR0_IAC12M_X
++#define DBCR_IAC34M	DBCR0_IAC34M
++#define DBCR_IAC34M_I	DBCR0_IAC34M_I
++#define DBCR_IAC34M_X	DBCR0_IAC34M_X
 +
-+	child->thread.dabr = (unsigned long)bp_info->addr;
-+#ifdef CONFIG_BOOKE
-+	child->thread.dbcr0 = DBCR0_IDM;
-+	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_READ)
-+		child->thread.dbcr0 |= DBSR_DAC1R;
-+	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
-+		child->thread.dbcr0 |= DBSR_DAC1W;
-+	child->thread.regs->msr |= MSR_DE;
-+#endif
-+	return 1;
-+}
++/* Bit definitions related to the DBCR1. */
++#define DBCR1_D1R	0x80000000	/* DAC1 Read Debug Event */
++#define DBCR1_DAC1R	DBCR1_D1R
++#define DBCR1_D2R	0x40000000	/* DAC2 Read Debug Event */
++#define DBCR1_DAC2R	DBCR1_D2R
++#define DBCR1_D1W	0x20000000	/* DAC1 Write Debug Event */
++#define DBCR1_DAC1W	DBCR1_D1W
++#define DBCR1_D2W	0x10000000	/* DAC2 Write Debug Event */
++#define DBCR1_DAC2W	DBCR1_D2W
 +
-+static long ppc_del_hwdebug(struct task_struct *child, long addr, long data)
-+{
-+	if ((data != 1) || (child->thread.dabr == 0))
-+		return -EINVAL;
++#define DBCR1_USER_DEBUG	(DBCR1_DAC1R | DBCR1_DAC2R | DBCR1_DAC1W | \
++				 DBCR1_DAC2W)
++#define DBCR1_BASE_REG_VALUE	0
 +
-+	child->thread.dabr = 0;
-+#ifdef CONFIG_BOOKE
-+	child->thread.dbcr0 &= ~(DBSR_DAC1R | DBSR_DAC1W | DBCR0_IDM);
-+	child->thread.regs->msr &= ~MSR_DE;
-+#endif
-+	return 0;
-+}
++#define dbcr_dac(task)	((task)->thread.dbcr1)
++#define DBCR_DAC1R	DBCR1_DAC1R
++#define DBCR_DAC1W	DBCR1_DAC1W
++#define DBCR_DAC2R	DBCR1_DAC2R
++#define DBCR_DAC2W	DBCR1_DAC2W
 +
- /*
-  * Here are the old "legacy" powerpc specific getregs/setregs ptrace calls,
-  * we mark them as obsolete now, they will be removed in a future version
-@@ -932,6 +976,50 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 		break;
- 	}
++#define DBCR2_USER_DEBUG	0
++#define DBCR2_BASE_REG_VALUE	0
++
++/*
++ * Are there any active Debug Events represented in the
++ * Debug Control Registers?
++ */
++#define DBCR0_ACTIVE_EVENTS	(DBCR0_ICMP | DBCR0_IAC1 | DBCR0_IAC2 | \
++				 DBCR0_IAC3 | DBCR0_IAC4)
++#define DBCR1_ACTIVE_EVENTS	(DBCR1_D1R | DBCR1_D2R | DBCR1_D1W | DBCR1_D2W)
++#define DBCR_ACTIVE_EVENTS(dbcr0, dbcr1)  (((dbcr0) & DBCR0_ACTIVE_EVENTS) || \
++					   ((dbcr1) & DBCR1_ACTIVE_EVENTS))
++
+ #elif defined(CONFIG_BOOKE)
+ #define DBCR0_EDM	0x80000000	/* External Debug Mode */
+ #define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
+@@ -324,8 +369,7 @@
+ #define DBCR0_RST_NONE	0x00000000	/* No Reset */
+ #define DBCR0_ICMP	0x08000000	/* Instruction Completion */
+ #define DBCR0_IC	DBCR0_ICMP
+-#define DBCR0_BRT	0x04000000	/* Branch Taken */
+-#define DBCR0_BT	DBCR0_BRT
++#define DBCR0_BT	0x04000000	/* Branch Taken */
+ #define DBCR0_IRPT	0x02000000	/* Exception Debug Event */
+ #define DBCR0_TDE	0x01000000	/* TRAP Debug Event */
+ #define DBCR0_TIE	DBCR0_TDE
+@@ -342,19 +386,99 @@
+ #define DBCR0_CRET	0x00000020	/* Critical Return Debug Event */
+ #define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
  
-+	case PPC_PTRACE_GETHWDBGINFO: {
-+		struct ppc_debug_info dbginfo;
++#define DBCR0_USER_DEBUG	(DBCR0_IDM | DBCR0_ICMP | DBCR0_IAC1 | \
++				 DBCR0_IAC2 | DBCR0_IAC3 | DBCR0_IAC4 | \
++				 DBCR0_DAC1R | DBCR0_DAC1W  | DBCR0_DAC2R | \
++				 DBCR0_DAC2W)
++#define DBCR0_BASE_REG_VALUE	0
 +
-+		dbginfo.version = 1;
-+		dbginfo.num_instruction_bps = 0;
-+		dbginfo.num_data_bps = 1;
-+		dbginfo.num_condition_regs = 0;
-+#ifdef CONFIG_PPC64
-+		dbginfo.data_bp_alignment = 8;
-+#else
-+		dbginfo.data_bp_alignment = 0;
-+#endif
-+		dbginfo.sizeof_condition = 0;
-+		dbginfo.features = 0;
++#define dbcr_dac(task)	((task)->thread.dbcr0)
++#define DBCR_DAC1R	DBCR0_DAC1R
++#define DBCR_DAC1W	DBCR0_DAC1W
++#define DBCR_DAC2R	DBCR0_DAC2R
++#define DBCR_DAC2W	DBCR0_DAC2W
 +
-+		if (!access_ok(VERIFY_WRITE, data,
-+			       sizeof(struct ppc_debug_info)))
-+			return -EFAULT;
-+		ret = __copy_to_user((struct ppc_debug_info __user *)data,
-+				     &dbginfo, sizeof(struct ppc_debug_info)) ?
-+		      -EFAULT : 0;
-+		break;
-+	}
+ /* Bit definitions related to the DBCR1. */
+-#define DBCR1_IAC12M	0x00800000	/* Instr Addr 1-2 range enable */
+-#define DBCR1_IAC12MX	0x00C00000	/* Instr Addr 1-2 range eXclusive */
+-#define DBCR1_IAC12AT	0x00010000	/* Instr Addr 1-2 range Toggle */
+-#define DBCR1_IAC34M	0x00000080	/* Instr Addr 3-4 range enable */
+-#define DBCR1_IAC34MX	0x000000C0	/* Instr Addr 3-4 range eXclusive */
+-#define DBCR1_IAC34AT	0x00000001	/* Instr Addr 3-4 range Toggle */
++#define DBCR1_IAC1US	0xC0000000	/* Instr Addr Cmp 1 Sup/User   */
++#define DBCR1_IAC1ER	0x30000000	/* Instr Addr Cmp 1 Eff/Real */
++#define DBCR1_IAC1ER_01	0x10000000	/* reserved */
++#define DBCR1_IAC1ER_10	0x20000000	/* Instr Addr Cmp 1 Eff/Real MSR[IS]=0 */
++#define DBCR1_IAC1ER_11	0x30000000	/* Instr Addr Cmp 1 Eff/Real MSR[IS]=1 */
++#define DBCR1_IAC2US	0x0C000000	/* Instr Addr Cmp 2 Sup/User   */
++#define DBCR1_IAC2ER	0x03000000	/* Instr Addr Cmp 2 Eff/Real */
++#define DBCR1_IAC2ER_01	0x01000000	/* reserved */
++#define DBCR1_IAC2ER_10	0x02000000	/* Instr Addr Cmp 2 Eff/Real MSR[IS]=0 */
++#define DBCR1_IAC2ER_11	0x03000000	/* Instr Addr Cmp 2 Eff/Real MSR[IS]=1 */
++#define DBCR1_IAC12M	0x00C00000	/* Instr Addr 1-2 range enable */
++#define DBCR1_IAC12M_R	0x00400000	/* Instr Addr 1-2 reserved state */
++#define DBCR1_IAC12M_I	0x00800000	/* Instr Addr 1-2 range inclusive */
++#define DBCR1_IAC12M_X	0x00C00000	/* Instr Addr 1-2 range eXclusive */
++#define DBCR1_IAC12A_T	0x00010000	/* Instr Addr 1-2 range Toggle */
++#define DBCR1_IAC3US	0x0000C000	/* Instr Addr Cmp 3 Sup/User   */
++#define DBCR1_IAC3ER	0x00003000	/* Instr Addr Cmp 3 Eff/Real */
++#define DBCR1_IAC3ER_01	0x00001000	/* reserved */
++#define DBCR1_IAC3ER_10	0x00002000	/* Instr Addr Cmp 3 Eff/Real MSR[IS]=0 */
++#define DBCR1_IAC3ER_11	0x00003000	/* Instr Addr Cmp 3 Eff/Real MSR[IS]=1 */
++#define DBCR1_IAC4US	0x00000C00	/* Instr Addr Cmp 4 Sup/User   */
++#define DBCR1_IAC4ER	0x00000300	/* Instr Addr Cmp 4 Eff/Real */
++#define DBCR1_IAC4ER_01	0x00000100	/* Instr Addr Cmp 4 Eff/Real MSR[IS]=0 */
++#define DBCR1_IAC4ER_10	0x00000200	/* Instr Addr Cmp 4 Eff/Real MSR[IS]=0 */
++#define DBCR1_IAC4ER_11	0x00000300	/* Instr Addr Cmp 4 Eff/Real MSR[IS]=1 */
++#define DBCR1_IAC34M	0x000000C0	/* Instr Addr 3-4 range enable */
++#define DBCR1_IAC34M_R	0x00000040	/* Instr Addr 3-4 reserved state */
++#define DBCR1_IAC34M_I	0x00000080	/* Instr Addr 3-4 range inclusive */
++#define DBCR1_IAC34M_X	0x000000C0	/* Instr Addr 3-4 range eXclusive */
++#define DBCR1_IAC34A_T	0x00000001	/* Instr Addr 3-4 range Toggle */
 +
-+	case PPC_PTRACE_SETHWDEBUG: {
-+		struct ppc_hw_breakpoint bp_info;
++#define DBCR1_USER_DEBUG	(DBCR1_IAC12M | DBCR1_IAC34M)
++#define DBCR1_BASE_REG_VALUE	(DBCR1_IAC1US | DBCR1_IAC1ER_10 | \
++				 DBCR1_IAC2US | DBCR1_IAC2ER_10 | \
++				 DBCR1_IAC3US | DBCR1_IAC3ER_10 | \
++				 DBCR1_IAC4US | DBCR1_IAC4ER_10)
 +
-+		if (!access_ok(VERIFY_READ, data,
-+			       sizeof(struct ppc_hw_breakpoint)))
-+			return -EFAULT;
-+		ret = __copy_from_user(&bp_info,
-+				       (struct ppc_hw_breakpoint __user *)data,
-+				       sizeof(struct ppc_hw_breakpoint)) ?
-+		      -EFAULT : 0;
-+		if (!ret)
-+			ret = ppc_set_hwdebug(child, &bp_info);
-+		break;
-+	}
++#define dbcr_iac_range(task)	((task)->thread.dbcr1)
++#define DBCR_IAC12M	DBCR1_IAC12M
++#define DBCR_IAC12M_I	DBCR1_IAC12M_I
++#define DBCR_IAC12M_X	DBCR1_IAC12M_X
++#define DBCR_IAC34M	DBCR1_IAC34M
++#define DBCR_IAC34M_I	DBCR1_IAC34M_I
++#define DBCR_IAC34M_X	DBCR1_IAC34M_X
+ 
+ /* Bit definitions related to the DBCR2. */
+-#define DBCR2_DAC12M	0x00800000	/* DAC 1-2 range enable */
+-#define DBCR2_DAC12MX	0x00C00000	/* DAC 1-2 range eXclusive */
++#define DBCR2_DAC1US	0xC0000000	/* Data Addr Cmp 1 Sup/User   */
++#define DBCR2_DAC1ER	0x30000000	/* Data Addr Cmp 1 Eff/Real */
++#define DBCR2_DAC2US	0x00000000	/* Data Addr Cmp 2 Sup/User   */
++#define DBCR2_DAC2ER	0x00000000	/* Data Addr Cmp 2 Eff/Real */
++#define DBCR2_DAC12MODE	0x00C00000	/* DAC 1-2 Mode Bits */
++#define DBCR2_DAC12MASK	0x00400000	/* DAC 1-2 Mask mode*/
++#define DBCR2_DAC12R	0x00800000	/* DAC 1-2 range enable */
++#define DBCR2_DAC12RX	0x00C00000	/* DAC 1-2 range eXclusive */
+ #define DBCR2_DAC12A	0x00200000	/* DAC 1-2 Asynchronous */
+-#endif
++#define DBCR2_DVC1M	0x000C0000	/* Data Value Comp 1 Mode */
++#define DBCR2_DVC1M_SHIFT	18	/* # of bits to shift DBCR2_DVC1M */
++#define DBCR2_DVC2M	0x00030000	/* Data Value Comp 2 Mode */
++#define DBCR2_DVC2M_SHIFT	16	/* # of bits to shift DBCR2_DVC2M */
++#define DBCR2_DVC1BE	0x00000F00	/* Data Value Comp 1 Byte */
++#define DBCR2_DVC1BE_SHIFT	8	/* # of bits to shift DBCR2_DVC1BE */
++#define DBCR2_DVC2BE	0x0000000F	/* Data Value Comp 2 Byte */
++#define DBCR2_DVC2BE_SHIFT	0	/* # of bits to shift DBCR2_DVC2BE */
 +
-+	case PPC_PTRACE_DELHWDEBUG: {
-+		ret = ppc_del_hwdebug(child, addr, data);
-+		break;
-+	}
++#define DBCR2_USER_DEBUG	(DBCR2_DAC12MODE | DBCR2_DVC1M | DBCR2_DVC2M | \
++				 DBCR2_DVC1BE | DBCR2_DVC2BE)
++#define DBCR2_BASE_REG_VALUE	(DBCR2_DAC1US | DBCR2_DAC2US)
 +
- 	case PTRACE_GET_DEBUGREG: {
- 		ret = -EINVAL;
- 		/* We only support one DABR and no IABRS at the moment */
++/*
++ * Are there any active Debug Events represented in the
++ * Debug Control Registers?
++ */
++#define DBCR0_ACTIVE_EVENTS  (DBCR0_ICMP | DBCR0_IAC1 | DBCR0_IAC2 | \
++			      DBCR0_IAC3 | DBCR0_IAC4 | DBCR0_DAC1R | \
++			      DBCR0_DAC1W  | DBCR0_DAC2R | DBCR0_DAC2W)
++#define DBCR1_ACTIVE_EVENTS	0
++
++#define DBCR_ACTIVE_EVENTS(dbcr0, dbcr1)  (((dbcr0) & DBCR0_ACTIVE_EVENTS) || \
++					   ((dbcr1) & DBCR1_ACTIVE_EVENTS))
++#endif /* #elif defined(CONFIG_BOOKE) */
+ 
+ /* Bit definitions related to the TCR. */
+ #define TCR_WP(x)	(((x)&0x3)<<30)	/* WDT Period */
 
 -- 
 Dave Kleikamp
