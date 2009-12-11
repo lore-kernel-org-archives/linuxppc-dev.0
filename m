@@ -1,16 +1,14 @@
 Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1259213266.16367.274.camel@pasglop>
+In-Reply-To: <1259208310.16367.231.camel@pasglop>
 References: <20091124081316.6216.66310.stgit@angua>
-	<20091124081827.6216.1896.stgit@angua>
-	<1259207974.16367.226.camel@pasglop>
-	<fa686aa40911252005o2db85dfk3d9acc61c12ca5e5@mail.gmail.com>
-	<1259213266.16367.274.camel@pasglop>
+	<20091124081906.6216.67035.stgit@angua>
+	<1259208310.16367.231.camel@pasglop>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 10 Dec 2009 23:43:47 -0700
-Message-ID: <fa686aa40912102243x7f64c5aay13a84b3cde58a5b9@mail.gmail.com>
-Subject: Re: [PATCH 04/11] of/flattree: eliminate cell_t typedef
+Date: Thu, 10 Dec 2009 23:54:55 -0700
+Message-ID: <fa686aa40912102254u7cd53819q6550d7b2413d0121@mail.gmail.com>
+Subject: Re: [PATCH 07/11] of: merge machine_is_compatible()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
@@ -25,16 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 25, 2009 at 10:27 PM, Benjamin Herrenschmidt
+On Wed, Nov 25, 2009 at 9:05 PM, Benjamin Herrenschmidt
 <benh@kernel.crashing.org> wrote:
-> On Wed, 2009-11-25 at 21:05 -0700, Grant Likely wrote:
->>
->> You're right, it's not, but makes merging less complex, and then I can
->> refactor properly.
+> On Tue, 2009-11-24 at 01:19 -0700, Grant Likely wrote:
+>> Merge common code between PowerPC and Microblaze
 >
-> Still, make them __be32 at least
+> I don't like moving this one to common code without the of_ prefix. I
+> think you should move it with the of_ prefix, and then add a alias in
+> powerpc and microblaze without of_ in a header until we fix all call
+> sites (which you can put on your to-do list :-)
 
-Okay.  Done.
+I've written another patch to rename it.
 
 g.
 
