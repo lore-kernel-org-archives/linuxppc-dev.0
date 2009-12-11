@@ -5,8 +5,8 @@ Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
 In-Reply-To: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-Date: Thu, 10 Dec 2009 20:23:35 -0600
-Message-Id: <F0B42818-1EE1-47EE-B2F3-B7529B2E13C8@kernel.crashing.org>
+Date: Thu, 10 Dec 2009 20:24:07 -0600
+Message-Id: <D925FFC0-EF2B-4ED4-8481-38BC743E9770@kernel.crashing.org>
 References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
 To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
@@ -89,8 +89,113 @@ process:
 > #define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
 > #define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
 > #define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
+>=20
+> 2. PTRACE_SETHWDEBUG
+>=20
+> Sets a hardware breakpoint or watchpoint, according to the provided =
+structure:
+>=20
+> struct ppc_hw_breakpoint {
+>        uint32_t version;
+> #define PPC_BREAKPOINT_TRIGGER_EXECUTE  0x1
+> #define PPC_BREAKPOINT_TRIGGER_READ     0x2
+> #define PPC_BREAKPOINT_TRIGGER_WRITE    0x4
+>        uint32_t trigger_type;       /* only some combinations allowed =
+*/
+> #define PPC_BREAKPOINT_MODE_EXACT               0x0
+> #define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE     0x1
+> #define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE     0x2
+> #define PPC_BREAKPOINT_MODE_MASK                0x3
+>        uint32_t addr_mode;          /* address match mode */
+>=20
+> #define PPC_BREAKPOINT_CONDITION_NONE   0x0
+> #define PPC_BREAKPOINT_CONDITION_AND    0x1
+> #define PPC_BREAKPOINT_CONDITION_EXACT  0x1	/* different name for =
+the same thing as above */
+> #define PPC_BREAKPOINT_CONDITION_OR     0x2
+> #define PPC_BREAKPOINT_CONDITION_AND_OR 0x3
+> #define PPC_BREAKPOINT_CONDITION_BE_ALL 0x00ff0000	/* byte enable =
+bits */
+> #define PPC_BREAKPOINT_CONDITION_BE(n)  (1<<((n)+16))
+>        uint32_t condition_mode;     /* break/watchpoint condition =
+flags */
+>=20
+>        uint64_t addr;
+>        uint64_t addr2;
+>        uint64_t condition_value;
+> };
+>=20
+> A request specifies one event, not necessarily just one register to be =
+set.
+> For instance, if the request is for a watchpoint with a condition, =
+both the
+> DAC and DVC registers will be set in the same request.
+>=20
+> With this GDB can ask for all kinds of hardware breakpoints and =
+watchpoints
+> that the BookE supports. COMEFROM breakpoints available in server =
+processors
+> are not contemplated, but that is out of the scope of this work.
+>=20
+> ptrace will return an integer (handle) uniquely identifying the =
+breakpoint or
+> watchpoint just created. This integer will be used in the =
+PTRACE_DELHWDEBUG
+> request to ask for its removal. Return -ENOSPC if the requested =
+breakpoint
+> can't be allocated on the registers.
+>=20
+> Some examples of using the structure to:
+>=20
+> - set a breakpoint in the first breakpoint register
+>=20
+>  p.version         =3D PPC_DEBUG_CURRENT_VERSION;
+>  p.trigger_type    =3D PPC_BREAKPOINT_TRIGGER_EXECUTE;
+>  p.addr_mode       =3D PPC_BREAKPOINT_MODE_EXACT;
+>  p.condition_mode  =3D PPC_BREAKPOINT_CONDITION_NONE;
+>  p.addr            =3D (uint64_t) address;
+>  p.addr2           =3D 0;
+>  p.condition_value =3D 0;
+>=20
+> - set a watchpoint which triggers on reads in the second watchpoint =
+register
+>=20
+>  p.version         =3D PPC_DEBUG_CURRENT_VERSION;
+>  p.trigger_type    =3D PPC_BREAKPOINT_TRIGGER_READ;
+>  p.addr_mode       =3D PPC_BREAKPOINT_MODE_EXACT;
+>  p.condition_mode  =3D PPC_BREAKPOINT_CONDITION_NONE;
+>  p.addr            =3D (uint64_t) address;
+>  p.addr2           =3D 0;
+>  p.condition_value =3D 0;
+>=20
+> - set a watchpoint which triggers only with a specific value
+>=20
+>  p.version         =3D PPC_DEBUG_CURRENT_VERSION;
+>  p.trigger_type    =3D PPC_BREAKPOINT_TRIGGER_READ;
+>  p.addr_mode       =3D PPC_BREAKPOINT_MODE_EXACT;
+>  p.condition_mode  =3D PPC_BREAKPOINT_CONDITION_AND | =
+PPC_BREAKPOINT_CONDITION_BE_ALL;
+>  p.addr            =3D (uint64_t) address;
+>  p.addr2           =3D 0;
+>  p.condition_value =3D (uint64_t) condition;
+>=20
+> - set a ranged hardware breakpoint
+>=20
+>  p.version         =3D PPC_DEBUG_CURRENT_VERSION;
+>  p.trigger_type    =3D PPC_BREAKPOINT_TRIGGER_EXECUTE;
+>  p.addr_mode       =3D PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE;
+>  p.condition_mode  =3D PPC_BREAKPOINT_CONDITION_NONE;
+>  p.addr            =3D (uint64_t) begin_range;
+>  p.addr2           =3D (uint64_t) end_range;
+>  p.condition_value =3D 0;
+>=20
+> 3. PTRACE_DELHWDEBUG
+>=20
+> Takes an integer which identifies an existing breakpoint or watchpoint
+> (i.e., the value returned from PTRACE_SETHWDEBUG), and deletes the
+> corresponding breakpoint or watchpoint..
 
-Is GDB smart enough to deal w/no condition_regs?  On some Book-E devices =
-we have 2 IACs, 2 DACs, and 0 DVCs.  Does it need to be in the features?
+This is a good write up.  We should have it as a commit message for the =
+first patch.
 
-- k=
+- k
