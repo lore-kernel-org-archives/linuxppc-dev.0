@@ -1,22 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f178.google.com (mail-yw0-f178.google.com
-	[209.85.211.178]) by ozlabs.org (Postfix) with ESMTP id 23195B7BE9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Dec 2009 17:14:07 +1100 (EST)
-Received: by ywh8 with SMTP id 8so602694ywh.3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Dec 2009 22:14:05 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <200912081339.50722.roman.fietze@telemotive.de>
-References: <200912081339.50722.roman.fietze@telemotive.de>
+In-Reply-To: <1259208248.16367.230.camel@pasglop>
+References: <20091124081316.6216.66310.stgit@angua>
+	<20091124081853.6216.68105.stgit@angua>
+	<1259208248.16367.230.camel@pasglop>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 10 Dec 2009 23:13:45 -0700
-Message-ID: <fa686aa40912102213m5b2a0092i3c25d73b914ece93@mail.gmail.com>
-Subject: Re: [PATCH] PowerPC: const intspec pointers
-To: Roman Fietze <roman.fietze@telemotive.de>
+Date: Thu, 10 Dec 2009 23:19:00 -0700
+Message-ID: <fa686aa40912102219s11a2aba3nc61bc0f53b0e9ffe@mail.gmail.com>
+Subject: Re: [PATCH 06/11] of/flattree: merge early_init_devtree() and
+	early_init_move_devtree()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 8, 2009 at 5:39 AM, Roman Fietze <roman.fietze@telemotive.de> wrote:
-> Hello,
+On Wed, Nov 25, 2009 at 9:04 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2009-11-24 at 01:19 -0700, Grant Likely wrote:
+>> =A0/**
+>> + * early_init_move_devtree - move tree to an unused area, if needed.
+>> + *
+>> + * The device tree may be allocated beyond our memory limit, or inside =
+the
+>> + * crash kernel region for kdump. If so, move it out of the way.
+>> + */
+>> +#if defined(CONFIG_PPC)
+>> +static void __init early_init_move_devtree(void)
 >
-> Writing a driver using SCLPC on the MPC5200B I detected, that the
-> intspec arrays to map irqs to Linux virq cannot be const, because the
-> mapping and xlate functions only take non const pointers. All those
-> functions do not modify the intspec, so a const pointer could be used.
+> And you still end up with an ifdef mess in the common code ...
 
-BTW, if you're interested, there is a driver for the SCLPC FIFO about
-to be merged into 2.6.33.  It's in Ben's tree waiting to be pulled
-into mainline.
+The #ifdefs are temporary.  I'm leaving them in now exactly because
+they are ugly and show where the code needs to be refactored and
+reorganized.  Once everything is merged, I'll probably do exactly what
+you suggest.  I just cannot yet tell the exact structure of it until I
+see the merged version.
 
-Cheers,
 g.
 
--- 
+--=20
 Grant Likely, B.Sc., P.Eng.
 Secret Lab Technologies Ltd.
