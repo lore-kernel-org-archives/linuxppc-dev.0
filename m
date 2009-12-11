@@ -1,14 +1,15 @@
 Return-Path: <dwg@au1.ibm.com>
-Date: Fri, 11 Dec 2009 11:44:34 +1100
+Date: Fri, 11 Dec 2009 11:53:44 +1100
 From: David Gibson <dwg@au1.ibm.com>
 To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC:PATCH 01/03] powerpc: Extended ptrace interface
-Message-ID: <20091211004434.GA8852@yookeroo>
+Subject: Re: [RFC:PATCH 02/03] powerpc: Add definitions for Debug Registers
+	on BookE Platforms
+Message-ID: <20091211005344.GB8852@yookeroo>
 References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-	<20091210155715.6697.92627.sendpatchset@norville.austin.ibm.com>
+	<20091210155721.6697.40863.sendpatchset@norville.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091210155715.6697.92627.sendpatchset@norville.austin.ibm.com>
+In-Reply-To: <20091210155721.6697.40863.sendpatchset@norville.austin.ibm.com>
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
 	Sergio Durigan Junior <sergiodj@br.ibm.com>,
 	Torez Smith <torez@us.ibm.com>, Thiago Jung Bauermann <bauerman@br.ibm.com>
@@ -21,80 +22,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 10, 2009 at 01:57:15PM -0200, Dave Kleikamp wrote:
-> powerpc: Extended ptrace interface
+On Thu, Dec 10, 2009 at 01:57:21PM -0200, Dave Kleikamp wrote:
+> powerpc: Add definitions for Debug Registers on BookE Platforms
 > 
 > From: Torez Smith <lnxtorez@linux.vnet.ibm.com>
 > 
-> Add a new extended ptrace interface so that user-space has a single
-> interface for powerpc, without having to know the specific layout
-> of the debug registers.
-
-
-> Implement:
-> PPC_PTRACE_GETHWDEBUGINFO
-> PPC_PTRACE_SETHWDEBUG
-> PPC_PTRACE_DELHWDEBUG
+> This patch adds additional definitions for BookE Debug Registers
+> to the reg_booke.h header file.
 > 
-> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 > Signed-off-by: Torez Smith  <lnxtorez@linux.vnet.ibm.com>
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
-Apart from the data breakpoint alignment for 32-bit systems, all the
-comments below are trivial nits, so:
+As with patch 1/3, none of the comments below is anything that
+couldn't be fixed up after merging.  So,
 
 Acked-by: David Gibson <dwg@au1.ibm.com>
 
-[snip]
-> +/*
-> + * Trigger Type
-> + */
-> +#define PPC_BREAKPOINT_TRIGGER_EXECUTE	0x1
-> +#define PPC_BREAKPOINT_TRIGGER_READ	0x2
-> +#define PPC_BREAKPOINT_TRIGGER_WRITE	0x4
-> +#define PPC_BREAKPOINT_TRIGGER_RW	0x6
-
-For a little extra safety, I'd tend towards defining the RW constant
-in terms of the READ and WRITE constants.
-
-> +
-> +/*
-> + * Address Mode
-> + */
-> +#define PPC_BREAKPOINT_MODE_EXACT		0x0
-> +#define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE	0x1
-> +#define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE	0x2
-> +#define PPC_BREAKPOINT_MODE_MASK		0x3
-> +
-> +/*
-> + * Condition Mode
-> + */
-> +#define PPC_BREAKPOINT_CONDITION_NONE	0x0
-> +#define PPC_BREAKPOINT_CONDITION_AND	0x1
-> +#define PPC_BREAKPOINT_CONDITION_EXACT	0x1
-
-And likewuse define EXACT in terms of AND.
-
-> +#define PPC_BREAKPOINT_CONDITION_OR	0x2
-> +#define PPC_BREAKPOINT_CONDITION_AND_OR	0x3
-> +#define PPC_BREAKPOINT_CONDITION_BE_ALL	0x00ff0000
-> +#define PPC_BREAKPOINT_CONDITION_BE_SHIFT	16
-> +#define PPC_BREAKPOINT_CONDITION_BE(n)	\
-> +	(1<<((n)+PPC_BREAKPOINT_CONDITION_BE_SHIFT))
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Thiago Jung Bauermann <bauerman@br.ibm.com>
+> Cc: Sergio Durigan Junior <sergiodj@br.ibm.com>
+> Cc: David Gibson <dwg@au1.ibm.com>
+> Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+> ---
+> 
+>  arch/powerpc/include/asm/processor.h |   30 +++++-
+>  arch/powerpc/include/asm/reg_booke.h |  176 +++++++++++++++++++++++++++++-----
+>  2 files changed, 178 insertions(+), 28 deletions(-)
 
 [snip]
-> +	case PPC_PTRACE_GETHWDBGINFO: {
-> +		struct ppc_debug_info dbginfo;
-> +
-> +		dbginfo.version = 1;
-> +		dbginfo.num_instruction_bps = 0;
-> +		dbginfo.num_data_bps = 1;
-> +		dbginfo.num_condition_regs = 0;
-> +#ifdef CONFIG_PPC64
-> +		dbginfo.data_bp_alignment = 8;
-> +#else
-> +		dbginfo.data_bp_alignment = 0;
+> +	/*
+> +	 * The following will contain addresses used by debug applications
+> +	 * to help trace and trap on particular address locations.
+> +	 * The bits in the Debug Control Registers above help define which
+> +	 * of the following registers will contain valid data and/or addresses.
+> +	 */
+> +	unsigned long	iac1;
+> +	unsigned long	iac2;
+> +	unsigned long	iac3;
+> +	unsigned long	iac4;
+> +	unsigned long	dac1;
+> +	unsigned long	dac2;
+> +	unsigned long	dvc1;
+> +	unsigned long	dvc2;
 
-Uh.. this looks wrong.  Surely it should be 4.
+I think you'd make the logic in patch 3 substantially easier, if you
+defined these as
+	unsigned long iac[4];
+	unsigned long dac[2];
+	unsigned long dvc[2];
+instead of as individual structure members.
+
+[snip]
+> +#define DBCR0_USER_DEBUG	(DBCR0_IDM | DBCR0_ICMP | DBCR0_IAC1 | \
+> +				 DBCR0_IAC2 | DBCR0_IAC3 | DBCR0_IAC4)
+> +#define DBCR0_BASE_REG_VALUE	0
+
+These constants are left over from when the interface allowed
+more-or-less direct access to the debug regs.  I don't think the
+USER_DEBUG constant is used at all any more, and the BASE_REG_VALUE is
+just used in the load_default function, and might as well be inline
+there.
+
+[snip]
+> +
+> +#define dbcr_iac_range(task)	((task)->thread.dbcr0)
+
+Hrm, I think the way these macros work to do the 40x vs. BookE
+abstration is kind of ugly.  But an unequivocally better way doesn't
+immediately occur to me.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
