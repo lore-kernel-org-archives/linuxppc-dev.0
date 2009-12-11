@@ -1,17 +1,21 @@
-Return-Path: <ajijuni@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <4B22939B.7060101@freescale.com>
-References: <7675847.584551260168085277.JavaMail.nabble@isper.nabble.com>
-	<20091207180719.GB8914@loki.buserror.net>
-	<72d214170912101634l1fab97fewc849a819f767415c@mail.gmail.com>
-	<4B22939B.7060101@freescale.com>
-Date: Fri, 11 Dec 2009 11:39:48 -0800
-Message-ID: <72d214170912111139w665b371aw1816ff571e4c0478@mail.gmail.com>
-Subject: Re: dts file for MPC8343EA
-From: Junita Ajith <ajijuni@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: multipart/alternative; boundary=00504502bc3430705a047a79162d
-Cc: Linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1A18AB6F0C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 12 Dec 2009 08:59:14 +1100 (EST)
+Subject: Re: [RFC PATCH v2 1/6] powerpc: wii: device tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Albert Herranz <albert_herranz@yahoo.es>
+In-Reply-To: <1259880447-5008-2-git-send-email-albert_herranz@yahoo.es>
+References: <1259880447-5008-1-git-send-email-albert_herranz@yahoo.es>
+	<1259880447-5008-2-git-send-email-albert_herranz@yahoo.es>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 12 Dec 2009 08:59:05 +1100
+Message-ID: <1260568745.16132.360.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,342 +25,468 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---00504502bc3430705a047a79162d
-Content-Type: text/plain; charset=ISO-8859-1
+On Thu, 2009-12-03 at 23:47 +0100, Albert Herranz wrote:
+> Add a device tree source file for the Nintendo Wii video game console.
+> 
+> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 
-Hi Scott:
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-After enabling debugging option from kernel (2.6.29) , here is the log.
-
-We do have an external debugger(BDI). But soon after the crash happens,
-looks like the core freezes and hence reading from any location in memeory
-gives "SAP: Read access failed" error.
-
-I have disabled PCI.
-
---Thanks,
-Junita
-
-Screen-dump :
-===========
-Bytes transferred = 12288 (3000 hex)
-SC3000> bootm 0x00600000 - 0x00900000
-## Booting image at 00600000 ...
-   Image Name:   Linux-2.6.29
-   Created:      2009-12-11   2:59:37 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    2177151 Bytes =  2.1 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-   Booting using the fdt at 0x900000
-   Loading Device Tree to 007fc000, end 007fefff ... OK
-Using MPC834x ITX machine description
-Linux version 2.6.29 (root@localhost.localdomain) (gcc version 4.1.2) #1 Thu
-De9console [udbg0] enabled
-setup_arch: bootmem
-mpc834x_itx_setup_arch()
-Found FSL PCI host bridge at 0x00000000e0008600. Firmware bus number: 1->1
-PCI host bridge /pci@e0008600  ranges:
- MEM 0x00000000a0000000..0x00000000afffffff -> 0x00000000a0000000 Prefetch
- MEM 0x00000000b0000000..0x00000000bfffffff -> 0x00000000b0000000
-  IO 0x00000000e3000000..0x00000000e3ffffff -> 0x0000000000000000
-arch: exit
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00008000
-  Normal   0x00008000 -> 0x00008000
-  HighMem  0x00008000 -> 0x00008000
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0: 0x00000000 -> 0x00008000
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 32512
-Kernel command line: root=/dev/ram rw console=ttyS0,115200 mem=128M
-IPIC (128 IRQ sources) at fe7fc700
-BUG: spinlock bad magic on CPU#0, swapper/0
- lock: c041c3b8, .magic: dead4ead, .owner: <none>/-1, .owner_cpu: -1
-Call Trace:
-[c0449db0] [c0008990] show_stack+0x3c/0x160 (unreliable)
-[c0449de0] [c01fced8] spin_bug+0x8c/0xd0
-[c0449e00] [c01fd0e0] _raw_spin_lock+0x94/0x16c
-[c0449e30] [c02bcef0] _spin_lock_irqsave+0x20/0x38
-[c0449e50] [c004ea4c] down_trylock+0x18/0x4c
-[c0449e60] [c0032650] try_acquire_console_sem+0x20/0x7c
-[c0449e70] [c0032de0] vprintk+0x148/0x3a4
-[c0449f20] [c003308c] printk+0x50/0x60
-[c0449f60] [c03f4e98] ipic_init+0x17c/0x180
-[c0449fa0] [c03fa7dc] mpc834x_itx_init_IRQ+0x2c/0x40
-[c0449fb0] [c03ebee8] init_IRQ+0x24/0x34
-[c0449fc0] [c03e570c] start_kernel+0x158/0x2b4
-[c0449ff0] [00003438] 0x3438
-PID hash table entries: 512 (order: 9, 2048 bytes)
-time_init: decrementer frequency = 66.666666 MHz
-time_init: processor frequency   = 399.999996 MHz
-clocksource: timebase mult[3c00001] shift[22] registered
-clockevent: decrementer mult[1111] shift[16] cpu[0]
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
-Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
-High memory: 0k
-Memory: 124912k/131072k available (4188k kernel code, 6008k reserved, 192k
-data)SLUB: Genslabs=12, HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
-Calibrating delay loop... 133.12 BogoMIPS (lpj=266240)
-Mount-cache hash table entries: 512
-khelper used greatest stack depth: 7656 bytes left
-         Unable to handle kernel paging request for data at address
-0xffff3f60
-Faulting instruction address: 0xc005e984
-Oops: Kernel access of bad area, sig: 11 [#1]
-MPC834x ITX
-NIP: c005e984 LR: c005eae8 CTR: c005eb48
-REGS: c781dd00 TRAP: 0300   Not tainted  (2.6.29)
-MSR: 00009032 <EE,ME,IR,DR>  CR: 22000088  XER: 00000000
-DAR: ffff3f60, DSISR: 20000000
-TASK = c7818000[1] 'swapper' THREAD: c781c000
-GPR00: c005eae8 c781ddb0 c7818000 ffff3f60 c03c1300 fffedb2b 00000100
-00000000
-GPR08: c0427c84 ffff3f60 00000001 c0440000 42000084 ffffffff 0fff7000
-00800000
-GPR16: ffffffff 00000000 007fff00 00000000 00000001 c0470000 c0478d1c
-c03a0000
-GPR24: 00000001 c0470000 0000000a c781c000 00009032 00000000 c0478ce0
-c0427c64
-NIP [c005e984] __rcu_process_callbacks+0x12c/0x2f0
-LR [c005eae8] __rcu_process_callbacks+0x290/0x2f0
-Call Trace:
-[c781ddb0] [c005eae8] __rcu_process_callbacks+0x290/0x2f0 (unreliable)
-[c781ddd0] [c005eb68] rcu_process_callbacks+0x20/0x44
-[c781dde0] [c0038244] __do_softirq+0x90/0x140
-[c781de20] [c0006534] do_softirq+0x58/0x5c
-[c781de30] [c00380a0] irq_exit+0x48/0x58
-[c781de40] [c0010e64] timer_interrupt+0x12c/0x188
-[c781de60] [c0014484] ret_from_except+0x0/0x14
---- Exception: 901 at udbg_550_putc+0x1c/0x58
-    LR = udbg_puts+0x48/0x6c
-[c781df20] [00000000] (null) (unreliable)
-[c781df30] [c03ee80c] udbg_progress+0x14/0x30
-[c781df40] [c03ee8f8] ppc_init+0x3c/0x68
-[c781df50] [c0003884] do_one_initcall+0x34/0x1a8
-[c781dfd0] [c03e516c] kernel_init+0x94/0xf8
-[c781dff0] [c0013c10] kernel_thread+0x4c/0x68
-Instruction dump:
-39200000 901e0008 913e0004 801f0000 901e0000 807e0024 2f830000 419e0090
-7c691b78 3ba00000 48000008 41920038 <83e90000> 2e1f0000 41920008 7c00fa2c
-Kernel panic - not syncing: Fatal exception in interrupt
-
-
-
-
-
-On 12/11/09, Scott Wood <scottwood@freescale.com> wrote:
->
-> Junita Ajith wrote:
->
->> Hi Scott:
->>
->> I am still stuck at Linux kernel booting in MPC8343EA based board.
->>
->> I have disabled "Ethernet, PCI, USB, dma engines " in the *.dts file and
->> also in the kernel config.
->> I am using MPC8349emitxgp.dts  ; enabled MPC8349ITX support in kernel
->> config also. In fact, I tried building MPC8349emITX; MPC8349MDS also. Same
->> behaviour!
->>
->> With this, the kernel boots up (explicitly passing the DTB file and
->> cuImage NEVER worked) and hangs after
->>
->> I am using Linux-V-2.6.27.18 and using powerpc-e300c3-gnu  toolchain  -
->> gcc-4.1.69-eglibc-2.5.69-1 to build u-boot-1.3.2 & linux.
->>
->> With this, the kernel boots up (explicitly passing the DTB file and
->> cuImage NEVER worked) and hangs after printing
->> "Calibrating delay loop... 133.12 BogoMIPS (lpj=266240)"
->>
->> With a few debug printks looks like the kernel hangs in
->> "cpu_idle" in --main/init.c
->>
->
-> Try to find out what threads are blocked where.
->
-> There may also have been a problem transitioning to the normal serial
-> driver.  Do you have an external debugger than can extract the log buffer?
->
-> -Scott
->
-
---00504502bc3430705a047a79162d
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi Scott:<br>
-<br>
-After enabling debugging option from kernel (2.6.29) , here is the log.<br>
-<br>
-We do have an external debugger(BDI). But soon after the crash happens,
-looks like the core freezes and hence reading from any location in
-memeory gives &quot;SAP: Read access failed&quot; error.<br>
-<br>
-I have disabled PCI. <br>
-<br>
---Thanks,<br>
-Junita<br>
-<br>
-Screen-dump :<br>
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D<br>
-Bytes transferred =3D 12288 (3000 hex)<br>
-SC3000&gt; bootm 0x00600000 - 0x00900000<br>
-## Booting image at 00600000 ...<br>
-=A0=A0 Image Name:=A0=A0 Linux-2.6.29<br>
-=A0=A0 Created:=A0=A0=A0=A0=A0 2009-12-11=A0=A0 2:59:37 UTC<br>
-=A0=A0 Image Type:=A0=A0 PowerPC Linux Kernel Image (gzip compressed)<br>
-=A0=A0 Data Size:=A0=A0=A0 2177151 Bytes =3D=A0 2.1 MB<br>
-=A0=A0 Load Address: 00000000<br>
-=A0=A0 Entry Point:=A0 00000000<br>
-=A0=A0 Verifying Checksum ... OK<br>
-=A0=A0 Uncompressing Kernel Image ... OK<br>
-=A0=A0 Booting using the fdt at 0x900000<br>
-=A0=A0 Loading Device Tree to 007fc000, end 007fefff ... OK<br>
-Using MPC834x ITX machine description<br>
-Linux version 2.6.29 (root@localhost.localdomain) (gcc version 4.1.2) #1 Th=
-u De9console [udbg0] enabled<br>
-setup_arch: bootmem<br>
-mpc834x_itx_setup_arch()<br>
-Found FSL PCI host bridge at 0x00000000e0008600. Firmware bus number: 1-&gt=
-;1<br>
-PCI host bridge /pci@e0008600=A0 ranges:<br>
-=A0MEM 0x00000000a0000000..0x00000000afffffff -&gt; 0x00000000a0000000 Pref=
-etch<br>
-=A0MEM 0x00000000b0000000..0x00000000bfffffff -&gt; 0x00000000b0000000<br>
-=A0 IO 0x00000000e3000000..0x00000000e3ffffff -&gt; 0x0000000000000000<br>
-arch: exit<br>
-Zone PFN ranges:<br>
-=A0 DMA=A0=A0=A0=A0=A0 0x00000000 -&gt; 0x00008000<br>
-=A0 Normal=A0=A0 0x00008000 -&gt; 0x00008000<br>
-=A0 HighMem=A0 0x00008000 -&gt; 0x00008000<br>
-Movable zone start PFN for each node<br>
-early_node_map[1] active PFN ranges<br>
-=A0=A0=A0 0: 0x00000000 -&gt; 0x00008000<br>
-Built 1 zonelists in Zone order, mobility grouping on.=A0 Total pages: 3251=
-2<br>
-Kernel command line: root=3D/dev/ram rw console=3DttyS0,115200 mem=3D128M<b=
-r>
-IPIC (128 IRQ sources) at fe7fc700<br>
-BUG: spinlock bad magic on CPU#0, swapper/0<br>
-=A0lock: c041c3b8, .magic: dead4ead, .owner: &lt;none&gt;/-1, .owner_cpu: -=
-1<br>
-Call Trace:<br>
-[c0449db0] [c0008990] show_stack+0x3c/0x160 (unreliable)<br>
-[c0449de0] [c01fced8] spin_bug+0x8c/0xd0<br>
-[c0449e00] [c01fd0e0] _raw_spin_lock+0x94/0x16c<br>
-[c0449e30] [c02bcef0] _spin_lock_irqsave+0x20/0x38<br>
-[c0449e50] [c004ea4c] down_trylock+0x18/0x4c<br>
-[c0449e60] [c0032650] try_acquire_console_sem+0x20/0x7c<br>
-[c0449e70] [c0032de0] vprintk+0x148/0x3a4<br>
-[c0449f20] [c003308c] printk+0x50/0x60<br>
-[c0449f60] [c03f4e98] ipic_init+0x17c/0x180<br>
-[c0449fa0] [c03fa7dc] mpc834x_itx_init_IRQ+0x2c/0x40<br>
-[c0449fb0] [c03ebee8] init_IRQ+0x24/0x34<br>
-[c0449fc0] [c03e570c] start_kernel+0x158/0x2b4<br>
-[c0449ff0] [00003438] 0x3438<br>
-PID hash table entries: 512 (order: 9, 2048 bytes)<br>
-time_init: decrementer frequency =3D 66.666666 MHz<br>
-time_init: processor frequency=A0=A0 =3D 399.999996 MHz<br>
-clocksource: timebase mult[3c00001] shift[22] registered<br>
-clockevent: decrementer mult[1111] shift[16] cpu[0]<br>
-Console: colour dummy device 80x25<br>
-Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)<br>
-Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)<br>
-High memory: 0k<br>
-Memory: 124912k/131072k available (4188k kernel code, 6008k reserved,
-192k data)SLUB: Genslabs=3D12, HWalign=3D32, Order=3D0-3, MinObjects=3D0,
-CPUs=3D1, Nodes=3D1<br>
-Calibrating delay loop... 133.12 BogoMIPS (lpj=3D266240)<br>
-Mount-cache hash table entries: 512<br>
-khelper used greatest stack depth: 7656 bytes left<br>
-=A0=A0=A0=A0=A0=A0=A0=A0 Unable to handle kernel paging request for data at=
- address 0xffff3f60<br>
-Faulting instruction address: 0xc005e984<br>
-Oops: Kernel access of bad area, sig: 11 [#1]<br>
-MPC834x ITX<br>
-NIP: c005e984 LR: c005eae8 CTR: c005eb48<br>
-REGS: c781dd00 TRAP: 0300=A0=A0 Not tainted=A0 (2.6.29)<br>
-MSR: 00009032 &lt;EE,ME,IR,DR&gt;=A0 CR: 22000088=A0 XER: 00000000<br>
-DAR: ffff3f60, DSISR: 20000000<br>
-TASK =3D c7818000[1] &#39;swapper&#39; THREAD: c781c000<br>
-GPR00: c005eae8 c781ddb0 c7818000 ffff3f60 c03c1300 fffedb2b 00000100 00000=
-000<br>
-GPR08: c0427c84 ffff3f60 00000001 c0440000 42000084 ffffffff 0fff7000 00800=
-000<br>
-GPR16: ffffffff 00000000 007fff00 00000000 00000001 c0470000 c0478d1c c03a0=
-000<br>
-GPR24: 00000001 c0470000 0000000a c781c000 00009032 00000000 c0478ce0 c0427=
-c64<br>
-NIP [c005e984] __rcu_process_callbacks+0x12c/0x2f0<br>
-LR [c005eae8] __rcu_process_callbacks+0x290/0x2f0<br>
-Call Trace:<br>
-[c781ddb0] [c005eae8] __rcu_process_callbacks+0x290/0x2f0 (unreliable)<br>
-[c781ddd0] [c005eb68] rcu_process_callbacks+0x20/0x44<br>
-[c781dde0] [c0038244] __do_softirq+0x90/0x140<br>
-[c781de20] [c0006534] do_softirq+0x58/0x5c<br>
-[c781de30] [c00380a0] irq_exit+0x48/0x58<br>
-[c781de40] [c0010e64] timer_interrupt+0x12c/0x188<br>
-[c781de60] [c0014484] ret_from_except+0x0/0x14<br>
---- Exception: 901 at udbg_550_putc+0x1c/0x58<br>
-=A0=A0=A0 LR =3D udbg_puts+0x48/0x6c<br>
-[c781df20] [00000000] (null) (unreliable)<br>
-[c781df30] [c03ee80c] udbg_progress+0x14/0x30<br>
-[c781df40] [c03ee8f8] ppc_init+0x3c/0x68<br>
-[c781df50] [c0003884] do_one_initcall+0x34/0x1a8<br>
-[c781dfd0] [c03e516c] kernel_init+0x94/0xf8<br>
-[c781dff0] [c0013c10] kernel_thread+0x4c/0x68<br>
-Instruction dump:<br>
-39200000 901e0008 913e0004 801f0000 901e0000 807e0024 2f830000 419e0090<br>
-7c691b78 3ba00000 48000008 41920038 &lt;83e90000&gt; 2e1f0000 41920008 7c00=
-fa2c<br>
-Kernel panic - not syncing: Fatal exception in interrupt<br>
-<br>
-<br>
-<br>
-<br><br><div><span class=3D"gmail_quote">On 12/11/09, <b class=3D"gmail_sen=
-dername">Scott Wood</b> &lt;<a href=3D"mailto:scottwood@freescale.com">scot=
-twood@freescale.com</a>&gt; wrote:</span><blockquote class=3D"gmail_quote" =
-style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8=
-ex; padding-left: 1ex;">
-<span class=3D"q">Junita Ajith wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
-204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Hi Scott:<br>
-<br>
-I am still stuck at Linux kernel booting in MPC8343EA based board.<br>
-<br>
-I have disabled &quot;Ethernet, PCI, USB, dma engines &quot; in the *.dts f=
-ile and also in the kernel config.<br>
-I am using MPC8349emitxgp.dts =A0; enabled MPC8349ITX support in
-kernel config also. In fact, I tried building MPC8349emITX; MPC8349MDS
-also. Same behaviour!<br>
-<br>
-With this, the kernel boots up (explicitly passing the DTB file and cuImage=
- NEVER worked) and hangs after<br>
-<br>
-I am using Linux-V-2.6.27.18 and using powerpc-e300c3-gnu
-=A0toolchain =A0- gcc-4.1.69-eglibc-2.5.69-1 to build
-u-boot-1.3.2 &amp; linux.<br>
-<br>
-With this, the kernel boots up (explicitly passing the DTB file and cuImage=
- NEVER worked) and hangs after printing<br>
-&quot;Calibrating delay loop... 133.12 BogoMIPS (lpj=3D266240)&quot;<br>
-<br>
-With a few debug printks looks like the kernel hangs in<br>
-&quot;cpu_idle&quot; in --main/init.c<br>
-</blockquote>
-<br></span>
-Try to find out what threads are blocked where.<br>
-<br>
-There may also have been a problem transitioning to the normal serial
-driver. =A0Do you have an external debugger than can extract the log
-buffer?<br><span class=3D"sg">
-<br>
--Scott<br>
-</span></blockquote></div><br>
-
---00504502bc3430705a047a79162d--
+> ---
+> v1 -> v2
+> - Document new bindings in Documentation/powerpc/dts-bindings.
+>   Suggestion by Grant Likely.
+> - Use same form for model property and compatible properties on the root
+>   node.  Suggestion by Grant Likely.
+> - Drop the model property in the soc node.  Suggestion by Grant Likely.
+> - Move interrupt-parent to the soc node instead of explicitly adding it to
+>   each child node.  Suggestion by Grant Likely.
+> - Declare all available memory and deal with the hole and fb area in the
+>   platform code. Suggestion by Segher Boessenkool.
+> - Rename the "soc" node to "hollywood". Suggestion by Benjamin Herrenschmidt.
+> - Remove the usbgecko node from the device tree and autodetect it in
+>   platform code. Suggestion by Segher Boessenkool.
+> - Don't use #cpus in cpus node. Suggestion by Segher Boessenkool.
+> - Remove clock-frequency property from the soc node.
+>   Suggestion by Segher Boessenkool.
+> - Create a processor-interface node and place flipper-pic into it.
+>   Suggestion by Segher Boessenkool.
+> - Remove #interrupt-cells from the hollywood node.
+>   Suggestion by Segher Boessenkool.
+> - Remove the mini header pointer from the device tree and deal with it
+>   in platform code. Suggestion by Segher Boessenkool.
+> - Add "usb-ohci" to the compatible property of ohci nodes.
+>   Suggestion by Segher Boessenkool.
+> - Add "usb-ehci" to the compatible property of ehci nodes.
+>   Suggestion by Segher Boessenkool.
+> - Don't use a different name if the unit address is different.
+>   Suggestion by Benjamin Herrenschmidt.
+> - Don't use "nobats", do a workaround in mmu_mapin_ram instead.
+>   Suggestion by Benjamin Herrenschmidt.
+> - Rename "mini" node to "ipc" and set it compatible with
+>   "nintendo,hollywood-ipc".
+> - Massive cleanups. Suggestions by Segher Boessenkool.
+> - Comment out i2c over gpio bindings until a standard is agreed.
+> - Use a single gpio controller node. It's just one controller with two
+>  "views".
+> 
+>  .../powerpc/dts-bindings/nintendo/wii.txt          |  184 +++++++++++++++++
+>  arch/powerpc/boot/dts/wii.dts                      |  218 ++++++++++++++++++++
+>  2 files changed, 402 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/powerpc/dts-bindings/nintendo/wii.txt
+>  create mode 100644 arch/powerpc/boot/dts/wii.dts
+> 
+> diff --git a/Documentation/powerpc/dts-bindings/nintendo/wii.txt b/Documentation/powerpc/dts-bindings/nintendo/wii.txt
+> new file mode 100644
+> index 0000000..a7e155a
+> --- /dev/null
+> +++ b/Documentation/powerpc/dts-bindings/nintendo/wii.txt
+> @@ -0,0 +1,184 @@
+> +
+> +Nintendo Wii device tree
+> +========================
+> +
+> +0) The root node
+> +
+> +  This node represents the Nintendo Wii video game console.
+> +
+> +  Required properties:
+> +
+> +   - model : Should be "nintendo,wii"
+> +   - compatible : Should be "nintendo,wii"
+> +
+> +1) The "hollywood" node
+> +
+> +  This node represents the multi-function "Hollywood" chip, which packages
+> +  many of the devices found in the Nintendo Wii.
+> +
+> +  Required properties:
+> +
+> +   - compatible : Should be "nintendo,hollywood"
+> +
+> +1.a) The Video Interface (VI) node
+> +
+> +  Represents the interface between the graphics processor and a external
+> +  video encoder.
+> +
+> +  Required properties:
+> +
+> +   - compatible : should be "nintendo,hollywood-vi","nintendo,flipper-vi"
+> +   - reg : should contain the VI registers location and length
+> +   - interrupts : should contain the VI interrupt
+> +
+> +1.b) The Processor Interface (PI) node
+> +
+> +  Represents the data and control interface between the main processor
+> +  and graphics and audio processor.
+> +
+> +  Required properties:
+> +
+> +  - compatible : should be "nintendo,hollywood-pi","nintendo,flipper-pi"
+> +  - reg : should contain the PI registers location and length
+> +
+> +1.b.i) The "Flipper" interrupt controller node
+> +
+> +  Represents the "Flipper" interrupt controller within the "Hollywood" chip.
+> +  The node for the "Flipper" interrupt controller must be placed under
+> +  the PI node.
+> +
+> +  Required properties:
+> +
+> +  - #interrupt-cells : <1>
+> +  - compatible : should be "nintendo,flipper-pic"
+> +  - interrupt-controller
+> +
+> +1.c) The Digital Signal Procesor (DSP) node
+> +
+> +  Represents the digital signal processor interface, designed to offload
+> +  audio related tasks.
+> +
+> +  Required properties:
+> +
+> +   - compatible : should be "nintendo,hollywood-dsp","nintendo,flipper-dsp"
+> +   - reg : should contain the DSP registers location and length
+> +   - interrupts : should contain the DSP interrupt
+> +
+> +1.d) The Serial Interface (SI) node
+> +
+> +  Represents the interface to the four single bit serial interfaces.
+> +  The SI is a proprietary serial interface used normally to control gamepads.
+> +  It's NOT a RS232-type interface.
+> +
+> +  Required properties:
+> +
+> +   - compatible : should be "nintendo,hollywood-si","nintendo,flipper-si"
+> +   - reg : should contain the SI registers location and length
+> +   - interrupts : should contain the SI interrupt
+> +
+> +1.e) The Audio Interface (AI) node
+> +
+> +  Represents the interface to the external 16-bit stereo digital-to-analog
+> +  converter.
+> +
+> +  Required properties:
+> +
+> +   - compatible : should be "nintendo,hollywood-ai","nintendo,flipper-ai"
+> +   - reg : should contain the AI registers location and length
+> +   - interrupts : should contain the AI interrupt
+> +
+> +1.f) The External Interface (EXI) node
+> +
+> +  Represents the multi-channel SPI-like interface.
+> +
+> +  Required properties:
+> +
+> +   - compatible : should be "nintendo,hollywood-exi","nintendo,flipper-exi"
+> +   - reg : should contain the EXI registers location and length
+> +   - interrupts : should contain the EXI interrupt
+> +
+> +1.g) The Open Host Controller Interface (OHCI) nodes
+> +
+> +  Represent the USB 1.x Open Host Controller Interfaces.
+> +
+> +  Required properties:
+> +
+> +   - compatible : should be "nintendo,hollywood-usb-ohci","usb-ohci"
+> +   - reg : should contain the OHCI registers location and length
+> +   - interrupts : should contain the OHCI interrupt
+> +
+> +1.h) The Enhanced Host Controller Interface (EHCI) node
+> +
+> +  Represents the USB 2.0 Enhanced Host Controller Interface.
+> +
+> +  Required properties:
+> +
+> +   - compatible : should be "nintendo,hollywood-usb-ehci","usb-ehci"
+> +   - reg : should contain the EHCI registers location and length
+> +   - interrupts : should contain the EHCI interrupt
+> +
+> +1.i) The Secure Digital Host Controller Interface (SDHCI) nodes
+> +
+> +  Represent the Secure Digital Host Controller Interfaces.
+> +
+> +  Required properties:
+> +
+> +   - compatible : should be "nintendo,hollywood-sdhci","sdhci"
+> +   - reg : should contain the SDHCI registers location and length
+> +   - interrupts : should contain the SDHCI interrupt
+> +
+> +1.j) The Inter-Processsor Communication (IPC) node
+> +
+> +  Represent the Inter-Processor Communication interface. This interface
+> +  enables communications between the Broadway and the Starlet processors.
+> +
+> +   - compatible : should be "nintendo,hollywood-ipc"
+> +   - reg : should contain the IPC registers location and length
+> +   - interrupts : should contain the IPC interrupt
+> +
+> +1.k) The "Hollywood" interrupt controller node
+> +
+> +  Represents the "Hollywood" interrupt controller within the
+> +  "Hollywood" chip.
+> +
+> +  Required properties:
+> +
+> +  - #interrupt-cells : <1>
+> +  - compatible : should be "nintendo,hollywood-pic"
+> +  - reg : should contain the controller registers location and length
+> +  - interrupt-controller
+> +  - interrupts : should contain the cascade interrupt of the "flipper" pic
+> +  - interrupt-parent: should contain the phandle of the "flipper" pic
+> +
+> +1.l) The General Purpose I/O (GPIO) controller node
+> +
+> +  Represents the dual access 32 GPIO controller interface.
+> +
+> +  Required properties:
+> +
+> +  - #gpio-cells : <2>
+> +  - compatible : should be "nintendo,hollywood-gpio"
+> +  - reg : should contain the IPC registers location and length
+> +  - gpio-controller
+> +
+> +1.m) The control node
+> +
+> +  Represents the control interface used to setup several miscellaneous
+> +  settings of the "Hollywood" chip like boot memory mappings, resets,
+> +  disk interface mode, etc.
+> +
+> +  Required properties:
+> +
+> +   - compatible : should be "nintendo,hollywood-control"
+> +   - reg : should contain the control registers location and length
+> +
+> +1.n) The Disk Interface (DI) node
+> +
+> +  Represents the interface used to communicate with mass storage devices.
+> +
+> +  Required properties:
+> +
+> +   - compatible : should be "nintendo,hollywood-di"
+> +   - reg : should contain the DI registers location and length
+> +   - interrupts : should contain the DI interrupt
+> +
+> diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dts
+> new file mode 100644
+> index 0000000..77528c9
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/wii.dts
+> @@ -0,0 +1,218 @@
+> +/*
+> + * arch/powerpc/boot/dts/wii.dts
+> + *
+> + * Nintendo Wii platform device tree source
+> + * Copyright (C) 2008-2009 The GameCube Linux Team
+> + * Copyright (C) 2008,2009 Albert Herranz
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version 2
+> + * of the License, or (at your option) any later version.
+> + *
+> + */
+> +
+> +/dts-v1/;
+> +
+> +/*
+> + * This is commented-out for now.
+> + * Until a later patch is merged, the kernel can use only the first
+> + * contiguous RAM range and will BUG() if the memreserve is outside
+> + * that range.
+> + */
+> +/*/memreserve/ 0x10000000 0x0004000;*/	/* DSP RAM */
+> +
+> +/ {
+> +	model = "nintendo,wii";
+> +	compatible = "nintendo,wii";
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +
+> +	chosen {
+> +		bootargs = "root=/dev/mmcblk0p2 rootwait udbg-immortal";
+> +	};
+> +
+> +	memory {
+> +		device_type = "memory";
+> +		reg = <0x00000000 0x01800000	/* MEM1 24MB 1T-SRAM */
+> +		       0x10000000 0x04000000>;	/* MEM2 64MB GDDR3 */
+> +	};
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		PowerPC,broadway@0 {
+> +			device_type = "cpu";
+> +			reg = <0>;
+> +			clock-frequency = <729000000>; /* 729MHz */
+> +			bus-frequency = <243000000>; /* 243MHz core-to-bus 3x */
+> +			timebase-frequency = <60750000>; /* 243MHz / 4 */
+> +			i-cache-line-size = <32>;
+> +			d-cache-line-size = <32>;
+> +			i-cache-size = <32768>;
+> +			d-cache-size = <32768>;
+> +		};
+> +	};
+> +
+> +	/* devices contained in the hollywood chipset */
+> +	hollywood {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		compatible = "nintendo,hollywood";
+> +                ranges = <0x0c000000 0x0c000000 0x01000000
+> +			  0x0d000000 0x0d000000 0x00800000
+> +			  0x0d800000 0x0d800000 0x00800000>;
+> +		interrupt-parent = <&PIC0>;
+> +
+> +		video@0c002000 {
+> +			compatible = "nintendo,hollywood-vi",
+> +					"nintendo,flipper-vi";
+> +			reg = <0x0c002000 0x100>;
+> +			interrupts = <8>;
+> +		};
+> +
+> +		processor-interface@0c003000 {
+> +			compatible = "nintendo,hollywood-pi",
+> +					"nintendo,flipper-pi";
+> +			reg = <0x0c003000 0x100>;
+> +
+> +			PIC0: pic0 {
+> +				#interrupt-cells = <1>;
+> +				compatible = "nintendo,flipper-pic";
+> +				interrupt-controller;
+> +			};
+> +		};
+> +
+> +		dsp@0c005000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "nintendo,hollywood-dsp",
+> +					"nintendo,flipper-dsp";
+> +			reg = <0x0c005000 0x200>;
+> +			interrupts = <6>;
+> +		};
+> +
+> +		gamepad-controller@0d006400 {
+> +			compatible = "nintendo,hollywood-si",
+> +					"nintendo,flipper-si";
+> +			reg = <0x0d006400 0x100>;
+> +			interrupts = <3>;
+> +		};
+> +
+> +		audio@0c006c00 {
+> +			compatible = "nintendo,hollywood-ai",
+> +					"nintendo,flipper-ai";
+> +			reg = <0x0d006c00 0x20>;
+> +			interrupts = <6>;
+> +		};
+> +
+> +		/* External Interface bus */
+> +		exi@0d006800 {
+> +			compatible = "nintendo,hollywood-exi",
+> +					"nintendo,flipper-exi";
+> +			reg = <0x0d006800 0x40>;
+> +			virtual-reg = <0x0d006800>;
+> +			interrupts = <4>;
+> +		};
+> +
+> +		usb@0d040000 {
+> +			compatible = "nintendo,hollywood-usb-ehci",
+> +					"usb-ehci";
+> +			reg = <0x0d040000 0x100>;
+> +			interrupts = <4>;
+> +			interrupt-parent = <&PIC1>;
+> +		};
+> +
+> +		usb@0d050000 {
+> +			compatible = "nintendo,hollywood-usb-ohci",
+> +					"usb-ohci";
+> +			reg = <0x0d050000 0x100>;
+> +			interrupts = <5>;
+> +			interrupt-parent = <&PIC1>;
+> +		};
+> +
+> +		usb@0d060000 {
+> +			compatible = "nintendo,hollywood-usb-ohci",
+> +					"usb-ohci";
+> +			reg = <0x0d060000 0x100>;
+> +			interrupts = <6>;
+> +			interrupt-parent = <&PIC1>;
+> +		};
+> +
+> +		sd@0d070000 {
+> +			compatible = "nintendo,hollywood-sdhci",
+> +					"sdhci";
+> +			reg = <0x0d070000 0x200>;
+> +			interrupts = <7>;
+> +			interrupt-parent = <&PIC1>;
+> +		};
+> +
+> +		sdio@0d080000 {
+> +			compatible = "nintendo,hollywood-sdhci",
+> +					"sdhci";
+> +			reg = <0x0d080000 0x200>;
+> +			interrupts = <8>;
+> +			interrupt-parent = <&PIC1>;
+> +		};
+> +
+> +		ipc@0d000000 {
+> +			compatible = "nintendo,hollywood-ipc";
+> +			reg = <0x0d000000 0x10>;
+> +			interrupts = <30>;
+> +			interrupt-parent = <&PIC1>;
+> +		};
+> +
+> +		PIC1: pic1@0d800030 {
+> +			#interrupt-cells = <1>;
+> +			compatible = "nintendo,hollywood-pic";
+> +			reg = <0x0d800030 0x10>;
+> +			interrupt-controller;
+> +			interrupts = <14>;
+> +		};
+> +
+> +		GPIO: gpio@0d8000c0 {
+> +			#gpio-cells = <2>;
+> +			compatible = "nintendo,hollywood-gpio";
+> +			reg = <0x0d8000c0 0x40>;
+> +			gpio-controller;
+> +
+> +			/*
+> +			 * This is commented out while a standard binding
+> +			 * for i2c over gpio is defined.
+> +			 */
+> +			/*
+> +			i2c-video {
+> +				#address-cells = <1>;
+> +				#size-cells = <0>;
+> +			        compatible = "i2c-gpio";
+> +
+> +			        gpios = <&GPIO 15 0
+> +			                 &GPIO 14 0>;
+> +			        clock-frequency = <250000>;
+> +				no-clock-stretching;
+> +			        scl-is-open-drain;
+> +			        sda-is-open-drain;
+> +			        sda-enforce-dir;
+> +
+> +			        AVE: audio-video-encoder@70 {
+> +			                compatible = "nintendo,wii-audio-video-encoder";
+> +			                reg = <0x70>;
+> +			        };
+> +			};
+> +			*/
+> +		};
+> +
+> +		control@0d800100 {
+> +			compatible = "nintendo,hollywood-control";
+> +			reg = <0x0d800100 0x300>;
+> +		};
+> +
+> +		disk@0d806000 {
+> +			compatible = "nintendo,hollywood-di";
+> +			reg = <0x0d806000 0x40>;
+> +			interrupts = <2>;
+> +		};
+> +	};
+> +};
+> +
