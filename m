@@ -1,34 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0C182B6F10
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Dec 2009 02:51:11 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e2.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nBBFgcEv003910
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 10:42:38 -0500
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBBFp852103594
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 10:51:08 -0500
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nBBFp7lA015127
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Dec 2009 08:51:08 -0700
-Date: Fri, 11 Dec 2009 10:51:04 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH 2/2 v4] powerpc/44x: Extend Katmai dts for ADMA and
-	RAID56 support
-Message-ID: <20091211155104.GB8458@zod.rchland.ibm.com>
-References: <1260538793-6655-1-git-send-email-agust@denx.de>
-	<1260538793-6655-2-git-send-email-agust@denx.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D6A42B6EDD
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Dec 2009 02:54:27 +1100 (EST)
+In-Reply-To: <200912111625.29674.arnd@arndb.de>
+References: <fa686aa40912091406i2ef4e1b2u25c9f46b20786245@mail.gmail.com>	<20091209.162121.256573183.davem@davemloft.net>
+	<fa686aa40912101247k55d56783ge0163dd1da073b49@mail.gmail.com>
+	<200912111625.29674.arnd@arndb.de>
+Subject: Re: Deprecating of_platform, the path from here...
+To: Arnd Bergmann <arnd@arndb.de>
+Message-ID: <OF923C4598.A28E30EF-ONC1257689.0056B139-C1257689.00574ED8@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Fri, 11 Dec 2009 16:53:38 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1260538793-6655-2-git-send-email-agust@denx.de>
-Cc: wd@denx.de, dzu@denx.de, Yuri Tikhonov <yur@emcraft.com>,
-	linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	dan.j.williams@intel.com
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	David Miller <davem@davemloft.net>, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,16 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 11, 2009 at 02:39:53PM +0100, Anatolij Gustschin wrote:
->Add nodes for PPC440SPe DMA, I2O, XOR engines and Memory
->Queue module which are used in the updated PPC440SPe ADMA
->driver. Also extend plb ranges property to specify address
->ranges for DMA0/1 and I2O engines.
 >
->Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
->Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> On Thursday 10 December 2009, Grant Likely wrote:
+> > On Wed, Dec 9, 2009 at 5:21 PM, David Miller <davem@davemloft.net> wrote:
+> > > From: David Miller <davem@davemloft.net>
+> > > Date: Wed, 09 Dec 2009 16:15:50 -0800 (PST)
+> > >> What a shame, it's one of the cleanest driver probing models
+> > >> in the tree.
+> > >
+> > > And BTW, have you folks who "decided" this considered at all the fact
+> > > that it is much easier to describe represent platform devices using
+> > > of OF devices rather than the other way around?
+> >
+> > Yup.  I also think of_platform is a cleaner implementation than
+> > platform, but the fact remains that there are far more platform
+> > drivers than there are of_platform.  So, as nice as of_platform is, it
+> > still does pretty much exactly the same job as platform.  I'd rather
+> > see of_platform features migrated to platform than creating drivers
+> > with dual registrations to be used on both OF and non-OF platforms.
+>
+> As far as I can tell, there is another path to allow unifying the drivers
+> that currently need to register to both platform_bus and of_bus, without
+> destroying the features we currently have in those two.
+>
+> > Trying to go the other way around (deprecate platform and encouraging
+> > of_platform instead) I don't think will gain much traction; whereas I
+> > think bringing of_platform features into platform will be an easier
+> > sell.  I'm trying to be pragmatic here.
+>
+> The key to the solution IMHO is the ability to create an of_platform_device
+> in a hardcoded way without data from a device tree, like we create a
+> platform_device today. All these static of_devices would then be rooted
+> in /sys/platform by default, while those that come from a device tree are
+> in the hierarchy defined there.
 
-I've queued this up in my next branch.  I'll probably send this to Ben in the
-next few days as the DTS changes are pretty independent of the actual driver.
+Yes, please. I don't like the direction some drivers are heading, namely OF only.
+I always tried to view OF as an layer on top of generic methods. If
+you look at spi_mpc83xx.c, it is actually less capable today since
+platform has been declared legacy.
 
-josh
+    Jocke
