@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers through
-	extended ptrace interface
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <200912111807.56262.bauerman@br.ibm.com>
-Date: Fri, 11 Dec 2009 14:51:51 -0600
-Message-Id: <8017A9F8-7854-466C-97BE-A80C2EE43BFE@kernel.crashing.org>
-References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-	<F0B42818-1EE1-47EE-B2F3-B7529B2E13C8@kernel.crashing.org>
-	<1260498456.4329.8.camel@norville.austin.ibm.com>
-	<200912111807.56262.bauerman@br.ibm.com>
-To: Thiago Jung Bauermann <bauerman@br.ibm.com>
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, David Gibson <dwg@au1.ibm.com>,
-	Sergio Durigan Junior <sergiodj@br.ibm.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Torez Smith <torez@us.ibm.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 69B7DB6F15
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Dec 2009 08:17:51 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Deprecating of_platform, the path from here...
+Date: Fri, 11 Dec 2009 21:17:43 +0000
+References: <fa686aa40912091406i2ef4e1b2u25c9f46b20786245@mail.gmail.com>
+	<200912111625.29674.arnd@arndb.de>
+	<fa686aa40912110844l5990d6fbh7c9c0928513b055d@mail.gmail.com>
+In-Reply-To: <fa686aa40912110844l5990d6fbh7c9c0928513b055d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200912112117.44022.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	David Miller <davem@davemloft.net>, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Friday 11 December 2009 16:44:32 Grant Likely wrote:
 
-On Dec 11, 2009, at 2:07 PM, Thiago Jung Bauermann wrote:
+> platform users far outnumber of_platform users.  I actually don't care
+> which becomes the 'preferred' bus, just as long as one is chosen.  It
+> is easy to migrate features between them.  When I look at the work
+> required though, I think it is far more feasible to fold of_platform
+> features into platform bus than it is to ask current platform users to
+> migrate over to of_platform.
 
-> On Fri 11 Dec 2009 00:27:36 Dave Kleikamp wrote:
->> On Thu, 2009-12-10 at 20:23 -0600, Kumar Gala wrote:
->>> On Dec 10, 2009, at 9:57 AM, Dave Kleikamp wrote:
->>>> #define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
->>>> #define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
->>>> #define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
->>>> #define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
->>>=20
->>> Is GDB smart enough to deal w/no condition_regs?  On some Book-E
->>> devices we have 2 IACs, 2 DACs, and 0 DVCs.  Does it need to be in =
-the
->>> features?
->>=20
->> I had discussed it with the gdb team.  I could easily add a feature
->> flag, but it would be equivalent to num_condition_regs > 0.  I don't
->> have a strong opinion either way.
->=20
-> The current GDB code we have here uses num_condition_regs > 0 to =
-discover if=20
-> DVCs are supported, so a PPC_DEBUG_FEATURE constant for that is =
-redundant=20
-> IMHO.
+Yes, I think you have convinced me. For me the key argument is that
+we can extend platform_bus to do everything that of_platform_bus
+does today. 
 
-That's fine, just want to make sure we are ok w/num_condition_regs =3D=3D =
-0.
+If we can automatically turn "reg" and "interrupt" properties into
+resources for the platform_devices created from a device tree,
+and add interfaces to platform_device to operate directly on properties
+of the underlying device, I'm happy.
 
-- k=
+DMA address translation is something that will require some care
+to get right with platform_device, and it's important that we come
+up with a nice syntax to define properties for regular
+platform_devices that do not come from a device tree.
+
+> Now, if consensus can be reached among architecture maintainers to
+> make of_platform the preferred approach, and to deprecate platform
+> bus, then I'm all for it and I'll work towards it  However, I
+> personally don't think it will fly and so I'm not spending any effort
+> on that direction.
+
+Right.
+
+	Arnd <><
