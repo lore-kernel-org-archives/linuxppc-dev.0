@@ -1,28 +1,16 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp5.netcologne.de (smtp5.netcologne.de [194.8.194.25])
-	by ozlabs.org (Postfix) with ESMTP id 79559B6F19
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Dec 2009 05:04:48 +1100 (EST)
-Received: from antares (xdsl-89-0-161-224.netcologne.de [89.0.161.224])
-	by smtp5.netcologne.de (Postfix) with ESMTP id 3682B40DC66
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Dec 2009 18:56:08 +0100 (CET)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id 15A93BA03E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Dec 2009 18:56:08 +0100 (CET)
-Date: Fri, 11 Dec 2009 18:55:56 +0100
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: Q: how to access the MPC5200B's timer gipo's?
-To: linuxppc-dev@lists.ozlabs.org
-References: <10228901.1260376093135.JavaMail.ngmail@webmail18.arcor-online.net>
-	<fa686aa40912102202q38f787bei26bac38666702ee3@mail.gmail.com>
-In-Reply-To: <fa686aa40912102202q38f787bei26bac38666702ee3@mail.gmail.com>
-	(from grant.likely@secretlab.ca on Fri Dec 11 07:02:30 2009)
-Message-Id: <1260554166.2313.0@antares>
+Return-Path: <B07421@freescale.com>
+Message-ID: <4B22939B.7060101@freescale.com>
+Date: Fri, 11 Dec 2009 12:46:51 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=PGP-SHA1; boundary="=-nXZIqH4vA6Rmoefvy1u6"
+To: Junita Ajith <ajijuni@gmail.com>
+Subject: Re: dts file for MPC8343EA
+References: <7675847.584551260168085277.JavaMail.nabble@isper.nabble.com>	
+	<20091207180719.GB8914@loki.buserror.net>
+	<72d214170912101634l1fab97fewc849a819f767415c@mail.gmail.com>
+In-Reply-To: <72d214170912101634l1fab97fewc849a819f767415c@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,34 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-nXZIqH4vA6Rmoefvy1u6
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Junita Ajith wrote:
+> Hi Scott:
+> 
+> I am still stuck at Linux kernel booting in MPC8343EA based board.
+> 
+> I have disabled "Ethernet, PCI, USB, dma engines " in the *.dts file and 
+> also in the kernel config.
+> I am using MPC8349emitxgp.dts  ; enabled MPC8349ITX support in kernel 
+> config also. In fact, I tried building MPC8349emITX; MPC8349MDS also. 
+> Same behaviour!
+> 
+> With this, the kernel boots up (explicitly passing the DTB file and 
+> cuImage NEVER worked) and hangs after
+> 
+> I am using Linux-V-2.6.27.18 and using powerpc-e300c3-gnu  toolchain  - 
+> gcc-4.1.69-eglibc-2.5.69-1 to build u-boot-1.3.2 & linux.
+> 
+> With this, the kernel boots up (explicitly passing the DTB file and 
+> cuImage NEVER worked) and hangs after printing
+> "Calibrating delay loop... 133.12 BogoMIPS (lpj=266240)"
+> 
+> With a few debug printks looks like the kernel hangs in
+> "cpu_idle" in --main/init.c
 
-Hi Grant:
+Try to find out what threads are blocked where.
 
-Am 11.12.09 07:02 schrieb(en) Grant Likely:
-> The existing API (of_get_gpio()) doesn't operate on gpio-controller
-> nodes.  It operates on a node that uses the gpio (has a 'gpios'
-> property as documented in
-> Documentation/powerpc/dts-bindings/gpio/gpio.txt).
+There may also have been a problem transitioning to the normal serial 
+driver.  Do you have an external debugger than can extract the log buffer?
 
-Thanks a lot for that pointer - I actually missed that documentation (so it=
- *was* a dumb question!.  Works as advertised when I add the gpio's to a (d=
-ummy) node.
-
-Thanks, Albrecht.
-
---=-nXZIqH4vA6Rmoefvy1u6
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-
-iD8DBQBLIoe2n/9unNAn/9ERAr6XAKCowb43t+e4W0gz3KTGYOwWp/vDBwCfaXrp
-V8SVtppZG8dvA2D3qOw8DVU=
-=cloS
------END PGP SIGNATURE-----
-
---=-nXZIqH4vA6Rmoefvy1u6--
+-Scott
