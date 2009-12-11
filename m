@@ -1,17 +1,27 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: devicetree-discuss@lists.ozlabs.org
-Subject: Re: Deprecating of_platform, the path from here...
-Date: Fri, 11 Dec 2009 16:25:29 +0100
-References: <fa686aa40912091406i2ef4e1b2u25c9f46b20786245@mail.gmail.com>
-	<20091209.162121.256573183.davem@davemloft.net>
-	<fa686aa40912101247k55d56783ge0163dd1da073b49@mail.gmail.com>
-In-Reply-To: <fa686aa40912101247k55d56783ge0163dd1da073b49@mail.gmail.com>
+Return-Path: <jacmet@gmail.com>
+Received: from mail-ew0-f209.google.com (mail-ew0-f209.google.com
+	[209.85.219.209]) by ozlabs.org (Postfix) with ESMTP id 7A3A6B6F0D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 12 Dec 2009 02:31:35 +1100 (EST)
+Received: by ewy1 with SMTP id 1so1086076ewy.8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 11 Dec 2009 07:31:31 -0800 (PST)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 3/3] mpc8xxx_gpio: add interrupt support
+References: <1259700494-17869-1-git-send-email-jacmet@sunsite.dk>
+	<1259700494-17869-2-git-send-email-jacmet@sunsite.dk>
+	<1259700494-17869-3-git-send-email-jacmet@sunsite.dk>
+	<87pr6omwk3.fsf@macbook.be.48ers.dk>
+	<8F2E2097-9BB7-4B7F-902E-F967F28120E8@kernel.crashing.org>
+Date: Fri, 11 Dec 2009 16:31:22 +0100
+In-Reply-To: <8F2E2097-9BB7-4B7F-902E-F967F28120E8@kernel.crashing.org> (Kumar
+	Gala's message of "Thu, 10 Dec 2009 20:13:35 -0600")
+Message-ID: <87r5r1ttmd.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200912111625.29674.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, David Miller <davem@davemloft.net>, jk@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,89 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 10 December 2009, Grant Likely wrote:
-> On Wed, Dec 9, 2009 at 5:21 PM, David Miller <davem@davemloft.net> wrote:
-> > From: David Miller <davem@davemloft.net>
-> > Date: Wed, 09 Dec 2009 16:15:50 -0800 (PST)
-> >> What a shame, it's one of the cleanest driver probing models
-> >> in the tree.
-> >
-> > And BTW, have you folks who "decided" this considered at all the fact
-> > that it is much easier to describe represent platform devices using
-> > of OF devices rather than the other way around?
-> 
-> Yup.  I also think of_platform is a cleaner implementation than
-> platform, but the fact remains that there are far more platform
-> drivers than there are of_platform.  So, as nice as of_platform is, it
-> still does pretty much exactly the same job as platform.  I'd rather
-> see of_platform features migrated to platform than creating drivers
-> with dual registrations to be used on both OF and non-OF platforms.
+>>>>> "Kumar" == Kumar Gala <galak@kernel.crashing.org> writes:
 
-As far as I can tell, there is another path to allow unifying the drivers
-that currently need to register to both platform_bus and of_bus, without
-destroying the features we currently have in those two.
+Hi,
 
-> Trying to go the other way around (deprecate platform and encouraging
-> of_platform instead) I don't think will gain much traction; whereas I
-> think bringing of_platform features into platform will be an easier
-> sell.  I'm trying to be pragmatic here.
+ Kumar> We need a binding document to go with this.
 
-The key to the solution IMHO is the ability to create an of_platform_device
-in a hardcoded way without data from a device tree, like we create a
-platform_device today. All these static of_devices would then be rooted
-in /sys/platform by default, while those that come from a device tree are
-in the hierarchy defined there.
+Ok, but where should it go? In the existing
+powerpc/dts-bindings/fsl/8xxx_gpio.txt or somewhere seperate? I don't
+see any other interrupt controller documentation besides the stuff in
+booting-without-of.txt
 
-With your generalized device tree support, you have come most of
-the way there, so the next step could be to create an
-of_platform_device_register or of_platform_device_{alloc,add} function
-that behaves like platform_device_register but adds an of_device
-instead.
-
-Something along the lines of
-
-struct of_platform_device {
-	of_device dev;			  /* this is what gets registered */
-	struct device_node node; /* can't point to the device tree */
-	struct property compatible;
-};
-
-int of_platform_device_register(struct of_platform_device *ofpdev,
-					const char *name,	struct property *properties,
-					struct device *parent)
-{
-	/* fill out the of_device */
-	ofpdev->dev.node = &ofpdev->node;
-	ofpdev->dev.dev.bus = &of_platform_bus_type;
-	ofpdev->dev.dev.parent = parent;
-	ofpdev->dev.dev.archdata.of_node = &ofpdev->node;
-
-	/* fill out only the parts of the node that are absolutely required */
-	ofpdev->node.name = name;
-	if (!ofpdev->node.type)
-		ofpdev->node.type = "platform"; /* not sure */
-	ofpdev->node.properties = &ofpdev->compatible;
-	kref_init(&ofpdev->node.kref);
-
-	/* add properties that we always want */
-	ofpdev->compatible.name = "compatible";
-	ofpdev->compatible.length = strlen(name);
-	ofpdev->compatible.value = name;
-
-	/* add any user-specified properties and chain them */
-	ofpdev->compatible.next = properties;
-	while (properties->name)
-		properties->next = ++properties;
-
-
-	return of_device_register(&ofpdev->dev);
-}
-
-There are obviously detailed that need to be worked out for this,
-but it should give you an easy way of defining of_platform_devices.
-All existing platform_drivers can stay unchanged, but if any driver
-should deal with both of_device and platform_device, you just
-kill the platform_driver in there and transform the platform_device
-definitions for this driver to of_platform_device definitions.
-
-	Arnd
+-- 
+Bye, Peter Korsgaard
