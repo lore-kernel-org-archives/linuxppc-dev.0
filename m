@@ -1,19 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1259208468.16367.234.camel@pasglop>
-References: <20091124081316.6216.66310.stgit@angua>
-	<20091124081931.6216.27102.stgit@angua>
-	<1259208468.16367.234.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 10 Dec 2009 15:21:47 -0700
-Message-ID: <fa686aa40912101421h4eabfeaat7925d89ebfe2c5a0@mail.gmail.com>
-Subject: Re: [PATCH 09/11] of: merge of_attach_node() & of_detach_node()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id B816CB6F0F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 11 Dec 2009 11:17:21 +1100 (EST)
+Date: Thu, 10 Dec 2009 19:17:19 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Floating point in the kernel
+Message-ID: <20091210191719.0516b46b@lappy.seanm.ca>
+In-Reply-To: <200912102235.47985.arnd@arndb.de>
+References: <20091210131311.78cab78c@lappy.seanm.ca>
+	<1260476379.16132.224.camel@pasglop>
+	<20091210153359.3a480488@lappy.seanm.ca>
+	<200912102235.47985.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 25, 2009 at 9:07 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2009-11-24 at 01:19 -0700, Grant Likely wrote:
->> Merge common code between PowerPC and Microblaze
->
-> Some of those guys might wnat to be in of_dynamic (see previous email)
->
-> Remember: We want to keep the footprint low for embedded archs that
-> don't want to do dynamic stuff. Really low.
+Found it. We are calling sock_sendmsg, which is definitely a call that
+can block! The receive side is done in a thread (which does no floating
+point ;), but the send was called directly from the "evil FP thread".
 
-I agree.  If it is okay by you I'll update this in a subsequent patch.
- Once the code is merge, then I'm going to do a bunch of refactoring
-patches.
+It looks like under light load, you tend to get away with it, so our
+trivial testing did not catch it. And most of our warp users do RTP via
+asterisk, so this RTP path was not really tested.
 
-g.
+I really appreciate the input, the comments convinced me I was going
+in the wrong direction and forced me to look harder. I am going to back
+out the two patches I sent and fix this properly instead.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Cheers,
+   Sean
