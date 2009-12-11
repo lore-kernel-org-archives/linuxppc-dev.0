@@ -1,21 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
-	by ozlabs.org (Postfix) with ESMTP id 7D6C0B7BA5
+Return-Path: <Simon.Richter@hogyros.de>
+Received: from psionic8.psi5.com (psionic.psi5.com [212.112.229.180])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.psi5.com", Issuer "psi5.com CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BA7ADB7BA5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Dec 2009 22:28:51 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
+	Fri, 11 Dec 2009 22:55:32 +1100 (EST)
+Received: from localhost (port-212-202-168-87.dynamic.qsc.de [212.202.168.87])
+	(using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+	(Client CN "Simon Richter",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by psionic8.psi5.com (Postfix) with ESMTPS id F2960F2C016
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 11 Dec 2009 12:45:42 +0100 (CET)
+Date: Fri, 11 Dec 2009 12:45:43 +0100
+From: Simon Richter <Simon.Richter@hogyros.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Floating point in the kernel
-Date: Fri, 11 Dec 2009 12:28:41 +0100
-References: <20091210131311.78cab78c@lappy.seanm.ca>
-	<200912102235.47985.arnd@arndb.de>
-	<20091210191719.0516b46b@lappy.seanm.ca>
-In-Reply-To: <20091210191719.0516b46b@lappy.seanm.ca>
+Subject: AltiVec in the kernel
+Message-ID: <20091211114543.GF24650@honey.hogyros.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200912111228.42231.arnd@arndb.de>
-Cc: Sean MacLennan <smaclennan@pikatech.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 11 December 2009, Sean MacLennan wrote:
-> Found it. We are calling sock_sendmsg, which is definitely a call that
-> can block! The receive side is done in a thread (which does no floating
-> point ;), but the send was called directly from the "evil FP thread".
-> 
-> It looks like under light load, you tend to get away with it, so our
-> trivial testing did not catch it. And most of our warp users do RTP via
-> asterisk, so this RTP path was not really tested.
-> 
-> I really appreciate the input, the comments convinced me I was going
-> in the wrong direction and forced me to look harder. I am going to back
-> out the two patches I sent and fix this properly instead.
+Hi,
 
-Glad to hear you found it.
+since there has been a thread on allowing the use of a coprocessor in
+the kernel already: I am wondering if it'd make sense to use AltiVec for
+AES in dm-crypt, and how difficult it would be to implement that.
 
-As a general remark though, both the usage of sockets and of floating
-point are a really strong hint that the stuff you are doing should be
-in user space instead, which would have saved you a lot of time in
-debugging. If you do something like this again, make sure to get the
-partitioning of the code between code in kernel and user space right.
-If in doubt, just ask on the mailing list.
+I'm using a PegasosII which has a G4 running at 1 GHz; I get around 3
+MB/s throughput when accessing harddisks. I think that could be
+improved.
 
-	Arnd <><
+If I understand correctly, the actual encryption work runs in a kernel
+thread, which is scheduled normally, so it ought to be possible to
+enable AltiVec for that thread; am I missing something here?
+
+   Simon
