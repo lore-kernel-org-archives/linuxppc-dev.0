@@ -1,16 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Message-ID: <4B22939B.7060101@freescale.com>
-Date: Fri, 11 Dec 2009 12:46:51 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <bauerman@br.ibm.com>
+From: Thiago Jung Bauermann <bauerman@br.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers through
+	extended ptrace interface
+Date: Fri, 11 Dec 2009 18:07:56 -0200
+References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
+	<F0B42818-1EE1-47EE-B2F3-B7529B2E13C8@kernel.crashing.org>
+	<1260498456.4329.8.camel@norville.austin.ibm.com>
+In-Reply-To: <1260498456.4329.8.camel@norville.austin.ibm.com>
 MIME-Version: 1.0
-To: Junita Ajith <ajijuni@gmail.com>
-Subject: Re: dts file for MPC8343EA
-References: <7675847.584551260168085277.JavaMail.nabble@isper.nabble.com>	
-	<20091207180719.GB8914@loki.buserror.net>
-	<72d214170912101634l1fab97fewc849a819f767415c@mail.gmail.com>
-In-Reply-To: <72d214170912101634l1fab97fewc849a819f767415c@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <200912111807.56262.bauerman@br.ibm.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
+	Sergio Durigan Junior <sergiodj@br.ibm.com>,
+	Torez Smith <torez@us.ibm.com>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,33 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Junita Ajith wrote:
-> Hi Scott:
+On Fri 11 Dec 2009 00:27:36 Dave Kleikamp wrote:
+> On Thu, 2009-12-10 at 20:23 -0600, Kumar Gala wrote:
+> > On Dec 10, 2009, at 9:57 AM, Dave Kleikamp wrote:
+> > > #define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
+> > > #define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
+> > > #define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
+> > > #define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
+> >
+> > Is GDB smart enough to deal w/no condition_regs?  On some Book-E
+> > devices we have 2 IACs, 2 DACs, and 0 DVCs.  Does it need to be in the
+> > features?
 > 
-> I am still stuck at Linux kernel booting in MPC8343EA based board.
-> 
-> I have disabled "Ethernet, PCI, USB, dma engines " in the *.dts file and 
-> also in the kernel config.
-> I am using MPC8349emitxgp.dts  ; enabled MPC8349ITX support in kernel 
-> config also. In fact, I tried building MPC8349emITX; MPC8349MDS also. 
-> Same behaviour!
-> 
-> With this, the kernel boots up (explicitly passing the DTB file and 
-> cuImage NEVER worked) and hangs after
-> 
-> I am using Linux-V-2.6.27.18 and using powerpc-e300c3-gnu  toolchain  - 
-> gcc-4.1.69-eglibc-2.5.69-1 to build u-boot-1.3.2 & linux.
-> 
-> With this, the kernel boots up (explicitly passing the DTB file and 
-> cuImage NEVER worked) and hangs after printing
-> "Calibrating delay loop... 133.12 BogoMIPS (lpj=266240)"
-> 
-> With a few debug printks looks like the kernel hangs in
-> "cpu_idle" in --main/init.c
+> I had discussed it with the gdb team.  I could easily add a feature
+> flag, but it would be equivalent to num_condition_regs > 0.  I don't
+> have a strong opinion either way.
 
-Try to find out what threads are blocked where.
-
-There may also have been a problem transitioning to the normal serial 
-driver.  Do you have an external debugger than can extract the log buffer?
-
--Scott
+The current GDB code we have here uses num_condition_regs > 0 to discover if 
+DVCs are supported, so a PPC_DEBUG_FEATURE constant for that is redundant 
+IMHO.
+-- 
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
