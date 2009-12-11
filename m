@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D7CE8B7B69
+	by ozlabs.org (Postfix) with ESMTPS id 6FA96B6F2B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Dec 2009 09:05:57 +1100 (EST)
-Subject: Re: [RFC PATCH v2 2/4] wii: use both mem1 and mem2 as ram
+	Sat, 12 Dec 2009 09:13:26 +1100 (EST)
+Subject: Re: [RFC PATCH v2 3/4] powerpc: allow ioremap within reserved
+	memory regions
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Albert Herranz <albert_herranz@yahoo.es>
-In-Reply-To: <1260297833-17625-3-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1260297833-17625-4-git-send-email-albert_herranz@yahoo.es>
 References: <1260297833-17625-1-git-send-email-albert_herranz@yahoo.es>
-	<1260297833-17625-3-git-send-email-albert_herranz@yahoo.es>
+	<1260297833-17625-4-git-send-email-albert_herranz@yahoo.es>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 12 Dec 2009 09:05:52 +1100
-Message-ID: <1260569152.16132.368.camel@pasglop>
+Date: Sat, 12 Dec 2009 09:13:20 +1100
+Message-ID: <1260569600.16132.375.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,223 +31,131 @@ On Tue, 2009-12-08 at 19:43 +0100, Albert Herranz wrote:
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-That will do for now. At some stage somebody should look at getting
-proper sparsemem etc... working (or even normal linear memmap with a
-hole which isn't actually hard but will waste a bit of RAM).
-
-Cheers,
-Ben.
-
 > ---
->  arch/powerpc/mm/init_32.c                |    4 ++
->  arch/powerpc/mm/mmu_decl.h               |   10 ++++-
->  arch/powerpc/mm/pgtable_32.c             |   32 +++++++++++++--
->  arch/powerpc/mm/ppc_mmu_32.c             |    4 +-
->  arch/powerpc/platforms/embedded6xx/wii.c |   63 ++++++++++++++++++++++++++++++
->  5 files changed, 106 insertions(+), 7 deletions(-)
+> v1 -> v2
+> - use a run-time flag to allow/disallow remapping reserved regions
+> - use lmbs to determine reserved regions
+
+We won't need that once we fix proper discontig mem.
+
+BTW. Question: Why do we need that fixup of yours to fold the 2 LMBs
+into one ?
+
+Wouldn't it be easier just to keep the 2 LMBs ? You already fix the
+mapin_ram thingy, so you could easily fix it up to just iterate over the
+LMBs instead no ? For now, it could only BAT map the first LMB to
+simplify things and we can fix the BAT mapping for the second one in a
+second step too.
+
+Wouldn't that work with simpler code ? An in the case of ioremap, the
+test becomes simply to check if it's RAM by checking if it's in the LMB
+rather than if it's reserved, which should be easier and wouldn't
+require your flag to "enable" the tweak since it could perfectly be kept
+as standard behaviour
+
+Also the code in arch/powerpc/mm/mem.c will already deal with holes
+just fine and will pass the hole size information to the VM which should
+make it behave properly.
+
+Thus I have the feeling that keeping the 2 LMBs rather than coalescing
+would simplify the code basically by only requiring a small fixup of the
+maping RAM bit.
+
+I'm acking the patches for now, so you can always come up with a fixup
+on top of them and we can merge the current ones.
+
+
+>  arch/powerpc/mm/init_32.c    |    5 +++++
+>  arch/powerpc/mm/mmu_decl.h   |    1 +
+>  arch/powerpc/mm/pgtable_32.c |    4 +++-
+>  include/linux/lmb.h          |    1 +
+>  lib/lmb.c                    |    7 ++++++-
+>  5 files changed, 16 insertions(+), 2 deletions(-)
 > 
 > diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-> index 9ddcfb4..703c7c2 100644
+> index 703c7c2..4ec900a 100644
 > --- a/arch/powerpc/mm/init_32.c
 > +++ b/arch/powerpc/mm/init_32.c
-> @@ -131,9 +131,13 @@ void __init MMU_init(void)
->  	MMU_setup();
+> @@ -82,6 +82,11 @@ extern struct task_struct *current_set[NR_CPUS];
+>  int __map_without_bats;
+>  int __map_without_ltlbs;
 >  
->  	if (lmb.memory.cnt > 1) {
-> +#ifndef CONFIG_WII
->  		lmb.memory.cnt = 1;
->  		lmb_analyze();
->  		printk(KERN_WARNING "Only using first contiguous memory region");
-> +#else
-> +		wii_memory_fixups();
-> +#endif
->  	}
+> +/*
+> + * This tells the system to allow ioremapping memory marked as reserved.
+> + */
+> +int __allow_ioremap_reserved;
+> +
+>  /* max amount of low RAM to map in */
+>  unsigned long __max_low_memory = MAX_LOW_MEM;
 >  
->  	total_lowmem = total_memory = lmb_end_of_DRAM() - memstart_addr;
 > diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-> index d2e5321..9aa39fe 100644
+> index 9aa39fe..34dacc3 100644
 > --- a/arch/powerpc/mm/mmu_decl.h
 > +++ b/arch/powerpc/mm/mmu_decl.h
-> @@ -136,6 +136,14 @@ extern phys_addr_t total_lowmem;
->  extern phys_addr_t memstart_addr;
->  extern phys_addr_t lowmem_end_addr;
+> @@ -115,6 +115,7 @@ extern void settlbcam(int index, unsigned long virt, phys_addr_t phys,
+>  extern void invalidate_tlbcam_entry(int index);
 >  
-> +#ifdef CONFIG_WII
-> +extern unsigned long wii_hole_start;
-> +extern unsigned long wii_hole_size;
-> +
-> +extern unsigned long wii_mmu_mapin_mem2(unsigned long top);
-> +extern void wii_memory_fixups(void);
-> +#endif
-> +
->  /* ...and now those things that may be slightly different between processor
->   * architectures.  -- Dan
->   */
-> @@ -155,5 +163,5 @@ extern void adjust_total_lowmem(void);
->  #elif defined(CONFIG_PPC32)
->  /* anything 32-bit except 4xx or 8xx */
->  extern void MMU_init_hw(void);
-> -extern unsigned long mmu_mapin_ram(void);
-> +extern unsigned long mmu_mapin_ram(unsigned long top);
->  #endif
+>  extern int __map_without_bats;
+> +extern int __allow_ioremap_reserved;
+>  extern unsigned long ioremap_base;
+>  extern unsigned int rtas_data, rtas_size;
+>  
 > diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-> index cb96cb2..b55bbe8 100644
+> index b55bbe8..177e403 100644
 > --- a/arch/powerpc/mm/pgtable_32.c
 > +++ b/arch/powerpc/mm/pgtable_32.c
-> @@ -283,18 +283,18 @@ int map_page(unsigned long va, phys_addr_t pa, int flags)
+> @@ -26,6 +26,7 @@
+>  #include <linux/vmalloc.h>
+>  #include <linux/init.h>
+>  #include <linux/highmem.h>
+> +#include <linux/lmb.h>
+>  
+>  #include <asm/pgtable.h>
+>  #include <asm/pgalloc.h>
+> @@ -191,7 +192,8 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
+>  	 * Don't allow anybody to remap normal RAM that we're using.
+>  	 * mem_init() sets high_memory so only do the check after that.
+>  	 */
+> -	if (mem_init_done && (p < virt_to_phys(high_memory))) {
+> +	if (mem_init_done && (p < virt_to_phys(high_memory)) &&
+> +	    !(__allow_ioremap_reserved && lmb_is_region_reserved(p, size))) {
+>  		printk("__ioremap(): phys addr 0x%llx is RAM lr %p\n",
+>  		       (unsigned long long)p, __builtin_return_address(0));
+>  		return NULL;
+> diff --git a/include/linux/lmb.h b/include/linux/lmb.h
+> index 2442e3f..ef82b8f 100644
+> --- a/include/linux/lmb.h
+> +++ b/include/linux/lmb.h
+> @@ -54,6 +54,7 @@ extern u64 __init lmb_phys_mem_size(void);
+>  extern u64 lmb_end_of_DRAM(void);
+>  extern void __init lmb_enforce_memory_limit(u64 memory_limit);
+>  extern int __init lmb_is_reserved(u64 addr);
+> +extern int lmb_is_region_reserved(u64 base, u64 size);
+>  extern int lmb_find(struct lmb_property *res);
+>  
+>  extern void lmb_dump_all(void);
+> diff --git a/lib/lmb.c b/lib/lmb.c
+> index 0343c05..9cee171 100644
+> --- a/lib/lmb.c
+> +++ b/lib/lmb.c
+> @@ -263,7 +263,7 @@ long __init lmb_reserve(u64 base, u64 size)
+>  	return lmb_add_region(_rgn, base, size);
 >  }
 >  
->  /*
-> - * Map in a big chunk of physical memory starting at PAGE_OFFSET.
-> + * Map in a chunk of physical memory starting at start.
->   */
-> -void __init mapin_ram(void)
-> +void __init __mapin_ram_chunk(unsigned long offset, unsigned long top)
+> -long __init lmb_overlaps_region(struct lmb_region *rgn, u64 base, u64 size)
+> +long lmb_overlaps_region(struct lmb_region *rgn, u64 base, u64 size)
 >  {
->  	unsigned long v, s, f;
->  	phys_addr_t p;
->  	int ktext;
+>  	unsigned long i;
 >  
-> -	s = mmu_mapin_ram();
-> +	s = offset;
->  	v = PAGE_OFFSET + s;
->  	p = memstart_addr + s;
-> -	for (; s < total_lowmem; s += PAGE_SIZE) {
-> +	for (; s < top; s += PAGE_SIZE) {
->  		ktext = ((char *) v >= _stext && (char *) v < etext);
->  		f = ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL;
->  		map_page(v, p, f);
-> @@ -307,6 +307,30 @@ void __init mapin_ram(void)
->  	}
->  }
->  
-> +void __init mapin_ram(void)
-> +{
-> +	unsigned long s, top;
-> +
-> +#ifndef CONFIG_WII
-> +	top = total_lowmem;
-> +	s = mmu_mapin_ram(top);
-> +	__mapin_ram_chunk(s, top);
-> +#else
-> +	if (!wii_hole_size) {
-> +		s = mmu_mapin_ram(total_lowmem);
-> +		__mapin_ram_chunk(s, total_lowmem);
-> +	} else {
-> +		top = wii_hole_start;
-> +		s = mmu_mapin_ram(top);
-> +		__mapin_ram_chunk(s, top);
-> +
-> +		top = lmb_end_of_DRAM();
-> +		s = wii_mmu_mapin_mem2(top);
-> +		__mapin_ram_chunk(s, top);
-> +	}
-> +#endif
-> +}
-> +
->  /* Scan the real Linux page tables and return a PTE pointer for
->   * a virtual address in a context.
->   * Returns true (1) if PTE was found, zero otherwise.  The pointer to
-> diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-> index 2d2a87e..f11c2cd 100644
-> --- a/arch/powerpc/mm/ppc_mmu_32.c
-> +++ b/arch/powerpc/mm/ppc_mmu_32.c
-> @@ -72,7 +72,7 @@ unsigned long p_mapped_by_bats(phys_addr_t pa)
+> @@ -493,6 +493,11 @@ int __init lmb_is_reserved(u64 addr)
 >  	return 0;
 >  }
 >  
-> -unsigned long __init mmu_mapin_ram(void)
-> +unsigned long __init mmu_mapin_ram(unsigned long top)
->  {
->  	unsigned long tot, bl, done;
->  	unsigned long max_size = (256<<20);
-> @@ -86,7 +86,7 @@ unsigned long __init mmu_mapin_ram(void)
->  
->  	/* Make sure we don't map a block larger than the
->  	   smallest alignment of the physical address. */
-> -	tot = total_lowmem;
-> +	tot = top;
->  	for (bl = 128<<10; bl < max_size; bl <<= 1) {
->  		if (bl * 2 > tot)
->  			break;
-> diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
-> index 1bd41cc..5eaed86 100644
-> --- a/arch/powerpc/platforms/embedded6xx/wii.c
-> +++ b/arch/powerpc/platforms/embedded6xx/wii.c
-> @@ -20,6 +20,8 @@
->  #include <linux/seq_file.h>
->  #include <linux/kexec.h>
->  #include <linux/of_platform.h>
-> +#include <linux/lmb.h>
-> +#include <mm/mmu_decl.h>
->  
->  #include <asm/io.h>
->  #include <asm/machdep.h>
-> @@ -52,6 +54,67 @@
->  static void __iomem *hw_ctrl;
->  static void __iomem *hw_gpio;
->  
-> +unsigned long wii_hole_start;
-> +unsigned long wii_hole_size;
-> +
-> +
-> +static int page_aligned(unsigned long x)
+> +int lmb_is_region_reserved(u64 base, u64 size)
 > +{
-> +	return !(x & (PAGE_SIZE-1));
+> +	return lmb_overlaps_region(&lmb.reserved, base, size);
 > +}
 > +
-> +void __init wii_memory_fixups(void)
-> +{
-> +	struct lmb_property *p = lmb.memory.region;
-> +
-> +	/*
-> +	 * This is part of a workaround to allow the use of two
-> +	 * discontiguous RAM ranges on the Wii, even if this is
-> +	 * currently unsupported on 32-bit PowerPC Linux.
-> +	 *
-> +	 * We coealesce the two memory ranges of the Wii into a
-> +	 * single range, then create a reservation for the "hole"
-> +	 * between both ranges.
-> +	 */
-> +
-> +	BUG_ON(lmb.memory.cnt != 2);
-> +	BUG_ON(!page_aligned(p[0].base) || !page_aligned(p[1].base));
-> +
-> +	p[0].size = _ALIGN_DOWN(p[0].size, PAGE_SIZE);
-> +	p[1].size = _ALIGN_DOWN(p[1].size, PAGE_SIZE);
-> +
-> +	wii_hole_start = p[0].base + p[0].size;
-> +	wii_hole_size = p[1].base - wii_hole_start;
-> +
-> +	pr_info("MEM1: <%08llx %08llx>\n", p[0].base, p[0].size);
-> +	pr_info("HOLE: <%08lx %08lx>\n", wii_hole_start, wii_hole_size);
-> +	pr_info("MEM2: <%08llx %08llx>\n", p[1].base, p[1].size);
-> +
-> +	p[0].size += wii_hole_size + p[1].size;
-> +
-> +	lmb.memory.cnt = 1;
-> +	lmb_analyze();
-> +
-> +	/* reserve the hole */
-> +	lmb_reserve(wii_hole_start, wii_hole_size);
-> +}
-> +
-> +unsigned long __init wii_mmu_mapin_mem2(unsigned long top)
-> +{
-> +	unsigned long delta, size, bl;
-> +	unsigned long max_size = (256<<20);
-> +
-> +	/* MEM2 64MB@0x10000000 */
-> +	delta = wii_hole_start + wii_hole_size;
-> +	size = top - delta;
-> +	for (bl = 128<<10; bl < max_size; bl <<= 1) {
-> +		if (bl * 2 > size)
-> +			break;
-> +	}
-> +	setbat(4, PAGE_OFFSET+delta, delta, bl, PAGE_KERNEL_X);
-> +	return delta + bl;
-> +}
-> +
->  static void wii_spin(void)
->  {
->  	local_irq_disable();
+>  /*
+>   * Given a <base, len>, find which memory regions belong to this range.
+>   * Adjust the request and return a contiguous chunk.
