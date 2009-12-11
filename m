@@ -1,23 +1,18 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2B25FB7C72
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Dec 2009 13:13:45 +1100 (EST)
-Subject: Re: [PATCH 3/3] mpc8xxx_gpio: add interrupt support
+Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers through
+	extended ptrace interface
 Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <87pr6omwk3.fsf@macbook.be.48ers.dk>
-Date: Thu, 10 Dec 2009 20:13:35 -0600
-Message-Id: <8F2E2097-9BB7-4B7F-902E-F967F28120E8@kernel.crashing.org>
-References: <1259700494-17869-1-git-send-email-jacmet@sunsite.dk>
-	<1259700494-17869-2-git-send-email-jacmet@sunsite.dk>
-	<1259700494-17869-3-git-send-email-jacmet@sunsite.dk>
-	<87pr6omwk3.fsf@macbook.be.48ers.dk>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
+Date: Thu, 10 Dec 2009 20:23:35 -0600
+Message-Id: <F0B42818-1EE1-47EE-B2F3-B7529B2E13C8@kernel.crashing.org>
+References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
+	Sergio Durigan Junior <sergiodj@br.ibm.com>,
+	Torez Smith <torez@us.ibm.com>,
+	Thiago Jung Bauermann <bauerman@br.ibm.com>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +23,74 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Dec 9, 2009, at 1:33 AM, Peter Korsgaard wrote:
+On Dec 10, 2009, at 9:57 AM, Dave Kleikamp wrote:
 
->>>>>> "Peter" =3D=3D Peter Korsgaard <jacmet@sunsite.dk> writes:
+> These patches implement an extention to the ptrace interface proposed =
+by
+> Thiago Bauermann and the the PowerPC gdb team.
 >=20
-> Comments?
+> GDB intends to support the following hardware debug features of BookE
+> processors:
 >=20
-> Peter> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-> Peter> ---
-> Peter>  arch/powerpc/sysdev/mpc8xxx_gpio.c |  147 =
-++++++++++++++++++++++++++++++++++++
-> Peter>  1 files changed, 147 insertions(+), 0 deletions(-)
+> 4 hardware breakpoints (IAC)
+> 2 hardware watchpoints (read, write and read-write) (DAC)
+> 2 value conditions for the hardware watchpoints (DVC)
+>=20
+> For that, we need to extend ptrace so that GDB can query and set these
+> resources. Since we're extending, we're trying to create an interface
+> that's extendable and that covers both BookE and server processors, so
+> that GDB doesn't need to special-case each of them. We propose the
+> following 3 new ptrace requests described below.
+>=20
+> There have been discussions of a generic hardware debug interface for =
+the
+> kernel which would hopefully contemplate all the functionality below =
+and
+> supersede it.  But we need something that works now, and which enables =
+GDB
+> to be simpler and work with both Server and Embedded processors =
+without
+> special cases.
+>=20
+> 1. PTRACE_PPC_GETHWDEBUGINFO
+>=20
+> Query for GDB to discover the hardware debug features. The main info =
+to
+> be returned here is the minimum alignment for the hardware =
+watchpoints.
+> BookE processors don't have restrictions here, but server processors =
+have
+> an 8-byte alignment restriction for hardware watchpoints. We'd like to =
+avoid
+> adding special cases to GDB based on what it sees in AUXV.
+>=20
+> Since we're at it, we added other useful info that the kernel can =
+return to
+> GDB: this query will return the number of hardware breakpoints, =
+hardware
+> watchpoints and whether it supports a range of addresses and a =
+condition.
+> The query will fill the following structure provided by the requesting =
+process:
+>=20
+> struct ppc_debug_info {
+>       unit32_t version;
+>       unit32_t num_instruction_bps;
+>       unit32_t num_data_bps;
+>       unit32_t num_condition_regs;
+>       unit32_t data_bp_alignment;
+>       unit32_t sizeof_condition; /* size of the DVC register */
+>       uint64_t features; /* bitmask of the individual flags */
+> };
+>=20
+> features will have bits indicating whether there is support for:
+>=20
+> #define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
+> #define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
+> #define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
+> #define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
 
-We need a binding document to go with this.
+Is GDB smart enough to deal w/no condition_regs?  On some Book-E devices =
+we have 2 IACs, 2 DACs, and 0 DVCs.  Does it need to be in the features?
 
 - k=
