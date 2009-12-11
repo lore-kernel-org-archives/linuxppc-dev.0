@@ -1,15 +1,13 @@
 Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers through
-	extended ptrace interface
+Subject: Re: [RFC:PATCH 01/03] powerpc: Extended ptrace interface
 Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1260498575.4329.10.camel@norville.austin.ibm.com>
-Date: Thu, 10 Dec 2009 20:32:40 -0600
-Message-Id: <24F9168B-E6F4-4082-92B0-69B6E0935C7E@kernel.crashing.org>
+In-Reply-To: <20091210155715.6697.92627.sendpatchset@norville.austin.ibm.com>
+Date: Thu, 10 Dec 2009 20:51:02 -0600
+Message-Id: <030D6CF9-8E28-4B91-A515-10A0D4A4FE5E@kernel.crashing.org>
 References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-	<D925FFC0-EF2B-4ED4-8481-38BC743E9770@kernel.crashing.org>
-	<1260498575.4329.10.camel@norville.austin.ibm.com>
+	<20091210155715.6697.92627.sendpatchset@norville.austin.ibm.com>
 To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
 	Sergio Durigan Junior <sergiodj@br.ibm.com>,
@@ -25,193 +23,278 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Dec 10, 2009, at 8:29 PM, Dave Kleikamp wrote:
+On Dec 10, 2009, at 9:57 AM, Dave Kleikamp wrote:
 
-> On Thu, 2009-12-10 at 20:24 -0600, Kumar Gala wrote:
->> On Dec 10, 2009, at 9:57 AM, Dave Kleikamp wrote:
->>=20
->>> These patches implement an extention to the ptrace interface =
-proposed by
->>> Thiago Bauermann and the the PowerPC gdb team.
->>>=20
->>> GDB intends to support the following hardware debug features of =
-BookE
->>> processors:
->>>=20
->>> 4 hardware breakpoints (IAC)
->>> 2 hardware watchpoints (read, write and read-write) (DAC)
->>> 2 value conditions for the hardware watchpoints (DVC)
->>>=20
->>> For that, we need to extend ptrace so that GDB can query and set =
-these
->>> resources. Since we're extending, we're trying to create an =
-interface
->>> that's extendable and that covers both BookE and server processors, =
-so
->>> that GDB doesn't need to special-case each of them. We propose the
->>> following 3 new ptrace requests described below.
->>>=20
->>> There have been discussions of a generic hardware debug interface =
-for the
->>> kernel which would hopefully contemplate all the functionality below =
-and
->>> supersede it.  But we need something that works now, and which =
-enables GDB
->>> to be simpler and work with both Server and Embedded processors =
-without
->>> special cases.
->>>=20
->>> 1. PTRACE_PPC_GETHWDEBUGINFO
->>>=20
->>> Query for GDB to discover the hardware debug features. The main info =
-to
->>> be returned here is the minimum alignment for the hardware =
-watchpoints.
->>> BookE processors don't have restrictions here, but server processors =
-have
->>> an 8-byte alignment restriction for hardware watchpoints. We'd like =
-to avoid
->>> adding special cases to GDB based on what it sees in AUXV.
->>>=20
->>> Since we're at it, we added other useful info that the kernel can =
-return to
->>> GDB: this query will return the number of hardware breakpoints, =
-hardware
->>> watchpoints and whether it supports a range of addresses and a =
-condition.
->>> The query will fill the following structure provided by the =
-requesting process:
->>>=20
->>> struct ppc_debug_info {
->>>      unit32_t version;
->>>      unit32_t num_instruction_bps;
->>>      unit32_t num_data_bps;
->>>      unit32_t num_condition_regs;
->>>      unit32_t data_bp_alignment;
->>>      unit32_t sizeof_condition; /* size of the DVC register */
->>>      uint64_t features; /* bitmask of the individual flags */
->>> };
->>>=20
->>> features will have bits indicating whether there is support for:
->>>=20
->>> #define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
->>> #define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
->>> #define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
->>> #define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
->>>=20
->>> 2. PTRACE_SETHWDEBUG
->>>=20
->>> Sets a hardware breakpoint or watchpoint, according to the provided =
-structure:
->>>=20
->>> struct ppc_hw_breakpoint {
->>>       uint32_t version;
->>> #define PPC_BREAKPOINT_TRIGGER_EXECUTE  0x1
->>> #define PPC_BREAKPOINT_TRIGGER_READ     0x2
->>> #define PPC_BREAKPOINT_TRIGGER_WRITE    0x4
->>>       uint32_t trigger_type;       /* only some combinations allowed =
+> powerpc: Extended ptrace interface
+>=20
+> From: Torez Smith <lnxtorez@linux.vnet.ibm.com>
+>=20
+> Add a new extended ptrace interface so that user-space has a single
+> interface for powerpc, without having to know the specific layout
+> of the debug registers.
+>=20
+> Implement:
+> PPC_PTRACE_GETHWDEBUGINFO
+> PPC_PTRACE_SETHWDEBUG
+> PPC_PTRACE_DELHWDEBUG
+>=20
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> Signed-off-by: Torez Smith  <lnxtorez@linux.vnet.ibm.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Thiago Jung Bauermann <bauerman@br.ibm.com>
+> Cc: Sergio Durigan Junior <sergiodj@br.ibm.com>
+> Cc: David Gibson <dwg@au1.ibm.com>
+> Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+> ---
+>=20
+> arch/powerpc/include/asm/ptrace.h |   75 =
+++++++++++++++++++++++++++++++++
+> arch/powerpc/kernel/ptrace.c      |   88 =
++++++++++++++++++++++++++++++++++++++
+> 2 files changed, 163 insertions(+), 0 deletions(-)
+>=20
+>=20
+> diff --git a/arch/powerpc/include/asm/ptrace.h =
+b/arch/powerpc/include/asm/ptrace.h
+> index 8c34149..7ae887b 100644
+> --- a/arch/powerpc/include/asm/ptrace.h
+> +++ b/arch/powerpc/include/asm/ptrace.h
+> @@ -24,6 +24,12 @@
+>  * 2 of the License, or (at your option) any later version.
+>  */
+>=20
+> +#ifdef __KERNEL__
+> +#include <linux/types.h>
+> +#else
+> +#include <stdint.h>
+> +#endif
+> +
+> #ifndef __ASSEMBLY__
+>=20
+> struct pt_regs {
+> @@ -292,4 +298,73 @@ extern void user_disable_single_step(struct =
+task_struct *);
+>=20
+> #define PTRACE_SINGLEBLOCK	0x100	/* resume execution until next =
+branch */
+>=20
+> +#define PPC_PTRACE_GETHWDBGINFO	0x89
+> +#define PPC_PTRACE_SETHWDEBUG	0x88
+> +#define PPC_PTRACE_DELHWDEBUG	0x87
+> +
+> +#ifndef __ASSEMBLY__
+> +
+> +struct ppc_debug_info {
+> +	uint32_t version;		/* Only version 1 exists to date =
 */
->>> #define PPC_BREAKPOINT_MODE_EXACT               0x0
->>> #define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE     0x1
->>> #define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE     0x2
->>> #define PPC_BREAKPOINT_MODE_MASK                0x3
->>>       uint32_t addr_mode;          /* address match mode */
->>>=20
->>> #define PPC_BREAKPOINT_CONDITION_NONE   0x0
->>> #define PPC_BREAKPOINT_CONDITION_AND    0x1
->>> #define PPC_BREAKPOINT_CONDITION_EXACT  0x1	/* different name for =
-the same thing as above */
->>> #define PPC_BREAKPOINT_CONDITION_OR     0x2
->>> #define PPC_BREAKPOINT_CONDITION_AND_OR 0x3
->>> #define PPC_BREAKPOINT_CONDITION_BE_ALL 0x00ff0000	/* byte enable =
-bits */
->>> #define PPC_BREAKPOINT_CONDITION_BE(n)  (1<<((n)+16))
->>>       uint32_t condition_mode;     /* break/watchpoint condition =
+> +	uint32_t num_instruction_bps;
+> +	uint32_t num_data_bps;
+> +	uint32_t num_condition_regs;
+> +	uint32_t data_bp_alignment;
+> +	uint32_t sizeof_condition;	/* size of the DVC register */
+> +	uint64_t features;
+> +};
+> +
+> +#endif /* __ASSEMBLY__ */
+> +
+> +/*
+> + * features will have bits indication whether there is support for:
+> + */
+> +#define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
+> +#define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
+> +#define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
+> +#define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
+
+Pad these out.
+
+#define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x0000000000000001
+#define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x0000000000000002
+
+etc..
+
+
+> +
+> +#ifndef __ASSEMBLY__
+> +
+> +struct ppc_hw_breakpoint {
+> +	uint32_t version;		/* currently, version must be 1 =
+*/
+> +	uint32_t trigger_type;		/* only some combinations =
+allowed */
+> +	uint32_t addr_mode;		/* address match mode */
+> +	uint32_t condition_mode;	/* break/watchpoint condition =
 flags */
->>>=20
->>>       uint64_t addr;
->>>       uint64_t addr2;
->>>       uint64_t condition_value;
->>> };
->>>=20
->>> A request specifies one event, not necessarily just one register to =
-be set.
->>> For instance, if the request is for a watchpoint with a condition, =
-both the
->>> DAC and DVC registers will be set in the same request.
->>>=20
->>> With this GDB can ask for all kinds of hardware breakpoints and =
-watchpoints
->>> that the BookE supports. COMEFROM breakpoints available in server =
-processors
->>> are not contemplated, but that is out of the scope of this work.
->>>=20
->>> ptrace will return an integer (handle) uniquely identifying the =
-breakpoint or
->>> watchpoint just created. This integer will be used in the =
-PTRACE_DELHWDEBUG
->>> request to ask for its removal. Return -ENOSPC if the requested =
-breakpoint
->>> can't be allocated on the registers.
->>>=20
->>> Some examples of using the structure to:
->>>=20
->>> - set a breakpoint in the first breakpoint register
->>>=20
->>> p.version         =3D PPC_DEBUG_CURRENT_VERSION;
->>> p.trigger_type    =3D PPC_BREAKPOINT_TRIGGER_EXECUTE;
->>> p.addr_mode       =3D PPC_BREAKPOINT_MODE_EXACT;
->>> p.condition_mode  =3D PPC_BREAKPOINT_CONDITION_NONE;
->>> p.addr            =3D (uint64_t) address;
->>> p.addr2           =3D 0;
->>> p.condition_value =3D 0;
->>>=20
->>> - set a watchpoint which triggers on reads in the second watchpoint =
-register
->>>=20
->>> p.version         =3D PPC_DEBUG_CURRENT_VERSION;
->>> p.trigger_type    =3D PPC_BREAKPOINT_TRIGGER_READ;
->>> p.addr_mode       =3D PPC_BREAKPOINT_MODE_EXACT;
->>> p.condition_mode  =3D PPC_BREAKPOINT_CONDITION_NONE;
->>> p.addr            =3D (uint64_t) address;
->>> p.addr2           =3D 0;
->>> p.condition_value =3D 0;
->>>=20
->>> - set a watchpoint which triggers only with a specific value
->>>=20
->>> p.version         =3D PPC_DEBUG_CURRENT_VERSION;
->>> p.trigger_type    =3D PPC_BREAKPOINT_TRIGGER_READ;
->>> p.addr_mode       =3D PPC_BREAKPOINT_MODE_EXACT;
->>> p.condition_mode  =3D PPC_BREAKPOINT_CONDITION_AND | =
-PPC_BREAKPOINT_CONDITION_BE_ALL;
->>> p.addr            =3D (uint64_t) address;
->>> p.addr2           =3D 0;
->>> p.condition_value =3D (uint64_t) condition;
->>>=20
->>> - set a ranged hardware breakpoint
->>>=20
->>> p.version         =3D PPC_DEBUG_CURRENT_VERSION;
->>> p.trigger_type    =3D PPC_BREAKPOINT_TRIGGER_EXECUTE;
->>> p.addr_mode       =3D PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE;
->>> p.condition_mode  =3D PPC_BREAKPOINT_CONDITION_NONE;
->>> p.addr            =3D (uint64_t) begin_range;
->>> p.addr2           =3D (uint64_t) end_range;
->>> p.condition_value =3D 0;
->>>=20
->>> 3. PTRACE_DELHWDEBUG
->>>=20
->>> Takes an integer which identifies an existing breakpoint or =
-watchpoint
->>> (i.e., the value returned from PTRACE_SETHWDEBUG), and deletes the
->>> corresponding breakpoint or watchpoint..
->>=20
->> This is a good write up.  We should have it as a commit message for =
-the first patch.
->=20
-> I have to give credit to Thiago for this.
->=20
-> Would it be worth adding to Documentation/powerpc/ ?
+> +	uint64_t addr;			/* break/watchpoint address */
+> +	uint64_t addr2;			/* range end or mask */
+> +	uint64_t condition_value;	/* contents of the DVC register =
+*/
+> +};
+> +
+> +#endif /* __ASSEMBLY__ */
+> +
+> +/*
+> + * Trigger Type
+> + */
+> +#define PPC_BREAKPOINT_TRIGGER_EXECUTE	0x1
+> +#define PPC_BREAKPOINT_TRIGGER_READ	0x2
+> +#define PPC_BREAKPOINT_TRIGGER_WRITE	0x4
+> +#define PPC_BREAKPOINT_TRIGGER_RW	0x6
 
-That would also work.
+(ditto on the padding)
 
-- k=
+> +
+> +/*
+> + * Address Mode
+> + */
+> +#define PPC_BREAKPOINT_MODE_EXACT		0x0
+> +#define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE	0x1
+> +#define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE	0x2
+> +#define PPC_BREAKPOINT_MODE_MASK		0x3
+> +
+
+(ditto on the padding)
+
+> +/*
+> + * Condition Mode
+> + */
+> +#define PPC_BREAKPOINT_CONDITION_NONE	0x0
+> +#define PPC_BREAKPOINT_CONDITION_AND	0x1
+> +#define PPC_BREAKPOINT_CONDITION_EXACT	0x1
+> +#define PPC_BREAKPOINT_CONDITION_OR	0x2
+> +#define PPC_BREAKPOINT_CONDITION_AND_OR	0x3
+
+(ditto on the padding)
+
+> +#define PPC_BREAKPOINT_CONDITION_BE_ALL	0x00ff0000
+> +#define PPC_BREAKPOINT_CONDITION_BE_SHIFT	16
+> +#define PPC_BREAKPOINT_CONDITION_BE(n)	\
+> +	(1<<((n)+PPC_BREAKPOINT_CONDITION_BE_SHIFT))
+> +
+> #endif /* _ASM_POWERPC_PTRACE_H */
+> diff --git a/arch/powerpc/kernel/ptrace.c =
+b/arch/powerpc/kernel/ptrace.c
+> index ef14988..6be2ce0 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -839,6 +839,50 @@ void ptrace_disable(struct task_struct *child)
+> 	user_disable_single_step(child);
+> }
+>=20
+> +static long ppc_set_hwdebug(struct task_struct *child,
+> +		     struct ppc_hw_breakpoint *bp_info)
+> +{
+> +	/*
+> +	 * We currently support one data breakpoint
+> +	 */
+> +	if (((bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_RW) =3D=3D =
+0) ||
+> +	    ((bp_info->trigger_type & ~PPC_BREAKPOINT_TRIGGER_RW) !=3D =
+0) ||
+> +	    (bp_info->trigger_type !=3D PPC_BREAKPOINT_TRIGGER_WRITE) ||
+> +	    (bp_info->addr_mode !=3D PPC_BREAKPOINT_MODE_EXACT) ||
+> +	    (bp_info->condition_mode !=3D =
+PPC_BREAKPOINT_CONDITION_NONE))
+> +		return -EINVAL;
+> +
+> +	if (child->thread.dabr)
+> +		return -ENOSPC;
+> +
+> +	if ((unsigned long)bp_info->addr >=3D TASK_SIZE)
+> +		return -EIO;
+> +
+> +	child->thread.dabr =3D (unsigned long)bp_info->addr;
+> +#ifdef CONFIG_BOOKE
+> +	child->thread.dbcr0 =3D DBCR0_IDM;
+> +	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_READ)
+> +		child->thread.dbcr0 |=3D DBSR_DAC1R;
+> +	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
+> +		child->thread.dbcr0 |=3D DBSR_DAC1W;
+> +	child->thread.regs->msr |=3D MSR_DE;
+> +#endif
+> +	return 1;
+> +}
+> +
+> +static long ppc_del_hwdebug(struct task_struct *child, long addr, =
+long data)
+> +{
+> +	if ((data !=3D 1) || (child->thread.dabr =3D=3D 0))
+> +		return -EINVAL;
+> +
+> +	child->thread.dabr =3D 0;
+> +#ifdef CONFIG_BOOKE
+> +	child->thread.dbcr0 &=3D ~(DBSR_DAC1R | DBSR_DAC1W | DBCR0_IDM);
+> +	child->thread.regs->msr &=3D ~MSR_DE;
+> +#endif
+> +	return 0;
+> +}
+> +
+> /*
+>  * Here are the old "legacy" powerpc specific getregs/setregs ptrace =
+calls,
+>  * we mark them as obsolete now, they will be removed in a future =
+version
+> @@ -932,6 +976,50 @@ long arch_ptrace(struct task_struct *child, long =
+request, long addr, long data)
+> 		break;
+> 	}
+>=20
+> +	case PPC_PTRACE_GETHWDBGINFO: {
+> +		struct ppc_debug_info dbginfo;
+> +
+> +		dbginfo.version =3D 1;
+> +		dbginfo.num_instruction_bps =3D 0;
+> +		dbginfo.num_data_bps =3D 1;
+> +		dbginfo.num_condition_regs =3D 0;
+> +#ifdef CONFIG_PPC64
+> +		dbginfo.data_bp_alignment =3D 8;
+> +#else
+> +		dbginfo.data_bp_alignment =3D 0;
+> +#endif
+> +		dbginfo.sizeof_condition =3D 0;
+> +		dbginfo.features =3D 0;
+> +
+> +		if (!access_ok(VERIFY_WRITE, data,
+> +			       sizeof(struct ppc_debug_info)))
+> +			return -EFAULT;
+> +		ret =3D __copy_to_user((struct ppc_debug_info __user =
+*)data,
+> +				     &dbginfo, sizeof(struct =
+ppc_debug_info)) ?
+> +		      -EFAULT : 0;
+> +		break;
+> +	}
+> +
+> +	case PPC_PTRACE_SETHWDEBUG: {
+> +		struct ppc_hw_breakpoint bp_info;
+> +
+> +		if (!access_ok(VERIFY_READ, data,
+> +			       sizeof(struct ppc_hw_breakpoint)))
+> +			return -EFAULT;
+> +		ret =3D __copy_from_user(&bp_info,
+> +				       (struct ppc_hw_breakpoint __user =
+*)data,
+> +				       sizeof(struct ppc_hw_breakpoint)) =
+?
+> +		      -EFAULT : 0;
+> +		if (!ret)
+> +			ret =3D ppc_set_hwdebug(child, &bp_info);
+> +		break;
+> +	}
+> +
+> +	case PPC_PTRACE_DELHWDEBUG: {
+> +		ret =3D ppc_del_hwdebug(child, addr, data);
+> +		break;
+> +	}
+> +
+> 	case PTRACE_GET_DEBUGREG: {
+> 		ret =3D -EINVAL;
+> 		/* We only support one DABR and no IABRS at the moment =
+*/
+>=20
+> --=20
+> Dave Kleikamp
+> IBM Linux Technology Center
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
