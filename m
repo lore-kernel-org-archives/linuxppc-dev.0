@@ -1,15 +1,15 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers
-	through extended ptrace interface
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <D925FFC0-EF2B-4ED4-8481-38BC743E9770@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: [RFC:PATCH 02/03] powerpc: Add definitions for Debug Registers on
+	BookE Platforms
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20091210155721.6697.40863.sendpatchset@norville.austin.ibm.com>
+Date: Thu, 10 Dec 2009 20:41:53 -0600
+Message-Id: <1134F495-6623-437F-AF1F-64D0A87BA112@kernel.crashing.org>
 References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-	<D925FFC0-EF2B-4ED4-8481-38BC743E9770@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 10 Dec 2009 20:29:35 -0600
-Message-Id: <1260498575.4329.10.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
+	<20091210155721.6697.40863.sendpatchset@norville.austin.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
 	Sergio Durigan Junior <sergiodj@br.ibm.com>,
 	Torez Smith <torez@us.ibm.com>,
@@ -23,157 +23,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-12-10 at 20:24 -0600, Kumar Gala wrote:
-> On Dec 10, 2009, at 9:57 AM, Dave Kleikamp wrote:
-> 
-> > These patches implement an extention to the ptrace interface proposed by
-> > Thiago Bauermann and the the PowerPC gdb team.
-> > 
-> > GDB intends to support the following hardware debug features of BookE
-> > processors:
-> > 
-> > 4 hardware breakpoints (IAC)
-> > 2 hardware watchpoints (read, write and read-write) (DAC)
-> > 2 value conditions for the hardware watchpoints (DVC)
-> > 
-> > For that, we need to extend ptrace so that GDB can query and set these
-> > resources. Since we're extending, we're trying to create an interface
-> > that's extendable and that covers both BookE and server processors, so
-> > that GDB doesn't need to special-case each of them. We propose the
-> > following 3 new ptrace requests described below.
-> > 
-> > There have been discussions of a generic hardware debug interface for the
-> > kernel which would hopefully contemplate all the functionality below and
-> > supersede it.  But we need something that works now, and which enables GDB
-> > to be simpler and work with both Server and Embedded processors without
-> > special cases.
-> > 
-> > 1. PTRACE_PPC_GETHWDEBUGINFO
-> > 
-> > Query for GDB to discover the hardware debug features. The main info to
-> > be returned here is the minimum alignment for the hardware watchpoints.
-> > BookE processors don't have restrictions here, but server processors have
-> > an 8-byte alignment restriction for hardware watchpoints. We'd like to avoid
-> > adding special cases to GDB based on what it sees in AUXV.
-> > 
-> > Since we're at it, we added other useful info that the kernel can return to
-> > GDB: this query will return the number of hardware breakpoints, hardware
-> > watchpoints and whether it supports a range of addresses and a condition.
-> > The query will fill the following structure provided by the requesting process:
-> > 
-> > struct ppc_debug_info {
-> >       unit32_t version;
-> >       unit32_t num_instruction_bps;
-> >       unit32_t num_data_bps;
-> >       unit32_t num_condition_regs;
-> >       unit32_t data_bp_alignment;
-> >       unit32_t sizeof_condition; /* size of the DVC register */
-> >       uint64_t features; /* bitmask of the individual flags */
-> > };
-> > 
-> > features will have bits indicating whether there is support for:
-> > 
-> > #define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
-> > #define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
-> > #define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
-> > #define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
-> > 
-> > 2. PTRACE_SETHWDEBUG
-> > 
-> > Sets a hardware breakpoint or watchpoint, according to the provided structure:
-> > 
-> > struct ppc_hw_breakpoint {
-> >        uint32_t version;
-> > #define PPC_BREAKPOINT_TRIGGER_EXECUTE  0x1
-> > #define PPC_BREAKPOINT_TRIGGER_READ     0x2
-> > #define PPC_BREAKPOINT_TRIGGER_WRITE    0x4
-> >        uint32_t trigger_type;       /* only some combinations allowed */
-> > #define PPC_BREAKPOINT_MODE_EXACT               0x0
-> > #define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE     0x1
-> > #define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE     0x2
-> > #define PPC_BREAKPOINT_MODE_MASK                0x3
-> >        uint32_t addr_mode;          /* address match mode */
-> > 
-> > #define PPC_BREAKPOINT_CONDITION_NONE   0x0
-> > #define PPC_BREAKPOINT_CONDITION_AND    0x1
-> > #define PPC_BREAKPOINT_CONDITION_EXACT  0x1	/* different name for the same thing as above */
-> > #define PPC_BREAKPOINT_CONDITION_OR     0x2
-> > #define PPC_BREAKPOINT_CONDITION_AND_OR 0x3
-> > #define PPC_BREAKPOINT_CONDITION_BE_ALL 0x00ff0000	/* byte enable bits */
-> > #define PPC_BREAKPOINT_CONDITION_BE(n)  (1<<((n)+16))
-> >        uint32_t condition_mode;     /* break/watchpoint condition flags */
-> > 
-> >        uint64_t addr;
-> >        uint64_t addr2;
-> >        uint64_t condition_value;
-> > };
-> > 
-> > A request specifies one event, not necessarily just one register to be set.
-> > For instance, if the request is for a watchpoint with a condition, both the
-> > DAC and DVC registers will be set in the same request.
-> > 
-> > With this GDB can ask for all kinds of hardware breakpoints and watchpoints
-> > that the BookE supports. COMEFROM breakpoints available in server processors
-> > are not contemplated, but that is out of the scope of this work.
-> > 
-> > ptrace will return an integer (handle) uniquely identifying the breakpoint or
-> > watchpoint just created. This integer will be used in the PTRACE_DELHWDEBUG
-> > request to ask for its removal. Return -ENOSPC if the requested breakpoint
-> > can't be allocated on the registers.
-> > 
-> > Some examples of using the structure to:
-> > 
-> > - set a breakpoint in the first breakpoint register
-> > 
-> >  p.version         = PPC_DEBUG_CURRENT_VERSION;
-> >  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_EXECUTE;
-> >  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
-> >  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
-> >  p.addr            = (uint64_t) address;
-> >  p.addr2           = 0;
-> >  p.condition_value = 0;
-> > 
-> > - set a watchpoint which triggers on reads in the second watchpoint register
-> > 
-> >  p.version         = PPC_DEBUG_CURRENT_VERSION;
-> >  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_READ;
-> >  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
-> >  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
-> >  p.addr            = (uint64_t) address;
-> >  p.addr2           = 0;
-> >  p.condition_value = 0;
-> > 
-> > - set a watchpoint which triggers only with a specific value
-> > 
-> >  p.version         = PPC_DEBUG_CURRENT_VERSION;
-> >  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_READ;
-> >  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
-> >  p.condition_mode  = PPC_BREAKPOINT_CONDITION_AND | PPC_BREAKPOINT_CONDITION_BE_ALL;
-> >  p.addr            = (uint64_t) address;
-> >  p.addr2           = 0;
-> >  p.condition_value = (uint64_t) condition;
-> > 
-> > - set a ranged hardware breakpoint
-> > 
-> >  p.version         = PPC_DEBUG_CURRENT_VERSION;
-> >  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_EXECUTE;
-> >  p.addr_mode       = PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE;
-> >  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
-> >  p.addr            = (uint64_t) begin_range;
-> >  p.addr2           = (uint64_t) end_range;
-> >  p.condition_value = 0;
-> > 
-> > 3. PTRACE_DELHWDEBUG
-> > 
-> > Takes an integer which identifies an existing breakpoint or watchpoint
-> > (i.e., the value returned from PTRACE_SETHWDEBUG), and deletes the
-> > corresponding breakpoint or watchpoint..
-> 
-> This is a good write up.  We should have it as a commit message for the first patch.
 
-I have to give credit to Thiago for this.
+On Dec 10, 2009, at 9:57 AM, Dave Kleikamp wrote:
 
-Would it be worth adding to Documentation/powerpc/ ?
--- 
-David Kleikamp
-IBM Linux Technology Center
+> +#define DBCR1_IAC1US	0xC0000000	/* Instr Addr Cmp 1 Sup/User   =
+*/
+> +#define DBCR1_IAC1ER	0x30000000	/* Instr Addr Cmp 1 Eff/Real */
+> +#define DBCR1_IAC1ER_01	0x10000000	/* reserved */
+> +#define DBCR1_IAC1ER_10	0x20000000	/* Instr Addr Cmp 1 =
+Eff/Real MSR[IS]=3D0 */
+> +#define DBCR1_IAC1ER_11	0x30000000	/* Instr Addr Cmp 1 =
+Eff/Real MSR[IS]=3D1 */
+> +#define DBCR1_IAC2US	0x0C000000	/* Instr Addr Cmp 2 Sup/User   =
+*/
+> +#define DBCR1_IAC2ER	0x03000000	/* Instr Addr Cmp 2 Eff/Real */
+> +#define DBCR1_IAC2ER_01	0x01000000	/* reserved */
+> +#define DBCR1_IAC2ER_10	0x02000000	/* Instr Addr Cmp 2 =
+Eff/Real MSR[IS]=3D0 */
+> +#define DBCR1_IAC2ER_11	0x03000000	/* Instr Addr Cmp 2 =
+Eff/Real MSR[IS]=3D1 */
+> +#define DBCR1_IAC12M	0x00C00000	/* Instr Addr 1-2 range enable =
+*/
+> +#define DBCR1_IAC12M_R	0x00400000	/* Instr Addr 1-2 =
+reserved state */
+> +#define DBCR1_IAC12M_I	0x00800000	/* Instr Addr 1-2 range =
+inclusive */
+> +#define DBCR1_IAC12M_X	0x00C00000	/* Instr Addr 1-2 range =
+eXclusive */
+> +#define DBCR1_IAC12A_T	0x00010000	/* Instr Addr 1-2 range =
+Toggle */
+> +#define DBCR1_IAC3US	0x0000C000	/* Instr Addr Cmp 3 Sup/User   =
+*/
+> +#define DBCR1_IAC3ER	0x00003000	/* Instr Addr Cmp 3 Eff/Real */
+> +#define DBCR1_IAC3ER_01	0x00001000	/* reserved */
+> +#define DBCR1_IAC3ER_10	0x00002000	/* Instr Addr Cmp 3 =
+Eff/Real MSR[IS]=3D0 */
+> +#define DBCR1_IAC3ER_11	0x00003000	/* Instr Addr Cmp 3 =
+Eff/Real MSR[IS]=3D1 */
+> +#define DBCR1_IAC4US	0x00000C00	/* Instr Addr Cmp 4 Sup/User   =
+*/
+> +#define DBCR1_IAC4ER	0x00000300	/* Instr Addr Cmp 4 Eff/Real */
+> +#define DBCR1_IAC4ER_01	0x00000100	/* Instr Addr Cmp 4 =
+Eff/Real MSR[IS]=3D0 */
+> +#define DBCR1_IAC4ER_10	0x00000200	/* Instr Addr Cmp 4 =
+Eff/Real MSR[IS]=3D0 */
+> +#define DBCR1_IAC4ER_11	0x00000300	/* Instr Addr Cmp 4 =
+Eff/Real MSR[IS]=3D1 */
+> +#define DBCR1_IAC34M	0x000000C0	/* Instr Addr 3-4 range enable =
+*/
+> +#define DBCR1_IAC34M_R	0x00000040	/* Instr Addr 3-4 =
+reserved state */
+> +#define DBCR1_IAC34M_I	0x00000080	/* Instr Addr 3-4 range =
+inclusive */
+> +#define DBCR1_IAC34M_X	0x000000C0	/* Instr Addr 3-4 range =
+eXclusive */
+> +#define DBCR1_IAC34A_T	0x00000001	/* Instr Addr 3-4 range =
+Toggle */
+> +
+> +#define DBCR1_USER_DEBUG	(DBCR1_IAC12M | DBCR1_IAC34M)
+> +#define DBCR1_BASE_REG_VALUE	(DBCR1_IAC1US | DBCR1_IAC1ER_10 | \
+> +				 DBCR1_IAC2US | DBCR1_IAC2ER_10 | \
+> +				 DBCR1_IAC3US | DBCR1_IAC3ER_10 | \
+> +				 DBCR1_IAC4US | DBCR1_IAC4ER_10)
+
+We are we using MSR[IS] IS=3D0, why not just any Eff address?  In the =
+future we might have user as IS =3D 1, and kernel as IS =3D 0.
+
+- k=
