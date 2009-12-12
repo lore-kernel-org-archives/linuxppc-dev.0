@@ -1,18 +1,20 @@
 Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp107.mail.ukl.yahoo.com (smtp107.mail.ukl.yahoo.com
-	[77.238.184.39]) by ozlabs.org (Postfix) with SMTP id 690C8B6F10
+Received: from smtp129.mail.ukl.yahoo.com (smtp129.mail.ukl.yahoo.com
+	[77.238.184.60]) by ozlabs.org (Postfix) with SMTP id CE9CAB7B93
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Dec 2009 11:18:46 +1100 (EST)
-Message-ID: <4B22E164.1070606@yahoo.es>
-Date: Sat, 12 Dec 2009 01:18:44 +0100
+	Sat, 12 Dec 2009 11:33:13 +1100 (EST)
+Message-ID: <4B22E4CB.2040509@yahoo.es>
+Date: Sat, 12 Dec 2009 01:33:15 +0100
 From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH v2 0/6] powerpc: nintendo wii support
-References: <1259880447-5008-1-git-send-email-albert_herranz@yahoo.es>
-	<fa686aa40912111552m28d1cc40we072cebef675f100@mail.gmail.com>
-In-Reply-To: <fa686aa40912111552m28d1cc40we072cebef675f100@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH v2 3/4] powerpc: allow ioremap within reserved memory
+	regions
+References: <1260297833-17625-1-git-send-email-albert_herranz@yahoo.es>	
+	<1260297833-17625-4-git-send-email-albert_herranz@yahoo.es>
+	<1260569600.16132.375.camel@pasglop>
+In-Reply-To: <1260569600.16132.375.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,54 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> Hi Albert.
+Benjamin Herrenschmidt wrote:
+> On Tue, 2009-12-08 at 19:43 +0100, Albert Herranz wrote:
+>> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+>> ---
+>> v1 -> v2
+>> - use a run-time flag to allow/disallow remapping reserved regions
+>> - use lmbs to determine reserved regions
+> 
+> We won't need that once we fix proper discontig mem.
+> 
+> BTW. Question: Why do we need that fixup of yours to fold the 2 LMBs
+> into one ?
+> 
+> Wouldn't it be easier just to keep the 2 LMBs ? You already fix the
+> mapin_ram thingy, so you could easily fix it up to just iterate over the
+> LMBs instead no ? For now, it could only BAT map the first LMB to
+> simplify things and we can fix the BAT mapping for the second one in a
+> second step too.
+> 
+> Wouldn't that work with simpler code ? An in the case of ioremap, the
+> test becomes simply to check if it's RAM by checking if it's in the LMB
+> rather than if it's reserved, which should be easier and wouldn't
+> require your flag to "enable" the tweak since it could perfectly be kept
+> as standard behaviour
+> 
+> Also the code in arch/powerpc/mm/mem.c will already deal with holes
+> just fine and will pass the hole size information to the VM which should
+> make it behave properly.
+> 
+> Thus I have the feeling that keeping the 2 LMBs rather than coalescing
+> would simplify the code basically by only requiring a small fixup of the
+> maping RAM bit.
+> 
+> I'm acking the patches for now, so you can always come up with a fixup
+> on top of them and we can merge the current ones.
 > 
 
-Hi,
-
-> I'm ready to pick up your Gamecube and Wii patch sets for merging.
-> You seem to have 4 distinct patch sets.  What order do they need to be
-> applied in, and what kernel version are they based on?
-> 
-
-The patches were based on 2.6.32-rc8.
-The apply order should be:
-
-v2 powerpc: nintendo gamecube support
- powerpc: gamecube/wii: usbgecko bootwrapper console support
- powerpc: gamecube: device tree
- powerpc: gamecube: bootwrapper bits
- powerpc: gamecube/wii: introduce GAMECUBE_COMMON
- powerpc: gamecube/wii: declare as non-coherent platforms
- powerpc: gamecube/wii: do not include PCI support
- powerpc: gamecube/wii: udbg support for usbgecko
- powerpc: gamecube/wii: flipper interrupt controller support
- powerpc: gamecube: platform support
- powerpc: gamecube: default config
-
-v2 powerpc: nintendo wii support
- powerpc: wii: device tree
- powerpc: wii: bootwrapper bits
- powerpc: broadway processor support
- powerpc: wii: hollywood interrupt controller support
- powerpc: wii: platform support
- powerpc: wii: default config
-
-v4 rework of usbgecko-based early debug
- powerpc: reserve fixmap entries for early debug
- powerpc: gamecube/wii: early debugging using usbgecko
-
-v2 powerpc: wii: mem2 as ram support
- wii: bootwrapper: add fixup to calc useable mem2
- wii: use both mem1 and mem2 as ram
- powerpc: allow ioremap within reserved memory regions
- powerpc: wii: allow ioremap within the memory hole
-
-But if you prefer it, I can re-send them as one patch set again rebased on top of v2.6.32.
-
-> Thanks,
-> g.
+I'll look into this.
+I used a single lmb range just as the current code does to avoid any unwanted side effects as I didn't audit all the mm code.
 
 Thanks,
 Albert
