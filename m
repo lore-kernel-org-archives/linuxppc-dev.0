@@ -1,13 +1,15 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp104.mail.ukl.yahoo.com (smtp104.mail.ukl.yahoo.com
-	[77.238.184.36]) by ozlabs.org (Postfix) with SMTP id 36046B7088
+	[77.238.184.36]) by ozlabs.org (Postfix) with SMTP id 388CAB7093
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sun, 13 Dec 2009 03:32:04 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 00/22] powerpc: nintendo gamecube and wii support
-Date: Sat, 12 Dec 2009 17:31:33 +0100
-Message-Id: <1260635515-7478-1-git-send-email-albert_herranz@yahoo.es>
+Subject: [PATCH v2 02/22] powerpc: gamecube: device tree
+Date: Sat, 12 Dec 2009 17:31:35 +0100
+Message-Id: <1260635515-7478-3-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1260635515-7478-1-git-send-email-albert_herranz@yahoo.es>
+References: <1260635515-7478-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -18,104 +20,251 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following patches add the base support for the Nintendo GameCube
-and Wii video game consoles on the powerpc arch.
+Add a device tree source file for the Nintendo GameCube video game console.
 
-For each video game console, the following is included:
-- a device tree source
-- bootwrapper support
-- udbg console option
-- early udbg console option
-- interrupt controller support
-- platform support
-
-The Nintendo Wii patches also include support for:
-- recognition of the broadway processor
-- workarounds to enable the use of the second discontiguous RAM block
-
-With these patches both video game consoles can fully boot up to the
-root filesystem mount phase.
-
-Albert Herranz (22):
-  powerpc: gamecube/wii: usbgecko bootwrapper console support
-  powerpc: gamecube: device tree
-  powerpc: gamecube: bootwrapper bits
-  powerpc: gamecube/wii: introduce GAMECUBE_COMMON
-  powerpc: gamecube/wii: declare as non-coherent platforms
-  powerpc: gamecube/wii: do not include PCI support
-  powerpc: gamecube/wii: udbg support for usbgecko
-  powerpc: gamecube/wii: flipper interrupt controller support
-  powerpc: gamecube: platform support
-  powerpc: gamecube: default config
-  powerpc: wii: device tree
-  powerpc: wii: bootwrapper bits
-  powerpc: broadway processor support
-  powerpc: wii: hollywood interrupt controller support
-  powerpc: wii: platform support
-  powerpc: wii: default config
-  powerpc: reserve fixmap entries for early debug
-  powerpc: gamecube/wii: early debugging using usbgecko
-  wii: bootwrapper: add fixup to calc useable mem2
-  wii: use both mem1 and mem2 as ram
-  powerpc: allow ioremap within reserved memory regions
-  powerpc: wii: allow ioremap within the memory hole
-
- .../powerpc/dts-bindings/nintendo/gamecube.txt     |  109 ++
- .../powerpc/dts-bindings/nintendo/wii.txt          |  184 +++
- arch/powerpc/Kconfig                               |    2 +-
- arch/powerpc/Kconfig.debug                         |    8 +
- arch/powerpc/boot/Makefile                         |    7 +-
- arch/powerpc/boot/dts/gamecube.dts                 |  114 ++
- arch/powerpc/boot/dts/wii.dts                      |  218 +++
- arch/powerpc/boot/gamecube-head.S                  |  111 ++
- arch/powerpc/boot/gamecube.c                       |   35 +
- arch/powerpc/boot/ugecon.c                         |  147 ++
- arch/powerpc/boot/ugecon.h                         |   24 +
- arch/powerpc/boot/wii-head.S                       |  142 ++
- arch/powerpc/boot/wii.c                            |  158 +++
- arch/powerpc/boot/wrapper                          |    4 +
- arch/powerpc/configs/gamecube_defconfig            | 1061 +++++++++++++++
- arch/powerpc/configs/wii_defconfig                 | 1406 ++++++++++++++++++++
- arch/powerpc/include/asm/fixmap.h                  |    3 +
- arch/powerpc/include/asm/udbg.h                    |    1 +
- arch/powerpc/kernel/cputable.c                     |    6 +-
- arch/powerpc/kernel/head_32.S                      |   25 +
- arch/powerpc/kernel/udbg.c                         |    2 +
- arch/powerpc/mm/init_32.c                          |    9 +
- arch/powerpc/mm/mmu_decl.h                         |   11 +-
- arch/powerpc/mm/pgtable_32.c                       |   36 +-
- arch/powerpc/mm/ppc_mmu_32.c                       |    4 +-
- arch/powerpc/platforms/Kconfig.cputype             |    2 +-
- arch/powerpc/platforms/embedded6xx/Kconfig         |   33 +
- arch/powerpc/platforms/embedded6xx/Makefile        |    4 +
- arch/powerpc/platforms/embedded6xx/flipper-pic.c   |  263 ++++
- arch/powerpc/platforms/embedded6xx/flipper-pic.h   |   25 +
- arch/powerpc/platforms/embedded6xx/gamecube.c      |  118 ++
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c      |  241 ++++
- arch/powerpc/platforms/embedded6xx/hlwd-pic.h      |   22 +
- arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |  328 +++++
- arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h |   32 +
- arch/powerpc/platforms/embedded6xx/wii.c           |  268 ++++
- include/linux/lmb.h                                |    1 +
- lib/lmb.c                                          |    7 +-
- 38 files changed, 5155 insertions(+), 16 deletions(-)
+Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+---
+ .../powerpc/dts-bindings/nintendo/gamecube.txt     |  109 +++++++++++++++++++
+ arch/powerpc/boot/dts/gamecube.dts                 |  114 ++++++++++++++++++++
+ 2 files changed, 223 insertions(+), 0 deletions(-)
  create mode 100644 Documentation/powerpc/dts-bindings/nintendo/gamecube.txt
- create mode 100644 Documentation/powerpc/dts-bindings/nintendo/wii.txt
  create mode 100644 arch/powerpc/boot/dts/gamecube.dts
- create mode 100644 arch/powerpc/boot/dts/wii.dts
- create mode 100644 arch/powerpc/boot/gamecube-head.S
- create mode 100644 arch/powerpc/boot/gamecube.c
- create mode 100644 arch/powerpc/boot/ugecon.c
- create mode 100644 arch/powerpc/boot/ugecon.h
- create mode 100644 arch/powerpc/boot/wii-head.S
- create mode 100644 arch/powerpc/boot/wii.c
- create mode 100644 arch/powerpc/configs/gamecube_defconfig
- create mode 100644 arch/powerpc/configs/wii_defconfig
- create mode 100644 arch/powerpc/platforms/embedded6xx/flipper-pic.c
- create mode 100644 arch/powerpc/platforms/embedded6xx/flipper-pic.h
- create mode 100644 arch/powerpc/platforms/embedded6xx/gamecube.c
- create mode 100644 arch/powerpc/platforms/embedded6xx/hlwd-pic.c
- create mode 100644 arch/powerpc/platforms/embedded6xx/hlwd-pic.h
- create mode 100644 arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
- create mode 100644 arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
- create mode 100644 arch/powerpc/platforms/embedded6xx/wii.c
+
+diff --git a/Documentation/powerpc/dts-bindings/nintendo/gamecube.txt b/Documentation/powerpc/dts-bindings/nintendo/gamecube.txt
+new file mode 100644
+index 0000000..b558585
+--- /dev/null
++++ b/Documentation/powerpc/dts-bindings/nintendo/gamecube.txt
+@@ -0,0 +1,109 @@
++
++Nintendo GameCube device tree
++=============================
++
++1) The "flipper" node
++
++  This node represents the multi-function "Flipper" chip, which packages
++  many of the devices found in the Nintendo GameCube.
++
++  Required properties:
++
++   - compatible : Should be "nintendo,flipper"
++
++1.a) The Video Interface (VI) node
++
++  Represents the interface between the graphics processor and a external
++  video encoder.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-vi"
++   - reg : should contain the VI registers location and length
++   - interrupts : should contain the VI interrupt
++
++1.b) The Processor Interface (PI) node
++
++  Represents the data and control interface between the main processor
++  and graphics and audio processor.
++
++  Required properties:
++
++  - compatible : should be "nintendo,flipper-pi"
++  - reg : should contain the PI registers location and length
++
++1.b.i) The "Flipper" interrupt controller node
++
++  Represents the interrupt controller within the "Flipper" chip.
++  The node for the "Flipper" interrupt controller must be placed under
++  the PI node.
++
++  Required properties:
++
++  - compatible : should be "nintendo,flipper-pic"
++
++1.c) The Digital Signal Procesor (DSP) node
++
++  Represents the digital signal processor interface, designed to offload
++  audio related tasks.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-dsp"
++   - reg : should contain the DSP registers location and length
++   - interrupts : should contain the DSP interrupt
++
++1.c.i) The Auxiliary RAM (ARAM) node
++
++  Represents the non cpu-addressable ram designed mainly to store audio
++  related information.
++  The ARAM node must be placed under the DSP node.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-aram"
++   - reg : should contain the ARAM start (zero-based) and length
++
++1.d) The Disk Interface (DI) node
++
++  Represents the interface used to communicate with mass storage devices.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-di"
++   - reg : should contain the DI registers location and length
++   - interrupts : should contain the DI interrupt
++
++1.e) The Audio Interface (AI) node
++
++  Represents the interface to the external 16-bit stereo digital-to-analog
++  converter.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-ai"
++   - reg : should contain the AI registers location and length
++   - interrupts : should contain the AI interrupt
++
++1.f) The Serial Interface (SI) node
++
++  Represents the interface to the four single bit serial interfaces.
++  The SI is a proprietary serial interface used normally to control gamepads.
++  It's NOT a RS232-type interface.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-si"
++   - reg : should contain the SI registers location and length
++   - interrupts : should contain the SI interrupt
++
++1.g) The External Interface (EXI) node
++
++  Represents the multi-channel SPI-like interface.
++
++  Required properties:
++
++   - compatible : should be "nintendo,flipper-exi"
++   - reg : should contain the EXI registers location and length
++   - interrupts : should contain the EXI interrupt
++
+diff --git a/arch/powerpc/boot/dts/gamecube.dts b/arch/powerpc/boot/dts/gamecube.dts
+new file mode 100644
+index 0000000..ef3be0e
+--- /dev/null
++++ b/arch/powerpc/boot/dts/gamecube.dts
+@@ -0,0 +1,114 @@
++/*
++ * arch/powerpc/boot/dts/gamecube.dts
++ *
++ * Nintendo GameCube platform device tree source
++ * Copyright (C) 2007-2009 The GameCube Linux Team
++ * Copyright (C) 2007,2008,2009 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ */
++
++/dts-v1/;
++
++/ {
++	model = "nintendo,gamecube";
++	compatible = "nintendo,gamecube";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	chosen {
++		bootargs = "root=/dev/gcnsda2 rootwait udbg-immortal";
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x01800000>;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,gekko@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <486000000>; /* 486MHz */
++			bus-frequency = <162000000>; /* 162MHz core-to-bus 3x */
++			timebase-frequency = <40500000>; /* 162MHz / 4 */
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <32768>;
++			d-cache-size = <32768>;
++		};
++	};
++
++	/* devices contained int the flipper chipset */
++	flipper {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "nintendo,flipper";
++		ranges = <0x0c000000 0x0c000000 0x00010000>;
++		interrupt-parent = <&PIC>;
++
++		video@0c002000 {
++			compatible = "nintendo,flipper-vi";
++			reg = <0x0c002000 0x100>;
++			interrupts = <8>;
++		};
++
++		processor-interface@0c003000 {
++			compatible = "nintendo,flipper-pi";
++			reg = <0x0c003000 0x100>;
++
++			PIC: pic {
++				#interrupt-cells = <1>;
++				compatible = "nintendo,flipper-pic";
++				interrupt-controller;
++			};
++		};
++
++		dsp@0c005000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "nintendo,flipper-dsp";
++			reg = <0x0c005000 0x200>;
++			interrupts = <6>;
++
++			memory@0 {
++				compatible = "nintendo,flipper-aram";
++				reg = <0 0x1000000>;	/* 16MB */
++			};
++		};
++
++		disk@0c006000 {
++			compatible = "nintendo,flipper-di";
++			reg = <0x0c006000 0x40>;
++			interrupts = <2>;
++		};
++
++		audio@0c006c00 {
++			compatible = "nintendo,flipper-ai";
++			reg = <0x0c006c00 0x20>;
++			interrupts = <6>;
++		};
++
++		gamepad-controller@0c006400 {
++			compatible = "nintendo,flipper-si";
++			reg = <0x0c006400 0x100>;
++			interrupts = <3>;
++		};
++
++		/* External Interface bus */
++		exi@0c006800 {
++			compatible = "nintendo,flipper-exi";
++			reg = <0x0c006800 0x40>;
++			virtual-reg = <0x0c006800>;
++			interrupts = <4>;
++		};
++        };
++};
++
+-- 
+1.6.3.3
