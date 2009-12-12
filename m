@@ -1,14 +1,13 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp104.mail.ukl.yahoo.com (smtp104.mail.ukl.yahoo.com
-	[77.238.184.36]) by ozlabs.org (Postfix) with SMTP id 338B8B7082
+	[77.238.184.36]) by ozlabs.org (Postfix) with SMTP id BCFB3B70B3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 13 Dec 2009 03:32:04 +1100 (EST)
+	Sun, 13 Dec 2009 03:32:05 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 01/22] powerpc: gamecube/wii: usbgecko bootwrapper console
-	support
-Date: Sat, 12 Dec 2009 17:31:34 +0100
-Message-Id: <1260635515-7478-2-git-send-email-albert_herranz@yahoo.es>
+Subject: [PATCH v2 03/22] powerpc: gamecube: bootwrapper bits
+Date: Sat, 12 Dec 2009 17:31:36 +0100
+Message-Id: <1260635515-7478-4-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1260635515-7478-1-git-send-email-albert_herranz@yahoo.es>
 References: <1260635515-7478-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
@@ -21,45 +20,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for using the USB Gecko adapter as a bootwrapper console on
-the Nintendo GameCube and Wii video game consoles.
-The USB Gecko is a 3rd party memory card interface adapter that provides
-a EXI (External Interface) to USB serial converter.
+Add support for the Nintendo GameCube video game console to the powerpc
+bootwrapper.
+
+dtbImage.gamecube is a wrapped image that contains a flat device tree,
+an entry point compatible with SDload, and an optional initrd.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
 ---
- arch/powerpc/boot/Makefile |    2 +-
- arch/powerpc/boot/ugecon.c |  147 ++++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/ugecon.h |   24 +++++++
- 3 files changed, 172 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/ugecon.c
- create mode 100644 arch/powerpc/boot/ugecon.h
+ arch/powerpc/boot/Makefile        |    4 +-
+ arch/powerpc/boot/gamecube-head.S |  111 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/gamecube.c      |   35 ++++++++++++
+ arch/powerpc/boot/wrapper         |    4 +
+ 4 files changed, 153 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/gamecube-head.S
+ create mode 100644 arch/powerpc/boot/gamecube.c
 
 diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 7bfc8ad..44bce21 100644
+index 44bce21..3e70aab 100644
 --- a/arch/powerpc/boot/Makefile
 +++ b/arch/powerpc/boot/Makefile
-@@ -66,7 +66,7 @@ src-wlib := string.S crt0.S crtsavres.S stdio.c main.c \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
- 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
- 		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
--		fsl-soc.c mpc8xx.c pq2.c
-+		fsl-soc.c mpc8xx.c pq2.c ugecon.c
- src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c \
- 		cuboot-ebony.c cuboot-hotfoot.c treeboot-ebony.c prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
-diff --git a/arch/powerpc/boot/ugecon.c b/arch/powerpc/boot/ugecon.c
+@@ -76,7 +76,8 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
+ 		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
+ 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
+ 		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
+-		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c
++		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c \
++		gamecube-head.S gamecube.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
+ 
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+@@ -254,6 +255,7 @@ image-$(CONFIG_KSI8560)			+= cuImage.ksi8560
+ image-$(CONFIG_STORCENTER)		+= cuImage.storcenter
+ image-$(CONFIG_MPC7448HPC2)		+= cuImage.mpc7448hpc2
+ image-$(CONFIG_PPC_C2K)			+= cuImage.c2k
++image-$(CONFIG_GAMECUBE)		+= dtbImage.gamecube
+ 
+ # Board port in arch/powerpc/platform/amigaone/Kconfig
+ image-$(CONFIG_AMIGAONE)		+= cuImage.amigaone
+diff --git a/arch/powerpc/boot/gamecube-head.S b/arch/powerpc/boot/gamecube-head.S
 new file mode 100644
-index 0000000..50609ea
+index 0000000..65a9b2a
 --- /dev/null
-+++ b/arch/powerpc/boot/ugecon.c
-@@ -0,0 +1,147 @@
++++ b/arch/powerpc/boot/gamecube-head.S
+@@ -0,0 +1,111 @@
 +/*
-+ * arch/powerpc/boot/ugecon.c
++ * arch/powerpc/boot/gamecube-head.S
 + *
-+ * USB Gecko bootwrapper console.
-+ * Copyright (C) 2008-2009 The GameCube Linux Team
++ * Nintendo GameCube bootwrapper entry.
++ * Copyright (C) 2004-2009 The GameCube Linux Team
++ * Copyright (C) 2008,2009 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ */
++
++#include "ppc_asm.h"
++
++/*
++ * The entry code does no assumptions regarding:
++ * - if the data and instruction caches are enabled or not
++ * - if the MMU is enabled or not
++ *
++ * We enable the caches if not already enabled, enable the MMU with an
++ * identity mapping scheme and jump to the start code.
++ */
++
++	.text
++
++	.globl _zimage_start
++_zimage_start:
++
++	/* turn the MMU off */
++	mfmsr	9
++	rlwinm	9, 9, 0, ~((1<<4)|(1<<5)) /* MSR_DR|MSR_IR */
++	bcl	20, 31, 1f
++1:
++	mflr	8
++	clrlwi	8, 8, 3		/* convert to a real address */
++	addi	8, 8, _mmu_off - 1b
++	mtsrr0	8
++	mtsrr1	9
++	rfi
++_mmu_off:
++	/* MMU disabled */
++
++	/* setup BATs */
++	isync
++	li      8, 0
++	mtspr	0x210, 8	/* IBAT0U */
++	mtspr	0x212, 8	/* IBAT1U */
++	mtspr	0x214, 8	/* IBAT2U */
++	mtspr	0x216, 8	/* IBAT3U */
++	mtspr	0x218, 8	/* DBAT0U */
++	mtspr	0x21a, 8	/* DBAT1U */
++	mtspr	0x21c, 8	/* DBAT2U */
++	mtspr	0x21e, 8	/* DBAT3U */
++
++	li	8, 0x01ff	/* first 16MiB */
++	li	9, 0x0002	/* rw */
++	mtspr	0x211, 9	/* IBAT0L */
++	mtspr	0x210, 8	/* IBAT0U */
++	mtspr	0x219, 9	/* DBAT0L */
++	mtspr	0x218, 8	/* DBAT0U */
++
++	lis	8, 0x0c00	/* I/O mem */
++	ori	8, 8, 0x3ff	/* 32MiB */
++	lis	9, 0x0c00
++	ori	9, 9, 0x002a	/* uncached, guarded, rw */
++	mtspr	0x21b, 9	/* DBAT1L */
++	mtspr	0x21a, 8	/* DBAT1U */
++
++	lis	8, 0x0100	/* next 8MiB */
++	ori	8, 8, 0x00ff	/* 8MiB */
++	lis	9, 0x0100
++	ori	9, 9, 0x0002	/* rw */
++	mtspr	0x215, 9	/* IBAT2L */
++	mtspr	0x214, 8	/* IBAT2U */
++	mtspr	0x21d, 9	/* DBAT2L */
++	mtspr	0x21c, 8	/* DBAT2U */
++
++	/* enable and invalidate the caches if not already enabled */
++	mfspr	8, 0x3f0	/* HID0 */
++	andi.	0, 8, (1<<15)		/* HID0_ICE */
++	bne	1f
++	ori	8, 8, (1<<15)|(1<<11)	/* HID0_ICE|HID0_ICFI*/
++1:
++	andi.	0, 8, (1<<14)		/* HID0_DCE */
++	bne	1f
++	ori	8, 8, (1<<14)|(1<<10)	/* HID0_DCE|HID0_DCFI*/
++1:
++	mtspr	0x3f0, 8	/* HID0 */
++	isync
++
++	/* initialize arguments */
++	li	3, 0
++	li	4, 0
++	li	5, 0
++
++	/* turn the MMU on */
++	bcl	20, 31, 1f
++1:
++	mflr	8
++	addi	8, 8, _mmu_on - 1b
++	mfmsr	9
++	ori	9, 9, (1<<4)|(1<<5) /* MSR_DR|MSR_IR */
++	mtsrr0	8
++	mtsrr1	9
++	sync
++	rfi
++_mmu_on:
++	b _zimage_start_lib
++
+diff --git a/arch/powerpc/boot/gamecube.c b/arch/powerpc/boot/gamecube.c
+new file mode 100644
+index 0000000..28ae705
+--- /dev/null
++++ b/arch/powerpc/boot/gamecube.c
+@@ -0,0 +1,35 @@
++/*
++ * arch/powerpc/boot/gamecube.c
++ *
++ * Nintendo GameCube bootwrapper support
++ * Copyright (C) 2004-2009 The GameCube Linux Team
 + * Copyright (C) 2008,2009 Albert Herranz
 + *
 + * This program is free software; you can redistribute it and/or
@@ -75,162 +202,35 @@ index 0000000..50609ea
 +#include "io.h"
 +#include "ops.h"
 +
++#include "ugecon.h"
 +
-+#define EXI_CLK_32MHZ           5
++BSS_STACK(8192);
 +
-+#define EXI_CSR                 0x00
-+#define   EXI_CSR_CLKMASK       (0x7<<4)
-+#define     EXI_CSR_CLK_32MHZ   (EXI_CLK_32MHZ<<4)
-+#define   EXI_CSR_CSMASK        (0x7<<7)
-+#define     EXI_CSR_CS_0        (0x1<<7)  /* Chip Select 001 */
-+
-+#define EXI_CR                  0x0c
-+#define   EXI_CR_TSTART         (1<<0)
-+#define   EXI_CR_WRITE		(1<<2)
-+#define   EXI_CR_READ_WRITE     (2<<2)
-+#define   EXI_CR_TLEN(len)      (((len)-1)<<4)
-+
-+#define EXI_DATA                0x10
-+
-+
-+/* virtual address base for input/output, retrieved from device tree */
-+static void *ug_io_base;
-+
-+
-+static u32 ug_io_transaction(u32 in)
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
 +{
-+	u32 *csr_reg = ug_io_base + EXI_CSR;
-+	u32 *data_reg = ug_io_base + EXI_DATA;
-+	u32 *cr_reg = ug_io_base + EXI_CR;
-+	u32 csr, data, cr;
++	u32 heapsize = 16*1024*1024 - (u32)_end;
 +
-+	/* select */
-+	csr = EXI_CSR_CLK_32MHZ | EXI_CSR_CS_0;
-+	out_be32(csr_reg, csr);
++	simple_alloc_init(_end, heapsize, 32, 64);
++	fdt_init(_dtb_start);
 +
-+	/* read/write */
-+	data = in;
-+	out_be32(data_reg, data);
-+	cr = EXI_CR_TLEN(2) | EXI_CR_READ_WRITE | EXI_CR_TSTART;
-+	out_be32(cr_reg, cr);
-+
-+	while (in_be32(cr_reg) & EXI_CR_TSTART)
-+		barrier();
-+
-+	/* deselect */
-+	out_be32(csr_reg, 0);
-+
-+	data = in_be32(data_reg);
-+	return data;
++	if (ug_probe())
++		console_ops.write = ug_console_write;
 +}
 +
-+static int ug_is_txfifo_ready(void)
-+{
-+	return ug_io_transaction(0xc0000000) & 0x04000000;
-+}
-+
-+static void ug_raw_putc(char ch)
-+{
-+	ug_io_transaction(0xb0000000 | (ch << 20));
-+}
-+
-+static void ug_putc(char ch)
-+{
-+	int count = 16;
-+
-+	if (!ug_io_base)
-+		return;
-+
-+	while (!ug_is_txfifo_ready() && count--)
-+		barrier();
-+	if (count)
-+		ug_raw_putc(ch);
-+}
-+
-+void ug_console_write(const char *buf, int len)
-+{
-+	char *b = (char *)buf;
-+
-+	while (len--) {
-+		if (*b == '\n')
-+			ug_putc('\r');
-+		ug_putc(*b++);
-+	}
-+}
-+
-+static int ug_is_adapter_present(void)
-+{
-+	if (!ug_io_base)
-+		return 0;
-+	return ug_io_transaction(0x90000000) == 0x04700000;
-+}
-+
-+static void *ug_grab_exi_io_base(void)
-+{
-+	u32 v;
-+	void *devp;
-+
-+	devp = find_node_by_compatible(NULL, "nintendo,flipper-exi");
-+	if (devp == NULL)
-+		goto err_out;
-+	if (getprop(devp, "virtual-reg", &v, sizeof(v)) != sizeof(v))
-+		goto err_out;
-+
-+	return (void *)v;
-+
-+err_out:
-+	return NULL;
-+}
-+
-+void *ug_probe(void)
-+{
-+	void *exi_io_base;
-+	int i;
-+
-+	exi_io_base = ug_grab_exi_io_base();
-+	if (!exi_io_base)
-+		return NULL;
-+
-+	/* look for a usbgecko on memcard slots A and B */
-+	for (i = 0; i < 2; i++) {
-+		ug_io_base = exi_io_base + 0x14 * i;
-+		if (ug_is_adapter_present())
-+			break;
-+	}
-+	if (i == 2)
-+		ug_io_base = NULL;
-+	return ug_io_base;
-+}
-+
-diff --git a/arch/powerpc/boot/ugecon.h b/arch/powerpc/boot/ugecon.h
-new file mode 100644
-index 0000000..4373753
---- /dev/null
-+++ b/arch/powerpc/boot/ugecon.h
-@@ -0,0 +1,24 @@
-+/*
-+ * arch/powerpc/boot/ugecon.h
-+ *
-+ * USB Gecko early bootwrapper console.
-+ * Copyright (C) 2008-2009 The GameCube Linux Team
-+ * Copyright (C) 2008,2009 Albert Herranz
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ *
-+ */
-+
-+#ifndef __UGECON_H
-+#define __UGECON_H
-+
-+extern void *ug_probe(void);
-+
-+extern void ug_putc(char ch);
-+extern void ug_console_write(const char *buf, int len);
-+
-+#endif /* __UGECON_H */
-+
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index ac9e9a5..5b9206f 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -230,6 +230,10 @@ xpedite52*)
+     link_address='0x1400000'
+     platformo=$object/cuboot-85xx.o
+     ;;
++gamecube)
++    link_address='0x600000'
++    platformo="$object/$platform-head.o $object/$platform.o"
++    ;;
+ esac
+ 
+ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
 -- 
 1.6.3.3
