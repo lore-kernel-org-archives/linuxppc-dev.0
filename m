@@ -1,13 +1,13 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp104.mail.ukl.yahoo.com (smtp104.mail.ukl.yahoo.com
-	[77.238.184.36]) by ozlabs.org (Postfix) with SMTP id 4815DB7082
+	[77.238.184.36]) by ozlabs.org (Postfix) with SMTP id 48CA5B7B6B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 13 Dec 2009 03:32:11 +1100 (EST)
+	Sun, 13 Dec 2009 03:32:12 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 10/22] powerpc: gamecube: default config
-Date: Sat, 12 Dec 2009 17:31:43 +0100
-Message-Id: <1260635515-7478-11-git-send-email-albert_herranz@yahoo.es>
+Subject: [PATCH v2 11/22] powerpc: wii: device tree
+Date: Sat, 12 Dec 2009 17:31:44 +0100
+Message-Id: <1260635515-7478-12-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1260635515-7478-1-git-send-email-albert_herranz@yahoo.es>
 References: <1260635515-7478-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
@@ -20,1080 +20,431 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a default configuration for the Nintendo GameCube video game console.
+Add a device tree source file for the Nintendo Wii video game console.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/configs/gamecube_defconfig | 1061 +++++++++++++++++++++++++++++++
- 1 files changed, 1061 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/configs/gamecube_defconfig
+ .../powerpc/dts-bindings/nintendo/wii.txt          |  184 +++++++++++++++++
+ arch/powerpc/boot/dts/wii.dts                      |  218 ++++++++++++++++++++
+ 2 files changed, 402 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/nintendo/wii.txt
+ create mode 100644 arch/powerpc/boot/dts/wii.dts
 
-diff --git a/arch/powerpc/configs/gamecube_defconfig b/arch/powerpc/configs/gamecube_defconfig
+diff --git a/Documentation/powerpc/dts-bindings/nintendo/wii.txt b/Documentation/powerpc/dts-bindings/nintendo/wii.txt
 new file mode 100644
-index 0000000..942e119
+index 0000000..a7e155a
 --- /dev/null
-+++ b/arch/powerpc/configs/gamecube_defconfig
-@@ -0,0 +1,1061 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.32-rc8
-+# Sun Nov 22 21:07:30 2009
-+#
-+# CONFIG_PPC64 is not set
++++ b/Documentation/powerpc/dts-bindings/nintendo/wii.txt
+@@ -0,0 +1,184 @@
 +
-+#
-+# Processor support
-+#
-+CONFIG_PPC_BOOK3S_32=y
-+# CONFIG_PPC_85xx is not set
-+# CONFIG_PPC_8xx is not set
-+# CONFIG_40x is not set
-+# CONFIG_44x is not set
-+# CONFIG_E200 is not set
-+CONFIG_PPC_BOOK3S=y
-+CONFIG_6xx=y
-+CONFIG_PPC_FPU=y
-+# CONFIG_ALTIVEC is not set
-+CONFIG_PPC_STD_MMU=y
-+CONFIG_PPC_STD_MMU_32=y
-+# CONFIG_PPC_MM_SLICES is not set
-+CONFIG_PPC_HAVE_PMU_SUPPORT=y
-+CONFIG_PPC_PERF_CTRS=y
-+# CONFIG_SMP is not set
-+CONFIG_NOT_COHERENT_CACHE=y
-+CONFIG_PPC32=y
-+CONFIG_WORD_SIZE=32
-+# CONFIG_ARCH_PHYS_ADDR_T_64BIT is not set
-+CONFIG_MMU=y
-+CONFIG_GENERIC_CMOS_UPDATE=y
-+CONFIG_GENERIC_TIME=y
-+CONFIG_GENERIC_TIME_VSYSCALL=y
-+CONFIG_GENERIC_CLOCKEVENTS=y
-+CONFIG_GENERIC_HARDIRQS=y
-+CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
-+# CONFIG_HAVE_SETUP_PER_CPU_AREA is not set
-+# CONFIG_NEED_PER_CPU_EMBED_FIRST_CHUNK is not set
-+CONFIG_IRQ_PER_CPU=y
-+CONFIG_STACKTRACE_SUPPORT=y
-+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
-+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-+CONFIG_LOCKDEP_SUPPORT=y
-+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-+CONFIG_ARCH_HAS_ILOG2_U32=y
-+CONFIG_GENERIC_HWEIGHT=y
-+CONFIG_GENERIC_FIND_NEXT_BIT=y
-+# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
-+CONFIG_PPC=y
-+CONFIG_EARLY_PRINTK=y
-+CONFIG_GENERIC_NVRAM=y
-+CONFIG_SCHED_OMIT_FRAME_POINTER=y
-+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-+CONFIG_PPC_OF=y
-+CONFIG_OF=y
-+# CONFIG_PPC_UDBG_16550 is not set
-+# CONFIG_GENERIC_TBSYNC is not set
-+CONFIG_AUDIT_ARCH=y
-+CONFIG_GENERIC_BUG=y
-+CONFIG_DTC=y
-+# CONFIG_DEFAULT_UIMAGE is not set
-+# CONFIG_PPC_DCR_NATIVE is not set
-+# CONFIG_PPC_DCR_MMIO is not set
-+CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
-+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-+CONFIG_CONSTRUCTORS=y
++Nintendo Wii device tree
++========================
 +
-+#
-+# General setup
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_LOCK_KERNEL=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+CONFIG_LOCALVERSION="-gcn"
-+CONFIG_LOCALVERSION_AUTO=y
-+CONFIG_SWAP=y
-+CONFIG_SYSVIPC=y
-+CONFIG_SYSVIPC_SYSCTL=y
-+# CONFIG_POSIX_MQUEUE is not set
-+# CONFIG_BSD_PROCESS_ACCT is not set
-+# CONFIG_TASKSTATS is not set
-+# CONFIG_AUDIT is not set
++0) The root node
 +
-+#
-+# RCU Subsystem
-+#
-+CONFIG_TREE_RCU=y
-+# CONFIG_TREE_PREEMPT_RCU is not set
-+# CONFIG_RCU_TRACE is not set
-+CONFIG_RCU_FANOUT=32
-+# CONFIG_RCU_FANOUT_EXACT is not set
-+# CONFIG_TREE_RCU_TRACE is not set
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_LOG_BUF_SHIFT=14
-+CONFIG_GROUP_SCHED=y
-+CONFIG_FAIR_GROUP_SCHED=y
-+# CONFIG_RT_GROUP_SCHED is not set
-+CONFIG_USER_SCHED=y
-+# CONFIG_CGROUP_SCHED is not set
-+# CONFIG_CGROUPS is not set
-+CONFIG_SYSFS_DEPRECATED=y
-+CONFIG_SYSFS_DEPRECATED_V2=y
-+# CONFIG_RELAY is not set
-+# CONFIG_NAMESPACES is not set
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_INITRAMFS_SOURCE=""
-+CONFIG_RD_GZIP=y
-+# CONFIG_RD_BZIP2 is not set
-+# CONFIG_RD_LZMA is not set
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_SYSCTL=y
-+CONFIG_ANON_INODES=y
-+CONFIG_EMBEDDED=y
-+CONFIG_SYSCTL_SYSCALL=y
-+CONFIG_KALLSYMS=y
-+CONFIG_KALLSYMS_ALL=y
-+# CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_HOTPLUG=y
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+# CONFIG_ELF_CORE is not set
-+CONFIG_BASE_FULL=y
-+CONFIG_FUTEX=y
-+CONFIG_EPOLL=y
-+CONFIG_SIGNALFD=y
-+CONFIG_TIMERFD=y
-+CONFIG_EVENTFD=y
-+CONFIG_SHMEM=y
-+CONFIG_AIO=y
-+CONFIG_HAVE_PERF_EVENTS=y
++  This node represents the Nintendo Wii video game console.
 +
-+#
-+# Kernel Performance Events And Counters
-+#
-+CONFIG_PERF_EVENTS=y
-+CONFIG_EVENT_PROFILE=y
-+CONFIG_PERF_COUNTERS=y
-+# CONFIG_DEBUG_PERF_USE_VMALLOC is not set
-+# CONFIG_VM_EVENT_COUNTERS is not set
-+CONFIG_COMPAT_BRK=y
-+CONFIG_SLAB=y
-+# CONFIG_SLUB is not set
-+# CONFIG_SLOB is not set
-+# CONFIG_PROFILING is not set
-+CONFIG_TRACEPOINTS=y
-+CONFIG_HAVE_OPROFILE=y
-+# CONFIG_KPROBES is not set
-+CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
-+CONFIG_HAVE_IOREMAP_PROT=y
-+CONFIG_HAVE_KPROBES=y
-+CONFIG_HAVE_KRETPROBES=y
-+CONFIG_HAVE_ARCH_TRACEHOOK=y
-+CONFIG_HAVE_DMA_ATTRS=y
-+CONFIG_HAVE_DMA_API_DEBUG=y
++  Required properties:
 +
-+#
-+# GCOV-based kernel profiling
-+#
-+# CONFIG_GCOV_KERNEL is not set
-+CONFIG_SLOW_WORK=y
-+# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
-+CONFIG_SLABINFO=y
-+CONFIG_RT_MUTEXES=y
-+CONFIG_BASE_SMALL=0
-+CONFIG_MODULES=y
-+# CONFIG_MODULE_FORCE_LOAD is not set
-+CONFIG_MODULE_UNLOAD=y
-+# CONFIG_MODULE_FORCE_UNLOAD is not set
-+# CONFIG_MODVERSIONS is not set
-+# CONFIG_MODULE_SRCVERSION_ALL is not set
-+CONFIG_BLOCK=y
-+CONFIG_LBDAF=y
-+# CONFIG_BLK_DEV_BSG is not set
-+# CONFIG_BLK_DEV_INTEGRITY is not set
++   - model : Should be "nintendo,wii"
++   - compatible : Should be "nintendo,wii"
 +
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+CONFIG_DEFAULT_AS=y
-+# CONFIG_DEFAULT_DEADLINE is not set
-+# CONFIG_DEFAULT_CFQ is not set
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="anticipatory"
-+# CONFIG_FREEZER is not set
++1) The "hollywood" node
 +
-+#
-+# Platform support
-+#
-+# CONFIG_PPC_CHRP is not set
-+# CONFIG_MPC5121_ADS is not set
-+# CONFIG_MPC5121_GENERIC is not set
-+# CONFIG_PPC_MPC52xx is not set
-+# CONFIG_PPC_PMAC is not set
-+# CONFIG_PPC_CELL is not set
-+# CONFIG_PPC_CELL_NATIVE is not set
-+# CONFIG_PPC_82xx is not set
-+# CONFIG_PQ2ADS is not set
-+# CONFIG_PPC_83xx is not set
-+# CONFIG_PPC_86xx is not set
-+CONFIG_EMBEDDED6xx=y
-+# CONFIG_LINKSTATION is not set
-+# CONFIG_STORCENTER is not set
-+# CONFIG_MPC7448HPC2 is not set
-+# CONFIG_PPC_HOLLY is not set
-+# CONFIG_PPC_PRPMC2800 is not set
-+# CONFIG_PPC_C2K is not set
-+CONFIG_GAMECUBE_COMMON=y
-+CONFIG_USBGECKO_UDBG=y
-+CONFIG_FLIPPER_PIC=y
-+CONFIG_GAMECUBE=y
-+# CONFIG_WII is not set
-+# CONFIG_AMIGAONE is not set
-+# CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
-+# CONFIG_IPIC is not set
-+# CONFIG_MPIC is not set
-+# CONFIG_MPIC_WEIRD is not set
-+# CONFIG_PPC_I8259 is not set
-+# CONFIG_PPC_RTAS is not set
-+# CONFIG_MMIO_NVRAM is not set
-+# CONFIG_PPC_MPC106 is not set
-+# CONFIG_PPC_970_NAP is not set
-+# CONFIG_PPC_INDIRECT_IO is not set
-+# CONFIG_GENERIC_IOMAP is not set
-+# CONFIG_CPU_FREQ is not set
-+# CONFIG_TAU is not set
-+# CONFIG_FSL_ULI1575 is not set
-+# CONFIG_SIMPLE_GPIO is not set
++  This node represents the multi-function "Hollywood" chip, which packages
++  many of the devices found in the Nintendo Wii.
 +
-+#
-+# Kernel options
-+#
-+# CONFIG_HIGHMEM is not set
-+# CONFIG_NO_HZ is not set
-+# CONFIG_HIGH_RES_TIMERS is not set
-+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-+# CONFIG_HZ_100 is not set
-+CONFIG_HZ_250=y
-+# CONFIG_HZ_300 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=250
-+# CONFIG_SCHED_HRTICK is not set
-+# CONFIG_PREEMPT_NONE is not set
-+# CONFIG_PREEMPT_VOLUNTARY is not set
-+CONFIG_PREEMPT=y
-+CONFIG_BINFMT_ELF=y
-+# CONFIG_HAVE_AOUT is not set
-+CONFIG_BINFMT_MISC=m
-+# CONFIG_IOMMU_HELPER is not set
-+# CONFIG_SWIOTLB is not set
-+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+CONFIG_ARCH_HAS_WALK_MEMORY=y
-+CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
-+CONFIG_KEXEC=y
-+# CONFIG_CRASH_DUMP is not set
-+CONFIG_MAX_ACTIVE_REGIONS=32
-+CONFIG_ARCH_FLATMEM_ENABLE=y
-+CONFIG_ARCH_POPULATES_NODE_MAP=y
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+CONFIG_PAGEFLAGS_EXTENDED=y
-+CONFIG_SPLIT_PTLOCK_CPUS=4
-+# CONFIG_MIGRATION is not set
-+# CONFIG_PHYS_ADDR_T_64BIT is not set
-+CONFIG_ZONE_DMA_FLAG=1
-+CONFIG_BOUNCE=y
-+CONFIG_VIRT_TO_BUS=y
-+CONFIG_HAVE_MLOCK=y
-+CONFIG_HAVE_MLOCKED_PAGE_BIT=y
-+# CONFIG_KSM is not set
-+CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
-+CONFIG_PPC_4K_PAGES=y
-+# CONFIG_PPC_16K_PAGES is not set
-+# CONFIG_PPC_64K_PAGES is not set
-+# CONFIG_PPC_256K_PAGES is not set
-+CONFIG_FORCE_MAX_ZONEORDER=11
-+CONFIG_PROC_DEVICETREE=y
-+# CONFIG_CMDLINE_BOOL is not set
-+CONFIG_EXTRA_TARGETS=""
-+# CONFIG_PM is not set
-+# CONFIG_SECCOMP is not set
-+CONFIG_ISA_DMA_API=y
++  Required properties:
 +
-+#
-+# Bus options
-+#
-+CONFIG_ZONE_DMA=y
-+CONFIG_GENERIC_ISA_DMA=y
-+# CONFIG_PCI is not set
-+# CONFIG_PCI_DOMAINS is not set
-+# CONFIG_PCI_SYSCALL is not set
-+# CONFIG_ARCH_SUPPORTS_MSI is not set
-+# CONFIG_PCCARD is not set
-+# CONFIG_HAS_RAPIDIO is not set
++   - compatible : Should be "nintendo,hollywood"
 +
-+#
-+# Advanced setup
-+#
-+CONFIG_ADVANCED_OPTIONS=y
-+# CONFIG_LOWMEM_SIZE_BOOL is not set
-+CONFIG_LOWMEM_SIZE=0x30000000
-+# CONFIG_PAGE_OFFSET_BOOL is not set
-+CONFIG_PAGE_OFFSET=0xc0000000
-+# CONFIG_KERNEL_START_BOOL is not set
-+CONFIG_KERNEL_START=0xc0000000
-+CONFIG_PHYSICAL_START=0x00000000
-+# CONFIG_TASK_SIZE_BOOL is not set
-+CONFIG_TASK_SIZE=0xc0000000
-+# CONFIG_CONSISTENT_SIZE_BOOL is not set
-+CONFIG_CONSISTENT_SIZE=0x00200000
-+CONFIG_NET=y
++1.a) The Video Interface (VI) node
 +
-+#
-+# Networking options
-+#
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+# CONFIG_IP_MULTICAST is not set
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+# CONFIG_IP_PNP_BOOTP is not set
-+CONFIG_IP_PNP_RARP=y
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_ARPD is not set
-+# CONFIG_SYN_COOKIES is not set
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_XFRM_TUNNEL is not set
-+# CONFIG_INET_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_BEET is not set
-+# CONFIG_INET_LRO is not set
-+# CONFIG_INET_DIAG is not set
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_TCP_MD5SIG is not set
-+# CONFIG_IPV6 is not set
-+# CONFIG_NETWORK_SECMARK is not set
-+# CONFIG_NETFILTER is not set
-+# CONFIG_IP_DCCP is not set
-+# CONFIG_IP_SCTP is not set
-+# CONFIG_RDS is not set
-+# CONFIG_TIPC is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_NET_DSA is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
-+# CONFIG_PHONET is not set
-+# CONFIG_IEEE802154 is not set
-+# CONFIG_NET_SCHED is not set
-+# CONFIG_DCB is not set
++  Represents the interface between the graphics processor and a external
++  video encoder.
 +
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_NET_DROP_MONITOR is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_CAN is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_AF_RXRPC is not set
-+# CONFIG_WIRELESS is not set
-+# CONFIG_WIMAX is not set
-+# CONFIG_RFKILL is not set
-+# CONFIG_NET_9P is not set
++  Required properties:
 +
-+#
-+# Device Drivers
-+#
++   - compatible : should be "nintendo,hollywood-vi","nintendo,flipper-vi"
++   - reg : should contain the VI registers location and length
++   - interrupts : should contain the VI interrupt
 +
-+#
-+# Generic Driver Options
-+#
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+# CONFIG_DEVTMPFS is not set
-+# CONFIG_STANDALONE is not set
-+CONFIG_PREVENT_FIRMWARE_BUILD=y
-+# CONFIG_FW_LOADER is not set
-+# CONFIG_DEBUG_DRIVER is not set
-+# CONFIG_DEBUG_DEVRES is not set
-+# CONFIG_SYS_HYPERVISOR is not set
-+# CONFIG_CONNECTOR is not set
-+# CONFIG_MTD is not set
-+CONFIG_OF_DEVICE=y
-+# CONFIG_PARPORT is not set
-+CONFIG_BLK_DEV=y
-+# CONFIG_BLK_DEV_FD is not set
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+CONFIG_BLK_DEV_LOOP=y
-+# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-+CONFIG_BLK_DEV_NBD=m
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=2
-+CONFIG_BLK_DEV_RAM_SIZE=4096
-+# CONFIG_BLK_DEV_XIP is not set
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+# CONFIG_BLK_DEV_HD is not set
-+CONFIG_MISC_DEVICES=y
-+# CONFIG_ENCLOSURE_SERVICES is not set
-+# CONFIG_C2PORT is not set
++1.b) The Processor Interface (PI) node
 +
-+#
-+# EEPROM support
-+#
-+# CONFIG_EEPROM_93CX6 is not set
-+CONFIG_HAVE_IDE=y
-+# CONFIG_IDE is not set
++  Represents the data and control interface between the main processor
++  and graphics and audio processor.
 +
-+#
-+# SCSI device support
-+#
-+# CONFIG_RAID_ATTRS is not set
-+# CONFIG_SCSI is not set
-+# CONFIG_SCSI_DMA is not set
-+# CONFIG_SCSI_NETLINK is not set
-+# CONFIG_ATA is not set
-+# CONFIG_MD is not set
-+# CONFIG_MACINTOSH_DRIVERS is not set
-+CONFIG_NETDEVICES=y
-+# CONFIG_DUMMY is not set
-+# CONFIG_BONDING is not set
-+# CONFIG_MACVLAN is not set
-+# CONFIG_EQUALIZER is not set
-+# CONFIG_TUN is not set
-+# CONFIG_VETH is not set
-+# CONFIG_PHYLIB is not set
-+CONFIG_NET_ETHERNET=y
-+# CONFIG_MII is not set
-+# CONFIG_ETHOC is not set
-+# CONFIG_DNET is not set
-+# CONFIG_IBM_NEW_EMAC_ZMII is not set
-+# CONFIG_IBM_NEW_EMAC_RGMII is not set
-+# CONFIG_IBM_NEW_EMAC_TAH is not set
-+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
-+# CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL is not set
-+# CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT is not set
-+# CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR is not set
-+# CONFIG_B44 is not set
-+# CONFIG_KS8842 is not set
-+# CONFIG_KS8851_MLL is not set
-+# CONFIG_XILINX_EMACLITE is not set
-+# CONFIG_NETDEV_1000 is not set
-+# CONFIG_NETDEV_10000 is not set
-+# CONFIG_WLAN is not set
++  Required properties:
 +
-+#
-+# Enable WiMAX (Networking options) to see the WiMAX drivers
-+#
-+# CONFIG_WAN is not set
-+# CONFIG_PPP is not set
-+# CONFIG_SLIP is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+# CONFIG_ISDN is not set
-+# CONFIG_PHONE is not set
++  - compatible : should be "nintendo,hollywood-pi","nintendo,flipper-pi"
++  - reg : should contain the PI registers location and length
 +
-+#
-+# Input device support
-+#
-+CONFIG_INPUT=y
-+CONFIG_INPUT_FF_MEMLESS=m
-+# CONFIG_INPUT_POLLDEV is not set
++1.b.i) The "Flipper" interrupt controller node
 +
-+#
-+# Userland interfaces
-+#
-+# CONFIG_INPUT_MOUSEDEV is not set
-+CONFIG_INPUT_JOYDEV=y
-+CONFIG_INPUT_EVDEV=y
-+# CONFIG_INPUT_EVBUG is not set
++  Represents the "Flipper" interrupt controller within the "Hollywood" chip.
++  The node for the "Flipper" interrupt controller must be placed under
++  the PI node.
 +
-+#
-+# Input Device Drivers
-+#
-+CONFIG_INPUT_KEYBOARD=y
-+# CONFIG_KEYBOARD_ATKBD is not set
-+# CONFIG_KEYBOARD_LKKBD is not set
-+# CONFIG_KEYBOARD_NEWTON is not set
-+# CONFIG_KEYBOARD_OPENCORES is not set
-+# CONFIG_KEYBOARD_STOWAWAY is not set
-+# CONFIG_KEYBOARD_SUNKBD is not set
-+# CONFIG_KEYBOARD_XTKBD is not set
-+# CONFIG_INPUT_MOUSE is not set
-+CONFIG_INPUT_JOYSTICK=y
-+# CONFIG_JOYSTICK_ANALOG is not set
-+# CONFIG_JOYSTICK_A3D is not set
-+# CONFIG_JOYSTICK_ADI is not set
-+# CONFIG_JOYSTICK_COBRA is not set
-+# CONFIG_JOYSTICK_GF2K is not set
-+# CONFIG_JOYSTICK_GRIP is not set
-+# CONFIG_JOYSTICK_GRIP_MP is not set
-+# CONFIG_JOYSTICK_GUILLEMOT is not set
-+# CONFIG_JOYSTICK_INTERACT is not set
-+# CONFIG_JOYSTICK_SIDEWINDER is not set
-+# CONFIG_JOYSTICK_TMDC is not set
-+# CONFIG_JOYSTICK_IFORCE is not set
-+# CONFIG_JOYSTICK_WARRIOR is not set
-+# CONFIG_JOYSTICK_MAGELLAN is not set
-+# CONFIG_JOYSTICK_SPACEORB is not set
-+# CONFIG_JOYSTICK_SPACEBALL is not set
-+# CONFIG_JOYSTICK_STINGER is not set
-+# CONFIG_JOYSTICK_TWIDJOY is not set
-+# CONFIG_JOYSTICK_ZHENHUA is not set
-+# CONFIG_JOYSTICK_JOYDUMP is not set
-+# CONFIG_INPUT_TABLET is not set
-+# CONFIG_INPUT_TOUCHSCREEN is not set
-+# CONFIG_INPUT_MISC is not set
++  Required properties:
 +
-+#
-+# Hardware I/O ports
-+#
-+CONFIG_SERIO=y
-+# CONFIG_SERIO_I8042 is not set
-+# CONFIG_SERIO_SERPORT is not set
-+# CONFIG_SERIO_LIBPS2 is not set
-+# CONFIG_SERIO_RAW is not set
-+# CONFIG_SERIO_XILINX_XPS_PS2 is not set
-+# CONFIG_GAMEPORT is not set
++  - #interrupt-cells : <1>
++  - compatible : should be "nintendo,flipper-pic"
++  - interrupt-controller
 +
-+#
-+# Character devices
-+#
-+CONFIG_VT=y
-+CONFIG_CONSOLE_TRANSLATIONS=y
-+CONFIG_VT_CONSOLE=y
-+CONFIG_HW_CONSOLE=y
-+# CONFIG_VT_HW_CONSOLE_BINDING is not set
-+# CONFIG_DEVKMEM is not set
-+# CONFIG_SERIAL_NONSTANDARD is not set
++1.c) The Digital Signal Procesor (DSP) node
 +
-+#
-+# Serial drivers
-+#
-+# CONFIG_SERIAL_8250 is not set
++  Represents the digital signal processor interface, designed to offload
++  audio related tasks.
 +
-+#
-+# Non-8250 serial port support
-+#
-+# CONFIG_SERIAL_UARTLITE is not set
-+CONFIG_UNIX98_PTYS=y
-+# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=64
-+# CONFIG_HVC_UDBG is not set
-+# CONFIG_IPMI_HANDLER is not set
-+# CONFIG_HW_RANDOM is not set
-+# CONFIG_NVRAM is not set
-+# CONFIG_R3964 is not set
-+# CONFIG_RAW_DRIVER is not set
-+# CONFIG_TCG_TPM is not set
-+# CONFIG_I2C is not set
-+# CONFIG_SPI is not set
++  Required properties:
 +
-+#
-+# PPS support
-+#
-+# CONFIG_PPS is not set
-+CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
-+# CONFIG_GPIOLIB is not set
-+# CONFIG_W1 is not set
-+# CONFIG_POWER_SUPPLY is not set
-+# CONFIG_HWMON is not set
-+# CONFIG_THERMAL is not set
-+# CONFIG_WATCHDOG is not set
-+CONFIG_SSB_POSSIBLE=y
++   - compatible : should be "nintendo,hollywood-dsp","nintendo,flipper-dsp"
++   - reg : should contain the DSP registers location and length
++   - interrupts : should contain the DSP interrupt
 +
-+#
-+# Sonics Silicon Backplane
-+#
-+# CONFIG_SSB is not set
++1.d) The Serial Interface (SI) node
 +
-+#
-+# Multifunction device drivers
-+#
-+# CONFIG_MFD_CORE is not set
-+# CONFIG_MFD_SM501 is not set
-+# CONFIG_HTC_PASIC3 is not set
-+# CONFIG_MFD_TMIO is not set
-+# CONFIG_REGULATOR is not set
-+# CONFIG_MEDIA_SUPPORT is not set
++  Represents the interface to the four single bit serial interfaces.
++  The SI is a proprietary serial interface used normally to control gamepads.
++  It's NOT a RS232-type interface.
 +
-+#
-+# Graphics support
-+#
-+# CONFIG_VGASTATE is not set
-+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
-+CONFIG_FB=y
-+# CONFIG_FIRMWARE_EDID is not set
-+# CONFIG_FB_DDC is not set
-+# CONFIG_FB_BOOT_VESA_SUPPORT is not set
-+# CONFIG_FB_CFB_FILLRECT is not set
-+# CONFIG_FB_CFB_COPYAREA is not set
-+# CONFIG_FB_CFB_IMAGEBLIT is not set
-+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
-+# CONFIG_FB_SYS_FILLRECT is not set
-+# CONFIG_FB_SYS_COPYAREA is not set
-+# CONFIG_FB_SYS_IMAGEBLIT is not set
-+# CONFIG_FB_FOREIGN_ENDIAN is not set
-+# CONFIG_FB_SYS_FOPS is not set
-+# CONFIG_FB_SVGALIB is not set
-+# CONFIG_FB_MACMODES is not set
-+# CONFIG_FB_BACKLIGHT is not set
-+# CONFIG_FB_MODE_HELPERS is not set
-+# CONFIG_FB_TILEBLITTING is not set
++  Required properties:
 +
-+#
-+# Frame buffer hardware drivers
-+#
-+# CONFIG_FB_OF is not set
-+# CONFIG_FB_VGA16 is not set
-+# CONFIG_FB_S1D13XXX is not set
-+# CONFIG_FB_IBM_GXT4500 is not set
-+# CONFIG_FB_VIRTUAL is not set
-+# CONFIG_FB_METRONOME is not set
-+# CONFIG_FB_MB862XX is not set
-+# CONFIG_FB_BROADSHEET is not set
-+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++   - compatible : should be "nintendo,hollywood-si","nintendo,flipper-si"
++   - reg : should contain the SI registers location and length
++   - interrupts : should contain the SI interrupt
 +
-+#
-+# Display device support
-+#
-+# CONFIG_DISPLAY_SUPPORT is not set
++1.e) The Audio Interface (AI) node
 +
-+#
-+# Console display driver support
-+#
-+# CONFIG_VGA_CONSOLE is not set
-+CONFIG_DUMMY_CONSOLE=y
-+CONFIG_FRAMEBUFFER_CONSOLE=y
-+# CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY is not set
-+# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
-+# CONFIG_FONTS is not set
-+CONFIG_FONT_8x8=y
-+CONFIG_FONT_8x16=y
-+CONFIG_LOGO=y
-+# CONFIG_LOGO_LINUX_MONO is not set
-+# CONFIG_LOGO_LINUX_VGA16 is not set
-+# CONFIG_LOGO_LINUX_CLUT224 is not set
-+CONFIG_SOUND=y
-+CONFIG_SOUND_OSS_CORE=y
-+CONFIG_SOUND_OSS_CORE_PRECLAIM=y
-+CONFIG_SND=y
-+CONFIG_SND_TIMER=y
-+CONFIG_SND_PCM=y
-+CONFIG_SND_SEQUENCER=y
-+# CONFIG_SND_SEQ_DUMMY is not set
-+CONFIG_SND_OSSEMUL=y
-+CONFIG_SND_MIXER_OSS=y
-+CONFIG_SND_PCM_OSS=y
-+CONFIG_SND_PCM_OSS_PLUGINS=y
-+CONFIG_SND_SEQUENCER_OSS=y
-+# CONFIG_SND_DYNAMIC_MINORS is not set
-+CONFIG_SND_SUPPORT_OLD_API=y
-+# CONFIG_SND_VERBOSE_PROCFS is not set
-+# CONFIG_SND_VERBOSE_PRINTK is not set
-+# CONFIG_SND_DEBUG is not set
-+# CONFIG_SND_RAWMIDI_SEQ is not set
-+# CONFIG_SND_OPL3_LIB_SEQ is not set
-+# CONFIG_SND_OPL4_LIB_SEQ is not set
-+# CONFIG_SND_SBAWE_SEQ is not set
-+# CONFIG_SND_EMU10K1_SEQ is not set
-+CONFIG_SND_DRIVERS=y
-+# CONFIG_SND_DUMMY is not set
-+# CONFIG_SND_VIRMIDI is not set
-+# CONFIG_SND_MTPAV is not set
-+# CONFIG_SND_SERIAL_U16550 is not set
-+# CONFIG_SND_MPU401 is not set
-+CONFIG_SND_PPC=y
-+# CONFIG_SND_SOC is not set
-+# CONFIG_SOUND_PRIME is not set
-+CONFIG_HID_SUPPORT=y
-+CONFIG_HID=y
-+# CONFIG_HIDRAW is not set
-+# CONFIG_HID_PID is not set
++  Represents the interface to the external 16-bit stereo digital-to-analog
++  converter.
 +
-+#
-+# Special HID drivers
-+#
-+# CONFIG_USB_SUPPORT is not set
-+# CONFIG_MMC is not set
-+# CONFIG_MEMSTICK is not set
-+# CONFIG_NEW_LEDS is not set
-+# CONFIG_ACCESSIBILITY is not set
-+# CONFIG_EDAC is not set
-+CONFIG_RTC_LIB=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_HCTOSYS=y
-+CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-+# CONFIG_RTC_DEBUG is not set
++  Required properties:
 +
-+#
-+# RTC interfaces
-+#
-+CONFIG_RTC_INTF_SYSFS=y
-+CONFIG_RTC_INTF_PROC=y
-+CONFIG_RTC_INTF_DEV=y
-+# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
-+# CONFIG_RTC_DRV_TEST is not set
++   - compatible : should be "nintendo,hollywood-ai","nintendo,flipper-ai"
++   - reg : should contain the AI registers location and length
++   - interrupts : should contain the AI interrupt
 +
-+#
-+# SPI RTC drivers
-+#
++1.f) The External Interface (EXI) node
 +
-+#
-+# Platform RTC drivers
-+#
-+# CONFIG_RTC_DRV_CMOS is not set
-+# CONFIG_RTC_DRV_DS1286 is not set
-+# CONFIG_RTC_DRV_DS1511 is not set
-+# CONFIG_RTC_DRV_DS1553 is not set
-+# CONFIG_RTC_DRV_DS1742 is not set
-+# CONFIG_RTC_DRV_STK17TA8 is not set
-+# CONFIG_RTC_DRV_M48T86 is not set
-+# CONFIG_RTC_DRV_M48T35 is not set
-+# CONFIG_RTC_DRV_M48T59 is not set
-+# CONFIG_RTC_DRV_BQ4802 is not set
-+# CONFIG_RTC_DRV_V3020 is not set
++  Represents the multi-channel SPI-like interface.
 +
-+#
-+# on-CPU RTC drivers
-+#
-+CONFIG_RTC_DRV_GENERIC=y
-+# CONFIG_DMADEVICES is not set
-+# CONFIG_AUXDISPLAY is not set
-+# CONFIG_UIO is not set
++  Required properties:
 +
-+#
-+# TI VLYNQ
-+#
-+# CONFIG_STAGING is not set
++   - compatible : should be "nintendo,hollywood-exi","nintendo,flipper-exi"
++   - reg : should contain the EXI registers location and length
++   - interrupts : should contain the EXI interrupt
 +
-+#
-+# File systems
-+#
-+CONFIG_EXT2_FS=y
-+# CONFIG_EXT2_FS_XATTR is not set
-+# CONFIG_EXT2_FS_XIP is not set
-+CONFIG_EXT3_FS=y
-+# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
-+# CONFIG_EXT3_FS_XATTR is not set
-+# CONFIG_EXT4_FS is not set
-+CONFIG_JBD=y
-+# CONFIG_JBD_DEBUG is not set
-+# CONFIG_REISERFS_FS is not set
-+# CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
-+# CONFIG_XFS_FS is not set
-+# CONFIG_GFS2_FS is not set
-+# CONFIG_OCFS2_FS is not set
-+# CONFIG_BTRFS_FS is not set
-+# CONFIG_NILFS2_FS is not set
-+CONFIG_FILE_LOCKING=y
-+CONFIG_FSNOTIFY=y
-+CONFIG_DNOTIFY=y
-+CONFIG_INOTIFY=y
-+CONFIG_INOTIFY_USER=y
-+# CONFIG_QUOTA is not set
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
++1.g) The Open Host Controller Interface (OHCI) nodes
 +
-+#
-+# Caches
-+#
-+# CONFIG_FSCACHE is not set
++  Represent the USB 1.x Open Host Controller Interfaces.
 +
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+CONFIG_ISO9660_FS=y
-+CONFIG_JOLIET=y
-+# CONFIG_ZISOFS is not set
-+# CONFIG_UDF_FS is not set
++  Required properties:
 +
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+CONFIG_FAT_FS=y
-+CONFIG_MSDOS_FS=y
-+CONFIG_VFAT_FS=y
-+CONFIG_FAT_DEFAULT_CODEPAGE=437
-+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-+# CONFIG_NTFS_FS is not set
++   - compatible : should be "nintendo,hollywood-usb-ohci","usb-ohci"
++   - reg : should contain the OHCI registers location and length
++   - interrupts : should contain the OHCI interrupt
 +
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_PROC_SYSCTL=y
-+# CONFIG_PROC_PAGE_MONITOR is not set
-+CONFIG_SYSFS=y
-+CONFIG_TMPFS=y
-+# CONFIG_TMPFS_POSIX_ACL is not set
-+# CONFIG_HUGETLB_PAGE is not set
-+# CONFIG_CONFIGFS_FS is not set
-+CONFIG_MISC_FILESYSTEMS=y
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+# CONFIG_CRAMFS is not set
-+# CONFIG_SQUASHFS is not set
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_OMFS_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+# CONFIG_ROMFS_FS is not set
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
-+CONFIG_NETWORK_FILESYSTEMS=y
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+# CONFIG_NFS_V3_ACL is not set
-+# CONFIG_NFS_V4 is not set
-+CONFIG_ROOT_NFS=y
-+# CONFIG_NFSD is not set
-+CONFIG_LOCKD=y
-+CONFIG_LOCKD_V4=y
-+CONFIG_NFS_COMMON=y
-+CONFIG_SUNRPC=y
-+# CONFIG_RPCSEC_GSS_KRB5 is not set
-+# CONFIG_RPCSEC_GSS_SPKM3 is not set
-+# CONFIG_SMB_FS is not set
-+CONFIG_CIFS=y
-+# CONFIG_CIFS_STATS is not set
-+# CONFIG_CIFS_WEAK_PW_HASH is not set
-+# CONFIG_CIFS_XATTR is not set
-+# CONFIG_CIFS_DEBUG2 is not set
-+# CONFIG_CIFS_EXPERIMENTAL is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
++1.h) The Enhanced Host Controller Interface (EHCI) node
 +
-+#
-+# Partition Types
-+#
-+# CONFIG_PARTITION_ADVANCED is not set
-+CONFIG_MSDOS_PARTITION=y
-+CONFIG_NLS=y
-+CONFIG_NLS_DEFAULT="iso8859-1"
-+CONFIG_NLS_CODEPAGE_437=y
-+# CONFIG_NLS_CODEPAGE_737 is not set
-+# CONFIG_NLS_CODEPAGE_775 is not set
-+# CONFIG_NLS_CODEPAGE_850 is not set
-+# CONFIG_NLS_CODEPAGE_852 is not set
-+# CONFIG_NLS_CODEPAGE_855 is not set
-+# CONFIG_NLS_CODEPAGE_857 is not set
-+# CONFIG_NLS_CODEPAGE_860 is not set
-+# CONFIG_NLS_CODEPAGE_861 is not set
-+# CONFIG_NLS_CODEPAGE_862 is not set
-+# CONFIG_NLS_CODEPAGE_863 is not set
-+# CONFIG_NLS_CODEPAGE_864 is not set
-+# CONFIG_NLS_CODEPAGE_865 is not set
-+# CONFIG_NLS_CODEPAGE_866 is not set
-+# CONFIG_NLS_CODEPAGE_869 is not set
-+# CONFIG_NLS_CODEPAGE_936 is not set
-+# CONFIG_NLS_CODEPAGE_950 is not set
-+# CONFIG_NLS_CODEPAGE_932 is not set
-+# CONFIG_NLS_CODEPAGE_949 is not set
-+# CONFIG_NLS_CODEPAGE_874 is not set
-+# CONFIG_NLS_ISO8859_8 is not set
-+# CONFIG_NLS_CODEPAGE_1250 is not set
-+# CONFIG_NLS_CODEPAGE_1251 is not set
-+# CONFIG_NLS_ASCII is not set
-+CONFIG_NLS_ISO8859_1=y
-+# CONFIG_NLS_ISO8859_2 is not set
-+# CONFIG_NLS_ISO8859_3 is not set
-+# CONFIG_NLS_ISO8859_4 is not set
-+# CONFIG_NLS_ISO8859_5 is not set
-+# CONFIG_NLS_ISO8859_6 is not set
-+# CONFIG_NLS_ISO8859_7 is not set
-+# CONFIG_NLS_ISO8859_9 is not set
-+# CONFIG_NLS_ISO8859_13 is not set
-+# CONFIG_NLS_ISO8859_14 is not set
-+# CONFIG_NLS_ISO8859_15 is not set
-+# CONFIG_NLS_KOI8_R is not set
-+# CONFIG_NLS_KOI8_U is not set
-+# CONFIG_NLS_UTF8 is not set
-+# CONFIG_DLM is not set
-+CONFIG_BINARY_PRINTF=y
++  Represents the USB 2.0 Enhanced Host Controller Interface.
 +
-+#
-+# Library routines
-+#
-+CONFIG_BITREVERSE=y
-+CONFIG_GENERIC_FIND_LAST_BIT=y
-+CONFIG_CRC_CCITT=y
-+# CONFIG_CRC16 is not set
-+# CONFIG_CRC_T10DIF is not set
-+# CONFIG_CRC_ITU_T is not set
-+CONFIG_CRC32=y
-+# CONFIG_CRC7 is not set
-+# CONFIG_LIBCRC32C is not set
-+CONFIG_ZLIB_INFLATE=y
-+CONFIG_DECOMPRESS_GZIP=y
-+CONFIG_HAS_IOMEM=y
-+CONFIG_HAS_IOPORT=y
-+CONFIG_HAS_DMA=y
-+CONFIG_HAVE_LMB=y
-+CONFIG_NLATTR=y
-+CONFIG_GENERIC_ATOMIC64=y
++  Required properties:
 +
-+#
-+# Kernel hacking
-+#
-+CONFIG_PRINTK_TIME=y
-+CONFIG_ENABLE_WARN_DEPRECATED=y
-+CONFIG_ENABLE_MUST_CHECK=y
-+CONFIG_FRAME_WARN=1024
-+# CONFIG_MAGIC_SYSRQ is not set
-+# CONFIG_STRIP_ASM_SYMS is not set
-+# CONFIG_UNUSED_SYMBOLS is not set
-+CONFIG_DEBUG_FS=y
-+# CONFIG_HEADERS_CHECK is not set
-+CONFIG_DEBUG_KERNEL=y
-+# CONFIG_DEBUG_SHIRQ is not set
-+CONFIG_DETECT_SOFTLOCKUP=y
-+# CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
-+# CONFIG_DETECT_HUNG_TASK is not set
-+CONFIG_SCHED_DEBUG=y
-+CONFIG_SCHEDSTATS=y
-+# CONFIG_TIMER_STATS is not set
-+# CONFIG_DEBUG_OBJECTS is not set
-+# CONFIG_DEBUG_SLAB is not set
-+# CONFIG_DEBUG_KMEMLEAK is not set
-+CONFIG_DEBUG_PREEMPT=y
-+# CONFIG_DEBUG_RT_MUTEXES is not set
-+# CONFIG_RT_MUTEX_TESTER is not set
-+CONFIG_DEBUG_SPINLOCK=y
-+CONFIG_DEBUG_MUTEXES=y
-+# CONFIG_DEBUG_LOCK_ALLOC is not set
-+# CONFIG_PROVE_LOCKING is not set
-+# CONFIG_LOCK_STAT is not set
-+CONFIG_DEBUG_SPINLOCK_SLEEP=y
-+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-+CONFIG_STACKTRACE=y
-+# CONFIG_DEBUG_KOBJECT is not set
-+CONFIG_DEBUG_BUGVERBOSE=y
-+# CONFIG_DEBUG_INFO is not set
-+# CONFIG_DEBUG_VM is not set
-+# CONFIG_DEBUG_WRITECOUNT is not set
-+# CONFIG_DEBUG_MEMORY_INIT is not set
-+# CONFIG_DEBUG_LIST is not set
-+# CONFIG_DEBUG_SG is not set
-+# CONFIG_DEBUG_NOTIFIERS is not set
-+# CONFIG_DEBUG_CREDENTIALS is not set
-+# CONFIG_RCU_TORTURE_TEST is not set
-+# CONFIG_RCU_CPU_STALL_DETECTOR is not set
-+# CONFIG_BACKTRACE_SELF_TEST is not set
-+# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
-+# CONFIG_DEBUG_FORCE_WEAK_PER_CPU is not set
-+# CONFIG_FAULT_INJECTION is not set
-+CONFIG_LATENCYTOP=y
-+CONFIG_SYSCTL_SYSCALL_CHECK=y
-+# CONFIG_DEBUG_PAGEALLOC is not set
-+CONFIG_NOP_TRACER=y
-+CONFIG_HAVE_FUNCTION_TRACER=y
-+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
-+CONFIG_HAVE_DYNAMIC_FTRACE=y
-+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
-+CONFIG_TRACER_MAX_TRACE=y
-+CONFIG_RING_BUFFER=y
-+CONFIG_EVENT_TRACING=y
-+CONFIG_CONTEXT_SWITCH_TRACER=y
-+CONFIG_TRACING=y
-+CONFIG_GENERIC_TRACER=y
-+CONFIG_TRACING_SUPPORT=y
-+CONFIG_FTRACE=y
-+# CONFIG_FUNCTION_TRACER is not set
-+# CONFIG_IRQSOFF_TRACER is not set
-+# CONFIG_PREEMPT_TRACER is not set
-+CONFIG_SCHED_TRACER=y
-+CONFIG_BOOT_TRACER=y
-+CONFIG_BRANCH_PROFILE_NONE=y
-+# CONFIG_PROFILE_ANNOTATED_BRANCHES is not set
-+# CONFIG_PROFILE_ALL_BRANCHES is not set
-+# CONFIG_STACK_TRACER is not set
-+# CONFIG_KMEMTRACE is not set
-+# CONFIG_WORKQUEUE_TRACER is not set
-+# CONFIG_BLK_DEV_IO_TRACE is not set
-+# CONFIG_FTRACE_STARTUP_TEST is not set
-+# CONFIG_RING_BUFFER_BENCHMARK is not set
-+# CONFIG_DYNAMIC_DEBUG is not set
-+CONFIG_DMA_API_DEBUG=y
-+# CONFIG_SAMPLES is not set
-+CONFIG_HAVE_ARCH_KGDB=y
-+# CONFIG_KGDB is not set
-+# CONFIG_PPC_DISABLE_WERROR is not set
-+CONFIG_PPC_WERROR=y
-+CONFIG_PRINT_STACK_DEPTH=64
-+# CONFIG_DEBUG_STACKOVERFLOW is not set
-+# CONFIG_DEBUG_STACK_USAGE is not set
-+# CONFIG_PPC_EMULATED_STATS is not set
-+# CONFIG_CODE_PATCHING_SELFTEST is not set
-+# CONFIG_FTR_FIXUP_SELFTEST is not set
-+# CONFIG_MSI_BITMAP_SELFTEST is not set
-+# CONFIG_XMON is not set
-+# CONFIG_IRQSTACKS is not set
-+# CONFIG_VIRQ_DEBUG is not set
-+# CONFIG_BDI_SWITCH is not set
-+# CONFIG_BOOTX_TEXT is not set
-+CONFIG_PPC_EARLY_DEBUG=y
-+# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
-+# CONFIG_PPC_EARLY_DEBUG_G5 is not set
-+# CONFIG_PPC_EARLY_DEBUG_RTAS_PANEL is not set
-+# CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE is not set
-+# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
-+# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
-+# CONFIG_PPC_EARLY_DEBUG_PAS_REALMODE is not set
-+# CONFIG_PPC_EARLY_DEBUG_BEAT is not set
-+# CONFIG_PPC_EARLY_DEBUG_44x is not set
-+# CONFIG_PPC_EARLY_DEBUG_40x is not set
-+# CONFIG_PPC_EARLY_DEBUG_CPM is not set
-+CONFIG_PPC_EARLY_DEBUG_USBGECKO=y
++   - compatible : should be "nintendo,hollywood-usb-ehci","usb-ehci"
++   - reg : should contain the EHCI registers location and length
++   - interrupts : should contain the EHCI interrupt
 +
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+# CONFIG_SECURITYFS is not set
-+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-+# CONFIG_CRYPTO is not set
-+# CONFIG_PPC_CLOCK is not set
-+# CONFIG_VIRTUALIZATION is not set
++1.i) The Secure Digital Host Controller Interface (SDHCI) nodes
++
++  Represent the Secure Digital Host Controller Interfaces.
++
++  Required properties:
++
++   - compatible : should be "nintendo,hollywood-sdhci","sdhci"
++   - reg : should contain the SDHCI registers location and length
++   - interrupts : should contain the SDHCI interrupt
++
++1.j) The Inter-Processsor Communication (IPC) node
++
++  Represent the Inter-Processor Communication interface. This interface
++  enables communications between the Broadway and the Starlet processors.
++
++   - compatible : should be "nintendo,hollywood-ipc"
++   - reg : should contain the IPC registers location and length
++   - interrupts : should contain the IPC interrupt
++
++1.k) The "Hollywood" interrupt controller node
++
++  Represents the "Hollywood" interrupt controller within the
++  "Hollywood" chip.
++
++  Required properties:
++
++  - #interrupt-cells : <1>
++  - compatible : should be "nintendo,hollywood-pic"
++  - reg : should contain the controller registers location and length
++  - interrupt-controller
++  - interrupts : should contain the cascade interrupt of the "flipper" pic
++  - interrupt-parent: should contain the phandle of the "flipper" pic
++
++1.l) The General Purpose I/O (GPIO) controller node
++
++  Represents the dual access 32 GPIO controller interface.
++
++  Required properties:
++
++  - #gpio-cells : <2>
++  - compatible : should be "nintendo,hollywood-gpio"
++  - reg : should contain the IPC registers location and length
++  - gpio-controller
++
++1.m) The control node
++
++  Represents the control interface used to setup several miscellaneous
++  settings of the "Hollywood" chip like boot memory mappings, resets,
++  disk interface mode, etc.
++
++  Required properties:
++
++   - compatible : should be "nintendo,hollywood-control"
++   - reg : should contain the control registers location and length
++
++1.n) The Disk Interface (DI) node
++
++  Represents the interface used to communicate with mass storage devices.
++
++  Required properties:
++
++   - compatible : should be "nintendo,hollywood-di"
++   - reg : should contain the DI registers location and length
++   - interrupts : should contain the DI interrupt
++
+diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dts
+new file mode 100644
+index 0000000..77528c9
+--- /dev/null
++++ b/arch/powerpc/boot/dts/wii.dts
+@@ -0,0 +1,218 @@
++/*
++ * arch/powerpc/boot/dts/wii.dts
++ *
++ * Nintendo Wii platform device tree source
++ * Copyright (C) 2008-2009 The GameCube Linux Team
++ * Copyright (C) 2008,2009 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ */
++
++/dts-v1/;
++
++/*
++ * This is commented-out for now.
++ * Until a later patch is merged, the kernel can use only the first
++ * contiguous RAM range and will BUG() if the memreserve is outside
++ * that range.
++ */
++/*/memreserve/ 0x10000000 0x0004000;*/	/* DSP RAM */
++
++/ {
++	model = "nintendo,wii";
++	compatible = "nintendo,wii";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	chosen {
++		bootargs = "root=/dev/mmcblk0p2 rootwait udbg-immortal";
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x01800000	/* MEM1 24MB 1T-SRAM */
++		       0x10000000 0x04000000>;	/* MEM2 64MB GDDR3 */
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,broadway@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <729000000>; /* 729MHz */
++			bus-frequency = <243000000>; /* 243MHz core-to-bus 3x */
++			timebase-frequency = <60750000>; /* 243MHz / 4 */
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <32768>;
++			d-cache-size = <32768>;
++		};
++	};
++
++	/* devices contained in the hollywood chipset */
++	hollywood {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "nintendo,hollywood";
++                ranges = <0x0c000000 0x0c000000 0x01000000
++			  0x0d000000 0x0d000000 0x00800000
++			  0x0d800000 0x0d800000 0x00800000>;
++		interrupt-parent = <&PIC0>;
++
++		video@0c002000 {
++			compatible = "nintendo,hollywood-vi",
++					"nintendo,flipper-vi";
++			reg = <0x0c002000 0x100>;
++			interrupts = <8>;
++		};
++
++		processor-interface@0c003000 {
++			compatible = "nintendo,hollywood-pi",
++					"nintendo,flipper-pi";
++			reg = <0x0c003000 0x100>;
++
++			PIC0: pic0 {
++				#interrupt-cells = <1>;
++				compatible = "nintendo,flipper-pic";
++				interrupt-controller;
++			};
++		};
++
++		dsp@0c005000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "nintendo,hollywood-dsp",
++					"nintendo,flipper-dsp";
++			reg = <0x0c005000 0x200>;
++			interrupts = <6>;
++		};
++
++		gamepad-controller@0d006400 {
++			compatible = "nintendo,hollywood-si",
++					"nintendo,flipper-si";
++			reg = <0x0d006400 0x100>;
++			interrupts = <3>;
++		};
++
++		audio@0c006c00 {
++			compatible = "nintendo,hollywood-ai",
++					"nintendo,flipper-ai";
++			reg = <0x0d006c00 0x20>;
++			interrupts = <6>;
++		};
++
++		/* External Interface bus */
++		exi@0d006800 {
++			compatible = "nintendo,hollywood-exi",
++					"nintendo,flipper-exi";
++			reg = <0x0d006800 0x40>;
++			virtual-reg = <0x0d006800>;
++			interrupts = <4>;
++		};
++
++		usb@0d040000 {
++			compatible = "nintendo,hollywood-usb-ehci",
++					"usb-ehci";
++			reg = <0x0d040000 0x100>;
++			interrupts = <4>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		usb@0d050000 {
++			compatible = "nintendo,hollywood-usb-ohci",
++					"usb-ohci";
++			reg = <0x0d050000 0x100>;
++			interrupts = <5>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		usb@0d060000 {
++			compatible = "nintendo,hollywood-usb-ohci",
++					"usb-ohci";
++			reg = <0x0d060000 0x100>;
++			interrupts = <6>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		sd@0d070000 {
++			compatible = "nintendo,hollywood-sdhci",
++					"sdhci";
++			reg = <0x0d070000 0x200>;
++			interrupts = <7>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		sdio@0d080000 {
++			compatible = "nintendo,hollywood-sdhci",
++					"sdhci";
++			reg = <0x0d080000 0x200>;
++			interrupts = <8>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		ipc@0d000000 {
++			compatible = "nintendo,hollywood-ipc";
++			reg = <0x0d000000 0x10>;
++			interrupts = <30>;
++			interrupt-parent = <&PIC1>;
++		};
++
++		PIC1: pic1@0d800030 {
++			#interrupt-cells = <1>;
++			compatible = "nintendo,hollywood-pic";
++			reg = <0x0d800030 0x10>;
++			interrupt-controller;
++			interrupts = <14>;
++		};
++
++		GPIO: gpio@0d8000c0 {
++			#gpio-cells = <2>;
++			compatible = "nintendo,hollywood-gpio";
++			reg = <0x0d8000c0 0x40>;
++			gpio-controller;
++
++			/*
++			 * This is commented out while a standard binding
++			 * for i2c over gpio is defined.
++			 */
++			/*
++			i2c-video {
++				#address-cells = <1>;
++				#size-cells = <0>;
++			        compatible = "i2c-gpio";
++
++			        gpios = <&GPIO 15 0
++			                 &GPIO 14 0>;
++			        clock-frequency = <250000>;
++				no-clock-stretching;
++			        scl-is-open-drain;
++			        sda-is-open-drain;
++			        sda-enforce-dir;
++
++			        AVE: audio-video-encoder@70 {
++			                compatible = "nintendo,wii-audio-video-encoder";
++			                reg = <0x70>;
++			        };
++			};
++			*/
++		};
++
++		control@0d800100 {
++			compatible = "nintendo,hollywood-control";
++			reg = <0x0d800100 0x300>;
++		};
++
++		disk@0d806000 {
++			compatible = "nintendo,hollywood-di";
++			reg = <0x0d806000 0x40>;
++			interrupts = <2>;
++		};
++	};
++};
++
 -- 
 1.6.3.3
