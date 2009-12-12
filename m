@@ -1,13 +1,13 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp104.mail.ukl.yahoo.com (smtp104.mail.ukl.yahoo.com
-	[77.238.184.36]) by ozlabs.org (Postfix) with SMTP id B013EB7C9B
+	[77.238.184.36]) by ozlabs.org (Postfix) with SMTP id 6F1A6B7C67
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 13 Dec 2009 03:32:19 +1100 (EST)
+	Sun, 13 Dec 2009 03:32:20 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 18/22] powerpc: gamecube/wii: early debugging using usbgecko
-Date: Sat, 12 Dec 2009 17:31:51 +0100
-Message-Id: <1260635515-7478-19-git-send-email-albert_herranz@yahoo.es>
+Subject: [PATCH v2 19/22] wii: bootwrapper: add fixup to calc useable mem2
+Date: Sat, 12 Dec 2009 17:31:52 +0100
+Message-Id: <1260635515-7478-20-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1260635515-7478-1-git-send-email-albert_herranz@yahoo.es>
 References: <1260635515-7478-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
@@ -20,197 +20,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for using the USB Gecko adapter as an early debugging
-console on the Nintendo GameCube and Wii video game consoles.
-The USB Gecko is a 3rd party memory card interface adapter that provides
-a EXI (External Interface) to USB serial converter.
+The top portion of MEM2 (the second 64MB memory block) in the Nintendo
+Wii video game console is used by the firmware running on the Starlet
+processor.
+
+Add code to calculate the portion of MEM2 safely useable by the
+Broadway processor. When running under the 'mini' firmware this is
+easily determined from an in-memory header. Otherwise, a safe default
+is used.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
-RFC v2 -> v2
-- use Vp=0 instead of Vp=1 for the early BAT mapping.
-  Suggestion by Segher Boessenkool.
+ arch/powerpc/boot/wii.c |  118 +++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 115 insertions(+), 3 deletions(-)
 
-Note that the patch was acked-by without the single change from
-RFC v2 to v2.
-
- arch/powerpc/Kconfig.debug                         |    8 +++
- arch/powerpc/include/asm/udbg.h                    |    1 +
- arch/powerpc/kernel/head_32.S                      |   25 +++++++++
- arch/powerpc/kernel/udbg.c                         |    2 +
- arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |   56 ++++++++++++++++++++
- arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h |    2 +
- 6 files changed, 94 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 3b10051..11e385b 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -254,6 +254,14 @@ config PPC_EARLY_DEBUG_CPM
- 	  using a CPM-based serial port.  This assumes that the bootwrapper
- 	  has run, and set up the CPM in a particular way.
+diff --git a/arch/powerpc/boot/wii.c b/arch/powerpc/boot/wii.c
+index d0e2625..2ebaec0 100644
+--- a/arch/powerpc/boot/wii.c
++++ b/arch/powerpc/boot/wii.c
+@@ -22,10 +22,120 @@
  
-+config PPC_EARLY_DEBUG_USBGECKO
-+	bool "Early debugging through the USB Gecko adapter"
-+	depends on GAMECUBE_COMMON
-+	select USBGECKO_UDBG
-+	help
-+	  Select this to enable early debugging for Nintendo GameCube/Wii
-+	  consoles via an external USB Gecko adapter.
+ BSS_STACK(8192);
+ 
+-#define HW_REG(x)	((void *)(x))
++#define HW_REG(x)		((void *)(x))
+ 
+-#define EXI_CTRL	HW_REG(0x0d800070)
+-#define EXI_CTRL_ENABLE	(1<<0)
++#define EXI_CTRL		HW_REG(0x0d800070)
++#define EXI_CTRL_ENABLE		(1<<0)
 +
- endchoice
- 
- config PPC_EARLY_DEBUG_44x_PHYSLOW
-diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
-index cd21e5e..11ae699 100644
---- a/arch/powerpc/include/asm/udbg.h
-+++ b/arch/powerpc/include/asm/udbg.h
-@@ -51,6 +51,7 @@ extern void __init udbg_init_btext(void);
- extern void __init udbg_init_44x_as1(void);
- extern void __init udbg_init_40x_realmode(void);
- extern void __init udbg_init_cpm(void);
-+extern void __init udbg_init_usbgecko(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 829c3fe..e025e89 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -164,6 +164,9 @@ __after_mmu_off:
- #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
- 	bl	setup_cpm_bat
- #endif
-+#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-+	bl	setup_usbgecko_bat
-+#endif
- 
- /*
-  * Call setup_cpu for CPU 0 and initialize 6xx Idle
-@@ -1203,6 +1206,28 @@ setup_cpm_bat:
- 	blr
- #endif
- 
-+#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-+setup_usbgecko_bat:
-+	/* prepare a BAT for early io */
-+#if defined(CONFIG_GAMECUBE)
-+	lis	r8, 0x0c00
-+#elif defined(CONFIG_WII)
-+	lis	r8, 0x0d00
-+#else
-+#error Invalid platform for USB Gecko based early debugging.
-+#endif
-+	/*
-+	 * The virtual address used must match the virtual address
-+	 * associated to the fixmap entry FIX_EARLY_DEBUG_BASE.
-+	 */
-+	lis	r11, 0xfffe	/* top 128K */
-+	ori	r8, r8, 0x002a	/* uncached, guarded ,rw */
-+	ori	r11, r11, 0x2	/* 128K, Vs=1, Vp=0 */
-+	mtspr	SPRN_DBAT1L, r8
-+	mtspr	SPRN_DBAT1U, r11
-+	blr
-+#endif
++#define MEM2_TOP		(0x10000000 + 64*1024*1024)
++#define FIRMWARE_DEFAULT_SIZE	(12*1024*1024)
 +
- #ifdef CONFIG_8260
- /* Jump into the system reset for the rom.
-  * We first disable the MMU, and then jump to the ROM reset address.
-diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
-index fc9af47..e39cad8 100644
---- a/arch/powerpc/kernel/udbg.c
-+++ b/arch/powerpc/kernel/udbg.c
-@@ -60,6 +60,8 @@ void __init udbg_early_init(void)
- 	udbg_init_40x_realmode();
- #elif defined(CONFIG_PPC_EARLY_DEBUG_CPM)
- 	udbg_init_cpm();
-+#elif defined(CONFIG_PPC_EARLY_DEBUG_USBGECKO)
-+	udbg_init_usbgecko();
- #endif
++
++struct mipc_infohdr {
++	char magic[3];
++	u8 version;
++	u32 mem2_boundary;
++	u32 ipc_in;
++	size_t ipc_in_size;
++	u32 ipc_out;
++	size_t ipc_out_size;
++};
++
++static int mipc_check_address(u32 pa)
++{
++	/* only MEM2 addresses */
++	if (pa < 0x10000000 || pa > 0x14000000)
++		return -EINVAL;
++	return 0;
++}
++
++static struct mipc_infohdr *mipc_get_infohdr(void)
++{
++	struct mipc_infohdr **hdrp, *hdr;
++
++	/* 'mini' header pointer is the last word of MEM2 memory */
++	hdrp = (struct mipc_infohdr **)0x13fffffc;
++	if (mipc_check_address((u32)hdrp)) {
++		printf("mini: invalid hdrp %08X\n", (u32)hdrp);
++		hdr = NULL;
++		goto out;
++	}
++
++	hdr = *hdrp;
++	if (mipc_check_address((u32)hdr)) {
++		printf("mini: invalid hdr %08X\n", (u32)hdr);
++		hdr = NULL;
++		goto out;
++	}
++	if (memcmp(hdr->magic, "IPC", 3)) {
++		printf("mini: invalid magic\n");
++		hdr = NULL;
++		goto out;
++	}
++
++out:
++	return hdr;
++}
++
++static int mipc_get_mem2_boundary(u32 *mem2_boundary)
++{
++	struct mipc_infohdr *hdr;
++	int error;
++
++	hdr = mipc_get_infohdr();
++	if (!hdr) {
++		error = -1;
++		goto out;
++	}
++
++	if (mipc_check_address(hdr->mem2_boundary)) {
++		printf("mini: invalid mem2_boundary %08X\n",
++		       hdr->mem2_boundary);
++		error = -EINVAL;
++		goto out;
++	}
++	*mem2_boundary = hdr->mem2_boundary;
++	error = 0;
++out:
++	return error;
++
++}
++
++static void platform_fixups(void)
++{
++	void *mem;
++	u32 reg[4];
++	u32 mem2_boundary;
++	int len;
++	int error;
++
++	mem = finddevice("/memory");
++	if (!mem)
++		fatal("Can't find memory node\n");
++
++	/* two ranges of (address, size) words */
++	len = getprop(mem, "reg", reg, sizeof(reg));
++	if (len != sizeof(reg)) {
++		/* nothing to do */
++		goto out;
++	}
++
++	/* retrieve MEM2 boundary from 'mini' */
++	error = mipc_get_mem2_boundary(&mem2_boundary);
++	if (error) {
++		/* if that fails use a sane value */
++		mem2_boundary = MEM2_TOP - FIRMWARE_DEFAULT_SIZE;
++	}
++
++	if (mem2_boundary > reg[2] && mem2_boundary < reg[2] + reg[3]) {
++		reg[3] = mem2_boundary - reg[2];
++		printf("top of MEM2 @ %08X\n", reg[2] + reg[3]);
++		setprop(mem, "reg", reg, sizeof(reg));
++	}
++
++out:
++	return;
++}
  
- #ifdef CONFIG_PPC_EARLY_DEBUG
-diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-index ba4c7cc..edc956c 100644
---- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-+++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-@@ -17,6 +17,7 @@
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/udbg.h>
-+#include <asm/fixmap.h>
+ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
+ {
+@@ -42,5 +152,7 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
  
- #include "usbgecko_udbg.h"
- 
-@@ -270,3 +271,58 @@ done:
- 		of_node_put(np);
- 	return;
+ 	if (ug_probe())
+ 		console_ops.write = ug_console_write;
++
++	platform_ops.fixups = platform_fixups;
  }
-+
-+#ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
-+
-+static phys_addr_t __init ug_early_grab_io_addr(void)
-+{
-+#if defined(CONFIG_GAMECUBE)
-+	return 0x0c000000;
-+#elif defined(CONFIG_WII)
-+	return 0x0d000000;
-+#else
-+#error Invalid platform for USB Gecko based early debugging.
-+#endif
-+}
-+
-+/*
-+ * USB Gecko early debug support initialization for udbg.
-+ */
-+void __init udbg_init_usbgecko(void)
-+{
-+	void __iomem *early_debug_area;
-+	void __iomem *exi_io_base;
-+
-+	/*
-+	 * At this point we have a BAT already setup that enables I/O
-+	 * to the EXI hardware.
-+	 *
-+	 * The BAT uses a virtual address range reserved at the fixmap.
-+	 * This must match the virtual address configured in
-+	 * head_32.S:setup_usbgecko_bat().
-+	 */
-+	early_debug_area = (void __iomem *)__fix_to_virt(FIX_EARLY_DEBUG_BASE);
-+	exi_io_base = early_debug_area + 0x00006800;
-+
-+	/* try to detect a USB Gecko */
-+	if (!ug_udbg_probe(exi_io_base))
-+		return;
-+
-+	/* we found a USB Gecko, load udbg hooks */
-+	udbg_putc = ug_udbg_putc;
-+	udbg_getc = ug_udbg_getc;
-+	udbg_getc_poll = ug_udbg_getc_poll;
-+
-+	/*
-+	 * Prepare again the same BAT for MMU_init.
-+	 * This allows udbg I/O to continue working after the MMU is
-+	 * turned on for real.
-+	 * It is safe to continue using the same virtual address as it is
-+	 * a reserved fixmap area.
-+	 */
-+	setbat(1, (unsigned long)early_debug_area,
-+	       ug_early_grab_io_addr(), 128*1024, PAGE_KERNEL_NCG);
-+}
-+
-+#endif /* CONFIG_PPC_EARLY_DEBUG_USBGECKO */
-+
-diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-index 3929de3..bb6cde4 100644
---- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-+++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.h
-@@ -27,4 +27,6 @@ static inline void __init ug_udbg_init(void)
  
- #endif /* CONFIG_USBGECKO_UDBG */
- 
-+void __init udbg_init_usbgecko(void);
-+
- #endif /* __USBGECKO_UDBG_H */
 -- 
 1.6.3.3
