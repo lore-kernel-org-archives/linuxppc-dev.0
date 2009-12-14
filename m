@@ -1,29 +1,31 @@
 Return-Path: <neilc@linux.vnet.ibm.com>
-Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [194.196.100.162])
+Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [194.196.100.165])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5467EB6F14
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 01:09:11 +1100 (EST)
-Received: from d06nrmr1806.portsmouth.uk.ibm.com
-	(d06nrmr1806.portsmouth.uk.ibm.com [9.149.39.193])
-	by mtagate2.uk.ibm.com (8.13.1/8.13.1) with ESMTP id nBEE8wBX017047
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 14:08:58 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1806.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id nBEE8w2L1331314
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 14:08:58 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id nBEE8wb3009072
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 14:08:58 GMT
-Message-ID: <4B2646F9.4000203@linux.vnet.ibm.com>
-Date: Mon, 14 Dec 2009 14:08:57 +0000
+	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DC21AB6F1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 01:21:25 +1100 (EST)
+Received: from d06nrmr1707.portsmouth.uk.ibm.com
+	(d06nrmr1707.portsmouth.uk.ibm.com [9.149.39.225])
+	by mtagate5.uk.ibm.com (8.13.1/8.13.1) with ESMTP id nBEELLag018119
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 14:21:21 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1707.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id nBEELLkj1314880
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 14:21:21 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id nBEELKnU027007
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 14:21:21 GMT
+Message-ID: <4B2649DF.4010903@linux.vnet.ibm.com>
+Date: Mon, 14 Dec 2009 14:21:19 +0000
 From: Neil Campbell <neilc@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: handle VSX alignment faults correctly in
+Subject: Re: [PATCH] powerpc: handle VSX alignment faults correctly in
 	little-endian mode
+References: <4B2646F9.4000203@linux.vnet.ibm.com>
+In-Reply-To: <4B2646F9.4000203@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,120 +37,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes the handling of VSX alignment faults in little-endian
-mode (the current code assumes the processor is in big-endian mode).
+Neil Campbell wrote:
+> This patch fixes the handling of VSX alignment faults in little-endian
+> mode (the current code assumes the processor is in big-endian mode).
+> 
+> The patch also makes the handlers clear the top 8 bytes of the register
+> when handling an 8 byte VSX load.
 
-The patch also makes the handlers clear the top 8 bytes of the register
-when handling an 8 byte VSX load.
+For the interested, here is a test case that demonstrates the problem.
 
-This is based on 2.6.32.
+It should compile with something like:
 
-Signed-off-by: Neil Campbell <neilc@linux.vnet.ibm.com>
-Cc: <stable@kernel.org>
+gcc -m64 -Wa,-mregnames -fno-strict-aliasing -mcpu=power7 -mvsx vsx_le.c -o vsx_le
+
+On an unpatched kernel it reports 8 failures for me, the patch fixes all 8 of these.
+
 ---
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index a5b632e..f0c624f 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -642,10 +642,14 @@ static int emulate_spe(struct pt_regs *regs, unsigned int reg,
-  */
- static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
- 		       unsigned int areg, struct pt_regs *regs,
--		       unsigned int flags, unsigned int length)
-+		       unsigned int flags, unsigned int length,
-+		       unsigned int elsize)
- {
- 	char *ptr;
-+	unsigned long *lptr;
- 	int ret = 0;
-+	int sw = 0;
-+	int i, j;
- 
- 	flush_vsx_to_thread(current);
- 
-@@ -654,19 +658,35 @@ static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
- 	else
- 		ptr = (char *) &current->thread.vr[reg - 32];
- 
--	if (flags & ST)
--		ret = __copy_to_user(addr, ptr, length);
--        else {
--		if (flags & SPLT){
--			ret = __copy_from_user(ptr, addr, length);
--			ptr += length;
-+	lptr = (unsigned long *) ptr;
-+
-+	if (flags & SW)
-+		sw = elsize-1;
-+
-+	for (j = 0; j < length; j += elsize) {
-+		for (i = 0; i < elsize; ++i) {
-+			if (flags & ST)
-+				ret |= __put_user(ptr[i^sw], addr + i);
-+			else
-+				ret |= __get_user(ptr[i^sw], addr + i);
- 		}
--		ret |= __copy_from_user(ptr, addr, length);
-+		ptr  += elsize;
-+		addr += elsize;
- 	}
--	if (flags & U)
--		regs->gpr[areg] = regs->dar;
--	if (ret)
-+
-+	if (!ret) {
-+		if (flags & U)
-+			regs->gpr[areg] = regs->dar;
-+
-+		/* Splat load copies the same data to top and bottom 8 bytes */
-+		if (flags & SPLT)
-+			lptr[1] = lptr[0];
-+		/* For 8 byte loads, zero the top 8 bytes */
-+		else if (!(flags & ST) && (8 == length))
-+			lptr[1] = 0;
-+	} else
- 		return -EFAULT;
-+
- 	return 1;
- }
- #endif
-@@ -767,16 +787,25 @@ int fix_alignment(struct pt_regs *regs)
- 
- #ifdef CONFIG_VSX
- 	if ((instruction & 0xfc00003e) == 0x7c000018) {
--		/* Additional register addressing bit (64 VSX vs 32 FPR/GPR */
-+		unsigned int elsize;
-+
-+		/* Additional register addressing bit (64 VSX vs 32 FPR/GPR) */
- 		reg |= (instruction & 0x1) << 5;
- 		/* Simple inline decoder instead of a table */
-+		/* VSX has only 8 and 16 byte memory accesses */
-+		nb = 8;
- 		if (instruction & 0x200)
- 			nb = 16;
--		else if (instruction & 0x080)
--			nb = 8;
--		else
--			nb = 4;
-+
-+		/* Vector stores in little-endian mode swap individual
-+		   elements, so process them separately */
-+		elsize = 4;
-+		if (instruction & 0x80)
-+			elsize = 8;
-+
- 		flags = 0;
-+		if (regs->msr & MSR_LE)
-+			flags |= SW;
- 		if (instruction & 0x100)
- 			flags |= ST;
- 		if (instruction & 0x040)
-@@ -787,7 +816,7 @@ int fix_alignment(struct pt_regs *regs)
- 			nb = 8;
- 		}
- 		PPC_WARN_EMULATED(vsx);
--		return emulate_vsx(addr, reg, areg, regs, flags, nb);
-+		return emulate_vsx(addr, reg, areg, regs, flags, nb, elsize);
- 	}
- #endif
- 	/* A size of 0 indicates an instruction we don't support, with
+
+#include <stdio.h>
+#include <string.h>
+
+int fails = 0;
+
+#define LOAD_FUNC(name,inst) \
+void test_load_##name(char* input, char* output, int le) \
+{ \
+  int aligned = (0 == ((long)input & 15)); \
+  char* alignstr = aligned?"aligned:   ":"unaligned: "; \
+  char* modestr = le?"(le)":"(be)"; \
+  int i; \
+  char dummydata[16] __attribute__((__aligned__(16))) = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }; \
+ \
+  memset(output, 0, 16); \
+ \
+  asm ( \
+      "mr r15, %[address1]\n\t" \
+      "mr r16, %[address2]\n\t" \
+      "lvx v0, r0, %[address3]\n\t" /* set register to dummy values */ \
+      "cmpwi %[le],1 \n\t" \
+      "beq "#name"leversion \n\t" \
+      #name" vs32, r0, r15\n\t" \
+      "b " #name"store\n\t" \
+      #name"leversion: \n\t" \
+      "li r0, 171\n\t" \
+      "li r3, 20\n\t" \
+      "li r4, 1\n\t" \
+      "sc\n\t" \
+      ".long " inst "\n\t" \
+      ".long 0xab000038\n\t" /*"li 0, 171\n\t"*/ \
+      ".long 0x14006038\n\t" /*"li 3, 20\n\t"*/ \
+      ".long 0x00008038\n\t" /*"li 4, 0\n\t"*/ \
+      ".long 0x02000044\n\t" /*"sc\n\t"*/ \
+      #name"store: \n\t" \
+      "stvx v0,r0,r16 \n\t" \
+      : \
+      : [address1] "b" (input), [address2] "b" (output), [address3] "b" (dummydata), [le] "b" (le) \
+      : "vs32", "r0", "r3", "r4", "r9", "r15", "r16", "cc",  "memory"); \
+ \
+  fprintf(stderr, #name" %s after %s  ", alignstr, modestr); \
+  for (i = 0; i < 16; ++i) \
+  { \
+    fprintf(stderr, " %x ", output[i]); \
+  } \
+  fprintf(stderr, "\n"); \
+} \
+
+
+#define STORE_FUNC(name,inst) \
+void test_store_##name(char* input, char* output, int le) \
+{ \
+  int aligned = (0 == ((long)output & 15)); \
+  char* alignstr = aligned?"aligned:   ":"unaligned: "; \
+  char* modestr = le?"(le)":"(be)"; \
+  int i; \
+ \
+  memset(output, 0, 16); \
+ \
+  asm ( \
+      "mr r15, %[address2]\n\t" \
+      "lvx v0, r0, %[address1]\n\t" \
+      "cmpwi %[le],1 \n\t" \
+      "beq "#name"leversion \n\t" \
+      #name" vs32, r0, r15\n\t" \
+      "b " #name"end\n\t" \
+      #name"leversion: \n\t" \
+      "li r0, 171\n\t" \
+      "li r3, 20\n\t" \
+      "li r4, 1\n\t" \
+      "sc\n\t" \
+      ".long " inst "\n\t" \
+      ".long 0xab000038\n\t" /*"li 0, 171\n\t"*/ \
+      ".long 0x14006038\n\t" /*"li 3, 20\n\t"*/ \
+      ".long 0x00008038\n\t" /*"li 4, 0\n\t"*/ \
+      ".long 0x02000044\n\t" /*"sc\n\t"*/ \
+      #name"end: \n\t" \
+      : \
+      : [address1] "b" (input), [address2] "b" (output), [le] "b" (le) \
+      : "vs32", "r0", "r3", "r4", "r9", "r15", "cc",  "memory"); \
+ \
+  fprintf(stderr, #name" %s after %s  ", alignstr, modestr); \
+  for (i = 0; i < 16; ++i) \
+  { \
+    fprintf(stderr, " %x ", output[i]); \
+  } \
+  fprintf(stderr, "\n"); \
+} \
+
+void do_compare(char* buf1, char* buf2)
+{
+  if(0 == memcmp(buf1,buf2,16))
+  {
+    fprintf(stderr, "PASS\n");
+  }
+  else
+  {
+    fprintf(stderr, "FAIL\n");
+    fails++;
+  }
+}
+
+STORE_FUNC(stxvw4x, "0x197f007c")
+STORE_FUNC(stxvd2x, "0x997f007c")
+STORE_FUNC(stxsdx, "0x997d007c")
+
+LOAD_FUNC(lxvw4x, "0x197e007c")
+LOAD_FUNC(lxvd2x, "0x997e007c")
+LOAD_FUNC(lxsdx, "0x997c007c")
+LOAD_FUNC(lxvdsx, "0x997a007c")
+
+int main(int argc, char* argv[])
+{
+  char inbuf[17] __attribute__((__aligned__(16))) = { -1, 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf };
+  char alignedinbuf[16] __attribute__((__aligned__(16))) = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf };
+  char outbuf[17] __attribute__((__aligned__(16))) = { -1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+  char alignedoutbuf[16] __attribute__((__aligned__(16))) = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+  char alignedoutbuf2[16] __attribute__((__aligned__(16))) = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+
+  test_store_stxvw4x(alignedinbuf, alignedoutbuf, 0);
+  test_store_stxvw4x(alignedinbuf, &outbuf[1], 0);
+  do_compare(alignedoutbuf, &outbuf[1]);
+  test_store_stxvw4x(alignedinbuf, alignedoutbuf, 1);
+  test_store_stxvw4x(alignedinbuf, &outbuf[1], 1);
+  do_compare(alignedoutbuf, &outbuf[1]);
+  fprintf(stderr, "\n");
+
+  test_store_stxvd2x(alignedinbuf, alignedoutbuf, 0);
+  test_store_stxvd2x(alignedinbuf, &outbuf[1], 0);
+  do_compare(alignedoutbuf, &outbuf[1]);
+  test_store_stxvd2x(alignedinbuf, alignedoutbuf, 1);
+  test_store_stxvd2x(alignedinbuf, &outbuf[1], 1);
+  do_compare(alignedoutbuf, &outbuf[1]);
+  fprintf(stderr, "\n");
+
+  test_store_stxsdx(alignedinbuf, alignedoutbuf, 0);
+  test_store_stxsdx(alignedinbuf, &outbuf[1], 0);
+  do_compare(alignedoutbuf, &outbuf[1]);
+  test_store_stxsdx(alignedinbuf, alignedoutbuf, 1);
+  test_store_stxsdx(alignedinbuf, &outbuf[1], 1);
+  do_compare(alignedoutbuf, &outbuf[1]);
+  fprintf(stderr, "\n");
+
+  test_load_lxvw4x(alignedinbuf, alignedoutbuf, 0);
+  test_load_lxvw4x(&inbuf[1], alignedoutbuf2, 0);
+  do_compare(alignedoutbuf, alignedoutbuf2);
+  test_load_lxvw4x(alignedinbuf, alignedoutbuf, 1);
+  test_load_lxvw4x(&inbuf[1], alignedoutbuf2, 1);
+  do_compare(alignedoutbuf, alignedoutbuf2);
+  fprintf(stderr, "\n");
+
+  test_load_lxvd2x(alignedinbuf, alignedoutbuf, 0);
+  test_load_lxvd2x(&inbuf[1], alignedoutbuf2, 0);
+  do_compare(alignedoutbuf, alignedoutbuf2);
+  test_load_lxvd2x(alignedinbuf, alignedoutbuf, 1);
+  test_load_lxvd2x(&inbuf[1], alignedoutbuf2, 1);
+  do_compare(alignedoutbuf, alignedoutbuf2);
+  fprintf(stderr, "\n");
+
+  test_load_lxsdx(alignedinbuf, alignedoutbuf, 0);
+  test_load_lxsdx(&inbuf[1], alignedoutbuf2, 0);
+  do_compare(alignedoutbuf, alignedoutbuf2);
+  test_load_lxsdx(alignedinbuf, alignedoutbuf, 1);
+  test_load_lxsdx(&inbuf[1], alignedoutbuf2, 1);
+  do_compare(alignedoutbuf, alignedoutbuf2);
+  fprintf(stderr, "\n");
+
+  test_load_lxvdsx(alignedinbuf, alignedoutbuf, 0);
+  test_load_lxvdsx(&inbuf[1], alignedoutbuf2, 0);
+  do_compare(alignedoutbuf, alignedoutbuf2);
+  test_load_lxvdsx(alignedinbuf, alignedoutbuf, 1);
+  test_load_lxvdsx(&inbuf[1], alignedoutbuf2, 1);
+  do_compare(alignedoutbuf, alignedoutbuf2);
+  fprintf(stderr, "\n");
+
+  fprintf(stderr, "%d tests failed\n", fails);
+  return fails;
+}
