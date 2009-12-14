@@ -2,26 +2,26 @@ Return-Path: <sachinp@in.ibm.com>
 Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 33DF8B6F1B
+	by ozlabs.org (Postfix) with ESMTPS id 2F1C3B6F08
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Dec 2009 18:01:20 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nBE6xsO0025480
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Dec 2009 23:59:54 -0700
+	Mon, 14 Dec 2009 18:15:25 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nBE7E4vd002356
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 00:14:04 -0700
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBE70lDK087334
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 00:00:50 -0700
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nBE7FG4T171892
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 00:15:16 -0700
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nBE70l1p022350
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 00:00:47 -0700
+	id nBE7FFdP009013
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 00:15:16 -0700
 From: Sachin Sant <sachinp@in.ibm.com>
 To: benh@kernel.crashing.org
-Date: Mon, 14 Dec 2009 12:30:43 +0530
-Message-Id: <20091214070043.10313.12371.sendpatchset@localhost.localdomain>
-Subject: Fix hash_utils_64.c compile errors with DEBUG enabled.
+Date: Mon, 14 Dec 2009 12:45:12 +0530
+Message-Id: <20091214071512.10647.1587.sendpatchset@localhost.localdomain>
+Subject: [RESEND]Fix hash_utils_64.c compile errors with DEBUG enabled.
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,13 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This time without the funny characters.
+
 Fix following build errors generated with DEBUG=1
 
 cc1: warnings being treated as errors
-arch/powerpc/mm/hash_utils_64.c: In function ‘htab_dt_scan_page_sizes’:
-arch/powerpc/mm/hash_utils_64.c:345: error: format ‘%04x’ expects type ‘unsigned int’, but argument 4 has type ‘long unsigned int’
-arch/powerpc/mm/hash_utils_64.c:345: error: format ‘%08x’ expects type ‘unsigned int’, but argument 5 has type ‘long unsigned int’
-arch/powerpc/mm/hash_utils_64.c: In function ‘htab_initialize’:
+arch/powerpc/mm/hash_utils_64.c: In function 'htab_dt_scan_page_sizes':
+arch/powerpc/mm/hash_utils_64.c:343: error: format '%04x' expects type 'unsigned int', but argument 4 has type 'long unsigned int'
+arch/powerpc/mm/hash_utils_64.c:343: error: format '%08x' expects type 'unsigned int', but argument 5 has type 'long unsigned int'
+arch/powerpc/mm/hash_utils_64.c: In function 'htab_initialize':
+arch/powerpc/mm/hash_utils_64.c:666: error: format '%x' expects type 'unsigned int', but argument 4 has type 'long unsigned int'
 ... SNIP ...
 
 Signed-off-by: Sachin Sant <sachinp@in.ibm.com>
