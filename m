@@ -1,21 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 53102B6F0E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Dec 2009 21:03:25 +1100 (EST)
-Subject: Re: powerpc/kvm tree build failure
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20091214173512.91e4e39a.sfr@canb.auug.org.au>
-Date: Mon, 14 Dec 2009 11:03:15 +0100
-Message-Id: <50AF206B-218A-404E-BC8A-F56434073999@suse.de>
-References: <20091214173512.91e4e39a.sfr@canb.auug.org.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
-	Hollis Blanchard <hollisb@us.ibm.com>, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 740C0B6F10
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 21:22:12 +1100 (EST)
+Subject: Re: [Next] CPU Hotplug test failures on powerpc
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sachin Sant <sachinp@in.ibm.com>
+In-Reply-To: <4B2224C7.1020908@in.ibm.com>
+References: <4B2224C7.1020908@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 14 Dec 2009 11:22:02 +0100
+Message-ID: <1260786122.4165.142.camel@twins>
+Mime-Version: 1.0
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 14.12.2009, at 07:35, Stephen Rothwell wrote:
-
-> Hi all,
+On Fri, 2009-12-11 at 16:23 +0530, Sachin Sant wrote:
+> While executing cpu_hotplug(from autotest) tests against latest
+> next on a power6 box, the machine locks up. A soft reset shows
+> the following trace
 >=20
-> A powerpc allmodconfig fails like this:
+> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
+>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
+>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
+>     sp: c00000000c933650
+>    msr: 8000000000089032
+>   current =3D 0xc00000000c173840
+>   paca    =3D 0xc000000000bc2600
+>     pid   =3D 2602, comm =3D hotplug06.top.s
+> enter ? for help
+> [link register   ] c000000000342f10 .cpumask_next_and+0x4c/0x94
+> [c00000000c933650] c0000000000e9f34 .cpuset_cpus_allowed_locked+0x38/0x74=
+ (unreliable)
+> [c00000000c9336e0] c000000000090074 .move_task_off_dead_cpu+0xc4/0x1ac
+> [c00000000c9337a0] c0000000005e4e5c .migration_call+0x304/0x830
+> [c00000000c933880] c0000000005e0880 .notifier_call_chain+0x68/0xe0
+> [c00000000c933920] c00000000012a92c ._cpu_down+0x210/0x34c
+> [c00000000c933a90] c00000000012aad8 .cpu_down+0x70/0xa8
+> [c00000000c933b20] c000000000525940 .store_online+0x54/0x894
+> [c00000000c933bb0] c000000000463430 .sysdev_store+0x3c/0x50
+> [c00000000c933c20] c0000000001f8320 .sysfs_write_file+0x124/0x18c
+> [c00000000c933ce0] c00000000017edac .vfs_write+0xd4/0x1fc
+> [c00000000c933d80] c00000000017efdc .SyS_write+0x58/0xa0
+> [c00000000c933e30] c0000000000085b4 syscall_exit+0x0/0x40
+> --- Exception: c01 (System Call) at 00000fff9fa8a8f8
+> SP (fffe7aef200) is in userspace
+> 0:mon> e
+> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
+>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
+>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
+>     sp: c00000000c933650
+>    msr: 8000000000089032
+>   current =3D 0xc00000000c173840
+>   paca    =3D 0xc000000000bc2600
+>     pid   =3D 2602, comm =3D hotplug06.top.s
 >=20
-> arch/powerpc/kvm/built-in.o:(.toc1+0x18): undefined reference to =
-`kvm_debugfs_dir'
->=20
-> This is because CONFIG_KVM_EXIT_TIMING is a bool while
-> CONFIG_KVM_BOOK3S_64 is tristate. This causes =
-arch/powerpc/kvm/timing.o
-> (which references kvm_debugfs_dir) to be built in, but
-> virt/kvm/kvm_main.o (which defines it) to be modular.
+> Last few messages from the dmesg log shows
 
-Ouch.
 
-EXIT_TIMING could be used by BookE and Book3S KVM support. BookE can't =
-be built as a module, while Book3S can.
+> After some debugging a possible suspect seems to be commit
+> 6ad4c18.. : sched: Fix balance vs hotplug race
 
-So what's the usual / best way to fix this? Make EXIT_TIMING a tristate =
-too, but only on Book3S? Maybe by defining it as dependent on Book3S or =
-BookE KVM support?
 
-The easiest thing for now would probably be to just make it depend on =
-BookE support, since we don't have support for exit timing in Book3S =
-yet. But I'm not sure which approach is the best to take :-).
+Oh, wonderful :-/
 
-Alex=
+So what is that thing whining about? Not being able to read a cpumask or
+something?
+
+Does your .config have cpusets enabled (there's a different
+cpuset_cpus_allowed_locked implementation depending on that)?
+
+I know of at least one remaining race and am working on closing that,
+but I'm not sure I can explain this crash with that.
