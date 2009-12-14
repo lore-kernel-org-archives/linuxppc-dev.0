@@ -1,33 +1,17 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 40C7BB6F0D
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 15:37:35 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id nBEFbY5M012248
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 02:37:34 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBE4bYux1863820
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 15:37:34 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nBE4bYhv003211
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 15:37:34 +1100
-Message-ID: <4B25C10B.9040001@in.ibm.com>
-Date: Mon, 14 Dec 2009 10:07:31 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Next] CPU Hotplug test failures on powerpc
-References: <4B2224C7.1020908@in.ibm.com> <1260758933.2217.7.camel@pasglop>
-In-Reply-To: <1260758933.2217.7.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 3C2ECB7093
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 16:34:58 +1100 (EST)
+Date: Mon, 14 Dec 2009 16:34:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: linux-next: 52xx-and-virtex tree build failure
+Message-Id: <20091214163456.e2e948cc.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Albert Herranz <albert_herranz@yahoo.es>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,135 +21,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Fri, 2009-12-11 at 16:23 +0530, Sachin Sant wrote:
->   
->> While executing cpu_hotplug(from autotest) tests against latest
->> next on a power6 box, the machine locks up. A soft reset shows
->> the following trace
->>     
->
-> Have you heard anything about that one yet or it's still to be
-> debugged ? It probably hit upstream by now.
->   
-Haven't received any response yet.
+Hi Grant,
 
-As you mentioned that patch went upstream and so did the problem.
+Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
 
-thanks
--Sachin
+arch/powerpc/mm/pgtable_32.c: In function 'mapin_ram':
+arch/powerpc/mm/pgtable_32.c:318: error: too many arguments to function 'mmu_mapin_ram'
 
-> Cheers,
-> Ben.
->
->   
->> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
->>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
->>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
->>     sp: c00000000c933650
->>    msr: 8000000000089032
->>   current = 0xc00000000c173840
->>   paca    = 0xc000000000bc2600
->>     pid   = 2602, comm = hotplug06.top.s
->> enter ? for help
->> [link register   ] c000000000342f10 .cpumask_next_and+0x4c/0x94
->> [c00000000c933650] c0000000000e9f34 .cpuset_cpus_allowed_locked+0x38/0x74 (unreliable)
->> [c00000000c9336e0] c000000000090074 .move_task_off_dead_cpu+0xc4/0x1ac
->> [c00000000c9337a0] c0000000005e4e5c .migration_call+0x304/0x830
->> [c00000000c933880] c0000000005e0880 .notifier_call_chain+0x68/0xe0
->> [c00000000c933920] c00000000012a92c ._cpu_down+0x210/0x34c
->> [c00000000c933a90] c00000000012aad8 .cpu_down+0x70/0xa8
->> [c00000000c933b20] c000000000525940 .store_online+0x54/0x894
->> [c00000000c933bb0] c000000000463430 .sysdev_store+0x3c/0x50
->> [c00000000c933c20] c0000000001f8320 .sysfs_write_file+0x124/0x18c
->> [c00000000c933ce0] c00000000017edac .vfs_write+0xd4/0x1fc
->> [c00000000c933d80] c00000000017efdc .SyS_write+0x58/0xa0
->> [c00000000c933e30] c0000000000085b4 syscall_exit+0x0/0x40
->> --- Exception: c01 (System Call) at 00000fff9fa8a8f8
->> SP (fffe7aef200) is in userspace
->> 0:mon> e
->> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
->>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
->>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
->>     sp: c00000000c933650
->>    msr: 8000000000089032
->>   current = 0xc00000000c173840
->>   paca    = 0xc000000000bc2600
->>     pid   = 2602, comm = hotplug06.top.s
->>
->> Last few messages from the dmesg log shows
->>
->> 0:mon> 
->> <4>IRQ 17 affinity broken off cpu 0
->> <4>IRQ 18 affinity broken off cpu 0
->> <4>IRQ 19 affinity broken off cpu 0
->> <4>IRQ 264 affinity broken off cpu 0
->> <4>cpu 0 (hwid 0) Ready to die...
->> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[0]
->> <4>Processor 0 found.
->> <4>IRQ 17 affinity broken off cpu 1
->> <4>IRQ 18 affinity broken off cpu 1
->> <4>IRQ 19 affinity broken off cpu 1
->> <4>IRQ 264 affinity broken off cpu 1
->> <4>cpu 1 (hwid 1) Ready to die...
->> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
->> <4>Processor 1 found.
->> <4>cpu 1 (hwid 1) Ready to die...
->> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
->> <4>Processor 1 found.
->> <4>cpu 1 (hwid 1) Ready to die...
->> <6>process 2423 (bash) no longer affine to cpu1
->> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
->> <4>Processor 1 found.
->> <4>cpu 1 (hwid 1) Ready to die...
->> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
->> <4>Processor 1 found.
->> <4>cpu 1 (hwid 1) Ready to die...
->> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
->> <4>Processor 1 found.
->> <4>cpu 1 (hwid 1) Ready to die...
->> <3>INFO: RCU detected CPU 0 stall (t=1000 jiffies)
->> <3>INFO: RCU detected CPU 0 stall (t=4000 jiffies)
->> 0:mon>
->>
->> After some debugging a possible suspect seems to be commit
->> 6ad4c18.. : sched: Fix balance vs hotplug race
->>
->> If i revert this patch i am able to execute the tests on this
->> power6 without any issues. 
->>
->> But at the same time the above patch is required to solve the
->> cpu hotplug related race on x86_64(as a side note this same
->> x86_64 issue can be recreated against latest Linus git as well)
->> that i reported here :
->>
->> http://marc.info/?l=linux-kernel&m=125802682922299&w=2
->>
->> I will try few more iterations with and without the above
->> patch just to make sure i have the correct results.
->>
->> If someone has a suggestion let me know.
->>
->> Thanks
->> -Sachin
->>
->>
->>     
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-next" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->   
+Casued by commit de32400dd26e743c5d500aa42d8d6818b79edb73 ("wii: use both
+mem1 and mem2 as ram").
 
+I applied the following patch for today, but this may be too much or
+there may be a better solution.
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 14 Dec 2009 16:04:15 +1100
+Subject: [PATCH] powerpc: fix up for mmu_mapin_ram api change
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/mm/40x_mmu.c       |    2 +-
+ arch/powerpc/mm/44x_mmu.c       |    2 +-
+ arch/powerpc/mm/fsl_booke_mmu.c |    2 +-
+ arch/powerpc/mm/mmu_decl.h      |    6 +++---
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
+index f5e7b9c..08dfa8e 100644
+--- a/arch/powerpc/mm/40x_mmu.c
++++ b/arch/powerpc/mm/40x_mmu.c
+@@ -91,7 +91,7 @@ void __init MMU_init_hw(void)
+ #define LARGE_PAGE_SIZE_16M	(1<<24)
+ #define LARGE_PAGE_SIZE_4M	(1<<22)
+ 
+-unsigned long __init mmu_mapin_ram(void)
++unsigned long __init mmu_mapin_ram(unsigned long top)
+ {
+ 	unsigned long v, s, mapped;
+ 	phys_addr_t p;
+diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
+index 98052ac..3986264 100644
+--- a/arch/powerpc/mm/44x_mmu.c
++++ b/arch/powerpc/mm/44x_mmu.c
+@@ -88,7 +88,7 @@ void __init MMU_init_hw(void)
+ 	flush_instruction_cache();
+ }
+ 
+-unsigned long __init mmu_mapin_ram(void)
++unsigned long __init mmu_mapin_ram(unsigned long top)
+ {
+ 	unsigned long addr;
+ 
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index fcfcb6e..c539472 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -207,7 +207,7 @@ unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
+ 	return amount_mapped;
+ }
+ 
+-unsigned long __init mmu_mapin_ram(void)
++unsigned long __init mmu_mapin_ram(unsigned long top)
+ {
+ 	return tlbcam_addrs[tlbcam_index - 1].limit - PAGE_OFFSET + 1;
+ }
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index eef7aaf..d49a775 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -139,15 +139,15 @@ extern void wii_memory_fixups(void);
+  */
+ #if defined(CONFIG_8xx)
+ #define MMU_init_hw()		do { } while(0)
+-#define mmu_mapin_ram()		(0UL)
++#define mmu_mapin_ram(top)	(0UL)
+ 
+ #elif defined(CONFIG_4xx)
+ extern void MMU_init_hw(void);
+-extern unsigned long mmu_mapin_ram(void);
++extern unsigned long mmu_mapin_ram(unsigned long top);
+ 
+ #elif defined(CONFIG_FSL_BOOKE)
+ extern void MMU_init_hw(void);
+-extern unsigned long mmu_mapin_ram(void);
++extern unsigned long mmu_mapin_ram(unsigned long top);
+ extern void adjust_total_lowmem(void);
+ 
+ #elif defined(CONFIG_PPC32)
+-- 
+1.6.5.4
 
 -- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
