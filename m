@@ -4,14 +4,14 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CCBA9B6EF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 00:30:51 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 18BFDB7088
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 00:31:13 +1100 (EST)
 From: Vishnu Suresh <Vishnu@freescale.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	linux-raid@vger.kernel.org, dan.j.williams@intel.com
-Subject: [PATCH v1] fsldma: Delete DMA_INTERRUPT capability
-Date: Mon, 14 Dec 2009 19:00:23 +0530
-Message-Id: <1260797423-7352-1-git-send-email-Vishnu@freescale.com>
+Subject: [PATCH v0] fsldma: re-initialize async_tx descriptors
+Date: Mon, 14 Dec 2009 19:00:55 +0530
+Message-Id: <1260797455-7390-1-git-send-email-Vishnu@freescale.com>
 Cc: Vishnu Suresh <Vishnu@freescale.com>, B04825@freescale.com,
 	R58472@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,78 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The DMA_INTERRUPT is a NULL transfer, triggering a
-Programming Error. Though this Error is handled in
-the driver with the fix given in "fsldma: Fix the DMA
-halt when using DMA_INTERRUPT async_tx transfer."
-<f79abb627f033c85a6088231f20c85bc4a9bd757>,
-the RAID5 operation, which initiated the transaction
-via Async_tx, hangs.
-
-Hence, this patch removes the DMA_INTERRUPT capability
-and the associated code from the driver.
+The async_tx descriptors contains dangling pointers.
+Hence, re-initialize them to NULL before use.
 
 Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
 ---
-Changes with respect to v0
-o. The functionality is removed instead of disabling as
-   per comments
 o. Rebased to linux-next as of 20091214
 
- drivers/dma/fsldma.c |   31 -------------------------------
- 1 files changed, 0 insertions(+), 31 deletions(-)
+ drivers/dma/fsldma.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 296f9e7..272097a 100644
+index 272097a..779c2b6 100644
 --- a/drivers/dma/fsldma.c
 +++ b/drivers/dma/fsldma.c
-@@ -449,35 +449,6 @@ static void fsl_dma_free_chan_resources(struct dma_chan *chan)
- 	fsl_chan->desc_pool = NULL;
- }
+@@ -384,6 +384,8 @@ static struct fsl_desc_sw *fsl_dma_alloc_descriptor(
+ 		dma_async_tx_descriptor_init(&desc_sw->async_tx,
+ 						&fsl_chan->common);
+ 		desc_sw->async_tx.tx_submit = fsl_dma_tx_submit;
++		desc_sw->async_tx.parent = NULL;
++		desc_sw->async_tx.next = NULL;
+ 		desc_sw->async_tx.phys = pdesc;
+ 	}
  
--static struct dma_async_tx_descriptor *
--fsl_dma_prep_interrupt(struct dma_chan *chan, unsigned long flags)
--{
--	struct fsl_dma_chan *fsl_chan;
--	struct fsl_desc_sw *new;
--
--	if (!chan)
--		return NULL;
--
--	fsl_chan = to_fsl_chan(chan);
--
--	new = fsl_dma_alloc_descriptor(fsl_chan);
--	if (!new) {
--		dev_err(fsl_chan->dev, "No free memory for link descriptor\n");
--		return NULL;
--	}
--
--	new->async_tx.cookie = -EBUSY;
--	new->async_tx.flags = flags;
--
--	/* Insert the link descriptor to the LD ring */
--	list_add_tail(&new->node, &new->tx_list);
--
--	/* Set End-of-link to the last link descriptor of new list*/
--	set_ld_eol(fsl_chan, new);
--
--	return &new->async_tx;
--}
--
- static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
- 	struct dma_chan *chan, dma_addr_t dma_dest, dma_addr_t dma_src,
- 	size_t len, unsigned long flags)
-@@ -1200,11 +1171,9 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
- 						- fdev->reg.start + 1);
- 
- 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
--	dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
- 	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
- 	fdev->common.device_alloc_chan_resources = fsl_dma_alloc_chan_resources;
- 	fdev->common.device_free_chan_resources = fsl_dma_free_chan_resources;
--	fdev->common.device_prep_dma_interrupt = fsl_dma_prep_interrupt;
- 	fdev->common.device_prep_dma_memcpy = fsl_dma_prep_memcpy;
- 	fdev->common.device_is_tx_complete = fsl_dma_is_complete;
- 	fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
 -- 
 1.6.4.2
