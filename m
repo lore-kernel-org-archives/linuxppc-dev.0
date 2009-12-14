@@ -1,19 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id AAB921009E1
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 02:41:13 +1100 (EST)
-Date: Mon, 14 Dec 2009 18:41:12 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 2/2] USB: ehci-fsl: Add power management support
-Message-ID: <20091214154112.GB26805@oksana.dev.rtsoft.ru>
-References: <20091214154025.GA24035@oksana.dev.rtsoft.ru>
+Return-Path: <to-fleischer@t-online.de>
+Received: from mailout09.t-online.de (mailout09.t-online.de [194.25.134.84])
+	by ozlabs.org (Postfix) with ESMTP id CC4A2B6F1A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 15 Dec 2009 03:55:21 +1100 (EST)
+From: Torsten Fleischer <to-fleischer@t-online.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: spi_mpc8xxx.c: chip select polarity problem
+Date: Mon, 14 Dec 2009 17:54:41 +0100
+References: <200911161742.46663.to-fleischer@t-online.de>
+	<200912091649.19380.to-fleischer@t-online.de>
+	<fa686aa40912090946m12fe293cg2efb043cb7a7f573@mail.gmail.com>
+In-Reply-To: <fa686aa40912090946m12fe293cg2efb043cb7a7f573@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20091214154025.GA24035@oksana.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>,
-	Jerry Huang <Chang-Ming.Huang@freescale.com>,
-	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200912141754.41329.to-fleischer@t-online.de>
+Cc: avorontsov@ru.mvista.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,150 +25,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-EHCI FSL controller preserve its state during sleep mode, so nothing
-fancy needs to be done.
+On Wed, Dec 9, 2009 at 18:46:51 Grant Likely wrote:
+> <to-fleischer@t-online.de> wrote:
+> [...]
+> > The following patch adds a function to get the active state of the chip
+> > select of a SPI device by looking for the 'spi-cs-high' property in the
+> > associated device tree node.
+> > This function is used by the spi_mpc8xxx driver to set a proper initial
+> > value to the associated GPIOs.
+> >
+> >
+> > Signed-off-by: Torsten Fleischer <to-fleischer@t-online.de>
+> 
+> I like this better.  See comments below.
+> 
+[...]
 
-Though, during 'deep sleep' mode (as found in MPC831x CPUs) the
-controller turns off and needs to be reinitialized upon resume.
+Hey Grant,
 
-This patch adds support for hibernation and resuming after deep sleep.
-Based on Dave Liu and Jerry Huang's work[1].
+below there is a new version of the patch containing the modifications
+according to your comments.
 
-[1] http://www.bitshrine.org/gpp/linux-fsl-2.6.24.3-MPC8315ERDB-usb-power-mangement.patch
+Thanks for the hints,
+Torsten
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+
+Signed-off-by: Torsten Fleischer <to-fleischer@t-online.de>
 ---
- drivers/usb/host/ehci-fsl.c |   90 +++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 83 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index 593a7e7..0e26aa1 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -1,5 +1,6 @@
- /*
-- * Copyright (c) 2005 MontaVista Software
-+ * Copyright 2005-2009 MontaVista Software, Inc.
-+ * Copyright 2008      Freescale Semiconductor, Inc.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the
-@@ -17,17 +18,20 @@
-  *
-  * Ported to 834x by Randy Vinson <rvinson@mvista.com> using code provided
-  * by Hunter Wu.
-+ * Power Management support by Dave Liu <daveliu@freescale.com>,
-+ * Jerry Huang <Chang-Ming.Huang@freescale.com> and
-+ * Anton Vorontsov <avorontsov@ru.mvista.com>.
-  */
+diff -ruN linux-2.6.32_orig//drivers/of/of_spi.c linux-2.6.32/drivers/of/of_spi.c
+--- linux-2.6.32_orig//drivers/of/of_spi.c	2009-12-03 04:51:21.000000000 +0100
++++ linux-2.6.32/drivers/of/of_spi.c	2009-12-11 17:57:22.016787665 +0100
+@@ -12,6 +12,43 @@
+ #include <linux/of_spi.h>
  
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/delay.h>
-+#include <linux/pm.h>
- #include <linux/platform_device.h>
- #include <linux/fsl_devices.h>
- 
- #include "ehci-fsl.h"
- 
--/* FIXME: Power Management is un-ported so temporarily disable it */
--#undef CONFIG_PM
--
--
- /* configure so an HC device and id are always provided */
- /* always called with process context; sleeping is OK */
- 
-@@ -285,10 +289,81 @@ static int ehci_fsl_setup(struct usb_hcd *hcd)
- 	return retval;
- }
- 
-+struct ehci_fsl {
-+	struct ehci_hcd	ehci;
-+
-+#ifdef CONFIG_PM
-+	/* Saved USB PHY settings, need to restore after deep sleep. */
-+	u32 usb_ctrl;
-+#endif
-+};
-+
-+#ifdef CONFIG_PM
-+
-+static struct ehci_fsl *hcd_to_ehci_fsl(struct usb_hcd *hcd)
+ /**
++ * of_get_spi_cs_active_state - Gets the chip select's active state of a SPI
++ * child devices.
++ * @np:        parent node of the SPI device nodes
++ * @index:     index/address of the SPI device (refers to the 'reg' property)
++ *
++ * Returns 0 for 'active low' or if the child's node can't be found.
++ * Otherwise it returns 1 ('active high').
++ */
++bool of_get_spi_cs_active_state(struct device_node *np, int index)
 +{
-+	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
++	struct device_node *child;
++	const int *prop;
++	int len;
++	bool active = 0;
 +
-+	return container_of(ehci, struct ehci_fsl, ehci);
++	/* search for the matching SPI device */
++	for_each_child_of_node(np, child) {
++		prop = of_get_property(child, "reg", &len);
++		if (!prop || len < sizeof(*prop)) {
++			/* property 'reg' not available (not an error) */
++			continue;
++		}
++
++		if ( *prop == index ) {
++			/* matching device found */
++			if (of_find_property(child, "spi-cs-high", NULL))
++				active = 1;
++			break;
++		}
++	}
++
++	return active;
 +}
++EXPORT_SYMBOL(of_get_spi_cs_active_state);
 +
-+static int ehci_fsl_drv_suspend(struct device *dev)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(dev);
-+	struct ehci_fsl *ehci_fsl = hcd_to_ehci_fsl(hcd);
-+	void __iomem *non_ehci = hcd->regs;
 +
-+	if (!fsl_deep_sleep())
-+		return 0;
-+
-+	ehci_fsl->usb_ctrl = in_be32(non_ehci + FSL_SOC_USB_CTRL);
-+	return 0;
-+}
-+
-+static int ehci_fsl_drv_resume(struct device *dev)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(dev);
-+	struct ehci_fsl *ehci_fsl = hcd_to_ehci_fsl(hcd);
-+	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
-+	void __iomem *non_ehci = hcd->regs;
-+
-+	if (!fsl_deep_sleep())
-+		return 0;
-+
-+	usb_root_hub_lost_power(hcd->self.root_hub);
-+
-+	/* Restore USB PHY settings and enable the controller. */
-+	out_be32(non_ehci + FSL_SOC_USB_CTRL, ehci_fsl->usb_ctrl);
-+
-+	ehci_reset(ehci);
-+	ehci_fsl_reinit(ehci);
-+
-+	return 0;
-+}
-+
-+static int ehci_fsl_drv_restore(struct device *dev)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(dev);
-+
-+	usb_root_hub_lost_power(hcd->self.root_hub);
-+	return 0;
-+}
-+
-+static struct dev_pm_ops ehci_fsl_pm_ops = {
-+	.suspend = ehci_fsl_drv_suspend,
-+	.resume = ehci_fsl_drv_resume,
-+	.restore = ehci_fsl_drv_restore,
-+};
-+
-+#define EHCI_FSL_PM_OPS		(&ehci_fsl_pm_ops)
-+#else
-+#define EHCI_FSL_PM_OPS		NULL
-+#endif /* CONFIG_PM */
-+
- static const struct hc_driver ehci_fsl_hc_driver = {
- 	.description = hcd_name,
- 	.product_desc = "Freescale On-Chip EHCI Host Controller",
--	.hcd_priv_size = sizeof(struct ehci_hcd),
-+	.hcd_priv_size = sizeof(struct ehci_fsl),
++/**
+  * of_register_spi_devices - Register child devices onto the SPI bus
+  * @master:	Pointer to spi_master device
+  * @np:		parent node of SPI device nodes
+diff -ruN linux-2.6.32_orig//drivers/spi/spi_mpc8xxx.c linux-2.6.32/drivers/spi/spi_mpc8xxx.c
+--- linux-2.6.32_orig//drivers/spi/spi_mpc8xxx.c	2009-12-03 04:51:21.000000000 +0100
++++ linux-2.6.32/drivers/spi/spi_mpc8xxx.c	2009-12-11 17:15:47.957379333 +0100
+@@ -705,6 +705,7 @@
+ 	for (; i < ngpios; i++) {
+ 		int gpio;
+ 		enum of_gpio_flags flags;
++		bool astate;
  
- 	/*
- 	 * generic hardware linkage
-@@ -355,6 +430,7 @@ static struct platform_driver ehci_fsl_driver = {
- 	.remove = ehci_fsl_drv_remove,
- 	.shutdown = usb_hcd_platform_shutdown,
- 	.driver = {
--		   .name = "fsl-ehci",
-+		.name = "fsl-ehci",
-+		.pm = EHCI_FSL_PM_OPS,
- 	},
- };
--- 
-1.6.3.3
+ 		gpio = of_get_gpio_flags(np, i, &flags);
+ 		if (!gpio_is_valid(gpio)) {
+@@ -721,8 +722,18 @@
+ 		pinfo->gpios[i] = gpio;
+ 		pinfo->alow_flags[i] = flags & OF_GPIO_ACTIVE_LOW;
+ 
++		/* get the active state of the SPI device */
++		astate = of_get_spi_cs_active_state(np, i);
++
++		/*
++		 *  alow_flags describe the wiring of the chip select
++		 *  (0 = non-inverted, 1 = inverted); this must be taken into
++		 *  account when setting the GPIO's initial value
++		 *  (see also mpc8xxx_spi_cs_control()); note that astate will
++		 *  be 0 for active low and 1 for active high respectively
++		 */
+ 		ret = gpio_direction_output(pinfo->gpios[i],
+-					    pinfo->alow_flags[i]);
++					    pinfo->alow_flags[i] ^ !astate);
+ 		if (ret) {
+ 			dev_err(dev, "can't set output direction for gpio "
+ 				"#%d: %d\n", i, ret);
+diff -ruN linux-2.6.32_orig//include/linux/of_spi.h linux-2.6.32/include/linux/of_spi.h
+--- linux-2.6.32_orig//include/linux/of_spi.h	2009-12-03 04:51:21.000000000 +0100
++++ linux-2.6.32/include/linux/of_spi.h	2009-12-11 17:10:21.681380685 +0100
+@@ -15,4 +15,7 @@
+ extern void of_register_spi_devices(struct spi_master *master,
+ 				    struct device_node *np);
+ 
++extern bool of_get_spi_cs_active_state(struct device_node *np,
++					   int index);
++
+ #endif /* __LINUX_OF_SPI */
