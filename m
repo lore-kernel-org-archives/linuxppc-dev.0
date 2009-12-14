@@ -1,18 +1,19 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 3FA3BB6EEE
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 02:40:28 +1100 (EST)
-Date: Mon, 14 Dec 2009 18:40:25 +0300
+	by ozlabs.org (Postfix) with ESMTP id 4321EB6F01
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 02:41:07 +1100 (EST)
+Date: Mon, 14 Dec 2009 18:41:05 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH v2 0/2] USB: ehci-fsl: Power management support
-Message-ID: <20091214154025.GA24035@oksana.dev.rtsoft.ru>
+Subject: [PATCH 1/2] USB: ehci-fsl: Fix sparse warnings
+Message-ID: <20091214154105.GA26805@oksana.dev.rtsoft.ru>
+References: <20091214154025.GA24035@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20091214154025.GA24035@oksana.dev.rtsoft.ru>
 Cc: Scott Wood <scottwood@freescale.com>,
 	Jerry Huang <Chang-Ming.Huang@freescale.com>,
 	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+This patch fixes following warnings:
 
-The patches were waiting for commit 2e9d546eda5888962a441da1e96bbf9
-("powerpc/fsl: Make fsl_deep_sleep() usable w/ modules and non-83xx
-builds") to hit Linus' tree.
+ehci-fsl.c:43:5: warning: symbol 'usb_hcd_fsl_probe' was not declared. Should it be static?
+ehci-fsl.c:150:6: warning: symbol 'usb_hcd_fsl_remove' was not declared. Should it be static?
 
-Now that the commit is in, I'm resending the series with some
-corrections as suggested[1] by Scott Wood.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/usb/host/ehci-fsl.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-It might be late for 2.6.33, but I believe that the patches are
-actually quite safe.
-
-Thanks!
-
-[1] http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg37297.html
-
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index 9911749..593a7e7 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -40,8 +40,8 @@
+  * Allocates basic resources for this USB host controller.
+  *
+  */
+-int usb_hcd_fsl_probe(const struct hc_driver *driver,
+-		      struct platform_device *pdev)
++static int usb_hcd_fsl_probe(const struct hc_driver *driver,
++			     struct platform_device *pdev)
+ {
+ 	struct fsl_usb2_platform_data *pdata;
+ 	struct usb_hcd *hcd;
+@@ -147,7 +147,8 @@ int usb_hcd_fsl_probe(const struct hc_driver *driver,
+  * Reverses the effect of usb_hcd_fsl_probe().
+  *
+  */
+-void usb_hcd_fsl_remove(struct usb_hcd *hcd, struct platform_device *pdev)
++static void usb_hcd_fsl_remove(struct usb_hcd *hcd,
++			       struct platform_device *pdev)
+ {
+ 	usb_remove_hcd(hcd);
+ 	iounmap(hcd->regs);
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.6.3.3
