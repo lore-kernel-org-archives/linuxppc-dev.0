@@ -1,28 +1,21 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2F1C3B6F08
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Dec 2009 18:15:25 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nBE7E4vd002356
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 00:14:04 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBE7FG4T171892
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 00:15:16 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nBE7FFdP009013
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 00:15:16 -0700
-From: Sachin Sant <sachinp@in.ibm.com>
-To: benh@kernel.crashing.org
-Date: Mon, 14 Dec 2009 12:45:12 +0530
-Message-Id: <20091214071512.10647.1587.sendpatchset@localhost.localdomain>
-Subject: [RESEND]Fix hash_utils_64.c compile errors with DEBUG enabled.
-Cc: linuxppc-dev@lists.ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A956CB6F06
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 20:08:36 +1100 (EST)
+Subject: Re: linux-next: 52xx-and-virtex tree build failure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20091214163456.e2e948cc.sfr@canb.auug.org.au>
+References: <20091214163456.e2e948cc.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 14 Dec 2009 20:08:17 +1100
+Message-ID: <1260781697.2217.15.camel@pasglop>
+Mime-Version: 1.0
+Cc: Albert Herranz <albert_herranz@yahoo.es>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,57 +25,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This time without the funny characters.
+On Mon, 2009-12-14 at 16:34 +1100, Stephen Rothwell wrote:
+> Hi Grant,
+> 
+> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
+> 
+> arch/powerpc/mm/pgtable_32.c: In function 'mapin_ram':
+> arch/powerpc/mm/pgtable_32.c:318: error: too many arguments to function 'mmu_mapin_ram'
+> 
+> Casued by commit de32400dd26e743c5d500aa42d8d6818b79edb73 ("wii: use both
+> mem1 and mem2 as ram").
+> 
+> I applied the following patch for today, but this may be too much or
+> there may be a better solution.
+> 
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Mon, 14 Dec 2009 16:04:15 +1100
+> Subject: [PATCH] powerpc: fix up for mmu_mapin_ram api change
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Fix following build errors generated with DEBUG=1
-
-cc1: warnings being treated as errors
-arch/powerpc/mm/hash_utils_64.c: In function 'htab_dt_scan_page_sizes':
-arch/powerpc/mm/hash_utils_64.c:343: error: format '%04x' expects type 'unsigned int', but argument 4 has type 'long unsigned int'
-arch/powerpc/mm/hash_utils_64.c:343: error: format '%08x' expects type 'unsigned int', but argument 5 has type 'long unsigned int'
-arch/powerpc/mm/hash_utils_64.c: In function 'htab_initialize':
-arch/powerpc/mm/hash_utils_64.c:666: error: format '%x' expects type 'unsigned int', but argument 4 has type 'long unsigned int'
-... SNIP ...
-
-Signed-off-by: Sachin Sant <sachinp@in.ibm.com>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-diff -Naurp a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
---- a/arch/powerpc/mm/hash_utils_64.c	2009-12-14 11:14:01.000000000 +0530
-+++ b/arch/powerpc/mm/hash_utils_64.c	2009-12-14 11:16:37.000000000 +0530
-@@ -340,7 +340,7 @@ static int __init htab_dt_scan_page_size
- 			else
- 				def->tlbiel = 0;
- 
--			DBG(" %d: shift=%02x, sllp=%04x, avpnm=%08x, "
-+			DBG(" %d: shift=%02x, sllp=%04lx, avpnm=%08lx, "
- 			    "tlbiel=%d, penc=%d\n",
- 			    idx, shift, def->sllp, def->avpnm, def->tlbiel,
- 			    def->penc);
-@@ -663,7 +663,7 @@ static void __init htab_initialize(void)
- 		base = (unsigned long)__va(lmb.memory.region[i].base);
- 		size = lmb.memory.region[i].size;
- 
--		DBG("creating mapping for region: %lx..%lx (prot: %x)\n",
-+		DBG("creating mapping for region: %lx..%lx (prot: %lx)\n",
- 		    base, size, prot);
- 
- #ifdef CONFIG_U3_DART
-@@ -1115,7 +1115,7 @@ void flush_hash_page(unsigned long va, r
- {
- 	unsigned long hash, index, shift, hidx, slot;
- 
--	DBG_LOW("flush_hash_page(va=%016x)\n", va);
-+	DBG_LOW("flush_hash_page(va=%016lx)\n", va);
- 	pte_iterate_hashed_subpages(pte, psize, va, index, shift) {
- 		hash = hpt_hash(va, shift, ssize);
- 		hidx = __rpte_to_hidx(pte, index);
-@@ -1123,7 +1123,7 @@ void flush_hash_page(unsigned long va, r
- 			hash = ~hash;
- 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 		slot += hidx & _PTEIDX_GROUP_IX;
--		DBG_LOW(" sub %d: hash=%x, hidx=%x\n", index, slot, hidx);
-+		DBG_LOW(" sub %ld: hash=%lx, hidx=%lx\n", index, slot, hidx);
- 		ppc_md.hpte_invalidate(slot, va, psize, ssize, local);
- 	} pte_iterate_hashed_end();
- }
+Grant, please add to your tree along with the Nintendo stuff.
+
+Cheers,
+Ben.
+
+> ---
+>  arch/powerpc/mm/40x_mmu.c       |    2 +-
+>  arch/powerpc/mm/44x_mmu.c       |    2 +-
+>  arch/powerpc/mm/fsl_booke_mmu.c |    2 +-
+>  arch/powerpc/mm/mmu_decl.h      |    6 +++---
+>  4 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
+> index f5e7b9c..08dfa8e 100644
+> --- a/arch/powerpc/mm/40x_mmu.c
+> +++ b/arch/powerpc/mm/40x_mmu.c
+> @@ -91,7 +91,7 @@ void __init MMU_init_hw(void)
+>  #define LARGE_PAGE_SIZE_16M	(1<<24)
+>  #define LARGE_PAGE_SIZE_4M	(1<<22)
+>  
+> -unsigned long __init mmu_mapin_ram(void)
+> +unsigned long __init mmu_mapin_ram(unsigned long top)
+>  {
+>  	unsigned long v, s, mapped;
+>  	phys_addr_t p;
+> diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
+> index 98052ac..3986264 100644
+> --- a/arch/powerpc/mm/44x_mmu.c
+> +++ b/arch/powerpc/mm/44x_mmu.c
+> @@ -88,7 +88,7 @@ void __init MMU_init_hw(void)
+>  	flush_instruction_cache();
+>  }
+>  
+> -unsigned long __init mmu_mapin_ram(void)
+> +unsigned long __init mmu_mapin_ram(unsigned long top)
+>  {
+>  	unsigned long addr;
+>  
+> diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+> index fcfcb6e..c539472 100644
+> --- a/arch/powerpc/mm/fsl_booke_mmu.c
+> +++ b/arch/powerpc/mm/fsl_booke_mmu.c
+> @@ -207,7 +207,7 @@ unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
+>  	return amount_mapped;
+>  }
+>  
+> -unsigned long __init mmu_mapin_ram(void)
+> +unsigned long __init mmu_mapin_ram(unsigned long top)
+>  {
+>  	return tlbcam_addrs[tlbcam_index - 1].limit - PAGE_OFFSET + 1;
+>  }
+> diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+> index eef7aaf..d49a775 100644
+> --- a/arch/powerpc/mm/mmu_decl.h
+> +++ b/arch/powerpc/mm/mmu_decl.h
+> @@ -139,15 +139,15 @@ extern void wii_memory_fixups(void);
+>   */
+>  #if defined(CONFIG_8xx)
+>  #define MMU_init_hw()		do { } while(0)
+> -#define mmu_mapin_ram()		(0UL)
+> +#define mmu_mapin_ram(top)	(0UL)
+>  
+>  #elif defined(CONFIG_4xx)
+>  extern void MMU_init_hw(void);
+> -extern unsigned long mmu_mapin_ram(void);
+> +extern unsigned long mmu_mapin_ram(unsigned long top);
+>  
+>  #elif defined(CONFIG_FSL_BOOKE)
+>  extern void MMU_init_hw(void);
+> -extern unsigned long mmu_mapin_ram(void);
+> +extern unsigned long mmu_mapin_ram(unsigned long top);
+>  extern void adjust_total_lowmem(void);
+>  
+>  #elif defined(CONFIG_PPC32)
+> -- 
+> 1.6.5.4
+> 
