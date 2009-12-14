@@ -1,13 +1,22 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Neil Campbell <neilc@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: handle VSX alignment faults correctly in
-	little-endian mode
-In-reply-to: <4B2646F9.4000203@linux.vnet.ibm.com>
-References: <4B2646F9.4000203@linux.vnet.ibm.com>
-Date: Tue, 15 Dec 2009 08:05:08 +1100
-Message-ID: <14867.1260824708@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3D023B6F15
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 08:18:40 +1100 (EST)
+Subject: Re: [Next] CPU Hotplug test failures on powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <1260793182.4165.223.camel@twins>
+References: <4B2224C7.1020908@in.ibm.com> <1260786122.4165.142.camel@twins>
+	<4B261D7A.9040802@in.ibm.com>  <1260793182.4165.223.camel@twins>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 15 Dec 2009 08:17:00 +1100
+Message-ID: <1260825420.2217.40.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,128 +26,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> This patch fixes the handling of VSX alignment faults in little-endian
-> mode (the current code assumes the processor is in big-endian mode).
-> 
-> The patch also makes the handlers clear the top 8 bytes of the register
-> when handling an 8 byte VSX load.
-> 
-> This is based on 2.6.32.
-> 
-> Signed-off-by: Neil Campbell <neilc@linux.vnet.ibm.com>
+On Mon, 2009-12-14 at 13:19 +0100, Peter Zijlstra wrote:
 
-Thanks for this Neil!
-
-Acked-by: Michael Neuling <mikey@neuling.org>
-
-> Cc: <stable@kernel.org>
-> ---
-> diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-> index a5b632e..f0c624f 100644
-> --- a/arch/powerpc/kernel/align.c
-> +++ b/arch/powerpc/kernel/align.c
-> @@ -642,10 +642,14 @@ static int emulate_spe(struct pt_regs *regs, unsigned i
-nt reg,
->   */
->  static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
->  		       unsigned int areg, struct pt_regs *regs,
-> -		       unsigned int flags, unsigned int length)
-> +		       unsigned int flags, unsigned int length,
-> +		       unsigned int elsize)
->  {
->  	char *ptr;
-> +	unsigned long *lptr;
->  	int ret = 0;
-> +	int sw = 0;
-> +	int i, j;
->  
->  	flush_vsx_to_thread(current);
->  
-> @@ -654,19 +658,35 @@ static int emulate_vsx(unsigned char __user *addr, unsi
-gned int reg,
->  	else
->  		ptr = (char *) &current->thread.vr[reg - 32];
->  
-> -	if (flags & ST)
-> -		ret = __copy_to_user(addr, ptr, length);
-> -        else {
-> -		if (flags & SPLT){
-> -			ret = __copy_from_user(ptr, addr, length);
-> -			ptr += length;
-> +	lptr = (unsigned long *) ptr;
-> +
-> +	if (flags & SW)
-> +		sw = elsize-1;
-> +
-> +	for (j = 0; j < length; j += elsize) {
-> +		for (i = 0; i < elsize; ++i) {
-> +			if (flags & ST)
-> +				ret |= __put_user(ptr[i^sw], addr + i);
-> +			else
-> +				ret |= __get_user(ptr[i^sw], addr + i);
->  		}
-> -		ret |= __copy_from_user(ptr, addr, length);
-> +		ptr  += elsize;
-> +		addr += elsize;
->  	}
-> -	if (flags & U)
-> -		regs->gpr[areg] = regs->dar;
-> -	if (ret)
-> +
-> +	if (!ret) {
-> +		if (flags & U)
-> +			regs->gpr[areg] = regs->dar;
-> +
-> +		/* Splat load copies the same data to top and bottom 8 bytes */
-> +		if (flags & SPLT)
-> +			lptr[1] = lptr[0];
-> +		/* For 8 byte loads, zero the top 8 bytes */
-> +		else if (!(flags & ST) && (8 == length))
-> +			lptr[1] = 0;
-> +	} else
->  		return -EFAULT;
-> +
->  	return 1;
->  }
->  #endif
-> @@ -767,16 +787,25 @@ int fix_alignment(struct pt_regs *regs)
->  
->  #ifdef CONFIG_VSX
->  	if ((instruction & 0xfc00003e) == 0x7c000018) {
-> -		/* Additional register addressing bit (64 VSX vs 32 FPR/GPR */
-> +		unsigned int elsize;
-> +
-> +		/* Additional register addressing bit (64 VSX vs 32 FPR/GPR) */
->  		reg |= (instruction & 0x1) << 5;
->  		/* Simple inline decoder instead of a table */
-> +		/* VSX has only 8 and 16 byte memory accesses */
-> +		nb = 8;
->  		if (instruction & 0x200)
->  			nb = 16;
-> -		else if (instruction & 0x080)
-> -			nb = 8;
-> -		else
-> -			nb = 4;
-> +
-> +		/* Vector stores in little-endian mode swap individual
-> +		   elements, so process them separately */
-> +		elsize = 4;
-> +		if (instruction & 0x80)
-> +			elsize = 8;
-> +
->  		flags = 0;
-> +		if (regs->msr & MSR_LE)
-> +			flags |= SW;
->  		if (instruction & 0x100)
->  			flags |= ST;
->  		if (instruction & 0x040)
-> @@ -787,7 +816,7 @@ int fix_alignment(struct pt_regs *regs)
->  			nb = 8;
->  		}
->  		PPC_WARN_EMULATED(vsx);
-> -		return emulate_vsx(addr, reg, areg, regs, flags, nb);
-> +		return emulate_vsx(addr, reg, areg, regs, flags, nb, elsize);
->  	}
->  #endif
->  	/* A size of 0 indicates an instruction we don't support, with
+> > >> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
+> > >>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
+> > >>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
+> > >>     sp: c00000000c933650
+> > >>    msr: 8000000000089032
+> > >>   current = 0xc00000000c173840
+> > >>   paca    = 0xc000000000bc2600
+> > >>     pid   = 2602, comm = hotplug06.top.s
+> > >> enter ? for help
+> > >> [link register   ] c000000000342f10 .cpumask_next_and+0x4c/0x94
+> > >> [c00000000c933650] c0000000000e9f34 .cpuset_cpus_allowed_locked+0x38/0x74 (unreliable)
+> > >> [c00000000c9336e0] c000000000090074 .move_task_off_dead_cpu+0xc4/0x1ac
+> > >> [c00000000c9337a0] c0000000005e4e5c .migration_call+0x304/0x830
+> > >> [c00000000c933880] c0000000005e0880 .notifier_call_chain+0x68/0xe0
+> > >> [c00000000c933920] c00000000012a92c ._cpu_down+0x210/0x34c
+> > >> [c00000000c933a90] c00000000012aad8 .cpu_down+0x70/0xa8
+> > >> [c00000000c933b20] c000000000525940 .store_online+0x54/0x894
+> > >> [c00000000c933bb0] c000000000463430 .sysdev_store+0x3c/0x50
+> > >> [c00000000c933c20] c0000000001f8320 .sysfs_write_file+0x124/0x18c
+> > >> [c00000000c933ce0] c00000000017edac .vfs_write+0xd4/0x1fc
+> > >> [c00000000c933d80] c00000000017efdc .SyS_write+0x58/0xa0
+> > >> [c00000000c933e30] c0000000000085b4 syscall_exit+0x0/0x40
+> > >> --- Exception: c01 (System Call) at 00000fff9fa8a8f8
+> > >> SP (fffe7aef200) is in userspace
+> > >> 0:mon> e
+> > >> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
+> > >>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
+> > >>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
+> > >>     sp: c00000000c933650
+> > >>    msr: 8000000000089032
+> > >>   current = 0xc00000000c173840
+> > >>   paca    = 0xc000000000bc2600
+> > >>     pid   = 2602, comm = hotplug06.top.s
+> > >>
 > 
+> OK so how do I read that above thing? What's a System Reset? Is that
+> like the x86 triple fault thing?
+
+Nah, it's an NMI that throws you into xmon. Basically, the machine was
+hung and Sachin interrupted it with an NMI to see what was going on. The
+above is the backtrace. It was at the moment of the NMI inside
+find_next_bit() called from cpumask_next_and() etc... 
+
+> >From what I can make of it, its in move_task_off_dead_cpu(), right after
+> having called cpuset_cpus_allowed_locked(), doing that cpumask_any_and()
+> call.
+
+Yes, it looks like it.
+
+> static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+> {
+>         int dest_cpu;
+>         const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(dead_cpu));
+> 
+> again:
+>         /* Look for allowed, online CPU in same node. */
+>         for_each_cpu_and(dest_cpu, nodemask, cpu_active_mask)
+>                 if (cpumask_test_cpu(dest_cpu, &p->cpus_allowed))
+>                         goto move;
+> 
+>         /* Any allowed, online CPU? */
+>         dest_cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
+>         if (dest_cpu < nr_cpu_ids)
+>                 goto move;
+> 
+>         /* No more Mr. Nice Guy. */
+>         if (dest_cpu >= nr_cpu_ids) {
+>                 cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
+> ====>           dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
+> 
+>                 /*
+>                  * Don't tell them about moving exiting tasks or
+>                  * kernel threads (both mm NULL), since they never
+>                  * leave kernel.
+>                  */
+>                 if (p->mm && printk_ratelimit()) {
+>                         pr_info("process %d (%s) no longer affine to cpu%d\n",
+>                                 task_pid_nr(p), p->comm, dead_cpu);
+>                 }
+>         }
+> 
+> move:
+>         /* It can have affinity changed while we were choosing. */
+>         if (unlikely(!__migrate_task_irq(p, dead_cpu, dest_cpu)))
+>                 goto again;
+> }
+> 
+> Both masks, p->cpus_allowed and cpu_active_mask are stable in that p
+> won't go away since we hold the tasklist_lock (in migrate_list_tasks),
+> and cpu_active_mask is static storage, so WTH is it going funny on?
+
+Sachin, this is 100% reproduceable right ? You should be able to
+sprinkle it with some xmon_printf() (rather than printk, just add a
+prototype extern void xmon_printf(const char *fmt,...); somewhere, this
+has the advantage of being fully synchronous and will print out even if
+the printk sem is held.
+
+Cheers,
+Ben.
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
