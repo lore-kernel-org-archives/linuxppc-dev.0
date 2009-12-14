@@ -1,20 +1,28 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 60FD6B6F09
+Return-Path: <sachinp@in.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 33DF8B6F1B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Dec 2009 17:35:22 +1100 (EST)
-Date: Mon, 14 Dec 2009 17:35:12 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
-	<paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Subject: powerpc/kvm tree build failure
-Message-Id: <20091214173512.91e4e39a.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__14_Dec_2009_17_35_12_+1100_cqJ=M75hCdP5qQaP"
-Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
-	Hollis Blanchard <hollisb@us.ibm.com>
+	Mon, 14 Dec 2009 18:01:20 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nBE6xsO0025480
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Dec 2009 23:59:54 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nBE70lDK087334
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 00:00:50 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id nBE70l1p022350
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 00:00:47 -0700
+From: Sachin Sant <sachinp@in.ibm.com>
+To: benh@kernel.crashing.org
+Date: Mon, 14 Dec 2009 12:30:43 +0530
+Message-Id: <20091214070043.10313.12371.sendpatchset@localhost.localdomain>
+Subject: Fix hash_utils_64.c compile errors with DEBUG enabled.
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +32,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__14_Dec_2009_17_35_12_+1100_cqJ=M75hCdP5qQaP
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fix following build errors generated with DEBUG=1
 
-Hi all,
+cc1: warnings being treated as errors
+arch/powerpc/mm/hash_utils_64.c: In function ‘htab_dt_scan_page_sizes’:
+arch/powerpc/mm/hash_utils_64.c:345: error: format ‘%04x’ expects type ‘unsigned int’, but argument 4 has type ‘long unsigned int’
+arch/powerpc/mm/hash_utils_64.c:345: error: format ‘%08x’ expects type ‘unsigned int’, but argument 5 has type ‘long unsigned int’
+arch/powerpc/mm/hash_utils_64.c: In function ‘htab_initialize’:
+... SNIP ...
 
-A powerpc allmodconfig fails like this:
+Signed-off-by: Sachin Sant <sachinp@in.ibm.com>
+---
 
-arch/powerpc/kvm/built-in.o:(.toc1+0x18): undefined reference to `kvm_debug=
-fs_dir'
-
-This is because CONFIG_KVM_EXIT_TIMING is a bool while
-CONFIG_KVM_BOOK3S_64 is tristate. This causes arch/powerpc/kvm/timing.o
-(which references kvm_debugfs_dir) to be built in, but
-virt/kvm/kvm_main.o (which defines it) to be modular.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__14_Dec_2009_17_35_12_+1100_cqJ=M75hCdP5qQaP
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksl3KAACgkQjjKRsyhoI8w29gCgm218Og9pn23CjoGVoBKvD2Vj
-KG0AnAqOaH7cPzvwp4S+lhz2G+l9/lrL
-=VKQO
------END PGP SIGNATURE-----
-
---Signature=_Mon__14_Dec_2009_17_35_12_+1100_cqJ=M75hCdP5qQaP--
+diff -Naurp a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+--- a/arch/powerpc/mm/hash_utils_64.c	2009-12-14 11:14:01.000000000 +0530
++++ b/arch/powerpc/mm/hash_utils_64.c	2009-12-14 11:16:37.000000000 +0530
+@@ -340,7 +340,7 @@ static int __init htab_dt_scan_page_size
+ 			else
+ 				def->tlbiel = 0;
+ 
+-			DBG(" %d: shift=%02x, sllp=%04x, avpnm=%08x, "
++			DBG(" %d: shift=%02x, sllp=%04lx, avpnm=%08lx, "
+ 			    "tlbiel=%d, penc=%d\n",
+ 			    idx, shift, def->sllp, def->avpnm, def->tlbiel,
+ 			    def->penc);
+@@ -663,7 +663,7 @@ static void __init htab_initialize(void)
+ 		base = (unsigned long)__va(lmb.memory.region[i].base);
+ 		size = lmb.memory.region[i].size;
+ 
+-		DBG("creating mapping for region: %lx..%lx (prot: %x)\n",
++		DBG("creating mapping for region: %lx..%lx (prot: %lx)\n",
+ 		    base, size, prot);
+ 
+ #ifdef CONFIG_U3_DART
+@@ -1115,7 +1115,7 @@ void flush_hash_page(unsigned long va, r
+ {
+ 	unsigned long hash, index, shift, hidx, slot;
+ 
+-	DBG_LOW("flush_hash_page(va=%016x)\n", va);
++	DBG_LOW("flush_hash_page(va=%016lx)\n", va);
+ 	pte_iterate_hashed_subpages(pte, psize, va, index, shift) {
+ 		hash = hpt_hash(va, shift, ssize);
+ 		hidx = __rpte_to_hidx(pte, index);
+@@ -1123,7 +1123,7 @@ void flush_hash_page(unsigned long va, r
+ 			hash = ~hash;
+ 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+ 		slot += hidx & _PTEIDX_GROUP_IX;
+-		DBG_LOW(" sub %d: hash=%x, hidx=%x\n", index, slot, hidx);
++		DBG_LOW(" sub %ld: hash=%lx, hidx=%lx\n", index, slot, hidx);
+ 		ppc_md.hpte_invalidate(slot, va, psize, ssize, local);
+ 	} pte_iterate_hashed_end();
+ }
