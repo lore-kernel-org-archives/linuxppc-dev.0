@@ -1,22 +1,22 @@
-Return-Path: <dwg@au1.ibm.com>
-Date: Mon, 14 Dec 2009 12:16:11 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC:PATCH 02/03] powerpc: Add definitions for Debug Registers
-	on BookE Platforms
-Message-ID: <20091214011611.GG4259@yookeroo>
-References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-	<20091210155721.6697.40863.sendpatchset@norville.austin.ibm.com>
-	<1134F495-6623-437F-AF1F-64D0A87BA112@kernel.crashing.org>
-	<20091211032815.GD8852@yookeroo>
-	<509EFABE-E123-48EA-9416-6FC22A00A6F5@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <509EFABE-E123-48EA-9416-6FC22A00A6F5@kernel.crashing.org>
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
-	Sergio Durigan Junior <sergiodj@br.ibm.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Thiago Jung Bauermann <bauerman@br.ibm.com>, Torez Smith <torez@us.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0F624B70B3
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Dec 2009 13:52:27 +1100 (EST)
+Subject: Re: [Next] CPU Hotplug test failures on powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sachin Sant <sachinp@in.ibm.com>
+In-Reply-To: <4B2224C7.1020908@in.ibm.com>
+References: <4B2224C7.1020908@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 14 Dec 2009 13:48:53 +1100
+Message-ID: <1260758933.2217.7.camel@pasglop>
+Mime-Version: 1.0
+Cc: Peter Zijlstra <peterz@infradead.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +26,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 11, 2009 at 08:35:35AM -0600, Kumar Gala wrote:
-> 
-> On Dec 10, 2009, at 9:28 PM, David Gibson wrote:
-> 
-> > On Thu, Dec 10, 2009 at 08:41:53PM -0600, Kumar Gala wrote:
-> > [snip]
-> >>> +#define DBCR1_USER_DEBUG	(DBCR1_IAC12M | DBCR1_IAC34M)
-> >>> +#define DBCR1_BASE_REG_VALUE	(DBCR1_IAC1US | DBCR1_IAC1ER_10 | \
-> >>> +				 DBCR1_IAC2US | DBCR1_IAC2ER_10 | \
-> >>> +				 DBCR1_IAC3US | DBCR1_IAC3ER_10 | \
-> >>> +				 DBCR1_IAC4US | DBCR1_IAC4ER_10)
-> >> 
-> >> We are we using MSR[IS] IS=0, why not just any Eff address?  In the
-> >> future we might have user as IS = 1, and kernel as IS = 0.
-> > 
-> > Since the user can't control that directly, we can update this when
-> > and if we change our use of address spaces.
-> 
-> That's such a subtle issue (easy to forgot about and miss in the
-> future).  Why do we need this now?
+On Fri, 2009-12-11 at 16:23 +0530, Sachin Sant wrote:
+> While executing cpu_hotplug(from autotest) tests against latest
+> next on a power6 box, the machine locks up. A soft reset shows
+> the following trace
 
-Um.. I guess we don't really.  I was thinking of this default value a)
-in the context of the old explicit register setting interface, where
-we wanted to force what userspace could and could not set here and b)
-half in the context of a system with real mode, in which we certainly
-wouldn't want userspace to be able to set real address breakpoints.
+Have you heard anything about that one yet or it's still to be
+debugged ? It probably hit upstream by now.
 
-I don't think it matters that much.  And, if we use AS1 for userspace
-in the future, we arguably still want to change this to make it _01,
-so that userspace can't set breakpoints in the kernel AS (although I
-guess as long as we force the PR state in which the breakpoint
-triggers, it doesn't really matter).
+Cheers,
+Ben.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
+>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
+>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
+>     sp: c00000000c933650
+>    msr: 8000000000089032
+>   current = 0xc00000000c173840
+>   paca    = 0xc000000000bc2600
+>     pid   = 2602, comm = hotplug06.top.s
+> enter ? for help
+> [link register   ] c000000000342f10 .cpumask_next_and+0x4c/0x94
+> [c00000000c933650] c0000000000e9f34 .cpuset_cpus_allowed_locked+0x38/0x74 (unreliable)
+> [c00000000c9336e0] c000000000090074 .move_task_off_dead_cpu+0xc4/0x1ac
+> [c00000000c9337a0] c0000000005e4e5c .migration_call+0x304/0x830
+> [c00000000c933880] c0000000005e0880 .notifier_call_chain+0x68/0xe0
+> [c00000000c933920] c00000000012a92c ._cpu_down+0x210/0x34c
+> [c00000000c933a90] c00000000012aad8 .cpu_down+0x70/0xa8
+> [c00000000c933b20] c000000000525940 .store_online+0x54/0x894
+> [c00000000c933bb0] c000000000463430 .sysdev_store+0x3c/0x50
+> [c00000000c933c20] c0000000001f8320 .sysfs_write_file+0x124/0x18c
+> [c00000000c933ce0] c00000000017edac .vfs_write+0xd4/0x1fc
+> [c00000000c933d80] c00000000017efdc .SyS_write+0x58/0xa0
+> [c00000000c933e30] c0000000000085b4 syscall_exit+0x0/0x40
+> --- Exception: c01 (System Call) at 00000fff9fa8a8f8
+> SP (fffe7aef200) is in userspace
+> 0:mon> e
+> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
+>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
+>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
+>     sp: c00000000c933650
+>    msr: 8000000000089032
+>   current = 0xc00000000c173840
+>   paca    = 0xc000000000bc2600
+>     pid   = 2602, comm = hotplug06.top.s
+> 
+> Last few messages from the dmesg log shows
+> 
+> 0:mon> 
+> <4>IRQ 17 affinity broken off cpu 0
+> <4>IRQ 18 affinity broken off cpu 0
+> <4>IRQ 19 affinity broken off cpu 0
+> <4>IRQ 264 affinity broken off cpu 0
+> <4>cpu 0 (hwid 0) Ready to die...
+> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[0]
+> <4>Processor 0 found.
+> <4>IRQ 17 affinity broken off cpu 1
+> <4>IRQ 18 affinity broken off cpu 1
+> <4>IRQ 19 affinity broken off cpu 1
+> <4>IRQ 264 affinity broken off cpu 1
+> <4>cpu 1 (hwid 1) Ready to die...
+> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
+> <4>Processor 1 found.
+> <4>cpu 1 (hwid 1) Ready to die...
+> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
+> <4>Processor 1 found.
+> <4>cpu 1 (hwid 1) Ready to die...
+> <6>process 2423 (bash) no longer affine to cpu1
+> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
+> <4>Processor 1 found.
+> <4>cpu 1 (hwid 1) Ready to die...
+> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
+> <4>Processor 1 found.
+> <4>cpu 1 (hwid 1) Ready to die...
+> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
+> <4>Processor 1 found.
+> <4>cpu 1 (hwid 1) Ready to die...
+> <3>INFO: RCU detected CPU 0 stall (t=1000 jiffies)
+> <3>INFO: RCU detected CPU 0 stall (t=4000 jiffies)
+> 0:mon>
+> 
+> After some debugging a possible suspect seems to be commit
+> 6ad4c18.. : sched: Fix balance vs hotplug race
+> 
+> If i revert this patch i am able to execute the tests on this
+> power6 without any issues. 
+> 
+> But at the same time the above patch is required to solve the
+> cpu hotplug related race on x86_64(as a side note this same
+> x86_64 issue can be recreated against latest Linus git as well)
+> that i reported here :
+> 
+> http://marc.info/?l=linux-kernel&m=125802682922299&w=2
+> 
+> I will try few more iterations with and without the above
+> patch just to make sure i have the correct results.
+> 
+> If someone has a suggestion let me know.
+> 
+> Thanks
+> -Sachin
+> 
+> 
