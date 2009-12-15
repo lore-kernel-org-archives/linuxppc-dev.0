@@ -1,26 +1,24 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-	by ozlabs.org (Postfix) with ESMTP id 456CCB6F19
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 05:23:42 +1100 (EST)
-Message-ID: <4B27D42C.8070309@intel.com>
-Date: Tue, 15 Dec 2009 11:23:40 -0700
-From: Dan Williams <dan.j.williams@intel.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f223.google.com (mail-gx0-f223.google.com
+	[209.85.217.223]) by ozlabs.org (Postfix) with ESMTP id BB5B1B6F18
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Dec 2009 06:50:27 +1100 (EST)
+Received: by gxk23 with SMTP id 23so282411gxk.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 15 Dec 2009 11:50:25 -0800 (PST)
 MIME-Version: 1.0
-To: Suresh Vishnu-B05022 <B05022@freescale.com>
-Subject: Re: [PATCH v0] Crypto: Talitos: re-initialize async_tx descriptors
-References: <1260797602-7476-1-git-send-email-Vishnu@freescale.com>
-	<e9c3a7c20912142329j6603402ah2963d075419efa1c@mail.gmail.com>
-	<76952DF81420A349876E087D089DF034562C75@zin33exm21.fsl.freescale.net>
-In-Reply-To: <76952DF81420A349876E087D089DF034562C75@zin33exm21.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-	Ira Snyder <iws@ovro.caltech.edu>,
-	Tabi Timur-B04825 <B04825@freescale.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-	Li Yang-R58472 <r58472@freescale.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <200912151159.40628.roman.fietze@telemotive.de>
+References: <200912081339.50722.roman.fietze@telemotive.de>
+	<fa686aa40912102213m5b2a0092i3c25d73b914ece93@mail.gmail.com>
+	<200912151159.40628.roman.fietze@telemotive.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 15 Dec 2009 12:50:05 -0700
+Message-ID: <fa686aa40912151150o64f97533h1b736b4445301192@mail.gmail.com>
+Subject: Re: [PATCH] PowerPC: const intspec pointers
+To: Roman Fietze <roman.fietze@telemotive.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,63 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Suresh Vishnu-B05022 wrote:
->  > On Mon, Dec 14, 2009 at 6:33 AM, Vishnu Suresh <Vishnu@freescale.com> 
-> wrote:
->  > > The async_tx descriptors contains dangling pointers.
->  > > Hence, re-initialize them to NULL before use.
->  > >
->  > > Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
->  > > ---
->  > > o. Rebased to linux-next as of 20091214
->  > >
->  > >  drivers/crypto/talitos.c |    3 +++
->  > >  1 files changed, 3 insertions(+), 0 deletions(-)
->  > >
->  > > diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
->  > > index 87f06be..9e261c6 100644
->  > > --- a/drivers/crypto/talitos.c
->  > > +++ b/drivers/crypto/talitos.c
->  > > @@ -952,6 +952,9 @@ static struct dma_async_tx_descriptor * 
-> talitos_prep_dma_xor(
->  > >                return NULL;
->  > >        }
->  > >        dma_async_tx_descriptor_init(&new->async_tx, &xor_chan->common);
->  > > +       new->async_tx.parent = NULL;
->  > > +       new->async_tx.next = NULL;
->  > > +
->  > >
->  > >        desc = &new->hwdesc;
->  > >        /* Set destination: Last pointer pair */
-> 
->  > These two values are owned by the async_tx api, drivers are not
->  > supposed to touch them.
-> I have sent this patch and the similar one for fsldma seperately,
-> so that if the changes are needed and can be done in 
-> dma_async_tx_descriptor_init(),
-> these patches can be ignored. 
->  > Both iop_adma and the new ppx4xx driver
->  > (which use the async_tx channel switching capability) get away without
->  > touching these fields which makes me suspect there is a
->  > misunderstanding/bug somewhere else in the talitos implementation.
-> 
-> This bug does not occur on all the platforms. The occurrance is random.
-> This occurs when a channel switch between two different devices are 
-> present.
-> This same initialization is required in case of fsldma as well. 
-> In case of fsldma/talitosXOR, there are two DMA channels (on same 
-> device) and single XOR channel (on another device).
-> 
-> When used without fsldma, this driver works fine.
-> Does iop_adma and ppx4xx work in similar enviroment?
+On Tue, Dec 15, 2009 at 3:59 AM, Roman Fietze
+<roman.fietze@telemotive.de> wrote:
+> Hallo Grant,
+>
+> On Friday 11 December 2009 07:13:45 Grant Likely wrote:
+>
+>> BTW, if you're interested, there is a driver for the SCLPC FIFO about
+>> to be merged into 2.6.33. =A0It's in Ben's tree waiting to be pulled
+>> into mainline.
+>
+> I've had a "look" into it. This means I rewrote it in some parts to
+> get it running.
+>
+> First I tried to do it in nice little steps, so the git commits are
+> clean and simple. But with my knowldege about the SCLPC, the code your
+> old SCLPC test driver and my 2.4.25 FPGA driver using SCLPS and
+> BestComm, one of the commits just got a big rewrite including fixes
+> for quite some bugs.
+>
+> The driver is now running using DMA TX and RX. Without BestComm it's
+> running partly. I'm really windering if this code ever ran before?
+> There are some historical or future items in there like measurement of
+> the times, a list_header maybe for future request queueing, and so on
 
-Yes, iop_adma when running on iop3xx hardware has one xor channel and 
-two memcpy channels.
+Yes, I'm using the driver in a couple of projects.  It works for me
+for both RX and TX (although TX+DMA has been troublesome).  I'll
+double check to make sure I've merged all of my patches for the
+driver.
 
-The bug may very well be in the fsldma driver, but the workarounds are 
-just band aids.  I would be more comfortable with dropping the three 
-workaround patches and simply adding "depends on !FSL_DMA" to the 
-CRYPTO_DEV_TALITOS option until the true fix can be developed.
+The test driver on the other hand is pretty poor code.  Don't expect
+much from it other than some hints.  There's a reason I didn't merge
+that chunk.
 
---
-Dan
+> If you or Ben are interested in my work I can post the patches
+> here. Of course just to get some comments, because the driver can't be
+> ready in the state it is. The commits would go on top of Ben's next
+> branch.
+
+Yes, please post the patches and cc: me.  I'll review, test, and make comme=
+nts.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
