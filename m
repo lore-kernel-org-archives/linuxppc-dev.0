@@ -1,40 +1,35 @@
-Return-Path: <arun@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 311CDB6F04
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Dec 2009 22:49:30 +1100 (EST)
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8BE22B6F1A
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 00:47:35 +1100 (EST)
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp03.au.ibm.com (8.14.3/8.13.1) with ESMTP id nBFBkh9F029820
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2009 22:46:43 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id nBFDlNvT018595
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 00:47:23 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
 	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBFBnUXa884738
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2009 22:49:30 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nBFBnTSl003518
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2009 22:49:30 +1100
-Date: Tue, 15 Dec 2009 17:19:22 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [v10 PATCH 8/9]: pSeries: implement pSeries processor idle module
-Message-ID: <20091215114922.GA23415@linux.vnet.ibm.com>
-References: <20091202095427.GA27251@linux.vnet.ibm.com>
-	<20091202100255.GI27251@linux.vnet.ibm.com>
-	<1259894858.2076.1251.camel@pasglop>
-	<20091204081539.GA5883@linux.vnet.ibm.com>
-	<1259920852.2076.1274.camel@pasglop>
+	nBFDlWqo1732616
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 00:47:32 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nBFDlVsk018282
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 00:47:32 +1100
+Message-ID: <4B279370.5050800@in.ibm.com>
+Date: Tue, 15 Dec 2009 19:17:28 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1259920852.2076.1274.camel@pasglop>
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Arun Bharadwaj <arun@linux.vnet.ibm.com>,
-	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
-Reply-To: arun@linux.vnet.ibm.com
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [Next] CPU Hotplug test failures on powerpc
+References: <4B2224C7.1020908@in.ibm.com> <1260786122.4165.142.camel@twins>
+	<4B261D7A.9040802@in.ibm.com> <1260793182.4165.223.camel@twins>
+	<1260825420.2217.40.camel@pasglop>
+	<4B275A6B.9030200@in.ibm.com> <1260873827.4165.362.camel@twins>
+In-Reply-To: <1260873827.4165.362.camel@twins>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,215 +39,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> [2009-12-04 21:00:52]:
+Peter Zijlstra wrote:
+>> I added some debug statements within the above code. 
+>> This is a 2 cpu machine.
+>>
+>> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
+>> XMON dest_cpu = 1024 
+>> XMON dest_cpu = 1024 . dead_cpu = 1
+>> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
+>> XMON dest_cpu = 1024 
+>> XMON dest_cpu = 1024 . dead_cpu = 1
+>> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
+>> XMON dest_cpu = 1024 
+>> XMON dest_cpu = 1024 . dead_cpu = 1
+>>
+>> Seems to me that the control is stuck in an infinite loop and hence the
+>> machine appears to be in hung state. The dest_cpu value is always 1024
+>> and never changes, which result in an infinite loop.
+>>
+>> In working scenario the o/p is something on the following lines
+>>
+>> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
+>> XMON dest_cpu = 0 
+>> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
+>> XMON dest_cpu = 0 
+>> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
+>> XMON dest_cpu = 0 
+>>
+>> Let me know if i should try to record any specific value ?
+>>     
+>
+> Could you possibly print the two masks themselves? cpumask_scnprintf()
+> and friend come in handy for this.
+>
+> The dest_cpu=1024 thing seem to suggest the intersection between
+> p->cpus_allowed and cpu_active_mask is empty for some reason, even
+> though we forcefully reset p->cpus_allowed to the full set using
+> cpuset_cpus_allowed_locked().
+>   
+So here is the data related to the two masks.
 
-> On Fri, 2009-12-04 at 13:45 +0530, Arun R Bharadwaj wrote:
-> 
-> > 
-> > Hi Ben,
-> > 
-> > I forgot to attach the patch which enables cpuidle for the rest of the
-> > POWER platforms. Attaching it below.
-> > 
-> > So for these platforms, ppc_md.power_save will be called from from the
-> > cpuidle_idle_call idle loop itself. Also, this cpuidle_idle_call is
-> > not a pseries specific idle loop. It is a common loop for Intel and
-> > PPC which use cpuidle infrastructure.
-> 
-> Ok, so there was a missing piece in the puzzle ;-)
-> 
-> I'll review asap.
-> 
+cpu_active_mask = 00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000
+XMON dest_cpu = 1024
 
-Hi Ben,
+while p->cpus_allowed =  00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000001
+XMON dest_cpu = 1024
 
-Did you get time to review this?
+In working scenario the above data looks like
 
-thanks
-arun
+cpu_active_mask = 00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000002
+XMON dest_cpu = 1
 
-> Cheers,
-> Ben.
-> 
-> > arun
-> > 
-> > 
-> > 
-> > This patch enables cpuidle for the rest of the POWER platforms like
-> > 44x, Cell, Pasemi etc.
-> > 
-> > Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/system.h       |    2 ++
-> >  arch/powerpc/kernel/idle.c              |   28 ++++++++++++++++++++++++++++
-> >  arch/powerpc/kernel/setup_32.c          |    8 ++++++--
-> >  arch/powerpc/platforms/44x/idle.c       |    2 ++
-> >  arch/powerpc/platforms/cell/pervasive.c |    2 ++
-> >  arch/powerpc/platforms/pasemi/idle.c    |    2 ++
-> >  arch/powerpc/platforms/ps3/setup.c      |    2 ++
-> >  7 files changed, 44 insertions(+), 2 deletions(-)
-> > 
-> > Index: linux.trees.git/arch/powerpc/include/asm/system.h
-> > ===================================================================
-> > --- linux.trees.git.orig/arch/powerpc/include/asm/system.h
-> > +++ linux.trees.git/arch/powerpc/include/asm/system.h
-> > @@ -551,8 +551,10 @@ void cpu_idle_wait(void);
-> >  
-> >  #ifdef CONFIG_CPU_IDLE
-> >  extern void update_smt_snooze_delay(int snooze);
-> > +extern void setup_cpuidle_ppc(void);
-> >  #else
-> >  static inline void update_smt_snooze_delay(int snooze) {}
-> > +static inline void setup_cpuidle_ppc(void) {}
-> >  #endif
-> >  
-> >  #endif /* __KERNEL__ */
-> > Index: linux.trees.git/arch/powerpc/kernel/idle.c
-> > ===================================================================
-> > --- linux.trees.git.orig/arch/powerpc/kernel/idle.c
-> > +++ linux.trees.git/arch/powerpc/kernel/idle.c
-> > @@ -129,6 +129,34 @@ void default_idle(void)
-> >  	HMT_very_low();
-> >  }
-> >  
-> > +#ifdef CONFIG_CPU_IDLE
-> > +DEFINE_PER_CPU(struct cpuidle_device, ppc_idle_devices);
-> > +struct cpuidle_driver cpuidle_ppc_driver = {
-> > +	.name =         "cpuidle_ppc",
-> > +};
-> > +
-> > +static void ppc_idle_loop(struct cpuidle_device *dev, struct cpuidle_state *st)
-> > +{
-> > +	ppc_md.power_save();
-> > +}
-> > +
-> > +void setup_cpuidle_ppc(void)
-> > +{
-> > +	struct cpuidle_device *dev;
-> > +	int cpu;
-> > +
-> > +	cpuidle_register_driver(&cpuidle_ppc_driver);
-> > +
-> > +	for_each_online_cpu(cpu) {
-> > +		dev = &per_cpu(ppc_idle_devices, cpu);
-> > +		dev->cpu = cpu;
-> > +		dev->states[0].enter = ppc_idle_loop;
-> > +		dev->state_count = 1;
-> > +		cpuidle_register_device(dev);
-> > +	}
-> > +}
-> > +#endif
-> > +
-> >  int powersave_nap;
-> >  
-> >  #ifdef CONFIG_SYSCTL
-> > Index: linux.trees.git/arch/powerpc/kernel/setup_32.c
-> > ===================================================================
-> > --- linux.trees.git.orig/arch/powerpc/kernel/setup_32.c
-> > +++ linux.trees.git/arch/powerpc/kernel/setup_32.c
-> > @@ -133,14 +133,18 @@ notrace void __init machine_init(unsigne
-> >  
-> >  #ifdef CONFIG_6xx
-> >  	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
-> > -	    cpu_has_feature(CPU_FTR_CAN_NAP))
-> > +	    cpu_has_feature(CPU_FTR_CAN_NAP)) {
-> >  		ppc_md.power_save = ppc6xx_idle;
-> > +		setup_cpuidle_ppc();
-> > +	}
-> >  #endif
-> >  
-> >  #ifdef CONFIG_E500
-> >  	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
-> > -	    cpu_has_feature(CPU_FTR_CAN_NAP))
-> > +	    cpu_has_feature(CPU_FTR_CAN_NAP)) {
-> >  		ppc_md.power_save = e500_idle;
-> > +		setup_cpuidle_ppc();
-> > +	}
-> >  #endif
-> >  	if (ppc_md.progress)
-> >  		ppc_md.progress("id mach(): done", 0x200);
-> > Index: linux.trees.git/arch/powerpc/platforms/44x/idle.c
-> > ===================================================================
-> > --- linux.trees.git.orig/arch/powerpc/platforms/44x/idle.c
-> > +++ linux.trees.git/arch/powerpc/platforms/44x/idle.c
-> > @@ -24,6 +24,7 @@
-> >  #include <linux/of.h>
-> >  #include <linux/kernel.h>
-> >  #include <asm/machdep.h>
-> > +#include <asm/system.h>
-> >  
-> >  static int mode_spin;
-> >  
-> > @@ -46,6 +47,7 @@ int __init ppc44x_idle_init(void)
-> >  		/* If we are not setting spin mode 
-> >                     then we set to wait mode */
-> >  		ppc_md.power_save = &ppc44x_idle;
-> > +		setup_cpuidle_ppc();
-> >  	}
-> >  
-> >  	return 0;
-> > Index: linux.trees.git/arch/powerpc/platforms/cell/pervasive.c
-> > ===================================================================
-> > --- linux.trees.git.orig/arch/powerpc/platforms/cell/pervasive.c
-> > +++ linux.trees.git/arch/powerpc/platforms/cell/pervasive.c
-> > @@ -35,6 +35,7 @@
-> >  #include <asm/pgtable.h>
-> >  #include <asm/reg.h>
-> >  #include <asm/cell-regs.h>
-> > +#include <asm/system.h>
-> >  
-> >  #include "pervasive.h"
-> >  
-> > @@ -128,5 +129,6 @@ void __init cbe_pervasive_init(void)
-> >  	}
-> >  
-> >  	ppc_md.power_save = cbe_power_save;
-> > +	setup_cpuidle_ppc();
-> >  	ppc_md.system_reset_exception = cbe_system_reset_exception;
-> >  }
-> > Index: linux.trees.git/arch/powerpc/platforms/pasemi/idle.c
-> > ===================================================================
-> > --- linux.trees.git.orig/arch/powerpc/platforms/pasemi/idle.c
-> > +++ linux.trees.git/arch/powerpc/platforms/pasemi/idle.c
-> > @@ -27,6 +27,7 @@
-> >  #include <asm/machdep.h>
-> >  #include <asm/reg.h>
-> >  #include <asm/smp.h>
-> > +#include <asm/system.h>
-> >  
-> >  #include "pasemi.h"
-> >  
-> > @@ -81,6 +82,7 @@ static int __init pasemi_idle_init(void)
-> >  
-> >  	ppc_md.system_reset_exception = pasemi_system_reset_exception;
-> >  	ppc_md.power_save = modes[current_mode].entry;
-> > +	setup_cpuidle_ppc();
-> >  	printk(KERN_INFO "Using PA6T idle loop (%s)\n", modes[current_mode].name);
-> >  
-> >  	return 0;
-> > Index: linux.trees.git/arch/powerpc/platforms/ps3/setup.c
-> > ===================================================================
-> > --- linux.trees.git.orig/arch/powerpc/platforms/ps3/setup.c
-> > +++ linux.trees.git/arch/powerpc/platforms/ps3/setup.c
-> > @@ -33,6 +33,7 @@
-> >  #include <asm/prom.h>
-> >  #include <asm/lv1call.h>
-> >  #include <asm/ps3gpu.h>
-> > +#include <asm/system.h>
-> >  
-> >  #include "platform.h"
-> >  
-> > @@ -214,6 +215,7 @@ static void __init ps3_setup_arch(void)
-> >  	prealloc_ps3flash_bounce_buffer();
-> >  
-> >  	ppc_md.power_save = ps3_power_save;
-> > +	setup_cpuidle_ppc();
-> >  	ps3_os_area_init();
-> >  
-> >  	DBG(" <- %s:%d\n", __func__, __LINE__);
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-arch" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+while p->cpus_allowed =  00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+00000000,00000000,00000002
+XMON dest_cpu = 1
+
+
+hope i got the data correct.
+
+Thanks
+-Sachin
+
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
