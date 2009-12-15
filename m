@@ -2,21 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3D023B6F15
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 08:18:40 +1100 (EST)
-Subject: Re: [Next] CPU Hotplug test failures on powerpc
+	by ozlabs.org (Postfix) with ESMTPS id 66088B6F1A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 15 Dec 2009 12:31:54 +1100 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id nBF1Vj6D007831
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Dec 2009 19:31:47 -0600
+Subject: [PATCH] powerpc: Fix MSI support on U4 bridge PCIe slot
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <1260793182.4165.223.camel@twins>
-References: <4B2224C7.1020908@in.ibm.com> <1260786122.4165.142.camel@twins>
-	<4B261D7A.9040802@in.ibm.com>  <1260793182.4165.223.camel@twins>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 15 Dec 2009 08:17:00 +1100
-Message-ID: <1260825420.2217.40.camel@pasglop>
+Date: Tue, 15 Dec 2009 12:31:13 +1100
+Message-ID: <1260840673.12008.0.camel@pasglop>
 Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,110 +24,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2009-12-14 at 13:19 +0100, Peter Zijlstra wrote:
+On machines using the Apple U4 bridge (AKA IBM CPC945) PCIe interface such
+as the latest generation G5 machines x16 slot or the x16 slot of the
+PowerStation, MSIs are currently broken (and will oops when enabling).
 
-> > >> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
-> > >>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
-> > >>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
-> > >>     sp: c00000000c933650
-> > >>    msr: 8000000000089032
-> > >>   current = 0xc00000000c173840
-> > >>   paca    = 0xc000000000bc2600
-> > >>     pid   = 2602, comm = hotplug06.top.s
-> > >> enter ? for help
-> > >> [link register   ] c000000000342f10 .cpumask_next_and+0x4c/0x94
-> > >> [c00000000c933650] c0000000000e9f34 .cpuset_cpus_allowed_locked+0x38/0x74 (unreliable)
-> > >> [c00000000c9336e0] c000000000090074 .move_task_off_dead_cpu+0xc4/0x1ac
-> > >> [c00000000c9337a0] c0000000005e4e5c .migration_call+0x304/0x830
-> > >> [c00000000c933880] c0000000005e0880 .notifier_call_chain+0x68/0xe0
-> > >> [c00000000c933920] c00000000012a92c ._cpu_down+0x210/0x34c
-> > >> [c00000000c933a90] c00000000012aad8 .cpu_down+0x70/0xa8
-> > >> [c00000000c933b20] c000000000525940 .store_online+0x54/0x894
-> > >> [c00000000c933bb0] c000000000463430 .sysdev_store+0x3c/0x50
-> > >> [c00000000c933c20] c0000000001f8320 .sysfs_write_file+0x124/0x18c
-> > >> [c00000000c933ce0] c00000000017edac .vfs_write+0xd4/0x1fc
-> > >> [c00000000c933d80] c00000000017efdc .SyS_write+0x58/0xa0
-> > >> [c00000000c933e30] c0000000000085b4 syscall_exit+0x0/0x40
-> > >> --- Exception: c01 (System Call) at 00000fff9fa8a8f8
-> > >> SP (fffe7aef200) is in userspace
-> > >> 0:mon> e
-> > >> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
-> > >>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
-> > >>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
-> > >>     sp: c00000000c933650
-> > >>    msr: 8000000000089032
-> > >>   current = 0xc00000000c173840
-> > >>   paca    = 0xc000000000bc2600
-> > >>     pid   = 2602, comm = hotplug06.top.s
-> > >>
-> 
-> OK so how do I read that above thing? What's a System Reset? Is that
-> like the x86 triple fault thing?
+This fixes the oops and implements proper support for those. Instead of
+using the PCIe <-> HT bridge conversion, on such slots we need to use
+a bunch of magic registers in the bridge as the MSI target, encoding
+the interrupt number in the low bits of the address itself
 
-Nah, it's an NMI that throws you into xmon. Basically, the machine was
-hung and Sachin interrupted it with an NMI to see what was going on. The
-above is the backtrace. It was at the moment of the NMI inside
-find_next_bit() called from cpumask_next_and() etc... 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/mpic_msi.c   |   11 ++++++++-
+ arch/powerpc/sysdev/mpic_u3msi.c |   46 ++++++++++++++++++++++++++++++++-----
+ 2 files changed, 49 insertions(+), 8 deletions(-)
 
-> >From what I can make of it, its in move_task_off_dead_cpu(), right after
-> having called cpuset_cpus_allowed_locked(), doing that cpumask_any_and()
-> call.
-
-Yes, it looks like it.
-
-> static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
-> {
->         int dest_cpu;
->         const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(dead_cpu));
-> 
-> again:
->         /* Look for allowed, online CPU in same node. */
->         for_each_cpu_and(dest_cpu, nodemask, cpu_active_mask)
->                 if (cpumask_test_cpu(dest_cpu, &p->cpus_allowed))
->                         goto move;
-> 
->         /* Any allowed, online CPU? */
->         dest_cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
->         if (dest_cpu < nr_cpu_ids)
->                 goto move;
-> 
->         /* No more Mr. Nice Guy. */
->         if (dest_cpu >= nr_cpu_ids) {
->                 cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
-> ====>           dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
-> 
->                 /*
->                  * Don't tell them about moving exiting tasks or
->                  * kernel threads (both mm NULL), since they never
->                  * leave kernel.
->                  */
->                 if (p->mm && printk_ratelimit()) {
->                         pr_info("process %d (%s) no longer affine to cpu%d\n",
->                                 task_pid_nr(p), p->comm, dead_cpu);
->                 }
->         }
-> 
-> move:
->         /* It can have affinity changed while we were choosing. */
->         if (unlikely(!__migrate_task_irq(p, dead_cpu, dest_cpu)))
->                 goto again;
-> }
-> 
-> Both masks, p->cpus_allowed and cpu_active_mask are stable in that p
-> won't go away since we hold the tasklist_lock (in migrate_list_tasks),
-> and cpu_active_mask is static storage, so WTH is it going funny on?
-
-Sachin, this is 100% reproduceable right ? You should be able to
-sprinkle it with some xmon_printf() (rather than printk, just add a
-prototype extern void xmon_printf(const char *fmt,...); somewhere, this
-has the advantage of being fully synchronous and will print out even if
-the printk sem is held.
-
-Cheers,
-Ben.
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff --git a/arch/powerpc/sysdev/mpic_msi.c b/arch/powerpc/sysdev/mpic_msi.c
+index 1d44eee..0f67cd7 100644
+--- a/arch/powerpc/sysdev/mpic_msi.c
++++ b/arch/powerpc/sysdev/mpic_msi.c
+@@ -39,7 +39,12 @@ static int mpic_msi_reserve_u3_hwirqs(struct mpic *mpic)
+ 
+ 	pr_debug("mpic: found U3, guessing msi allocator setup\n");
+ 
+-	/* Reserve source numbers we know are reserved in the HW */
++	/* Reserve source numbers we know are reserved in the HW.
++	 *
++	 * This is a bit of a mix of U3 and U4 reserves but that's going
++	 * to work fine, we have plenty enugh numbers left so let's just
++	 * mark anything we don't like reserved.
++	 */
+ 	for (i = 0;   i < 8;   i++)
+ 		msi_bitmap_reserve_hwirq(&mpic->msi_bitmap, i);
+ 
+@@ -49,6 +54,10 @@ static int mpic_msi_reserve_u3_hwirqs(struct mpic *mpic)
+ 	for (i = 100; i < 105; i++)
+ 		msi_bitmap_reserve_hwirq(&mpic->msi_bitmap, i);
+ 
++	for (i = 124; i < mpic->irq_count; i++)
++		msi_bitmap_reserve_hwirq(&mpic->msi_bitmap, i);
++
++
+ 	np = NULL;
+ 	while ((np = of_find_all_nodes(np))) {
+ 		pr_debug("mpic: mapping hwirqs for %s\n", np->full_name);
+diff --git a/arch/powerpc/sysdev/mpic_u3msi.c b/arch/powerpc/sysdev/mpic_u3msi.c
+index d3caf23..bcbfe79 100644
+--- a/arch/powerpc/sysdev/mpic_u3msi.c
++++ b/arch/powerpc/sysdev/mpic_u3msi.c
+@@ -64,12 +64,12 @@ static u64 read_ht_magic_addr(struct pci_dev *pdev, unsigned int pos)
+ 	return addr;
+ }
+ 
+-static u64 find_ht_magic_addr(struct pci_dev *pdev)
++static u64 find_ht_magic_addr(struct pci_dev *pdev, unsigned int hwirq)
+ {
+ 	struct pci_bus *bus;
+ 	unsigned int pos;
+ 
+-	for (bus = pdev->bus; bus; bus = bus->parent) {
++	for (bus = pdev->bus; bus && bus->self; bus = bus->parent) {
+ 		pos = pci_find_ht_capability(bus->self, HT_CAPTYPE_MSI_MAPPING);
+ 		if (pos)
+ 			return read_ht_magic_addr(bus->self, pos);
+@@ -78,13 +78,41 @@ static u64 find_ht_magic_addr(struct pci_dev *pdev)
+ 	return 0;
+ }
+ 
++static u64 find_u4_magic_addr(struct pci_dev *pdev, unsigned int hwirq)
++{
++	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
++
++	/* U4 PCIe MSIs need to write to the special register in
++	 * the bridge that generates interrupts. There should be
++	 * theorically a register at 0xf8005000 where you just write
++	 * the MSI number and that triggers the right interrupt, but
++	 * unfortunately, this is busted in HW, the bridge endian swaps
++	 * the value and hits the wrong nibble in the register.
++	 *
++	 * So instead we use another register set which is used normally
++	 * for converting HT interrupts to MPIC interrupts, which decodes
++	 * the interrupt number as part of the low address bits
++	 *
++	 * This will not work if we ever use more than one legacy MSI in
++	 * a block but we never do. For one MSI or multiple MSI-X where
++	 * each interrupt address can be specified separately, it works
++	 * just fine.
++	 */
++	if (of_device_is_compatible(hose->dn, "u4-pcie") ||
++	    of_device_is_compatible(hose->dn, "U4-pcie"))
++		return 0xf8004000 | (hwirq << 4);
++
++	return 0;
++}
++
+ static int u3msi_msi_check_device(struct pci_dev *pdev, int nvec, int type)
+ {
+ 	if (type == PCI_CAP_ID_MSIX)
+ 		pr_debug("u3msi: MSI-X untested, trying anyway.\n");
+ 
+ 	/* If we can't find a magic address then MSI ain't gonna work */
+-	if (find_ht_magic_addr(pdev) == 0) {
++	if (find_ht_magic_addr(pdev, 0) == 0 &&
++	    find_u4_magic_addr(pdev, 0) == 0) {
+ 		pr_debug("u3msi: no magic address found for %s\n",
+ 			 pci_name(pdev));
+ 		return -ENXIO;
+@@ -118,10 +146,6 @@ static int u3msi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 	u64 addr;
+ 	int hwirq;
+ 
+-	addr = find_ht_magic_addr(pdev);
+-	msg.address_lo = addr & 0xFFFFFFFF;
+-	msg.address_hi = addr >> 32;
+-
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
+ 		hwirq = msi_bitmap_alloc_hwirqs(&msi_mpic->msi_bitmap, 1);
+ 		if (hwirq < 0) {
+@@ -129,6 +153,12 @@ static int u3msi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 			return hwirq;
+ 		}
+ 
++		addr = find_ht_magic_addr(pdev, hwirq);
++		if (addr == 0)
++			addr = find_u4_magic_addr(pdev, hwirq);
++		msg.address_lo = addr & 0xFFFFFFFF;
++		msg.address_hi = addr >> 32;
++
+ 		virq = irq_create_mapping(msi_mpic->irqhost, hwirq);
+ 		if (virq == NO_IRQ) {
+ 			pr_debug("u3msi: failed mapping hwirq 0x%x\n", hwirq);
+@@ -143,6 +173,8 @@ static int u3msi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 		pr_debug("u3msi: allocated virq 0x%x (hw 0x%x) addr 0x%lx\n",
+ 			  virq, hwirq, (unsigned long)addr);
+ 
++		printk("u3msi: allocated virq 0x%x (hw 0x%x) addr 0x%lx\n",
++			  virq, hwirq, (unsigned long)addr);
+ 		msg.data = hwirq;
+ 		write_msi_msg(virq, &msg);
+ 
