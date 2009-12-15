@@ -1,17 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 53DE8B6F08
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 07:20:15 +1100 (EST)
-Date: Tue, 15 Dec 2009 14:20:04 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git next branch
-Message-ID: <Pine.LNX.4.64.0912151419170.32516@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTPS id CDF70B6F0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 08:26:01 +1100 (EST)
+Message-ID: <4B27FEE3.80001@embedded-sol.com>
+Date: Tue, 15 Dec 2009 23:25:55 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>,
+	Kumar Gala <galak@kernel.crashing.org>
+Subject: Problem with mini-PCI-E slot on P2020RDB
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,46 +22,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since
-commit e090aa80321b64c3b793f3b047e31ecf1af9538d:
-  Benjamin Herrenschmidt (1):
-        powerpc: Fix usage of 64-bit instruction in 32-bit altivec code
+Hi,
 
-are available in the git repository at:
+I'm trying to use mini-PCI-E WLAN card on P2020RDB running 2.6.32, but 
+so far without success.
+ath9k driver identifies the device, I can run ifconfig, iwconfig and 
+hostapd on wlan0, but device is not
+getting any interrupts,  so I suspect the interrupt configuration is 
+wrong. Atheros ath9k driver reports:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
+phy0: Atheros AR9280 MAC/BB Rev:2 AR5133 RF Rev:d0: mem=0xf1060000, irq=16
 
-Anton Vorontsov (4):
-      powerpc/fsl_pci: Fix P2P bridge handling for MPC83xx PCIe controllers
-      powerpc/83xx/suspend: Clear deep_sleeping after devices resume
-      powerpc/83xx/suspend: Save and restore SICRL, SICRH and SCCR
-      powerpc/83xx: Add power management support for MPC8315E-RDB boards
+The mapping for irq 16 is:
 
-Dmitry Eremin-Solenikov (4):
-      powerpc/83xx: mpc8349emitx - add gpio controller declarations
-      powerpc/83xx: mpc8349emitx - populate I2C busses in device tree
-      powerpc/83xx: mpc8349emitx - add OF descriptions of LocalBus devices
-      powerpc/83xx: mpc8349emitx - add leds-gpio binding
+irq: irq 1 on host /soc@ffe00000/pic@40000 mapped to virtual irq 16
 
-Felix Radensky (1):
-      powerpc/85xx: Workaround MPC8572/MPC8536 GPIO 1 errata.
+According to /proc/interrupts:
 
-Mark Ware (1):
-      powerpc/cpm2_pic: Allow correct flow_types for port C interrupts
+          CPU0
+ 16:          0   OpenPIC   Edge      ath9k
 
-Peter Korsgaard (1):
-      powerpc/gpio: support gpio_to_irq()
+The same problem happens if Atheros card is plugged (with adapter) into 
+regular PCI-E slot.
 
-Sebastian Andrzej Siewior (1):
-      powerpc/fsl: try to explain why the interrupt numbers are off by 16
+It seems that p2020rdb device tree is missing interrupt-map-mask and 
+interrupt-map properties
+in PCI-E nodes.
 
- Documentation/powerpc/dts-bindings/fsl/mpic.txt |   42 ++++++++++++
- arch/powerpc/boot/dts/mpc8315erdb.dts           |   27 ++++++++
- arch/powerpc/boot/dts/mpc8349emitx.dts          |   82 ++++++++++++++++++++++-
- arch/powerpc/include/asm/gpio.h                 |    5 +-
- arch/powerpc/platforms/83xx/suspend.c           |   52 ++++++++++++++-
- arch/powerpc/sysdev/cpm2_pic.c                  |   28 ++++++--
- arch/powerpc/sysdev/fsl_pci.c                   |    8 ++-
- arch/powerpc/sysdev/mpc8xxx_gpio.c              |   21 ++++++-
- 8 files changed, 248 insertions(+), 17 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/fsl/mpic.txt
+I've tried running kernel from latest FSL BSP for this board (based on 
+2.6.32-rc3). The device tree
+has the interrupt-map-mask and interrupt-map properties, and interrupt 
+mapping is different:
+
+irq: irq 0 on host /soc@ffe00000/pic@40000 mapped to virtual irq 16
+
+In /proc/interrups I see
+           CPU0
+ 16:     100001   OpenPIC   Level     ath9k
+
+However, when ath9k driver is loaded I get this:
+
+irq 16: nobody cared (try booting with the "irqpoll" option)
+Call Trace:
+[efbefa40] [c00074b0] show_stack+0x4c/0x16c (unreliable)
+[efbefa70] [c0073970] __report_bad_irq+0x38/0xd0
+[efbefa90] [c0073bd4] note_interrupt+0x1cc/0x22c
+[efbefac0] [c00747d0] handle_fasteoi_irq+0xf4/0x128
+[efbefae0] [c0004eb8] do_IRQ+0xc8/0xf4
+[efbefb00] [c001081c] ret_from_except+0x0/0x18
+[efbefbc0] [00000000] (null)
+[efbefc10] [c0004d24] do_softirq+0x60/0x64
+[efbefc20] [c0044670] irq_exit+0x88/0xa8
+[efbefc30] [c0004ebc] do_IRQ+0xcc/0xf4
+[efbefc50] [c001081c] ret_from_except+0x0/0x18
+[efbefd10] [c00730b4] __setup_irq+0x320/0x39c
+[efbefd30] [c0073214] request_threaded_irq+0xe4/0x148
+[efbefd60] [f2244218] ath_pci_probe+0x1b0/0x3a4 [ath9k]
+[efbefda0] [c01c386c] local_pci_probe+0x24/0x34
+[efbefdb0] [c01c3bc0] pci_device_probe+0x84/0xa8
+[efbefde0] [c01e86b8] driver_probe_device+0xa8/0x1a8
+[efbefe00] [c01e8874] __driver_attach+0xbc/0xc0
+[efbefe20] [c01e7d88] bus_for_each_dev+0x70/0xac
+[efbefe50] [c01e84d8] driver_attach+0x24/0x34
+[efbefe60] [c01e7504] bus_add_driver+0xb8/0x278
+[efbefe90] [c01e8bec] driver_register+0x84/0x178
+[efbefeb0] [c01c3e6c] __pci_register_driver+0x54/0xe4
+[efbefed0] [f2244434] ath_pci_init+0x28/0x38 [ath9k]
+[efbefee0] [f215702c] ath9k_init+0x2c/0x100 [ath9k]
+[efbefef0] [c0001d34] do_one_initcall+0x3c/0x1e8
+[efbeff20] [c006f9f0] sys_init_module+0xf8/0x220
+[efbeff40] [c00101c4] ret_from_syscall+0x0/0x3c
+handlers:
+[<f223badc>] (ath_isr+0x0/0x1b4 [ath9k])
+Disabling IRQ #16
+
+Atheros card plugged into regular PCI-E slot  works OK in  FSL BSP.
+
+Any help in resolving this is much appreciated.
+
+Thanks.
+
+Felix.
