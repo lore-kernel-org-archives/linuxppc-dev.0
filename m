@@ -1,32 +1,21 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8BE22B6F1A
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 00:47:35 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id nBFDlNvT018595
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 00:47:23 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBFDlWqo1732616
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 00:47:32 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nBFDlVsk018282
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 00:47:32 +1100
-Message-ID: <4B279370.5050800@in.ibm.com>
-Date: Tue, 15 Dec 2009 19:17:28 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EB5A8B6EE9
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 02:03:34 +1100 (EST)
 Subject: Re: [Next] CPU Hotplug test failures on powerpc
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sachin Sant <sachinp@in.ibm.com>
+In-Reply-To: <4B279370.5050800@in.ibm.com>
 References: <4B2224C7.1020908@in.ibm.com> <1260786122.4165.142.camel@twins>
-	<4B261D7A.9040802@in.ibm.com> <1260793182.4165.223.camel@twins>
-	<1260825420.2217.40.camel@pasglop>
-	<4B275A6B.9030200@in.ibm.com> <1260873827.4165.362.camel@twins>
-In-Reply-To: <1260873827.4165.362.camel@twins>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	<4B261D7A.9040802@in.ibm.com>  <1260793182.4165.223.camel@twins>
+	<1260825420.2217.40.camel@pasglop>  <4B275A6B.9030200@in.ibm.com>
+	<1260873827.4165.362.camel@twins>  <4B279370.5050800@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 15 Dec 2009 16:03:22 +0100
+Message-ID: <1260889402.4165.434.camel@twins>
+Mime-Version: 1.0
 Cc: Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
 	linux-kernel <linux-kernel@vger.kernel.org>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>
@@ -39,88 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra wrote:
->> I added some debug statements within the above code. 
->> This is a 2 cpu machine.
->>
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 1024 
->> XMON dest_cpu = 1024 . dead_cpu = 1
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 1024 
->> XMON dest_cpu = 1024 . dead_cpu = 1
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 1024 
->> XMON dest_cpu = 1024 . dead_cpu = 1
->>
->> Seems to me that the control is stuck in an infinite loop and hence the
->> machine appears to be in hung state. The dest_cpu value is always 1024
->> and never changes, which result in an infinite loop.
->>
->> In working scenario the o/p is something on the following lines
->>
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 0 
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 0 
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 0 
->>
->> Let me know if i should try to record any specific value ?
->>     
->
-> Could you possibly print the two masks themselves? cpumask_scnprintf()
-> and friend come in handy for this.
->
-> The dest_cpu=1024 thing seem to suggest the intersection between
-> p->cpus_allowed and cpu_active_mask is empty for some reason, even
-> though we forcefully reset p->cpus_allowed to the full set using
-> cpuset_cpus_allowed_locked().
->   
-So here is the data related to the two masks.
 
-cpu_active_mask = 00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000
-XMON dest_cpu = 1024
+Could you try the below?
 
-while p->cpus_allowed =  00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000001
-XMON dest_cpu = 1024
+---
+ init/main.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
 
-In working scenario the above data looks like
-
-cpu_active_mask = 00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000002
-XMON dest_cpu = 1
-
-while p->cpus_allowed =  00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000002
-XMON dest_cpu = 1
-
-
-hope i got the data correct.
-
-Thanks
--Sachin
-
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+diff --git a/init/main.c b/init/main.c
+index 4051d75..4be7de2 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -369,12 +369,6 @@ static void __init smp_init(void)
+ {
+ 	unsigned int cpu;
+=20
+-	/*
+-	 * Set up the current CPU as possible to migrate to.
+-	 * The other ones will be done by cpu_up/cpu_down()
+-	 */
+-	set_cpu_active(smp_processor_id(), true);
+-
+ 	/* FIXME: This should be done in userspace --RR */
+ 	for_each_present_cpu(cpu) {
+ 		if (num_online_cpus() >=3D setup_max_cpus)
+@@ -486,6 +480,7 @@ static void __init boot_cpu_init(void)
+ 	int cpu =3D smp_processor_id();
+ 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
+ 	set_cpu_online(cpu, true);
++	set_cpu_active(cpu, true);
+ 	set_cpu_present(cpu, true);
+ 	set_cpu_possible(cpu, true);
+ }
