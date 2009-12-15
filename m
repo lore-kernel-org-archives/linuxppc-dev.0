@@ -1,18 +1,16 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CDF70B6F0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 08:26:01 +1100 (EST)
-Message-ID: <4B27FEE3.80001@embedded-sol.com>
-Date: Tue, 15 Dec 2009 23:25:55 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id F28AFB6F0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 10:04:51 +1100 (EST)
+Date: Wed, 16 Dec 2009 01:58:09 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/85xx: Fix oops during MSI driver probe on
+	MPC85xxMDS boards
+Message-ID: <20091215225809.GA32140@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>,
-	Kumar Gala <galak@kernel.crashing.org>
-Subject: Problem with mini-PCI-E slot on P2020RDB
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,84 +20,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+MPC85xx chips report the wrong value in feature reporting register,
+and that causes the following oops:
 
-I'm trying to use mini-PCI-E WLAN card on P2020RDB running 2.6.32, but 
-so far without success.
-ath9k driver identifies the device, I can run ifconfig, iwconfig and 
-hostapd on wlan0, but device is not
-getting any interrupts,  so I suspect the interrupt configuration is 
-wrong. Atheros ath9k driver reports:
+ Unable to handle kernel paging request for data at address 0x00000c00
+ Faulting instruction address: 0xc0019294
+ Oops: Kernel access of bad area, sig: 11 [#1]
+ MPC8569 MDS
+ Modules linked in:
+ [...]
+ NIP [c0019294] mpic_set_irq_type+0x2f0/0x368
+ LR [c0019124] mpic_set_irq_type+0x180/0x368
+ Call Trace:
+ [ef851d60] [c0019124] mpic_set_irq_type+0x180/0x368 (unreliable)
+ [ef851d90] [c007958c] __irq_set_trigger+0x44/0xd4
+ [ef851db0] [c007b550] set_irq_type+0x40/0x7c
+ [ef851dc0] [c0004a60] irq_create_of_mapping+0xb4/0x114
+ [ef851df0] [c0004af0] irq_of_parse_and_map+0x30/0x40
+ [ef851e20] [c0405678] fsl_of_msi_probe+0x1a0/0x328
+ [ef851e60] [c02e6438] of_platform_device_probe+0x5c/0x84
+ [...]
 
-phy0: Atheros AR9280 MAC/BB Rev:2 AR5133 RF Rev:d0: mem=0xf1060000, irq=16
+This is because mpic_alloc() assigns wrong values to
+mpic->isu_{size,shift,mask}, and things eventually break when
+_mpic_irq_read() is trying to use them.
 
-The mapping for irq 16 is:
+This patch fixes the issue by enabling MPIC_BROKEN_FRR_NIRQS quirk.
 
-irq: irq 1 on host /soc@ffe00000/pic@40000 mapped to virtual irq 16
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-According to /proc/interrupts:
-
-          CPU0
- 16:          0   OpenPIC   Edge      ath9k
-
-The same problem happens if Atheros card is plugged (with adapter) into 
-regular PCI-E slot.
-
-It seems that p2020rdb device tree is missing interrupt-map-mask and 
-interrupt-map properties
-in PCI-E nodes.
-
-I've tried running kernel from latest FSL BSP for this board (based on 
-2.6.32-rc3). The device tree
-has the interrupt-map-mask and interrupt-map properties, and interrupt 
-mapping is different:
-
-irq: irq 0 on host /soc@ffe00000/pic@40000 mapped to virtual irq 16
-
-In /proc/interrups I see
-           CPU0
- 16:     100001   OpenPIC   Level     ath9k
-
-However, when ath9k driver is loaded I get this:
-
-irq 16: nobody cared (try booting with the "irqpoll" option)
-Call Trace:
-[efbefa40] [c00074b0] show_stack+0x4c/0x16c (unreliable)
-[efbefa70] [c0073970] __report_bad_irq+0x38/0xd0
-[efbefa90] [c0073bd4] note_interrupt+0x1cc/0x22c
-[efbefac0] [c00747d0] handle_fasteoi_irq+0xf4/0x128
-[efbefae0] [c0004eb8] do_IRQ+0xc8/0xf4
-[efbefb00] [c001081c] ret_from_except+0x0/0x18
-[efbefbc0] [00000000] (null)
-[efbefc10] [c0004d24] do_softirq+0x60/0x64
-[efbefc20] [c0044670] irq_exit+0x88/0xa8
-[efbefc30] [c0004ebc] do_IRQ+0xcc/0xf4
-[efbefc50] [c001081c] ret_from_except+0x0/0x18
-[efbefd10] [c00730b4] __setup_irq+0x320/0x39c
-[efbefd30] [c0073214] request_threaded_irq+0xe4/0x148
-[efbefd60] [f2244218] ath_pci_probe+0x1b0/0x3a4 [ath9k]
-[efbefda0] [c01c386c] local_pci_probe+0x24/0x34
-[efbefdb0] [c01c3bc0] pci_device_probe+0x84/0xa8
-[efbefde0] [c01e86b8] driver_probe_device+0xa8/0x1a8
-[efbefe00] [c01e8874] __driver_attach+0xbc/0xc0
-[efbefe20] [c01e7d88] bus_for_each_dev+0x70/0xac
-[efbefe50] [c01e84d8] driver_attach+0x24/0x34
-[efbefe60] [c01e7504] bus_add_driver+0xb8/0x278
-[efbefe90] [c01e8bec] driver_register+0x84/0x178
-[efbefeb0] [c01c3e6c] __pci_register_driver+0x54/0xe4
-[efbefed0] [f2244434] ath_pci_init+0x28/0x38 [ath9k]
-[efbefee0] [f215702c] ath9k_init+0x2c/0x100 [ath9k]
-[efbefef0] [c0001d34] do_one_initcall+0x3c/0x1e8
-[efbeff20] [c006f9f0] sys_init_module+0xf8/0x220
-[efbeff40] [c00101c4] ret_from_syscall+0x0/0x3c
-handlers:
-[<f223badc>] (ath_isr+0x0/0x1b4 [ath9k])
-Disabling IRQ #16
-
-Atheros card plugged into regular PCI-E slot  works OK in  FSL BSP.
-
-Any help in resolving this is much appreciated.
-
-Thanks.
-
-Felix.
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index c5028a2..6491f7c 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -338,7 +338,8 @@ static void __init mpc85xx_mds_pic_init(void)
+ 	}
+ 
+ 	mpic = mpic_alloc(np, r.start,
+-			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
++			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN |
++			MPIC_BROKEN_FRR_NIRQS,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+ 	of_node_put(np);
+-- 
+1.6.3.3
