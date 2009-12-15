@@ -1,33 +1,40 @@
-Return-Path: <B05022@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <arun@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 180FDB6F18
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 22:03:47 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nBFB3iPG000924
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 04:03:44 -0700 (MST)
-Received: from zin33exm21.fsl.freescale.net (zin33exm21.ap.freescale.net
-	[10.232.192.8])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id nBFB3jKl001378
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 05:03:46 -0600 (CST)
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 311CDB6F04
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 15 Dec 2009 22:49:30 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp03.au.ibm.com (8.14.3/8.13.1) with ESMTP id nBFBkh9F029820
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2009 22:46:43 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nBFBnUXa884738
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2009 22:49:30 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nBFBnTSl003518
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Dec 2009 22:49:30 +1100
+Date: Tue, 15 Dec 2009 17:19:22 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [v10 PATCH 8/9]: pSeries: implement pSeries processor idle module
+Message-ID: <20091215114922.GA23415@linux.vnet.ibm.com>
+References: <20091202095427.GA27251@linux.vnet.ibm.com>
+	<20091202100255.GI27251@linux.vnet.ibm.com>
+	<1259894858.2076.1251.camel@pasglop>
+	<20091204081539.GA5883@linux.vnet.ibm.com>
+	<1259920852.2076.1274.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CA7D76.437CCC34"
-Subject: RE: [PATCH v0] Crypto: Talitos: re-initialize async_tx descriptors
-Date: Tue, 15 Dec 2009 16:33:42 +0530
-Message-ID: <76952DF81420A349876E087D089DF034562C75@zin33exm21.fsl.freescale.net>
-References: <1260797602-7476-1-git-send-email-Vishnu@freescale.com>
-	<e9c3a7c20912142329j6603402ah2963d075419efa1c@mail.gmail.com>
-From: "Suresh Vishnu-B05022" <B05022@freescale.com>
-To: "Dan Williams" <dan.j.williams@intel.com>
-Cc: herbert@gondor.apana.org.au, Tabi Timur-B04825 <B04825@freescale.com>,
-	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org,
-	Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1259920852.2076.1274.camel@pasglop>
+Cc: linux-arch@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Arun Bharadwaj <arun@linux.vnet.ibm.com>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
+Reply-To: arun@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,135 +44,215 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> [2009-12-04 21:00:52]:
 
-------_=_NextPart_001_01CA7D76.437CCC34
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+> On Fri, 2009-12-04 at 13:45 +0530, Arun R Bharadwaj wrote:
+> 
+> > 
+> > Hi Ben,
+> > 
+> > I forgot to attach the patch which enables cpuidle for the rest of the
+> > POWER platforms. Attaching it below.
+> > 
+> > So for these platforms, ppc_md.power_save will be called from from the
+> > cpuidle_idle_call idle loop itself. Also, this cpuidle_idle_call is
+> > not a pseries specific idle loop. It is a common loop for Intel and
+> > PPC which use cpuidle infrastructure.
+> 
+> Ok, so there was a missing piece in the puzzle ;-)
+> 
+> I'll review asap.
+> 
 
-> On Mon, Dec 14, 2009 at 6:33 AM, Vishnu Suresh <Vishnu@freescale.com> =
-wrote:
-> > The async_tx descriptors contains dangling pointers.
-> > Hence, re-initialize them to NULL before use.
-> >
-> > Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
+Hi Ben,
+
+Did you get time to review this?
+
+thanks
+arun
+
+> Cheers,
+> Ben.
+> 
+> > arun
+> > 
+> > 
+> > 
+> > This patch enables cpuidle for the rest of the POWER platforms like
+> > 44x, Cell, Pasemi etc.
+> > 
+> > Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 > > ---
-> > o. Rebased to linux-next as of 20091214
-> >
-> >  drivers/crypto/talitos.c |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-> > index 87f06be..9e261c6 100644
-> > --- a/drivers/crypto/talitos.c
-> > +++ b/drivers/crypto/talitos.c
-> > @@ -952,6 +952,9 @@ static struct dma_async_tx_descriptor * =
-talitos_prep_dma_xor(
-> >                return NULL;
-> >        }
-> >        dma_async_tx_descriptor_init(&new->async_tx, =
-&xor_chan->common);
-> > +       new->async_tx.parent =3D NULL;
-> > +       new->async_tx.next =3D NULL;
+> >  arch/powerpc/include/asm/system.h       |    2 ++
+> >  arch/powerpc/kernel/idle.c              |   28 ++++++++++++++++++++++++++++
+> >  arch/powerpc/kernel/setup_32.c          |    8 ++++++--
+> >  arch/powerpc/platforms/44x/idle.c       |    2 ++
+> >  arch/powerpc/platforms/cell/pervasive.c |    2 ++
+> >  arch/powerpc/platforms/pasemi/idle.c    |    2 ++
+> >  arch/powerpc/platforms/ps3/setup.c      |    2 ++
+> >  7 files changed, 44 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux.trees.git/arch/powerpc/include/asm/system.h
+> > ===================================================================
+> > --- linux.trees.git.orig/arch/powerpc/include/asm/system.h
+> > +++ linux.trees.git/arch/powerpc/include/asm/system.h
+> > @@ -551,8 +551,10 @@ void cpu_idle_wait(void);
+> >  
+> >  #ifdef CONFIG_CPU_IDLE
+> >  extern void update_smt_snooze_delay(int snooze);
+> > +extern void setup_cpuidle_ppc(void);
+> >  #else
+> >  static inline void update_smt_snooze_delay(int snooze) {}
+> > +static inline void setup_cpuidle_ppc(void) {}
+> >  #endif
+> >  
+> >  #endif /* __KERNEL__ */
+> > Index: linux.trees.git/arch/powerpc/kernel/idle.c
+> > ===================================================================
+> > --- linux.trees.git.orig/arch/powerpc/kernel/idle.c
+> > +++ linux.trees.git/arch/powerpc/kernel/idle.c
+> > @@ -129,6 +129,34 @@ void default_idle(void)
+> >  	HMT_very_low();
+> >  }
+> >  
+> > +#ifdef CONFIG_CPU_IDLE
+> > +DEFINE_PER_CPU(struct cpuidle_device, ppc_idle_devices);
+> > +struct cpuidle_driver cpuidle_ppc_driver = {
+> > +	.name =         "cpuidle_ppc",
+> > +};
 > > +
-> >
-> >        desc =3D &new->hwdesc;
-> >        /* Set destination: Last pointer pair */
-
-> These two values are owned by the async_tx api, drivers are not
-> supposed to touch them.
-I have sent this patch and the similar one for fsldma seperately,=20
-so that if the changes are needed and can be done in =
-dma_async_tx_descriptor_init(),=20
-these patches can be ignored. =20
-> Both iop_adma and the new ppx4xx driver
-> (which use the async_tx channel switching capability) get away without
-> touching these fields which makes me suspect there is a
-> misunderstanding/bug somewhere else in the talitos implementation.
-
-This bug does not occur on all the platforms. The occurrance is random.=20
-This occurs when a channel switch between two different devices are =
-present.=20
-This same initialization is required in case of fsldma as well.=20
-In case of fsldma/talitosXOR, there are two DMA channels (on same =
-device) and single XOR channel (on another device).=20
-
-When used without fsldma, this driver works fine.
-Does iop_adma and ppx4xx work in similar enviroment?
-
-> > Also that dma_async_tx_descriptor_init() is unexpected in the hot
-> > path, it's only needed at initial descriptor allocation.  End result =
-I
-> > think this driver needs some more time to brew.
-
-
-
-> --
-> Dan
-
-
-
-
-------_=_NextPart_001_01CA7D76.437CCC34
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<HTML dir=3Dltr><HEAD><TITLE>Re: [PATCH v0] Crypto: Talitos: =
-re-initialize async_tx descriptors</TITLE>=0A=
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
-<META content=3D"MSHTML 6.00.2900.3627" name=3DGENERATOR></HEAD>=0A=
-<BODY>=0A=
-<DIV id=3DidOWAReplyText95776 dir=3Dltr>=0A=
-<DIV dir=3Dltr><FONT size=3D2>&gt; On Mon, Dec 14, 2009 at 6:33 AM, =
-Vishnu Suresh &lt;Vishnu@freescale.com&gt; wrote:<BR>&gt; &gt; The =
-async_tx descriptors contains dangling pointers.<BR>&gt; &gt; Hence, =
-re-initialize them to NULL before use.<BR>&gt; &gt;<BR>&gt; &gt; =
-Signed-off-by: Vishnu Suresh &lt;Vishnu@freescale.com&gt;<BR>&gt; &gt; =
----<BR>&gt; &gt; o. Rebased to linux-next as of 20091214<BR>&gt; =
-&gt;<BR>&gt; &gt; &nbsp;drivers/crypto/talitos.c | &nbsp; &nbsp;3 =
-+++<BR>&gt; &gt; &nbsp;1 files changed, 3 insertions(+), 0 =
-deletions(-)<BR>&gt; &gt;<BR>&gt; &gt; diff --git =
-a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c<BR>&gt; &gt; index =
-87f06be..9e261c6 100644<BR>&gt; &gt; --- =
-a/drivers/crypto/talitos.c<BR>&gt; &gt; +++ =
-b/drivers/crypto/talitos.c<BR>&gt; &gt; @@ -952,6 +952,9 @@ static =
-struct dma_async_tx_descriptor * talitos_prep_dma_xor(<BR>&gt; &gt; =
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;return =
-NULL;<BR>&gt; &gt; &nbsp; &nbsp; &nbsp; &nbsp;}<BR>&gt; &gt; &nbsp; =
-&nbsp; &nbsp; &nbsp;dma_async_tx_descriptor_init(&amp;new-&gt;async_tx, =
-&amp;xor_chan-&gt;common);<BR>&gt; &gt; + &nbsp; &nbsp; &nbsp; =
-new-&gt;async_tx.parent =3D NULL;<BR>&gt; &gt; + &nbsp; &nbsp; &nbsp; =
-new-&gt;async_tx.next =3D NULL;<BR>&gt; &gt; +<BR>&gt; &gt;<BR>&gt; &gt; =
-&nbsp; &nbsp; &nbsp; &nbsp;desc =3D &amp;new-&gt;hwdesc;<BR>&gt; &gt; =
-&nbsp; &nbsp; &nbsp; &nbsp;/* Set destination: Last pointer pair =
-*/<BR><BR>&gt; These two values are owned by the async_tx api, drivers =
-are not<BR>&gt; supposed to touch them.</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT size=3D2>I have sent this patch and =
-the&nbsp;similar one for fsldma seperately, <BR>so that if the =
-changes&nbsp;are needed and can be done in =
-dma_async_tx_descriptor_init(), <BR>these patches can be ignored.&nbsp; =
-</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT size=3D2>&gt; Both iop_adma and the new ppx4xx =
-driver<BR>&gt; (which use the async_tx channel switching capability) get =
-away without<BR>&gt; touching these fields which makes me suspect there =
-is a<BR>&gt; misunderstanding/bug somewhere else in the talitos =
-implementation.</FONT></DIV></DIV>=0A=
-<DIV>=0A=
-<P><FONT size=3D2>This bug&nbsp;does&nbsp;not&nbsp;occur on all the =
-platforms. The occurrance&nbsp;is random. <BR>This occurs when a channel =
-switch between two different devices are present. <BR></FONT><FONT =
-size=3D2>This same initialization is required in case of fsldma as =
-well.&nbsp;<BR>In case of fsldma/talitosXOR, there are two&nbsp;DMA =
-channels (on same device) and single XOR channel (on another device). =
-</FONT></P>=0A=
-<P><FONT size=3D2>When used without fsldma, this driver works =
-fine.<BR>Does iop_adma and ppx4xx work in similar enviroment?</FONT></P>=0A=
-<P><FONT size=3D2>&gt; &gt; Also that dma_async_tx_descriptor_init() is =
-unexpected in the hot<BR>&gt; &gt; path, it's only needed at initial =
-descriptor allocation.&nbsp; End result I<BR>&gt; &gt; think this driver =
-needs some more time to brew.</FONT></P>=0A=
-<P><FONT size=3D2><BR><BR>&gt; --<BR>&gt; =
-Dan<BR><BR></P></FONT></DIV></BODY></HTML>
-------_=_NextPart_001_01CA7D76.437CCC34--
+> > +static void ppc_idle_loop(struct cpuidle_device *dev, struct cpuidle_state *st)
+> > +{
+> > +	ppc_md.power_save();
+> > +}
+> > +
+> > +void setup_cpuidle_ppc(void)
+> > +{
+> > +	struct cpuidle_device *dev;
+> > +	int cpu;
+> > +
+> > +	cpuidle_register_driver(&cpuidle_ppc_driver);
+> > +
+> > +	for_each_online_cpu(cpu) {
+> > +		dev = &per_cpu(ppc_idle_devices, cpu);
+> > +		dev->cpu = cpu;
+> > +		dev->states[0].enter = ppc_idle_loop;
+> > +		dev->state_count = 1;
+> > +		cpuidle_register_device(dev);
+> > +	}
+> > +}
+> > +#endif
+> > +
+> >  int powersave_nap;
+> >  
+> >  #ifdef CONFIG_SYSCTL
+> > Index: linux.trees.git/arch/powerpc/kernel/setup_32.c
+> > ===================================================================
+> > --- linux.trees.git.orig/arch/powerpc/kernel/setup_32.c
+> > +++ linux.trees.git/arch/powerpc/kernel/setup_32.c
+> > @@ -133,14 +133,18 @@ notrace void __init machine_init(unsigne
+> >  
+> >  #ifdef CONFIG_6xx
+> >  	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
+> > -	    cpu_has_feature(CPU_FTR_CAN_NAP))
+> > +	    cpu_has_feature(CPU_FTR_CAN_NAP)) {
+> >  		ppc_md.power_save = ppc6xx_idle;
+> > +		setup_cpuidle_ppc();
+> > +	}
+> >  #endif
+> >  
+> >  #ifdef CONFIG_E500
+> >  	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
+> > -	    cpu_has_feature(CPU_FTR_CAN_NAP))
+> > +	    cpu_has_feature(CPU_FTR_CAN_NAP)) {
+> >  		ppc_md.power_save = e500_idle;
+> > +		setup_cpuidle_ppc();
+> > +	}
+> >  #endif
+> >  	if (ppc_md.progress)
+> >  		ppc_md.progress("id mach(): done", 0x200);
+> > Index: linux.trees.git/arch/powerpc/platforms/44x/idle.c
+> > ===================================================================
+> > --- linux.trees.git.orig/arch/powerpc/platforms/44x/idle.c
+> > +++ linux.trees.git/arch/powerpc/platforms/44x/idle.c
+> > @@ -24,6 +24,7 @@
+> >  #include <linux/of.h>
+> >  #include <linux/kernel.h>
+> >  #include <asm/machdep.h>
+> > +#include <asm/system.h>
+> >  
+> >  static int mode_spin;
+> >  
+> > @@ -46,6 +47,7 @@ int __init ppc44x_idle_init(void)
+> >  		/* If we are not setting spin mode 
+> >                     then we set to wait mode */
+> >  		ppc_md.power_save = &ppc44x_idle;
+> > +		setup_cpuidle_ppc();
+> >  	}
+> >  
+> >  	return 0;
+> > Index: linux.trees.git/arch/powerpc/platforms/cell/pervasive.c
+> > ===================================================================
+> > --- linux.trees.git.orig/arch/powerpc/platforms/cell/pervasive.c
+> > +++ linux.trees.git/arch/powerpc/platforms/cell/pervasive.c
+> > @@ -35,6 +35,7 @@
+> >  #include <asm/pgtable.h>
+> >  #include <asm/reg.h>
+> >  #include <asm/cell-regs.h>
+> > +#include <asm/system.h>
+> >  
+> >  #include "pervasive.h"
+> >  
+> > @@ -128,5 +129,6 @@ void __init cbe_pervasive_init(void)
+> >  	}
+> >  
+> >  	ppc_md.power_save = cbe_power_save;
+> > +	setup_cpuidle_ppc();
+> >  	ppc_md.system_reset_exception = cbe_system_reset_exception;
+> >  }
+> > Index: linux.trees.git/arch/powerpc/platforms/pasemi/idle.c
+> > ===================================================================
+> > --- linux.trees.git.orig/arch/powerpc/platforms/pasemi/idle.c
+> > +++ linux.trees.git/arch/powerpc/platforms/pasemi/idle.c
+> > @@ -27,6 +27,7 @@
+> >  #include <asm/machdep.h>
+> >  #include <asm/reg.h>
+> >  #include <asm/smp.h>
+> > +#include <asm/system.h>
+> >  
+> >  #include "pasemi.h"
+> >  
+> > @@ -81,6 +82,7 @@ static int __init pasemi_idle_init(void)
+> >  
+> >  	ppc_md.system_reset_exception = pasemi_system_reset_exception;
+> >  	ppc_md.power_save = modes[current_mode].entry;
+> > +	setup_cpuidle_ppc();
+> >  	printk(KERN_INFO "Using PA6T idle loop (%s)\n", modes[current_mode].name);
+> >  
+> >  	return 0;
+> > Index: linux.trees.git/arch/powerpc/platforms/ps3/setup.c
+> > ===================================================================
+> > --- linux.trees.git.orig/arch/powerpc/platforms/ps3/setup.c
+> > +++ linux.trees.git/arch/powerpc/platforms/ps3/setup.c
+> > @@ -33,6 +33,7 @@
+> >  #include <asm/prom.h>
+> >  #include <asm/lv1call.h>
+> >  #include <asm/ps3gpu.h>
+> > +#include <asm/system.h>
+> >  
+> >  #include "platform.h"
+> >  
+> > @@ -214,6 +215,7 @@ static void __init ps3_setup_arch(void)
+> >  	prealloc_ps3flash_bounce_buffer();
+> >  
+> >  	ppc_md.power_save = ps3_power_save;
+> > +	setup_cpuidle_ppc();
+> >  	ps3_os_area_init();
+> >  
+> >  	DBG(" <- %s:%d\n", __func__, __LINE__);
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-arch" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
