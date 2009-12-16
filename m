@@ -1,18 +1,19 @@
-Return-Path: <yong.zhang0@gmail.com>
-Received: from mail-px0-f188.google.com (mail-px0-f188.google.com
-	[209.85.216.188]) by ozlabs.org (Postfix) with ESMTP id C59C2B6F10
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 01:36:18 +1100 (EST)
-Received: by pxi26 with SMTP id 26so776121pxi.17
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 06:36:17 -0800 (PST)
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] powerpc/iseries: use DECLARE_COMPLETION_ONSTACK for
-	non-constant completion
-Date: Wed, 16 Dec 2009 22:35:57 +0800
-Message-Id: <1260974161-6934-2-git-send-email-yong.zhang0@gmail.com>
-In-Reply-To: <1260974161-6934-1-git-send-email-yong.zhang0@gmail.com>
-References: <1260974161-6934-1-git-send-email-yong.zhang0@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <vishnus@lc1105.zin33.ap.freescale.net>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EA3ADB7093
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 02:34:54 +1100 (EST)
+From: Vishnu Suresh <Vishnu@freescale.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-raid@vger.kernel.org, dan.j.williams@intel.com
+Subject: [PATCH v2 1/2] fsldma: Delete DMA_INTERRUPT capability
+Date: Wed, 16 Dec 2009 21:04:29 +0530
+Message-Id: <1260977669-4036-1-git-send-email-Vishnu@freescale.com>
+Cc: Vishnu Suresh <Vishnu@freescale.com>, B04825@freescale.com,
+	R58472@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,29 +23,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The _ONSTACK variant should be used for on-stack completion,
-otherwise it will break lockdep.
+The DMA_INTERRUPT is a NULL transfer, triggering a
+Programming Error. Though this Error is handled in
+the driver with the fix given in "fsldma: Fix the DMA
+halt when using DMA_INTERRUPT async_tx transfer."
+<f79abb627f033c85a6088231f20c85bc4a9bd757>,
+the RAID5 operation, which initiated the transaction
+via Async_tx, hangs.
 
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Hence, this patch removes the DMA_INTERRUPT capability
+and the associated code from the driver.
+
+Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
 ---
- arch/powerpc/platforms/iseries/viopath.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Changes with respect to v1
+o. Rebased to linux-next as of 20091216
 
-diff --git a/arch/powerpc/platforms/iseries/viopath.c b/arch/powerpc/platforms/iseries/viopath.c
-index 49ff4dc..5aea94f 100644
---- a/arch/powerpc/platforms/iseries/viopath.c
-+++ b/arch/powerpc/platforms/iseries/viopath.c
-@@ -116,7 +116,7 @@ static int proc_viopath_show(struct seq_file *m, void *v)
- 	u16 vlanMap;
- 	dma_addr_t handle;
- 	HvLpEvent_Rc hvrc;
--	DECLARE_COMPLETION(done);
-+	DECLARE_COMPLETION_ONSTACK(done);
- 	struct device_node *node;
- 	const char *sysid;
+ drivers/dma/fsldma.c |   31 -------------------------------
+ 1 files changed, 0 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 296f9e7..272097a 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -449,35 +449,6 @@ static void fsl_dma_free_chan_resources(struct dma_chan *chan)
+ 	fsl_chan->desc_pool = NULL;
+ }
  
+-static struct dma_async_tx_descriptor *
+-fsl_dma_prep_interrupt(struct dma_chan *chan, unsigned long flags)
+-{
+-	struct fsl_dma_chan *fsl_chan;
+-	struct fsl_desc_sw *new;
+-
+-	if (!chan)
+-		return NULL;
+-
+-	fsl_chan = to_fsl_chan(chan);
+-
+-	new = fsl_dma_alloc_descriptor(fsl_chan);
+-	if (!new) {
+-		dev_err(fsl_chan->dev, "No free memory for link descriptor\n");
+-		return NULL;
+-	}
+-
+-	new->async_tx.cookie = -EBUSY;
+-	new->async_tx.flags = flags;
+-
+-	/* Insert the link descriptor to the LD ring */
+-	list_add_tail(&new->node, &new->tx_list);
+-
+-	/* Set End-of-link to the last link descriptor of new list*/
+-	set_ld_eol(fsl_chan, new);
+-
+-	return &new->async_tx;
+-}
+-
+ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
+ 	struct dma_chan *chan, dma_addr_t dma_dest, dma_addr_t dma_src,
+ 	size_t len, unsigned long flags)
+@@ -1200,11 +1171,9 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 						- fdev->reg.start + 1);
+ 
+ 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+-	dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
+ 	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+ 	fdev->common.device_alloc_chan_resources = fsl_dma_alloc_chan_resources;
+ 	fdev->common.device_free_chan_resources = fsl_dma_free_chan_resources;
+-	fdev->common.device_prep_dma_interrupt = fsl_dma_prep_interrupt;
+ 	fdev->common.device_prep_dma_memcpy = fsl_dma_prep_memcpy;
+ 	fdev->common.device_is_tx_complete = fsl_dma_is_complete;
+ 	fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
 -- 
-1.6.3.3
+1.6.4.2
