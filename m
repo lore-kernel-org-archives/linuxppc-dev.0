@@ -1,22 +1,23 @@
-Return-Path: <bigeasy@breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 160C2B7093
+	by ozlabs.org (Postfix) with ESMTPS id DBB41B7B64
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Dec 2009 09:28:30 +1100 (EST)
-Date: Wed, 16 Dec 2009 23:11:52 +0100
-From: Sebastian Andrzej Siewior <bigeasy@breakpoint.cc>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: AltiVec in the kernel
-Message-ID: <20091216221152.GA11248@Chamillionaire.breakpoint.cc>
-References: <20091211114543.GF24650@honey.hogyros.de>
-	<200912111649.25617.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <200912111649.25617.arnd@arndb.de>
-Cc: Simon Richter <Simon.Richter@hogyros.de>, linuxppc-dev@lists.ozlabs.org
+	Thu, 17 Dec 2009 09:54:29 +1100 (EST)
+Subject: Re: [PATCH] cardbus: Add a fixup hook and fix powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <20091216140128.16afbeb7@jbarnes-piketon>
+References: <1260341533.16132.20.camel@pasglop>
+	<20091216140128.16afbeb7@jbarnes-piketon>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 09:54:23 +1100
+Message-ID: <1261004063.20129.113.camel@pasglop>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, linux-pci@vger.kernel.org,
+	blofeldus@yahoo.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Arnd Bergmann | 2009-12-11 16:49:25 [+0100]:
+On Wed, 2009-12-16 at 14:01 -0800, Jesse Barnes wrote:
 
->On Friday 11 December 2009, Simon Richter wrote:
->> Hi,
->> 
->> since there has been a thread on allowing the use of a coprocessor in
->> the kernel already: I am wondering if it'd make sense to use AltiVec for
->> AES in dm-crypt, and how difficult it would be to implement that.
->> 
->> I'm using a PegasosII which has a G4 running at 1 GHz; I get around 3
->> MB/s throughput when accessing harddisks. I think that could be
->> improved.
->> 
->> If I understand correctly, the actual encryption work runs in a kernel
->> thread, which is scheduled normally, so it ought to be possible to
->> enable AltiVec for that thread; am I missing something here?
+> > Olof, once that's in you should be able to remove the hack you have in
+> > the PA-Semi code to work around this.
+> > 
+> 
+> Oops, looks like this fails for the modular case?  I get an unresolved
+> symbol error when building this with my default config...
+> 
+> Care to resend with the fix against my for-linus branch?
 
-dm-crypt is async these days so the patches Arnd mentioned could be
-used actually :) I've never tested them with dm-crypt but it should
-work. Back then I had around 20MiB/sec encryption and around 15 MiB/sec
-for decryption on 4KiB page on a PS3 [0]. This was pure testing, no
-subsystem was involved. dm-crypt will feed multiple 512 byte requests.
-And according [1] 512 bytes are aren't slow :) However [2] says that
-that AltiVec was always slower than the generic implementation. Maybe
-PS3's AltiVec unit was slower than the average one because everyone was
-focuesed on the SPUs. Maybe not and you get similar results. 
+Care to send a log ? I fail to see where the problem is since the patch
+has:
 
->Sebastian Siewior has implemented this some time ago:
->
->http://old.nabble.com/-RFC-0-3--Experiments-with-AES-AltiVec,-part-2-tc10034255.html
->
->You can try the old patches on your machine to see if they are any good
->there.
-Ah you remember :)
+--- linux-work.orig/drivers/pci/pci.c   2009-12-09 17:33:24.000000000 +1100
++++ linux-work/drivers/pci/pci.c        2009-12-09 17:34:16.000000000 +1100
+@@ -2723,6 +2723,11 @@ int __attribute__ ((weak)) pci_ext_cfg_a
+        return 1;
+ }
+ 
++void __weak pci_fixup_cardbus(struct pci_bus *bus)
++{
++}
++EXPORT_SYMBOL(pci_fixup_cardbus);
 
-[0] http://diploma-thesis.siewior.net/html/diplomarbeitch4.html#x12-46002r2
-[1] http://diploma-thesis.siewior.net/html/diplomarbeitch4.html#x12-46004r4
-[2] http://diploma-thesis.siewior.net/html/diplomarbeitch4.html#x12-47017r5
->
->	Arnd <><
+Or is that broken in some way ?
 
-Sebastian
+I'm starting to regret trying to use weak stuff :-) I may turn it into a good
+old:
+
+#ifndef pcibios_fixup_cardbus
+static inline void pcibios_fixup_cardbus(struct pci_bus *bus) { }
+#define pcibios_fixup_cardbus
+#endif
+
+In a header and have ppc define it.
+
+(And call it pcibios_ instead of pci_ which matches better what other arch
+fixups are called :-)
+
+Cheers,
+Ben.
