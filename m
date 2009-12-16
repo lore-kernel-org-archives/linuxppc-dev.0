@@ -1,32 +1,21 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 412EAB6F1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 17:54:15 +1100 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp06.in.ibm.com (8.14.3/8.13.1) with ESMTP id nBG6sCkH032429
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 12:24:12 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBG6sCuC2871524
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 12:24:12 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
-	by d28av02.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nBG6sCGo010402
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 17:54:12 +1100
-Message-ID: <4B288413.2070704@in.ibm.com>
-Date: Wed, 16 Dec 2009 12:24:11 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+Return-Path: <xtfeng@gmail.com>
+Received: from mail-pw0-f50.google.com (mail-pw0-f50.google.com
+	[209.85.160.50]) by ozlabs.org (Postfix) with ESMTP id 81B15B6F19
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 17:56:02 +1100 (EST)
+Received: by pwi20 with SMTP id 20so463595pwi.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Dec 2009 22:56:01 -0800 (PST)
 MIME-Version: 1.0
-To: Xiaotian Feng <xtfeng@gmail.com>
+In-Reply-To: <4B279370.5050800@in.ibm.com>
+References: <4B2224C7.1020908@in.ibm.com> <1260786122.4165.142.camel@twins>
+	<4B261D7A.9040802@in.ibm.com> <1260793182.4165.223.camel@twins>
+	<1260825420.2217.40.camel@pasglop> <4B275A6B.9030200@in.ibm.com>
+	<1260873827.4165.362.camel@twins> <4B279370.5050800@in.ibm.com>
+Date: Wed, 16 Dec 2009 14:56:01 +0800
+Message-ID: <7b6bb4a50912152256j58cdc8f6u7fc0f38c60281dc8@mail.gmail.com>
 Subject: Re: [Next] CPU Hotplug test failures on powerpc
-References: <4B2224C7.1020908@in.ibm.com>
-	<7b6bb4a50912152225p4f5dde13re83c439407c16eaf@mail.gmail.com>
-	<4B288131.2050306@in.ibm.com>
-	<7b6bb4a50912152245v61a7f1ebgb41f4857134f3476@mail.gmail.com>
-In-Reply-To: <7b6bb4a50912152245v61a7f1ebgb41f4857134f3476@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Xiaotian Feng <xtfeng@gmail.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: Peter Zijlstra <peterz@infradead.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
@@ -40,39 +29,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Xiaotian Feng wrote:
-> On Wed, Dec 16, 2009 at 2:41 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
->   
->> Xiaotian Feng wrote:
->>     
->>> Does this testcase hotplug cpu 0 off?
+On Tue, Dec 15, 2009 at 9:47 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
+> Peter Zijlstra wrote:
 >>>
->>>       
->> No, i don't think so. It skips cpu0 during online/offline
->> process.
->>     
+>>> I added some debug statements within the above code. This is a 2 cpu
+>>> machine.
+>>>
+>>> XMON dest_cpu =3D 1024 . dead_cpu =3D 1 . nr_cpu_ids =3D 2
+>>> XMON dest_cpu =3D 1024 XMON dest_cpu =3D 1024 . dead_cpu =3D 1
+>>> XMON dest_cpu =3D 1024 . dead_cpu =3D 1 . nr_cpu_ids =3D 2
+>>> XMON dest_cpu =3D 1024 XMON dest_cpu =3D 1024 . dead_cpu =3D 1
+>>> XMON dest_cpu =3D 1024 . dead_cpu =3D 1 . nr_cpu_ids =3D 2
+>>> XMON dest_cpu =3D 1024 XMON dest_cpu =3D 1024 . dead_cpu =3D 1
+>>>
+>>> Seems to me that the control is stuck in an infinite loop and hence the
+>>> machine appears to be in hung state. The dest_cpu value is always 1024
+>>> and never changes, which result in an infinite loop.
+>>>
+>>> In working scenario the o/p is something on the following lines
+>>>
+>>> XMON dest_cpu =3D 1024 . dead_cpu =3D 1 . nr_cpu_ids =3D 2
+>>> XMON dest_cpu =3D 0 XMON dest_cpu =3D 1024 . dead_cpu =3D 1 . nr_cpu_id=
+s =3D 2
+>>> XMON dest_cpu =3D 0 XMON dest_cpu =3D 1024 . dead_cpu =3D 1 . nr_cpu_id=
+s =3D 2
+>>> XMON dest_cpu =3D 0
+>>> Let me know if i should try to record any specific value ?
+>>>
+>>
+>> Could you possibly print the two masks themselves? cpumask_scnprintf()
+>> and friend come in handy for this.
+>>
+>> The dest_cpu=3D1024 thing seem to suggest the intersection between
+>> p->cpus_allowed and cpu_active_mask is empty for some reason, even
+>> though we forcefully reset p->cpus_allowed to the full set using
+>> cpuset_cpus_allowed_locked().
+>>
 >
-> Then how could this happen ? Looks like cpu 0 is offline ....
-> 0:mon> <4>IRQ 17 affinity broken off cpu 0
-> <4>IRQ 18 affinity broken off cpu 0
-> <4>IRQ 19 affinity broken off cpu 0
-> <4>IRQ 264 affinity broken off cpu 0
-> <4>cpu 0 (hwid 0) Ready to die...
-> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[0]
->   
-Sorry i was looking at only one script. Looking more closely
-at the test there are 6 different sub tests. The rest of the
-tests do seem to hotplug CPU 0.
+> So here is the data related to the two masks.
+>
+> cpu_active_mask =3D 00000000,00000000,00000000,00000000,00000000,00000000=
+,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000
+> XMON dest_cpu =3D 1024
+>
 
-Thanks
--Sachin
+How about cpu_online_mask? commit 6ad4c1 switches from cpu_online_mask
+to cpu_active_mask.
+Is there a mismatch for cpu_online_mask and cpu_active_mask?
 
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+> while p->cpus_allowed =3D =C2=A000000000,00000000,00000000,00000000,00000=
+000,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000,00000001
+> XMON dest_cpu =3D 1024
+>
+> In working scenario the above data looks like
+>
+> cpu_active_mask =3D 00000000,00000000,00000000,00000000,00000000,00000000=
+,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000002
+> XMON dest_cpu =3D 1
+>
+> while p->cpus_allowed =3D =C2=A000000000,00000000,00000000,00000000,00000=
+000,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
+> 00000000,00000000,00000002
+> XMON dest_cpu =3D 1
+>
+>
+> hope i got the data correct.
+>
+> Thanks
+> -Sachin
+>
+>
+> --
+>
+> ---------------------------------
+> Sachin Sant
+> IBM Linux Technology Center
+> India Systems and Technology Labs
+> Bangalore, India
+> ---------------------------------
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-next" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =C2=A0http://vger.kernel.org/majordomo-info.html
+>
