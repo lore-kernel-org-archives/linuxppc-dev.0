@@ -1,20 +1,33 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-153.bluehost.com (outbound-mail-153.bluehost.com
-	[67.222.39.33]) by ozlabs.org (Postfix) with SMTP id 61516B7088
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Dec 2009 09:08:29 +1100 (EST)
-Date: Wed, 16 Dec 2009 14:01:28 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] cardbus: Add a fixup hook and fix powerpc
-Message-ID: <20091216140128.16afbeb7@jbarnes-piketon>
-In-Reply-To: <1260341533.16132.20.camel@pasglop>
-References: <1260341533.16132.20.camel@pasglop>
+Return-Path: <R1AAHA@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8698AB6F0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 09:36:56 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nBGMarJ0025544
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 15:36:53 -0700 (MST)
+Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
+	[10.64.32.10])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nBGMfGmh010185
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 16:41:16 -0600 (CST)
+Date: Wed, 16 Dec 2009 16:41:44 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Vishnu Suresh <Vishnu@freescale.com>
+Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
+Message-Id: <20091216164144.daff5468.kim.phillips@freescale.com>
+In-Reply-To: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
+References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Olof Johansson <olof@lixom.net>, linux-pci@vger.kernel.org,
-	blofeldus@yahoo.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: herbert@gondor.apana.org.au, B04825@freescale.com,
+	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org,
+	Dipen Dudhat <Dipen.Dudhat@freescale.com>, dan.j.williams@intel.com,
+	Maneesh Gupta <Maneesh.Gupta@freescale.com>, R58472@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +37,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 09 Dec 2009 17:52:13 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Wed, 16 Dec 2009 21:04:58 +0530
+Vishnu Suresh <Vishnu@freescale.com> wrote:
 
-> The cardbus code creates PCI devices without ever going through the
-> necessary fixup bits and pieces that normal PCI devices go through.
+> Expose Talitos's XOR functionality to be used for
+> RAID Parity calculation via the Async_tx layer.
 > 
-> There's in fact a commented out call to pcibios_fixup_bus() in there,
-> it's commented because ... it doesn't work.
+> Known Issue:
+> When used with fsldma, random crashes are observed
+> on some platforms. Hence, inter-operability with fsldma
+> is currently disabled
 > 
-> I could make pcibios_fixup_bus() do the right thing on powerpc easily
-> but I felt it cleaner instead to provide a specific hook
-> pci_fixup_cardbus for which a weak empty implementation is provided
-> by the PCI core.
+> Thanks to Surender Kumar and Lee Nipper for their help in
+> realising this driver
 > 
-> This fixes cardbus on powerbooks and probably all other PowerPC
-> platforms which was broken completely for ever on some platforms and
-> since 2.6.31 on others such as PowerBooks when we made the DMA ops
-> mandatory (since those are setup by the fixups).
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> Signed-off-by: Dipen Dudhat <Dipen.Dudhat@freescale.com>
+> Signed-off-by: Maneesh Gupta <Maneesh.Gupta@freescale.com>
+> Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
 > ---
-> 
-> Note: In the long run we might want to streamline the hooks for fixing
-> up new devices vs. new busses and make some stuff common between
-> cardbus and PCI hotplug which is actually a mess.
-> 
-> This is a quick fix that makes it work again in the meantime, and that
-> I would like to see in 2.6.31 and 2.6.32 stable at least. 
-> 
-> Another option if you prefer is I can make my pcibios_fixup_bus() do
-> the right thing in all cases I believe (by testing bus->is_added to
-> skip stuff that must not be done twice) and we can remove the comment
-> and stick the call in #ifdef CONFIG_PPC but I felt that solution was
-> a tad cleaner.
-> 
-> Olof, once that's in you should be able to remove the hack you have in
-> the PA-Semi code to work around this.
-> 
+> Changes with respect to v1 as per comments received
+> o. Rebased to linux-next as of 20091216
+> o. The selection is based exclusive of fsldma
+> o. Intoduced a new Kernel Configuration variable
+>    *. This enables selecting the Cryptographic functionality
+>       of Talitos along with fsldma.
+>    *. Disables the XOR parity calculation offload, if fsldma enabled
+>       either as kernel in-built or as a module
+>    *. Once the inter-operability with fsldma is resolved, this option
+>       can be removed
 
-Oops, looks like this fails for the modular case?  I get an unresolved
-symbol error when building this with my default config...
+wait, why can't the interoperability bug be fixed in the first place?
 
-Care to resend with the fix against my for-linus branch?
-
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Kim
