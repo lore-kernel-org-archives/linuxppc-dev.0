@@ -1,28 +1,22 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-	by ozlabs.org (Postfix) with ESMTP id D0962B6EE9
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 09:47:51 +1100 (EST)
-Message-ID: <4B296394.9010709@intel.com>
-Date: Wed, 16 Dec 2009 15:47:48 -0700
-From: Dan Williams <dan.j.williams@intel.com>
+Return-Path: <bigeasy@breakpoint.cc>
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+	[85.10.199.196])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 160C2B7093
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 17 Dec 2009 09:28:30 +1100 (EST)
+Date: Wed, 16 Dec 2009 23:11:52 +0100
+From: Sebastian Andrzej Siewior <bigeasy@breakpoint.cc>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: AltiVec in the kernel
+Message-ID: <20091216221152.GA11248@Chamillionaire.breakpoint.cc>
+References: <20091211114543.GF24650@honey.hogyros.de>
+	<200912111649.25617.arnd@arndb.de>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
-References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
-	<20091216164144.daff5468.kim.phillips@freescale.com>
-	<2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
-In-Reply-To: <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-	"B04825@freescale.com" <B04825@freescale.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Vishnu Suresh <Vishnu@freescale.com>,
-	"linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-	Dipen Dudhat <Dipen.Dudhat@freescale.com>,
-	Maneesh Gupta <Maneesh.Gupta@freescale.com>,
-	"R58472@freescale.com" <R58472@freescale.com>
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <200912111649.25617.arnd@arndb.de>
+Cc: Simon Richter <Simon.Richter@hogyros.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->>> Changes with respect to v1 as per comments received
->>> o. Rebased to linux-next as of 20091216
->>> o. The selection is based exclusive of fsldma
->>> o. Intoduced a new Kernel Configuration variable
->>>   *. This enables selecting the Cryptographic functionality
->>>      of Talitos along with fsldma.
->>>   *. Disables the XOR parity calculation offload, if fsldma enabled
->>>      either as kernel in-built or as a module
->>>   *. Once the inter-operability with fsldma is resolved, this option
->>>      can be removed
->> wait, why can't the interoperability bug be fixed in the first place?
-> 
-> I agree w/Kim.  We need to better understand what the bug is and how to reproduce it so we can get to the root cause.
-> 
-> Paper taping over it by disabling fsldma is not the right solution.
+* Arnd Bergmann | 2009-12-11 16:49:25 [+0100]:
 
-Hopefully this prompts fsldma authors to get involved because the 
-interoperability issue has been out there without comment*, just 
-band-aids, since October.
+>On Friday 11 December 2009, Simon Richter wrote:
+>> Hi,
+>> 
+>> since there has been a thread on allowing the use of a coprocessor in
+>> the kernel already: I am wondering if it'd make sense to use AltiVec for
+>> AES in dm-crypt, and how difficult it would be to implement that.
+>> 
+>> I'm using a PegasosII which has a G4 running at 1 GHz; I get around 3
+>> MB/s throughput when accessing harddisks. I think that could be
+>> improved.
+>> 
+>> If I understand correctly, the actual encryption work runs in a kernel
+>> thread, which is scheduled normally, so it ought to be possible to
+>> enable AltiVec for that thread; am I missing something here?
 
---
-Dan
+dm-crypt is async these days so the patches Arnd mentioned could be
+used actually :) I've never tested them with dm-crypt but it should
+work. Back then I had around 20MiB/sec encryption and around 15 MiB/sec
+for decryption on 4KiB page on a PS3 [0]. This was pure testing, no
+subsystem was involved. dm-crypt will feed multiple 512 byte requests.
+And according [1] 512 bytes are aren't slow :) However [2] says that
+that AltiVec was always slower than the generic implementation. Maybe
+PS3's AltiVec unit was slower than the average one because everyone was
+focuesed on the SPUs. Maybe not and you get similar results. 
 
-* well one comment from Ira saying the interrupt functionality worked 
-for him.
+>Sebastian Siewior has implemented this some time ago:
+>
+>http://old.nabble.com/-RFC-0-3--Experiments-with-AES-AltiVec,-part-2-tc10034255.html
+>
+>You can try the old patches on your machine to see if they are any good
+>there.
+Ah you remember :)
+
+[0] http://diploma-thesis.siewior.net/html/diplomarbeitch4.html#x12-46002r2
+[1] http://diploma-thesis.siewior.net/html/diplomarbeitch4.html#x12-46004r4
+[2] http://diploma-thesis.siewior.net/html/diplomarbeitch4.html#x12-47017r5
+>
+>	Arnd <><
+
+Sebastian
