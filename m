@@ -1,21 +1,20 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 3E7D1B6F1A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Dec 2009 22:37:17 +1100 (EST)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: MPC5200B XLB Configuration Issues, FEC RFIFO Events, ATA Crashes
-References: <200912091529.13913.roman.fietze@telemotive.de>
-	<20091209145748.GB3112@pengutronix.de>
-In-Reply-To: <20091209145748.GB3112@pengutronix.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A9AB9B6F1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Dec 2009 23:00:03 +1100 (EST)
+Message-ID: <4B28CBC4.4010501@embedded-sol.com>
+Date: Wed, 16 Dec 2009 14:00:04 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Message-ID: <200912161237.09796.roman.fietze@telemotive.de>
-Date: Wed, 16 Dec 2009 12:37:09 +0100
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Mahajan Vivek-B08308 <B08308@freescale.com>
+Subject: Re: Problem with mini-PCI-E slot on P2020RDB
+References: <4B27FEE3.80001@embedded-sol.com>	<0949C49693EF1A47A54B0F0113CDB4A607674F@zin33exm23.fsl.freescale.net>	<4B28A7C3.6040209@embedded-sol.com>
+	<0949C49693EF1A47A54B0F0113CDB4A6076776@zin33exm23.fsl.freescale.net>
+In-Reply-To: <0949C49693EF1A47A54B0F0113CDB4A6076776@zin33exm23.fsl.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Aggrwal Poonam-B10812 <B10812@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,125 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Wolfram,
+Mahajan Vivek-B08308 wrote:
+>> From: Felix Radensky [mailto:felix@embedded-sol.com] 
+>> Sent: Wednesday, December 16, 2009 2:56 PM
+>> To: Mahajan Vivek-B08308
+>> Cc: linuxppc-dev@ozlabs.org; Aggrwal Poonam-B10812; Kumar Gala
+>> Subject: Re: Problem with mini-PCI-E slot on P2020RDB
+>>
+>> Hi,
+>>     
+>>> Looks like INTA is not being routed to IRQ0 properly for this PCIe 
+>>> ctlr. Try changing the interrupt-map prop for the ctlr at 
+>>>       
+>> 0xffe0a000 
+>>     
+>>> to the following, temporarily:-
+>>>
+>>> interrupt-map = <
+>>> /* IDSEL 0x0 */
+>>> 0000 0x0 0x0 0x1 &mpic 0x1 0x1
+>>> 0000 0x0 0x0 0x2 &mpic 0x2 0x1
+>>> 0000 0x0 0x0 0x3 &mpic 0x3 0x1
+>>> 0000 0x0 0x0 0x4 &mpic 0x0 0x1
+>>>   
+>>>       
+>> Thanks for your help. With this change "nobody cared" message 
+>> disappears, but interrupts are not coming at all.
+>>
+>> Is it a SoC problem or a board problem ?
+>>     
+>
+> As per the p2020rm, PCIe legacy INTA is shared with IRQ0 for 
+> this ctlr, which is the exactly the case with other SoC's 
+> p2020ds, mpc8536ds, mpc8572ds. To me it seems like a board 
+> issue and it needs to be followed up.
+>
+> I plugged in ralink rt2860 pcie wirless card in the mini-pcie 
+> slot of p2020rdb, which ran fine becaused it used MSI by default.
+> How hard is it to enable MSI in the atheros wireless driver.
+>
+>   
 
-On Wednesday 09 December 2009 15:57:48 Wolfram Sang wrote:
+I've enabled MSI in ath9k driver, by simply adding pci_enable_msi() and
+pci_disable_msi() at relevant places. The MSI interrupt is allocated.
 
-> Do you have a way to measure performance penalties?
+irq: irq 0 on host /soc@ffe00000/msi@41600 mapped to virtual irq 18
+phy0: Atheros AR9280 MAC/BB Rev:2 AR5133 RF Rev:d0: mem=0xf2160000, irq=18
 
-As I said, I do.
+cat /proc/interrupts
+           CPU0
+ 18:          0   FSL-MSI   Edge      ath9k
 
-And here they are. They won't win a price for the most impartial
-benchmarks ever seen, but thet'll be a good starting point to get a
-feeling what stability might cost.
+lspci -v shows that MSI was enabled on device
 
-The board is using the MPC5200B on a board derived from the old
-lite5200, but with the fixes for the MPC5200B. All tests are run using
-an ST940813AM hard drive with an ext2 and an ext3 of 10GB each,
-default mkfs options. The OS is Debian 4.0. The network connection is
-between a fast Athlon XP2 6400 and the target, using 100MBit/s wiring
-and a 100MBit/s switch.
+But I don't get any interrupts. I've posted a question to ath9k list, 
+maybe folks there
+will have some ideas.
 
-The F always stands for fast settings, coherent cache, XLB features
-like snooping, etc. turned on, XLB config 0x0000a006 or 0x0001a006
-(makes no or no big difference).
+Thanks.
 
-The S always stands for slow settings, non coherent cache, XLB
-features like snooping, etc. turned on, XLB config 0x80012006.
-
-
-Bonnie++ V1.03:
-
-              ------Sequential Output------ --Sequential Input- --Random-
-              -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-Machine  Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
-=46 ext2:  256M  2676  99 14759  47  5502  24  2792  98 16201  26 136.2   4
-               ------Sequential Create------ --------Random Create--------
-               -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
-         files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
-            64    85  99 84712  99 14517 100    86  99 114078 100   309  99
-
-
-              ------Sequential Output------ --Sequential Input- --Random-
-              -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-Machine  Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
-S ext2:  256M  2647  99 14462  56  5468  29  2778  99 15856  32 134.2   4
-               ------Sequential Create------ --------Random Create--------
-               -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
-         files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
-            64    87  99 85872 100 15919  99    88  99 114094  99   317  99
-
-
-              ------Sequential Output------ --Sequential Input- --Random-
-              -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-Machine  Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
-=46 ext3:  256M  2461  96 13327  73  5792  29  2798  98 16213  27 133.9   3
-               ------Sequential Create------ --------Random Create--------
-               -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
-         files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
-            64  2826  92 59290  99  3803  71  2778  90 114706 100  3872  74
-
-
-              ------Sequential Output------ --Sequential Input- --Random-
-              -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-Machine  Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
-S ext3:  256M  2455  97 13340  85  5533  33  2759  98 15855  32 136.7   4
-               ------Sequential Create------ --------Random Create--------
-               -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
-         files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
-            64  2774  92 59474 100  3810  74  2726  91 113937 100  3905  77
-
-
-Netcat tests to or from my MPC5200B target. All times are the netcat
-time -p output real/user/sys and the network data rate in MB/s. The
-source data itself is either a dd from /dev/zero with bs=3D10M
-count=3D1024 or a file of equal size either on an ext2 or ext3
-filesystem. The destination is either /dev/null or a file on an ext2
-or ext3.
-
-
-Server:/dev/zero -> Target:/dev/null
-  F: 1594/15.3/1031	6.8
-  S: 1864/8.8/921	5.8
-
-Target:/dev/zero -> Server:/dev/null
-  F: 1396/35.8/1361	7.7
-  S: 1578/51.5/1526	6.8
-
-Server:/dev/zero -> Target:ext2
-  F: 1799/37.0/1721	6.0
-  S: 2093/42.6/2009	5.1
-
-Target:ext2 -> Server:/dev/null
-  F: 2423/31.3/1030	4.4
-  S: 2820/15.2/1186	3.8
-
-Server:/dev/zero -> Target:ext3
-  F: 2110/33.4/1912.88	5.1
-  S: 2397/47.5/2208.63	4.5
-
-Target:ext3 -> Server:/dev/null
-  F: 2407/17.9/1016	4.5
-  S: 2676/15.4/1160	4.0
-
-I repeated one or the other test and got comparable results.
-
-And please keep in mind, that adding some more or less high load on
-the SCLPC/LPC the F system crashed either right away or at least once
-every few hours, depending on what we did (TX/RX, FLASH/FPGA,
-SCLPC+DMA/SCLPC/CPU, ...), and depending on the concurrent load on the
-=46EC and ATA. If you only need one or the other peripheral with your
-system you might get away with alls the XLB fetures turned on.
-
-Additionally to that, I got wrong data reading from FLASH or the FPGA
-using SCLPC+DMA in the first few bytes with the fast settings, when I
-did not manually flush or invalidate the cache prior to the DMA
-submission as dma_map_single would do it in non cache coherent setups.
-
-
-Roman
-
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+Felix.
