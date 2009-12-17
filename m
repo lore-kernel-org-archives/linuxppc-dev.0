@@ -1,33 +1,20 @@
-Return-Path: <B08308@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A9218B6EF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 19:59:59 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nBH8xtl3016459
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 01:59:56 -0700 (MST)
-Received: from zin33exm23.fsl.freescale.net (zin33exm23.ap.freescale.net
-	[10.232.192.22])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nBH94tOS005013
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 03:04:56 -0600 (CST)
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0F759B6F19
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 20:34:44 +1100 (EST)
+Date: Thu, 17 Dec 2009 10:34:34 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [POWERPC] add U-Boot bootcount driver.
+Message-ID: <20091217093434.GA19931@pengutronix.de>
+References: <20091216024730.455b90fd@vitb-lp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Problem with mini-PCI-E slot on P2020RDB
-Date: Thu, 17 Dec 2009 14:29:53 +0530
-Message-ID: <0949C49693EF1A47A54B0F0113CDB4A60767F0@zin33exm23.fsl.freescale.net>
-In-Reply-To: <4B29F23A.9070001@embedded-sol.com>
-References: <4B27FEE3.80001@embedded-sol.com>	<0949C49693EF1A47A54B0F0113CDB4A607674F@zin33exm23.fsl.freescale.net>	<4B28A7C3.6040209@embedded-sol.com>	<0949C49693EF1A47A54B0F0113CDB4A6076776@zin33exm23.fsl.freescale.net>	<4B28CBC4.4010501@embedded-sol.com><0949C49693EF1A47A54B0F0113CDB4A6076791@zin33exm23.fsl.freescale.net>
-	<4B29DC2B.8090405@embedded-sol.com>
-	<0949C49693EF1A47A54B0F0113CDB4A60767E8@zin33exm23.fsl.freescale.net>
-	<4B29F23A.9070001@embedded-sol.com>
-From: "Mahajan Vivek-B08308" <B08308@freescale.com>
-To: "Felix Radensky" <felix@embedded-sol.com>
-Cc: linuxppc-dev@ozlabs.org, Aggrwal Poonam-B10812 <B10812@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
+In-Reply-To: <20091216024730.455b90fd@vitb-lp>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,23 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> From: Felix Radensky [mailto:felix@embedded-sol.com]=20
-> Sent: Thursday, December 17, 2009 2:26 PM
-> >
-> Yes, I've enabled that bit, but didn't get any interrupt.
 
-Thanks for trying.=20
+--gKMricLos+KVdGMg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, Dec 16, 2009 at 02:47:30AM +0300, Vitaly Bordug wrote:
 >=20
-> Thanks a lot. If I understand you correctly, the only way I=20
-> can get ath9k driver to work on this board using legacy=20
-> interrupts is to wait for a hardware fix. Right ?
-
-Correct
-
+> From: Heiko Schocher <hs@denx.de>
 >=20
-> Felix.
+> This driver provides (read/write) access to the
+> U-Boot bootcounter via PROC FS or sysFS.
 >=20
+> in u-boot, it uses a 8 byte mem area (it must hold the value over a
+> soft reset of course), for storing a bootcounter (it counts many soft
+> resets are done, on hard reset it starts with 0). If the bootcountvalue
+> exceeds the value in the env variable "bootlimit", and alternative
+> bootcmd stored in the env variable "altbootcmd" is run.
 
-Thanks,
-Vivek
+Hmm, both in my inbox and in patchwork, the patch seems line-wrapped.
+Also, there are a few printk without loglevel. As probe has access to
+a device structure, dev_* should be a nice option here.
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--gKMricLos+KVdGMg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAksp+yoACgkQD27XaX1/VRtbXwCgvxRytWh+MVWtZLwaaSPLYFE3
+nB0AoImNwH+7z5PfUJm54HoFmk7r6LDz
+=MDuE
+-----END PGP SIGNATURE-----
+
+--gKMricLos+KVdGMg--
