@@ -1,18 +1,15 @@
-Return-Path: <sylvain.lamontagne@gmail.com>
-Received: from qw-out-1920.google.com (qw-out-1920.google.com [74.125.92.144])
-	by ozlabs.org (Postfix) with ESMTP id DEA3FB6F04
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp126.mail.ukl.yahoo.com (smtp126.mail.ukl.yahoo.com
+	[77.238.184.57]) by ozlabs.org (Postfix) with SMTP id 5D0D2B6EF5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Dec 2009 02:57:03 +1100 (EST)
-Received: by qw-out-1920.google.com with SMTP id 4so385408qwk.50
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Dec 2009 07:57:01 -0800 (PST)
-MIME-Version: 1.0
-Date: Thu, 17 Dec 2009 10:57:01 -0500
-Message-ID: <3e45db430912170757v20209609y61498e287928d47b@mail.gmail.com>
-Subject: Need advice on changing MPC5200B UART prescaler
-From: Sylvain Lamontagne <sylvain.lamontagne@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=000e0cd6ca2c77435b047aeeac83
+	Fri, 18 Dec 2009 05:33:56 +1100 (EST)
+From: Albert Herranz <albert_herranz@yahoo.es>
+To: linuxppc-dev@lists.ozlabs.org, grant.likely@secretlab.ca
+Subject: [PATCH] powerpc: gamecube/wii: fix off-by-one error in
+	ugecon/usbgecko_udbg
+Date: Thu, 17 Dec 2009 19:33:41 +0100
+Message-Id: <1261074821-4120-1-git-send-email-albert_herranz@yahoo.es>
+Cc: juha_motorsportcom@luukku.com, Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,64 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0cd6ca2c77435b047aeeac83
-Content-Type: text/plain; charset=UTF-8
+The retry logic in ug_putc() is broken.
 
-Hi all,
+If the TX fifo is not ready and the counter runs out it will have a
+value of -1 and no transfer should be attempted. Also, a counter
+with a value of 0 means that the TX fifo got ready in the last try
+and the transfer should be attempted.
 
-I would like to be able to set a baud rate of 460800 for modem that we are
-testing. With the actual prescaler of 32 and a IPB frequency of 84MHz
-I got a 5.1% error (437500) vs a 0.9% error (456522) if I could use the
-prescaler of 4. See MPC5200B user manual page 15-46 for the calculation
-formula and page 15-12 for the CSR description.
+Reported-by: "Juha Leppanen" <juha_motorsportcom@luukku.com>
+Signed-off-by: "Juha Leppanen" <juha_motorsportcom@luukku.com>
+Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+---
+ arch/powerpc/boot/ugecon.c                         |    2 +-
+ arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Currently the code for the kernel we are using here, (2.6.29.2) seams not to
-take a prescaler of 4 into account.
-Line 249 of mpc52xx_uart.c
-http://lxr.linux.no/linux+v2.6.29.2/drivers/serial/mpc52xx_uart.c#L249
-
-/* Search for bus-frequency property in this node or a parent */
-static unsigned long mpc52xx_getuartclk(void *p)
-{
-        /*
-         * 5200 UARTs have a / 32 prescaler
-         * but the generic serial code assumes 16
-         * so return ipb freq / 2
-         */
-        return mpc52xx_find_ipb_freq(p) / 2;
-}
-
-How could I make it use the prescaler of 4 without breaking anything that we
-currently have working ?
-I doubt that simply doing  return mpc52xx_find_ipb_freq(p) / 4 would do the
-trick ...
-
---000e0cd6ca2c77435b047aeeac83
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Hi all,=C2=A0<div><br></div><div>I would like to be able to set a baud rate=
- of 460800 for modem that we are testing. With the actual prescaler of 32 a=
-nd a IPB frequency of 84MHz</div><div>I got a 5.1% error (437500) vs a 0.9%=
- error (456522) if I could use the prescaler of 4. See MPC5200B user manual=
- page 15-46 for the calculation formula and page 15-12 for the CSR descript=
-ion.</div>
-<div><br></div><div>Currently the code for the kernel we are using here, (2=
-.6.29.2) seams not to take a prescaler of 4 into account.</div><div><div>Li=
-ne 249 of mpc52xx_uart.c=C2=A0<a href=3D"http://lxr.linux.no/linux+v2.6.29.=
-2/drivers/serial/mpc52xx_uart.c#L249">http://lxr.linux.no/linux+v2.6.29.2/d=
-rivers/serial/mpc52xx_uart.c#L249</a></div>
-<div><br></div><div>/* Search for bus-frequency property in this node or a =
-parent */</div><div>static unsigned long mpc52xx_getuartclk(void *p)</div><=
-div>{</div><div>=C2=A0=C2=A0 =C2=A0 =C2=A0 =C2=A0/*</div><div>=C2=A0=C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 * 5200 UARTs have a / 32 prescaler</div>
-<div>=C2=A0=C2=A0 =C2=A0 =C2=A0 =C2=A0 * but the generic serial code assume=
-s 16</div><div>=C2=A0=C2=A0 =C2=A0 =C2=A0 =C2=A0 * so return ipb freq / 2</=
-div><div>=C2=A0=C2=A0 =C2=A0 =C2=A0 =C2=A0 */</div><div>=C2=A0=C2=A0 =C2=A0=
- =C2=A0 =C2=A0return mpc52xx_find_ipb_freq(p) / 2;</div><div>}</div><div><b=
-r></div><div>How could I make it use the prescaler of 4 without breaking an=
-ything that we currently have working ?</div>
-<div>I doubt that simply doing=C2=A0=C2=A0return mpc52xx_find_ipb_freq(p) /=
- 4 would do the trick ...</div></div>
-
---000e0cd6ca2c77435b047aeeac83--
+diff --git a/arch/powerpc/boot/ugecon.c b/arch/powerpc/boot/ugecon.c
+index 50609ea..8f2a6b3 100644
+--- a/arch/powerpc/boot/ugecon.c
++++ b/arch/powerpc/boot/ugecon.c
+@@ -86,7 +86,7 @@ static void ug_putc(char ch)
+ 
+ 	while (!ug_is_txfifo_ready() && count--)
+ 		barrier();
+-	if (count)
++	if (count >= 0)
+ 		ug_raw_putc(ch);
+ }
+ 
+diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
+index edc956c..20a8ed9 100644
+--- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
++++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
+@@ -120,7 +120,7 @@ static void ug_putc(char ch)
+ 
+ 	while (!ug_is_txfifo_ready() && count--)
+ 		barrier();
+-	if (count)
++	if (count >= 0)
+ 		ug_raw_putc(ch);
+ }
+ 
+-- 
+1.6.3.3
