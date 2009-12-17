@@ -1,20 +1,19 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-310.bluehost.com (outbound-mail-310.bluehost.com
-	[67.222.54.3]) by ozlabs.org (Postfix) with SMTP id 15DCFB70B3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Dec 2009 14:03:28 +1100 (EST)
-Date: Wed, 16 Dec 2009 18:56:27 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] cardbus: Add a fixup hook and fix powerpc
-Message-ID: <20091216185627.2ea4f3d8@jbarnes-piketon>
-In-Reply-To: <1260341533.16132.20.camel@pasglop>
-References: <1260341533.16132.20.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Olof Johansson <olof@lixom.net>, linux-pci@vger.kernel.org,
-	blofeldus@yahoo.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <mhiramat@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 570CDB70B3
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 16:36:15 +1100 (EST)
+Message-ID: <4B29C3E3.3060905@redhat.com>
+Date: Thu, 17 Dec 2009 00:38:43 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH -tip tracing/kprobes] PPC: Powerpc port of the kprobe-based
+	event tracer
+References: <20091216043619.963539987@mars.in.ibm.com>
+	<20091216043933.GA9328@in.ibm.com> <13884.1261016575@neuling.org>
+In-Reply-To: <13884.1261016575@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +23,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 09 Dec 2009 17:52:13 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Hi Michael,
 
-> The cardbus code creates PCI devices without ever going through the
-> necessary fixup bits and pieces that normal PCI devices go through.
+Michael Neuling wrote:
+>> +
+>> +static const struct pt_regs_offset regoffset_table[] = {
+>> +	REG_OFFSET_NAME(gpr[0]),
+>> +	REG_OFFSET_NAME(gpr[1]),
+>> +	REG_OFFSET_NAME(gpr[2]),
+>> +	REG_OFFSET_NAME(gpr[3]),
+>> +	REG_OFFSET_NAME(gpr[4]),
+>> +	REG_OFFSET_NAME(gpr[5]),
+>> +	REG_OFFSET_NAME(gpr[6]),
+>> +	REG_OFFSET_NAME(gpr[7]),
+>> +	REG_OFFSET_NAME(gpr[8]),
+>> +	REG_OFFSET_NAME(gpr[9]),
+>> +	REG_OFFSET_NAME(gpr[10]),
+>> +	REG_OFFSET_NAME(gpr[11]),
+>> +	REG_OFFSET_NAME(gpr[12]),
+>> +	REG_OFFSET_NAME(gpr[13]),
+>> +	REG_OFFSET_NAME(gpr[14]),
+>> +	REG_OFFSET_NAME(gpr[15]),
+>> +	REG_OFFSET_NAME(gpr[16]),
+>> +	REG_OFFSET_NAME(gpr[17]),
+>> +	REG_OFFSET_NAME(gpr[18]),
+>> +	REG_OFFSET_NAME(gpr[19]),
+>> +	REG_OFFSET_NAME(gpr[20]),
+>> +	REG_OFFSET_NAME(gpr[21]),
+>> +	REG_OFFSET_NAME(gpr[22]),
+>> +	REG_OFFSET_NAME(gpr[23]),
+>> +	REG_OFFSET_NAME(gpr[24]),
+>> +	REG_OFFSET_NAME(gpr[25]),
+>> +	REG_OFFSET_NAME(gpr[26]),
+>> +	REG_OFFSET_NAME(gpr[27]),
+>> +	REG_OFFSET_NAME(gpr[28]),
+>> +	REG_OFFSET_NAME(gpr[29]),
+>> +	REG_OFFSET_NAME(gpr[30]),
+>> +	REG_OFFSET_NAME(gpr[31]),
+>> +	REG_OFFSET_NAME(nip),
+>> +	REG_OFFSET_NAME(msr),
+>> +	REG_OFFSET_NAME(orig_gpr3),
+>> +	REG_OFFSET_NAME(ctr),
+>> +	REG_OFFSET_NAME(link),
+>> +	REG_OFFSET_NAME(xer),
+>> +	REG_OFFSET_NAME(ccr),
+>> +#ifdef CONFIG_PPC64
+>> +	REG_OFFSET_NAME(softe),
+>> +#else
+>> +	REG_OFFSET_NAME(mq),
+>> +#endif
+>> +	REG_OFFSET_NAME(trap),
+>> +	REG_OFFSET_NAME(dar),
+>> +	REG_OFFSET_NAME(dsisr),
+>> +	REG_OFFSET_NAME(result),
+>> +	REG_OFFSET_END,
 > 
-> There's in fact a commented out call to pcibios_fixup_bus() in there,
-> it's commented because ... it doesn't work.
-> 
-> I could make pcibios_fixup_bus() do the right thing on powerpc easily
-> but I felt it cleaner instead to provide a specific hook
-> pci_fixup_cardbus for which a weak empty implementation is provided
-> by the PCI core.
-> 
-> This fixes cardbus on powerbooks and probably all other PowerPC
-> platforms which was broken completely for ever on some platforms and
-> since 2.6.31 on others such as PowerBooks when we made the DMA ops
-> mandatory (since those are setup by the fixups).
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Do we need to add something for FP and VMX registers here?
 
-Ah the link failure was my fault.  I had fixed up the conflict
-incorrectly.  It's applied now.
+Hmm, are FP and VMX registers actually used inside kernel on PPC?
+Actually, the main purpose of this code is to provide accessing method
+of in-kernel pt_regs fields (registers used in kernel) by name.
+
+Thank you,
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
