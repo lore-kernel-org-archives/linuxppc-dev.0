@@ -1,34 +1,38 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 135B1B6F04
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 05:45:18 +1100 (EST)
-Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
-Mime-Version: 1.0 (Apple Message framework v1077)
+	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BC278B6EED
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 06:03:28 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp06.in.ibm.com (8.14.3/8.13.1) with ESMTP id nBHJ3PiC030327
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 00:33:25 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nBHJ3Pdi3567846
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 00:33:25 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nBHJ3O0o014264
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 00:33:25 +0530
+Date: Fri, 18 Dec 2009 00:33:20 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: [Patch 1/1] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
+Message-ID: <20091217190320.GA20331@in.ibm.com>
+References: <20091211160409.GB23156@in.ibm.com>
+	<20091214005648.82BA31DE@magilla.sf.frob.com>
+	<20091214180324.GA18406@in.ibm.com>
+	<20091214192626.3F9171DE@magilla.sf.frob.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4B2A6DFA.6000504@intel.com>
-Date: Thu, 17 Dec 2009 12:45:01 -0600
-Message-Id: <AFE3AE33-41FB-42EE-A861-9C6CC1D1F435@kernel.crashing.org>
-References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
-	<20091216164144.daff5468.kim.phillips@freescale.com>
-	<2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
-	<4B296394.9010709@intel.com>
-	<20091217170958.GE18271@ovro.caltech.edu>
-	<4B2A6DFA.6000504@intel.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>,
-	"B04825@freescale.com" <B04825@freescale.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Vishnu Suresh <Vishnu@freescale.com>,
-	"linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-	Dipen Dudhat <Dipen.Dudhat@freescale.com>,
-	Maneesh Gupta <Maneesh.Gupta@freescale.com>,
-	"R58472@freescale.com" <R58472@freescale.com>
+In-Reply-To: <20091214192626.3F9171DE@magilla.sf.frob.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+	Alan Stern <stern@rowland.harvard.edu>, paulus@samba.org
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,23 +42,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Dec 14, 2009 at 11:26:26AM -0800, Roland McGrath wrote:
+<snipped>
+> I understand the reason for using stepping.  (I have advised in the past
+> that I thought this magical implicit step logic was too hairy to roll in
+> under the covers and that a low-level facility expressing the different
+> hardware semantics to a kernel API would be OK.  I do agree with the
+> motivation of cross-arch uniformity of the semantics.  I don't object to
+> making it magically right--I just expressed general skepticism/fear about
+> getting that right so that I didn't want to try writing that magic.  Now
+> I'm just responding about the particular details I've noticed about that
+> can of worms.  It's certainly great if you can resolve all that.  But I'll
+> note that I am still by no means confident that the details I have raised
+> cover all the worms in that can.)
+> 
+> What remains less than clear is how preemption relates.  For any per-thread
+> hw_breakpoint, there is no high-level reason to care one way or the other.
+> The thread, its HW breakpoints, its register state including state of
+> stepping, are all part of per-thread state and no reason to do any less (or
+> more) preemption than normally happens.
+> 
 
-On Dec 17, 2009, at 11:44 AM, Dan Williams wrote:
+I get that reasoning now...I'd been unduly worried about pre-emption
+and hence the introduction of pre-emption disabled state.
 
-> Ira W. Snyder wrote:
->> Yes, I have used the device_prep_dma_interrupt() functionality quite =
-a
->> while back. However, I found it to be pretty much useless.
->=20
-> The specific case it is needed for Talitos/raid is a channel switch =
-interrupt.  The interrupt causes the cleanup operation to be run which =
-will kick off any pending dependent operations on the xor channel.  In =
-the raid case we only have callbacks at the end of a chain, so we need =
-the interrupt to kick the engine in an operation chain like =
-xor->copy->xor->callback.
+But of course, in the existing design, the per-cpu variables would be
+affected because if pre-emption was to occur. I'll see how that can be
+factored in, while retaining the abstraction provided by the interfaces.
 
-Ok, I'm still confused as to how the DMA interrupt interacts with the =
-Talitos/raid side of things.  The should be completely independent =
-(separate interrupts, separate IP blocks).
+> > Disabling pre-emption is necessary to ensure that hw-breakpoints are
+> > enabled immediately after the causative instruction has finished
+> > execution (the control flow may go astray if pre-emption occurs between
+> > i1 and i2).
+> 
+> I don't understand what "go astray" means here.  The only thing I can think
+> of is the effect on any per-cpu variables you are using in hw_breakpoint
+> implementation.
+> 
 
-- k=
+As stated above, I was worried about a pre-emption happening between a
+return from breakpoint exception handler and the execution of the
+causative instruction....but as I learn, it seems fine now. It is just that
+the kernel code needs to be tweaked keeping this in mind.
+
+Thanks,
+K.Prasad
