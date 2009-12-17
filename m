@@ -1,27 +1,22 @@
-Return-Path: <R58472@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 24050B70CF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Dec 2009 16:41:51 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nBH5fn4r015832 for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Dec 2009 22:41:49 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nBH5kB5L014949
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Dec 2009 23:46:11 -0600 (CST)
-From: Li Yang <leoli@freescale.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH] mpic: fix problem that affinity is not updated
-Date: Thu, 17 Dec 2009 14:18:11 +0800
-Message-Id: <1261030691-1946-1-git-send-email-leoli@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Jiajun Wu <b06378@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CEB1CB6F2B
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 18:07:33 +1100 (EST)
+Subject: Re: [PATCH -tip tracing/kprobes] PPC: Powerpc port of the
+	kprobe-based event tracer
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <13884.1261016575@neuling.org>
+References: <20091216043619.963539987@mars.in.ibm.com>
+	<20091216043933.GA9328@in.ibm.com>  <13884.1261016575@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 18:07:07 +1100
+Message-ID: <1261033627.6682.28.camel@pasglop>
+Mime-Version: 1.0
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+	Masami Hiramatsu <mhiramat@redhat.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,53 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 57b150cce8e004ddd36330490a68bfb59b7271e9, desc->affinity
-of an irq is changed after calling desc->chip->set_affinity.
-Therefore we need to fix the irq_choose_cpu() not to depend on the
-desc->affinity for new mask.
+On Thu, 2009-12-17 at 13:22 +1100, Michael Neuling wrote:
 
-Signed-off-by: Jiajun Wu <b06378@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- arch/powerpc/sysdev/mpic.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+> > + * The @offset is the offset of the register in struct pt_regs.
+> > + * If @offset is bigger than MAX_REG_OFFSET, this returns 0.
+> > + */
+> > +static inline unsigned long regs_get_register(struct pt_regs *regs,
+> > +						unsigned int offset)
+> 
+> Please put only function definitions in the .h file.  The rest of this
+> should be in .c
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 30c44e6..54ef5cd 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -567,12 +567,11 @@ static void __init mpic_scan_ht_pics(struct mpic *mpic)
- #endif /* CONFIG_MPIC_U3_HT_IRQS */
- 
- #ifdef CONFIG_SMP
--static int irq_choose_cpu(unsigned int virt_irq)
-+static int irq_choose_cpu(const cpumask_t *cpumask)
- {
--	cpumask_t mask;
-+	cpumask_t mask = *cpumask;
- 	int cpuid;
- 
--	cpumask_copy(&mask, irq_desc[virt_irq].affinity);
- 	if (cpus_equal(mask, CPU_MASK_ALL)) {
- 		static int irq_rover;
- 		static DEFINE_SPINLOCK(irq_rover_lock);
-@@ -607,7 +606,7 @@ static int irq_choose_cpu(unsigned int virt_irq)
- 	return get_hard_smp_processor_id(cpuid);
- }
- #else
--static int irq_choose_cpu(unsigned int virt_irq)
-+static int irq_choose_cpu(const cpumask_t *cpumask)
- {
- 	return hard_smp_processor_id();
- }
-@@ -816,7 +815,7 @@ int mpic_set_affinity(unsigned int irq, const struct cpumask *cpumask)
- 	unsigned int src = mpic_irq_to_hw(irq);
- 
- 	if (mpic->flags & MPIC_SINGLE_DEST_CPU) {
--		int cpuid = irq_choose_cpu(irq);
-+		int cpuid = irq_choose_cpu(cpumask);
- 
- 		mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION), 1 << cpuid);
- 	} else {
--- 
-1.6.6-rc1.GIT
+Not really in that case actually. There are just simple accessors, we
+traditionally have them in .h files so they get fully inlined when
+used.
+
+I'll have a look at the rest of the patch asap, hopefully tomorrow.
+
+Cheers,
+Ben.
