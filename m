@@ -1,31 +1,17 @@
-Return-Path: <B08308@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5606EB6F19
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 18:59:52 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nBH7xmvV027976
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 00:59:48 -0700 (MST)
-Received: from zin33exm23.fsl.freescale.net (zin33exm23.ap.freescale.net
-	[10.232.192.22])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nBH84CGB001452
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 02:04:13 -0600 (CST)
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id BDBC6B70CF
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 19:16:10 +1100 (EST)
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [POWERPC] add U-Boot bootcount driver.
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Problem with mini-PCI-E slot on P2020RDB
-Date: Thu, 17 Dec 2009 13:29:45 +0530
-Message-ID: <0949C49693EF1A47A54B0F0113CDB4A60767E8@zin33exm23.fsl.freescale.net>
-In-Reply-To: <4B29DC2B.8090405@embedded-sol.com>
-References: <4B27FEE3.80001@embedded-sol.com>	<0949C49693EF1A47A54B0F0113CDB4A607674F@zin33exm23.fsl.freescale.net>	<4B28A7C3.6040209@embedded-sol.com>	<0949C49693EF1A47A54B0F0113CDB4A6076776@zin33exm23.fsl.freescale.net>	<4B28CBC4.4010501@embedded-sol.com><0949C49693EF1A47A54B0F0113CDB4A6076791@zin33exm23.fsl.freescale.net>
-	<4B29DC2B.8090405@embedded-sol.com>
-From: "Mahajan Vivek-B08308" <B08308@freescale.com>
-To: "Felix Radensky" <felix@embedded-sol.com>
-Cc: linuxppc-dev@ozlabs.org, Aggrwal Poonam-B10812 <B10812@freescale.com>
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <20091216024730.455b90fd@vitb-lp>
+References: <20091216024730.455b90fd@vitb-lp>
+Date: Thu, 17 Dec 2009 09:16:07 +0100
+Message-Id: <20091217081607.4B621D43F21@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +21,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> From:=20
-> linuxppc-dev-bounces+vivek.mahajan=3Dfreescale.com@lists.ozlabs.
-> org=20
-> [mailto:linuxppc-dev-bounces+vivek.mahajan=3Dfreescale.com@lists
-> .ozlabs.org] On Behalf Of Felix Radensky
-> Sent: Thursday, December 17, 2009 12:52 PM
-> >
-> > I just noticed a MSI enable bit in=20
-> > drivers/net/wireless/ath/ath9k/reg.h
-> > as under, may be we need to trun this on:-
-> >
-> > reg.h:1013:#define AR_PCIE_MSI                              0x4094
-> > reg.h:1014:#define AR_PCIE_MSI_ENABLE                      =20
-> 0x00000001
-> >  =20
-> According to ath9k developers adding MSI support to the=20
-> driver is not trivial.
-> They've tried once, it didn't work and they gave up. Any=20
-> chance I can use mini-PCI-E slot without MSI ?
+Dear Vitaly Bordug,
 
-So, even after enabling the above bit, there were no MSI=20
-interrupts from this card. If we look at some of the GbE=20
-or SATA drivers, adding MSI is not that hard. ath9k can=20
-be an exception.=20
 
-I reported this issue to the p2020 board designer; but=20
-unfortunately he is out until 1/4/10. It could be a missing=20
-pull-up issue at IRQ0 or some thing else, I don't know.=20
+repl: bad addresses:
+	linuxppc-dev@ozlabs.org <linuxppc-dev@ozlabs.org> -- junk after local@domain (<)
+In message <20091216024730.455b90fd@vitb-lp> you wrote:
+> 
+> From: Heiko Schocher <hs@denx.de>
+> 
+> This driver provides (read/write) access to the
+> U-Boot bootcounter via PROC FS or sysFS.
+> 
+> in u-boot, it uses a 8 byte mem area (it must hold the value over a
+> soft reset of course), for storing a bootcounter (it counts many soft
+> resets are done, on hard reset it starts with 0). If the bootcountvalue
+> exceeds the value in the env variable "bootlimit", and alternative
+> bootcmd stored in the env variable "altbootcmd" is run.
+> 
+> The bootcountregister gets configured via DTS.
+> for example on the mgsuvd board:
+> 
+> bootcount@0x3eb0 {
+>                   device_type = "bootcount";
+>                   compatible = "uboot,bootcount";
+>                   reg = <0x3eb0 0x08>;
+>                  };
+> 
+> This driver is tested on the mgcoge(82xx) and mgsuvd(8xx) board.
+> 
+> Signed-off-by: Heiko Schocher <hs@denx.de>
+> Signed-off-by: Wolfgang Denk <wd@denx.de>
+> Signed-off-by: Vitaly Bordyug <vitb@kernel.crashing.org>
 
->=20
-> Thanks.
->=20
-> Felix.
+I think it would be good if the text of the commit message could be
+reworked by a native English speaker.
 
-Thanks,
-Vivek
+Regarding the subject: it is probably important to point out that this
+driver implements the Linux kernel half of the boot count feature -
+the boot counter can only be reset after it is clear that the
+application has been started and is running correctly, which usually
+can only be determined by the application code itself. Thus the reset
+of the boot counter must be done by application code, which thus needs
+an appropriate driver.
+
+> I think there is no reason not to have this in mainline. Thoughts? And
+> I'm not sure what is right direction to push this - it's representation
+> of u-boot feature in fact, pretty useful tho.
+
+It's not only useful, it's actually a required feature by the Carrier
+Grade Linux Requirements Definition; see for example document "Carrier
+Grade Linux Requirements Definition Overview V3.0" at
+https://www.linux-foundation.org/images/1/1a/Cgl_req_def_overview_30.pdf
+Page 49:
+
+	ID PLT.4.0 (2.3 in v1.1)	Boot Cycle Detection
+
+        Description: OSDL CGL specifies that carrier grade Linux
+        shall provide support for detecting a repeating reboot cycle
+        due to recurring failures and going to an offline state if
+        this occurs.
+
+
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I read part of it all the way through.
