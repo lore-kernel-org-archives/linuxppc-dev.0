@@ -1,15 +1,34 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp126.mail.ukl.yahoo.com (smtp126.mail.ukl.yahoo.com
-	[77.238.184.57]) by ozlabs.org (Postfix) with SMTP id 5D0D2B6EF5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Dec 2009 05:33:56 +1100 (EST)
-From: Albert Herranz <albert_herranz@yahoo.es>
-To: linuxppc-dev@lists.ozlabs.org, grant.likely@secretlab.ca
-Subject: [PATCH] powerpc: gamecube/wii: fix off-by-one error in
-	ugecon/usbgecko_udbg
-Date: Thu, 17 Dec 2009 19:33:41 +0100
-Message-Id: <1261074821-4120-1-git-send-email-albert_herranz@yahoo.es>
-Cc: juha_motorsportcom@luukku.com, Albert Herranz <albert_herranz@yahoo.es>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 135B1B6F04
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 05:45:18 +1100 (EST)
+Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4B2A6DFA.6000504@intel.com>
+Date: Thu, 17 Dec 2009 12:45:01 -0600
+Message-Id: <AFE3AE33-41FB-42EE-A861-9C6CC1D1F435@kernel.crashing.org>
+References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
+	<20091216164144.daff5468.kim.phillips@freescale.com>
+	<2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
+	<4B296394.9010709@intel.com>
+	<20091217170958.GE18271@ovro.caltech.edu>
+	<4B2A6DFA.6000504@intel.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+	"Ira W. Snyder" <iws@ovro.caltech.edu>,
+	"B04825@freescale.com" <B04825@freescale.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Vishnu Suresh <Vishnu@freescale.com>,
+	"linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+	Dipen Dudhat <Dipen.Dudhat@freescale.com>,
+	Maneesh Gupta <Maneesh.Gupta@freescale.com>,
+	"R58472@freescale.com" <R58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,46 +38,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The retry logic in ug_putc() is broken.
 
-If the TX fifo is not ready and the counter runs out it will have a
-value of -1 and no transfer should be attempted. Also, a counter
-with a value of 0 means that the TX fifo got ready in the last try
-and the transfer should be attempted.
+On Dec 17, 2009, at 11:44 AM, Dan Williams wrote:
 
-Reported-by: "Juha Leppanen" <juha_motorsportcom@luukku.com>
-Signed-off-by: "Juha Leppanen" <juha_motorsportcom@luukku.com>
-Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
----
- arch/powerpc/boot/ugecon.c                         |    2 +-
- arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> Ira W. Snyder wrote:
+>> Yes, I have used the device_prep_dma_interrupt() functionality quite =
+a
+>> while back. However, I found it to be pretty much useless.
+>=20
+> The specific case it is needed for Talitos/raid is a channel switch =
+interrupt.  The interrupt causes the cleanup operation to be run which =
+will kick off any pending dependent operations on the xor channel.  In =
+the raid case we only have callbacks at the end of a chain, so we need =
+the interrupt to kick the engine in an operation chain like =
+xor->copy->xor->callback.
 
-diff --git a/arch/powerpc/boot/ugecon.c b/arch/powerpc/boot/ugecon.c
-index 50609ea..8f2a6b3 100644
---- a/arch/powerpc/boot/ugecon.c
-+++ b/arch/powerpc/boot/ugecon.c
-@@ -86,7 +86,7 @@ static void ug_putc(char ch)
- 
- 	while (!ug_is_txfifo_ready() && count--)
- 		barrier();
--	if (count)
-+	if (count >= 0)
- 		ug_raw_putc(ch);
- }
- 
-diff --git a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-index edc956c..20a8ed9 100644
---- a/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-+++ b/arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c
-@@ -120,7 +120,7 @@ static void ug_putc(char ch)
- 
- 	while (!ug_is_txfifo_ready() && count--)
- 		barrier();
--	if (count)
-+	if (count >= 0)
- 		ug_raw_putc(ch);
- }
- 
--- 
-1.6.3.3
+Ok, I'm still confused as to how the DMA interrupt interacts with the =
+Talitos/raid side of things.  The should be completely independent =
+(separate interrupts, separate IP blocks).
+
+- k=
