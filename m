@@ -1,19 +1,27 @@
-Return-Path: <mhiramat@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 570CDB70B3
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 16:36:15 +1100 (EST)
-Message-ID: <4B29C3E3.3060905@redhat.com>
-Date: Thu, 17 Dec 2009 00:38:43 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH -tip tracing/kprobes] PPC: Powerpc port of the kprobe-based
-	event tracer
-References: <20091216043619.963539987@mars.in.ibm.com>
-	<20091216043933.GA9328@in.ibm.com> <13884.1261016575@neuling.org>
-In-Reply-To: <13884.1261016575@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Return-Path: <R58472@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 24050B70CF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 17 Dec 2009 16:41:51 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nBH5fn4r015832 for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Dec 2009 22:41:49 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nBH5kB5L014949
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Dec 2009 23:46:11 -0600 (CST)
+From: Li Yang <leoli@freescale.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] mpic: fix problem that affinity is not updated
+Date: Thu, 17 Dec 2009 14:18:11 +0800
+Message-Id: <1261030691-1946-1-git-send-email-leoli@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Jiajun Wu <b06378@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,74 +31,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Since commit 57b150cce8e004ddd36330490a68bfb59b7271e9, desc->affinity
+of an irq is changed after calling desc->chip->set_affinity.
+Therefore we need to fix the irq_choose_cpu() not to depend on the
+desc->affinity for new mask.
 
-Michael Neuling wrote:
->> +
->> +static const struct pt_regs_offset regoffset_table[] = {
->> +	REG_OFFSET_NAME(gpr[0]),
->> +	REG_OFFSET_NAME(gpr[1]),
->> +	REG_OFFSET_NAME(gpr[2]),
->> +	REG_OFFSET_NAME(gpr[3]),
->> +	REG_OFFSET_NAME(gpr[4]),
->> +	REG_OFFSET_NAME(gpr[5]),
->> +	REG_OFFSET_NAME(gpr[6]),
->> +	REG_OFFSET_NAME(gpr[7]),
->> +	REG_OFFSET_NAME(gpr[8]),
->> +	REG_OFFSET_NAME(gpr[9]),
->> +	REG_OFFSET_NAME(gpr[10]),
->> +	REG_OFFSET_NAME(gpr[11]),
->> +	REG_OFFSET_NAME(gpr[12]),
->> +	REG_OFFSET_NAME(gpr[13]),
->> +	REG_OFFSET_NAME(gpr[14]),
->> +	REG_OFFSET_NAME(gpr[15]),
->> +	REG_OFFSET_NAME(gpr[16]),
->> +	REG_OFFSET_NAME(gpr[17]),
->> +	REG_OFFSET_NAME(gpr[18]),
->> +	REG_OFFSET_NAME(gpr[19]),
->> +	REG_OFFSET_NAME(gpr[20]),
->> +	REG_OFFSET_NAME(gpr[21]),
->> +	REG_OFFSET_NAME(gpr[22]),
->> +	REG_OFFSET_NAME(gpr[23]),
->> +	REG_OFFSET_NAME(gpr[24]),
->> +	REG_OFFSET_NAME(gpr[25]),
->> +	REG_OFFSET_NAME(gpr[26]),
->> +	REG_OFFSET_NAME(gpr[27]),
->> +	REG_OFFSET_NAME(gpr[28]),
->> +	REG_OFFSET_NAME(gpr[29]),
->> +	REG_OFFSET_NAME(gpr[30]),
->> +	REG_OFFSET_NAME(gpr[31]),
->> +	REG_OFFSET_NAME(nip),
->> +	REG_OFFSET_NAME(msr),
->> +	REG_OFFSET_NAME(orig_gpr3),
->> +	REG_OFFSET_NAME(ctr),
->> +	REG_OFFSET_NAME(link),
->> +	REG_OFFSET_NAME(xer),
->> +	REG_OFFSET_NAME(ccr),
->> +#ifdef CONFIG_PPC64
->> +	REG_OFFSET_NAME(softe),
->> +#else
->> +	REG_OFFSET_NAME(mq),
->> +#endif
->> +	REG_OFFSET_NAME(trap),
->> +	REG_OFFSET_NAME(dar),
->> +	REG_OFFSET_NAME(dsisr),
->> +	REG_OFFSET_NAME(result),
->> +	REG_OFFSET_END,
-> 
-> Do we need to add something for FP and VMX registers here?
+Signed-off-by: Jiajun Wu <b06378@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/sysdev/mpic.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-Hmm, are FP and VMX registers actually used inside kernel on PPC?
-Actually, the main purpose of this code is to provide accessing method
-of in-kernel pt_regs fields (registers used in kernel) by name.
-
-Thank you,
-
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 30c44e6..54ef5cd 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -567,12 +567,11 @@ static void __init mpic_scan_ht_pics(struct mpic *mpic)
+ #endif /* CONFIG_MPIC_U3_HT_IRQS */
+ 
+ #ifdef CONFIG_SMP
+-static int irq_choose_cpu(unsigned int virt_irq)
++static int irq_choose_cpu(const cpumask_t *cpumask)
+ {
+-	cpumask_t mask;
++	cpumask_t mask = *cpumask;
+ 	int cpuid;
+ 
+-	cpumask_copy(&mask, irq_desc[virt_irq].affinity);
+ 	if (cpus_equal(mask, CPU_MASK_ALL)) {
+ 		static int irq_rover;
+ 		static DEFINE_SPINLOCK(irq_rover_lock);
+@@ -607,7 +606,7 @@ static int irq_choose_cpu(unsigned int virt_irq)
+ 	return get_hard_smp_processor_id(cpuid);
+ }
+ #else
+-static int irq_choose_cpu(unsigned int virt_irq)
++static int irq_choose_cpu(const cpumask_t *cpumask)
+ {
+ 	return hard_smp_processor_id();
+ }
+@@ -816,7 +815,7 @@ int mpic_set_affinity(unsigned int irq, const struct cpumask *cpumask)
+ 	unsigned int src = mpic_irq_to_hw(irq);
+ 
+ 	if (mpic->flags & MPIC_SINGLE_DEST_CPU) {
+-		int cpuid = irq_choose_cpu(irq);
++		int cpuid = irq_choose_cpu(cpumask);
+ 
+ 		mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION), 1 << cpuid);
+ 	} else {
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+1.6.6-rc1.GIT
