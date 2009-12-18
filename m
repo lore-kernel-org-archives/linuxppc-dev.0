@@ -1,18 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id D15B5B6F05
+Return-Path: <roman.fietze@telemotive.de>
+Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 9F87FB6F07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Dec 2009 19:25:24 +1100 (EST)
-Message-ID: <4B2B3C3D.4090308@grandegger.com>
-Date: Fri, 18 Dec 2009 09:24:29 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Roman Fietze <roman.fietze@telemotive.de>
+	Fri, 18 Dec 2009 20:08:02 +1100 (EST)
+From: Roman Fietze <roman.fietze@telemotive.de>
+To: Wolfgang Grandegger <wg@grandegger.com>
 Subject: Re: MPC5200B XLB Configuration Issues, FEC RFIFO Events, ATA Crashes
-References: <200912091529.13913.roman.fietze@telemotive.de>	<20091209145748.GB3112@pengutronix.de>
+References: <200912091529.13913.roman.fietze@telemotive.de>
 	<200912161237.09796.roman.fietze@telemotive.de>
-In-Reply-To: <200912161237.09796.roman.fietze@telemotive.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	<4B2B3C3D.4090308@grandegger.com>
+In-Reply-To: <4B2B3C3D.4090308@grandegger.com>
+MIME-Version: 1.0
+Message-ID: <200912181007.55792.roman.fietze@telemotive.de>
+Date: Fri, 18 Dec 2009 10:07:55 +0100
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,33 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Roman Fietze wrote:
-> Hello Wolfram,
-> 
-> On Wednesday 09 December 2009 15:57:48 Wolfram Sang wrote:
-> 
->> Do you have a way to measure performance penalties?
-> 
-> As I said, I do.
-> 
-> And here they are. They won't win a price for the most impartial
-> benchmarks ever seen, but thet'll be a good starting point to get a
-> feeling what stability might cost.
-> 
-> The board is using the MPC5200B on a board derived from the old
-> lite5200, but with the fixes for the MPC5200B. All tests are run using
-> an ST940813AM hard drive with an ext2 and an ext3 of 10GB each,
-> default mkfs options. The OS is Debian 4.0. The network connection is
-> between a fast Athlon XP2 6400 and the target, using 100MBit/s wiring
-> and a 100MBit/s switch.
-> 
-> The F always stands for fast settings, coherent cache, XLB features
-> like snooping, etc. turned on, XLB config 0x0000a006 or 0x0001a006
-> (makes no or no big difference).
-> 
-> The S always stands for slow settings, non coherent cache, XLB
-> features like snooping, etc. turned on, XLB config 0x80012006.
+Hello Wolfgang,
 
-What disc access modes, (pio, mwdma or udma) did you use for these tests.
+On Friday 18 December 2009 09:24:29 Wolfgang Grandegger wrote:
 
-Wolfgang.
+> What disc access modes, (pio, mwdma or udma) did you use for these tests.
+
+MWDMA2.
+
+On our hardware Linux 2.6 UDMA2 only works with very few disks. And on
+top of that, UDMA seems to have problems on the MPC5200B with
+concurrent traffic to or from the LPC (chips selects of peripherals
+while a DMA transfer is active).
+
+The same disks work without problems using UDMA2 on the old 2.4.25 on
+exctly the same HW. Why? I don't know yet.
+
+
+Roman
+
+=2D-=20
+Roman Fietze                Telemotive AG B=FCro M=FChlhausen
+Breitwiesen                              73347 M=FChlhausen
+Tel.: +49(0)7335/18493-45        http://www.telemotive.de
