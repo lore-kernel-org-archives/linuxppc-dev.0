@@ -1,23 +1,19 @@
-Return-Path: <xiyou.wangcong@gmail.com>
-Received: from mail-qy0-f186.google.com (mail-qy0-f186.google.com
-	[209.85.221.186]) by ozlabs.org (Postfix) with ESMTP id 221F3B6F08
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 18:50:08 +1100 (EST)
-Received: by qyk16 with SMTP id 16so1180053qyk.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 23:50:07 -0800 (PST)
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id D15B5B6F05
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 18 Dec 2009 19:25:24 +1100 (EST)
+Message-ID: <4B2B3C3D.4090308@grandegger.com>
+Date: Fri, 18 Dec 2009 09:24:29 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-In-Reply-To: <b1e768440912172338k8849393ye23f5e277f554caf@mail.gmail.com>
-References: <b1e768440912172008g605bade0ledc77f91eeaa9d36@mail.gmail.com>
-	<2375c9f90912172312x7d324979r10da5ecd7edc61d3@mail.gmail.com>
-	<b1e768440912172338k8849393ye23f5e277f554caf@mail.gmail.com>
-Date: Fri, 18 Dec 2009 15:50:07 +0800
-Message-ID: <2375c9f90912172350t3902d8c9p9b5302e3a6194318@mail.gmail.com>
-Subject: Re: 2.6.32 Kernel panic - not syncing: Attempted to kill init!
-	Rebooting in 180 seconds..
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Zhiyong Wu <zwu.kernel@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, agraf@suse.de, llim@redhat.com,
-	linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
+To: Roman Fietze <roman.fietze@telemotive.de>
+Subject: Re: MPC5200B XLB Configuration Issues, FEC RFIFO Events, ATA Crashes
+References: <200912091529.13913.roman.fietze@telemotive.de>	<20091209145748.GB3112@pengutronix.de>
+	<200912161237.09796.roman.fietze@telemotive.de>
+In-Reply-To: <200912161237.09796.roman.fietze@telemotive.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,70 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 18, 2009 at 3:38 PM, Zhiyong Wu <zwu.kernel@gmail.com> wrote
-> On Fri, Dec 18, 2009 at 3:12 PM, Am=C3=A9rico Wang <xiyou.wangcong@gmail.=
-com> wrote:
->> On Fri, Dec 18, 2009 at 12:08 PM, Zhiyong Wu <zwu.kernel@gmail.com> wrot=
-e:
->>> HI,
->>>
->>> linux-2.6.32 is compiled on a p6 machine with RH5.4 OS and KVM option i=
-s enable.
->>>
->>> When rebooting this machine, a crash takes place such as:
->>>
+Roman Fietze wrote:
+> Hello Wolfram,
+> 
+> On Wednesday 09 December 2009 15:57:48 Wolfram Sang wrote:
+> 
+>> Do you have a way to measure performance penalties?
+> 
+> As I said, I do.
+> 
+> And here they are. They won't win a price for the most impartial
+> benchmarks ever seen, but thet'll be a good starting point to get a
+> feeling what stability might cost.
+> 
+> The board is using the MPC5200B on a board derived from the old
+> lite5200, but with the fixes for the MPC5200B. All tests are run using
+> an ST940813AM hard drive with an ext2 and an ext3 of 10GB each,
+> default mkfs options. The OS is Debian 4.0. The network connection is
+> between a fast Athlon XP2 6400 and the target, using 100MBit/s wiring
+> and a 100MBit/s switch.
+> 
+> The F always stands for fast settings, coherent cache, XLB features
+> like snooping, etc. turned on, XLB config 0x0000a006 or 0x0001a006
+> (makes no or no big difference).
+> 
+> The S always stands for slow settings, non coherent cache, XLB
+> features like snooping, etc. turned on, XLB config 0x80012006.
 
-<snip>
+What disc access modes, (pio, mwdma or udma) did you use for these tests.
 
->>> command line: ro console=3Dhvc0 rhgb quiet root=3DLABEL=3D/
->>> memory layout at init:
->>> =C2=A0memory_limit : 0000000000000000 (16 MB aligned)
->>> =C2=A0alloc_bottom : 00000000019b0000
->>> =C2=A0alloc_top =C2=A0 =C2=A0: 0000000008000000
->>> =C2=A0alloc_top_hi : 0000000008000000
->>> =C2=A0rmo_top =C2=A0 =C2=A0 =C2=A0: 0000000008000000
->>> =C2=A0ram_top =C2=A0 =C2=A0 =C2=A0: 0000000008000000
->>> instantiating rtas at 0x0000000006e10000... done
->>> boot cpu hw idx 0000000000000000
->>> copying OF device tree...
->>> Building dt strings...
->>> Building dt structure...
->>> Device tree strings 0x0000000001bc0000 -> 0x0000000001bc15bb
->>> Device tree struct =C2=A00x0000000001bd0000 -> 0x0000000001bf0000
->>> Calling quiesce...
->>> returning from prom_init
->>> Red Hat nash version 5.1.19.6 starting
->>> ibmvscsi 30000002: fast_fail not supported in server
->>> sd 0:0:1:0: [sda] Assuming drive cache: write through
->>> sd 0:0:1:0: [sda] Assuming drive cache: write through
->>> sd 0:0:1:0: [sda] Assuming drive cache: write through
->>> insmod: error inserting '/lib/dm-region-hash.ko': -1 File exists
->>> mount: could not find filesystem '/dev/root'
->>> setuproot: moving /dev failed: No such file or directory
->>> setuproot: error mounting /proc: No such file or directory
->>> setuproot: error mounting /sys: No such file or directory
->>> switchroot: mount failed: No such file or directory
->>> Kernel panic - not syncing: Attempted to kill init!
->>> Rebooting in 180 seconds..[disconnect]
->>>
->>> Can anyone give me a warm hand?
->>
->> Probably this is not a problem of kernel, maybe it's
->> a problem of your initial ramdisk, or something wrong with
->> your root filesystem.
->>
->> Does changing "root=3DLABEL=3D/" to "root=3D/dev/XXX" help?
->> Where "/dev/XXX" is your root filesystem.
->>
->
-> It does'nt still work based on your method.
-
-Hmm, so I would guess it's a problem in your initial ramdisk.
-
-So you can boot RH5 native kernel with the same boot options
-but only this one not??
-
-Or maybe the udev your are using doesn't work with 2.6.32?
-Only another guess...
-
-But anyway, checking your 'mkinitrd' would help.
+Wolfgang.
