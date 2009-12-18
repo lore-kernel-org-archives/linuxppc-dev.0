@@ -1,28 +1,20 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mail-ew0-f221.google.com (mail-ew0-f221.google.com
-	[209.85.219.221]) by ozlabs.org (Postfix) with ESMTP id 48DA1B6F01
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Dec 2009 07:31:27 +1100 (EST)
-Received: by ewy21 with SMTP id 21so874505ewy.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Dec 2009 12:31:25 -0800 (PST)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] mpc8xxx_gpio: add interrupt support
-References: <1259700494-17869-1-git-send-email-jacmet@sunsite.dk>
-	<1259700494-17869-2-git-send-email-jacmet@sunsite.dk>
-	<1259700494-17869-3-git-send-email-jacmet@sunsite.dk>
-	<87pr6omwk3.fsf@macbook.be.48ers.dk>
-	<8F2E2097-9BB7-4B7F-902E-F967F28120E8@kernel.crashing.org>
-	<87r5r1ttmd.fsf@macbook.be.48ers.dk>
-Date: Thu, 17 Dec 2009 21:31:21 +0100
-In-Reply-To: <87r5r1ttmd.fsf@macbook.be.48ers.dk> (Peter Korsgaard's message
-	of "Fri, 11 Dec 2009 16:31:22 +0100")
-Message-ID: <87k4wl4a1y.fsf@macbook.be.48ers.dk>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 34F3FB6EF7
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 11:45:14 +1100 (EST)
+Message-Id: <200912180044.nBI0iTbj028399@imap1.linux-foundation.org>
+Subject: [patch 1/5] powerpc: Sky CPU: redundant or incorrect tests on unsigned
+To: benh@kernel.crashing.org
+From: akpm@linux-foundation.org
+Date: Thu, 17 Dec 2009 16:44:28 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Cc: waite@skycomputers.com, roel.kluin@gmail.com, gorcunov@gmail.com,
+	linuxppc-dev@ozlabs.org, galak@gate.crashing.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,19 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>> "Peter" == Peter Korsgaard <jacmet@sunsite.dk> writes:
+From: Roel Kluin <roel.kluin@gmail.com>
 
->>>>> "Kumar" == Kumar Gala <galak@kernel.crashing.org> writes:
- Peter> Hi,
+count is unsigned and cannot be less than 0.
 
- Kumar> We need a binding document to go with this.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Acked-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Kumar Gala <galak@gate.crashing.org>
+Cc: Brian Waite <waite@skycomputers.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
- Peter> Ok, but where should it go? In the existing
- Peter> powerpc/dts-bindings/fsl/8xxx_gpio.txt or somewhere seperate? I don't
- Peter> see any other interrupt controller documentation besides the stuff in
- Peter> booting-without-of.txt
+ drivers/misc/hdpuftrs/hdpu_cpustate.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-Any comments?
-
--- 
-Bye, Peter Korsgaard
+diff -puN drivers/misc/hdpuftrs/hdpu_cpustate.c~powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned drivers/misc/hdpuftrs/hdpu_cpustate.c
+--- a/drivers/misc/hdpuftrs/hdpu_cpustate.c~powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned
++++ a/drivers/misc/hdpuftrs/hdpu_cpustate.c
+@@ -121,8 +121,6 @@ static ssize_t cpustate_read(struct file
+ {
+ 	unsigned char data;
+ 
+-	if (count < 0)
+-		return -EFAULT;
+ 	if (count == 0)
+ 		return 0;
+ 
+@@ -137,9 +135,6 @@ static ssize_t cpustate_write(struct fil
+ {
+ 	unsigned char data;
+ 
+-	if (count < 0)
+-		return -EFAULT;
+-
+ 	if (count == 0)
+ 		return 0;
+ 
+_
