@@ -1,31 +1,15 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-vw0-f172.google.com (mail-vw0-f172.google.com
-	[209.85.212.172]) by ozlabs.org (Postfix) with ESMTP id 4D1EFB6F06
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Dec 2009 09:17:44 +1100 (EST)
-Received: by vws2 with SMTP id 2so1168550vws.17
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 14:17:43 -0800 (PST)
-MIME-Version: 1.0
-Sender: dan.j.williams@gmail.com
-In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED01059526@zch01exm26.fsl.freescale.net>
-References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
-	<20091216164144.daff5468.kim.phillips@freescale.com>
-	<2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
-	<4B296394.9010709@intel.com> <20091217170958.GE18271@ovro.caltech.edu>
-	<4B2A6DFA.6000504@intel.com>
-	<3A45394FD742FA419B760BB8D398F9ED01059526@zch01exm26.fsl.freescale.net>
-Date: Fri, 18 Dec 2009 15:17:42 -0700
-Message-ID: <e9c3a7c20912181417v2b8155e5w23fb3cee02b9a4c9@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
-From: Dan Williams <dan.j.williams@intel.com>
-To: Li Yang-R58472 <r58472@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: herbert@gondor.apana.org.au, "Ira W. Snyder" <iws@ovro.caltech.edu>,
-	Suresh Vishnu-B05022 <B05022@freescale.com>,
-	Tabi Timur-B04825 <B04825@freescale.com>,
-	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org,
-	Gupta Maneesh-B18878 <B18878@freescale.com>,
-	Dudhat Dipen-B09055 <B09055@freescale.com>
+Return-Path: <ptyser@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A7259B6EF0
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Dec 2009 09:50:45 +1100 (EST)
+From: Peter Tyser <ptyser@xes-inc.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: Fix SMP when "cpu-release-addr" is in lowmem
+Date: Fri, 18 Dec 2009 16:50:37 -0600
+Message-Id: <1261176637-23912-1-git-send-email-ptyser@xes-inc.com>
+Cc: Peter Tyser <ptyser@xes-inc.com>, Nate Case <ncase@xes-inc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,38 +19,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 18, 2009 at 8:02 AM, Li Yang-R58472 <r58472@freescale.com> wrot=
-e:
->
->>Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for
->>Async_tx XOR offload
->>
->>Ira W. Snyder wrote:
->>> Yes, I have used the device_prep_dma_interrupt()
->>functionality quite a
->>> while back. However, I found it to be pretty much useless.
->>
->>The specific case it is needed for Talitos/raid is a channel
->>switch interrupt. =A0The interrupt causes the cleanup operation
->>to be run which will kick off any pending dependent operations
->>on the xor channel. =A0In the raid case we only have callbacks
->>at the end of a chain, so we need the interrupt to kick the
->>engine in an operation chain like
->>xor->copy->xor->callback.
->
-> I am wondering if can use more callbacks to kick off pending dependent op=
-erations?
-> Like xor->callback->copy->callback->xor->callback?
->
+Recent U-Boot commit 5ccd29c3679b3669b0bde5c501c1aa0f325a7acb caused
+the "cpu-release-addr" device tree property to contain the physical RAM
+location that secondary cores were spinning at.  Previously, the
+"cpu-release-addr" property contained a value referencing the boot page
+translation address range of 0xfffffxxx, which then indirectly accessed
+RAM.
 
-No, the callback field is reserved for clients of the api.  What you want i=
-s:
+The "cpu-release-addr" is currently ioremapped and the secondary cores
+kicked.  However, due to the recent change in "cpu-release-addr", it
+sometimes points to a memory location in low memory that cannot be
+ioremapped.  For example on a P2020-based board with 512MB of RAM the
+following error occurs on bootup:
 
-xor->cleanupT->copy->cleanupF->xor->cleanupT->callback
+  <...>
+  mpic: requesting IPIs ...
+  __ioremap(): phys addr 0x1ffff000 is RAM lr c05df9a0
+  Unable to handle kernel paging request for data at address 0x00000014
+  Faulting instruction address: 0xc05df9b0
+  Oops: Kernel access of bad area, sig: 11 [#1]
+  SMP NR_CPUS=2 P2020 RDB
+  Modules linked in:
+  <... eventual kernel panic>
 
-Where cleanupT is the Talitos descriptor cleanup routine and cleanupF
-is from fsldma.  The assumption is that the interrupt kicks the
-cleanup routine and that calls dma_run_dependencies().
+Adding logic to conditionally ioremap or access memory directly resolves
+the issue.
 
---
-Dan
+Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
+Signed-off-by: Nate Case <ncase@xes-inc.com>
+Reported-by: Dipen Dudhat <B09055@freescale.com>
+Tested-by: Dipen Dudhat <B09055@freescale.com>
+---
+ arch/powerpc/platforms/85xx/smp.c |   21 +++++++++++++++++++--
+ 1 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 04160a4..a15f582 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -46,6 +46,7 @@ smp_85xx_kick_cpu(int nr)
+ 	__iomem u32 *bptr_vaddr;
+ 	struct device_node *np;
+ 	int n = 0;
++	int ioremappable;
+ 
+ 	WARN_ON (nr < 0 || nr >= NR_CPUS);
+ 
+@@ -59,21 +60,37 @@ smp_85xx_kick_cpu(int nr)
+ 		return;
+ 	}
+ 
++	/*
++	 * A secondary core could be in a spinloop in the bootpage
++	 * (0xfffff000), somewhere in highmem, or somewhere in lowmem.
++	 * The bootpage and highmem can be accessed via ioremap(), but
++	 * we need to directly access the spinloop if its in lowmem.
++	 */
++	ioremappable = *cpu_rel_addr > virt_to_phys(high_memory);
++
+ 	/* Map the spin table */
+-	bptr_vaddr = ioremap(*cpu_rel_addr, SIZE_BOOT_ENTRY);
++	if (ioremappable)
++		bptr_vaddr = ioremap(*cpu_rel_addr, SIZE_BOOT_ENTRY);
++	else
++		bptr_vaddr = phys_to_virt(*cpu_rel_addr);
+ 
+ 	local_irq_save(flags);
+ 
+ 	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, nr);
+ 	out_be32(bptr_vaddr + BOOT_ENTRY_ADDR_LOWER, __pa(__early_start));
+ 
++	if (!ioremappable)
++		flush_dcache_range((ulong)bptr_vaddr,
++				(ulong)(bptr_vaddr + SIZE_BOOT_ENTRY));
++
+ 	/* Wait a bit for the CPU to ack. */
+ 	while ((__secondary_hold_acknowledge != nr) && (++n < 1000))
+ 		mdelay(1);
+ 
+ 	local_irq_restore(flags);
+ 
+-	iounmap(bptr_vaddr);
++	if (ioremappable)
++		iounmap(bptr_vaddr);
+ 
+ 	pr_debug("waited %d msecs for CPU #%d.\n", n, nr);
+ }
+-- 
+1.6.2.1
