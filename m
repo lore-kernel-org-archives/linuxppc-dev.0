@@ -1,34 +1,21 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 590D51007D3
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 17:11:41 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp04.au.ibm.com (8.14.3/8.13.1) with ESMTP id nBI68LoS008973
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 17:08:21 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBI6Beif1478898
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 17:11:40 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nBI6BdtX013949
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 17:11:40 +1100
-Message-ID: <4B2B0EBF.5040302@linux.vnet.ibm.com>
-Date: Fri, 18 Dec 2009 10:40:23 +0530
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Return-Path: <xiyou.wangcong@gmail.com>
+Received: from mail-qy0-f186.google.com (mail-qy0-f186.google.com
+	[209.85.221.186]) by ozlabs.org (Postfix) with ESMTP id C7DF61007D2
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 18:12:23 +1100 (EST)
+Received: by qyk16 with SMTP id 16so1173973qyk.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Dec 2009 23:12:22 -0800 (PST)
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH -tip tracing/kprobes] PPC: Powerpc port of the kprobe-based
-	event tracer
-References: <20091216043619.963539987@mars.in.ibm.com>
-	<20091216043933.GA9328@in.ibm.com> <13884.1261016575@neuling.org>
-	<4B29EE5F.9020801@linux.vnet.ibm.com>
-	<12450.1261043861@neuling.org>
-In-Reply-To: <12450.1261043861@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <b1e768440912172008g605bade0ledc77f91eeaa9d36@mail.gmail.com>
+References: <b1e768440912172008g605bade0ledc77f91eeaa9d36@mail.gmail.com>
+Date: Fri, 18 Dec 2009 15:12:21 +0800
+Message-ID: <2375c9f90912172312x7d324979r10da5ecd7edc61d3@mail.gmail.com>
+Subject: Re: 2.6.32 Kernel panic - not syncing: Attempted to kill init!
+	Rebooting in 180 seconds..
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Zhiyong Wu <zwu.kernel@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, agraf@suse.de, llim@redhat.com,
+	linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,102 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling wrote:
-> In message <4B29EE5F.9020801@linux.vnet.ibm.com> you wrote:
->> Hi Michael,
->>
->> Michael Neuling wrote:
->>>> + * regs_get_argument_nth() - get Nth argument at function call
->>>> + * @regs:	pt_regs which contains registers at function entry.
->>>> + * @n:		argument number.
->>>> + *
->>>> + * regs_get_argument_nth() returns @n th argument of a function call.
->>>> + * Since usually the kernel stack will be changed right after function en
-> try
->>> ,
->>>> + * you must use this at function entry. If the @n th entry is NOT in the
->>>> + * kernel stack or pt_regs, this returns 0.
->>>> + */
->>>> +unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned int n)
->>>> +{
->>>> +	if (n < ARRAY_SIZE(arg_offs_table))
->>>> +		return *(unsigned long *)((char *)regs + arg_offs_table[n]);
->>>> +	else {
->>>> +		/*
->>>> +		 * If more arguments are passed that can be stored in
->>>> +		 * registers, the remaining arguments are stored in the
->>>> +		 * parameter save area located at fixed offset from stack
->>>> +		 * pointer.
->>>> +		 * Following the PowerPC ABI, the first few arguments are
->>>> +		 * actually passed in registers (r3-r10), with equivalent space
->>>> +		 * left unused in the parameter save area.
->>>> +		 */
->>>> +		n += (PARAMETER_SAVE_AREA_OFFSET / sizeof(unsigned long));
->>>> +		return regs_get_kernel_stack_nth(regs, n);
->>> How do we handle FP args?
->> Currently this patch does not support FP args.
-> 
-> This might be OK.  I don't think we use floating point parameters in any
-> function definitions in the kernel.  
-> 
-> We do use altivec in the raid6 driver (drivers/md/raid6altivec.uc) but
-> they are static inline, so they probably don't even end up as
-> functions.  
-> 
-> I guess we need to make sure that we're not limiting the interface in
-> such a way that we can't support it later if the above changes.  
-> 
-> regs_get_argument_nth returns an unsigned long which makes returning a
-> 128 bit VMX register impossible.  This might be a show stopper for me.
-> How are the x86 guys dealing with this?
-> 
-Nope, x86 does not deal with bigger registers (Masami, correct me if I 
-am wrong). The return data type is opaque to user. Hence this enables us 
-to handle any such situations in future without effecting user space API.
+On Fri, Dec 18, 2009 at 12:08 PM, Zhiyong Wu <zwu.kernel@gmail.com> wrote:
+> HI,
+>
+> linux-2.6.32 is compiled on a p6 machine with RH5.4 OS and KVM option is =
+enable.
+>
+> When rebooting this machine, a crash takes place such as:
+>
+> Loading ramdisk...
+> ramdisk loaded at 01700000, size: 2700 Kbytes
+> OF stdout device is: /vdevice/vty@30000000
+> Preparing to boot Linux version 2.6.32 (root@p6ml4n07.clusters.com)
+> (gcc version 4.1.2 20080704 (Red Hat 4.1.2-46)) #1 SMP Fri Dec 18
+> 06:53:27 EST 2009
+> Calling ibm,client-architecture-support.../
+> Elapsed time since release of system processors: 1212 mins 30 secs
+>
+> Config file read, 1024 bytes
+>
+> Welcome
+> Welcome to yaboot version 1.3.13 (Red Hat 1.3.13-8.el5)
+> Enter "help" to get some basic usage information
+> boot: linux-32
+> Please wait, loading kernel...
+> =C2=A0 Elf64 kernel loaded...
+> Loading ramdisk...
+> ramdisk loaded at 01700000, size: 2700 Kbytes
+> OF stdout device is: /vdevice/vty@30000000
+> Preparing to boot Linux version 2.6.32 (root@p6ml4n07.clusters.com)
+> (gcc version 4.1.2 20080704 (Red Hat 4.1.2-46)) #1 SMP Fri Dec 18
+> 06:53:27 EST 2009
+> Calling ibm,client-architecture-support... done
+> command line: ro console=3Dhvc0 rhgb quiet root=3DLABEL=3D/
+> memory layout at init:
+> =C2=A0memory_limit : 0000000000000000 (16 MB aligned)
+> =C2=A0alloc_bottom : 00000000019b0000
+> =C2=A0alloc_top =C2=A0 =C2=A0: 0000000008000000
+> =C2=A0alloc_top_hi : 0000000008000000
+> =C2=A0rmo_top =C2=A0 =C2=A0 =C2=A0: 0000000008000000
+> =C2=A0ram_top =C2=A0 =C2=A0 =C2=A0: 0000000008000000
+> instantiating rtas at 0x0000000006e10000... done
+> boot cpu hw idx 0000000000000000
+> copying OF device tree...
+> Building dt strings...
+> Building dt structure...
+> Device tree strings 0x0000000001bc0000 -> 0x0000000001bc15bb
+> Device tree struct =C2=A00x0000000001bd0000 -> 0x0000000001bf0000
+> Calling quiesce...
+> returning from prom_init
+> Red Hat nash version 5.1.19.6 starting
+> ibmvscsi 30000002: fast_fail not supported in server
+> sd 0:0:1:0: [sda] Assuming drive cache: write through
+> sd 0:0:1:0: [sda] Assuming drive cache: write through
+> sd 0:0:1:0: [sda] Assuming drive cache: write through
+> insmod: error inserting '/lib/dm-region-hash.ko': -1 File exists
+> mount: could not find filesystem '/dev/root'
+> setuproot: moving /dev failed: No such file or directory
+> setuproot: error mounting /proc: No such file or directory
+> setuproot: error mounting /sys: No such file or directory
+> switchroot: mount failed: No such file or directory
+> Kernel panic - not syncing: Attempted to kill init!
+> Rebooting in 180 seconds..[disconnect]
+>
+> Can anyone give me a warm hand?
 
->>>> +	}
->>>> +}
->>>> +/*
->>>>   * does not yet catch signals sent when the child dies.
->>>>   * in exit.c or in signal.c.
->>>>   */
->>>> Index: linux-2.6-tip/kernel/trace/Kconfig
->>>> ===================================================================
->>>> --- linux-2.6-tip.orig/kernel/trace/Kconfig
->>>> +++ linux-2.6-tip/kernel/trace/Kconfig
->>>> @@ -464,7 +464,7 @@ config BLK_DEV_IO_TRACE
->>>>  
->>>>  config KPROBE_EVENT
->>>>  	depends on KPROBES
->>>> -	depends on X86
->>>> +	depends on X86 || PPC
->>>>  	bool "Enable kprobes-based dynamic events"
->>>>  	select TRACING
->>>>  	default y
->>>>
->>>> _______________________________________________
->>>> Linuxppc-dev mailing list
->>>> Linuxppc-dev@lists.ozlabs.org
->>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>>>
->> Thanks for reviewing.
-> 
-> We are creating a new user space API here, so I'm keen for others to take
-> a good look at the interface before we commit to something we are going
-> to have to keep forever.  
-> 
-> Who is the main consumer of this (/me is pretty ignorant of kprobes)?
-> What do they think of the interface?
-> 
-The user space API are already present in the upstream kernel and 
-currently only supported architecture is x86. This patch provides ppc 
-architecture specific interfaces that enables powerpc also in par with x86.
+Probably this is not a problem of kernel, maybe it's
+a problem of your initial ramdisk, or something wrong with
+your root filesystem.
 
-The main consumer would be kernel developers who would like to see 
-register values, arguments and stack when the probe hits at given text 
-address.
-> Mikey
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Does changing "root=3DLABEL=3D/" to "root=3D/dev/XXX" help?
+Where "/dev/XXX" is your root filesystem.
