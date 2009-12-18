@@ -1,22 +1,40 @@
-Return-Path: <mhiramat@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 9973A1007DF
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Dec 2009 01:33:39 +1100 (EST)
-Message-ID: <4B2B934C.1060807@redhat.com>
-Date: Fri, 18 Dec 2009 09:35:56 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
+Return-Path: <R58472@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 37D3FB6F10
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Dec 2009 01:46:37 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	nBIEkXtT017232
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 07:46:33 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id nBIEpr2p017561
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 08:51:54 -0600 (CST)
 MIME-Version: 1.0
-To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH -tip tracing/kprobes] PPC: Powerpc port of the kprobe-based
-	event tracer
-References: <20091216043619.963539987@mars.in.ibm.com>
-	<20091216043933.GA9328@in.ibm.com> <13884.1261016575@neuling.org>
-	<4B29EE5F.9020801@linux.vnet.ibm.com>
-	<12450.1261043861@neuling.org>
-	<4B2B0EBF.5040302@linux.vnet.ibm.com>
-In-Reply-To: <4B2B0EBF.5040302@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
+Date: Fri, 18 Dec 2009 22:46:27 +0800
+Message-ID: <3A45394FD742FA419B760BB8D398F9ED01059523@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20091217170958.GE18271@ovro.caltech.edu>
+References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
+	<20091216164144.daff5468.kim.phillips@freescale.com>
+	<2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
+	<4B296394.9010709@intel.com>
+	<20091217170958.GE18271@ovro.caltech.edu>
+From: "Li Yang-R58472" <r58472@freescale.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>,
+	"Dan Williams" <dan.j.williams@intel.com>
+Cc: herbert@gondor.apana.org.au, Suresh Vishnu-B05022 <B05022@freescale.com>,
+	Tabi Timur-B04825 <B04825@freescale.com>,
+	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org,
+	Gupta Maneesh-B18878 <B18878@freescale.com>,
+	Dudhat Dipen-B09055 <B09055@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,126 +45,58 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+>Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for=20
+>Async_tx XOR offload
+>
+>On Wed, Dec 16, 2009 at 03:47:48PM -0700, Dan Williams wrote:
+>> Kumar Gala wrote:
+>> >>> Changes with respect to v1 as per comments received o.=20
+>Rebased to=20
+>> >>> linux-next as of 20091216 o. The selection is based exclusive of=20
+>> >>> fsldma o. Intoduced a new Kernel Configuration variable
+>> >>>   *. This enables selecting the Cryptographic functionality
+>> >>>      of Talitos along with fsldma.
+>> >>>   *. Disables the XOR parity calculation offload, if=20
+>fsldma enabled
+>> >>>      either as kernel in-built or as a module
+>> >>>   *. Once the inter-operability with fsldma is resolved,=20
+>this option
+>> >>>      can be removed
+>> >> wait, why can't the interoperability bug be fixed in the=20
+>first place?
+>> >=20
+>> > I agree w/Kim.  We need to better understand what the bug=20
+>is and how to reproduce it so we can get to the root cause.
+>> >=20
+>> > Paper taping over it by disabling fsldma is not the right solution.
+>>=20
+>> Hopefully this prompts fsldma authors to get involved because the=20
+>> interoperability issue has been out there without comment*, just=20
+>> band-aids, since October.
+>>=20
+>> --
+>> Dan
+>>=20
+>> * well one comment from Ira saying the interrupt=20
+>functionality worked=20
+>> for him.
+>
+>Yes, I have used the device_prep_dma_interrupt() functionality=20
+>quite a while back. However, I found it to be pretty much=20
+>useless. Any functionality I need is covered by adding a=20
+>callback to the last DMA
+>memcpy() operation. Since the operations happen in-order, I=20
+>can be sure that the entire set of memcpy()s cas completed. I=20
+>never needed the capability to generate an interrupt without a=20
+>memcpy().
+>
+>I agree that the fsldma driver could use some love. There are=20
+>places where I am still not confident in the locking. Perhaps=20
+>I can find some time over Christmas to work on it, but I need=20
+>someone with 85xx/86xx hardware to test the changes. I only=20
+>have 83xx hardware.
 
-Mahesh Jagannath Salgaonkar wrote:
-> Michael Neuling wrote:
->> In message <4B29EE5F.9020801@linux.vnet.ibm.com> you wrote:
->>> Hi Michael,
->>>
->>> Michael Neuling wrote:
->>>>> + * regs_get_argument_nth() - get Nth argument at function call
->>>>> + * @regs:    pt_regs which contains registers at function entry.
->>>>> + * @n:        argument number.
->>>>> + *
->>>>> + * regs_get_argument_nth() returns @n th argument of a function call.
->>>>> + * Since usually the kernel stack will be changed right after
->>>>> function en
->> try
->>>> ,
->>>>> + * you must use this at function entry. If the @n th entry is NOT
->>>>> in the
->>>>> + * kernel stack or pt_regs, this returns 0.
->>>>> + */
->>>>> +unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned
->>>>> int n)
->>>>> +{
->>>>> +    if (n < ARRAY_SIZE(arg_offs_table))
->>>>> +        return *(unsigned long *)((char *)regs + arg_offs_table[n]);
->>>>> +    else {
->>>>> +        /*
->>>>> +         * If more arguments are passed that can be stored in
->>>>> +         * registers, the remaining arguments are stored in the
->>>>> +         * parameter save area located at fixed offset from stack
->>>>> +         * pointer.
->>>>> +         * Following the PowerPC ABI, the first few arguments are
->>>>> +         * actually passed in registers (r3-r10), with equivalent
->>>>> space
->>>>> +         * left unused in the parameter save area.
->>>>> +         */
->>>>> +        n += (PARAMETER_SAVE_AREA_OFFSET / sizeof(unsigned long));
->>>>> +        return regs_get_kernel_stack_nth(regs, n);
->>>> How do we handle FP args?
->>> Currently this patch does not support FP args.
->>
->> This might be OK.  I don't think we use floating point parameters in any
->> function definitions in the kernel. 
->> We do use altivec in the raid6 driver (drivers/md/raid6altivec.uc) but
->> they are static inline, so they probably don't even end up as
->> functions. 
->> I guess we need to make sure that we're not limiting the interface in
->> such a way that we can't support it later if the above changes. 
->> regs_get_argument_nth returns an unsigned long which makes returning a
->> 128 bit VMX register impossible.  This might be a show stopper for me.
->> How are the x86 guys dealing with this?
->>
-> Nope, x86 does not deal with bigger registers (Masami, correct me if I
-> am wrong). The return data type is opaque to user. Hence this enables us
-> to handle any such situations in future without effecting user space API.
+I can also help with the 85xx testing when I finish the busy project
+soon.
 
-Right, we don't use those bigger registers in the kernel context.
-(some special functions use it inside, but most of codes
- are just using general regs)
-And regs_get_argument_nth is just an accessor of pt_regs field.
-This means that it just provides field in pt_regs.
-
->>>>> +    }
->>>>> +}
->>>>> +/*
->>>>>   * does not yet catch signals sent when the child dies.
->>>>>   * in exit.c or in signal.c.
->>>>>   */
->>>>> Index: linux-2.6-tip/kernel/trace/Kconfig
->>>>> ===================================================================
->>>>> --- linux-2.6-tip.orig/kernel/trace/Kconfig
->>>>> +++ linux-2.6-tip/kernel/trace/Kconfig
->>>>> @@ -464,7 +464,7 @@ config BLK_DEV_IO_TRACE
->>>>>  
->>>>>  config KPROBE_EVENT
->>>>>      depends on KPROBES
->>>>> -    depends on X86
->>>>> +    depends on X86 || PPC
->>>>>      bool "Enable kprobes-based dynamic events"
->>>>>      select TRACING
->>>>>      default y
->>>>>
->>>>> _______________________________________________
->>>>> Linuxppc-dev mailing list
->>>>> Linuxppc-dev@lists.ozlabs.org
->>>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>>>>
->>> Thanks for reviewing.
->>
->> We are creating a new user space API here, so I'm keen for others to take
->> a good look at the interface before we commit to something we are going
->> to have to keep forever. 
->> Who is the main consumer of this (/me is pretty ignorant of kprobes)?
->> What do they think of the interface?
->>
-> The user space API are already present in the upstream kernel and
-> currently only supported architecture is x86. This patch provides ppc
-> architecture specific interfaces that enables powerpc also in par with x86.
-
-Yes, there is a kprobe tracer in ftrace (see Documentation/trace/kprobetrace.txt).
-and this tracer is only for probing kernel (not userspace).
-
-> 
-> The main consumer would be kernel developers who would like to see
-> register values, arguments and stack when the probe hits at given text
-> address.
-
-Right.
-
-BTW, there is a user-space tools we have (tools/perf/builtin-probe.c).
-Currently, it's only for x86. Mahesh, You just need to add a register
-translation table in tools/perf/util/probe-finder.c for ppc support.
-
-Thank you!
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+- Leo
