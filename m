@@ -1,29 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 510AFB6F12
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 19 Dec 2009 01:08:48 +1100 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e7.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nBIE3VeN024346
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2009 09:03:31 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBIE8iEG102934
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2009 09:08:44 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nBIE8iFZ029303
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Dec 2009 12:08:44 -0200
-Date: Fri, 18 Dec 2009 09:08:40 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Please pull 'next' branch of 4xx tree
-Message-ID: <20091218140840.GH8458@zod.rchland.ibm.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id D02A51007D1
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Dec 2009 01:33:17 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 5/6 v5] CPU probe/release files
+References: <4AE8ADCF.6090104@austin.ibm.com> <4AE8B072.1070603@austin.ibm.com>
+Date: Fri, 18 Dec 2009 15:33:11 +0100
+In-Reply-To: <4AE8B072.1070603@austin.ibm.com> (Nathan Fontenot's message of
+	"Wed, 28 Oct 2009 15:58:26 -0500")
+Message-ID: <m2oclw9wt4.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,31 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+Nathan Fontenot <nfont@austin.ibm.com> writes:
 
-A couple more small commits for .33 below.
+> Index: powerpc/arch/powerpc/Kconfig
+> ===================================================================
+> --- powerpc.orig/arch/powerpc/Kconfig	2009-10-28 15:21:47.000000000 -0500
+> +++ powerpc/arch/powerpc/Kconfig	2009-10-28 15:21:53.000000000 -0500
+> @@ -320,6 +320,10 @@
+>  
+>  	  Say N if you are unsure.
+>  
+> +config ARCH_CPU_PROBE_RELEASE
+> +	def_bool y
+> +	depends on HOTPLUG_CPU
+> +
 
-I'd like to get the 460SX patch in still, but it's not quite ready.  I also plan
-on doing some defconfig updates around -rc2.  Other than that, I don't have
-any outstanding patches other than those below.
+That does not work.
 
-thx,
-josh
+drivers/built-in.o: In function `.store_online':
+cpu.c:(.ref.text+0xf5c): undefined reference to `.cpu_hotplug_driver_lock'
+cpu.c:(.ref.text+0xfc8): undefined reference to `.cpu_hotplug_driver_unlock'
+make: *** [.tmp_vmlinux1] Error 1
 
-The following changes since commit e090aa80321b64c3b793f3b047e31ecf1af9538d:
-  Benjamin Herrenschmidt (1):
-        powerpc: Fix usage of 64-bit instruction in 32-bit altivec code
+cpu_hotplug_driver_lock is only defined on pseries, but HOTPLUG_CPU is
+also defined on pmac.
 
-are available in the git repository at:
+Andreas.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
-
-Anatolij Gustschin (1):
-      powerpc/44x: Extend Katmai dts for ADMA and RAID56 support
-
-Sean MacLennan (1):
-      powerpc/44x: Increase warp SD buffer
-
- arch/powerpc/boot/dts/katmai.dts |   52 +++++++++++++++++++++++++++++++++++++-
- arch/powerpc/boot/dts/warp.dts   |    2 +-
- 2 files changed, 52 insertions(+), 2 deletions(-)
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
