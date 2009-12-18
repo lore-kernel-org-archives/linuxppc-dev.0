@@ -1,41 +1,31 @@
-Return-Path: <R58472@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A2853B6F14
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Dec 2009 02:02:43 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	nBIF2Q4B022349
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 08:02:36 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id nBIF6ql6005647
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 09:06:53 -0600 (CST)
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 09F52B6F0C
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Dec 2009 03:25:00 +1100 (EST)
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e1.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nBIGMJXA028362
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 11:22:19 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nBIGOsQ41708076
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 11:24:54 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nBIGOr3e026392
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 14:24:54 -0200
+Message-ID: <4B2BACD3.7010903@austin.ibm.com>
+Date: Fri, 18 Dec 2009 10:24:51 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
-Date: Fri, 18 Dec 2009 23:02:22 +0800
-Message-ID: <3A45394FD742FA419B760BB8D398F9ED01059526@zch01exm26.fsl.freescale.net>
-In-Reply-To: <4B2A6DFA.6000504@intel.com>
-References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
-	<20091216164144.daff5468.kim.phillips@freescale.com>
-	<2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
-	<4B296394.9010709@intel.com>
-	<20091217170958.GE18271@ovro.caltech.edu>
-	<4B2A6DFA.6000504@intel.com>
-From: "Li Yang-R58472" <r58472@freescale.com>
-To: "Dan Williams" <dan.j.williams@intel.com>,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>
-Cc: herbert@gondor.apana.org.au, Suresh Vishnu-B05022 <B05022@freescale.com>,
-	Tabi Timur-B04825 <B04825@freescale.com>,
-	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org,
-	Gupta Maneesh-B18878 <B18878@freescale.com>,
-	Dudhat Dipen-B09055 <B09055@freescale.com>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH 5/6 v5] CPU probe/release files
+References: <4AE8ADCF.6090104@austin.ibm.com>	<4AE8B072.1070603@austin.ibm.com>
+	<m2oclw9wt4.fsf@igel.home>
+In-Reply-To: <m2oclw9wt4.fsf@igel.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,25 +35,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Andreas Schwab wrote:
+> Nathan Fontenot <nfont@austin.ibm.com> writes:
+> 
+>> Index: powerpc/arch/powerpc/Kconfig
+>> ===================================================================
+>> --- powerpc.orig/arch/powerpc/Kconfig	2009-10-28 15:21:47.000000000 -0500
+>> +++ powerpc/arch/powerpc/Kconfig	2009-10-28 15:21:53.000000000 -0500
+>> @@ -320,6 +320,10 @@
+>>  
+>>  	  Say N if you are unsure.
+>>  
+>> +config ARCH_CPU_PROBE_RELEASE
+>> +	def_bool y
+>> +	depends on HOTPLUG_CPU
+>> +
+> 
+> That does not work.
+> 
+> drivers/built-in.o: In function `.store_online':
+> cpu.c:(.ref.text+0xf5c): undefined reference to `.cpu_hotplug_driver_lock'
+> cpu.c:(.ref.text+0xfc8): undefined reference to `.cpu_hotplug_driver_unlock'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> cpu_hotplug_driver_lock is only defined on pseries, but HOTPLUG_CPU is
+> also defined on pmac.
 
->Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for=20
->Async_tx XOR offload
->
->Ira W. Snyder wrote:
->> Yes, I have used the device_prep_dma_interrupt()=20
->functionality quite a=20
->> while back. However, I found it to be pretty much useless.
->
->The specific case it is needed for Talitos/raid is a channel=20
->switch interrupt.  The interrupt causes the cleanup operation=20
->to be run which will kick off any pending dependent operations=20
->on the xor channel.  In the raid case we only have callbacks=20
->at the end of a chain, so we need the interrupt to kick the=20
->engine in an operation chain like=20
->xor->copy->xor->callback.
+These two routines should be defined as a no-op if CONFIG_ARCH_CPU_PROBE_RELEASE
+is not defined in linux/cpu.h.  The update below should be in the patch set
+you are looking at. 
 
-I am wondering if can use more callbacks to kick off pending dependent =
-operations?
-Like xor->callback->copy->callback->xor->callback?
+from linux/cpu.h:
 
-- Leo
+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
+extern void cpu_hotplug_driver_lock(void);
+extern void cpu_hotplug_driver_unlock(void);
+#else
+static inline void cpu_hotplug_driver_lock(void)
+{
+}
+
+static inline void cpu_hotplug_driver_unlock(void)
+{
+}
+#endif
+
+-Nathan Fontenot
