@@ -1,27 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 841CF100B8F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 19 Dec 2009 09:09:45 +1100 (EST)
-Subject: Re: [PATCH v2] ps3_gelic_wireless: Fix build failure due to
-	missing WEXT_PRIV
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <4B2BC8E6.9090007@am.sony.com>
-References: <1261115574.2173.18.camel@pasglop>
-	<20091218085547.fb8bdaf5.randy.dunlap@oracle.com>
-	<4B2BC8E6.9090007@am.sony.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 19 Dec 2009 09:09:36 +1100
-Message-ID: <1261174176.2173.67.camel@pasglop>
-Mime-Version: 1.0
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	"linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-	Hamish Guthrie <Hamish.Guthrie@sonycom.com>
+Return-Path: <dan.j.williams@gmail.com>
+Received: from mail-vw0-f172.google.com (mail-vw0-f172.google.com
+	[209.85.212.172]) by ozlabs.org (Postfix) with ESMTP id 4D1EFB6F06
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Dec 2009 09:17:44 +1100 (EST)
+Received: by vws2 with SMTP id 2so1168550vws.17
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 14:17:43 -0800 (PST)
+MIME-Version: 1.0
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED01059526@zch01exm26.fsl.freescale.net>
+References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
+	<20091216164144.daff5468.kim.phillips@freescale.com>
+	<2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
+	<4B296394.9010709@intel.com> <20091217170958.GE18271@ovro.caltech.edu>
+	<4B2A6DFA.6000504@intel.com>
+	<3A45394FD742FA419B760BB8D398F9ED01059526@zch01exm26.fsl.freescale.net>
+Date: Fri, 18 Dec 2009 15:17:42 -0700
+Message-ID: <e9c3a7c20912181417v2b8155e5w23fb3cee02b9a4c9@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
+From: Dan Williams <dan.j.williams@intel.com>
+To: Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: herbert@gondor.apana.org.au, "Ira W. Snyder" <iws@ovro.caltech.edu>,
+	Suresh Vishnu-B05022 <B05022@freescale.com>,
+	Tabi Timur-B04825 <B04825@freescale.com>,
+	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org,
+	Gupta Maneesh-B18878 <B18878@freescale.com>,
+	Dudhat Dipen-B09055 <B09055@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,42 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-12-18 at 10:24 -0800, Geoff Levand wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> The option to support the old style PSK interface in the PS3
-> GELIC wireless drivers requires CONFIG_WEXT_PRIV to be set
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> ---
-> v2: Added 'depends on WLAN'.
-> 
-> Please send to Linus asap (or I can put it in powerpc.git) as it's
-> breaking one of my test build configs :-)
-> 
-> Just as a note, I asked Hamish to work to remove this option.
-> No distros use it anymore, so we don't need it.
+On Fri, Dec 18, 2009 at 8:02 AM, Li Yang-R58472 <r58472@freescale.com> wrot=
+e:
+>
+>>Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for
+>>Async_tx XOR offload
+>>
+>>Ira W. Snyder wrote:
+>>> Yes, I have used the device_prep_dma_interrupt()
+>>functionality quite a
+>>> while back. However, I found it to be pretty much useless.
+>>
+>>The specific case it is needed for Talitos/raid is a channel
+>>switch interrupt. =A0The interrupt causes the cleanup operation
+>>to be run which will kick off any pending dependent operations
+>>on the xor channel. =A0In the raid case we only have callbacks
+>>at the end of a chain, so we need the interrupt to kick the
+>>engine in an operation chain like
+>>xor->copy->xor->callback.
+>
+> I am wondering if can use more callbacks to kick off pending dependent op=
+erations?
+> Like xor->callback->copy->callback->xor->callback?
+>
 
-Geoff, the depends on WLAN should be on config GELIC_WIRELESS
+No, the callback field is reserved for clients of the api.  What you want i=
+s:
 
-Cheers,
-Ben.
+xor->cleanupT->copy->cleanupF->xor->cleanupT->callback
 
-> -Geoff
-> ---
->  drivers/net/Kconfig |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> --- a/drivers/net/Kconfig
-> +++ b/drivers/net/Kconfig
-> @@ -2357,7 +2357,9 @@ config GELIC_WIRELESS
->  
->  config GELIC_WIRELESS_OLD_PSK_INTERFACE
->         bool "PS3 Wireless private PSK interface (OBSOLETE)"
-> +       depends on WLAN
->         depends on GELIC_WIRELESS
-> +       select WEXT_PRIV
->         help
->            This option retains the obsolete private interface to pass
->            the PSK from user space programs to the driver.  The PSK
+Where cleanupT is the Talitos descriptor cleanup routine and cleanupF
+is from fsldma.  The assumption is that the interrupt kicks the
+cleanup routine and that calls dma_run_dependencies().
+
+--
+Dan
