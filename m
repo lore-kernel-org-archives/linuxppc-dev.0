@@ -1,19 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5B32BB6F0C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Dec 2009 16:53:10 +1100 (EST)
-Subject: [PATCH] ps3_gelic_wireless: Fix build failure due to missing WEXT_PRIV
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 18 Dec 2009 16:52:54 +1100
-Message-ID: <1261115574.2173.18.camel@pasglop>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 0FC15B6F0D
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 17:11:07 +1100 (EST)
+Date: Fri, 18 Dec 2009 09:01:05 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [POWERPC] add U-Boot bootcount driver.
+Message-ID: <20091218090105.397e0da9@vitb-lp>
+In-Reply-To: <20091216000250.GK9463@yookeroo>
+References: <20091216024730.455b90fd@vitb-lp> <20091216000250.GK9463@yookeroo>
 Mime-Version: 1.0
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The option to support the old style PSK interface in the PS3
-GELIC wireless drivers requires CONFIG_WEXT_PRIV to be set
+[...]
+> > bootcount@0x3eb0 {
+> >                   device_type = "bootcount";
+Clear.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> 
+> No device_type.
+> 
+> >                   compatible = "uboot,bootcount";
+> >                   reg = <0x3eb0 0x08>;
+> >                  };
+> 
+> This area should also be in the flattened tree's reserved map.
+> 
+Can you elaborate this a little bit? I know about the reserved map by
+putting -R4 into device tree cmdline which is apparently not enough :)
 
-Please send to Linus asap (or I can put it in powerpc.git) as it's
-breaking one of my test build configs :-)
-
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index e58a653..c0ecc77 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2358,6 +2358,7 @@ config GELIC_WIRELESS
- config GELIC_WIRELESS_OLD_PSK_INTERFACE
-        bool "PS3 Wireless private PSK interface (OBSOLETE)"
-        depends on GELIC_WIRELESS
-+       select WEXT_PRIV
-        help
-           This option retains the obsolete private interface to pass
-           the PSK from user space programs to the driver.  The PSK
+Thanks,
+-Vitaly
