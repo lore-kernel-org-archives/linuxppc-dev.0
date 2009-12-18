@@ -1,18 +1,34 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id DBD1FB7C30
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 17:11:13 +1100 (EST)
-Date: Fri, 18 Dec 2009 08:50:58 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: [POWERPC] add U-Boot bootcount driver.
-Message-ID: <20091218085058.2d28577d@vitb-lp>
-In-Reply-To: <20091217081607.4B621D43F21@gemini.denx.de>
-References: <20091216024730.455b90fd@vitb-lp>
-	<20091217081607.4B621D43F21@gemini.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 590D51007D3
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 17:11:41 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp04.au.ibm.com (8.14.3/8.13.1) with ESMTP id nBI68LoS008973
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 17:08:21 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	nBI6Beif1478898
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 17:11:40 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	nBI6BdtX013949
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Dec 2009 17:11:40 +1100
+Message-ID: <4B2B0EBF.5040302@linux.vnet.ibm.com>
+Date: Fri, 18 Dec 2009 10:40:23 +0530
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH -tip tracing/kprobes] PPC: Powerpc port of the kprobe-based
+	event tracer
+References: <20091216043619.963539987@mars.in.ibm.com>
+	<20091216043933.GA9328@in.ibm.com> <13884.1261016575@neuling.org>
+	<4B29EE5F.9020801@linux.vnet.ibm.com>
+	<12450.1261043861@neuling.org>
+In-Reply-To: <12450.1261043861@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,83 +38,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=D0=92 Thu, 17 Dec 2009 09:16:07 +0100
-Wolfgang Denk <wd@denx.de> =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+Michael Neuling wrote:
+> In message <4B29EE5F.9020801@linux.vnet.ibm.com> you wrote:
+>> Hi Michael,
+>>
+>> Michael Neuling wrote:
+>>>> + * regs_get_argument_nth() - get Nth argument at function call
+>>>> + * @regs:	pt_regs which contains registers at function entry.
+>>>> + * @n:		argument number.
+>>>> + *
+>>>> + * regs_get_argument_nth() returns @n th argument of a function call.
+>>>> + * Since usually the kernel stack will be changed right after function en
+> try
+>>> ,
+>>>> + * you must use this at function entry. If the @n th entry is NOT in the
+>>>> + * kernel stack or pt_regs, this returns 0.
+>>>> + */
+>>>> +unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned int n)
+>>>> +{
+>>>> +	if (n < ARRAY_SIZE(arg_offs_table))
+>>>> +		return *(unsigned long *)((char *)regs + arg_offs_table[n]);
+>>>> +	else {
+>>>> +		/*
+>>>> +		 * If more arguments are passed that can be stored in
+>>>> +		 * registers, the remaining arguments are stored in the
+>>>> +		 * parameter save area located at fixed offset from stack
+>>>> +		 * pointer.
+>>>> +		 * Following the PowerPC ABI, the first few arguments are
+>>>> +		 * actually passed in registers (r3-r10), with equivalent space
+>>>> +		 * left unused in the parameter save area.
+>>>> +		 */
+>>>> +		n += (PARAMETER_SAVE_AREA_OFFSET / sizeof(unsigned long));
+>>>> +		return regs_get_kernel_stack_nth(regs, n);
+>>> How do we handle FP args?
+>> Currently this patch does not support FP args.
+> 
+> This might be OK.  I don't think we use floating point parameters in any
+> function definitions in the kernel.  
+> 
+> We do use altivec in the raid6 driver (drivers/md/raid6altivec.uc) but
+> they are static inline, so they probably don't even end up as
+> functions.  
+> 
+> I guess we need to make sure that we're not limiting the interface in
+> such a way that we can't support it later if the above changes.  
+> 
+> regs_get_argument_nth returns an unsigned long which makes returning a
+> 128 bit VMX register impossible.  This might be a show stopper for me.
+> How are the x86 guys dealing with this?
+> 
+Nope, x86 does not deal with bigger registers (Masami, correct me if I 
+am wrong). The return data type is opaque to user. Hence this enables us 
+to handle any such situations in future without effecting user space API.
 
-> Dear Vitaly Bordug,
->=20
->=20
-> repl: bad addresses:
-> 	linuxppc-dev@ozlabs.org <linuxppc-dev@ozlabs.org> -- junk
-> after local@domain (<) In message <20091216024730.455b90fd@vitb-lp>
-> you wrote:
-> >=20
-> > From: Heiko Schocher <hs@denx.de>
-> >=20
-> > This driver provides (read/write) access to the
-> > U-Boot bootcounter via PROC FS or sysFS.
-> >=20
-> > in u-boot, it uses a 8 byte mem area (it must hold the value over a
-> > soft reset of course), for storing a bootcounter (it counts many
-> > soft resets are done, on hard reset it starts with 0). If the
-> > bootcountvalue exceeds the value in the env variable "bootlimit",
-> > and alternative bootcmd stored in the env variable "altbootcmd" is
-> > run.
-> >=20
-> > The bootcountregister gets configured via DTS.
-> > for example on the mgsuvd board:
-> >=20
-> > bootcount@0x3eb0 {
-> >                   device_type =3D "bootcount";
-> >                   compatible =3D "uboot,bootcount";
-> >                   reg =3D <0x3eb0 0x08>;
-> >                  };
-> >=20
-> > This driver is tested on the mgcoge(82xx) and mgsuvd(8xx) board.
-> >=20
-> > Signed-off-by: Heiko Schocher <hs@denx.de>
-> > Signed-off-by: Wolfgang Denk <wd@denx.de>
-> > Signed-off-by: Vitaly Bordyug <vitb@kernel.crashing.org>
->=20
-> I think it would be good if the text of the commit message could be
-> reworked by a native English speaker.
->=20
-OK.=20
+>>>> +	}
+>>>> +}
+>>>> +/*
+>>>>   * does not yet catch signals sent when the child dies.
+>>>>   * in exit.c or in signal.c.
+>>>>   */
+>>>> Index: linux-2.6-tip/kernel/trace/Kconfig
+>>>> ===================================================================
+>>>> --- linux-2.6-tip.orig/kernel/trace/Kconfig
+>>>> +++ linux-2.6-tip/kernel/trace/Kconfig
+>>>> @@ -464,7 +464,7 @@ config BLK_DEV_IO_TRACE
+>>>>  
+>>>>  config KPROBE_EVENT
+>>>>  	depends on KPROBES
+>>>> -	depends on X86
+>>>> +	depends on X86 || PPC
+>>>>  	bool "Enable kprobes-based dynamic events"
+>>>>  	select TRACING
+>>>>  	default y
+>>>>
+>>>> _______________________________________________
+>>>> Linuxppc-dev mailing list
+>>>> Linuxppc-dev@lists.ozlabs.org
+>>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>>>
+>> Thanks for reviewing.
+> 
+> We are creating a new user space API here, so I'm keen for others to take
+> a good look at the interface before we commit to something we are going
+> to have to keep forever.  
+> 
+> Who is the main consumer of this (/me is pretty ignorant of kprobes)?
+> What do they think of the interface?
+> 
+The user space API are already present in the upstream kernel and 
+currently only supported architecture is x86. This patch provides ppc 
+architecture specific interfaces that enables powerpc also in par with x86.
 
-> Regarding the subject: it is probably important to point out that this
-> driver implements the Linux kernel half of the boot count feature -
-> the boot counter can only be reset after it is clear that the
-> application has been started and is running correctly, which usually
-> can only be determined by the application code itself. Thus the reset
-> of the boot counter must be done by application code, which thus needs
-> an appropriate driver.
->=20
-I'll rework the commit message to make it more clear, thanks for the
-details!
-
--Vitaly
-
-> > I think there is no reason not to have this in mainline. Thoughts?
-> > And I'm not sure what is right direction to push this - it's
-> > representation of u-boot feature in fact, pretty useful tho.
->=20
-> It's not only useful, it's actually a required feature by the Carrier
-> Grade Linux Requirements Definition; see for example document "Carrier
-> Grade Linux Requirements Definition Overview V3.0" at
-> https://www.linux-foundation.org/images/1/1a/Cgl_req_def_overview_30.pdf
-> Page 49:
->=20
-> 	ID PLT.4.0 (2.3 in v1.1)	Boot Cycle Detection
->=20
->         Description: OSDL CGL specifies that carrier grade Linux
->         shall provide support for detecting a repeating reboot cycle
->         due to recurring failures and going to an offline state if
->         this occurs.
->=20
->=20
->=20
->=20
-> Best regards,
->=20
-> Wolfgang Denk
->=20
+The main consumer would be kernel developers who would like to see 
+register values, arguments and stack when the probe hits at given text 
+address.
+> Mikey
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
