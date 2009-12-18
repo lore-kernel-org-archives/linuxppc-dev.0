@@ -1,29 +1,21 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 77ABCB6F0A
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
+	[216.32.180.15]) by ozlabs.org (Postfix) with ESMTP id 4A1221007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 19 Dec 2009 06:12:53 +1100 (EST)
-Subject: Re: [PATCH v2] ps3_gelic_wireless: Fix build failure due to
-	missing WEXT_PRIV
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <4B2BC8E6.9090007@am.sony.com>
+	Sat, 19 Dec 2009 06:20:45 +1100 (EST)
+Message-ID: <4B2BD5C4.6050001@am.sony.com>
+Date: Fri, 18 Dec 2009 11:19:32 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v3] ps3_gelic_wireless: Fix build failure due to missing
+	WEXT_PRIV
 References: <1261115574.2173.18.camel@pasglop>
-	<20091218085547.fb8bdaf5.randy.dunlap@oracle.com>
-	<4B2BC8E6.9090007@am.sony.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-fPnoSaeSXGA91qGIZ54b"
-Date: Fri, 18 Dec 2009 19:30:36 +0100
-Message-ID: <1261161036.14206.3.camel@johannes.local>
-Mime-Version: 1.0
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-	"linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+In-Reply-To: <1261115574.2173.18.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Hamish Guthrie <Hamish.Guthrie@sonycom.com>
+	"linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,44 +26,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-fPnoSaeSXGA91qGIZ54b
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-On Fri, 2009-12-18 at 10:24 -0800, Geoff Levand wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->=20
-> The option to support the old style PSK interface in the PS3
-> GELIC wireless drivers requires CONFIG_WEXT_PRIV to be set
->=20
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> ---
-> v2: Added 'depends on WLAN'.
+The option to support the old style PSK interface in the PS3
+GELIC wireless drivers requires CONFIG_WEXT_PRIV to be set
 
-Won't you want 'depends on WLAN' for GELIC_WIRELESS instead of here?
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+v2: Added 'depends on WLAN'.
+v3: Moved 'depends on WLAN' to GELIC_WIRELESS.
 
-johannes
+Please send to Linus asap (or I can put it in powerpc.git) as it's
+breaking one of my test build configs :-)
 
---=-fPnoSaeSXGA91qGIZ54b
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+---
+ drivers/net/Kconfig |    2 ++
+ 1 file changed, 2 insertions(+)
 
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLK8pIAAoJEODzc/N7+Qma+toP/iarWy2EipzMYswHGNrgA3h1
-RdMr4Gy93ESxqWEpKPxZaFwbAsdmr7z9zIhQxhkz//Fzz/scu6DvgGaV8sqsZQqQ
-uVlZivy7TOdVuzXs6ocjZKV144Waq3VNdQwmJ9AXemfOFTTIZbA3RYXS+oSe1SEa
-jINun2K+XnNp8oPcHJayoo5BMu8ou8hBr+hXonVB8srj7dTAfGHkwyjkwaMgGvI0
-u5Ksw1TNzMlo75xENOWzmi9bsc9jIeCSpHg9BWS0zdTjDObkJYJLEerWEZf5w2kd
-C+T4NM04BU1eainx30sIcqGqMq2R3KDQwx3DI+FrGhDu6VJI3/y6Eu3d3YfUlqGk
-bn5ZLbwpNYccI4LA7k/cFcX8gz/IV1kYXAc+g3hGKZQCMcQbWgSfQXDJb3/jGTsT
-R5IWwIg0oEoCY5ZIFrqcBTne/n7snWnxrdjXi+DQN0YGufzD8+mkJQDJV8jPw+Dy
-8h1W9u8IzFAt86rHdC8zp7vSbO9D4gv3havsxgk7Z+j9l0SiIT0Yxh18dCvG85yy
-vNcmJw4sMSEYl8VLEfgLj0a8XA7MU/xXYllU5Eo3Ts2Ac7PhhyczedvV0GA52asP
-uUdgFMNwe9CB3BNmk4NSs9m+krTkndgw6Lffmw0SdE6wMNJiECg72bneU1wlyIbr
-Svww/5qZVwiAB7gOviVC
-=jbIL
------END PGP SIGNATURE-----
-
---=-fPnoSaeSXGA91qGIZ54b--
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2346,6 +2346,7 @@ config GELIC_NET
+ 
+ config GELIC_WIRELESS
+ 	bool "PS3 Wireless support"
++	depends on WLAN
+ 	depends on GELIC_NET
+ 	select WIRELESS_EXT
+ 	help
+@@ -2358,6 +2359,7 @@ config GELIC_WIRELESS
+ config GELIC_WIRELESS_OLD_PSK_INTERFACE
+        bool "PS3 Wireless private PSK interface (OBSOLETE)"
+        depends on GELIC_WIRELESS
++       select WEXT_PRIV
+        help
+           This option retains the obsolete private interface to pass
+           the PSK from user space programs to the driver.  The PSK
