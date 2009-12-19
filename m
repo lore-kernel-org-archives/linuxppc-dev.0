@@ -1,15 +1,18 @@
-Return-Path: <jothiadithya@yahoo.com>
-Received: from web112309.mail.gq1.yahoo.com (web112309.mail.gq1.yahoo.com
-	[98.137.26.152]) by ozlabs.org (Postfix) with SMTP id DB719B6F0A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 20 Dec 2009 04:47:33 +1100 (EST)
-Message-ID: <45586.35526.qm@web112309.mail.gq1.yahoo.com>
-Date: Sat, 19 Dec 2009 09:47:31 -0800 (PST)
-From: Jothi Adithya <jothiadithya@yahoo.com>
-Subject: xilinx xps_spi & ads7846
-To: linuxppc-dev@lists.ozlabs.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 19EA0B6F19
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Dec 2009 05:56:59 +1100 (EST)
+To: Hunter Cobbs <hunter.cobbs@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: DWC_OTG Issues
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1190223599-1261244851=:35526"
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <1261190115.14590.5.camel@mobiLinux>
+References: <1261176637-23912-1-git-send-email-ptyser@xes-inc.com>
+	<1261190115.14590.5.camel@mobiLinux>
+Date: Sat, 19 Dec 2009 19:56:57 +0100
+Message-Id: <20091219185657.5FF29E85072@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,25 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0-1190223599-1261244851=:35526
-Content-Type: text/plain; charset=us-ascii
+Dear Hunter Cobbs,
 
-Hi
+In message <1261190115.14590.5.camel@mobiLinux> you wrote:
+> Hello list.  I've run into a rather odd problem.  I seem to have a
+> problem with full-speed isochronous transfers across a USB2.0 Hub.  I
+> believe this was observed before with the general EHCI drivers in Linux.
 
-Anybody has experience using xilinx xps_spi driver & ads7846 driver for touchscreen control?
+Which exazct kernel / driver cversions are you talking about?
 
-Jothi
+> In the latest branch of the kernel, the EHCI driver has some "Enhanced
+> Transaction Translation" scheduling.  This would be great for me to use
+> as it seems to directly address the issues I've seen.  However, I'm not
+> really sure on how to proceed because the DWC_OTG driver is not GPL code
 
+Oops? if that wa the case you could not use (and distribute) this code
+in a Linux context at all.
 
-      
---0-1190223599-1261244851=:35526
-Content-Type: text/html; charset=us-ascii
+> while the EHCI code I'd like to use is.  Therefore, I don't believe that
+> I can port the Enhanced Transaction Translation routine into the DWC_OTG
+> driver without violating both the GPL and Synopsis's own driver.
 
-<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:'times new roman', 'new york', times, serif;font-size:14pt"><div>Hi</div><div><br></div><div>Anybody has experience using xilinx xps_spi driver &amp; ads7846 driver for touchscreen control?</div><div><br></div><div>Jothi</div><div style="position:fixed"></div>
+What makes you think so?
 
+The Synopsis dwc_otg driver license does not seem to be  in  conflict
+to  the  GPL,  if  you  ask  me (but then, I am not a layer). When we
+worked on this, we were assured that the use of this driver source in
+the context of GPLed software like the Linux kernel (or  U-Boot)  was
+not considered an issue by Synopsis.
 
-<!-- cg37.c4.mail.gq1.yahoo.com compressed/chunked Sat Dec 19 09:46:25 PST 2009 -->
-</div><br>
+> Does anyone have a suggestion on how to proceed?
 
-      </body></html>
---0-1190223599-1261244851=:35526--
+We have been doing some work on the DWC drivers in the past, fixing a
+number of issues. [We never  attempted  to  psuh  any  of  this  into
+mainline  as  the  Synopsis  drivers  are  -  in  our  opinion  - not
+avcceptable for mainline but require more  or  less  a  rewrite  from
+scratch. But you can find all this stuff in our linux-2.6-denx repo.]
+
+I recommend you give a try to our latest stable branch.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+What is research but a blind date with knowledge?      -- Will Harvey
