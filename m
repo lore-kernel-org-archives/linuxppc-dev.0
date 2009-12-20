@@ -1,21 +1,18 @@
-Return-Path: <hunter.cobbs@gmail.com>
-Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
-	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id D144FB6F01
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 07:13:50 +1100 (EST)
-Received: by yxe8 with SMTP id 8so4889353yxe.17
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Dec 2009 12:13:48 -0800 (PST)
-Subject: Re: DWC_OTG Issues
-From: Hunter Cobbs <hunter.cobbs@gmail.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20091219185657.5FF29E85072@gemini.denx.de>
-References: <1261176637-23912-1-git-send-email-ptyser@xes-inc.com>
-	<1261190115.14590.5.camel@mobiLinux>
-	<20091219185657.5FF29E85072@gemini.denx.de>
-Content-Type: text/plain
-Date: Sun, 20 Dec 2009 14:13:45 -0600
-Message-Id: <1261340025.3473.15.camel@mobiLinux>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH -tip tracing/kprobes] PPC: Powerpc port of the
+	kprobe-based event tracer
+In-reply-to: <4B2B934C.1060807@redhat.com>
+References: <20091216043619.963539987@mars.in.ibm.com>
+	<20091216043933.GA9328@in.ibm.com> <13884.1261016575@neuling.org>
+	<4B29EE5F.9020801@linux.vnet.ibm.com>
+	<12450.1261043861@neuling.org>
+	<4B2B0EBF.5040302@linux.vnet.ibm.com> <4B2B934C.1060807@redhat.com>
+Date: Mon, 21 Dec 2009 07:54:04 +1100
+Message-ID: <9823.1261342444@neuling.org>
+Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,78 +22,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Well, thank you for the assurance on the Synopsis drivers not being in
-conflict.  That makes me feel a little better.
 
-We're using Linux 2.6.30(.3)-denx.  We've worked on this issue a bit
-before, although at the time you were doing some work for AMCC on just
-accessing devices across a hub in general.  We've been using the driver
-for a few months now and it is very stable on first-use of the driver,
-but once we close a full-speed port and try to reopen, that's when we
-get error concerning not being able to allocate resources and getting
--28 errors.  I don't have anything precise in front of me at the moment,
-my test equipment is at the office.  But this seems to be the issues
-that lead to the Enhanced Transaction Translation Scheduling changes in
-the main-line kernel.
 
-I'm mainly being, I believe, overly cautious about not including GPL
-code in the Synopsis driver simply because I'd rather be overly careful
-than be exposed to some liability later down the road if Synopsis
-decides they want to make their driver completely proprietary.  While
-the code is available, I'm not sure if we can include code from GPL
-sources in the Synopsis drivers without requiring the Synopsis driver to
-become completely GPL.  I am also not a lawyer, but I'd rather be
-cautious.
+In message <4B2B934C.1060807@redhat.com> you wrote:
+> 
+> 
+> Mahesh Jagannath Salgaonkar wrote:
+> > Michael Neuling wrote:
+> >> In message <4B29EE5F.9020801@linux.vnet.ibm.com> you wrote:
+> >>> Hi Michael,
+> >>>
+> >>> Michael Neuling wrote:
+> >>>>> + * regs_get_argument_nth() - get Nth argument at function call
+> >>>>> + * @regs:    pt_regs which contains registers at function entry.
+> >>>>> + * @n:        argument number.
+> >>>>> + *
+> >>>>> + * regs_get_argument_nth() returns @n th argument of a function call.
+> >>>>> + * Since usually the kernel stack will be changed right after
+> >>>>> function en
+> >> try
+> >>>> ,
+> >>>>> + * you must use this at function entry. If the @n th entry is NOT
+> >>>>> in the
+> >>>>> + * kernel stack or pt_regs, this returns 0.
+> >>>>> + */
+> >>>>> +unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned
+> >>>>> int n)
+> >>>>> +{
+> >>>>> +    if (n < ARRAY_SIZE(arg_offs_table))
+> >>>>> +        return *(unsigned long *)((char *)regs + arg_offs_table[n]);
+> >>>>> +    else {
+> >>>>> +        /*
+> >>>>> +         * If more arguments are passed that can be stored in
+> >>>>> +         * registers, the remaining arguments are stored in the
+> >>>>> +         * parameter save area located at fixed offset from stack
+> >>>>> +         * pointer.
+> >>>>> +         * Following the PowerPC ABI, the first few arguments are
+> >>>>> +         * actually passed in registers (r3-r10), with equivalent
+> >>>>> space
+> >>>>> +         * left unused in the parameter save area.
+> >>>>> +         */
+> >>>>> +        n += (PARAMETER_SAVE_AREA_OFFSET / sizeof(unsigned long));
+> >>>>> +        return regs_get_kernel_stack_nth(regs, n);
+> >>>> How do we handle FP args?
+> >>> Currently this patch does not support FP args.
+> >>
+> >> This might be OK.  I don't think we use floating point parameters in any
+> >> function definitions in the kernel. 
+> >> We do use altivec in the raid6 driver (drivers/md/raid6altivec.uc) but
+> >> they are static inline, so they probably don't even end up as
+> >> functions. 
+> >> I guess we need to make sure that we're not limiting the interface in
+> >> such a way that we can't support it later if the above changes. 
+> >> regs_get_argument_nth returns an unsigned long which makes returning a
+> >> 128 bit VMX register impossible.  This might be a show stopper for me.
+> >> How are the x86 guys dealing with this?
+> >>
+> > Nope, x86 does not deal with bigger registers (Masami, correct me if I
+> > am wrong). The return data type is opaque to user. Hence this enables us
+> > to handle any such situations in future without effecting user space API.
+> 
+> Right, we don't use those bigger registers in the kernel context.
+> (some special functions use it inside, but most of codes
+>  are just using general regs)
 
-I did do a comparison on the previous branch we are (2.6.30.3-denx) and
-the current stable.  The only differences in the code were minor enough
-that I simply merged them into our existing codebase.  It didn't really
-help our issue, but on block transfers and standard connect/disconnect
-the driver seemed more responsive.  I believe this was mainly from 
-Setphan's actions to put some sleeps inside of tight loops that would
-chew up major CPU time on a non-preemptable kernel(which we had earlier).
+Sure, but kernel interfaces are for now.  What happens if this changes in
+the future?
 
-On Sat, 2009-12-19 at 19:56 +0100, Wolfgang Denk wrote:
-> Dear Hunter Cobbs,
+> And regs_get_argument_nth is just an accessor of pt_regs field.
+> This means that it just provides field in pt_regs.
+
+Sure, that's how it's implemented, but that's not what the name of the
+function suggests it does.
+
+Mikey
+
 > 
-> In message <1261190115.14590.5.camel@mobiLinux> you wrote:
-> > Hello list.  I've run into a rather odd problem.  I seem to have a
-> > problem with full-speed isochronous transfers across a USB2.0 Hub.  I
-> > believe this was observed before with the general EHCI drivers in Linux.
+> >>>>> +    }
+> >>>>> +}
+> >>>>> +/*
+> >>>>>   * does not yet catch signals sent when the child dies.
+> >>>>>   * in exit.c or in signal.c.
+> >>>>>   */
+> >>>>> Index: linux-2.6-tip/kernel/trace/Kconfig
+> >>>>> ===================================================================
+> >>>>> --- linux-2.6-tip.orig/kernel/trace/Kconfig
+> >>>>> +++ linux-2.6-tip/kernel/trace/Kconfig
+> >>>>> @@ -464,7 +464,7 @@ config BLK_DEV_IO_TRACE
+> >>>>>  
+> >>>>>  config KPROBE_EVENT
+> >>>>>      depends on KPROBES
+> >>>>> -    depends on X86
+> >>>>> +    depends on X86 || PPC
+> >>>>>      bool "Enable kprobes-based dynamic events"
+> >>>>>      select TRACING
+> >>>>>      default y
+> >>>>>
+> >>>>> _______________________________________________
+> >>>>> Linuxppc-dev mailing list
+> >>>>> Linuxppc-dev@lists.ozlabs.org
+> >>>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> >>>>>
+> >>> Thanks for reviewing.
+> >>
+> >> We are creating a new user space API here, so I'm keen for others to take
+> >> a good look at the interface before we commit to something we are going
+> >> to have to keep forever. 
+> >> Who is the main consumer of this (/me is pretty ignorant of kprobes)?
+> >> What do they think of the interface?
+> >>
+> > The user space API are already present in the upstream kernel and
+> > currently only supported architecture is x86. This patch provides ppc
+> > architecture specific interfaces that enables powerpc also in par with x86.
 > 
-> Which exazct kernel / driver cversions are you talking about?
+> Yes, there is a kprobe tracer in ftrace (see Documentation/trace/kprobetrace.
+txt).
+> and this tracer is only for probing kernel (not userspace).
 > 
-> > In the latest branch of the kernel, the EHCI driver has some "Enhanced
-> > Transaction Translation" scheduling.  This would be great for me to use
-> > as it seems to directly address the issues I've seen.  However, I'm not
-> > really sure on how to proceed because the DWC_OTG driver is not GPL code
+> > 
+> > The main consumer would be kernel developers who would like to see
+> > register values, arguments and stack when the probe hits at given text
+> > address.
 > 
-> Oops? if that wa the case you could not use (and distribute) this code
-> in a Linux context at all.
+> Right.
 > 
-> > while the EHCI code I'd like to use is.  Therefore, I don't believe that
-> > I can port the Enhanced Transaction Translation routine into the DWC_OTG
-> > driver without violating both the GPL and Synopsis's own driver.
+> BTW, there is a user-space tools we have (tools/perf/builtin-probe.c).
+> Currently, it's only for x86. Mahesh, You just need to add a register
+> translation table in tools/perf/util/probe-finder.c for ppc support.
 > 
-> What makes you think so?
+> Thank you!
 > 
-> The Synopsis dwc_otg driver license does not seem to be  in  conflict
-> to  the  GPL,  if  you  ask  me (but then, I am not a layer). When we
-> worked on this, we were assured that the use of this driver source in
-> the context of GPLed software like the Linux kernel (or  U-Boot)  was
-> not considered an issue by Synopsis.
+> -- 
+> Masami Hiramatsu
 > 
-> > Does anyone have a suggestion on how to proceed?
+> Software Engineer
+> Hitachi Computer Products (America), Inc.
+> Software Solutions Division
 > 
-> We have been doing some work on the DWC drivers in the past, fixing a
-> number of issues. [We never  attempted  to  psuh  any  of  this  into
-> mainline  as  the  Synopsis  drivers  are  -  in  our  opinion  - not
-> avcceptable for mainline but require more  or  less  a  rewrite  from
-> scratch. But you can find all this stuff in our linux-2.6-denx repo.]
-> 
-> I recommend you give a try to our latest stable branch.
-> 
-> Best regards,
-> 
-> Wolfgang Denk
+> e-mail: mhiramat@redhat.com
 > 
