@@ -1,19 +1,11 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id DA75AB6F15
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 08:58:34 +1100 (EST)
-To: Hunter Cobbs <hunter.cobbs@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: DWC_OTG Issues
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <1261340025.3473.15.camel@mobiLinux>
-References: <1261176637-23912-1-git-send-email-ptyser@xes-inc.com>
-	<1261190115.14590.5.camel@mobiLinux>
-	<20091219185657.5FF29E85072@gemini.denx.de>
-	<1261340025.3473.15.camel@mobiLinux>
-Date: Sun, 20 Dec 2009 22:58:31 +0100
-Message-Id: <20091220215831.EEBE43F6FF@gemini.denx.de>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: [PATCH] powerpc: update ibm,client-architecture
+In-reply-to: <1261170452.8134.13.camel@jschopp-laptop>
+References: <1261170452.8134.13.camel@jschopp-laptop>
+Date: Mon, 21 Dec 2009 10:59:26 +1100
+Message-ID: <29526.1261353566@neuling.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,52 +16,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Hunter Cobbs,
+> Subject: Re: [PATCH] powerpc: update ibm,client-architecture
 
-In message <1261340025.3473.15.camel@mobiLinux> you wrote:
+Please give this a more appropriate name.  
+
+> In order to boot with more than 64 cores on machines that support the
+> ibm,client-architecture RTAS call a new field has been added to the
+> structure.  This patch updates that field and adds a few others in the
+> process.
+
+Please detail what these are here.
+
+> It would be good if this could go in as a bugfix.  
 > 
-> We're using Linux 2.6.30(.3)-denx.  We've worked on this issue a bit
-> before, although at the time you were doing some work for AMCC on just
-> accessing devices across a hub in general.  We've been using the driver
-> for a few months now and it is very stable on first-use of the driver,
-> but once we close a full-speed port and try to reopen, that's when we
-> get error concerning not being able to allocate resources and getting
-> -28 errors.  I don't have anything precise in front of me at the moment,
-> my test equipment is at the office.  But this seems to be the issues
-> that lead to the Enhanced Transaction Translation Scheduling changes in
-> the main-line kernel.
+> Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+> 
+> Index: linux-2.6.git/arch/powerpc/kernel/prom_init.c
+> ===================================================================
+> --- linux-2.6.git.orig/arch/powerpc/kernel/prom_init.c
+> +++ linux-2.6.git/arch/powerpc/kernel/prom_init.c
+> @@ -654,6 +654,9 @@ static void __init early_cmdline_parse(v
+>  #define OV5_CMO			0x00
+>  #endif
+>  
+> +/* Option Vector 6: IBM PAPR hints */
+> +#define OV6_LINUX		0x02	/* Linux is our OS */
+> +
+>  /*
+>   * The architecture vector has an array of PVR mask/value pairs,
+>   * followed by # option vectors - 1, followed by the option vectors.
+> @@ -665,7 +668,7 @@ static unsigned char ibm_architecture_ve
+>  	W(0xffffffff), W(0x0f000003),	/* all 2.06-compliant */
+>  	W(0xffffffff), W(0x0f000002),	/* all 2.05-compliant */
+>  	W(0xfffffffe), W(0x0f000001),	/* all 2.04-compliant and earlier */
+> -	5 - 1,				/* 5 option vectors */
+> +	6 - 1,				/* 6 option vectors */
+>  
+>  	/* option vector 1: processor architectures supported */
+>  	3 - 2,				/* length */
+> @@ -697,12 +700,26 @@ static unsigned char ibm_architecture_ve
+>  	0,				/* don't halt */
+>  
+>  	/* option vector 5: PAPR/OF options */
+> -	5 - 2,				/* length */
+> +	13 - 2,				/* length */
+>  	0,				/* don't ignore, don't halt */
+>  	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_DRCONF_MEMORY |
+>  	OV5_DONATE_DEDICATE_CPU | OV5_MSI,
+>  	0,
+>  	OV5_CMO,
+> +	0,				/* reserved */
+> +	0,				/* reserved */
+> +	0,				/* reserved */
+> +	0,				/* reserved */
+> +	W(NR_CPUS/4),			/* max cores supported */
 
-If you have a detailed bug report, ideally including an easy to
-reproduce test case to trigger the problem then please feel free to
-send it to our support address.
+4?
 
-> I'm mainly being, I believe, overly cautious about not including GPL
-> code in the Synopsis driver simply because I'd rather be overly careful
-> than be exposed to some liability later down the road if Synopsis
-> decides they want to make their driver completely proprietary.  While
-> the code is available, I'm not sure if we can include code from GPL
-> sources in the Synopsis drivers without requiring the Synopsis driver to
-> become completely GPL.  I am also not a lawyer, but I'd rather be
-> cautious.
+> +
+> +	/* option vector 6: IBM PAPR hints */
+> +	4 - 2,
 
-Well, their license is relatively simple: the driver is unsupported,
-it "IS NOT an item of Licensed Software or Licensed Product under any
-End User Software License Agreement or Agreement for Licensed
-Product", and you "are permitted to use andredistribute this Software
-in source and binary forms, with or without modification, provided
-that redistributions of source code must retain this notice." And
-there is no warranty, of course.
+Please put a comment next to these to say what it is.  
 
-IANAL, but I see no risks here.
+> +	0,				/* reserved */
+> +	0,				/* 1 == no secondary pteg */
+> +	OV6_LINUX,
+> +
+> +	/* option vector 7: IBM PAPR OS identification */
+> +	/* a human readable ascii string will go here */
 
+Can we do this now or remove the comment.  Maybe UTS_RELEASE or
+something like that.
 
-Best regards,
+Mikey
 
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-If I ever needed a brain transplant, I'd choose a teenager's  because
-I'd want a brain that had never been used.
+>  };
+>  
+>  /* Old method - ELF header with PT_NOTE sections */
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
